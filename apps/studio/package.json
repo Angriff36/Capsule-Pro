@@ -1,0 +1,12 @@
+{
+  "name": "studio",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "set DOTENV_CONFIG_PATH=.env.local && prisma studio --config ../../packages/database/prisma.config.ts --port 2226",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "devDependencies": {
+    "prisma": "7.1.0"
+  }
+}
