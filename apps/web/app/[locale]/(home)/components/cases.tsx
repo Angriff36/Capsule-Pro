@@ -7,6 +7,7 @@ import {
   CarouselItem,
 } from "@repo/design-system/components/ui/carousel";
 import type { Dictionary } from "@repo/internationalization";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 type CasesProps = {
@@ -16,6 +17,17 @@ type CasesProps = {
 export const Cases = ({ dictionary }: CasesProps) => {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
+  const caseImages = [
+    "/marketing/EnterpriseDashboard.png",
+    "/marketing/OperationsDashboard.png",
+    "/marketing/LeadershipKanban.png",
+    "/marketing/RecipesMenus.png",
+    "/marketing/KitchenOverview.png",
+    "/marketing/Dishes.png",
+    "/marketing/KitchenOpsDashboard.png",
+    "/marketing/ConsolidatedTasks.png",
+    "/marketing/EventChat.png",
+  ];
 
   useEffect(() => {
     if (!api) {
@@ -42,13 +54,23 @@ export const Cases = ({ dictionary }: CasesProps) => {
           </h2>
           <Carousel className="w-full" setApi={setApi}>
             <CarouselContent>
-              {Array.from({ length: 15 }).map((_, index) => (
-                <CarouselItem className="basis-1/4 lg:basis-1/6" key={index}>
-                  <div className="flex aspect-square items-center justify-center rounded-md bg-muted p-6">
-                    <span className="text-sm">Logo {index + 1}</span>
-                  </div>
-                </CarouselItem>
-              ))}
+              {Array.from({ length: 12 }).map((_, index) => {
+                const src = caseImages[index % caseImages.length];
+
+                return (
+                  <CarouselItem className="basis-1/2 lg:basis-1/4" key={index}>
+                    <div className="relative aspect-[4/3] overflow-hidden rounded-xl border bg-muted">
+                      <Image
+                        alt="Operations preview"
+                        fill
+                        sizes="(min-width: 1024px) 25vw, 50vw"
+                        src={src}
+                        style={{ objectFit: "cover" }}
+                      />
+                    </div>
+                  </CarouselItem>
+                );
+              })}
             </CarouselContent>
           </Carousel>
         </div>

@@ -42,6 +42,7 @@
 - Fixed Vercel build error by returning Uint8Array in event import download response.
 - Refreshed landing page copy in `packages/internationalization/dictionaries/en.json`.
 - Copied updated marketing copy (including testimonial images) to de/es/fr/pt/zh dictionaries.
+- Populated landing page hero, cases carousel, and feature cards with local UI images.
 
 ## Tests
 - Not run (UI verification pending).

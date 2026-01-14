@@ -73,3 +73,4 @@
 - Vercel build fix: use Uint8Array in event import download response for type compatibility.
 - Updated marketing copy for the landing page (en dictionary).
 - Synced landing page copy and testimonial images across all locales.
+- Added marketing image assets and replaced landing page placeholders with real UI imagery.
