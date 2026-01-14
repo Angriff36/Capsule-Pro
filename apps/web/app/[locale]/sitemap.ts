@@ -9,30 +9,50 @@ const pages = appFolders
   .filter((folder) => !folder.name.startsWith("_"))
   .filter((folder) => !folder.name.startsWith("("))
   .map((folder) => folder.name);
-const blogs = (await blog.getPosts()).map((post) => post._sys.filename);
-const legals = (await legal.getPosts()).map((post) => post._sys.filename);
-const protocol = env.VERCEL_PROJECT_PRODUCTION_URL?.startsWith("https")
-  ? "https"
-  : "http";
-const url = new URL(`${protocol}://${env.VERCEL_PROJECT_PRODUCTION_URL}`);
 
-const sitemap = async (): Promise<MetadataRoute.Sitemap> => [
-  {
-    url: new URL("/", url).href,
-    lastModified: new Date(),
-  },
-  ...pages.map((page) => ({
-    url: new URL(page, url).href,
-    lastModified: new Date(),
-  })),
-  ...blogs.map((blog) => ({
-    url: new URL(`blog/${blog}`, url).href,
-    lastModified: new Date(),
-  })),
-  ...legals.map((legal) => ({
-    url: new URL(`legal/${legal}`, url).href,
-    lastModified: new Date(),
-  })),
-];
+const resolveBaseUrl = () => {
+  const raw =
+    env.NEXT_PUBLIC_WEB_URL ??
+    env.VERCEL_PROJECT_PRODUCTION_URL ??
+    env.VERCEL_URL ??
+    "http://localhost:2222";
+  const normalized = raw.startsWith("http") ? raw : `https://${raw}`;
+  return new URL(normalized);
+};
+
+const toSlugs = (posts: unknown[]) =>
+  posts
+    .filter((post) => post && typeof post === "object")
+    .map((post) => (post as { _sys?: { filename?: string } })._sys?.filename)
+    .filter((slug): slug is string => Boolean(slug));
+
+const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
+  const url = resolveBaseUrl();
+  const [blogPosts, legalPosts] = await Promise.all([
+    blog.getPosts().catch(() => []),
+    legal.getPosts().catch(() => []),
+  ]);
+  const blogs = Array.isArray(blogPosts) ? toSlugs(blogPosts) : [];
+  const legals = Array.isArray(legalPosts) ? toSlugs(legalPosts) : [];
+
+  return [
+    {
+      url: new URL("/", url).href,
+      lastModified: new Date(),
+    },
+    ...pages.map((page) => ({
+      url: new URL(page, url).href,
+      lastModified: new Date(),
+    })),
+    ...blogs.map((slug) => ({
+      url: new URL(`blog/${slug}`, url).href,
+      lastModified: new Date(),
+    })),
+    ...legals.map((slug) => ({
+      url: new URL(`legal/${slug}`, url).href,
+      lastModified: new Date(),
+    })),
+  ];
+};
 
 export default sitemap;

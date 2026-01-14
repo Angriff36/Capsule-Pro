@@ -1,6 +1,10 @@
 # Created by https://www.toptal.com/developers/gitignore/api/macos,windows,node,nextjs,vercel,turbo,storybookjs,react
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,windows,node,nextjs,vercel,turbo,storybookjs,react
 
+# AI agent planning directories (archived to docs/task-plans/ when complete)
+/claude-code-plans/
+/codex-plans/
+
 ### macOS ###
 # General
 .DS_Store
