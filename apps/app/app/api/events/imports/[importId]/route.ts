@@ -35,7 +35,9 @@ export const GET = async (_request: Request, context: RouteContext) => {
     return NextResponse.json({ message: "Not found" }, { status: 404 });
   }
 
-  return new NextResponse(row.content, {
+  const body = row.content ? new Uint8Array(row.content) : null;
+
+  return new NextResponse(body, {
     headers: {
       "Content-Type": row.mime_type,
       "Content-Disposition": `${inline ? "inline" : "attachment"}; filename="${row.file_name}"`,

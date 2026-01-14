@@ -39,6 +39,7 @@
 - Built Kitchen Production Board mock UI for `/kitchen`.
 - Added module header navigation and module-specific sidebar slot.
 - Added module settings placeholder route and kitchen/warehouse inventory placeholders.
+- Fixed Vercel build error by returning Uint8Array in event import download response.
 
 ## Tests
 - Not run (UI verification pending).
