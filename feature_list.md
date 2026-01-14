@@ -34,6 +34,7 @@
 - Clients + contacts
 - Deals + activities
 - Event-linked customer history
+- Self-serve import manager (bulk leads/contacts)
 
 ## Milestone 6: Inventory
 - Items + stock locations

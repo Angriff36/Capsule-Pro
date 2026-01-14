@@ -71,3 +71,5 @@
 - Kitchen overview dashboard UI added on `/kitchen` (static for now).
 - Modules now live in a global header; left sidebar renders module-specific items with a per-module settings link.
 - Vercel build fix: use Uint8Array in event import download response for type compatibility.
+- Updated marketing copy for the landing page (en dictionary).
+- Synced landing page copy and testimonial images across all locales.
