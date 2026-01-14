@@ -123,18 +123,72 @@ Full documentation is available at [next-forge.com/docs](https://www.next-forge.
 - Deployment instructions
 - Examples and recipes
 
-## Contributing
+## Convoy Specific information
 
-We welcome contributions! See the [contributing guide](https://github.com/vercel/next-forge/blob/main/.github/CONTRIBUTING.md) for details.
+Convoy is an attempt to salvage previous projects that were all attempting to build a comprehensive enterprise catering management software suite. They all had various failures and they can all be found within C:\Projects\respective_project_name ie C:\projects\capsule
 
-## Contributors
 
-<a href="https://github.com/vercel/next-forge/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=vercel/next-forge" />
-</a>
 
-Made with [contrib.rocks](https://contrib.rocks).
+# Notes: Convoy Salvage Sources
 
-## License
+## Sources
 
-MIT
+### Capsule
+- Key: Supabase schema contract and migrations across tenant_* schemas.
+- Artifacts: `supabase/Schema Contract v2.txt`, `supabase/migrations/`.
+**Failure cause: horrible looking ui but had strong backend setup**
+
+### Shift-Stream
+- Key: Scheduling data model (companies, users, venues, shifts, time off).
+- Artifacts: `shared/schema.ts`.
+**Failure cause: Built with replit, worked and looked great, hard to port**
+
+### Battle-Boards
+- Key: CSV + TPP PDF parsing; print-ready battle board UI.
+- Artifacts: `shared/` parsers, `Event-Battle-Board/src/`.
+**Failure cause: incomplete functionality with autofilling fields, should be combined with Mikes module for similar functionality**
+
+### Kitchen-Manager-Module
+- Key: Event/run-report JSON schemas, policies.
+- Artifacts: `schemas/event.schema.json`, `schemas/runreport.schema.json`.
+**Failure cause: part of Mikes module, incomplete**
+
+### Mikes Module
+- Key: PDF parsing pipeline + allergen/policy configs + review flow.
+- Artifacts: `kitchen-prep-app/src/lib/`, `config/`.
+**Failure cause: dont remember, was mostly complete but not sure where the functionality is now**
+
+### PrepChefApp
+- Key: Prep lists, recipes, tasks, event integration; mobile-first workflows.
+**Original iteration, had some good ideas but implementation was awful. but it did kind of work. was being built under the impression it was a mobile app, didnt realize i was building it as a web app accidentally**
+
+### caterkingapp
+- Key: OpenAPI contracts for prep lists, recipes, events, tasks, CRM.
+- Artifacts: `specs/001-catering-ops-platform/contracts/*.yaml`.
+**Failure cause: started over because i realized i was building a web app for the kitchen aspect instead of a mobile app. has a good spec and guardrails**
+
+### codemachine
+- Key: Monorepo blueprint + system scope inventory.
+**Failure cause: experimental program that tries to oneshot complex designs. Spent millions of tokens designing enterprise grade architecture i dont even understand but i couldnt get  it to actually all work together in a usable ai. worth revisiting**
+
+### hq-operations
+- Key: Module separation and integration diagrams.
+**Failure cause: just was an attempt to create a headquarters module for overseeing all  your modules.**
+
+## Synthesized Findings
+
+### Database + RLS
+- Capsule contract is the most complete, enforceable multi-tenant model.
+- Use SQL migrations to preserve RLS, audit, and realtime requirements.
+- Current direction: shared DB with `tenant_id` (no per-tenant DBs).
+
+### Realtime priorities
+- Kitchen task claims/progress first.
+- Events board second.
+- Scheduling third.
+
+### Modules to prioritize
+- Events + Battle Boards (highest leverage, clear import pipeline).
+- Kitchen tasks and prep lists (mobile + realtime).
+- Scheduling (Shift-Stream model maps cleanly).
+

@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev --parallel",
+    "dev": "turbo dev --parallel --filter=!studio",
     "dev:apps": "turbo dev --parallel --filter=app --filter=web --filter=api --filter=docs --filter=email --filter=storybook",
     "check": "npx ultracite@latest check",
     "fix": "npx ultracite@latest fix",

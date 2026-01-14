@@ -277,3 +277,12 @@ packages/database/generated
 .contentlayer
 .content-collections
 .source
+# Local-only files
+/turbo
+.cursorrules.example
+fix-supabase-publication.sql
+fix-supabase-roles.sql
+.vscode/
+tools/
+ui-design-images/
+apps/web/new 2.txt

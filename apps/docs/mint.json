@@ -69,6 +69,10 @@
       "pages": ["api-reference/introduction"]
     },
     {
+      "group": "Events",
+      "pages": ["events/overview", "events/imports"]
+    },
+    {
       "group": "Endpoint Examples",
       "pages": [
         "api-reference/endpoint/get",

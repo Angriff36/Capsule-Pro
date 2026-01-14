@@ -1,0 +1,406 @@
+SCHEMA CONTRACT v2 (Enterprise Catering Platform)
+==================================================
+
+A) NAMESPACE HIERARCHY
+----------------------
+Schema categories (create in this order):
+  platform.*  - Multi-tenant platform tables (NO tenant_id)
+  core.*      - Shared enums, functions, types
+  tenant.*    - Tenant-scoped operational tables (ALL have tenant_id)
+
+Allowed schemas:
+  platform.accounts, platform.billing, platform.audit_archive
+  core (enums, functions, types only - no tables except lookup)
+  tenant, public, testing (system schemas for migrations/testing)
+  tenant_staff, tenant_crm, tenant_kitchen, tenant_events, tenant_inventory, tenant_admin
+
+All objects MUST be schema-qualified. No public schema usage.
+
+
+B) TABLE CLASSIFICATION (MANDATORY)
+-----------------------------------
+PLATFORM TABLES (platform.*):
+  - NO tenant_id column
+  - Used for: accounts (tenants), billing, platform config
+  - RLS uses account ownership or platform admin role check
+  - Example: platform.accounts, platform.subscriptions
+
+TENANT TABLES (tenant.*):
+  - MUST start with: tenant_id uuid NOT NULL REFERENCES platform.accounts(id)
+  - Then: id uuid DEFAULT gen_random_uuid()
+  - Primary key strategy:
+    * Simple tables: PRIMARY KEY (id)
+    * Tables needing cross-tenant collision safety: PRIMARY KEY (tenant_id, id)
+    * Junction tables: composite PK on FKs, include tenant_id
+  - MUST include:
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    deleted_at timestamptz NULL
+  - FK to platform.accounts: ON DELETE RESTRICT (tenants cannot be hard-deleted while data exists)
+
+LOOKUP TABLES (core.*):
+  - Immutable reference data (units, currencies, etc.)
+  - No tenant_id, no RLS (public read)
+  - ON DELETE RESTRICT for all FKs pointing here
+
+
+C) LOCATION-AWARE MULTI-TENANCY
+-------------------------------
+Tenants MAY have multiple locations. Location-scoped tables must include:
+
+  tenant_id uuid NOT NULL,
+  location_id uuid NULL,  -- NULL means "all locations" or "tenant-wide"
+  
+Location hierarchy:
+  platform.accounts (tenant)
+    └── tenant.locations (physical sites per tenant)
+          └── location-scoped tables (inventory, equipment, some staff)
+
+Tables that ARE location-scoped:
+  - tenant_inventory.*, tenant_kitchen.containers, tenant_kitchen.equipment
+  - tenant_staff.employee_locations (junction), tenant_events.events
+
+Tables that are NOT location-scoped (tenant-wide):
+  - tenant_crm.*, tenant_kitchen.recipes, tenant_admin.*
+
+
+D) RLS POLICY PATTERNS (MANDATORY)
+----------------------------------
+Enable RLS on EVERY table:
+  ALTER TABLE <schema>.<table> ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE <schema>.<table> FORCE ROW LEVEL SECURITY;  -- Applies to table owner too
+
+FOUR separate policies per tenant table (no combined ALL):
+
+-- 1. SELECT
+CREATE POLICY "<table>_select" ON <schema>.<table>
+  FOR SELECT USING (
+    tenant_id = (auth.jwt() ->> 'tenant_id')::uuid
+    AND deleted_at IS NULL  -- Soft-deleted records invisible by default
+  );
+
+-- 2. INSERT  
+CREATE POLICY "<table>_insert" ON <schema>.<table>
+  FOR INSERT WITH CHECK (
+    tenant_id = (auth.jwt() ->> 'tenant_id')::uuid
+    AND tenant_id IS NOT NULL  -- Explicit NOT NULL check
+  );
+
+-- 3. UPDATE (cannot change tenant_id)
+CREATE POLICY "<table>_update" ON <schema>.<table>
+  FOR UPDATE USING (
+    tenant_id = (auth.jwt() ->> 'tenant_id')::uuid
+    AND deleted_at IS NULL
+  ) WITH CHECK (
+    tenant_id = (auth.jwt() ->> 'tenant_id')::uuid  -- Prevent tenant_id mutation
+  );
+
+-- 4. DELETE (soft delete only - actual DELETE blocked)
+CREATE POLICY "<table>_delete" ON <schema>.<table>
+  FOR DELETE USING (false);  -- Block hard deletes at RLS level
+
+-- 5. SERVICE ROLE BYPASS (for migrations, cron, admin)
+CREATE POLICY "<table>_service" ON <schema>.<table>
+  FOR ALL
+  TO service_role
+  USING (true)
+  WITH CHECK (true);
+
+NULL JWT HANDLING:
+  - (auth.jwt() ->> 'tenant_id')::uuid returns NULL if claim missing
+  - NULL = NULL is false in SQL, so missing claim = no access (safe default)
+  - Service role operations must use service_role, not rely on JWT
+
+
+E) SOFT DELETE + AUDIT (MANDATORY)
+----------------------------------
+SOFT DELETE:
+  - Most tenant tables have deleted_at timestamptz NULL
+  - Registry exceptions: settings, task_claims, task_progress, inventory_transactions, inventory_stock, report_history, notifications (immutable log tables)
+  - Application MUST use: UPDATE ... SET deleted_at = now() for tables with deleted_at
+  - Hard DELETE blocked by RLS policy
+  - Service role can hard delete for data cleanup jobs only
+
+AUDIT STRATEGY (performance-aware):
+  Two-tier audit system:
+
+  1. HOT AUDIT (recent, fast writes):
+     platform.audit_log - Partitioned by month
+     - tenant_id, table_schema, table_name, record_id, action, 
+       old_values jsonb, new_values jsonb, performed_by, created_at
+     - Retention: 90 days in hot table
+     - Indexes: (tenant_id, created_at), (table_name, record_id)
+
+  2. COLD AUDIT (archived, compliance):
+     platform.audit_archive - Partitioned by year
+     - Same schema, populated by monthly archival job
+     - Retention: 7 years (compliance)
+     - Compressed, minimal indexes
+
+  AUDIT EXCLUSIONS (for performance):
+    Tables with high-frequency writes get SELECTIVE auditing:
+    - tenant_kitchen.task_progress: Audit only status changes, not all updates
+    - tenant_staff.time_entries: Audit only clock-in/out, not GPS pings
+    
+  Configure via: core.audit_config(table_name, audit_level enum('full','changes_only','status_only','none'))
+
+TRIGGERS:
+  - core.fn_update_timestamp(): Updates updated_at on any UPDATE
+  - core.fn_audit_trigger(): Checks audit_config, writes to audit_log if enabled
+  - core.fn_prevent_tenant_mutation(): Raises exception if tenant_id changes
+
+
+F) STATUS HANDLING (MANDATORY)
+------------------------------
+USE LOOKUP TABLES, NOT ENUMS for statuses that may change:
+
+CREATE TABLE core.status_types (
+  id smallint PRIMARY KEY,
+  category text NOT NULL,  -- 'task', 'event', 'lead', 'payroll', 'claim', 'proposal'
+  code text NOT NULL,
+  label text NOT NULL,
+  description text,
+  color_hex char(7),
+  sort_order smallint NOT NULL DEFAULT 0,
+  is_terminal boolean NOT NULL DEFAULT false,  -- Can't transition out
+  is_default boolean NOT NULL DEFAULT false,
+  is_active boolean NOT NULL DEFAULT true,
+  UNIQUE (category, code)
+);
+
+Status transitions enforced via:
+CREATE TABLE core.status_transitions (
+  category text NOT NULL,
+  from_status_code text NOT NULL,  -- NULL means "initial state"
+  to_status_code text NOT NULL,
+  requires_role text[],  -- Roles that can make this transition
+  is_automatic boolean NOT NULL DEFAULT false,
+  PRIMARY KEY (category, from_status_code, to_status_code)
+);
+
+HARD ENUMS only for truly immutable values:
+  - core.employment_type: 'full_time', 'part_time', 'contractor', 'temp'
+  - core.unit_system: 'metric', 'imperial', 'custom'
+  - core.unit_type: 'volume', 'weight', 'count', 'length', 'temperature', 'time'
+  - core.action_type: 'insert', 'update', 'delete' (for audit)
+
+STATUS HANDLING OPTIONS:
+  - Status can be either text (simple) or references to core.status_types (structured)
+  - core.status_types is optional - status is acceptable as simple text when:
+    * Status transitions are not complex
+    * No need for UI hints (colors, descriptions)
+    * Status values are stable and rarely change
+  - For complex workflows: use core.status_types + status_transitions for validation
+
+
+G) TIME HANDLING (MANDATORY)
+----------------------------
+STORAGE: All timestamps stored as TIMESTAMPTZ (UTC internally)
+
+TENANT CONFIG:
+  platform.accounts includes:
+    - default_timezone text NOT NULL DEFAULT 'UTC'  -- e.g., 'America/New_York'
+    - week_start smallint NOT NULL DEFAULT 1        -- 1=Monday, 0=Sunday
+
+LOCATION OVERRIDE:
+  tenant.locations includes:
+    - timezone text  -- Overrides tenant default if set
+
+EVENT OVERRIDE:
+  tenant_events.events includes:
+    - event_timezone text  -- For events in different timezone than location
+
+DATE vs TIMESTAMP decisions:
+  - start_by_date: DATE type, interpreted in tenant/location timezone
+  - event_date: DATE type + event_start_time TIME type + event_timezone
+  - All other operational timestamps: TIMESTAMPTZ
+
+HELPER FUNCTION:
+  core.fn_to_tenant_time(ts timestamptz, p_tenant_id uuid, p_location_id uuid DEFAULT NULL)
+  RETURNS timestamptz  -- Converts to appropriate timezone for display
+
+
+H) RECIPE VERSIONING (MANDATORY)
+--------------------------------
+IMMUTABLE VERSIONS:
+  tenant_kitchen.recipe_versions:
+    - version_number int NOT NULL (auto-increment per recipe)
+    - is_locked boolean NOT NULL DEFAULT false
+    - locked_at timestamptz
+    - Constraint: Cannot UPDATE if is_locked = true (trigger-enforced)
+
+TASK BINDING:
+  tenant_kitchen.prep_tasks.recipe_version_id:
+    - References a LOCKED version only (trigger-enforced on insert)
+    - If recipe updated, new version created, existing tasks unchanged
+
+VERSION LIFECYCLE:
+  1. Create recipe (v1, is_locked=false) - editable
+  2. First task assigned - auto-lock v1, create v2 draft if edits needed
+  3. Recipe "deleted" - soft delete recipe, versions remain for historical tasks
+
+INGREDIENT IMMUTABILITY:
+  tenant_kitchen.recipe_ingredients belongs to recipe_version
+  - Cannot modify ingredients on locked version
+  - Scaling calculated at query time, not stored
+
+
+I) TASK CLAIMS LIFECYCLE (MANDATORY)
+------------------------------------
+TABLE: tenant_kitchen.task_claims
+  tenant_id, id, task_id, employee_id, 
+  claimed_at timestamptz NOT NULL DEFAULT now(),
+  released_at timestamptz NULL,
+  release_reason text NULL,  -- 'completed', 'reassigned', 'shift_ended', 'abandoned'
+  
+CONSTRAINTS:
+  -- Only one active claim per task
+  CREATE UNIQUE INDEX task_claims_active_idx 
+    ON tenant_kitchen.task_claims (tenant_id, task_id) 
+    WHERE released_at IS NULL;
+
+  -- Employee can only have N active claims (configurable per tenant)
+  -- Enforced via trigger checking count
+
+CLAIM OPERATIONS:
+  - Claim: INSERT (fails if active claim exists via unique index)
+  - Release: UPDATE SET released_at = now(), release_reason = '...'
+  - Reassign: Release current + Claim new (transaction)
+  - Auto-release: Cron job releases claims where employee shift ended
+
+
+J) UNIT CONVERSION (MANDATORY)
+------------------------------
+LOOKUP TABLES:
+  core.units (id, code, name, unit_system, unit_type)  
+    -- unit_type: 'volume', 'weight', 'count', 'length'
+  
+  core.unit_conversions (from_unit_id, to_unit_id, multiplier numeric)
+    -- Only within same unit_type
+    -- e.g., cups -> ml = 236.588
+
+INGREDIENT-SPECIFIC DENSITY:
+  tenant_kitchen.ingredients includes:
+    - density_g_per_ml numeric  -- For volume<->weight conversion
+    - NULL means volume/weight not interchangeable
+
+SCALING RULES:
+  core.fn_scale_ingredient(
+    p_ingredient_id uuid,
+    p_quantity numeric,
+    p_from_unit_id int,
+    p_to_unit_id int,
+    p_scale_factor numeric
+  ) RETURNS TABLE (quantity numeric, unit_id int, warning text)
+  
+  Warnings returned for:
+    - Fractional unusable quantities (0.3 eggs -> "Round to nearest whole")
+    - Cross-type conversion without density ("Cannot convert cups to grams for flour")
+
+
+K) REAL-TIME SUPPORT (MANDATORY)
+--------------------------------
+REPLICA IDENTITY for Supabase Realtime:
+  Tables needing real-time subscriptions MUST have:
+  ALTER TABLE <table> REPLICA IDENTITY FULL;
+
+REAL-TIME TABLES:
+  - tenant_kitchen.task_claims (dashboard: who's working what)
+  - tenant_kitchen.task_progress (dashboard: live progress)
+  - tenant_kitchen.prep_tasks (status changes only)
+  - tenant_events.events (status changes only)
+
+BROADCAST vs CHANGES:
+  - Use Postgres Changes for: task_claims, task_progress (need actual data)
+  - Use Broadcast for: notifications, alerts (fire-and-forget)
+
+REALTIME RLS:
+  Supabase Realtime respects RLS policies.
+  Ensure SELECT policies work for subscription filters.
+
+
+L) INDEX STRATEGY (MANDATORY)
+-----------------------------
+STANDARD INDEXES (every tenant table):
+  - (tenant_id) - Always
+  - (tenant_id, deleted_at) WHERE deleted_at IS NULL - Partial for active records (NOT for immutable tables)
+  - UNIQUE constraints include tenant_id for composite safety: (tenant_id, <column_name>) WHERE deleted_at IS NULL
+
+COMPOSITE INDEXES (by table type):
+  Status tables: (tenant_id, status) WHERE deleted_at IS NULL
+  Date-range queries: (tenant_id, <date_col>) WHERE deleted_at IS NULL
+
+SPECIFIC REQUIREMENTS:
+  - prep_tasks: (tenant_id, start_by_date, status) for kitchen dashboard
+  - task_claims: (tenant_id, employee_id) WHERE released_at IS NULL (active claims only)
+  - task_progress: (tenant_id, task_id, created_at DESC) for latest status
+  - events: (tenant_id, event_date, status) for event calendar
+  - time_entries: (tenant_id, employee_id, clock_in) for payroll queries
+  - audit_log: (tenant_id, created_at), (table_name, record_id)
+  - Unique indexes include tenant_id: (tenant_id, email) WHERE deleted_at IS NULL
+
+INDEX EXCLUSIONS (immutable log tables):
+  - task_claims, task_progress, inventory_transactions, inventory_stock, report_history, notifications
+  - These have no deleted_at and no soft delete - indexes are standard
+
+
+M) CROSS-MODULE FOREIGN KEYS (MANDATORY)
+----------------------------------------
+PROBLEM: Building modules independently means FKs can't exist during initial creation.
+
+SOLUTION: Two-phase approach
+
+PHASE 1 (Module creation):
+  - Create _id uuid columns with NOT NULL
+  - Add CHECK constraint for non-null: CHECK (<col>_id IS NOT NULL)
+  - Add index on the FK column
+  - NO REFERENCES clause yet
+
+PHASE 2 (090_cross_module_fks.sql):
+  - Add all FOREIGN KEY constraints
+  - Constraints include tenant_id for composite safety:
+    
+    -- Safe cross-module FK pattern:
+    ALTER TABLE tenant_kitchen.prep_tasks
+      ADD CONSTRAINT prep_tasks_event_fk 
+      FOREIGN KEY (tenant_id, event_id) 
+      REFERENCES tenant_events.events (tenant_id, id)
+      ON DELETE RESTRICT;
+    
+    -- This requires events.events to have: UNIQUE (tenant_id, id)
+    -- Which is automatic if PK is (tenant_id, id), otherwise add explicit UNIQUE
+
+INTEGRITY WINDOW:
+  - Between Phase 1 and Phase 2, application code MUST validate FK existence
+  - Or: Run both phases in same transaction during initial deploy
+  - For incremental module adds: Add module + its FKs in same migration
+
+
+N) OUTPUT RULES FOR DATABASE.BUILD
+----------------------------------
+1. SQL only - no markdown, no explanations inline
+2. Batch size: <= 120 lines, then STOP and output: -- BATCH COMPLETE. Reply "next" to continue.
+3. After each batch that creates objects, include verification:
+   SELECT schemaname, tablename FROM pg_tables WHERE schemaname = '<schema>';
+   SELECT * FROM pg_indexes WHERE schemaname = '<schema>';
+4. Use database.build's SQL execution for introspection when debugging
+5. Comment critical constraints and non-obvious design decisions
+6. Prefix each batch with: -- MIGRATION: <filename> BATCH <n>/<total>
+
+
+O) MIGRATION FILE SEQUENCE
+--------------------------
+000_extensions.sql      - uuid-ossp, pgcrypto, pg_trgm
+005_schemas.sql         - CREATE SCHEMA statements
+010_core_types.sql      - Enums, lookup tables, core functions
+015_platform.sql        - platform.accounts, platform.billing, audit tables
+020_tenant_base.sql     - tenant.locations, tenant.settings
+030_staff.sql           - tenant_staff.*
+040_crm.sql             - tenant_crm.*
+050_kitchen.sql         - tenant_kitchen.*
+060_events.sql          - tenant_events.*
+070_inventory.sql       - tenant_inventory.*
+080_admin.sql           - tenant_admin.*
+090_cross_module_fks.sql - All cross-schema foreign keys
+095_realtime.sql        - REPLICA IDENTITY settings
+099_seed.sql            - core lookup data (units, status_types, etc.)

@@ -1,7 +1,11 @@
 import withBundleAnalyzer from "@next/bundle-analyzer";
 import type { NextConfig } from "next";
+import path from "path";
 
 export const config: NextConfig = {
+  turbopack: {
+    root: path.resolve(process.cwd(), "..", ".."),
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [

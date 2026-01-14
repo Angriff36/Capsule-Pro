@@ -5,6 +5,7 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 import ws from "ws";
 import { PrismaClient } from "./generated/client";
 import { keys } from "./keys";
+import { createTenantClient } from "./tenant";
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
@@ -18,5 +19,9 @@ if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = database;
 }
 
+export const tenantDatabase = (tenantId: string) =>
+  createTenantClient(tenantId, database);
+
 // biome-ignore lint/performance/noBarrelFile: re-exporting
 export * from "./generated/client";
+export * from "./tenant";

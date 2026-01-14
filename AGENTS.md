@@ -5,7 +5,39 @@
 **Project:** Enterprise Catering Management System
 
 ---
+										 # Convoy repo instructions (entrypoint)
 
+Before doing any work, read:
+"C:\Users\Ryan\Home\agent-scripts\AGENTS.MD"
+"C:\Users\Ryan\Home\agent-scripts\docs" relevant docs only
+
+Repo specifics:
+- Use pnpm.
+
+## Guardrails (Do Not Drift)
+- Stack: Prisma + Neon; no Supabase RLS.
+- Multi-tenant: shared DB with `tenant_id`.
+- Realtime: Ably via outbox pipeline.
+- Priority order: kitchen tasks, then events, then scheduling.
+- Clerk
+- Mint docs at http://localhost:2232/introduction
+
+
+## Planning With Files (Required)
+
+- Create `task_plan.md` and `notes.md` at task start for complex work.
+- Update `task_plan.md` after each phase.
+- Archive completed `task_plan.md` under `docs/task-plans/`.
+- Treat `notes.md` as a scratch pad:
+  - Keep a static Guardrails section at the top.
+  - Keep a short Handoff section after each task.
+  - Clear the scratch content when a task is complete (do not delete the file)
+  
+---
+
+
+**THE FOLLOWING IS FOR CLAUDE CODE NOT CODEX**
+  
 ## Table of Contents
 
 1. [Overview](#overview)
@@ -37,6 +69,8 @@ The Orchestrator's job is to:
 - Delegate work to those subagents
 - Merge outcomes into a final plan
 - Only then proceed to controlled execution
+
+
 
 **Full documentation continues at:** C:/Projects/capsule/AGENTS_FULL.md
 

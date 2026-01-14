@@ -2,18 +2,188 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated"
+  provider        = "prisma-client"
+  output          = "../generated"
 }
 
 datasource db {
   provider     = "postgresql"
   relationMode = "prisma"
+  schemas      = ["public", "core", "platform", "tenant", "tenant_admin", "tenant_crm", "tenant_events", "tenant_inventory", "tenant_kitchen", "tenant_staff"]
 }
 
-// This is a stub model.
-// Delete it and add your own Prisma models.
-model Page {
-  id   Int    @id @default(autoincrement())
-  name String
+enum UserRole {
+  owner
+  admin
+  manager
+  staff
+
+  @@schema("public")
+}
+
+enum KitchenTaskStatus {
+  open
+  in_progress
+  done
+  canceled
+
+  @@schema("public")
+}
+
+enum KitchenTaskPriority {
+  low
+  medium
+  high
+  urgent
+
+  @@schema("public")
+}
+
+enum OutboxStatus {
+  pending
+  published
+  failed
+
+  @@schema("public")
+}
+
+model Tenant {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users                User[]
+  kitchenTasks         KitchenTask[]
+  kitchenTaskClaims    KitchenTaskClaim[]
+  kitchenTaskProgress  KitchenTaskProgress[]
+  outboxEvents         OutboxEvent[]
+
+  @@schema("public")
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @db.Uuid
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  role      UserRole @default(staff)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant                Tenant        @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  assignedKitchenTasks  KitchenTask[] @relation("KitchenTaskAssignedTo")
+  createdKitchenTasks   KitchenTask[] @relation("KitchenTaskCreatedBy")
+  kitchenTaskClaims     KitchenTaskClaim[]
+
+  @@index([tenantId])
+  @@schema("public")
+}
+
+model KitchenTask {
+  id           String              @id @default(uuid()) @db.Uuid
+  tenantId     String              @db.Uuid
+  title        String
+  description  String?
+  status       KitchenTaskStatus   @default(open)
+  priority     KitchenTaskPriority @default(medium)
+  dueAt        DateTime?
+  assignedToId String?             @db.Uuid
+  createdById  String?             @db.Uuid
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  tenant      Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  assignedTo  User?  @relation("KitchenTaskAssignedTo", fields: [assignedToId], references: [id])
+  createdBy   User?  @relation("KitchenTaskCreatedBy", fields: [createdById], references: [id])
+  claims      KitchenTaskClaim[]
+  progressLog KitchenTaskProgress[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, assignedToId])
+  @@schema("public")
+}
+
+model KitchenTaskClaim {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @db.Uuid
+  taskId        String   @db.Uuid
+  userId        String   @db.Uuid
+  claimedAt     DateTime @default(now())
+  releasedAt    DateTime?
+  releaseReason String?
+
+  tenant Tenant      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  task   KitchenTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user   User        @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([tenantId, taskId])
+  @@index([tenantId, userId])
+  @@index([tenantId, releasedAt])
+  @@schema("public")
+}
+
+model KitchenTaskProgress {
+  id        String            @id @default(uuid()) @db.Uuid
+  tenantId  String            @db.Uuid
+  taskId    String            @db.Uuid
+  status    KitchenTaskStatus
+  note      String?
+  createdAt DateTime          @default(now())
+
+  tenant Tenant      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  task   KitchenTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, taskId])
+  @@schema("public")
+}
+
+model OutboxEvent {
+  id            String       @id @default(uuid()) @db.Uuid
+  tenantId      String       @db.Uuid
+  aggregateType String
+  aggregateId   String
+  eventType     String
+  payload       Json
+  status        OutboxStatus @default(pending)
+  createdAt     DateTime     @default(now())
+  publishedAt   DateTime?
+  error         String?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([tenantId, status, createdAt])
+  @@schema("public")
+}
+
+model Event {
+  tenantId     String    @map("tenant_id") @db.Uuid
+  id           String    @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  eventNumber  String?   @map("event_number")
+  title        String    @default("Untitled Event")
+  clientId     String?   @map("client_id") @db.Uuid
+  locationId   String?   @map("location_id") @db.Uuid
+  eventType    String    @map("event_type")
+  eventDate    DateTime  @map("event_date") @db.Date
+  guestCount   Int       @default(1) @map("guest_count")
+  status       String    @default("confirmed")
+  budget       Decimal?  @db.Decimal(12, 2)
+  assignedTo   String?   @map("assigned_to") @db.Uuid
+  venueName    String?   @map("venue_name")
+  venueAddress String?   @map("venue_address")
+  notes        String?
+  tags         String[]  @default([])
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  @@id([tenantId, id])
+  @@map("events")
+  @@schema("tenant_events")
 }

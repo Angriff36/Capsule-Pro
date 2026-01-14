@@ -1,0 +1,37 @@
+import type { ReactNode } from "react";
+import { auth, currentUser } from "@repo/auth/server";
+import { env } from "@/env";
+import { secure } from "@repo/security";
+import { DevConsoleBodyClass } from "./components/body-class";
+import { DevConsoleSidebar } from "./components/sidebar";
+import { DevConsoleTopbar } from "./components/topbar";
+
+type DevConsoleLayoutProperties = {
+  readonly children: ReactNode;
+};
+
+const DevConsoleLayout = async ({ children }: DevConsoleLayoutProperties) => {
+  if (env.ARCJET_KEY) {
+    await secure(["CATEGORY:PREVIEW"]);
+  }
+
+  const user = await currentUser();
+  const { redirectToSignIn } = await auth();
+
+  if (!user) {
+    return redirectToSignIn();
+  }
+
+  return (
+    <div className="dev-console-root">
+      <DevConsoleBodyClass />
+      <DevConsoleSidebar />
+      <div className="dev-console-content">
+        <DevConsoleTopbar />
+        <main className="dev-console-main">{children}</main>
+      </div>
+    </div>
+  );
+};
+
+export default DevConsoleLayout;
