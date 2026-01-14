@@ -1,3 +1,64 @@
+# Task Plan: Unify Next.js Versions (Deployment Fix)
+
+## Goal
+Ensure a single Next.js version across the monorepo and remove conflicting versions (esp. email preview server) so Vercel builds resolve cleanly.
+
+## Current Phase
+Complete
+
+## Phases
+### Phase 1: Package Alignment
+- [x] Add root `pnpm.overrides` for Next.js version
+- [x] Move `@react-email/preview-server` to devDependencies in `apps/email`
+- **Status:** complete
+
+### Phase 2: Lockfile Update
+- [x] Run `pnpm install --no-frozen-lockfile`
+- [x] Confirm `pnpm-lock.yaml` updated
+- **Status:** complete
+
+### Phase 3: Verify
+- [x] Run `pnpm -r why next` and confirm single version
+- [x] Summarize result in `progress.md`
+- **Status:** complete
+
+## Errors Encountered
+| Error | Attempt | Resolution |
+|-------|---------|------------|
+|  |  |  |
+
+# Task Plan: Fix Capsule-Pro Web Build (Basehub Blog Types)
+
+## Goal
+Resolve Basehub blog type/schema mismatches so the `apps/web` build passes on Vercel without unsafe casts or fallback hacks.
+
+## Current Phase
+Phase 1
+
+## Phases
+### Phase 1: Schema + Type Alignment
+- [ ] Confirm Basehub blog fields available in schema (title vs _title, description, slug)
+- [ ] Align `packages/cms` fragments to the schema fields used in UI
+- [ ] Update blog pages to use the canonical fields only
+- **Status:** in_progress
+
+### Phase 2: Verification
+- [ ] Run `pnpm --filter web run build` and confirm no TS errors
+- [ ] Capture any warnings/errors in this plan
+- **Status:** pending
+
+### Phase 3: Ship
+- [ ] Commit changes
+- [ ] Push to `capsule-pro` remote
+- **Status:** pending
+
+## Errors Encountered
+| Error | Attempt | Resolution |
+|-------|---------|------------|
+| `pnpm --filter web build` reported "No projects matched the filters C:\\projects\\convoy" | 1 | Use `pnpm --filter web run build` or `pnpm --filter ./apps/web run build` |
+| TS error: `Property '_title' does not exist on type 'Post'` | 1 | Pending (align schema + fragment) |
+| TS error: `Property 'description' does not exist on type 'Post'` | 2 | Pending (align schema + fragment) |
+
 # Task Plan: Long-Term Feature List (Convoy)
 
 ## Goal

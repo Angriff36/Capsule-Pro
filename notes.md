@@ -1,4 +1,4 @@
-# Notes: Convoy Salvage Sources
+﻿# Notes: Convoy Salvage Sources
 
 ## Guardrails
 - Stack: Prisma + Neon; no Supabase RLS.
@@ -61,6 +61,9 @@
 - Scheduling (Shift-Stream model maps cleanly).
 
 ## Handoff
+- Vercel deploy failing in pps/web due to Basehub blog type mismatch; fix requires aligning schema fields in packages/cms fragments and blog pages (no casts).
+- Do not revert unrelated styling/font changes; other agent is updating those files.
+- Deployment fix in progress: enforce single Next.js version via root `pnpm.overrides` and move `@react-email/preview-server` to devDependencies in `apps/email`.
 - Events module wiring updated; manual UI verification still pending.
 - CSV import and seed script added; PDF import is placeholder.
 - Events module works; UI needs polish. Seed data shows duplicates (multiple events per CSV).
@@ -74,3 +77,5 @@
 - Updated marketing copy for the landing page (en dictionary).
 - Synced landing page copy and testimonial images across all locales.
 - Added marketing image assets and replaced landing page placeholders with real UI imagery.
+- Updated fonts to match Mangia-inspired style (Playfair Display + Source Sans 3).
+

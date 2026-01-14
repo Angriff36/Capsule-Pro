@@ -1,7 +1,10 @@
-# Progress Log: Events Module (Convoy)
+﻿# Progress Log: Events Module (Convoy)
 
 ## Session Log
-- Initialized planning files for Events module.
+- Investigated Vercel build failure for `apps/web`; TS errors point to Basehub blog types.
+- Ran `pnpm --filter web build` (failed) and noted correct invocation should be `pnpm --filter web run build`.
+- Regenerated Basehub types via `pnpm --filter @repo/cms build`.
+- Restored local edits in blog and CMS files per user request; did not touch unrelated styling/font changes.- Initialized planning files for Events module.
 - Scanned repo structure and spec references.
 - Confirmed Events should be listable, creatable, editable, and deletable with Prisma in this worktree.
 - Reviewed Capsule Supabase migrations for Events tables and RLS policies.
@@ -43,6 +46,9 @@
 - Refreshed landing page copy in `packages/internationalization/dictionaries/en.json`.
 - Copied updated marketing copy (including testimonial images) to de/es/fr/pt/zh dictionaries.
 - Populated landing page hero, cases carousel, and feature cards with local UI images.
+- Swapped brand fonts to Playfair Display + Source Sans 3 and applied display font to web headings.
+- Began Next.js version unification for deploy stability (root overrides + email preview-server cleanup).
+- Verified `pnpm -r why next` shows only Next 16.0.10 across the workspace.
 
 ## Tests
 - Not run (UI verification pending).
@@ -50,3 +56,4 @@
 - `pnpm --filter app typecheck`
 - [session] Read task_plan.md and findings.md per request.
 - [session] Read progress.md and notes.md per request.
+

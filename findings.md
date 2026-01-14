@@ -1,5 +1,11 @@
 ﻿# Findings: Events Module (Convoy)
 
+## Capsule-Pro Web Build (Basehub)
+- basehub-types.d.ts has no post/log matches; likely schema lacks blog definitions or typegen branch mismatch.
+- Vercel build fails in `apps/web` due to TypeScript mismatch in blog pages (`_title`/`description` missing on `Post`).
+- `pnpm --filter web build` used earlier; should be `pnpm --filter web run build` (or `pnpm --filter ./apps/web run build`).
+- Basehub type generation (`pnpm --filter @repo/cms build`) ran successfully; blog schema fields still need confirmation.
+- `apps/email` pulls Next via `@react-email/preview-server`; keep a single Next version by moving preview-server to devDependencies and adding a root `pnpm.overrides.next`.
 ## Initial Repo Scan
 - No Events routes or modules found under `apps/app/app/(authenticated)`.
 - `spec.md` identifies Events + Battle Boards as the first web/admin module to implement.
@@ -31,3 +37,5 @@
 
 ## Events Wiring Gaps
 - `packages/database/prisma/schema.prisma` does not yet include the Events model or multi-schema config; generated client already has Events, so schema/prisma client are out of sync.
+
+

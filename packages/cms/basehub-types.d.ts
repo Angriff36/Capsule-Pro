@@ -99,7 +99,7 @@ export interface BlockColor {
     __typename: 'BlockColor'
 }
 
-export type BlockDocument = (Legal | LegalPageItemComponent | Legalpages | LegalpagesItem | _AgentStart | legalPageItemComponent_AsList | legalpagesItem_AsList) & { __isUnion?: true }
+export type BlockDocument = (Legal | LegalPageItemComponent | _AgentStart | legalPageItemComponent_AsList) & { __isUnion?: true }
 
 export interface BlockDocumentSys {
     apiNamePath: Scalars['String']
@@ -158,7 +158,7 @@ export interface BlockImage {
     __typename: 'BlockImage'
 }
 
-export type BlockList = (Legalpages | legalPageItemComponent_AsList | legalpagesItem_AsList) & { __isUnion?: true }
+export type BlockList = (legalPageItemComponent_AsList) & { __isUnion?: true }
 
 export interface BlockOgImage {
     height: Scalars['Int']
@@ -237,41 +237,6 @@ export interface LegalPageItemComponent {
 
 export type LegalPageItemComponentOrderByEnum = '_sys_createdAt__ASC' | '_sys_createdAt__DESC' | '_sys_hash__ASC' | '_sys_hash__DESC' | '_sys_id__ASC' | '_sys_id__DESC' | '_sys_lastModifiedAt__ASC' | '_sys_lastModifiedAt__DESC' | '_sys_slug__ASC' | '_sys_slug__DESC' | '_sys_title__ASC' | '_sys_title__DESC' | 'body__ASC' | 'body__DESC' | 'slug__ASC' | 'slug__DESC' | 'title__ASC' | 'title__DESC'
 
-export interface Legalpages {
-    _analyticsKey: Scalars['String']
-    _dashboardUrl: Scalars['String']
-    _id: Scalars['String']
-    _idPath: Scalars['String']
-    _meta: ListMeta
-    /** The key used to search from the frontend. */
-    _searchKey: Scalars['String']
-    _slug: Scalars['String']
-    _slugPath: Scalars['String']
-    _sys: BlockDocumentSys
-    _title: Scalars['String']
-    /** Returns the first item in the list, or null if the list is empty. Useful when you expect only one result. */
-    item: (LegalpagesItem | null)
-    /** Returns the list of items after filtering and paginating according to the arguments sent by the client. */
-    items: LegalpagesItem[]
-    __typename: 'Legalpages'
-}
-
-export interface LegalpagesItem {
-    _analyticsKey: Scalars['String']
-    _dashboardUrl: Scalars['String']
-    /** Array of search highlight information with field names and HTML markup */
-    _highlight: (SearchHighlight[] | null)
-    _id: Scalars['String']
-    _idPath: Scalars['String']
-    _slug: Scalars['String']
-    _slugPath: Scalars['String']
-    _sys: BlockDocumentSys
-    _title: Scalars['String']
-    __typename: 'LegalpagesItem'
-}
-
-export type LegalpagesItemOrderByEnum = '_sys_createdAt__ASC' | '_sys_createdAt__DESC' | '_sys_hash__ASC' | '_sys_hash__DESC' | '_sys_id__ASC' | '_sys_id__DESC' | '_sys_lastModifiedAt__ASC' | '_sys_lastModifiedAt__DESC' | '_sys_slug__ASC' | '_sys_slug__DESC' | '_sys_title__ASC' | '_sys_title__DESC'
-
 export interface ListMeta {
     /** Number of items after applying filters but before pagination */
     filteredCount: Scalars['Int']
@@ -330,7 +295,6 @@ export interface Query {
     _sys: RepoSys
     legal: Legal
     legalPageItem: LegalPageItemComponent
-    legalpages: Legalpages
     __typename: 'Query'
 }
 
@@ -479,7 +443,6 @@ export interface _agents {
 
 export interface _components {
     legalPageItem: legalPageItemComponent_AsList
-    legalpagesItem: legalpagesItem_AsList
     __typename: '_components'
 }
 
@@ -500,25 +463,6 @@ export interface legalPageItemComponent_AsList {
     /** Returns the list of items after filtering and paginating according to the arguments sent by the client. */
     items: LegalPageItemComponent[]
     __typename: 'legalPageItemComponent_AsList'
-}
-
-export interface legalpagesItem_AsList {
-    _analyticsKey: Scalars['String']
-    _dashboardUrl: Scalars['String']
-    _id: Scalars['String']
-    _idPath: Scalars['String']
-    _meta: ListMeta
-    /** The key used to search from the frontend. */
-    _searchKey: Scalars['String']
-    _slug: Scalars['String']
-    _slugPath: Scalars['String']
-    _sys: BlockDocumentSys
-    _title: Scalars['String']
-    /** Returns the first item in the list, or null if the list is empty. Useful when you expect only one result. */
-    item: (LegalpagesItem | null)
-    /** Returns the list of items after filtering and paginating according to the arguments sent by the client. */
-    items: LegalpagesItem[]
-    __typename: 'legalpagesItem_AsList'
 }
 
 export interface BaseRichTextJsonGenqlSelection{
@@ -581,11 +525,8 @@ export interface BlockDocumentGenqlSelection{
     _title?: boolean | number
     on_Legal?: LegalGenqlSelection
     on_LegalPageItemComponent?: LegalPageItemComponentGenqlSelection
-    on_Legalpages?: LegalpagesGenqlSelection
-    on_LegalpagesItem?: LegalpagesItemGenqlSelection
     on__AgentStart?: _AgentStartGenqlSelection
     on_legalPageItemComponent_AsList?: legalPageItemComponent_AsListGenqlSelection
-    on_legalpagesItem_AsList?: legalpagesItem_AsListGenqlSelection
     __typename?: boolean | number
     __fragmentOn?: "BlockDocument"
 }
@@ -668,9 +609,7 @@ export interface BlockListGenqlSelection{
     _slugPath?: boolean | number
     _sys?: BlockDocumentSysGenqlSelection
     _title?: boolean | number
-    on_Legalpages?: LegalpagesGenqlSelection
     on_legalPageItemComponent_AsList?: legalPageItemComponent_AsListGenqlSelection
-    on_legalpagesItem_AsList?: legalpagesItem_AsListGenqlSelection
     __typename?: boolean | number
     __fragmentOn?: "BlockList"
 }
@@ -800,61 +739,6 @@ by?: (Scalars['String'][] | null),
 /** Search query */
 q?: (Scalars['String'] | null)}
 
-export interface LegalpagesGenqlSelection{
-    _analyticsKey?: { __args: {
-    /**
-     * The scope of the analytics key. Use `send` for just ingesting data. Use `query` if you need to show an analytics data in your website.
-     * 
-     * Have in mind, if you expose your `query` analytics key in the frontend, you'll be exposing all of this block's analytics data to the public. This is generally safe, but it might not be in your case.
-     */
-    scope?: (AnalyticsKeyScope | null)} } | boolean | number
-    _dashboardUrl?: boolean | number
-    _id?: boolean | number
-    _idPath?: boolean | number
-    _meta?: ListMetaGenqlSelection
-    /** The key used to search from the frontend. */
-    _searchKey?: boolean | number
-    _slug?: boolean | number
-    _slugPath?: boolean | number
-    _sys?: BlockDocumentSysGenqlSelection
-    _title?: boolean | number
-    /** Returns the first item in the list, or null if the list is empty. Useful when you expect only one result. */
-    item?: LegalpagesItemGenqlSelection
-    /** Returns the list of items after filtering and paginating according to the arguments sent by the client. */
-    items?: LegalpagesItemGenqlSelection
-    __typename?: boolean | number
-    __fragmentOn?: "Legalpages"
-}
-
-export interface LegalpagesItemGenqlSelection{
-    _analyticsKey?: { __args: {
-    /**
-     * The scope of the analytics key. Use `send` for just ingesting data. Use `query` if you need to show an analytics data in your website.
-     * 
-     * Have in mind, if you expose your `query` analytics key in the frontend, you'll be exposing all of this block's analytics data to the public. This is generally safe, but it might not be in your case.
-     */
-    scope?: (AnalyticsKeyScope | null)} } | boolean | number
-    _dashboardUrl?: boolean | number
-    /** Array of search highlight information with field names and HTML markup */
-    _highlight?: SearchHighlightGenqlSelection
-    _id?: boolean | number
-    _idPath?: boolean | number
-    _slug?: boolean | number
-    _slugPath?: boolean | number
-    _sys?: BlockDocumentSysGenqlSelection
-    _title?: boolean | number
-    __typename?: boolean | number
-    __fragmentOn?: "LegalpagesItem"
-}
-
-export interface LegalpagesItemFilterInput {AND?: (LegalpagesItemFilterInput | null),OR?: (LegalpagesItemFilterInput | null),_id?: (StringFilter | null),_slug?: (StringFilter | null),_sys_apiNamePath?: (StringFilter | null),_sys_createdAt?: (DateFilter | null),_sys_hash?: (StringFilter | null),_sys_id?: (StringFilter | null),_sys_idPath?: (StringFilter | null),_sys_lastModifiedAt?: (DateFilter | null),_sys_slug?: (StringFilter | null),_sys_slugPath?: (StringFilter | null),_sys_title?: (StringFilter | null),_title?: (StringFilter | null)}
-
-export interface LegalpagesItemSearchInput {
-/** Searchable fields for query */
-by?: (Scalars['String'][] | null),
-/** Search query */
-q?: (Scalars['String'] | null)}
-
 export interface ListFilter {isEmpty?: (Scalars['Boolean'] | null),length?: (Scalars['Int'] | null)}
 
 export interface ListMetaGenqlSelection{
@@ -979,17 +863,6 @@ export interface QueryGenqlSelection{
     _sys?: RepoSysGenqlSelection
     legal?: LegalGenqlSelection
     legalPageItem?: LegalPageItemComponentGenqlSelection
-    legalpages?: (LegalpagesGenqlSelection & { __args?: {
-    /** Filter by a field. */
-    filter?: (LegalpagesItemFilterInput | null), 
-    /** Limit the number of items returned. Defaults to 500. */
-    first?: (Scalars['Int'] | null), 
-    /** Order by a field. */
-    orderBy?: (LegalpagesItemOrderByEnum | null), 
-    /** Search configuration */
-    search?: (LegalpagesItemSearchInput | null), 
-    /** Skip the first n items. */
-    skip?: (Scalars['Int'] | null)} })
     __typename?: boolean | number
     __fragmentOn?: "Query"
 }
@@ -1175,17 +1048,6 @@ export interface _componentsGenqlSelection{
     search?: (LegalPageItemComponentSearchInput | null), 
     /** Skip the first n items. */
     skip?: (Scalars['Int'] | null)} })
-    legalpagesItem?: (legalpagesItem_AsListGenqlSelection & { __args?: {
-    /** Filter by a field. */
-    filter?: (LegalpagesItemFilterInput | null), 
-    /** Limit the number of items returned. Defaults to 500. */
-    first?: (Scalars['Int'] | null), 
-    /** Order by a field. */
-    orderBy?: (LegalpagesItemOrderByEnum | null), 
-    /** Search configuration */
-    search?: (LegalpagesItemSearchInput | null), 
-    /** Skip the first n items. */
-    skip?: (Scalars['Int'] | null)} })
     __typename?: boolean | number
     __fragmentOn?: "_components"
 }
@@ -1214,32 +1076,6 @@ export interface legalPageItemComponent_AsListGenqlSelection{
     items?: LegalPageItemComponentGenqlSelection
     __typename?: boolean | number
     __fragmentOn?: "legalPageItemComponent_AsList"
-}
-
-export interface legalpagesItem_AsListGenqlSelection{
-    _analyticsKey?: { __args: {
-    /**
-     * The scope of the analytics key. Use `send` for just ingesting data. Use `query` if you need to show an analytics data in your website.
-     * 
-     * Have in mind, if you expose your `query` analytics key in the frontend, you'll be exposing all of this block's analytics data to the public. This is generally safe, but it might not be in your case.
-     */
-    scope?: (AnalyticsKeyScope | null)} } | boolean | number
-    _dashboardUrl?: boolean | number
-    _id?: boolean | number
-    _idPath?: boolean | number
-    _meta?: ListMetaGenqlSelection
-    /** The key used to search from the frontend. */
-    _searchKey?: boolean | number
-    _slug?: boolean | number
-    _slugPath?: boolean | number
-    _sys?: BlockDocumentSysGenqlSelection
-    _title?: boolean | number
-    /** Returns the first item in the list, or null if the list is empty. Useful when you expect only one result. */
-    item?: LegalpagesItemGenqlSelection
-    /** Returns the list of items after filtering and paginating according to the arguments sent by the client. */
-    items?: LegalpagesItemGenqlSelection
-    __typename?: boolean | number
-    __fragmentOn?: "legalpagesItem_AsList"
 }
 
 export interface FragmentsMap {
@@ -1310,14 +1146,6 @@ export interface FragmentsMap {
   LegalPageItemComponent: {
     root: LegalPageItemComponent,
     selection: LegalPageItemComponentGenqlSelection,
-}
-  Legalpages: {
-    root: Legalpages,
-    selection: LegalpagesGenqlSelection,
-}
-  LegalpagesItem: {
-    root: LegalpagesItem,
-    selection: LegalpagesItemGenqlSelection,
 }
   ListMeta: {
     root: ListMeta,
@@ -1390,9 +1218,5 @@ export interface FragmentsMap {
   legalPageItemComponent_AsList: {
     root: legalPageItemComponent_AsList,
     selection: legalPageItemComponent_AsListGenqlSelection,
-}
-  legalpagesItem_AsList: {
-    root: legalpagesItem_AsList,
-    selection: legalpagesItem_AsListGenqlSelection,
 }
 }

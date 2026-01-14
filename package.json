@@ -44,7 +44,8 @@
   },
   "pnpm": {
     "overrides": {
-      "parse5": "^7.2.1"
+      "parse5": "^7.2.1",
+      "next": "16.0.10"
     }
   },
   "type": "module"

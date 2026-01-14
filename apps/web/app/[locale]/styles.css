@@ -1,5 +1,15 @@
 @import "@repo/design-system/styles/globals.css";
 
+@layer base {
+  h1,
+  h2,
+  h3,
+  .display-text {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
 .shiki {
   background-color: var(--shiki-light-bg);
   color: var(--shiki-light);
