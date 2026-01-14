@@ -1,0 +1,36 @@
+# Partner Feedback (Shared)
+
+Purpose: capture partner feedback in one place so product and engineering can track, triage, and follow up.
+
+How to add feedback:
+- Add a new entry under "Feedback Log" using the template.
+- Keep it short and link to the source (Slack, call notes, email) when possible.
+- Avoid PII; redact names/emails/phone numbers unless required.
+
+Template:
+```
+- Date:
+- Partner:
+- Source:
+- Summary:
+- Pain:
+- Requested outcome:
+- Priority (P0/P1/P2):
+- Area (kitchen/events/scheduling/CRM/other):
+- Related docs/links:
+- Owner:
+- Status (new/triage/in-progress/done):
+```
+
+## Feedback Log
+- Date: TBD
+- Partner: Partner at company
+- Source: Chatbot conversation about bulk importing leads
+- Summary: Needs a self-serve bulk import manager in the new CRM.
+- Pain: Current process requires sending a template to Client Care and waiting; wants to import immediately.
+- Requested outcome: Allow users to upload and process lead/contact imports without support intervention.
+- Priority (P0/P1/P2): P1
+- Area (kitchen/events/scheduling/CRM/other): CRM
+- Related docs/links: 
+- Owner: 
+- Status (new/triage/in-progress/done): new
