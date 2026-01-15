@@ -1,152 +1,152 @@
 {
   "web": {
     "global": {
-      "primaryCta": "Book a demo",
-      "secondaryCta": "Sign in"
+      "primaryCta": "Book a call",
+      "secondaryCta": "Sign up"
     },
     "header": {
       "home": "Home",
       "product": {
         "title": "Product",
-        "description": "Enterprise Business Solutions Simplified.",
+        "description": "Managing a small business today is already tough.",
         "pricing": "Pricing"
       },
       "blog": "Blog",
       "docs": "Docs",
       "contact": "Contact",
       "signIn": "Sign in",
-      "signUp": "Book a demo"
+      "signUp": "Get started"
     },
     "home": {
       "meta": {
-        "title": "Enterprise Business Solutions, Unified in Real Time",
-        "description": "Clean, streamlined business management suite that consolidates every module into one system while doing what no other apps do: connect every workflow seamlessly, in real time."
+        "title": "Transform Your Business Operations Today",
+        "description": "In today's fast-paced world, your business deserves better than outdated trading systems. Our innovative platform streamlines operations, reduces complexity, and helps small businesses thrive in the modern economy."
       },
       "hero": {
-        "announcement": "Now live: unified operations for multi-site teams"
+        "announcement": "Read our latest article"
       },
       "cases": {
-        "title": "Operations connected across every location"
+        "title": "Empowering Success Stories Across the Globe"
       },
       "features": {
-        "title": "Built for end-to-end operations",
-        "description": "Consolidate CRM, events, kitchen, warehouse, scheduling, and payroll into one connected system.",
+        "title": "Powerful Tools for Modern Business",
+        "description": "Discover how our cutting-edge features can revolutionize your daily operations.",
         "items": [
           {
-            "title": "Unified modules",
-            "description": "Replace scattered tools with a single operational core and shared data model."
+            "title": "Streamlined Operations",
+            "description": "Our platform streamlines operations, reduces complexity, and helps small businesses thrive in the modern economy."
           },
           {
-            "title": "Real-time coordination",
-            "description": "Tasks, tickets, and inventory updates sync instantly across teams."
+            "title": "Real-Time Analytics",
+            "description": "Get instant insights into your business performance with comprehensive analytics and reporting tools."
           },
           {
-            "title": "Automated workflows",
-            "description": "Standardize approvals, handoffs, and reporting without manual follow-up."
+            "title": "Automated Workflows",
+            "description": "Save time and reduce errors with intelligent automation that handles repetitive tasks for you."
           },
           {
-            "title": "Enterprise control",
-            "description": "Role-based access, audit trails, and tenant isolation by default."
+            "title": "Secure Transactions",
+            "description": "Rest easy knowing your business operations are protected by enterprise-grade security and encryption."
           }
         ]
       },
       "stats": {
-        "title": "Operational clarity at scale",
-        "description": "Teams reduce handoffs, shorten service cycles, and gain immediate visibility into every module.",
+        "title": "Real Results, Real Impact",
+        "description": "Join thousands of businesses that have transformed their operations with our platform. Our solutions have helped companies reduce administrative overhead by 60% and increase trading efficiency by 45% on average.",
         "items": [
           {
-            "title": "Active teams onboarded",
-            "metric": "120",
-            "delta": "18",
+            "title": "Monthly active users",
+            "metric": "100000",
+            "delta": "10",
             "type": "unit"
           },
           {
-            "title": "Events executed per month",
-            "metric": "340",
-            "delta": "12",
+            "title": "Daily active users",
+            "metric": "10000",
+            "delta": "-5",
             "type": "unit"
           },
           {
-            "title": "Avg. response time (mins)",
-            "metric": "14",
-            "delta": "-22",
-            "type": "unit"
+            "title": "Monthly recurring revenue",
+            "metric": "100000",
+            "delta": "20",
+            "type": "currency"
           },
           {
-            "title": "Inventory variance reduced",
-            "metric": "38",
-            "delta": "-15",
-            "type": "unit"
+            "title": "Cost per acquisition",
+            "metric": "100",
+            "delta": "-10",
+            "type": "currency"
           }
         ]
       },
       "testimonials": {
-        "title": "Teams running in sync",
+        "title": "Hear from Our Thriving Community",
         "items": [
           {
-            "title": "Finally one system",
-            "description": "We replaced five tools and the handoffs disappeared. Every team now sees the same source of truth.",
+            "title": "Best decision",
+            "description": "Our goal was to streamline SMB trade, making it easier and faster than ever and we did it together.",
             "author": {
-              "name": "Maya Thornton",
-              "image": "https://i.pravatar.cc/100?img=12"
+              "name": "Hayden Bleasel",
+              "image": "https://github.com/haydenbleasel.png"
             }
           },
           {
-            "title": "Real-time visibility",
-            "description": "From kitchen to warehouse, we can see changes instantly and make faster decisions.",
+            "title": "Game changer",
+            "description": "This platform revolutionized how we handle our day-to-day operations. The efficiency gains have been remarkable.",
             "author": {
-              "name": "Andre Kim",
-              "image": "https://i.pravatar.cc/100?img=32"
+              "name": "Lee Robinson",
+              "image": "https://github.com/leerob.png"
             }
           },
           {
-            "title": "Smooth rollout",
-            "description": "The onboarding was painless, and our teams adopted it in weeks instead of months.",
+            "title": "Exceeded expectations",
+            "description": "Implementation was smooth and the results were immediate. Our team adapted quickly and productivity soared.",
             "author": {
-              "name": "Sofia Alvarez",
-              "image": "https://i.pravatar.cc/100?img=45"
+              "name": "shadcn",
+              "image": "https://github.com/shadcn.png"
             }
           },
           {
-            "title": "Operational unlock",
-            "description": "We can now plan, execute, and report in a single flow. That alone saved us hours each week.",
+            "title": "Outstanding support",
+            "description": "Not only is the platform powerful, but the customer support team has been exceptional in helping us maximize its potential.",
             "author": {
-              "name": "Jordan Patel",
-              "image": "https://i.pravatar.cc/100?img=8"
+              "name": "Pontus Abrahamsson",
+              "image": "https://github.com/pontusab.png"
             }
           }
         ]
       },
       "faq": {
-        "title": "Questions, answered",
-        "description": "Everything you need to know about consolidating operations into one real-time platform.",
-        "cta": "Have a specific workflow? Let's talk",
+        "title": "Common Questions, Expert Answers",
+        "description": "Get quick answers to your most pressing questions about our platform. We've compiled everything you need to know about transforming your business operations and getting started with modern trading solutions.",
+        "cta": "Any questions? Reach out",
         "items": [
           {
-            "question": "What does the suite replace?",
-            "answer": "It unifies CRM, events, kitchen, warehouse, scheduling, payroll, analytics, and admin workflows into one system."
+            "question": "What is the platform?",
+            "answer": "The platform is a trading platform that allows you to trade with confidence."
           },
           {
-            "question": "Is data shared in real time across modules?",
-            "answer": "Yes. Updates in one module are immediately reflected across related workflows without manual syncing."
+            "question": "How secure is the platform?",
+            "answer": "Our platform employs enterprise-grade security measures, including end-to-end encryption and multi-factor authentication, to ensure your trading activities remain completely secure."
           },
           {
-            "question": "How does onboarding work?",
-            "answer": "We start with your core workflows, import existing data, and phase modules in without disrupting operations."
+            "question": "What trading features are available?",
+            "answer": "The platform offers comprehensive trading tools including real-time market data, advanced charting, automated trading strategies, and detailed analytics to support informed decision-making."
           },
           {
-            "question": "Can we start with one module?",
-            "answer": "Yes. You can roll out by team or module, and expand once processes are stable."
+            "question": "How does pricing work?",
+            "answer": "We offer flexible pricing tiers designed to scale with your business needs, from starter plans for individual traders to enterprise solutions for large organizations."
           },
           {
-            "question": "What support do you provide?",
-            "answer": "We offer onboarding, workflow design, and ongoing support with direct access to the team."
+            "question": "What kind of support do you provide?",
+            "answer": "Our dedicated support team is available 24/7 through multiple channels including live chat, email, and phone. We also provide extensive documentation and training resources."
           }
         ]
       },
       "cta": {
-        "title": "Bring every operation into one system",
-        "description": "See how a connected suite can replace your current stack and give every team real-time clarity."
+        "title": "Start Your Business Transformation",
+        "description": "Join thousands of forward-thinking businesses who have already modernized their operations. Our platform offers the tools, support, and efficiency you need to succeed in today's competitive market. Get started in minutes."
       }
     },
     "blog": {

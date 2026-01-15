@@ -81,4 +81,3 @@
 - Synced landing page copy and testimonial images across all locales.
 - Added marketing image assets and replaced landing page placeholders with real UI imagery.
 - Updated fonts to match Mangia-inspired style (Playfair Display + Source Sans 3).
-
