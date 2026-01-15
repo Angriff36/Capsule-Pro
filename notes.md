@@ -64,6 +64,9 @@
 - Vercel deploy failing in pps/web due to Basehub blog type mismatch; fix requires aligning schema fields in packages/cms fragments and blog pages (no casts).
 - Do not revert unrelated styling/font changes; other agent is updating those files.
 - Deployment fix in progress: enforce single Next.js version via root `pnpm.overrides` and move `@react-email/preview-server` to devDependencies in `apps/email`.
+- Vercel CLI installed and authenticated; use `vercel inspect <url> --logs` to see build errors.
+- Current hard error: `apps/app` build fails on `packages/design-system/lib/fonts.ts` because `next/font/google` can’t be resolved; fix is adding `next` to `@repo/design-system` deps and updating lockfile.
+- User requested focus on local dev build stability before deployment.
 - Events module wiring updated; manual UI verification still pending.
 - CSV import and seed script added; PDF import is placeholder.
 - Events module works; UI needs polish. Seed data shows duplicates (multiple events per CSV).

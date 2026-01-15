@@ -1,26 +1,17 @@
-# Task Plan: Unify Next.js Versions (Deployment Fix)
+# Task Plan: Local Build Recovery (App/Web)
 
 ## Goal
-Ensure a single Next.js version across the monorepo and remove conflicting versions (esp. email preview server) so Vercel builds resolve cleanly.
+Restore local dev/build stability for `apps/app` and `apps/web` before further deployment work.
 
 ## Current Phase
-Complete
+Paused
 
 ## Phases
-### Phase 1: Package Alignment
-- [x] Add root `pnpm.overrides` for Next.js version
-- [x] Move `@react-email/preview-server` to devDependencies in `apps/email`
-- **Status:** complete
-
-### Phase 2: Lockfile Update
-- [x] Run `pnpm install --no-frozen-lockfile`
-- [x] Confirm `pnpm-lock.yaml` updated
-- **Status:** complete
-
-### Phase 3: Verify
-- [x] Run `pnpm -r why next` and confirm single version
-- [x] Summarize result in `progress.md`
-- **Status:** complete
+### Phase 1: Fix Local Build Errors
+- [ ] Address `next/font/google` missing in `@repo/design-system` (add `next` dep + lockfile)
+- [ ] Re-run `pnpm --filter app run build`
+- [ ] Re-run `pnpm --filter web run build`
+- **Status:** pending
 
 ## Errors Encountered
 | Error | Attempt | Resolution |

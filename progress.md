@@ -49,6 +49,8 @@
 - Swapped brand fonts to Playfair Display + Source Sans 3 and applied display font to web headings.
 - Began Next.js version unification for deploy stability (root overrides + email preview-server cleanup).
 - Verified `pnpm -r why next` shows only Next 16.0.10 across the workspace.
+- Pulled Vercel build logs via CLI; current app build fails on missing `next/font/google` from `@repo/design-system`.
+- Paused edits at user request while preparing local build fix plan.
 
 ## Tests
 - Not run (UI verification pending).
