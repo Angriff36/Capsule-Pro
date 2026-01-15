@@ -13,7 +13,7 @@
     "@t3-oss/env-nextjs": "^0.13.8",
     "@vercel/toolbar": "^0.1.41",
     "flags": "^4.0.2",
-    "react": "19.2.1",
+    "react": "19.2.3",
     "zod": "^4.1.13"
   },
   "peerDependencies": {
