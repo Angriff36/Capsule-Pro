@@ -27,7 +27,7 @@ export const generateMetadata = async ({
 
   return createMetadata({
     title: post._title,
-    description: post.title ?? post._title,
+    description: post._title,
   });
 };
 
@@ -65,7 +65,7 @@ const LegalPage = async ({ params }: LegalPageProperties) => {
               {page._title}
             </h1>
             <p className="text-balance leading-7 [&:not(:first-child)]:mt-6">
-              {page.title ?? page._title}
+              {page._title}
             </p>
             <div className="mt-16 flex flex-col items-start gap-8 sm:flex-row">
               <div className="sm:flex-1">
