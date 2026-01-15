@@ -291,3 +291,6 @@ tools/
 ui-design-images/
 ui-design-images/Mangia Brand Guideline.pdf
 apps/web/new 2.txt
+
+# Local Netlify folder
+.netlify

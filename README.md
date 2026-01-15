@@ -91,6 +91,12 @@ npx next-forge@latest init
 
 For detailed setup instructions, read the [documentation](https://www.next-forge.com/docs).
 
+### Setup Discipline (Required)
+
+- Follow all relevant setup steps from official docs end-to-end (install, env, scripts, generators, integration).
+- No minimal patterns or partial installs; wire into the actual repo files.
+- If blocked or missing secrets, stop and ask before proceeding.
+
 ## Structure
 
 next-forge uses a monorepo structure managed by Turborepo:
@@ -191,4 +197,3 @@ Convoy is an attempt to salvage previous projects that were all attempting to bu
 - Events + Battle Boards (highest leverage, clear import pipeline).
 - Kitchen tasks and prep lists (mobile + realtime).
 - Scheduling (Shift-Stream model maps cleanly).
-

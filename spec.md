@@ -9,6 +9,11 @@ Scope
 - Mobile/kitchen app for prep tasks + shift scheduling + time clock.
 - Multi-tenant data model with strict isolation and real-time where required.
 
+Setup Discipline (Required)
+- Follow all relevant setup steps from official docs end-to-end (install, env, scripts, generators, integration).
+- No minimal patterns or partial installs; wire into the actual repo files.
+- If blocked or missing secrets, stop and ask before proceeding.
+
 Sources (legacy repos)
 - C:\Projects\Capsule (Supabase schema contract + multi-module schema + syncing between modules)
 - C:\Projects\Shift-Stream (scheduling app with clear data model)

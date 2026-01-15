@@ -112,14 +112,12 @@ export const blog = {
  * Legal Fragments & Queries
  * -----------------------------------------------------------------------------------------------*/
 
-const legalPostMetaFragment = fragmentOn("LegalPageItemComponent", {
+const legalPostMetaFragment = fragmentOn("LegalPagesItem", {
   _slug: true,
   _title: true,
-  slug: true,
-  title: true,
 });
 
-const legalPostFragment = fragmentOn("LegalPageItemComponent", {
+const legalPostFragment = fragmentOn("LegalPagesItem", {
   ...legalPostMetaFragment,
   body: {
     plainText: true,
@@ -137,7 +135,7 @@ export type LegalPost = fragmentOn.infer<typeof legalPostFragment>;
 export const legal = {
   postsQuery: fragmentOn("Query", {
     _componentInstances: {
-      legalPageItem: {
+      legalPagesItem: {
         items: legalPostFragment,
       },
     },
@@ -145,7 +143,7 @@ export const legal = {
 
   latestPostQuery: fragmentOn("Query", {
     _componentInstances: {
-      legalPageItem: {
+      legalPagesItem: {
         __args: {
           orderBy: "_sys_createdAt__DESC",
         },
@@ -157,7 +155,7 @@ export const legal = {
   postQuery: (slug: string) =>
     fragmentOn("Query", {
       _componentInstances: {
-        legalPageItem: {
+        legalPagesItem: {
           __args: {
             filter: {
               _sys_slug: { eq: slug },
@@ -171,19 +169,19 @@ export const legal = {
   getPosts: async (): Promise<LegalPost[]> => {
     const data = await basehub.query(legal.postsQuery);
 
-    return data._componentInstances.legalPageItem.items;
+    return data._componentInstances.legalPagesItem.items;
   },
 
   getLatestPost: async (): Promise<LegalPost | null> => {
     const data = await basehub.query(legal.latestPostQuery);
 
-    return data._componentInstances.legalPageItem.item;
+    return data._componentInstances.legalPagesItem.item;
   },
 
   getPost: async (slug: string): Promise<LegalPost | null> => {
     const query = legal.postQuery(slug);
     const data = await basehub.query(query);
 
-    return data._componentInstances.legalPageItem.item;
+    return data._componentInstances.legalPagesItem.item;
   },
 };

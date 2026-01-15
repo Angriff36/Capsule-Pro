@@ -24,6 +24,12 @@ Repo specifics:
 - **Priority order**: Kitchen tasks → Events → Scheduling
 - **Docs**: Mintlify at http://localhost:2232/introduction (when running)
 
+## Setup Discipline (Required)
+
+- Follow all relevant setup steps from official docs end-to-end (install, env, scripts, generators, integration).
+- No minimal patterns or partial installs; wire into the actual repo files.
+- If blocked or missing secrets, stop and ask before proceeding.
+
 ## Planning With Files (Required)
 
 **AT THE BEGINNING OF EVERY TASK AND UPON ENCOUNTERING ANY ERROR, CALL CONTEXT7 MCP**

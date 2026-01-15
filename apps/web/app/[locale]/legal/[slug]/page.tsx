@@ -46,7 +46,7 @@ const LegalPage = async ({ params }: LegalPageProperties) => {
       {async ([data]) => {
         "use server";
 
-        const page = data._componentInstances.legalPageItem.item;
+        const page = data._componentInstances.legalPagesItem.item;
 
         if (!page) {
           notFound();

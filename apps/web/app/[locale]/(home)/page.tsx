@@ -1,6 +1,7 @@
 import { showBetaFeature } from "@repo/feature-flags";
 import { getDictionary } from "@repo/internationalization";
 import { createMetadata } from "@repo/seo/metadata";
+import { Pump } from "basehub/react-pump";
 import type { Metadata } from "next";
 import { Cases } from "./components/cases";
 import { CTA } from "./components/cta";
@@ -31,20 +32,28 @@ const Home = async ({ params }: HomeProps) => {
   const betaFeature = await showBetaFeature();
 
   return (
-    <>
-      {betaFeature && (
-        <div className="w-full bg-black py-2 text-center text-white">
-          Beta feature now available
-        </div>
-      )}
-      <Hero dictionary={dictionary} />
-      <Cases dictionary={dictionary} />
-      <Features dictionary={dictionary} />
-      <Stats dictionary={dictionary} />
-      <Testimonials dictionary={dictionary} />
-      <FAQ dictionary={dictionary} />
-      <CTA dictionary={dictionary} />
-    </>
+    <Pump queries={[{ __typename: true }]}>
+      {async ([data]) => {
+        "use server";
+        return (
+          <>
+            <pre className="hidden">{JSON.stringify(data, null, 2)}</pre>
+            {betaFeature && (
+              <div className="w-full bg-black py-2 text-center text-white">
+                Beta feature now available
+              </div>
+            )}
+            <Hero dictionary={dictionary} />
+            <Cases dictionary={dictionary} />
+            <Features dictionary={dictionary} />
+            <Stats dictionary={dictionary} />
+            <Testimonials dictionary={dictionary} />
+            <FAQ dictionary={dictionary} />
+            <CTA dictionary={dictionary} />
+          </>
+        );
+      }}
+    </Pump>
   );
 };
 

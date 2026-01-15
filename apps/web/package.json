@@ -2,8 +2,8 @@
   "name": "web",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 2222",
-    "build": "next build",
+    "dev": "concurrently \"basehub dev\" \"next dev -p 2222\"",
+    "build": "basehub && next build",
     "start": "next start",
     "analyze": "ANALYZE=true npm run build",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
@@ -44,6 +44,8 @@
     "@types/node": "24.10.1",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
+    "concurrently": "^9.2.1",
+    "basehub": "9.5.3",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3"
   }
