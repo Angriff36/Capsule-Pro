@@ -10,6 +10,10 @@ type ImportContext = {
   locationId: string;
   unitIds: {
     pound?: number;
+    each?: number;
+    ounce?: number;
+    gram?: number;
+    kilogram?: number;
   };
 };
 
@@ -144,12 +148,24 @@ const ensureLocationId = async (tenantId: string): Promise<string> => {
   return createdId;
 };
 
+const getFallbackUnitId = async () => {
+  const [row] = await database.$queryRaw<{ id: number }[]>(
+    Prisma.sql`
+      SELECT id
+      FROM core.units
+      ORDER BY id ASC
+      LIMIT 1
+    `,
+  );
+  return row?.id;
+};
+
 const getUnitIds = async () => {
   const rows = await database.$queryRaw<{ id: number; code: string }[]>(
     Prisma.sql`
       SELECT id, code
       FROM core.units
-      WHERE code IN ('lb')
+      WHERE code IN ('lb', 'ea', 'oz', 'g', 'kg')
     `,
   );
 
@@ -157,6 +173,18 @@ const getUnitIds = async () => {
   rows.forEach((row) => {
     if (row.code === "lb") {
       unitIds.pound = row.id;
+    }
+    if (row.code === "ea") {
+      unitIds.each = row.id;
+    }
+    if (row.code === "oz") {
+      unitIds.ounce = row.id;
+    }
+    if (row.code === "g") {
+      unitIds.gram = row.id;
+    }
+    if (row.code === "kg") {
+      unitIds.kilogram = row.id;
     }
   });
 
@@ -177,7 +205,14 @@ const findRecipeId = async (tenantId: string, name: string) => {
   return row?.id;
 };
 
-const insertRecipe = async (tenantId: string, name: string) => {
+const insertRecipe = async (
+  tenantId: string,
+  name: string,
+  {
+    category,
+    tags,
+  }: { category?: string | null; tags?: string[] } = {},
+) => {
   const existingId = await findRecipeId(tenantId, name);
   if (existingId) {
     return existingId;
@@ -186,8 +221,10 @@ const insertRecipe = async (tenantId: string, name: string) => {
   const id = randomUUID();
   await database.$executeRaw(
     Prisma.sql`
-      INSERT INTO tenant_kitchen.recipes (tenant_id, id, name, is_active)
-      VALUES (${tenantId}, ${id}, ${name}, true)
+      INSERT INTO tenant_kitchen.recipes (tenant_id, id, name, category, tags, is_active)
+      VALUES (${tenantId}, ${id}, ${name}, ${category ?? null}, ${
+        tags && tags.length > 0 ? tags : null
+      }, true)
     `,
   );
   return id;
@@ -207,7 +244,12 @@ const findDishId = async (tenantId: string, name: string) => {
   return row?.id;
 };
 
-const insertDish = async (tenantId: string, name: string, recipeId: string) => {
+const insertDish = async (
+  tenantId: string,
+  name: string,
+  recipeId: string,
+  category?: string | null,
+) => {
   const existingId = await findDishId(tenantId, name);
   if (existingId) {
     return existingId;
@@ -216,11 +258,221 @@ const insertDish = async (tenantId: string, name: string, recipeId: string) => {
   const id = randomUUID();
   await database.$executeRaw(
     Prisma.sql`
-      INSERT INTO tenant_kitchen.dishes (tenant_id, id, recipe_id, name, is_active)
-      VALUES (${tenantId}, ${id}, ${recipeId}, ${name}, true)
+      INSERT INTO tenant_kitchen.dishes (tenant_id, id, recipe_id, name, category, is_active)
+      VALUES (${tenantId}, ${id}, ${recipeId}, ${name}, ${category ?? null}, true)
     `,
   );
   return id;
+};
+
+const findIngredientId = async (tenantId: string, name: string) => {
+  const [row] = await database.$queryRaw<{ id: string }[]>(
+    Prisma.sql`
+      SELECT id
+      FROM tenant_kitchen.ingredients
+      WHERE tenant_id = ${tenantId}
+        AND name = ${name}
+        AND deleted_at IS NULL
+      LIMIT 1
+    `,
+  );
+  return row?.id;
+};
+
+const insertIngredient = async (
+  tenantId: string,
+  name: string,
+  defaultUnitId: number,
+  category?: string | null,
+) => {
+  const existingId = await findIngredientId(tenantId, name);
+  if (existingId) {
+    return existingId;
+  }
+
+  const id = randomUUID();
+  await database.$executeRaw(
+    Prisma.sql`
+      INSERT INTO tenant_kitchen.ingredients (
+        tenant_id,
+        id,
+        name,
+        category,
+        default_unit_id,
+        is_active
+      )
+      VALUES (${tenantId}, ${id}, ${name}, ${category ?? null}, ${defaultUnitId}, true)
+    `,
+  );
+  return id;
+};
+
+const findInventoryItemId = async (tenantId: string, name: string) => {
+  const [row] = await database.$queryRaw<{ id: string }[]>(
+    Prisma.sql`
+      SELECT id
+      FROM tenant_inventory.inventory_items
+      WHERE tenant_id = ${tenantId}
+        AND name = ${name}
+        AND deleted_at IS NULL
+      LIMIT 1
+    `,
+  );
+  return row?.id;
+};
+
+const insertInventoryItem = async (
+  tenantId: string,
+  name: string,
+  category: string,
+  tags: string[],
+) => {
+  const existingId = await findInventoryItemId(tenantId, name);
+  if (existingId) {
+    return existingId;
+  }
+
+  const id = randomUUID();
+  const itemNumber = `INV-${id.slice(0, 8).toUpperCase()}`;
+  await database.$executeRaw(
+    Prisma.sql`
+      INSERT INTO tenant_inventory.inventory_items (
+        tenant_id,
+        id,
+        item_number,
+        name,
+        category,
+        unit_cost,
+        quantity_on_hand,
+        reorder_level,
+        tags
+      )
+      VALUES (
+        ${tenantId},
+        ${id},
+        ${itemNumber},
+        ${name},
+        ${category},
+        ${0},
+        ${0},
+        ${0},
+        ${tags}
+      )
+    `,
+  );
+  return id;
+};
+
+type ItemClassification = {
+  kind: "dish" | "recipe" | "ingredient" | "supply";
+  category?: string;
+  tags: string[];
+};
+
+const SUPPLY_KEYWORDS = [
+  "chafing",
+  "chafer",
+  "sterno",
+  "serveware",
+  "servingware",
+  "plate",
+  "utensil",
+  "fork",
+  "spoon",
+  "knife",
+  "napkin",
+  "plasticware",
+  "disposable",
+  "tray",
+  "pan",
+  "lid",
+  "container",
+  "place setting",
+  "cutlery",
+  "tongs",
+];
+
+const BEVERAGE_KEYWORDS = [
+  "water",
+  "iced tea",
+  "tea",
+  "lemonade",
+  "coffee",
+  "juice",
+  "soda",
+  "beverage",
+  "drink",
+];
+
+const INGREDIENT_KEYWORDS = [
+  "cheese",
+  "lettuce",
+  "tortilla",
+  "rice",
+  "beans",
+  "salsa",
+  "cream",
+  "butter",
+  "onion",
+  "pickles",
+  "tomato",
+  "cilantro",
+  "lime",
+  "garlic",
+  "pepper",
+  "salt",
+];
+
+const RECIPE_KEYWORDS = [
+  "sauce",
+  "reduction",
+  "dressing",
+  "vinaigrette",
+  "aioli",
+  "rub",
+  "marinade",
+  "glaze",
+  "compote",
+];
+
+const classifyItem = (name: string, unit: string): ItemClassification => {
+  const normalized = normalizeHeader(name);
+  const normalizedUnit = normalizeHeader(unit);
+
+  if (SUPPLY_KEYWORDS.some((keyword) => normalized.includes(keyword))) {
+    return { kind: "supply", category: "serveware", tags: ["imported"] };
+  }
+
+  const isBeverage = BEVERAGE_KEYWORDS.some((keyword) =>
+    normalized.includes(keyword),
+  );
+  if (isBeverage) {
+    const isPackaged =
+      normalized.includes("bottle") || normalized.includes("bottled");
+    if (isPackaged) {
+      return { kind: "supply", category: "beverage", tags: ["imported"] };
+    }
+    return { kind: "dish", category: "beverage", tags: ["imported"] };
+  }
+
+  const isIngredientUnit =
+    normalizedUnit.includes("lb") ||
+    normalizedUnit.includes("oz") ||
+    normalizedUnit.includes("g") ||
+    normalizedUnit.includes("kg");
+
+  if (
+    INGREDIENT_KEYWORDS.some((keyword) => normalized.includes(keyword)) ||
+    isIngredientUnit
+  ) {
+    return { kind: "ingredient", category: "ingredient", tags: ["imported"] };
+  }
+
+  if (RECIPE_KEYWORDS.some((keyword) => normalized.includes(keyword))) {
+    return { kind: "recipe", category: "recipe", tags: ["imported"] };
+  }
+
+  return { kind: "dish", category: "menu", tags: ["imported"] };
 };
 
 const insertEvent = async (
@@ -391,8 +643,7 @@ const importRows = async (
     notes?: string;
     guestCount: number;
     mapRow: (row: CsvRow) => {
-      dishName: string;
-      recipeName: string;
+      itemName: string;
       quantity: number;
       unit: string;
       servings: number;
@@ -411,21 +662,99 @@ const importRows = async (
 
   const recipeCache = new Map<string, string>();
   const dishCache = new Map<string, string>();
+  const ingredientCache = new Map<string, string>();
+  const inventoryCache = new Map<string, string>();
+  const fallbackUnitId = await getFallbackUnitId();
 
   for (const row of rows) {
     const mapped = mapRow(row);
-    const recipeKey = mapped.recipeName.toLowerCase();
-    const dishKey = mapped.dishName.toLowerCase();
+    const itemName = mapped.itemName.trim();
+    if (!itemName) {
+      continue;
+    }
 
+    const classification = classifyItem(itemName, mapped.unit);
+    const itemKey = itemName.toLowerCase();
+
+    if (classification.kind === "supply") {
+      const existingId =
+        inventoryCache.get(itemKey) ??
+        (await insertInventoryItem(
+          context.tenantId,
+          itemName,
+          classification.category ?? "supplies",
+          classification.tags,
+        ));
+      inventoryCache.set(itemKey, existingId);
+      continue;
+    }
+
+    if (classification.kind === "ingredient") {
+      if (!fallbackUnitId) {
+        continue;
+      }
+      const ingredientId =
+        ingredientCache.get(itemKey) ??
+        (await insertIngredient(
+          context.tenantId,
+          itemName,
+          context.unitIds.each ??
+            context.unitIds.pound ??
+            context.unitIds.ounce ??
+            fallbackUnitId,
+          classification.category,
+        ));
+      ingredientCache.set(itemKey, ingredientId);
+
+      await insertPrepTask(context, {
+        eventId,
+        dishId: null,
+        name: itemName,
+        quantityTotal: mapped.quantity,
+        unit: mapped.unit,
+        servingsTotal: mapped.servings,
+        startByDate: addDays(eventDate, -2),
+        dueByDate: eventDate,
+        isEventFinish: mapped.isEventFinish,
+        notes: mapped.instructions,
+      });
+      continue;
+    }
+
+    const recipeKey = itemKey;
     const recipeId =
       recipeCache.get(recipeKey) ??
-      (await insertRecipe(context.tenantId, mapped.recipeName));
+      (await insertRecipe(context.tenantId, itemName, {
+        category: classification.category ?? null,
+        tags: classification.tags,
+      }));
     recipeCache.set(recipeKey, recipeId);
 
+    if (classification.kind === "recipe") {
+      await insertPrepTask(context, {
+        eventId,
+        dishId: null,
+        name: itemName,
+        quantityTotal: mapped.quantity,
+        unit: mapped.unit,
+        servingsTotal: mapped.servings,
+        startByDate: addDays(eventDate, -2),
+        dueByDate: eventDate,
+        isEventFinish: mapped.isEventFinish,
+        notes: mapped.instructions,
+      });
+      continue;
+    }
+
     const dishId =
-      dishCache.get(dishKey) ??
-      (await insertDish(context.tenantId, mapped.dishName, recipeId));
-    dishCache.set(dishKey, dishId);
+      dishCache.get(itemKey) ??
+      (await insertDish(
+        context.tenantId,
+        itemName,
+        recipeId,
+        classification.category,
+      ));
+    dishCache.set(itemKey, dishId);
 
     await insertEventDish(context.tenantId, {
       eventId,
@@ -437,7 +766,7 @@ const importRows = async (
     await insertPrepTask(context, {
       eventId,
       dishId,
-      name: mapped.dishName,
+      name: itemName,
       quantityTotal: mapped.quantity,
       unit: mapped.unit,
       servingsTotal: mapped.servings,
@@ -516,12 +845,10 @@ export const importEventFromCsvText = async ({
       guestCount,
       notes: `Imported from ${fileName}`,
       mapRow: (row) => {
-        const dishName =
+        const itemName =
           getValue(row, ["item_name"]) ||
           getValue(row, ["recipe_name"]) ||
           "Imported item";
-        const recipeName =
-          getValue(row, ["recipe_name"]) || getValue(row, ["item_name"]);
         const quantity = Number(row.quantity ?? 0) || 1;
         const unit = getValue(row, ["unit"]).toLowerCase();
         const servings =
@@ -532,8 +859,7 @@ export const importEventFromCsvText = async ({
           .includes("event");
 
         return {
-          dishName,
-          recipeName,
+          itemName,
           quantity,
           unit,
           servings,
@@ -585,7 +911,7 @@ export const importEventFromCsvText = async ({
     guestCount: Math.max(1, Math.round(servings)),
     notes: `Imported from ${fileName}`,
     mapRow: (row) => {
-      const dishName = getValue(row, ["dish name"]) || "Imported dish";
+      const itemName = getValue(row, ["dish name"]) || "Imported dish";
       const servingsRaw = getValue(row, ["servings/batch", "servings batch"]);
       const { amount, unit } = parseQuantityUnit(
         getValue(row, ["quantity/unit", "quantity unit"]),
@@ -594,8 +920,7 @@ export const importEventFromCsvText = async ({
       const finishedAt = getValue(row, ["finished at"]).toLowerCase();
 
       return {
-        dishName,
-        recipeName: dishName,
+        itemName,
         quantity: amount ?? 1,
         unit,
         servings: parseNumber(servingsRaw) ?? 1,

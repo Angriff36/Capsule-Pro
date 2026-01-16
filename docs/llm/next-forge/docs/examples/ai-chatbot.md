@@ -1,0 +1,210 @@
+[Vercel](https://vercel.com/)Slash[next-forge](/en)
+
+* [Docs](/en/docs)
+* [Source](https://github.com/vercel/next-forge/)
+
+Search...`⌘K`Ask AI
+
+Ask AI
+
+Introduction
+
+[Overview](/docs)[Philosophy](/docs/philosophy)[Structure](/docs/structure)[Updates](/docs/updates)[FAQ](/docs/faq)
+
+Usage
+
+Setup
+
+Apps
+
+Packages
+
+Deployment
+
+Other
+
+Addons
+
+Examples
+
+Migrations
+
+On this page
+
+# Create an AI Chatbot
+
+Let's use next-forge to create a simple AI chatbot.
+
+Today we're going to create an AI chatbot using next-forge and the built-in AI package, powered by [Vercel AI SDK](https://sdk.vercel.ai/).
+
+![/images/ai-chatbot.png](/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fai-chatbot.d90da20c.png&w=3840&q=75&dpl=dpl_GNYDMquaXuMtnLzfKfMsTquZJvC1)
+
+## [1. Create a new project](#1-create-a-new-project)
+
+Terminal
+
+```
+npx next-forge@latest init ai-chatbot
+```
+
+This will create a new project with the name `ai-chatbot` and install the necessary dependencies.
+
+## [2. Configure your environment variables](#2-configure-your-environment-variables)
+
+Follow the guide on [Environment Variables](/en/docs/setup/env) to fill in your environment variables.
+
+Specifically, make sure you set an `OPENAI_API_KEY` environment variable to your `apps/app/.env.local` file.
+
+Make sure you have some credits in your OpenAI account.
+
+## [3. Create the chatbot UI](#3-create-the-chatbot-ui)
+
+We're going to start by creating a simple chatbot UI with a text input and a button to send messages.
+
+Create a new file called `Chatbot` in the `app/components` directory. We're going to use a few things here:
+
+* `useChat` from our AI package to handle the chat logic.
+* `Button` and `Input` components from our Design System to render the form.
+* `Thread` and `Message` components from our AI package to render the chat history.
+* `handleError` from our Design System to handle errors.
+* `SendIcon` from `lucide-react` to create a send icon.
+
+apps/app/app/(authenticated)/components/chatbot.tsx
+
+```
+'use client';
+
+import { Message } from '@repo/ai/components/message';
+import { Thread } from '@repo/ai/components/thread';
+import { useChat } from '@repo/ai/lib/react';
+import { Button } from '@repo/design-system/components/ui/button';
+import { Input } from '@repo/design-system/components/ui/input';
+import { handleError } from '@repo/design-system/lib/utils';
+import { SendIcon } from 'lucide-react';
+
+export const Chatbot = () => {
+  const { messages, input, handleInputChange, isLoading, handleSubmit } =
+    useChat({
+      onError: handleError,
+      api: '/api/chat',
+    });
+
+  return (
+    <div className="flex h-[calc(100vh-64px-16px)] flex-col divide-y overflow-hidden">
+      <Thread>
+        {messages.map((message) => (
+          <Message key={message.id} data={message} />
+        ))}
+      </Thread>
+      <form
+        onSubmit={handleSubmit}
+        className="flex shrink-0 items-center gap-2 px-8 py-4"
+        aria-disabled={isLoading}
+      >
+        <Input
+          placeholder="Ask a question!"
+          value={input}
+          onChange={handleInputChange}
+        />
+        <Button type="submit" size="icon" disabled={isLoading}>
+          <SendIcon className="h-4 w-4" />
+        </Button>
+      </form>
+    </div>
+  );
+};
+```
+
+## [4. Create the chatbot API route](#4-create-the-chatbot-api-route)
+
+Create a new file called `chat` in the `app/api` directory. This Next.js route handler will handle the chatbot's responses.
+
+We're going to use the `streamText` function from our AI package to stream the chatbot's responses to the client. We'll also use the `provider` function from our AI package to get the OpenAI provider, and the `log` function from our Observability package to log the chatbot's responses.
+
+apps/app/app/api/chat/route.ts
+
+```
+import { streamText } from '@repo/ai';
+import { log } from '@repo/observability/log';
+import { models } from '@repo/ai/lib/models';
+
+export const POST = async (req: Request) => {
+  const body = await req.json();
+
+  log.info('🤖 Chat request received.', { body });
+  const { messages } = body;
+
+  log.info('🤖 Generating response...');
+  const result = streamText({
+    model: models.chat,
+    system: 'You are a helpful assistant.',
+    messages,
+  });
+
+  log.info('🤖 Streaming response...');
+  return result.toDataStreamResponse();
+};
+```
+
+## [5. Update the app](#5-update-the-app)
+
+Finally, we'll update the `app/page.tsx` file to be a simple entry point that renders the chatbot UI.
+
+apps/app/app/(authenticated)/page.tsx
+
+```
+import { auth } from '@repo/auth/server';
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { Chatbot } from './components/chatbot';
+import { Header } from './components/header';
+
+const title = 'Acme Inc';
+const description = 'My application.';
+
+export const metadata: Metadata = {
+  title,
+  description,
+};
+
+const App = async () => {
+  const { orgId } = await auth();
+
+  if (!orgId) {
+    notFound();
+  }
+
+  return (
+    <>
+      <Header pages={['Building Your Application']} page="AI Chatbot" />
+      <Chatbot />
+    </>
+  );
+};
+
+export default App;
+```
+
+## [6. Run the app](#6-run-the-app)
+
+Run the app development server and you should be able to see the chatbot UI at <http://localhost:3000>.
+
+Terminal
+
+```
+pnpm dev --filter app
+```
+
+That's it! You've now created an AI chatbot using next-forge and the built-in AI package. If you have any questions, please reach out to me on [Twitter](https://x.com/haydenbleasel) or open an issue on [GitHub](https://github.com/vercel/next-forge).
+
+### On this page
+
+[1. Create a new project](#1-create-a-new-project)[2. Configure your environment variables](#2-configure-your-environment-variables)[3. Create the chatbot UI](#3-create-the-chatbot-ui)[4. Create the chatbot API route](#4-create-the-chatbot-api-route)[5. Update the app](#5-update-the-app)[6. Run the app](#6-run-the-app)
+
+[GitHubEdit this page on GitHub](https://github.com/vercel/next-forge/edit/main/docs/content/docs/examples/ai-chatbot.mdx)Scroll to topGive feedbackCopy pageAsk AI about this pageOpen in chat
+
+Vercel
+
+Copyright Vercel 2025. All rights reserved.
+
+Select language[GitHub](https://github.com/vercel/next-forge)

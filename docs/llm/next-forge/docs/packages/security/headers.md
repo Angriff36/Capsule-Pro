@@ -1,0 +1,129 @@
+[Vercel](https://vercel.com/)Slash[next-forge](/en)
+
+* [Docs](/en/docs)
+* [Source](https://github.com/vercel/next-forge/)
+
+Search...`⌘K`Ask AI
+
+Ask AI
+
+Introduction
+
+[Overview](/docs)[Philosophy](/docs/philosophy)[Structure](/docs/structure)[Updates](/docs/updates)[FAQ](/docs/faq)
+
+Usage
+
+Setup
+
+Apps
+
+Packages
+
+Deployment
+
+Other
+
+Addons
+
+Examples
+
+Migrations
+
+On this page
+
+# Security Headers
+
+Security headers used to protect your application.
+
+next-forge uses [Nosecone](https://docs.arcjet.com/nosecone/quick-start) to set HTTP response headers related to security.
+
+## [Configuration](#configuration)
+
+Here are the headers we have enabled:
+
+* `Cross-Origin-Embedder-Policy` (COEP)
+* `Cross-Origin-Opener-Policy`
+* `Cross-Origin-Resource-Policy`
+* `Origin-Agent-Cluster`
+* `Referrer-Policy`
+* `Strict-Transport-Security` (HSTS)
+* `X-Content-Type-Options`
+* `X-DNS-Prefetch-Control`
+* `X-Download-Options`
+* `X-Frame-Options`
+* `X-Permitted-Cross-Domain-Policies`
+* `X-XSS-Protection`
+
+See the [Nosecone reference](https://docs.arcjet.com/nosecone/reference) for details on each header and configuration options.
+
+## [Usage](#usage)
+
+Recommended headers are set by default and configured in `@repo/security/middleware`. Changing the configuration here will affect all apps.
+
+They are then attached to the response within the middleware in `apps/app/middleware` and `apps/web/middleware.ts`. Adjusting the configuration in these files will only affect the specific app.
+
+## [Content Security Policy (CSP)](#content-security-policy-csp)
+
+The CSP header is not set by default because it requires specific configuration based on the next-forge features you have enabled.
+
+In the meantime, you can set the CSP header using the Nosecone configuration. For example, the following CSP configuration will work with the default next-forge features:
+
+```
+import type { NoseconeOptions } from '@nosecone/next';
+import { defaults as noseconeDefaults } from '@nosecone/next';
+
+const noseconeOptions: NoseconeOptions = {
+  ...noseconeDefaults,
+  contentSecurityPolicy: {
+    ...noseconeDefaults.contentSecurityPolicy,
+    directives: {
+      ...noseconeDefaults.contentSecurityPolicy.directives,
+      scriptSrc: [
+        // We have to use unsafe-inline because next-themes and Vercel Analytics
+        // do not support nonce
+        // https://github.com/pacocoursey/next-themes/issues/106
+        // https://github.com/vercel/analytics/issues/122
+        //...noseconeDefaults.contentSecurityPolicy.directives.scriptSrc,
+        "'self'",
+        "'unsafe-inline'",
+        "https://www.googletagmanager.com",
+        "https://*.clerk.accounts.dev",
+        "https://va.vercel-scripts.com",
+      ],
+      connectSrc: [
+        ...noseconeDefaults.contentSecurityPolicy.directives.connectSrc,
+        "https://*.clerk.accounts.dev",
+        "https://*.google-analytics.com",
+        "https://clerk-telemetry.com",
+      ],
+      workerSrc: [
+        ...noseconeDefaults.contentSecurityPolicy.directives.workerSrc,
+        "blob:",
+        "https://*.clerk.accounts.dev"
+      ],
+      imgSrc: [
+        ...noseconeDefaults.contentSecurityPolicy.directives.imgSrc,
+        "https://img.clerk.com"
+      ],
+      objectSrc: [
+        ...noseconeDefaults.contentSecurityPolicy.directives.objectSrc,
+      ],
+      // We only set this in production because the server may be started
+      // without HTTPS
+      upgradeInsecureRequests: process.env.NODE_ENV === "production",
+    },
+  },
+}
+```
+
+### On this page
+
+[Configuration](#configuration)[Usage](#usage)[Content Security Policy (CSP)](#content-security-policy-csp)
+
+[GitHubEdit this page on GitHub](https://github.com/vercel/next-forge/edit/main/docs/content/docs/packages/security/headers.mdx)Scroll to topGive feedbackCopy pageAsk AI about this pageOpen in chat
+
+Vercel
+
+Copyright Vercel 2025. All rights reserved.
+
+Select language[GitHub](https://github.com/vercel/next-forge)

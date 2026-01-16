@@ -8,7 +8,7 @@
     "dist/index.js"
   ],
   "scripts": {
-    "docs:list": "bun C:\\\\Users\\\\Ryan\\\\Home\\\\agent-scripts\\\\bin\\\\docs-list.exe",
+    "docs:list": "bun C:\\\\Users\\\\Ryan\\\\Home\\\\agent-scripts\\\\scripts\\\\docs-list.ts",
     "browser-tools": "C:\\\\Users\\\\Ryan\\\\Home\\\\agent-scripts\\\\bin\\\\browser-tools.exe",
     "build": "turbo build",
     "dev": "turbo dev --parallel --filter=!studio",
