@@ -64,7 +64,7 @@ const enqueueOutboxEvent = async (
   aggregateType: string,
   aggregateId: string,
   eventType: string,
-  payload: Record<string, unknown>,
+  payload: Prisma.InputJsonValue,
 ) => {
   await database.outboxEvent.create({
     data: {
