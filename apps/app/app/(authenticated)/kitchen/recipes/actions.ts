@@ -163,11 +163,12 @@ export const createRecipe = async (formData: FormData) => {
   const difficulty = parseNumber(formData.get("difficultyLevel"));
   const notes = String(formData.get("notes") || "").trim() || null;
   const imageFile = readImageFile(formData, "imageFile");
+  const hasImageFile = Boolean(imageFile);
 
   const ingredientLines = parseLines(formData.get("ingredients"));
   const rawStepLines = parseLines(formData.get("steps"));
   const stepLines =
-    rawStepLines.length === 0 && imageUrl
+    rawStepLines.length === 0 && hasImageFile
       ? ["Reference photo"]
       : rawStepLines;
 
