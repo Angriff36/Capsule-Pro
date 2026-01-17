@@ -1,6 +1,6 @@
 "use client";
 
-import Ably from "ably/browser";
+import Ably from "ably";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
