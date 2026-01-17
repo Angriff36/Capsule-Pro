@@ -46,7 +46,9 @@ const SchedulingRealtime = ({ tenantId, userId }: SchedulingRealtimeProps) => {
           const tokenRequest = await response.json();
           callback(null, tokenRequest);
         } catch (error) {
-          callback(error as Error, null);
+          const message =
+            error instanceof Error ? error.message : "Ably auth failed.";
+          callback(message, null);
         }
       },
     });
