@@ -2,6 +2,7 @@
 
 import { randomUUID } from "crypto";
 import { Prisma, database } from "@repo/database";
+import { put } from "@repo/storage";
 import { requireTenantId } from "../../../lib/tenant";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -30,7 +31,7 @@ const parseLines = (value: FormDataEntryValue | null) =>
         .filter(Boolean)
     : [];
 
-const readImageDataUrl = async (formData: FormData, key: string) => {
+const readImageFile = (formData: FormData, key: string) => {
   const file = formData.get(key);
 
   if (!(file instanceof File) || file.size === 0) {
@@ -41,9 +42,39 @@ const readImageDataUrl = async (formData: FormData, key: string) => {
     throw new Error("Image must be an image file.");
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const mimeType = file.type || "application/octet-stream";
-  return `data:${mimeType};base64,${buffer.toString("base64")}`;
+  return file;
+};
+
+const uploadImage = async (
+  tenantId: string,
+  pathPrefix: string,
+  file: File,
+) => {
+  const filename = file.name?.trim() || "image";
+  const blob = await put(`tenants/${tenantId}/${pathPrefix}/${filename}`, file, {
+    access: "public",
+    addRandomSuffix: true,
+    contentType: file.type || "application/octet-stream",
+  });
+  return blob.url;
+};
+
+const enqueueOutboxEvent = async (
+  tenantId: string,
+  aggregateType: string,
+  aggregateId: string,
+  eventType: string,
+  payload: Record<string, unknown>,
+) => {
+  await database.outboxEvent.create({
+    data: {
+      tenantId,
+      aggregateType,
+      aggregateId,
+      eventType,
+      payload,
+    },
+  });
 };
 
 const loadUnitMap = async (codes: string[]) => {
@@ -131,7 +162,7 @@ export const createRecipe = async (formData: FormData) => {
   const restTime = parseNumber(formData.get("restTimeMinutes"));
   const difficulty = parseNumber(formData.get("difficultyLevel"));
   const notes = String(formData.get("notes") || "").trim() || null;
-  const imageUrl = await readImageDataUrl(formData, "imageFile");
+  const imageFile = readImageFile(formData, "imageFile");
 
   const ingredientLines = parseLines(formData.get("ingredients"));
   const rawStepLines = parseLines(formData.get("steps"));
@@ -163,6 +194,9 @@ export const createRecipe = async (formData: FormData) => {
 
   const recipeId = randomUUID();
   const recipeVersionId = randomUUID();
+  const imageUrl = imageFile
+    ? await uploadImage(tenantId, `recipes/${recipeId}/hero`, imageFile)
+    : null;
 
   await database.$executeRaw(
     Prisma.sql`
@@ -280,7 +314,142 @@ export const createRecipe = async (formData: FormData) => {
   }
 
   revalidatePath("/kitchen/recipes");
+  await enqueueOutboxEvent(tenantId, "recipe", recipeId, "recipe.created", {
+    recipeId,
+    imageUrl,
+  });
   redirect("/kitchen/recipes");
+};
+
+export const updateRecipeImage = async (recipeId: string, formData: FormData) => {
+  const tenantId = await requireTenantId();
+  if (!recipeId) {
+    throw new Error("Recipe id is required.");
+  }
+
+  const imageFile = readImageFile(formData, "imageFile");
+  if (!imageFile) {
+    return;
+  }
+  const imageUrl = await uploadImage(
+    tenantId,
+    `recipes/${recipeId}/hero`,
+    imageFile,
+  );
+
+  const [version] = await database.$queryRaw<{ id: string }[]>(
+    Prisma.sql`
+      SELECT id
+      FROM tenant_kitchen.recipe_versions
+      WHERE tenant_id = ${tenantId}
+        AND recipe_id = ${recipeId}
+        AND deleted_at IS NULL
+      ORDER BY version_number DESC
+      LIMIT 1
+    `,
+  );
+
+  let versionId = version?.id;
+  if (!versionId) {
+    const [maxVersion] = await database.$queryRaw<{ max: number | null }[]>(
+      Prisma.sql`
+        SELECT MAX(version_number)::int AS max
+        FROM tenant_kitchen.recipe_versions
+        WHERE tenant_id = ${tenantId}
+          AND recipe_id = ${recipeId}
+      `,
+    );
+    const [fallbackUnit] = await database.$queryRaw<{ id: number }[]>(
+      Prisma.sql`
+        SELECT id
+        FROM core.units
+        ORDER BY id ASC
+        LIMIT 1
+      `,
+    );
+
+    if (!fallbackUnit?.id) {
+      throw new Error("No units configured in core.units.");
+    }
+
+    versionId = randomUUID();
+    await database.$executeRaw(
+      Prisma.sql`
+        INSERT INTO tenant_kitchen.recipe_versions (
+          tenant_id,
+          id,
+          recipe_id,
+          version_number,
+          yield_quantity,
+          yield_unit_id
+        )
+        VALUES (
+          ${tenantId},
+          ${versionId},
+          ${recipeId},
+          ${(maxVersion?.max ?? 0) + 1},
+          1,
+          ${fallbackUnit.id}
+        )
+      `,
+    );
+  }
+
+  const [step] = await database.$queryRaw<{ id: string }[]>(
+    Prisma.sql`
+      SELECT id
+      FROM tenant_kitchen.recipe_steps
+      WHERE tenant_id = ${tenantId}
+        AND recipe_version_id = ${versionId}
+        AND deleted_at IS NULL
+      ORDER BY step_number ASC
+      LIMIT 1
+    `,
+  );
+
+  if (step?.id) {
+    await database.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.recipe_steps
+        SET image_url = ${imageUrl}
+        WHERE tenant_id = ${tenantId}
+          AND id = ${step.id}
+      `,
+    );
+  } else {
+    await database.$executeRaw(
+      Prisma.sql`
+        INSERT INTO tenant_kitchen.recipe_steps (
+          tenant_id,
+          id,
+          recipe_version_id,
+          step_number,
+          instruction,
+          image_url
+        )
+        VALUES (
+          ${tenantId},
+          ${randomUUID()},
+          ${versionId},
+          1,
+          'Reference photo',
+          ${imageUrl}
+        )
+      `,
+    );
+  }
+
+  revalidatePath("/kitchen/recipes");
+  await enqueueOutboxEvent(
+    tenantId,
+    "recipe",
+    recipeId,
+    "recipe.image.updated",
+    {
+      recipeId,
+      imageUrl,
+    },
+  );
 };
 
 export const createDish = async (formData: FormData) => {
@@ -295,7 +464,7 @@ export const createDish = async (formData: FormData) => {
   const category = String(formData.get("category") || "").trim() || null;
   const serviceStyle = String(formData.get("serviceStyle") || "").trim() || null;
   const description = String(formData.get("description") || "").trim() || null;
-  const imageUrl = await readImageDataUrl(formData, "imageFile");
+  const imageFile = readImageFile(formData, "imageFile");
   const dietaryTags = parseList(formData.get("dietaryTags"));
   const allergens = parseList(formData.get("allergens"));
   const pricePerPerson = parseNumber(formData.get("pricePerPerson"));
@@ -304,6 +473,11 @@ export const createDish = async (formData: FormData) => {
   const maxLead = parseNumber(formData.get("maxPrepLeadDays"));
   const portionSize =
     String(formData.get("portionSizeDescription") || "").trim() || null;
+
+  const dishId = randomUUID();
+  const imageUrl = imageFile
+    ? await uploadImage(tenantId, `dishes/${dishId}/hero`, imageFile)
+    : null;
 
   await database.$executeRaw(
     Prisma.sql`
@@ -327,7 +501,7 @@ export const createDish = async (formData: FormData) => {
       )
       VALUES (
         ${tenantId},
-        ${randomUUID()},
+        ${dishId},
         ${recipeId},
         ${name},
         ${description},

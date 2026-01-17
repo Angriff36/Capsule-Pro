@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "dev": "mintlify dev --port 2224",
-    "lint": "mintlify broken-links"
+    "lint": "mintlify broken-links",
+	"build": "mintlify build"
   },
   "devDependencies": {
     "mintlify": "^4.2.1",

@@ -21,6 +21,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "../../components/header";
 import { getTenantIdForOrg } from "../../../lib/tenant";
+import { updateRecipeImage } from "./actions";
+import { RecipeImagePlaceholder } from "./recipe-image-placeholder";
+import RecipesRealtime from "./recipes-realtime";
 import { RecipesToolbar } from "./recipes-toolbar";
 
 type RecipeRow = {
@@ -126,7 +129,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
     return Prisma.sql`${column} @> ARRAY[${dietary}]::text[]`;
   };
 
-  const { orgId } = await auth();
+  const { orgId, userId } = await auth();
 
   if (!orgId) {
     notFound();
@@ -370,6 +373,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
           </Button>
         </div>
       </Header>
+      <RecipesRealtime tenantId={tenantId} userId={userId} />
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         <div className="rounded-3xl border bg-card/80 p-4 shadow-sm">
           <RecipesToolbar
@@ -415,9 +419,10 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                           src={recipe.image_url}
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-slate-200 via-slate-100 to-white text-muted-foreground">
-                          <ChefHatIcon size={32} />
-                        </div>
+                        <RecipeImagePlaceholder
+                          recipeName={recipe.name}
+                          uploadAction={updateRecipeImage.bind(null, recipe.id)}
+                        />
                       )}
                       <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
                         {recipe.category ? (

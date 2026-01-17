@@ -54,6 +54,19 @@
       "pages": ["introduction", "quickstart", "development"]
     },
     {
+      "group": "Architecture",
+      "pages": ["architecture"]
+    },
+    {
+      "group": "Internal",
+      "pages": [
+        "internal/development-notes",
+        "internal/partner-feedback",
+        "internal/recipes-ingredients-contract",
+        "internal/google-tag"
+      ]
+    },
+    {
       "group": "Essentials",
       "pages": [
         "essentials/markdown",

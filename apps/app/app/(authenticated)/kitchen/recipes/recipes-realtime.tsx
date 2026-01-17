@@ -4,7 +4,7 @@ import Ably from "ably";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-type SchedulingRealtimeProps = {
+type RecipesRealtimeProps = {
   tenantId: string;
   userId?: string | null;
 };
@@ -18,10 +18,10 @@ const getApiBaseUrl = () => {
   return appUrl ? appUrl.replace(/\/$/, "") : "";
 };
 
-const isOpenShiftEvent = (eventName?: string) =>
-  eventName?.startsWith("open_shift.") ?? false;
+const isRecipeEvent = (eventName?: string) =>
+  eventName?.startsWith("recipe.") ?? false;
 
-const SchedulingRealtime = ({ tenantId, userId }: SchedulingRealtimeProps) => {
+const RecipesRealtime = ({ tenantId, userId }: RecipesRealtimeProps) => {
   const router = useRouter();
 
   useEffect(() => {
@@ -55,7 +55,7 @@ const SchedulingRealtime = ({ tenantId, userId }: SchedulingRealtimeProps) => {
 
     const channel = client.channels.get(`tenant:${tenantId}`);
     const handleMessage = (message: { name?: string }) => {
-      if (!isOpenShiftEvent(message.name)) return;
+      if (!isRecipeEvent(message.name)) return;
       router.refresh();
     };
 
@@ -73,4 +73,5 @@ const SchedulingRealtime = ({ tenantId, userId }: SchedulingRealtimeProps) => {
   return null;
 };
 
-export default SchedulingRealtime;
+export default RecipesRealtime;
+
