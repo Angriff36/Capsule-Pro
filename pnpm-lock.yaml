@@ -178,6 +178,9 @@ importers:
       '@t3-oss/env-nextjs':
         specifier: ^0.13.8
         version: 0.13.8(arktype@2.1.29)(typescript@5.9.3)(valibot@1.2.0(typescript@5.9.3))(zod@4.1.13)
+      ably:
+        specifier: ^2.10.0
+        version: 2.17.0(bufferutil@4.0.9)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       fuse.js:
         specifier: ^7.1.0
         version: 7.1.0

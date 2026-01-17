@@ -37,7 +37,11 @@ const NewRecipePage = async () => {
         </Button>
       </Header>
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        <form action={createRecipe} className="grid gap-6 lg:grid-cols-3">
+        <form
+          action={createRecipe}
+          className="grid gap-6 lg:grid-cols-3"
+          encType="multipart/form-data"
+        >
           <Card className="lg:col-span-2">
             <CardContent className="space-y-6 p-6">
               <div className="grid gap-4 md:grid-cols-2">
@@ -215,13 +219,14 @@ const NewRecipePage = async () => {
           <Card>
             <CardContent className="space-y-6 p-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="imageUrl">
-                  Hero image URL
+                <label className="text-sm font-medium" htmlFor="imageFile">
+                  Hero image
                 </label>
                 <Input
-                  id="imageUrl"
-                  name="imageUrl"
-                  placeholder="https://..."
+                  accept="image/*"
+                  id="imageFile"
+                  name="imageFile"
+                  type="file"
                 />
               </div>
               <div className="space-y-2">

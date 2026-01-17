@@ -46,6 +46,7 @@ All rows are tenant-scoped via `tenant_id` and live in the tenant schemas below.
 ### Recipe
 - Purpose: an ingredient-driven, step-based preparation.
 - Key fields: `name`, `category`, `tags`, `description`, `is_active`.
+- Image: hero image stored as a data URL in `recipe_steps.image_url` (first step).
 - Relationships:
   - `recipes` -> `recipe_versions`
   - `recipes` -> `dishes`
@@ -68,6 +69,7 @@ All rows are tenant-scoped via `tenant_id` and live in the tenant schemas below.
 - Purpose: menu offering tied to a recipe and used on events.
 - Key fields: `name`, `category`, `dietary_tags`, `price_per_person`,
   `cost_per_person`, `presentation_image_url`.
+- Image: uploaded presentation image stored as a data URL in `presentation_image_url`.
 - Relationships:
   - `dishes` -> `recipes`
   - `event_dishes` -> `dishes`

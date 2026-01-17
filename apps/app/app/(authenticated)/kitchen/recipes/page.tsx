@@ -358,14 +358,6 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
     );
   };
 
-  const toolbarPanelClassName =
-    "rounded-3xl border border-slate-900/60 bg-[linear-gradient(120deg,_#0b1320_0%,_#0b1320_60%,_#0b1f24_100%)] p-4 shadow-[0_18px_40px_rgba(3,6,12,0.35)]";
-  const contentPanelClassName =
-    "rounded-3xl border border-slate-900/60 bg-[linear-gradient(140deg,_#0b1220_0%,_#0b1220_55%,_#152438_100%)] p-4";
-  const cardClassName =
-    "overflow-hidden border-slate-900/60 bg-slate-950/60 shadow-[0_12px_30px_rgba(3,6,12,0.35)]";
-  const emptyClassName = "border-slate-800/60 bg-slate-950/40";
-
   return (
     <>
       <Header page="Recipes & Menus" pages={["Kitchen Ops"]}>
@@ -379,7 +371,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
         </div>
       </Header>
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        <div className={toolbarPanelClassName}>
+        <div className="rounded-3xl border bg-card/80 p-4 shadow-sm">
           <RecipesToolbar
             activeTab={activeTab}
             initialCategory={category}
@@ -391,11 +383,11 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
           />
         </div>
 
-        <div className={contentPanelClassName}>
+        <div className="rounded-3xl border bg-muted/40 p-4">
           {activeTab === "recipes" && (
             <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {recipes.length === 0 ? (
-                <Empty className={emptyClassName}>
+                <Empty className="bg-card/50">
                   <EmptyHeader>
                     <EmptyMedia variant="icon">
                       <ChefHatIcon />
@@ -414,7 +406,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                 </Empty>
               ) : (
                 recipes.map((recipe) => (
-                  <Card className={cardClassName} key={recipe.id}>
+                  <Card className="overflow-hidden shadow-sm" key={recipe.id}>
                     <div className="relative h-40 w-full bg-muted">
                       {recipe.image_url ? (
                         <img
@@ -478,7 +470,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
         {activeTab === "dishes" && (
           <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {dishes.length === 0 ? (
-              <Empty className={emptyClassName}>
+              <Empty className="bg-card/50">
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
                     <BookOpenIcon />
@@ -499,7 +491,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
               dishes.map((dish) => {
                 const margin = getDishMargin(dish);
                 return (
-                  <Card className={cardClassName} key={dish.id}>
+                  <Card className="overflow-hidden shadow-sm" key={dish.id}>
                     <div className="relative h-40 w-full bg-muted">
                       {dish.presentation_image_url ? (
                         <img
@@ -580,7 +572,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
         {activeTab === "ingredients" && (
           <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {ingredients.length === 0 ? (
-              <Empty className={emptyClassName}>
+              <Empty className="bg-card/50">
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
                     <ChefHatIcon />
@@ -593,7 +585,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
               </Empty>
             ) : (
               ingredients.map((ingredient) => (
-                <Card className={cardClassName} key={ingredient.id}>
+                <Card className="shadow-sm" key={ingredient.id}>
                   <CardHeader className="space-y-2">
                     <CardTitle className="text-base">
                       {ingredient.name}
@@ -632,7 +624,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
         )}
 
         {activeTab === "menus" && (
-          <Empty className={emptyClassName}>
+          <Empty className="bg-card/50">
             <EmptyHeader>
               <EmptyMedia variant="icon">
                 <BookOpenIcon />
@@ -649,7 +641,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
         {activeTab === "costing" && (
           <section className="grid gap-4 lg:grid-cols-2">
             {dishes.length === 0 ? (
-              <Empty className={emptyClassName}>
+              <Empty className="bg-card/50">
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
                     <BookOpenIcon />
@@ -664,7 +656,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
               dishes.map((dish) => {
                 const margin = getDishMargin(dish);
                 return (
-                  <Card className={cardClassName} key={dish.id}>
+                  <Card className="shadow-sm" key={dish.id}>
                     <CardHeader className="space-y-1">
                       <CardTitle className="text-base">{dish.name}</CardTitle>
                       <div className="text-muted-foreground text-sm">

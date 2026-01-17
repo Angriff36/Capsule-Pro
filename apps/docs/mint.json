@@ -59,6 +59,7 @@
         "essentials/markdown",
         "essentials/code",
         "essentials/images",
+        "essentials/ui-guidelines",
         "essentials/settings",
         "essentials/navigation",
         "essentials/reusable-snippets"

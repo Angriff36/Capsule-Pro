@@ -30,6 +30,22 @@ const parseLines = (value: FormDataEntryValue | null) =>
         .filter(Boolean)
     : [];
 
+const readImageDataUrl = async (formData: FormData, key: string) => {
+  const file = formData.get(key);
+
+  if (!(file instanceof File) || file.size === 0) {
+    return null;
+  }
+
+  if (file.type && !file.type.startsWith("image/")) {
+    throw new Error("Image must be an image file.");
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const mimeType = file.type || "application/octet-stream";
+  return `data:${mimeType};base64,${buffer.toString("base64")}`;
+};
+
 const loadUnitMap = async (codes: string[]) => {
   if (codes.length === 0) {
     return new Map<string, number>();
@@ -115,7 +131,7 @@ export const createRecipe = async (formData: FormData) => {
   const restTime = parseNumber(formData.get("restTimeMinutes"));
   const difficulty = parseNumber(formData.get("difficultyLevel"));
   const notes = String(formData.get("notes") || "").trim() || null;
-  const imageUrl = String(formData.get("imageUrl") || "").trim() || null;
+  const imageUrl = await readImageDataUrl(formData, "imageFile");
 
   const ingredientLines = parseLines(formData.get("ingredients"));
   const rawStepLines = parseLines(formData.get("steps"));
@@ -279,7 +295,7 @@ export const createDish = async (formData: FormData) => {
   const category = String(formData.get("category") || "").trim() || null;
   const serviceStyle = String(formData.get("serviceStyle") || "").trim() || null;
   const description = String(formData.get("description") || "").trim() || null;
-  const imageUrl = String(formData.get("imageUrl") || "").trim() || null;
+  const imageUrl = await readImageDataUrl(formData, "imageFile");
   const dietaryTags = parseList(formData.get("dietaryTags"));
   const allergens = parseList(formData.get("allergens"));
   const pricePerPerson = parseNumber(formData.get("pricePerPerson"));
