@@ -29,7 +29,7 @@
     "@repo/typescript-config": "workspace:*",
     "@storybook/addon-onboarding": "^10.1.4",
     "@storybook/addon-themes": "^10.1.4",
-    "@storybook/nextjs": "^10.1.4",
+    "@storybook/nextjs": "^10.1.11",
     "@storybook/react": "^10.1.4",
     "@types/node": "^24",
     "@types/react": "19.2.7",
