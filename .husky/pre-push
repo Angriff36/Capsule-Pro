@@ -1,3 +1,18 @@
 #!/usr/bin/env sh
-pnpm -s run build
+set -e
+
+# Block pushes if any Vercel-deployed app fails its build
+# Mirrors per-app vercel.json buildCommand behavior
+
+# Install workspace deps to ensure builds run like Vercel
+pnpm -s install --frozen-lockfile
+
+# Build apps in the same way Vercel does
+pnpm -s --filter api build
+pnpm -s --filter app build
+pnpm -s --filter web build
+# Docs optional: enable if deployed via Vercel
+pnpm -s --filter docs build
+
+# Secrets scan must pass
 pnpm -s run secrets:scan
