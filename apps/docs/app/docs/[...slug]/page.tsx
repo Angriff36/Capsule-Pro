@@ -29,7 +29,7 @@ export const generateMetadata = async (props: PageProps): Promise<Metadata> => {
   };
 };
 
-const DocsPageRoute = async (props: PageProps) => {
+const DocsPageRoute = async (props: PageProps): Promise<JSX.Element> => {
   const params = await props.params;
   const page = source.getPage(params.slug ?? []);
 
