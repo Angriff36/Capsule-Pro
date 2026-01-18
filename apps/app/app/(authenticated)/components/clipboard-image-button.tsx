@@ -1,12 +1,14 @@
 "use client";
 
 import type { ClipboardEvent, MouseEvent } from "react";
+import { UploadIcon } from "lucide-react";
 
 type ClipboardImageButtonProps = {
   label: string;
   onImage: (file: File) => void;
   disabled?: boolean;
   className?: string;
+  showUploadIcon?: boolean;
 };
 
 const extractClipboardImage = (event: ClipboardEvent<HTMLButtonElement>) => {
@@ -60,6 +62,7 @@ export const ClipboardImageButton = ({
   onImage,
   disabled,
   className,
+  showUploadIcon,
 }: ClipboardImageButtonProps) => (
   <button
     className={
@@ -78,6 +81,7 @@ export const ClipboardImageButton = ({
     }}
     type="button"
   >
+    {showUploadIcon && <UploadIcon className="size-4" />}
     {label}
   </button>
 );

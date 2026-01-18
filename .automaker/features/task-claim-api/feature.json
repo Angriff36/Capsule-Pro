@@ -1,0 +1,18 @@
+{
+  "id": "task-claim-api",
+  "category": "API",
+  "title": "Task Claim API Endpoint",
+  "description": "Server action or API route for claiming tasks with optimistic concurrency control. Creates KitchenTaskClaim record and transitions task to in_progress status.",
+  "status": "backlog",
+  "priority": 1,
+  "complexity": "moderate",
+  "dependencies": [
+    "tenant-scoped-task-queries",
+    "task-state-transition-logic"
+  ],
+  "createdAt": "2026-01-17T17:54:44.416Z",
+  "updatedAt": "2026-01-17T19:20:36.742Z",
+  "branchName": "preview",
+  "descriptionHistory": [],
+  "startedAt": "2026-01-17T19:20:31.776Z"
+}

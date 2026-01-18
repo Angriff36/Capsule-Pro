@@ -1,0 +1,15 @@
+{
+  "id": "task-detail-view",
+  "category": "UI",
+  "title": "Mobile Task Detail View",
+  "description": "Full task detail screen with ingredients, quantities, instructions, and urgency indicators. Provides complete context for task execution with mobile-optimized layout.",
+  "status": "backlog",
+  "priority": 1,
+  "complexity": "moderate",
+  "dependencies": [
+    "mobile-task-list-ui",
+    "tenant-scoped-task-queries"
+  ],
+  "createdAt": "2026-01-17T17:54:44.438Z",
+  "updatedAt": "2026-01-17T17:54:44.438Z"
+}

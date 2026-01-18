@@ -1,0 +1,31 @@
+{
+  "category": "UI",
+  "description": "Update the UI with these improvements, this is for the recipes page but some of it may apply throughout the layout:  \n\nWhat’s working really well\n\nInformation density is solid: cards show name + key stats without drowning you.\n\nTop nav + left nav separation makes sense: “domain tabs” up top, “workspace actions” on the left.\n\nFilters + search row is the right pattern for recipe libraries.\n\nThe card layout reads fast: image → title → metadata is the right scan order.\n\nWhat’s costing you clicks / attention\n\nThe left sidebar is heavy. It’s visually dominant, and the actual work area feels slightly boxed-in. (The app looks like it has two “frames”: sidebar + inner bordered canvas.)\n\nReal-world effect: users feel like they’re operating inside a smaller window than they actually are.\n\n“Cleanup imports” is top-right and loud-ish, but it’s a rare/admin action.\n\nReal-world effect: it competes with daily actions like “Add Recipe” and filters. It should probably live under a kebab menu / admin tools.\n\nThe recipe cards look a bit “same-y” once you have dozens. The repeated “Yield/Prep/Ingredients/Linked dishes/Status” layout is good, but the eye needs stronger anchors.\n\nReal-world effect: users take longer to find the one they want, even if search exists.\n\nTwo high-impact improvements (cheap, big payoff)\n\nMake the card title the visual hero\n\nIncrease title size/weight slightly, or add a subtle divider.\n\nRight now the title competes with the image area and the meta lines.\n\nMake the “Add image / paste image” affordance feel more intentional\n\nThat “Click to paste image from clipboard” strip looks like an input field.\n\nBetter as a button/dropzone with an icon + clear border state.\n\nReal-world effect: fewer “is this editable?” hesitation moments.\n\nOne “this will annoy real users” detail\n\nYou’ve got two navigation systems + inner breadcrumbs + inner tabs:\n\ntop domain tabs (Events/Kitchen/Warehouse/etc)\n\nleft nav (Dashboard/Inbox/Kitchen/etc + Production)\n\nbreadcrumb (Kitchen Ops > Recipes & Menus)\n\ninner tabs (Recipes/Dishes/Menus/Ingredients/Costing)\n\nThis is organized, but it’s also a lot of navigation chrome.\nReal-world effect: users sometimes feel lost: “Where am I? Which nav changes what?”\n\nFix without redesign: collapse one layer visually.\nExample: make breadcrumbs smaller/lighter, or remove one nav label layer when inside Kitchen.\n\nOverall vibe\n\n8/10 foundation. It’s already “shippable,” but you’re one polish pass away from it feeling premium instead of competent.",
+  "title": "Simplify recipes UI with card hierarchy improvements",
+  "images": [],
+  "imagePaths": [],
+  "textFilePaths": [],
+  "skipTests": true,
+  "model": "sonnet",
+  "thinkingLevel": "medium",
+  "reasoningEffort": "none",
+  "priority": 2,
+  "planningMode": "lite",
+  "requirePlanApproval": false,
+  "dependencies": [],
+  "workMode": "current",
+  "titleGenerating": false,
+  "status": "verified",
+  "id": "feature-1768673580952-bgvjh37oj",
+  "descriptionHistory": [
+    {
+      "description": "Update the UI with these improvements, this is for the recipes page but some of it may apply throughout the layout:  \n\nWhat’s working really well\n\nInformation density is solid: cards show name + key stats without drowning you.\n\nTop nav + left nav separation makes sense: “domain tabs” up top, “workspace actions” on the left.\n\nFilters + search row is the right pattern for recipe libraries.\n\nThe card layout reads fast: image → title → metadata is the right scan order.\n\nWhat’s costing you clicks / attention\n\nThe left sidebar is heavy. It’s visually dominant, and the actual work area feels slightly boxed-in. (The app looks like it has two “frames”: sidebar + inner bordered canvas.)\n\nReal-world effect: users feel like they’re operating inside a smaller window than they actually are.\n\n“Cleanup imports” is top-right and loud-ish, but it’s a rare/admin action.\n\nReal-world effect: it competes with daily actions like “Add Recipe” and filters. It should probably live under a kebab menu / admin tools.\n\nThe recipe cards look a bit “same-y” once you have dozens. The repeated “Yield/Prep/Ingredients/Linked dishes/Status” layout is good, but the eye needs stronger anchors.\n\nReal-world effect: users take longer to find the one they want, even if search exists.\n\nTwo high-impact improvements (cheap, big payoff)\n\nMake the card title the visual hero\n\nIncrease title size/weight slightly, or add a subtle divider.\n\nRight now the title competes with the image area and the meta lines.\n\nMake the “Add image / paste image” affordance feel more intentional\n\nThat “Click to paste image from clipboard” strip looks like an input field.\n\nBetter as a button/dropzone with an icon + clear border state.\n\nReal-world effect: fewer “is this editable?” hesitation moments.\n\nOne “this will annoy real users” detail\n\nYou’ve got two navigation systems + inner breadcrumbs + inner tabs:\n\ntop domain tabs (Events/Kitchen/Warehouse/etc)\n\nleft nav (Dashboard/Inbox/Kitchen/etc + Production)\n\nbreadcrumb (Kitchen Ops > Recipes & Menus)\n\ninner tabs (Recipes/Dishes/Menus/Ingredients/Costing)\n\nThis is organized, but it’s also a lot of navigation chrome.\nReal-world effect: users sometimes feel lost: “Where am I? Which nav changes what?”\n\nFix without redesign: collapse one layer visually.\nExample: make breadcrumbs smaller/lighter, or remove one nav label layer when inside Kitchen.\n\nOverall vibe\n\n8/10 foundation. It’s already “shippable,” but you’re one polish pass away from it feeling premium instead of competent.",
+      "timestamp": "2026-01-17T18:13:00.927Z",
+      "source": "initial"
+    }
+  ],
+  "branchName": "preview",
+  "startedAt": "2026-01-17T18:13:01.829Z",
+  "updatedAt": "2026-01-17T18:17:02.567Z",
+  "justFinishedAt": "2026-01-17T18:17:02.567Z"
+}

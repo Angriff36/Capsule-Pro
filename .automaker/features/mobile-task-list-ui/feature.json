@@ -1,0 +1,17 @@
+{
+  "id": "mobile-task-list-ui",
+  "category": "UI",
+  "title": "Mobile Task List View",
+  "description": "Mobile-first task list with large touch targets and tap-first interactions. Displays tasks grouped by urgency with status indicators and assignment information.",
+  "status": "backlog",
+  "priority": 1,
+  "complexity": "moderate",
+  "dependencies": [
+    "tenant-scoped-task-queries"
+  ],
+  "createdAt": "2026-01-17T17:54:44.427Z",
+  "updatedAt": "2026-01-17T19:18:25.977Z",
+  "branchName": "preview",
+  "descriptionHistory": [],
+  "startedAt": "2026-01-17T19:18:18.987Z"
+}

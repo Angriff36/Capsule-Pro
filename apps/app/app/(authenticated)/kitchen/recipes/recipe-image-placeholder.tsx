@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useTransition, type ChangeEvent } from "react";
-import { ChefHatIcon } from "lucide-react";
+import { ChefHatIcon, UploadIcon } from "lucide-react";
 import { ClipboardImageButton } from "../../components/clipboard-image-button";
 
 type UploadAction = (formData: FormData) => Promise<void>;
@@ -37,7 +37,7 @@ export const RecipeImagePlaceholder = ({
 
   return (
     <>
-      <div className="flex h-full w-full flex-col bg-linear-to-br from-slate-200 via-slate-100 to-white text-muted-foreground">
+      <div className="flex h-full w-full flex-col gap-3 bg-linear-to-br from-slate-200 via-slate-100 to-white p-3 text-muted-foreground">
         <button
           aria-label={`Add image for ${recipeName}`}
           className="flex flex-1 flex-col items-center justify-center gap-2 transition-opacity hover:opacity-90"
@@ -48,13 +48,13 @@ export const RecipeImagePlaceholder = ({
           <ChefHatIcon size={32} />
           <span className="text-xs">Click to add image</span>
         </button>
-        <div className="px-3 pb-3">
-          <ClipboardImageButton
-            disabled={isPending}
-            label="Click to paste image from clipboard"
-            onImage={submitFile}
-          />
-        </div>
+        <ClipboardImageButton
+          className="inline-flex w-full items-center justify-center gap-2 rounded-md border-2 border-dashed border-muted-foreground/30 bg-white/80 px-3 py-3 text-xs font-medium text-foreground transition-colors hover:border-muted-foreground/50 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+          disabled={isPending}
+          label="Paste from clipboard"
+          onImage={submitFile}
+          showUploadIcon
+        />
       </div>
       <input
         accept="image/*"

@@ -1,0 +1,15 @@
+{
+  "id": "automatic-time-tracking",
+  "category": "Core",
+  "title": "Automatic Task Time Tracking",
+  "description": "Server-side time tracking that starts on claim and stops on completion. Records duration in KitchenTaskProgress with handling for app backgrounding and reconnection.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "task-claim-api",
+    "task-complete-api"
+  ],
+  "createdAt": "2026-01-17T17:54:44.448Z",
+  "updatedAt": "2026-01-17T17:54:44.448Z"
+}

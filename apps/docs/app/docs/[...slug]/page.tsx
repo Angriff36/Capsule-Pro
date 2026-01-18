@@ -1,5 +1,7 @@
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/layouts/docs/page';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
+import type { TOCItemType } from 'fumadocs-core/toc';
+import type { MDXContent } from 'mdx/types';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import type React from 'react';
@@ -38,7 +40,10 @@ const DocsPageRoute = async (props: PageProps): Promise<React.ReactElement> => {
     notFound();
   }
 
-  const { body: MdxContent, toc } = await page.data.load();
+  const { body: MdxContent, toc } = page.data as {
+    body: MDXContent;
+    toc: TOCItemType[];
+  };
 
   return (
     <DocsPage toc={toc}>
