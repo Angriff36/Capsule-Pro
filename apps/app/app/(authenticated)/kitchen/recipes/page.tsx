@@ -8,6 +8,12 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@repo/design-system/components/ui/dropdown-menu";
+import {
   Empty,
   EmptyContent,
   EmptyDescription,
@@ -16,7 +22,7 @@ import {
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
 import { Prisma, database } from "@repo/database";
-import { BookOpenIcon, CheckCircleIcon, ChefHatIcon } from "lucide-react";
+import { BookOpenIcon, CheckCircleIcon, ChefHatIcon, SettingsIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "../../components/header";
@@ -66,13 +72,13 @@ type IngredientRow = {
 };
 
 type RecipesPageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     tab?: string;
     q?: string;
     category?: string;
     dietary?: string;
     status?: string;
-  };
+  }>;
 };
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -103,7 +109,7 @@ const buildConditions = (base: Prisma.Sql[], extra: Prisma.Sql[]) => {
 };
 
 const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
-  const params = searchParams ?? {};
+  const params = (await searchParams) ?? {};
   const activeTab = params.tab ?? "recipes";
   const query = params.q?.trim();
   const category = params.category?.trim();
@@ -364,13 +370,22 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
   return (
     <>
       <Header page="Recipes & Menus" pages={["Kitchen Ops"]}>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline">
-            <Link href="/kitchen/recipes/cleanup">Cleanup imports</Link>
-          </Button>
-          <Button asChild variant="ghost">
-            <Link href="/search">Global search</Link>
-          </Button>
+        <div className="flex items-center gap-2 px-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon" variant="ghost">
+                <SettingsIcon className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href="/kitchen/recipes/cleanup">Cleanup imports</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/search">Global search</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </Header>
       <RecipesRealtime tenantId={tenantId} userId={userId} />
@@ -436,7 +451,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       </div>
                     </div>
                     <CardHeader className="space-y-2">
-                      <CardTitle className="text-base">{recipe.name}</CardTitle>
+                      <CardTitle className="text-lg font-semibold">{recipe.name}</CardTitle>
                       <div className="text-muted-foreground text-sm">
                         Yield: {formatYield(recipe.yield_quantity, recipe.yield_unit)}
                         {" | "}Prep: {formatMinutes(recipe.prep_time_minutes)}
@@ -521,7 +536,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       </div>
                     </div>
                     <CardHeader className="space-y-2">
-                      <CardTitle className="text-base">{dish.name}</CardTitle>
+                      <CardTitle className="text-lg font-semibold">{dish.name}</CardTitle>
                       <div className="text-muted-foreground text-sm">
                         Recipe: {dish.recipe_name ?? "Unlinked"}
                       </div>
@@ -592,7 +607,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
               ingredients.map((ingredient) => (
                 <Card className="shadow-sm" key={ingredient.id}>
                   <CardHeader className="space-y-2">
-                    <CardTitle className="text-base">
+                    <CardTitle className="text-lg font-semibold">
                       {ingredient.name}
                     </CardTitle>
                     <div className="flex flex-wrap gap-2">
