@@ -2,6 +2,7 @@ import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/layo
 import { createRelativeLink } from 'fumadocs-ui/mdx';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import type React from 'react';
 
 import { getMDXComponents } from '@/mdx-components';
 import { source } from '@/lib/source';
@@ -29,7 +30,7 @@ export const generateMetadata = async (props: PageProps): Promise<Metadata> => {
   };
 };
 
-const DocsPageRoute = async (props: PageProps): Promise<JSX.Element> => {
+const DocsPageRoute = async (props: PageProps): Promise<React.ReactElement> => {
   const params = await props.params;
   const page = source.getPage(params.slug ?? []);
 
