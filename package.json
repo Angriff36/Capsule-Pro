@@ -8,10 +8,10 @@
     "dist/index.js"
   ],
   "scripts": {
-    "docs:list": "bun C:\\\\Users\\\\Ryan\\\\Home\\\\agent-scripts\\\\scripts\\\\docs-list.ts",
-    "browser-tools": "C:\\\\Users\\\\Ryan\\\\Home\\\\agent-scripts\\\\bin\\\\browser-tools.exe",
+    "docs:list": "bun ./tools/scripts/docs-list.ts",
+    "browser-tools": "./tools/bin/browser-tools.exe",
     "build": "turbo build",
-    "dev": "turbo dev --parallel --filter=!studio",
+    "dev": "turbo dev --parallel",
     "dev:apps": "turbo dev --parallel --filter=app --filter=web --filter=api --filter=docs --filter=email --filter=storybook",
     "check": "npx ultracite@latest check",
     "fix": "npx ultracite@latest fix",
@@ -19,17 +19,29 @@
     "analyze": "turbo analyze",
     "translate": "turbo translate",
     "boundaries": "turbo boundaries",
-    "bump-deps": "npx npm-check-updates --deep -u -x recharts && pnpm install",
-    "bump-ui": "npx shadcn@latest add --all --overwrite -c packages/design-system",
-    "migrate": "cd packages/database && npx prisma format && npx prisma generate && npx prisma db push",
-    "clean": "git clean -xdf node_modules"
+    "bump-deps": "npx npm-check-updates --deep -u --reject recharts && pnpm install",
+    "bump-ui": "cd packages/design-system && pnpm dlx shadcn@latest add --all --overwrite",
+    "prisma:format": "cd packages/database && npx prisma format",
+    "prisma:generate": "cd packages/database && npx prisma generate",
+    "db:push": "cd packages/database && npx prisma db push",
+    "migrate": "pnpm prisma:format && pnpm prisma:generate && pnpm db:push",
+    "clean:preview": "git clean -ndx",
+    "clean:hard": "git clean -xdf",
+    "clean:node_modules": "git clean -xdf node_modules",
+    "secrets:scan": "secretlint \"**/*\"",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@auto-it/first-time-contributor": "^11.3.6",
     "@biomejs/biome": "2.3.8",
     "@repo/typescript-config": "workspace:*",
+    "@secretlint/secretlint-rule-database-connection-string": "^11.3.0",
+    "@secretlint/secretlint-rule-preset-recommend": "^11.3.0",
     "@turbo/gen": "^2.6.3",
     "@types/node": "^24.10.1",
+    "cross-env": "^7.0.3",
+    "husky": "^9.1.7",
+    "secretlint": "^11.3.0",
     "tsup": "^8.5.1",
     "turbo": "^2.6.3",
     "typescript": "^5.9.3",
@@ -49,8 +61,24 @@
       "parse5": "^7.2.1",
       "next": "16.0.10",
       "react": "19.2.3",
-      "react-dom": "19.2.3"
-    }
+      "react-dom": "19.2.3",
+      "@types/react": "19.2.7",
+      "@types/react-dom": "19.2.3"
+    },
+    "ignoredBuiltDependencies": [
+      "@clerk/shared",
+      "bufferutil",
+      "core-js",
+      "core-js-pure",
+      "protobufjs"
+    ],
+    "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "@sentry/cli",
+      "esbuild",
+      "prisma",
+      "sharp"
+    ]
   },
   "type": "module"
 }

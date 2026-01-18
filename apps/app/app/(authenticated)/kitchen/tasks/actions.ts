@@ -2,7 +2,6 @@
 
 import {
   Prisma,
-  database,
   tenantDatabase,
   type KitchenTaskStatus,
   type KitchenTaskPriority,

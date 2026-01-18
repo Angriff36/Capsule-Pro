@@ -66,7 +66,9 @@ yarn-error.log*
 # local env files
 .env*.local
 .env.vercel
+.env.vercel*
 **/.env.vercel
+**/.env.vercel*
 
 # vercel
 .vercel
@@ -293,6 +295,8 @@ tools/
 ui-design-images/
 ui-design-images/Mangia Brand Guideline.pdf
 apps/web/new 2.txt
+tools/
+.automaker
 
 # Local Netlify folder
 .netlify

@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+set -e
+
+# Validate pnpm versions in GitHub Actions workflows match package.json
+node scripts/validate-versions.mjs
