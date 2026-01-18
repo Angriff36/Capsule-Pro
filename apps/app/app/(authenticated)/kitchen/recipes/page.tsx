@@ -108,8 +108,8 @@ const buildConditions = (base: Prisma.Sql[], extra: Prisma.Sql[]) => {
   return Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}`;
 };
 
-const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
-  const params = (await searchParams) ?? {};
+const parseSearchParams = async (searchParams?: Promise<any>) => {
+  const params = searchParams ? await searchParams : {};
   const activeTab = params.tab ?? "recipes";
   const query = params.q?.trim();
   const category = params.category?.trim();
@@ -117,23 +117,28 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
   const status = params.status?.trim();
   const queryPattern = query ? `%${query}%` : null;
   const categoryLower = category ? category.toLowerCase() : null;
+  return { activeTab, query, category, dietary, status, queryPattern, categoryLower };
+};
 
-  const getStatusCondition = (column: Prisma.Sql) => {
-    if (status === "active") {
-      return Prisma.sql`${column} = true`;
-    }
-    if (status === "inactive") {
-      return Prisma.sql`${column} = false`;
-    }
+const getStatusCondition = (status: string | undefined, column: Prisma.Sql) => {
+  if (status === "active") {
+    return Prisma.sql`${column} = true`;
+  }
+  if (status === "inactive") {
+    return Prisma.sql`${column} = false`;
+  }
+  return Prisma.sql`TRUE`;
+};
+
+const getDietaryCondition = (dietary: string | undefined, column: Prisma.Sql) => {
+  if (!dietary) {
     return Prisma.sql`TRUE`;
-  };
+  }
+  return Prisma.sql`${column} @> ARRAY[${dietary}]::text[]`;
+};
 
-  const getDietaryCondition = (column: Prisma.Sql) => {
-    if (!dietary) {
-      return Prisma.sql`TRUE`;
-    }
-    return Prisma.sql`${column} @> ARRAY[${dietary}]::text[]`;
-  };
+const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
+  const { activeTab, query, category, dietary, status, queryPattern, categoryLower } = await parseSearchParams(searchParams);
 
   const { orgId, userId } = await auth();
 
@@ -180,8 +185,8 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
       categoryLower
         ? Prisma.sql`lower(r.category) = ${categoryLower}`
         : Prisma.sql`TRUE`,
-      getDietaryCondition(Prisma.sql`r.tags`),
-      getStatusCondition(Prisma.sql`r.is_active`),
+      getDietaryCondition(dietary, Prisma.sql`r.tags`),
+      getStatusCondition(status, Prisma.sql`r.is_active`),
     ],
   );
 
@@ -195,8 +200,8 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
       categoryLower
         ? Prisma.sql`lower(d.category) = ${categoryLower}`
         : Prisma.sql`TRUE`,
-      getDietaryCondition(Prisma.sql`d.dietary_tags`),
-      getStatusCondition(Prisma.sql`d.is_active`),
+      getDietaryCondition(dietary, Prisma.sql`d.dietary_tags`),
+      getStatusCondition(status, Prisma.sql`d.is_active`),
     ],
   );
 
@@ -210,8 +215,8 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
       categoryLower
         ? Prisma.sql`lower(i.category) = ${categoryLower}`
         : Prisma.sql`TRUE`,
-      getDietaryCondition(Prisma.sql`i.allergens`),
-      getStatusCondition(Prisma.sql`i.is_active`),
+      getDietaryCondition(dietary, Prisma.sql`i.allergens`),
+      getStatusCondition(status, Prisma.sql`i.is_active`),
     ],
   );
 
