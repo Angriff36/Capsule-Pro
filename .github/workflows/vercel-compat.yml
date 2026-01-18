@@ -7,31 +7,60 @@ on:
     branches: [preview, main, develop]
 
 jobs:
-  build-vercel-style:
+  api-build:
+    name: Build API
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
       - name: Build apps/api (next build)
         run: pnpm --filter api build
 
+  app-build:
+    name: Build App
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Build apps/app (next build)
         run: pnpm --filter app build
 
+  web-build:
+    name: Build Web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Build apps/web (basehub && next build)
         run: |
           cd apps/web
@@ -42,8 +71,21 @@ jobs:
           BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
           BASEHUB_DRAFT: false
 
+  docs-build:
+    name: Build Docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Build apps/docs (next build)
         run: pnpm --filter docs build
-
-      - name: Summary
-        run: echo "All Vercel-style builds passed"
