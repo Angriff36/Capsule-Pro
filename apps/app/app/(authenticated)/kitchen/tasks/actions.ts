@@ -11,7 +11,7 @@ import {
   type KitchenTaskProgress,
 } from "@repo/database";
 import { revalidatePath } from "next/cache";
-import { requireTenantId } from "../../lib/tenant";
+import { requireTenantId } from "@/app/lib/tenant";
 
 // ============================================================================
 // Helper Functions
@@ -201,6 +201,7 @@ export const createKitchenTask = async (formData: FormData): Promise<KitchenTask
 
   const task = await client.kitchenTask.create({
     data: {
+      tenantId,
       title,
       description,
       priority: priority || "medium",
@@ -354,6 +355,7 @@ export const claimTask = async (taskId: string, userId: string): Promise<Kitchen
   // Create claim record
   const claim = await client.kitchenTaskClaim.create({
     data: {
+      tenantId,
       taskId,
       userId,
     },
@@ -497,6 +499,7 @@ export const addTaskProgress = async (
 
   const progress = await client.kitchenTaskProgress.create({
     data: {
+      tenantId,
       taskId,
       status,
       note: note ?? undefined,

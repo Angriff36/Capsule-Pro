@@ -1,17 +1,8 @@
 import { database } from "@repo/database";
 
 export const GET = async () => {
-  const newPage = await database.page.create({
-    data: {
-      name: "cron-temp",
-    },
-  });
-
-  await database.page.delete({
-    where: {
-      id: newPage.id,
-    },
-  });
+  // Simple keep-alive query - count tenants to keep database connection active
+  await database.tenant.count();
 
   return new Response("OK", { status: 200 });
 };
