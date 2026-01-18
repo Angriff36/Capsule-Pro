@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check if Dependabot PR
+        id: dependabot-check
+        run: |
+          if [ "${{ github.actor }}" = "dependabot[bot]" ]; then
+            echo "is_dependabot=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_dependabot=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup PostgreSQL (skip for Dependabot)
+        if: steps.dependabot-check.outputs.is_dependabot != 'true'
+        uses: harmon758/postgresql-action@v1
+        with:
+          postgresql version: '15'
+          postgresql password: postgres
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate code (Prisma, BaseHub types, etc.)
+        run: |
+          pnpm run analyze
+          cd apps/web && npx basehub
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
+          BASEHUB_DRAFT: false
+
+      - name: Run linting
+        run: pnpm run check
+
+      - name: Run tests (with DB for non-Dependabot)
+        if: steps.dependabot-check.outputs.is_dependabot != 'true'
+        run: pnpm test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+
+      - name: Run tests (no DB for Dependabot)
+        if: steps.dependabot-check.outputs.is_dependabot == 'true'
+        run: pnpm test -- --run --reporter=verbose
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"  # Dummy URL for tests that don't need DB
+
+      - name: Build all apps
+        run: pnpm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-artifacts
+          path: |
+            apps/*/dist/
+            apps/*/.next/
+            packages/*/dist/
+            packages/*/generated/
