@@ -1,174 +1,154 @@
 # Convoy Salvage + Integration Spec
 
 Purpose
-- Capture working pieces from prior repos and map them into the Convoy (next-forge) foundation.
-- Define a phased migration path for web/admin vs mobile without losing the working core systems.
+- Preserve the legacy features we still care about (landing page, docs, API, admin) while wiring the work into the existing Convoy stack (Prisma + Neon + Clerk).
+- Capture what needs to land inside the deployed foundation so future automation has the right targets.
 
 Scope
-- Web/admin SaaS + CRM + operations dashboard.
-- Mobile/kitchen app for prep tasks + shift scheduling + time clock.
-- Multi-tenant data model with strict isolation and real-time where required.
+- Web/admin SaaS dashboard, CRM, and operations tooling served from `apps/app` (Next.js).
+- Mobile kitchen prep + scheduling companion app (Android + iOS) that reads/writes the same database and surfaces the workflows kitchen staff need.
+- Multi-tenant data model with Prisma/Neon backing, audit metadata, and realtime updates where the product demands them.
 
 Setup Discipline (Required)
-- Follow all relevant setup steps from official docs end-to-end (install, env, scripts, generators, integration).
-- No minimal patterns or partial installs; wire into the actual repo files.
-- If blocked or missing secrets, stop and ask before proceeding.
+- Follow every relevant step documented for this repo; run `pnpm` (never `npm` or `yarn`) and honor the scripts that build docs, API, and UI.
+- Keep changes inside the current repo structure (`apps/app`, `apps/web`, `apps/api`, `docs`, `packages/*`) so the deployed pipelines stay healthy.
+- If you encounter missing secrets, blocked services, or anything unexpected, pause and ask before continuing.
 
 Sources (legacy repos)
-- C:\Projects\Capsule (Supabase schema contract + multi-module schema + syncing between modules)
-- C:\Projects\Shift-Stream (scheduling app with clear data model)
-- C:\Projects\Battle-Boards (battle board parsing + print-ready UI)
-- C:\Projects\Kitchen-Manager-Module (JSON schemas + policies for event/run reports)
-- C:\Projects\Mikes Module (TPP PDF parsing pipeline + allergen/policy configs)
-- C:\Projects\PrepChefApp (prep lists, recipes, events, tasks + mobile focus)
-- C:\Projects\caterkingapp (API contracts + migrations, multi-tenant Supabase)
-- C:\Projects\codemachine (monorepo blueprint, system scope + docs)
-- C:\Projects\hq-operations (module separation + architecture diagrams)
-- C:\Projects\CaterKing (Nx migration intent)
+- C:\Projects\Capsule (schema registry + contract that mostly moved into Prisma/Neon + metadata about tenancy, policies, and realtime expectations)
+- C:\Projects\Shift-Stream (scheduling data model and mobile-friendly shift flows)
+- C:\Projects\Battle-Boards (PDF ingestion + print-ready battle board export)
+- C:\Projects\Kitchen-Manager-Module (event/run report schema + policy enforcement)
+- C:\Projects\Mikes Module (PDF parsing logic, TPP, allergen configs)
+- C:\Projects\PrepChefApp (prep lists + combination logic for batch prep)
+- C:\Projects\caterkingapp (REST API contracts for recipes, prep lists, events, tasks, CRM)
+- C:\Projects\codemachine (deep architectural notes and attempted implementations)
+- C:\Projects\hq-operations (module boundaries + event flow diagrams)
+- C:\Projects\CaterKing (Nx migration intent and multi-app lessons)
 
 Convoy Foundation (current)
-- apps/app: main Next.js app (use for admin/web SaaS)
-- apps/web: marketing site (port 2222)
-- packages/database: Prisma stub only (needs real schema)
-- packages/auth: default next-forge auth (needs Supabase alignment if staying with RLS)
-- packages/design-system: shared UI kit
-- apps/api: API server (if used)
+- `apps/app`: main Next.js admin/operator portal (deployed, working). Continues hosting Events, Kitchen, Battle Boards, Scheduling, Inventory, CRM, etc.
+- `apps/web`: marketing/landing site (port 2222 locally, production ready).
+- `apps/api`: REST API that already talks to Prisma/Neon and backs the UI layers.
+- `docs/`: Mintlify-hosted documentation (runs on port 2232 locally); treat it as part of the delivery.
+- `packages/database`: Prisma schema + generated client wired to Neon; schema already contains tenant, event, kitchen, outbox tables.
+- `packages/auth`: Clerk provider (with theming) is authoritative for session/auth flows.
+- `packages/design-system`: shared UI primitives.
+- Deployments already include landing page, app, API, and docs, so keep any changes aligned with that pipeline.
 
-Working Assets to Salvage
+Highlighted Legacy Assets
 
 1) Capsule
-- Value: strongest multi-tenant schema + RLS contract + module boundaries.
+- Value: Schema registry/contract plus tenant-aware catalog.
 - Key artifacts:
-  - supabase/Schema Contract v2.txt: mandatory patterns for tenant schemas, RLS, audit, realtime, and FK strategy.
-  - supabase/migrations: tenant_kitchen, tenant_events, tenant_inventory, tenant_staff, tenant_crm, tenant_admin, platform.*
-- Port to Convoy:
-  - Use as database source of truth and migration ordering.
-  - Recreate schema contract in Convoy migrations (prefer SQL migrations to keep RLS patterns).
+  - `supabase/Schema Contract v2.txt`: tenant patterns, audit columns, realtime expectations.
+  - `supabase/migrations`: event, kitchen, inventory, staff, CRM tables.
+- Keep the tenant model in Prisma/Neon while honoring the original contract for audits and realtime columns.
 
 2) Shift-Stream
-- Value: clean scheduling data model and flows.
+- Value: proven scheduling data model and mobile shift flows.
 - Key entities: companies, users, venues, shifts, shift_team_members, breaks, time_off_requests, time_adjustment_requests.
-- Port to Convoy:
-  - tenant_staff schema tables (shifts, availability, time entries, time off) in Supabase.
-  - Mobile app: staff shift view + clock in/out.
+- Reuse the logical model for Prisma and the new mobile scheduling screens.
 
 3) Battle-Boards
-- Value: document parsing + printable battle board.
-- Key assets: shared parsers (CSV staff schedule, TPP PDF parser, PDF extraction), battle board types.
-- Port to Convoy:
-  - Create an ingestion pipeline that takes CSV/TPP PDF, normalizes into event + staffing + menu blocks.
-  - Battle Board module in web/admin (print preview + PDF export).
+- Value: document parsing and print-ready battle board exports.
+- Key assets: CSV staff schedule parser, TPP/PDF parser, extraction modules.
+- Re-implement the ingestion pipeline so `apps/app` can normalize TPP/CSV/PDF data into events, staffing, and printable briefs.
 
 4) Kitchen-Manager-Module
-- Value: schemas and policies for event/run reports.
-- Key assets: event.schema.json, runreport.schema.json, policies for allergens and staffing ratios.
-- Port to Convoy:
-  - Use schemas as validation targets after parsing.
-  - Use policies in ingestion pipeline and kitchen dashboards.
+- Value: event/run report schema plus policies for allergens and staffing ratios.
+- Key assets: `event.schema.json`, `runreport.schema.json`, policy rules.
+- Surface those schemas and policies in the parsing/validation flow and show violations in the Kitchen Manager dashboards.
 
 5) Mikes Module
-- Value: complete PDF parsing pipeline + state model + UI review flow.
-- Key assets: PDF extraction, TPP parser, allergen/policy configs, validation flags, report export.
-- Port to Convoy:
-  - Extract parsing logic into packages (server or worker) and reuse in battle boards + kitchen manager.
+- Value: PDF parsing, TPP logic, allergen configs, validation flags, report exports.
+- Key assets: PDF extractor + parser + validation pipeline.
+- Extract these pieces into a shared package or worker so both battle board and kitchen manager layers can reuse them.
 
 6) PrepChefApp
-- Value: working prep list + event integration + mobile-first kitchen flows.
-- Port to Convoy:
-  - Use as product behavior reference for kitchen tasks, prep lists, recipes, event-prep links.
-  - Mobile app scope (kitchen prep + shift scheduling).
+- Value: bulk combination logic for prep lists and event integration.
+- Use the prep/recipe behavior as a reference for the web UI and upcoming mobile prep lists.
 
 7) caterkingapp
-- Value: API contracts and multi-tenant endpoints.
-- Key assets: specs/001-catering-ops-platform/contracts/*.yaml (prep lists, recipes, events, tasks, CRM).
-- Port to Convoy:
-  - Use OpenAPI contracts as API reference while wiring Convoy endpoints.
+- Value: REST API contracts for recipes, prep lists, events, tasks, CRM.
+- Keep the OpenAPI specs nearby to guide `apps/api` so we stay aligned with the existing ops contracts.
 
 8) codemachine
-- Value: blueprint for full system scope and module list.
-- Port to Convoy:
-  - Use as feature inventory; prefer actual working code from Capsule/PrepChef/Mikes for implementation.
+- Value: deep planning docs and possible blockers for phased delivery.
+- Keep the architecture notes for reference and salvage any reusable insights.
 
 9) hq-operations
-- Value: separation between admin/web and mobile, plus cross-module data flow diagrams.
-- Port to Convoy:
-  - Use architecture diagram to validate module boundaries + event-driven integrations.
+- Value: diagrams that show how admin/web vs. mobile should interact.
+- Use those diagrams to validate how realtime data and shared packages glue the modules together.
 
 Domain Model Baseline (authoritative)
-- Use Capsule schema contract as the canonical model.
-- Multi-tenancy pattern:
-  - platform.accounts for tenant records (no tenant_id).
-  - tenant.* schemas for operational tables (all include tenant_id + soft delete + RLS).
-  - tenant.locations for location scoping where needed (events, inventory, equipment).
-- Core modules (schemas):
-  - tenant_staff: employees, shifts, time entries, availability, time off, assignments.
-  - tenant_events: events, menus, timelines, staffing assignments.
-  - tenant_kitchen: prep tasks, recipes, recipe versions, task claims, kitchen realtime.
-  - tenant_inventory: items, locations, stock, transactions.
-  - tenant_crm: companies, contacts, deals, activities.
-  - tenant_admin: reports, workflows, audits, notifications.
+- The Capsule schema contract remains canonical, but it now lives inside Prisma/Neon (`packages/database/prisma/schema.prisma`).
+- Multi-tenancy pattern uses `tenant_id` on all operational tables plus audit/soft delete columns.
+- Core modules:
+  - `tenant_staff`: users, shifts, availability, time entries, time off, assignments.
+  - `tenant_events`: events, menus, timelines, staffing assignments.
+  - `tenant_kitchen`: prep tasks, recipes, recipe versions, task claims, realtime progress.
+  - `tenant_inventory`: items, locations, stock, transactions.
+  - `tenant_crm`: companies, contacts, deals, activities.
+  - `tenant_admin`: reports, workflows, audits, notifications.
 
 Module Split (Convoy)
-- Web/admin (apps/app):
-  - Events + Battle Boards + Kitchen Manager + Inventory + CRM + Scheduling + Admin.
-  - Print-ready battle board and event briefing export.
-- Mobile (new app to add under apps/mobile):
-  - Kitchen tasks, prep lists, recipe view, shift scheduling, time clock.
-  - Offline-first considerations later; start with realtime updates.
+- Web/admin (`apps/app`): Events + Battle Boards + Kitchen Manager + Inventory + CRM + Scheduling + Admin. Print-ready battle boards and event briefs remain here. Kitchen task data also surfaces in the admin experience so owners and operators can follow a live production board, drill into recipes, and monitor the mobile crews.
+- Mobile companion (Android + iOS): Focus on the tap-first kitchen prep and scheduling flows (recipes, prep lists, task claims, time clock). Share the same Prisma/Neon data, Clerk sessions, and Ably/Knock realtime streams as the web app while keeping the UI streamlined for small screens. Itemize which capabilities stay mobile-only (task claiming, quick completion, time clock) vs. what the web app must mirror (read-only boards, reporting, event supervision).
 
 Key Cross-Module Flows
-- Event created -> battle board auto-populates -> printable export.
-- Event created -> prep tasks generated -> kitchen task claims + realtime progress.
-- Event menu + allergens -> kitchen run report + staffing ratios check -> flags.
-- Shifts + time entries -> payroll/export pipeline.
+- Event created/updated in `apps/app` -> ingestion pipeline normalizes TPP/CSV/PDF data -> battle board + kitchen run report + print exports.
+- Event metadata (menu, allergens, staffing) -> prep tasks + kitchen task claims with realtime progress streaming to the mobile companion.
+- Prep lists + bulk combination logic -> inventory adjustments -> run reports with allergen/staff policies.
+- Shift scheduling/time entries (web + mobile) -> payroll/export pipelines feeding accounting systems.
+- Kitchen tasks claimed/completed on mobile -> Ably/Outbox events refresh the web-based production board and owner dashboards; web actions (notes, approvals) feed back to mobile staff through the same realtime bus so both surface consistent states.
 
 Decisions (proposed defaults)
-- Database: Supabase Postgres + SQL migrations aligned to Capsule Schema Contract v2 (for RLS, audit, realtime).
-- Auth: Supabase Auth to match RLS model; adjust next-forge auth package accordingly.
-- API style: REST endpoints matching caterkingapp OpenAPI contracts (later add event-driven jobs if needed).
+- Database: Prisma/Neon with the schema under `packages/database/prisma/schema.prisma`; keep tenant-aware tables, audit fields, outbox/realtime support.
+- Auth: Clerk (as implemented) is the session/auth source of truth; plan web/mobile auth flows around Clerk tokens or session bridging.
+- API style: REST endpoints in `apps/api`, matching the contracts in `caterkingapp` when practical; docs hosted in `docs/` should mirror the same surface.
 
 Phased Migration Plan
 
 Phase 0: Inventory + alignment (now)
-- Freeze this spec and treat it as source of truth for migration.
-- Identify any missing capabilities in Convoy foundation that block Supabase usage.
+- Treat this spec as the current plan for the Prisma/Neon + Clerk stack.
+- Identify the gaps between legacy capabilities (parsing, prep logic, battle board) and the running codebase.
 
-Phase 1: Data model + migrations
-- Port Capsule migrations into Convoy (SQL migrations first; keep schema contract intact).
-- Add tenant schemas, RLS, audit, and realtime settings.
-- Confirm core tables for events, kitchen tasks, inventory, staff, CRM.
+Phase 1: Domain model embodiment
+- Ensure the Prisma schema reflects the Capsule tenant tables, audit columns, realtime expectations, and outbox patterns.
+- Validate the schema against the existing contracts for events, kitchen tasks, inventory, staff, and CRM.
 
-Phase 2: Shared domain packages
-- Create shared domain types (events, tasks, recipes, shifts) under packages/.
-- Port parsing/policy logic into a shared package (from Mikes Module + Battle-Boards + Kitchen-Manager-Module).
+Phase 2: Shared packages + parsing
+- Create shared domain types (events, tasks, recipes, shifts) under `packages/` to prevent duplication.
+- Move parsing/policy logic (Battle Boards, Kitchen Manager, Mikes Module) into reusable packages/workers.
+- Surface prep combination logic from PrepChefApp so all clients share the same rules.
 
-Phase 3: Web/admin modules
-- Implement Events + Battle Boards first (highest leverage).
-- Wire ingestion pipeline for TPP/CSV -> event entities -> battle board print.
-- Add Kitchen Manager UI for prep tasks and inventory.
+Phase 3: Web/admin refinement
+- Expand Events + Battle Boards in `apps/app`, include print-ready exports, and reintroduce ingestion from TPP/CSV/PDF briefs.
+- Build Kitchen Manager dashboards for prep tasks, inventory, and policy validation.
 
-Phase 4: Mobile app
-- Add Expo app under apps/mobile.
-- Implement kitchen tasks + shift scheduling + time clock using Supabase realtime.
+Phase 4: Mobile kitchen companion
+- Add Android/iOS mobile app under `apps/mobile` (can be Expo or another framework compatible with the repo).
+- Support kitchen prep + scheduling flows only (recipes, prep lists, task claims, time clock).
+- Connect to the same Prisma/Neon database via `apps/api` and reuse Clerk for auth.
 
 Phase 5: Integrations + reliability
-- Add GoodShuffle/Nowsta integrations when core scheduling data model is stable.
-- Add alerting, audit review, and reports.
+- Layer in GoodShuffle/Nowsta integrations when scheduling/prep data stabilize.
+- Improve observability, alerting, audit review dashboards, and export-ready reports.
 
 Open Gaps (to fill as we implement)
-- Confirm which external systems must sync first (GoodShuffle, Nowsta, TPP).
-- Define minimum data model for Events, Dishes, and Staffing in Convoy (before parsing import).
-- Decide how to handle legacy UI issues (keep data/logic, rebuild UI in Convoy design system).
+- Which parsing features (Capsule, Battle-Boards, Mikes Module) should be prioritized for reintroduction?
+- What is the minimal schema for Events + Recipes + Staffing that both web and mobile prep experiences rely on?
+- How much of the legacy UI needs recreation versus a redesign in the current design system?
 
 Design Goals and Edge Cases (Owner Notes)
-- Events are the shared anchor across modules; event fields stay consistent everywhere.
-- Module-specific data (kitchen tasks, prep lists, staffing, CRM notes) lives in its own tables and does not appear in other modules by default.
-- Future-proof for cross-module sync: allow all related tables to sync later without re-architecture.
-- Real-time collaboration should work across devices and roles (e.g., kitchen mobile staff ask questions on tasks/dishes; office/admin users can respond immediately in web/admin).
-- Ensure cross-module visibility paths can be enabled for edge cases without forcing full UI parity across apps.
+- Events remain the shared anchor; every module consumes identical event fields.
+- Module-specific data (prep lists, staffing notes, CRM comments) stays in its dedicated tables but connects via shared events.
+- Cross-module sync should be achievable without rearchitecting (shared packages + event hooks).
+- Real-time collaboration across web and mobile (kitchen staff vs. office operators) is essential; refresh points should respect the prep workflow.
+- Provide targeted visibility for edge cases without forcing UI parity across apps.
 
 Immediate Next Actions
-- Decide on Supabase + RLS as the primary database layer (assumed here).
-- Start porting Capsule schema contract and migrations into Convoy.
-- Extract parsers and schemas into a shared package for reuse.
-
+- Confirm that Prisma/Neon + Clerk is the long-term runtime before adding more Supabase-specific assumptions.
+- Lock in the schema migrations that honor the Capsule contract and ensure Neon connectivity.
+- Collect parsing/TPP/combination logic (PrepChefApp + Mikes) and place it into shared packages so the web/mobile apps can reuse it.

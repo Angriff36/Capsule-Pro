@@ -63,10 +63,7 @@ const SchedulingRealtime = ({ tenantId, userId }: SchedulingRealtimeProps) => {
 
     return () => {
       channel.unsubscribe(handleMessage);
-      const releasableStates = new Set(["initialized", "detached", "failed"]);
-      if (releasableStates.has(channel.state)) {
-        client.channels.release(`tenant:${tenantId}`);
-      }
+      client.close();
     };
   }, [tenantId, userId, router]);
 
