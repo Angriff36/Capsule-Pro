@@ -1,7 +1,6 @@
 {
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
-    "baseUrl": ".",
 
     "declaration": false,
     "declarationMap": false,
@@ -9,7 +8,7 @@
     "paths": {
       "@/*": ["./*"],
       "@repo/*": ["../../packages/*"],
-      "fumadocs-mdx:collections/*": [".source/*"]
+      "fumadocs-mdx:collections/*": ["./.source/*"]
     }
   },
   "include": [

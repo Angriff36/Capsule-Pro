@@ -83,6 +83,23 @@ jobs:
 
       - name: Build all apps
         run: pnpm run build
+        env:
+          # Required env vars for build (dummy values for CI)
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+          NEXT_PUBLIC_APP_URL: "https://app.example.com"
+          NEXT_PUBLIC_WEB_URL: "https://example.com"
+          NEXT_PUBLIC_API_URL: "https://api.example.com"
+          NEXT_PUBLIC_DOCS_URL: "https://docs.example.com"
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
+          NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: "/dashboard"
+          NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: "/onboarding"
+          NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
+          NEXT_PUBLIC_POSTHOG_HOST: "https://posthog.example.com"
+          BASEHUB_TOKEN: "bshb_pk_dummy"
+          RESEND_TOKEN: "re_dummy"
+          RESEND_FROM: "noreply@example.com"
+          STRIPE_SECRET_KEY: "sk_test_dummy"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

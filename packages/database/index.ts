@@ -11,7 +11,7 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 neonConfig.webSocketConstructor = ws;
 
-const adapter = new PrismaNeon({ connectionString: keys().DATABASE_URL || "" });
+const adapter = new PrismaNeon({ connectionString: keys().DATABASE_URL });
 
 export const database = globalForPrisma.prisma || new PrismaClient({ adapter });
 
