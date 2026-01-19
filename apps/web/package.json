@@ -27,7 +27,7 @@
     "@sentry/nextjs": "^10.29.0",
     "@t3-oss/env-nextjs": "^0.13.8",
     "date-fns": "^4.1.0",
-    "fumadocs-core": "^16.2.3",
+    "fumadocs-core": "^16.4.7",
     "import-in-the-middle": "^2.0.0",
     "lucide-react": "^0.556.0",
     "mdx-bundler": "^10.1.1",
@@ -44,8 +44,8 @@
     "@types/node": "24.10.1",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
+    "basehub": "^9.5.3",
     "concurrently": "^9.2.1",
-    "basehub": "9.5.3",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3"
   }

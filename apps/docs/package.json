@@ -11,8 +11,8 @@
     "@repo/design-system": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/mdx": "^2.0.13",
-    "@types/node": "^25.0.9",
-    "@types/react": "^19.2.8",
+    "@types/node": "24.10.1",
+    "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3"
