@@ -4,8 +4,11 @@
   "ui": "tui",
   "envMode": "loose",
   "tasks": {
+    "generate": {
+      "cache": false
+    },
     "build": {
-      "dependsOn": ["^build", "test"],
+      "dependsOn": ["^build", "generate", "test"],
       "outputs": [
         ".next/**",
         "!.next/cache/**",
