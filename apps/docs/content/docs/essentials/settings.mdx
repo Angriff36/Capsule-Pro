@@ -1,0 +1,126 @@
+---
+title: 'Global Settings'
+description: 'Configuration settings for documentation with mint.json'
+icon: 'gear'
+---
+
+Every documentation site needs a `mint.json` configuration file with core settings.
+
+## Basic Configuration
+
+### Project Name
+Set the name of your project:
+```json
+"name": "My Project"
+```
+
+### Navigation Structure
+Define the documentation structure with groups and pages:
+
+```json
+"navigation": [
+  {
+    "group": "Getting Started",
+    "pages": ["quickstart", "installation"]
+  },
+  {
+    "group": "API Reference",
+    "pages": ["api/overview", "api/authentication"]
+  }
+]
+```
+
+### Logo Configuration
+Set a simple logo:
+```json
+"logo": "/logo.svg"
+```
+
+Or provide separate light and dark mode logos:
+```json
+"logo": {
+  "light": "/logo-light.svg",
+  "dark": "/logo-dark.svg"
+}
+```
+
+### Favicon
+```json
+"favicon": "/favicon.ico"
+```
+
+## Theme Settings
+
+### Colors
+Customize your documentation theme colors:
+
+```json
+"colors": {
+  "primary": "#007BFF",
+  "light": "#0056B3",
+  "dark": "#003D82"
+}
+```
+
+### Dark Mode Toggle
+Configure dark/light mode switching:
+
+**Only Dark Mode:**
+```json
+"modeToggle": {
+  "default": "dark",
+  "isHidden": true
+}
+```
+
+**Only Light Mode:**
+```json
+"modeToggle": {
+  "default": "light",
+  "isHidden": true
+}
+```
+
+## Additional Customization
+
+### Topbar Links
+Add links to the top navigation bar:
+
+```json
+"topbarLinks": [
+  {
+    "name": "Contact",
+    "url": "https://example.com/contact"
+  }
+]
+```
+
+### Footer Socials
+Add social media links to the footer:
+
+```json
+"footerSocials": {
+  "x": "https://x.com/yourhandle",
+  "github": "https://github.com/yourrepo",
+  "linkedin": "https://linkedin.com/company/yours"
+}
+```
+
+### API Configuration
+Set up API documentation with OpenAPI files:
+
+```json
+"openapi": "https://api.example.com/openapi.json"
+```
+
+Or use a local path:
+```json
+"openapi": "/openapi.json"
+```
+
+### Background Image
+Add a background image to your documentation:
+
+```json
+"backgroundImage": "/background.png"
+```

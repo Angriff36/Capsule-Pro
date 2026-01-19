@@ -1,0 +1,129 @@
+---
+title: Recipes and Ingredients Contract
+description: Authoritative data model and workflows for recipes, dishes, and ingredients.
+---
+
+# Recipes and Ingredients Contract
+
+## Purpose
+Define the authoritative data model, rules, and workflows for recipes, dishes, and
+ingredients so all modules stay consistent and multi-tenant safe.
+
+## Scope
+- Recipes and recipe versions
+- Recipe ingredients and steps
+- Dishes (menu items) and event linkage
+- Ingredients (kitchen) and inventory routing for supplies
+
+## Source of Truth (Database)
+All rows are tenant-scoped via `tenant_id` and live in the tenant schemas below.
+
+### Tables
+- `tenant_kitchen.recipes`
+- `tenant_kitchen.recipe_versions`
+- `tenant_kitchen.recipe_ingredients`
+- `tenant_kitchen.recipe_steps`
+- `tenant_kitchen.dishes`
+- `tenant_kitchen.ingredients`
+- `tenant_kitchen.prep_tasks`
+- `tenant_events.event_dishes`
+- `tenant_inventory.inventory_items` (for supplies/serveware)
+
+## Core Rules
+1) **Immutable recipe versions**
+   - New edits create a new recipe version.
+   - Locked versions cannot be updated.
+
+2) **Prep tasks bind to locked versions**
+   - Prep tasks referencing a recipe must point at a locked version.
+   - The DB trigger auto-locks a version when first used.
+
+3) **Soft delete**
+   - Recipes, dishes, and ingredients are soft-deleted via `deleted_at`.
+   - Historical prep tasks must remain valid.
+
+4) **Multi-tenant isolation**
+   - Every query must filter by `tenant_id`.
+   - Never join across tenants.
+
+## Entity Definitions
+
+### Recipe
+- Purpose: an ingredient-driven, step-based preparation.
+- Key fields: `name`, `category`, `tags`, `description`, `is_active`.
+- Image: hero image stored as a data URL in `recipe_steps.image_url` (first step).
+- Relationships:
+  - `recipes` -> `recipe_versions`
+  - `recipes` -> `dishes`
+
+### Recipe Version
+- Purpose: immutable snapshot of a recipe at a point in time.
+- Key fields: `version_number`, `yield_quantity`, `yield_unit_id`,
+  `prep_time_minutes`, `cook_time_minutes`, `rest_time_minutes`, `is_locked`.
+- Relationships:
+  - `recipe_versions` -> `recipe_ingredients`
+  - `recipe_versions` -> `recipe_steps`
+
+### Ingredient (Kitchen)
+- Purpose: base ingredient used by recipes.
+- Key fields: `name`, `category`, `default_unit_id`, `allergens`, `is_active`.
+- Relationships:
+  - `ingredients` -> `recipe_ingredients`
+
+### Dish
+- Purpose: menu offering tied to a recipe and used on events.
+- Key fields: `name`, `category`, `dietary_tags`, `price_per_person`,
+  `cost_per_person`, `presentation_image_url`.
+- Image: uploaded presentation image stored as a data URL in `presentation_image_url`.
+- Relationships:
+  - `dishes` -> `recipes`
+  - `event_dishes` -> `dishes`
+  - `prep_tasks` -> `dishes`
+
+## Workflows
+
+### Create Recipe
+1) Insert into `tenant_kitchen.recipes`.
+2) Insert version into `tenant_kitchen.recipe_versions`.
+3) Insert ingredients into `tenant_kitchen.recipe_ingredients`.
+4) Insert steps into `tenant_kitchen.recipe_steps`.
+
+### Update Recipe
+1) Create a new recipe version with updated values.
+2) New ingredients/steps attach to the new version.
+3) Existing prep tasks remain bound to the old locked version.
+
+### Create Dish
+1) Ensure recipe exists.
+2) Insert dish with `recipe_id`.
+3) Optional: attach to event via `tenant_events.event_dishes`.
+
+### Import Classification (Events)
+Items are auto-classified:
+- **Supply / Serveware** -> `tenant_inventory.inventory_items`
+- **Ingredient** -> `tenant_kitchen.ingredients`
+- **Recipe** -> `tenant_kitchen.recipes` (+ version)
+- **Dish** -> `tenant_kitchen.dishes` (+ recipe)
+
+Classification uses keyword heuristics. Update keywords when you see drift.
+
+### Cleanup
+Imported items without ingredients/steps can be reclassified to inventory or
+ingredients and the original recipes/dishes deactivated.
+
+## UI Requirements
+- Recipes and Menus page shows:
+  - Tabs: Recipes, Dishes, Menus, Ingredients, Costing Analysis
+  - Filters: search, category, dietary, status
+  - Recipe cards: image, tags, yield, prep time, ingredient count, linked dishes
+  - Dish cards: image, pricing, margin, event usage, prep task usage
+- New Recipe / New Dish forms must write to the tenant tables above.
+
+## Integration Points
+- **Events**: `event_dishes` references dishes for event menus.
+- **Kitchen tasks**: `prep_tasks` reference dishes and locked recipe versions.
+- **Inventory**: supplies/serveware are routed to `inventory_items`.
+
+## Non-Goals (for now)
+- Menu builder (bundled dishes) is not implemented yet.
+- Automated costing from ingredients is not implemented yet.

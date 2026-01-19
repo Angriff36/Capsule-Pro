@@ -23,5 +23,6 @@ export const tenantDatabase = (tenantId: string) =>
   createTenantClient(tenantId, database);
 
 // biome-ignore lint/performance/noBarrelFile: re-exporting
+export { Prisma } from "./generated/client";
 export * from "./generated/client";
 export * from "./tenant";

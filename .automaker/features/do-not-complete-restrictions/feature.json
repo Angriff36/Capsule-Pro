@@ -1,0 +1,14 @@
+{
+  "id": "do-not-complete-restrictions",
+  "category": "Core",
+  "title": "Do Not Complete Until Date Logic",
+  "description": "Server-side validation preventing task completion before specified date with manager override capability. Ensures tasks aren't completed prematurely for timing-sensitive items.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "task-complete-api"
+  ],
+  "createdAt": "2026-01-17T17:54:44.458Z",
+  "updatedAt": "2026-01-17T17:54:44.458Z"
+}

@@ -1,12 +1,14 @@
 {
   "name": "studio",
   "version": "0.0.0",
+  "private": true,
   "scripts": {
-    "dev": "set DOTENV_CONFIG_PATH=.env.local && prisma studio --config ../../packages/database/prisma.config.ts --port 2226",
+    "dev": "dotenv -e ../../packages/database/.env -- prisma studio --config ../../packages/database/prisma.config.ts --port 2226",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "devDependencies": {
+    "dotenv-cli": "^7.4.4",
     "prisma": "7.1.0"
   }
 }

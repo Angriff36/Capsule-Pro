@@ -1,0 +1,23 @@
+# Global owners
+
+- @your-username
+
+# Database and backend
+
+packages/database/ @your-username apps/api/ @your-username
+
+# Frontend apps
+
+apps/app/ @your-username apps/web/ @your-username
+
+# Documentation
+
+apps/docs/ @your-username
+
+# Infrastructure and CI/CD
+
+.github/ @your-username scripts/ @your-username
+
+# Design system (may need design review)
+
+packages/design-system/ @your-username

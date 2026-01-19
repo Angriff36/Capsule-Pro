@@ -50,9 +50,14 @@ The `app` application is the main user-facing application built on [Next.js](htt
 * **Database**: The app is connected to the [Database](/en/packages/database) and can fetch data in React Server Components.
 * **Collaboration**: The app is connected to the [Collaboration](/en/packages/collaboration) and contains Avatar Stack and Live Cursor components.
 
+## [Development Notes](#development-notes)
+
+* **Clerk UI and hydration**: Keep interactive Clerk components (for example, `UserButton`) inside Client Components to avoid hydration mismatches in the root layout.
+* **Search params in Next 16**: `searchParams` is a Promise in Server Components; unwrap it with `await` before reading properties.
+
 ### On this page
 
-[Overview](#overview)[Features](#features)
+[Overview](#overview)[Features](#features)[Development Notes](#development-notes)
 
 [GitHubEdit this page on GitHub](https://github.com/vercel/next-forge/edit/main/docs/content/docs/apps/app.mdx)Scroll to topGive feedbackCopy pageAsk AI about this page
 

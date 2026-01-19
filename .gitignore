@@ -5,6 +5,9 @@
 /claude-code-plans/
 /codex-plans/
 
+# Storybook build artifacts
+**/storybook-static/
+
 ### macOS ###
 # General
 .DS_Store
@@ -66,7 +69,9 @@ yarn-error.log*
 # local env files
 .env*.local
 .env.vercel
+.env.vercel*
 **/.env.vercel
+**/.env.vercel*
 
 # vercel
 .vercel
@@ -293,6 +298,13 @@ tools/
 ui-design-images/
 ui-design-images/Mangia Brand Guideline.pdf
 apps/web/new 2.txt
+tools/
+.automaker/
 
 # Local Netlify folder
 .netlify
+
+# Storybook build output
+storybook-static/
+**/storybook-static/
+apps/storybook/storybook-static/

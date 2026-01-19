@@ -8,6 +8,12 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@repo/design-system/components/ui/dropdown-menu";
+import {
   Empty,
   EmptyContent,
   EmptyDescription,
@@ -16,11 +22,14 @@ import {
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
 import { Prisma, database } from "@repo/database";
-import { BookOpenIcon, CheckCircleIcon, ChefHatIcon } from "lucide-react";
+import { BookOpenIcon, CheckCircleIcon, ChefHatIcon, SettingsIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "../../components/header";
 import { getTenantIdForOrg } from "../../../lib/tenant";
+import { updateRecipeImage } from "./actions";
+import { RecipeImagePlaceholder } from "./recipe-image-placeholder";
+import RecipesRealtime from "./recipes-realtime";
 import { RecipesToolbar } from "./recipes-toolbar";
 
 type RecipeRow = {
@@ -63,13 +72,13 @@ type IngredientRow = {
 };
 
 type RecipesPageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     tab?: string;
     q?: string;
     category?: string;
     dietary?: string;
     status?: string;
-  };
+  }>;
 };
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -99,8 +108,8 @@ const buildConditions = (base: Prisma.Sql[], extra: Prisma.Sql[]) => {
   return Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}`;
 };
 
-const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
-  const params = searchParams ?? {};
+const parseSearchParams = async (searchParams?: Promise<any>) => {
+  const params = searchParams ? await searchParams : {};
   const activeTab = params.tab ?? "recipes";
   const query = params.q?.trim();
   const category = params.category?.trim();
@@ -108,25 +117,30 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
   const status = params.status?.trim();
   const queryPattern = query ? `%${query}%` : null;
   const categoryLower = category ? category.toLowerCase() : null;
+  return { activeTab, query, category, dietary, status, queryPattern, categoryLower };
+};
 
-  const getStatusCondition = (column: Prisma.Sql) => {
-    if (status === "active") {
-      return Prisma.sql`${column} = true`;
-    }
-    if (status === "inactive") {
-      return Prisma.sql`${column} = false`;
-    }
+const getStatusCondition = (status: string | undefined, column: Prisma.Sql) => {
+  if (status === "active") {
+    return Prisma.sql`${column} = true`;
+  }
+  if (status === "inactive") {
+    return Prisma.sql`${column} = false`;
+  }
+  return Prisma.sql`TRUE`;
+};
+
+const getDietaryCondition = (dietary: string | undefined, column: Prisma.Sql) => {
+  if (!dietary) {
     return Prisma.sql`TRUE`;
-  };
+  }
+  return Prisma.sql`${column} @> ARRAY[${dietary}]::text[]`;
+};
 
-  const getDietaryCondition = (column: Prisma.Sql) => {
-    if (!dietary) {
-      return Prisma.sql`TRUE`;
-    }
-    return Prisma.sql`${column} @> ARRAY[${dietary}]::text[]`;
-  };
+const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
+  const { activeTab, query, category, dietary, status, queryPattern, categoryLower } = await parseSearchParams(searchParams);
 
-  const { orgId } = await auth();
+  const { orgId, userId } = await auth();
 
   if (!orgId) {
     notFound();
@@ -171,8 +185,8 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
       categoryLower
         ? Prisma.sql`lower(r.category) = ${categoryLower}`
         : Prisma.sql`TRUE`,
-      getDietaryCondition(Prisma.sql`r.tags`),
-      getStatusCondition(Prisma.sql`r.is_active`),
+      getDietaryCondition(dietary, Prisma.sql`r.tags`),
+      getStatusCondition(status, Prisma.sql`r.is_active`),
     ],
   );
 
@@ -186,8 +200,8 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
       categoryLower
         ? Prisma.sql`lower(d.category) = ${categoryLower}`
         : Prisma.sql`TRUE`,
-      getDietaryCondition(Prisma.sql`d.dietary_tags`),
-      getStatusCondition(Prisma.sql`d.is_active`),
+      getDietaryCondition(dietary, Prisma.sql`d.dietary_tags`),
+      getStatusCondition(status, Prisma.sql`d.is_active`),
     ],
   );
 
@@ -201,8 +215,8 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
       categoryLower
         ? Prisma.sql`lower(i.category) = ${categoryLower}`
         : Prisma.sql`TRUE`,
-      getDietaryCondition(Prisma.sql`i.allergens`),
-      getStatusCondition(Prisma.sql`i.is_active`),
+      getDietaryCondition(dietary, Prisma.sql`i.allergens`),
+      getStatusCondition(status, Prisma.sql`i.is_active`),
     ],
   );
 
@@ -361,15 +375,25 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
   return (
     <>
       <Header page="Recipes & Menus" pages={["Kitchen Ops"]}>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline">
-            <Link href="/kitchen/recipes/cleanup">Cleanup imports</Link>
-          </Button>
-          <Button asChild variant="ghost">
-            <Link href="/search">Global search</Link>
-          </Button>
+        <div className="flex items-center gap-2 px-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon" variant="ghost">
+                <SettingsIcon className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href="/kitchen/recipes/cleanup">Cleanup imports</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/search">Global search</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </Header>
+      <RecipesRealtime tenantId={tenantId} userId={userId} />
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         <div className="rounded-3xl border bg-card/80 p-4 shadow-sm">
           <RecipesToolbar
@@ -415,9 +439,10 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                           src={recipe.image_url}
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-slate-200 via-slate-100 to-white text-muted-foreground">
-                          <ChefHatIcon size={32} />
-                        </div>
+                        <RecipeImagePlaceholder
+                          recipeName={recipe.name}
+                          uploadAction={updateRecipeImage.bind(null, recipe.id)}
+                        />
                       )}
                       <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
                         {recipe.category ? (
@@ -431,7 +456,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       </div>
                     </div>
                     <CardHeader className="space-y-2">
-                      <CardTitle className="text-base">{recipe.name}</CardTitle>
+                      <CardTitle className="text-lg font-semibold">{recipe.name}</CardTitle>
                       <div className="text-muted-foreground text-sm">
                         Yield: {formatYield(recipe.yield_quantity, recipe.yield_unit)}
                         {" | "}Prep: {formatMinutes(recipe.prep_time_minutes)}
@@ -516,7 +541,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       </div>
                     </div>
                     <CardHeader className="space-y-2">
-                      <CardTitle className="text-base">{dish.name}</CardTitle>
+                      <CardTitle className="text-lg font-semibold">{dish.name}</CardTitle>
                       <div className="text-muted-foreground text-sm">
                         Recipe: {dish.recipe_name ?? "Unlinked"}
                       </div>
@@ -587,7 +612,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
               ingredients.map((ingredient) => (
                 <Card className="shadow-sm" key={ingredient.id}>
                   <CardHeader className="space-y-2">
-                    <CardTitle className="text-base">
+                    <CardTitle className="text-lg font-semibold">
                       {ingredient.name}
                     </CardTitle>
                     <div className="flex flex-wrap gap-2">
