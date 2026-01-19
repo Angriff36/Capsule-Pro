@@ -5,6 +5,9 @@
 /claude-code-plans/
 /codex-plans/
 
+# Storybook build artifacts
+**/storybook-static/
+
 ### macOS ###
 # General
 .DS_Store
