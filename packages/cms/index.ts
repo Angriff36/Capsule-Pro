@@ -5,7 +5,7 @@ import { keys } from "./keys";
 import "./basehub.config";
 
 const basehub = basehubClient({
-  token: keys().BASEHUB_TOKEN,
+  token: keys().BASEHUB_TOKEN || "",
 });
 
 /* -------------------------------------------------------------------------------------------------
