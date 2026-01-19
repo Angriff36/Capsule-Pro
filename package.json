@@ -39,7 +39,7 @@
     "@secretlint/secretlint-rule-database-connection-string": "^11.3.0",
     "@secretlint/secretlint-rule-preset-recommend": "^11.3.0",
     "@turbo/gen": "^2.6.3",
-    "@types/node": "24.10.1",
+    "@types/node": "25.0.9",
     "commander": "^14.0.2",
     "cross-env": "^7.0.3",
     "husky": "^9.1.7",
