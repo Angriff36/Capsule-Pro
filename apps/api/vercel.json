@@ -1,5 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "next build",
+  "installCommand": "cd ../.. && pnpm install",
+  "framework": "nextjs",
   "ignoreCommand": "node scripts/skip-ci.js",
   "crons": [
     {

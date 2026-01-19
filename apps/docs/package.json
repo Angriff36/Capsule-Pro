@@ -2,11 +2,27 @@
   "name": "docs",
   "private": true,
   "scripts": {
-    "dev": "mintlify dev --port 2224",
-    "lint": "mintlify broken-links"
+    "dev": "next dev -p 2224",
+    "build": "next build",
+    "start": "next start -p 2224",
+    "lint": "next lint"
   },
   "devDependencies": {
-    "mintlify": "^4.2.1",
+    "@repo/design-system": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/mdx": "^2.0.13",
+    "@types/node": "24.10.1",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "fumadocs-core": "^16.4.7",
+    "fumadocs-mdx": "^14.2.5",
+    "fumadocs-ui": "^16.4.7",
+    "next": "16.0.10",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
   }
 }

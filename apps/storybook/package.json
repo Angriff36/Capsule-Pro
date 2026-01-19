@@ -1,5 +1,5 @@
 {
-  "name": "storybook",
+  "name": "@repo/storybook",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -31,13 +31,13 @@
     "@storybook/addon-themes": "^10.1.4",
     "@storybook/nextjs": "^10.1.4",
     "@storybook/react": "^10.1.4",
-    "@types/node": "^24",
+    "@types/node": "24.10.1",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "chromatic": "^13.3.4",
-    "postcss": "^8",
+    "postcss": "^8.5.6",
     "storybook": "^10.1.4",
     "tailwindcss": "^4.1.17",
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   }
 }

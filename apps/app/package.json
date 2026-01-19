@@ -2,15 +2,17 @@
   "name": "app",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack -p 2221",
+    "dev": "next dev -p 2221",
     "build": "next build",
     "start": "next start",
     "analyze": "ANALYZE=true npm run build",
-    "test": "NODE_ENV=test vitest run",
+    "test": "cross-env NODE_ENV=test vitest run",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
+    "@clerk/nextjs": "latest",
+    "@prisma/client": "7.1.0",
     "@repo/analytics": "workspace:*",
     "@repo/auth": "workspace:*",
     "@repo/collaboration": "workspace:*",
@@ -34,8 +36,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "require-in-the-middle": "8.0.1",
-    "zod": "^4.1.13",
-    "@clerk/nextjs": "latest"
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
@@ -45,6 +46,7 @@
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "cross-env": "^7.0.3",
     "jsdom": "^27.2.0",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3",

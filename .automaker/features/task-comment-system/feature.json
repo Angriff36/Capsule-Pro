@@ -1,0 +1,15 @@
+{
+  "id": "task-comment-system",
+  "category": "Core",
+  "title": "Task Comment and Clarification System",
+  "description": "Comment model and API for task clarifications with answered/unanswered indicators. Enables staff to ask questions and managers to provide guidance on specific tasks.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "task-detail-view",
+    "tenant-scoped-task-queries"
+  ],
+  "createdAt": "2026-01-17T17:54:44.453Z",
+  "updatedAt": "2026-01-17T17:54:44.453Z"
+}

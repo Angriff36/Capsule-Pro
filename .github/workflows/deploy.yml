@@ -1,0 +1,109 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  check-dependabot:
+    runs-on: ubuntu-latest
+    outputs:
+      has-failing-dependabot: ${{ steps.check.outputs.has-failing }}
+
+    steps:
+      - name: Check for failing Dependabot PRs
+        id: check
+        run: |
+          # Check if there are any open Dependabot PRs with failing checks
+          FAILING_PRS=$(gh pr list --author dependabot[bot] --json statusCheckRollup --jq '.[] | select(.statusCheckRollup[]?.status == "FAILURE" or .statusCheckRollup[]?.status == "ERROR") | .number' || echo "")
+
+          if [ -n "$FAILING_PRS" ]; then
+            echo "has-failing=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Found failing Dependabot PRs: $FAILING_PRS"
+          else
+            echo "has-failing=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: check-dependabot
+    if: needs.check-dependabot.outputs.has-failing-dependabot == 'false'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.24.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run linting
+        run: pnpm run check
+
+      - name: Generate code for deployment
+        run: |
+          pnpm run analyze
+          cd apps/web && npx basehub
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
+          BASEHUB_DRAFT: false
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Build all apps
+        run: pnpm run build
+
+      - name: Deploy to Vercel (App)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_APP_PROJECT_ID }}
+          working-directory: ./apps/app
+          vercel-args: '--prod'
+
+      - name: Deploy to Vercel (API)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_API_PROJECT_ID }}
+          working-directory: ./apps/api
+          vercel-args: '--prod'
+
+      - name: Deploy to Vercel (Docs)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_DOCS_PROJECT_ID }}
+          working-directory: ./apps/docs
+          vercel-args: '--prod'
+
+  notify-failing-dependabot:
+    runs-on: ubuntu-latest
+    needs: check-dependabot
+    if: needs.check-dependabot.outputs.has-failing-dependabot == 'true'
+
+    steps:
+      - name: Notify about failing Dependabot PRs
+        run: |
+          echo "🚫 Deployment blocked by failing Dependabot PRs"
+          echo "Please review and fix the failing Dependabot PRs before deploying"
+          gh pr list --author dependabot[bot] --json number,title,statusCheckRollup --template '{{range .}}{{tablerow .number .title (join .statusCheckRollup " ")}}{{end}}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

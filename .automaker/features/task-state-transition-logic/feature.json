@@ -1,0 +1,15 @@
+{
+  "id": "task-state-transition-logic",
+  "category": "Core",
+  "title": "Task State Transition Domain Logic",
+  "description": "Shared package logic for managing task state transitions (open → in_progress → done, canceled). Validates allowed transitions and handles concurrent claim conflicts.",
+  "status": "verified",
+  "priority": 1,
+  "complexity": "moderate",
+  "dependencies": [],
+  "createdAt": "2026-01-17T17:54:44.412Z",
+  "updatedAt": "2026-01-17T18:21:21.016Z",
+  "branchName": "preview",
+  "descriptionHistory": [],
+  "startedAt": "2026-01-17T18:10:28.773Z"
+}

@@ -34,7 +34,20 @@ SYSTEMS ARE CORRECTLY WIRED AND CONFIGURED**
 
 ## Planning With Files (Required)
 
-**AT THE BEGINNING OF EVERY TASK AND UPON ENCOUNTERING ANY ERROR, CALL CONTEXT7
-MCP**
+**WHEN WORKING ON ANY 3rd PARTY LIB OR IMPLEMENTATION OF A NEW FEATURE FROM A
+3rd PARTY, AND UPON ENCOUNTERING ANY ERROR THAT ISN'T A SIMPLE INCORRECT
+COMMAND, CALL CONTEXT7 MCP**
 
-- Use the `planning-with-files` skill
+- Use the `planning-with-files` skill for any task that goes beyond simple or
+  mundane tasks, as well as upon encountering unexpected errors.
+
+## CI/CD Configuration Rules
+
+**GitHub Actions Workflows - CRITICAL**
+- **NEVER** hardcode ANY versions in `.github/workflows/*.yml`
+- **ALWAYS** extract versions from source-of-truth configuration files:
+  - pnpm version: `package.json` `"packageManager"` field
+  - Node.js version: `.nvmrc` file or `package.json` `"engines.node"` field
+- Validation script blocks commits with mismatches: `scripts/validate-pnpm-versions.js`
+- This ensures local dev, CI, and Vercel production all use identical versions
+- Example: If `package.json` has `"packageManager": "pnpm@10.24.0"`, workflows MUST use `version: 10.24.0`

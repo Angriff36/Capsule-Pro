@@ -1,0 +1,88 @@
+---
+title: Markdown Essentials
+description: Basic Markdown syntax supported in these docs
+---
+
+# Markdown Essentials
+
+This page explains the standard Markdown features available in Fumadocs MDX files.
+
+## Headings
+
+# H1 - Main title
+## H2 - Section
+### H3 - Subsection
+#### H4
+##### H5
+###### H6 - Smallest
+
+## Emphasis
+
+**Bold** — use `**text**`
+
+*Italic* — use `*text*`
+
+~~Strikethrough~~ — use `~~text~~`
+
+## Lists
+
+### Unordered lists
+- Item one
+- Item two
+  - Nested item
+  - Another nested
+
+### Ordered lists
+1. First step
+2. Second step
+   - Sub-step
+   - Another sub-step
+
+## Code
+
+Inline code: `const x = 1;`
+
+Fenced code block:
+
+```typescript
+function example(name: string) {
+  return `Hello, ${name}!`;
+}
+```
+
+## Links
+
+[Visit example.com](https://example.com)
+
+## Images
+
+Image support is available for local images in the public directory.
+
+## Blockquotes
+
+> This is a blockquote.
+> 
+> It can span multiple lines.
+
+## Tables
+
+| Feature      | Syntax                  | Example                  |
+|--------------|-------------------------|--------------------------|
+| Bold         | `**text**`              | **Bold text**            |
+| Italic       | `*text*`                | *Italic text*            |
+| Code block   | triple backticks        | See above                |
+| Link         | `[text](url)`           | [Link](https://example.com) |
+
+Only standard Markdown is used here — no custom components like Latex.
+```
+
+**Important:** Click the **Copy** button in the top-right of this popup (next to the X). It copies the **entire** file content, even if the preview window cuts it off or truncates it.
+
+Paste that full copied text over your existing `content/docs/essentials/markdown.mdx` file, save it, then run:
+
+```
+rm -rf apps/docs/.next
+pnpm --filter docs build
+```
+
+This version has **no custom components at all** (no Latex, no Callout, nothing), so the build will pass this page. We'll handle the next error the same way if it comes up.
