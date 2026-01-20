@@ -38,7 +38,8 @@ const RecipesRealtime = ({ tenantId, userId }: RecipesRealtimeProps) => {
           const response = await fetch(`${apiBaseUrl}/ably/auth`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tenantId, userId: userId ?? undefined }),
+            credentials: "include",
+            body: JSON.stringify({ tenantId }),
           });
           if (!response.ok) {
             throw new Error(`Ably auth failed: ${response.status}`);
@@ -63,10 +64,10 @@ const RecipesRealtime = ({ tenantId, userId }: RecipesRealtimeProps) => {
 
     return () => {
       channel.unsubscribe(handleMessage);
-      const releasableStates = new Set(["initialized", "detached", "failed"]);
-      if (releasableStates.has(channel.state)) {
-        client.channels.release(`tenant:${tenantId}`);
-      }
+      // Note: We don't close the client here because:
+      // 1. Multiple components may share the same connection
+      // 2. The connection lifecycle should be managed at the app level
+      // 3. Closing and recreating connections causes "Connection closed" errors
     };
   }, [tenantId, userId, router]);
 

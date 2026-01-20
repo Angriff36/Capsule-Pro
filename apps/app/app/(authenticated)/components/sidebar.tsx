@@ -155,7 +155,7 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
         </SidebarContent>
         <SidebarFooter>
           <SidebarMenu>
-            <SidebarMenuItem className="flex items-center gap-2">
+            <SidebarMenuItem className="flex items-center gap-2" suppressHydrationWarning>
               <UserButton
                 appearance={{
                   elements: {

@@ -1,8 +1,11 @@
 SCHEMA REGISTRY v2 (Enterprise Catering Platform)
 ==================================================
-Last updated: [DATE]
+Last updated: 2025-01-15
 Canonical source of truth for all database objects.
 Update this file BEFORE generating any migration.
+
+NOTE: This registry reflects the actual database state as of 2025-01-15.
+All tables listed here exist in the Neon database migrations.
 
 ================================================================================
 PLATFORM SCHEMA (no tenant_id)
@@ -40,6 +43,17 @@ platform.audit_log (partitioned by month)
 
 platform.audit_archive (partitioned by year)
   -- Same schema as audit_log, populated by archival job
+
+platform.sent_emails
+  id uuid PK DEFAULT gen_random_uuid()
+  tenant_id uuid NOT NULL REFERENCES platform.accounts(id) ON DELETE RESTRICT
+  recipient_email text NOT NULL
+  subject text NOT NULL
+  correlation_id text  -- For idempotency (Inngest job tracking)
+  sent_at timestamptz NOT NULL DEFAULT now()
+  UNIQUE (tenant_id, correlation_id) WHERE correlation_id IS NOT NULL
+  -- Purpose: Track sent emails for idempotency in background jobs (Inngest)
+  -- Note: tenant_id present but this is platform-level tracking table
 
 ================================================================================
 CORE SCHEMA (enums, functions, lookups - no tenant-scoped tables)
@@ -152,6 +166,25 @@ tenant.settings
   created_at, updated_at
   -- No deleted_at (settings are upserted, not deleted)
 
+tenant.documents
+  tenant_id uuid NOT NULL REFERENCES platform.accounts(id) ON DELETE CASCADE
+  id uuid DEFAULT uuid_generate_v4() PK
+  UNIQUE: (tenant_id, id)  -- For composite FK
+  file_name text NOT NULL
+  file_type text NOT NULL
+  file_size integer
+  storage_path text
+  parsed_data jsonb
+  parse_status text NOT NULL DEFAULT 'pending'  -- 'pending', 'processing', 'completed', 'failed'
+  parse_error text
+  parsed_at timestamptz
+  event_id uuid  -- FK to tenant_events.events
+  battle_board_id uuid  -- FK to tenant_events.battle_boards
+  metadata jsonb DEFAULT '{}'::jsonb
+  created_at, updated_at, deleted_at
+  -- Purpose: PDF document storage and parsing tracking for Docling feature
+  -- Stores uploaded PDFs, tracks parsing status, links to events/battle boards
+
 ================================================================================
 TENANT.STAFF SCHEMA
 ================================================================================
@@ -161,7 +194,7 @@ tenant_staff.employees
   id uuid DEFAULT gen_random_uuid()
   PK: (tenant_id, id)
   UNIQUE: (tenant_id, id)  -- For composite FK references
-  auth_user_id uuid UNIQUE  -- Links to auth.users, NULL if invite pending
+  auth_user_id text UNIQUE  -- Links to auth.users, NULL if invite pending; accepts Clerk IDs
   employee_number text  -- Internal ID, UNIQUE per tenant
   email text NOT NULL
   first_name text NOT NULL
@@ -314,6 +347,26 @@ tenant_staff.payroll_line_items
   deductions jsonb NOT NULL DEFAULT '{}'
   net_pay numeric(10,2) NOT NULL
   created_at, updated_at, deleted_at
+
+tenant_staff.open_shifts
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  UNIQUE: (tenant_id, id)  -- For composite FK
+  schedule_id uuid NOT NULL
+  location_id uuid NOT NULL
+  shift_start timestamptz NOT NULL
+  shift_end timestamptz NOT NULL
+  role_during_shift text
+  notes text
+  status text NOT NULL DEFAULT 'open'  -- 'open', 'claimed', 'filled', 'canceled'
+  claimed_by uuid
+  claimed_at timestamptz
+  assigned_shift_id uuid  -- Links to schedule_shifts when filled
+  created_at, updated_at, deleted_at
+  CHECK: shift_end > shift_start
+  -- Purpose: Track unassigned shifts that can be claimed or filled by employees
+  -- Used for shift marketplace/claiming functionality
 
 ================================================================================
 TENANT.CRM SCHEMA
@@ -841,33 +894,93 @@ tenant_events.battle_boards
   tags text[]
   created_at, updated_at, deleted_at
 
+tenant_events.battle_board_uploads
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  file_path text NOT NULL  -- Storage path
+  file_size bigint NOT NULL
+  file_type text NOT NULL
+  original_filename text NOT NULL
+  upload_status text NOT NULL DEFAULT 'pending'  -- 'pending', 'processing', 'completed', 'failed', 'expired'
+  battle_board_id uuid  -- FK to battle_boards (NULL until linked)
+  uploaded_at timestamptz NOT NULL DEFAULT now()
+  processed_at timestamptz
+  expires_at timestamptz NOT NULL DEFAULT now() + interval '90 days'  -- 90-day retention
+  created_at, updated_at, deleted_at
+  -- Purpose: Track file uploads for battle boards with 90-day retention policy
+
+tenant_events.catering_orders
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  UNIQUE: (id)  -- Global unique for order_number lookup
+  customer_id uuid NOT NULL  -- FK to tenant_crm.clients
+  event_id uuid  -- FK to tenant_events.events (nullable for advance orders)
+  order_number text NOT NULL UNIQUE  -- Format: ORD-YYYY-NNNN
+  order_status text NOT NULL DEFAULT 'draft'  -- 'draft', 'pending_review', 'confirmed', 'in_progress', 'ready', 'delivered', 'completed', 'cancelled', 'on_hold'
+  order_date timestamptz NOT NULL DEFAULT now()
+  delivery_date timestamptz NOT NULL
+  delivery_time text NOT NULL  -- Format: "HH:MM AM/PM"
+  subtotal_amount numeric(12,2) NOT NULL DEFAULT 0
+  tax_amount numeric(12,2) NOT NULL DEFAULT 0
+  discount_amount numeric(12,2) NOT NULL DEFAULT 0
+  service_charge_amount numeric(12,2) NOT NULL DEFAULT 0
+  total_amount numeric(12,2) NOT NULL DEFAULT 0
+  deposit_required boolean NOT NULL DEFAULT false
+  deposit_amount numeric(12,2)
+  deposit_paid boolean NOT NULL DEFAULT false
+  deposit_paid_at timestamptz
+  venue_name text
+  venue_address text
+  venue_city text
+  venue_state text
+  venue_zip text
+  venue_contact_name text
+  venue_contact_phone text
+  guest_count integer NOT NULL DEFAULT 0
+  special_instructions text
+  dietary_restrictions text
+  staff_required integer DEFAULT 0
+  staff_assigned integer DEFAULT 0
+  created_at, updated_at, deleted_at
+  -- Purpose: Order management for catering operations, separate from events
+  -- Includes status transition validation and auto-generated order numbers
+
+tenant_events.event_imports
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  event_id uuid NOT NULL
+  file_name text NOT NULL
+  mime_type text NOT NULL
+  file_size integer NOT NULL DEFAULT 0
+  content bytea NOT NULL  -- Raw file content stored in database
+  created_at timestamptz NOT NULL DEFAULT now()
+  -- Purpose: Store source documents (CSV/PDF) per event for import processing
+  -- Note: No deleted_at (immutable import records)
+
 ================================================================================
 TENANT.INVENTORY SCHEMA
 ================================================================================
 
-tenant_inventory.vendors
+tenant_inventory.inventory_suppliers
   tenant_id uuid NOT NULL
   id uuid DEFAULT gen_random_uuid()
   PK: (tenant_id, id)
-  UNIQUE: (tenant_id, id)  -- For composite FK
+  UNIQUE: (tenant_id, supplier_number)  -- Auto-generated supplier number
+  supplier_number text NOT NULL  -- Auto-generated per tenant
   name text NOT NULL
-  vendor_type text  -- 'food', 'equipment', 'supplies', etc.
-  contact_name text
+  contact_person text
   email text
   phone text
-  website text
-  address_line1 text
-  address_line2 text
-  city text
-  state_province text
-  postal_code text
-  country_code char(2)
-  payment_terms smallint  -- days
-  account_number text
+  payment_terms text NOT NULL DEFAULT 'NET_30'
   notes text
-  is_active boolean NOT NULL DEFAULT true
+  tags text[] DEFAULT '{}'
   created_at, updated_at, deleted_at
-  UNIQUE (tenant_id, name) WHERE deleted_at IS NULL
+  UNIQUE (tenant_id, supplier_number) WHERE deleted_at IS NULL
+  -- Note: Named inventory_suppliers in migrations (not vendors)
+  -- Purpose: Master supplier catalog with auto-generated supplier numbers
 
 tenant_inventory.inventory_items
   tenant_id uuid NOT NULL
@@ -936,12 +1049,26 @@ tenant_inventory.inventory_transactions
   created_at timestamptz NOT NULL DEFAULT now()
   -- No updated_at/deleted_at (immutable ledger)
 
+tenant_inventory.inventory_alerts
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  item_id uuid NOT NULL
+  alert_type text NOT NULL  -- 'LOW_STOCK', 'EXPIRED', 'REORDER'
+  threshold_value numeric(12,3) NOT NULL
+  triggered_at timestamptz NOT NULL DEFAULT now()
+  resolved_at timestamptz NULL
+  notes text
+  created_at, updated_at, deleted_at
+  -- Purpose: System alerts for inventory thresholds and issues
+  -- Tracks low stock warnings, expiration alerts, reorder notifications
+
 tenant_inventory.purchase_orders
   tenant_id uuid NOT NULL
   id uuid DEFAULT gen_random_uuid()
   PK: (tenant_id, id)
   po_number text NOT NULL  -- Auto-generated
-  vendor_id uuid NOT NULL
+  vendor_id uuid NOT NULL  -- FK to inventory_suppliers (not vendors)
   location_id uuid NOT NULL  -- Delivery location
   order_date date NOT NULL DEFAULT CURRENT_DATE
   expected_delivery_date date
@@ -1114,6 +1241,65 @@ tenant_admin.notification_preferences
   created_at, updated_at
   UNIQUE (tenant_id, employee_id, notification_type, channel)
 
+tenant_admin.admin_roles
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  role_name tenant_admin.admin_role NOT NULL  -- Enum: 'super_admin', 'tenant_admin', 'finance_manager', 'operations_manager', 'staff_manager', 'read_only'
+  description text
+  permissions jsonb DEFAULT '[]'::jsonb
+  created_at, updated_at, deleted_at
+  UNIQUE (tenant_id, role_name) WHERE deleted_at IS NULL
+  -- Purpose: RBAC role definitions for admin users
+
+tenant_admin.admin_permissions
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  permission_name text NOT NULL
+  resource_type text NOT NULL  -- 'table', 'function', 'module', etc.
+  resource_name text NOT NULL
+  action text NOT NULL  -- 'read', 'write', 'delete', 'execute', etc.
+  description text
+  created_at, updated_at, deleted_at
+  UNIQUE (tenant_id, permission_name) WHERE deleted_at IS NULL
+  -- Purpose: Permission definitions for RBAC system
+
+tenant_admin.admin_users
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  auth_user_id uuid NOT NULL  -- Links to auth.users
+  role_id uuid NOT NULL  -- FK to admin_roles
+  is_active boolean NOT NULL DEFAULT true
+  last_login timestamptz
+  last_failed_login timestamptz
+  failed_login_attempts smallint DEFAULT 0
+  locked_until timestamptz
+  two_factor_enabled boolean NOT NULL DEFAULT false
+  two_factor_secret text
+  login_ip text
+  created_at, updated_at, deleted_at
+  -- Purpose: Admin user accounts with RBAC, 2FA, and security features
+
+tenant_admin.admin_audit_trail
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  admin_user_id uuid NOT NULL  -- FK to admin_users
+  entity_type tenant_admin.admin_entity_type NOT NULL  -- Enum: 'admin_users', 'admin_roles', 'admin_permissions', 'users', 'roles', 'permissions', 'tenants', 'reports', 'settings'
+  entity_id uuid
+  action tenant_admin.admin_action NOT NULL  -- Enum: 'login', 'logout', 'create', 'update', 'delete', 'view', 'permission_change', 'role_change', 'account_change', 'security_change'
+  description text
+  changes jsonb
+  old_values jsonb
+  new_values jsonb
+  ip_address inet
+  user_agent text
+  created_at, deleted_at
+  -- Purpose: Audit trail for admin operations and security events
+  -- Note: No updated_at (immutable audit log)
+
 ================================================================================
 CROSS-MODULE FK SUMMARY (for 090_cross_module_fks.sql)
 ================================================================================
@@ -1147,11 +1333,11 @@ CROSS-MODULE FK SUMMARY (for 090_cross_module_fks.sql)
 -- events.event_staff_assignments -> events.events, staff.employees
 -- events.event_timeline -> events.events
 
--- inventory.inventory_items -> kitchen.ingredients, inventory.vendors
+-- inventory.inventory_items -> kitchen.ingredients, inventory.inventory_suppliers
 -- inventory.storage_locations -> tenant.locations
 -- inventory.inventory_stock -> inventory.inventory_items, inventory.storage_locations
 -- inventory.inventory_transactions -> inventory.inventory_items, inventory.storage_locations, staff.employees
--- inventory.purchase_orders -> inventory.vendors, tenant.locations
+-- inventory.purchase_orders -> inventory.inventory_suppliers, tenant.locations
 -- inventory.purchase_order_items -> inventory.purchase_orders, inventory.inventory_items
 -- inventory.inventory_counts -> tenant.locations, inventory.storage_locations
 -- inventory.inventory_count_items -> inventory.inventory_counts, inventory.inventory_items, inventory.storage_locations

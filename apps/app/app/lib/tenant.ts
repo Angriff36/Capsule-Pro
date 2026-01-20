@@ -1,54 +1,25 @@
 import "server-only";
 
 import { auth } from "@repo/auth/server";
-import { Prisma, database } from "@repo/database";
-
-type TenantRow = {
-  id: string;
-  name: string;
-  slug: string;
-};
-
-const ensurePlatformAccount = async (tenant: TenantRow) => {
-  await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO platform.accounts (id, name, slug)
-      VALUES (${tenant.id}, ${tenant.name}, ${tenant.slug})
-      ON CONFLICT (slug) DO NOTHING
-    `,
-  );
-};
+import { database } from "@repo/database";
 
 export const getTenantIdForOrg = async (orgId: string): Promise<string> => {
-  const [account] = await database.$queryRaw<{ id: string }[]>(
-    Prisma.sql`
-      SELECT id
-      FROM platform.accounts
-      WHERE slug = ${orgId}
-        AND deleted_at IS NULL
-      LIMIT 1
-    `,
-  );
-
-  const tenant = await database.tenant.upsert({
-    where: {
-      slug: orgId,
-    },
-    update: {
-      name: orgId,
-    },
-    create: {
-      id: account?.id,
-      name: orgId,
-      slug: orgId,
-    },
+  // Get or create account by slug
+  let account = await database.account.findFirst({
+    where: { slug: orgId, deletedAt: null },
   });
 
-  if (!account?.id) {
-    await ensurePlatformAccount(tenant);
+  if (!account) {
+    // Create new account if it doesn't exist
+    account = await database.account.create({
+      data: {
+        name: orgId,
+        slug: orgId,
+      },
+    });
   }
 
-  return tenant.id;
+  return account.id;
 };
 
 export const requireTenantId = async (): Promise<string> => {
