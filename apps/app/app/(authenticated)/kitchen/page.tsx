@@ -63,6 +63,7 @@ const KitchenPage = async () => {
       firstName: true,
       lastName: true,
       email: true,
+      avatarUrl: true,
     },
   });
 

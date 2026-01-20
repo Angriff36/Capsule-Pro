@@ -82,12 +82,7 @@ export const getKitchenTasks = async (filters?: {
   status?: KitchenTaskStatus;
   priority?: KitchenTaskPriority;
   assignedToId?: string;
-}): Promise<
-  (KitchenTask & {
-    assignedTo: { id: string; email: string; firstName: string | null; lastName: string | null } | null;
-    createdBy: { id: string; email: string; firstName: string | null; lastName: string | null } | null;
-  })[]
-> => {
+}): Promise<KitchenTask[]> => {
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
 
@@ -98,10 +93,6 @@ export const getKitchenTasks = async (filters?: {
       ...(filters?.assignedToId && { assignedToId: filters.assignedToId }),
     },
     orderBy: { createdAt: "desc" },
-    include: {
-      assignedTo: true,
-      createdBy: true,
-    },
   });
 };
 

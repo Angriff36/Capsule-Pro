@@ -35,7 +35,7 @@ import {
 import type { KitchenTask, User as DbUser, KitchenTaskClaim } from "@repo/database";
 import { TaskCard } from "./task-card";
 
-type UserSelect = Pick<DbUser, "id" | "firstName" | "lastName" | "email">;
+type UserSelect = Pick<DbUser, "id" | "firstName" | "lastName" | "email" | "avatarUrl">;
 
 type TaskWithRelations = KitchenTask & {
   claims: Array<KitchenTaskClaim & { user: UserSelect | null }>;

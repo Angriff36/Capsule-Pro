@@ -20,7 +20,7 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/design-system/components/ui/avatar";
 import type { KitchenTask, User as DbUser, KitchenTaskClaim } from "@repo/database";
 
-type UserSelect = Pick<DbUser, "id" | "firstName" | "lastName" | "email">;
+type UserSelect = Pick<DbUser, "id" | "firstName" | "lastName" | "email" | "avatarUrl">;
 
 type TaskWithRelations = KitchenTask & {
   claims: Array<KitchenTaskClaim & { user: UserSelect | null }>;

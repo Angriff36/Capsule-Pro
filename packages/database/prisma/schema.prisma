@@ -99,6 +99,7 @@ model User {
   updatedAt       DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt       DateTime?      @map("deleted_at") @db.Timestamptz(6)
   authUserId      String?        @unique @map("auth_user_id")
+  avatarUrl       String?        @map("avatar_url")
   employeeNumber  String?        @map("employee_number")
   phone           String?
   employmentType  EmploymentType @default(full_time) @map("employment_type")
@@ -1721,17 +1722,20 @@ enum OutboxStatus {
 }
 
 model OutboxEvent {
-  id          String       @id @default(cuid())
-  tenantId    String
-  eventType   String
-  payload     Json
-  status      OutboxStatus @default(pending)
-  error       String?
-  createdAt   DateTime     @default(now())
-  publishedAt DateTime?
+  id            String       @id @default(cuid())
+  tenantId      String
+  aggregateType String
+  aggregateId   String
+  eventType     String
+  payload       Json
+  status        OutboxStatus @default(pending)
+  error         String?
+  createdAt     DateTime     @default(now())
+  publishedAt   DateTime?
 
   @@index([status, createdAt])
   @@index([tenantId])
+  @@index([aggregateType, aggregateId])
   @@schema("public")
 }
 
