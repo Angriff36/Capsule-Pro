@@ -1,5 +1,5 @@
 import Ably from "ably";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@repo/auth/server";
 import { env } from "@/env";
 import { NextResponse } from "next/server";
 
