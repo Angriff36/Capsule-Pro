@@ -67,7 +67,7 @@ export const ClipboardImageButton = ({
   <button
     className={
       className ??
-      "inline-flex w-full items-center justify-center rounded-md border border-muted-foreground/30 bg-white px-3 py-2 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+      "inline-flex w-full items-center justify-center rounded-md border border-muted-foreground/30 bg-white px-3 py-2 font-medium text-foreground text-xs shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
     }
     disabled={disabled}
     onClick={(event) => readClipboardImage(event, onImage)}

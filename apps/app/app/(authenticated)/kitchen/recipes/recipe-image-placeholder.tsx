@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useTransition, type ChangeEvent } from "react";
-import { ChefHatIcon, UploadIcon } from "lucide-react";
+import { ChefHatIcon, } from "lucide-react";
 import { ClipboardImageButton } from "../../components/clipboard-image-button";
 
 type UploadAction = (formData: FormData) => Promise<void>;
@@ -49,7 +49,7 @@ export const RecipeImagePlaceholder = ({
           <span className="text-xs">Click to add image</span>
         </button>
         <ClipboardImageButton
-          className="inline-flex w-full items-center justify-center gap-2 rounded-md border-2 border-dashed border-muted-foreground/30 bg-white/80 px-3 py-3 text-xs font-medium text-foreground transition-colors hover:border-muted-foreground/50 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-md border-2 border-muted-foreground/30 border-dashed bg-white/80 px-3 py-3 font-medium text-foreground text-xs transition-colors hover:border-muted-foreground/50 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
           disabled={isPending}
           label="Paste from clipboard"
           onImage={submitFile}

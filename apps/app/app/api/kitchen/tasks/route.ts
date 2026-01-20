@@ -22,7 +22,7 @@ export async function GET(request: Request) {
         { tenantId },
         { deletedAt: null },
         ...(status ? [{ status }] : []),
-        ...(minPriority ? [{ priority: { lte: parseInt(minPriority, 10) } }] : []),
+        ...(minPriority ? [{ priority: { lte: Number.parseInt(minPriority, 10) } }] : []),
       ]
     },
     orderBy: [

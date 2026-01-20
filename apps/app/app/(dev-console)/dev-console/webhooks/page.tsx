@@ -6,7 +6,7 @@ const DevConsoleWebhooksPage = () => (
         <p>Monitor delivery, retries, and signatures.</p>
       </div>
     </div>
-    <p className="text-sm text-slate-400">
+    <p className="text-slate-400 text-sm">
       Placeholder screen. Wire to webhook delivery logs when ready.
     </p>
   </div>

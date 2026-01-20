@@ -11,8 +11,7 @@ import {
   NavigationMenuTrigger,
 } from "@repo/design-system/components/ui/navigation-menu";
 import type { Dictionary } from "@repo/internationalization";
-import { CommandIcon, Menu, MoveRight, X } from "lucide-react";
-import Image from "next/image";
+import { Menu, MoveRight, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { env } from "@/env";

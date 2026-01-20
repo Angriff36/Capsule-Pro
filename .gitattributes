@@ -1,0 +1,11 @@
+# Normalize all text files to LF in the repo and working tree
+* text=auto eol=lf
+
+# Never mess with binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary

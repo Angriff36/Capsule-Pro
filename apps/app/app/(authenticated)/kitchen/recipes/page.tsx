@@ -358,11 +358,11 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
     if (activeTab === "dishes") {
       return { label: "Add Dish", href: "/kitchen/recipes/dishes/new" };
     }
-    return undefined;
+    return ;
   })();
 
   const getDishMargin = (dish: DishRow) => {
-    if (!dish.price_per_person || !dish.cost_per_person) {
+    if (!(dish.price_per_person && dish.cost_per_person)) {
       return null;
     }
     return (
@@ -456,7 +456,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       </div>
                     </div>
                     <CardHeader className="space-y-2">
-                      <CardTitle className="text-lg font-semibold">{recipe.name}</CardTitle>
+                      <CardTitle className="font-semibold text-lg">{recipe.name}</CardTitle>
                       <div className="text-muted-foreground text-sm">
                         Yield: {formatYield(recipe.yield_quantity, recipe.yield_unit)}
                         {" | "}Prep: {formatMinutes(recipe.prep_time_minutes)}
@@ -541,7 +541,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       </div>
                     </div>
                     <CardHeader className="space-y-2">
-                      <CardTitle className="text-lg font-semibold">{dish.name}</CardTitle>
+                      <CardTitle className="font-semibold text-lg">{dish.name}</CardTitle>
                       <div className="text-muted-foreground text-sm">
                         Recipe: {dish.recipe_name ?? "Unlinked"}
                       </div>
@@ -612,7 +612,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
               ingredients.map((ingredient) => (
                 <Card className="shadow-sm" key={ingredient.id}>
                   <CardHeader className="space-y-2">
-                    <CardTitle className="text-lg font-semibold">
+                    <CardTitle className="font-semibold text-lg">
                       {ingredient.name}
                     </CardTitle>
                     <div className="flex flex-wrap gap-2">

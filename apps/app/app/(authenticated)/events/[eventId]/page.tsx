@@ -116,7 +116,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
         <Collapsible className="rounded-xl border bg-card text-card-foreground shadow-sm">
           <div className="flex items-center justify-between gap-4 px-6 py-4">
             <div>
-              <div className="text-sm font-semibold">Source documents</div>
+              <div className="font-semibold text-sm">Source documents</div>
               <div className="text-muted-foreground text-sm">
                 {imports.length} files attached
               </div>
@@ -158,7 +158,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
         <Collapsible className="rounded-xl border bg-card text-card-foreground shadow-sm">
           <div className="flex items-center justify-between gap-4 px-6 py-4">
             <div>
-              <div className="text-sm font-semibold">Prep tasks</div>
+              <div className="font-semibold text-sm">Prep tasks</div>
               <div className="text-muted-foreground text-sm">
                 {prepTasks.length} tasks linked to this event
               </div>

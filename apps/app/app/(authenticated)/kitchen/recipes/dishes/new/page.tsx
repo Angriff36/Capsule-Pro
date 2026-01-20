@@ -50,7 +50,7 @@ const NewDishPage = async () => {
             <CardContent className="space-y-6 p-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="name">
+                  <label className="font-medium text-sm" htmlFor="name">
                     Dish name
                   </label>
                   <Input
@@ -61,11 +61,11 @@ const NewDishPage = async () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="recipeId">
+                  <label className="font-medium text-sm" htmlFor="recipeId">
                     Linked recipe
                   </label>
                   <select
-                    className="border-input bg-background text-foreground h-9 w-full rounded-md border px-3 text-sm"
+                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-foreground text-sm"
                     id="recipeId"
                     name="recipeId"
                     required
@@ -81,7 +81,7 @@ const NewDishPage = async () => {
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="category">
+                  <label className="font-medium text-sm" htmlFor="category">
                     Category
                   </label>
                   <Input
@@ -91,7 +91,7 @@ const NewDishPage = async () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="serviceStyle">
+                  <label className="font-medium text-sm" htmlFor="serviceStyle">
                     Service style
                   </label>
                   <Input
@@ -104,7 +104,7 @@ const NewDishPage = async () => {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <label
-                    className="text-sm font-medium"
+                    className="font-medium text-sm"
                     htmlFor="pricePerPerson"
                   >
                     Menu price per person
@@ -118,7 +118,7 @@ const NewDishPage = async () => {
                 </div>
                 <div className="space-y-2">
                   <label
-                    className="text-sm font-medium"
+                    className="font-medium text-sm"
                     htmlFor="costPerPerson"
                   >
                     Food cost per person
@@ -134,7 +134,7 @@ const NewDishPage = async () => {
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
                   <label
-                    className="text-sm font-medium"
+                    className="font-medium text-sm"
                     htmlFor="minPrepLeadDays"
                   >
                     Min prep lead (days)
@@ -148,7 +148,7 @@ const NewDishPage = async () => {
                 </div>
                 <div className="space-y-2">
                   <label
-                    className="text-sm font-medium"
+                    className="font-medium text-sm"
                     htmlFor="maxPrepLeadDays"
                   >
                     Max prep lead (days)
@@ -162,7 +162,7 @@ const NewDishPage = async () => {
                 </div>
                 <div className="space-y-2">
                   <label
-                    className="text-sm font-medium"
+                    className="font-medium text-sm"
                     htmlFor="portionSizeDescription"
                   >
                     Portion size
@@ -176,7 +176,7 @@ const NewDishPage = async () => {
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="dietaryTags">
+                  <label className="font-medium text-sm" htmlFor="dietaryTags">
                     Dietary tags
                   </label>
                   <Input
@@ -186,7 +186,7 @@ const NewDishPage = async () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="allergens">
+                  <label className="font-medium text-sm" htmlFor="allergens">
                     Allergens
                   </label>
                   <Input
@@ -201,7 +201,7 @@ const NewDishPage = async () => {
           <Card>
             <CardContent className="space-y-6 p-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="imageFile">
+                <label className="font-medium text-sm" htmlFor="imageFile">
                   Presentation image
                 </label>
                 <Input
@@ -213,7 +213,7 @@ const NewDishPage = async () => {
               </div>
               <div className="space-y-2">
                 <label
-                  className="text-sm font-medium"
+                  className="font-medium text-sm"
                   htmlFor="description"
                 >
                   Service notes

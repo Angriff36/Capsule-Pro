@@ -87,7 +87,7 @@ export const RecipesToolbar = ({
           <TabsList className="h-10 bg-transparent p-0">
             {tabs.map((tab) => (
               <TabsTrigger
-                className="h-10 rounded-none border-b-2 border-transparent px-4 text-sm data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground"
+                className="h-10 rounded-none border-transparent border-b-2 px-4 text-sm data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground"
                 key={tab.value}
                 value={tab.value}
               >
@@ -121,7 +121,7 @@ export const RecipesToolbar = ({
       >
         <div className="relative min-w-[240px] flex-1">
           <SearchIcon
-            className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2"
+            className="-translate-y-1/2 absolute top-1/2 left-3 size-4 text-muted-foreground"
             size={16}
           />
           <Input

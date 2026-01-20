@@ -12,7 +12,7 @@ const getString = (formData: FormData, key: string): string | undefined => {
   const value = formData.get(key);
 
   if (typeof value !== "string") {
-    return undefined;
+    return ;
   }
 
   const trimmed = value.trim();
@@ -26,7 +26,7 @@ const getOptionalString = (
   const value = formData.get(key);
 
   if (typeof value !== "string") {
-    return undefined;
+    return ;
   }
 
   const trimmed = value.trim();
@@ -37,7 +37,7 @@ const getNumber = (formData: FormData, key: string): number | undefined => {
   const value = getString(formData, key);
 
   if (!value) {
-    return undefined;
+    return ;
   }
 
   const numberValue = Number(value);
@@ -51,7 +51,7 @@ const getNumberOrNull = (
   const value = formData.get(key);
 
   if (typeof value !== "string") {
-    return undefined;
+    return ;
   }
 
   const trimmed = value.trim();
@@ -68,7 +68,7 @@ const getDate = (formData: FormData, key: string): Date | undefined => {
   const value = getString(formData, key);
 
   if (!value) {
-    return undefined;
+    return ;
   }
 
   const dateValue = new Date(`${value}T00:00:00`);

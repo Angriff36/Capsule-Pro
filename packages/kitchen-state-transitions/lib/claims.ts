@@ -1,4 +1,4 @@
-import type { ClaimConflictInfo, TransitionError, TransitionResult } from './types';
+import type { ClaimConflictInfo, TransitionResult } from './types';
 import { TransitionErrorCode } from './types';
 
 /**

@@ -13,6 +13,11 @@ Management System (Convoy)
 **APP IS NOT PRODUCTION. IF SOMETHING SEEMS WRONG, INVESTIGATE, DONT ASSUME ALL
 SYSTEMS ARE CORRECTLY WIRED AND CONFIGURED**
 
+**This Project uses next-forge, if you are EVER unsure of what system we use,
+what the default protocols are, anything, refer to
+C:\Projects\convoy\docs\llm\next-forge it has all the information you could
+need.**
+
 ## Repo specifics:
 
 - **ALL SYSTEMS CONNECTED** Every module is interconnected. Events created in
@@ -44,10 +49,13 @@ COMMAND, CALL CONTEXT7 MCP**
 ## CI/CD Configuration Rules
 
 **GitHub Actions Workflows - CRITICAL**
+
 - **NEVER** hardcode ANY versions in `.github/workflows/*.yml`
 - **ALWAYS** extract versions from source-of-truth configuration files:
   - pnpm version: `package.json` `"packageManager"` field
   - Node.js version: `.nvmrc` file or `package.json` `"engines.node"` field
-- Validation script blocks commits with mismatches: `scripts/validate-pnpm-versions.js`
+- Validation script blocks commits with mismatches:
+  `scripts/validate-pnpm-versions.js`
 - This ensures local dev, CI, and Vercel production all use identical versions
-- Example: If `package.json` has `"packageManager": "pnpm@10.24.0"`, workflows MUST use `version: 10.24.0`
+- Example: If `package.json` has `"packageManager": "pnpm@10.24.0"`, workflows
+  MUST use `version: 10.24.0`

@@ -66,7 +66,7 @@ const App = async () => {
                 className="flex flex-col justify-between gap-2 rounded-xl bg-muted/50 p-4"
                 key={`${event.tenantId}-${event.id}`}
               >
-                <div className="text-sm font-medium">{event.title}</div>
+                <div className="font-medium text-sm">{event.title}</div>
                 <div className="text-muted-foreground text-xs">
                   {dateFormatter.format(event.eventDate)}
                 </div>

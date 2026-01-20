@@ -432,16 +432,16 @@ const SchedulingPage = async () => {
       <SchedulingRealtime tenantId={tenantId} userId={userId} />
     <div className="flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
+        <h1 className="font-semibold text-2xl text-foreground">Dashboard</h1>
         <p className="text-muted-foreground">
           Welcome back. You have scheduling activity for this week.
         </p>
       </div>
       <div className="flex items-center gap-3">
         <div className="relative min-w-[260px]">
-          <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input className="pl-9 pr-12" placeholder="Search anything..." />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md border bg-background px-2 py-1 text-xs text-muted-foreground">
+          <SearchIcon className="-translate-y-1/2 absolute top-1/2 left-3 size-4 text-muted-foreground" />
+          <Input className="pr-12 pl-9" placeholder="Search anything..." />
+          <span className="-translate-y-1/2 absolute top-1/2 right-3 rounded-md border bg-background px-2 py-1 text-muted-foreground text-xs">
             ⌘K
           </span>
         </div>
@@ -458,14 +458,14 @@ const SchedulingPage = async () => {
             <div>
               <CardDescription>{item.label}</CardDescription>
               <CardTitle className="text-2xl">{item.value}</CardTitle>
-              <p className="text-xs text-muted-foreground">{item.note}</p>
+              <p className="text-muted-foreground text-xs">{item.note}</p>
             </div>
             <div className={`flex size-10 items-center justify-center rounded-xl ${item.tone}`}>
               <item.icon className="size-5" />
             </div>
           </CardHeader>
           <CardContent>
-            <span className="text-xs font-medium text-emerald-600 dark:text-emerald-300">
+            <span className="font-medium text-emerald-600 text-xs dark:text-emerald-300">
               {item.delta}
             </span>
           </CardContent>
@@ -498,7 +498,7 @@ const SchedulingPage = async () => {
             <div className="grid grid-cols-7 gap-3 text-sm">
               {scheduleDays.map((day) => (
                 <div key={day.label} className="rounded-xl border bg-muted/30 p-3">
-                  <div className="text-xs font-medium text-muted-foreground">
+                  <div className="font-medium text-muted-foreground text-xs">
                     {day.label}
                   </div>
                   <div className="mt-3 grid gap-2">
@@ -531,7 +531,7 @@ const SchedulingPage = async () => {
           </CardHeader>
           <CardContent className="grid gap-4">
             {happeningToday.length === 0 ? (
-              <div className="rounded-xl border bg-muted/20 p-4 text-sm text-muted-foreground">
+              <div className="rounded-xl border bg-muted/20 p-4 text-muted-foreground text-sm">
                 No shifts scheduled for today.
               </div>
             ) : (
@@ -541,14 +541,14 @@ const SchedulingPage = async () => {
                   className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-background p-3"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="text-sm font-semibold text-muted-foreground">
+                    <div className="font-semibold text-muted-foreground text-sm">
                       {formatTime(item.shift_start)}
                     </div>
                     <div>
                       <div className="font-medium text-foreground">
                         {item.role ?? "Scheduled shift"}
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1 text-muted-foreground text-xs">
                         <Badge variant="outline">
                           {formatName(item.first_name, item.last_name)}
                         </Badge>
@@ -582,19 +582,19 @@ const SchedulingPage = async () => {
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="rounded-xl border bg-muted/40 p-4">
-            <div className="flex items-center justify-between text-sm font-medium">
+            <div className="flex items-center justify-between font-medium text-sm">
               <span className="text-muted-foreground">Live Battle Royale</span>
               <span className="text-primary">This Week</span>
             </div>
             <div className="mt-4 grid gap-4">
               {leaderboard.length === 0 ? (
-                <div className="rounded-xl border bg-background p-4 text-sm text-muted-foreground">
+                <div className="rounded-xl border bg-background p-4 text-muted-foreground text-sm">
                   No shift activity yet this week.
                 </div>
               ) : (
                 leaderboard.map((person, index) => (
                   <div key={person.employee_id} className="flex gap-3">
-                    <div className="text-sm font-semibold text-muted-foreground">
+                    <div className="font-semibold text-muted-foreground text-sm">
                       #{index + 1}
                     </div>
                     <Avatar>
@@ -610,7 +610,7 @@ const SchedulingPage = async () => {
                       <div className="font-medium text-foreground">
                         {formatName(person.first_name, person.last_name)}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-muted-foreground text-xs">
                         {person.shift_count} shifts this week
                       </div>
                       <div className="mt-2 flex flex-wrap gap-2">

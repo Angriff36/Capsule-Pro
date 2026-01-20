@@ -2,12 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { format, isPast, isFuture, differenceInMinutes } from "date-fns";
+import { format, isPast, differenceInMinutes } from "date-fns";
 import {
   MoreVertical,
   Clock,
   User,
-  AlertTriangle,
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@repo/design-system/components/ui/button";
@@ -227,13 +226,13 @@ export function TaskCard({ task, currentUserId, compact = false }: TaskCardProps
       <div className="group flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-all hover:border-slate-300 hover:shadow-md">
         <div className={`h-2 w-2 shrink-0 rounded-full ${priority.dot}`} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-slate-800">{task.title}</p>
+          <p className="truncate font-medium text-slate-800 text-sm">{task.title}</p>
           {task.summary && (
-            <p className="truncate text-xs text-slate-500">{task.summary}</p>
+            <p className="truncate text-slate-500 text-xs">{task.summary}</p>
           )}
         </div>
         {dueStatus && (
-          <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${dueStatus.className}`}>
+          <span className={`shrink-0 rounded-full px-2 py-0.5 font-medium text-xs ${dueStatus.className}`}>
             {dueStatus.label}
           </span>
         )}
@@ -256,15 +255,15 @@ export function TaskCard({ task, currentUserId, compact = false }: TaskCardProps
       }`}
     >
       {/* Priority indicator bar */}
-      <div className={`absolute left-0 top-0 bottom-0 w-1 ${priority.dot}`} />
+      <div className={`absolute top-0 bottom-0 left-0 w-1 ${priority.dot}`} />
 
       <div className="pl-3">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <h4 className="font-semibold text-slate-800 line-clamp-1">{task.title}</h4>
+            <h4 className="line-clamp-1 font-semibold text-slate-800">{task.title}</h4>
             {task.summary && (
-              <p className="mt-1 text-sm text-slate-500 line-clamp-2">{task.summary}</p>
+              <p className="mt-1 line-clamp-2 text-slate-500 text-sm">{task.summary}</p>
             )}
           </div>
           <DropdownMenu>
@@ -302,20 +301,20 @@ export function TaskCard({ task, currentUserId, compact = false }: TaskCardProps
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {/* Priority badge */}
           <Badge
-            className={`${priority.color} border-0 text-xs font-medium`}
+            className={`${priority.color} border-0 font-medium text-xs`}
           >
             {priority.label}
           </Badge>
 
           {/* Status badge */}
-          <Badge variant={status.variant} className="text-xs font-medium">
+          <Badge variant={status.variant} className="font-medium text-xs">
             {status.label}
           </Badge>
 
           {/* Due time */}
           {dueStatus && (
             <span
-              className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${dueStatus.className}`}
+              className={`flex items-center gap-1 rounded-full px-2 py-0.5 font-medium text-xs ${dueStatus.className}`}
             >
               <Clock className="h-3 w-3" />
               {dueStatus.label}
@@ -326,7 +325,7 @@ export function TaskCard({ task, currentUserId, compact = false }: TaskCardProps
         {/* Assignees */}
         {assignedUsers.length > 0 && (
           <div className="mt-3 flex items-center gap-2">
-            <div className="flex -space-x-2">
+            <div className="-space-x-2 flex">
               {assignedUsers.slice(0, 3).map((claim, index) => (
                 <Avatar
                   key={claim.user?.id || index}
@@ -343,12 +342,12 @@ export function TaskCard({ task, currentUserId, compact = false }: TaskCardProps
                 </Avatar>
               ))}
               {assignedUsers.length > 3 && (
-                <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-xs font-medium text-slate-600">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-slate-100 font-medium text-slate-600 text-xs">
                   +{assignedUsers.length - 3}
                 </div>
               )}
             </div>
-            <span className="text-xs text-slate-500">
+            <span className="text-slate-500 text-xs">
               {assignedUsers.length === 1
                 ? assignedUsers[0].user
                   ? `${assignedUsers[0].user.firstName} ${assignedUsers[0].user.lastName}`

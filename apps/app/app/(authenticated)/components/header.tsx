@@ -22,7 +22,7 @@ export const Header = ({ pages, page, children }: HeaderProps) => (
       <SidebarTrigger className="-ml-1" />
       <Separator className="mr-2 h-4" orientation="vertical" />
       <Breadcrumb>
-        <BreadcrumbList className="text-sm text-muted-foreground/70">
+        <BreadcrumbList className="text-muted-foreground/70 text-sm">
           {pages.map((page, index) => (
             <Fragment key={page}>
               {index > 0 && <BreadcrumbSeparator className="hidden md:block" />}

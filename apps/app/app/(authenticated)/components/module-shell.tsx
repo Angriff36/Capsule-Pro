@@ -26,7 +26,7 @@ export const ModuleShell = ({
   return (
     <div className="flex min-h-[calc(100vh-6rem)] gap-6 px-6 py-6">
       <aside className="hidden w-64 shrink-0 rounded-2xl border border-border/60 bg-muted/30 p-4 md:block">
-        <div className="pb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <div className="pb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">
           {title}
         </div>
         <nav className="space-y-1">

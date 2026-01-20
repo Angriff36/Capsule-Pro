@@ -59,6 +59,7 @@ Temporary Items
 
 # misc
 *.pem
+docs/llm/random-ai-slopdocs/
 
 # debug
 npm-debug.log*
@@ -300,6 +301,7 @@ ui-design-images/Mangia Brand Guideline.pdf
 apps/web/new 2.txt
 tools/
 .automaker/
+scripts/
 
 # Local Netlify folder
 .netlify

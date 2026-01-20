@@ -46,7 +46,7 @@ const NewRecipePage = async () => {
             <CardContent className="space-y-6 p-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="name">
+                  <label className="font-medium text-sm" htmlFor="name">
                     Recipe name
                   </label>
                   <Input
@@ -57,7 +57,7 @@ const NewRecipePage = async () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="category">
+                  <label className="font-medium text-sm" htmlFor="category">
                     Category
                   </label>
                   <Input
@@ -68,7 +68,7 @@ const NewRecipePage = async () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="description">
+                <label className="font-medium text-sm" htmlFor="description">
                   Description
                 </label>
                 <Textarea
@@ -80,7 +80,7 @@ const NewRecipePage = async () => {
               </div>
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="yieldQuantity">
+                  <label className="font-medium text-sm" htmlFor="yieldQuantity">
                     Yield quantity
                   </label>
                   <Input
@@ -92,11 +92,11 @@ const NewRecipePage = async () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="yieldUnit">
+                  <label className="font-medium text-sm" htmlFor="yieldUnit">
                     Yield unit
                   </label>
                   <select
-                    className="border-input bg-background text-foreground h-9 w-full rounded-md border px-3 text-sm"
+                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-foreground text-sm"
                     defaultValue={units[0]?.code ?? "ea"}
                     id="yieldUnit"
                     name="yieldUnit"
@@ -110,7 +110,7 @@ const NewRecipePage = async () => {
                 </div>
                 <div className="space-y-2">
                   <label
-                    className="text-sm font-medium"
+                    className="font-medium text-sm"
                     htmlFor="yieldDescription"
                   >
                     Yield notes
@@ -125,7 +125,7 @@ const NewRecipePage = async () => {
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
                   <label
-                    className="text-sm font-medium"
+                    className="font-medium text-sm"
                     htmlFor="prepTimeMinutes"
                   >
                     Prep time (min)
@@ -139,7 +139,7 @@ const NewRecipePage = async () => {
                 </div>
                 <div className="space-y-2">
                   <label
-                    className="text-sm font-medium"
+                    className="font-medium text-sm"
                     htmlFor="cookTimeMinutes"
                   >
                     Cook time (min)
@@ -153,7 +153,7 @@ const NewRecipePage = async () => {
                 </div>
                 <div className="space-y-2">
                   <label
-                    className="text-sm font-medium"
+                    className="font-medium text-sm"
                     htmlFor="restTimeMinutes"
                   >
                     Rest time (min)
@@ -169,7 +169,7 @@ const NewRecipePage = async () => {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <label
-                    className="text-sm font-medium"
+                    className="font-medium text-sm"
                     htmlFor="difficultyLevel"
                   >
                     Difficulty (1-5)
@@ -183,14 +183,14 @@ const NewRecipePage = async () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="tags">
+                  <label className="font-medium text-sm" htmlFor="tags">
                     Tags (comma separated)
                   </label>
                   <Input id="tags" name="tags" placeholder="GF, seasonal" />
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="ingredients">
+                <label className="font-medium text-sm" htmlFor="ingredients">
                   Ingredients (one per line)
                 </label>
                 <Textarea
@@ -204,7 +204,7 @@ const NewRecipePage = async () => {
                 </p>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="steps">
+                <label className="font-medium text-sm" htmlFor="steps">
                   Steps (one per line)
                 </label>
                 <Textarea
@@ -219,7 +219,7 @@ const NewRecipePage = async () => {
           <Card>
             <CardContent className="space-y-6 p-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="imageFile">
+                <label className="font-medium text-sm" htmlFor="imageFile">
                   Hero image
                 </label>
                 <Input
@@ -230,7 +230,7 @@ const NewRecipePage = async () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="notes">
+                <label className="font-medium text-sm" htmlFor="notes">
                   Kitchen notes
                 </label>
                 <Textarea

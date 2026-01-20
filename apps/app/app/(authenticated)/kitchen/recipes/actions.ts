@@ -458,7 +458,7 @@ export const createDish = async (formData: FormData) => {
 
   const name = String(formData.get("name") || "").trim();
   const recipeId = String(formData.get("recipeId") || "").trim();
-  if (!name || !recipeId) {
+  if (!(name && recipeId)) {
     throw new Error("Dish name and recipe are required.");
   }
 

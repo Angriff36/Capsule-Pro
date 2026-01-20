@@ -43,7 +43,7 @@ export const createTenantClient = (tenantId: string, client: PrismaClient) =>
     query: {
       $allModels: {
         async $allOperations({ model, operation, args, query }) {
-          if (!model || !tenantScopedModels.has(model)) {
+          if (!(model && tenantScopedModels.has(model))) {
             return query(args);
           }
 

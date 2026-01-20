@@ -46,14 +46,12 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   // Validate priority if provided
-  if (body.priority !== undefined) {
-    if (typeof body.priority !== "number" || body.priority < 1 || body.priority > 10) {
+  if (body.priority !== undefined && (typeof body.priority !== "number" || body.priority < 1 || body.priority > 10)) {
       return NextResponse.json(
         { message: "Priority must be an integer between 1 and 10" },
         { status: 400 }
       );
     }
-  }
 
   // Update task
   const updateData: Record<string, any> = {};

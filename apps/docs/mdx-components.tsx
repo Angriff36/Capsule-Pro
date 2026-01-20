@@ -53,18 +53,18 @@ const Card = ({ title, icon, href, children }: CardProps) => {
   const Wrapper = href ? 'a' : 'div';
   return (
     <Wrapper
-      className="group rounded-xl border border-border/60 bg-card/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-border hover:shadow-md"
+      className="group hover:-translate-y-0.5 rounded-xl border border-border/60 bg-card/80 p-4 shadow-sm transition hover:border-border hover:shadow-md"
       href={href}
     >
-      <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+      <div className="mb-2 flex items-center gap-2 font-semibold text-sm">
         {icon ? (
-          <span className="rounded-md bg-muted px-2 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+          <span className="rounded-md bg-muted px-2 py-1 text-[10px] text-muted-foreground uppercase tracking-wide">
             {icon}
           </span>
         ) : null}
         <span>{title}</span>
       </div>
-      <div className="text-sm text-muted-foreground">{children}</div>
+      <div className="text-muted-foreground text-sm">{children}</div>
     </Wrapper>
   );
 };
@@ -85,17 +85,17 @@ type AccordionProps = {
 
 const Accordion = ({ title, children, icon }: AccordionProps) => (
   <details className="rounded-lg border border-border/60 bg-card/70 px-4 py-2">
-    <summary className="cursor-pointer list-none py-2 text-sm font-semibold">
+    <summary className="cursor-pointer list-none py-2 font-semibold text-sm">
       <span className="flex items-center gap-2">
         {icon ? (
-          <span className="rounded-md bg-muted px-2 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+          <span className="rounded-md bg-muted px-2 py-1 text-[10px] text-muted-foreground uppercase tracking-wide">
             {icon}
           </span>
         ) : null}
         {title}
       </span>
     </summary>
-    <div className="pb-3 text-sm text-muted-foreground">{children}</div>
+    <div className="pb-3 text-muted-foreground text-sm">{children}</div>
   </details>
 );
 
@@ -112,15 +112,15 @@ const ResponseField = ({ name, type, required, default: defaultValue, children }
     <div className="flex flex-wrap items-center gap-2 text-sm">
       <code className="rounded bg-muted px-2 py-1 text-[12px]">{name}</code>
       {type ? (
-        <span className="text-xs text-muted-foreground">type: {type}</span>
+        <span className="text-muted-foreground text-xs">type: {type}</span>
       ) : null}
       {required ? (
-        <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-rose-700">
+        <span className="rounded-full bg-rose-100 px-2 py-0.5 font-semibold text-[10px] text-rose-700 uppercase">
           required
         </span>
       ) : null}
       {defaultValue ? (
-        <span className="text-xs text-muted-foreground">default: {defaultValue}</span>
+        <span className="text-muted-foreground text-xs">default: {defaultValue}</span>
       ) : null}
     </div>
     {children ? <div className="mt-2 space-y-2">{children}</div> : null}

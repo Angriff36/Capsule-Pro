@@ -1,7 +1,7 @@
 "use server";
 
 import {
-  Prisma,
+  type Prisma,
   tenantDatabase,
   type KitchenTaskStatus,
   type KitchenTaskPriority,
@@ -20,7 +20,7 @@ const getString = (formData: FormData, key: string): string | undefined => {
   const value = formData.get(key);
 
   if (typeof value !== "string") {
-    return undefined;
+    return ;
   }
 
   const trimmed = value.trim();
@@ -34,7 +34,7 @@ const getOptionalString = (
   const value = formData.get(key);
 
   if (typeof value !== "string") {
-    return undefined;
+    return ;
   }
 
   const trimmed = value.trim();
@@ -45,7 +45,7 @@ const getDateTime = (formData: FormData, key: string): Date | undefined => {
   const value = getString(formData, key);
 
   if (!value) {
-    return undefined;
+    return ;
   }
 
   const dateValue = new Date(value);
@@ -145,9 +145,7 @@ export const getKitchenTasksByStatus = async (
     assignedTo: { id: string; email: string; firstName: string | null; lastName: string | null } | null;
     createdBy: { id: string; email: string; firstName: string | null; lastName: string | null } | null;
   })[]
-> => {
-  return getKitchenTasks({ status });
-};
+> => getKitchenTasks({ status });
 
 /**
  * Get urgent priority tasks that are open or in progress
@@ -341,7 +339,7 @@ export const claimTask = async (taskId: string, userId: string): Promise<Kitchen
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
 
-  if (!taskId || !userId) {
+  if (!(taskId && userId)) {
     throw new Error("Task id and user id are required.");
   }
 

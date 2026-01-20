@@ -9,8 +9,6 @@ import {
   Calendar,
   Clock,
   Sun,
-  Cloud,
-  CloudRain,
   Plus,
   Search,
   ChefHat,
@@ -70,7 +68,7 @@ function KitchenClock() {
   }, []);
 
   return (
-    <div className="flex items-center gap-2 text-sm font-medium text-slate-600">
+    <div className="flex items-center gap-2 font-medium text-slate-600 text-sm">
       <Clock className="h-4 w-4" />
       <span>{format(time, "h:mm:ss a")}</span>
     </div>
@@ -91,11 +89,11 @@ function WeatherWidget() {
     <div className="flex items-center gap-3 rounded-lg bg-white px-3 py-2 shadow-sm ring-1 ring-slate-100">
       <div className="flex items-center gap-1.5 text-amber-500">
         <Icon className="h-5 w-5" />
-        <span className="text-lg font-semibold">{weather.temp}</span>
+        <span className="font-semibold text-lg">{weather.temp}</span>
       </div>
       <div className="hidden sm:block">
-        <div className="text-xs font-medium text-slate-600">Sunny</div>
-        <div className="text-xs text-slate-400">Kitchen temp normal</div>
+        <div className="font-medium text-slate-600 text-xs">Sunny</div>
+        <div className="text-slate-400 text-xs">Kitchen temp normal</div>
       </div>
     </div>
   );
@@ -193,7 +191,7 @@ function StatsSidebar({
       {/* Progress Card */}
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+          <CardTitle className="flex items-center gap-2 font-semibold text-sm">
             <TrendingUp className="h-4 w-4 text-slate-500" />
             Shift Progress
           </CardTitle>
@@ -212,8 +210,8 @@ function StatsSidebar({
                 key={stat.label}
                 className="rounded-lg bg-slate-50 p-3 text-center"
               >
-                <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-                <div className="text-xs text-slate-500">{stat.label}</div>
+                <div className={`font-bold text-2xl ${stat.color}`}>{stat.value}</div>
+                <div className="text-slate-500 text-xs">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -223,7 +221,7 @@ function StatsSidebar({
       {/* Quick Stats */}
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold">Quick Stats</CardTitle>
+          <CardTitle className="font-semibold text-sm">Quick Stats</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {stats.slice(2).map((stat) => (
@@ -235,7 +233,7 @@ function StatsSidebar({
                 <div className={`rounded-md p-1.5 ${stat.bgColor}`}>
                   <stat.icon className={`h-4 w-4 ${stat.color}`} />
                 </div>
-                <span className="text-sm text-slate-600">{stat.label}</span>
+                <span className="text-slate-600 text-sm">{stat.label}</span>
               </div>
               <span className="font-semibold text-slate-800">{stat.value}</span>
             </div>
@@ -246,7 +244,7 @@ function StatsSidebar({
       {/* Team Activity */}
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold">Team Activity</CardTitle>
+          <CardTitle className="font-semibold text-sm">Team Activity</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center gap-3">
@@ -255,8 +253,8 @@ function StatsSidebar({
               <AvatarFallback className="bg-blue-100 text-blue-600 text-xs">JD</AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <div className="text-sm font-medium text-slate-700">John Doe</div>
-              <div className="text-xs text-slate-500">Completed 3 tasks</div>
+              <div className="font-medium text-slate-700 text-sm">John Doe</div>
+              <div className="text-slate-500 text-xs">Completed 3 tasks</div>
             </div>
             <Badge variant="secondary" className="text-xs">3</Badge>
           </div>
@@ -266,8 +264,8 @@ function StatsSidebar({
               <AvatarFallback className="bg-emerald-100 text-emerald-600 text-xs">AS</AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <div className="text-sm font-medium text-slate-700">Alice Smith</div>
-              <div className="text-xs text-slate-500">Working on 2 tasks</div>
+              <div className="font-medium text-slate-700 text-sm">Alice Smith</div>
+              <div className="text-slate-500 text-xs">Working on 2 tasks</div>
             </div>
             <Badge variant="secondary" className="text-xs">2</Badge>
           </div>
@@ -301,15 +299,15 @@ function TaskColumn({
           </div>
           <h3 className="font-semibold text-slate-700">{title}</h3>
         </div>
-        <Badge variant="secondary" className="text-xs font-medium">
+        <Badge variant="secondary" className="font-medium text-xs">
           {count}
         </Badge>
       </div>
       <div className="flex-1 space-y-3 overflow-y-auto">
         {tasks.length === 0 ? (
-          <div className="flex h-32 flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 text-center">
+          <div className="flex h-32 flex-col items-center justify-center rounded-xl border-2 border-slate-200 border-dashed text-center">
             <Icon className="h-6 w-6 text-slate-300" />
-            <p className="mt-2 text-sm text-slate-400">No tasks</p>
+            <p className="mt-2 text-slate-400 text-sm">No tasks</p>
           </div>
         ) : (
           tasks.map((task) => (
@@ -368,7 +366,7 @@ export function ProductionBoardClient({
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur-md">
+      <header className="sticky top-0 z-10 border-slate-200 border-b bg-white/80 backdrop-blur-md">
         <div className="flex flex-col gap-4 px-6 py-4">
           {/* Top Row: Date Navigation and Actions */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -403,7 +401,7 @@ export function ProductionBoardClient({
                 return (
                   <button
                     key={station.id}
-                    className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                    className={`flex items-center gap-2 rounded-lg px-4 py-2 font-medium text-sm transition-all ${
                       isActive
                         ? "bg-white text-slate-900 shadow-sm"
                         : "text-slate-500 hover:text-slate-700"
@@ -411,7 +409,7 @@ export function ProductionBoardClient({
                     onClick={() => setSelectedStation(station.id)}
                   >
                     <Icon className="h-4 w-4" />
-                    <span className="hidden xs:inline">{station.label}</span>
+                    <span className="xs:inline hidden">{station.label}</span>
                   </button>
                 );
               })}
@@ -419,7 +417,7 @@ export function ProductionBoardClient({
 
             {/* Search */}
             <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-slate-400" />
               <Input
                 className="pl-10"
                 placeholder="Search tasks..."
@@ -440,7 +438,7 @@ export function ProductionBoardClient({
             {myTasks.length > 0 && (
               <section className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-slate-800">
+                  <h2 className="font-semibold text-lg text-slate-800">
                     My Tasks
                   </h2>
                   <Badge variant="secondary">{myTasks.length} assigned</Badge>

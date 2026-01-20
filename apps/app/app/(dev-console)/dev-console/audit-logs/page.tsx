@@ -6,7 +6,7 @@ const DevConsoleAuditLogsPage = () => (
         <p>Track critical changes across tenants.</p>
       </div>
     </div>
-    <p className="text-sm text-slate-400">
+    <p className="text-slate-400 text-sm">
       Placeholder screen. Connect to audit log storage when ready.
     </p>
   </div>

@@ -9,7 +9,7 @@ type RouteContext = {
 
 export async function POST(request: Request, context: RouteContext) {
   const { orgId, userId: clerkId } = await auth();
-  if (!orgId || !clerkId) {
+  if (!(orgId && clerkId)) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
