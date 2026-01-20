@@ -1,5 +1,15 @@
-# Normalize all text files to LF in the repo and working tree
-* text=auto eol=lf
+# Set repository default handling for text files
+* text=auto
+
+# Normalize line endings for common source files
+*.sh     text eol=lf
+*.ts     text eol=lf
+*.js     text eol=lf
+*.mjs    text eol=lf
+
+# Do not include these developer artifacts in archives
+docs/llm/random-ai-slopdocs/** export-ignore
+scripts/dev.mjs export-ignore
 
 # Never mess with binary files
 *.png binary
