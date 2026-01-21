@@ -1,46 +1,81 @@
-# AGENTS.md - Ralph Operational Guide
+# AGENTS.md — Convoy (Ralph Wiggum Loop)
 
-## Repo Specifics
+This file defines **operational context** for Ralph Wiggum loops. It is read on
+every iteration.
 
-- **Turborepo monorepo** managed with pnpm (NEVER npm/yarn)
-- **Stack**: Prisma + Neon Postgres, Clerk auth, Ably realtime
-- **Multi-tenant**: Shared DB with `tenantId` column (NOT per-tenant databases)
-- **Priority order**: Kitchen tasks → Events → Scheduling → CRM → Inventory
-- **ALL MODULES INTERCONNECTED**: Events in CRM must appear in kitchen mobile app
-- **Not production-ready**: Investigate issues, don't assume systems work correctly
+It is NOT an architecture document. It is NOT a design proposal. It is NOT a
+planning scratchpad.
 
-## Build & Run
+If something is not needed every iteration, it does not belong here.
 
-```bash
-pnpm dev         # All apps in parallel
-pnpm dev:apps    # web (port 2222) + app (port 2221)
-pnpm build       # Production build
-```
+---
 
-## Validation (Backpressure)
+## Project Type
 
-Run after implementing functionality. If ANY fail, STOP and update IMPLEMENTATION_PLAN.md:
+- Monorepo
+- Package manager: pnpm (ONLY)
+- Primary folders:
+  - apps/
+  - packages/
+  - specs/
 
-```bash
-pnpm install              # Install dependencies
-pnpm check                # Typecheck + lint
-pnpm test                 # All tests
-pnpm build                # Production build
-```
+---
 
-## Database
+## Allowed Agent Behavior
 
-```bash
-pnpm prisma:format        # Format schema
-pnpm prisma:generate      # Generate Prisma client
-pnpm migrate              # Format + generate + push (use carefully)
-```
+Ralph Wiggum:
 
-**CRITICAL**: Database mutations require explicit human approval. Never auto-migrate.
+- Executes ONE small task per iteration
+- Uses IMPLEMENTATION_PLAN.md as task source of truth
+- Stops after one commit or one documented blocker
 
-## Operational Rules
+Ralph must NOT:
 
-- If validation fails: STOP, document in IMPLEMENTATION_PLAN.md, exit without commit
-- No stubs/mocks for Ably integrations - implement real or log failure
-- Complete implementations only - no placeholders
-- Keep this file operational only - status/progress goes in IMPLEMENTATION_PLAN.md
+- Expand scope
+- Fix unrelated issues
+- Refactor for cleanliness
+- Invent missing requirements
+- Read large architecture or historical docs unless explicitly told
+
+---
+
+## Build & Validation Conventions
+
+- Use pnpm only (no npm, no yarn)
+- Prefer the smallest possible validation:
+  - Targeted tests
+  - Targeted typecheck
+- Do NOT run full monorepo builds unless required to validate the task
+
+---
+
+## Files to Ignore by Default
+
+Do not read unless explicitly required by the current task:
+
+- docs/inventory/**
+- Archived plans
+- Historical architecture findings
+- Generated folders (.next, dist, build output)
+- pnpm store directories
+
+---
+
+## Commit Rules
+
+- Exactly one commit per iteration
+- Conventional Commit format
+- No tags
+- No version bumps unless required by the task
+
+---
+
+## When Blocked
+
+If blocked:
+
+- Document the blocker in IMPLEMENTATION_PLAN.md
+- STOP
+- Do not attempt alternate tasks
+
+This is intentional.

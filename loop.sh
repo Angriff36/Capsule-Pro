@@ -1,28 +1,26 @@
 #!/bin/bash
-# Ralph Wiggum Loop for Convoy
-# Usage: ./loop.sh [plan] [max_iterations]
-# Examples:
-#   ./loop.sh              # Build mode, unlimited iterations
-#   ./loop.sh 20           # Build mode, max 20 iterations
-#   ./loop.sh plan         # Plan mode, unlimited iterations
-#   ./loop.sh plan 5       # Plan mode, max 5 iterations
+# Ralph Wiggum Loop for Convoy (bounded + hook-safe)
+# Usage:
+#   ./loop.sh                 # build mode, 1 iteration
+#   ./loop.sh 10              # build mode, max 10 iterations
+#   ./loop.sh plan            # plan mode, 1 iteration (default)
+#   ./loop.sh plan 3          # plan mode, max 3 iterations
 
-# Parse arguments
-if [ "$1" = "plan" ]; then
-    # Plan mode
-    MODE="plan"
-    PROMPT_FILE="PROMPT_plan.md"
-    MAX_ITERATIONS=${2:-0}
-elif [[ "$1" =~ ^[0-9]+$ ]]; then
-    # Build mode with max iterations
-    MODE="build"
-    PROMPT_FILE="PROMPT_build.md"
-    MAX_ITERATIONS=$1
+set -euo pipefail
+
+# ---------- Parse arguments ----------
+if [ "${1:-}" = "plan" ]; then
+  MODE="plan"
+  PROMPT_FILE="PROMPT_plan.md"
+  MAX_ITERATIONS=${2:-1}   # IMPORTANT: plan defaults to 1
+elif [[ "${1:-}" =~ ^[0-9]+$ ]]; then
+  MODE="build"
+  PROMPT_FILE="PROMPT_build.md"
+  MAX_ITERATIONS=$1
 else
-    # Build mode, unlimited (no arguments or invalid input)
-    MODE="build"
-    PROMPT_FILE="PROMPT_build.md"
-    MAX_ITERATIONS=0
+  MODE="build"
+  PROMPT_FILE="PROMPT_build.md"
+  MAX_ITERATIONS=${1:-1}   # IMPORTANT: build defaults to 1
 fi
 
 ITERATION=0
@@ -32,39 +30,66 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "Mode:   $MODE"
 echo "Prompt: $PROMPT_FILE"
 echo "Branch: $CURRENT_BRANCH"
-[ $MAX_ITERATIONS -gt 0 ] && echo "Max:    $MAX_ITERATIONS iterations"
+echo "Max:    $MAX_ITERATIONS iteration(s)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# Verify prompt file exists
 if [ ! -f "$PROMPT_FILE" ]; then
-    echo "Error: $PROMPT_FILE not found"
-    exit 1
+  echo "Error: $PROMPT_FILE not found"
+  exit 1
 fi
 
+# ---------- Safety: planning must be side-effect free ----------
+if [ "$MODE" = "plan" ]; then
+  # Common env flags used by tools/hooks to suppress heavy work
+  export CI=1
+  export SKIP_BUILD=1
+  export SKIP_TESTS=1
+  export HUSKY=0
+fi
+
+# ---------- Permissions mode (avoid permanent YOLO) ----------
+# If you want YOLO only in sandbox branches:
+#   sandbox/* -> skip permissions
+PERMISSIONS_ARGS=()
+if [[ "$CURRENT_BRANCH" == sandbox/* ]]; then
+  PERMISSIONS_ARGS+=(--dangerously-skip-permissions)
+fi
+
+# ---------- Main loop ----------
 while true; do
-    if [ $MAX_ITERATIONS -gt 0 ] && [ $ITERATION -ge $MAX_ITERATIONS ]; then
-        echo "Reached max iterations: $MAX_ITERATIONS"
-        break
-    fi
+  if [ "$ITERATION" -ge "$MAX_ITERATIONS" ]; then
+    echo "Reached max iterations: $MAX_ITERATIONS"
+    break
+  fi
 
-    # Run Ralph iteration with selected prompt
-    # -p: Headless mode (non-interactive, reads from stdin)
-    # --dangerously-skip-permissions: Auto-approve all tool calls (YOLO mode)
-    # --output-format=stream-json: Structured output for logging/monitoring
-    # --model minimax-2-1: Using MiniMax 2.1 via z.ai (max 10 parallel subagents)
-    # --verbose: Detailed execution logging
-    cat "$PROMPT_FILE" | claude -p \
-        --dangerously-skip-permissions \
-        --output-format=stream-json \
-        --model minimax-2-1 \
-        --verbose
+  echo "----- Iteration $((ITERATION + 1)) / $MAX_ITERATIONS -----"
 
-    # Push changes after each iteration
-    git push origin "$CURRENT_BRANCH" || {
-        echo "Failed to push. Creating remote branch..."
-        git push -u origin "$CURRENT_BRANCH"
-    }
+  # Snapshot state
+  BEFORE_STATUS=$(git status --porcelain || true)
+  BEFORE_HEAD=$(git rev-parse HEAD)
 
-    ITERATION=$((ITERATION + 1))
-    echo -e "\n\n======================== LOOP $ITERATION ========================\n"
+  # Run Claude headless with selected prompt
+  cat "$PROMPT_FILE" | claude -p \
+    "${PERMISSIONS_ARGS[@]}" \
+    --output-format=stream-json \
+    --verbose
+
+  # If nothing changed, stop (prevents infinite “no-op” loops)
+  AFTER_STATUS=$(git status --porcelain || true)
+  if [ "$BEFORE_STATUS" = "$AFTER_STATUS" ]; then
+    echo "No working tree changes detected. Exiting."
+    break
+  fi
+
+  # If no new commit was created, do NOT push.
+  AFTER_HEAD=$(git rev-parse HEAD)
+  if [ "$BEFORE_HEAD" = "$AFTER_HEAD" ]; then
+    echo "No new commit created this iteration. Not pushing."
+  else
+    echo "New commit detected. Pushing..."
+    git push origin "$CURRENT_BRANCH" || git push -u origin "$CURRENT_BRANCH"
+  fi
+
+  ITERATION=$((ITERATION + 1))
+  echo -e "\n======================== LOOP $ITERATION COMPLETE ========================\n"
 done
