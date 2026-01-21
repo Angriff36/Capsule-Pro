@@ -43,6 +43,7 @@ Temporary Items
 
 ### NextJS ###
 # dependencies
+.pnpm-store/
 /node_modules
 /.pnp
 .pnp.js
