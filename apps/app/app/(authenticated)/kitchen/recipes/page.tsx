@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import { AspectRatio } from "@repo/design-system/components/ui/aspect-ratio";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -22,7 +23,7 @@ import {
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
 import { Prisma, database } from "@repo/database";
-import { BookOpenIcon, CheckCircleIcon, ChefHatIcon, SettingsIcon } from "lucide-react";
+import { BookOpenIcon, CheckCircleIcon, ChefHatIcon, HeartIcon, SettingsIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "../../components/header";
@@ -35,6 +36,7 @@ import { RecipesToolbar } from "./recipes-toolbar";
 type RecipeRow = {
   id: string;
   name: string;
+  description: string | null;
   category: string | null;
   tags: string[] | null;
   is_active: boolean;
@@ -89,16 +91,6 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 
 const formatMinutes = (minutes?: number | null) =>
   minutes && minutes > 0 ? `${minutes}m` : "-";
-
-const formatYield = (quantity?: number | null, unit?: string | null) => {
-  if (!quantity || quantity <= 0) {
-    return "-";
-  }
-  if (!unit) {
-    return `${quantity}`;
-  }
-  return `${quantity} ${unit}`;
-};
 
 const formatPercent = (value: number | null) =>
   value === null ? "-" : `${Math.round(value)}%`;
@@ -230,6 +222,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
           SELECT
             r.id,
             r.name,
+            r.description,
             r.category,
             r.tags,
             r.is_active,
@@ -409,7 +402,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
 
         <div className="rounded-3xl border bg-muted/40 p-4">
           {activeTab === "recipes" && (
-            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
               {recipes.length === 0 ? (
                 <Empty className="bg-card/50">
                   <EmptyHeader>
@@ -430,62 +423,61 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                 </Empty>
               ) : (
                 recipes.map((recipe) => (
-                  <Card className="overflow-hidden shadow-sm" key={recipe.id}>
-                    <div className="relative h-40 w-full bg-muted">
-                      {recipe.image_url ? (
-                        <img
-                          alt={recipe.name}
-                          className="h-full w-full object-cover"
-                          src={recipe.image_url}
-                        />
-                      ) : (
-                        <RecipeImagePlaceholder
-                          recipeName={recipe.name}
-                          uploadAction={updateRecipeImage.bind(null, recipe.id)}
-                        />
-                      )}
-                      <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
-                        {recipe.category ? (
-                          <Badge variant="secondary">
-                            {recipe.category.toUpperCase()}
-                          </Badge>
-                        ) : null}
-                        {(recipe.tags ?? []).slice(0, 2).map((tag) => (
-                          <Badge key={tag}>{tag.toUpperCase()}</Badge>
-                        ))}
-                      </div>
-                    </div>
+                  <Card className="group overflow-hidden shadow-sm transition-all duration-200 hover:translate-y-[-4px] hover:shadow-md" key={recipe.id}>
+                    <Link href={`/kitchen/recipes/${recipe.id}`}>
+                      <AspectRatio ratio={16 / 9} className="relative w-full bg-muted">
+                        {recipe.image_url ? (
+                          <img
+                            alt={recipe.name}
+                            className="h-full w-full object-cover"
+                            height={240}
+                            src={recipe.image_url}
+                            width={426}
+                          />
+                        ) : (
+                          <RecipeImagePlaceholder
+                            recipeName={recipe.name}
+                            uploadAction={updateRecipeImage.bind(null, recipe.id)}
+                          />
+                        )}
+                        <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 via-transparent to-transparent p-3 opacity-0 transition-opacity group-hover:opacity-100">
+                          <Button
+                            aria-label={`Edit ${recipe.name}`}
+                            className="text-white"
+                            size="sm"
+                            type="button"
+                            variant="secondary"
+                          >
+                            Edit
+                          </Button>
+                        </div>
+                        <button
+                          aria-label={`Favorite ${recipe.name}`}
+                          className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-white/90 text-rose-500 shadow-sm transition-all hover:bg-white hover:scale-110 active:scale-95"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                          type="button"
+                        >
+                          <HeartIcon className="size-5" />
+                        </button>
+                      </AspectRatio>
+                    </Link>
                     <CardHeader className="space-y-2">
                       <CardTitle className="font-semibold text-lg">{recipe.name}</CardTitle>
-                      <div className="text-muted-foreground text-sm">
-                        Yield: {formatYield(recipe.yield_quantity, recipe.yield_unit)}
-                        {" | "}Prep: {formatMinutes(recipe.prep_time_minutes)}
+                      <div className="flex flex-wrap items-center gap-2">
+                        {recipe.category ? (
+                          <Badge variant="secondary">{recipe.category}</Badge>
+                        ) : null}
+                        <Badge variant="outline">{formatMinutes(recipe.prep_time_minutes)}</Badge>
                       </div>
+                      {recipe.description && (
+                        <p className="text-muted-foreground line-clamp-2 text-sm">
+                          {recipe.description}
+                        </p>
+                      )}
                     </CardHeader>
-                    <CardContent className="grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <div className="text-muted-foreground">Ingredients</div>
-                        <div className="font-semibold">
-                          {recipe.ingredient_count}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground">Linked dishes</div>
-                        <div className="font-semibold">{recipe.dish_count}</div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground">Cook time</div>
-                        <div className="font-semibold">
-                          {formatMinutes(recipe.cook_time_minutes)}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground">Status</div>
-                        <div className="font-semibold">
-                          {recipe.is_active ? "Active" : "Paused"}
-                        </div>
-                      </div>
-                    </CardContent>
                   </Card>
                 ))
               )}
