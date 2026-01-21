@@ -1,97 +1,46 @@
-# AGENTS.md - Codex Instructions
+# AGENTS.md - Ralph Operational Guide
 
-**Version:** 2.0.0 **Last Updated:** 2026-01-14 **Project:** Enterprise Catering
-Management System (Convoy)
+## Repo Specifics
 
----
+- **Turborepo monorepo** managed with pnpm (NEVER npm/yarn)
+- **Stack**: Prisma + Neon Postgres, Clerk auth, Ably realtime
+- **Multi-tenant**: Shared DB with `tenantId` column (NOT per-tenant databases)
+- **Priority order**: Kitchen tasks → Events → Scheduling → CRM → Inventory
+- **ALL MODULES INTERCONNECTED**: Events in CRM must appear in kitchen mobile app
+- **Not production-ready**: Investigate issues, don't assume systems work correctly
 
-**Before doing any work, read:**
+## Build & Run
 
-- `C:\Users\Ryan\Home\agent-scripts\AGENTS.MD`
-- `C:\Users\Ryan\Home\agent-scripts\docs`
+```bash
+pnpm dev         # All apps in parallel
+pnpm dev:apps    # web (port 2222) + app (port 2221)
+pnpm build       # Production build
+```
 
-**APP IS NOT PRODUCTION. IF SOMETHING SEEMS WRONG, INVESTIGATE, DONT ASSUME ALL
-SYSTEMS ARE CORRECTLY WIRED AND CONFIGURED**
+## Validation (Backpressure)
 
-**This Project uses next-forge, if you are EVER unsure of what system we use,
-what the default protocols are, anything, refer to
-C:\Projects\convoy\docs\llm\next-forge it has all the information you could
-need.**
+Run after implementing functionality. If ANY fail, STOP and update IMPLEMENTATION_PLAN.md:
 
-## Repo specifics:
+```bash
+pnpm install              # Install dependencies
+pnpm check                # Typecheck + lint
+pnpm test                 # All tests
+pnpm build                # Production build
+```
 
-- **ALL SYSTEMS CONNECTED** Every module is interconnected. Events created in
-  crm module must display on kitchen mobile app etc. This is imperative.
-- **Use** pnpm (never npm or yarn)
-- **Stack**: Prisma + Neon (no Supabase RLS)
-- **Multi-tenant**: Shared DB with `tenant_id` column (NOT per-tenant databases)
-- **Realtime**: Ably via outbox pipeline (NOT Supabase Realtime)
-- **Auth**: Clerk (already integrated)
-- **Priority order**: Recipes > Kitchen tasks → Events → Scheduling
-- **Docs**: Mintlify at http://localhost:2232/introduction (when running)
+## Database
 
-## Setup Discipline (Required)
+```bash
+pnpm prisma:format        # Format schema
+pnpm prisma:generate      # Generate Prisma client
+pnpm migrate              # Format + generate + push (use carefully)
+```
 
-- Follow all relevant setup steps from official docs end-to-end (install, env,
-  scripts, generators, integration).
-- No minimal patterns or partial installs; wire into the actual repo files.
-- If blocked or missing secrets, stop and ask before proceeding.
+**CRITICAL**: Database mutations require explicit human approval. Never auto-migrate.
 
-## Planning With Files (Required)
+## Operational Rules
 
-**WHEN WORKING ON ANY 3rd PARTY LIB OR IMPLEMENTATION OF A NEW FEATURE FROM A
-3rd PARTY, AND UPON ENCOUNTERING ANY ERROR THAT ISN'T A SIMPLE INCORRECT
-COMMAND, CALL CONTEXT7 MCP**
-
-- Use the `planning-with-files` skill for any task that goes beyond simple or
-  mundane tasks, as well as upon encountering unexpected errors.
-
-## CI/CD Configuration Rules
-
-**GitHub Actions Workflows - CRITICAL**
-
-- **NEVER** hardcode ANY versions in `.github/workflows/*.yml`
-- **ALWAYS** extract versions from source-of-truth configuration files:
-  - pnpm version: `package.json` `"packageManager"` field
-  - Node.js version: `.nvmrc` file or `package.json` `"engines.node"` field
-- Validation script blocks commits with mismatches:
-  `scripts/validate-pnpm-versions.js`
-- This ensures local dev, CI, and Vercel production all use identical versions
-- Example: If `package.json` has `"packageManager": "pnpm@10.24.0"`, workflows
-  MUST use `version: 10.24.0`
-
-## Validation Commands (Authoritative)
-
-The following commands define backpressure for Ralph iterations.
-All build-mode iterations MUST run these unless explicitly scoped otherwise.
-
-### Install
-pnpm install
-
-### Typecheck
-pnpm check
-
-### Tests
-pnpm test
-
-### Lint / Static Analysis
-pnpm check
-
-### Build
-pnpm build
-
-### Database Safety
-- Schema changes MUST run:
-  pnpm prisma:format
-  pnpm prisma:generate
-
-- Database mutations MUST NOT be applied automatically.
-  Any destructive migration requires explicit human approval.
-
-### Realtime / Integration Rules
-- Ably integrations must never be stubbed or mocked silently.
-- Webhook or external sync code must log failures explicitly.
-
-If any of the above commands fail, the iteration MUST STOP,
-update IMPLEMENTATION_PLAN.md with the failure cause,
-and exit without committing.
+- If validation fails: STOP, document in IMPLEMENTATION_PLAN.md, exit without commit
+- No stubs/mocks for Ably integrations - implement real or log failure
+- Complete implementations only - no placeholders
+- Keep this file operational only - status/progress goes in IMPLEMENTATION_PLAN.md
