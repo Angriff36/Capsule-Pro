@@ -1,42 +1,60 @@
 # Implementation Plan (Scoped)
 
-Scope: SMS notification system (urgent updates, shift reminders, task assignments)
+Scope: Expand Recipes and Events Pages with rich interactive features, image management, and modal-based editing
 
 Non-goals:
-- SMS template creation/editing UI
-- Two-way SMS conversations
-- SMS analytics or reporting
-- Integration with external SMS providers beyond Twilio
+- Calendar export to Google/Apple/Outlook
+- Recipe rating system (1-5 stars)
+- Comments/Notes on recipes
+- Print view functionality
+- Event reminders via email notifications
+- Camera capture for images
 
 ## Blockers / Decisions
 
-- [ ] Twilio API key configuration (devops/platform)
+- [ ] Image storage provider (Supabase Storage or other)
+- [ ] Image upload endpoint implementation
+- [ ] Recipe favorites data model (new table/column)
 
-## Tasks (max 12, ordered)
+## Tasks (ordered)
 
-- [ ] T1: Add Twilio client package and environment variable configuration (spec: specs/sms-notification-system.md)
-- [ ] T2: Create SMS service wrapper with send(), validatePhone(), and formatNumber() methods (spec: specs/sms-notification-system.md)
-- [ ] T3: Add SMS channel to notification_preferences (seed data: 'sms' channel option) (spec: specs/sms-notification-system.md)
-- [ ] T4: Create SMS notification templates for urgent updates, shift reminders, task assignments (spec: specs/sms-notification-system.md)
-- [ ] T5: Implement SMS opt-in/opt-out toggle in user notification preferences UI (spec: specs/sms-notification-system.md)
-- [ ] T6: Add SMS delivery tracking table/model (sent, delivered, failed status) (spec: specs/sms-notification-system.md)
-- [ ] T7: Create Knock integration to trigger SMS sends via notification workflows (spec: specs/sms-notification-system.md)
-- [ ] T8: Implement phone validation before SMS send (E.164 format, invalid check) (spec: specs/sms-notification-system.md)
-- [ ] T9: Add deduplication logic to prevent duplicate SMS for same notification (spec: specs/sms-notification-system.md)
-- [ ] T10: Implement error handling and logging for failed SMS deliveries (spec: specs/sms-notification-system.md)
+- [ ] T1: Update recipes page grid to responsive layout (2 mobile, 3 tablet, 4 desktop) with 16:9 aspect ratio images
+- [ ] T2: Add heart/favorite icon with hover animation to recipe cards
+- [ ] T3: Create shared modal component with full-screen mobile and centered desktop views (max-width 800px)
+- [ ] T4: Implement recipe editor modal with Basic Info section (title, description, prep/cook time, servings, difficulty)
+- [ ] T5: Add image upload section with drag-and-drop zone, preview, and progress indicators
+- [ ] T6: Implement dynamic ingredients list with add/remove rows (quantity, unit, name, optional checkbox)
+- [ ] T7: Add step-by-step instructions with drag-to-reorder handles
+- [ ] T8: Implement tag input with suggestions
+- [ ] T9: Add toast notification component with 3s auto-dismiss and undo support
+- [ ] T10: Update events page with enhanced card layout and RSVP functionality
+- [ ] T11: Add loading states (skeleton cards, spinners, progress bars)
+- [ ] T12: Implement empty and error states with retry buttons
+- [ ] T13: Add keyboard navigation and focus management for modals
+- [ ] T14: Add ARIA labels and screen reader announcements
+- [ ] T15: Implement lazy loading for images below fold
+- [ ] T16: Add progress tracking for ingredients and steps in recipe detail view
 
 ## Exit Criteria
 
-- [ ] SMS sent for urgent updates, shift reminders, task assignments
-- [ ] SMS delivery status tracked (sent/delivered/failed)
-- [ ] User can opt-in/opt-out of SMS notifications
-- [ ] Invalid phone numbers rejected before send
-- [ ] Duplicate SMS not sent for same notification
-- [ ] SMS sending failures logged and reported
+- [ ] Recipe cards render in responsive grid with 2/3/4 columns on mobile/tablet/desktop
+- [ ] Heart/favorite icon with animation on recipe cards
+- [ ] Modal-based recipe editor opens (full-screen mobile, centered desktop)
+- [ ] Recipe editor saves successfully with toast notification
+- [ ] Image upload works with drag-drop and progress indicators
+- [ ] Ingredients and steps can be added/removed dynamically
+- [ ] RSVP functionality works on events with attendee count updates
+- [ ] Loading, empty, and error states display correctly
+- [ ] Keyboard navigation and ARIA labels implemented
+- [ ] Images lazy-load efficiently
 
 ## Notes
 
-- Knock provider already configured in packages/notifications/
-- User.phone field exists in database (schema.prisma:104)
-- notification_preferences table supports channel-based preferences
-- Use E.164 phone format validation
+- Use existing shadcn/ui components from @repo/design-system
+- Follow existing code patterns from event-form.tsx
+- Use existing Toast component from @repo/design-system/components/ui/sonner.tsx
+- Images use 16:9 aspect ratio on cards
+- Modal opens < 300ms (animation duration)
+- Toast auto-dismisses after 3s
+- Debounced search at 300ms to reduce API calls
+- Touch targets minimum 44x44px for mobile
