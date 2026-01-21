@@ -51,13 +51,12 @@ while true; do
     # -p: Headless mode (non-interactive, reads from stdin)
     # --dangerously-skip-permissions: Auto-approve all tool calls (YOLO mode)
     # --output-format=stream-json: Structured output for logging/monitoring
-    # --model opus: Primary agent uses Opus for complex reasoning (task selection, prioritization)
-    #               Can use 'sonnet' in build mode for speed if plan is clear and tasks well-defined
+    # --model minimax-2-1: Using MiniMax 2.1 (gets stuck less than GLM 4.7)
     # --verbose: Detailed execution logging
     cat "$PROMPT_FILE" | claude -p \
         --dangerously-skip-permissions \
         --output-format=stream-json \
-        --model opus \
+        --model minimax-2-1 \
         --verbose
 
     # Push changes after each iteration
