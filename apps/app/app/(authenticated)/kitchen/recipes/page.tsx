@@ -26,6 +26,7 @@ import { Prisma, database } from "@repo/database";
 import { BookOpenIcon, CheckCircleIcon, ChefHatIcon, HeartIcon, SettingsIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { RecipeEditorModal } from "./recipe-editor-modal";
 import { Header } from "../../components/header";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { updateRecipeImage } from "./actions";
