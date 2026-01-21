@@ -59,3 +59,39 @@ COMMAND, CALL CONTEXT7 MCP**
 - This ensures local dev, CI, and Vercel production all use identical versions
 - Example: If `package.json` has `"packageManager": "pnpm@10.24.0"`, workflows
   MUST use `version: 10.24.0`
+
+## Validation Commands (Authoritative)
+
+The following commands define backpressure for Ralph iterations.
+All build-mode iterations MUST run these unless explicitly scoped otherwise.
+
+### Install
+pnpm install
+
+### Typecheck
+pnpm check
+
+### Tests
+pnpm test
+
+### Lint / Static Analysis
+pnpm check
+
+### Build
+pnpm build
+
+### Database Safety
+- Schema changes MUST run:
+  pnpm prisma:format
+  pnpm prisma:generate
+
+- Database mutations MUST NOT be applied automatically.
+  Any destructive migration requires explicit human approval.
+
+### Realtime / Integration Rules
+- Ably integrations must never be stubbed or mocked silently.
+- Webhook or external sync code must log failures explicitly.
+
+If any of the above commands fail, the iteration MUST STOP,
+update IMPLEMENTATION_PLAN.md with the failure cause,
+and exit without committing.

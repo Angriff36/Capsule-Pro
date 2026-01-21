@@ -1,13 +1,12 @@
 "use server";
 
 import {
-  type Prisma,
-  tenantDatabase,
-  type KitchenTaskStatus,
-  type KitchenTaskPriority,
   type KitchenTask,
   type KitchenTaskClaim,
   type KitchenTaskProgress,
+  type KitchenTaskStatus,
+  type Prisma,
+  tenantDatabase,
 } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { requireTenantId } from "@/app/lib/tenant";
@@ -20,7 +19,7 @@ const getString = (formData: FormData, key: string): string | undefined => {
   const value = formData.get(key);
 
   if (typeof value !== "string") {
-    return ;
+    return;
   }
 
   const trimmed = value.trim();
@@ -29,12 +28,12 @@ const getString = (formData: FormData, key: string): string | undefined => {
 
 const getOptionalString = (
   formData: FormData,
-  key: string,
+  key: string
 ): string | null | undefined => {
   const value = formData.get(key);
 
   if (typeof value !== "string") {
-    return ;
+    return;
   }
 
   const trimmed = value.trim();
@@ -45,7 +44,7 @@ const getDateTime = (formData: FormData, key: string): Date | undefined => {
   const value = getString(formData, key);
 
   if (!value) {
-    return ;
+    return;
   }
 
   const dateValue = new Date(value);
@@ -57,7 +56,7 @@ const enqueueOutboxEvent = async (
   aggregateType: string,
   aggregateId: string,
   eventType: string,
-  payload: Prisma.InputJsonValue,
+  payload: Prisma.InputJsonValue
 ): Promise<void> => {
   const client = tenantDatabase(tenantId);
   await client.outboxEvent.create({
@@ -79,9 +78,8 @@ const enqueueOutboxEvent = async (
  * List all kitchen tasks with optional filters
  */
 export const getKitchenTasks = async (filters?: {
-  status?: KitchenTaskStatus;
-  priority?: KitchenTaskPriority;
-  assignedToId?: string;
+  status?: string;
+  priority?: number;
 }): Promise<KitchenTask[]> => {
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
@@ -90,7 +88,6 @@ export const getKitchenTasks = async (filters?: {
     where: {
       ...(filters?.status && { status: filters.status }),
       ...(filters?.priority && { priority: filters.priority }),
-      ...(filters?.assignedToId && { assignedToId: filters.assignedToId }),
     },
     orderBy: { createdAt: "desc" },
   });
@@ -100,29 +97,13 @@ export const getKitchenTasks = async (filters?: {
  * Get a single kitchen task by ID
  */
 export const getKitchenTaskById = async (
-  taskId: string,
-): Promise<
-  | (KitchenTask & {
-      assignedTo: { id: string; email: string; firstName: string | null; lastName: string | null } | null;
-      createdBy: { id: string; email: string; firstName: string | null; lastName: string | null } | null;
-      claims: KitchenTaskClaim[];
-      progressLog: KitchenTaskProgress[];
-    })
-  | null
-> => {
+  taskId: string
+): Promise<KitchenTask | null> => {
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
 
   return client.kitchenTask.findFirst({
     where: { id: taskId },
-    include: {
-      assignedTo: true,
-      createdBy: true,
-      claims: true,
-      progressLog: {
-        orderBy: { createdAt: "desc" },
-      },
-    },
   });
 };
 
@@ -130,38 +111,26 @@ export const getKitchenTaskById = async (
  * Get tasks filtered by status
  */
 export const getKitchenTasksByStatus = async (
-  status: KitchenTaskStatus,
-): Promise<
-  (KitchenTask & {
-    assignedTo: { id: string; email: string; firstName: string | null; lastName: string | null } | null;
-    createdBy: { id: string; email: string; firstName: string | null; lastName: string | null } | null;
-  })[]
-> => getKitchenTasks({ status });
+  status: string
+): Promise<KitchenTask[]> => getKitchenTasks({ status });
 
 /**
  * Get urgent priority tasks that are open or in progress
  */
-export const getUrgentTasks = async (): Promise<
-  (KitchenTask & {
-    assignedTo: { id: string; email: string; firstName: string | null; lastName: string | null } | null;
-    createdBy: { id: string; email: string; firstName: string | null; lastName: string | null } | null;
-  })[]
-> => {
+export const getUrgentTasks = async (): Promise<KitchenTask[]> => {
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
 
   return client.kitchenTask.findMany({
     where: {
-      priority: "urgent",
+      priority: {
+        lte: 2, // Urgent and Critical (1-2)
+      },
       status: {
         in: ["open", "in_progress"],
       },
     },
-    orderBy: [{ dueAt: "asc" }, { createdAt: "asc" }],
-    include: {
-      assignedTo: true,
-      createdBy: true,
-    },
+    orderBy: [{ dueDate: "asc" }, { createdAt: "asc" }],
   });
 };
 
@@ -172,7 +141,9 @@ export const getUrgentTasks = async (): Promise<
 /**
  * Create a new kitchen task
  */
-export const createKitchenTask = async (formData: FormData): Promise<KitchenTask> => {
+export const createKitchenTask = async (
+  formData: FormData
+): Promise<KitchenTask> => {
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
 
@@ -181,33 +152,36 @@ export const createKitchenTask = async (formData: FormData): Promise<KitchenTask
     throw new Error("Task title is required.");
   }
 
-  const description = getOptionalString(formData, "description");
-  const priority = getString(formData, "priority") as KitchenTaskPriority | undefined;
-  const dueAt = getDateTime(formData, "dueAt");
-  const assignedToId = getOptionalString(formData, "assignedToId");
-  const createdById = getOptionalString(formData, "createdById");
+  const summary = getOptionalString(formData, "summary") || "";
+  const priorityStr = getString(formData, "priority");
+  const priority = priorityStr ? Number.parseInt(priorityStr, 10) : undefined;
+  const dueDate = getDateTime(formData, "dueDate");
 
   const task = await client.kitchenTask.create({
     data: {
       tenantId,
       title,
-      description,
-      priority: priority || "medium",
-      dueAt,
-      assignedToId: assignedToId ?? undefined,
-      createdById: createdById ?? undefined,
+      summary,
+      priority: priority || 5, // default to medium (5)
+      dueDate,
     },
   });
 
   revalidatePath("/kitchen/tasks");
 
   // Enqueue outbox event for real-time sync
-  await enqueueOutboxEvent(tenantId, "kitchen.task", task.id, "kitchen.task.created", {
-    taskId: task.id,
-    title: task.title,
-    priority: task.priority,
-    status: task.status,
-  });
+  await enqueueOutboxEvent(
+    tenantId,
+    "kitchen.task",
+    task.id,
+    "kitchen.task.created",
+    {
+      taskId: task.id,
+      title: task.title,
+      priority: task.priority,
+      status: task.status,
+    }
+  );
 
   return task;
 };
@@ -215,7 +189,9 @@ export const createKitchenTask = async (formData: FormData): Promise<KitchenTask
 /**
  * Update kitchen task fields
  */
-export const updateKitchenTask = async (formData: FormData): Promise<KitchenTask> => {
+export const updateKitchenTask = async (
+  formData: FormData
+): Promise<KitchenTask> => {
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
 
@@ -225,31 +201,36 @@ export const updateKitchenTask = async (formData: FormData): Promise<KitchenTask
   }
 
   const title = getString(formData, "title");
-  const description = getOptionalString(formData, "description");
-  const priority = getString(formData, "priority") as KitchenTaskPriority | undefined;
-  const dueAt = getDateTime(formData, "dueAt");
-  const assignedToId = getOptionalString(formData, "assignedToId");
+  const summary = getOptionalString(formData, "summary");
+  const priorityStr = getString(formData, "priority");
+  const priority = priorityStr ? Number.parseInt(priorityStr, 10) : undefined;
+  const dueDate = getDateTime(formData, "dueDate");
 
   const task = await client.kitchenTask.update({
-    where: { id: taskId },
+    where: { tenantId_id: { tenantId, id: taskId } },
     data: {
       ...(title && { title }),
-      ...(description !== undefined && { description }),
+      ...(summary !== undefined && { summary: summary || "" }),
       ...(priority && { priority }),
-      ...(dueAt && { dueAt }),
-      ...(assignedToId !== undefined && { assignedToId: assignedToId ?? undefined }),
+      ...(dueDate && { dueDate }),
     },
   });
 
   revalidatePath("/kitchen/tasks");
 
   // Enqueue outbox event for real-time sync
-  await enqueueOutboxEvent(tenantId, "kitchen.task", task.id, "kitchen.task.updated", {
-    taskId: task.id,
-    title: task.title,
-    priority: task.priority,
-    status: task.status,
-  });
+  await enqueueOutboxEvent(
+    tenantId,
+    "kitchen.task",
+    task.id,
+    "kitchen.task.updated",
+    {
+      taskId: task.id,
+      title: task.title,
+      priority: task.priority,
+      status: task.status,
+    }
+  );
 
   return task;
 };
@@ -259,7 +240,7 @@ export const updateKitchenTask = async (formData: FormData): Promise<KitchenTask
  */
 export const updateKitchenTaskStatus = async (
   taskId: string,
-  status: KitchenTaskStatus,
+  status: KitchenTaskStatus
 ): Promise<KitchenTask> => {
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
@@ -280,18 +261,24 @@ export const updateKitchenTaskStatus = async (
   const previousStatus = currentTask.status;
 
   const task = await client.kitchenTask.update({
-    where: { id: taskId },
+    where: { tenantId_id: { tenantId, id: taskId } },
     data: { status },
   });
 
   revalidatePath("/kitchen/tasks");
 
   // Enqueue outbox event for real-time sync
-  await enqueueOutboxEvent(tenantId, "kitchen.task", task.id, "kitchen.task.status_changed", {
-    taskId: task.id,
-    status: task.status,
-    previousStatus,
-  });
+  await enqueueOutboxEvent(
+    tenantId,
+    "kitchen.task",
+    task.id,
+    "kitchen.task.status_changed",
+    {
+      taskId: task.id,
+      status: task.status,
+      previousStatus,
+    }
+  );
 
   return task;
 };
@@ -308,15 +295,21 @@ export const deleteKitchenTask = async (taskId: string): Promise<void> => {
   }
 
   await client.kitchenTask.delete({
-    where: { id: taskId },
+    where: { tenantId_id: { tenantId, id: taskId } },
   });
 
   revalidatePath("/kitchen/tasks");
 
   // Enqueue outbox event for real-time sync
-  await enqueueOutboxEvent(tenantId, "kitchen.task", taskId, "kitchen.task.deleted", {
+  await enqueueOutboxEvent(
+    tenantId,
+    "kitchen.task",
     taskId,
-  });
+    "kitchen.task.deleted",
+    {
+      taskId,
+    }
+  );
 };
 
 // ============================================================================
@@ -326,17 +319,20 @@ export const deleteKitchenTask = async (taskId: string): Promise<void> => {
 /**
  * Claim a task for a user and set status to in_progress
  */
-export const claimTask = async (taskId: string, userId: string): Promise<KitchenTaskClaim> => {
+export const claimTask = async (
+  taskId: string,
+  employeeId: string
+): Promise<KitchenTaskClaim> => {
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
 
-  if (!(taskId && userId)) {
-    throw new Error("Task id and user id are required.");
+  if (!(taskId && employeeId)) {
+    throw new Error("Task id and employee id are required.");
   }
 
   // Update task status to in_progress
   await client.kitchenTask.update({
-    where: { id: taskId },
+    where: { tenantId_id: { tenantId, id: taskId } },
     data: { status: "in_progress" },
   });
 
@@ -345,18 +341,24 @@ export const claimTask = async (taskId: string, userId: string): Promise<Kitchen
     data: {
       tenantId,
       taskId,
-      userId,
+      employeeId,
     },
   });
 
   revalidatePath("/kitchen/tasks");
 
   // Enqueue outbox event for real-time sync
-  await enqueueOutboxEvent(tenantId, "kitchen.task", taskId, "kitchen.task.claimed", {
+  await enqueueOutboxEvent(
+    tenantId,
+    "kitchen.task",
     taskId,
-    userId,
-    claimedAt: claim.claimedAt.toISOString(),
-  });
+    "kitchen.task.claimed",
+    {
+      taskId,
+      employeeId,
+      claimedAt: claim.claimedAt.toISOString(),
+    }
+  );
 
   return claim;
 };
@@ -366,7 +368,7 @@ export const claimTask = async (taskId: string, userId: string): Promise<Kitchen
  */
 export const releaseTask = async (
   taskId: string,
-  reason?: string | null,
+  reason?: string | null
 ): Promise<KitchenTaskClaim | null> => {
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
@@ -389,7 +391,7 @@ export const releaseTask = async (
 
   // Release the claim
   const updatedClaim = await client.kitchenTaskClaim.update({
-    where: { id: activeClaim.id },
+    where: { tenantId_id: { tenantId, id: activeClaim.id } },
     data: {
       releasedAt: new Date(),
       releaseReason: reason ?? undefined,
@@ -398,18 +400,24 @@ export const releaseTask = async (
 
   // Update task status back to open
   await client.kitchenTask.update({
-    where: { id: taskId },
+    where: { tenantId_id: { tenantId, id: taskId } },
     data: { status: "open" },
   });
 
   revalidatePath("/kitchen/tasks");
 
   // Enqueue outbox event for real-time sync
-  await enqueueOutboxEvent(tenantId, "kitchen.task", taskId, "kitchen.task.released", {
+  await enqueueOutboxEvent(
+    tenantId,
+    "kitchen.task",
     taskId,
-    userId: activeClaim.userId,
-    reason: reason ?? null,
-  });
+    "kitchen.task.released",
+    {
+      taskId,
+      employeeId: activeClaim.employeeId,
+      reason: reason ?? null,
+    }
+  );
 
   return updatedClaim;
 };
@@ -417,7 +425,9 @@ export const releaseTask = async (
 /**
  * Get all claims for a task
  */
-export const getTaskClaims = async (taskId: string): Promise<KitchenTaskClaim[]> => {
+export const getTaskClaims = async (
+  taskId: string
+): Promise<KitchenTaskClaim[]> => {
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
 
@@ -434,33 +444,20 @@ export const getTaskClaims = async (taskId: string): Promise<KitchenTaskClaim[]>
 /**
  * Get user's active (unreleased) claims
  */
-export const getMyActiveClaims = async (userId: string): Promise<
-  (KitchenTaskClaim & {
-    task: KitchenTask & {
-      assignedTo: { id: string; email: string; firstName: string | null; lastName: string | null } | null;
-      createdBy: { id: string; email: string; firstName: string | null; lastName: string | null } | null;
-    };
-  })[]
-> => {
+export const getMyActiveClaims = async (
+  employeeId: string
+): Promise<KitchenTaskClaim[]> => {
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
 
-  if (!userId) {
-    throw new Error("User id is required.");
+  if (!employeeId) {
+    throw new Error("Employee id is required.");
   }
 
   return client.kitchenTaskClaim.findMany({
     where: {
-      userId,
+      employeeId,
       releasedAt: null,
-    },
-    include: {
-      task: {
-        include: {
-          assignedTo: true,
-          createdBy: true,
-        },
-      },
     },
     orderBy: { claimedAt: "desc" },
   });
@@ -475,33 +472,53 @@ export const getMyActiveClaims = async (userId: string): Promise<
  */
 export const addTaskProgress = async (
   taskId: string,
-  status: KitchenTaskStatus,
-  note?: string | null,
+  employeeId: string,
+  progressType: string,
+  options?: {
+    oldStatus?: string;
+    newStatus?: string;
+    quantityCompleted?: number;
+    notes?: string;
+  }
 ): Promise<KitchenTaskProgress> => {
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
 
-  if (!taskId) {
-    throw new Error("Task id is required.");
+  if (!(taskId && employeeId)) {
+    throw new Error("Task id and employee id are required.");
   }
 
   const progress = await client.kitchenTaskProgress.create({
     data: {
       tenantId,
       taskId,
-      status,
-      note: note ?? undefined,
+      employeeId,
+      progressType,
+      ...(options?.oldStatus && { oldStatus: options.oldStatus }),
+      ...(options?.newStatus && { newStatus: options.newStatus }),
+      ...(options?.quantityCompleted && {
+        quantityCompleted: options.quantityCompleted,
+      }),
+      ...(options?.notes && { notes: options.notes }),
     },
   });
 
   revalidatePath("/kitchen/tasks");
 
   // Enqueue outbox event for real-time sync
-  await enqueueOutboxEvent(tenantId, "kitchen.task.progress", taskId, "kitchen.task.progress", {
+  await enqueueOutboxEvent(
+    tenantId,
+    "kitchen.task.progress",
     taskId,
-    status,
-    note: note ?? null,
-  });
+    "kitchen.task.progress",
+    {
+      taskId,
+      employeeId,
+      progressType,
+      ...(options?.newStatus && { newStatus: options.newStatus }),
+      ...(options?.notes && { notes: options.notes }),
+    }
+  );
 
   return progress;
 };
@@ -509,7 +526,9 @@ export const addTaskProgress = async (
 /**
  * Get progress history for a task
  */
-export const getTaskProgressLog = async (taskId: string): Promise<KitchenTaskProgress[]> => {
+export const getTaskProgressLog = async (
+  taskId: string
+): Promise<KitchenTaskProgress[]> => {
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
 
