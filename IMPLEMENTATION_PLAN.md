@@ -18,14 +18,14 @@ Non-goals:
 
 ## Tasks (ordered)
 
-- [ ] T1: Update recipes page grid to responsive layout (2 mobile, 3 tablet, 4 desktop) with 16:9 aspect ratio images
-- [ ] T2: Add heart/favorite icon with hover animation to recipe cards
-- [ ] T3: Create shared modal component with full-screen mobile and centered desktop views (max-width 800px)
-- [ ] T4: Implement recipe editor modal with Basic Info section (title, description, prep/cook time, servings, difficulty)
+- [x] T1: Update recipes page grid to responsive layout (2 mobile, 3 tablet, 4 desktop) with 16:9 aspect ratio images
+- [x] T2: Add heart/favorite icon with hover animation to recipe cards
+- [x] T3: Create shared modal component with full-screen mobile and centered desktop views (max-width 800px)
+- [x] T4: Implement recipe editor modal with Basic Info section (title, description, prep/cook time, servings, difficulty)
 - [ ] T5: Add image upload section with drag-and-drop zone, preview, and progress indicators
-- [ ] T6: Implement dynamic ingredients list with add/remove rows (quantity, unit, name, optional checkbox)
-- [ ] T7: Add step-by-step instructions with drag-to-reorder handles
-- [ ] T8: Implement tag input with suggestions
+- [x] T6: Implement dynamic ingredients list with add/remove rows (quantity, unit, name, optional checkbox)
+- [x] T7: Add step-by-step instructions with drag-to-reorder handles
+- [x] T8: Implement tag input with suggestions
 - [ ] T9: Add toast notification component with 3s auto-dismiss and undo support
 - [ ] T10: Update events page with enhanced card layout and RSVP functionality
 - [ ] T11: Add loading states (skeleton cards, spinners, progress bars)
