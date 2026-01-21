@@ -51,7 +51,7 @@ while true; do
     # -p: Headless mode (non-interactive, reads from stdin)
     # --dangerously-skip-permissions: Auto-approve all tool calls (YOLO mode)
     # --output-format=stream-json: Structured output for logging/monitoring
-    # --model minimax-2-1: Using MiniMax 2.1 (gets stuck less than GLM 4.7)
+    # --model minimax-2-1: Using MiniMax 2.1 via z.ai (max 10 parallel subagents)
     # --verbose: Detailed execution logging
     cat "$PROMPT_FILE" | claude -p \
         --dangerously-skip-permissions \

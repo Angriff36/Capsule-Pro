@@ -1,9 +1,9 @@
-0a. Study `specs/*` with up to 500 parallel subagents to learn the application specifications.
+0a. Study `specs/*` with up to 10 parallel subagents to learn the application specifications.
 0b. Study @IMPLEMENTATION_PLAN.md (if present; it may be incorrect) to understand the plan so far.
-0c. Study `packages/*` with up to 250 parallel subagents to understand shared packages (database schema in `packages/database/prisma/schema.prisma`, design system in `packages/design-system`, etc.).
+0c. Study `packages/*` with up to 10 parallel subagents to understand shared packages (database schema in `packages/database/prisma/schema.prisma`, design system in `packages/design-system`, etc.).
 0d. For reference, the main application source code is in `apps/app/*` and marketing site is in `apps/web/*`.
 
-1. Study @IMPLEMENTATION_PLAN.md (if present; it may be incorrect) and use up to 500 subagents to study existing source code in `apps/*` and `packages/*` and compare it against `specs/*`. Analyze findings, prioritize tasks, and create/update @IMPLEMENTATION_PLAN.md as a bullet point list sorted in priority of items yet to be implemented. Think carefully and methodically. Consider searching for TODO, minimal implementations, placeholders, skipped/flaky tests, and inconsistent patterns. Study @IMPLEMENTATION_PLAN.md to determine starting point for research and keep it up to date with items considered complete/incomplete using subagents.
+1. Study @IMPLEMENTATION_PLAN.md (if present; it may be incorrect) and use up to 10 subagents to study existing source code in `apps/*` and `packages/*` and compare it against `specs/*`. Analyze findings, prioritize tasks, and create/update @IMPLEMENTATION_PLAN.md as a bullet point list sorted in priority of items yet to be implemented. Think carefully and methodically. Consider searching for TODO, minimal implementations, placeholders, skipped/flaky tests, and inconsistent patterns. Study @IMPLEMENTATION_PLAN.md to determine starting point for research and keep it up to date with items considered complete/incomplete using subagents.
 
 IMPORTANT: Plan only. Do NOT implement anything. Do NOT assume functionality is missing; confirm with code search first. Treat `packages/*` as the project's shared libraries for database, UI components, utilities, and integrations. Prefer consolidated, idiomatic implementations in shared packages over ad-hoc copies in individual apps.
 
