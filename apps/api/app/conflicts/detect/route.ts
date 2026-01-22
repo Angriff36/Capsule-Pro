@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { detectConflicts } from "./service";
-import type { ConflictDetectionRequest } from "./types";
+import { detectConflicts } from "../service";
+import type { ConflictDetectionRequest } from "../types";
 
 export async function POST(request: Request) {
   try {
