@@ -1,10 +1,7 @@
-import { ModuleSection } from "../../components/module-section";
+import { ShiftsClient } from "./components/shifts-client";
 
-const SchedulingShiftsPage = () => (
-  <ModuleSection
-    summary="Create and manage shifts by role, station, and event."
-    title="Shifts"
-  />
-);
+const SchedulingShiftsPage = () => {
+  return <ShiftsClient />;
+};
 
 export default SchedulingShiftsPage;
