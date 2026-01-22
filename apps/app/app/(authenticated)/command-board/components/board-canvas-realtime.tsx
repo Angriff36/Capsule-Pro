@@ -16,6 +16,8 @@ import {
 import { createCard, deleteCard, updateCard } from "../actions/cards";
 import {
   type BoardState,
+  CardType,
+  type CardConnection,
   type CommandBoardCard,
   INITIAL_BOARD_STATE,
   type Point,
@@ -24,6 +26,7 @@ import {
 } from "../types";
 import { BoardCard } from "./board-card";
 import { CanvasViewport } from "./canvas-viewport";
+import { ConnectionLines } from "./connection-lines";
 import { GridLayer } from "./grid-layer";
 import { calculateFitToScreen } from "./viewport-controls";
 
@@ -54,15 +57,139 @@ export function BoardCanvas({
   const [gridSize, setGridSize] = useState(40);
   const [showGrid, setShowGrid] = useState(true);
   const [snapToGrid, setSnapToGrid] = useState(true);
+  const [selectedCardType, setSelectedCardType] = useState<CardType>(CardType.generic);
 
   const [showSettings, setShowSettings] = useState(false);
   const [showEmptyState, setShowEmptyState] = useState(
     initialCards.length === 0
   );
+  const [connections, setConnections] = useState<CardConnection[]>([]);
+  const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(
+    null
+  );
 
   const { updateCursor, updateSelectedCard, clearPresence } =
     useCommandBoardPresence();
   const broadcast = useBroadcastEvent();
+
+  useEffect(() => {
+    const autoGenerateConnections = () => {
+      const cardById = new Map(state.cards.map((card) => [card.id, card]));
+      const newConnections: CardConnection[] = [];
+
+      for (const card of state.cards) {
+        const entityId = card.metadata.entityId;
+        if (!entityId) {
+          continue;
+        }
+
+        if (card.cardType === "client") {
+          const relatedEvents = state.cards.filter(
+            (c) =>
+              c.cardType === "event" &&
+              c.metadata.eventId === entityId &&
+              c.id !== card.id
+          );
+          for (const eventCard of relatedEvents) {
+            const connectionId = `${card.id}-${eventCard.id}-client_to_event`;
+            const existingConnection = connections.find(
+              (conn) => conn.id === connectionId
+            );
+            if (!existingConnection) {
+              newConnections.push({
+                id: connectionId,
+                fromCardId: card.id,
+                toCardId: eventCard.id,
+                relationshipType: "client_to_event",
+                visible: true,
+              });
+            }
+          }
+        }
+
+        if (card.cardType === "event") {
+          const eventCardId = entityId;
+          const relatedTasks = state.cards.filter(
+            (c) =>
+              c.cardType === "task" &&
+              c.metadata.eventId === eventCardId &&
+              c.id !== card.id
+          );
+          for (const taskCard of relatedTasks) {
+            const connectionId = `${card.id}-${taskCard.id}-event_to_task`;
+            const existingConnection = connections.find(
+              (conn) => conn.id === connectionId
+            );
+            if (!existingConnection) {
+              newConnections.push({
+                id: connectionId,
+                fromCardId: card.id,
+                toCardId: taskCard.id,
+                relationshipType: "event_to_task",
+                visible: true,
+              });
+            }
+          }
+
+          const relatedInventory = state.cards.filter(
+            (c) =>
+              c.cardType === "inventory" &&
+              c.metadata.eventId === eventCardId &&
+              c.id !== card.id
+          );
+          for (const invCard of relatedInventory) {
+            const connectionId = `${card.id}-${invCard.id}-event_to_inventory`;
+            const existingConnection = connections.find(
+              (conn) => conn.id === connectionId
+            );
+            if (!existingConnection) {
+              newConnections.push({
+                id: connectionId,
+                fromCardId: card.id,
+                toCardId: invCard.id,
+                relationshipType: "event_to_inventory",
+                visible: true,
+              });
+            }
+          }
+        }
+
+        if (card.cardType === "task") {
+          const assignee = card.metadata.assignee;
+          const assigneeId = assignee && typeof assignee === "object" && "id" in assignee ? assignee.id : null;
+          if (assigneeId) {
+            const assignedEmployee = state.cards.find(
+              (c) =>
+                c.cardType === "employee" &&
+                c.metadata.entityId === assigneeId &&
+                c.id !== card.id
+            );
+            if (assignedEmployee) {
+              const connectionId = `${card.id}-${assignedEmployee.id}-task_to_employee`;
+              const existingConnection = connections.find(
+                (conn) => conn.id === connectionId
+              );
+              if (!existingConnection) {
+                newConnections.push({
+                  id: connectionId,
+                  fromCardId: card.id,
+                  toCardId: assignedEmployee.id,
+                  relationshipType: "task_to_employee",
+                  visible: true,
+                });
+              }
+            }
+          }
+        }
+      }
+
+      if (newConnections.length > 0) {
+        setConnections((prev) => [...prev, ...newConnections]);
+      }
+    };
+
+    autoGenerateConnections();
+  }, [state.cards, connections]);
 
   useEffect(() => {
     setShowEmptyState(state.cards.length === 0);
@@ -137,8 +264,8 @@ export function BoardCanvas({
 
   const handleAddCard = useCallback(async () => {
     const result = await createCard(boardId, {
-      title: "New Card",
-      cardType: "generic",
+      title: `New ${selectedCardType.charAt(0).toUpperCase() + selectedCardType.slice(1)}`,
+      cardType: selectedCardType,
       position: {
         x: 100 + state.cards.length * 20,
         y: 100 + state.cards.length * 20,
@@ -161,18 +288,20 @@ export function BoardCanvas({
     } else {
       console.log(result.error ?? "Failed to add card");
     }
-  }, [boardId, state.cards.length, broadcast]);
+  }, [boardId, selectedCardType, state.cards.length, broadcast]);
 
   const handleCardClick = useCallback(
     (cardId: string) => {
       if (!canEdit) return;
 
       updateSelectedCard(cardId);
+      setSelectedConnectionId(null);
       setState((prev) => {
         const isAlreadySelected = prev.selectedCardIds.includes(cardId);
         return {
           ...prev,
           selectedCardIds: isAlreadySelected ? [] : [cardId],
+          selectedConnectionId: null,
         };
       });
     },
@@ -286,20 +415,35 @@ export function BoardCanvas({
     }));
   }, [state.cards]);
 
+  const handleConnectionClick = useCallback((connectionId: string) => {
+    if (!canEdit) return;
+    setSelectedConnectionId(connectionId);
+    updateSelectedCard(null);
+    setState((prev) => ({
+      ...prev,
+      selectedCardIds: [],
+      selectedConnectionId: connectionId,
+    }));
+  }, [canEdit, updateSelectedCard]);
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!canEdit) return;
+
+      if (e.key === "Escape") {
+        updateSelectedCard(null);
+        setState((prev) => ({
+          ...prev,
+          selectedCardIds: [],
+          selectedConnectionId: null,
+        }));
+      }
 
       if (
         (e.key === "Delete" || e.key === "Backspace") &&
         state.selectedCardIds.length > 0
       ) {
         state.selectedCardIds.forEach((id) => handleDeleteCard(id));
-      }
-
-      if (e.key === "Escape") {
-        updateSelectedCard(null);
-        setState((prev) => ({ ...prev, selectedCardIds: [] }));
       }
 
       if (e.key === "a" && (e.metaKey || e.ctrlKey)) {
@@ -412,22 +556,50 @@ export function BoardCanvas({
 
         <div className="flex items-center gap-2">
           {canEdit && (
-            <Button onClick={handleAddCard} size="sm" variant="default">
-              <svg
-                className="mr-2 h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <line x1="12" x2="12" y1="5" y2="19" />
-                <line x1="5" x2="19" y1="12" y2="12" />
-              </svg>
-              Add Card
-            </Button>
+            <>
+              <div className="relative">
+                <select
+                  className="appearance-none rounded-md border bg-background pr-8 pl-3 py-1.5 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  onChange={(e) => setSelectedCardType(e.target.value as CardType)}
+                  value={selectedCardType}
+                >
+                  <option value={CardType.generic}>Note</option>
+                  <option value={CardType.task}>Task</option>
+                  <option value={CardType.event}>Event</option>
+                  <option value={CardType.client}>Client</option>
+                  <option value={CardType.employee}>Staff</option>
+                  <option value={CardType.inventory}>Inventory</option>
+                  <option value={CardType.recipe}>Recipe</option>
+                </select>
+                <svg
+                  className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
+              <Button onClick={handleAddCard} size="sm" variant="default">
+                <svg
+                  className="mr-2 h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <line x1="12" x2="12" y1="5" y2="19" />
+                  <line x1="5" x2="19" y1="12" y2="12" />
+                </svg>
+                Add Card
+              </Button>
+            </>
           )}
 
           <Button
@@ -517,13 +689,20 @@ export function BoardCanvas({
         enableWheelZoom={true}
         initialViewport={state.viewport}
         onViewportChange={handleViewportChange}
-        showControls={false}
+        showControls={true}
       >
         <div className="relative min-h-[4000px] min-w-[4000px]">
           <GridLayer
             className="absolute inset-0"
             gridSize={gridSize}
             showGrid={showGrid}
+          />
+
+          <ConnectionLines
+            cards={state.cards}
+            connections={connections}
+            onConnectionClick={handleConnectionClick}
+            selectedConnectionId={selectedConnectionId ?? undefined}
           />
 
           {state.cards.map((card) => (
@@ -589,102 +768,6 @@ export function BoardCanvas({
           )}
         </div>
       </CanvasViewport>
-
-      {/* Floating Zoom HUD - always visible */}
-      <div className="absolute bottom-4 right-4 z-50 flex items-center gap-2 rounded-lg border bg-background/95 px-3 py-2 shadow-lg backdrop-blur-sm">
-        <button
-          aria-label="Zoom out"
-          className="flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
-          disabled={state.viewport.zoom <= 0.25}
-          onClick={() => {
-            setState((prev) => ({
-              ...prev,
-              viewport: {
-                ...prev.viewport,
-                zoom: Math.max(0.25, prev.viewport.zoom - 0.1),
-              },
-            }));
-          }}
-          type="button"
-        >
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" x2="16.65" y1="21" y2="16.65" />
-            <line x1="8" x2="14" y1="11" y2="11" />
-          </svg>
-        </button>
-
-        <span className="min-w-[3.5rem] text-center font-mono text-xs">
-          {Math.round(state.viewport.zoom * 100)}%
-        </span>
-
-        <button
-          aria-label="Zoom in"
-          className="flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
-          disabled={state.viewport.zoom >= 2}
-          onClick={() => {
-            setState((prev) => ({
-              ...prev,
-              viewport: {
-                ...prev.viewport,
-                zoom: Math.min(2, prev.viewport.zoom + 0.1),
-              },
-            }));
-          }}
-          type="button"
-        >
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" x2="16.65" y1="21" y2="16.65" />
-            <line x1="11" x2="11" y1="8" y2="14" />
-            <line x1="8" x2="14" y1="11" y2="11" />
-          </svg>
-        </button>
-
-        <div
-          aria-hidden="true"
-          className="mx-1 h-5 w-px bg-border"
-        />
-
-        <button
-          aria-label="Fit to screen"
-          className="flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
-          disabled={state.cards.length === 0}
-          onClick={handleFitToScreen}
-          type="button"
-        >
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <path d="M8 3H5a2 2 0 0 0-2 2v3" />
-            <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
-            <path d="M3 16v3a2 2 0 0 0 2 2h3" />
-            <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
-          </svg>
-        </button>
-      </div>
     </div>
   );
 }

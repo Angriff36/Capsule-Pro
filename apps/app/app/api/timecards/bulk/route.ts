@@ -46,7 +46,7 @@ async function validateTimeEntries(
   return timeEntries;
 }
 
-async function processApprovals(
+function processApprovals(
   tx: TxClient,
   tenantId: string,
   timeEntryIds: string[],
@@ -66,7 +66,7 @@ async function processApprovals(
   });
 }
 
-async function processRejections(
+function processRejections(
   tx: TxClient,
   tenantId: string,
   timeEntryIds: string[],

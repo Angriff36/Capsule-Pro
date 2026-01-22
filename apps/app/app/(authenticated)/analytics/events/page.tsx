@@ -1,10 +1,9 @@
-import { ModuleSection } from "../../components/module-section";
+import { ProfitabilityDashboard } from "./components/profitability-dashboard";
 
 const AnalyticsEventsPage = () => (
-  <ModuleSection
-    summary="Analyze event performance, margins, and service trends."
-    title="Event Analytics"
-  />
+  <div className="container mx-auto py-8">
+    <ProfitabilityDashboard />
+  </div>
 );
 
 export default AnalyticsEventsPage;

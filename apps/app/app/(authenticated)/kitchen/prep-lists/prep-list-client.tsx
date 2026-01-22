@@ -378,7 +378,7 @@ export function PrepListClient({
   if (!prepList) {
     return (
       <div className="space-y-6">
-        <EmptyState onGoToEvents={() => router.push(`/events/${eventId}`)} />
+        <EmptyState onGoToEvents={() => router.push(`/events/${eventId}#dishes`)} />
       </div>
     );
   }
@@ -529,7 +529,7 @@ export function PrepListClient({
             ))}
           </div>
         ) : prepList.totalIngredients === 0 ? (
-          <EmptyState onGoToEvents={() => router.push(`/events/${eventId}`)} />
+          <EmptyState onGoToEvents={() => router.push(`/events/${eventId}#dishes`)} />
         ) : (
           <div className="space-y-6">
             <Alert>

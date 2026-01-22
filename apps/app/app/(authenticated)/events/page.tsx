@@ -22,6 +22,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
 import { Header } from "../components/header";
+import { EventsPageClient } from "./events-page-client";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   dateStyle: "medium",
@@ -72,6 +73,7 @@ const EventsPage = async () => {
           </Button>
         </div>
       </Header>
+      <EventsPageClient />
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         <section className="grid gap-4 lg:grid-cols-4">
           <Card>

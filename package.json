@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "docs:list": "bun ./tools/scripts/docs-list.ts",
-    "browser-tools": "npx chrome-devtools-mcp@latest --headless=false --isolated=true --viewport=1920x1080",
+    "browser-tools": "npx @modelcontextprotocol/server-playwright",
     "build": "turbo build",
     "dev": "turbo dev --parallel",
     "dev:check": "node scripts/dev.mjs",
@@ -49,6 +49,7 @@
     "commander": "^14.0.2",
     "cross-env": "^7.0.3",
     "husky": "^9.1.7",
+    "playwright": "^1.57.0",
     "secretlint": "^11.3.0",
     "tsup": "^8.5.1",
     "turbo": "^2.6.3",

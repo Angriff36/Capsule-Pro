@@ -38,6 +38,7 @@ import { RecipeFavoriteButton } from "./recipe-favorite-button";
 import { RecipeImagePlaceholder } from "./recipe-image-placeholder";
 import RecipesRealtime from "./recipes-realtime";
 import { RecipesToolbar } from "./recipes-toolbar";
+import { RecipesPageClient } from "./recipes-page-client";
 
 type RecipeRow = {
   id: string;
@@ -408,6 +409,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
         </div>
       </Header>
       <RecipesRealtime tenantId={tenantId} userId={userId} />
+      {activeTab === "recipes" && <RecipesPageClient />}
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         <div className="rounded-3xl border bg-card/80 p-4 shadow-sm">
           <RecipesToolbar

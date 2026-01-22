@@ -326,6 +326,7 @@ DATABASE_PRE_MIGRATION_CHECKLIST.md
 IMPLEMENTATION_SUMMARY_BATTLE_BOARD.md
 create_timeline_tasks_table.sql
 test-results/
+e2e/.auth/
 test-*.spec.ts
 **/battle-board/README.md
 nul

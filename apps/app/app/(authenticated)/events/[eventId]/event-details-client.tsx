@@ -1,21 +1,56 @@
 "use client";
 
 import type { Event } from "@repo/database";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@repo/design-system/components/ui/collapsible";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@repo/design-system/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { ChevronDownIcon, PlusIcon, SparklesIcon } from "lucide-react";
+import { ChevronDownIcon, PlusIcon, SparklesIcon, TrashIcon, UtensilsIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   generateTaskBreakdown,
   saveTaskBreakdown,
   type TaskBreakdown,
 } from "../actions/task-breakdown";
+import {
+  addDishToEvent,
+  getAvailableDishes,
+  getEventDishes,
+  removeDishFromEvent,
+} from "../actions/event-dishes";
+import {
+  deleteEventSummary,
+  generateEventSummary,
+  getEventSummary,
+  type GeneratedEventSummary,
+} from "../actions/event-summary";
+import {
+  EventSummaryDisplay,
+  EventSummarySkeleton,
+  GenerateEventSummaryModal,
+} from "../components/event-summary-display";
 import {
   GenerateTaskBreakdownModal,
   TaskBreakdownDisplay,
@@ -28,6 +63,24 @@ type EventDetailsClientProps = {
   prepTasks: PrepTaskSummary[];
 };
 
+type EventDish = {
+  link_id: string;
+  dish_id: string;
+  name: string;
+  category: string | null;
+  recipe_name: string | null;
+  course: string | null;
+  quantity_servings: number;
+  dietary_tags: string[] | null;
+};
+
+type AvailableDish = {
+  id: string;
+  name: string;
+  category: string | null;
+  recipe_name: string | null;
+};
+
 export function EventDetailsClient({
   event,
   prepTasks: initialPrepTasks,
@@ -38,6 +91,95 @@ export function EventDetailsClient({
   const [generationProgress, setGenerationProgress] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
+
+  // Summary state
+  const [summary, setSummary] = useState<GeneratedEventSummary | null | undefined>(undefined);
+  const [isLoadingSummary, setIsLoadingSummary] = useState(true);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+
+  // Dishes state
+  const [eventDishes, setEventDishes] = useState<EventDish[]>([]);
+  const [availableDishes, setAvailableDishes] = useState<AvailableDish[]>([]);
+  const [isLoadingDishes, setIsLoadingDishes] = useState(false);
+  const [showAddDishDialog, setShowAddDishDialog] = useState(false);
+  const [selectedDishId, setSelectedDishId] = useState<string>("");
+  const [selectedCourse, setSelectedCourse] = useState<string>("");
+
+  // Load summary
+  useEffect(() => {
+    const loadSummary = async () => {
+      setIsLoadingSummary(true);
+      try {
+        const result = await getEventSummary(event.id);
+        if (result.success && result.summary) {
+          setSummary(result.summary);
+        } else {
+          setSummary(null);
+        }
+      } catch (error) {
+        console.error("Failed to load summary:", error);
+        setSummary(null);
+      } finally {
+        setIsLoadingSummary(false);
+      }
+    };
+    loadSummary();
+  }, [event.id]);
+
+  // Load dishes
+  const loadDishes = useCallback(async () => {
+    setIsLoadingDishes(true);
+    try {
+      const [linked, available] = await Promise.all([
+        getEventDishes(event.id),
+        getAvailableDishes(event.id),
+      ]);
+      setEventDishes(linked as EventDish[]);
+      setAvailableDishes(available as AvailableDish[]);
+    } catch (error) {
+      console.error("Failed to load dishes:", error);
+    } finally {
+      setIsLoadingDishes(false);
+    }
+  }, [event.id]);
+
+  useEffect(() => {
+    loadDishes();
+  }, [loadDishes]);
+
+  const handleAddDish = useCallback(async () => {
+    if (!selectedDishId) {
+      toast.error("Please select a dish");
+      return;
+    }
+
+    const result = await addDishToEvent(
+      event.id,
+      selectedDishId,
+      selectedCourse || undefined
+    );
+
+    if (result.success) {
+      toast.success("Dish added to event");
+      setShowAddDishDialog(false);
+      setSelectedDishId("");
+      setSelectedCourse("");
+      loadDishes();
+    } else {
+      toast.error(result.error || "Failed to add dish");
+    }
+  }, [event.id, selectedDishId, selectedCourse, loadDishes]);
+
+  const handleRemoveDish = useCallback(async (linkId: string) => {
+    const result = await removeDishFromEvent(event.id, linkId);
+
+    if (result.success) {
+      toast.success("Dish removed from event");
+      loadDishes();
+    } else {
+      toast.error(result.error || "Failed to remove dish");
+    }
+  }, [event.id, loadDishes]);
 
   const handleGenerate = useCallback(
     async (customInstructions?: string) => {
@@ -97,6 +239,22 @@ export function EventDetailsClient({
     }
   }, [breakdown, event.id, router]);
 
+  const handleGenerateSummary = useCallback(async (): Promise<GeneratedEventSummary> => {
+    const result = await generateEventSummary(event.id);
+    setSummary(result);
+    router.refresh();
+    return result;
+  }, [event.id, router]);
+
+  const handleDeleteSummary = useCallback(async () => {
+    if (!summary || !summary.id) {
+      return;
+    }
+
+    await deleteEventSummary(summary.id);
+    setSummary(null);
+  }, [summary]);
+
   const handleExport = useCallback(() => {
     if (!breakdown) {
       return;
@@ -109,7 +267,7 @@ export function EventDetailsClient({
     link.setAttribute("href", url);
     link.setAttribute(
       "download",
-      `${event.title.replace(/[^a-z0-9]/gi, "_")}_task_breakdown.csv`
+      event.title.replace(/[^a-z0-9]/gi, "_") + "_task_breakdown.csv"
     );
     link.style.visibility = "hidden";
     document.body.appendChild(link);
@@ -120,6 +278,173 @@ export function EventDetailsClient({
   return (
     <>
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+        {/* Menu/Dishes Section */}
+        <Collapsible
+          id="dishes"
+          className="rounded-xl border bg-card text-card-foreground shadow-sm"
+          defaultOpen={true}
+        >
+          <div className="flex items-center justify-between gap-4 px-6 py-4">
+            <div className="flex items-center gap-2">
+              <UtensilsIcon className="size-5 text-emerald-500" />
+              <div>
+                <div className="font-semibold text-sm">Menu / Dishes</div>
+                <div className="text-muted-foreground text-sm">
+                  {eventDishes.length} dishes linked to this event
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Dialog open={showAddDishDialog} onOpenChange={setShowAddDishDialog}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline">
+                    <PlusIcon className="mr-2 size-3" />
+                    Add Dish
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Dish to Event</DialogTitle>
+                    <DialogDescription>
+                      Select a dish from your menu to add to this event.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Dish</label>
+                      <Select value={selectedDishId} onValueChange={setSelectedDishId}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a dish" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableDishes.length === 0 ? (
+                            <div className="p-2 text-sm text-muted-foreground">
+                              No dishes available. Create dishes in Kitchen Recipes first.
+                            </div>
+                          ) : (
+                            availableDishes.map((dish) => (
+                              <SelectItem key={dish.id} value={dish.id}>
+                                {dish.name}
+                                {dish.category && " (" + dish.category + ")"}
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Course (optional)</label>
+                      <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select course" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="appetizer">Appetizer</SelectItem>
+                          <SelectItem value="soup">Soup</SelectItem>
+                          <SelectItem value="salad">Salad</SelectItem>
+                          <SelectItem value="entree">Entree</SelectItem>
+                          <SelectItem value="dessert">Dessert</SelectItem>
+                          <SelectItem value="beverage">Beverage</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setShowAddDishDialog(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleAddDish} disabled={!selectedDishId}>
+                      Add Dish
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost">
+                  View dishes
+                  <ChevronDownIcon />
+                </Button>
+              </CollapsibleTrigger>
+            </div>
+          </div>
+          <Separator />
+          <CollapsibleContent className="px-6 py-4">
+            {isLoadingDishes ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              </div>
+            ) : eventDishes.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="mb-4 rounded-full bg-muted p-3">
+                  <UtensilsIcon className="size-6 text-muted-foreground" />
+                </div>
+                <p className="mb-2 text-muted-foreground text-sm">
+                  No dishes linked to this event
+                </p>
+                <p className="mb-4 text-muted-foreground text-xs">
+                  Add dishes so they can be used for prep lists and task generation.
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowAddDishDialog(true)}
+                >
+                  <PlusIcon className="mr-2 size-3" />
+                  Add First Dish
+                </Button>
+              </div>
+            ) : (
+              <div className="grid gap-3">
+                {eventDishes.map((dish) => (
+                  <div
+                    className="flex flex-wrap items-center justify-between gap-4 rounded-lg border px-4 py-3"
+                    key={dish.link_id}
+                  >
+                    <div className="flex flex-1 flex-col">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{dish.name}</span>
+                        {dish.course && (
+                          <Badge variant="secondary" className="text-xs">
+                            {dish.course}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground text-xs">
+                        {dish.recipe_name ? (
+                          <span>Recipe: {dish.recipe_name}</span>
+                        ) : (
+                          <span className="text-amber-600">No recipe linked</span>
+                        )}
+                        {(dish.dietary_tags ?? []).length > 0 && (
+                          <Badge variant="outline" className="text-xs">
+                            {dish.dietary_tags?.join(", ")}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground text-xs">
+                        {dish.quantity_servings} servings
+                      </span>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="size-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleRemoveDish(dish.link_id)}
+                      >
+                        <TrashIcon className="size-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
+
+        <Separator />
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <SparklesIcon className="size-5 text-purple-500" />
@@ -160,6 +485,31 @@ export function EventDetailsClient({
         )}
 
         {isGenerating && !breakdown && <TaskBreakdownSkeleton />}
+
+        <Separator />
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <SparklesIcon className="size-5 text-primary" />
+            <h2 className="font-semibold text-lg">Executive Summary</h2>
+          </div>
+          <Button onClick={() => setShowSummaryModal(true)}>
+            <SparklesIcon className="mr-2 size-4" />
+            Generate Summary
+          </Button>
+        </div>
+
+        {isLoadingSummary ? (
+          <EventSummarySkeleton />
+        ) : (
+          <EventSummaryDisplay
+            eventId={event.id}
+            eventTitle={event.title}
+            initialSummary={summary}
+            onGenerate={handleGenerateSummary}
+            onDelete={handleDeleteSummary}
+          />
+        )}
 
         <Separator />
 
@@ -291,14 +641,22 @@ export function EventDetailsClient({
         onOpenChange={setShowModal}
         venueName={event.venueName ?? undefined}
       />
+
+      <GenerateEventSummaryModal
+        eventId={event.id}
+        eventTitle={event.title}
+        onGenerate={handleGenerateSummary}
+        isOpen={showSummaryModal}
+        onOpenChange={setShowSummaryModal}
+      />
     </>
   );
 }
 
 function generateCSV(breakdown: TaskBreakdown): string {
-  const rows: string[] = [];
+  const rows = [];
   rows.push(
-    `"Task Name","Description","Section","Duration (min)","Relative Time","Critical","Confidence"`
+    "\"Task Name\",\"Description\",\"Section\",\"Duration (min)\",\"Relative Time\",\"Critical\",\"Confidence\""
   );
 
   const allTasks = [
@@ -309,8 +667,8 @@ function generateCSV(breakdown: TaskBreakdown): string {
 
   for (const task of allTasks) {
     const row = [
-      `"${task.name.replace(/"/g, '""')}"`,
-      `"${(task.description || "").replace(/"/g, '""')}"`,
+      "\"" + task.name.replace(/"/g, '""') + "\"",
+      "\"" + (task.description || "").replace(/"/g, '""') + "\"",
       task.section,
       task.durationMinutes.toString(),
       task.relativeTime || "",
@@ -321,16 +679,16 @@ function generateCSV(breakdown: TaskBreakdown): string {
   }
 
   rows.push("");
-  rows.push(`"Total Prep Time","${breakdown.totalPrepTime} min"`);
-  rows.push(`"Total Setup Time","${breakdown.totalSetupTime} min"`);
-  rows.push(`"Total Cleanup Time","${breakdown.totalCleanupTime} min"`);
+  rows.push("\"Total Prep Time\"," + breakdown.totalPrepTime + " min");
+  rows.push("\"Total Setup Time\"," + breakdown.totalSetupTime + " min");
+  rows.push("\"Total Cleanup Time\"," + breakdown.totalCleanupTime + " min");
   rows.push(
-    `"Grand Total","${breakdown.totalPrepTime + breakdown.totalSetupTime + breakdown.totalCleanupTime} min"`
+    "\"Grand Total\"," + (breakdown.totalPrepTime + breakdown.totalSetupTime + breakdown.totalCleanupTime) + " min"
   );
   rows.push("");
-  rows.push(`"Generated At","${breakdown.generatedAt.toISOString()}"`);
-  rows.push(`"Event Date","${breakdown.eventDate.toISOString()}"`);
-  rows.push(`"Guest Count","${breakdown.guestCount}"`);
+  rows.push("\"Generated At\"," + breakdown.generatedAt.toISOString());
+  rows.push("\"Event Date\"," + breakdown.eventDate.toISOString());
+  rows.push("\"Guest Count\"," + breakdown.guestCount);
 
   return rows.join("\n");
 }

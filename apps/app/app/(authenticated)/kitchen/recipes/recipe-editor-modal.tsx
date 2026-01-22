@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import { AspectRatio } from "@repo/design-system/components/ui/aspect-ratio";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -19,8 +21,8 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { PlusIcon, XIcon } from "lucide-react";
-import { useState } from "react";
+import { ImagePlusIcon, PlusIcon, UploadIcon, XIcon } from "lucide-react";
+import { useRef, useState } from "react";
 
 type Ingredient = {
   id: string;
@@ -34,6 +36,13 @@ type Instruction = {
   id: string;
   stepNumber: number;
   text: string;
+};
+
+type RecipeImage = {
+  id: string;
+  file: File;
+  url: string;
+  isMain: boolean;
 };
 
 type RecipeEditorModalProps = {
@@ -70,6 +79,8 @@ export const RecipeEditorModal = ({
   );
   const [tags, setTags] = useState<string[]>(recipe?.tags ?? []);
   const [tagInput, setTagInput] = useState("");
+  const [images, setImages] = useState<RecipeImage[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const addIngredient = () => {
     setIngredients([
@@ -130,6 +141,38 @@ export const RecipeEditorModal = ({
 
   const removeTag = (tagToRemove: string) => {
     setTags(tags.filter((tag) => tag !== tagToRemove));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) {
+      return;
+    }
+
+    const newImages: RecipeImage[] = files.map((file) => ({
+      id: Math.random().toString(),
+      file,
+      url: URL.createObjectURL(file),
+      isMain: images.length === 0,
+    }));
+
+    setImages([...images, ...newImages]);
+  };
+
+  const handleRemoveImage = (id: string) => {
+    const removed = images.find((img) => img.id === id);
+    if (removed) {
+      URL.revokeObjectURL(removed.url);
+    }
+    const newImages = images.filter((img) => img.id !== id);
+    if (removed?.isMain && newImages.length > 0) {
+      newImages[0].isMain = true;
+    }
+    setImages(newImages);
+  };
+
+  const handleSetMainImage = (id: string) => {
+    setImages(images.map((img) => ({ ...img, isMain: img.id === id })));
   };
 
   return (
@@ -232,6 +275,72 @@ export const RecipeEditorModal = ({
               placeholder="Brief description of the recipe"
               rows={3}
             />
+          </div>
+
+          <div className="space-y-3">
+            <Label>Images</Label>
+            <div className="rounded-lg border-2 border-dashed p-4 text-center">
+              <input
+                accept="image/*"
+                className="hidden"
+                multiple
+                onChange={handleImageUpload}
+                ref={fileInputRef}
+                type="file"
+              />
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                type="button"
+                variant="outline"
+              >
+                <UploadIcon className="mr-2 size-4" />
+                Upload Images
+              </Button>
+              <p className="text-muted-foreground mt-2 text-sm">
+                Drag and drop or click to upload
+              </p>
+            </div>
+              {images.length > 0 && (
+                <div className="grid gap-3 md:grid-cols-3">
+                  {images.map((image) => (
+                    <div key={image.id} className="relative group">
+                      <AspectRatio ratio={16 / 9}>
+                        <Image
+                          alt="Recipe"
+                          className="h-full w-full rounded-lg object-cover"
+                          fill
+                          src={image.url}
+                        />
+                      </AspectRatio>
+                      {image.isMain && (
+                        <Badge className="absolute left-2 top-2" variant="default">
+                          Main
+                        </Badge>
+                      )}
+                      <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                        {!image.isMain && (
+                          <Button
+                            onClick={() => handleSetMainImage(image.id)}
+                            size="icon"
+                            type="button"
+                            variant="secondary"
+                          >
+                            <ImagePlusIcon className="size-4" />
+                          </Button>
+                        )}
+                        <Button
+                          onClick={() => handleRemoveImage(image.id)}
+                          size="icon"
+                          type="button"
+                          variant="destructive"
+                        >
+                          <XIcon className="size-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
           </div>
 
           <div className="space-y-3">

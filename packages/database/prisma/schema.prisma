@@ -53,6 +53,16 @@ model Account {
   inventorySuppliers    InventorySupplier[]
   inventoryAlerts       InventoryAlert[]
   inventoryStock        InventoryStock[]
+  inventoryForecasts    InventoryForecast[]
+  forecastInputs        ForecastInput[]
+  reorderSuggestions    ReorderSuggestion[]
+  alertsConfigs         AlertsConfig[]
+  cycleCountSessions    CycleCountSession[]
+  cycleCountRecords    CycleCountRecord[]
+  varianceReports       VarianceReport[]
+  cycleCountAuditLogs  CycleCountAuditLog[]
+  purchaseOrders        PurchaseOrder[]
+  purchaseOrderItems    PurchaseOrderItem[]
   reports               Report[]
   workflows             Workflow[]
   notifications         Notification[]
@@ -63,6 +73,7 @@ model Account {
   commandBoards         CommandBoard[]
   commandBoardCards     CommandBoardCard[]
   timelineTasks         TimelineTask[]
+  timecardEditRequests  TimecardEditRequest[]
 
   @@map("accounts")
   @@schema("platform")
@@ -250,6 +261,76 @@ model Event {
   @@schema("tenant_events")
 }
 
+model EventProfitability {
+  tenantId String @map("tenant_id") @db.Uuid
+  id       String @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  eventId  String @map("event_id") @db.Uuid
+
+  budgetedRevenue        Decimal @default(0) @map("budgeted_revenue") @db.Decimal(12, 2)
+  budgetedFoodCost       Decimal @default(0) @map("budgeted_food_cost") @db.Decimal(12, 2)
+  budgetedLaborCost      Decimal @default(0) @map("budgeted_labor_cost") @db.Decimal(12, 2)
+  budgetedOverhead       Decimal @default(0) @map("budgeted_overhead") @db.Decimal(12, 2)
+  budgetedTotalCost      Decimal @default(0) @map("budgeted_total_cost") @db.Decimal(12, 2)
+  budgetedGrossMargin    Decimal @default(0) @map("budgeted_gross_margin") @db.Decimal(12, 2)
+  budgetedGrossMarginPct Decimal @default(0) @map("budgeted_gross_margin_pct") @db.Decimal(5, 2)
+
+  actualRevenue        Decimal @default(0) @map("actual_revenue") @db.Decimal(12, 2)
+  actualFoodCost       Decimal @default(0) @map("actual_food_cost") @db.Decimal(12, 2)
+  actualLaborCost      Decimal @default(0) @map("actual_labor_cost") @db.Decimal(12, 2)
+  actualOverhead       Decimal @default(0) @map("actual_overhead") @db.Decimal(12, 2)
+  actualTotalCost      Decimal @default(0) @map("actual_total_cost") @db.Decimal(12, 2)
+  actualGrossMargin    Decimal @default(0) @map("actual_gross_margin") @db.Decimal(12, 2)
+  actualGrossMarginPct Decimal @default(0) @map("actual_gross_margin_pct") @db.Decimal(5, 2)
+
+  revenueVariance   Decimal @default(0) @map("revenue_variance") @db.Decimal(12, 2)
+  foodCostVariance  Decimal @default(0) @map("food_cost_variance") @db.Decimal(12, 2)
+  laborCostVariance Decimal @default(0) @map("labor_cost_variance") @db.Decimal(12, 2)
+  totalCostVariance Decimal @default(0) @map("total_cost_variance") @db.Decimal(12, 2)
+  marginVariancePct Decimal @default(0) @map("margin_variance_pct") @db.Decimal(5, 2)
+
+  calculatedAt      DateTime @default(now()) @map("calculated_at") @db.Timestamptz(6)
+  calculationMethod String   @default("auto") @map("calculation_method")
+  notes             String?
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([eventId])
+  @@index([tenantId, eventId])
+  @@index([calculatedAt(sort: Desc)])
+  @@map("event_profitability")
+  @@schema("tenant_events")
+}
+
+model EventSummary {
+  tenantId String @map("tenant_id") @db.Uuid
+  id       String @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  eventId  String @map("event_id") @db.Uuid
+
+  highlights        Json?   @default("[]")
+  issues            Json?   @default("[]")
+  financialPerformance Json? @default("[]")
+  clientFeedback    Json?   @default("[]")
+  insights          Json?   @default("[]")
+
+  overallSummary    String? @map("overall_summary")
+  generatedAt       DateTime @default(now()) @map("generated_at") @db.Timestamptz(6)
+  generationDurationMs Int?  @map("generation_duration_ms")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([eventId])
+  @@index([tenantId, eventId])
+  @@index([generatedAt(sort: Desc)])
+  @@map("event_summaries")
+  @@schema("tenant_events")
+}
+
 model Client {
   tenantId            String    @map("tenant_id") @db.Uuid
   id                  String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -409,6 +490,7 @@ model Proposal {
   deletedAt          DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant             Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  @@unique([tenantId, id])
   @@id([tenantId, id])
   @@map("proposals")
   @@schema("tenant_crm")
@@ -451,6 +533,9 @@ model RecipeVersion {
   isLocked         Boolean   @default(false) @map("is_locked")
   lockedAt         DateTime? @map("locked_at") @db.Timestamptz(6)
   lockedBy         String?   @map("locked_by") @db.Uuid
+  totalCost        Decimal   @default(0) @map("total_cost") @db.Decimal(12, 2)
+  costPerYield     Decimal   @default(0) @map("cost_per_yield") @db.Decimal(12, 2)
+  costCalculatedAt DateTime? @map("cost_calculated_at") @db.Timestamptz(6)
   createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt        DateTime? @map("deleted_at") @db.Timestamptz(6)
@@ -474,6 +559,10 @@ model RecipeIngredient {
   preparationNotes String?   @map("preparation_notes")
   isOptional       Boolean   @default(false) @map("is_optional")
   sortOrder        Int       @default(0) @map("sort_order") @db.SmallInt
+  wasteFactor      Decimal   @default(1.0) @map("waste_factor") @db.Decimal(5, 4)
+  ingredientCost   Decimal   @default(0) @map("ingredient_cost") @db.Decimal(12, 2)
+  adjustedQuantity Decimal   @default(0) @map("adjusted_quantity") @db.Decimal(10, 4)
+  costCalculatedAt DateTime? @map("cost_calculated_at") @db.Timestamptz(6)
   createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt        DateTime? @map("deleted_at") @db.Timestamptz(6)
@@ -934,6 +1023,257 @@ model InventoryStock {
   @@schema("tenant_inventory")
 }
 
+model InventoryForecast {
+  tenantId     String   @map("tenant_id") @db.Uuid
+  id           String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sku          String
+  date         DateTime @db.Date
+  forecast     Decimal  @db.Decimal(10, 2)
+  lower_bound  Decimal  @db.Decimal(10, 2)
+  upper_bound  Decimal  @db.Decimal(10, 2)
+  confidence   Decimal  @db.Decimal(3, 2)
+  horizon_days Int
+  last_updated DateTime @default(now()) @db.Timestamptz(6)
+  tenant       Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([tenantId, sku, date], map: "inventory_forecasts_tenant_sku_date_idx")
+  @@map("inventory_forecasts")
+  @@schema("tenant_inventory")
+}
+
+model ForecastInput {
+  tenantId            String   @map("tenant_id") @db.Uuid
+  id                  String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sku                 String
+  date                DateTime @db.Date
+  historical_usage    Decimal  @db.Decimal(10, 2)
+  events              Json
+  promotions          Json
+  seasonality_factors Json?
+  tenant              Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([tenantId, sku, date], map: "forecast_inputs_tenant_sku_date_idx")
+  @@map("forecast_inputs")
+  @@schema("tenant_inventory")
+}
+
+model ReorderSuggestion {
+  tenantId              String   @map("tenant_id") @db.Uuid
+  id                    String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sku                   String
+  recommended_order_qty Decimal  @db.Decimal(10, 2)
+  reorder_point         Decimal  @db.Decimal(10, 2)
+  safety_stock          Decimal  @db.Decimal(10, 2)
+  lead_time_days        Int
+  justification         String
+  created_at            DateTime @default(now()) @db.Timestamptz(6)
+  tenant                Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([tenantId, sku], map: "reorder_suggestions_tenant_sku_idx")
+  @@map("reorder_suggestions")
+  @@schema("tenant_inventory")
+}
+
+model AlertsConfig {
+  tenantId    String  @map("tenant_id") @db.Uuid
+  id          String  @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  channel     String
+  destination String
+  tenant      Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@map("alerts_config")
+  @@schema("tenant_inventory")
+}
+
+model CycleCountSession {
+  tenantId          String    @map("tenant_id") @db.Uuid
+  id                String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  locationId        String    @map("location_id") @db.Uuid
+  sessionId         String    @map("session_id") @unique
+  sessionName       String    @map("session_name")
+  countType         String    @map("count_type") @default("ad_hoc")
+  scheduledDate     DateTime? @map("scheduled_date") @db.Timestamptz(6)
+  startedAt         DateTime? @map("started_at") @db.Timestamptz(6)
+  completedAt       DateTime? @map("completed_at") @db.Timestamptz(6)
+  finalizedAt       DateTime? @map("finalized_at") @db.Timestamptz(6)
+  status            String    @default("draft")
+  totalItems        Int       @default(0) @map("total_items")
+  countedItems      Int       @default(0) @map("counted_items")
+  totalVariance     Decimal   @default(0) @map("total_variance") @db.Decimal(12, 3)
+  variancePercentage Decimal   @default(0) @map("variance_percentage") @db.Decimal(5, 2)
+  notes             String?
+  createdById       String    @map("created_by_id") @db.Uuid
+  approvedById      String?   @map("approved_by_id") @db.Uuid
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant            Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([tenantId, locationId], map: "cycle_count_sessions_tenant_location_idx")
+  @@index([tenantId, status], map: "cycle_count_sessions_tenant_status_idx")
+  @@index([tenantId, scheduledDate], map: "cycle_count_sessions_tenant_scheduled_idx")
+  @@map("cycle_count_sessions")
+  @@schema("tenant_inventory")
+}
+
+model CycleCountRecord {
+  tenantId          String    @map("tenant_id") @db.Uuid
+  id                String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId         String    @map("session_id") @db.Uuid
+  itemId            String    @map("item_id") @db.Uuid
+  itemNumber        String    @map("item_number")
+  itemName          String    @map("item_name")
+  storageLocationId String    @map("storage_location_id") @db.Uuid
+  expectedQuantity  Decimal   @map("expected_quantity") @db.Decimal(12, 3)
+  countedQuantity   Decimal   @map("counted_quantity") @db.Decimal(12, 3)
+  variance          Decimal   @default(0) @db.Decimal(12, 3)
+  variancePct       Decimal   @default(0) @map("variance_pct") @db.Decimal(5, 2)
+  countDate         DateTime  @default(now()) @map("count_date") @db.Timestamptz(6)
+  countedById       String    @map("counted_by_id") @db.Uuid
+  barcode           String?
+  notes             String?
+  isVerified        Boolean   @default(false) @map("is_verified")
+  verifiedById      String?   @map("verified_by_id") @db.Uuid
+  verifiedAt        DateTime? @map("verified_at") @db.Timestamptz(6)
+  syncStatus        String    @default("synced") @map("sync_status")
+  offlineId         String?   @map("offline_id")
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant            Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([tenantId, sessionId], map: "cycle_count_records_tenant_session_idx")
+  @@index([tenantId, itemId], map: "cycle_count_records_tenant_item_idx")
+  @@index([tenantId, syncStatus], map: "cycle_count_records_tenant_sync_idx")
+  @@index([tenantId, offlineId], map: "cycle_count_records_tenant_offline_idx")
+  @@map("cycle_count_records")
+  @@schema("tenant_inventory")
+}
+
+model VarianceReport {
+  tenantId           String    @map("tenant_id") @db.Uuid
+  id                 String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId          String    @map("session_id") @db.Uuid
+  reportType         String    @map("report_type")
+  itemId            String    @map("item_id") @db.Uuid
+  itemNumber        String    @map("item_number")
+  itemName          String    @map("item_name")
+  expectedQuantity  Decimal   @map("expected_quantity") @db.Decimal(12, 3)
+  countedQuantity   Decimal   @map("counted_quantity") @db.Decimal(12, 3)
+  variance          Decimal   @db.Decimal(12, 3)
+  variancePct       Decimal   @map("variance_pct") @db.Decimal(5, 2)
+  accuracyScore     Decimal   @map("accuracy_score") @db.Decimal(5, 2)
+  status            String    @default("pending")
+  adjustmentType    String?   @map("adjustment_type")
+  adjustmentAmount   Decimal?  @map("adjustment_amount") @db.Decimal(12, 3)
+  adjustmentDate    DateTime? @map("adjustment_date") @db.Timestamptz(6)
+  notes             String?
+  generatedAt       DateTime  @default(now()) @map("generated_at") @db.Timestamptz(6)
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant            Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([tenantId, sessionId], map: "variance_reports_tenant_session_idx")
+  @@index([tenantId, itemId], map: "variance_reports_tenant_item_idx")
+  @@index([tenantId, status], map: "variance_reports_tenant_status_idx")
+  @@map("variance_reports")
+  @@schema("tenant_inventory")
+}
+
+model CycleCountAuditLog {
+  tenantId      String    @map("tenant_id") @db.Uuid
+  id            String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId     String    @map("session_id") @db.Uuid
+  recordId      String?   @map("record_id") @db.Uuid
+  action        String
+  entityType    String    @map("entity_type")
+  entityId      String    @map("entity_id") @db.Uuid
+  oldValue      Json?     @map("old_value")
+  newValue      Json?     @map("new_value")
+  performedById String    @map("performed_by_id") @db.Uuid
+  ipAddress     String?   @map("ip_address") @db.Inet
+  userAgent     String?   @map("user_agent")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  tenant        Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([tenantId, sessionId], map: "cycle_count_audit_tenant_session_idx")
+  @@index([tenantId, performedById], map: "cycle_count_audit_tenant_performer_idx")
+  @@index([tenantId, createdAt(sort: Desc)], map: "cycle_count_audit_tenant_created_idx")
+  @@map("cycle_count_audit_log")
+  @@schema("tenant_inventory")
+}
+
+model PurchaseOrder {
+  tenantId              String    @map("tenant_id") @db.Uuid
+  id                    String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  poNumber              String    @unique @map("po_number")
+  vendorId              String    @map("vendor_id") @db.Uuid
+  locationId            String    @map("location_id") @db.Uuid
+  orderDate             DateTime  @default(now()) @map("order_date") @db.Date
+  expectedDeliveryDate   DateTime? @map("expected_delivery_date") @db.Date
+  actualDeliveryDate     DateTime? @map("actual_delivery_date") @db.Date
+  status                String    @default("draft")
+  subtotal              Decimal   @default(0) @map("subtotal") @db.Decimal(12, 2)
+  taxAmount             Decimal   @default(0) @map("tax_amount") @db.Decimal(12, 2)
+  shippingAmount        Decimal   @default(0) @map("shipping_amount") @db.Decimal(12, 2)
+  total                 Decimal   @default(0) @db.Decimal(12, 2)
+  notes                 String?
+  submittedBy           String?   @map("submitted_by") @db.Uuid
+  submittedAt           DateTime? @map("submitted_at") @db.Timestamptz(6)
+  receivedBy            String?   @map("received_by") @db.Uuid
+  receivedAt            DateTime? @map("received_at") @db.Timestamptz(6)
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt             DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant                Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  items                 PurchaseOrderItem[]
+
+  @@unique([tenantId, id])
+  @@unique([id])
+  @@id([tenantId, id])
+  @@index([tenantId, vendorId], map: "purchase_orders_tenant_vendor_idx")
+  @@index([tenantId, status], map: "purchase_orders_tenant_status_idx")
+  @@index([tenantId, orderDate], map: "purchase_orders_tenant_date_idx")
+  @@map("purchase_orders")
+  @@schema("tenant_inventory")
+}
+
+model PurchaseOrderItem {
+  tenantId           String   @map("tenant_id") @db.Uuid
+  id                 String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  purchaseOrderId     String   @map("purchase_order_id") @db.Uuid
+  itemId             String   @map("item_id") @db.Uuid
+  quantityOrdered    Decimal  @map("quantity_ordered") @db.Decimal(10, 2)
+  quantityReceived   Decimal  @default(0) @map("quantity_received") @db.Decimal(10, 2)
+  unitId             Int      @map("unit_id") @db.SmallInt
+  unitCost           Decimal  @map("unit_cost") @db.Decimal(10, 4)
+  totalCost          Decimal  @map("total_cost") @db.Decimal(12, 2)
+  qualityStatus      String?  @default("pending") @map("quality_status")
+  discrepancyType    String?  @map("discrepancy_type")
+  discrepancyAmount  Decimal? @map("discrepancy_amount") @db.Decimal(10, 2)
+  notes              String?
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt          DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant             Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  purchaseOrder      PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([tenantId, purchaseOrderId], map: "purchase_order_items_tenant_po_idx")
+  @@index([tenantId, itemId], map: "purchase_order_items_tenant_item_idx")
+  @@map("purchase_order_items")
+  @@schema("tenant_inventory")
+}
+
 model Report {
   tenantId       String    @map("tenant_id") @db.Uuid
   id             String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -1054,6 +1394,27 @@ model TimeEntry {
   @@id([tenantId, id])
   @@index([employeeId], map: "time_entries_employee_idx")
   @@map("time_entries")
+  @@schema("tenant_staff")
+}
+
+model TimecardEditRequest {
+  tenantId              String    @map("tenant_id") @db.Uuid
+  id                    String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  timeEntryId           String    @map("time_entry_id") @db.Uuid
+  employeeId            String    @map("employee_id") @db.Uuid
+  requestedClockIn      DateTime? @map("requested_clock_in") @db.Timestamptz(6)
+  requestedClockOut     DateTime? @map("requested_clock_out") @db.Timestamptz(6)
+  requestedBreakMinutes Int?      @map("requested_break_minutes") @db.SmallInt
+  reason                String
+  status                String    @default("pending")
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant                Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, timeEntryId], map: "timecard_edit_requests_unique_entry")
+  @@index([employeeId], map: "timecard_edit_requests_employee_idx")
+  @@map("timecard_edit_requests")
   @@schema("tenant_staff")
 }
 

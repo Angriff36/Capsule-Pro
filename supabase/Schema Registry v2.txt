@@ -874,6 +874,29 @@ tenant_events.event_timeline
   sort_order smallint NOT NULL DEFAULT 0
   created_at, updated_at, deleted_at
 
+tenant_events.timeline_tasks
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  UNIQUE: (tenant_id, id)  -- For composite FK
+  event_id uuid NOT NULL
+  title text NOT NULL
+  description text
+  start_time timestamptz NOT NULL
+  end_time timestamptz NOT NULL
+  status text NOT NULL DEFAULT 'not_started'  -- 'not_started', 'in_progress', 'completed', 'delayed', 'blocked'
+  priority text NOT NULL DEFAULT 'medium'  -- 'low', 'medium', 'high', 'critical'
+  category text NOT NULL
+  assignee_id uuid  -- FK to tenant_staff.employees
+  progress integer NOT NULL DEFAULT 0  -- 0-100
+  dependencies text[] NOT NULL DEFAULT '{}'  -- Array of task IDs
+  is_on_critical_path boolean NOT NULL DEFAULT false
+  slack_minutes integer NOT NULL DEFAULT 0
+  notes text
+  created_at, updated_at, deleted_at
+  -- Purpose: Event-specific tactical planning tasks with minute-by-minute precision
+  -- Supports dependencies, critical path analysis, and staff coordination
+
 tenant_events.battle_boards
   tenant_id uuid NOT NULL
   id uuid DEFAULT gen_random_uuid()
@@ -1050,18 +1073,75 @@ tenant_inventory.inventory_transactions
   -- No updated_at/deleted_at (immutable ledger)
 
 tenant_inventory.inventory_alerts
-  tenant_id uuid NOT NULL
-  id uuid DEFAULT gen_random_uuid()
-  PK: (tenant_id, id)
-  item_id uuid NOT NULL
-  alert_type text NOT NULL  -- 'LOW_STOCK', 'EXPIRED', 'REORDER'
-  threshold_value numeric(12,3) NOT NULL
-  triggered_at timestamptz NOT NULL DEFAULT now()
-  resolved_at timestamptz NULL
-  notes text
-  created_at, updated_at, deleted_at
-  -- Purpose: System alerts for inventory thresholds and issues
-  -- Tracks low stock warnings, expiration alerts, reorder notifications
+   tenant_id uuid NOT NULL
+   id uuid DEFAULT gen_random_uuid()
+   PK: (tenant_id, id)
+   item_id uuid NOT NULL
+   alert_type text NOT NULL  -- 'LOW_STOCK', 'EXPIRED', 'REORDER'
+   threshold_value numeric(12,3) NOT NULL
+   triggered_at timestamptz NOT NULL DEFAULT now()
+   resolved_at timestamptz NULL
+   notes text
+   created_at, updated_at, deleted_at
+   -- Purpose: System alerts for inventory thresholds and issues
+   -- Tracks low stock warnings, expiration alerts, reorder notifications
+
+tenant_inventory.inventory_forecasts
+   tenant_id uuid NOT NULL
+   id uuid DEFAULT gen_random_uuid()
+   PK: (tenant_id, id)
+   sku text NOT NULL
+   date date NOT NULL
+   forecast numeric(10,2) NOT NULL
+   lower_bound numeric(10,2) NOT NULL
+   upper_bound numeric(10,2) NOT NULL
+   confidence numeric(3,2) NOT NULL
+   horizon_days int NOT NULL
+   last_updated timestamptz NOT NULL DEFAULT now()
+   created_at, updated_at, deleted_at
+   UNIQUE (tenant_id, sku, date)
+   -- Purpose: Time-series forecast data with confidence intervals
+   -- Supports AI-powered inventory depletion forecasting
+
+tenant_inventory.forecast_inputs
+   tenant_id uuid NOT NULL
+   id uuid DEFAULT gen_random_uuid()
+   PK: (tenant_id, id)
+   sku text NOT NULL
+   date date NOT NULL
+   historical_usage numeric(10,2) NOT NULL
+   events jsonb
+   promotions jsonb
+   seasonality_factors jsonb
+   created_at, updated_at, deleted_at
+   UNIQUE (tenant_id, sku, date)
+   -- Purpose: Input data for forecasting models
+   -- Includes historical data, events, promotions for accurate predictions
+
+tenant_inventory.reorder_suggestions
+   tenant_id uuid NOT NULL
+   id uuid DEFAULT gen_random_uuid()
+   PK: (tenant_id, id)
+   sku text NOT NULL
+   recommended_order_qty numeric(10,2) NOT NULL
+   reorder_point numeric(10,2) NOT NULL
+   safety_stock numeric(10,2) NOT NULL
+   lead_time_days int NOT NULL
+   justification text NOT NULL
+   created_at, updated_at, deleted_at
+   -- Purpose: Automated reorder recommendations with justification
+   -- Includes safety stock calculations and lead time considerations
+
+tenant_inventory.alerts_config
+   tenant_id uuid NOT NULL
+   id uuid DEFAULT gen_random_uuid()
+   PK: (tenant_id, id)
+   channel text NOT NULL  -- 'email', 'slack', 'webhook'
+   destination text NOT NULL
+   created_at, updated_at, deleted_at
+   -- Purpose: Alert delivery configuration for inventory notifications
+   -- Supports multiple channels (email, Slack, webhook)
+
 
 tenant_inventory.purchase_orders
   tenant_id uuid NOT NULL

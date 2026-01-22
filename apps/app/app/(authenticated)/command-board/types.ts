@@ -87,6 +87,58 @@ export const CardType = {
 
 export type CardType = (typeof CardType)[keyof typeof CardType];
 
+/**
+ * Relationship type values for connections between cards
+ */
+export const RelationshipType = {
+  client_to_event: "client_to_event",
+  event_to_task: "event_to_task",
+  task_to_employee: "task_to_employee",
+  event_to_inventory: "event_to_inventory",
+  generic: "generic",
+} as const;
+
+export type RelationshipType = (typeof RelationshipType)[keyof typeof RelationshipType];
+
+/**
+ * Relationship configuration with visual properties
+ */
+export const RelationshipConfig: Record<
+  RelationshipType,
+  { label: string; color: string; dashArray?: string; strokeWidth: number }
+> = {
+  [RelationshipType.client_to_event]: {
+    label: "has",
+    color: "#3b82f6",
+    dashArray: undefined,
+    strokeWidth: 2,
+  },
+  [RelationshipType.event_to_task]: {
+    label: "includes",
+    color: "#10b981",
+    dashArray: undefined,
+    strokeWidth: 2,
+  },
+  [RelationshipType.task_to_employee]: {
+    label: "assigned",
+    color: "#f59e0b",
+    dashArray: "5,5",
+    strokeWidth: 2,
+  },
+  [RelationshipType.event_to_inventory]: {
+    label: "uses",
+    color: "#8b5cf6",
+    dashArray: undefined,
+    strokeWidth: 2,
+  },
+  [RelationshipType.generic]: {
+    label: "related",
+    color: "#6b7280",
+    dashArray: "4,4",
+    strokeWidth: 1.5,
+  },
+};
+
 // =============================================================================
 // Position and Dimension Types
 // =============================================================================
@@ -214,6 +266,24 @@ export type CommandBoardCard = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
+};
+
+/**
+ * Connection between two cards
+ */
+export type CardConnection = {
+  /** Unique ID for the connection */
+  id: string;
+  /** Source card ID */
+  fromCardId: string;
+  /** Target card ID */
+  toCardId: string;
+  /** Type of relationship */
+  relationshipType: RelationshipType;
+  /** Optional label override */
+  label?: string;
+  /** Whether the connection is visible */
+  visible: boolean;
 };
 
 /**
@@ -353,10 +423,14 @@ export type BoardState = {
   board: CommandBoard | null;
   /** All cards on the board */
   cards: CommandBoardCard[];
+  /** Connections between cards */
+  connections: CardConnection[];
   /** Current viewport state */
   viewport: ViewportState;
   /** Currently selected card IDs */
   selectedCardIds: string[];
+  /** Currently selected connection ID */
+  selectedConnectionId: string | null;
   /** Whether the board is currently loading */
   isLoading: boolean;
   /** Error message if any */
@@ -371,12 +445,14 @@ export type BoardState = {
 export const INITIAL_BOARD_STATE: BoardState = {
   board: null,
   cards: [],
+  connections: [],
   viewport: {
     zoom: VIEWPORT_DEFAULTS.DEFAULT_ZOOM,
     panX: 0,
     panY: 0,
   },
   selectedCardIds: [],
+  selectedConnectionId: null,
   isLoading: false,
   error: null,
   isDirty: false,
@@ -562,4 +638,105 @@ export function pointInBox(point: Point, box: BoundingBox): boolean {
     point.y >= box.y &&
     point.y <= box.y + box.height
   );
+}
+
+// =============================================================================
+// Connection Line Types
+// =============================================================================
+
+/**
+ * Calculate anchor point on card edge for connection line
+ * Returns the closest point on the card's edge to the target point
+ */
+export function calculateAnchorPoint(
+  cardBox: BoundingBox,
+  targetPoint: Point
+): Point {
+  const centerX = cardBox.x + cardBox.width / 2;
+  const centerY = cardBox.y + cardBox.height / 2;
+
+  const dx = targetPoint.x - centerX;
+  const dy = targetPoint.y - centerY;
+
+  if (Math.abs(dx) > Math.abs(dy) * (cardBox.width / cardBox.height)) {
+    return {
+      x: dx > 0 ? cardBox.x + cardBox.width : cardBox.x,
+      y: centerY,
+    };
+  }
+  return {
+    x: centerX,
+    y: dy > 0 ? cardBox.y + cardBox.height : cardBox.y,
+  };
+}
+
+/**
+ * Calculate cubic bezier curve path for connection line
+ * Creates a smooth curve between two points
+ */
+export function calculateCurvePath(
+  startPoint: Point,
+  endPoint: Point,
+  curvature: number
+): string {
+  const dx = endPoint.x - startPoint.x;
+  const dy = endPoint.y - startPoint.y;
+  const controlDist = Math.max(Math.abs(dx), Math.abs(dy)) * curvature;
+
+  const cp1 = {
+    x: startPoint.x + controlDist,
+    y: startPoint.y,
+  };
+  const cp2 = {
+    x: endPoint.x - controlDist,
+    y: endPoint.y,
+  };
+
+  return `M ${startPoint.x} ${startPoint.y} C ${cp1.x} ${cp1.y}, ${cp2.x} ${cp2.y}, ${endPoint.x} ${endPoint.y}`;
+}
+
+/**
+ * Calculate straight line path for connection
+ */
+export function calculateStraightPath(
+  startPoint: Point,
+  endPoint: Point
+): string {
+  return `M ${startPoint.x} ${startPoint.y} L ${endPoint.x} ${endPoint.y}`;
+}
+
+/**
+ * Calculate mid-point along a curve path for label positioning
+ */
+export function calculateMidPoint(
+  startPoint: Point,
+  endPoint: Point
+): Point {
+  return {
+    x: (startPoint.x + endPoint.x) / 2,
+    y: (startPoint.y + endPoint.y) / 2,
+  };
+}
+
+/**
+ * Auto-detect relationship type based on card types
+ */
+export function detectRelationshipType(
+  fromCardType: CardType,
+  toCardType: CardType
+): RelationshipType {
+  if (fromCardType === "client" && toCardType === "event") {
+    return RelationshipType.client_to_event;
+  }
+  if (fromCardType === "event" && toCardType === "task") {
+    return RelationshipType.event_to_task;
+  }
+  if (fromCardType === "task" && toCardType === "employee") {
+    return RelationshipType.task_to_employee;
+  }
+  if (fromCardType === "event" && toCardType === "inventory") {
+    return RelationshipType.event_to_inventory;
+  }
+
+  return RelationshipType.generic;
 }

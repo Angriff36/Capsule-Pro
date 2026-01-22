@@ -1,11 +1,9 @@
-# QuickBooks Export
+# QuickBooks Payroll Export
 
 ## Outcome
-The system exports invoices, bills, and payroll summaries to QuickBooks in compatible format. This streamlines accounting workflows by eliminating manual data entry.
+The system exports payroll summaries to QuickBooks in compatible format. This streamlines accounting workflows by eliminating manual data entry.
 
 ## In Scope
-- Export invoices to QuickBooks format (customer, items, amounts, dates)
-- Export bills/vendor invoices to QuickBooks format
 - Export payroll summaries to QuickBooks format (employee, hours, pay, deductions)
 - Support multiple export formats (CSV, IIF, or QuickBooks API)
 - Map Convoy entities to QuickBooks accounts and items
@@ -26,7 +24,6 @@ The system exports invoices, bills, and payroll summaries to QuickBooks in compa
 - Exported data must never be modified after export file generation
 
 ## Acceptance Checks
-- Export invoices → file generated in QuickBooks-compatible format
 - Export payroll → file includes all employees with correct pay data
 - Import export file into QuickBooks → data imports successfully
 - View export history → shows all exports with dates and file names
