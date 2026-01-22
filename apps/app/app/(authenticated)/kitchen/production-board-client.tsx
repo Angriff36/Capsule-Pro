@@ -265,37 +265,8 @@ function StatsSidebar({
           <CardTitle className="font-semibold text-sm">Team Activity</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src="/placeholder-user.jpg" />
-              <AvatarFallback className="bg-blue-100 text-blue-600 text-xs">
-                JD
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <div className="font-medium text-slate-700 text-sm">John Doe</div>
-              <div className="text-slate-500 text-xs">Completed 3 tasks</div>
-            </div>
-            <Badge className="text-xs" variant="secondary">
-              3
-            </Badge>
-          </div>
-          <div className="flex items-center gap-3">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src="/placeholder-user.jpg" />
-              <AvatarFallback className="bg-emerald-100 text-emerald-600 text-xs">
-                AS
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <div className="font-medium text-slate-700 text-sm">
-                Alice Smith
-              </div>
-              <div className="text-slate-500 text-xs">Working on 2 tasks</div>
-            </div>
-            <Badge className="text-xs" variant="secondary">
-              2
-            </Badge>
+          <div className="text-center py-4 text-muted-foreground text-sm">
+            Team activity tracking coming soon
           </div>
         </CardContent>
       </Card>
