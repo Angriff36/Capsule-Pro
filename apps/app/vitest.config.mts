@@ -5,6 +5,12 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   plugins: [react()],
   test: {
+    // API route tests need node environment (server-only), most specific first
+    environmentMatchGlobs: [
+      ['**/__tests__/api/**/*.test.ts', 'node'],
+      ['**/__tests__/api/**/*.test.tsx', 'node'],
+    ],
+    // Default to jsdom for everything else
     environment: "jsdom",
     exclude: ["**/e2e/**", "**/node_modules/**"],
   },

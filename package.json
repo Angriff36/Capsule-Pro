@@ -49,6 +49,7 @@
     "commander": "^14.0.2",
     "cross-env": "^7.0.3",
     "husky": "^9.1.7",
+    "node-mocks-http": "^1.17.2",
     "playwright": "^1.57.0",
     "secretlint": "^11.3.0",
     "tsup": "^8.5.1",
