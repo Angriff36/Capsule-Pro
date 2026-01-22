@@ -66,18 +66,19 @@ const KitchenStationsPage = async () => {
   const stationStats = await database.$queryRaw<StationStats[]>(
     Prisma.sql`
       SELECT
-        LOWER(REPLACE(UNNEST(tags), ' ', '-')) AS station_id,
+        LOWER(REPLACE(tag, ' ', '-')) AS station_id,
         COUNT(*) AS total_tasks,
         SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed_tasks,
         SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) AS in_progress_tasks,
         SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) AS open_tasks,
         0 AS team_members
-      FROM public.kitchen_tasks
+      FROM tenant_kitchen.kitchen_tasks
+      CROSS JOIN UNNEST(tags) AS tag
       WHERE tenant_id = ${tenantId}
         AND deleted_at IS NULL
         AND tags IS NOT NULL
-        AND tags::text != '{}'
-      GROUP BY station_id
+        AND ARRAY_LENGTH(tags, 1) > 0
+      GROUP BY tag
       ORDER BY total_tasks DESC
     `
   );
@@ -88,14 +89,17 @@ const KitchenStationsPage = async () => {
   >(
     Prisma.sql`
       SELECT
-        LOWER(REPLACE(kt.tags::text, ' ', '-')) AS station_id,
+        LOWER(REPLACE(tag, ' ', '-')) AS station_id,
         COUNT(*) AS count
-      FROM public.kitchen_task_claims tc
-      JOIN public.kitchen_tasks kt ON kt.id = tc.task_id
+      FROM tenant_kitchen.task_claims tc
+      JOIN tenant_kitchen.kitchen_tasks kt ON kt.id = tc.task_id
+      CROSS JOIN UNNEST(kt.tags) AS tag
       WHERE tc.tenant_id = ${tenantId}
         AND tc.released_at IS NULL
         AND kt.deleted_at IS NULL
-      GROUP BY station_id
+        AND kt.tags IS NOT NULL
+        AND ARRAY_LENGTH(kt.tags, 1) > 0
+      GROUP BY tag
     `
   );
 
