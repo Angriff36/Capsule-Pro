@@ -2,9 +2,11 @@
 
 import { cn } from "@repo/design-system/lib/utils";
 import {
+  forwardRef,
   type KeyboardEvent,
   type MouseEvent,
   type ReactNode,
+  useImperativeHandle,
   useCallback,
   useEffect,
   useRef,
@@ -61,6 +63,14 @@ interface PanState {
   startY: number;
   startPanX: number;
   startPanY: number;
+}
+
+// Public API exposed via ref
+export interface ViewportRef {
+  zoomIn: () => void;
+  zoomOut: () => void;
+  resetViewport: () => void;
+  setZoom: (zoom: number) => void;
 }
 
 // =============================================================================
@@ -196,7 +206,7 @@ export function useViewportState(
  * - Smooth CSS transitions for zoom changes
  * - Coordinate transformation between screen and canvas space
  */
-export function CanvasViewport({
+export const CanvasViewport = forwardRef<ViewportRef, CanvasViewportProps>(function CanvasViewport({
   children,
   className,
   initialViewport,
@@ -209,12 +219,20 @@ export function CanvasViewport({
   onCanvasDoubleClick,
   minZoom = VIEWPORT_DEFAULTS.MIN_ZOOM as number,
   maxZoom = VIEWPORT_DEFAULTS.MAX_ZOOM as number,
-}: CanvasViewportProps) {
+}, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const { viewport, setViewport, zoomIn, zoomOut, resetViewport, panBy } =
     useViewportState(initialViewport, minZoom, maxZoom);
+
+  // Expose zoom functions via ref for external control
+  useImperativeHandle(ref, () => ({
+    zoomIn,
+    zoomOut,
+    resetViewport,
+    setZoom: (zoom: number) => setViewport((prev) => ({ ...prev, zoom })),
+  }), [zoomIn, zoomOut, resetViewport, setViewport]);
 
   const [panState, setPanState] = useState<PanState>({
     isPanning: false,
@@ -431,10 +449,11 @@ export function CanvasViewport({
     return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
   }, [panState.isPanning]);
 
-  // Calculate transform style
+  // Calculate transform style with smooth transitions for non-drag interactions
   const transformStyle = {
     transform: `translate(${viewport.panX}px, ${viewport.panY}px) scale(${viewport.zoom})`,
     transformOrigin: "0 0",
+    transition: panState.isPanning ? "none" : "transform 0.15s ease-out",
   };
 
   // Calculate cursor style based on state
@@ -495,7 +514,7 @@ export function CanvasViewport({
       </div>
     </div>
   );
-}
+});
 
 // =============================================================================
 // Sub-component: ViewportControlBar
