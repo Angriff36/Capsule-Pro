@@ -311,3 +311,21 @@ scripts/
 storybook-static/
 **/storybook-static/
 apps/storybook/storybook-static/
+
+# AI agent files and local documentation
+.claude/ralph-loop.local.md
+.playwright-mcp/
+findings.md
+learnings.json
+notes.md
+progress.md
+spec.md
+task_plan.md
+feature_list.md
+DATABASE_PRE_MIGRATION_CHECKLIST.md
+IMPLEMENTATION_SUMMARY_BATTLE_BOARD.md
+create_timeline_tasks_table.sql
+test-results/
+test-*.spec.ts
+**/battle-board/README.md
+nul
