@@ -1,5 +1,8 @@
-import { listCycleCountSessions, createCycleCountSession } from "./actions/sessions";
 import { redirect } from "next/navigation";
+import {
+  createCycleCountSession,
+  listCycleCountSessions,
+} from "./actions/sessions";
 
 export default async function CycleCountingPage() {
   const sessions = await listCycleCountSessions();
@@ -9,7 +12,8 @@ export default async function CycleCountingPage() {
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Cycle Counting</h1>
         <p className="text-gray-600 mt-2">
-          Manage inventory cycle counts with automated variance tracking and adjustments.
+          Manage inventory cycle counts with automated variance tracking and
+          adjustments.
         </p>
       </div>
 
@@ -20,7 +24,7 @@ export default async function CycleCountingPage() {
             locationId: "00000000-0000-0000-0000-000000000000",
             sessionName: formData.get("sessionName") as string,
             countType: "ad_hoc",
-            notes: formData.get("notes") as string || undefined,
+            notes: (formData.get("notes") as string) || undefined,
           });
 
           if (result.success) {
@@ -31,49 +35,44 @@ export default async function CycleCountingPage() {
       >
         <div className="mb-4">
           <label
-            htmlFor="sessionName"
             className="block text-sm font-medium mb-2"
+            htmlFor="sessionName"
           >
             Session Name
           </label>
           <input
-            type="text"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             id="sessionName"
             name="sessionName"
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="e.g., Main Warehouse Count"
+            required
+            type="text"
           />
         </div>
 
         <div className="mb-4">
-          <label
-            htmlFor="notes"
-            className="block text-sm font-medium mb-2"
-          >
+          <label className="block text-sm font-medium mb-2" htmlFor="notes">
             Notes
           </label>
           <textarea
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             id="notes"
             name="notes"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            rows={3}
             placeholder="Optional notes..."
+            rows={3}
           />
         </div>
 
         <button
-          type="submit"
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          type="submit"
         >
           Create New Session
         </button>
       </form>
 
       <div className="mt-8">
-        <h2 className="text-2xl font-semibold mb-4">
-          Recent Sessions
-        </h2>
+        <h2 className="text-2xl font-semibold mb-4">Recent Sessions</h2>
 
         {sessions.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
@@ -103,11 +102,11 @@ export default async function CycleCountingPage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {sessions.map((session) => (
-                  <tr key={session.id} className="hover:bg-gray-50">
+                  <tr className="hover:bg-gray-50" key={session.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <a
-                        href={`/cycle-counting/${session.sessionId}`}
                         className="text-blue-600 hover:text-blue-900 font-medium"
+                        href={`/cycle-counting/${session.sessionId}`}
                       >
                         {session.sessionName}
                       </a>
@@ -121,8 +120,8 @@ export default async function CycleCountingPage() {
                           session.status === "finalized"
                             ? "bg-green-100 text-green-800"
                             : session.status === "in_progress"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-gray-100 text-gray-800"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-gray-100 text-gray-800"
                         }`}
                       >
                         {session.status}

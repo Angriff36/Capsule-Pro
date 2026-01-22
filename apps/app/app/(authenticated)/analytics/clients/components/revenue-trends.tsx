@@ -11,14 +11,8 @@ import {
   ChartContainer,
   ChartTooltipContent,
 } from "@repo/design-system/components/ui/chart";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from "recharts";
 import { cn } from "@repo/design-system/lib/utils";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 type RevenueTrendsProps = {
   data: Array<{
@@ -62,36 +56,40 @@ export function RevenueTrends({ data, className }: RevenueTrendsProps) {
     <Card className={cn("", className)}>
       <CardHeader>
         <CardTitle>Revenue Trends</CardTitle>
-        <CardDescription>Monthly revenue and client acquisition</CardDescription>
+        <CardDescription>
+          Monthly revenue and client acquisition
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px] w-full">
+        <ChartContainer className="h-[300px] w-full" config={chartConfig}>
           <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+            <CartesianGrid className="stroke-muted" strokeDasharray="3 3" />
             <XAxis
+              axisLine={false}
+              className="text-xs fill-muted-foreground"
               dataKey="month"
               tickLine={false}
-              axisLine={false}
-              className="text-xs fill-muted-foreground"
             />
             <YAxis
-              tickLine={false}
               axisLine={false}
-              tickFormatter={(value) => formatCurrency(value)}
               className="text-xs fill-muted-foreground"
+              tickFormatter={(value) => formatCurrency(value)}
+              tickLine={false}
             />
             <ChartTooltipContent
               formatter={(value, name) => [
-                name === "revenue" && typeof value === "number" ? formatCurrency(value) : value,
+                name === "revenue" && typeof value === "number"
+                  ? formatCurrency(value)
+                  : value,
                 chartConfig[name as keyof typeof chartConfig]?.label ?? name,
               ]}
             />
             <Line
-              type="monotone"
               dataKey="revenue"
+              dot={false}
               stroke="var(--color-revenue)"
               strokeWidth={2}
-              dot={false}
+              type="monotone"
             />
           </LineChart>
         </ChartContainer>

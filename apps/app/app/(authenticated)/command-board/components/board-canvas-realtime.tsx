@@ -16,8 +16,8 @@ import {
 import { createCard, deleteCard, updateCard } from "../actions/cards";
 import {
   type BoardState,
-  CardType,
   type CardConnection,
+  CardType,
   type CommandBoardCard,
   INITIAL_BOARD_STATE,
   type Point,
@@ -57,16 +57,18 @@ export function BoardCanvas({
   const [gridSize, setGridSize] = useState(40);
   const [showGrid, setShowGrid] = useState(true);
   const [snapToGrid, setSnapToGrid] = useState(true);
-  const [selectedCardType, setSelectedCardType] = useState<CardType>(CardType.generic);
+  const [selectedCardType, setSelectedCardType] = useState<CardType>(
+    CardType.generic
+  );
 
   const [showSettings, setShowSettings] = useState(false);
   const [showEmptyState, setShowEmptyState] = useState(
     initialCards.length === 0
   );
   const [connections, setConnections] = useState<CardConnection[]>([]);
-  const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(
-    null
-  );
+  const [selectedConnectionId, setSelectedConnectionId] = useState<
+    string | null
+  >(null);
 
   const { updateCursor, updateSelectedCard, clearPresence } =
     useCommandBoardPresence();
@@ -156,7 +158,10 @@ export function BoardCanvas({
 
         if (card.cardType === "task") {
           const assignee = card.metadata.assignee;
-          const assigneeId = assignee && typeof assignee === "object" && "id" in assignee ? assignee.id : null;
+          const assigneeId =
+            assignee && typeof assignee === "object" && "id" in assignee
+              ? assignee.id
+              : null;
           if (assigneeId) {
             const assignedEmployee = state.cards.find(
               (c) =>
@@ -415,16 +420,19 @@ export function BoardCanvas({
     }));
   }, [state.cards]);
 
-  const handleConnectionClick = useCallback((connectionId: string) => {
-    if (!canEdit) return;
-    setSelectedConnectionId(connectionId);
-    updateSelectedCard(null);
-    setState((prev) => ({
-      ...prev,
-      selectedCardIds: [],
-      selectedConnectionId: connectionId,
-    }));
-  }, [canEdit, updateSelectedCard]);
+  const handleConnectionClick = useCallback(
+    (connectionId: string) => {
+      if (!canEdit) return;
+      setSelectedConnectionId(connectionId);
+      updateSelectedCard(null);
+      setState((prev) => ({
+        ...prev,
+        selectedCardIds: [],
+        selectedConnectionId: connectionId,
+      }));
+    },
+    [canEdit, updateSelectedCard]
+  );
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -560,7 +568,9 @@ export function BoardCanvas({
               <div className="relative">
                 <select
                   className="appearance-none rounded-md border bg-background pr-8 pl-3 py-1.5 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  onChange={(e) => setSelectedCardType(e.target.value as CardType)}
+                  onChange={(e) =>
+                    setSelectedCardType(e.target.value as CardType)
+                  }
                   value={selectedCardType}
                 >
                   <option value={CardType.generic}>Note</option>
@@ -744,7 +754,8 @@ export function BoardCanvas({
                   Your board is empty
                 </h2>
                 <p className="mb-6 text-muted-foreground">
-                  Start by adding your first card to organize your strategic view
+                  Start by adding your first card to organize your strategic
+                  view
                 </p>
                 {canEdit && (
                   <Button onClick={handleAddCard} size="lg">

@@ -3,11 +3,11 @@
 import { database } from "@repo/database";
 import { requireTenantId } from "../../../lib/tenant";
 import type {
-  CycleCountRecord,
   CreateRecordInput,
-  UpdateRecordInput,
+  CycleCountRecord,
   RecordResult,
   SyncRecordsInput,
+  UpdateRecordInput,
 } from "../types";
 
 function toNumber(value: { toNumber: () => number }): number {
@@ -49,7 +49,11 @@ export async function listCycleCountRecords(
     isVerified: record.isVerified,
     verifiedById: record.verifiedById,
     verifiedAt: record.verifiedAt,
-    syncStatus: record.syncStatus as "synced" | "pending" | "failed" | "conflict",
+    syncStatus: record.syncStatus as
+      | "synced"
+      | "pending"
+      | "failed"
+      | "conflict",
     offlineId: record.offlineId,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
@@ -93,7 +97,11 @@ export async function getCycleCountRecord(
     isVerified: record.isVerified,
     verifiedById: record.verifiedById,
     verifiedAt: record.verifiedAt,
-    syncStatus: record.syncStatus as "synced" | "pending" | "failed" | "conflict",
+    syncStatus: record.syncStatus as
+      | "synced"
+      | "pending"
+      | "failed"
+      | "conflict",
     offlineId: record.offlineId,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
@@ -109,7 +117,7 @@ export async function createCycleCountRecord(
     const user = await database.user.findFirst({
       where: {
         tenantId,
-        authUserId: (await requireTenantId()),
+        authUserId: await requireTenantId(),
       },
     });
 
@@ -121,9 +129,10 @@ export async function createCycleCountRecord(
     }
 
     const variance = input.countedQuantity - input.expectedQuantity;
-    const variancePct = input.expectedQuantity > 0
-      ? (variance / input.expectedQuantity) * 100
-      : 0;
+    const variancePct =
+      input.expectedQuantity > 0
+        ? (variance / input.expectedQuantity) * 100
+        : 0;
 
     const record = await database.cycleCountRecord.create({
       data: {
@@ -166,7 +175,11 @@ export async function createCycleCountRecord(
         isVerified: record.isVerified,
         verifiedById: record.verifiedById,
         verifiedAt: record.verifiedAt,
-        syncStatus: record.syncStatus as "synced" | "pending" | "failed" | "conflict",
+        syncStatus: record.syncStatus as
+          | "synced"
+          | "pending"
+          | "failed"
+          | "conflict",
         offlineId: record.offlineId,
         createdAt: record.createdAt,
         updatedAt: record.updatedAt,
@@ -207,9 +220,8 @@ export async function updateCycleCountRecord(
     if (input.countedQuantity !== undefined) {
       const expectedQuantity = toNumber(existing.expectedQuantity);
       const variance = input.countedQuantity - expectedQuantity;
-      const variancePct = expectedQuantity > 0
-        ? (variance / expectedQuantity) * 100
-        : 0;
+      const variancePct =
+        expectedQuantity > 0 ? (variance / expectedQuantity) * 100 : 0;
       updatedData.countedQuantity = input.countedQuantity;
       updatedData.variance = variance;
       updatedData.variancePct = variancePct;
@@ -261,7 +273,11 @@ export async function updateCycleCountRecord(
         isVerified: record.isVerified,
         verifiedById: record.verifiedById,
         verifiedAt: record.verifiedAt,
-        syncStatus: record.syncStatus as "synced" | "pending" | "failed" | "conflict",
+        syncStatus: record.syncStatus as
+          | "synced"
+          | "pending"
+          | "failed"
+          | "conflict",
         offlineId: record.offlineId,
         createdAt: record.createdAt,
         updatedAt: record.updatedAt,
@@ -284,7 +300,7 @@ export async function syncCycleCountRecords(
     const user = await database.user.findFirst({
       where: {
         tenantId,
-        authUserId: (await requireTenantId()),
+        authUserId: await requireTenantId(),
       },
     });
 
@@ -300,9 +316,8 @@ export async function syncCycleCountRecords(
         const expectedQuantity = recordData.expectedQuantity;
         const countedQuantity = recordData.countedQuantity;
         const variance = countedQuantity - expectedQuantity;
-        const variancePct = expectedQuantity > 0
-          ? (variance / expectedQuantity) * 100
-          : 0;
+        const variancePct =
+          expectedQuantity > 0 ? (variance / expectedQuantity) * 100 : 0;
 
         const record = await database.cycleCountRecord.create({
           data: {
@@ -343,7 +358,11 @@ export async function syncCycleCountRecords(
           isVerified: record.isVerified,
           verifiedById: record.verifiedById,
           verifiedAt: record.verifiedAt,
-          syncStatus: record.syncStatus as "synced" | "pending" | "failed" | "conflict",
+          syncStatus: record.syncStatus as
+            | "synced"
+            | "pending"
+            | "failed"
+            | "conflict",
           offlineId: record.offlineId,
           createdAt: record.createdAt,
           updatedAt: record.updatedAt,

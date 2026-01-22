@@ -1,7 +1,5 @@
 "use client";
 
-import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -54,11 +52,7 @@ export default function NewKitchenTaskPage() {
 
   return (
     <div className="container mx-auto max-w-2xl py-8">
-      <Button
-        className="mb-6"
-        variant="ghost"
-        onClick={() => router.back()}
-      >
+      <Button className="mb-6" onClick={() => router.back()} variant="ghost">
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back to Production Board
       </Button>
@@ -112,25 +106,18 @@ export default function NewKitchenTaskPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="dueDate">Due Date / Time</Label>
-                <Input
-                  id="dueDate"
-                  name="dueDate"
-                  type="datetime-local"
-                />
+                <Input id="dueDate" name="dueDate" type="datetime-local" />
               </div>
             </div>
 
             <div className="flex gap-4 pt-4">
-              <Button
-                type="submit"
-                disabled={isPending}
-              >
+              <Button disabled={isPending} type="submit">
                 {isPending ? "Creating..." : "Create Task"}
               </Button>
               <Button
+                onClick={() => router.back()}
                 type="button"
                 variant="outline"
-                onClick={() => router.back()}
               >
                 Cancel
               </Button>

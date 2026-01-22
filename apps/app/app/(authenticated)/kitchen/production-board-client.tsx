@@ -5,11 +5,6 @@ import type {
   KitchenTask,
   KitchenTaskClaim,
 } from "@repo/database";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@repo/design-system/components/ui/avatar";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {

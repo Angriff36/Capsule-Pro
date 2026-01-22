@@ -1,14 +1,14 @@
+import { Spinner } from "@repo/design-system/components/ui/spinner";
 import { Suspense } from "react";
 import { ModuleSection } from "../../components/module-section";
-import { CLVDashboard } from "./components/clv-dashboard";
-import { Spinner } from "@repo/design-system/components/ui/spinner";
 import { getClientLTVMetrics } from "./actions/get-client-ltv";
+import { CLVDashboard } from "./components/clv-dashboard";
 
 async function ClientAnalyticsContent() {
   const metrics = await getClientLTVMetrics();
   const clients = metrics.topClients;
 
-  return <CLVDashboard metrics={metrics} clients={clients} />;
+  return <CLVDashboard clients={clients} metrics={metrics} />;
 }
 
 const ClientAnalyticsPage = () => (

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -8,9 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import {
-  type EmployeePerformanceMetrics,
-  type EmployeePerformanceSummary,
+import { useEffect, useState } from "react";
+import type {
+  EmployeePerformanceMetrics,
+  EmployeePerformanceSummary,
 } from "../actions/get-employee-performance";
 
 interface EmployeePerformanceDashboardProps {
@@ -20,8 +20,12 @@ interface EmployeePerformanceDashboardProps {
 export function EmployeePerformanceDashboard({
   employeeId,
 }: EmployeePerformanceDashboardProps) {
-  const [metrics, setMetrics] = useState<EmployeePerformanceMetrics | null>(null);
-  const [summary, setSummary] = useState<EmployeePerformanceSummary | null>(null);
+  const [metrics, setMetrics] = useState<EmployeePerformanceMetrics | null>(
+    null
+  );
+  const [summary, setSummary] = useState<EmployeePerformanceSummary | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState<string>("3m");
 
@@ -114,8 +118,8 @@ export function EmployeePerformanceDashboard({
                   metrics.qualityScore >= 80
                     ? "text-green-600"
                     : metrics.qualityScore >= 60
-                    ? "text-yellow-600"
-                    : "text-red-600"
+                      ? "text-yellow-600"
+                      : "text-red-600"
                 }`}
               >
                 {metrics.qualityScore.toFixed(1)}
@@ -138,8 +142,8 @@ export function EmployeePerformanceDashboard({
                   metrics.efficiencyScore >= 80
                     ? "text-green-600"
                     : metrics.efficiencyScore >= 60
-                    ? "text-yellow-600"
-                    : "text-red-600"
+                      ? "text-yellow-600"
+                      : "text-red-600"
                 }`}
               >
                 {metrics.efficiencyScore.toFixed(1)}
@@ -162,8 +166,8 @@ export function EmployeePerformanceDashboard({
                   metrics.punctualityRate >= 95
                     ? "text-green-600"
                     : metrics.punctualityRate >= 90
-                    ? "text-yellow-600"
-                    : "text-red-600"
+                      ? "text-yellow-600"
+                      : "text-red-600"
                 }`}
               >
                 {metrics.punctualityRate.toFixed(1)}%
@@ -198,8 +202,8 @@ export function EmployeePerformanceDashboard({
                         metrics.taskCompletionRate >= 80
                           ? "bg-green-500"
                           : metrics.taskCompletionRate >= 60
-                          ? "bg-yellow-500"
-                          : "bg-red-500"
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
                       }`}
                       style={{ width: `${metrics.taskCompletionRate}%` }}
                     />
@@ -219,8 +223,8 @@ export function EmployeePerformanceDashboard({
                         metrics.onTimeTaskRate >= 80
                           ? "bg-green-500"
                           : metrics.onTimeTaskRate >= 60
-                          ? "bg-yellow-500"
-                          : "bg-red-500"
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
                       }`}
                       style={{ width: `${metrics.onTimeTaskRate}%` }}
                     />
@@ -240,8 +244,8 @@ export function EmployeePerformanceDashboard({
                         metrics.qualityScore >= 80
                           ? "bg-green-500"
                           : metrics.qualityScore >= 60
-                          ? "bg-yellow-500"
-                          : "bg-red-500"
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
                       }`}
                       style={{ width: `${metrics.qualityScore}%` }}
                     />
@@ -261,8 +265,8 @@ export function EmployeePerformanceDashboard({
                         metrics.efficiencyScore >= 80
                           ? "bg-green-500"
                           : metrics.efficiencyScore >= 60
-                          ? "bg-yellow-500"
-                          : "bg-red-500"
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
                       }`}
                       style={{ width: `${metrics.efficiencyScore}%` }}
                     />
@@ -294,8 +298,8 @@ export function EmployeePerformanceDashboard({
                         metrics.attendanceRate >= 95
                           ? "bg-green-500"
                           : metrics.attendanceRate >= 90
-                          ? "bg-yellow-500"
-                          : "bg-red-500"
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
                       }`}
                       style={{ width: `${metrics.attendanceRate}%` }}
                     />
@@ -315,8 +319,8 @@ export function EmployeePerformanceDashboard({
                         metrics.punctualityRate >= 95
                           ? "bg-green-500"
                           : metrics.punctualityRate >= 90
-                          ? "bg-yellow-500"
-                          : "bg-red-500"
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
                       }`}
                       style={{ width: `${metrics.punctualityRate}%` }}
                     />
@@ -358,12 +362,8 @@ export function EmployeePerformanceDashboard({
           <CardContent>
             <div className="grid gap-4 md:grid-cols-4">
               <div>
-                <div className="text-xs text-muted-foreground">
-                  Total Tasks
-                </div>
-                <div className="text-2xl font-bold">
-                  {metrics.totalTasks}
-                </div>
+                <div className="text-xs text-muted-foreground">Total Tasks</div>
+                <div className="text-2xl font-bold">{metrics.totalTasks}</div>
               </div>
               <div>
                 <div className="text-xs text-muted-foreground">
@@ -417,21 +417,16 @@ export function EmployeePerformanceDashboard({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">
-          Employee Performance Dashboard
-        </h2>
+        <h2 className="text-2xl font-bold">Employee Performance Dashboard</h2>
         <div className="flex items-center gap-2">
-          <label
-            htmlFor="period-select"
-            className="text-sm font-medium"
-          >
+          <label className="text-sm font-medium" htmlFor="period-select">
             Period:
           </label>
           <select
-            id="period-select"
-            value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value)}
             className="rounded border border-input bg-background px-3 py-2 text-sm"
+            id="period-select"
+            onChange={(e) => setSelectedPeriod(e.target.value)}
+            value={selectedPeriod}
           >
             <option value="3m">Last 3 months</option>
             <option value="6m">Last 6 months</option>
@@ -507,8 +502,8 @@ export function EmployeePerformanceDashboard({
               <div className="space-y-3">
                 {summary.topPerformers.map((performer) => (
                   <div
-                    key={performer.employeeId}
                     className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                    key={performer.employeeId}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold">
@@ -553,9 +548,7 @@ export function EmployeePerformanceDashboard({
                         <th className="py-2 text-right font-medium">
                           Completion %
                         </th>
-                        <th className="py-2 text-right font-medium">
-                          Quality
-                        </th>
+                        <th className="py-2 text-right font-medium">Quality</th>
                         <th className="py-2 text-right font-medium">
                           Efficiency
                         </th>
@@ -564,12 +557,10 @@ export function EmployeePerformanceDashboard({
                     <tbody>
                       {summary.metricsByRole.map((roleMetrics) => (
                         <tr
-                          key={roleMetrics.role}
                           className="border-b hover:bg-muted/50"
+                          key={roleMetrics.role}
                         >
-                          <td className="py-2">
-                            {roleMetrics.role}
-                          </td>
+                          <td className="py-2">{roleMetrics.role}</td>
                           <td className="py-2 text-right">
                             {roleMetrics.employeeCount}
                           </td>
@@ -581,8 +572,8 @@ export function EmployeePerformanceDashboard({
                               roleMetrics.avgQualityScore >= 80
                                 ? "text-green-600"
                                 : roleMetrics.avgQualityScore >= 60
-                                ? "text-yellow-600"
-                                : "text-red-600"
+                                  ? "text-yellow-600"
+                                  : "text-red-600"
                             }`}
                           >
                             {roleMetrics.avgQualityScore.toFixed(1)}
@@ -592,8 +583,8 @@ export function EmployeePerformanceDashboard({
                               roleMetrics.avgEfficiencyScore >= 80
                                 ? "text-green-600"
                                 : roleMetrics.avgEfficiencyScore >= 60
-                                ? "text-yellow-600"
-                                : "text-red-600"
+                                  ? "text-yellow-600"
+                                  : "text-red-600"
                             }`}
                           >
                             {roleMetrics.avgEfficiencyScore.toFixed(1)}
@@ -617,8 +608,8 @@ export function EmployeePerformanceDashboard({
                 <div className="space-y-2">
                   {summary.monthlyTrends.map((trend, index) => (
                     <div
-                      key={trend.month}
                       className="flex items-center gap-2 text-sm"
+                      key={trend.month}
                     >
                       <div className="w-16 text-xs text-muted-foreground">
                         {new Date(`${trend.month}-01`).toLocaleDateString(
@@ -628,9 +619,7 @@ export function EmployeePerformanceDashboard({
                       </div>
                       <div className="flex-1 space-y-1">
                         <div className="flex items-center gap-1">
-                          <div className="w-24 text-xs">
-                            Completion:
-                          </div>
+                          <div className="w-24 text-xs">Completion:</div>
                           <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                             <div
                               className="h-full bg-blue-500 transition-all"

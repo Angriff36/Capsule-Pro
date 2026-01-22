@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma } from "@repo/database";
+import { PrismaClient } from "@repo/database";
 
 const prisma = new PrismaClient();
 
@@ -102,7 +102,10 @@ async function main() {
   console.log(`Created/found ${ingredientMap.size} ingredients`);
 
   // Define recipe ingredients for each recipe
-  const recipeIngredientData: Record<string, Array<{ name: string; quantity: number; unit: string }>> = {
+  const recipeIngredientData: Record<
+    string,
+    Array<{ name: string; quantity: number; unit: string }>
+  > = {
     "Grilled Herb Chicken": [
       { name: "Chicken Breast", quantity: 1, unit: "lb" },
       { name: "Olive Oil", quantity: 2, unit: "tbsp" },
@@ -154,9 +157,7 @@ async function main() {
       { name: "Heavy Cream", quantity: 1, unit: "cup" },
       { name: "Vanilla Extract", quantity: 1, unit: "tsp" },
     ],
-    "Fruit Platter": [
-      { name: "Fruit Assortment", quantity: 4, unit: "lb" },
-    ],
+    "Fruit Platter": [{ name: "Fruit Assortment", quantity: 4, unit: "lb" }],
   };
 
   // Find recipe versions for each dish and add ingredients
@@ -174,7 +175,7 @@ async function main() {
       const ingredientId = ingredientMap.get(ri.name);
       const unitId = unitMap.get(ri.unit);
 
-      if (!ingredientId || !unitId) {
+      if (!(ingredientId && unitId)) {
         console.log(`Missing ingredient or unit: ${ri.name} / ${ri.unit}`);
         continue;
       }

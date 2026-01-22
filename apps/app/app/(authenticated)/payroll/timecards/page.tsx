@@ -1,16 +1,5 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@repo/design-system/components/ui/table";
 import {
   Avatar,
   AvatarFallback,
@@ -18,6 +7,7 @@ import {
 } from "@repo/design-system/components/ui/avatar";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import {
   Select,
@@ -27,18 +17,27 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/design-system/components/ui/table";
+import {
+  AlertTriangleIcon,
   CalendarIcon,
   CheckCircleIcon,
-  ClockIcon,
-  AlertTriangleIcon,
   CheckIcon,
+  ClockIcon,
   EditIcon,
   FlagIcon,
-  XCircleIcon,
   Loader2Icon,
 } from "lucide-react";
-import TimecardDetailModal from "./timecard-detail-modal";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import TimecardDetailModal from "./timecard-detail-modal";
 
 type TimeEntry = {
   id: string;
@@ -108,10 +107,7 @@ function formatTime(date: Date) {
   }).format(date);
 }
 
-function getEmployeeName(
-  firstName: string | null,
-  lastName: string | null
-) {
+function getEmployeeName(firstName: string | null, lastName: string | null) {
   return [firstName, lastName].filter(Boolean).join(" ") || "Unknown";
 }
 
@@ -156,15 +152,18 @@ export default function TimecardsPage() {
     totalPages: 1,
   });
   const [loading, setLoading] = useState(true);
-  const [selectedEntries, setSelectedEntries] = useState<Set<string>>(new Set());
+  const [selectedEntries, setSelectedEntries] = useState<Set<string>>(
+    new Set()
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("pending");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [selectedTimeEntry, setSelectedTimeEntry] =
-    useState<TimeEntry | null>(null);
+  const [selectedTimeEntry, setSelectedTimeEntry] = useState<TimeEntry | null>(
+    null
+  );
   const [actionLoading, setActionLoading] = useState(false);
 
   const fetchTimecards = useCallback(async () => {
@@ -180,9 +179,7 @@ export default function TimecardsPage() {
       if (startDate) params.set("startDate", startDate);
       if (endDate) params.set("endDate", endDate);
 
-      const response = await fetch(
-        `/api/timecards?${params.toString()}`
-      );
+      const response = await fetch(`/api/timecards?${params.toString()}`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch timecards");
@@ -197,7 +194,14 @@ export default function TimecardsPage() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, pagination.page, pagination.limit, searchQuery, startDate, endDate]);
+  }, [
+    statusFilter,
+    pagination.page,
+    pagination.limit,
+    searchQuery,
+    startDate,
+    endDate,
+  ]);
 
   useEffect(() => {
     fetchTimecards();
@@ -341,9 +345,7 @@ export default function TimecardsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-semibold text-2xl text-foreground">
-            Timecards
-          </h1>
+          <h1 className="font-semibold text-2xl text-foreground">Timecards</h1>
           <p className="text-muted-foreground text-sm">
             Review and approve employee time entries
           </p>
@@ -355,13 +357,13 @@ export default function TimecardsPage() {
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex-1 min-w-[200px]">
               <Input
+                onChange={(e) => handleSearch(e.target.value)}
                 placeholder="Search employees..."
                 value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
 
-            <Select value={statusFilter} onValueChange={handleStatusChange}>
+            <Select onValueChange={handleStatusChange} value={statusFilter}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue />
               </SelectTrigger>
@@ -374,17 +376,17 @@ export default function TimecardsPage() {
             </Select>
 
             <Input
+              className="w-[160px]"
+              onChange={(e) => setStartDate(e.target.value)}
               type="date"
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-[160px]"
             />
 
             <Input
+              className="w-[160px]"
+              onChange={(e) => setEndDate(e.target.value)}
               type="date"
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-[160px]"
             />
           </div>
         </CardContent>
@@ -410,7 +412,6 @@ export default function TimecardsPage() {
                     <TableRow>
                       <TableHead className="w-[40px]">
                         <input
-                          type="checkbox"
                           checked={selectedEntries.size === timeEntries.length}
                           onChange={(e) => {
                             if (e.target.checked) {
@@ -421,6 +422,7 @@ export default function TimecardsPage() {
                               setSelectedEntries(new Set());
                             }
                           }}
+                          type="checkbox"
                         />
                       </TableHead>
                       <TableHead>Employee</TableHead>
@@ -436,26 +438,26 @@ export default function TimecardsPage() {
                   <TableBody>
                     {timeEntries.map((entry) => (
                       <TableRow
-                        key={entry.id}
                         className="cursor-pointer hover:bg-muted/50"
+                        key={entry.id}
                         onClick={() => openDetailModal(entry)}
                       >
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <input
-                            type="checkbox"
                             checked={selectedEntries.has(entry.id)}
                             onChange={() => toggleSelectEntry(entry.id)}
+                            type="checkbox"
                           />
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar className="h-8 w-8">
                               <AvatarImage
-                                src={`${entry.employee_first_name?.[0]}${entry.employee_last_name?.[0]}`}
                                 alt={getEmployeeName(
                                   entry.employee_first_name,
                                   entry.employee_last_name
                                 )}
+                                src={`${entry.employee_first_name?.[0]}${entry.employee_last_name?.[0]}`}
                               />
                               <AvatarFallback>
                                 {getEmployeeName(
@@ -536,12 +538,14 @@ export default function TimecardsPage() {
                         <TableCell>
                           {getExceptionBadge(entry.exception_type)}
                         </TableCell>
-                        <TableCell>{formatCurrency(entry.total_cost)}</TableCell>
+                        <TableCell>
+                          {formatCurrency(entry.total_cost)}
+                        </TableCell>
                         <TableCell>
                           {entry.approved_at ? (
                             <Badge
-                              variant="secondary"
                               className="flex items-center gap-1"
+                              variant="secondary"
                             >
                               <CheckCircleIcon className="h-3 w-3" />
                               Approved
@@ -565,29 +569,29 @@ export default function TimecardsPage() {
                           <div className="flex items-center gap-1">
                             {!entry.approved_at && entry.clock_out && (
                               <Button
-                                size="icon"
-                                variant="ghost"
                                 className="h-8 w-8 text-green-600 hover:text-green-700"
+                                disabled={actionLoading}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleApprove(entry.id);
                                 }}
-                                disabled={actionLoading}
+                                size="icon"
+                                variant="ghost"
                               >
                                 <CheckIcon className="h-4 w-4" />
                               </Button>
                             )}
                             <Button
+                              className="h-8 w-8 text-blue-600 hover:text-blue-700"
                               size="icon"
                               variant="ghost"
-                              className="h-8 w-8 text-blue-600 hover:text-blue-700"
                             >
                               <EditIcon className="h-4 w-4" />
                             </Button>
                             <Button
+                              className="h-8 w-8 text-orange-600 hover:text-orange-700"
                               size="icon"
                               variant="ghost"
-                              className="h-8 w-8 text-orange-600 hover:text-orange-700"
                             >
                               <FlagIcon className="h-4 w-4" />
                             </Button>
@@ -607,10 +611,10 @@ export default function TimecardsPage() {
             </p>
             <div className="flex items-center gap-2">
               <Button
-                variant="outline"
                 disabled={pagination.page <= 1}
-                size="sm"
                 onClick={() => handlePageChange(pagination.page - 1)}
+                size="sm"
+                variant="outline"
               >
                 Previous
               </Button>
@@ -618,10 +622,10 @@ export default function TimecardsPage() {
                 Page {pagination.page} of {pagination.totalPages}
               </span>
               <Button
-                variant="outline"
                 disabled={pagination.page >= pagination.totalPages}
-                size="sm"
                 onClick={() => handlePageChange(pagination.page + 1)}
+                size="sm"
+                variant="outline"
               >
                 Next
               </Button>
@@ -632,23 +636,19 @@ export default function TimecardsPage() {
 
       {selectedTimeEntry && (
         <TimecardDetailModal
-          timeEntry={selectedTimeEntry}
-          open={detailModalOpen}
+          onApprove={() => handleApprove(selectedTimeEntry.id)}
           onClose={() => {
             setDetailModalOpen(false);
             setSelectedTimeEntry(null);
           }}
-          onApprove={() => handleApprove(selectedTimeEntry.id)}
           onEditRequest={(reason, requestedChanges) =>
-            handleEditRequest(
-              selectedTimeEntry.id,
-              reason,
-              requestedChanges
-            )
+            handleEditRequest(selectedTimeEntry.id, reason, requestedChanges)
           }
           onFlagException={(type, notes) =>
             handleFlagException(selectedTimeEntry.id, type, notes)
           }
+          open={detailModalOpen}
+          timeEntry={selectedTimeEntry}
         />
       )}
     </div>

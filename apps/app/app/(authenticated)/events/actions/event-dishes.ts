@@ -2,8 +2,8 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { getTenantIdForOrg } from "../../../lib/tenant";
 import { revalidatePath } from "next/cache";
+import { getTenantIdForOrg } from "../../../lib/tenant";
 
 export async function getEventDishes(eventId: string) {
   const { orgId } = await auth();
@@ -146,7 +146,7 @@ export async function addDishToEvent(
   quantityServings?: number
 ) {
   const { orgId, userId } = await auth();
-  if (!orgId || !userId) {
+  if (!(orgId && userId)) {
     throw new Error("Unauthorized");
   }
 
@@ -185,7 +185,7 @@ export async function addDishToEvent(
 
 export async function removeDishFromEvent(eventId: string, linkId: string) {
   const { orgId, userId } = await auth();
-  if (!orgId || !userId) {
+  if (!(orgId && userId)) {
     throw new Error("Unauthorized");
   }
 

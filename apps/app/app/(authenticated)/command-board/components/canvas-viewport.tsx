@@ -6,9 +6,9 @@ import {
   type KeyboardEvent,
   type MouseEvent,
   type ReactNode,
-  useImperativeHandle,
   useCallback,
   useEffect,
+  useImperativeHandle,
   useRef,
   useState,
   type WheelEvent,
@@ -206,315 +206,327 @@ export function useViewportState(
  * - Smooth CSS transitions for zoom changes
  * - Coordinate transformation between screen and canvas space
  */
-export const CanvasViewport = forwardRef<ViewportRef, CanvasViewportProps>(function CanvasViewport({
-  children,
-  className,
-  initialViewport,
-  onViewportChange,
-  showControls = true,
-  enableWheelZoom = true,
-  enablePan = true,
-  enableKeyboardShortcuts = true,
-  onCanvasClick,
-  onCanvasDoubleClick,
-  minZoom = VIEWPORT_DEFAULTS.MIN_ZOOM as number,
-  maxZoom = VIEWPORT_DEFAULTS.MAX_ZOOM as number,
-}, ref) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  const { viewport, setViewport, zoomIn, zoomOut, resetViewport, panBy } =
-    useViewportState(initialViewport, minZoom, maxZoom);
-
-  // Expose zoom functions via ref for external control
-  useImperativeHandle(ref, () => ({
-    zoomIn,
-    zoomOut,
-    resetViewport,
-    setZoom: (zoom: number) => setViewport((prev) => ({ ...prev, zoom })),
-  }), [zoomIn, zoomOut, resetViewport, setViewport]);
-
-  const [panState, setPanState] = useState<PanState>({
-    isPanning: false,
-    startX: 0,
-    startY: 0,
-    startPanX: 0,
-    startPanY: 0,
-  });
-
-  const [isSpacePressed, setIsSpacePressed] = useState(false);
-
-  // Notify parent of viewport changes
-  useEffect(() => {
-    onViewportChange?.(viewport);
-  }, [viewport, onViewportChange]);
-
-  // Get mouse position relative to the container
-  const getMousePosition = useCallback((e: MouseEvent): Point => {
-    if (!containerRef.current) {
-      return { x: 0, y: 0 };
-    }
-    const rect = containerRef.current.getBoundingClientRect();
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    };
-  }, []);
-
-  // Handle wheel zoom
-  const handleWheel = useCallback(
-    (e: WheelEvent) => {
-      if (!enableWheelZoom) {
-        return;
-      }
-
-      e.preventDefault();
-
-      const mousePos = getMousePosition(e as unknown as MouseEvent);
-      const delta =
-        e.deltaY > 0
-          ? -VIEWPORT_DEFAULTS.ZOOM_STEP
-          : VIEWPORT_DEFAULTS.ZOOM_STEP;
-
-      setViewport((prev: ViewportState) => {
-        const newZoom = clampZoom(prev.zoom + delta, minZoom, maxZoom);
-        const zoomRatio = newZoom / prev.zoom;
-
-        return {
-          zoom: newZoom,
-          panX: mousePos.x - (mousePos.x - prev.panX) * zoomRatio,
-          panY: mousePos.y - (mousePos.y - prev.panY) * zoomRatio,
-        };
-      });
+export const CanvasViewport = forwardRef<ViewportRef, CanvasViewportProps>(
+  function CanvasViewport(
+    {
+      children,
+      className,
+      initialViewport,
+      onViewportChange,
+      showControls = true,
+      enableWheelZoom = true,
+      enablePan = true,
+      enableKeyboardShortcuts = true,
+      onCanvasClick,
+      onCanvasDoubleClick,
+      minZoom = VIEWPORT_DEFAULTS.MIN_ZOOM as number,
+      maxZoom = VIEWPORT_DEFAULTS.MAX_ZOOM as number,
     },
-    [enableWheelZoom, getMousePosition, setViewport, minZoom, maxZoom]
-  );
+    ref
+  ) {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
 
-  // Handle mouse down for panning
-  const handleMouseDown = useCallback(
-    (e: MouseEvent) => {
-      if (!enablePan) {
-        return;
+    const { viewport, setViewport, zoomIn, zoomOut, resetViewport, panBy } =
+      useViewportState(initialViewport, minZoom, maxZoom);
+
+    // Expose zoom functions via ref for external control
+    useImperativeHandle(
+      ref,
+      () => ({
+        zoomIn,
+        zoomOut,
+        resetViewport,
+        setZoom: (zoom: number) => setViewport((prev) => ({ ...prev, zoom })),
+      }),
+      [zoomIn, zoomOut, resetViewport, setViewport]
+    );
+
+    const [panState, setPanState] = useState<PanState>({
+      isPanning: false,
+      startX: 0,
+      startY: 0,
+      startPanX: 0,
+      startPanY: 0,
+    });
+
+    const [isSpacePressed, setIsSpacePressed] = useState(false);
+
+    // Notify parent of viewport changes
+    useEffect(() => {
+      onViewportChange?.(viewport);
+    }, [viewport, onViewportChange]);
+
+    // Get mouse position relative to the container
+    const getMousePosition = useCallback((e: MouseEvent): Point => {
+      if (!containerRef.current) {
+        return { x: 0, y: 0 };
       }
+      const rect = containerRef.current.getBoundingClientRect();
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      };
+    }, []);
 
-      // Middle click or space+left click initiates panning
-      const shouldPan = e.button === 1 || (e.button === 0 && isSpacePressed);
+    // Handle wheel zoom
+    const handleWheel = useCallback(
+      (e: WheelEvent) => {
+        if (!enableWheelZoom) {
+          return;
+        }
 
-      if (shouldPan) {
         e.preventDefault();
-        setPanState({
-          isPanning: true,
-          startX: e.clientX,
-          startY: e.clientY,
-          startPanX: viewport.panX,
-          startPanY: viewport.panY,
+
+        const mousePos = getMousePosition(e as unknown as MouseEvent);
+        const delta =
+          e.deltaY > 0
+            ? -VIEWPORT_DEFAULTS.ZOOM_STEP
+            : VIEWPORT_DEFAULTS.ZOOM_STEP;
+
+        setViewport((prev: ViewportState) => {
+          const newZoom = clampZoom(prev.zoom + delta, minZoom, maxZoom);
+          const zoomRatio = newZoom / prev.zoom;
+
+          return {
+            zoom: newZoom,
+            panX: mousePos.x - (mousePos.x - prev.panX) * zoomRatio,
+            panY: mousePos.y - (mousePos.y - prev.panY) * zoomRatio,
+          };
         });
-      }
-    },
-    [enablePan, isSpacePressed, viewport.panX, viewport.panY]
-  );
+      },
+      [enableWheelZoom, getMousePosition, setViewport, minZoom, maxZoom]
+    );
 
-  // Handle mouse move for panning
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      if (!panState.isPanning) return;
+    // Handle mouse down for panning
+    const handleMouseDown = useCallback(
+      (e: MouseEvent) => {
+        if (!enablePan) {
+          return;
+        }
 
-      const deltaX = e.clientX - panState.startX;
-      const deltaY = e.clientY - panState.startY;
+        // Middle click or space+left click initiates panning
+        const shouldPan = e.button === 1 || (e.button === 0 && isSpacePressed);
 
-      setViewport((prev: ViewportState) => ({
-        ...prev,
-        panX: panState.startPanX + deltaX,
-        panY: panState.startPanY + deltaY,
-      }));
-    },
-    [panState, setViewport]
-  );
+        if (shouldPan) {
+          e.preventDefault();
+          setPanState({
+            isPanning: true,
+            startX: e.clientX,
+            startY: e.clientY,
+            startPanX: viewport.panX,
+            startPanY: viewport.panY,
+          });
+        }
+      },
+      [enablePan, isSpacePressed, viewport.panX, viewport.panY]
+    );
 
-  // Handle mouse up to end panning
-  const handleMouseUp = useCallback(() => {
-    if (panState.isPanning) {
-      setPanState((prev: PanState) => ({ ...prev, isPanning: false }));
-    }
-  }, [panState.isPanning]);
+    // Handle mouse move for panning
+    const handleMouseMove = useCallback(
+      (e: MouseEvent) => {
+        if (!panState.isPanning) return;
 
-  // Handle click on canvas
-  const handleClick = useCallback(
-    (e: MouseEvent) => {
-      if (!onCanvasClick || panState.isPanning) return;
+        const deltaX = e.clientX - panState.startX;
+        const deltaY = e.clientY - panState.startY;
 
-      // Don't trigger click if we just finished panning
-      const target = e.target as HTMLElement;
-      if (target !== containerRef.current && target !== contentRef.current) {
-        return; // Click was on a child element
-      }
+        setViewport((prev: ViewportState) => ({
+          ...prev,
+          panX: panState.startPanX + deltaX,
+          panY: panState.startPanY + deltaY,
+        }));
+      },
+      [panState, setViewport]
+    );
 
-      const mousePos = getMousePosition(e);
-      const canvasPos = screenToCanvas(mousePos, viewport);
-      onCanvasClick(canvasPos);
-    },
-    [onCanvasClick, panState.isPanning, getMousePosition, viewport]
-  );
-
-  // Handle double-click on canvas
-  const handleDoubleClick = useCallback(
-    (e: MouseEvent) => {
-      if (!onCanvasDoubleClick) return;
-
-      const target = e.target as HTMLElement;
-      if (target !== containerRef.current && target !== contentRef.current) {
-        return; // Click was on a child element
-      }
-
-      const mousePos = getMousePosition(e);
-      const canvasPos = screenToCanvas(mousePos, viewport);
-      onCanvasDoubleClick(canvasPos);
-    },
-    [onCanvasDoubleClick, getMousePosition, viewport]
-  );
-
-  // Handle keyboard events
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (!enableKeyboardShortcuts) return;
-
-      // Track space key for space+drag panning
-      if (e.code === "Space") {
-        e.preventDefault();
-        setIsSpacePressed(true);
-        return;
-      }
-
-      // Zoom controls
-      if (e.key === "=" || e.key === "+") {
-        e.preventDefault();
-        zoomIn();
-        return;
-      }
-
-      if (e.key === "-" || e.key === "_") {
-        e.preventDefault();
-        zoomOut();
-        return;
-      }
-
-      // Reset viewport
-      if (e.key === "0") {
-        e.preventDefault();
-        resetViewport();
-        return;
-      }
-
-      // Arrow key panning
-      const panAmount = VIEWPORT_DEFAULTS.PAN_STEP;
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        panBy(panAmount, 0);
-        return;
-      }
-      if (e.key === "ArrowRight") {
-        e.preventDefault();
-        panBy(-panAmount, 0);
-        return;
-      }
-      if (e.key === "ArrowUp") {
-        e.preventDefault();
-        panBy(0, panAmount);
-        return;
-      }
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        panBy(0, -panAmount);
-        return;
-      }
-    },
-    [enableKeyboardShortcuts, zoomIn, zoomOut, resetViewport, panBy]
-  );
-
-  const handleKeyUp = useCallback((e: KeyboardEvent) => {
-    if (e.code === "Space") {
-      setIsSpacePressed(false);
-    }
-  }, []);
-
-  // Add global mouse up listener for ending pan outside container
-  useEffect(() => {
-    const handleGlobalMouseUp = () => {
+    // Handle mouse up to end panning
+    const handleMouseUp = useCallback(() => {
       if (panState.isPanning) {
         setPanState((prev: PanState) => ({ ...prev, isPanning: false }));
       }
+    }, [panState.isPanning]);
+
+    // Handle click on canvas
+    const handleClick = useCallback(
+      (e: MouseEvent) => {
+        if (!onCanvasClick || panState.isPanning) return;
+
+        // Don't trigger click if we just finished panning
+        const target = e.target as HTMLElement;
+        if (target !== containerRef.current && target !== contentRef.current) {
+          return; // Click was on a child element
+        }
+
+        const mousePos = getMousePosition(e);
+        const canvasPos = screenToCanvas(mousePos, viewport);
+        onCanvasClick(canvasPos);
+      },
+      [onCanvasClick, panState.isPanning, getMousePosition, viewport]
+    );
+
+    // Handle double-click on canvas
+    const handleDoubleClick = useCallback(
+      (e: MouseEvent) => {
+        if (!onCanvasDoubleClick) return;
+
+        const target = e.target as HTMLElement;
+        if (target !== containerRef.current && target !== contentRef.current) {
+          return; // Click was on a child element
+        }
+
+        const mousePos = getMousePosition(e);
+        const canvasPos = screenToCanvas(mousePos, viewport);
+        onCanvasDoubleClick(canvasPos);
+      },
+      [onCanvasDoubleClick, getMousePosition, viewport]
+    );
+
+    // Handle keyboard events
+    const handleKeyDown = useCallback(
+      (e: KeyboardEvent) => {
+        if (!enableKeyboardShortcuts) return;
+
+        // Track space key for space+drag panning
+        if (e.code === "Space") {
+          e.preventDefault();
+          setIsSpacePressed(true);
+          return;
+        }
+
+        // Zoom controls
+        if (e.key === "=" || e.key === "+") {
+          e.preventDefault();
+          zoomIn();
+          return;
+        }
+
+        if (e.key === "-" || e.key === "_") {
+          e.preventDefault();
+          zoomOut();
+          return;
+        }
+
+        // Reset viewport
+        if (e.key === "0") {
+          e.preventDefault();
+          resetViewport();
+          return;
+        }
+
+        // Arrow key panning
+        const panAmount = VIEWPORT_DEFAULTS.PAN_STEP;
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          panBy(panAmount, 0);
+          return;
+        }
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          panBy(-panAmount, 0);
+          return;
+        }
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          panBy(0, panAmount);
+          return;
+        }
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          panBy(0, -panAmount);
+          return;
+        }
+      },
+      [enableKeyboardShortcuts, zoomIn, zoomOut, resetViewport, panBy]
+    );
+
+    const handleKeyUp = useCallback((e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        setIsSpacePressed(false);
+      }
+    }, []);
+
+    // Add global mouse up listener for ending pan outside container
+    useEffect(() => {
+      const handleGlobalMouseUp = () => {
+        if (panState.isPanning) {
+          setPanState((prev: PanState) => ({ ...prev, isPanning: false }));
+        }
+      };
+
+      window.addEventListener("mouseup", handleGlobalMouseUp);
+      return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
+    }, [panState.isPanning]);
+
+    // Calculate transform style with smooth transitions for non-drag interactions
+    const transformStyle = {
+      transform: `translate(${viewport.panX}px, ${viewport.panY}px) scale(${viewport.zoom})`,
+      transformOrigin: "0 0",
+      transition: panState.isPanning ? "none" : "transform 0.15s ease-out",
     };
 
-    window.addEventListener("mouseup", handleGlobalMouseUp);
-    return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
-  }, [panState.isPanning]);
+    // Calculate cursor style based on state
+    const getCursorStyle = () => {
+      if (panState.isPanning) return "grabbing";
+      if (isSpacePressed) return "grab";
+      return "default";
+    };
 
-  // Calculate transform style with smooth transitions for non-drag interactions
-  const transformStyle = {
-    transform: `translate(${viewport.panX}px, ${viewport.panY}px) scale(${viewport.zoom})`,
-    transformOrigin: "0 0",
-    transition: panState.isPanning ? "none" : "transform 0.15s ease-out",
-  };
-
-  // Calculate cursor style based on state
-  const getCursorStyle = () => {
-    if (panState.isPanning) return "grabbing";
-    if (isSpacePressed) return "grab";
-    return "default";
-  };
-
-  return (
-    <div className="relative flex h-full w-full flex-col">
-      {/* Viewport Controls */}
-      {showControls && (
-        <ViewportControlBar
-          maxZoom={maxZoom}
-          minZoom={minZoom}
-          onReset={resetViewport}
-          onZoomIn={() => zoomIn()}
-          onZoomOut={() => zoomOut()}
-          viewport={viewport}
-        />
-      )}
-
-      {/* Canvas Container */}
-      <div
-        aria-label="Canvas viewport - Use mouse wheel to zoom, middle-click or space+drag to pan, arrow keys to navigate"
-        className={cn("relative flex-1 overflow-hidden bg-muted/30", className)}
-        onClick={handleClick}
-        onDoubleClick={handleDoubleClick}
-        onKeyDown={handleKeyDown}
-        onKeyUp={handleKeyUp}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onWheel={handleWheel}
-        ref={containerRef}
-        role="application"
-        style={{ cursor: getCursorStyle() }}
-        tabIndex={0}
-      >
-        {/* Transformed Content Layer */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          ref={contentRef}
-          style={transformStyle}
-        >
-          <div className="pointer-events-auto">{children}</div>
-        </div>
-
-        {/* Keyboard Shortcuts Hint (bottom-left) */}
-        {enableKeyboardShortcuts && (
-          <div className="pointer-events-none absolute bottom-3 left-3 text-muted-foreground text-xs opacity-50">
-            <span className="hidden sm:inline">
-              Scroll to zoom | Space+drag to pan | 0 to reset
-            </span>
-          </div>
+    return (
+      <div className="relative flex h-full w-full flex-col">
+        {/* Viewport Controls */}
+        {showControls && (
+          <ViewportControlBar
+            maxZoom={maxZoom}
+            minZoom={minZoom}
+            onReset={resetViewport}
+            onZoomIn={() => zoomIn()}
+            onZoomOut={() => zoomOut()}
+            viewport={viewport}
+          />
         )}
+
+        {/* Canvas Container */}
+        <div
+          aria-label="Canvas viewport - Use mouse wheel to zoom, middle-click or space+drag to pan, arrow keys to navigate"
+          className={cn(
+            "relative flex-1 overflow-hidden bg-muted/30",
+            className
+          )}
+          onClick={handleClick}
+          onDoubleClick={handleDoubleClick}
+          onKeyDown={handleKeyDown}
+          onKeyUp={handleKeyUp}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onWheel={handleWheel}
+          ref={containerRef}
+          role="application"
+          style={{ cursor: getCursorStyle() }}
+          tabIndex={0}
+        >
+          {/* Transformed Content Layer */}
+          <div
+            className="pointer-events-none absolute inset-0"
+            ref={contentRef}
+            style={transformStyle}
+          >
+            <div className="pointer-events-auto">{children}</div>
+          </div>
+
+          {/* Keyboard Shortcuts Hint (bottom-left) */}
+          {enableKeyboardShortcuts && (
+            <div className="pointer-events-none absolute bottom-3 left-3 text-muted-foreground text-xs opacity-50">
+              <span className="hidden sm:inline">
+                Scroll to zoom | Space+drag to pan | 0 to reset
+              </span>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 // =============================================================================
 // Sub-component: ViewportControlBar

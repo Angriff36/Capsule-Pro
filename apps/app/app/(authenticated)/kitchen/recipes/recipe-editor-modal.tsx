@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { AspectRatio } from "@repo/design-system/components/ui/aspect-ratio";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
@@ -22,6 +21,7 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { ImagePlusIcon, PlusIcon, UploadIcon, XIcon } from "lucide-react";
+import Image from "next/image";
 import { useRef, useState } from "react";
 
 type Ingredient = {
@@ -300,47 +300,50 @@ export const RecipeEditorModal = ({
                 Drag and drop or click to upload
               </p>
             </div>
-              {images.length > 0 && (
-                <div className="grid gap-3 md:grid-cols-3">
-                  {images.map((image) => (
-                    <div key={image.id} className="relative group">
-                      <AspectRatio ratio={16 / 9}>
-                        <Image
-                          alt="Recipe"
-                          className="h-full w-full rounded-lg object-cover"
-                          fill
-                          src={image.url}
-                        />
-                      </AspectRatio>
-                      {image.isMain && (
-                        <Badge className="absolute left-2 top-2" variant="default">
-                          Main
-                        </Badge>
-                      )}
-                      <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                        {!image.isMain && (
-                          <Button
-                            onClick={() => handleSetMainImage(image.id)}
-                            size="icon"
-                            type="button"
-                            variant="secondary"
-                          >
-                            <ImagePlusIcon className="size-4" />
-                          </Button>
-                        )}
+            {images.length > 0 && (
+              <div className="grid gap-3 md:grid-cols-3">
+                {images.map((image) => (
+                  <div className="relative group" key={image.id}>
+                    <AspectRatio ratio={16 / 9}>
+                      <Image
+                        alt="Recipe"
+                        className="h-full w-full rounded-lg object-cover"
+                        fill
+                        src={image.url}
+                      />
+                    </AspectRatio>
+                    {image.isMain && (
+                      <Badge
+                        className="absolute left-2 top-2"
+                        variant="default"
+                      >
+                        Main
+                      </Badge>
+                    )}
+                    <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                      {!image.isMain && (
                         <Button
-                          onClick={() => handleRemoveImage(image.id)}
+                          onClick={() => handleSetMainImage(image.id)}
                           size="icon"
                           type="button"
-                          variant="destructive"
+                          variant="secondary"
                         >
-                          <XIcon className="size-4" />
+                          <ImagePlusIcon className="size-4" />
                         </Button>
-                      </div>
+                      )}
+                      <Button
+                        onClick={() => handleRemoveImage(image.id)}
+                        size="icon"
+                        type="button"
+                        variant="destructive"
+                      >
+                        <XIcon className="size-4" />
+                      </Button>
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="space-y-3">

@@ -1,11 +1,6 @@
 "use client";
 
-import { CalendarDaysIcon, MapPinIcon, UsersIcon, ClockIcon, TagIcon, ImagePlusIcon, UploadIcon, XIcon } from "lucide-react";
-import { useState, useRef } from "react";
-import { toast } from "sonner";
-import Image from "next/image";
 import { AspectRatio } from "@repo/design-system/components/ui/aspect-ratio";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
@@ -24,6 +19,10 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { MapPinIcon, UploadIcon, UsersIcon, XIcon } from "lucide-react";
+import Image from "next/image";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 
 type EventImage = {
   id: string;
@@ -107,9 +106,7 @@ export const EventEditorModal = ({
           }}
           className="flex flex-col gap-6"
         >
-          {event?.id && (
-            <input name="eventId" type="hidden" value={event.id} />
-          )}
+          {event?.id && <input name="eventId" type="hidden" value={event.id} />}
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
@@ -171,12 +168,12 @@ export const EventEditorModal = ({
               <div className="relative">
                 <MapPinIcon className="absolute left-3 top-3 size-4 text-muted-foreground" />
                 <Input
+                  className="pl-10"
                   defaultValue={event?.location ?? ""}
                   id="location"
                   name="location"
                   placeholder="e.g., 123 Main St, City, State"
                   required
-                  className="pl-10"
                 />
               </div>
             </div>
@@ -186,6 +183,7 @@ export const EventEditorModal = ({
               <div className="relative">
                 <UsersIcon className="absolute left-3 top-3 size-4 text-muted-foreground" />
                 <Input
+                  className="pl-10"
                   defaultValue={event?.capacity ?? ""}
                   id="capacity"
                   min="1"
@@ -193,7 +191,6 @@ export const EventEditorModal = ({
                   placeholder="e.g., 50"
                   required
                   type="number"
-                  className="pl-10"
                 />
               </div>
             </div>
@@ -236,7 +233,7 @@ export const EventEditorModal = ({
             {images.length > 0 && (
               <div className="grid gap-3 md:grid-cols-2">
                 {images.map((image) => (
-                  <div key={image.id} className="relative group">
+                  <div className="relative group" key={image.id}>
                     <AspectRatio ratio={16 / 9}>
                       <Image
                         alt="Event banner"

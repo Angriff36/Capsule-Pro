@@ -132,7 +132,8 @@ export async function getEmployeePerformance(
       attended_shifts: string;
       punctual_shifts: string;
       total_hours: string;
-      unique_days: string }>
+      unique_days: string;
+    }>
   >(
     `
     SELECT 
@@ -195,7 +196,8 @@ export async function getEmployeePerformance(
   const taskProgress = await database.$queryRawUnsafe<
     Array<{
       progress_count: string;
-      rework_count: string }>
+      rework_count: string;
+    }>
   >(
     `
     SELECT 
@@ -213,21 +215,29 @@ export async function getEmployeePerformance(
   const taskStats = taskMetrics[0];
   const timeStats = timeEntryMetrics[0];
   const progressStats = taskProgress[0];
-  const clientInteractions = Number(clientInteractionCount[0]?.interaction_count || 0);
-  const eventParticipation = Number(eventParticipationCount[0]?.event_count || 0);
+  const clientInteractions = Number(
+    clientInteractionCount[0]?.interaction_count || 0
+  );
+  const eventParticipation = Number(
+    eventParticipationCount[0]?.event_count || 0
+  );
 
   const totalTasks = Number(taskStats?.total_tasks || 0);
   const completedTasks = Number(taskStats?.completed_tasks || 0);
-  const taskCompletionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+  const taskCompletionRate =
+    totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   const onTimeTasks = Number(taskStats?.on_time_tasks || 0);
-  const onTimeTaskRate = completedTasks > 0 ? (onTimeTasks / completedTasks) * 100 : 0;
+  const onTimeTaskRate =
+    completedTasks > 0 ? (onTimeTasks / completedTasks) * 100 : 0;
   const averageTaskDuration = Number(taskStats?.avg_duration_hours || 0);
 
   const totalShifts = Number(timeStats?.total_shifts || 0);
   const attendedShifts = Number(timeStats?.attended_shifts || 0);
-  const attendanceRate = totalShifts > 0 ? (attendedShifts / totalShifts) * 100 : 100;
+  const attendanceRate =
+    totalShifts > 0 ? (attendedShifts / totalShifts) * 100 : 100;
   const punctualShifts = Number(timeStats?.punctual_shifts || 0);
-  const punctualityRate = attendedShifts > 0 ? (punctualShifts / attendedShifts) * 100 : 100;
+  const punctualityRate =
+    attendedShifts > 0 ? (punctualShifts / attendedShifts) * 100 : 100;
   const totalHoursWorked = Number(timeStats?.total_hours || 0);
   const uniqueDays = Number(timeStats?.unique_days || 0);
   const weeksWorked = Math.max(1, Math.ceil(uniqueDays / 7));
@@ -235,12 +245,18 @@ export async function getEmployeePerformance(
 
   const progressCount = Number(progressStats?.progress_count || 0);
   const reworkCount = Number(progressStats?.rework_count || 0);
-  const taskRejectionRate = progressCount > 0 ? (reworkCount / progressCount) * 100 : 0;
-  const reworkRate = completedTasks > 0 ? (reworkCount / completedTasks) * 100 : 0;
+  const taskRejectionRate =
+    progressCount > 0 ? (reworkCount / progressCount) * 100 : 0;
+  const reworkRate =
+    completedTasks > 0 ? (reworkCount / completedTasks) * 100 : 0;
   const qualityScore = Math.max(0, 100 - taskRejectionRate - reworkRate);
 
-  const tasksPerHour = totalHoursWorked > 0 ? completedTasks / totalHoursWorked : 0;
-  const efficiencyScore = Math.min(100, (taskCompletionRate * 0.4) + (onTimeTaskRate * 0.3) + (tasksPerHour * 10));
+  const tasksPerHour =
+    totalHoursWorked > 0 ? completedTasks / totalHoursWorked : 0;
+  const efficiencyScore = Math.min(
+    100,
+    taskCompletionRate * 0.4 + onTimeTaskRate * 0.3 + tasksPerHour * 10
+  );
 
   const revenueGenerated = 0;
 
@@ -399,22 +415,32 @@ export async function getEmployeePerformanceSummary(): Promise<EmployeePerforman
   const employees = employeePerformanceRaw.map((emp) => {
     const totalTasks = Number(emp.total_tasks);
     const completedTasks = Number(emp.completed_tasks);
-    const taskCompletionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+    const taskCompletionRate =
+      totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
     const onTimeTasks = Number(emp.on_time_tasks);
-    const onTimeTaskRate = completedTasks > 0 ? (onTimeTasks / completedTasks) * 100 : 0;
+    const onTimeTaskRate =
+      completedTasks > 0 ? (onTimeTasks / completedTasks) * 100 : 0;
     const totalHoursWorked = Number(emp.total_hours);
-    const tasksPerHour = totalHoursWorked > 0 ? completedTasks / totalHoursWorked : 0;
+    const tasksPerHour =
+      totalHoursWorked > 0 ? completedTasks / totalHoursWorked : 0;
     const totalShifts = Number(emp.total_shifts);
     const attendedShifts = Number(emp.attended_shifts);
-    const attendanceRate = totalShifts > 0 ? (attendedShifts / totalShifts) * 100 : 100;
+    const attendanceRate =
+      totalShifts > 0 ? (attendedShifts / totalShifts) * 100 : 100;
     const punctualShifts = Number(emp.punctual_shifts);
-    const punctualityRate = attendedShifts > 0 ? (punctualShifts / attendedShifts) * 100 : 100;
+    const punctualityRate =
+      attendedShifts > 0 ? (punctualShifts / attendedShifts) * 100 : 100;
     const progressCount = Number(emp.progress_count);
     const reworkCount = Number(emp.rework_count);
-    const taskRejectionRate = progressCount > 0 ? (reworkCount / progressCount) * 100 : 0;
-    const reworkRate = completedTasks > 0 ? (reworkCount / completedTasks) * 100 : 0;
+    const taskRejectionRate =
+      progressCount > 0 ? (reworkCount / progressCount) * 100 : 0;
+    const reworkRate =
+      completedTasks > 0 ? (reworkCount / completedTasks) * 100 : 0;
     const qualityScore = Math.max(0, 100 - taskRejectionRate - reworkRate);
-    const efficiencyScore = Math.min(100, (taskCompletionRate * 0.4) + (onTimeTaskRate * 0.3) + (tasksPerHour * 10));
+    const efficiencyScore = Math.min(
+      100,
+      taskCompletionRate * 0.4 + onTimeTaskRate * 0.3 + tasksPerHour * 10
+    );
 
     return {
       employeeId: emp.employee_id,
@@ -435,73 +461,104 @@ export async function getEmployeePerformanceSummary(): Promise<EmployeePerforman
 
   const totalEmployees = employees.length;
 
-  const averageTaskCompletionRate = employees.length > 0
-    ? employees.reduce((sum, e) => sum + e.taskCompletionRate, 0) / employees.length
-    : 0;
+  const averageTaskCompletionRate =
+    employees.length > 0
+      ? employees.reduce((sum, e) => sum + e.taskCompletionRate, 0) /
+        employees.length
+      : 0;
 
-  const averageAttendanceRate = employees.length > 0
-    ? employees.reduce((sum, e) => sum + e.attendanceRate, 0) / employees.length
-    : 0;
+  const averageAttendanceRate =
+    employees.length > 0
+      ? employees.reduce((sum, e) => sum + e.attendanceRate, 0) /
+        employees.length
+      : 0;
 
-  const averagePunctualityRate = employees.length > 0
-    ? employees.reduce((sum, e) => sum + e.punctualityRate, 0) / employees.length
-    : 0;
+  const averagePunctualityRate =
+    employees.length > 0
+      ? employees.reduce((sum, e) => sum + e.punctualityRate, 0) /
+        employees.length
+      : 0;
 
-  const averageQualityScore = employees.length > 0
-    ? employees.reduce((sum, e) => sum + e.qualityScore, 0) / employees.length
-    : 0;
+  const averageQualityScore =
+    employees.length > 0
+      ? employees.reduce((sum, e) => sum + e.qualityScore, 0) / employees.length
+      : 0;
 
-  const averageEfficiencyScore = employees.length > 0
-    ? employees.reduce((sum, e) => sum + e.efficiencyScore, 0) / employees.length
-    : 0;
+  const averageEfficiencyScore =
+    employees.length > 0
+      ? employees.reduce((sum, e) => sum + e.efficiencyScore, 0) /
+        employees.length
+      : 0;
 
-  const sortedByTaskCompletion = [...employees].sort((a, b) => b.taskCompletionRate - a.taskCompletionRate);
-  const sortedByQuality = [...employees].sort((a, b) => b.qualityScore - a.qualityScore);
-  const sortedByEfficiency = [...employees].sort((a, b) => b.efficiencyScore - a.efficiencyScore);
-  const sortedByPunctuality = [...employees].sort((a, b) => b.punctualityRate - a.punctualityRate);
+  const sortedByTaskCompletion = [...employees].sort(
+    (a, b) => b.taskCompletionRate - a.taskCompletionRate
+  );
+  const sortedByQuality = [...employees].sort(
+    (a, b) => b.qualityScore - a.qualityScore
+  );
+  const sortedByEfficiency = [...employees].sort(
+    (a, b) => b.efficiencyScore - a.efficiencyScore
+  );
+  const sortedByPunctuality = [...employees].sort(
+    (a, b) => b.punctualityRate - a.punctualityRate
+  );
 
   const topPerformers = [
     {
       employeeId: sortedByTaskCompletion[0]?.employeeId || "",
-      name: `${sortedByTaskCompletion[0]?.firstName || ""} ${sortedByTaskCompletion[0]?.lastName || ""}`.trim() || "N/A",
+      name:
+        `${sortedByTaskCompletion[0]?.firstName || ""} ${sortedByTaskCompletion[0]?.lastName || ""}`.trim() ||
+        "N/A",
       score: sortedByTaskCompletion[0]?.taskCompletionRate || 0,
       category: "Task Completion",
     },
     {
       employeeId: sortedByQuality[0]?.employeeId || "",
-      name: `${sortedByQuality[0]?.firstName || ""} ${sortedByQuality[0]?.lastName || ""}`.trim() || "N/A",
+      name:
+        `${sortedByQuality[0]?.firstName || ""} ${sortedByQuality[0]?.lastName || ""}`.trim() ||
+        "N/A",
       score: sortedByQuality[0]?.qualityScore || 0,
       category: "Quality",
     },
     {
       employeeId: sortedByEfficiency[0]?.employeeId || "",
-      name: `${sortedByEfficiency[0]?.firstName || ""} ${sortedByEfficiency[0]?.lastName || ""}`.trim() || "N/A",
+      name:
+        `${sortedByEfficiency[0]?.firstName || ""} ${sortedByEfficiency[0]?.lastName || ""}`.trim() ||
+        "N/A",
       score: sortedByEfficiency[0]?.efficiencyScore || 0,
       category: "Efficiency",
     },
     {
       employeeId: sortedByPunctuality[0]?.employeeId || "",
-      name: `${sortedByPunctuality[0]?.firstName || ""} ${sortedByPunctuality[0]?.lastName || ""}`.trim() || "N/A",
+      name:
+        `${sortedByPunctuality[0]?.firstName || ""} ${sortedByPunctuality[0]?.lastName || ""}`.trim() ||
+        "N/A",
       score: sortedByPunctuality[0]?.punctualityRate || 0,
       category: "Punctuality",
     },
   ];
 
-  const roleGroups = employees.reduce((acc, emp) => {
-    const role = emp.role || "Other";
-    if (!acc[role]) {
-      acc[role] = [];
-    }
-    acc[role].push(emp);
-    return acc;
-  }, {} as Record<string, typeof employees>);
+  const roleGroups = employees.reduce(
+    (acc, emp) => {
+      const role = emp.role || "Other";
+      if (!acc[role]) {
+        acc[role] = [];
+      }
+      acc[role].push(emp);
+      return acc;
+    },
+    {} as Record<string, typeof employees>
+  );
 
   const metricsByRole = Object.entries(roleGroups).map(([role, emps]) => ({
     role,
     employeeCount: emps.length,
-    avgTaskCompletionRate: emps.reduce((sum, e) => sum + e.taskCompletionRate, 0) / emps.length,
-    avgQualityScore: emps.reduce((sum, e) => sum + e.qualityScore, 0) / emps.length,
-    avgEfficiencyScore: emps.reduce((sum, e) => sum + e.efficiencyScore, 0) / emps.length,
+    avgTaskCompletionRate:
+      emps.reduce((sum, e) => sum + e.taskCompletionRate, 0) / emps.length,
+    avgQualityScore:
+      emps.reduce((sum, e) => sum + e.qualityScore, 0) / emps.length,
+    avgEfficiencyScore:
+      emps.reduce((sum, e) => sum + e.efficiencyScore, 0) / emps.length,
   }));
 
   const monthlyTrends = await database.$queryRawUnsafe<
@@ -564,8 +621,12 @@ export async function getEmployeePerformanceSummary(): Promise<EmployeePerforman
 }
 
 export async function getEmployeeList(
-  sortBy: "task_completion" | "quality" | "efficiency" | "punctuality" = "task_completion",
-  limit: number = 50
+  sortBy:
+    | "task_completion"
+    | "quality"
+    | "efficiency"
+    | "punctuality" = "task_completion",
+  limit = 50
 ): Promise<EmployeePerformanceMetrics[]> {
   const { orgId } = await auth();
 
@@ -691,22 +752,32 @@ export async function getEmployeeList(
   const employees = employeePerformanceRaw.map((emp) => {
     const totalTasks = Number(emp.total_tasks);
     const completedTasks = Number(emp.completed_tasks);
-    const taskCompletionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+    const taskCompletionRate =
+      totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
     const onTimeTasks = Number(emp.on_time_tasks);
-    const onTimeTaskRate = completedTasks > 0 ? (onTimeTasks / completedTasks) * 100 : 0;
+    const onTimeTaskRate =
+      completedTasks > 0 ? (onTimeTasks / completedTasks) * 100 : 0;
     const totalHoursWorked = Number(emp.total_hours);
-    const tasksPerHour = totalHoursWorked > 0 ? completedTasks / totalHoursWorked : 0;
+    const tasksPerHour =
+      totalHoursWorked > 0 ? completedTasks / totalHoursWorked : 0;
     const totalShifts = Number(emp.total_shifts);
     const attendedShifts = Number(emp.attended_shifts);
-    const attendanceRate = totalShifts > 0 ? (attendedShifts / totalShifts) * 100 : 100;
+    const attendanceRate =
+      totalShifts > 0 ? (attendedShifts / totalShifts) * 100 : 100;
     const punctualShifts = Number(emp.punctual_shifts);
-    const punctualityRate = attendedShifts > 0 ? (punctualShifts / attendedShifts) * 100 : 100;
+    const punctualityRate =
+      attendedShifts > 0 ? (punctualShifts / attendedShifts) * 100 : 100;
     const progressCount = Number(emp.progress_count);
     const reworkCount = Number(emp.rework_count);
-    const taskRejectionRate = progressCount > 0 ? (reworkCount / progressCount) * 100 : 0;
-    const reworkRate = completedTasks > 0 ? (reworkCount / completedTasks) * 100 : 0;
+    const taskRejectionRate =
+      progressCount > 0 ? (reworkCount / progressCount) * 100 : 0;
+    const reworkRate =
+      completedTasks > 0 ? (reworkCount / completedTasks) * 100 : 0;
     const qualityScore = Math.max(0, 100 - taskRejectionRate - reworkRate);
-    const efficiencyScore = Math.min(100, (taskCompletionRate * 0.4) + (onTimeTaskRate * 0.3) + (tasksPerHour * 10));
+    const efficiencyScore = Math.min(
+      100,
+      taskCompletionRate * 0.4 + onTimeTaskRate * 0.3 + tasksPerHour * 10
+    );
     const uniqueDays = Number(emp.unique_days);
     const weeksWorked = Math.max(1, Math.ceil(uniqueDays / 7));
     const averageHoursPerWeek = totalHoursWorked / weeksWorked;
@@ -747,7 +818,7 @@ export async function getEmployeeList(
     };
   });
 
-  let sortedEmployees = [...employees];
+  const sortedEmployees = [...employees];
   if (sortBy === "quality") {
     sortedEmployees.sort((a, b) => b.qualityScore - a.qualityScore);
   } else if (sortBy === "efficiency") {

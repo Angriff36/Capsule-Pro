@@ -1,7 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,8 +8,8 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Progress } from "@repo/design-system/components/ui/progress";
-import { Header } from "../../components/header";
 import { getTenantIdForOrg } from "../../../lib/tenant";
+import { Header } from "../../components/header";
 
 type StationStats = {
   station_id: string;
@@ -119,18 +118,18 @@ const KitchenStationsPage = async () => {
             <Card className="col-span-full">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <p className="text-muted-foreground">
-                  No station data found. Tasks with station tags will appear here.
+                  No station data found. Tasks with station tags will appear
+                  here.
                 </p>
               </CardContent>
             </Card>
           ) : (
             stationStats.map((station) => {
-              const config =
-                STATION_CONFIG[station.station_id] || {
-                  label: station.station_id,
-                  color: "bg-slate-100 text-slate-800",
-                  tasksLabel: "Tasks",
-                };
+              const config = STATION_CONFIG[station.station_id] || {
+                label: station.station_id,
+                color: "bg-slate-100 text-slate-800",
+                tasksLabel: "Tasks",
+              };
               const completionRate =
                 station.total_tasks > 0
                   ? Math.round(
@@ -143,9 +142,7 @@ const KitchenStationsPage = async () => {
                 <Card key={station.station_id}>
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">
-                        {config.label}
-                      </CardTitle>
+                      <CardTitle className="text-lg">{config.label}</CardTitle>
                       <Badge className={config.color} variant="secondary">
                         {station.total_tasks} tasks
                       </Badge>
@@ -216,8 +213,8 @@ const KitchenStationsPage = async () => {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
               {Object.entries(STATION_CONFIG).map(([key, config]) => (
                 <div
-                  key={key}
                   className="flex items-center gap-2 rounded-lg border p-3"
+                  key={key}
                 >
                   <div className={`h-3 w-3 rounded-full ${config.color}`} />
                   <span className="text-sm font-medium">{config.label}</span>
@@ -225,8 +222,9 @@ const KitchenStationsPage = async () => {
               ))}
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              Add station tags to tasks (e.g., "hot-line", "cold-prep", "bakery")
-              to see them grouped here. Tasks can have multiple station tags.
+              Add station tags to tasks (e.g., "hot-line", "cold-prep",
+              "bakery") to see them grouped here. Tasks can have multiple
+              station tags.
             </p>
           </CardContent>
         </Card>

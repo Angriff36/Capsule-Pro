@@ -1,12 +1,12 @@
 "use client";
 
-import { MetricsCards } from "./metrics-cards";
-import { RevenueTrends } from "./revenue-trends";
-import { CohortAnalysis } from "./cohort-analysis";
-import { ClientTable } from "./client-table";
-import { PredictiveLTV } from "./predictive-ltv";
 import { cn } from "@repo/design-system/lib/utils";
 import type { ClientLTVMetrics } from "../actions/get-client-ltv";
+import { ClientTable } from "./client-table";
+import { CohortAnalysis } from "./cohort-analysis";
+import { MetricsCards } from "./metrics-cards";
+import { PredictiveLTV } from "./predictive-ltv";
+import { RevenueTrends } from "./revenue-trends";
 
 interface CLVDashboardProps {
   metrics: ClientLTVMetrics;
@@ -14,7 +14,11 @@ interface CLVDashboardProps {
   className?: string;
 }
 
-export function CLVDashboard({ metrics, clients, className }: CLVDashboardProps) {
+export function CLVDashboard({
+  metrics,
+  clients,
+  className,
+}: CLVDashboardProps) {
   return (
     <div className={cn("flex flex-col gap-6", className)}>
       <MetricsCards metrics={metrics} />

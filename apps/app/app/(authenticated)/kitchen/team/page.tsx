@@ -1,8 +1,13 @@
-import { Header } from "../../components/header";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
-import { Users, UserPlus, Settings } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { Settings, UserPlus, Users } from "lucide-react";
 import Link from "next/link";
+import { Header } from "../../components/header";
 
 const KitchenTeamPage = () => {
   return (
@@ -18,8 +23,8 @@ const KitchenTeamPage = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">
-              Kitchen team management is handled in the Staff module. View team members,
-              their roles, skills, and station assignments there.
+              Kitchen team management is handled in the Staff module. View team
+              members, their roles, skills, and station assignments there.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button asChild>
@@ -88,25 +93,41 @@ const KitchenTeamPage = () => {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <Button className="h-auto flex-col gap-2 py-4" variant="outline" asChild>
+              <Button
+                asChild
+                className="h-auto flex-col gap-2 py-4"
+                variant="outline"
+              >
                 <Link href="/staff/team?view=online">
                   <Users className="h-5 w-5" />
                   <span>Who's Working</span>
                 </Link>
               </Button>
-              <Button className="h-auto flex-col gap-2 py-4" variant="outline" asChild>
+              <Button
+                asChild
+                className="h-auto flex-col gap-2 py-4"
+                variant="outline"
+              >
                 <Link href="/staff/team?action=assign">
                   <UserPlus className="h-5 w-5" />
                   <span>Quick Assign</span>
                 </Link>
               </Button>
-              <Button className="h-auto flex-col gap-2 py-4" variant="outline" asChild>
+              <Button
+                asChild
+                className="h-auto flex-col gap-2 py-4"
+                variant="outline"
+              >
                 <Link href="/staff/availability">
                   <Settings className="h-5 w-5" />
                   <span>Availability</span>
                 </Link>
               </Button>
-              <Button className="h-auto flex-col gap-2 py-4" variant="outline" asChild>
+              <Button
+                asChild
+                className="h-auto flex-col gap-2 py-4"
+                variant="outline"
+              >
                 <Link href="/staff/time-off">
                   <span className="text-xl">📅</span>
                   <span>Time Off</span>

@@ -98,7 +98,8 @@ export const RelationshipType = {
   generic: "generic",
 } as const;
 
-export type RelationshipType = (typeof RelationshipType)[keyof typeof RelationshipType];
+export type RelationshipType =
+  (typeof RelationshipType)[keyof typeof RelationshipType];
 
 /**
  * Relationship configuration with visual properties
@@ -708,10 +709,7 @@ export function calculateStraightPath(
 /**
  * Calculate mid-point along a curve path for label positioning
  */
-export function calculateMidPoint(
-  startPoint: Point,
-  endPoint: Point
-): Point {
+export function calculateMidPoint(startPoint: Point, endPoint: Point): Point {
   return {
     x: (startPoint.x + endPoint.x) / 2,
     y: (startPoint.y + endPoint.y) / 2,

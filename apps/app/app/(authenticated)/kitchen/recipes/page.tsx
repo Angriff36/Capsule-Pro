@@ -36,9 +36,9 @@ import { Header } from "../../components/header";
 import { updateRecipeImage } from "./actions";
 import { RecipeFavoriteButton } from "./recipe-favorite-button";
 import { RecipeImagePlaceholder } from "./recipe-image-placeholder";
+import { RecipesPageClient } from "./recipes-page-client";
 import RecipesRealtime from "./recipes-realtime";
 import { RecipesToolbar } from "./recipes-toolbar";
-import { RecipesPageClient } from "./recipes-page-client";
 
 type RecipeRow = {
   id: string;

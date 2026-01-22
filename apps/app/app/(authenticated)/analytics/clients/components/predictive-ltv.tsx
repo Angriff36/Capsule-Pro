@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -11,15 +12,8 @@ import {
   ChartContainer,
   ChartTooltipContent,
 } from "@repo/design-system/components/ui/chart";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from "recharts";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { cn } from "@repo/design-system/lib/utils";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 type PredictiveLTVProps = {
   data: {
@@ -34,7 +28,7 @@ type PredictiveLTVProps = {
     }>;
   };
   className?: string;
-}
+};
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -87,20 +81,23 @@ export function PredictiveLTV({ data, className }: PredictiveLTVProps) {
         ) : (
           <>
             <div className="h-[200px]">
-              <ChartContainer config={chartConfig} className="h-full w-full">
+              <ChartContainer className="h-full w-full" config={chartConfig}>
                 <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <CartesianGrid
+                    className="stroke-muted"
+                    strokeDasharray="3 3"
+                  />
                   <XAxis
+                    axisLine={false}
+                    className="text-xs fill-muted-foreground"
                     dataKey="name"
                     tickLine={false}
-                    axisLine={false}
-                    className="text-xs fill-muted-foreground"
                   />
                   <YAxis
-                    tickLine={false}
                     axisLine={false}
-                    tickFormatter={(value) => formatCurrency(value)}
                     className="text-xs fill-muted-foreground"
+                    tickFormatter={(value) => formatCurrency(value)}
+                    tickLine={false}
                   />
                   <ChartTooltipContent
                     formatter={(value) => [formatCurrency(value as number), ""]}
@@ -121,8 +118,8 @@ export function PredictiveLTV({ data, className }: PredictiveLTVProps) {
             <div className="grid gap-2">
               {data.clientSegments.map((segment) => (
                 <div
-                  key={segment.segment}
                   className="flex items-center justify-between text-sm"
+                  key={segment.segment}
                 >
                   <div className="flex items-center gap-2">
                     <div
@@ -132,7 +129,7 @@ export function PredictiveLTV({ data, className }: PredictiveLTVProps) {
                       )}
                     />
                     <span className="font-medium">{segment.segment}</span>
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge className="text-xs" variant="secondary">
                       {segment.count} clients
                     </Badge>
                   </div>

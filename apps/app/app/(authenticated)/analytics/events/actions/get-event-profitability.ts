@@ -120,7 +120,9 @@ export async function calculateEventProfitability(
     new Date(event.eventDate.setHours(23, 59, 59, 999))
   );
 
-  const actualLaborCost = Number(actualLaborCostResult[0]?.total_labor_cost || 0);
+  const actualLaborCost = Number(
+    actualLaborCostResult[0]?.total_labor_cost || 0
+  );
 
   const budgetedFoodCostPct = 0.35;
   const budgetedLaborCostPct = 0.25;
@@ -210,7 +212,7 @@ export async function calculateEventProfitability(
 }
 
 export async function getHistoricalProfitability(
-  months: number = 12
+  months = 12
 ): Promise<HistoricalProfitabilityData[]> {
   const { orgId } = await auth();
 

@@ -1,18 +1,15 @@
 "use client";
 
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Card,
-  CardContent,
-} from "@repo/design-system/components/ui/card";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { CheckIcon, XIcon, EditIcon, FlagIcon } from "lucide-react";
+import { CheckIcon, EditIcon, FlagIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 
 type TimecardBulkActionsProps = {
@@ -31,9 +28,7 @@ export default function TimecardBulkActions({
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Badge variant="secondary">{totalEntries} total</Badge>
-              {selectedCount > 0 && (
-                <Badge>{selectedCount} selected</Badge>
-              )}
+              {selectedCount > 0 && <Badge>{selectedCount} selected</Badge>}
             </div>
           </div>
 

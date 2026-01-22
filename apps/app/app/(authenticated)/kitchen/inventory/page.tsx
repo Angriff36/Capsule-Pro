@@ -16,8 +16,8 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { Header } from "../../components/header";
 import { getTenantIdForOrg } from "../../../lib/tenant";
+import { Header } from "../../components/header";
 
 type InventoryItemRow = {
   id: string;
@@ -47,7 +47,10 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 const formatQuantity = (qty: number) => {
   if (qty === 0) return "0";
   if (qty < 0.01) return "<0.01";
-  return qty.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+  return qty.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 3,
+  });
 };
 
 const KitchenInventoryPage = async () => {
@@ -181,8 +184,8 @@ const KitchenInventoryPage = async () => {
               <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
                 {lowStockAlerts.map((alert) => (
                   <div
-                    key={alert.id}
                     className="flex items-center justify-between rounded-lg border border-amber-200 bg-white p-3"
+                    key={alert.id}
                   >
                     <div>
                       <div className="font-medium">{alert.item_name}</div>

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -8,9 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import {
-  type EventProfitabilityMetrics,
-  type HistoricalProfitabilityData,
+import { useEffect, useState } from "react";
+import type {
+  EventProfitabilityMetrics,
+  HistoricalProfitabilityData,
 } from "../actions/get-event-profitability";
 
 interface ProfitabilityDashboardProps {
@@ -20,7 +20,9 @@ interface ProfitabilityDashboardProps {
 export function ProfitabilityDashboard({
   eventId,
 }: ProfitabilityDashboardProps) {
-  const [metrics, setMetrics] = useState<EventProfitabilityMetrics | null>(null);
+  const [metrics, setMetrics] = useState<EventProfitabilityMetrics | null>(
+    null
+  );
   const [historical, setHistorical] = useState<HistoricalProfitabilityData[]>(
     []
   );
@@ -33,9 +35,7 @@ export function ProfitabilityDashboard({
         setLoading(true);
 
         if (eventId) {
-          const response = await fetch(
-            `/api/events/${eventId}/profitability`
-          );
+          const response = await fetch(`/api/events/${eventId}/profitability`);
           const data = await response.json();
           setMetrics(data);
         } else {
@@ -102,11 +102,14 @@ export function ProfitabilityDashboard({
               </div>
               <div
                 className={`text-xs mt-1 ${
-                  metrics.revenueVariance >= 0 ? "text-green-600" : "text-red-600"
+                  metrics.revenueVariance >= 0
+                    ? "text-green-600"
+                    : "text-red-600"
                 }`}
               >
                 {metrics.revenueVariance >= 0 ? "+" : ""}
-                {metrics.revenueVariance.toFixed(2)} ({metrics.revenueVariance >= 0 ? "over" : "under"} budget)
+                {metrics.revenueVariance.toFixed(2)} (
+                {metrics.revenueVariance >= 0 ? "over" : "under"} budget)
               </div>
             </CardContent>
           </Card>
@@ -120,29 +123,38 @@ export function ProfitabilityDashboard({
                 ${metrics.actualTotalCost.toFixed(2)}
               </div>
               <div className="text-xs text-muted-foreground mt-1">
-                Food: ${metrics.actualFoodCost.toFixed(2)} | Labor: ${metrics.actualLaborCost.toFixed(2)} | Overhead: ${metrics.actualOverhead.toFixed(2)}
+                Food: ${metrics.actualFoodCost.toFixed(2)} | Labor: $
+                {metrics.actualLaborCost.toFixed(2)} | Overhead: $
+                {metrics.actualOverhead.toFixed(2)}
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm font-medium">Gross Margin</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Gross Margin
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div
                 className={`text-2xl font-bold ${
-                  metrics.actualGrossMargin >= 0 ? "text-green-600" : "text-red-600"
+                  metrics.actualGrossMargin >= 0
+                    ? "text-green-600"
+                    : "text-red-600"
                 }`}
               >
                 {metrics.actualGrossMargin.toFixed(2)}
               </div>
               <div
                 className={`text-xs mt-1 ${
-                  metrics.marginVariancePct >= 0 ? "text-green-600" : "text-red-600"
+                  metrics.marginVariancePct >= 0
+                    ? "text-green-600"
+                    : "text-red-600"
                 }`}
               >
-                {metrics.actualGrossMarginPct.toFixed(1)}% ({metrics.marginVariancePct >= 0 ? "+" : ""}
+                {metrics.actualGrossMarginPct.toFixed(1)}% (
+                {metrics.marginVariancePct >= 0 ? "+" : ""}
                 {metrics.marginVariancePct.toFixed(1)}% vs budget)
               </div>
             </CardContent>
@@ -153,9 +165,7 @@ export function ProfitabilityDashboard({
           <Card>
             <CardHeader>
               <CardTitle>Cost Breakdown</CardTitle>
-              <CardDescription>
-                Actual costs vs budgeted costs
-              </CardDescription>
+              <CardDescription>Actual costs vs budgeted costs</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -274,8 +284,8 @@ export function ProfitabilityDashboard({
                   <div className="h-48 space-y-1">
                     {metrics.marginTrend.map((item, index) => (
                       <div
-                        key={index}
                         className="flex items-center gap-2 text-sm"
+                        key={index}
                       >
                         <div className="w-16 text-xs text-muted-foreground">
                           {item.date.toLocaleDateString("en-US", {
@@ -402,21 +412,16 @@ export function ProfitabilityDashboard({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">
-          Event Profitability Dashboard
-        </h2>
+        <h2 className="text-2xl font-bold">Event Profitability Dashboard</h2>
         <div className="flex items-center gap-2">
-          <label
-            htmlFor="period-select"
-            className="text-sm font-medium"
-          >
+          <label className="text-sm font-medium" htmlFor="period-select">
             Period:
           </label>
           <select
-            id="period-select"
-            value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value)}
             className="rounded border border-input bg-background px-3 py-2 text-sm"
+            id="period-select"
+            onChange={(e) => setSelectedPeriod(e.target.value)}
+            value={selectedPeriod}
           >
             <option value="3m">Last 3 months</option>
             <option value="6m">Last 6 months</option>
@@ -481,7 +486,8 @@ export function ProfitabilityDashboard({
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  ${historical
+                  $
+                  {historical
                     .reduce((sum, h) => sum + h.totalRevenue, 0)
                     .toFixed(2)}
                 </div>
@@ -496,7 +502,8 @@ export function ProfitabilityDashboard({
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  ${historical
+                  $
+                  {historical
                     .reduce((sum, h) => sum + h.totalCost, 0)
                     .toFixed(2)}
                 </div>
@@ -517,9 +524,7 @@ export function ProfitabilityDashboard({
                   <thead>
                     <tr className="border-b">
                       <th className="py-2 text-left font-medium">Period</th>
-                      <th className="py-2 text-right font-medium">
-                        Events
-                      </th>
+                      <th className="py-2 text-right font-medium">Events</th>
                       <th className="py-2 text-right font-medium">Revenue</th>
                       <th className="py-2 text-right font-medium">
                         Avg Margin %
@@ -537,14 +542,9 @@ export function ProfitabilityDashboard({
                   </thead>
                   <tbody>
                     {historical.map((item, index) => (
-                      <tr
-                        key={index}
-                        className="border-b hover:bg-muted/50"
-                      >
+                      <tr className="border-b hover:bg-muted/50" key={index}>
                         <td className="py-2">{item.period}</td>
-                        <td className="py-2 text-right">
-                          {item.totalEvents}
-                        </td>
+                        <td className="py-2 text-right">{item.totalEvents}</td>
                         <td className="py-2 text-right">
                           ${item.totalRevenue.toFixed(2)}
                         </td>

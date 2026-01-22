@@ -1,5 +1,7 @@
 "use client";
 
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,19 +13,15 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import {
-  CalendarIcon,
-  ClockIcon,
-  MapPinIcon,
-  DollarSignIcon,
-  CheckCircleIcon,
   AlertTriangleIcon,
+  CalendarIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  DollarSignIcon,
+  MapPinIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -62,11 +60,14 @@ type TimecardDetailModalProps = {
   open: boolean;
   onClose: () => void;
   onApprove: () => void;
-  onEditRequest: (reason: string, requestedChanges?: {
-    requestedClockIn?: string;
-    requestedClockOut?: string;
-    requestedBreakMinutes?: number;
-  }) => void;
+  onEditRequest: (
+    reason: string,
+    requestedChanges?: {
+      requestedClockIn?: string;
+      requestedClockOut?: string;
+      requestedBreakMinutes?: number;
+    }
+  ) => void;
   onFlagException: (type: string, notes: string) => void;
 };
 
@@ -101,10 +102,7 @@ function formatTime(date: Date) {
   }).format(date);
 }
 
-function getEmployeeName(
-  firstName: string | null,
-  lastName: string | null
-) {
+function getEmployeeName(firstName: string | null, lastName: string | null) {
   return [firstName, lastName].filter(Boolean).join(" ") || "Unknown";
 }
 
@@ -123,7 +121,7 @@ export default function TimecardDetailModal({
   const isOpen = timeEntry.clock_out === null;
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog onOpenChange={onClose} open={open}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Timecard Details</DialogTitle>
@@ -212,9 +210,7 @@ export default function TimecardDetailModal({
                     </TableRow>
                   )}
                   <TableRow>
-                    <TableCell className="font-medium">
-                      Actual Hours
-                    </TableCell>
+                    <TableCell className="font-medium">Actual Hours</TableCell>
                     <TableCell>{formatHours(timeEntry.actual_hours)}</TableCell>
                   </TableRow>
                   {timeEntry.scheduled_hours && (
@@ -261,8 +257,8 @@ export default function TimecardDetailModal({
                   <TableCell>
                     {isApproved ? (
                       <Badge
-                        variant="secondary"
                         className="flex items-center gap-1"
+                        variant="secondary"
                       >
                         <CheckCircleIcon className="h-3 w-3" />
                         Approved
@@ -288,9 +284,7 @@ export default function TimecardDetailModal({
                 )}
                 {timeEntry.approved_at && (
                   <TableRow>
-                    <TableCell className="font-medium">
-                      Approved At
-                    </TableCell>
+                    <TableCell className="font-medium">Approved At</TableCell>
                     <TableCell>
                       {new Intl.DateTimeFormat("en-US", {
                         month: "short",
@@ -339,7 +333,6 @@ export default function TimecardDetailModal({
             {isPending && (
               <>
                 <Button
-                  variant="outline"
                   onClick={() => {
                     const notes = prompt("Enter exception notes:");
                     if (notes) {
@@ -351,17 +344,18 @@ export default function TimecardDetailModal({
                       }
                     }
                   }}
+                  variant="outline"
                 >
                   Flag Exception
                 </Button>
                 <Button
-                  variant="outline"
                   onClick={() => {
                     const reason = prompt("Enter edit request reason:");
                     if (reason) {
                       onEditRequest(reason);
                     }
                   }}
+                  variant="outline"
                 >
                   Request Edit
                 </Button>
@@ -370,16 +364,16 @@ export default function TimecardDetailModal({
             )}
             {isOpen && (
               <Button
-                variant="outline"
                 onClick={() => {
                   toast.info("Clock out functionality to be implemented");
                 }}
+                variant="outline"
               >
                 Clock Out
               </Button>
             )}
             {isApproved && (
-              <Button variant="outline" onClick={onClose}>
+              <Button onClick={onClose} variant="outline">
                 Close
               </Button>
             )}

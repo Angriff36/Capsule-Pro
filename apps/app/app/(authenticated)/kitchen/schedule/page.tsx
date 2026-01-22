@@ -1,9 +1,13 @@
-import { Header } from "../../components/header";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import { Calendar, Clock, Users } from "lucide-react";
 import Link from "next/link";
+import { Header } from "../../components/header";
 
 const KitchenSchedulePage = () => {
   return (
@@ -19,8 +23,8 @@ const KitchenSchedulePage = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">
-              Kitchen staff scheduling is managed in the Staff module. View and manage
-              shifts, time-off requests, and team availability there.
+              Kitchen staff scheduling is managed in the Staff module. View and
+              manage shifts, time-off requests, and team availability there.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button asChild>
@@ -77,19 +81,27 @@ const KitchenSchedulePage = () => {
             <div className="grid gap-4 md:grid-cols-4">
               <div className="text-center">
                 <div className="text-2xl font-bold">-</div>
-                <div className="text-sm text-muted-foreground">Today's Shifts</div>
+                <div className="text-sm text-muted-foreground">
+                  Today's Shifts
+                </div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold">-</div>
-                <div className="text-sm text-muted-foreground">Staff On Duty</div>
+                <div className="text-sm text-muted-foreground">
+                  Staff On Duty
+                </div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold">-</div>
-                <div className="text-sm text-muted-foreground">Coverage Alerts</div>
+                <div className="text-sm text-muted-foreground">
+                  Coverage Alerts
+                </div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold">-</div>
-                <div className="text-sm text-muted-foreground">Pending Requests</div>
+                <div className="text-sm text-muted-foreground">
+                  Pending Requests
+                </div>
               </div>
             </div>
             <p className="mt-4 text-sm text-muted-foreground text-center">

@@ -1,9 +1,9 @@
 "use server";
 
-import { database, Prisma } from "@repo/database";
-import { requireTenantId } from "../../../lib/tenant";
 import { openai } from "@ai-sdk/openai";
+import { database, Prisma } from "@repo/database";
 import { generateText } from "ai";
+import { requireTenantId } from "../../../lib/tenant";
 import { calculateEventProfitability } from "../../analytics/events/actions/get-event-profitability";
 
 const AI_MODEL = "gpt-4o-mini";
@@ -50,7 +50,9 @@ export interface GetEventSummaryResult {
   error?: string;
 }
 
-export async function getEventSummary(eventId: string): Promise<GetEventSummaryResult> {
+export async function getEventSummary(
+  eventId: string
+): Promise<GetEventSummaryResult> {
   const tenantId = await requireTenantId();
 
   const existingSummary = await database.$queryRaw<
@@ -100,7 +102,8 @@ export async function getEventSummary(eventId: string): Promise<GetEventSummaryR
       eventId: summary.event_id,
       highlights: (summary.highlights as SummaryItem[]) || [],
       issues: (summary.issues as SummaryItem[]) || [],
-      financialPerformance: (summary.financial_performance as SummaryItem[]) || [],
+      financialPerformance:
+        (summary.financial_performance as SummaryItem[]) || [],
       clientFeedback: (summary.client_feedback as SummaryItem[]) || [],
       insights: (summary.insights as SummaryItem[]) || [],
       overallSummary: summary.overall_summary || "",
@@ -187,7 +190,8 @@ export async function generateEventSummary(
   try {
     profitability = await calculateEventProfitability(eventId);
   } catch (error) {
-    profitabilityError = error instanceof Error ? error.message : "Unknown error";
+    profitabilityError =
+      error instanceof Error ? error.message : "Unknown error";
   }
 
   const staffAssignmentsResult = await database.$queryRaw<
@@ -328,16 +332,15 @@ Please provide a comprehensive executive summary following the system prompt gui
       financialPerformance: [],
       clientFeedback: [],
       insights: [],
-      overallSummary: "Unable to generate summary from AI response. Please review event data manually.",
+      overallSummary:
+        "Unable to generate summary from AI response. Please review event data manually.",
     };
   }
 
   const endTime = Date.now();
   const generationDurationMs = endTime - startTime;
 
-  const summaryRecord = await database.$queryRaw<
-    Array<{ id: string }>
-  >(
+  const summaryRecord = await database.$queryRaw<Array<{ id: string }>>(
     Prisma.sql`
       INSERT INTO tenant_events.event_summaries (
         tenant_id,

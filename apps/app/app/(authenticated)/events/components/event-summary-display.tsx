@@ -1,14 +1,8 @@
 "use client";
 
-import type { GeneratedEventSummary, SummaryItem } from "../actions/event-summary";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import {
   Collapsible,
   CollapsibleContent,
@@ -46,6 +40,10 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import type {
+  GeneratedEventSummary,
+  SummaryItem,
+} from "../actions/event-summary";
 
 interface EventSummaryDisplayProps {
   eventId: string;
@@ -167,11 +165,11 @@ function SummarySection({
   const hasItems = items && items.length > 0;
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+    <Collapsible onOpenChange={setIsOpen} open={isOpen}>
       <CollapsibleTrigger
-        className={`flex w-full items-center justify-between rounded-xl border p-4 transition-colors hover:bg-muted/50 ${bgColor}`}
-        aria-expanded={isOpen}
         aria-controls={`${id}-content`}
+        aria-expanded={isOpen}
+        className={`flex w-full items-center justify-between rounded-xl border p-4 transition-colors hover:bg-muted/50 ${bgColor}`}
       >
         <div className="flex items-center gap-3">
           <div className={`rounded-lg p-2 ${color} bg-white/50`}>
@@ -183,9 +181,7 @@ function SummarySection({
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {hasItems && (
-            <Badge variant="secondary">{items.length} items</Badge>
-          )}
+          {hasItems && <Badge variant="secondary">{items.length} items</Badge>}
           {isOpen ? (
             <ChevronUpIcon className="size-4 text-muted-foreground" />
           ) : (
@@ -194,17 +190,17 @@ function SummarySection({
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent
-        id={`${id}-content`}
         className="mt-2 space-y-2 px-4 pb-4"
+        id={`${id}-content`}
       >
-        {!hasItems ? (
+        {hasItems ? (
+          items.map((item, index) => (
+            <SummaryItemCard item={item} key={index} />
+          ))
+        ) : (
           <p className="py-4 text-center text-muted-foreground text-sm">
             No {title.toLowerCase()} to display
           </p>
-        ) : (
-          items.map((item, index) => (
-            <SummaryItemCard key={index} item={item} />
-          ))
         )}
       </CollapsibleContent>
     </Collapsible>
@@ -218,9 +214,9 @@ export function EventSummaryDisplay({
   onGenerate,
   onDelete,
 }: EventSummaryDisplayProps) {
-  const [summary, setSummary] = useState<GeneratedEventSummary | null | undefined>(
-    initialSummary
-  );
+  const [summary, setSummary] = useState<
+    GeneratedEventSummary | null | undefined
+  >(initialSummary);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState("");
   const [streamingSections, setStreamingSections] = useState<string[]>([]);
@@ -392,10 +388,11 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
           <h3 className="font-medium text-lg mb-2">No summary generated yet</h3>
           <p className="text-muted-foreground text-sm text-center max-w-sm mb-4">
             Generate an AI-powered executive summary to get insights about this
-            event&apos;s performance, highlights, and actionable recommendations.
+            event&apos;s performance, highlights, and actionable
+            recommendations.
           </p>
           {onGenerate && (
-            <Button onClick={handleGenerate} disabled={isGenerating}>
+            <Button disabled={isGenerating} onClick={handleGenerate}>
               <SparklesIcon className="mr-2 size-4" />
               Generate Executive Summary
             </Button>
@@ -417,7 +414,11 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
   });
 
   return (
-    <div className="space-y-6" role="region" aria-label="Event Executive Summary">
+    <div
+      aria-label="Event Executive Summary"
+      className="space-y-6"
+      role="region"
+    >
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-primary/10 p-2">
@@ -428,57 +429,61 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
             <p className="text-muted-foreground text-sm">
               Generated {dateFormatter.format(summary.generatedAt)}
               {summary.generationDurationMs && (
-                <span className="ml-2">({(summary.generationDurationMs / 1000).toFixed(1)}s)</span>
+                <span className="ml-2">
+                  ({(summary.generationDurationMs / 1000).toFixed(1)}s)
+                </span>
               )}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCopyToClipboard}
             aria-label="Copy summary to clipboard"
+            onClick={handleCopyToClipboard}
+            size="sm"
+            variant="outline"
           >
             <ClipboardCopyIcon className="mr-2 size-4" />
             Copy
           </Button>
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowExportDialog(true)}
             aria-label="Export summary"
+            onClick={() => setShowExportDialog(true)}
+            size="sm"
+            variant="outline"
           >
             <DownloadIcon className="mr-2 size-4" />
             Export
           </Button>
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowRatingDialog(true)}
             aria-label="Rate this summary"
+            onClick={() => setShowRatingDialog(true)}
+            size="sm"
+            variant="outline"
           >
             <StarIcon className="mr-2 size-4" />
             Rate
           </Button>
           {onGenerate && (
             <Button
-              variant="outline"
-              size="sm"
-              onClick={handleGenerate}
-              disabled={isGenerating}
               aria-label="Regenerate summary"
+              disabled={isGenerating}
+              onClick={handleGenerate}
+              size="sm"
+              variant="outline"
             >
-              <RefreshCwIcon className={`mr-2 size-4 ${isGenerating ? "animate-spin" : ""}`} />
+              <RefreshCwIcon
+                className={`mr-2 size-4 ${isGenerating ? "animate-spin" : ""}`}
+              />
               Regenerate
             </Button>
           )}
           {onDelete && (
             <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDelete}
               aria-label="Delete summary"
+              onClick={handleDelete}
+              size="sm"
+              variant="outline"
             >
               <XIcon className="mr-2 size-4" />
               Delete
@@ -494,13 +499,15 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
               <Spinner className="size-5 text-primary" />
               <div className="flex-1">
                 <p className="font-medium">Generating summary...</p>
-                <p className="text-muted-foreground text-sm">{generationProgress}</p>
+                <p className="text-muted-foreground text-sm">
+                  {generationProgress}
+                </p>
               </div>
-              <Progress value={45} className="w-32" />
+              <Progress className="w-32" value={45} />
               <Button
-                variant="outline"
-                size="sm"
                 onClick={() => setIsGenerating(false)}
+                size="sm"
+                variant="outline"
               >
                 <StopCircleIcon className="mr-1 size-4" />
                 Cancel
@@ -526,62 +533,62 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
 
       <div className="grid gap-4">
         <SummarySection
-          id="highlights"
-          title={SECTION_CONFIG.highlights.label}
-          items={summary.highlights}
-          icon={SECTION_CONFIG.highlights.icon}
-          color={SECTION_CONFIG.highlights.color}
           bgColor={SECTION_CONFIG.highlights.bgColor}
-          description={SECTION_CONFIG.highlights.description}
+          color={SECTION_CONFIG.highlights.color}
           defaultOpen={streamingSections.includes("highlights")}
+          description={SECTION_CONFIG.highlights.description}
+          icon={SECTION_CONFIG.highlights.icon}
+          id="highlights"
+          items={summary.highlights}
+          title={SECTION_CONFIG.highlights.label}
         />
 
         <SummarySection
-          id="issues"
-          title={SECTION_CONFIG.issues.label}
-          items={summary.issues}
-          icon={SECTION_CONFIG.issues.icon}
-          color={SECTION_CONFIG.issues.color}
           bgColor={SECTION_CONFIG.issues.bgColor}
-          description={SECTION_CONFIG.issues.description}
+          color={SECTION_CONFIG.issues.color}
           defaultOpen={streamingSections.includes("issues")}
+          description={SECTION_CONFIG.issues.description}
+          icon={SECTION_CONFIG.issues.icon}
+          id="issues"
+          items={summary.issues}
+          title={SECTION_CONFIG.issues.label}
         />
 
         <SummarySection
-          id="financial"
-          title={SECTION_CONFIG.financialPerformance.label}
-          items={summary.financialPerformance}
-          icon={SECTION_CONFIG.financialPerformance.icon}
-          color={SECTION_CONFIG.financialPerformance.color}
           bgColor={SECTION_CONFIG.financialPerformance.bgColor}
-          description={SECTION_CONFIG.financialPerformance.description}
+          color={SECTION_CONFIG.financialPerformance.color}
           defaultOpen={streamingSections.includes("financialPerformance")}
+          description={SECTION_CONFIG.financialPerformance.description}
+          icon={SECTION_CONFIG.financialPerformance.icon}
+          id="financial"
+          items={summary.financialPerformance}
+          title={SECTION_CONFIG.financialPerformance.label}
         />
 
         <SummarySection
-          id="feedback"
-          title={SECTION_CONFIG.clientFeedback.label}
-          items={summary.clientFeedback}
-          icon={SECTION_CONFIG.clientFeedback.icon}
-          color={SECTION_CONFIG.clientFeedback.color}
           bgColor={SECTION_CONFIG.clientFeedback.bgColor}
-          description={SECTION_CONFIG.clientFeedback.description}
+          color={SECTION_CONFIG.clientFeedback.color}
           defaultOpen={streamingSections.includes("clientFeedback")}
+          description={SECTION_CONFIG.clientFeedback.description}
+          icon={SECTION_CONFIG.clientFeedback.icon}
+          id="feedback"
+          items={summary.clientFeedback}
+          title={SECTION_CONFIG.clientFeedback.label}
         />
 
         <SummarySection
-          id="insights"
-          title={SECTION_CONFIG.insights.label}
-          items={summary.insights}
-          icon={SECTION_CONFIG.insights.icon}
-          color={SECTION_CONFIG.insights.color}
           bgColor={SECTION_CONFIG.insights.bgColor}
-          description={SECTION_CONFIG.insights.description}
+          color={SECTION_CONFIG.insights.color}
           defaultOpen={streamingSections.includes("insights")}
+          description={SECTION_CONFIG.insights.description}
+          icon={SECTION_CONFIG.insights.icon}
+          id="insights"
+          items={summary.insights}
+          title={SECTION_CONFIG.insights.label}
         />
       </div>
 
-      <Dialog open={showRatingDialog} onOpenChange={setShowRatingDialog}>
+      <Dialog onOpenChange={setShowRatingDialog} open={showRatingDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Rate this summary</DialogTitle>
@@ -592,12 +599,12 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
           <div className="flex justify-center gap-2 py-4">
             {[1, 2, 3, 4, 5].map((rating) => (
               <Button
-                key={rating}
-                variant="ghost"
-                size="lg"
-                className="rounded-full"
-                onClick={() => handleRating(rating)}
                 aria-label={`Rate ${rating} out of 5 stars`}
+                className="rounded-full"
+                key={rating}
+                onClick={() => handleRating(rating)}
+                size="lg"
+                variant="ghost"
               >
                 <StarIcon
                   className={`size-8 ${
@@ -610,14 +617,17 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
             ))}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowRatingDialog(false)}>
+            <Button
+              onClick={() => setShowRatingDialog(false)}
+              variant="outline"
+            >
               Cancel
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+      <Dialog onOpenChange={setShowExportDialog} open={showExportDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Export Summary</DialogTitle>
@@ -627,30 +637,33 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
           </DialogHeader>
           <div className="grid gap-3 py-4">
             <Button
-              variant="outline"
               className="justify-start"
               onClick={() => {
                 setShowExportDialog(false);
                 handleCopyToClipboard();
               }}
+              variant="outline"
             >
               <ClipboardCopyIcon className="mr-2 size-4" />
               Copy to Clipboard
             </Button>
             <Button
-              variant="outline"
               className="justify-start"
               onClick={() => {
                 setShowExportDialog(false);
                 handleExportPDF();
               }}
+              variant="outline"
             >
               <DownloadIcon className="mr-2 size-4" />
               Download as HTML
             </Button>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowExportDialog(false)}>
+            <Button
+              onClick={() => setShowExportDialog(false)}
+              variant="outline"
+            >
               Cancel
             </Button>
           </DialogFooter>
@@ -693,7 +706,7 @@ export function EventSummarySkeleton() {
 
       <div className="space-y-4">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="rounded-xl border p-4">
+          <div className="rounded-xl border p-4" key={i}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Skeleton className="h-10 w-10 rounded-lg" />

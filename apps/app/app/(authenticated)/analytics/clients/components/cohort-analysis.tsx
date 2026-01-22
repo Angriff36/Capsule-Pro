@@ -26,7 +26,7 @@ type CohortAnalysisProps = {
     month11: number;
   }>;
   className?: string;
-}
+};
 
 function getRetentionColor(value: number): string {
   if (value >= 80) return "bg-emerald-500/90";
@@ -38,7 +38,20 @@ function getRetentionColor(value: number): string {
 }
 
 export function CohortAnalysis({ data, className }: CohortAnalysisProps) {
-  const months = ["M0", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "M10", "M11"];
+  const months = [
+    "M0",
+    "M1",
+    "M2",
+    "M3",
+    "M4",
+    "M5",
+    "M6",
+    "M7",
+    "M8",
+    "M9",
+    "M10",
+    "M11",
+  ];
 
   return (
     <Card className={cn("", className)}>
@@ -51,9 +64,14 @@ export function CohortAnalysis({ data, className }: CohortAnalysisProps) {
           <table className="w-full text-sm">
             <thead>
               <tr>
-                <th className="text-left font-medium text-muted-foreground pb-2 pr-4">Cohort</th>
+                <th className="text-left font-medium text-muted-foreground pb-2 pr-4">
+                  Cohort
+                </th>
                 {months.map((month) => (
-                  <th key={month} className="text-center font-medium text-muted-foreground pb-2 px-1">
+                  <th
+                    className="text-center font-medium text-muted-foreground pb-2 px-1"
+                    key={month}
+                  >
                     {month}
                   </th>
                 ))}
@@ -69,9 +87,11 @@ export function CohortAnalysis({ data, className }: CohortAnalysisProps) {
                     })}
                   </td>
                   {months.map((_, index) => {
-                    const value = row[`month${index as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11}` as keyof typeof row] as number;
+                    const value = row[
+                      `month${index as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11}` as keyof typeof row
+                    ] as number;
                     return (
-                      <td key={index} className="py-1 px-0.5">
+                      <td className="py-1 px-0.5" key={index}>
                         <div
                           className={cn(
                             "h-8 w-full rounded text-center text-xs flex items-center justify-center text-white font-medium",

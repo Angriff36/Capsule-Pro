@@ -150,7 +150,9 @@ export async function getClientLTVMetrics(): Promise<ClientLTVMetrics> {
   const totalOrders = clientData.reduce((sum, c) => sum + c.orderCount, 0);
   const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
-  const sortedByLTV = [...clientData].sort((a, b) => a.lifetimeValue - b.lifetimeValue);
+  const sortedByLTV = [...clientData].sort(
+    (a, b) => a.lifetimeValue - b.lifetimeValue
+  );
   const medianLTV =
     sortedByLTV.length > 0
       ? sortedByLTV[Math.floor(sortedByLTV.length / 2)].lifetimeValue
@@ -159,7 +161,11 @@ export async function getClientLTVMetrics(): Promise<ClientLTVMetrics> {
     clientData.length > 0 ? totalRevenue / clientData.length : 0;
 
   const now = new Date();
-  const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+  const oneYearAgo = new Date(
+    now.getFullYear() - 1,
+    now.getMonth(),
+    now.getDate()
+  );
   const retainedClients = clientData.filter(
     (c) =>
       c.lastOrderDate !== null &&
@@ -167,7 +173,9 @@ export async function getClientLTVMetrics(): Promise<ClientLTVMetrics> {
       c.orderCount > 1
   );
   const retentionRate =
-    clientData.length > 0 ? (retainedClients.length / clientData.length) * 100 : 0;
+    clientData.length > 0
+      ? (retainedClients.length / clientData.length) * 100
+      : 0;
 
   const topClients = clientData.slice(0, 10);
 
@@ -193,14 +201,19 @@ function calculateRevenueByMonth(
   revenueData: OrderMonthData[]
 ): Array<{ month: string; revenue: number; orders: number; clients: number }> {
   const now = new Date();
-  const months: Array<{ month: string; revenue: number; orders: number; clients: number }> = [];
+  const months: Array<{
+    month: string;
+    revenue: number;
+    orders: number;
+    clients: number;
+  }> = [];
 
   for (let i = 11; i >= 0; i--) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const monthKey = date.toISOString().slice(0, 7);
-    
-    const monthData = revenueData.find(r => r.month === monthKey);
-    
+
+    const monthData = revenueData.find((r) => r.month === monthKey);
+
     months.push({
       month: monthKey,
       revenue: monthData ? Number(monthData.total_revenue) : 0,
@@ -212,9 +225,7 @@ function calculateRevenueByMonth(
   return months;
 }
 
-function calculateCohortAnalysis(
-  clientData: ClientLTVData[]
-): Array<{
+function calculateCohortAnalysis(clientData: ClientLTVData[]): Array<{
   cohort: string;
   month0: number;
   month1: number;
@@ -229,7 +240,10 @@ function calculateCohortAnalysis(
   month10: number;
   month11: number;
 }> {
-  const cohorts: Map<string, Array<{ value: number; monthsSinceFirst: number }>> = new Map();
+  const cohorts: Map<
+    string,
+    Array<{ value: number; monthsSinceFirst: number }>
+  > = new Map();
   const now = new Date();
 
   for (const client of clientData) {
@@ -239,7 +253,8 @@ function calculateCohortAnalysis(
     }
 
     const monthsSinceFirst = Math.floor(
-      (now.getTime() - new Date(client.createdAt).getTime()) / (1000 * 60 * 60 * 24 * 30)
+      (now.getTime() - new Date(client.createdAt).getTime()) /
+        (1000 * 60 * 60 * 24 * 30)
     );
 
     const cohortClients = cohorts.get(cohortMonth);
@@ -284,9 +299,7 @@ function calculateCohortAnalysis(
   });
 }
 
-function calculatePredictiveLTV(
-  clientData: ClientLTVData[]
-): {
+function calculatePredictiveLTV(clientData: ClientLTVData[]): {
   averagePredictedLTV: number;
   confidence: number;
   clientSegments: Array<{
@@ -311,7 +324,9 @@ function calculatePredictiveLTV(
   const segments = [
     {
       segment: "Champions",
-      clients: clientData.filter((c) => c.lifetimeValue > avgHistoricalLTV * 2 && c.orderCount > 3),
+      clients: clientData.filter(
+        (c) => c.lifetimeValue > avgHistoricalLTV * 2 && c.orderCount > 3
+      ),
     },
     {
       segment: "Loyal",
@@ -345,7 +360,8 @@ function calculatePredictiveLTV(
       clients: clientData.filter((c) => {
         if (c.lifetimeValue === 0 || c.lastOrderDate === null) return false;
         const daysSinceLastOrder =
-          (Date.now() - new Date(c.lastOrderDate).getTime()) / (1000 * 60 * 60 * 24);
+          (Date.now() - new Date(c.lastOrderDate).getTime()) /
+          (1000 * 60 * 60 * 24);
         return daysSinceLastOrder > 180;
       }),
     },
@@ -355,10 +371,13 @@ function calculatePredictiveLTV(
     .filter((s) => s.clients.length > 0)
     .map((s) => {
       const avgLTV =
-        s.clients.reduce((sum, c) => sum + c.lifetimeValue, 0) / s.clients.length;
+        s.clients.reduce((sum, c) => sum + c.lifetimeValue, 0) /
+        s.clients.length;
       const avgOrderValue =
-        s.clients.reduce((sum, c) => sum + c.averageOrderValue, 0) / s.clients.length;
-      const avgOrderCount = s.clients.reduce((sum, c) => sum + c.orderCount, 0) / s.clients.length;
+        s.clients.reduce((sum, c) => sum + c.averageOrderValue, 0) /
+        s.clients.length;
+      const avgOrderCount =
+        s.clients.reduce((sum, c) => sum + c.orderCount, 0) / s.clients.length;
 
       const predictedLTV = avgLTV * (1 + Math.max(0, avgOrderCount - 1) * 0.15);
 
@@ -382,10 +401,13 @@ function calculatePredictiveLTV(
     confidence = 30;
   }
 
-  const averagePredictedLTV = clientSegments.length > 0
-    ? clientSegments.reduce((sum, s) => sum + s.avgPredictedLTV * s.count, 0) /
-      clientData.length
-    : avgHistoricalLTV * 1.2;
+  const averagePredictedLTV =
+    clientSegments.length > 0
+      ? clientSegments.reduce(
+          (sum, s) => sum + s.avgPredictedLTV * s.count,
+          0
+        ) / clientData.length
+      : avgHistoricalLTV * 1.2;
 
   return {
     averagePredictedLTV,
@@ -396,7 +418,7 @@ function calculatePredictiveLTV(
 
 export async function getClientList(
   sortBy: "ltv" | "orders" | "recent" = "ltv",
-  limit: number = 50
+  limit = 50
 ): Promise<ClientLTVData[]> {
   const { orgId } = await auth();
 

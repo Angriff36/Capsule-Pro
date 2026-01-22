@@ -25,15 +25,16 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { ChevronDownIcon, PlusIcon, SparklesIcon, TrashIcon, UtensilsIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  PlusIcon,
+  SparklesIcon,
+  TrashIcon,
+  UtensilsIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-  generateTaskBreakdown,
-  saveTaskBreakdown,
-  type TaskBreakdown,
-} from "../actions/task-breakdown";
 import {
   addDishToEvent,
   getAvailableDishes,
@@ -42,10 +43,15 @@ import {
 } from "../actions/event-dishes";
 import {
   deleteEventSummary,
+  type GeneratedEventSummary,
   generateEventSummary,
   getEventSummary,
-  type GeneratedEventSummary,
 } from "../actions/event-summary";
+import {
+  generateTaskBreakdown,
+  saveTaskBreakdown,
+  type TaskBreakdown,
+} from "../actions/task-breakdown";
 import {
   EventSummaryDisplay,
   EventSummarySkeleton,
@@ -93,7 +99,9 @@ export function EventDetailsClient({
   const [showBreakdown, setShowBreakdown] = useState(false);
 
   // Summary state
-  const [summary, setSummary] = useState<GeneratedEventSummary | null | undefined>(undefined);
+  const [summary, setSummary] = useState<
+    GeneratedEventSummary | null | undefined
+  >(undefined);
   const [isLoadingSummary, setIsLoadingSummary] = useState(true);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
 
@@ -170,16 +178,19 @@ export function EventDetailsClient({
     }
   }, [event.id, selectedDishId, selectedCourse, loadDishes]);
 
-  const handleRemoveDish = useCallback(async (linkId: string) => {
-    const result = await removeDishFromEvent(event.id, linkId);
+  const handleRemoveDish = useCallback(
+    async (linkId: string) => {
+      const result = await removeDishFromEvent(event.id, linkId);
 
-    if (result.success) {
-      toast.success("Dish removed from event");
-      loadDishes();
-    } else {
-      toast.error(result.error || "Failed to remove dish");
-    }
-  }, [event.id, loadDishes]);
+      if (result.success) {
+        toast.success("Dish removed from event");
+        loadDishes();
+      } else {
+        toast.error(result.error || "Failed to remove dish");
+      }
+    },
+    [event.id, loadDishes]
+  );
 
   const handleGenerate = useCallback(
     async (customInstructions?: string) => {
@@ -239,15 +250,16 @@ export function EventDetailsClient({
     }
   }, [breakdown, event.id, router]);
 
-  const handleGenerateSummary = useCallback(async (): Promise<GeneratedEventSummary> => {
-    const result = await generateEventSummary(event.id);
-    setSummary(result);
-    router.refresh();
-    return result;
-  }, [event.id, router]);
+  const handleGenerateSummary =
+    useCallback(async (): Promise<GeneratedEventSummary> => {
+      const result = await generateEventSummary(event.id);
+      setSummary(result);
+      router.refresh();
+      return result;
+    }, [event.id, router]);
 
   const handleDeleteSummary = useCallback(async () => {
-    if (!summary || !summary.id) {
+    if (!(summary && summary.id)) {
       return;
     }
 
@@ -280,9 +292,9 @@ export function EventDetailsClient({
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         {/* Menu/Dishes Section */}
         <Collapsible
-          id="dishes"
           className="rounded-xl border bg-card text-card-foreground shadow-sm"
           defaultOpen={true}
+          id="dishes"
         >
           <div className="flex items-center justify-between gap-4 px-6 py-4">
             <div className="flex items-center gap-2">
@@ -295,7 +307,10 @@ export function EventDetailsClient({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Dialog open={showAddDishDialog} onOpenChange={setShowAddDishDialog}>
+              <Dialog
+                onOpenChange={setShowAddDishDialog}
+                open={showAddDishDialog}
+              >
                 <DialogTrigger asChild>
                   <Button size="sm" variant="outline">
                     <PlusIcon className="mr-2 size-3" />
@@ -312,14 +327,18 @@ export function EventDetailsClient({
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Dish</label>
-                      <Select value={selectedDishId} onValueChange={setSelectedDishId}>
+                      <Select
+                        onValueChange={setSelectedDishId}
+                        value={selectedDishId}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a dish" />
                         </SelectTrigger>
                         <SelectContent>
                           {availableDishes.length === 0 ? (
                             <div className="p-2 text-sm text-muted-foreground">
-                              No dishes available. Create dishes in Kitchen Recipes first.
+                              No dishes available. Create dishes in Kitchen
+                              Recipes first.
                             </div>
                           ) : (
                             availableDishes.map((dish) => (
@@ -333,8 +352,13 @@ export function EventDetailsClient({
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Course (optional)</label>
-                      <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+                      <label className="text-sm font-medium">
+                        Course (optional)
+                      </label>
+                      <Select
+                        onValueChange={setSelectedCourse}
+                        value={selectedCourse}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select course" />
                         </SelectTrigger>
@@ -351,10 +375,13 @@ export function EventDetailsClient({
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setShowAddDishDialog(false)}>
+                    <Button
+                      onClick={() => setShowAddDishDialog(false)}
+                      variant="outline"
+                    >
                       Cancel
                     </Button>
-                    <Button onClick={handleAddDish} disabled={!selectedDishId}>
+                    <Button disabled={!selectedDishId} onClick={handleAddDish}>
                       Add Dish
                     </Button>
                   </DialogFooter>
@@ -383,12 +410,13 @@ export function EventDetailsClient({
                   No dishes linked to this event
                 </p>
                 <p className="mb-4 text-muted-foreground text-xs">
-                  Add dishes so they can be used for prep lists and task generation.
+                  Add dishes so they can be used for prep lists and task
+                  generation.
                 </p>
                 <Button
+                  onClick={() => setShowAddDishDialog(true)}
                   size="sm"
                   variant="outline"
-                  onClick={() => setShowAddDishDialog(true)}
                 >
                   <PlusIcon className="mr-2 size-3" />
                   Add First Dish
@@ -405,7 +433,7 @@ export function EventDetailsClient({
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{dish.name}</span>
                         {dish.course && (
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge className="text-xs" variant="secondary">
                             {dish.course}
                           </Badge>
                         )}
@@ -414,10 +442,12 @@ export function EventDetailsClient({
                         {dish.recipe_name ? (
                           <span>Recipe: {dish.recipe_name}</span>
                         ) : (
-                          <span className="text-amber-600">No recipe linked</span>
+                          <span className="text-amber-600">
+                            No recipe linked
+                          </span>
                         )}
                         {(dish.dietary_tags ?? []).length > 0 && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge className="text-xs" variant="outline">
                             {dish.dietary_tags?.join(", ")}
                           </Badge>
                         )}
@@ -428,10 +458,10 @@ export function EventDetailsClient({
                         {dish.quantity_servings} servings
                       </span>
                       <Button
-                        size="icon"
-                        variant="ghost"
                         className="size-8 text-muted-foreground hover:text-destructive"
                         onClick={() => handleRemoveDish(dish.link_id)}
+                        size="icon"
+                        variant="ghost"
                       >
                         <TrashIcon className="size-4" />
                       </Button>
@@ -506,8 +536,8 @@ export function EventDetailsClient({
             eventId={event.id}
             eventTitle={event.title}
             initialSummary={summary}
-            onGenerate={handleGenerateSummary}
             onDelete={handleDeleteSummary}
+            onGenerate={handleGenerateSummary}
           />
         )}
 
@@ -645,8 +675,8 @@ export function EventDetailsClient({
       <GenerateEventSummaryModal
         eventId={event.id}
         eventTitle={event.title}
-        onGenerate={handleGenerateSummary}
         isOpen={showSummaryModal}
+        onGenerate={handleGenerateSummary}
         onOpenChange={setShowSummaryModal}
       />
     </>
@@ -656,7 +686,7 @@ export function EventDetailsClient({
 function generateCSV(breakdown: TaskBreakdown): string {
   const rows = [];
   rows.push(
-    "\"Task Name\",\"Description\",\"Section\",\"Duration (min)\",\"Relative Time\",\"Critical\",\"Confidence\""
+    '"Task Name","Description","Section","Duration (min)","Relative Time","Critical","Confidence"'
   );
 
   const allTasks = [
@@ -667,8 +697,8 @@ function generateCSV(breakdown: TaskBreakdown): string {
 
   for (const task of allTasks) {
     const row = [
-      "\"" + task.name.replace(/"/g, '""') + "\"",
-      "\"" + (task.description || "").replace(/"/g, '""') + "\"",
+      '"' + task.name.replace(/"/g, '""') + '"',
+      '"' + (task.description || "").replace(/"/g, '""') + '"',
       task.section,
       task.durationMinutes.toString(),
       task.relativeTime || "",
@@ -679,16 +709,20 @@ function generateCSV(breakdown: TaskBreakdown): string {
   }
 
   rows.push("");
-  rows.push("\"Total Prep Time\"," + breakdown.totalPrepTime + " min");
-  rows.push("\"Total Setup Time\"," + breakdown.totalSetupTime + " min");
-  rows.push("\"Total Cleanup Time\"," + breakdown.totalCleanupTime + " min");
+  rows.push('"Total Prep Time",' + breakdown.totalPrepTime + " min");
+  rows.push('"Total Setup Time",' + breakdown.totalSetupTime + " min");
+  rows.push('"Total Cleanup Time",' + breakdown.totalCleanupTime + " min");
   rows.push(
-    "\"Grand Total\"," + (breakdown.totalPrepTime + breakdown.totalSetupTime + breakdown.totalCleanupTime) + " min"
+    '"Grand Total",' +
+      (breakdown.totalPrepTime +
+        breakdown.totalSetupTime +
+        breakdown.totalCleanupTime) +
+      " min"
   );
   rows.push("");
-  rows.push("\"Generated At\"," + breakdown.generatedAt.toISOString());
-  rows.push("\"Event Date\"," + breakdown.eventDate.toISOString());
-  rows.push("\"Guest Count\"," + breakdown.guestCount);
+  rows.push('"Generated At",' + breakdown.generatedAt.toISOString());
+  rows.push('"Event Date",' + breakdown.eventDate.toISOString());
+  rows.push('"Guest Count",' + breakdown.guestCount);
 
   return rows.join("\n");
 }

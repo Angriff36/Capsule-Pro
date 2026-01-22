@@ -28,12 +28,10 @@ export async function generateVarianceReports(
     const expectedQuantity = toNumber(record.expectedQuantity);
     const countedQuantity = toNumber(record.countedQuantity);
     const variance = countedQuantity - expectedQuantity;
-    const variancePct = expectedQuantity > 0
-      ? Math.abs((variance / expectedQuantity) * 100)
-      : 0;
-    const accuracyScore = expectedQuantity > 0
-      ? Math.max(0, 100 - variancePct)
-      : 100;
+    const variancePct =
+      expectedQuantity > 0 ? Math.abs((variance / expectedQuantity) * 100) : 0;
+    const accuracyScore =
+      expectedQuantity > 0 ? Math.max(0, 100 - variancePct) : 100;
 
     return {
       id: crypto.randomUUID(),
@@ -67,9 +65,11 @@ export async function generateVarianceReports(
   return reports;
 }
 
-export async function finalizeCycleCountSession(
-  input: { sessionId: string; approvedById: string; notes?: string }
-): Promise<FinalizeResult> {
+export async function finalizeCycleCountSession(input: {
+  sessionId: string;
+  approvedById: string;
+  notes?: string;
+}): Promise<FinalizeResult> {
   try {
     const tenantId = await requireTenantId();
 
@@ -112,9 +112,8 @@ export async function finalizeCycleCountSession(
       totalExpected += toNumber(record.expectedQuantity);
     }
 
-    const variancePercentage = totalExpected > 0
-      ? Math.abs((totalVariance / totalExpected) * 100)
-      : 0;
+    const variancePercentage =
+      totalExpected > 0 ? Math.abs((totalVariance / totalExpected) * 100) : 0;
 
     const updatedSession = await database.cycleCountSession.update({
       where: {
@@ -187,7 +186,8 @@ export async function finalizeCycleCountSession(
           },
           data: {
             status: "approved",
-            adjustmentType: variance > 0 ? "increase" : variance < 0 ? "decrease" : "none",
+            adjustmentType:
+              variance > 0 ? "increase" : variance < 0 ? "decrease" : "none",
             adjustmentAmount: Math.abs(variance),
             adjustmentDate: new Date(),
           },
@@ -224,14 +224,14 @@ export async function finalizeCycleCountSession(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to finalize session",
+      error:
+        error instanceof Error ? error.message : "Failed to finalize session",
     };
   }
 }
 
-export async function getAuditLogs(
-  sessionId: string
-): Promise<Array<{
+export async function getAuditLogs(sessionId: string): Promise<
+  Array<{
     id: string;
     sessionId: string;
     recordId: string | null;
@@ -244,7 +244,8 @@ export async function getAuditLogs(
     ipAddress: string | null;
     userAgent: string | null;
     createdAt: Date;
-  }>> {
+  }>
+> {
   const tenantId = await requireTenantId();
 
   const logs = await database.cycleCountAuditLog.findMany({

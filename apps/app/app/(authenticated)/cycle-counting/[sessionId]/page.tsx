@@ -1,7 +1,10 @@
-import { listCycleCountRecords, createCycleCountRecord } from "../actions/records";
-import { getCycleCountSession } from "../actions/sessions";
 import { redirect } from "next/navigation";
-import type { CycleCountSession, CycleCountRecord } from "../types";
+import {
+  createCycleCountRecord,
+  listCycleCountRecords,
+} from "../actions/records";
+import { getCycleCountSession } from "../actions/sessions";
+import type { CycleCountRecord } from "../types";
 
 export default async function SessionPage({
   params,
@@ -28,8 +31,8 @@ export default async function SessionPage({
       storageLocationId: "00000000-0000-0000-0000-000000000000",
       expectedQuantity: Number(formData.get("expectedQuantity") as string),
       countedQuantity: Number(formData.get("countedQuantity") as string),
-      barcode: formData.get("barcode") as string || undefined,
-      notes: formData.get("notes") as string || undefined,
+      barcode: (formData.get("barcode") as string) || undefined,
+      notes: (formData.get("notes") as string) || undefined,
     });
 
     if (result.success) {
@@ -41,23 +44,17 @@ export default async function SessionPage({
     <div className="p-6">
       <div className="mb-6">
         <button
-          onClick={() => redirect("/cycle-counting")}
           className="text-gray-600 hover:text-gray-900 mb-4"
+          onClick={() => redirect("/cycle-counting")}
         >
           ← Back to Sessions
         </button>
 
-        <h1 className="text-3xl font-bold mb-2">
-          {session.sessionName}
-        </h1>
+        <h1 className="text-3xl font-bold mb-2">{session.sessionName}</h1>
 
         <div className="mb-4 flex space-x-4 text-sm">
-          <span className="text-gray-600">
-            Type: {session.countType}
-          </span>
-          <span className="text-gray-600">
-            Status: {session.status}
-          </span>
+          <span className="text-gray-600">Type: {session.countType}</span>
+          <span className="text-gray-600">Status: {session.status}</span>
         </div>
       </div>
 
@@ -65,119 +62,111 @@ export default async function SessionPage({
         <form action={handleSubmit} className="space-y-4">
           <div>
             <label
-              htmlFor="itemNumber"
               className="block text-sm font-medium mb-2"
+              htmlFor="itemNumber"
             >
               Item Number
             </label>
             <input
-              type="text"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="itemNumber"
               name="itemNumber"
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter item number"
+              required
+              type="text"
             />
           </div>
 
           <div>
             <label
-              htmlFor="itemName"
               className="block text-sm font-medium mb-2"
+              htmlFor="itemName"
             >
               Item Name
             </label>
             <input
-              type="text"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="itemName"
               name="itemName"
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter item name"
+              required
+              type="text"
             />
           </div>
 
           <div>
             <label
-              htmlFor="expectedQuantity"
               className="block text-sm font-medium mb-2"
+              htmlFor="expectedQuantity"
             >
               Expected Quantity
             </label>
             <input
-              type="number"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="expectedQuantity"
               name="expectedQuantity"
+              placeholder="Enter expected quantity"
               required
               step="0.001"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter expected quantity"
+              type="number"
             />
           </div>
 
           <div>
             <label
-              htmlFor="countedQuantity"
               className="block text-sm font-medium mb-2"
+              htmlFor="countedQuantity"
             >
               Counted Quantity
             </label>
             <input
-              type="number"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="countedQuantity"
               name="countedQuantity"
+              placeholder="Enter counted quantity"
               required
               step="0.001"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter counted quantity"
+              type="number"
             />
           </div>
 
           <div>
-            <label
-              htmlFor="barcode"
-              className="block text-sm font-medium mb-2"
-            >
+            <label className="block text-sm font-medium mb-2" htmlFor="barcode">
               Barcode (optional)
             </label>
             <input
-              type="text"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="barcode"
               name="barcode"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Scan or enter barcode"
+              type="text"
             />
           </div>
 
           <div>
-            <label
-              htmlFor="notes"
-              className="block text-sm font-medium mb-2"
-            >
+            <label className="block text-sm font-medium mb-2" htmlFor="notes">
               Notes (optional)
             </label>
             <textarea
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="notes"
               name="notes"
-              rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Optional notes..."
+              rows={2}
             />
           </div>
 
           <button
-            type="submit"
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             formAction="submit"
+            type="submit"
           >
             Submit Count
           </button>
         </form>
 
         <div>
-          <h2 className="text-xl font-semibold mb-4">
-            Count Records
-          </h2>
+          <h2 className="text-xl font-semibold mb-4">Count Records</h2>
 
           {records.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
@@ -207,7 +196,7 @@ export default async function SessionPage({
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {records.map((record: CycleCountRecord) => (
-                    <tr key={record.id} className="hover:bg-gray-50">
+                    <tr className="hover:bg-gray-50" key={record.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {record.itemNumber}
                       </td>

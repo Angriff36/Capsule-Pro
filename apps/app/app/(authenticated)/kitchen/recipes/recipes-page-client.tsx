@@ -1,11 +1,11 @@
 "use client";
 
 import { PlusIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import { createRecipe } from "./actions";
 import { RecipeEditorModal } from "./recipe-editor-modal";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
 export const RecipesPageClient = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,13 +25,13 @@ export const RecipesPageClient = () => {
   return (
     <>
       <RecipeEditorModal
+        onOpenChange={setIsModalOpen}
         onSave={handleSaveRecipe}
         open={isModalOpen}
-        onOpenChange={setIsModalOpen}
       />
       <button
-        onClick={() => setIsModalOpen(true)}
         className="fixed bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-110 transition-transform"
+        onClick={() => setIsModalOpen(true)}
         type="button"
       >
         <PlusIcon className="size-6" />

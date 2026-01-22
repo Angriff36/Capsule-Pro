@@ -8,12 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
-import { Header } from "../../../components/header";
-import { getTenantIdForOrg } from "../../../../lib/tenant";
-import { Clock, Users, ChefHat, Edit, ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChefHat, Clock, Edit, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTenantIdForOrg } from "../../../../lib/tenant";
+import { Header } from "../../../components/header";
 
 type RecipeDetailRow = {
   id: string;
@@ -231,15 +230,13 @@ const RecipeDetailPage = async ({
           </CardHeader>
           <CardContent>
             {ingredients.length === 0 ? (
-              <p className="text-muted-foreground">
-                No ingredients added yet.
-              </p>
+              <p className="text-muted-foreground">No ingredients added yet.</p>
             ) : (
               <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
                 {ingredients.map((ingredient) => (
                   <div
-                    key={ingredient.id}
                     className="flex items-center justify-between rounded-lg border p-3"
+                    key={ingredient.id}
                   >
                     <span className="font-medium">{ingredient.name}</span>
                     <span className="text-muted-foreground">

@@ -19,12 +19,9 @@ import {
 import { format } from "date-fns";
 import { Calendar, Clock, User } from "lucide-react";
 import { notFound } from "next/navigation";
-import { Header } from "../../components/header";
-import {
-  getKitchenTasks,
-  getMyActiveClaims,
-} from "./actions";
 import { getTenantIdForOrg } from "../../../lib/tenant";
+import { Header } from "../../components/header";
+import { getKitchenTasks, getMyActiveClaims } from "./actions";
 
 const priorityLabels: Record<number, string> = {
   1: "Urgent",
@@ -72,9 +69,7 @@ const KitchenTasksPage = async () => {
   const tasks = await getKitchenTasks();
 
   // Fetch user's active claims
-  const myClaims = currentUser
-    ? await getMyActiveClaims(currentUser.id)
-    : [];
+  const myClaims = currentUser ? await getMyActiveClaims(currentUser.id) : [];
 
   // Build task map with claims
   const myClaimedTaskIds = new Set(myClaims.map((c) => c.taskId));
@@ -142,7 +137,8 @@ const KitchenTasksPage = async () => {
             {tasks.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <p className="text-muted-foreground">
-                  No kitchen tasks found. Create tasks from the Production Board.
+                  No kitchen tasks found. Create tasks from the Production
+                  Board.
                 </p>
                 <Button asChild className="mt-4">
                   <a href="/kitchen/tasks/new">Create Task</a>
@@ -163,7 +159,9 @@ const KitchenTasksPage = async () => {
                 <TableBody>
                   {tasks.map((task) => {
                     const isClaimedByMe = myClaimedTaskIds.has(task.id);
-                    const claimedBy = myClaims.find((c) => c.taskId === task.id);
+                    const claimedBy = myClaims.find(
+                      (c) => c.taskId === task.id
+                    );
                     return (
                       <TableRow key={task.id}>
                         <TableCell>

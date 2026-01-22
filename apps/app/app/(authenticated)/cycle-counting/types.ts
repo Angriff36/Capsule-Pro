@@ -1,8 +1,21 @@
-export type CycleCountSessionType = "ad_hoc" | "scheduled_daily" | "scheduled_weekly" | "scheduled_monthly";
+export type CycleCountSessionType =
+  | "ad_hoc"
+  | "scheduled_daily"
+  | "scheduled_weekly"
+  | "scheduled_monthly";
 
-export type CycleCountSessionStatus = "draft" | "in_progress" | "completed" | "finalized" | "cancelled";
+export type CycleCountSessionStatus =
+  | "draft"
+  | "in_progress"
+  | "completed"
+  | "finalized"
+  | "cancelled";
 
-export type VarianceReportStatus = "pending" | "reviewed" | "approved" | "rejected";
+export type VarianceReportStatus =
+  | "pending"
+  | "reviewed"
+  | "approved"
+  | "rejected";
 
 export type SyncStatus = "synced" | "pending" | "failed" | "conflict";
 

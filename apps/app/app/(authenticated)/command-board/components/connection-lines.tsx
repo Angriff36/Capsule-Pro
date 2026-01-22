@@ -2,10 +2,7 @@
 
 import { cn } from "@repo/design-system/lib/utils";
 import { memo, useMemo } from "react";
-import type {
-  CardConnection,
-  CommandBoardCard,
-} from "../types";
+import type { CardConnection, CommandBoardCard } from "../types";
 import {
   calculateAnchorPoint,
   calculateCurvePath,
@@ -41,9 +38,7 @@ export const ConnectionLines = memo(function ConnectionLines({
     return map;
   }, [cards]);
 
-  const renderConnection = (
-    connection: CardConnection
-  ) => {
+  const renderConnection = (connection: CardConnection) => {
     const fromCard = cardMap.get(connection.fromCardId);
     const toCard = cardMap.get(connection.toCardId);
 
@@ -169,6 +164,7 @@ export const ConnectionLines = memo(function ConnectionLines({
         <path
           d={pathData}
           fill="none"
+          markerEnd={markerUrl}
           stroke={config.color}
           strokeDasharray={config.dashArray}
           strokeLinecap="round"
@@ -177,7 +173,6 @@ export const ConnectionLines = memo(function ConnectionLines({
             opacity: isSelected ? 1 : 0.7,
             transition: "opacity 0.2s, stroke-width 0.2s",
           }}
-          markerEnd={markerUrl}
         />
 
         {isSelected && (
@@ -193,9 +188,11 @@ export const ConnectionLines = memo(function ConnectionLines({
           />
         )}
 
-        <g style={{
-          transition: "transform 0.2s",
-        }}>
+        <g
+          style={{
+            transition: "transform 0.2s",
+          }}
+        >
           <rect
             fill="background"
             height="20"
@@ -211,8 +208,8 @@ export const ConnectionLines = memo(function ConnectionLines({
           />
           <text
             dominantBaseline="middle"
-            fontSize="11"
             fill={config.color}
+            fontSize="11"
             textAnchor="middle"
             x={midPoint.x}
             y={midPoint.y}

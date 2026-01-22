@@ -3,10 +3,10 @@
 import { database } from "@repo/database";
 import { requireTenantId } from "../../../lib/tenant";
 import type {
-  CycleCountSession,
   CreateSessionInput,
-  UpdateSessionInput,
+  CycleCountSession,
   SessionResult,
+  UpdateSessionInput,
 } from "../types";
 
 function toNumber(value: { toNumber: () => number }): number {
@@ -32,12 +32,21 @@ export async function listCycleCountSessions(): Promise<CycleCountSession[]> {
     locationId: session.locationId,
     sessionId: session.sessionId,
     sessionName: session.sessionName,
-    countType: session.countType as "ad_hoc" | "scheduled_daily" | "scheduled_weekly" | "scheduled_monthly",
+    countType: session.countType as
+      | "ad_hoc"
+      | "scheduled_daily"
+      | "scheduled_weekly"
+      | "scheduled_monthly",
     scheduledDate: session.scheduledDate,
     startedAt: session.startedAt,
     completedAt: session.completedAt,
     finalizedAt: session.finalizedAt,
-    status: session.status as "draft" | "in_progress" | "completed" | "finalized" | "cancelled",
+    status: session.status as
+      | "draft"
+      | "in_progress"
+      | "completed"
+      | "finalized"
+      | "cancelled",
     totalItems: session.totalItems,
     countedItems: session.countedItems,
     totalVariance: toNumber(session.totalVariance),
@@ -74,12 +83,21 @@ export async function getCycleCountSession(
     locationId: session.locationId,
     sessionId: session.sessionId,
     sessionName: session.sessionName,
-    countType: session.countType as "ad_hoc" | "scheduled_daily" | "scheduled_weekly" | "scheduled_monthly",
+    countType: session.countType as
+      | "ad_hoc"
+      | "scheduled_daily"
+      | "scheduled_weekly"
+      | "scheduled_monthly",
     scheduledDate: session.scheduledDate,
     startedAt: session.startedAt,
     completedAt: session.completedAt,
     finalizedAt: session.finalizedAt,
-    status: session.status as "draft" | "in_progress" | "completed" | "finalized" | "cancelled",
+    status: session.status as
+      | "draft"
+      | "in_progress"
+      | "completed"
+      | "finalized"
+      | "cancelled",
     totalItems: session.totalItems,
     countedItems: session.countedItems,
     totalVariance: toNumber(session.totalVariance),
@@ -101,7 +119,7 @@ export async function createCycleCountSession(
     const user = await database.user.findFirst({
       where: {
         tenantId,
-        authUserId: (await requireTenantId()),
+        authUserId: await requireTenantId(),
       },
     });
 
@@ -137,12 +155,21 @@ export async function createCycleCountSession(
         locationId: session.locationId,
         sessionId: session.sessionId,
         sessionName: session.sessionName,
-        countType: session.countType as "ad_hoc" | "scheduled_daily" | "scheduled_weekly" | "scheduled_monthly",
+        countType: session.countType as
+          | "ad_hoc"
+          | "scheduled_daily"
+          | "scheduled_weekly"
+          | "scheduled_monthly",
         scheduledDate: session.scheduledDate,
         startedAt: session.startedAt,
         completedAt: session.completedAt,
         finalizedAt: session.finalizedAt,
-        status: session.status as "draft" | "in_progress" | "completed" | "finalized" | "cancelled",
+        status: session.status as
+          | "draft"
+          | "in_progress"
+          | "completed"
+          | "finalized"
+          | "cancelled",
         totalItems: session.totalItems,
         countedItems: session.countedItems,
         totalVariance: session.totalVariance.toNumber(),
@@ -158,7 +185,8 @@ export async function createCycleCountSession(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to create session",
+      error:
+        error instanceof Error ? error.message : "Failed to create session",
     };
   }
 }
@@ -177,10 +205,14 @@ export async function updateCycleCountSession(
         },
       },
       data: {
-        ...(input.sessionName !== undefined && { sessionName: input.sessionName }),
+        ...(input.sessionName !== undefined && {
+          sessionName: input.sessionName,
+        }),
         ...(input.status !== undefined && { status: input.status }),
         ...(input.notes !== undefined && { notes: input.notes }),
-        ...(input.approvedById !== undefined && { approvedById: input.approvedById }),
+        ...(input.approvedById !== undefined && {
+          approvedById: input.approvedById,
+        }),
         ...(input.status === "in_progress" && { startedAt: new Date() }),
         ...(input.status === "completed" && { completedAt: new Date() }),
         ...(input.status === "finalized" && { finalizedAt: new Date() }),
@@ -195,12 +227,21 @@ export async function updateCycleCountSession(
         locationId: session.locationId,
         sessionId: session.sessionId,
         sessionName: session.sessionName,
-        countType: session.countType as "ad_hoc" | "scheduled_daily" | "scheduled_weekly" | "scheduled_monthly",
+        countType: session.countType as
+          | "ad_hoc"
+          | "scheduled_daily"
+          | "scheduled_weekly"
+          | "scheduled_monthly",
         scheduledDate: session.scheduledDate,
         startedAt: session.startedAt,
         completedAt: session.completedAt,
         finalizedAt: session.finalizedAt,
-        status: session.status as "draft" | "in_progress" | "completed" | "finalized" | "cancelled",
+        status: session.status as
+          | "draft"
+          | "in_progress"
+          | "completed"
+          | "finalized"
+          | "cancelled",
         totalItems: session.totalItems,
         countedItems: session.countedItems,
         totalVariance: session.totalVariance.toNumber(),
@@ -216,7 +257,8 @@ export async function updateCycleCountSession(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to update session",
+      error:
+        error instanceof Error ? error.message : "Failed to update session",
     };
   }
 }
@@ -243,7 +285,8 @@ export async function deleteCycleCountSession(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to delete session",
+      error:
+        error instanceof Error ? error.message : "Failed to delete session",
     };
   }
 }

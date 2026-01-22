@@ -189,9 +189,11 @@ export const DraggableCard = memo(function DraggableCard({
         className={cn(
           "absolute rounded-lg border-2 bg-card transition-all duration-200",
           // Default state
-          !isSelected && "border-border shadow-sm hover:shadow-md hover:border-border/80",
+          !isSelected &&
+            "border-border shadow-sm hover:shadow-md hover:border-border/80",
           // Selected state - more prominent
-          isSelected && "border-primary shadow-lg shadow-primary/20 ring-4 ring-primary/10",
+          isSelected &&
+            "border-primary shadow-lg shadow-primary/20 ring-4 ring-primary/10",
           // Read-only state
           !canDrag && "cursor-default opacity-80",
           // Drag states
@@ -231,39 +233,39 @@ export const DraggableCard = memo(function DraggableCard({
           elementSnapDirections={{}}
           gap={0}
           // Grid snapping disabled - we handle it manually
+          handleClassName="bg-primary/80"
           maxHeight={600 * viewportZoom}
           maxWidth={800 * viewportZoom}
-          minHeight={100 * viewportZoom}
           // Resize handles
-          minWidth={150 * viewportZoom}
+          minHeight={100 * viewportZoom}
           // Minimum size constraints in screen coordinates (will be converted in handler)
+          minWidth={150 * viewportZoom}
           onDrag={handleDrag}
-          onDragEnd={handleDragEnd}
           // Maximum size constraints in screen coordinates
+          onDragEnd={handleDragEnd}
           onDragStart={handleDragStart}
-          onResize={handleResize}
           // Event handlers
+          onResize={handleResize}
           preventClickDefault={true}
           renderDirections={
             canResize ? ["nw", "n", "ne", "w", "e", "sw", "s", "se"] : []
           }
-          resizable={canResize}
-          snapElement={false}
-          // Prevent default drag behavior
-          snapGap={false}
-          // Throttle updates for performance
-          snapThreshold={0}
-          target={cardRef.current}
-          // Edge and gap for better UX
-          throttleDrag={1}
-          throttleResize={1}
-          // Custom handle styles for better visibility
           renderHandleProps={{
             "n,r,e,s,w,se,sw,ne,nw": {
               className: "bg-primary border-2 border-background rounded-sm",
             },
           }}
-          handleClassName="bg-primary/80"
+          // Prevent default drag behavior
+          resizable={canResize}
+          // Throttle updates for performance
+          snapElement={false}
+          snapGap={false}
+          // Edge and gap for better UX
+          snapThreshold={0}
+          target={cardRef.current}
+          // Custom handle styles for better visibility
+          throttleDrag={1}
+          throttleResize={1}
         />
       )}
     </>
