@@ -9,8 +9,8 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
-import { Header } from "../../components/header";
-import { getTenantIdForOrg } from "../../../lib/tenant";
+import { Header } from "../../../components/header";
+import { getTenantIdForOrg } from "../../../../lib/tenant";
 import { Clock, Users, ChefHat, Edit, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
