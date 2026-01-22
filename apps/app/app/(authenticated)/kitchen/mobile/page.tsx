@@ -1,128 +1,545 @@
-import { Header } from "../../components/header";
+"use client";
+
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
-import { Smartphone, Zap, Clock, CheckCircle } from "lucide-react";
-import Link from "next/link";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import { differenceInMinutes, format, isPast } from "date-fns";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  RefreshCw,
+  Wifi,
+  WifiOff,
+} from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Header } from "../../components/header";
 
-const KitchenMobilePage = () => {
-  return (
-    <>
-      <Header page="Mobile Workflow" pages={["Kitchen Ops"]} />
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        <Card className="bg-gradient-to-br from-slate-900 to-slate-800 text-white">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Smartphone className="h-5 w-5" />
-              Mobile-Optimized Kitchen Tasks
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-slate-300">
-              The Production Board is fully responsive and works on mobile devices.
-              Line staff can claim tasks, track progress, and mark completion from
-              anywhere in the kitchen.
-            </p>
-            <Button className="bg-white text-slate-900 hover:bg-slate-100" asChild>
-              <Link href="/kitchen">Open Production Board</Link>
-            </Button>
-          </CardContent>
-        </Card>
+// Types
+type Task = {
+  id: string;
+  title: string;
+  summary: string | null;
+  status: string;
+  priority: number;
+  dueDate: string | null;
+  tags: string[];
+  claims: Array<{
+    id: string;
+    employeeId: string;
+    user: {
+      id: string;
+      firstName: string | null;
+      lastName: string | null;
+      email: string | null;
+    } | null;
+  }>;
+  isClaimedByOthers?: boolean;
+  isAvailable?: boolean;
+  claimedAt?: string | null;
+};
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Zap className="h-4 w-4 text-amber-500" />
-                Quick Claim
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              <ul className="list-disc pl-4 space-y-1">
-                <li>Tap any task to claim it instantly</li>
-                <li>Auto-assigns to your profile</li>
-                <li>Changes status to In Progress</li>
-                <li>One-tap release if you get pulled away</li>
-              </ul>
-            </CardContent>
-          </Card>
+type ApiResponse = {
+  tasks: Task[];
+  userId?: string;
+};
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Clock className="h-4 w-4 text-blue-500" />
-                Progress Tracking
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              <ul className="list-disc pl-4 space-y-1">
-                <li>Update task status as you work</li>
-                <li>Add notes and completion details</li>
-                <li>See time elapsed on each task</li>
-                <li>Get reminders for upcoming tasks</li>
-              </ul>
-            </CardContent>
-          </Card>
+const priorityConfig: Record<number, { label: string; color: string }> = {
+  1: { label: "CRITICAL", color: "bg-rose-500" },
+  2: { label: "URGENT", color: "bg-red-500" },
+  3: { label: "HIGH", color: "bg-orange-500" },
+  4: { label: "MED-HIGH", color: "bg-amber-500" },
+  5: { label: "MEDIUM", color: "bg-yellow-500" },
+  6: { label: "MED-LOW", color: "bg-lime-500" },
+  7: { label: "LOW", color: "bg-green-500" },
+  8: { label: "VERY LOW", color: "bg-emerald-500" },
+  9: { label: "MINIMAL", color: "bg-teal-500" },
+  10: { label: "NONE", color: "bg-slate-400" },
+};
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-emerald-500" />
-                Completion
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              <ul className="list-disc pl-4 space-y-1">
-                <li>Mark tasks done with one tap</li>
-                <li>Add completion notes</li>
-                <li>Auto-updates team statistics</li>
-                <li>Triggers real-time board updates</li>
-              </ul>
-            </CardContent>
-          </Card>
+function getInitials(
+  firstName?: string | null,
+  lastName?: string | null
+): string {
+  const first = firstName?.charAt(0)?.toUpperCase() || "";
+  const last = lastName?.charAt(0)?.toUpperCase() || "";
+  return first + last || "?";
+}
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">My Tasks View</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              <ul className="list-disc pl-4 space-y-1">
-                <li>See only your claimed tasks</li>
-                <li>Quick access from the board header</li>
-                <li>Filter by station or priority</li>
-                <li>Pull-to-refresh for updates</li>
-              </ul>
-            </CardContent>
-          </Card>
+function formatDueStatus(
+  dueDate: string | null
+): { label: string; isOverdue: boolean; isUrgent: boolean } | null {
+  if (!dueDate) return null;
+
+  const now = new Date();
+  const due = new Date(dueDate);
+  const diffMins = differenceInMinutes(due, now);
+
+  if (isPast(due) && diffMins < -30) {
+    return { label: "OVERDUE", isOverdue: true, isUrgent: true };
+  }
+
+  if (diffMins < 0) {
+    return {
+      label: `${Math.abs(diffMins)}m late`,
+      isOverdue: false,
+      isUrgent: true,
+    };
+  }
+
+  if (diffMins < 60) {
+    return { label: `Due ${diffMins}m`, isOverdue: false, isUrgent: true };
+  }
+
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 4) {
+    return { label: `Due ${diffHours}h`, isOverdue: false, isUrgent: false };
+  }
+
+  return { label: format(due, "h:mm a"), isOverdue: false, isUrgent: false };
+}
+
+export default function KitchenMobilePage() {
+  const searchParams = useSearchParams();
+  const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
+  const [myTasks, setMyTasks] = useState<Task[]>([]);
+  const [isOnline, setIsOnline] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("available");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [syncQueue, setSyncQueue]: {
+    taskId: string;
+    action: "claim" | "release";
+    timestamp: string;
+  }[] = [];
+
+  // Fetch available tasks
+  const fetchAvailableTasks = async () => {
+    try {
+      const response = await fetch("/api/kitchen/tasks/available");
+      if (response.ok) {
+        const data: ApiResponse = await response.json();
+        setAvailableTasks(data.tasks);
+        setCurrentUserId(data.userId || null);
+      }
+    } catch (error) {
+      console.error("Error fetching available tasks:", error);
+    }
+  };
+
+  // Fetch my tasks
+  const fetchMyTasks = async () => {
+    try {
+      const response = await fetch("/api/kitchen/tasks/my-tasks");
+      if (response.ok) {
+        const data: ApiResponse = await response.json();
+        setMyTasks(data.tasks);
+        setCurrentUserId(data.userId || null);
+      }
+    } catch (error) {
+      console.error("Error fetching my tasks:", error);
+    }
+  };
+
+  // Initial load
+  useEffect(() => {
+    fetchAvailableTasks();
+    fetchMyTasks();
+  }, []);
+
+  // Monitor online/offline status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    setIsOnline(navigator.onLine);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  // Sync offline queue when coming back online
+  useEffect(() => {
+    if (isOnline && syncQueue && syncQueue.length > 0) {
+      syncOfflineClaims();
+    }
+  }, [isOnline]);
+
+  const syncOfflineClaims = async () => {
+    if (!syncQueue || syncQueue.length === 0) return;
+
+    try {
+      const response = await fetch("/api/kitchen/tasks/sync-claims", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ claims: syncQueue }),
+      });
+
+      if (response.ok) {
+        setSyncQueue([]);
+        fetchAvailableTasks();
+        fetchMyTasks();
+      }
+    } catch (error) {
+      console.error("Error syncing claims:", error);
+    }
+  };
+
+  const handleClaim = async (taskId: string) => {
+    setIsLoading(true);
+
+    if (!isOnline) {
+      // Queue the action for later sync
+      setSyncQueue((prev = []) => [
+        ...(prev || []),
+        {
+          taskId,
+          action: "claim",
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/kitchen/tasks/${taskId}/claim`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (response.ok) {
+        await fetchAvailableTasks();
+        await fetchMyTasks();
+        setActiveTab("my-tasks");
+      } else {
+        const error = await response.json();
+        alert(error.message || "Failed to claim task");
+      }
+    } catch (error) {
+      console.error("Error claiming task:", error);
+      alert("Failed to claim task. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRelease = async (taskId: string) => {
+    setIsLoading(true);
+
+    if (!isOnline) {
+      // Queue the action for later sync
+      setSyncQueue((prev = []) => [
+        ...(prev || []),
+        {
+          taskId,
+          action: "release",
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/kitchen/tasks/${taskId}/release`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (response.ok) {
+        await fetchAvailableTasks();
+        await fetchMyTasks();
+      } else {
+        const error = await response.json();
+        alert(error.message || "Failed to release task");
+      }
+    } catch (error) {
+      console.error("Error releasing task:", error);
+      alert("Failed to release task. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleComplete = async (taskId: string) => {
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`/api/kitchen/tasks/${taskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "completed" }),
+      });
+
+      if (response.ok) {
+        await fetchMyTasks();
+      } else {
+        alert("Failed to complete task");
+      }
+    } catch (error) {
+      console.error("Error completing task:", error);
+      alert("Failed to complete task. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const MobileTaskCard = ({
+    task,
+    type,
+  }: {
+    task: Task;
+    type: "available" | "my-tasks";
+  }) => {
+    const priority = priorityConfig[task.priority] || priorityConfig[5];
+    const dueStatus = formatDueStatus(task.dueDate);
+
+    return (
+      <div
+        className={`mb-3 overflow-hidden rounded-xl border-2 bg-white p-4 shadow-sm ${
+          dueStatus?.isUrgent ? "border-rose-300" : "border-slate-200"
+        } ${dueStatus?.isOverdue ? "bg-rose-50" : ""}`}
+      >
+        {/* Priority indicator */}
+        <div className={"mb-3 flex items-center justify-between"}>
+          <Badge className={`${priority.color} border-0 font-bold text-xs`}>
+            {priority.label}
+          </Badge>
+          {dueStatus && (
+            <span
+              className={`flex items-center gap-1 rounded-full px-2 py-1 font-bold text-xs ${
+                dueStatus.isOverdue
+                  ? "bg-rose-100 text-rose-700"
+                  : dueStatus.isUrgent
+                    ? "bg-amber-100 text-amber-700"
+                    : "bg-slate-100 text-slate-600"
+              }`}
+            >
+              <Clock className="h-3 w-3" />
+              {dueStatus.label}
+            </span>
+          )}
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Best Practices</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            <ul className="list-disc pl-4 space-y-2">
-              <li>
-                <strong>Claim before starting:</strong> Always claim a task before
-                working on it so your team can see what you&apos;re doing.
-              </li>
-              <li>
-                <strong>Release if interrupted:</strong> If you get pulled away,
-                release the task so someone else can pick it up.
-              </li>
-              <li>
-                <strong>Add notes:</strong> Adding notes helps the next person
-                understand what&apos;s been done and what remains.
-              </li>
-              <li>
-                <strong>Keep it updated:</strong> Update task status as you progress
-                to help the team track overall kitchen status.
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
+        {/* Task title */}
+        <h3 className="mb-1 text-lg font-bold text-slate-900">{task.title}</h3>
+        {task.summary && (
+          <p className="mb-3 text-slate-600 text-sm">{task.summary}</p>
+        )}
+
+        {/* Tags/Station */}
+        {task.tags && task.tags.length > 0 && (
+          <div className="mb-3 flex flex-wrap gap-1">
+            {task.tags.map((tag) => (
+              <span
+                className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600 text-xs font-medium"
+                key={tag}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Claimed by others indicator */}
+        {type === "available" &&
+          task.isClaimedByOthers &&
+          task.claims.length > 0 && (
+            <div className="mb-3 flex items-center gap-2 rounded-lg bg-slate-50 px-2 py-1">
+              <AlertCircle className="h-4 w-4 text-slate-500" />
+              <span className="text-slate-600 text-xs">
+                Claimed by {task.claims[0].user?.firstName || "Someone"}
+              </span>
+            </div>
+          )}
+
+        {/* Action button - LARGE for mobile */}
+        {type === "available" && task.isAvailable && (
+          <Button
+            className="h-14 w-full text-lg font-bold"
+            disabled={isLoading || !isOnline}
+            onClick={() => handleClaim(task.id)}
+            size="lg"
+          >
+            CLAIM TASK
+          </Button>
+        )}
+
+        {type === "my-tasks" && (
+          <div className="flex gap-2">
+            <Button
+              className="h-14 flex-1 text-lg font-bold"
+              disabled={isLoading || !isOnline}
+              onClick={() => handleRelease(task.id)}
+              variant="outline"
+            >
+              RELEASE
+            </Button>
+            {task.status === "in_progress" && (
+              <Button
+                className="h-14 flex-1 bg-emerald-600 text-lg font-bold hover:bg-emerald-700"
+                disabled={isLoading || !isOnline}
+                onClick={() => handleComplete(task.id)}
+              >
+                <CheckCircle2 className="mr-1 h-5 w-5" />
+                DONE
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <Header page="Mobile Tasks" pages={["Kitchen Ops"]} />
+
+      {/* Offline indicator banner */}
+      {!isOnline && (
+        <div className="flex items-center justify-center gap-2 bg-amber-500 px-4 py-2">
+          <WifiOff className="h-4 w-4 text-white" />
+          <span className="font-medium text-white">
+            You're offline. Actions will sync when you reconnect.
+          </span>
+        </div>
+      )}
+
+      {/* Sync queue indicator */}
+      {syncQueue && syncQueue.length > 0 && (
+        <div className="flex items-center justify-center gap-2 bg-blue-500 px-4 py-2">
+          <AlertCircle className="h-4 w-4 text-white" />
+          <span className="font-medium text-white">
+            {syncQueue.length} action{syncQueue.length > 1 ? "s" : ""} pending
+            sync
+          </span>
+        </div>
+      )}
+
+      <div className="flex flex-1 flex-col p-4">
+        <Tabs
+          className="flex flex-1 flex-col"
+          onValueChange={(value) => {
+            setActiveTab(value);
+            if (value === "available") fetchAvailableTasks();
+            if (value === "my-tasks") fetchMyTasks();
+          }}
+          value={activeTab}
+        >
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger className="text-base" value="available">
+              Available ({availableTasks.length})
+            </TabsTrigger>
+            <TabsTrigger className="text-base" value="my-tasks">
+              My Tasks ({myTasks.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent className="mt-4 flex-1" value="available">
+            {/* Refresh button */}
+            <div className="mb-4 flex items-center justify-between">
+              <span className="text-slate-600 text-sm">
+                {isOnline ? (
+                  <span className="flex items-center gap-1">
+                    <Wifi className="h-3 w-3 text-emerald-500" />
+                    Online
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <WifiOff className="h-3 w-3 text-amber-500" />
+                    Offline
+                  </span>
+                )}
+              </span>
+              <Button
+                disabled={isLoading || !isOnline}
+                onClick={fetchAvailableTasks}
+                size="sm"
+                variant="outline"
+              >
+                <RefreshCw
+                  className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+                />
+              </Button>
+            </div>
+
+            {/* Available tasks list */}
+            {availableTasks.length === 0 ? (
+              <div className="flex flex-1 flex-col items-center justify-center py-12">
+                <CheckCircle2 className="mb-4 h-16 w-16 text-emerald-500" />
+                <p className="text-center text-slate-600">
+                  No available tasks right now!
+                </p>
+                <p className="mt-2 text-center text-slate-500 text-sm">
+                  Check back later or pull to refresh.
+                </p>
+              </div>
+            ) : (
+              availableTasks.map((task) => (
+                <MobileTaskCard key={task.id} task={task} type="available" />
+              ))
+            )}
+          </TabsContent>
+
+          <TabsContent className="mt-4 flex-1" value="my-tasks">
+            {/* Refresh button */}
+            <div className="mb-4 flex items-center justify-between">
+              <span className="text-slate-600 text-sm">
+                {isOnline ? (
+                  <span className="flex items-center gap-1">
+                    <Wifi className="h-3 w-3 text-emerald-500" />
+                    Online
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <WifiOff className="h-3 w-3 text-amber-500" />
+                    Offline
+                  </span>
+                )}
+              </span>
+              <Button
+                disabled={isLoading || !isOnline}
+                onClick={fetchMyTasks}
+                size="sm"
+                variant="outline"
+              >
+                <RefreshCw
+                  className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+                />
+              </Button>
+            </div>
+
+            {/* My tasks list */}
+            {myTasks.length === 0 ? (
+              <div className="flex flex-1 flex-col items-center justify-center py-12">
+                <Clock className="mb-4 h-16 w-16 text-slate-400" />
+                <p className="text-center text-slate-600">
+                  You haven't claimed any tasks yet.
+                </p>
+                <p className="mt-2 text-center text-slate-500 text-sm">
+                  Switch to Available tab to claim tasks.
+                </p>
+              </div>
+            ) : (
+              myTasks.map((task) => (
+                <MobileTaskCard key={task.id} task={task} type="my-tasks" />
+              ))
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </>
   );
-};
-
-export default KitchenMobilePage;
+}
