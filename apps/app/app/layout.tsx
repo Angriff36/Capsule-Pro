@@ -1,8 +1,6 @@
 import { env } from "@/env";
 import "./styles.css";
-import {
-  ClerkProvider,
-} from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import { AnalyticsProvider } from "@repo/analytics/provider";
 import { DesignSystemProvider } from "@repo/design-system";
 import { fonts } from "@repo/design-system/lib/fonts";
@@ -26,7 +24,10 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
               "/legal/privacy",
               env.NEXT_PUBLIC_WEB_URL
             ).toString()}
-            termsUrl={new URL("/legal/terms", env.NEXT_PUBLIC_WEB_URL).toString()}
+            termsUrl={new URL(
+              "/legal/terms",
+              env.NEXT_PUBLIC_WEB_URL
+            ).toString()}
           >
             {children}
           </DesignSystemProvider>

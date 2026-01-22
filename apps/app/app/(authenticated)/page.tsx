@@ -4,10 +4,10 @@ import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
 import { env } from "@/env";
+import { getTenantIdForOrg } from "../lib/tenant";
 import { AvatarStack } from "./components/avatar-stack";
 import { Cursors } from "./components/cursors";
 import { Header } from "./components/header";
-import { getTenantIdForOrg } from "../lib/tenant";
 
 const title = "Acme Inc";
 const description = "My application.";
@@ -57,9 +57,7 @@ const App = async () => {
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <div className="grid auto-rows-min gap-4 md:grid-cols-3">
           {events.length === 0 ? (
-            <div className="text-muted-foreground text-sm">
-              No events yet.
-            </div>
+            <div className="text-muted-foreground text-sm">No events yet.</div>
           ) : (
             events.map((event) => (
               <div

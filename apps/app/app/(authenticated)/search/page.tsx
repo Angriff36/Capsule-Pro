@@ -1,8 +1,8 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { notFound, redirect } from "next/navigation";
-import { Header } from "../components/header";
 import { getTenantIdForOrg } from "../../lib/tenant";
+import { Header } from "../components/header";
 
 type SearchPageProperties = {
   searchParams: Promise<{

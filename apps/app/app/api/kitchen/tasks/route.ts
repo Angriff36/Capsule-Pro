@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export async function GET(request: Request) {
   const { orgId } = await auth();
@@ -22,8 +22,10 @@ export async function GET(request: Request) {
         { tenantId },
         { deletedAt: null },
         ...(status ? [{ status }] : []),
-        ...(minPriority ? [{ priority: { lte: Number.parseInt(minPriority, 10) } }] : []),
-      ]
+        ...(minPriority
+          ? [{ priority: { lte: Number.parseInt(minPriority, 10) } }]
+          : []),
+      ],
     },
     orderBy: [
       { priority: "asc" }, // priority 1-10, ascending = highest first
@@ -34,10 +36,7 @@ export async function GET(request: Request) {
   // Fetch claims separately
   const claims = await database.kitchenTaskClaim.findMany({
     where: {
-      AND: [
-        { tenantId },
-        { releasedAt: null }
-      ]
+      AND: [{ tenantId }, { releasedAt: null }],
     },
   });
 
@@ -45,10 +44,7 @@ export async function GET(request: Request) {
   const claimEmployeeIds = new Set(claims.map((c) => c.employeeId));
   const users = await database.user.findMany({
     where: {
-      AND: [
-        { tenantId },
-        { id: { in: Array.from(claimEmployeeIds) } }
-      ]
+      AND: [{ tenantId }, { id: { in: Array.from(claimEmployeeIds) } }],
     },
     select: {
       id: true,

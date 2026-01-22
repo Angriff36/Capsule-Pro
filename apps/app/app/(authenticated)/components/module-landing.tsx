@@ -21,7 +21,7 @@ export const ModuleLanding = ({
     </header>
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       {highlights.map((item) => (
-        <Card key={item} className="bg-card/60 p-4">
+        <Card className="bg-card/60 p-4" key={item}>
           <p className="text-muted-foreground text-sm">{item}</p>
         </Card>
       ))}

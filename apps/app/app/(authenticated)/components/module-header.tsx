@@ -1,8 +1,8 @@
 "use client";
 
+import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@repo/design-system/lib/utils";
 import { getModuleKeyFromPathname, modules } from "./module-nav";
 
 export const ModuleHeader = () => {
@@ -17,14 +17,14 @@ export const ModuleHeader = () => {
 
           return (
             <Link
-              key={module.key}
-              href={module.href}
               className={cn(
                 "rounded-full px-4 py-1.5 font-medium text-sm transition",
                 isActive
                   ? "bg-foreground text-background"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
+              href={module.href}
+              key={module.key}
             >
               {module.label}
             </Link>

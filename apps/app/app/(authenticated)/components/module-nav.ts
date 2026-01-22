@@ -170,8 +170,9 @@ export const modules: ModuleDefinition[] = [
 ];
 
 export const getModuleKeyFromPathname = (pathname: string): ModuleKey => {
-  const match = modules.find((module) =>
-    pathname === module.href || pathname.startsWith(`${module.href}/`)
+  const match = modules.find(
+    (module) =>
+      pathname === module.href || pathname.startsWith(`${module.href}/`)
   );
 
   return match?.key ?? "events";

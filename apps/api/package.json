@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^2.0.89",
     "@repo/analytics": "workspace:*",
     "@repo/auth": "workspace:*",
     "@repo/database": "workspace:*",
@@ -23,6 +24,7 @@
     "@sentry/nextjs": "^10.29.0",
     "@t3-oss/env-nextjs": "^0.13.8",
     "ably": "^2.10.0",
+    "ai": "^5.0.121",
     "import-in-the-middle": "^2.0.0",
     "next": "16.0.10",
     "react": "19.2.3",

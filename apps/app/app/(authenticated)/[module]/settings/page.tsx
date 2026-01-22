@@ -13,8 +13,8 @@ const ModuleSettingsPage = async ({ params }: ModuleSettingsPageProps) => {
 
   return (
     <ModuleSection
-      title={`${label} Settings`}
       summary={`Module-level settings for ${label}.`}
+      title={`${label} Settings`}
     />
   );
 };

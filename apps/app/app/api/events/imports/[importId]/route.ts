@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { Prisma, database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -28,7 +28,7 @@ export const GET = async (_request: Request, context: RouteContext) => {
       WHERE tenant_id = ${tenantId}
         AND id = ${importId}
       LIMIT 1
-    `,
+    `
   );
 
   if (!row) {

@@ -77,10 +77,14 @@ const LegalPage = async ({ params }: LegalPageProperties) => {
                 <Sidebar
                   date={new Date()}
                   readingTime={
-                    page.body ? `${page.body.readingTime} min read` : "0 min read"
+                    page.body
+                      ? `${page.body.readingTime} min read`
+                      : "0 min read"
                   }
                   toc={
-                    page.body ? <TableOfContents data={page.body.json.toc} /> : null
+                    page.body ? (
+                      <TableOfContents data={page.body.json.toc} />
+                    ) : null
                   }
                 />
               </div>

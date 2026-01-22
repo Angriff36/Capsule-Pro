@@ -35,7 +35,6 @@ export const ModuleShell = ({
 
             return (
               <Link
-                key={item.href}
                 className={cn(
                   "block rounded-lg px-3 py-2 text-sm transition",
                   isActive
@@ -43,6 +42,7 @@ export const ModuleShell = ({
                     : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                 )}
                 href={item.href}
+                key={item.href}
               >
                 {item.title}
               </Link>

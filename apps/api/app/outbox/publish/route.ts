@@ -1,5 +1,5 @@
-import Ably from "ably";
 import { database } from "@repo/database";
+import Ably from "ably";
 import { env } from "@/env";
 
 type PublishRequest = {
@@ -7,12 +7,16 @@ type PublishRequest = {
 };
 
 const parseLimit = (payload: PublishRequest | null) => {
-  if (!payload?.limit) return 100;
+  if (!payload?.limit) {
+    return 100;
+  }
   return Math.max(1, Math.min(500, payload.limit));
 };
 
 const isAuthorized = (authorization: string | null) => {
-  if (!authorization?.startsWith("Bearer ")) return false;
+  if (!authorization?.startsWith("Bearer ")) {
+    return false;
+  }
   const token = authorization.slice("Bearer ".length).trim();
   return token.length > 0 && token === env.OUTBOX_PUBLISH_TOKEN;
 };
@@ -22,7 +26,9 @@ export async function POST(request: Request) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const payload = (await request.json().catch(() => null)) as PublishRequest | null;
+  const payload = (await request
+    .json()
+    .catch(() => null)) as PublishRequest | null;
   const limit = parseLimit(payload);
 
   const pendingEvents = await database.outboxEvent.findMany({

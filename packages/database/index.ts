@@ -22,7 +22,7 @@ if (process.env.NODE_ENV !== "production") {
 export const tenantDatabase = (tenantId: string) =>
   createTenantClient(tenantId, database);
 
+export * from "./generated/client";
 // biome-ignore lint/performance/noBarrelFile: re-exporting
 export { Prisma } from "./generated/client";
-export * from "./generated/client";
 export * from "./tenant";

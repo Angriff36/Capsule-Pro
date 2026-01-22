@@ -1,8 +1,8 @@
 "use client";
 
 import Ably from "ably";
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 type ProductionBoardRealtimeProps = {
   tenantId: string;

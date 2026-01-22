@@ -1,7 +1,7 @@
 import "server-only";
 
+import { database, Prisma } from "@repo/database";
 import { randomUUID } from "crypto";
-import { Prisma, database } from "@repo/database";
 
 type CsvRow = Record<string, string>;
 
@@ -18,7 +18,11 @@ type ImportContext = {
 };
 
 const normalizeHeader = (value: string) =>
-  value.replace(/\uFEFF/g, "").trim().replace(/\s+/g, " ").toLowerCase();
+  value
+    .replace(/\uFEFF/g, "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
 
 const parseCsv = (input: string): CsvRow[] => {
   const rows: string[][] = [];
@@ -130,7 +134,7 @@ const ensureLocationId = async (tenantId: string): Promise<string> => {
         AND deleted_at IS NULL
       ORDER BY is_primary DESC, created_at ASC
       LIMIT 1
-    `,
+    `
   );
 
   if (location?.id) {
@@ -142,7 +146,7 @@ const ensureLocationId = async (tenantId: string): Promise<string> => {
     Prisma.sql`
       INSERT INTO tenant.locations (tenant_id, id, name, is_primary, is_active)
       VALUES (${tenantId}, ${createdId}, ${"Main Kitchen"}, true, true)
-    `,
+    `
   );
 
   return createdId;
@@ -155,7 +159,7 @@ const getFallbackUnitId = async () => {
       FROM core.units
       ORDER BY id ASC
       LIMIT 1
-    `,
+    `
   );
   return row?.id;
 };
@@ -166,7 +170,7 @@ const getUnitIds = async () => {
       SELECT id, code
       FROM core.units
       WHERE code IN ('lb', 'ea', 'oz', 'g', 'kg')
-    `,
+    `
   );
 
   const unitIds: ImportContext["unitIds"] = {};
@@ -200,7 +204,7 @@ const findRecipeId = async (tenantId: string, name: string) => {
         AND name = ${name}
         AND deleted_at IS NULL
       LIMIT 1
-    `,
+    `
   );
   return row?.id;
 };
@@ -208,10 +212,7 @@ const findRecipeId = async (tenantId: string, name: string) => {
 const insertRecipe = async (
   tenantId: string,
   name: string,
-  {
-    category,
-    tags,
-  }: { category?: string | null; tags?: string[] } = {},
+  { category, tags }: { category?: string | null; tags?: string[] } = {}
 ) => {
   const existingId = await findRecipeId(tenantId, name);
   if (existingId) {
@@ -225,7 +226,7 @@ const insertRecipe = async (
       VALUES (${tenantId}, ${id}, ${name}, ${category ?? null}, ${
         tags && tags.length > 0 ? tags : null
       }, true)
-    `,
+    `
   );
   return id;
 };
@@ -239,7 +240,7 @@ const findDishId = async (tenantId: string, name: string) => {
         AND name = ${name}
         AND deleted_at IS NULL
       LIMIT 1
-    `,
+    `
   );
   return row?.id;
 };
@@ -248,7 +249,7 @@ const insertDish = async (
   tenantId: string,
   name: string,
   recipeId: string,
-  category?: string | null,
+  category?: string | null
 ) => {
   const existingId = await findDishId(tenantId, name);
   if (existingId) {
@@ -260,7 +261,7 @@ const insertDish = async (
     Prisma.sql`
       INSERT INTO tenant_kitchen.dishes (tenant_id, id, recipe_id, name, category, is_active)
       VALUES (${tenantId}, ${id}, ${recipeId}, ${name}, ${category ?? null}, true)
-    `,
+    `
   );
   return id;
 };
@@ -274,7 +275,7 @@ const findIngredientId = async (tenantId: string, name: string) => {
         AND name = ${name}
         AND deleted_at IS NULL
       LIMIT 1
-    `,
+    `
   );
   return row?.id;
 };
@@ -283,7 +284,7 @@ const insertIngredient = async (
   tenantId: string,
   name: string,
   defaultUnitId: number,
-  category?: string | null,
+  category?: string | null
 ) => {
   const existingId = await findIngredientId(tenantId, name);
   if (existingId) {
@@ -302,7 +303,7 @@ const insertIngredient = async (
         is_active
       )
       VALUES (${tenantId}, ${id}, ${name}, ${category ?? null}, ${defaultUnitId}, true)
-    `,
+    `
   );
   return id;
 };
@@ -316,7 +317,7 @@ const findInventoryItemId = async (tenantId: string, name: string) => {
         AND name = ${name}
         AND deleted_at IS NULL
       LIMIT 1
-    `,
+    `
   );
   return row?.id;
 };
@@ -325,7 +326,7 @@ const insertInventoryItem = async (
   tenantId: string,
   name: string,
   category: string,
-  tags: string[],
+  tags: string[]
 ) => {
   const existingId = await findInventoryItemId(tenantId, name);
   if (existingId) {
@@ -358,7 +359,7 @@ const insertInventoryItem = async (
         ${0},
         ${tags}
       )
-    `,
+    `
   );
   return id;
 };
@@ -444,7 +445,7 @@ const classifyItem = (name: string, unit: string): ItemClassification => {
   }
 
   const isBeverage = BEVERAGE_KEYWORDS.some((keyword) =>
-    normalized.includes(keyword),
+    normalized.includes(keyword)
   );
   if (isBeverage) {
     const isPackaged =
@@ -489,7 +490,7 @@ const insertEvent = async (
     eventType: string;
     guestCount: number;
     notes?: string;
-  },
+  }
 ) => {
   const eventId = randomUUID();
   await database.$executeRaw(
@@ -514,7 +515,7 @@ const insertEvent = async (
         ${"confirmed"},
         ${notes ?? null}
       )
-    `,
+    `
   );
   return eventId;
 };
@@ -531,7 +532,7 @@ const insertEventDish = async (
     dishId: string;
     quantityServings: number;
     specialInstructions?: string;
-  },
+  }
 ) => {
   await database.$executeRaw(
     Prisma.sql`
@@ -551,7 +552,7 @@ const insertEventDish = async (
         ${quantityServings},
         ${specialInstructions ?? null}
       )
-    `,
+    `
   );
 };
 
@@ -579,7 +580,7 @@ const insertPrepTask = async (
     dueByDate: Date;
     isEventFinish: boolean;
     notes?: string;
-  },
+  }
 ) => {
   const unitId = unit.includes("pound") ? context.unitIds.pound : undefined;
 
@@ -621,12 +622,15 @@ const insertPrepTask = async (
         ${5},
         ${notes ?? null}
       )
-    `,
+    `
   );
 };
 
 const getFileLabel = (fileName: string) =>
-  fileName.replace(/\.[^/.]+$/, "").replace(/[_-]+/g, " ").trim();
+  fileName
+    .replace(/\.[^/.]+$/, "")
+    .replace(/[_-]+/g, " ")
+    .trim();
 
 const importRows = async (
   rows: CsvRow[],
@@ -650,7 +654,7 @@ const importRows = async (
       instructions?: string;
       isEventFinish: boolean;
     };
-  },
+  }
 ) => {
   const eventId = await insertEvent(context.tenantId, {
     title,
@@ -683,7 +687,7 @@ const importRows = async (
           context.tenantId,
           itemName,
           classification.category ?? "supplies",
-          classification.tags,
+          classification.tags
         ));
       inventoryCache.set(itemKey, existingId);
       continue;
@@ -702,7 +706,7 @@ const importRows = async (
             context.unitIds.pound ??
             context.unitIds.ounce ??
             fallbackUnitId,
-          classification.category,
+          classification.category
         ));
       ingredientCache.set(itemKey, ingredientId);
 
@@ -752,7 +756,7 @@ const importRows = async (
         context.tenantId,
         itemName,
         recipeId,
-        classification.category,
+        classification.category
       ));
     dishCache.set(itemKey, dishId);
 
@@ -834,9 +838,9 @@ export const importEventFromCsvText = async ({
             const unit = getValue(row, ["unit"]).toLowerCase();
             return unit.includes("serv") ? Number(row.quantity ?? 0) : 0;
           }),
-          1,
-        ),
-      ),
+          1
+        )
+      )
     );
 
     const eventId = await importRows(firstGroup, context, {
@@ -851,8 +855,7 @@ export const importEventFromCsvText = async ({
           "Imported item";
         const quantity = Number(row.quantity ?? 0) || 1;
         const unit = getValue(row, ["unit"]).toLowerCase();
-        const servings =
-          unit.includes("serv") && quantity > 0 ? quantity : 1;
+        const servings = unit.includes("serv") && quantity > 0 ? quantity : 1;
         const instructions = getValue(row, ["notes"]);
         const isEventFinish = getValue(row, ["finish_location"])
           .toLowerCase()
@@ -889,7 +892,7 @@ export const importEventFromCsvText = async ({
           ${Buffer.byteLength(content)},
           ${Buffer.from(content)}
         )
-      `,
+      `
     );
 
     return eventId;
@@ -902,7 +905,7 @@ export const importEventFromCsvText = async ({
       const value = getValue(row, ["servings/batch", "servings batch"]);
       return parseNumber(value) ?? 0;
     }),
-    1,
+    1
   );
 
   const eventId = await importRows(rows, context, {
@@ -914,7 +917,7 @@ export const importEventFromCsvText = async ({
       const itemName = getValue(row, ["dish name"]) || "Imported dish";
       const servingsRaw = getValue(row, ["servings/batch", "servings batch"]);
       const { amount, unit } = parseQuantityUnit(
-        getValue(row, ["quantity/unit", "quantity unit"]),
+        getValue(row, ["quantity/unit", "quantity unit"])
       );
       const instructions = getValue(row, ["special instructions"]);
       const finishedAt = getValue(row, ["finished at"]).toLowerCase();
@@ -951,7 +954,7 @@ export const importEventFromCsvText = async ({
         ${Buffer.byteLength(content)},
         ${Buffer.from(content)}
       )
-    `,
+    `
   );
 
   return eventId;
@@ -996,7 +999,7 @@ export const importEventFromPdf = async ({
         ${content.byteLength},
         ${content}
       )
-    `,
+    `
   );
 
   return eventId;

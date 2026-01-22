@@ -1,5 +1,10 @@
 import { auth } from "@repo/auth/server";
-import { Prisma, database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@repo/design-system/components/ui/avatar";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -16,12 +21,6 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@repo/design-system/components/ui/avatar";
-import { notFound } from "next/navigation";
-import {
   BellIcon,
   CalendarCheckIcon,
   ClockIcon,
@@ -31,6 +30,7 @@ import {
   UsersIcon,
   WalletIcon,
 } from "lucide-react";
+import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
 import SchedulingRealtime from "./scheduling-realtime";
 
@@ -127,7 +127,7 @@ const SchedulingPage = async () => {
       WHERE tenant_id = ${tenantId}
         AND deleted_at IS NULL
         AND is_active = true
-    `,
+    `
   );
 
   const [previousStaff] = await database.$queryRaw<{ count: number }[]>(
@@ -138,7 +138,7 @@ const SchedulingPage = async () => {
         AND deleted_at IS NULL
         AND is_active = true
         AND created_at < ${weekStart}
-    `,
+    `
   );
 
   const [currentHours] = await database.$queryRaw<{ hours: number }[]>(
@@ -149,7 +149,7 @@ const SchedulingPage = async () => {
         AND deleted_at IS NULL
         AND shift_start >= ${weekStart}
         AND shift_start < ${weekEnd}
-    `,
+    `
   );
 
   const [previousHours] = await database.$queryRaw<{ hours: number }[]>(
@@ -160,7 +160,7 @@ const SchedulingPage = async () => {
         AND deleted_at IS NULL
         AND shift_start >= ${previousWeekStart}
         AND shift_start < ${weekStart}
-    `,
+    `
   );
 
   const [openShifts] = await database.$queryRaw<{ count: number }[]>(
@@ -172,7 +172,7 @@ const SchedulingPage = async () => {
         AND status = 'open'
         AND shift_start >= ${weekStart}
         AND shift_start < ${weekEnd}
-    `,
+    `
   );
 
   const [previousOpenShifts] = await database.$queryRaw<{ count: number }[]>(
@@ -184,7 +184,7 @@ const SchedulingPage = async () => {
         AND status = 'open'
         AND shift_start >= ${previousWeekStart}
         AND shift_start < ${weekStart}
-    `,
+    `
   );
 
   const [currentCost] = await database.$queryRaw<{ cost: number }[]>(
@@ -208,7 +208,7 @@ const SchedulingPage = async () => {
         AND s.deleted_at IS NULL
         AND s.shift_start >= ${weekStart}
         AND s.shift_start < ${weekEnd}
-    `,
+    `
   );
 
   const [previousCost] = await database.$queryRaw<{ cost: number }[]>(
@@ -232,7 +232,7 @@ const SchedulingPage = async () => {
         AND s.deleted_at IS NULL
         AND s.shift_start >= ${previousWeekStart}
         AND s.shift_start < ${weekStart}
-    `,
+    `
   );
 
   const shiftSummary = await database.$queryRaw<ScheduleSummaryRow[]>(
@@ -268,13 +268,15 @@ const SchedulingPage = async () => {
         COALESCE(o.open_count, 0) AS open_count
       FROM scheduled s
       FULL OUTER JOIN open o ON o.shift_date = s.shift_date
-    `,
+    `
   );
 
-  const [shiftTotals] = await database.$queryRaw<{
-    shift_count: number;
-    staff_count: number;
-  }[]>(
+  const [shiftTotals] = await database.$queryRaw<
+    {
+      shift_count: number;
+      staff_count: number;
+    }[]
+  >(
     Prisma.sql`
       SELECT
         (
@@ -302,7 +304,7 @@ const SchedulingPage = async () => {
             AND shift_start >= ${weekStart}
             AND shift_start < ${weekEnd}
         ) AS staff_count
-    `,
+    `
   );
 
   const happeningToday = await database.$queryRaw<HappeningShiftRow[]>(
@@ -336,7 +338,7 @@ const SchedulingPage = async () => {
         AND o.shift_start < ${endOfToday}
       ORDER BY shift_start
       LIMIT 6
-    `,
+    `
   );
 
   const leaderboard = await database.$queryRaw<LeaderboardRow[]>(
@@ -358,24 +360,20 @@ const SchedulingPage = async () => {
       GROUP BY s.employee_id, e.first_name, e.last_name, e.role
       ORDER BY shift_count DESC, e.last_name ASC
       LIMIT 3
-    `,
+    `
   );
 
   const scheduleMap = new Map(
-    shiftSummary.map((row) => [
-      row.shift_date.toDateString(),
-      row,
-    ])
+    shiftSummary.map((row) => [row.shift_date.toDateString(), row])
   );
 
   const scheduleDays = Array.from({ length: 7 }).map((_, index) => {
     const date = addDays(weekStart, index);
-    const summary =
-      scheduleMap.get(date.toDateString()) ?? {
-        shift_count: 0,
-        staff_count: 0,
-        open_count: 0,
-      };
+    const summary = scheduleMap.get(date.toDateString()) ?? {
+      shift_count: 0,
+      staff_count: 0,
+      open_count: 0,
+    };
     const badges = [];
     if (summary.staff_count > 0) {
       badges.push(`${summary.staff_count} Staff`);
@@ -412,7 +410,10 @@ const SchedulingPage = async () => {
     {
       label: "Open Shifts",
       value: openShifts?.count ?? 0,
-      delta: formatDelta(openShifts?.count ?? 0, previousOpenShifts?.count ?? 0),
+      delta: formatDelta(
+        openShifts?.count ?? 0,
+        previousOpenShifts?.count ?? 0
+      ),
       note: "Unassigned shifts",
       icon: CalendarCheckIcon,
       tone: "bg-accent/15 text-accent-foreground",
@@ -430,206 +431,222 @@ const SchedulingPage = async () => {
   return (
     <div className="flex flex-col gap-6">
       <SchedulingRealtime tenantId={tenantId} userId={userId} />
-    <div className="flex flex-wrap items-center justify-between gap-4">
-      <div>
-        <h1 className="font-semibold text-2xl text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Welcome back. You have scheduling activity for this week.
-        </p>
-      </div>
-      <div className="flex items-center gap-3">
-        <div className="relative min-w-[260px]">
-          <SearchIcon className="-translate-y-1/2 absolute top-1/2 left-3 size-4 text-muted-foreground" />
-          <Input className="pr-12 pl-9" placeholder="Search anything..." />
-          <span className="-translate-y-1/2 absolute top-1/2 right-3 rounded-md border bg-background px-2 py-1 text-muted-foreground text-xs">
-            ⌘K
-          </span>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="font-semibold text-2xl text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Welcome back. You have scheduling activity for this week.
+          </p>
         </div>
-        <Button size="icon" variant="outline">
-          <BellIcon className="size-4" />
-        </Button>
-      </div>
-    </div>
-
-    <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      {stats.map((item) => (
-        <Card key={item.label} className="shadow-sm">
-          <CardHeader className="flex flex-row items-start justify-between space-y-0">
-            <div>
-              <CardDescription>{item.label}</CardDescription>
-              <CardTitle className="text-2xl">{item.value}</CardTitle>
-              <p className="text-muted-foreground text-xs">{item.note}</p>
-            </div>
-            <div className={`flex size-10 items-center justify-center rounded-xl ${item.tone}`}>
-              <item.icon className="size-5" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <span className="font-medium text-emerald-600 text-xs dark:text-emerald-300">
-              {item.delta}
+        <div className="flex items-center gap-3">
+          <div className="relative min-w-[260px]">
+            <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input className="pr-12 pl-9" placeholder="Search anything..." />
+            <span className="absolute top-1/2 right-3 -translate-y-1/2 rounded-md border bg-background px-2 py-1 text-muted-foreground text-xs">
+              ⌘K
             </span>
-          </CardContent>
-        </Card>
-      ))}
-    </section>
-
-    <section className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-      <div className="grid gap-6">
-        <Card className="shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <div>
-              <CardTitle>Upcoming Schedule</CardTitle>
-              <CardDescription>Keep coverage balanced across departments.</CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              <Tabs defaultValue="week">
-                <TabsList>
-                  <TabsTrigger value="week">Week</TabsTrigger>
-                  <TabsTrigger value="month">Month</TabsTrigger>
-                </TabsList>
-              </Tabs>
-              <Button size="sm">
-                <PlusIcon className="size-4" />
-                Add Shift
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-7 gap-3 text-sm">
-              {scheduleDays.map((day) => (
-                <div key={day.label} className="rounded-xl border bg-muted/30 p-3">
-                  <div className="font-medium text-muted-foreground text-xs">
-                    {day.label}
-                  </div>
-                  <div className="mt-3 grid gap-2">
-                    {day.badges.length === 0 ? (
-                      <Badge variant="outline" className="justify-center">
-                        No shifts
-                      </Badge>
-                    ) : (
-                      day.badges.map((shift) => (
-                        <Badge
-                          key={`${day.label}-${shift}`}
-                          variant={shift.includes("Open") ? "outline" : "secondary"}
-                          className="justify-center"
-                        >
-                          {shift}
-                        </Badge>
-                      ))
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle>Happening Today</CardTitle>
-            <CardDescription>Live shift start times and staff coverage.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            {happeningToday.length === 0 ? (
-              <div className="rounded-xl border bg-muted/20 p-4 text-muted-foreground text-sm">
-                No shifts scheduled for today.
-              </div>
-            ) : (
-              happeningToday.map((item) => (
-                <div
-                  key={`${item.shift_start.toISOString()}-${item.first_name ?? "unknown"}`}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-background p-3"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="font-semibold text-muted-foreground text-sm">
-                      {formatTime(item.shift_start)}
-                    </div>
-                    <div>
-                      <div className="font-medium text-foreground">
-                        {item.role ?? "Scheduled shift"}
-                      </div>
-                      <div className="flex items-center gap-1 text-muted-foreground text-xs">
-                        <Badge variant="outline">
-                          {formatName(item.first_name, item.last_name)}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="sm">
-                    Edit
-                  </Button>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+          </div>
+          <Button size="icon" variant="outline">
+            <BellIcon className="size-4" />
+          </Button>
+        </div>
       </div>
 
-      <Card className="shadow-sm">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <SparklesIcon className="size-5 text-primary" />
-                Shift Battle Arena
-              </CardTitle>
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {stats.map((item) => (
+          <Card className="shadow-sm" key={item.label}>
+            <CardHeader className="flex flex-row items-start justify-between space-y-0">
+              <div>
+                <CardDescription>{item.label}</CardDescription>
+                <CardTitle className="text-2xl">{item.value}</CardTitle>
+                <p className="text-muted-foreground text-xs">{item.note}</p>
+              </div>
+              <div
+                className={`flex size-10 items-center justify-center rounded-xl ${item.tone}`}
+              >
+                <item.icon className="size-5" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <span className="font-medium text-emerald-600 text-xs dark:text-emerald-300">
+                {item.delta}
+              </span>
+            </CardContent>
+          </Card>
+        ))}
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div className="grid gap-6">
+          <Card className="shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <div>
+                <CardTitle>Upcoming Schedule</CardTitle>
+                <CardDescription>
+                  Keep coverage balanced across departments.
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Tabs defaultValue="week">
+                  <TabsList>
+                    <TabsTrigger value="week">Week</TabsTrigger>
+                    <TabsTrigger value="month">Month</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <Button size="sm">
+                  <PlusIcon className="size-4" />
+                  Add Shift
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-7 gap-3 text-sm">
+                {scheduleDays.map((day) => (
+                  <div
+                    className="rounded-xl border bg-muted/30 p-3"
+                    key={day.label}
+                  >
+                    <div className="font-medium text-muted-foreground text-xs">
+                      {day.label}
+                    </div>
+                    <div className="mt-3 grid gap-2">
+                      {day.badges.length === 0 ? (
+                        <Badge className="justify-center" variant="outline">
+                          No shifts
+                        </Badge>
+                      ) : (
+                        day.badges.map((shift) => (
+                          <Badge
+                            className="justify-center"
+                            key={`${day.label}-${shift}`}
+                            variant={
+                              shift.includes("Open") ? "outline" : "secondary"
+                            }
+                          >
+                            {shift}
+                          </Badge>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle>Happening Today</CardTitle>
               <CardDescription>
-                Real-time, first-come shift claiming with power-ups.
+                Live shift start times and staff coverage.
               </CardDescription>
-            </div>
-            <Badge className="bg-primary/10 text-primary">Game Mode</Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="rounded-xl border bg-muted/40 p-4">
-            <div className="flex items-center justify-between font-medium text-sm">
-              <span className="text-muted-foreground">Live Battle Royale</span>
-              <span className="text-primary">This Week</span>
-            </div>
-            <div className="mt-4 grid gap-4">
-              {leaderboard.length === 0 ? (
-                <div className="rounded-xl border bg-background p-4 text-muted-foreground text-sm">
-                  No shift activity yet this week.
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              {happeningToday.length === 0 ? (
+                <div className="rounded-xl border bg-muted/20 p-4 text-muted-foreground text-sm">
+                  No shifts scheduled for today.
                 </div>
               ) : (
-                leaderboard.map((person, index) => (
-                  <div key={person.employee_id} className="flex gap-3">
-                    <div className="font-semibold text-muted-foreground text-sm">
-                      #{index + 1}
-                    </div>
-                    <Avatar>
-                      <AvatarImage
-                        src=""
-                        alt={formatName(person.first_name, person.last_name)}
-                      />
-                      <AvatarFallback>
-                        {formatName(person.first_name, person.last_name).slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="font-medium text-foreground">
-                        {formatName(person.first_name, person.last_name)}
+                happeningToday.map((item) => (
+                  <div
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-background p-3"
+                    key={`${item.shift_start.toISOString()}-${item.first_name ?? "unknown"}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="font-semibold text-muted-foreground text-sm">
+                        {formatTime(item.shift_start)}
                       </div>
-                      <div className="text-muted-foreground text-xs">
-                        {person.shift_count} shifts this week
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {person.role ? (
-                          <Badge variant="secondary">{person.role}</Badge>
-                        ) : null}
-                        <Badge variant="outline">Top performer</Badge>
+                      <div>
+                        <div className="font-medium text-foreground">
+                          {item.role ?? "Scheduled shift"}
+                        </div>
+                        <div className="flex items-center gap-1 text-muted-foreground text-xs">
+                          <Badge variant="outline">
+                            {formatName(item.first_name, item.last_name)}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
+                    <Button size="sm" variant="ghost">
+                      Edit
+                    </Button>
                   </div>
                 ))
               )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="shadow-sm">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <SparklesIcon className="size-5 text-primary" />
+                  Shift Battle Arena
+                </CardTitle>
+                <CardDescription>
+                  Real-time, first-come shift claiming with power-ups.
+                </CardDescription>
+              </div>
+              <Badge className="bg-primary/10 text-primary">Game Mode</Badge>
             </div>
-          </div>
-          <Button variant="outline">View full leaderboard</Button>
-        </CardContent>
-      </Card>
-    </section>
-  </div>
+          </CardHeader>
+          <CardContent className="grid gap-4">
+            <div className="rounded-xl border bg-muted/40 p-4">
+              <div className="flex items-center justify-between font-medium text-sm">
+                <span className="text-muted-foreground">
+                  Live Battle Royale
+                </span>
+                <span className="text-primary">This Week</span>
+              </div>
+              <div className="mt-4 grid gap-4">
+                {leaderboard.length === 0 ? (
+                  <div className="rounded-xl border bg-background p-4 text-muted-foreground text-sm">
+                    No shift activity yet this week.
+                  </div>
+                ) : (
+                  leaderboard.map((person, index) => (
+                    <div className="flex gap-3" key={person.employee_id}>
+                      <div className="font-semibold text-muted-foreground text-sm">
+                        #{index + 1}
+                      </div>
+                      <Avatar>
+                        <AvatarImage
+                          alt={formatName(person.first_name, person.last_name)}
+                          src=""
+                        />
+                        <AvatarFallback>
+                          {formatName(
+                            person.first_name,
+                            person.last_name
+                          ).slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="font-medium text-foreground">
+                          {formatName(person.first_name, person.last_name)}
+                        </div>
+                        <div className="text-muted-foreground text-xs">
+                          {person.shift_count} shifts this week
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {person.role ? (
+                            <Badge variant="secondary">{person.role}</Badge>
+                          ) : null}
+                          <Badge variant="outline">Top performer</Badge>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+            <Button variant="outline">View full leaderboard</Button>
+          </CardContent>
+        </Card>
+      </section>
+    </div>
   );
 };
 

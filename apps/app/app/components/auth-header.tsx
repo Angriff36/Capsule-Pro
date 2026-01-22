@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
 import {
-  SignInButton,
-  SignUpButton,
   SignedIn,
   SignedOut,
+  SignInButton,
+  SignUpButton,
   UserButton,
-} from '@clerk/nextjs';
+} from "@clerk/nextjs";
 
 export const AuthHeader = () => (
   <header>

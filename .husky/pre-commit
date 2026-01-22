@@ -1,5 +1,8 @@
 #!/usr/bin/env sh
 set -e
 
+# Run DB migrations checklist guard before anything else
+node scripts/enforce-db-pre-migration-checklist.mjs
+
 # Validate pnpm versions in GitHub Actions workflows match package.json
 node scripts/validate-versions.mjs

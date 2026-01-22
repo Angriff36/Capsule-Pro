@@ -1,9 +1,36 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "extends": ["ultracite/core", "ultracite/react", "ultracite/next"],
+  "linter": {
+    "rules": {
+      "nursery": "off"
+    }
+  },
   "javascript": {
     "globals": ["Liveblocks"]
   },
+  "overrides": [
+    {
+      "includes": ["packages/**"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noBarrelFile": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/**"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noBarrelFile": "error"
+          }
+        }
+      }
+    }
+  ],
   "files": {
     "includes": [
       "**/*",

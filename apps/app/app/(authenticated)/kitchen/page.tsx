@@ -42,10 +42,7 @@ const KitchenPage = async () => {
   // Fetch claims separately
   const claims = await database.kitchenTaskClaim.findMany({
     where: {
-      AND: [
-        { tenantId },
-        { releasedAt: null }
-      ]
+      AND: [{ tenantId }, { releasedAt: null }],
     },
   });
 
@@ -53,10 +50,7 @@ const KitchenPage = async () => {
   const claimEmployeeIds = new Set(claims.map((c) => c.employeeId));
   const users = await database.user.findMany({
     where: {
-      AND: [
-        { tenantId },
-        { id: { in: Array.from(claimEmployeeIds) } }
-      ]
+      AND: [{ tenantId }, { id: { in: Array.from(claimEmployeeIds) } }],
     },
     select: {
       id: true,

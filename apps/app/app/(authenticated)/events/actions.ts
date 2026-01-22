@@ -1,18 +1,18 @@
 "use server";
 
+import { database, Prisma } from "@repo/database";
 import { randomUUID } from "crypto";
-import { Prisma, database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireTenantId } from "../../lib/tenant";
-import { eventStatuses, type EventStatus } from "./constants";
+import { type EventStatus, eventStatuses } from "./constants";
 import { importEventFromCsvText, importEventFromPdf } from "./importer";
 
 const getString = (formData: FormData, key: string): string | undefined => {
   const value = formData.get(key);
 
   if (typeof value !== "string") {
-    return ;
+    return;
   }
 
   const trimmed = value.trim();
@@ -21,12 +21,12 @@ const getString = (formData: FormData, key: string): string | undefined => {
 
 const getOptionalString = (
   formData: FormData,
-  key: string,
+  key: string
 ): string | null | undefined => {
   const value = formData.get(key);
 
   if (typeof value !== "string") {
-    return ;
+    return;
   }
 
   const trimmed = value.trim();
@@ -37,7 +37,7 @@ const getNumber = (formData: FormData, key: string): number | undefined => {
   const value = getString(formData, key);
 
   if (!value) {
-    return ;
+    return;
   }
 
   const numberValue = Number(value);
@@ -46,12 +46,12 @@ const getNumber = (formData: FormData, key: string): number | undefined => {
 
 const getNumberOrNull = (
   formData: FormData,
-  key: string,
+  key: string
 ): number | null | undefined => {
   const value = formData.get(key);
 
   if (typeof value !== "string") {
-    return ;
+    return;
   }
 
   const trimmed = value.trim();
@@ -68,7 +68,7 @@ const getDate = (formData: FormData, key: string): Date | undefined => {
   const value = getString(formData, key);
 
   if (!value) {
-    return ;
+    return;
   }
 
   const dateValue = new Date(`${value}T00:00:00`);
@@ -247,7 +247,7 @@ export const attachEventImport = async (formData: FormData): Promise<void> => {
         ${fileBuffer.byteLength},
         ${fileBuffer}
       )
-    `,
+    `
   );
 
   revalidatePath(`/events/${eventId}`);

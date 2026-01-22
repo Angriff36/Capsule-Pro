@@ -1,8 +1,8 @@
 "use client";
 
 import Ably from "ably";
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 type RecipesRealtimeProps = {
   tenantId: string;
@@ -75,4 +75,3 @@ const RecipesRealtime = ({ tenantId, userId }: RecipesRealtimeProps) => {
 };
 
 export default RecipesRealtime;
-

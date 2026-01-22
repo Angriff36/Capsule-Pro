@@ -1,10 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -19,8 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { XIcon, PlusIcon } from "lucide-react";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { PlusIcon, XIcon } from "lucide-react";
+import { useState } from "react";
 
 type Ingredient = {
   id: string;
@@ -88,7 +88,11 @@ export const RecipeEditorModal = ({
     setIngredients(ingredients.filter((ing) => ing.id !== id));
   };
 
-  const updateIngredient = (id: string, field: keyof Ingredient, value: string) => {
+  const updateIngredient = (
+    id: string,
+    field: keyof Ingredient,
+    value: string
+  ) => {
     setIngredients(
       ingredients.map((ing) =>
         ing.id === id ? { ...ing, [field]: value } : ing
@@ -129,15 +133,13 @@ export const RecipeEditorModal = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[800px]">
         <DialogHeader>
-          <DialogTitle>
-            {recipe?.id ? "Edit Recipe" : "Add Recipe"}
-          </DialogTitle>
+          <DialogTitle>{recipe?.id ? "Edit Recipe" : "Add Recipe"}</DialogTitle>
           <DialogDescription>
-            Fill in the recipe details below. Required fields are marked with
-            an asterisk.
+            Fill in the recipe details below. Required fields are marked with an
+            asterisk.
           </DialogDescription>
         </DialogHeader>
 
@@ -168,7 +170,10 @@ export const RecipeEditorModal = ({
 
             <div className="space-y-2">
               <Label htmlFor="difficulty">Difficulty</Label>
-              <Select defaultValue={recipe?.difficulty ?? "Medium"} name="difficulty">
+              <Select
+                defaultValue={recipe?.difficulty ?? "Medium"}
+                name="difficulty"
+              >
                 <SelectTrigger id="difficulty">
                   <SelectValue />
                 </SelectTrigger>
@@ -247,27 +252,31 @@ export const RecipeEditorModal = ({
             </div>
             <div className="space-y-2">
               {ingredients.map((ingredient) => (
-                <div key={ingredient.id} className="grid gap-2 md:grid-cols-4">
+                <div className="grid gap-2 md:grid-cols-4" key={ingredient.id}>
                   <Input
+                    onChange={(e) =>
+                      updateIngredient(
+                        ingredient.id,
+                        "quantity",
+                        e.target.value
+                      )
+                    }
                     placeholder="Quantity"
                     value={ingredient.quantity}
-                    onChange={(e) =>
-                      updateIngredient(ingredient.id, "quantity", e.target.value)
-                    }
                   />
                   <Input
-                    placeholder="Unit"
-                    value={ingredient.unit}
                     onChange={(e) =>
                       updateIngredient(ingredient.id, "unit", e.target.value)
                     }
+                    placeholder="Unit"
+                    value={ingredient.unit}
                   />
                   <Input
-                    placeholder="Ingredient name"
-                    value={ingredient.name}
                     onChange={(e) =>
                       updateIngredient(ingredient.id, "name", e.target.value)
                     }
+                    placeholder="Ingredient name"
+                    value={ingredient.name}
                   />
                   <div className="flex gap-2">
                     <Button
@@ -307,18 +316,18 @@ export const RecipeEditorModal = ({
             </div>
             <div className="space-y-2">
               {instructions.map((instruction) => (
-                <div key={instruction.id} className="flex gap-2">
+                <div className="flex gap-2" key={instruction.id}>
                   <div className="flex min-w-[40px] items-center justify-center rounded bg-muted font-semibold">
                     {instruction.stepNumber}
                   </div>
                   <div className="flex flex-1 flex-col gap-2">
                     <Textarea
-                      placeholder="Describe this step..."
-                      value={instruction.text}
                       onChange={(e) =>
                         updateInstruction(instruction.id, e.target.value)
                       }
+                      placeholder="Describe this step..."
                       rows={2}
+                      value={instruction.text}
                     />
                   </div>
                   <Button
@@ -345,8 +354,6 @@ export const RecipeEditorModal = ({
               <Input
                 className="flex-1"
                 id="tags"
-                placeholder="Type and press Enter to add tags"
-                value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -354,6 +361,8 @@ export const RecipeEditorModal = ({
                     addTag();
                   }
                 }}
+                placeholder="Type and press Enter to add tags"
+                value={tagInput}
               />
               <Button
                 onClick={(e) => {
@@ -370,10 +379,10 @@ export const RecipeEditorModal = ({
               <div className="flex flex-wrap gap-2">
                 {tags.map((tag) => (
                   <Badge
-                    key={tag}
                     className="cursor-pointer"
-                    variant="secondary"
+                    key={tag}
                     onClick={() => removeTag(tag)}
+                    variant="secondary"
                   >
                     {tag}
                     <XIcon className="ml-1 inline size-3" />
@@ -381,11 +390,7 @@ export const RecipeEditorModal = ({
                 ))}
               </div>
             )}
-            <input
-              name="tags"
-              type="hidden"
-              value={JSON.stringify(tags)}
-            />
+            <input name="tags" type="hidden" value={JSON.stringify(tags)} />
           </div>
 
           <div className="flex justify-end gap-3">

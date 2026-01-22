@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import { database, Prisma } from "@repo/database";
 import { AspectRatio } from "@repo/design-system/components/ui/aspect-ratio";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
@@ -22,14 +23,18 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
-import { Prisma, database } from "@repo/database";
-import { BookOpenIcon, CheckCircleIcon, ChefHatIcon, HeartIcon, SettingsIcon } from "lucide-react";
+import {
+  BookOpenIcon,
+  CheckCircleIcon,
+  ChefHatIcon,
+  SettingsIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { RecipeEditorModal } from "./recipe-editor-modal";
-import { Header } from "../../components/header";
 import { getTenantIdForOrg } from "../../../lib/tenant";
+import { Header } from "../../components/header";
 import { updateRecipeImage } from "./actions";
+import { RecipeFavoriteButton } from "./recipe-favorite-button";
 import { RecipeImagePlaceholder } from "./recipe-image-placeholder";
 import RecipesRealtime from "./recipes-realtime";
 import { RecipesToolbar } from "./recipes-toolbar";
@@ -110,7 +115,15 @@ const parseSearchParams = async (searchParams?: Promise<any>) => {
   const status = params.status?.trim();
   const queryPattern = query ? `%${query}%` : null;
   const categoryLower = category ? category.toLowerCase() : null;
-  return { activeTab, query, category, dietary, status, queryPattern, categoryLower };
+  return {
+    activeTab,
+    query,
+    category,
+    dietary,
+    status,
+    queryPattern,
+    categoryLower,
+  };
 };
 
 const getStatusCondition = (status: string | undefined, column: Prisma.Sql) => {
@@ -123,7 +136,10 @@ const getStatusCondition = (status: string | undefined, column: Prisma.Sql) => {
   return Prisma.sql`TRUE`;
 };
 
-const getDietaryCondition = (dietary: string | undefined, column: Prisma.Sql) => {
+const getDietaryCondition = (
+  dietary: string | undefined,
+  column: Prisma.Sql
+) => {
   if (!dietary) {
     return Prisma.sql`TRUE`;
   }
@@ -131,7 +147,15 @@ const getDietaryCondition = (dietary: string | undefined, column: Prisma.Sql) =>
 };
 
 const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
-  const { activeTab, query, category, dietary, status, queryPattern, categoryLower } = await parseSearchParams(searchParams);
+  const {
+    activeTab,
+    query,
+    category,
+    dietary,
+    status,
+    queryPattern,
+    categoryLower,
+  } = await parseSearchParams(searchParams);
 
   const { orgId, userId } = await auth();
 
@@ -147,7 +171,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
       FROM tenant_kitchen.recipes
       WHERE tenant_id = ${tenantId}
         AND deleted_at IS NULL
-    `,
+    `
   );
 
   const [dishTotals] = await database.$queryRaw<{ count: number }[]>(
@@ -156,7 +180,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
       FROM tenant_kitchen.dishes
       WHERE tenant_id = ${tenantId}
         AND deleted_at IS NULL
-    `,
+    `
   );
 
   const [ingredientTotals] = await database.$queryRaw<{ count: number }[]>(
@@ -165,52 +189,49 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
       FROM tenant_kitchen.ingredients
       WHERE tenant_id = ${tenantId}
         AND deleted_at IS NULL
-    `,
+    `
   );
 
   const recipeConditions = buildConditions(
+    [Prisma.sql`r.tenant_id = ${tenantId}`, Prisma.sql`r.deleted_at IS NULL`],
     [
-      Prisma.sql`r.tenant_id = ${tenantId}`,
-      Prisma.sql`r.deleted_at IS NULL`,
-    ],
-    [
-      queryPattern ? Prisma.sql`r.name ILIKE ${queryPattern}` : Prisma.sql`TRUE`,
+      queryPattern
+        ? Prisma.sql`r.name ILIKE ${queryPattern}`
+        : Prisma.sql`TRUE`,
       categoryLower
         ? Prisma.sql`lower(r.category) = ${categoryLower}`
         : Prisma.sql`TRUE`,
       getDietaryCondition(dietary, Prisma.sql`r.tags`),
       getStatusCondition(status, Prisma.sql`r.is_active`),
-    ],
+    ]
   );
 
   const dishConditions = buildConditions(
+    [Prisma.sql`d.tenant_id = ${tenantId}`, Prisma.sql`d.deleted_at IS NULL`],
     [
-      Prisma.sql`d.tenant_id = ${tenantId}`,
-      Prisma.sql`d.deleted_at IS NULL`,
-    ],
-    [
-      queryPattern ? Prisma.sql`d.name ILIKE ${queryPattern}` : Prisma.sql`TRUE`,
+      queryPattern
+        ? Prisma.sql`d.name ILIKE ${queryPattern}`
+        : Prisma.sql`TRUE`,
       categoryLower
         ? Prisma.sql`lower(d.category) = ${categoryLower}`
         : Prisma.sql`TRUE`,
       getDietaryCondition(dietary, Prisma.sql`d.dietary_tags`),
       getStatusCondition(status, Prisma.sql`d.is_active`),
-    ],
+    ]
   );
 
   const ingredientConditions = buildConditions(
+    [Prisma.sql`i.tenant_id = ${tenantId}`, Prisma.sql`i.deleted_at IS NULL`],
     [
-      Prisma.sql`i.tenant_id = ${tenantId}`,
-      Prisma.sql`i.deleted_at IS NULL`,
-    ],
-    [
-      queryPattern ? Prisma.sql`i.name ILIKE ${queryPattern}` : Prisma.sql`TRUE`,
+      queryPattern
+        ? Prisma.sql`i.name ILIKE ${queryPattern}`
+        : Prisma.sql`TRUE`,
       categoryLower
         ? Prisma.sql`lower(i.category) = ${categoryLower}`
         : Prisma.sql`TRUE`,
       getDietaryCondition(dietary, Prisma.sql`i.allergens`),
       getStatusCondition(status, Prisma.sql`i.is_active`),
-    ],
+    ]
   );
 
   const showRecipes = activeTab === "recipes";
@@ -272,7 +293,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
           ) image ON true
           ${recipeConditions}
           ORDER BY r.name ASC
-        `,
+        `
       )
     : [];
 
@@ -311,7 +332,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
           ) event_dishes ON true
           ${dishConditions}
           ORDER BY d.name ASC
-        `,
+        `
       )
     : [];
 
@@ -329,7 +350,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
           LEFT JOIN core.units u ON u.id = i.default_unit_id
           ${ingredientConditions}
           ORDER BY i.name ASC
-        `,
+        `
       )
     : [];
 
@@ -352,7 +373,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
     if (activeTab === "dishes") {
       return { label: "Add Dish", href: "/kitchen/recipes/dishes/new" };
     }
-    return ;
+    return;
   })();
 
   const getDishMargin = (dish: DishRow) => {
@@ -360,8 +381,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
       return null;
     }
     return (
-      ((dish.price_per_person - dish.cost_per_person) /
-        dish.price_per_person) *
+      ((dish.price_per_person - dish.cost_per_person) / dish.price_per_person) *
       100
     );
   };
@@ -424,9 +444,16 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                 </Empty>
               ) : (
                 recipes.map((recipe) => (
-                  <Card className="group overflow-hidden shadow-sm transition-all duration-200 hover:translate-y-[-4px] hover:shadow-md" key={recipe.id}>
+                  <Card
+                    className="group overflow-hidden shadow-sm transition-all duration-200 hover:translate-y-[-4px] hover:shadow-md"
+                    data-testid="recipe-card"
+                    key={recipe.id}
+                  >
                     <Link href={`/kitchen/recipes/${recipe.id}`}>
-                      <AspectRatio ratio={16 / 9} className="relative w-full bg-muted">
+                      <AspectRatio
+                        className="relative w-full bg-muted"
+                        ratio={16 / 9}
+                      >
                         {recipe.image_url ? (
                           <img
                             alt={recipe.name}
@@ -438,7 +465,10 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                         ) : (
                           <RecipeImagePlaceholder
                             recipeName={recipe.name}
-                            uploadAction={updateRecipeImage.bind(null, recipe.id)}
+                            uploadAction={updateRecipeImage.bind(
+                              null,
+                              recipe.id
+                            )}
                           />
                         )}
                         <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 via-transparent to-transparent p-3 opacity-0 transition-opacity group-hover:opacity-100">
@@ -452,29 +482,23 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                             Edit
                           </Button>
                         </div>
-                        <button
-                          aria-label={`Favorite ${recipe.name}`}
-                          className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-white/90 text-rose-500 shadow-sm transition-all hover:bg-white hover:scale-110 active:scale-95"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                          }}
-                          type="button"
-                        >
-                          <HeartIcon className="size-5" />
-                        </button>
+                        <RecipeFavoriteButton recipeName={recipe.name} />
                       </AspectRatio>
                     </Link>
                     <CardHeader className="space-y-2">
-                      <CardTitle className="font-semibold text-lg">{recipe.name}</CardTitle>
+                      <CardTitle className="font-semibold text-lg">
+                        {recipe.name}
+                      </CardTitle>
                       <div className="flex flex-wrap items-center gap-2">
                         {recipe.category ? (
                           <Badge variant="secondary">{recipe.category}</Badge>
                         ) : null}
-                        <Badge variant="outline">{formatMinutes(recipe.prep_time_minutes)}</Badge>
+                        <Badge variant="outline">
+                          {formatMinutes(recipe.prep_time_minutes)}
+                        </Badge>
                       </div>
                       {recipe.description && (
-                        <p className="text-muted-foreground line-clamp-2 text-sm">
+                        <p className="line-clamp-2 text-muted-foreground text-sm">
                           {recipe.description}
                         </p>
                       )}
@@ -485,232 +509,247 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
             </section>
           )}
 
-        {activeTab === "dishes" && (
-          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {dishes.length === 0 ? (
-              <Empty className="bg-card/50">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <BookOpenIcon />
-                  </EmptyMedia>
-                  <EmptyTitle>No dishes yet</EmptyTitle>
-                  <EmptyDescription>
-                    Dishes bundle recipes with service details so they can be
-                    scheduled on events and prep runs.
-                  </EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent>
-                  <Button asChild>
-                    <Link href="/kitchen/recipes/dishes/new">Add Dish</Link>
-                  </Button>
-                </EmptyContent>
-              </Empty>
-            ) : (
-              dishes.map((dish) => {
-                const margin = getDishMargin(dish);
-                return (
-                  <Card className="overflow-hidden shadow-sm" key={dish.id}>
-                    <div className="relative h-40 w-full bg-muted">
-                      {dish.presentation_image_url ? (
-                        <img
-                          alt={dish.name}
-                          className="h-full w-full object-cover"
-                          src={dish.presentation_image_url}
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-slate-200 via-slate-100 to-white text-muted-foreground">
-                          <BookOpenIcon size={32} />
+          {activeTab === "dishes" && (
+            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {dishes.length === 0 ? (
+                <Empty className="bg-card/50">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <BookOpenIcon />
+                    </EmptyMedia>
+                    <EmptyTitle>No dishes yet</EmptyTitle>
+                    <EmptyDescription>
+                      Dishes bundle recipes with service details so they can be
+                      scheduled on events and prep runs.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <Button asChild>
+                      <Link href="/kitchen/recipes/dishes/new">Add Dish</Link>
+                    </Button>
+                  </EmptyContent>
+                </Empty>
+              ) : (
+                dishes.map((dish) => {
+                  const margin = getDishMargin(dish);
+                  return (
+                    <Card className="overflow-hidden shadow-sm" key={dish.id}>
+                      <div className="relative h-40 w-full bg-muted">
+                        {dish.presentation_image_url ? (
+                          <img
+                            alt={dish.name}
+                            className="h-full w-full object-cover"
+                            src={dish.presentation_image_url}
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-slate-200 via-slate-100 to-white text-muted-foreground">
+                            <BookOpenIcon size={32} />
+                          </div>
+                        )}
+                        <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
+                          {dish.category ? (
+                            <Badge variant="secondary">
+                              {dish.category.toUpperCase()}
+                            </Badge>
+                          ) : null}
+                          {(dish.dietary_tags ?? []).slice(0, 2).map((tag) => (
+                            <Badge key={tag}>{tag.toUpperCase()}</Badge>
+                          ))}
                         </div>
-                      )}
-                      <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
-                        {dish.category ? (
+                      </div>
+                      <CardHeader className="space-y-2">
+                        <CardTitle className="font-semibold text-lg">
+                          {dish.name}
+                        </CardTitle>
+                        <div className="text-muted-foreground text-sm">
+                          Recipe: {dish.recipe_name ?? "Unlinked"}
+                        </div>
+                      </CardHeader>
+                      <CardContent className="grid grid-cols-3 gap-3 text-sm">
+                        <div>
+                          <div className="text-muted-foreground">Food cost</div>
+                          <div className="font-semibold">
+                            {dish.cost_per_person
+                              ? currencyFormatter.format(dish.cost_per_person)
+                              : "-"}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">
+                            Menu price
+                          </div>
+                          <div className="font-semibold">
+                            {dish.price_per_person
+                              ? currencyFormatter.format(dish.price_per_person)
+                              : "-"}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Margin</div>
+                          <div className="font-semibold text-emerald-600">
+                            {formatPercent(margin)}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Events</div>
+                          <div className="font-semibold">
+                            {dish.event_count}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">
+                            Prep tasks
+                          </div>
+                          <div className="font-semibold">
+                            {dish.prep_task_count}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Status</div>
+                          <div className="flex items-center gap-1 font-semibold">
+                            <CheckCircleIcon className="size-4 text-emerald-500" />
+                            {dish.is_active ? "Active" : "Paused"}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
+            </section>
+          )}
+
+          {activeTab === "ingredients" && (
+            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {ingredients.length === 0 ? (
+                <Empty className="bg-card/50">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <ChefHatIcon />
+                    </EmptyMedia>
+                    <EmptyTitle>No ingredients yet</EmptyTitle>
+                    <EmptyDescription>
+                      Add ingredients to keep recipe scaling and costing
+                      accurate.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
+              ) : (
+                ingredients.map((ingredient) => (
+                  <Card className="shadow-sm" key={ingredient.id}>
+                    <CardHeader className="space-y-2">
+                      <CardTitle className="font-semibold text-lg">
+                        {ingredient.name}
+                      </CardTitle>
+                      <div className="flex flex-wrap gap-2">
+                        {ingredient.category ? (
                           <Badge variant="secondary">
-                            {dish.category.toUpperCase()}
+                            {ingredient.category.toUpperCase()}
                           </Badge>
                         ) : null}
-                        {(dish.dietary_tags ?? []).slice(0, 2).map((tag) => (
-                          <Badge key={tag}>{tag.toUpperCase()}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <CardHeader className="space-y-2">
-                      <CardTitle className="font-semibold text-lg">{dish.name}</CardTitle>
-                      <div className="text-muted-foreground text-sm">
-                        Recipe: {dish.recipe_name ?? "Unlinked"}
+                        {(ingredient.allergens ?? [])
+                          .slice(0, 2)
+                          .map((allergen) => (
+                            <Badge key={allergen} variant="outline">
+                              {allergen.toUpperCase()}
+                            </Badge>
+                          ))}
                       </div>
                     </CardHeader>
-                    <CardContent className="grid grid-cols-3 gap-3 text-sm">
+                    <CardContent className="grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <div className="text-muted-foreground">Food cost</div>
-                        <div className="font-semibold">
-                          {dish.cost_per_person
-                            ? currencyFormatter.format(dish.cost_per_person)
-                            : "-"}
+                        <div className="text-muted-foreground">
+                          Default unit
                         </div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground">Menu price</div>
                         <div className="font-semibold">
-                          {dish.price_per_person
-                            ? currencyFormatter.format(dish.price_per_person)
-                            : "-"}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground">Margin</div>
-                        <div className="font-semibold text-emerald-600">
-                          {formatPercent(margin)}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground">Events</div>
-                        <div className="font-semibold">{dish.event_count}</div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground">Prep tasks</div>
-                        <div className="font-semibold">
-                          {dish.prep_task_count}
+                          {ingredient.unit_code ?? "-"}
                         </div>
                       </div>
                       <div>
                         <div className="text-muted-foreground">Status</div>
-                        <div className="flex items-center gap-1 font-semibold">
-                          <CheckCircleIcon className="size-4 text-emerald-500" />
-                          {dish.is_active ? "Active" : "Paused"}
+                        <div className="font-semibold">
+                          {ingredient.is_active ? "Active" : "Paused"}
                         </div>
                       </div>
                     </CardContent>
                   </Card>
-                );
-              })
-            )}
-          </section>
-        )}
+                ))
+              )}
+            </section>
+          )}
 
-        {activeTab === "ingredients" && (
-          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {ingredients.length === 0 ? (
-              <Empty className="bg-card/50">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <ChefHatIcon />
-                  </EmptyMedia>
-                  <EmptyTitle>No ingredients yet</EmptyTitle>
-                  <EmptyDescription>
-                    Add ingredients to keep recipe scaling and costing accurate.
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            ) : (
-              ingredients.map((ingredient) => (
-                <Card className="shadow-sm" key={ingredient.id}>
-                  <CardHeader className="space-y-2">
-                    <CardTitle className="font-semibold text-lg">
-                      {ingredient.name}
-                    </CardTitle>
-                    <div className="flex flex-wrap gap-2">
-                      {ingredient.category ? (
-                        <Badge variant="secondary">
-                          {ingredient.category.toUpperCase()}
-                        </Badge>
-                      ) : null}
-                      {(ingredient.allergens ?? []).slice(0, 2).map((allergen) => (
-                        <Badge key={allergen} variant="outline">
-                          {allergen.toUpperCase()}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <div className="text-muted-foreground">Default unit</div>
-                      <div className="font-semibold">
-                        {ingredient.unit_code ?? "-"}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Status</div>
-                      <div className="font-semibold">
-                        {ingredient.is_active ? "Active" : "Paused"}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </section>
-        )}
+          {activeTab === "menus" && (
+            <Empty className="bg-card/50">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <BookOpenIcon />
+                </EmptyMedia>
+                <EmptyTitle>Menus are coming next</EmptyTitle>
+                <EmptyDescription>
+                  Menus will bundle dishes into event-ready collections with
+                  pricing and dietary breakdowns.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          )}
 
-        {activeTab === "menus" && (
-          <Empty className="bg-card/50">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <BookOpenIcon />
-              </EmptyMedia>
-              <EmptyTitle>Menus are coming next</EmptyTitle>
-              <EmptyDescription>
-                Menus will bundle dishes into event-ready collections with
-                pricing and dietary breakdowns.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        )}
-
-        {activeTab === "costing" && (
-          <section className="grid gap-4 lg:grid-cols-2">
-            {dishes.length === 0 ? (
-              <Empty className="bg-card/50">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <BookOpenIcon />
-                  </EmptyMedia>
-                  <EmptyTitle>No costing data yet</EmptyTitle>
-                  <EmptyDescription>
-                    Add dishes with pricing and cost details to see margins.
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            ) : (
-              dishes.map((dish) => {
-                const margin = getDishMargin(dish);
-                return (
-                  <Card className="shadow-sm" key={dish.id}>
-                    <CardHeader className="space-y-1">
-                      <CardTitle className="text-base">{dish.name}</CardTitle>
-                      <div className="text-muted-foreground text-sm">
-                        Recipe: {dish.recipe_name ?? "Unlinked"}
-                      </div>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-3 gap-3 text-sm">
-                      <div>
-                        <div className="text-muted-foreground">Food cost</div>
-                        <div className="font-semibold">
-                          {dish.cost_per_person
-                            ? currencyFormatter.format(dish.cost_per_person)
-                            : "-"}
+          {activeTab === "costing" && (
+            <section className="grid gap-4 lg:grid-cols-2">
+              {dishes.length === 0 ? (
+                <Empty className="bg-card/50">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <BookOpenIcon />
+                    </EmptyMedia>
+                    <EmptyTitle>No costing data yet</EmptyTitle>
+                    <EmptyDescription>
+                      Add dishes with pricing and cost details to see margins.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
+              ) : (
+                dishes.map((dish) => {
+                  const margin = getDishMargin(dish);
+                  return (
+                    <Card className="shadow-sm" key={dish.id}>
+                      <CardHeader className="space-y-1">
+                        <CardTitle className="text-base">{dish.name}</CardTitle>
+                        <div className="text-muted-foreground text-sm">
+                          Recipe: {dish.recipe_name ?? "Unlinked"}
                         </div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground">Menu price</div>
-                        <div className="font-semibold">
-                          {dish.price_per_person
-                            ? currencyFormatter.format(dish.price_per_person)
-                            : "-"}
+                      </CardHeader>
+                      <CardContent className="grid grid-cols-3 gap-3 text-sm">
+                        <div>
+                          <div className="text-muted-foreground">Food cost</div>
+                          <div className="font-semibold">
+                            {dish.cost_per_person
+                              ? currencyFormatter.format(dish.cost_per_person)
+                              : "-"}
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground">Margin</div>
-                        <div className="font-semibold text-emerald-600">
-                          {formatPercent(margin)}
+                        <div>
+                          <div className="text-muted-foreground">
+                            Menu price
+                          </div>
+                          <div className="font-semibold">
+                            {dish.price_per_person
+                              ? currencyFormatter.format(dish.price_per_person)
+                              : "-"}
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })
-            )}
-          </section>
-        )}
+                        <div>
+                          <div className="text-muted-foreground">Margin</div>
+                          <div className="font-semibold text-emerald-600">
+                            {formatPercent(margin)}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
+            </section>
+          )}
         </div>
       </div>
     </>

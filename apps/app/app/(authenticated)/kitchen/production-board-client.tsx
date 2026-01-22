@@ -1,41 +1,52 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { format, addDays, subDays, isToday, isYesterday } from "date-fns";
+import type {
+  User as DbUser,
+  KitchenTask,
+  KitchenTaskClaim,
+} from "@repo/database";
 import {
-  ChevronLeft,
-  ChevronRight,
-  Calendar,
-  Clock,
-  Sun,
-  Plus,
-  Search,
-  ChefHat,
-  Flame,
-  Snowflake,
-  UtensilsCrossed,
-  TrendingUp,
-  CheckCircle2,
-  Circle,
-  Clock3,
-  User as UserIcon,
-} from "lucide-react";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@repo/design-system/components/ui/avatar";
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@repo/design-system/components/ui/avatar";
-import { Progress } from "@repo/design-system/components/ui/progress";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import type { KitchenTask, User as DbUser, KitchenTaskClaim } from "@repo/database";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Progress } from "@repo/design-system/components/ui/progress";
+import { addDays, format, isToday, isYesterday, subDays } from "date-fns";
+import {
+  Calendar,
+  CheckCircle2,
+  ChefHat,
+  ChevronLeft,
+  ChevronRight,
+  Circle,
+  Clock,
+  Clock3,
+  Flame,
+  Plus,
+  Search,
+  Snowflake,
+  Sun,
+  TrendingUp,
+  User as UserIcon,
+  UtensilsCrossed,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { TaskCard } from "./task-card";
 
-type UserSelect = Pick<DbUser, "id" | "firstName" | "lastName" | "email" | "avatarUrl">;
+type UserSelect = Pick<
+  DbUser,
+  "id" | "firstName" | "lastName" | "email" | "avatarUrl"
+>;
 
 type TaskWithRelations = KitchenTask & {
   claims: Array<KitchenTaskClaim & { user: UserSelect | null }>;
@@ -109,30 +120,32 @@ function DateNavigator({
   return (
     <div className="flex items-center gap-2">
       <Button
-        variant="outline"
-        size="icon"
         className="h-8 w-8 rounded-full"
         onClick={() => onDateChange(subDays(selectedDate, 1))}
+        size="icon"
+        variant="outline"
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
       <div className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 shadow-sm ring-1 ring-slate-100">
         <Calendar className="h-4 w-4 text-slate-400" />
-        <span className="font-medium text-slate-700">{formatDateLabel(selectedDate)}</span>
+        <span className="font-medium text-slate-700">
+          {formatDateLabel(selectedDate)}
+        </span>
       </div>
       <Button
-        variant="outline"
-        size="icon"
         className="h-8 w-8 rounded-full"
         onClick={() => onDateChange(addDays(selectedDate, 1))}
+        size="icon"
+        variant="outline"
       >
         <ChevronRight className="h-4 w-4" />
       </Button>
       <Button
-        variant="ghost"
-        size="sm"
         className="ml-1 h-8 text-slate-500 hover:text-slate-700"
         onClick={() => onDateChange(new Date())}
+        size="sm"
+        variant="ghost"
       >
         Today
       </Button>
@@ -153,7 +166,8 @@ function StatsSidebar({
   completedTasks: number;
   myTasks: number;
 }) {
-  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  const completionRate =
+    totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   const stats = [
     {
@@ -200,17 +214,21 @@ function StatsSidebar({
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-600">Completion Rate</span>
-              <span className="font-semibold text-slate-800">{completionRate}%</span>
+              <span className="font-semibold text-slate-800">
+                {completionRate}%
+              </span>
             </div>
-            <Progress value={completionRate} className="h-2" />
+            <Progress className="h-2" value={completionRate} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             {stats.slice(0, 2).map((stat) => (
               <div
-                key={stat.label}
                 className="rounded-lg bg-slate-50 p-3 text-center"
+                key={stat.label}
               >
-                <div className={`font-bold text-2xl ${stat.color}`}>{stat.value}</div>
+                <div className={`font-bold text-2xl ${stat.color}`}>
+                  {stat.value}
+                </div>
                 <div className="text-slate-500 text-xs">{stat.label}</div>
               </div>
             ))}
@@ -226,8 +244,8 @@ function StatsSidebar({
         <CardContent className="space-y-3">
           {stats.slice(2).map((stat) => (
             <div
-              key={stat.label}
               className="flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-slate-50"
+              key={stat.label}
             >
               <div className="flex items-center gap-3">
                 <div className={`rounded-md p-1.5 ${stat.bgColor}`}>
@@ -250,24 +268,34 @@ function StatsSidebar({
           <div className="flex items-center gap-3">
             <Avatar className="h-8 w-8">
               <AvatarImage src="/placeholder-user.jpg" />
-              <AvatarFallback className="bg-blue-100 text-blue-600 text-xs">JD</AvatarFallback>
+              <AvatarFallback className="bg-blue-100 text-blue-600 text-xs">
+                JD
+              </AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <div className="font-medium text-slate-700 text-sm">John Doe</div>
               <div className="text-slate-500 text-xs">Completed 3 tasks</div>
             </div>
-            <Badge variant="secondary" className="text-xs">3</Badge>
+            <Badge className="text-xs" variant="secondary">
+              3
+            </Badge>
           </div>
           <div className="flex items-center gap-3">
             <Avatar className="h-8 w-8">
               <AvatarImage src="/placeholder-user.jpg" />
-              <AvatarFallback className="bg-emerald-100 text-emerald-600 text-xs">AS</AvatarFallback>
+              <AvatarFallback className="bg-emerald-100 text-emerald-600 text-xs">
+                AS
+              </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <div className="font-medium text-slate-700 text-sm">Alice Smith</div>
+              <div className="font-medium text-slate-700 text-sm">
+                Alice Smith
+              </div>
               <div className="text-slate-500 text-xs">Working on 2 tasks</div>
             </div>
-            <Badge variant="secondary" className="text-xs">2</Badge>
+            <Badge className="text-xs" variant="secondary">
+              2
+            </Badge>
           </div>
         </CardContent>
       </Card>
@@ -299,7 +327,7 @@ function TaskColumn({
           </div>
           <h3 className="font-semibold text-slate-700">{title}</h3>
         </div>
-        <Badge variant="secondary" className="font-medium text-xs">
+        <Badge className="font-medium text-xs" variant="secondary">
           {count}
         </Badge>
       </div>
@@ -311,7 +339,7 @@ function TaskColumn({
           </div>
         ) : (
           tasks.map((task) => (
-            <TaskCard key={task.id} task={task} currentUserId={currentUserId} />
+            <TaskCard currentUserId={currentUserId} key={task.id} task={task} />
           ))
         )}
       </div>
@@ -343,18 +371,21 @@ export function ProductionBoardClient({
   });
 
   // Group tasks by status
-  const pendingTasks = filteredTasks.filter((task) => task.status === "pending");
-  const inProgressTasks = filteredTasks.filter(
-    (task) => task.status === "in_progress",
+  const pendingTasks = filteredTasks.filter(
+    (task) => task.status === "pending"
   );
-  const completedTasks = filteredTasks.filter((task) => task.status === "completed");
+  const inProgressTasks = filteredTasks.filter(
+    (task) => task.status === "in_progress"
+  );
+  const completedTasks = filteredTasks.filter(
+    (task) => task.status === "completed"
+  );
 
   // Calculate my tasks
-  const myTasks = filteredTasks.filter(
-    (task) =>
-      task.claims.some(
-        (claim) => claim.employeeId === currentUserId && !claim.releasedAt,
-      ),
+  const myTasks = filteredTasks.filter((task) =>
+    task.claims.some(
+      (claim) => claim.employeeId === currentUserId && !claim.releasedAt
+    )
   );
 
   const handleCreateTask = useCallback(() => {
@@ -372,8 +403,8 @@ export function ProductionBoardClient({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <DateNavigator
-                selectedDate={selectedDate}
                 onDateChange={setSelectedDate}
+                selectedDate={selectedDate}
               />
               <div className="hidden sm:block">
                 <KitchenClock />
@@ -400,12 +431,12 @@ export function ProductionBoardClient({
                 const isActive = selectedStation === station.id;
                 return (
                   <button
-                    key={station.id}
                     className={`flex items-center gap-2 rounded-lg px-4 py-2 font-medium text-sm transition-all ${
                       isActive
                         ? "bg-white text-slate-900 shadow-sm"
                         : "text-slate-500 hover:text-slate-700"
                     }`}
+                    key={station.id}
                     onClick={() => setSelectedStation(station.id)}
                   >
                     <Icon className="h-4 w-4" />
@@ -417,12 +448,12 @@ export function ProductionBoardClient({
 
             {/* Search */}
             <div className="relative w-full sm:w-72">
-              <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-slate-400" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
                 className="pl-10"
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search tasks..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
           </div>
@@ -446,9 +477,9 @@ export function ProductionBoardClient({
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {myTasks.map((task) => (
                     <TaskCard
+                      currentUserId={currentUserId}
                       key={task.id}
                       task={task}
-                      currentUserId={currentUserId}
                     />
                   ))}
                 </div>
@@ -458,28 +489,28 @@ export function ProductionBoardClient({
             {/* Kanban Board */}
             <div className="grid gap-4 lg:grid-cols-3">
               <TaskColumn
-                title="Pending"
-                tasks={pendingTasks}
+                count={pendingTasks.length}
                 currentUserId={currentUserId}
                 icon={Circle}
-                count={pendingTasks.length}
                 iconColor="bg-amber-100 text-amber-600"
+                tasks={pendingTasks}
+                title="Pending"
               />
               <TaskColumn
-                title="In Progress"
-                tasks={inProgressTasks}
+                count={inProgressTasks.length}
                 currentUserId={currentUserId}
                 icon={Clock3}
-                count={inProgressTasks.length}
                 iconColor="bg-blue-100 text-blue-600"
+                tasks={inProgressTasks}
+                title="In Progress"
               />
               <TaskColumn
-                title="Completed"
-                tasks={completedTasks}
+                count={completedTasks.length}
                 currentUserId={currentUserId}
                 icon={CheckCircle2}
-                count={completedTasks.length}
                 iconColor="bg-emerald-100 text-emerald-600"
+                tasks={completedTasks}
+                title="Completed"
               />
             </div>
           </div>
@@ -487,11 +518,11 @@ export function ProductionBoardClient({
           {/* Stats Sidebar */}
           <aside className="space-y-4">
             <StatsSidebar
-              totalTasks={filteredTasks.length}
-              pendingTasks={pendingTasks.length}
-              inProgressTasks={inProgressTasks.length}
               completedTasks={completedTasks.length}
+              inProgressTasks={inProgressTasks.length}
               myTasks={myTasks.length}
+              pendingTasks={pendingTasks.length}
+              totalTasks={filteredTasks.length}
             />
           </aside>
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useTransition, type ChangeEvent } from "react";
-import { ChefHatIcon, } from "lucide-react";
+import { ChefHatIcon } from "lucide-react";
+import { type ChangeEvent, useRef, useTransition } from "react";
 import { ClipboardImageButton } from "../../components/clipboard-image-button";
 
 type UploadAction = (formData: FormData) => Promise<void>;

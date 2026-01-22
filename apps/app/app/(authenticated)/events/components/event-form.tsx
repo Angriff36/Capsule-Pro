@@ -1,7 +1,7 @@
+import type { Event } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import type { Event } from "@repo/database";
 import { eventStatuses } from "../constants";
 
 type EventFormProps = {
@@ -19,7 +19,7 @@ const formatDateValue = (value?: Date | null): string => {
 };
 
 const formatDecimalValue = (
-  value: Event["budget"] | null | undefined,
+  value: Event["budget"] | null | undefined
 ): string => {
   if (!value) {
     return "";
@@ -54,8 +54,8 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => (
         <Input
           defaultValue={formatDateValue(event?.eventDate)}
           name="eventDate"
-          type="date"
           required
+          type="date"
         />
       </label>
       <label className="flex flex-col gap-2 font-medium text-sm">

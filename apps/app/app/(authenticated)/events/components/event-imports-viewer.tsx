@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
@@ -10,7 +9,15 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import { Spinner } from "@repo/design-system/components/ui/spinner";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@repo/design-system/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/design-system/components/ui/table";
+import { useMemo, useState } from "react";
 
 type ImportFile = {
   id: string;
@@ -86,7 +93,7 @@ export const EventImportsViewer = ({ imports }: { imports: ImportFile[] }) => {
 
   const current = useMemo(
     () => imports.find((file) => file.id === openId) ?? null,
-    [imports, openId],
+    [imports, openId]
   );
 
   const handleOpen = async (file: ImportFile) => {
@@ -127,7 +134,11 @@ export const EventImportsViewer = ({ imports }: { imports: ImportFile[] }) => {
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <Button onClick={() => handleOpen(file)} size="sm" variant="secondary">
+              <Button
+                onClick={() => handleOpen(file)}
+                size="sm"
+                variant="secondary"
+              >
                 View
               </Button>
               <Button asChild size="sm" variant="ghost">
@@ -137,45 +148,61 @@ export const EventImportsViewer = ({ imports }: { imports: ImportFile[] }) => {
           </div>
         ))}
       </div>
-      <Dialog open={Boolean(current)} onOpenChange={close}>
+      <Dialog onOpenChange={close} open={Boolean(current)}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>{current?.file_name}</DialogTitle>
           </DialogHeader>
-          {current ? (
-            current.mime_type.includes("pdf") ? (
-              <iframe
-                className="h-[70vh] w-full rounded-md border"
-                src={`/api/events/imports/${current.id}?inline=1`}
-                title={current.file_name}
-              />
-            ) : current.mime_type.startsWith("image/") ? (
-              <div className="flex max-h-[70vh] w-full items-center justify-center overflow-auto rounded-md border p-4">
-                <img
-                  alt={current.file_name}
-                  className="max-h-[65vh] w-auto rounded-md"
+          {(() => {
+            if (!current) {
+              return null;
+            }
+
+            if (current.mime_type.includes("pdf")) {
+              return (
+                <iframe
+                  className="h-[70vh] w-full rounded-md border"
                   src={`/api/events/imports/${current.id}?inline=1`}
+                  title={current.file_name}
                 />
-              </div>
-            ) : loading ? (
-              <div className="flex h-[40vh] items-center justify-center">
-                <Spinner />
-              </div>
-            ) : (
+              );
+            }
+
+            if (current.mime_type.startsWith("image/")) {
+              return (
+                <div className="flex max-h-[70vh] w-full items-center justify-center overflow-auto rounded-md border p-4">
+                  <img
+                    alt={current.file_name}
+                    className="max-h-[65vh] w-auto rounded-md"
+                    src={`/api/events/imports/${current.id}?inline=1`}
+                  />
+                </div>
+              );
+            }
+
+            if (loading) {
+              return (
+                <div className="flex h-[40vh] items-center justify-center">
+                  <Spinner />
+                </div>
+              );
+            }
+
+            return (
               <ScrollArea className="h-[70vh] rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      {(csvData?.[0] ?? []).map((header, index) => (
-                        <TableHead key={`${header}-${index}`}>{header}</TableHead>
+                      {(csvData?.[0] ?? []).map((header) => (
+                        <TableHead key={header}>{header}</TableHead>
                       ))}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {(csvData ?? []).slice(1).map((row, rowIndex) => (
                       <TableRow key={`${rowIndex}-${row.join("-")}`}>
-                        {row.map((value, cellIndex) => (
-                          <TableCell key={`${rowIndex}-${cellIndex}`}>
+                        {row.map((value) => (
+                          <TableCell key={`${rowIndex}-${value}`}>
                             {value}
                           </TableCell>
                         ))}
@@ -184,8 +211,8 @@ export const EventImportsViewer = ({ imports }: { imports: ImportFile[] }) => {
                   </TableBody>
                 </Table>
               </ScrollArea>
-            )
-          ) : null}
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </>

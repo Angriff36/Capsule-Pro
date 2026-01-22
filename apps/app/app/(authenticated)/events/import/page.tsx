@@ -1,3 +1,4 @@
+import { auth } from "@repo/auth/server";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -7,7 +8,6 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
-import { auth } from "@repo/auth/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "../../components/header";

@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -16,17 +17,11 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
-import { database } from "@repo/database";
-import {
-  CalendarDaysIcon,
-  MapPinIcon,
-  TagIcon,
-  UsersIcon,
-} from "lucide-react";
+import { CalendarDaysIcon, MapPinIcon, TagIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Header } from "../components/header";
 import { getTenantIdForOrg } from "../../lib/tenant";
+import { Header } from "../components/header";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   dateStyle: "medium",
@@ -162,9 +157,7 @@ const EventsPage = async () => {
                         {event.status}
                       </Badge>
                     </CardDescription>
-                    <CardTitle className="text-lg">
-                      {event.title}
-                    </CardTitle>
+                    <CardTitle className="text-lg">{event.title}</CardTitle>
                     <CardDescription className="capitalize">
                       {event.eventType}
                     </CardDescription>

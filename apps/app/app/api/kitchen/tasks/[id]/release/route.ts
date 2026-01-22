@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -20,10 +20,7 @@ export async function POST(request: Request, context: RouteContext) {
   // Get current user by Clerk ID
   const currentUser = await database.user.findFirst({
     where: {
-      AND: [
-        { tenantId },
-        { authUserId: clerkId }
-      ]
+      AND: [{ tenantId }, { authUserId: clerkId }],
     },
   });
 
@@ -41,8 +38,8 @@ export async function POST(request: Request, context: RouteContext) {
         { tenantId },
         { taskId: id },
         { employeeId: currentUser.id },
-        { releasedAt: null }
-      ]
+        { releasedAt: null },
+      ],
     },
   });
 
@@ -65,10 +62,7 @@ export async function POST(request: Request, context: RouteContext) {
   // Get the current task
   const task = await database.kitchenTask.findFirst({
     where: {
-      AND: [
-        { tenantId },
-        { id }
-      ]
+      AND: [{ tenantId }, { id }],
     },
   });
 
@@ -79,11 +73,7 @@ export async function POST(request: Request, context: RouteContext) {
   // Check if there are any other active claims
   const remainingClaims = await database.kitchenTaskClaim.count({
     where: {
-      AND: [
-        { tenantId },
-        { taskId: id },
-        { releasedAt: null }
-      ]
+      AND: [{ tenantId }, { taskId: id }, { releasedAt: null }],
     },
   });
 

@@ -60,6 +60,9 @@ model Account {
   scheduleShifts        ScheduleShift[]
   timeEntries           TimeEntry[]
   employeeLocations     EmployeeLocation[]
+  commandBoards         CommandBoard[]
+  commandBoardCards     CommandBoardCard[]
+  timelineTasks         TimelineTask[]
 
   @@map("accounts")
   @@schema("platform")
@@ -681,6 +684,90 @@ model BattleBoard {
   @@index([boardData], map: "idx_battle_boards_data_gin", type: Gin)
   @@index([tags], map: "idx_battle_boards_tags_gin", type: Gin)
   @@map("battle_boards")
+  @@schema("tenant_events")
+}
+
+model CommandBoard {
+  tenantId    String             @map("tenant_id") @db.Uuid
+  id          String             @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId     String?            @map("event_id") @db.Uuid
+  name        String
+  description String?
+  status      String             @default("draft")
+  isTemplate  Boolean            @default(false) @map("is_template")
+  tags        String[]
+  createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime?          @map("deleted_at") @db.Timestamptz(6)
+  tenant      Account            @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  cards       CommandBoardCard[]
+
+  @@id([tenantId, id])
+  @@index([eventId])
+  @@index([tags], map: "idx_command_boards_tags_gin", type: Gin)
+  @@map("command_boards")
+  @@schema("tenant_events")
+}
+
+model CommandBoardCard {
+  tenantId  String       @map("tenant_id") @db.Uuid
+  id        String       @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  boardId   String       @map("board_id") @db.Uuid
+  title     String
+  content   String?
+  cardType  String       @default("task") @map("card_type")
+  status    String       @default("pending")
+  positionX Int          @default(0) @map("position_x")
+  positionY Int          @default(0) @map("position_y")
+  width     Int          @default(200)
+  height    Int          @default(150)
+  zIndex    Int          @default(0) @map("z_index")
+  color     String?
+  metadata  Json         @default("{}")
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime?    @map("deleted_at") @db.Timestamptz(6)
+  tenant    Account      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  board     CommandBoard @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([boardId])
+  @@index([zIndex])
+  @@map("command_board_cards")
+  @@schema("tenant_events")
+}
+
+model TimelineTask {
+  tenantId         String    @map("tenant_id") @db.Uuid
+  id               String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId          String    @map("event_id") @db.Uuid
+  title            String
+  description      String?
+  startTime        DateTime  @map("start_time") @db.Timestamptz(6)
+  endTime          DateTime  @map("end_time") @db.Timestamptz(6)
+  status           String    @default("not_started")
+  priority         String    @default("medium")
+  category         String
+  assigneeId       String?   @map("assignee_id") @db.Uuid
+  progress         Int       @default(0)
+  dependencies     String[]
+  isOnCriticalPath Boolean   @default(false) @map("is_on_critical_path")
+  slackMinutes     Int       @default(0) @map("slack_minutes")
+  notes            String?
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt        DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant           Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([eventId])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([priority])
+  @@index([startTime])
+  @@index([isOnCriticalPath])
+  @@index([dependencies], type: Gin)
+  @@map("timeline_tasks")
   @@schema("tenant_events")
 }
 

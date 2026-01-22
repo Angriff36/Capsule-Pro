@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@repo/design-system/lib/utils";
 import {
   BoxesIcon,
   KeyIcon,
@@ -10,7 +11,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@repo/design-system/lib/utils";
 
 const navSections = [
   {
@@ -26,7 +26,11 @@ const navSections = [
     items: [
       { title: "API Keys", href: "/dev-console/api-keys", icon: KeyIcon },
       { title: "Webhooks", href: "/dev-console/webhooks", icon: WebhookIcon },
-      { title: "Audit Logs", href: "/dev-console/audit-logs", icon: ShieldCheckIcon },
+      {
+        title: "Audit Logs",
+        href: "/dev-console/audit-logs",
+        icon: ShieldCheckIcon,
+      },
     ],
   },
 ];
@@ -42,23 +46,24 @@ export const DevConsoleSidebar = () => {
       </div>
       <nav className="dev-console-nav">
         {navSections.map((section) => (
-          <div key={section.label} className="dev-console-nav-section">
+          <div className="dev-console-nav-section" key={section.label}>
             <div className="dev-console-nav-label">{section.label}</div>
             <div className="dev-console-nav-items">
               {section.items.map((item) => {
                 const isActive =
                   pathname === item.href ||
-                  (item.href !== "/dev-console" && pathname.startsWith(item.href));
+                  (item.href !== "/dev-console" &&
+                    pathname.startsWith(item.href));
                 const Icon = item.icon;
 
                 return (
                   <Link
-                    key={item.href}
                     className={cn(
                       "dev-console-nav-item",
                       isActive && "dev-console-nav-item-active"
                     )}
                     href={item.href}
+                    key={item.href}
                   >
                     <Icon className="h-4 w-4" />
                     <span>{item.title}</span>

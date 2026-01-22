@@ -33,7 +33,7 @@ const ensureTenantDataMany = (args: PrismaArgs, tenantId: string) => {
 const assertNoFindUnique = (model: string, operation: string) => {
   if (operation === "findUnique" || operation === "findUniqueOrThrow") {
     throw new Error(
-      `Use findFirst/findFirstOrThrow for ${model} with tenantId scoping.`,
+      `Use findFirst/findFirstOrThrow for ${model} with tenantId scoping.`
     );
   }
 };

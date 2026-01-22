@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "docs:list": "bun ./tools/scripts/docs-list.ts",
-    "browser-tools": "./tools/bin/browser-tools.exe",
+    "browser-tools": "npx chrome-devtools-mcp@latest --headless=false --isolated=true --viewport=1920x1080",
     "build": "turbo build",
     "dev": "turbo dev --parallel",
     "dev:check": "node scripts/dev.mjs",
@@ -40,6 +40,7 @@
     "@auto-it/first-time-contributor": "^11.3.6",
     "@biomejs/biome": "2.3.8",
     "@clack/prompts": "^0.11.0",
+    "@playwright/test": "^1.57.0",
     "@repo/typescript-config": "workspace:*",
     "@secretlint/secretlint-rule-database-connection-string": "^11.3.0",
     "@secretlint/secretlint-rule-preset-recommend": "^11.3.0",

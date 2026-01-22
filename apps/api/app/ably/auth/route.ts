@@ -1,7 +1,7 @@
-import Ably from "ably";
 import { auth } from "@repo/auth/server";
-import { env } from "@/env";
+import Ably from "ably";
 import { NextResponse } from "next/server";
+import { env } from "@/env";
 
 type AuthRequest = {
   tenantId: string;
@@ -12,15 +12,19 @@ const getClientId = (tenantId: string, userId: string) =>
 
 // Get allowed origins from environment or default to common dev ports
 const getAllowedOrigins = (): string[] => {
-  const allowedOrigins = env.ABLY_AUTH_CORS_ORIGINS?.split(",").map((o) => o.trim());
-  return allowedOrigins || [
-    "http://localhost:2221",
-    "http://localhost:2222",
-    "http://localhost:3000",
-    "http://127.0.0.1:2221",
-    "http://127.0.0.1:2222",
-    "http://127.0.0.1:3000",
-  ];
+  const allowedOrigins = env.ABLY_AUTH_CORS_ORIGINS?.split(",").map((o) =>
+    o.trim()
+  );
+  return (
+    allowedOrigins || [
+      "http://localhost:2221",
+      "http://localhost:2222",
+      "http://localhost:3000",
+      "http://127.0.0.1:2221",
+      "http://127.0.0.1:2222",
+      "http://127.0.0.1:3000",
+    ]
+  );
 };
 
 function corsHeaders(request: Request) {
@@ -28,9 +32,8 @@ function corsHeaders(request: Request) {
   const allowedOrigins = getAllowedOrigins();
 
   // Allow request origin if it matches or default to first allowed origin
-  const allowedOrigin = origin && allowedOrigins.includes(origin)
-    ? origin
-    : allowedOrigins[0];
+  const allowedOrigin =
+    origin && allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
 
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
@@ -40,7 +43,7 @@ function corsHeaders(request: Request) {
   };
 }
 
-export async function OPTIONS(request: Request) {
+export function OPTIONS(request: Request) {
   return new NextResponse(null, {
     status: 204,
     headers: corsHeaders(request),
@@ -58,8 +61,11 @@ export async function POST(request: Request) {
   }
 
   // Get tenantId from Clerk session claims (or request body as fallback)
-  const requestBody = await request.json().catch(() => null) as AuthRequest | null;
-  const tenantId = requestBody?.tenantId || sessionClaims?.tenantId as string | undefined;
+  const requestBody = (await request
+    .json()
+    .catch(() => null)) as AuthRequest | null;
+  const tenantId =
+    requestBody?.tenantId || (sessionClaims?.tenantId as string | undefined);
 
   if (!tenantId) {
     return new NextResponse("tenantId required", {

@@ -1,7 +1,7 @@
 "use client";
 
-import type { ClipboardEvent, MouseEvent } from "react";
 import { UploadIcon } from "lucide-react";
+import type { ClipboardEvent, MouseEvent } from "react";
 
 type ClipboardImageButtonProps = {
   label: string;
@@ -20,25 +20,25 @@ const extractClipboardImage = (event: ClipboardEvent<HTMLButtonElement>) => {
 
   const items = Array.from(event.clipboardData.items ?? []);
   const item = items.find(
-    (entry) => entry.kind === "file" && entry.type.startsWith("image/"),
+    (entry) => entry.kind === "file" && entry.type.startsWith("image/")
   );
   return item?.getAsFile() ?? null;
 };
 
 const readClipboardImage = (
   event: MouseEvent<HTMLButtonElement>,
-  onImage: (file: File) => void,
+  onImage: (file: File) => void
 ) => {
   event.currentTarget.focus();
   if (!navigator.clipboard?.read) {
     return;
   }
 
-  void navigator.clipboard
+  navigator.clipboard
     .read()
     .then(async (items) => {
       const imageItem = items.find((item) =>
-        item.types.some((type) => type.startsWith("image/")),
+        item.types.some((type) => type.startsWith("image/"))
       );
       if (!imageItem) {
         return;
@@ -49,7 +49,7 @@ const readClipboardImage = (
       onImage(
         new File([blob], "clipboard-image", {
           type: blob.type || imageType,
-        }),
+        })
       );
     })
     .catch((error) => {

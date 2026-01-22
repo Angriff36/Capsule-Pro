@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -20,10 +20,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   // Verify task exists and belongs to tenant
   const existingTask = await database.kitchenTask.findFirst({
     where: {
-      AND: [
-        { tenantId },
-        { id }
-      ]
+      AND: [{ tenantId }, { id }],
     },
   });
 
@@ -36,22 +33,24 @@ export async function PATCH(request: Request, context: RouteContext) {
   if (clerkId) {
     const user = await database.user.findFirst({
       where: {
-        AND: [
-          { tenantId },
-          { authUserId: clerkId }
-        ]
+        AND: [{ tenantId }, { authUserId: clerkId }],
       },
     });
     employeeId = user?.id;
   }
 
   // Validate priority if provided
-  if (body.priority !== undefined && (typeof body.priority !== "number" || body.priority < 1 || body.priority > 10)) {
-      return NextResponse.json(
-        { message: "Priority must be an integer between 1 and 10" },
-        { status: 400 }
-      );
-    }
+  if (
+    body.priority !== undefined &&
+    (typeof body.priority !== "number" ||
+      body.priority < 1 ||
+      body.priority > 10)
+  ) {
+    return NextResponse.json(
+      { message: "Priority must be an integer between 1 and 10" },
+      { status: 400 }
+    );
+  }
 
   // Update task
   const updateData: Record<string, any> = {};
@@ -60,7 +59,8 @@ export async function PATCH(request: Request, context: RouteContext) {
   if (body.summary !== undefined) updateData.summary = body.summary;
   if (body.complexity !== undefined) updateData.complexity = body.complexity;
   if (body.tags !== undefined) updateData.tags = body.tags;
-  if (body.dueDate !== undefined) updateData.dueDate = body.dueDate ? new Date(body.dueDate) : null;
+  if (body.dueDate !== undefined)
+    updateData.dueDate = body.dueDate ? new Date(body.dueDate) : null;
   if (body.status === "completed") updateData.completedAt = new Date();
 
   const task = await database.kitchenTask.update({

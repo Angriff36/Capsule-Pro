@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { format, isPast, differenceInMinutes } from "date-fns";
+import type {
+  User as DbUser,
+  KitchenTask,
+  KitchenTaskClaim,
+} from "@repo/database";
 import {
-  MoreVertical,
-  Clock,
-  User,
-  ChevronRight,
-} from "lucide-react";
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@repo/design-system/components/ui/avatar";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   DropdownMenu,
@@ -16,11 +18,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@repo/design-system/components/ui/avatar";
-import type { KitchenTask, User as DbUser, KitchenTaskClaim } from "@repo/database";
+import { differenceInMinutes, format, isPast } from "date-fns";
+import { ChevronRight, Clock, MoreVertical, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-type UserSelect = Pick<DbUser, "id" | "firstName" | "lastName" | "email" | "avatarUrl">;
+type UserSelect = Pick<
+  DbUser,
+  "id" | "firstName" | "lastName" | "email" | "avatarUrl"
+>;
 
 type TaskWithRelations = KitchenTask & {
   claims: Array<KitchenTaskClaim & { user: UserSelect | null }>;
@@ -36,11 +42,27 @@ const priorityConfig = {
   1: { label: "Critical", color: "bg-rose-500 text-white", dot: "bg-rose-500" },
   2: { label: "Urgent", color: "bg-red-500 text-white", dot: "bg-red-500" },
   3: { label: "High", color: "bg-orange-500 text-white", dot: "bg-orange-500" },
-  4: { label: "Medium-High", color: "bg-amber-500 text-white", dot: "bg-amber-500" },
-  5: { label: "Medium", color: "bg-yellow-500 text-white", dot: "bg-yellow-500" },
-  6: { label: "Medium-Low", color: "bg-lime-500 text-white", dot: "bg-lime-500" },
+  4: {
+    label: "Medium-High",
+    color: "bg-amber-500 text-white",
+    dot: "bg-amber-500",
+  },
+  5: {
+    label: "Medium",
+    color: "bg-yellow-500 text-white",
+    dot: "bg-yellow-500",
+  },
+  6: {
+    label: "Medium-Low",
+    color: "bg-lime-500 text-white",
+    dot: "bg-lime-500",
+  },
   7: { label: "Low", color: "bg-green-500 text-white", dot: "bg-green-500" },
-  8: { label: "Very Low", color: "bg-emerald-500 text-white", dot: "bg-emerald-500" },
+  8: {
+    label: "Very Low",
+    color: "bg-emerald-500 text-white",
+    dot: "bg-emerald-500",
+  },
   9: { label: "Minimal", color: "bg-teal-500 text-white", dot: "bg-teal-500" },
   10: { label: "None", color: "bg-slate-400 text-white", dot: "bg-slate-400" },
 };
@@ -76,7 +98,10 @@ const statusConfig = {
   },
 };
 
-function getInitials(firstName?: string | null, lastName?: string | null): string {
+function getInitials(
+  firstName?: string | null,
+  lastName?: string | null
+): string {
   const first = firstName?.charAt(0)?.toUpperCase() || "";
   const last = lastName?.charAt(0)?.toUpperCase() || "";
   return first + last || "?";
@@ -152,18 +177,28 @@ function formatDueStatus(dueDate: Date | null): {
   };
 }
 
-export function TaskCard({ task, currentUserId, compact = false }: TaskCardProps) {
+export function TaskCard({
+  task,
+  currentUserId,
+  compact = false,
+}: TaskCardProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   const userClaim = task.claims.find(
-    (claim) => claim.employeeId === currentUserId && !claim.releasedAt,
+    (claim) => claim.employeeId === currentUserId && !claim.releasedAt
   );
 
   const assignedUsers = task.claims.filter((c) => c.user && !c.releasedAt);
-  const priority = priorityConfig[task.priority as keyof typeof priorityConfig] || priorityConfig[5];
-  const status = statusConfig[task.status as keyof typeof statusConfig] || statusConfig.pending;
-  const dueStatus = formatDueStatus(task.dueDate ? new Date(task.dueDate) : null);
+  const priority =
+    priorityConfig[task.priority as keyof typeof priorityConfig] ||
+    priorityConfig[5];
+  const status =
+    statusConfig[task.status as keyof typeof statusConfig] ||
+    statusConfig.pending;
+  const dueStatus = formatDueStatus(
+    task.dueDate ? new Date(task.dueDate) : null
+  );
 
   const handleClaim = async () => {
     if (!currentUserId) return;
@@ -226,13 +261,17 @@ export function TaskCard({ task, currentUserId, compact = false }: TaskCardProps
       <div className="group flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-all hover:border-slate-300 hover:shadow-md">
         <div className={`h-2 w-2 shrink-0 rounded-full ${priority.dot}`} />
         <div className="min-w-0 flex-1">
-          <p className="truncate font-medium text-slate-800 text-sm">{task.title}</p>
+          <p className="truncate font-medium text-slate-800 text-sm">
+            {task.title}
+          </p>
           {task.summary && (
             <p className="truncate text-slate-500 text-xs">{task.summary}</p>
           )}
         </div>
         {dueStatus && (
-          <span className={`shrink-0 rounded-full px-2 py-0.5 font-medium text-xs ${dueStatus.className}`}>
+          <span
+            className={`shrink-0 rounded-full px-2 py-0.5 font-medium text-xs ${dueStatus.className}`}
+          >
             {dueStatus.label}
           </span>
         )}
@@ -240,7 +279,10 @@ export function TaskCard({ task, currentUserId, compact = false }: TaskCardProps
           <Avatar className="h-6 w-6">
             <AvatarImage src={assignedUsers[0].user?.avatarUrl || undefined} />
             <AvatarFallback className="text-[10px]">
-              {getInitials(assignedUsers[0].user?.firstName, assignedUsers[0].user?.lastName)}
+              {getInitials(
+                assignedUsers[0].user?.firstName,
+                assignedUsers[0].user?.lastName
+              )}
             </AvatarFallback>
           </Avatar>
         )}
@@ -261,25 +303,31 @@ export function TaskCard({ task, currentUserId, compact = false }: TaskCardProps
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <h4 className="line-clamp-1 font-semibold text-slate-800">{task.title}</h4>
+            <h4 className="line-clamp-1 font-semibold text-slate-800">
+              {task.title}
+            </h4>
             {task.summary && (
-              <p className="mt-1 line-clamp-2 text-slate-500 text-sm">{task.summary}</p>
+              <p className="mt-1 line-clamp-2 text-slate-500 text-sm">
+                {task.summary}
+              </p>
             )}
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                variant="ghost"
-                size="icon"
                 className="h-8 w-8 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
                 disabled={isLoading}
+                size="icon"
+                variant="ghost"
               >
                 <MoreVertical className="h-4 w-4 text-slate-400" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {task.status !== "completed" && (
-                <DropdownMenuItem onClick={() => handleStatusChange("completed")}>
+                <DropdownMenuItem
+                  onClick={() => handleStatusChange("completed")}
+                >
                   Mark as Completed
                 </DropdownMenuItem>
               )}
@@ -289,7 +337,9 @@ export function TaskCard({ task, currentUserId, compact = false }: TaskCardProps
                 </DropdownMenuItem>
               )}
               {task.status !== "canceled" && (
-                <DropdownMenuItem onClick={() => handleStatusChange("canceled")}>
+                <DropdownMenuItem
+                  onClick={() => handleStatusChange("canceled")}
+                >
                   Cancel Task
                 </DropdownMenuItem>
               )}
@@ -300,14 +350,12 @@ export function TaskCard({ task, currentUserId, compact = false }: TaskCardProps
         {/* Metadata row */}
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {/* Priority badge */}
-          <Badge
-            className={`${priority.color} border-0 font-medium text-xs`}
-          >
+          <Badge className={`${priority.color} border-0 font-medium text-xs`}>
             {priority.label}
           </Badge>
 
           {/* Status badge */}
-          <Badge variant={status.variant} className="font-medium text-xs">
+          <Badge className="font-medium text-xs" variant={status.variant}>
             {status.label}
           </Badge>
 
@@ -325,11 +373,11 @@ export function TaskCard({ task, currentUserId, compact = false }: TaskCardProps
         {/* Assignees */}
         {assignedUsers.length > 0 && (
           <div className="mt-3 flex items-center gap-2">
-            <div className="-space-x-2 flex">
+            <div className="flex -space-x-2">
               {assignedUsers.slice(0, 3).map((claim, index) => (
                 <Avatar
-                  key={claim.user?.id || index}
                   className="h-7 w-7 border-2 border-white"
+                  key={claim.user?.id || index}
                 >
                   <AvatarImage src={claim.user?.avatarUrl || undefined} />
                   <AvatarFallback
@@ -361,33 +409,35 @@ export function TaskCard({ task, currentUserId, compact = false }: TaskCardProps
         <div className="mt-3">
           {task.status === "pending" && !userClaim && (
             <Button
-              size="sm"
               className="w-full gap-2 bg-slate-900 text-white hover:bg-slate-800"
-              onClick={handleClaim}
               disabled={isLoading}
+              onClick={handleClaim}
+              size="sm"
             >
               <User className="h-4 w-4" />
               Claim Task
             </Button>
           )}
-          {userClaim && task.status !== "completed" && task.status !== "canceled" && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-full gap-2"
-              onClick={handleRelease}
-              disabled={isLoading}
-            >
-              <User className="h-4 w-4" />
-              Release Task
-            </Button>
-          )}
+          {userClaim &&
+            task.status !== "completed" &&
+            task.status !== "canceled" && (
+              <Button
+                className="w-full gap-2"
+                disabled={isLoading}
+                onClick={handleRelease}
+                size="sm"
+                variant="outline"
+              >
+                <User className="h-4 w-4" />
+                Release Task
+              </Button>
+            )}
           {task.status === "in_progress" && userClaim && (
             <Button
-              size="sm"
               className="w-full gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
-              onClick={() => handleStatusChange("completed")}
               disabled={isLoading}
+              onClick={() => handleStatusChange("completed")}
+              size="sm"
             >
               <ChevronRight className="h-4 w-4" />
               Mark Complete

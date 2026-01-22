@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import { database, Prisma } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -6,11 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Prisma, database } from "@repo/database";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Header } from "../../../components/header";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
+import { Header } from "../../../components/header";
 import { cleanupImportedItems } from "./server-actions";
 
 type CleanupCandidate = {
@@ -83,7 +83,11 @@ const INGREDIENT_KEYWORDS = [
 ];
 
 const normalize = (value: string) =>
-  value.replace(/\uFEFF/g, "").trim().replace(/\s+/g, " ").toLowerCase();
+  value
+    .replace(/\uFEFF/g, "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
 
 const classifyCandidate = (name: string): Classification => {
   const normalized = normalize(name);
@@ -93,7 +97,7 @@ const classifyCandidate = (name: string): Classification => {
   }
 
   const isBeverage = BEVERAGE_KEYWORDS.some((keyword) =>
-    normalized.includes(keyword),
+    normalized.includes(keyword)
   );
   if (isBeverage) {
     const isPackaged =
@@ -161,7 +165,7 @@ const CleanupImportsPage = async () => {
       ) dishes ON true
       WHERE r.tenant_id = ${tenantId}
         AND r.deleted_at IS NULL
-    `,
+    `
   );
 
   const rows = candidates
@@ -185,9 +189,9 @@ const CleanupImportsPage = async () => {
           <CardHeader>
             <CardTitle>Imported item cleanup</CardTitle>
             <p className="text-muted-foreground text-sm">
-              These items have no ingredients or steps. Cleanup will move supplies
-              to warehouse inventory and convert ingredient-like entries to
-              kitchen ingredients.
+              These items have no ingredients or steps. Cleanup will move
+              supplies to warehouse inventory and convert ingredient-like
+              entries to kitchen ingredients.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">

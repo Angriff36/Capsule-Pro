@@ -1,13 +1,13 @@
 import { auth } from "@repo/auth/server";
+import { database, Prisma } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { Prisma, database } from "@repo/database";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Header } from "../../../../components/header";
 import { getTenantIdForOrg } from "../../../../../lib/tenant";
+import { Header } from "../../../../components/header";
 import { createDish } from "../../actions";
 
 type RecipeOption = {
@@ -30,7 +30,7 @@ const NewDishPage = async () => {
       WHERE tenant_id = ${tenantId}
         AND deleted_at IS NULL
       ORDER BY name ASC
-    `,
+    `
   );
 
   return (
@@ -212,10 +212,7 @@ const NewDishPage = async () => {
                 />
               </div>
               <div className="space-y-2">
-                <label
-                  className="font-medium text-sm"
-                  htmlFor="description"
-                >
+                <label className="font-medium text-sm" htmlFor="description">
                   Service notes
                 </label>
                 <Textarea
