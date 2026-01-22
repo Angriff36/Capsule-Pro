@@ -1,0 +1,33 @@
+<!--
+  This checklist is required before creating or modifying any `.sql` migration file.
+
+  AI agents and humans alike must:
+    1. Review `supabase/Schema Contract v2.txt` (tenant rules, RLS expectations, audit/index requirements).
+    2. Cross-check the canonical `supabase/Schema Registry v2.txt` entry for the table(s) you're touching.
+    3. Verify Prisma (`packages/database/prisma/schema.prisma`) will remain in sync.
+    4. Confirm you understand RLS policies, indices, and soft-delete expectations for the schema in question.
+    5. Add a checked checklist entry (see format) that documents these steps before committing.
+
+  Entries go at the bottom of this file as soon as the migration is ready to land.
+-->
+
+# Database Pre-Migration Checklist Log
+
+Each SQL file that touches the schema must have a corresponding checked entry below. Include the relative path, a short confirmation of what you reviewed, and any relevant links (contract page, registry sections, Prisma updates, etc.).
+
+Example entry:
+
+```
+- [x] supabase/migrations/20260130000000_create_timeline_tasks.sql — Reviewed Schema Contract sections B/D/L, added `timeline_tasks` to Registry, confirmed Prisma model.
+```
+
+If an entry is missing for a staged `.sql` file, the pre-commit hook will fail and remind you to update this checklist.
+
+---
+- [x] create_timeline_tasks_table.sql — Reviewed Schema Contract sections B/D/G/L; added TIMESTAMPTZ, integrity checks, tenant-aware partial indexes, RLS policies, and standard triggers (update timestamp, prevent tenant mutation, audit). Registry alignment confirmed for tenant_events; Prisma sync planned in packages/database.
+- [x] 20260121000000_battle_board_timeline_tasks.sql — Reviewed Schema Contract sections B/D/G/K/L; added composite PK (tenant_id, id), RLS policies (5), all required indexes (tenant, active, event, assignee, status, priority, start_time, critical_path, dependencies GIN), standard triggers (update timestamp, prevent tenant mutation, audit), REPLICA IDENTITY for real-time, and FK constraints to events and employees tables. Added timeline_tasks entry to Schema Registry v2.txt. Prisma model TimelineTask already exists and is in sync.
+- [x] 20260122000000_event_profitability.sql — Reviewed Schema Contract sections B/D/L; added composite PK (tenant_id, id), RLS policies (5), indexes (event_id, tenant_id+event_id, calculated_at), standard triggers (update timestamp, prevent tenant mutation), REPLICA IDENTITY for real-time, and FK to events table with CASCADE delete. Added EventProfitability model to Prisma schema. Tracks profitability metrics including budgeted vs actual revenue, food/labor/overhead costs, gross margins, and variance analysis.
+- [x] 20260123000000_inventory_forecasting.sql — Reviewed Schema Contract sections B/D/L; added inventory_forecasts, forecast_inputs, reorder_suggestions, alerts_config to tenant_inventory schema in Registry; confirmed Prisma models with tenant_id, composite PKs, RLS policies, standard triggers, indexes, and audit patterns.
+- [x] 20260122000001_purchase_orders_receiving.sql — Reviewed Schema Contract sections B/D/G/K/L; added purchase_orders and purchase_order_items tables to tenant_inventory schema with composite PKs (tenant_id, id), RLS policies (5 each), all required indexes (tenant, active, vendor, status, date, po_number for orders; tenant, active, po, item, quality for items), standard triggers (update timestamp, prevent tenant mutation, audit), REPLICA IDENTITY for real-time, FK constraints to inventory_suppliers, locations, and inventory_items. Added receiving workflow fields: quality_status (pending/approved/rejected/needs_inspection), discrepancy_type (shortage/overage/damaged/wrong_item/none), discrepancy_amount. Prisma models PurchaseOrder and PurchaseOrderItem added and synced.
+- [x] 20260122000002_waste_tracking.sql — Reviewed Schema Contract sections B/D/E/G/K/L; added core.waste_reasons lookup table with standard waste reasons (spoilage, overproduction, prep_error, burnt, expired, quality, dropped, leftovers, customer_return, other) and tenant_kitchen.waste_entries table with composite PK (tenant_id, id), RLS policies (5), all required indexes (tenant, active, item, reason, location, event, logged_by, logged_at DESC), standard triggers (update timestamp, prevent tenant mutation, audit), REPLICA IDENTITY for real-time, and FK constraints to core.waste_reasons, tenant_inventory.inventory_items, tenant.locations, tenant_events.events, tenant_staff.employees, and core.units. Added waste tracking spec compliance: quantity > 0, costs >= 0, CHECK constraint for valid reason_id. Added entries to Schema Registry v2.txt for core.waste_reasons and tenant_kitchen.waste_entries. Prisma models WasteReason and WasteEntry added to schema.prisma.
+- [x] 20260122000003_prep_lists.sql — Reviewed Schema Contract sections B/D/E/G/K/L; added tenant_kitchen.prep_lists and tenant_kitchen.prep_list_items tables with composite PKs (tenant_id, id), RLS policies (5 each), all required indexes (tenant, active, event, status, generated_at for lists; tenant, active, prep_list, station, ingredient, completed, station+completed for items), standard triggers (update timestamp, prevent tenant mutation, audit), REPLICA IDENTITY for real-time, and FK constraints to tenant_events.events, tenant_kitchen.ingredients, and tenant_staff.employees. Supports prep list persistence, manual quantity editing, completion tracking, and station-based organization. Prisma models PrepList and PrepListItem added to schema.prisma.

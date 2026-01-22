@@ -105,6 +105,7 @@ export type PrepListGenerationResult = {
   eventDate: Date;
   guestCount: number;
   batchMultiplier: number;
+  dietaryRestrictions: string[];
   stationLists: StationPrepList[];
   totalIngredients: number;
   totalEstimatedTime: number;
@@ -218,6 +219,7 @@ export async function generatePrepList(
       eventDate: event.eventDate,
       guestCount: event.guestCount,
       batchMultiplier,
+      dietaryRestrictions: input.dietaryRestrictions ?? [],
       stationLists: PREP_STATIONS.map((station) => ({
         ...station,
         totalIngredients: 0,
@@ -288,6 +290,7 @@ export async function generatePrepList(
     eventDate: event.eventDate,
     guestCount: event.guestCount,
     batchMultiplier,
+    dietaryRestrictions: input.dietaryRestrictions ?? [],
     stationLists,
     totalIngredients,
     totalEstimatedTime,
@@ -774,5 +777,113 @@ export async function savePrepListToProductionBoard(
   } catch (error) {
     console.error("Error saving prep list to production board:", error);
     return { success: false, error: "Failed to save prep list" };
+  }
+}
+
+/**
+ * Save a generated prep list to the database for later viewing/editing
+ */
+export async function savePrepListToDatabase(
+  eventId: string,
+  prepList: PrepListGenerationResult,
+  name?: string
+): Promise<{ success: boolean; prepListId?: string; error?: string }> {
+  const { orgId } = await auth();
+
+  if (!orgId) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const tenantId = await getTenantIdForOrg(orgId);
+
+  try {
+    // Calculate total estimated time
+    const totalEstimatedTime = Math.round(
+      prepList.totalEstimatedTime * 60
+    ); // Convert to minutes
+
+    // Create the prep list
+    const result = await database.$queryRaw<
+      Array<{ id: string }>
+    >`
+      INSERT INTO tenant_kitchen.prep_lists (
+        tenant_id,
+        event_id,
+        name,
+        batch_multiplier,
+        dietary_restrictions,
+        status,
+        total_items,
+        total_estimated_time
+      ) VALUES (
+        ${tenantId},
+        ${eventId},
+        ${name || `${prepList.eventTitle} - Prep List`},
+        ${prepList.batchMultiplier},
+        ${prepList.dietaryRestrictions || []},
+        'draft',
+        ${prepList.totalIngredients},
+        ${totalEstimatedTime}
+      )
+      RETURNING id
+    `;
+
+    const prepListId = result[0].id;
+
+    // Create all prep list items
+    let sortOrder = 0;
+    for (const station of prepList.stationLists) {
+      for (const ingredient of station.ingredients) {
+        await database.$executeRaw`
+          INSERT INTO tenant_kitchen.prep_list_items (
+            tenant_id,
+            prep_list_id,
+            station_id,
+            station_name,
+            ingredient_id,
+            ingredient_name,
+            category,
+            base_quantity,
+            base_unit,
+            scaled_quantity,
+            scaled_unit,
+            is_optional,
+            preparation_notes,
+            allergens,
+            dietary_substitutions,
+            dish_id,
+            dish_name,
+            recipe_version_id,
+            sort_order
+          ) VALUES (
+            ${tenantId},
+            ${prepListId},
+            ${station.stationId},
+            ${station.stationName},
+            ${ingredient.ingredientId},
+            ${ingredient.ingredientName},
+            ${ingredient.category},
+            ${ingredient.baseQuantity},
+            ${ingredient.baseUnit},
+            ${ingredient.scaledQuantity},
+            ${ingredient.scaledUnit},
+            ${ingredient.isOptional},
+            ${ingredient.preparationNotes},
+            ${ingredient.allergens},
+            ${ingredient.dietarySubstitutions},
+            NULL,
+            NULL,
+            NULL,
+            ${sortOrder}
+          )
+        `;
+        sortOrder++;
+      }
+    }
+
+    return { success: true, prepListId };
+  } catch (error) {
+    console.error("Error saving prep list to database:", error);
+    return { success: false, error: "Failed to save prep list to database" };
   }
 }

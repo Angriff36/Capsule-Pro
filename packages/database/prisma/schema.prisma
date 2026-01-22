@@ -25,6 +25,8 @@ model Account {
   locations             Location[]
   employees             User[]
   kitchenTasks          KitchenTask[]
+  prepLists             PrepList[]
+  prepListItems         PrepListItem[]
   prepTasks             PrepTask[]
   taskClaims            KitchenTaskClaim[]
   taskProgress          KitchenTaskProgress[]
@@ -231,6 +233,70 @@ model KitchenTaskProgress {
   @@index([taskId])
   @@index([tenantId, taskId, createdAt(sort: Desc)], map: "task_progress_tenant_task_created_idx")
   @@map("task_progress")
+  @@schema("tenant_kitchen")
+}
+
+model PrepList {
+  tenantId            String    @map("tenant_id") @db.Uuid
+  id                  String    @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  eventId             String    @map("event_id") @db.Uuid
+  name                String
+  batchMultiplier     Decimal   @default(1) @map("batch_multiplier") @db.Decimal(10, 2)
+  dietaryRestrictions String[]  @map("dietary_restrictions")
+  status              String    @default("draft")
+  totalItems          Int       @default(0) @map("total_items")
+  totalEstimatedTime  Int       @default(0) @map("total_estimated_time")
+  notes               String?
+  generatedAt         DateTime  @default(now()) @map("generated_at") @db.Timestamptz(6)
+  finalizedAt         DateTime? @map("finalized_at") @db.Timestamptz(6)
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant              Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([eventId])
+  @@index([status])
+  @@index([generatedAt])
+  @@map("prep_lists")
+  @@schema("tenant_kitchen")
+}
+
+model PrepListItem {
+  tenantId             String    @map("tenant_id") @db.Uuid
+  id                   String    @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  prepListId           String    @map("prep_list_id") @db.Uuid
+  stationId            String    @map("station_id")
+  stationName          String    @map("station_name")
+  ingredientId         String    @map("ingredient_id") @db.Uuid
+  ingredientName       String    @map("ingredient_name")
+  category             String?
+  baseQuantity         Decimal   @map("base_quantity") @db.Decimal(10, 2)
+  baseUnit             String    @map("base_unit")
+  scaledQuantity       Decimal   @map("scaled_quantity") @db.Decimal(10, 2)
+  scaledUnit           String    @map("scaled_unit")
+  isOptional           Boolean   @default(false) @map("is_optional")
+  preparationNotes     String?   @map("preparation_notes")
+  allergens            String[]
+  dietarySubstitutions String[]  @map("dietary_substitutions")
+  dishId               String?   @map("dish_id") @db.Uuid
+  dishName             String?   @map("dish_name")
+  recipeVersionId      String?   @map("recipe_version_id") @db.Uuid
+  sortOrder            Int       @default(0) @map("sort_order")
+  isCompleted          Boolean   @default(false) @map("is_completed")
+  completedAt          DateTime? @map("completed_at") @db.Timestamptz(6)
+  completedBy          String?   @map("completed_by") @db.Uuid
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt            DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant               Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([prepListId])
+  @@index([stationId])
+  @@index([ingredientId])
+  @@index([isCompleted])
+  @@map("prep_list_items")
   @@schema("tenant_kitchen")
 }
 

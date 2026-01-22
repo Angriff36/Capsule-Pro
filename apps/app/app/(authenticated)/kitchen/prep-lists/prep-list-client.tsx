@@ -22,10 +22,12 @@ import {
   Check,
   ChefHat,
   Clock,
+  Database,
   Download,
   Flame,
   Leaf,
   RefreshCw,
+  Save,
   Snowflake,
   Users,
   UtensilsCrossed,
@@ -266,6 +268,7 @@ export function PrepListClient({
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSavingToDb, setIsSavingToDb] = useState(false);
   const [expandedStations, setExpandedStations] = useState<Set<string>>(
     new Set()
   );
@@ -363,6 +366,46 @@ export function PrepListClient({
     }
   }, [prepList]);
 
+  const handleSaveToDatabase = useCallback(async () => {
+    if (!prepList) {
+      return;
+    }
+
+    setIsSavingToDb(true);
+    try {
+      const response = await fetch("/api/kitchen/prep-lists/save-db", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventId: prepList.eventId,
+          prepList,
+          name: `${prepList.eventTitle} - ${format(new Date(prepList.eventDate), "MMM d")} Prep List`,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save prep list to database");
+      }
+
+      const { prepListId } = await response.json();
+
+      toast.success("Prep list saved to database", {
+        description: `You can now access this prep list anytime`,
+        action: {
+          label: "View",
+          onClick: () => router.push(`/kitchen/prep-lists/${prepListId}`),
+        },
+      });
+    } catch (error) {
+      console.error("Error saving prep list to database:", error);
+      toast.error("Save to database failed", {
+        description: "Failed to save prep list to database",
+      });
+    } finally {
+      setIsSavingToDb(false);
+    }
+  }, [prepList, router]);
+
   const toggleStation = (stationId: string) => {
     setExpandedStations((prev) => {
       const newSet = new Set(prev);
@@ -378,7 +421,9 @@ export function PrepListClient({
   if (!prepList) {
     return (
       <div className="space-y-6">
-        <EmptyState onGoToEvents={() => router.push(`/events/${eventId}#dishes`)} />
+        <EmptyState
+          onGoToEvents={() => router.push(`/events/${eventId}#dishes`)}
+        />
       </div>
     );
   }
@@ -413,6 +458,24 @@ export function PrepListClient({
                 <Download className="h-4 w-4" />
               </Button>
               <Button
+                disabled={isSavingToDb || prepList.totalIngredients === 0}
+                onClick={handleSaveToDatabase}
+                size="sm"
+                variant="secondary"
+              >
+                {isSavingToDb ? (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Database className="mr-2 h-4 w-4" />
+                    Save to Database
+                  </>
+                )}
+              </Button>
+              <Button
                 disabled={isSaving || prepList.totalIngredients === 0}
                 onClick={handleSave}
               >
@@ -422,7 +485,10 @@ export function PrepListClient({
                     Saving...
                   </>
                 ) : (
-                  "Save to Production Board"
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save to Production Board
+                  </>
                 )}
               </Button>
             </div>
@@ -529,7 +595,9 @@ export function PrepListClient({
             ))}
           </div>
         ) : prepList.totalIngredients === 0 ? (
-          <EmptyState onGoToEvents={() => router.push(`/events/${eventId}#dishes`)} />
+          <EmptyState
+            onGoToEvents={() => router.push(`/events/${eventId}#dishes`)}
+          />
         ) : (
           <div className="space-y-6">
             <Alert>
