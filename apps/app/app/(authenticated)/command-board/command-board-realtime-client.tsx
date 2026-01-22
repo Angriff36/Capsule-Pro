@@ -189,6 +189,53 @@ export function BoardCanvas({
     [canEdit, updateSelectedCard]
   );
 
+  const handlePositionChange = useCallback(
+    async (cardId: string, position: { x: number; y: number }) => {
+      if (!canEdit) return;
+
+      const gridSnapEnabled = snapToGrid;
+      const snapSize = gridSnapEnabled ? gridSize : 1;
+
+      const finalPosition = {
+        x: Math.round(position.x / snapSize) * snapSize,
+        y: Math.round(position.y / snapSize) * snapSize,
+      };
+
+      setState((prev) => ({
+        ...prev,
+        cards: prev.cards.map((c) =>
+          c.id === cardId
+            ? {
+                ...c,
+                position: {
+                  ...c.position,
+                  x: finalPosition.x,
+                  y: finalPosition.y,
+                },
+              }
+            : c
+        ),
+      }));
+
+      const result = await updateCard({
+        id: cardId,
+        position: finalPosition,
+      });
+
+      if (result.success) {
+        broadcast({
+          type: "CARD_MOVED",
+          cardId,
+          x: finalPosition.x,
+          y: finalPosition.y,
+        });
+      } else {
+        toast.error(result.error || "Failed to save card position");
+      }
+    },
+    [canEdit, snapToGrid, gridSize, broadcast]
+  );
+
   const handleDragStart = useCallback(
     (e: MouseEvent, cardId: string) => {
       if (!canEdit) return;
@@ -593,7 +640,9 @@ export function BoardCanvas({
               key={card.id}
               onClick={() => handleCardClick(card.id)}
               onDelete={handleDeleteCard}
-              onDragStart={handleDragStart}
+              onPositionChange={handlePositionChange}
+              snapToGridEnabled={snapToGrid}
+              viewportZoom={state.viewport.zoom}
             />
           ))}
 
