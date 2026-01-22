@@ -828,6 +828,30 @@ tenant_kitchen.waste_entries
   FK: (tenant_id, logged_by) -> tenant_staff.employees
   FK: (reason_id) -> core.waste_reasons
   FK: (unit_id) -> core.units
+tenant_kitchen.allergen_warnings
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  UNIQUE: (tenant_id, id)  -- For composite FK
+  event_id uuid NOT NULL
+  dish_id uuid  -- NULL for general menu warnings
+  warning_type text NOT NULL  -- 'allergen_conflict', 'dietary_restriction', 'cross_contamination'
+  allergens text[]
+  severity text NOT NULL DEFAULT 'warning'  -- 'info', 'warning', 'critical'
+  affected_guests text[]  -- Array of guest names or IDs
+  is_acknowledged boolean NOT NULL DEFAULT false
+  acknowledged_by uuid
+  acknowledged_at timestamptz
+  override_reason text
+  resolved boolean NOT NULL DEFAULT false
+  resolved_at timestamptz
+  notes text
+  created_at, updated_at, deleted_at
+  CHECK: warning_type IN ('allergen_conflict', 'dietary_restriction', 'cross_contamination')
+  CHECK: severity IN ('info', 'warning', 'critical')
+  FK: (tenant_id, event_id) -> tenant_events.events
+  FK: (tenant_id, dish_id) -> tenant_kitchen.dishes
+  FK: (tenant_id, acknowledged_by) -> tenant_staff.employees
 
 ================================================================================
 TENANT.EVENTS SCHEMA
@@ -1004,6 +1028,26 @@ tenant_events.catering_orders
   created_at, updated_at, deleted_at
   -- Purpose: Order management for catering operations, separate from events
   -- Includes status transition validation and auto-generated order numbers
+tenant_events.event_guests
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  UNIQUE: (tenant_id, id)  -- For composite FK
+  event_id uuid NOT NULL
+  guest_name text NOT NULL
+  guest_email text
+  guest_phone text
+  is_primary_contact boolean NOT NULL DEFAULT false
+  dietary_restrictions text[]  -- vegan, vegetarian, kosher, halal, etc.
+  allergen_restrictions text[]  -- peanuts, dairy, gluten, shellfish, etc.
+  special_meal_required boolean NOT NULL DEFAULT false
+  special_meal_notes text
+  meal_preference text
+  table_assignment text
+  notes text
+  created_at, updated_at, deleted_at
+  FK: (tenant_id, event_id) -> tenant_events.events
+  UNIQUE (tenant_id, guest_name, event_id) WHERE deleted_at IS NULL
 
 tenant_events.event_imports
   tenant_id uuid NOT NULL
