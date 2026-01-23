@@ -596,6 +596,134 @@ export async function createClientInteraction(
   return interaction;
 }
 
+export interface UpdateClientInteractionInput {
+  interactionType?: string;
+  subject?: string;
+  description?: string;
+  followUpDate?: string;
+  followUpCompleted?: boolean;
+}
+
+/**
+ * Update a client interaction
+ */
+export async function updateClientInteraction(
+  clientId: string,
+  interactionId: string,
+  input: UpdateClientInteractionInput
+) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+  invariant(clientId, "Client ID is required");
+  invariant(interactionId, "Interaction ID is required");
+
+  // Verify client exists
+  const client = await database.client.findFirst({
+    where: {
+      AND: [{ tenantId }, { id: clientId }, { deletedAt: null }],
+    },
+  });
+
+  invariant(client, "Client not found");
+
+  // Verify interaction exists and belongs to this client
+  const existingInteraction = await database.clientInteraction.findFirst({
+    where: {
+      AND: [
+        { tenantId },
+        { id: interactionId },
+        { clientId },
+        { deletedAt: null },
+      ],
+    },
+  });
+
+  invariant(existingInteraction, "Interaction not found");
+
+  // Build update data with only provided fields
+  const updateData: Record<string, unknown> = {};
+
+  if (input.interactionType !== undefined) {
+    updateData.interactionType = input.interactionType.trim();
+  }
+  if (input.subject !== undefined) {
+    updateData.subject = input.subject?.trim() || null;
+  }
+  if (input.description !== undefined) {
+    updateData.description = input.description?.trim() || null;
+  }
+  if (input.followUpDate !== undefined) {
+    updateData.followUpDate = input.followUpDate
+      ? new Date(input.followUpDate)
+      : null;
+  }
+  if (input.followUpCompleted !== undefined) {
+    updateData.followUpCompleted = input.followUpCompleted;
+  }
+
+  const updatedInteraction = await database.clientInteraction.update({
+    where: {
+      tenantId_id: { tenantId, id: interactionId },
+    },
+    data: updateData,
+  });
+
+  revalidatePath(`/crm/clients/${clientId}`);
+
+  return updatedInteraction;
+}
+
+/**
+ * Delete a client interaction (soft delete)
+ */
+export async function deleteClientInteraction(
+  clientId: string,
+  interactionId: string
+) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+  invariant(clientId, "Client ID is required");
+  invariant(interactionId, "Interaction ID is required");
+
+  // Verify client exists
+  const client = await database.client.findFirst({
+    where: {
+      AND: [{ tenantId }, { id: clientId }, { deletedAt: null }],
+    },
+  });
+
+  invariant(client, "Client not found");
+
+  // Verify interaction exists and belongs to this client
+  const existingInteraction = await database.clientInteraction.findFirst({
+    where: {
+      AND: [
+        { tenantId },
+        { id: interactionId },
+        { clientId },
+        { deletedAt: null },
+      ],
+    },
+  });
+
+  invariant(existingInteraction, "Interaction not found");
+
+  await database.clientInteraction.update({
+    where: {
+      tenantId_id: { tenantId, id: interactionId },
+    },
+    data: { deletedAt: new Date() },
+  });
+
+  revalidatePath(`/crm/clients/${clientId}`);
+
+  return { success: true };
+}
+
 /**
  * Get client event history
  */

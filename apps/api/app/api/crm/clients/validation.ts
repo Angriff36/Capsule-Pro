@@ -10,6 +10,7 @@ import type {
   CreateClientContactRequest,
   CreateClientInteractionRequest,
   CreateClientRequest,
+  UpdateClientInteractionRequest,
   UpdateClientRequest,
 } from "./types";
 
@@ -265,4 +266,54 @@ export function parsePaginationParams(searchParams: URLSearchParams): {
   );
 
   return { page, limit };
+}
+
+/**
+ * Validate update client interaction request (more lenient - all optional)
+ */
+export function validateUpdateClientInteractionRequest(
+  body: unknown
+): asserts body is UpdateClientInteractionRequest {
+  invariant(
+    body && typeof body === "object",
+    "Request body must be a valid object"
+  );
+
+  const data = body as Record<string, unknown>;
+
+  // If interactionType is provided, validate it
+  if (data.interactionType !== undefined) {
+    invariant(
+      typeof data.interactionType === "string" &&
+        data.interactionType.trim().length > 0,
+      "interactionType must be a non-empty string"
+    );
+  }
+
+  // Validate followUpDate format if provided
+  if (data.followUpDate && typeof data.followUpDate === "string") {
+    const date = new Date(data.followUpDate);
+    invariant(
+      !Number.isNaN(date.getTime()),
+      "followUpDate must be a valid ISO date string"
+    );
+  }
+
+  // Validate followUpCompleted is boolean if provided
+  if (data.followUpCompleted !== undefined) {
+    invariant(
+      typeof data.followUpCompleted === "boolean",
+      "followUpCompleted must be a boolean"
+    );
+  }
+
+  // At least one field must be provided
+  const hasData =
+    data.interactionType !== undefined ||
+    data.subject !== undefined ||
+    data.description !== undefined ||
+    data.followUpDate !== undefined ||
+    data.followUpCompleted !== undefined;
+
+  invariant(hasData, "At least one field must be provided for update");
 }

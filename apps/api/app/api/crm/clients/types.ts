@@ -171,6 +171,17 @@ export type CreateClientInteractionRequest = {
 };
 
 /**
+ * Update client interaction request body (all fields optional)
+ */
+export type UpdateClientInteractionRequest = Partial<{
+  interactionType: string;
+  subject: string;
+  description: string;
+  followUpDate: string; // ISO date string
+  followUpCompleted: boolean;
+}>;
+
+/**
  * Client list filters
  */
 export type ClientListFilters = {
