@@ -8,8 +8,9 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { NextResponse } from "next/server";
-import { InvariantError } from "../../../lib/invariant";
+import { InvariantError, invariant } from "../../../lib/invariant";
 import { getTenantIdForOrg } from "../../../lib/tenant";
+import { CONTRACT_STATUSES } from "./validation";
 import type { ContractStatus } from "./types";
 
 // Define types
@@ -49,7 +50,7 @@ function parseContractFilters(
   const status = searchParams.get("status");
   if (
     status &&
-    Object.values(ContractStatus).includes(status as ContractStatus)
+    CONTRACT_STATUSES.includes(status as ContractStatus)
   ) {
     filters.status = status as ContractStatus;
   }
@@ -224,12 +225,7 @@ export async function GET(request: Request) {
     // Add event and client details to contracts
     const contractsWithDetails = contracts.map((contract) => ({
       ...contract,
-      event: contract.eventId
-        ? {
-            ...eventMap.get(contract.eventId),
-            eventDate: eventMap.get(contract.eventId)?.eventDate,
-          } || null
-        : null,
+      event: contract.eventId ? (eventMap.get(contract.eventId) || null) : null,
       client: contract.clientId
         ? clientMap.get(contract.clientId) || null
         : null,
@@ -346,7 +342,7 @@ export async function POST(request: Request) {
         clientId: data.clientId,
         contractNumber: finalContractNumber,
         title: data.title?.trim() || "Untitled Contract",
-        status: ContractStatus.draft,
+        status: "draft" as ContractStatus,
         notes: data.notes?.trim() || null,
         expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
         documentUrl: data.documentUrl?.trim() || null,

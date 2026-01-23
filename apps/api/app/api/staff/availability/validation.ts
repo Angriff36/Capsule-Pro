@@ -229,14 +229,15 @@ export async function verifyAvailability(
     id: string;
     employee_id: string;
     day_of_week: number;
+    effective_until: Date | null;
   } | null;
   error: NextResponse | null;
 }> {
   const availability = await database.$queryRaw<
-    Array<{ id: string; employee_id: string; day_of_week: number }>
+    Array<{ id: string; employee_id: string; day_of_week: number; effective_until: Date | null }>
   >(
     Prisma.sql`
-      SELECT id, employee_id, day_of_week
+      SELECT id, employee_id, day_of_week, effective_until
       FROM tenant_staff.employee_availability
       WHERE tenant_id = ${tenantId}
         AND id = ${availabilityId}

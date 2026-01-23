@@ -4,14 +4,17 @@
 
 import { invariant } from "@/app/lib/invariant";
 
-export type ContractStatus =
-  | "draft"
-  | "sent"
-  | "viewed"
-  | "signed"
-  | "rejected"
-  | "expired"
-  | "canceled";
+export const CONTRACT_STATUSES = [
+  "draft",
+  "sent",
+  "viewed",
+  "signed",
+  "rejected",
+  "expired",
+  "canceled",
+] as const;
+
+export type ContractStatus = (typeof CONTRACT_STATUSES)[number];
 
 export type ContractFilters = {
   search?: string;
@@ -41,6 +44,7 @@ export type UpdateContractRequest = {
   expiresAt?: string | Date;
   documentUrl?: string;
   documentType?: string;
+  status?: ContractStatus;
 };
 
 export type ContractSignatureData = {
@@ -416,7 +420,7 @@ export function validateContractBusinessRules(
   }
 
   // Check if contract is already expired
-  if (isContractExpired(contract.expiresAt)) {
+  if (isContractExpired(contract.expiresAt ?? null)) {
     invariant(
       operation !== "update" && operation !== "send",
       "Contract is expired and cannot be updated or sent"

@@ -48,28 +48,28 @@ export async function GET(
       );
     }
 
-    // Get events from catering_orders
-    const events = await database.cateringOrder.findMany({
+    // Get events for this client (Event model has clientId field)
+    const events = await database.event.findMany({
       where: {
         AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
       },
-      include: {
-        event: {
-          select: {
-            id: true,
-            name: true,
-            eventDate: true,
-            status: true,
-          },
-        },
+      select: {
+        id: true,
+        title: true,
+        eventDate: true,
+        status: true,
+        guestCount: true,
+        eventType: true,
+        venueName: true,
+        createdAt: true,
       },
-      orderBy: [{ createdAt: "desc" }],
+      orderBy: [{ eventDate: "desc" }],
       take: limit,
       skip: offset,
     });
 
     // Get total count
-    const totalCount = await database.cateringOrder.count({
+    const totalCount = await database.event.count({
       where: {
         AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
       },

@@ -5,6 +5,7 @@ import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   type ContractStatus,
+  type UpdateContractRequest,
   validateContractBusinessRules,
   validateContractStatusTransition,
   validateUpdateContractRequest,
@@ -105,7 +106,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
 
     // Validate request body
     validateUpdateContractRequest(body);
-    const updateData = { ...body };
+    const updateData = body as UpdateContractRequest;
 
     // Validate contract exists and belongs to tenant
     const existingContract = await database.eventContract.findFirst({
@@ -122,7 +123,13 @@ export async function PUT(request: Request, { params }: { params: Params }) {
     }
 
     // Validate business rules for update
-    validateContractBusinessRules(existingContract, "update");
+    validateContractBusinessRules(
+      {
+        status: existingContract.status as ContractStatus,
+        expiresAt: existingContract.expiresAt,
+      },
+      "update"
+    );
 
     // Handle status transition if provided
     if (updateData.status !== undefined) {
@@ -330,7 +337,13 @@ export async function DELETE(request: Request, { params }: { params: Params }) {
     }
 
     // Validate contract can be deleted
-    validateContractBusinessRules(existingContract, "cancel");
+    validateContractBusinessRules(
+      {
+        status: existingContract.status as ContractStatus,
+        expiresAt: existingContract.expiresAt,
+      },
+      "cancel"
+    );
 
     // Additional validation: cannot delete signed or active contracts
     if (existingContract.status === "signed") {

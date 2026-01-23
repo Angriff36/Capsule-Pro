@@ -4,7 +4,10 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
   CreateTimeOffRequestInput,
+  TimeOffRequest,
   TimeOffRequestsListResponse,
+  TimeOffStatus,
+  TimeOffType,
 } from "../types";
 import {
   checkOverlappingTimeOffRequests,
@@ -43,9 +46,8 @@ export async function GET(request: Request) {
   const limit = Number.parseInt(searchParams.get("limit") || "50", 10);
   const offset = (page - 1) * limit;
 
-  const [requests, totalCount] = await Promise.all([
-    database.$queryRaw<
-      Array<{
+  const requests = await database.$queryRaw<
+    Array<{
         id: string;
         tenant_id: string;
         employee_id: string;
@@ -106,29 +108,37 @@ export async function GET(request: Request) {
         LIMIT ${limit}
         OFFSET ${offset}
       `
-    ),
-    database.$queryRaw<[{ count: bigint }]>(
-      Prisma.sql`
-        SELECT COUNT(*)::bigint
-        FROM tenant_staff.employee_time_off_requests tor
-        WHERE tor.tenant_id = ${tenantId}
-          AND tor.deleted_at IS NULL
-          ${employeeId ? Prisma.sql`AND tor.employee_id = ${employeeId}` : Prisma.empty}
-          ${status ? Prisma.sql`AND tor.status = ${status}` : Prisma.empty}
-          ${startDate ? Prisma.sql`AND tor.end_date >= ${new Date(startDate)}` : Prisma.empty}
-          ${endDate ? Prisma.sql`AND tor.start_date <= ${new Date(endDate)}` : Prisma.empty}
-          ${requestType ? Prisma.sql`AND tor.request_type = ${requestType}` : Prisma.empty}
-      `
-    ),
-  ]);
+    );
+
+  // Get total count
+  const totalCountResult = await database.$queryRaw<[{ count: bigint }]>(
+    Prisma.sql`
+      SELECT COUNT(*)::bigint
+      FROM tenant_staff.employee_time_off_requests tor
+      WHERE tor.tenant_id = ${tenantId}
+        AND tor.deleted_at IS NULL
+        ${employeeId ? Prisma.sql`AND tor.employee_id = ${employeeId}` : Prisma.empty}
+        ${status ? Prisma.sql`AND tor.status = ${status}` : Prisma.empty}
+        ${startDate ? Prisma.sql`AND tor.end_date >= ${new Date(startDate)}` : Prisma.empty}
+        ${endDate ? Prisma.sql`AND tor.start_date <= ${new Date(endDate)}` : Prisma.empty}
+        ${requestType ? Prisma.sql`AND tor.request_type = ${requestType}` : Prisma.empty}
+    `
+  );
+
+  // Map raw results to TimeOffRequest type with proper status casting
+  const typedRequests: TimeOffRequest[] = requests.map((req) => ({
+    ...req,
+    status: req.status as TimeOffStatus,
+    request_type: req.request_type as TimeOffType,
+  }));
 
   const response: TimeOffRequestsListResponse = {
-    requests,
+    requests: typedRequests,
     pagination: {
       page,
       limit,
-      total: Number(totalCount[0].count),
-      totalPages: Math.ceil(Number(totalCount[0].count) / limit),
+      total: Number(totalCountResult[0].count),
+      totalPages: Math.ceil(Number(totalCountResult[0].count) / limit),
     },
   };
 

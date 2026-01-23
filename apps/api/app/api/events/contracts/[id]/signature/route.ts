@@ -66,7 +66,7 @@ function validateCreateSignatureRequest(
  */
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { orgId } = await auth();
@@ -75,7 +75,7 @@ export async function POST(
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    const contractId = params.id;
+    const { id: contractId } = await params;
     const body = await request.json();
 
     // Validate request body
@@ -122,8 +122,10 @@ export async function POST(
     // Auto-update contract status to 'signed' after signature
     await database.eventContract.update({
       where: {
-        tenantId,
-        id: contractId,
+        tenantId_id: {
+          tenantId,
+          id: contractId,
+        },
       },
       data: {
         status: "signed" as ContractStatus,

@@ -129,7 +129,7 @@ export async function POST(
 
     // Get current user (employee) ID
     // For now, we'll need to look up the employee from the user
-    const employee = await database.employee.findFirst({
+    const employee = await database.user.findFirst({
       where: {
         AND: [{ tenantId }, { deletedAt: null }],
       },
@@ -137,7 +137,7 @@ export async function POST(
 
     if (!employee) {
       return NextResponse.json(
-        { message: "Employee record not found for current user" },
+        { message: "User record not found for current user" },
         { status: 400 }
       );
     }

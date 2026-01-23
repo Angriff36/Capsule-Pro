@@ -2,7 +2,7 @@ import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { UpdateAvailabilityInput } from "../types";
+import type { DayOfWeek, UpdateAvailabilityInput } from "../types";
 import {
   checkOverlappingAvailability,
   validateDayOfWeek,
@@ -110,9 +110,12 @@ export async function PATCH(request: Request, context: RouteContext) {
   const { availability: existingAvail, error: verifyError } =
     await verifyAvailability(tenantId, id);
   if (verifyError || !existingAvail) {
-    return verifyError || NextResponse.json(
-      { message: "Availability record not found" },
-      { status: 404 }
+    return (
+      verifyError ||
+      NextResponse.json(
+        { message: "Availability record not found" },
+        { status: 404 }
+      )
     );
   }
 
@@ -149,7 +152,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   // Check for overlapping availability if day or time is changing
-  const newDayOfWeek = body.dayOfWeek ?? existingAvail.day_of_week;
+  const newDayOfWeek: DayOfWeek = (body.dayOfWeek ?? existingAvail.day_of_week) as DayOfWeek;
   const newStartTime = body.startTime ?? "00:00"; // Will be validated on overlap check
   const newEndTime = body.endTime ?? "23:59";
   const newEffectiveFrom = body.effectiveFrom

@@ -14,7 +14,7 @@ import {
  */
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { orgId } = await auth();
   if (!orgId) {
@@ -22,7 +22,7 @@ export async function GET(
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  const requestId = params.id;
+  const { id: requestId } = await params;
 
   const [timeOffRequest] = await database.$queryRaw<
     Array<{
@@ -101,7 +101,7 @@ export async function GET(
  */
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { orgId, userId } = await auth();
   if (!(orgId && userId)) {
@@ -109,7 +109,7 @@ export async function PATCH(
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  const requestId = params.id;
+  const { id: requestId } = await params;
   const body = (await request.json()) as UpdateTimeOffStatusInput;
 
   // Validate status is provided
@@ -124,9 +124,12 @@ export async function PATCH(
   const { request: timeOffRequest, error: requestError } =
     await verifyTimeOffRequest(tenantId, requestId);
   if (requestError || !timeOffRequest) {
-    return requestError || NextResponse.json(
-      { message: "Time-off request not found" },
-      { status: 404 }
+    return (
+      requestError ||
+      NextResponse.json(
+        { message: "Time-off request not found" },
+        { status: 404 }
+      )
     );
   }
 
@@ -189,7 +192,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { orgId } = await auth();
   if (!orgId) {
@@ -197,15 +200,18 @@ export async function DELETE(
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  const requestId = params.id;
+  const { id: requestId } = await params;
 
   // Get current request
   const { request: timeOffRequest, error: requestError } =
     await verifyTimeOffRequest(tenantId, requestId);
   if (requestError || !timeOffRequest) {
-    return requestError || NextResponse.json(
-      { message: "Time-off request not found" },
-      { status: 404 }
+    return (
+      requestError ||
+      NextResponse.json(
+        { message: "Time-off request not found" },
+        { status: 404 }
+      )
     );
   }
 

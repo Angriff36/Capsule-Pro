@@ -145,7 +145,7 @@ function buildSignatureWhereClause(
  */
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { orgId } = await auth();
@@ -154,7 +154,7 @@ export async function GET(
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    const contractId = params.id;
+    const { id: contractId } = await params;
     const { searchParams } = new URL(request.url);
 
     // Parse filters and pagination

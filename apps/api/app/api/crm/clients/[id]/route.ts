@@ -70,8 +70,8 @@ export async function GET(
       },
     });
 
-    // Get event count (from catering_orders in tenant_events)
-    const eventCount = await database.cateringOrder.count({
+    // Get event count (from events in tenant_events)
+    const eventCount = await database.event.count({
       where: {
         AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
       },
@@ -80,14 +80,14 @@ export async function GET(
     // Get total revenue (sum of catering order totals)
     const revenueResult = await database.cateringOrder.aggregate({
       where: {
-        AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
+        AND: [{ tenantId }, { customer_id: id }, { deletedAt: null }],
       },
       _sum: {
-        total: true,
+        totalAmount: true,
       },
     });
 
-    const totalRevenue = revenueResult._sum.total;
+    const totalRevenue = revenueResult._sum.totalAmount;
 
     return NextResponse.json({
       data: {

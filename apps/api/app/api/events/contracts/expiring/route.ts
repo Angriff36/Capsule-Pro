@@ -174,7 +174,7 @@ export async function GET(request: Request) {
             `${client.first_name} ${client.last_name}`.trim()
           : "Unknown Client",
         eventName: event?.title || null,
-        eventDate: event?.eventDate,
+        eventDate: event?.eventDate ?? null,
         documentType: contract.documentType as DocumentType | null,
         expiresAt: contract.expiresAt,
         createdAt: contract.createdAt,
