@@ -141,26 +141,29 @@ export function AllergenManagementModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id,
-          tenantId,
+          tenantId, // Server validates tenantId from auth
           allergens: selectedAllergens,
           dietaryTags: selectedDietaryTags,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update allergen information");
+        const error = await response.json();
+        throw new Error(error.error || "Failed to update allergen information");
       }
 
       toast.success(`Allergen information updated for dish: ${name}`);
       setOpen(false);
 
-      // Refresh the page to show updated data
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      // Trigger a custom event for parent component to refresh
+      window.dispatchEvent(new CustomEvent("allergen-updated"));
     } catch (error) {
       console.error("Error updating allergens:", error);
-      toast.error("Failed to update allergen information. Please try again.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to update allergen information. Please try again."
+      );
     } finally {
       setSaving(false);
     }

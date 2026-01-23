@@ -1,8 +1,7 @@
 import { Readable } from "node:stream";
+import { generateText } from "ai";
 import { v4 as uuidv4 } from "uuid";
 import { CancellationError, ERROR_CODES, SDKError } from "./errors.js";
-import { generateText } from "ai";
-import { models } from "./models.js";
 import {
   type AgentEvent,
   AgentEventEmitter,
@@ -10,6 +9,7 @@ import {
   type LifecycleEvent,
 } from "./events.js";
 import { MetricsCollector } from "./metrics.js";
+import { models } from "./models.js";
 import { RetryManager } from "./retry.js";
 import { type Tool, ToolRegistry } from "./tool.js";
 import {
@@ -455,7 +455,7 @@ export class Agent {
       const result = await generateText({
         model: models.chat,
         system: this.instructions,
-        prompt: prompt,
+        prompt,
         temperature: 0.7,
       });
 
@@ -470,7 +470,7 @@ export class Agent {
       return result.text;
     } catch (error) {
       if (this.debug) {
-        console.error(`[Agent] LLM API call failed:`, error);
+        console.error("[Agent] LLM API call failed:", error);
       }
 
       // Re-throw as SDKError for proper retry handling
