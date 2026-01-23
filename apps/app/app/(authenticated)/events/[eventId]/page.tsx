@@ -55,6 +55,19 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
     )
   );
 
+  // Fetch budget for this event
+  const budget = await database.eventBudget.findFirst({
+    where: {
+      AND: [
+        { tenantId },
+        { eventId },
+        { status: { in: ["draft", "approved"] } },
+        { deletedAt: null },
+      ],
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
   return (
     <>
       <Header page={event.title} pages={["Operations", "Events"]}>
@@ -79,7 +92,11 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
           </a>
         </div>
       </Header>
-      <EventDetailsClient event={event} prepTasks={prepTasks} />
+      <EventDetailsClient
+        budget={budget}
+        event={event}
+        prepTasks={prepTasks}
+      />
     </>
   );
 };

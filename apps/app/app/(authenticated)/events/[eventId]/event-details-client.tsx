@@ -1,6 +1,6 @@
 "use client";
 
-import type { Event } from "@repo/database";
+import type { Event, EventBudget } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -27,6 +27,7 @@ import {
 import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   ChevronDownIcon,
+  DollarSignIcon,
   PlusIcon,
   SparklesIcon,
   TrashIcon,
@@ -63,8 +64,10 @@ import {
   TaskBreakdownSkeleton,
 } from "../components/task-breakdown-display";
 import type { PrepTaskSummary } from "./prep-task-contract";
+import { getVarianceColor, getBudgetStatusLabel } from "../../../../lib/use-budgets";
 
 type EventDetailsClientProps = {
+  budget: EventBudget | null;
   event: Event;
   prepTasks: PrepTaskSummary[];
 };
@@ -88,6 +91,7 @@ type AvailableDish = {
 };
 
 export function EventDetailsClient({
+  budget,
   event,
   prepTasks: initialPrepTasks,
 }: EventDetailsClientProps) {
@@ -468,6 +472,94 @@ export function EventDetailsClient({
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Budget Summary Section */}
+        <Collapsible
+          className="rounded-xl border bg-card text-card-foreground shadow-sm"
+          defaultOpen={true}
+        >
+          <div className="flex items-center justify-between gap-4 px-6 py-4">
+            <div className="flex items-center gap-2">
+              <DollarSignIcon className="size-5 text-green-500" />
+              <div>
+                <div className="font-semibold text-sm">Event Budget</div>
+                <div className="text-muted-foreground text-sm">
+                  {budget
+                    ? `${getBudgetStatusLabel(budget.status)} - v${budget.version}`
+                    : "No budget created yet"}
+                </div>
+              </div>
+            </div>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost">
+                {budget ? "View budget" : "Create budget"}
+                <ChevronDownIcon />
+              </Button>
+            </CollapsibleTrigger>
+          </div>
+          <Separator />
+          <CollapsibleContent className="px-6 py-4">
+            {budget ? (
+              <div className="grid gap-4 md:grid-cols-4">
+                <div className="rounded-lg border p-4">
+                  <div className="text-muted-foreground text-xs">Total Budgeted</div>
+                  <div className="text-lg font-semibold">
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "USD",
+                    }).format(budget.total_budget_amount)}
+                  </div>
+                </div>
+                <div className="rounded-lg border p-4">
+                  <div className="text-muted-foreground text-xs">Total Actual</div>
+                  <div className="text-lg font-semibold">
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "USD",
+                    }).format(budget.total_actual_amount)}
+                  </div>
+                </div>
+                <div className="rounded-lg border p-4">
+                  <div className="text-muted-foreground text-xs">Variance</div>
+                  <div className={`text-lg font-semibold ${getVarianceColor(budget.variance_amount)}`}>
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "USD",
+                    }).format(budget.variance_amount)}
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  <Button
+                    className="w-full"
+                    onClick={() => router.push(`/events/budgets/${budget.id}`)}
+                  >
+                    View Full Budget
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="mb-4 rounded-full bg-muted p-3">
+                  <DollarSignIcon className="size-6 text-muted-foreground" />
+                </div>
+                <p className="mb-2 text-muted-foreground text-sm">
+                  No budget created for this event
+                </p>
+                <p className="mb-4 text-muted-foreground text-xs">
+                  Create a budget to track costs and manage event finances
+                </p>
+                <Button
+                  onClick={() => router.push("/events/budgets")}
+                  size="sm"
+                  variant="outline"
+                >
+                  <PlusIcon className="mr-2 size-3" />
+                  Create Budget
+                </Button>
               </div>
             )}
           </CollapsibleContent>
