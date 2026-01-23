@@ -7,8 +7,8 @@ export default defineConfig({
   test: {
     // API route tests need node environment (server-only), most specific first
     environmentMatchGlobs: [
-      ['**/__tests__/api/**/*.test.ts', 'node'],
-      ['**/__tests__/api/**/*.test.tsx', 'node'],
+      ["**/__tests__/api/**/*.test.ts", "node"],
+      ["**/__tests__/api/**/*.test.tsx", "node"],
     ],
     // Default to jsdom for everything else
     environment: "jsdom",
@@ -18,6 +18,10 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./"),
       "@repo": path.resolve(__dirname, "../../packages"),
+      "server-only": path.resolve(__dirname, "__tests__/mocks/server-only.ts"),
     },
+  },
+  optimizeDeps: {
+    include: ["server-only"],
   },
 });

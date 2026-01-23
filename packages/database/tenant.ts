@@ -1,9 +1,14 @@
 import type { PrismaClient } from "./generated/client";
 
 const tenantScopedModels = new Set([
+  "Client",
+  "ClientContact",
+  "ClientInteraction",
+  "ClientPreference",
   "KitchenTask",
   "KitchenTaskClaim",
   "KitchenTaskProgress",
+  "Lead",
   "OutboxEvent",
 ]);
 
