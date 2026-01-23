@@ -17,7 +17,7 @@ import {
   validateLineItemAmount,
   verifyEditableBudget,
   verifyLineItem,
-} from "../../validation";
+} from "../../validation.ts";
 
 type Params = Promise<{ id: string; lineItemId: string }>;
 
