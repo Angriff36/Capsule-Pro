@@ -79,6 +79,8 @@ model Account {
   timecardEditRequests  TimecardEditRequest[]
   allergenWarnings      AllergenWarning[]
   eventGuests           EventGuest[]
+  eventContracts        EventContract[]
+  contractSignatures    ContractSignature[]
 
   @@map("accounts")
   @@schema("platform")
@@ -2411,5 +2413,60 @@ model EventGuest {
   @@index([dietaryRestrictions], type: Gin)
   @@index([allergenRestrictions], type: Gin)
   @@map("event_guests")
+  @@schema("tenant_events")
+}
+
+model EventContract {
+  tenantId       String    @map("tenant_id") @db.Uuid
+  id             String    @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  eventId        String    @map("event_id") @db.Uuid
+  clientId       String    @map("client_id") @db.Uuid
+  contractNumber String?   @map("contract_number")
+  title          String    @default("Untitled Contract")
+  status         String    @default("draft")
+  documentUrl    String?   @map("document_url")
+  documentType   String?   @map("document_type")
+  notes          String?
+  expiresAt      DateTime? @map("expires_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  // Note: relations to Event and Client use composite FKs enforced at DB level
+  // Note: relation to ContractSignature uses composite FK enforced at DB level
+
+  @@id([tenantId, id])
+  @@index([tenantId, status])
+  @@index([tenantId, eventId])
+  @@index([tenantId, clientId])
+  @@index([tenantId, expiresAt])
+  @@index([tenantId, contractNumber])
+  @@index([tenantId, documentType])
+  @@map("event_contracts")
+  @@schema("tenant_events")
+}
+
+model ContractSignature {
+  tenantId      String    @map("tenant_id") @db.Uuid
+  id            String    @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  contractId    String    @map("contract_id") @db.Uuid
+  signedAt      DateTime  @default(now()) @map("signed_at") @db.Timestamptz(6)
+  signatureData String    @map("signature_data")
+  signerName    String    @map("signer_name")
+  signerEmail   String?   @map("signer_email")
+  ipAddress     String?   @map("ip_address")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  // Note: relation to EventContract uses composite FK enforced at DB level
+
+  @@id([tenantId, id])
+  @@index([tenantId, contractId])
+  @@index([tenantId, signedAt])
+  @@index([tenantId, signerEmail])
+  @@map("contract_signatures")
   @@schema("tenant_events")
 }
