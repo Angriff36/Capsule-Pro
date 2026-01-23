@@ -1,6 +1,8 @@
 import { Readable } from "node:stream";
 import { v4 as uuidv4 } from "uuid";
 import { CancellationError, ERROR_CODES, SDKError } from "./errors.js";
+import { generateText } from "ai";
+import { models } from "./models.js";
 import {
   type AgentEvent,
   AgentEventEmitter,
@@ -440,7 +442,48 @@ export class Agent {
       onProgress: (data: AgentEvent) => void;
     }
   ): Promise<string> {
-    return `[Agent: ${this.name}] ${this.instructions}\n\nUser: ${prompt}`;
+    try {
+      // Emit progress event before making the API call
+      context.onProgress({
+        type: "progress",
+        stage: "calling_llm",
+        percentage: 0,
+        message: "Calling GPT-4o-mini...",
+      });
+
+      // Make the actual LLM API call using Vercel AI SDK
+      const result = await generateText({
+        model: models.chat,
+        system: this.instructions,
+        prompt: prompt,
+        temperature: 0.7,
+      });
+
+      // Emit progress event after successful API response
+      context.onProgress({
+        type: "progress",
+        stage: "llm_response",
+        percentage: 100,
+        message: "Received response from GPT-4o-mini",
+      });
+
+      return result.text;
+    } catch (error) {
+      if (this.debug) {
+        console.error(`[Agent] LLM API call failed:`, error);
+      }
+
+      // Re-throw as SDKError for proper retry handling
+      throw new SDKError(
+        `LLM API call failed: ${error instanceof Error ? error.message : String(error)}`,
+        {
+          code: ERROR_CODES.AGENT_EXECUTION_FAILED,
+          agentId: this.id,
+          retryable: true,
+          context: { originalError: error },
+        }
+      );
+    }
   }
 
   private emitStarted(executionId: string): void {
