@@ -2079,8 +2079,8 @@ model employee_time_off_requests {
   start_date        DateTime  @db.Date
   end_date          DateTime  @db.Date
   reason            String?   @db.Text
-  status            String    @default("PENDING") @db.TenantStaffTimeOffStatus
-  request_type      String    @default("VACATION") @db.TenantStaffTimeOffType
+  status            String    @default("PENDING")
+  request_type      String    @default("VACATION")
   created_at        DateTime  @default(now()) @db.Timestamptz(6)
   updated_at        DateTime  @default(now()) @db.Timestamptz(6)
   deleted_at        DateTime? @db.Timestamptz(6)

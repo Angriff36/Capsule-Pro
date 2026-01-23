@@ -1,10 +1,7 @@
-import { ModuleSection } from "../../components/module-section";
+import { AvailabilityClient } from "./components/availability-client";
 
-const SchedulingAvailabilityPage = () => (
-  <ModuleSection
-    summary="Collect availability and time-off submissions."
-    title="Availability"
-  />
-);
+const SchedulingAvailabilityPage = () => {
+  return <AvailabilityClient />;
+};
 
 export default SchedulingAvailabilityPage;
