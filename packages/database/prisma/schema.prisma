@@ -404,6 +404,52 @@ model EventSummary {
   @@schema("tenant_events")
 }
 
+model EventBudget {
+  tenantId            String             @map("tenant_id") @db.Uuid
+  id                  String             @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  eventId             String             @map("event_id") @db.Uuid
+  version             Int                @default(1) @map("version")
+  status              EventBudgetStatus  @default(draft)
+  totalBudgetAmount   Decimal            @default(0) @map("total_budget_amount") @db.Decimal(12, 2)
+  totalActualAmount   Decimal            @default(0) @map("total_actual_amount") @db.Decimal(12, 2)
+  varianceAmount      Decimal            @default(0) @map("variance_amount") @db.Decimal(12, 2)
+  variancePercentage  Decimal            @default(0) @map("variance_percentage") @db.Decimal(5, 2)
+  notes               String?            @db.Text
+  createdAt           DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt           DateTime?          @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([eventId])
+  @@index([status])
+  @@index([tenantId, eventId])
+  @@map("event_budgets")
+  @@schema("tenant_events")
+}
+
+model BudgetLineItem {
+  tenantId       String                      @map("tenant_id") @db.Uuid
+  id             String                      @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  budgetId       String                      @map("budget_id") @db.Uuid
+  category       BudgetLineItemCategory
+  name           String                      @db.VarChar(255)
+  description    String?                     @db.Text
+  budgetedAmount Decimal                     @default(0) @map("budgeted_amount") @db.Decimal(12, 2)
+  actualAmount   Decimal                     @default(0) @map("actual_amount") @db.Decimal(12, 2)
+  varianceAmount Decimal                     @default(0) @map("variance_amount") @db.Decimal(12, 2)
+  sortOrder      Int                         @default(0) @map("sort_order")
+  notes          String?                     @db.Text
+  createdAt      DateTime                    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime                    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime?                   @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([budgetId])
+  @@index([category])
+  @@map("budget_line_items")
+  @@schema("tenant_events")
+}
+
 model Client {
   tenantId            String    @map("tenant_id") @db.Uuid
   id                  String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -2406,6 +2452,25 @@ enum TenantStaffTimeOffType {
 
   @@map("time_off_type")
   @@schema("tenant_staff")
+}
+
+enum EventBudgetStatus {
+  draft
+  approved
+  locked
+
+  @@map("event_budget_status")
+  @@schema("tenant_events")
+}
+
+enum BudgetLineItemCategory {
+  food
+  labor
+  rentals
+  miscellaneous
+
+  @@map("budget_line_item_category")
+  @@schema("tenant_events")
 }
 
 model OutboxEvent {
