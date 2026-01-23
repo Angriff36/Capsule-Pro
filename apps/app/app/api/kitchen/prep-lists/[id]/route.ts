@@ -1,6 +1,6 @@
-import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
@@ -68,7 +68,10 @@ export async function GET(
     `;
 
     if (prepListResult.length === 0) {
-      return NextResponse.json({ error: "Prep list not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Prep list not found" },
+        { status: 404 }
+      );
     }
 
     const prepList = prepListResult[0];
@@ -211,7 +214,9 @@ export async function PATCH(
     values.push(tenantId, id);
 
     // Build dynamic SQL for updates
-    const updateClause = updates.map((u, i) => u.replace(/\$\d+/, `$${i + 1}`)).join(", ");
+    const updateClause = updates
+      .map((u, i) => u.replace(/\$\d+/, `$${i + 1}`))
+      .join(", ");
     const sql = `UPDATE tenant_kitchen.prep_lists SET ${updateClause} WHERE tenant_id = $${updates.length + 1} AND id = $${updates.length + 2} AND deleted_at IS NULL`;
 
     await database.$queryRawUnsafe(sql, values);

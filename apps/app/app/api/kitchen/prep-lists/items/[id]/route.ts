@@ -1,6 +1,6 @@
-import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
@@ -14,19 +14,14 @@ export async function PATCH(
   try {
     const { orgId, userId } = await auth();
 
-    if (!orgId || !userId) {
+    if (!(orgId && userId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     const { id } = await params;
     const body = await request.json();
-    const {
-      scaledQuantity,
-      isCompleted,
-      preparationNotes,
-      isOptional,
-    } = body;
+    const { scaledQuantity, isCompleted, preparationNotes, isOptional } = body;
 
     const updates: string[] = [];
     const values: any[] = [];
@@ -44,8 +39,8 @@ export async function PATCH(
         updates.push(`completed_by = $${values.length + 1}`);
         values.push(userId);
       } else {
-        updates.push(`completed_at = NULL`);
-        updates.push(`completed_by = NULL`);
+        updates.push("completed_at = NULL");
+        updates.push("completed_by = NULL");
       }
     }
     if (preparationNotes !== undefined) {
@@ -65,13 +60,17 @@ export async function PATCH(
     }
 
     // Build dynamic SQL for updates
-    const updateClause = updates.map((u, i) => u.replace(/\$\d+/, `$${i + 1}`)).join(", ");
+    const updateClause = updates
+      .map((u, i) => u.replace(/\$\d+/, `$${i + 1}`))
+      .join(", ");
     const valuesArray = [...values, tenantId, id];
     const sql = `UPDATE tenant_kitchen.prep_list_items SET ${updateClause} WHERE tenant_id = $${updates.length + 1} AND id = $${updates.length + 2} AND deleted_at IS NULL`;
 
     await database.$queryRawUnsafe(sql, valuesArray);
 
-    return NextResponse.json({ message: "Prep list item updated successfully" });
+    return NextResponse.json({
+      message: "Prep list item updated successfully",
+    });
   } catch (error) {
     console.error("Error updating prep list item:", error);
     return NextResponse.json(
@@ -107,7 +106,9 @@ export async function DELETE(
         AND deleted_at IS NULL
     `;
 
-    return NextResponse.json({ message: "Prep list item deleted successfully" });
+    return NextResponse.json({
+      message: "Prep list item deleted successfully",
+    });
   } catch (error) {
     console.error("Error deleting prep list item:", error);
     return NextResponse.json(

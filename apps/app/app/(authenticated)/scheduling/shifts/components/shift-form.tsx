@@ -1,8 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Loader2Icon } from "lucide-react";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
@@ -14,9 +11,18 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { Loader2Icon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { createShift, updateShift } from "../actions";
-import { getAvailableEmployees, getEmployees, getLocations, getSchedules } from "../actions";
+import {
+  createShift,
+  getAvailableEmployees,
+  getEmployees,
+  getLocations,
+  getSchedules,
+  updateShift,
+} from "../actions";
 
 interface Shift {
   id?: string;
@@ -69,7 +75,12 @@ const formatDateTimeLocal = (dateStr: string | undefined) => {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
-export function ShiftForm({ shift, scheduleId, onSuccess, onCancel }: ShiftFormProps) {
+export function ShiftForm({
+  shift,
+  scheduleId,
+  onSuccess,
+  onCancel,
+}: ShiftFormProps) {
   const router = useRouter();
   const isEditing = Boolean(shift?.id);
 
@@ -100,11 +111,9 @@ export function ShiftForm({ shift, scheduleId, onSuccess, onCancel }: ShiftFormP
     async function loadData() {
       setLoading(true);
       try {
-        const [employeesData, locationsData, schedulesData] = await Promise.all([
-          getEmployees(),
-          getLocations(),
-          getSchedules(),
-        ]);
+        const [employeesData, locationsData, schedulesData] = await Promise.all(
+          [getEmployees(), getLocations(), getSchedules()]
+        );
         setEmployees(employeesData.employees || []);
         setLocations(locationsData.locations || []);
         setSchedules(schedulesData.schedules || []);
@@ -153,7 +162,11 @@ export function ShiftForm({ shift, scheduleId, onSuccess, onCancel }: ShiftFormP
     if (!formData.locationId) newErrors.locationId = "Location is required";
     if (!formData.shiftStart) newErrors.shiftStart = "Start time is required";
     if (!formData.shiftEnd) newErrors.shiftEnd = "End time is required";
-    if (formData.shiftStart && formData.shiftEnd && new Date(formData.shiftStart) >= new Date(formData.shiftEnd)) {
+    if (
+      formData.shiftStart &&
+      formData.shiftEnd &&
+      new Date(formData.shiftStart) >= new Date(formData.shiftEnd)
+    ) {
       newErrors.shiftEnd = "End time must be after start time";
     }
 
@@ -167,9 +180,13 @@ export function ShiftForm({ shift, scheduleId, onSuccess, onCancel }: ShiftFormP
     submitData.append("scheduleId", formData.scheduleId);
     submitData.append("employeeId", formData.employeeId);
     submitData.append("locationId", formData.locationId);
-    submitData.append("shiftStart", new Date(formData.shiftStart).toISOString());
+    submitData.append(
+      "shiftStart",
+      new Date(formData.shiftStart).toISOString()
+    );
     submitData.append("shiftEnd", new Date(formData.shiftEnd).toISOString());
-    if (formData.roleDuringShift) submitData.append("roleDuringShift", formData.roleDuringShift);
+    if (formData.roleDuringShift)
+      submitData.append("roleDuringShift", formData.roleDuringShift);
     if (formData.notes) submitData.append("notes", formData.notes);
     if (formData.allowOverlap) submitData.append("allowOverlap", "true");
 
@@ -190,8 +207,14 @@ export function ShiftForm({ shift, scheduleId, onSuccess, onCancel }: ShiftFormP
     }
   };
 
-  const displayEmployees = showAllEmployees ? employees : availableEmployees.length > 0 ? availableEmployees : employees;
-  const hasConflicts = availableEmployees.some((e) => e.id === formData.employeeId && e.hasConflictingShift);
+  const displayEmployees = showAllEmployees
+    ? employees
+    : availableEmployees.length > 0
+      ? availableEmployees
+      : employees;
+  const hasConflicts = availableEmployees.some(
+    (e) => e.id === formData.employeeId && e.hasConflictingShift
+  );
 
   if (loading) {
     return (
@@ -202,15 +225,17 @@ export function ShiftForm({ shift, scheduleId, onSuccess, onCancel }: ShiftFormP
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+    <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
       <div className="grid gap-6 md:grid-cols-2">
         {/* Schedule */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="scheduleId">Schedule *</Label>
           <Select
-            value={formData.scheduleId}
-            onValueChange={(value) => setFormData({ ...formData, scheduleId: value })}
             disabled={!!scheduleId}
+            onValueChange={(value) =>
+              setFormData({ ...formData, scheduleId: value })
+            }
+            value={formData.scheduleId}
           >
             <SelectTrigger id="scheduleId">
               <SelectValue placeholder="Select schedule" />
@@ -218,20 +243,25 @@ export function ShiftForm({ shift, scheduleId, onSuccess, onCancel }: ShiftFormP
             <SelectContent>
               {schedules.map((schedule) => (
                 <SelectItem key={schedule.id} value={schedule.id}>
-                  {schedule.schedule_date.toLocaleDateString()} ({schedule.status})
+                  {schedule.schedule_date.toLocaleDateString()} (
+                  {schedule.status})
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          {errors.scheduleId && <p className="text-sm text-destructive">{errors.scheduleId}</p>}
+          {errors.scheduleId && (
+            <p className="text-sm text-destructive">{errors.scheduleId}</p>
+          )}
         </div>
 
         {/* Location */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="locationId">Location *</Label>
           <Select
+            onValueChange={(value) =>
+              setFormData({ ...formData, locationId: value })
+            }
             value={formData.locationId}
-            onValueChange={(value) => setFormData({ ...formData, locationId: value })}
           >
             <SelectTrigger id="locationId">
               <SelectValue placeholder="Select location" />
@@ -244,28 +274,35 @@ export function ShiftForm({ shift, scheduleId, onSuccess, onCancel }: ShiftFormP
               ))}
             </SelectContent>
           </Select>
-          {errors.locationId && <p className="text-sm text-destructive">{errors.locationId}</p>}
+          {errors.locationId && (
+            <p className="text-sm text-destructive">{errors.locationId}</p>
+          )}
         </div>
 
         {/* Employee */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="employeeId">Employee *</Label>
           <Select
+            onValueChange={(value) =>
+              setFormData({ ...formData, employeeId: value })
+            }
             value={formData.employeeId}
-            onValueChange={(value) => setFormData({ ...formData, employeeId: value })}
           >
             <SelectTrigger id="employeeId">
               <SelectValue placeholder="Select employee" />
             </SelectTrigger>
             <SelectContent>
               {displayEmployees.map((employee) => {
-                const isUnavailable = availableEmployees.length > 0 && !availableEmployees.some((e) => e.id === employee.id);
-                const hasConflict = employee.id === formData.employeeId && hasConflicts;
+                const isUnavailable =
+                  availableEmployees.length > 0 &&
+                  !availableEmployees.some((e) => e.id === employee.id);
+                const hasConflict =
+                  employee.id === formData.employeeId && hasConflicts;
                 return (
                   <SelectItem
+                    disabled={isUnavailable && !showAllEmployees}
                     key={employee.id}
                     value={employee.id}
-                    disabled={isUnavailable && !showAllEmployees}
                   >
                     {employee.first_name} {employee.last_name} ({employee.role})
                     {hasConflict && " ⚠️ Conflict"}
@@ -275,22 +312,28 @@ export function ShiftForm({ shift, scheduleId, onSuccess, onCancel }: ShiftFormP
             </SelectContent>
           </Select>
           <div className="flex items-center gap-2">
-            {errors.employeeId && <p className="text-sm text-destructive">{errors.employeeId}</p>}
+            {errors.employeeId && (
+              <p className="text-sm text-destructive">{errors.employeeId}</p>
+            )}
             {hasConflicts && (
               <p className="text-sm text-orange-600">
-                This employee has a conflicting shift. Enable "Allow Overlap" to proceed.
+                This employee has a conflicting shift. Enable "Allow Overlap" to
+                proceed.
               </p>
             )}
           </div>
-          {availableEmployees.length > 0 && availableEmployees.length < employees.length && (
-            <button
-              type="button"
-              onClick={() => setShowAllEmployees(!showAllEmployees)}
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              {showAllEmployees ? "Show available only" : `Show all employees (${employees.length} total)`}
-            </button>
-          )}
+          {availableEmployees.length > 0 &&
+            availableEmployees.length < employees.length && (
+              <button
+                className="text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => setShowAllEmployees(!showAllEmployees)}
+                type="button"
+              >
+                {showAllEmployees
+                  ? "Show available only"
+                  : `Show all employees (${employees.length} total)`}
+              </button>
+            )}
         </div>
 
         {/* Role During Shift */}
@@ -298,9 +341,11 @@ export function ShiftForm({ shift, scheduleId, onSuccess, onCancel }: ShiftFormP
           <Label htmlFor="roleDuringShift">Role During Shift</Label>
           <Input
             id="roleDuringShift"
-            value={formData.roleDuringShift}
-            onChange={(e) => setFormData({ ...formData, roleDuringShift: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, roleDuringShift: e.target.value })
+            }
             placeholder="e.g., Line Cook, Server"
+            value={formData.roleDuringShift}
           />
         </div>
 
@@ -309,11 +354,15 @@ export function ShiftForm({ shift, scheduleId, onSuccess, onCancel }: ShiftFormP
           <Label htmlFor="shiftStart">Start Time *</Label>
           <Input
             id="shiftStart"
+            onChange={(e) =>
+              setFormData({ ...formData, shiftStart: e.target.value })
+            }
             type="datetime-local"
             value={formData.shiftStart}
-            onChange={(e) => setFormData({ ...formData, shiftStart: e.target.value })}
           />
-          {errors.shiftStart && <p className="text-sm text-destructive">{errors.shiftStart}</p>}
+          {errors.shiftStart && (
+            <p className="text-sm text-destructive">{errors.shiftStart}</p>
+          )}
         </div>
 
         {/* End Time */}
@@ -321,11 +370,15 @@ export function ShiftForm({ shift, scheduleId, onSuccess, onCancel }: ShiftFormP
           <Label htmlFor="shiftEnd">End Time *</Label>
           <Input
             id="shiftEnd"
+            onChange={(e) =>
+              setFormData({ ...formData, shiftEnd: e.target.value })
+            }
             type="datetime-local"
             value={formData.shiftEnd}
-            onChange={(e) => setFormData({ ...formData, shiftEnd: e.target.value })}
           />
-          {errors.shiftEnd && <p className="text-sm text-destructive">{errors.shiftEnd}</p>}
+          {errors.shiftEnd && (
+            <p className="text-sm text-destructive">{errors.shiftEnd}</p>
+          )}
         </div>
 
         {/* Notes */}
@@ -333,10 +386,12 @@ export function ShiftForm({ shift, scheduleId, onSuccess, onCancel }: ShiftFormP
           <Label htmlFor="notes">Notes</Label>
           <Textarea
             id="notes"
-            value={formData.notes}
-            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, notes: e.target.value })
+            }
             placeholder="Additional notes or instructions..."
             rows={3}
+            value={formData.notes}
           />
         </div>
 
@@ -345,10 +400,12 @@ export function ShiftForm({ shift, scheduleId, onSuccess, onCancel }: ShiftFormP
           <div className="flex flex-col gap-2 md:col-span-2">
             <label className="flex items-center gap-2">
               <input
-                type="checkbox"
                 checked={formData.allowOverlap}
-                onChange={(e) => setFormData({ ...formData, allowOverlap: e.target.checked })}
                 className="h-4 w-4 rounded border-gray-300"
+                onChange={(e) =>
+                  setFormData({ ...formData, allowOverlap: e.target.checked })
+                }
+                type="checkbox"
               />
               <span className="text-sm">Allow overlapping shifts</span>
             </label>
@@ -359,12 +416,14 @@ export function ShiftForm({ shift, scheduleId, onSuccess, onCancel }: ShiftFormP
       {/* Actions */}
       <div className="flex justify-end gap-3">
         {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button onClick={onCancel} type="button" variant="outline">
             Cancel
           </Button>
         )}
-        <Button type="submit" disabled={checkingAvailability}>
-          {checkingAvailability && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
+        <Button disabled={checkingAvailability} type="submit">
+          {checkingAvailability && (
+            <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+          )}
           {isEditing ? "Update Shift" : "Create Shift"}
         </Button>
       </div>

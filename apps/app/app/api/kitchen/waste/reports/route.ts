@@ -56,8 +56,14 @@ export async function GET(request: Request) {
   });
 
   // Calculate totals
-  const totalCost = entries.reduce((sum, entry) => sum + Number(entry.totalCost || 0), 0);
-  const totalQuantity = entries.reduce((sum, entry) => sum + Number(entry.quantity), 0);
+  const totalCost = entries.reduce(
+    (sum, entry) => sum + Number(entry.totalCost || 0),
+    0
+  );
+  const totalQuantity = entries.reduce(
+    (sum, entry) => sum + Number(entry.quantity),
+    0
+  );
   const entryCount = entries.length;
 
   // Group data based on groupBy parameter

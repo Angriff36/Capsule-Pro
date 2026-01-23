@@ -63,10 +63,7 @@ export async function POST(request: Request) {
     });
 
     if (!event) {
-      return NextResponse.json(
-        { message: "Event not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Event not found" }, { status: 404 });
     }
 
     // Get all guests for the event with their dietary and allergen restrictions
@@ -109,13 +106,13 @@ export async function POST(request: Request) {
             d.dietary_tags
           FROM tenant_kitchen.dishes d
           WHERE d.tenant_id = ${tenantId}
-            AND d.id IN (SELECT UNNEST(ARRAY[${Prisma.raw(body.dishIds.map(id => `'${id}'`).join(","))}]::uuid[]))
+            AND d.id IN (SELECT UNNEST(ARRAY[${Prisma.raw(body.dishIds.map((id) => `'${id}'`).join(","))}]::uuid[]))
             AND d.deleted_at IS NULL
         `
       );
 
       // Convert to expected format and verify all requested dishes exist
-      dishes = linkedDishes.map(d => ({
+      dishes = linkedDishes.map((d) => ({
         id: d.dish_id,
         name: d.dish_name,
         allergens: d.allergens || [],
@@ -123,11 +120,13 @@ export async function POST(request: Request) {
       }));
 
       // Verify all requested dishes exist
-      const foundDishIds = dishes.map(d => d.id);
-      const missingDishIds = body.dishIds?.filter(id => !foundDishIds);
+      const foundDishIds = dishes.map((d) => d.id);
+      const missingDishIds = body.dishIds?.filter((id) => !foundDishIds);
       if (missingDishIds && missingDishIds.length > 0) {
         return NextResponse.json(
-          { message: `The following dishes not found: ${missingDishIds.join(", ")}` },
+          {
+            message: `The following dishes not found: ${missingDishIds.join(", ")}`,
+          },
           { status: 404 }
         );
       }
@@ -158,7 +157,7 @@ export async function POST(request: Request) {
         `
       );
 
-      dishes = linkedDishes.map(d => ({
+      dishes = linkedDishes.map((d) => ({
         id: d.dish_id,
         name: d.dish_name,
         allergens: d.allergens || [],
@@ -177,10 +176,13 @@ export async function POST(request: Request) {
         // Check allergen conflicts (critical)
         if (guest.allergenRestrictions && dish.allergens) {
           for (const allergen of guest.allergenRestrictions) {
-            if (dish.allergens.some(dishAllergen =>
-              dishAllergen.toLowerCase().includes(allergen.toLowerCase()) ||
-              allergen.toLowerCase().includes(dishAllergen.toLowerCase())
-            )) {
+            if (
+              dish.allergens.some(
+                (dishAllergen) =>
+                  dishAllergen.toLowerCase().includes(allergen.toLowerCase()) ||
+                  allergen.toLowerCase().includes(dishAllergen.toLowerCase())
+              )
+            ) {
               conflictingAllergens.push(allergen);
             }
           }
@@ -189,10 +191,15 @@ export async function POST(request: Request) {
         // Check dietary restriction conflicts (warning)
         if (guest.dietaryRestrictions && dish.dietaryTags) {
           for (const restriction of guest.dietaryRestrictions) {
-            if (dish.dietaryTags.some(dietaryTag =>
-              dietaryTag.toLowerCase().includes(restriction.toLowerCase()) ||
-              restriction.toLowerCase().includes(dietaryTag.toLowerCase())
-            )) {
+            if (
+              dish.dietaryTags.some(
+                (dietaryTag) =>
+                  dietaryTag
+                    .toLowerCase()
+                    .includes(restriction.toLowerCase()) ||
+                  restriction.toLowerCase().includes(dietaryTag.toLowerCase())
+              )
+            ) {
               conflictingDietaryTags.push(restriction);
             }
           }
@@ -228,8 +235,8 @@ export async function POST(request: Request) {
     // Create summary
     const summary = {
       total: conflicts.length,
-      critical: conflicts.filter(c => c.severity === "critical").length,
-      warning: conflicts.filter(c => c.severity === "warning").length,
+      critical: conflicts.filter((c) => c.severity === "critical").length,
+      warning: conflicts.filter((c) => c.severity === "warning").length,
     };
 
     // Return response
@@ -239,7 +246,6 @@ export async function POST(request: Request) {
     };
 
     return NextResponse.json(response);
-
   } catch (error) {
     console.error("Error checking allergens:", error);
     return NextResponse.json(

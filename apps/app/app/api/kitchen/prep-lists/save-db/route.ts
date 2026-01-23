@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { eventId, prepList, name } = body;
 
-    if (!eventId || !prepList) {
+    if (!(eventId && prepList)) {
       return NextResponse.json(
         { error: "eventId and prepList are required" },
         { status: 400 }

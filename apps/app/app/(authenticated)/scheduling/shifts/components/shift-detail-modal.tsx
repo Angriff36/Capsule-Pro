@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,9 +9,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Loader2Icon, PencilIcon, Trash2Icon, UserIcon, MapPinIcon, ClockIcon } from "lucide-react";
+import {
+  ClockIcon,
+  Loader2Icon,
+  MapPinIcon,
+  PencilIcon,
+  Trash2Icon,
+  UserIcon,
+} from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { deleteShift } from "../actions";
 import { ShiftForm } from "./shift-form";
@@ -40,7 +47,12 @@ interface ShiftDetailModalProps {
   onDelete?: () => void;
 }
 
-export function ShiftDetailModal({ open, onClose, shift, onDelete }: ShiftDetailModalProps) {
+export function ShiftDetailModal({
+  open,
+  onClose,
+  shift,
+  onDelete,
+}: ShiftDetailModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -89,13 +101,22 @@ export function ShiftDetailModal({ open, onClose, shift, onDelete }: ShiftDetail
 
   if (isEditing) {
     return (
-      <Dialog open={open} onOpenChange={onClose}>
+      <Dialog onOpenChange={onClose} open={open}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Shift</DialogTitle>
-            <DialogDescription>Update shift details for {shift.employee_first_name} {shift.employee_last_name}</DialogDescription>
+            <DialogDescription>
+              Update shift details for {shift.employee_first_name}{" "}
+              {shift.employee_last_name}
+            </DialogDescription>
           </DialogHeader>
           <ShiftForm
+            onCancel={() => setIsEditing(false)}
+            onSuccess={() => {
+              setIsEditing(false);
+              onDelete?.();
+              onClose();
+            }}
             shift={{
               id: shift.id,
               schedule_id: shift.schedule_id,
@@ -106,12 +127,6 @@ export function ShiftDetailModal({ open, onClose, shift, onDelete }: ShiftDetail
               role_during_shift: shift.role_during_shift,
               notes: shift.notes,
             }}
-            onSuccess={() => {
-              setIsEditing(false);
-              onDelete?.();
-              onClose();
-            }}
-            onCancel={() => setIsEditing(false)}
           />
         </DialogContent>
       </Dialog>
@@ -119,12 +134,13 @@ export function ShiftDetailModal({ open, onClose, shift, onDelete }: ShiftDetail
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog onOpenChange={onClose} open={open}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Shift Details</DialogTitle>
           <DialogDescription>
-            {shift.employee_first_name} {shift.employee_last_name} - {formatDate(shift.shift_start)}
+            {shift.employee_first_name} {shift.employee_last_name} -{" "}
+            {formatDate(shift.shift_start)}
           </DialogDescription>
         </DialogHeader>
 
@@ -138,11 +154,15 @@ export function ShiftDetailModal({ open, onClose, shift, onDelete }: ShiftDetail
               <h3 className="font-semibold text-lg">
                 {shift.employee_first_name} {shift.employee_last_name}
               </h3>
-              <p className="text-sm text-muted-foreground">{shift.employee_email}</p>
+              <p className="text-sm text-muted-foreground">
+                {shift.employee_email}
+              </p>
               <div className="mt-2 flex gap-2">
                 <Badge variant="secondary">{shift.employee_role}</Badge>
                 {shift.role_during_shift && (
-                  <Badge variant="outline">Role: {shift.role_during_shift}</Badge>
+                  <Badge variant="outline">
+                    Role: {shift.role_during_shift}
+                  </Badge>
                 )}
               </div>
             </div>
@@ -156,10 +176,12 @@ export function ShiftDetailModal({ open, onClose, shift, onDelete }: ShiftDetail
                 <p className="text-sm text-muted-foreground">Time</p>
                 <p className="font-medium">{formatDate(shift.shift_start)}</p>
                 <p className="text-sm">
-                  {formatTime(shift.shift_start)} - {formatTime(shift.shift_end)}
+                  {formatTime(shift.shift_start)} -{" "}
+                  {formatTime(shift.shift_end)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Duration: {calculateDuration(shift.shift_start, shift.shift_end)}
+                  Duration:{" "}
+                  {calculateDuration(shift.shift_start, shift.shift_end)}
                 </p>
               </div>
             </div>
@@ -199,19 +221,18 @@ export function ShiftDetailModal({ open, onClose, shift, onDelete }: ShiftDetail
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button
-              variant="outline"
-              onClick={() => setIsEditing(true)}
-            >
+            <Button onClick={() => setIsEditing(true)} variant="outline">
               <PencilIcon className="h-4 w-4 mr-2" />
               Edit
             </Button>
             <Button
-              variant="destructive"
-              onClick={handleDelete}
               disabled={isDeleting}
+              onClick={handleDelete}
+              variant="destructive"
             >
-              {isDeleting && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
+              {isDeleting && (
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+              )}
               <Trash2Icon className="h-4 w-4 mr-2" />
               Delete
             </Button>

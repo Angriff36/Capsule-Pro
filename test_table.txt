@@ -1,0 +1,20 @@
+tenant_events.event_guests
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  UNIQUE: (tenant_id, id)  -- For composite FK
+  event_id uuid NOT NULL
+  guest_name text NOT NULL
+  guest_email text
+  guest_phone text
+  is_primary_contact boolean NOT NULL DEFAULT false
+  dietary_restrictions text[]  -- vegan, vegetarian, kosher, halal, etc.
+  allergen_restrictions text[]  -- peanuts, dairy, gluten, shellfish, etc.
+  special_meal_required boolean NOT NULL DEFAULT false
+  special_meal_notes text
+  meal_preference text
+  table_assignment text
+  notes text
+  created_at, updated_at, deleted_at
+  FK: (tenant_id, event_id) -> tenant_events.events
+  UNIQUE (tenant_id, guest_name, event_id) WHERE deleted_at IS NULL

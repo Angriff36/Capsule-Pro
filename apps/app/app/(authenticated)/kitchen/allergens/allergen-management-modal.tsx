@@ -38,11 +38,25 @@ const COMMON_ALLERGENS = [
   { id: "gluten", label: "Gluten", description: "Wheat, barley, rye, etc." },
   { id: "soy", label: "Soy", description: "Soybeans and soy products" },
   { id: "fish", label: "Fish", description: "All types of fish" },
-  { id: "shellfish", label: "Shellfish", description: "Shrimp, crab, lobster, etc." },
+  {
+    id: "shellfish",
+    label: "Shellfish",
+    description: "Shrimp, crab, lobster, etc.",
+  },
   { id: "sesame", label: "Sesame", description: "Sesame seeds and sesame oil" },
 ] as const;
 
-const COMMON_ALLERGENS_IDS = ["peanuts", "tree-nuts", "dairy", "eggs", "gluten", "soy", "fish", "shellfish", "sesame"] as const;
+const COMMON_ALLERGENS_IDS = [
+  "peanuts",
+  "tree-nuts",
+  "dairy",
+  "eggs",
+  "gluten",
+  "soy",
+  "fish",
+  "shellfish",
+  "sesame",
+] as const;
 
 const DIETARY_TAGS = [
   { id: "vegan", label: "Vegan", description: "No animal products" },
@@ -51,9 +65,21 @@ const DIETARY_TAGS = [
     label: "Vegetarian",
     description: "No meat, but may include dairy/eggs",
   },
-  { id: "kosher", label: "Kosher", description: "Prepared according to Jewish law" },
-  { id: "halal", label: "Halal", description: "Prepared according to Islamic law" },
-  { id: "gluten-free", label: "Gluten-Free", description: "No gluten-containing ingredients" },
+  {
+    id: "kosher",
+    label: "Kosher",
+    description: "Prepared according to Jewish law",
+  },
+  {
+    id: "halal",
+    label: "Halal",
+    description: "Prepared according to Islamic law",
+  },
+  {
+    id: "gluten-free",
+    label: "Gluten-Free",
+    description: "No gluten-containing ingredients",
+  },
   { id: "dairy-free", label: "Dairy-Free", description: "No dairy products" },
   { id: "nut-free", label: "Nut-Free", description: "No nuts or peanuts" },
 ] as const;
@@ -79,9 +105,8 @@ export function AllergenManagementModal({
   const [saving, setSaving] = useState(false);
   const [selectedAllergens, setSelectedAllergens] =
     useState<string[]>(currentAllergens);
-  const [selectedDietaryTags, setSelectedDietaryTags] = useState<string[]>(
-    currentDietaryTags
-  );
+  const [selectedDietaryTags, setSelectedDietaryTags] =
+    useState<string[]>(currentDietaryTags);
 
   const handleAllergenToggle = (allergen: string) => {
     setSelectedAllergens((prev) =>
@@ -102,7 +127,9 @@ export function AllergenManagementModal({
     try {
       // Recipe allergen management has been deprecated and is no longer available
       if (type === "recipe") {
-        toast.error("Recipe allergen management is not available. Allergens are managed at the dish level.");
+        toast.error(
+          "Recipe allergen management is not available. Allergens are managed at the dish level."
+        );
         setOpen(false);
         return;
       }
@@ -124,9 +151,7 @@ export function AllergenManagementModal({
         throw new Error("Failed to update allergen information");
       }
 
-      toast.success(
-        `Allergen information updated for dish: ${name}`
-      );
+      toast.success(`Allergen information updated for dish: ${name}`);
       setOpen(false);
 
       // Refresh the page to show updated data
@@ -135,9 +160,7 @@ export function AllergenManagementModal({
       }, 500);
     } catch (error) {
       console.error("Error updating allergens:", error);
-      toast.error(
-        `Failed to update allergen information. Please try again.`
-      );
+      toast.error("Failed to update allergen information. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -150,7 +173,7 @@ export function AllergenManagementModal({
       JSON.stringify(currentDietaryTags.sort());
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
           <EditIcon className="mr-2 h-4 w-4" />
@@ -162,8 +185,8 @@ export function AllergenManagementModal({
           <DialogTitle>Edit Allergen Information</DialogTitle>
           <DialogDescription>
             Manage allergens and dietary restrictions for &quot;{name}
-            &quot;. This information will be used to generate warnings for guests
-            with restrictions.
+            &quot;. This information will be used to generate warnings for
+            guests with restrictions.
           </DialogDescription>
         </DialogHeader>
 
@@ -181,20 +204,18 @@ export function AllergenManagementModal({
               <div className="space-y-2">
                 {COMMON_ALLERGENS.map((allergen) => (
                   <div
-                    key={allergen.id}
                     className="flex items-start space-x-3 rounded-md border p-3"
+                    key={allergen.id}
                   >
                     <Checkbox
-                      id={`allergen-${allergen.id}`}
                       checked={selectedAllergens.includes(allergen.id)}
-                      onCheckedChange={() =>
-                        handleAllergenToggle(allergen.id)
-                      }
+                      id={`allergen-${allergen.id}`}
+                      onCheckedChange={() => handleAllergenToggle(allergen.id)}
                     />
                     <div className="flex-1">
                       <Label
-                        htmlFor={`allergen-${allergen.id}`}
                         className="cursor-pointer font-medium"
+                        htmlFor={`allergen-${allergen.id}`}
                       >
                         {allergen.label}
                       </Label>
@@ -219,18 +240,18 @@ export function AllergenManagementModal({
               <div className="space-y-2">
                 {DIETARY_TAGS.map((tag) => (
                   <div
-                    key={tag.id}
                     className="flex items-start space-x-3 rounded-md border p-3"
+                    key={tag.id}
                   >
                     <Checkbox
-                      id={`dietary-${tag.id}`}
                       checked={selectedDietaryTags.includes(tag.id)}
+                      id={`dietary-${tag.id}`}
                       onCheckedChange={() => handleDietaryToggle(tag.id)}
                     />
                     <div className="flex-1">
                       <Label
-                        htmlFor={`dietary-${tag.id}`}
                         className="cursor-pointer font-medium"
+                        htmlFor={`dietary-${tag.id}`}
                       >
                         {tag.label}
                       </Label>
@@ -248,7 +269,9 @@ export function AllergenManagementModal({
               <h4 className="font-semibold text-sm mb-2">Summary</h4>
               <div className="space-y-1 text-sm">
                 <div>
-                  <span className="text-muted-foreground">Selected allergens: </span>
+                  <span className="text-muted-foreground">
+                    Selected allergens:{" "}
+                  </span>
                   <span className="font-medium">
                     {selectedAllergens.length > 0
                       ? selectedAllergens.join(", ")
@@ -269,10 +292,10 @@ export function AllergenManagementModal({
         </ScrollArea>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
+          <Button onClick={() => setOpen(false)} variant="outline">
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={!hasChanges || saving}>
+          <Button disabled={!hasChanges || saving} onClick={handleSave}>
             {saving ? (
               <>
                 <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />

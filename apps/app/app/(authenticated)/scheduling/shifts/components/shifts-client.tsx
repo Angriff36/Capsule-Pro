@@ -1,17 +1,8 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import { Loader2Icon, PlusIcon, FilterIcon } from "lucide-react";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -27,8 +18,17 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import {
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { FilterIcon, Loader2Icon, PlusIcon } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getShifts, getEmployees, getLocations } from "../actions";
+import { getEmployees, getLocations, getShifts } from "../actions";
 import { ShiftDetailModal } from "./shift-detail-modal";
 import { ShiftForm } from "./shift-form";
 
@@ -184,7 +184,9 @@ export function ShiftsClient() {
           <div className="font-medium">
             {row.original.employee_first_name} {row.original.employee_last_name}
           </div>
-          <div className="text-sm text-muted-foreground">{row.original.employee_email}</div>
+          <div className="text-sm text-muted-foreground">
+            {row.original.employee_email}
+          </div>
         </div>
       ),
     },
@@ -198,8 +200,16 @@ export function ShiftsClient() {
       header: "Time",
       cell: ({ row }) => (
         <div>
-          <div>{formatTime(row.original.shift_start)} - {formatTime(row.original.shift_end)}</div>
-          <div className="text-sm text-muted-foreground">{calculateDuration(row.original.shift_start, row.original.shift_end)}</div>
+          <div>
+            {formatTime(row.original.shift_start)} -{" "}
+            {formatTime(row.original.shift_end)}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {calculateDuration(
+              row.original.shift_start,
+              row.original.shift_end
+            )}
+          </div>
         </div>
       ),
     },
@@ -246,18 +256,21 @@ export function ShiftsClient() {
       <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
         <FilterIcon className="h-4 w-4 text-muted-foreground" />
         <Input
+          className="max-w-[150px]"
+          onChange={(e) => handleFilterChange("startDate", e.target.value)}
           type="date"
           value={filters.startDate}
-          onChange={(e) => handleFilterChange("startDate", e.target.value)}
-          className="max-w-[150px]"
         />
         <Input
+          className="max-w-[150px]"
+          onChange={(e) => handleFilterChange("endDate", e.target.value)}
           type="date"
           value={filters.endDate}
-          onChange={(e) => handleFilterChange("endDate", e.target.value)}
-          className="max-w-[150px]"
         />
-        <Select value={filters.employeeId} onValueChange={(value) => handleFilterChange("employeeId", value)}>
+        <Select
+          onValueChange={(value) => handleFilterChange("employeeId", value)}
+          value={filters.employeeId}
+        >
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Filter by employee" />
           </SelectTrigger>
@@ -270,7 +283,10 @@ export function ShiftsClient() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={filters.locationId} onValueChange={(value) => handleFilterChange("locationId", value)}>
+        <Select
+          onValueChange={(value) => handleFilterChange("locationId", value)}
+          value={filters.locationId}
+        >
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Filter by location" />
           </SelectTrigger>
@@ -283,11 +299,21 @@ export function ShiftsClient() {
             ))}
           </SelectContent>
         </Select>
-        {(filters.startDate || filters.endDate || filters.employeeId || filters.locationId) && (
+        {(filters.startDate ||
+          filters.endDate ||
+          filters.employeeId ||
+          filters.locationId) && (
           <Button
-            variant="ghost"
+            onClick={() =>
+              setFilters({
+                startDate: "",
+                endDate: "",
+                employeeId: "",
+                locationId: "",
+              })
+            }
             size="sm"
-            onClick={() => setFilters({ startDate: "", endDate: "", employeeId: "", locationId: "" })}
+            variant="ghost"
           >
             Clear filters
           </Button>
@@ -304,7 +330,10 @@ export function ShiftsClient() {
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -313,26 +342,35 @@ export function ShiftsClient() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  className="h-24 text-center"
+                  colSpan={columns.length}
+                >
                   <Loader2Icon className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
                 </TableCell>
               </TableRow>
             ) : shifts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
+                <TableCell
+                  className="h-24 text-center text-muted-foreground"
+                  colSpan={columns.length}
+                >
                   No shifts found. Create a new shift to get started.
                 </TableCell>
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
                 <TableRow
-                  key={row.id}
                   className="cursor-pointer hover:bg-muted/50"
+                  key={row.id}
                   onClick={() => handleRowClick(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -346,23 +384,28 @@ export function ShiftsClient() {
       {pagination.totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {((pagination.page - 1) * pagination.limit) + 1} to{" "}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} shifts
+            Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
+            {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
+            {pagination.total} shifts
           </p>
           <div className="flex gap-2">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPagination((prev) => ({ ...prev, page: prev.page - 1 }))}
               disabled={pagination.page === 1}
+              onClick={() =>
+                setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
+              }
+              size="sm"
+              variant="outline"
             >
               Previous
             </Button>
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
               disabled={pagination.page === pagination.totalPages}
+              onClick={() =>
+                setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
+              }
+              size="sm"
+              variant="outline"
             >
               Next
             </Button>
@@ -372,17 +415,17 @@ export function ShiftsClient() {
 
       {/* Detail Modal */}
       <ShiftDetailModal
-        open={modalOpen}
         onClose={() => {
           setModalOpen(false);
           setSelectedShift(null);
         }}
-        shift={selectedShift}
         onDelete={() => {
           fetchShifts();
           setModalOpen(false);
           setSelectedShift(null);
         }}
+        open={modalOpen}
+        shift={selectedShift}
       />
 
       {/* Create Modal */}
@@ -391,14 +434,16 @@ export function ShiftsClient() {
           <div className="bg-background rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
             <div className="mb-4">
               <h2 className="text-2xl font-bold">Create New Shift</h2>
-              <p className="text-muted-foreground">Add a new shift to the schedule.</p>
+              <p className="text-muted-foreground">
+                Add a new shift to the schedule.
+              </p>
             </div>
             <ShiftForm
+              onCancel={() => setCreateModalOpen(false)}
               onSuccess={() => {
                 setCreateModalOpen(false);
                 fetchShifts();
               }}
-              onCancel={() => setCreateModalOpen(false)}
             />
           </div>
         </div>

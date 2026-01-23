@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 /**
  * IMPORTANT:
@@ -42,7 +42,9 @@ test.describe("Kitchen: route existence + no dead-ends (AUTH REQUIRED)", () => {
     });
   }
 
-  test("Kitchen: click-audit all visible in-app links/buttons (no 404 / no blank)", async ({ page }) => {
+  test("Kitchen: click-audit all visible in-app links/buttons (no 404 / no blank)", async ({
+    page,
+  }) => {
     await page.goto(KITCHEN_ENTRY, { waitUntil: "domcontentloaded" });
 
     // Collect candidate click targets:
@@ -65,7 +67,8 @@ test.describe("Kitchen: route existence + no dead-ends (AUTH REQUIRED)", () => {
     const hrefs = new Set<string>();
     for (let i = 0; i < count; i++) {
       const el = candidates.nth(i);
-      const href = (await el.getAttribute("href")) ?? (await el.getAttribute("data-href"));
+      const href =
+        (await el.getAttribute("href")) ?? (await el.getAttribute("data-href"));
       if (!href) continue;
       if (href.startsWith("http")) continue; // ignore external
       if (href.startsWith("#")) continue; // ignore hash

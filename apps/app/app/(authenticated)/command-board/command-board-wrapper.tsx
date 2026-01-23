@@ -2,31 +2,43 @@
 
 import { LivePresenceIndicator, Room } from "@repo/collaboration";
 import { Button } from "@repo/design-system/components/ui/button";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Sparkles } from "lucide-react";
 import { useState } from "react";
 import {
   type Conflict,
   type ConflictDetectionResult,
   detectConflicts,
 } from "./actions/conflicts";
+import type { SuggestedAction } from "./actions/suggestions-types";
 import { BoardCanvas } from "./components/board-canvas-realtime";
 import { ConflictWarningPanel } from "./components/conflict-warning-panel";
+import { SuggestionsPanel } from "./components/suggestions-panel";
+import { useSuggestions } from "./hooks/use-suggestions";
 import type { CommandBoardCard } from "./types";
 
 type CommandBoardRealtimePageProps = {
   boardId: string;
   orgId: string;
+  tenantId: string;
   initialCards?: CommandBoardCard[];
 };
 
 function CommandBoardRealtimeContent({
   boardId,
   orgId,
+  tenantId,
   initialCards = [],
 }: CommandBoardRealtimePageProps) {
   const [cards, setCards] = useState<CommandBoardCard[]>(initialCards);
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
   const [isDetectingConflicts, setIsDetectingConflicts] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const {
+    suggestions,
+    isLoading: suggestionsLoading,
+    fetchSuggestions,
+    dismissSuggestion,
+  } = useSuggestions(tenantId, boardId);
 
   const handleDetectConflicts = async () => {
     setIsDetectingConflicts(true);
@@ -39,6 +51,12 @@ function CommandBoardRealtimeContent({
       console.error("Failed to detect conflicts:", err);
     } finally {
       setIsDetectingConflicts(false);
+    }
+  };
+
+  const handleActionClick = (suggestion: SuggestedAction) => {
+    if (suggestion.action.type === "navigate") {
+      window.location.href = suggestion.action.path;
     }
   };
 
@@ -60,21 +78,45 @@ function CommandBoardRealtimeContent({
     >
       <div className="h-full w-full">
         <LivePresenceIndicator className="absolute top-4 right-4 z-50" />
-        <Button
-          className="absolute top-4 left-4 z-50 gap-2"
-          disabled={isDetectingConflicts}
-          onClick={handleDetectConflicts}
-          variant="outline"
-        >
-          <RefreshCw
-            className={`h-4 w-4 ${isDetectingConflicts ? "animate-spin" : ""}`}
-          />
-          {isDetectingConflicts ? "Detecting..." : "Detect Conflicts"}
-        </Button>
+        <div className="absolute top-4 left-4 z-50 flex gap-2">
+          <Button
+            disabled={isDetectingConflicts}
+            onClick={handleDetectConflicts}
+            variant="outline"
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${isDetectingConflicts ? "animate-spin" : ""}`}
+            />
+            {isDetectingConflicts ? "Detecting..." : "Detect Conflicts"}
+          </Button>
+          <Button
+            onClick={() => {
+              setShowSuggestions(!showSuggestions);
+              if (!showSuggestions && suggestions.length === 0) {
+                fetchSuggestions();
+              }
+            }}
+            variant="outline"
+          >
+            <Sparkles className="h-4 w-4" />
+            AI Suggestions
+          </Button>
+        </div>
         <ConflictWarningPanel
           conflicts={conflicts}
           onClose={handleDismissConflicts}
         />
+        {showSuggestions && (
+          <div className="absolute right-4 top-16 z-40 h-3/4 w-96 shadow-xl">
+            <SuggestionsPanel
+              isLoading={suggestionsLoading}
+              onAction={handleActionClick}
+              onDismiss={dismissSuggestion}
+              onRefresh={fetchSuggestions}
+              suggestions={suggestions}
+            />
+          </div>
+        )}
         <BoardCanvas
           boardId={boardId}
           canEdit={true}

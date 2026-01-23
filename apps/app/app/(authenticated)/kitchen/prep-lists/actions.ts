@@ -798,14 +798,10 @@ export async function savePrepListToDatabase(
 
   try {
     // Calculate total estimated time
-    const totalEstimatedTime = Math.round(
-      prepList.totalEstimatedTime * 60
-    ); // Convert to minutes
+    const totalEstimatedTime = Math.round(prepList.totalEstimatedTime * 60); // Convert to minutes
 
     // Create the prep list
-    const result = await database.$queryRaw<
-      Array<{ id: string }>
-    >`
+    const result = await database.$queryRaw<Array<{ id: string }>>`
       INSERT INTO tenant_kitchen.prep_lists (
         tenant_id,
         event_id,

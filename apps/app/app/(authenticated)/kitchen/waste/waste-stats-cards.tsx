@@ -1,7 +1,7 @@
 "use client";
 
-import { Card, CardContent } from "@capsule/ui/card";
-import { Trash2, DollarSign, Scale, TrendingUp } from "lucide-react";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { DollarSign, Scale, Trash2, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface WasteStats {
@@ -20,7 +20,9 @@ export function WasteStatsCards() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const trendsResponse = await fetch(`/api/kitchen/waste/trends?period=30d`);
+        const trendsResponse = await fetch(
+          "/api/kitchen/waste/trends?period=30d"
+        );
         const trends = await trendsResponse.json();
         setStats(trends.trends.summary);
       } catch (error) {

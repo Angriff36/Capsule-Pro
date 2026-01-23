@@ -1,6 +1,6 @@
-import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
@@ -82,9 +82,7 @@ export async function GET(request: NextRequest) {
     // If station filter is provided, we need to check if any items match
     let filteredLists = prepLists;
     if (station) {
-      const listIds = await database.$queryRaw<
-        Array<{ prep_list_id: string }>
-      >`
+      const listIds = await database.$queryRaw<Array<{ prep_list_id: string }>>`
         SELECT DISTINCT prep_list_id
         FROM tenant_kitchen.prep_list_items
         WHERE tenant_id = ${tenantId}
@@ -114,7 +112,7 @@ export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
 
-    if (!orgId || !userId) {
+    if (!(orgId && userId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -128,7 +126,7 @@ export async function POST(request: NextRequest) {
       items,
     } = body;
 
-    if (!eventId || !name || !items || !Array.isArray(items)) {
+    if (!(eventId && name && items && Array.isArray(items))) {
       return NextResponse.json(
         { error: "eventId, name, and items are required" },
         { status: 400 }
@@ -199,7 +197,7 @@ export async function POST(request: NextRequest) {
           ${item.baseUnit},
           ${item.scaledQuantity},
           ${item.scaledUnit},
-          ${item.isOptional || false},
+          ${item.isOptional},
           ${item.preparationNotes || null},
           ${item.allergens || []},
           ${item.dietarySubstitutions || []},

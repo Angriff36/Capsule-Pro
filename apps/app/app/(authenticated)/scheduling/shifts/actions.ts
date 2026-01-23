@@ -1,9 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database, Prisma } from "@repo/database";
+import { revalidatePath } from "next/cache";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
  * Get all shifts with optional filters
@@ -324,7 +324,7 @@ export async function createShift(formData: FormData) {
   const allowOverlap = formData.get("allowOverlap") === "true";
 
   // Validate required fields
-  if (!scheduleId || !employeeId || !locationId || !shiftStart || !shiftEnd) {
+  if (!(scheduleId && employeeId && locationId && shiftStart && shiftEnd)) {
     throw new Error("Schedule, employee, location, and times are required");
   }
 
@@ -342,9 +342,7 @@ export async function createShift(formData: FormData) {
 
   // Check for overlapping shifts
   if (!allowOverlap) {
-    const [overlap] = await database.$queryRaw<
-      Array<{ count: bigint }>
-    >(
+    const [overlap] = await database.$queryRaw<Array<{ count: bigint }>>(
       Prisma.sql`
         SELECT COUNT(*)::bigint
         FROM tenant_staff.schedule_shifts
@@ -398,7 +396,7 @@ export async function updateShift(shiftId: string, formData: FormData) {
   const allowOverlap = formData.get("allowOverlap") === "true";
 
   // Validate required fields
-  if (!scheduleId || !employeeId || !locationId || !shiftStart || !shiftEnd) {
+  if (!(scheduleId && employeeId && locationId && shiftStart && shiftEnd)) {
     throw new Error("Schedule, employee, location, and times are required");
   }
 
@@ -412,9 +410,7 @@ export async function updateShift(shiftId: string, formData: FormData) {
 
   // Check for overlapping shifts (excluding current shift)
   if (!allowOverlap) {
-    const [overlap] = await database.$queryRaw<
-      Array<{ count: bigint }>
-    >(
+    const [overlap] = await database.$queryRaw<Array<{ count: bigint }>>(
       Prisma.sql`
         SELECT COUNT(*)::bigint
         FROM tenant_staff.schedule_shifts

@@ -9,22 +9,33 @@
 
 "use client";
 
-import { AllergenWarningBanner, AllergenSeverityBadge, AllergenWarningInline } from "./allergen-warning-banner";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import type { AllergenWarning } from "@repo/database";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  AllergenSeverityBadge,
+  AllergenWarningBanner,
+  AllergenWarningInline,
+} from "./allergen-warning-banner";
 
 /**
  * Example data for demonstration purposes
  */
-const exampleWarnings: Array<AllergenWarning & {
-  dishName?: string;
-  affectedGuestDetails?: Array<{
-    id: string;
-    name: string;
-    email?: string | null;
-  }>;
-}> = [
+const exampleWarnings: Array<
+  AllergenWarning & {
+    dishName?: string;
+    affectedGuestDetails?: Array<{
+      id: string;
+      name: string;
+      email?: string | null;
+    }>;
+  }
+> = [
   {
     tenantId: "tenant-1",
     id: "warning-1",
@@ -85,13 +96,13 @@ const exampleWarnings: Array<AllergenWarning & {
     severity: "warning",
     isAcknowledged: true,
     acknowledgedBy: "user-123",
-    acknowledgedAt: new Date(Date.now() - 86400000),
+    acknowledgedAt: new Date(Date.now() - 86_400_000),
     overrideReason: "Separate prep area confirmed with chef",
     resolved: false,
     resolvedAt: null,
     notes: "Shared equipment risk",
-    createdAt: new Date(Date.now() - 172800000),
-    updatedAt: new Date(Date.now() - 86400000),
+    createdAt: new Date(Date.now() - 172_800_000),
+    updatedAt: new Date(Date.now() - 86_400_000),
     deletedAt: null,
     dishName: "Grilled Salmon with Shrimp Scampi",
     affectedGuestDetails: [
@@ -140,7 +151,7 @@ const exampleWarnings: Array<AllergenWarning & {
     resolved: true,
     resolvedAt: new Date(),
     notes: "Alternative dessert provided",
-    createdAt: new Date(Date.now() - 259200000),
+    createdAt: new Date(Date.now() - 259_200_000),
     updatedAt: new Date(),
     deletedAt: null,
     dishName: "Crème Brûlée",
@@ -181,9 +192,12 @@ export default function AllergenWarningBannerExamples() {
   return (
     <div className="container mx-auto max-w-5xl space-y-8 p-6">
       <div>
-        <h1 className="text-3xl font-bold">Allergen Warning Banner Component</h1>
+        <h1 className="text-3xl font-bold">
+          Allergen Warning Banner Component
+        </h1>
         <p className="text-muted-foreground mt-2">
-          Comprehensive allergen and dietary restriction warnings with severity-based styling
+          Comprehensive allergen and dietary restriction warnings with
+          severity-based styling
         </p>
       </div>
 
@@ -194,7 +208,8 @@ export default function AllergenWarningBannerExamples() {
         <div>
           <h2 className="text-2xl font-semibold">Critical Severity</h2>
           <p className="text-muted-foreground text-sm">
-            Used for life-threatening allergen conflicts requiring immediate attention
+            Used for life-threatening allergen conflicts requiring immediate
+            attention
           </p>
         </div>
 
@@ -204,9 +219,9 @@ export default function AllergenWarningBannerExamples() {
           </CardHeader>
           <CardContent>
             <AllergenWarningBanner
-              warning={exampleWarnings[0]}
               onAcknowledge={handleAcknowledge}
               onViewDetails={handleViewDetails}
+              warning={exampleWarnings[0]}
             />
           </CardContent>
         </Card>
@@ -217,9 +232,9 @@ export default function AllergenWarningBannerExamples() {
           </CardHeader>
           <CardContent>
             <AllergenWarningBanner
-              warning={exampleWarnings[4]}
               onAcknowledge={handleAcknowledge}
               onViewDetails={handleViewDetails}
+              warning={exampleWarnings[4]}
             />
           </CardContent>
         </Card>
@@ -242,9 +257,9 @@ export default function AllergenWarningBannerExamples() {
           </CardHeader>
           <CardContent>
             <AllergenWarningBanner
-              warning={exampleWarnings[1]}
               onAcknowledge={handleAcknowledge}
               onViewDetails={handleViewDetails}
+              warning={exampleWarnings[1]}
             />
           </CardContent>
         </Card>
@@ -255,9 +270,9 @@ export default function AllergenWarningBannerExamples() {
           </CardHeader>
           <CardContent>
             <AllergenWarningBanner
-              warning={exampleWarnings[2]}
               onAcknowledge={handleAcknowledge}
               onViewDetails={handleViewDetails}
+              warning={exampleWarnings[2]}
             />
           </CardContent>
         </Card>
@@ -280,10 +295,10 @@ export default function AllergenWarningBannerExamples() {
           </CardHeader>
           <CardContent>
             <AllergenWarningBanner
-              warning={exampleWarnings[3]}
               onAcknowledge={handleAcknowledge}
               onDismiss={handleDismiss}
               onViewDetails={handleViewDetails}
+              warning={exampleWarnings[3]}
             />
           </CardContent>
         </Card>
@@ -307,10 +322,10 @@ export default function AllergenWarningBannerExamples() {
           <CardContent className="space-y-3">
             {exampleWarnings.slice(0, 3).map((warning) => (
               <AllergenWarningBanner
-                key={warning.id}
-                warning={warning}
                 compact
+                key={warning.id}
                 onAcknowledge={handleAcknowledge}
+                warning={warning}
               />
             ))}
           </CardContent>
@@ -337,8 +352,8 @@ export default function AllergenWarningBannerExamples() {
               {exampleWarnings.map((warning) => (
                 <AllergenWarningInline
                   key={warning.id}
-                  warning={warning}
                   onViewDetails={handleViewDetails}
+                  warning={warning}
                 />
               ))}
             </div>
@@ -385,7 +400,7 @@ export default function AllergenWarningBannerExamples() {
           </CardHeader>
           <CardContent>
             <pre className="bg-slate-950 text-slate-50 overflow-x-auto rounded-lg p-4 text-sm">
-{`import { AllergenWarningBanner } from "@/components/allergen-warning-banner";
+              {`import { AllergenWarningBanner } from "@/components/allergen-warning-banner";
 import type { AllergenWarning } from "@repo/database";
 
 function MyComponent() {
@@ -415,7 +430,7 @@ function MyComponent() {
           </CardHeader>
           <CardContent>
             <pre className="bg-slate-950 text-slate-50 overflow-x-auto rounded-lg p-4 text-sm">
-{`<AllergenWarningBanner
+              {`<AllergenWarningBanner
   warning={warning}
   compact
   onAcknowledge={handleAcknowledge}
@@ -430,7 +445,7 @@ function MyComponent() {
           </CardHeader>
           <CardContent>
             <pre className="bg-slate-950 text-slate-50 overflow-x-auto rounded-lg p-4 text-sm">
-{`import { AllergenWarningInline } from "@/components/allergen-warning-banner";
+              {`import { AllergenWarningInline } from "@/components/allergen-warning-banner";
 
 {warnings.map((warning) => (
   <AllergenWarningInline
@@ -449,7 +464,7 @@ function MyComponent() {
           </CardHeader>
           <CardContent>
             <pre className="bg-slate-950 text-slate-50 overflow-x-auto rounded-lg p-4 text-sm">
-{`import { AllergenSeverityBadge } from "@/components/allergen-warning-banner";
+              {`import { AllergenSeverityBadge } from "@/components/allergen-warning-banner";
 
 <AllergenSeverityBadge severity="critical" />
 // Outputs: "Critical" badge with red styling`}

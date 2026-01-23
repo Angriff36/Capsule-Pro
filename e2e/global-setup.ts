@@ -1,11 +1,13 @@
-import { chromium, FullConfig } from "@playwright/test";
+import { chromium, type FullConfig } from "@playwright/test";
 
 export default async function globalSetup(config: FullConfig) {
   const baseURL = config.projects[0]?.use?.baseURL as string;
   const storageStatePath = "e2e/.auth/storageState.json";
 
   // Skip if we are not ready to run authenticated tests.
-  if (!process.env.PLAYWRIGHT_AUTH_EMAIL || !process.env.PLAYWRIGHT_AUTH_PASSWORD) {
+  if (
+    !(process.env.PLAYWRIGHT_AUTH_EMAIL && process.env.PLAYWRIGHT_AUTH_PASSWORD)
+  ) {
     return;
   }
 
@@ -16,8 +18,14 @@ export default async function globalSetup(config: FullConfig) {
   await page.goto(`${baseURL}/sign-in`, { waitUntil: "domcontentloaded" });
 
   // Example placeholders (replace with real selectors)
-  await page.fill('input[name="identifier"]', process.env.PLAYWRIGHT_AUTH_EMAIL);
-  await page.fill('input[name="password"]', process.env.PLAYWRIGHT_AUTH_PASSWORD);
+  await page.fill(
+    'input[name="identifier"]',
+    process.env.PLAYWRIGHT_AUTH_EMAIL
+  );
+  await page.fill(
+    'input[name="password"]',
+    process.env.PLAYWRIGHT_AUTH_PASSWORD
+  );
 
   await Promise.all([
     page.waitForNavigation({ waitUntil: "domcontentloaded" }),

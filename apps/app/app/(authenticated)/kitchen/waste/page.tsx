@@ -1,7 +1,13 @@
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import { BarChart3, Trash2, TrendingUp } from "lucide-react";
 import { Suspense } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@capsule/ui/card";
-import { Skeleton } from "@capsule/ui/skeleton";
-import { Trash2, TrendingUp, BarChart3 } from "lucide-react";
 import { WasteEntriesClient } from "./waste-entries-client";
 import { WasteStatsCards } from "./waste-stats-cards";
 
@@ -133,7 +139,7 @@ function WasteReportsSkeleton() {
 // Client components for data fetching
 async function WasteTrendsView() {
   const trendsResponse = await fetch(
-    `/api/kitchen/waste/trends?period=30d&groupBy=day`
+    "/api/kitchen/waste/trends?period=30d&groupBy=day"
   );
   const trends = await trendsResponse.json();
 
@@ -145,13 +151,11 @@ async function WasteTrendsView() {
       <div className="space-y-2">
         {trends.trends.topReasons.map((item: any) => (
           <div
-            key={item.reason.id}
             className="flex items-center justify-between text-sm"
+            key={item.reason.id}
           >
             <span>{item.reason.name}</span>
-            <span className="font-medium">
-              ${item.cost.toFixed(2)}
-            </span>
+            <span className="font-medium">${item.cost.toFixed(2)}</span>
           </div>
         ))}
       </div>
@@ -173,7 +177,7 @@ async function WasteTrendsView() {
 
 async function WasteReportsView() {
   const reportsResponse = await fetch(
-    `/api/kitchen/waste/reports?groupBy=reason`
+    "/api/kitchen/waste/reports?groupBy=reason"
   );
   const reports = await reportsResponse.json();
 
@@ -213,13 +217,14 @@ async function WasteReportsView() {
         <div className="space-y-2">
           {reports.report.data.map((item: any) => (
             <div
-              key={item.key}
               className="flex items-center justify-between rounded-lg border p-4"
+              key={item.key}
             >
               <div>
                 <p className="font-medium">{item.label}</p>
                 <p className="text-sm text-muted-foreground">
-                  {item.count} entries • {item.avgQuantityPerEntry.toFixed(2)} avg qty
+                  {item.count} entries • {item.avgQuantityPerEntry.toFixed(2)}{" "}
+                  avg qty
                 </p>
               </div>
               <div className="text-right">

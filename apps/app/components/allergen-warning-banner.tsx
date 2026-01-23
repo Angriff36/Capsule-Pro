@@ -62,7 +62,8 @@ const severityConfig = {
     borderColor: "border-amber-200 dark:border-amber-800",
     textColor: "text-amber-900 dark:text-amber-100",
     iconColor: "text-amber-600 dark:text-amber-400",
-    badgeColor: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100",
+    badgeColor:
+      "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100",
     buttonVariant: "default" as const,
     label: "Warning",
   },
@@ -148,7 +149,10 @@ function formatAllergenName(allergen: string): string {
  * Get warning type label
  */
 function getWarningTypeLabel(type: string): string {
-  return warningTypeLabels[type] || type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+  return (
+    warningTypeLabels[type] ||
+    type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
+  );
 }
 
 /**
@@ -191,7 +195,7 @@ function AcknowledgeDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -223,15 +227,16 @@ function AcknowledgeDialog({
                 Override Reason <span className="text-destructive">*</span>
               </Label>
               <Textarea
-                id="override-reason"
-                placeholder="Explain why this warning is being acknowledged (e.g., guest confirmed safe, alternative provided, etc.)"
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
                 className="min-h-[100px]"
                 disabled={isSubmitting}
+                id="override-reason"
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Explain why this warning is being acknowledged (e.g., guest confirmed safe, alternative provided, etc.)"
+                value={reason}
               />
               <p className="text-muted-foreground text-xs">
-                This reason will be logged for audit and safety tracking purposes.
+                This reason will be logged for audit and safety tracking
+                purposes.
               </p>
             </div>
           )}
@@ -240,12 +245,12 @@ function AcknowledgeDialog({
             <div className="space-y-2">
               <Label htmlFor="optional-notes">Optional Notes</Label>
               <Textarea
-                id="optional-notes"
-                placeholder="Add any additional notes (optional)"
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
                 className="min-h-[80px]"
                 disabled={isSubmitting}
+                id="optional-notes"
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Add any additional notes (optional)"
+                value={reason}
               />
             </div>
           )}
@@ -253,18 +258,18 @@ function AcknowledgeDialog({
 
         <DialogFooter>
           <Button
+            disabled={isSubmitting}
+            onClick={() => setOpen(false)}
             type="button"
             variant="outline"
-            onClick={() => setOpen(false)}
-            disabled={isSubmitting}
           >
             Cancel
           </Button>
           <Button
+            disabled={isSubmitting || (requiresReason && !reason.trim())}
+            onClick={handleConfirm}
             type="button"
             variant={severity === "critical" ? "destructive" : "default"}
-            onClick={handleConfirm}
-            disabled={isSubmitting || (requiresReason && !reason.trim())}
           >
             {isSubmitting ? "Acknowledging..." : "Acknowledge Warning"}
           </Button>
@@ -345,10 +350,17 @@ export function AllergenWarningBanner({
         )}
       >
         <SeverityIcon className={cn("h-4 w-4", severity.iconColor)} />
-        <AlertTitle className={cn("flex items-center justify-between", severity.textColor)}>
+        <AlertTitle
+          className={cn(
+            "flex items-center justify-between",
+            severity.textColor
+          )}
+        >
           <span className="flex items-center gap-2">
             {getWarningTypeLabel(warning.warningType)}
-            {isResolved && <CheckCircle2 className="h-4 w-4 text-emerald-600" />}
+            {isResolved && (
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            )}
             {isAcknowledged && !isResolved && (
               <CheckCircle2 className="h-4 w-4 text-blue-600" />
             )}
@@ -362,7 +374,11 @@ export function AllergenWarningBanner({
         <AlertDescription className={severity.textColor}>
           <div className="flex flex-wrap items-center gap-2">
             {warning.allergens.slice(0, 2).map((allergen) => (
-              <Badge key={allergen} className={severity.badgeColor} variant="secondary">
+              <Badge
+                className={severity.badgeColor}
+                key={allergen}
+                variant="secondary"
+              >
                 {formatAllergenName(allergen)}
               </Badge>
             ))}
@@ -396,7 +412,12 @@ export function AllergenWarningBanner({
 
       <div className="flex-1 space-y-3">
         {/* Title and Status */}
-        <AlertTitle className={cn("flex items-center justify-between", severity.textColor)}>
+        <AlertTitle
+          className={cn(
+            "flex items-center justify-between",
+            severity.textColor
+          )}
+        >
           <div className="flex items-center gap-2">
             {getWarningTypeLabel(warning.warningType)}
             <Badge className={severity.badgeColor} variant="secondary">
@@ -406,13 +427,19 @@ export function AllergenWarningBanner({
 
           <div className="flex items-center gap-2">
             {isResolved && (
-              <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-100" variant="secondary">
+              <Badge
+                className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-100"
+                variant="secondary"
+              >
                 <CheckCircle2 className="mr-1 h-3 w-3" />
                 Resolved
               </Badge>
             )}
             {isAcknowledged && !isResolved && (
-              <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100" variant="secondary">
+              <Badge
+                className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+                variant="secondary"
+              >
                 <CheckCircle2 className="mr-1 h-3 w-3" />
                 Acknowledged
               </Badge>
@@ -430,27 +457,25 @@ export function AllergenWarningBanner({
                 Affected Guests
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {warning.affectedGuestDetails ? (
-                  warning.affectedGuestDetails.map((guest) => (
-                    <Badge
-                      key={guest.id}
-                      className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
-                      variant="outline"
-                    >
-                      {guest.name}
-                    </Badge>
-                  ))
-                ) : (
-                  warning.affectedGuests.map((guestId, index) => (
-                    <Badge
-                      key={guestId}
-                      className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
-                      variant="outline"
-                    >
-                      Guest {index + 1}
-                    </Badge>
-                  ))
-                )}
+                {warning.affectedGuestDetails
+                  ? warning.affectedGuestDetails.map((guest) => (
+                      <Badge
+                        className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                        key={guest.id}
+                        variant="outline"
+                      >
+                        {guest.name}
+                      </Badge>
+                    ))
+                  : warning.affectedGuests.map((guestId, index) => (
+                      <Badge
+                        className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                        key={guestId}
+                        variant="outline"
+                      >
+                        Guest {index + 1}
+                      </Badge>
+                    ))}
               </div>
             </div>
           )}
@@ -460,11 +485,17 @@ export function AllergenWarningBanner({
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5 text-xs font-semibold uppercase">
                 <Ban className="h-3.5 w-3.5" />
-                {warning.warningType === "dietary_restriction" ? "Restrictions" : "Allergens"}
+                {warning.warningType === "dietary_restriction"
+                  ? "Restrictions"
+                  : "Allergens"}
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {warning.allergens.map((allergen) => (
-                  <Badge key={allergen} className={severity.badgeColor} variant="secondary">
+                  <Badge
+                    className={severity.badgeColor}
+                    key={allergen}
+                    variant="secondary"
+                  >
                     {formatAllergenName(allergen)}
                   </Badge>
                 ))}
@@ -496,7 +527,9 @@ export function AllergenWarningBanner({
           {/* Notes (if present) */}
           {warning.notes && (
             <div className="rounded-md bg-white/50 dark:bg-slate-900/50 p-2">
-              <p className="text-xs font-semibold uppercase">Additional Notes</p>
+              <p className="text-xs font-semibold uppercase">
+                Additional Notes
+              </p>
               <p className="text-xs mt-1">{warning.notes}</p>
             </div>
           )}
@@ -505,38 +538,7 @@ export function AllergenWarningBanner({
         {/* Action Buttons */}
         {!isResolved && (
           <div className="flex flex-wrap items-center gap-2">
-            {!isAcknowledged ? (
-              <>
-                <AcknowledgeDialog
-                  warningId={warning.id}
-                  warningType={warning.warningType}
-                  severity={warning.severity}
-                  onConfirm={handleAcknowledge}
-                  trigger={
-                    <Button
-                      size="sm"
-                      variant={severity.buttonVariant}
-                      className="gap-1.5"
-                    >
-                      <CheckCircle2 className="h-4 w-4" />
-                      Acknowledge
-                    </Button>
-                  }
-                />
-
-                {onViewDetails && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleViewDetails}
-                    className="gap-1.5"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                    View Details
-                  </Button>
-                )}
-              </>
-            ) : (
+            {isAcknowledged ? (
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <CheckCircle2 className="h-4 w-4 text-blue-600" />
                 <span>
@@ -546,14 +548,45 @@ export function AllergenWarningBanner({
                     : ""}
                 </span>
               </div>
+            ) : (
+              <>
+                <AcknowledgeDialog
+                  onConfirm={handleAcknowledge}
+                  severity={warning.severity}
+                  trigger={
+                    <Button
+                      className="gap-1.5"
+                      size="sm"
+                      variant={severity.buttonVariant}
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      Acknowledge
+                    </Button>
+                  }
+                  warningId={warning.id}
+                  warningType={warning.warningType}
+                />
+
+                {onViewDetails && (
+                  <Button
+                    className="gap-1.5"
+                    onClick={handleViewDetails}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                    View Details
+                  </Button>
+                )}
+              </>
             )}
 
             {warning.severity === "info" && onDismiss && !isAcknowledged && (
               <Button
+                className="gap-1.5 ml-auto"
+                onClick={handleDismiss}
                 size="sm"
                 variant="ghost"
-                onClick={handleDismiss}
-                className="gap-1.5 ml-auto"
               >
                 <X className="h-4 w-4" />
                 Dismiss
@@ -573,7 +606,10 @@ export function AllergenWarningInline({
   warning,
   onViewDetails,
   className,
-}: Pick<AllergenWarningBannerProps, "warning" | "onViewDetails" | "className">) {
+}: Pick<
+  AllergenWarningBannerProps,
+  "warning" | "onViewDetails" | "className"
+>) {
   const severity =
     severityConfig[warning.severity as keyof typeof severityConfig] ||
     severityConfig.warning;
@@ -581,7 +617,6 @@ export function AllergenWarningInline({
 
   return (
     <button
-      onClick={() => onViewDetails?.(warning.id)}
       className={cn(
         "flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors hover:opacity-80",
         severity.bgColor,
@@ -590,10 +625,14 @@ export function AllergenWarningInline({
         "border",
         className
       )}
+      onClick={() => onViewDetails?.(warning.id)}
     >
       <SeverityIcon className={cn("h-3.5 w-3.5", severity.iconColor)} />
       <span className="line-clamp-1">
-        {warning.allergens.length} {warning.warningType === "dietary_restriction" ? "restriction" : "allergen"}
+        {warning.allergens.length}{" "}
+        {warning.warningType === "dietary_restriction"
+          ? "restriction"
+          : "allergen"}
         {warning.allergens.length !== 1 ? "s" : ""}
       </span>
     </button>
@@ -603,13 +642,10 @@ export function AllergenWarningInline({
 /**
  * Severity badge component for use in tables and lists
  */
-export function AllergenSeverityBadge({
-  severity,
-}: {
-  severity: string;
-}) {
+export function AllergenSeverityBadge({ severity }: { severity: string }) {
   const config =
-    severityConfig[severity as keyof typeof severityConfig] || severityConfig.warning;
+    severityConfig[severity as keyof typeof severityConfig] ||
+    severityConfig.warning;
 
   return (
     <Badge className={config.badgeColor} variant="secondary">

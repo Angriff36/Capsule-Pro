@@ -1,0 +1,573 @@
+"use server";
+
+/**
+ * Proposal CRUD Server Actions
+ *
+ * Server actions for proposal management operations
+ */
+
+import { auth } from "@repo/auth/server";
+import type { Proposal } from "@repo/database";
+import { database } from "@repo/database";
+import { revalidatePath } from "next/cache";
+import { invariant } from "@/app/lib/invariant";
+import { getTenantId } from "@/app/lib/tenant";
+
+// Types matching the API
+export interface ProposalFilters {
+  search?: string;
+  status?: string;
+  clientId?: string;
+  leadId?: string;
+  eventId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export interface CreateProposalInput {
+  clientId?: string | null;
+  leadId?: string | null;
+  eventId?: string | null;
+  title: string;
+  eventDate?: string | null;
+  eventType?: string | null;
+  guestCount?: number | null;
+  venueName?: string | null;
+  venueAddress?: string | null;
+  subtotal?: number | null;
+  taxRate?: number | null;
+  taxAmount?: number | null;
+  discountAmount?: number | null;
+  total?: number | null;
+  status?: "draft" | "sent" | "viewed" | "accepted" | "rejected" | "expired";
+  validUntil?: string | null;
+  notes?: string | null;
+  termsAndConditions?: string | null;
+  lineItems?: CreateLineItemInput[];
+}
+
+export interface CreateLineItemInput {
+  sortOrder?: number;
+  itemType: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  total?: number | null;
+  notes?: string | null;
+}
+
+export interface SendProposalInput {
+  recipientEmail?: string;
+  message?: string;
+}
+
+/**
+ * Get list of proposals with filters and pagination
+ */
+export async function getProposals(
+  filters: ProposalFilters = {},
+  page = 1,
+  limit = 50
+) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+
+  const whereClause: Record<string, unknown> = {
+    AND: [{ tenantId }, { deletedAt: null }],
+  };
+
+  // Add search filter
+  if (filters.search) {
+    const searchLower = filters.search.toLowerCase();
+    (whereClause.AND as Array<Record<string, unknown>>).push({
+      OR: [
+        { title: { contains: searchLower, mode: "insensitive" } },
+        { proposalNumber: { contains: searchLower, mode: "insensitive" } },
+        { venueName: { contains: searchLower, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  // Add status filter
+  if (filters.status) {
+    (whereClause.AND as Array<Record<string, unknown>>).push({
+      status: filters.status,
+    });
+  }
+
+  // Add client filter
+  if (filters.clientId) {
+    (whereClause.AND as Array<Record<string, unknown>>).push({
+      clientId: filters.clientId,
+    });
+  }
+
+  // Add lead filter
+  if (filters.leadId) {
+    (whereClause.AND as Array<Record<string, unknown>>).push({
+      leadId: filters.leadId,
+    });
+  }
+
+  // Add event filter
+  if (filters.eventId) {
+    (whereClause.AND as Array<Record<string, unknown>>).push({
+      eventId: filters.eventId,
+    });
+  }
+
+  // Add date range filters
+  if (filters.dateFrom) {
+    (whereClause.AND as Array<Record<string, unknown>>).push({
+      eventDate: { gte: new Date(filters.dateFrom) },
+    });
+  }
+
+  if (filters.dateTo) {
+    (whereClause.AND as Array<Record<string, unknown>>).push({
+      eventDate: { lte: new Date(filters.dateTo) },
+    });
+  }
+
+  const offset = (page - 1) * limit;
+
+  const proposals = await database.proposal.findMany({
+    where: whereClause,
+    orderBy: [{ createdAt: "desc" }],
+    take: limit,
+    skip: offset,
+    include: {
+      client: {
+        select: {
+          id: true,
+          company_name: true,
+          first_name: true,
+          last_name: true,
+        },
+      },
+      lead: {
+        select: {
+          id: true,
+          company_name: true,
+          first_name: true,
+          last_name: true,
+        },
+      },
+    },
+  });
+
+  const totalCount = await database.proposal.count({
+    where: whereClause,
+  });
+
+  return {
+    data: proposals as Proposal[],
+    pagination: {
+      page,
+      limit,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+    },
+  };
+}
+
+/**
+ * Get proposal by ID with full details
+ */
+export async function getProposalById(id: string) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+  invariant(id, "Proposal ID is required");
+
+  const proposal = await database.proposal.findFirst({
+    where: {
+      AND: [{ tenantId }, { id }, { deletedAt: null }],
+    },
+    include: {
+      lineItems: {
+        orderBy: [{ sortOrder: "asc" }],
+      },
+      client: {
+        select: {
+          id: true,
+          company_name: true,
+          first_name: true,
+          last_name: true,
+          email: true,
+          phone: true,
+          addressLine1: true,
+          city: true,
+          stateProvince: true,
+          postalCode: true,
+        },
+      },
+      lead: {
+        select: {
+          id: true,
+          company_name: true,
+          first_name: true,
+          last_name: true,
+          email: true,
+          phone: true,
+        },
+      },
+      event: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  invariant(proposal, "Proposal not found");
+
+  return proposal;
+}
+
+/**
+ * Create a new proposal
+ */
+export async function createProposal(input: CreateProposalInput) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+
+  // Validate input
+  invariant(input.title?.trim(), "Title is required");
+  invariant(
+    input.clientId || input.leadId || input.eventId,
+    "At least one of clientId, leadId, or eventId must be provided"
+  );
+
+  // Generate proposal number
+  const year = new Date().getFullYear();
+  const count = await database.proposal.count({
+    where: {
+      AND: [
+        { tenantId },
+        { proposalNumber: { startsWith: `PROP-${year}` } },
+        { deletedAt: null },
+      ],
+    },
+  });
+  const proposalNumber = `PROP-${year}-${String(count + 1).padStart(4, "0")}`;
+
+  // Calculate totals if line items provided
+  let calculatedSubtotal = input.subtotal ?? 0;
+  let calculatedTax = input.taxAmount ?? 0;
+  let calculatedTotal = input.total ?? 0;
+
+  if (input.lineItems && input.lineItems.length > 0) {
+    calculatedSubtotal = input.lineItems.reduce(
+      (sum, item) => sum + item.quantity * item.unitPrice,
+      0
+    );
+    const taxRate = input.taxRate ?? 0;
+    calculatedTax = calculatedSubtotal * (taxRate / 100);
+    const discount = input.discountAmount ?? 0;
+    calculatedTotal = calculatedSubtotal + calculatedTax - discount;
+  }
+
+  const proposal = await database.proposal.create({
+    data: {
+      tenantId,
+      proposalNumber,
+      clientId: input.clientId,
+      leadId: input.leadId,
+      eventId: input.eventId,
+      title: input.title.trim(),
+      eventDate: input.eventDate ? new Date(input.eventDate) : null,
+      eventType: input.eventType?.trim() || null,
+      guestCount: input.guestCount ?? null,
+      venueName: input.venueName?.trim() || null,
+      venueAddress: input.venueAddress?.trim() || null,
+      subtotal: calculatedSubtotal,
+      taxRate: input.taxRate ?? 0,
+      taxAmount: calculatedTax,
+      discountAmount: input.discountAmount ?? 0,
+      total: calculatedTotal,
+      status: input.status ?? "draft",
+      validUntil: input.validUntil ? new Date(input.validUntil) : null,
+      notes: input.notes?.trim() || null,
+      termsAndConditions: input.termsAndConditions?.trim() || null,
+      lineItems: input.lineItems
+        ? {
+            create: input.lineItems.map((item, index) => ({
+              tenantId,
+              sortOrder: item.sortOrder ?? index,
+              itemType: item.itemType.trim(),
+              description: item.description.trim(),
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              total: item.total ?? item.quantity * item.unitPrice,
+              notes: item.notes?.trim() || null,
+            })),
+          }
+        : undefined,
+    },
+    include: {
+      lineItems: true,
+    },
+  });
+
+  revalidatePath("/crm/proposals");
+
+  return proposal;
+}
+
+/**
+ * Update a proposal
+ */
+export async function updateProposal(
+  id: string,
+  input: Partial<CreateProposalInput>
+) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+  invariant(id, "Proposal ID is required");
+
+  // Check if proposal exists
+  const existingProposal = await database.proposal.findFirst({
+    where: {
+      AND: [{ tenantId }, { id }, { deletedAt: null }],
+    },
+  });
+
+  invariant(existingProposal, "Proposal not found");
+
+  // Calculate totals if line items provided
+  let calculatedSubtotal = input.subtotal ?? existingProposal.subtotal;
+  let calculatedTax = input.taxAmount ?? existingProposal.taxAmount;
+  let calculatedTotal = input.total ?? existingProposal.total;
+
+  if (input.lineItems && input.lineItems.length > 0) {
+    calculatedSubtotal = input.lineItems.reduce(
+      (sum, item) => sum + item.quantity * item.unitPrice,
+      0
+    );
+    const taxRate = input.taxRate ?? existingProposal.taxRate;
+    calculatedTax = calculatedSubtotal * (taxRate / 100);
+    const discount = input.discountAmount ?? existingProposal.discountAmount;
+    calculatedTotal = calculatedSubtotal + calculatedTax - discount;
+  }
+
+  const proposal = await database.proposal.update({
+    where: { id },
+    data: {
+      ...(input.title !== undefined && { title: input.title?.trim() }),
+      ...(input.clientId !== undefined && { clientId: input.clientId }),
+      ...(input.leadId !== undefined && { leadId: input.leadId }),
+      ...(input.eventId !== undefined && { eventId: input.eventId }),
+      ...(input.eventDate !== undefined && {
+        eventDate: input.eventDate ? new Date(input.eventDate) : null,
+      }),
+      ...(input.eventType !== undefined && {
+        eventType: input.eventType?.trim() || null,
+      }),
+      ...(input.guestCount !== undefined && {
+        guestCount: input.guestCount ?? null,
+      }),
+      ...(input.venueName !== undefined && {
+        venueName: input.venueName?.trim() || null,
+      }),
+      ...(input.venueAddress !== undefined && {
+        venueAddress: input.venueAddress?.trim() || null,
+      }),
+      ...(input.subtotal !== undefined && { subtotal: calculatedSubtotal }),
+      ...(input.taxRate !== undefined && { taxRate: input.taxRate ?? 0 }),
+      ...(input.taxAmount !== undefined && { taxAmount: calculatedTax }),
+      ...(input.discountAmount !== undefined && {
+        discountAmount: input.discountAmount ?? 0,
+      }),
+      ...(input.total !== undefined && { total: calculatedTotal }),
+      ...(input.status !== undefined && { status: input.status as any }),
+      ...(input.validUntil !== undefined && {
+        validUntil: input.validUntil ? new Date(input.validUntil) : null,
+      }),
+      ...(input.notes !== undefined && { notes: input.notes?.trim() || null }),
+      ...(input.termsAndConditions !== undefined && {
+        termsAndConditions: input.termsAndConditions?.trim() || null,
+      }),
+      // Update line items if provided
+      ...(input.lineItems && {
+        lineItems: {
+          deleteMany: {},
+          create: input.lineItems.map((item, index) => ({
+            tenantId,
+            sortOrder: item.sortOrder ?? index,
+            itemType: item.itemType.trim(),
+            description: item.description.trim(),
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            total: item.total ?? item.quantity * item.unitPrice,
+            notes: item.notes?.trim() || null,
+          })),
+        },
+      }),
+    },
+    include: {
+      lineItems: true,
+    },
+  });
+
+  revalidatePath("/crm/proposals");
+  revalidatePath(`/crm/proposals/${id}`);
+
+  return proposal;
+}
+
+/**
+ * Delete a proposal (soft delete)
+ */
+export async function deleteProposal(id: string) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+  invariant(id, "Proposal ID is required");
+
+  const existingProposal = await database.proposal.findFirst({
+    where: {
+      AND: [{ tenantId }, { id }, { deletedAt: null }],
+    },
+  });
+
+  invariant(existingProposal, "Proposal not found");
+
+  await database.proposal.update({
+    where: {
+      tenantId_id: { tenantId, id },
+    },
+    data: { deletedAt: new Date() },
+  });
+
+  revalidatePath("/crm/proposals");
+
+  return { success: true };
+}
+
+/**
+ * Send a proposal to the client
+ */
+export async function sendProposal(id: string, input: SendProposalInput = {}) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+  invariant(id, "Proposal ID is required");
+
+  const existingProposal = await database.proposal.findFirst({
+    where: {
+      AND: [{ tenantId }, { id }, { deletedAt: null }],
+    },
+    include: {
+      client: {
+        select: {
+          id: true,
+          company_name: true,
+          first_name: true,
+          last_name: true,
+          email: true,
+        },
+      },
+      lead: {
+        select: {
+          id: true,
+          company_name: true,
+          first_name: true,
+          last_name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  invariant(existingProposal, "Proposal not found");
+
+  const recipientEmail =
+    input.recipientEmail?.trim() ||
+    existingProposal.client?.email ||
+    existingProposal.lead?.email;
+
+  invariant(recipientEmail, "No recipient email available");
+
+  // Update proposal status
+  const proposal = await database.proposal.update({
+    where: { id },
+    data: {
+      status: "sent",
+      sentAt: new Date(),
+    },
+  });
+
+  revalidatePath("/crm/proposals");
+  revalidatePath(`/crm/proposals/${id}`);
+
+  // TODO: Send email with proposal PDF
+  console.log(`Proposal ${id} would be sent to ${recipientEmail}`);
+
+  return {
+    success: true,
+    proposal,
+    sentTo: recipientEmail,
+  };
+}
+
+/**
+ * Get proposal count by status
+ */
+export async function getProposalStats() {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+
+  const [
+    totalCount,
+    draftCount,
+    sentCount,
+    viewedCount,
+    acceptedCount,
+    rejectedCount,
+  ] = await Promise.all([
+    database.proposal.count({
+      where: { AND: [{ tenantId }, { deletedAt: null }] },
+    }),
+    database.proposal.count({
+      where: { AND: [{ tenantId }, { status: "draft" }, { deletedAt: null }] },
+    }),
+    database.proposal.count({
+      where: { AND: [{ tenantId }, { status: "sent" }, { deletedAt: null }] },
+    }),
+    database.proposal.count({
+      where: { AND: [{ tenantId }, { status: "viewed" }, { deletedAt: null }] },
+    }),
+    database.proposal.count({
+      where: {
+        AND: [{ tenantId }, { status: "accepted" }, { deletedAt: null }],
+      },
+    }),
+    database.proposal.count({
+      where: {
+        AND: [{ tenantId }, { status: "rejected" }, { deletedAt: null }],
+      },
+    }),
+  ]);
+
+  return {
+    total: totalCount,
+    draft: draftCount,
+    sent: sentCount,
+    viewed: viewedCount,
+    accepted: acceptedCount,
+    rejected: rejectedCount,
+  };
+}

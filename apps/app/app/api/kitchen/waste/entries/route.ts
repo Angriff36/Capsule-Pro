@@ -83,12 +83,14 @@ export async function POST(request: Request) {
   const body = await request.json();
 
   // Validate required fields per spec
-  if (!body.inventoryItemId || !body.quantity || !body.reasonId) {
+  if (!(body.inventoryItemId && body.quantity && body.reasonId)) {
     return NextResponse.json(
       {
         message: "Missing required fields",
         errors: {
-          ...(body.inventoryItemId ? {} : { inventoryItemId: "Item is required" }),
+          ...(body.inventoryItemId
+            ? {}
+            : { inventoryItemId: "Item is required" }),
           ...(body.quantity ? {} : { quantity: "Quantity is required" }),
           ...(body.reasonId ? {} : { reasonId: "Reason is required" }),
         },

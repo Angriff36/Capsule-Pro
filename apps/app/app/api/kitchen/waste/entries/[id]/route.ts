@@ -34,7 +34,10 @@ export async function GET(request: Request, { params }: { params: Params }) {
   });
 
   if (!entry) {
-    return NextResponse.json({ message: "Waste entry not found" }, { status: 404 });
+    return NextResponse.json(
+      { message: "Waste entry not found" },
+      { status: 404 }
+    );
   }
 
   return NextResponse.json({ entry });
@@ -62,7 +65,10 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   });
 
   if (!existingEntry) {
-    return NextResponse.json({ message: "Waste entry not found" }, { status: 404 });
+    return NextResponse.json(
+      { message: "Waste entry not found" },
+      { status: 404 }
+    );
   }
 
   // Validate quantity if provided
@@ -95,15 +101,23 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   // Build update data
   const updateData: any = {};
   if (body.quantity !== undefined) updateData.quantity = Number(body.quantity);
-  if (body.unitId !== undefined) updateData.unitId = Number.parseInt(body.unitId, 10);
-  if (body.reasonId !== undefined) updateData.reasonId = Number.parseInt(body.reasonId, 10);
+  if (body.unitId !== undefined)
+    updateData.unitId = Number.parseInt(body.unitId, 10);
+  if (body.reasonId !== undefined)
+    updateData.reasonId = Number.parseInt(body.reasonId, 10);
   if (body.locationId !== undefined) updateData.locationId = body.locationId;
   if (body.notes !== undefined) updateData.notes = body.notes;
 
   // Recalculate total cost if quantity or unit cost changed
   if (body.quantity !== undefined || body.unitCost !== undefined) {
-    const newQuantity = body.quantity !== undefined ? Number(body.quantity) : Number(existingEntry.quantity);
-    const newUnitCost = body.unitCost !== undefined ? Number(body.unitCost) : Number(existingEntry.unitCost || 0);
+    const newQuantity =
+      body.quantity !== undefined
+        ? Number(body.quantity)
+        : Number(existingEntry.quantity);
+    const newUnitCost =
+      body.unitCost !== undefined
+        ? Number(body.unitCost)
+        : Number(existingEntry.unitCost || 0);
     updateData.totalCost = newQuantity * newUnitCost;
     if (body.unitCost !== undefined) updateData.unitCost = newUnitCost;
   }
@@ -143,7 +157,10 @@ export async function DELETE(request: Request, { params }: { params: Params }) {
   });
 
   if (!existingEntry) {
-    return NextResponse.json({ message: "Waste entry not found" }, { status: 404 });
+    return NextResponse.json(
+      { message: "Waste entry not found" },
+      { status: 404 }
+    );
   }
 
   // Soft delete

@@ -26,6 +26,29 @@ Tooling: Turbo + pnpm, Next.js 16, React 19, TypeScript.
 - `apps/storybook`: UI component workshop + Chromatic.
 - `apps/studio`: Prisma Studio (DB inspection).
 
+## API Architecture Invariant
+
+### The invariant
+- `/api/**` must be implemented ONLY in `apps/api`.
+- `apps/app` must NOT contain `app/api/**/route.ts` files.
+- `apps/app` may call `/api/**` normally (fetch("/api/...")), but routing must be proxied to `apps/api` via Next.js rewrites.
+
+### Why
+- `apps/app` = primary UI
+- `apps/api` = API + worker endpoints
+- This keeps DB access and background concerns centralized, and keeps the UI app focused.
+
+### Implementation rule of thumb
+- If code touches `@repo/database`, Prisma, `$queryRaw`, or any SQL:
+  - It belongs in `apps/api` (Route Handler) OR a Server Action (for UI-only mutations).
+- If a feature needs a public HTTP endpoint: implement it in `apps/api` and proxy from `apps/app`.
+
+### Migration procedure (repeatable)
+1. When you see a file created under `apps/app/app/api/.../route.ts`, move it to `apps/api/app/api/.../route.ts` keeping the same URL path.
+2. Ensure the UI keeps calling `/api/...` (no code changes needed if rewrites are in place).
+3. Delete the old `apps/app/app/api/.../route.ts` file.
+4. Never reintroduce Route Handlers inside `apps/app`.
+
 ### Shared Packages (high-level)
 - `packages/database`: Prisma client + Neon adapter.
 - `packages/auth`: Clerk auth integration.

@@ -1,19 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@capsule/ui/button";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@capsule/ui/select";
-import { Input } from "@capsule/ui/input";
-import { Label } from "@capsule/ui/label";
-import { Textarea } from "@capsule/ui/textarea";
-import { Trash2, CheckCircle2 } from "lucide-react";
-import { useToast } from "@capsule/ui/use-toast";
+} from "@repo/design-system/components/ui/select";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { useToast } from "@repo/design-system/hooks/use-toast";
+import { Trash2 } from "lucide-react";
+import { useState } from "react";
 
 export function WasteEntriesClient() {
   const { toast } = useToast();
@@ -67,7 +67,8 @@ export function WasteEntriesClient() {
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to log waste entry",
+        description:
+          error instanceof Error ? error.message : "Failed to log waste entry",
         variant: "destructive",
       });
     } finally {
@@ -76,16 +77,16 @@ export function WasteEntriesClient() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form className="space-y-4" onSubmit={handleSubmit}>
       {/* Inventory Item */}
       <div className="space-y-2">
         <Label htmlFor="inventoryItemId">Item *</Label>
         <Select
-          value={formData.inventoryItemId}
           onValueChange={(value) =>
             setFormData({ ...formData, inventoryItemId: value })
           }
           required
+          value={formData.inventoryItemId}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select item" />
@@ -105,15 +106,15 @@ export function WasteEntriesClient() {
         <Label htmlFor="quantity">Quantity *</Label>
         <Input
           id="quantity"
-          type="number"
-          step="0.001"
           min="0.001"
-          placeholder="0.00"
-          value={formData.quantity}
           onChange={(e) =>
             setFormData({ ...formData, quantity: e.target.value })
           }
+          placeholder="0.00"
           required
+          step="0.001"
+          type="number"
+          value={formData.quantity}
         />
       </div>
 
@@ -121,11 +122,11 @@ export function WasteEntriesClient() {
       <div className="space-y-2">
         <Label htmlFor="reasonId">Reason *</Label>
         <Select
-          value={formData.reasonId}
           onValueChange={(value) =>
             setFormData({ ...formData, reasonId: value })
           }
           required
+          value={formData.reasonId}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select reason" />
@@ -149,10 +150,8 @@ export function WasteEntriesClient() {
       <div className="space-y-2">
         <Label htmlFor="unitId">Unit (optional)</Label>
         <Select
+          onValueChange={(value) => setFormData({ ...formData, unitId: value })}
           value={formData.unitId}
-          onValueChange={(value) =>
-            setFormData({ ...formData, unitId: value })
-          }
         >
           <SelectTrigger>
             <SelectValue placeholder="Select unit" />
@@ -175,17 +174,15 @@ export function WasteEntriesClient() {
         <Label htmlFor="notes">Notes (optional)</Label>
         <Textarea
           id="notes"
+          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           placeholder="Additional context about this waste entry..."
-          value={formData.notes}
-          onChange={(e) =>
-            setFormData({ ...formData, notes: e.target.value })
-          }
           rows={3}
+          value={formData.notes}
         />
       </div>
 
       {/* Submit */}
-      <Button type="submit" disabled={submitting} className="w-full">
+      <Button className="w-full" disabled={submitting} type="submit">
         {submitting ? (
           "Logging..."
         ) : (

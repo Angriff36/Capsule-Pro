@@ -60,7 +60,11 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   const updateData: any = {};
 
   if (body.guestName !== undefined) {
-    if (!body.guestName || typeof body.guestName !== 'string' || body.guestName.trim() === '') {
+    if (
+      !body.guestName ||
+      typeof body.guestName !== "string" ||
+      body.guestName.trim() === ""
+    ) {
       return NextResponse.json(
         { message: "Guest name is required and cannot be empty" },
         { status: 400 }
@@ -71,7 +75,10 @@ export async function PUT(request: Request, { params }: { params: Params }) {
 
   if (body.guestEmail !== undefined) {
     if (body.guestEmail !== null) {
-      if (typeof body.guestEmail !== 'string' || body.guestEmail.trim() === '') {
+      if (
+        typeof body.guestEmail !== "string" ||
+        body.guestEmail.trim() === ""
+      ) {
         return NextResponse.json(
           { message: "Email must be a valid string or null" },
           { status: 400 }
@@ -93,7 +100,10 @@ export async function PUT(request: Request, { params }: { params: Params }) {
 
   if (body.guestPhone !== undefined) {
     if (body.guestPhone !== null) {
-      if (typeof body.guestPhone !== 'string' || body.guestPhone.trim() === '') {
+      if (
+        typeof body.guestPhone !== "string" ||
+        body.guestPhone.trim() === ""
+      ) {
         return NextResponse.json(
           { message: "Phone must be a valid string or null" },
           { status: 400 }
@@ -117,7 +127,12 @@ export async function PUT(request: Request, { params }: { params: Params }) {
       );
     }
     updateData.dietaryRestrictions = body.dietaryRestrictions
-      .filter((restriction: any) => restriction !== null && restriction !== undefined && restriction.toString().trim() !== '')
+      .filter(
+        (restriction: any) =>
+          restriction !== null &&
+          restriction !== undefined &&
+          restriction.toString().trim() !== ""
+      )
       .map((restriction: any) => restriction.toString().trim());
   }
 
@@ -129,12 +144,18 @@ export async function PUT(request: Request, { params }: { params: Params }) {
       );
     }
     updateData.allergenRestrictions = body.allergenRestrictions
-      .filter((restriction: any) => restriction !== null && restriction !== undefined && restriction.toString().trim() !== '')
+      .filter(
+        (restriction: any) =>
+          restriction !== null &&
+          restriction !== undefined &&
+          restriction.toString().trim() !== ""
+      )
       .map((restriction: any) => restriction.toString().trim());
   }
 
   if (body.notes !== undefined) {
-    updateData.notes = body.notes === null ? null : body.notes.toString().trim();
+    updateData.notes =
+      body.notes === null ? null : body.notes.toString().trim();
   }
 
   if (body.specialMealRequired !== undefined) {
@@ -142,15 +163,24 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   }
 
   if (body.specialMealNotes !== undefined) {
-    updateData.specialMealNotes = body.specialMealNotes === null ? null : body.specialMealNotes.toString().trim();
+    updateData.specialMealNotes =
+      body.specialMealNotes === null
+        ? null
+        : body.specialMealNotes.toString().trim();
   }
 
   if (body.tableAssignment !== undefined) {
-    updateData.tableAssignment = body.tableAssignment === null ? null : body.tableAssignment.toString().trim();
+    updateData.tableAssignment =
+      body.tableAssignment === null
+        ? null
+        : body.tableAssignment.toString().trim();
   }
 
   if (body.mealPreference !== undefined) {
-    updateData.mealPreference = body.mealPreference === null ? null : body.mealPreference.toString().trim();
+    updateData.mealPreference =
+      body.mealPreference === null
+        ? null
+        : body.mealPreference.toString().trim();
   }
 
   // Update guest

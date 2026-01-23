@@ -7,19 +7,25 @@
  * @canonical false
  */
 
-import { AllergenWarningBanner, AllergenSeverityBadge, AllergenWarningInline } from "@/components/allergen-warning-banner";
 import type { AllergenWarning } from "@repo/database";
+import {
+  AllergenSeverityBadge,
+  AllergenWarningBanner,
+  AllergenWarningInline,
+} from "@/components/allergen-warning-banner";
 
 export default function AllergenWarningTestPage() {
   // Mock warning data
-  const warnings: Array<AllergenWarning & {
-    dishName?: string;
-    affectedGuestDetails?: Array<{
-      id: string;
-      name: string;
-      email?: string | null;
-    }>;
-  }> = [
+  const warnings: Array<
+    AllergenWarning & {
+      dishName?: string;
+      affectedGuestDetails?: Array<{
+        id: string;
+        name: string;
+        email?: string | null;
+      }>;
+    }
+  > = [
     {
       tenantId: "test-tenant",
       id: "1",
@@ -65,9 +71,7 @@ export default function AllergenWarningTestPage() {
       updatedAt: new Date(),
       deletedAt: null,
       dishName: "Beef Wellington",
-      affectedGuestDetails: [
-        { id: "guest-3", name: "Emma Davis" },
-      ],
+      affectedGuestDetails: [{ id: "guest-3", name: "Emma Davis" }],
     },
   ];
 
@@ -84,9 +88,9 @@ export default function AllergenWarningTestPage() {
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">Critical Warning</h2>
         <AllergenWarningBanner
-          warning={warnings[0]}
           onAcknowledge={(id, reason) => console.log("Acknowledge", id, reason)}
           onViewDetails={(id) => console.log("View details", id)}
+          warning={warnings[0]}
         />
       </section>
 
@@ -94,9 +98,9 @@ export default function AllergenWarningTestPage() {
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">Warning Severity</h2>
         <AllergenWarningBanner
-          warning={warnings[1]}
           onAcknowledge={(id, reason) => console.log("Acknowledge", id, reason)}
           onViewDetails={(id) => console.log("View details", id)}
+          warning={warnings[1]}
         />
       </section>
 
@@ -105,14 +109,18 @@ export default function AllergenWarningTestPage() {
         <h2 className="text-2xl font-semibold">Compact Mode</h2>
         <div className="space-y-3">
           <AllergenWarningBanner
-            warning={warnings[0]}
             compact
-            onAcknowledge={(id, reason) => console.log("Acknowledge", id, reason)}
+            onAcknowledge={(id, reason) =>
+              console.log("Acknowledge", id, reason)
+            }
+            warning={warnings[0]}
           />
           <AllergenWarningBanner
-            warning={warnings[1]}
             compact
-            onAcknowledge={(id, reason) => console.log("Acknowledge", id, reason)}
+            onAcknowledge={(id, reason) =>
+              console.log("Acknowledge", id, reason)
+            }
+            warning={warnings[1]}
           />
         </div>
       </section>
@@ -124,8 +132,8 @@ export default function AllergenWarningTestPage() {
           {warnings.map((warning) => (
             <AllergenWarningInline
               key={warning.id}
-              warning={warning}
               onViewDetails={(id) => console.log("View details", id)}
+              warning={warning}
             />
           ))}
         </div>

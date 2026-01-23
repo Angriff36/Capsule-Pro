@@ -9,7 +9,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,17 +26,14 @@ export async function POST(request: NextRequest) {
     const { orgId } = await auth();
 
     if (!orgId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body: UpdateDishAllergensRequest = await request.json();
     const { id, tenantId, allergens, dietaryTags } = body;
 
     // Validate required fields
-    if (!id || !tenantId) {
+    if (!(id && tenantId)) {
       return NextResponse.json(
         { error: "Missing required fields: id and tenantId" },
         { status: 400 }
@@ -61,10 +58,7 @@ export async function POST(request: NextRequest) {
 
     // Verify tenant matches
     if (tenantId !== orgId) {
-      return NextResponse.json(
-        { error: "Tenant mismatch" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Tenant mismatch" }, { status: 403 });
     }
 
     // Update dish allergens
@@ -96,13 +90,13 @@ export async function POST(request: NextRequest) {
 
     // Handle specific Prisma errors
     if (error && typeof error === "object" && "code" in error) {
-      const prismaError = error as { code: string; meta?: { target?: string[] } };
+      const prismaError = error as {
+        code: string;
+        meta?: { target?: string[] };
+      };
 
       if (prismaError.code === "P2025") {
-        return NextResponse.json(
-          { error: "Dish not found" },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: "Dish not found" }, { status: 404 });
       }
     }
 

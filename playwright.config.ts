@@ -18,19 +18,21 @@ export default defineConfig({
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
-    storageState: process.env.PLAYWRIGHT_AUTH_READY ? "e2e/.auth/storageState.json" : undefined,
+    storageState: process.env.PLAYWRIGHT_AUTH_READY
+      ? "e2e/.auth/storageState.json"
+      : undefined,
   },
 
   // Start Next.js once for the suite.
   // (This is the standard Next.js + Playwright pattern.)
   webServer: {
-    command: process.env.CI ? "pnpm --filter ./apps/app start" : "pnpm --filter ./apps/app dev",
+    command: process.env.CI
+      ? "pnpm --filter ./apps/app start"
+      : "pnpm --filter ./apps/app dev",
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
   },
 
-  projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-  ],
+  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 });

@@ -92,18 +92,18 @@ export function AllergenFilters({
   return (
     <div className="space-y-4">
       {/* Search Bar */}
-      <form onSubmit={handleSearch} className="flex gap-2">
+      <form className="flex gap-2" onSubmit={handleSearch}>
         <div className="relative flex-1">
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
+            className="pl-9"
+            defaultValue={initialQuery}
             name="search"
             placeholder="Search recipes and dishes..."
-            defaultValue={initialQuery}
-            className="pl-9"
           />
         </div>
         {hasActiveFilters && (
-          <Button type="button" variant="outline" onClick={handleClearFilters}>
+          <Button onClick={handleClearFilters} type="button" variant="outline">
             <XIcon className="mr-2 h-4 w-4" />
             Clear
           </Button>
@@ -116,8 +116,8 @@ export function AllergenFilters({
         <div className="space-y-2">
           <Label htmlFor="allergen-select">Filter by Allergen</Label>
           <Select
-            value={initialAllergen}
             onValueChange={(value) => updateFilters({ allergen: value })}
+            value={initialAllergen}
           >
             <SelectTrigger id="allergen-select">
               <SelectValue placeholder="Select allergen" />
@@ -136,8 +136,8 @@ export function AllergenFilters({
         <div className="space-y-2">
           <Label htmlFor="dietary-select">Filter by Dietary Restriction</Label>
           <Select
-            value={initialDietary}
             onValueChange={(value) => updateFilters({ dietary: value })}
+            value={initialDietary}
           >
             <SelectTrigger id="dietary-select">
               <SelectValue placeholder="Select dietary restriction" />

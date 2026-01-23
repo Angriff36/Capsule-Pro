@@ -75,11 +75,12 @@ export async function GET(request: Request) {
       case "day":
         key = date.toISOString().split("T")[0];
         break;
-      case "week":
+      case "week": {
         const weekStart = new Date(date);
         weekStart.setDate(date.getDate() - date.getDay());
         key = weekStart.toISOString().split("T")[0];
         break;
+      }
       case "month":
         key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
         break;
@@ -107,12 +108,16 @@ export async function GET(request: Request) {
   const trends = Object.values(trendData).map((trend) => ({
     ...trend,
     avgCostPerEntry: trend.count > 0 ? trend.totalCost / trend.count : 0,
-    avgQuantityPerEntry: trend.count > 0 ? trend.totalQuantity / trend.count : 0,
+    avgQuantityPerEntry:
+      trend.count > 0 ? trend.totalQuantity / trend.count : 0,
   }));
 
   // Calculate period-over-period comparison
   const totalPeriodCost = trends.reduce((sum, t) => sum + t.totalCost, 0);
-  const totalPeriodQuantity = trends.reduce((sum, t) => sum + t.totalQuantity, 0);
+  const totalPeriodQuantity = trends.reduce(
+    (sum, t) => sum + t.totalQuantity,
+    0
+  );
   const totalPeriodEntries = trends.reduce((sum, t) => sum + t.count, 0);
 
   // Get top waste reasons for the period
@@ -142,8 +147,10 @@ export async function GET(request: Request) {
   );
 
   // Get top wasted items for the period
-  const itemCounts: Record<string, { name: string; count: number; cost: number }> =
-    {};
+  const itemCounts: Record<
+    string,
+    { name: string; count: number; cost: number }
+  > = {};
   for (const entry of entries) {
     const itemName = entry.inventoryItem.name;
     if (!itemCounts[itemName]) {
@@ -175,12 +182,19 @@ export async function GET(request: Request) {
   }
 
   // Check if any single reason accounts for >30% of waste
-  const maxReasonCost = Math.max(...Object.values(reasonCounts).map((r) => r.cost));
+  const maxReasonCost = Math.max(
+    ...Object.values(reasonCounts).map((r) => r.cost)
+  );
   if (maxReasonCost > totalPeriodCost * 0.3) {
     const topReason = await database.wasteReason.findUnique({
-      where: { id: Number.parseInt(Object.keys(reasonCounts).reduce((a, b) =>
-        reasonCounts[a].cost > reasonCounts[b].cost ? a : b
-      ), 10) },
+      where: {
+        id: Number.parseInt(
+          Object.keys(reasonCounts).reduce((a, b) =>
+            reasonCounts[a].cost > reasonCounts[b].cost ? a : b
+          ),
+          10
+        ),
+      },
     });
     reductionOpportunities.push({
       type: "reason_focus",
@@ -196,7 +210,8 @@ export async function GET(request: Request) {
         totalCost: totalPeriodCost,
         totalQuantity: totalPeriodQuantity,
         totalEntries: totalPeriodEntries,
-        avgCostPerEntry: totalPeriodEntries > 0 ? totalPeriodCost / totalPeriodEntries : 0,
+        avgCostPerEntry:
+          totalPeriodEntries > 0 ? totalPeriodCost / totalPeriodEntries : 0,
         period,
         startDate: startDate.toISOString(),
         endDate: now.toISOString(),

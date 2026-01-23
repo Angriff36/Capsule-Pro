@@ -390,7 +390,7 @@ export function PrepListClient({
       const { prepListId } = await response.json();
 
       toast.success("Prep list saved to database", {
-        description: `You can now access this prep list anytime`,
+        description: "You can now access this prep list anytime",
         action: {
           label: "View",
           onClick: () => router.push(`/kitchen/prep-lists/${prepListId}`),

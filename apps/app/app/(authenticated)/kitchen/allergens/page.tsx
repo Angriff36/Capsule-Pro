@@ -9,14 +9,23 @@
 
 "use client";
 
-import { useState } from "react";
-import { Button } from "@repo/design-system/components/ui/button";
 import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system/components/ui/tabs";
-import { AlertTriangle, CheckCircle2, SearchIcon, Loader2 } from "lucide-react";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import { AlertTriangle, CheckCircle2, Loader2, SearchIcon } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { AllergenManagementModal } from "./allergen-management-modal";
 
@@ -118,21 +127,25 @@ export default function AllergenManagementPage() {
   const tenantId = "tenant-1"; // This would come from auth context
 
   // Filter data based on search term
-  const filteredWarnings = mockAllergenWarnings.filter(warning =>
-    warning.warningType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    warning.allergens.some(allergen => allergen.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredWarnings = mockAllergenWarnings.filter(
+    (warning) =>
+      warning.warningType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      warning.allergens.some((allergen) =>
+        allergen.toLowerCase().includes(searchTerm.toLowerCase())
+      )
   );
 
-  const filteredEvents = mockEvents.filter(event =>
-    event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    event.location.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredEvents = mockEvents.filter(
+    (event) =>
+      event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.location.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredDishes = mockDishes.filter(dish =>
+  const filteredDishes = mockDishes.filter((dish) =>
     dish.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredRecipes = mockRecipes.filter(recipe =>
+  const filteredRecipes = mockRecipes.filter((recipe) =>
     recipe.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -150,7 +163,10 @@ export default function AllergenManagementPage() {
     }
   };
 
-  const handleResolveWarning = async (warningId: string, overrideReason: string) => {
+  const handleResolveWarning = async (
+    warningId: string,
+    overrideReason: string
+  ) => {
     setLoading(true);
     try {
       // In a real app, this would make an API call
@@ -197,7 +213,8 @@ export default function AllergenManagementPage() {
         <div>
           <h1 className="text-3xl font-bold">Allergen Management</h1>
           <p className="text-muted-foreground">
-            Manage allergen warnings and dietary restrictions for events and dishes
+            Manage allergen warnings and dietary restrictions for events and
+            dishes
           </p>
         </div>
       </div>
@@ -205,14 +222,14 @@ export default function AllergenManagementPage() {
       <div className="flex items-center space-x-2">
         <SearchIcon className="h-4 w-4 text-muted-foreground" />
         <Input
+          className="w-64"
+          onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search warnings, events, dishes..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-64"
         />
       </div>
 
-      <Tabs defaultValue="warnings" className="space-y-4">
+      <Tabs className="space-y-4" defaultValue="warnings">
         <TabsList>
           <TabsTrigger value="warnings">Allergen Warnings</TabsTrigger>
           <TabsTrigger value="events">Events</TabsTrigger>
@@ -221,7 +238,7 @@ export default function AllergenManagementPage() {
         </TabsList>
 
         {/* Allergen Warnings Tab */}
-        <TabsContent value="warnings" className="space-y-4">
+        <TabsContent className="space-y-4" value="warnings">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -238,12 +255,19 @@ export default function AllergenManagementPage() {
               ) : (
                 <div className="space-y-4">
                   {filteredWarnings.map((warning) => (
-                    <Card key={warning.id} className="border-l-4 border-l-yellow-500">
+                    <Card
+                      className="border-l-4 border-l-yellow-500"
+                      key={warning.id}
+                    >
                       <CardContent className="pt-4">
                         <div className="flex items-start justify-between">
                           <div className="space-y-2">
                             <div className="flex items-center space-x-2">
-                              <Badge variant={getSeverityBadgeColor(warning.severity)}>
+                              <Badge
+                                variant={getSeverityBadgeColor(
+                                  warning.severity
+                                )}
+                              >
                                 {warning.severity}
                               </Badge>
                               <span className="text-sm text-muted-foreground">
@@ -254,9 +278,12 @@ export default function AllergenManagementPage() {
                               )}
                             </div>
                             <div>
-                              <p className="font-medium">Warning Type: {warning.warningType}</p>
+                              <p className="font-medium">
+                                Warning Type: {warning.warningType}
+                              </p>
                               <p className="text-sm text-muted-foreground">
-                                Allergens: {warning.allergens.join(", ") || "None"}
+                                Allergens:{" "}
+                                {warning.allergens.join(", ") || "None"}
                               </p>
                               <p className="text-sm text-muted-foreground">
                                 {formatGuests(warning.affectedGuests)}
@@ -269,10 +296,12 @@ export default function AllergenManagementPage() {
                           <div className="flex space-x-2">
                             {!warning.isAcknowledged && (
                               <Button
+                                disabled={loading}
+                                onClick={() =>
+                                  handleAcknowledgeWarning(warning.id)
+                                }
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleAcknowledgeWarning(warning.id)}
-                                disabled={loading}
                               >
                                 {loading ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -283,15 +312,17 @@ export default function AllergenManagementPage() {
                             )}
                             {!warning.resolved && (
                               <Button
-                                size="sm"
+                                disabled={loading}
                                 onClick={() => {
                                   // In a real app, this would open a modal for override reason
-                                  const reason = prompt("Please provide override reason:");
+                                  const reason = prompt(
+                                    "Please provide override reason:"
+                                  );
                                   if (reason) {
                                     handleResolveWarning(warning.id, reason);
                                   }
                                 }}
-                                disabled={loading}
+                                size="sm"
                               >
                                 {loading ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -312,7 +343,7 @@ export default function AllergenManagementPage() {
         </TabsContent>
 
         {/* Events Tab */}
-        <TabsContent value="events" className="space-y-4">
+        <TabsContent className="space-y-4" value="events">
           <Card>
             <CardHeader>
               <CardTitle>Event Allergen Information</CardTitle>
@@ -331,10 +362,18 @@ export default function AllergenManagementPage() {
                           <div>
                             <h3 className="font-medium">{event.name}</h3>
                             <p className="text-sm text-muted-foreground">
-                              {event.date.toLocaleDateString()} at {event.location}
+                              {event.date.toLocaleDateString()} at{" "}
+                              {event.location}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              Status: <Badge variant={event.status === "confirmed" ? "default" : "secondary"}>
+                              Status:{" "}
+                              <Badge
+                                variant={
+                                  event.status === "confirmed"
+                                    ? "default"
+                                    : "secondary"
+                                }
+                              >
                                 {event.status}
                               </Badge>
                             </p>
@@ -351,7 +390,7 @@ export default function AllergenManagementPage() {
         </TabsContent>
 
         {/* Dishes Tab */}
-        <TabsContent value="dishes" className="space-y-4">
+        <TabsContent className="space-y-4" value="dishes">
           <Card>
             <CardHeader>
               <CardTitle>Dish Allergen Information</CardTitle>
@@ -387,12 +426,12 @@ export default function AllergenManagementPage() {
                             </div>
                           </div>
                           <AllergenManagementModal
-                            type="dish"
-                            id={dish.id}
-                            name={dish.name}
                             currentAllergens={dish.allergens}
                             currentDietaryTags={dish.dietary_tags}
+                            id={dish.id}
+                            name={dish.name}
                             tenantId={tenantId}
+                            type="dish"
                           />
                         </div>
                       </CardContent>
@@ -405,7 +444,7 @@ export default function AllergenManagementPage() {
         </TabsContent>
 
         {/* Recipes Tab */}
-        <TabsContent value="recipes" className="space-y-4">
+        <TabsContent className="space-y-4" value="recipes">
           <Card>
             <CardHeader>
               <CardTitle>Recipe Information</CardTitle>
@@ -439,7 +478,9 @@ export default function AllergenManagementPage() {
                             ))}
                           </div>
                           <div className="text-sm text-muted-foreground mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
-                            <strong>Note:</strong> Recipe allergen management is not available. Allergens are managed at the dish level.
+                            <strong>Note:</strong> Recipe allergen management is
+                            not available. Allergens are managed at the dish
+                            level.
                           </div>
                         </div>
                       </CardContent>
