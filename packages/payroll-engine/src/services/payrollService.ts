@@ -1,7 +1,6 @@
-import { v4 as uuidv4 } from "crypto";
+import { randomUUID } from "crypto";
 import {
   calculatePayroll,
-  type PayrollCalculationInput,
   verifyPayrollBalances,
 } from "../core/calculator";
 import {
@@ -15,6 +14,7 @@ import type {
   GeneratePayrollRequest,
   GeneratePayrollResponse,
   PayrollAudit,
+  PayrollCalculationInput,
   PayrollPeriod,
   PayrollRecord,
   Role,
@@ -88,7 +88,7 @@ export class PayrollService {
     const periodStart = new Date(request.periodStart);
     const periodEnd = new Date(request.periodEnd);
     const periodId = this.generatePeriodId(tenantId, periodStart, periodEnd);
-    const batchId = uuidv4();
+    const batchId = randomUUID();
 
     try {
       // Fetch all required data
@@ -134,7 +134,7 @@ export class PayrollService {
         tenantId,
         startDate: periodStart,
         endDate: periodEnd,
-        status: "completed",
+        status: "finalized",
         currency: "USD",
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -147,7 +147,7 @@ export class PayrollService {
       // Create audit record
       if (this.enableAuditLog) {
         const audit: PayrollAudit = {
-          id: uuidv4(),
+          id: randomUUID(),
           tenantId,
           periodId,
           action: "generated",
@@ -237,12 +237,12 @@ export class PayrollService {
       aggregate: true, // Use aggregate entry for QB
     });
 
-    const exportId = uuidv4();
+    const exportId = randomUUID();
 
     // Log export audit
     if (this.enableAuditLog) {
       const audit: PayrollAudit = {
-        id: uuidv4(),
+        id: randomUUID(),
         tenantId,
         periodId,
         action: "exported",

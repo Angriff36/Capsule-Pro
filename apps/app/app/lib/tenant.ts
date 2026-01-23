@@ -31,3 +31,6 @@ export const requireTenantId = async (): Promise<string> => {
 
   return getTenantIdForOrg(orgId);
 };
+
+// Alias for backward compatibility with existing code using getTenantId
+export const getTenantId = requireTenantId;
