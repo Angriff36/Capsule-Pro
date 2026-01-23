@@ -2072,6 +2072,33 @@ model employee_availability {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model employee_time_off_requests {
+  tenant_id         String    @db.Uuid
+  id                String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employee_id       String    @db.Uuid
+  start_date        DateTime  @db.Date
+  end_date          DateTime  @db.Date
+  reason            String?   @db.Text
+  status            String    @default("PENDING") @db.TenantStaffTimeOffStatus
+  request_type      String    @default("VACATION") @db.TenantStaffTimeOffType
+  created_at        DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at        DateTime? @db.Timestamptz(6)
+  processed_at      DateTime? @db.Timestamptz(6)
+  processed_by      String?   @db.Uuid
+  rejection_reason  String?   @db.Text
+
+  @@id([tenant_id, id])
+  @@index([tenant_id, status], map: "time_off_requests_tenant_status_idx")
+  @@index([employee_id], map: "time_off_requests_employee_idx")
+  @@index([start_date, end_date], map: "time_off_requests_date_range_idx")
+  @@index([tenant_id, start_date], map: "time_off_requests_tenant_date_idx")
+  @@index([tenant_id, processed_by], map: "time_off_requests_processed_by_idx")
+  @@schema("tenant_staff")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model employee_certifications {
   tenant_id          String    @db.Uuid
   id                 String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -2317,6 +2344,29 @@ enum OutboxStatus {
   failed
 
   @@schema("public")
+}
+
+enum TenantStaffTimeOffStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+
+  @@map("time_off_status")
+  @@schema("tenant_staff")
+}
+
+enum TenantStaffTimeOffType {
+  VACATION
+  SICK_LEAVE
+  PERSONAL_DAY
+  BEREAVEMENT
+  MATERNITY_LEAVE
+  PATERNITY_LEAVE
+  OTHER
+
+  @@map("time_off_type")
+  @@schema("tenant_staff")
 }
 
 model OutboxEvent {

@@ -64,6 +64,8 @@ ENUMS (immutable only):
   core.employment_type: 'full_time', 'part_time', 'contractor', 'temp'
   core.unit_system: 'metric', 'imperial', 'custom'
   core.unit_type: 'volume', 'weight', 'count', 'length', 'temperature', 'time'
+  tenant_staff.time_off_status: 'PENDING', 'APPROVED', 'REJECTED', 'CANCELLED'
+  tenant_staff.time_off_type: 'VACATION', 'SICK_LEAVE', 'PERSONAL_DAY', 'BEREAVEMENT', 'MATERNITY_LEAVE', 'PATERNITY_LEAVE', 'OTHER'
 
 LOOKUP TABLES:
 
@@ -274,6 +276,26 @@ tenant_staff.employee_availability
   effective_until date
   created_at, updated_at, deleted_at
   -- No overlapping availability for same employee+day
+
+tenant_staff.employee_time_off_requests
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  employee_id uuid NOT NULL
+  start_date date NOT NULL
+  end_date date NOT NULL
+  reason text
+  status tenant_staff.time_off_status NOT NULL DEFAULT 'PENDING'  -- PENDING, APPROVED, REJECTED, CANCELLED
+  request_type tenant_staff.time_off_type NOT NULL DEFAULT 'VACATION'  -- VACATION, SICK_LEAVE, PERSONAL_DAY, BEREAVEMENT, MATERNITY_LEAVE, PATERNITY_LEAVE, OTHER
+  processed_at timestamptz
+  processed_by uuid  -- employee_id of manager who processed
+  rejection_reason text
+  created_at, updated_at, deleted_at
+  CHECK: end_date >= start_date
+  CHECK: start_date >= CURRENT_DATE OR (status = 'APPROVED' AND start_date < CURRENT_DATE)
+  CHECK: (status NOT IN ('APPROVED', 'REJECTED')) OR (processed_at IS NOT NULL AND processed_by IS NOT NULL)
+  CHECK: status != 'REJECTED' OR rejection_reason IS NOT NULL
+  -- Purpose: Track employee time-off requests with approval workflow
 
 tenant_staff.schedules
   tenant_id uuid NOT NULL
