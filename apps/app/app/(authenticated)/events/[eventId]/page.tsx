@@ -56,7 +56,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
   );
 
   // Fetch budget for this event
-  const budget = await database.eventBudget.findFirst({
+  const budget = await database.budget.findFirst({
     where: {
       AND: [
         { tenantId },

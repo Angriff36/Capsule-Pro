@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { ContractPDF } from "@repo/pdf";
-import { getTenantIdForOrg } from "@/lib/tenant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export const runtime = "nodejs";
 
@@ -35,42 +35,13 @@ export async function GET(
 
     const tenantId = await getTenantIdForOrg(orgId);
 
-    // Fetch contract with all related data
+    // Fetch contract
+    // TODO: Add event, client, signatures relations to Prisma schema
     const contract = await database.eventContract.findFirst({
       where: {
         id: contractId,
         tenantId,
         deletedAt: null,
-      },
-      include: {
-        event: {
-          select: {
-            id: true,
-            title: true,
-            eventDate: true,
-            venue: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        },
-        client: {
-          select: {
-            name: true,
-            email: true,
-            phone: true,
-            address: true,
-          },
-        },
-        signatures: {
-          where: {
-            deletedAt: null,
-          },
-          orderBy: {
-            signedAt: "asc",
-          },
-        },
       },
     });
 
@@ -82,8 +53,11 @@ export async function GET(
     }
 
     // Fetch user info for metadata
-    const user = await database.user.findUnique({
-      where: { id: userId },
+    const user = await database.user.findFirst({
+      where: {
+        tenantId,
+        authUserId: userId,
+      },
       select: {
         firstName: true,
         lastName: true,
@@ -113,32 +87,16 @@ export async function GET(
     const pdfData = {
       contract: {
         id: contract.id,
+        contractNumber: contract.contractNumber || undefined,
         title: contract.title,
         status: contract.status,
         notes: contract.notes || undefined,
         expiresAt: contract.expiresAt || undefined,
         createdAt: contract.createdAt,
       },
-      event: {
-        id: contract.event.id,
-        name: contract.event.title,
-        date: contract.event.eventDate,
-        venue: contract.event.venue?.name || undefined,
-      },
-      client: contract.client
-        ? {
-            name: contract.client.name,
-            email: contract.client.email || undefined,
-            phone: contract.client.phone || undefined,
-            address: contract.client.address || undefined,
-          }
-        : undefined,
-      signatures: contract.signatures.map((sig) => ({
-        id: sig.id,
-        signerName: sig.signerName,
-        signerEmail: sig.signerEmail,
-        signedAt: sig.signedAt,
-      })),
+      event: undefined, // TODO: Fetch from Event relation when added
+      client: undefined, // TODO: Fetch from Client relation when added
+      signatures: [], // TODO: Fetch from ContractSignature relation when added
       terms: defaultTerms,
       metadata: {
         generatedAt: new Date(),

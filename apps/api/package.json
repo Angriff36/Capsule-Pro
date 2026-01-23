@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.89",
+    "@react-pdf/renderer": "^4.2.1",
     "@repo/analytics": "workspace:*",
     "@repo/auth": "workspace:*",
     "@repo/database": "workspace:*",

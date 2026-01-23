@@ -330,3 +330,14 @@ e2e/.auth/
 test-*.spec.ts
 **/battle-board/README.md
 nul
+
+/generated/prisma
+
+IMPLEMENTATION_PLAN.md.bak
+docs/IMPLEMENTATION_PLAN.md
+main.ts
+update_implementation_plan.sh
+fakegit.sh
+ralph-stream.ndjson
+test-api-route.ts
+test_table.txt

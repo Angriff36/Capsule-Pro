@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { BattleBoardPDF } from "@repo/pdf";
-import { getTenantIdForOrg } from "@/lib/tenant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export const runtime = "nodejs";
 
@@ -36,24 +36,12 @@ export async function GET(
     const tenantId = await getTenantIdForOrg(orgId);
 
     // Fetch event details
+    // TODO: Add client, venue relations to Prisma schema
     const event = await database.event.findUnique({
       where: {
         tenantId_id: {
           tenantId,
           id: eventId,
-        },
-      },
-      include: {
-        client: {
-          select: {
-            name: true,
-          },
-        },
-        venue: {
-          select: {
-            name: true,
-            address: true,
-          },
         },
       },
     });
@@ -136,8 +124,11 @@ export async function GET(
     );
 
     // Fetch user info for metadata
-    const user = await database.user.findUnique({
-      where: { id: userId },
+    const user = await database.user.findFirst({
+      where: {
+        tenantId,
+        authUserId: userId,
+      },
       select: {
         firstName: true,
         lastName: true,
@@ -158,9 +149,9 @@ export async function GET(
         id: event.id,
         name: event.title,
         date: event.eventDate,
-        venue: event.venue?.name,
-        address: event.venue?.address,
-        clientName: event.client?.name,
+        venue: event.venueName,
+        address: event.venueAddress,
+        clientName: undefined, // TODO: Fetch from client relation when added
       },
       tasks: tasks.map((task) => ({
         id: task.id,

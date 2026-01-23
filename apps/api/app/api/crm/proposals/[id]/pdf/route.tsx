@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { ProposalPDF } from "@repo/pdf";
-import { getTenantIdForOrg } from "@/lib/tenant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export const runtime = "nodejs";
 
@@ -35,49 +35,13 @@ export async function GET(
 
     const tenantId = await getTenantIdForOrg(orgId);
 
-    // Fetch proposal with all related data
+    // Fetch proposal
+    // TODO: Add client, lead, event, lineItems relations to Prisma schema
     const proposal = await database.proposal.findFirst({
       where: {
         id: proposalId,
         tenantId,
         deletedAt: null,
-      },
-      include: {
-        client: {
-          select: {
-            name: true,
-            email: true,
-            phone: true,
-            address: true,
-          },
-        },
-        lead: {
-          select: {
-            name: true,
-            email: true,
-            phone: true,
-          },
-        },
-        event: {
-          select: {
-            name: true,
-            eventDate: true,
-            guestCount: true,
-            venue: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        },
-        lineItems: {
-          where: {
-            deletedAt: null,
-          },
-          orderBy: {
-            sortOrder: "asc",
-          },
-        },
       },
     });
 
@@ -89,8 +53,11 @@ export async function GET(
     }
 
     // Fetch user info for metadata
-    const user = await database.user.findUnique({
-      where: { id: userId },
+    const user = await database.user.findFirst({
+      where: {
+        tenantId,
+        authUserId: userId,
+      },
       select: {
         firstName: true,
         lastName: true,
@@ -110,6 +77,7 @@ export async function GET(
       proposal: {
         id: proposal.id,
         proposalNumber: proposal.proposalNumber,
+        title: proposal.title,
         status: proposal.status,
         validUntil: proposal.validUntil,
         subtotal: Number(proposal.subtotal),
@@ -117,39 +85,16 @@ export async function GET(
         total: Number(proposal.total),
         notes: proposal.notes || undefined,
         createdAt: proposal.createdAt,
+        eventDate: proposal.eventDate,
+        eventType: proposal.eventType,
+        guestCount: proposal.guestCount,
+        venueName: proposal.venueName,
+        venueAddress: proposal.venueAddress,
       },
-      client: proposal.client
-        ? {
-            name: proposal.client.name,
-            email: proposal.client.email || undefined,
-            phone: proposal.client.phone || undefined,
-            address: proposal.client.address || undefined,
-          }
-        : undefined,
-      lead: proposal.lead
-        ? {
-            name: proposal.lead.name,
-            email: proposal.lead.email || undefined,
-            phone: proposal.lead.phone || undefined,
-          }
-        : undefined,
-      event: proposal.event
-        ? {
-            name: proposal.event.name,
-            date: proposal.event.eventDate,
-            guestCount: proposal.event.guestCount,
-            venue: proposal.event.venue?.name || undefined,
-          }
-        : undefined,
-      lineItems: proposal.lineItems.map((item) => ({
-        id: item.id,
-        name: item.name,
-        description: item.description || undefined,
-        quantity: item.quantity,
-        unitPrice: Number(item.unitPrice),
-        totalPrice: Number(item.totalPrice),
-        category: item.category || undefined,
-      })),
+      client: undefined, // TODO: Fetch client data separately when relation is added
+      lead: undefined, // TODO: Fetch lead data separately when relation is added
+      event: undefined, // TODO: Fetch event data separately when relation is added
+      lineItems: [], // TODO: Fetch line items separately when relation is added
       metadata: {
         generatedAt: new Date(),
         generatedBy: user.email || `${user.firstName} ${user.lastName}`,

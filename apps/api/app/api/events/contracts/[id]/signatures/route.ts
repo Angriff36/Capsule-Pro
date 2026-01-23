@@ -1,14 +1,21 @@
 /**
  * Event Contract Signatures API Endpoints
  *
- * GET /api/events/contracts/[id]/signatures - List all signatures for a contract
+ * GET  /api/events/contracts/[id]/signatures - List all signatures for a contract
+ * POST /api/events/contracts/[id]/signatures - Create a new signature for a contract
  */
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+
+type CreateSignatureBody = {
+  signatureData: string;
+  signerName: string;
+  signerEmail?: string;
+};
 
 // Define types
 type PaginationParams = {
@@ -241,6 +248,83 @@ export async function GET(
     console.error("Error listing signatures:", error);
     return NextResponse.json(
       { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * POST /api/events/contracts/[id]/signatures
+ * Create a new signature for a contract
+ */
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id: contractId } = await params;
+  const { orgId } = await auth();
+
+  if (!orgId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const tenantId = await getTenantIdForOrg(orgId);
+
+  try {
+    const body = (await request.json()) as CreateSignatureBody;
+    const { signatureData, signerName, signerEmail } = body;
+
+    // Validate required fields
+    if (!(signatureData && signerName)) {
+      return NextResponse.json(
+        { error: "Signature data and signer name are required" },
+        { status: 400 }
+      );
+    }
+
+    // Check if contract exists and belongs to tenant
+    const contract = await database.eventContract.findUnique({
+      where: {
+        tenantId_id: {
+          tenantId,
+          id: contractId,
+        },
+      },
+    });
+
+    if (!contract) {
+      return NextResponse.json(
+        { error: "Contract not found" },
+        { status: 404 }
+      );
+    }
+
+    // Get client IP address
+    const ipAddress =
+      request.headers.get("x-forwarded-for") ||
+      request.headers.get("x-real-ip") ||
+      "unknown";
+
+    // Create signature record
+    const signature = await database.contractSignature.create({
+      data: {
+        tenantId,
+        contractId,
+        signatureData,
+        signerName,
+        signerEmail: signerEmail || null,
+        ipAddress,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      signature,
+    });
+  } catch (error) {
+    console.error("Error creating signature:", error);
+    return NextResponse.json(
+      { error: "Failed to create signature" },
       { status: 500 }
     );
   }

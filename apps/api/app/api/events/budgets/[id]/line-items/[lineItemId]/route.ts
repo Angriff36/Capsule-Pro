@@ -1,9 +1,9 @@
 /**
  * Individual Budget Line Item API Endpoints
  *
- * GET    /api/events/budgets/[budgetId]/line-items/[lineItemId]      - Get a single line item
- * PUT    /api/events/budgets/[budgetId]/line-items/[lineItemId]      - Update a line item
- * DELETE /api/events/budgets/[budgetId]/line-items/[lineItemId]      - Delete a line item
+ * GET    /api/events/budgets/[id]/line-items/[lineItemId]      - Get a single line item
+ * PUT    /api/events/budgets/[id]/line-items/[lineItemId]      - Update a line item
+ * DELETE /api/events/budgets/[id]/line-items/[lineItemId]      - Delete a line item
  */
 
 import { auth } from "@repo/auth/server";
@@ -11,18 +11,18 @@ import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { UpdateLineItemRequest } from "../../../types";
+import type { UpdateLineItemRequest } from "../../types";
 import {
   validateBudgetCategory,
   validateLineItemAmount,
   verifyEditableBudget,
   verifyLineItem,
-} from "../../../validation";
+} from "../../validation";
 
-type Params = Promise<{ budgetId: string; lineItemId: string }>;
+type Params = Promise<{ id: string; lineItemId: string }>;
 
 /**
- * GET /api/events/budgets/[budgetId]/line-items/[lineItemId]
+ * GET /api/events/budgets/[id]/line-items/[lineItemId]
  * Get a single line item
  */
 export async function GET(request: Request, { params }: { params: Params }) {
@@ -33,7 +33,7 @@ export async function GET(request: Request, { params }: { params: Params }) {
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    const { budgetId, lineItemId } = await params;
+    const { id: budgetId, lineItemId } = await params;
 
     invariant(budgetId, "Budget ID is required");
     invariant(lineItemId, "Line item ID is required");
@@ -111,7 +111,7 @@ export async function GET(request: Request, { params }: { params: Params }) {
 }
 
 /**
- * PUT /api/events/budgets/[budgetId]/line-items/[lineItemId]
+ * PUT /api/events/budgets/[id]/line-items/[lineItemId]
  * Update a line item
  */
 export async function PUT(request: Request, { params }: { params: Params }) {
@@ -122,7 +122,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    const { budgetId, lineItemId } = await params;
+    const { id: budgetId, lineItemId } = await params;
     const body = await request.json();
 
     invariant(budgetId, "Budget ID is required");
@@ -286,7 +286,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
 }
 
 /**
- * DELETE /api/events/budgets/[budgetId]/line-items/[lineItemId]
+ * DELETE /api/events/budgets/[id]/line-items/[lineItemId]
  * Delete a line item
  */
 export async function DELETE(request: Request, { params }: { params: Params }) {
@@ -297,7 +297,7 @@ export async function DELETE(request: Request, { params }: { params: Params }) {
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    const { budgetId, lineItemId } = await params;
+    const { id: budgetId, lineItemId } = await params;
 
     invariant(budgetId, "Budget ID is required");
     invariant(lineItemId, "Line item ID is required");

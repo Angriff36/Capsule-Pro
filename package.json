@@ -51,8 +51,10 @@
     "husky": "^9.1.7",
     "node-mocks-http": "^1.17.2",
     "playwright": "^1.57.0",
+    "prisma": "7.1.0",
     "secretlint": "^11.3.0",
     "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
     "turbo": "^2.6.3",
     "typescript": "^5.9.3",
     "ultracite": "6.3.9",
@@ -82,5 +84,9 @@
       "sharp"
     ]
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@prisma/adapter-neon": "7.1.0",
+    "@prisma/client": "7.1.0"
+  }
 }
