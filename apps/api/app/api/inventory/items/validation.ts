@@ -5,9 +5,9 @@
 import { InvariantError } from "@/app/lib/invariant";
 import type {
   CreateInventoryItemRequest,
-  UpdateInventoryItemRequest,
   FSAStatus,
   ItemCategory,
+  UpdateInventoryItemRequest,
 } from "./types";
 import { FSA_STATUSES, ITEM_CATEGORIES } from "./types";
 
@@ -28,7 +28,9 @@ export function validateFSAStatus(value: unknown): asserts value is FSAStatus {
 /**
  * Validate item category
  */
-export function validateItemCategory(value: unknown): asserts value is ItemCategory {
+export function validateItemCategory(
+  value: unknown
+): asserts value is ItemCategory {
   if (!value) {
     throw new InvariantError("Category is required");
   }

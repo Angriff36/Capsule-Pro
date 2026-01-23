@@ -11,8 +11,8 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import type { FSAStatus, InventoryItemWithStatus } from "../types";
 import { validateUpdateInventoryItemRequest } from "../validation";
-import type { UpdateInventoryItemRequest, InventoryItemWithStatus, FSAStatus } from "../types";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -42,12 +42,18 @@ export async function GET(request: Request, context: RouteContext) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const { id } = await context.params;
     if (!id) {
-      return NextResponse.json({ message: "Item ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Item ID is required" },
+        { status: 400 }
+      );
     }
 
     const item = await database.inventoryItem.findFirst({
@@ -112,12 +118,18 @@ export async function PUT(request: Request, context: RouteContext) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const { id } = await context.params;
     if (!id) {
-      return NextResponse.json({ message: "Item ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Item ID is required" },
+        { status: 400 }
+      );
     }
 
     // Verify item exists and belongs to tenant
@@ -163,13 +175,18 @@ export async function PUT(request: Request, context: RouteContext) {
     if (body.name !== undefined) updateData.name = body.name;
     if (body.category !== undefined) updateData.category = body.category;
     if (body.unit_cost !== undefined) updateData.unitCost = body.unit_cost;
-    if (body.quantity_on_hand !== undefined) updateData.quantityOnHand = body.quantity_on_hand;
-    if (body.reorder_level !== undefined) updateData.reorder_level = body.reorder_level;
+    if (body.quantity_on_hand !== undefined)
+      updateData.quantityOnHand = body.quantity_on_hand;
+    if (body.reorder_level !== undefined)
+      updateData.reorder_level = body.reorder_level;
     if (body.tags !== undefined) updateData.tags = body.tags;
     if (body.fsa_status !== undefined) updateData.fsa_status = body.fsa_status;
-    if (body.fsa_temp_logged !== undefined) updateData.fsa_temp_logged = body.fsa_temp_logged;
-    if (body.fsa_allergen_info !== undefined) updateData.fsa_allergen_info = body.fsa_allergen_info;
-    if (body.fsa_traceable !== undefined) updateData.fsa_traceable = body.fsa_traceable;
+    if (body.fsa_temp_logged !== undefined)
+      updateData.fsa_temp_logged = body.fsa_temp_logged;
+    if (body.fsa_allergen_info !== undefined)
+      updateData.fsa_allergen_info = body.fsa_allergen_info;
+    if (body.fsa_traceable !== undefined)
+      updateData.fsa_traceable = body.fsa_traceable;
 
     // Update inventory item using raw SQL for composite key
     await database.$executeRaw`
@@ -255,12 +272,18 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const { id } = await context.params;
     if (!id) {
-      return NextResponse.json({ message: "Item ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Item ID is required" },
+        { status: 400 }
+      );
     }
 
     // Verify item exists and belongs to tenant

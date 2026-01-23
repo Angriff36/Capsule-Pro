@@ -10,8 +10,8 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "../../../lib/invariant";
 import { getTenantIdForOrg } from "../../../lib/tenant";
-import { CONTRACT_STATUSES } from "./validation";
 import type { ContractStatus } from "./types";
+import { CONTRACT_STATUSES } from "./validation";
 
 // Define types
 type CreateContractRequest = {
@@ -48,10 +48,7 @@ function parseContractFilters(
 
   // Parse status filter
   const status = searchParams.get("status");
-  if (
-    status &&
-    CONTRACT_STATUSES.includes(status as ContractStatus)
-  ) {
+  if (status && CONTRACT_STATUSES.includes(status as ContractStatus)) {
     filters.status = status as ContractStatus;
   }
 
@@ -225,7 +222,7 @@ export async function GET(request: Request) {
     // Add event and client details to contracts
     const contractsWithDetails = contracts.map((contract) => ({
       ...contract,
-      event: contract.eventId ? (eventMap.get(contract.eventId) || null) : null,
+      event: contract.eventId ? eventMap.get(contract.eventId) || null : null,
       client: contract.clientId
         ? clientMap.get(contract.clientId) || null
         : null,

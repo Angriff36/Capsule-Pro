@@ -1,19 +1,16 @@
 "use client";
 
-import { PlusIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
-import {
-  type BudgetListResponse,
-  type EventBudget,
-  type EventBudgetStatus,
-  getBudgetStatusLabel,
-  getVarianceColor,
-  listBudgets,
-  deleteBudget,
-} from "../../../lib/use-budgets";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -29,16 +26,19 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { PlusIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@repo/design-system/components/ui/dialog";
-import { Input } from "@repo/design-system/components/ui/input";
+  type BudgetListResponse,
+  deleteBudget,
+  type EventBudget,
+  type EventBudgetStatus,
+  getBudgetStatusLabel,
+  getVarianceColor,
+  listBudgets,
+} from "../../../lib/use-budgets";
 import { CreateBudgetModal } from "./components/create-budget-modal";
 
 export const BudgetsPageClient = () => {
@@ -138,10 +138,10 @@ export const BudgetsPageClient = () => {
             <div className="relative">
               <Input
                 className="w-64"
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search budgets..."
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <Select
@@ -182,7 +182,9 @@ export const BudgetsPageClient = () => {
             </div>
           </div>
           <div className="rounded-xl border bg-card p-4">
-            <div className="text-muted-foreground text-sm">Approved Budgets</div>
+            <div className="text-muted-foreground text-sm">
+              Approved Budgets
+            </div>
             <div className="text-2xl font-bold">
               {budgets.filter((b) => b.status === "approved").length}
             </div>
@@ -263,8 +265,8 @@ export const BudgetsPageClient = () => {
                           budget.status === "draft"
                             ? "bg-yellow-100 text-yellow-800 border-yellow-200"
                             : budget.status === "approved"
-                            ? "bg-blue-100 text-blue-800 border-blue-200"
-                            : "bg-gray-100 text-gray-800 border-gray-200"
+                              ? "bg-blue-100 text-blue-800 border-blue-200"
+                              : "bg-gray-100 text-gray-800 border-gray-200"
                         }
                         variant="outline"
                       >
@@ -305,10 +307,10 @@ export const BudgetsPageClient = () => {
                         </Button>
                         {budget.status !== "locked" && (
                           <Button
+                            className="text-destructive hover:text-destructive"
                             onClick={() => confirmDelete(budget)}
                             size="sm"
                             variant="ghost"
-                            className="text-destructive hover:text-destructive"
                           >
                             Delete
                           </Button>
@@ -362,10 +364,7 @@ export const BudgetsPageClient = () => {
       />
 
       {/* Delete Confirmation Dialog */}
-      <Dialog
-        onOpenChange={setDeleteDialogOpen}
-        open={deleteDialogOpen}
-      >
+      <Dialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Budget?</DialogTitle>

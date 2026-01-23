@@ -6,23 +6,18 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
-import { InvariantError, invariant } from "@/app/lib/invariant";
+import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import {
-  validateCreateInventoryItemRequest,
-  validateItemCategory,
-  validateFSAStatus,
-} from "./validation";
 import type {
-  CreateInventoryItemRequest,
+  FSAStatus,
   InventoryItemListFilters,
   InventoryItemWithStatus,
   StockStatus,
-  FSAStatus,
 } from "./types";
-import { ITEM_CATEGORIES, FSA_STATUSES } from "./types";
+import { FSA_STATUSES, ITEM_CATEGORIES } from "./types";
+import { validateCreateInventoryItemRequest } from "./validation";
 
 type PaginationParams = {
   page: number;
@@ -63,7 +58,10 @@ function parseInventoryItemFilters(
   }
 
   const stockStatus = searchParams.get("stock_status");
-  if (stockStatus && ["in_stock", "low_stock", "out_of_stock"].includes(stockStatus)) {
+  if (
+    stockStatus &&
+    ["in_stock", "low_stock", "out_of_stock"].includes(stockStatus)
+  ) {
     filters.stock_status = stockStatus as StockStatus;
   }
 
@@ -104,7 +102,10 @@ export async function GET(request: Request) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const { searchParams } = new URL(request.url);
@@ -176,10 +177,7 @@ export async function GET(request: Request) {
       const stockStatus = calculateStockStatus(quantityOnHand, reorderLevel);
 
       // Apply stock status filter that requires calculation
-      if (
-        filters.stock_status === "low_stock" &&
-        stockStatus !== "low_stock"
-      ) {
+      if (filters.stock_status === "low_stock" && stockStatus !== "low_stock") {
         return null;
       }
 
@@ -211,9 +209,7 @@ export async function GET(request: Request) {
 
     // Recalculate total after stock status filtering
     const filteredTotal =
-      filters.stock_status === "low_stock"
-        ? itemsWithStatus.length
-        : total;
+      filters.stock_status === "low_stock" ? itemsWithStatus.length : total;
 
     return NextResponse.json({
       data: itemsWithStatus,
@@ -245,7 +241,10 @@ export async function POST(request: Request) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const body = await request.json();

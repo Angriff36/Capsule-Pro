@@ -152,7 +152,8 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   // Check for overlapping availability if day or time is changing
-  const newDayOfWeek: DayOfWeek = (body.dayOfWeek ?? existingAvail.day_of_week) as DayOfWeek;
+  const newDayOfWeek: DayOfWeek = (body.dayOfWeek ??
+    existingAvail.day_of_week) as DayOfWeek;
   const newStartTime = body.startTime ?? "00:00"; // Will be validated on overlap check
   const newEndTime = body.endTime ?? "23:59";
   const newEffectiveFrom = body.effectiveFrom

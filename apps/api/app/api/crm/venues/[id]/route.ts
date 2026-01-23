@@ -7,11 +7,10 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { Prisma } from "@repo/database";
 import type { UpdateVenueRequest } from "../types";
 import { validateUpdateVenueRequest } from "../validation";
 

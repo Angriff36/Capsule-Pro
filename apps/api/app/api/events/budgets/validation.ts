@@ -4,9 +4,8 @@
 
 import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
-import { invariant } from "@/app/lib/invariant";
-import type { EventBudgetStatus, BudgetCategory } from "./types";
-import { EVENT_BUDGET_STATUSES, BUDGET_CATEGORIES } from "./types";
+import type { BudgetCategory, EventBudgetStatus } from "./types";
+import { BUDGET_CATEGORIES, EVENT_BUDGET_STATUSES } from "./types";
 
 /**
  * Validate budget status
@@ -42,9 +41,7 @@ export async function verifyEvent(
   event: { id: string; title: string } | null;
   error: NextResponse | null;
 }> {
-  const event = await database.$queryRaw<
-    Array<{ id: string; title: string }>
-  >(
+  const event = await database.$queryRaw<Array<{ id: string; title: string }>>(
     Prisma.sql`
       SELECT id, title
       FROM tenant_events.events
@@ -57,10 +54,7 @@ export async function verifyEvent(
   if (!event[0]) {
     return {
       event: null,
-      error: NextResponse.json(
-        { message: "Event not found" },
-        { status: 404 }
-      ),
+      error: NextResponse.json({ message: "Event not found" }, { status: 404 }),
     };
   }
 
@@ -170,7 +164,7 @@ export async function verifyEditableBudget(
  */
 export function validateLineItemAmount(
   amount: number,
-  fieldName: string = "amount"
+  fieldName = "amount"
 ): NextResponse | null {
   if (amount < 0) {
     return NextResponse.json(

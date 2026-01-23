@@ -11,16 +11,11 @@ import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type {
-  EventBudget,
-  EventBudgetStatus,
-  UpdateBudgetRequest,
-} from "../types";
+import type { EventBudgetStatus, UpdateBudgetRequest } from "../types";
 import {
-  verifyEditableBudget,
-  verifyEvent,
   validateBudgetStatus,
   validateBudgetStatusTransition,
+  verifyEditableBudget,
 } from "../validation";
 
 type Params = Promise<{ id: string }>;
@@ -228,7 +223,9 @@ export async function PUT(request: Request, { params }: { params: Params }) {
     }
 
     if (updateData.notes !== undefined) {
-      updatePayload.notes = updateData.notes ? String(updateData.notes).trim() : null;
+      updatePayload.notes = updateData.notes
+        ? String(updateData.notes).trim()
+        : null;
     }
 
     // Update budget using raw SQL for composite key

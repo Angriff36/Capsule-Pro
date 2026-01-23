@@ -1,25 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import {
-  type CreateInventoryItemRequest,
-  type UpdateInventoryItemRequest,
-  type InventoryItemWithStatus,
-  type ItemCategory,
-  type FSAStatus,
-  createInventoryItem,
-  updateInventoryItem,
-  ITEM_CATEGORIES,
-  FSA_STATUSES,
-  getCategoryLabel,
-  getFSAStatusLabel,
-  formatCurrency,
-  formatQuantity,
-} from "../../../../lib/use-inventory";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
+import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -35,8 +20,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Checkbox } from "@repo/design-system/components/ui/checkbox";
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import {
+  type CreateInventoryItemRequest,
+  createInventoryItem,
+  FSA_STATUSES,
+  type FSAStatus,
+  formatCurrency,
+  formatQuantity,
+  getCategoryLabel,
+  getFSAStatusLabel,
+  type InventoryItemWithStatus,
+  ITEM_CATEGORIES,
+  type ItemCategory,
+  type UpdateInventoryItemRequest,
+  updateInventoryItem,
+} from "../../../../lib/use-inventory";
 
 interface CreateInventoryItemModalProps {
   open: boolean;
@@ -110,13 +110,13 @@ export const CreateInventoryItemModal = ({
         name: formData.name.trim(),
         category: formData.category,
         unit_cost: formData.unit_cost
-          ? parseFloat(formData.unit_cost)
+          ? Number.parseFloat(formData.unit_cost)
           : undefined,
         quantity_on_hand: formData.quantity_on_hand
-          ? parseFloat(formData.quantity_on_hand)
+          ? Number.parseFloat(formData.quantity_on_hand)
           : undefined,
         reorder_level: formData.reorder_level
-          ? parseFloat(formData.reorder_level)
+          ? Number.parseFloat(formData.reorder_level)
           : undefined,
         tags: formData.tags.length > 0 ? formData.tags : undefined,
         fsa_status: formData.fsa_status,
@@ -129,9 +129,7 @@ export const CreateInventoryItemModal = ({
         await updateInventoryItem(editItem.id, request);
         toast.success("Inventory item updated successfully");
       } else {
-        await createInventoryItem(
-          request as CreateInventoryItemRequest
-        );
+        await createInventoryItem(request as CreateInventoryItemRequest);
         toast.success("Inventory item created successfully");
       }
 
@@ -192,12 +190,12 @@ export const CreateInventoryItemModal = ({
                 <Input
                   disabled={isLoading}
                   id="item_number"
-                  placeholder="e.g., INV001"
-                  required
-                  value={formData.item_number}
                   onChange={(e) =>
                     setFormData({ ...formData, item_number: e.target.value })
                   }
+                  placeholder="e.g., INV001"
+                  required
+                  value={formData.item_number}
                 />
               </div>
               <div className="space-y-2">
@@ -205,12 +203,12 @@ export const CreateInventoryItemModal = ({
                 <Input
                   disabled={isLoading}
                   id="name"
-                  placeholder="e.g., Olive Oil"
-                  required
-                  value={formData.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
+                  placeholder="e.g., Olive Oil"
+                  required
+                  value={formData.name}
                 />
               </div>
             </div>
@@ -246,17 +244,17 @@ export const CreateInventoryItemModal = ({
                   disabled={isLoading}
                   id="unit_cost"
                   min="0"
+                  onChange={(e) =>
+                    setFormData({ ...formData, unit_cost: e.target.value })
+                  }
                   placeholder="0.00"
                   step="0.01"
                   type="number"
                   value={formData.unit_cost}
-                  onChange={(e) =>
-                    setFormData({ ...formData, unit_cost: e.target.value })
-                  }
                 />
                 <p className="text-muted-foreground text-xs">
                   {formData.unit_cost
-                    ? formatCurrency(parseFloat(formData.unit_cost))
+                    ? formatCurrency(Number.parseFloat(formData.unit_cost))
                     : "-"}
                 </p>
               </div>
@@ -266,20 +264,22 @@ export const CreateInventoryItemModal = ({
                   disabled={isLoading}
                   id="quantity_on_hand"
                   min="0"
-                  placeholder="0.000"
-                  step="0.001"
-                  type="number"
-                  value={formData.quantity_on_hand}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
                       quantity_on_hand: e.target.value,
                     })
                   }
+                  placeholder="0.000"
+                  step="0.001"
+                  type="number"
+                  value={formData.quantity_on_hand}
                 />
                 <p className="text-muted-foreground text-xs">
                   {formData.quantity_on_hand
-                    ? formatQuantity(parseFloat(formData.quantity_on_hand))
+                    ? formatQuantity(
+                        Number.parseFloat(formData.quantity_on_hand)
+                      )
                     : "-"}
                 </p>
               </div>
@@ -289,17 +289,17 @@ export const CreateInventoryItemModal = ({
                   disabled={isLoading}
                   id="reorder_level"
                   min="0"
+                  onChange={(e) =>
+                    setFormData({ ...formData, reorder_level: e.target.value })
+                  }
                   placeholder="0.000"
                   step="0.001"
                   type="number"
                   value={formData.reorder_level}
-                  onChange={(e) =>
-                    setFormData({ ...formData, reorder_level: e.target.value })
-                  }
                 />
                 <p className="text-muted-foreground text-xs">
                   {formData.reorder_level
-                    ? formatQuantity(parseFloat(formData.reorder_level))
+                    ? formatQuantity(Number.parseFloat(formData.reorder_level))
                     : "-"}
                 </p>
               </div>
@@ -312,10 +312,10 @@ export const CreateInventoryItemModal = ({
                 <Input
                   disabled={isLoading}
                   id="tags"
-                  placeholder="Add tags (e.g., organic, gluten-free)"
-                  value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={handleKeyPress}
+                  placeholder="Add tags (e.g., organic, gluten-free)"
+                  value={tagInput}
                 />
                 <Button
                   disabled={isLoading || !tagInput.trim()}

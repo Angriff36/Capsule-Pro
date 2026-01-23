@@ -10,16 +10,11 @@ import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { BUDGET_CATEGORIES } from "../../types";
-import type {
-  BudgetCategory,
-  CreateLineItemRequest,
-  UpdateLineItemRequest,
-} from "../../types";
+import type { CreateLineItemRequest } from "../../types";
 import {
-  verifyEditableBudget,
   validateBudgetCategory,
   validateLineItemAmount,
+  verifyEditableBudget,
 } from "../../validation";
 
 type Params = Promise<{ id: string }>;
@@ -140,11 +135,17 @@ export async function POST(request: Request, { params }: { params: Params }) {
     validateBudgetCategory(data.category);
 
     // Validate amounts
-    const budgetedError = validateLineItemAmount(data.budgetedAmount, "budgetedAmount");
+    const budgetedError = validateLineItemAmount(
+      data.budgetedAmount,
+      "budgetedAmount"
+    );
     if (budgetedError) return budgetedError;
 
     if (data.actualAmount !== undefined) {
-      const actualError = validateLineItemAmount(data.actualAmount, "actualAmount");
+      const actualError = validateLineItemAmount(
+        data.actualAmount,
+        "actualAmount"
+      );
       if (actualError) return actualError;
     }
 

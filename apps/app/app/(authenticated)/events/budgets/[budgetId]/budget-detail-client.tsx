@@ -1,28 +1,26 @@
 "use client";
 
-import { PencilIcon, PlusIcon, SaveIcon, TrashIcon, XIcon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 import {
-  type BudgetCategory,
-  type BudgetLineItem,
-  type EventBudget,
-  type EventBudgetStatus,
-  type UpdateBudgetRequest,
-  type UpdateLineItemRequest,
-  getBudget,
-  getBudgetStatusLabel,
-  getCategoryLabel,
-  getVarianceColor,
-  isBudgetEditable,
-  updateBudget,
-  deleteBudget,
-  createLineItem,
-  updateLineItem,
-  deleteLineItem,
-} from "../../../../../lib/use-budgets";
-import { Button } from "@repo/design-system/components/ui/button";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -38,34 +36,28 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@repo/design-system/components/ui/dialog";
-import { Input } from "@repo/design-system/components/ui/input";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { Label } from "@repo/design-system/components/ui/label";
+import { PencilIcon, PlusIcon, SaveIcon, TrashIcon, XIcon } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@repo/design-system/components/ui/alert-dialog";
+  type BudgetCategory,
+  type BudgetLineItem,
+  createLineItem,
+  deleteBudget,
+  deleteLineItem,
+  type EventBudget,
+  type EventBudgetStatus,
+  getBudget,
+  getBudgetStatusLabel,
+  getCategoryLabel,
+  getVarianceColor,
+  isBudgetEditable,
+  type UpdateBudgetRequest,
+  type UpdateLineItemRequest,
+  updateBudget,
+  updateLineItem,
+} from "../../../../../lib/use-budgets";
 
 interface BudgetDetailClientProps {
   budgetId: string;
@@ -253,21 +245,19 @@ export const BudgetDetailClient = ({
   };
 
   // Calculate category totals
-  const categoryTotals = budget?.line_items?.reduce(
-    (acc, item) => {
-      const category = item.category;
-      if (!acc[category]) {
-        acc[category] = { budgeted: 0, actual: 0 };
-      }
-      acc[category].budgeted += item.budgeted_amount;
-      acc[category].actual += item.actual_amount;
-      return acc;
-    },
-    {} as Record<
-      BudgetCategory,
-      { budgeted: number; actual: number }
-    >
-  ) || {};
+  const categoryTotals =
+    budget?.line_items?.reduce(
+      (acc, item) => {
+        const category = item.category;
+        if (!acc[category]) {
+          acc[category] = { budgeted: 0, actual: 0 };
+        }
+        acc[category].budgeted += item.budgeted_amount;
+        acc[category].actual += item.actual_amount;
+        return acc;
+      },
+      {} as Record<BudgetCategory, { budgeted: number; actual: number }>
+    ) || {};
 
   if (isLoading) {
     return (
@@ -305,8 +295,8 @@ export const BudgetDetailClient = ({
                     budget.status === "draft"
                       ? "bg-yellow-100 text-yellow-800 border-yellow-200"
                       : budget.status === "approved"
-                      ? "bg-blue-100 text-blue-800 border-blue-200"
-                      : "bg-gray-100 text-gray-800 border-gray-200"
+                        ? "bg-blue-100 text-blue-800 border-blue-200"
+                        : "bg-gray-100 text-gray-800 border-gray-200"
                   }
                   variant="outline"
                 >
@@ -398,10 +388,10 @@ export const BudgetDetailClient = ({
               <Label htmlFor="editNotes">Notes</Label>
               <Textarea
                 id="editNotes"
-                placeholder="Add notes about this budget..."
-                value={editNotes}
                 onChange={(e) => setEditNotes(e.target.value)}
+                placeholder="Add notes about this budget..."
                 rows={2}
+                value={editNotes}
               />
             </div>
           </CardContent>
@@ -435,10 +425,14 @@ export const BudgetDetailClient = ({
             <CardDescription>Variance</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${getVarianceColor(budget.variance_amount)}`}>
+            <div
+              className={`text-2xl font-bold ${getVarianceColor(budget.variance_amount)}`}
+            >
               {formatCurrency(budget.variance_amount)}
             </div>
-            <div className={`text-sm ${getVarianceColor(budget.variance_amount)}`}>
+            <div
+              className={`text-sm ${getVarianceColor(budget.variance_amount)}`}
+            >
               {formatPercentage(budget.variance_percentage)}
             </div>
           </CardContent>
@@ -452,8 +446,8 @@ export const BudgetDetailClient = ({
               {budget.variance_amount < 0
                 ? "Over Budget"
                 : budget.variance_amount === 0
-                ? "On Budget"
-                : "Under Budget"}
+                  ? "On Budget"
+                  : "Under Budget"}
             </div>
           </CardContent>
         </Card>
@@ -468,10 +462,7 @@ export const BudgetDetailClient = ({
           <CardContent>
             <div className="grid gap-4 md:grid-cols-4">
               {Object.entries(categoryTotals).map(([category, totals]) => (
-                <div
-                  key={category}
-                  className="rounded-lg border p-4"
-                >
+                <div className="rounded-lg border p-4" key={category}>
                   <div className="mb-2 text-sm font-medium uppercase">
                     {getCategoryLabel(category as BudgetCategory)}
                   </div>
@@ -493,8 +484,8 @@ export const BudgetDetailClient = ({
                         totals.budgeted - totals.actual < 0
                           ? "text-red-600"
                           : totals.budgeted - totals.actual === 0
-                          ? "text-gray-600"
-                          : "text-green-600"
+                            ? "text-gray-600"
+                            : "text-green-600"
                       }`}
                     >
                       <span>Variance:</span>
@@ -537,7 +528,10 @@ export const BudgetDetailClient = ({
                   <Label>Category</Label>
                   <Select
                     onValueChange={(v) =>
-                      setNewLineItem({ ...newLineItem, category: v as BudgetCategory })
+                      setNewLineItem({
+                        ...newLineItem,
+                        category: v as BudgetCategory,
+                      })
                     }
                     value={newLineItem.category}
                   >
@@ -557,50 +551,50 @@ export const BudgetDetailClient = ({
                 <div className="space-y-2">
                   <Label>Name</Label>
                   <Input
-                    placeholder="Item name"
-                    value={newLineItem.name}
                     onChange={(e) =>
                       setNewLineItem({ ...newLineItem, name: e.target.value })
                     }
+                    placeholder="Item name"
+                    value={newLineItem.name}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Budgeted</Label>
                   <Input
                     min={0}
+                    onChange={(e) =>
+                      setNewLineItem({
+                        ...newLineItem,
+                        budgetedAmount: Number.parseFloat(e.target.value) || 0,
+                      })
+                    }
                     placeholder="0.00"
                     step="0.01"
                     type="number"
                     value={newLineItem.budgetedAmount || ""}
-                    onChange={(e) =>
-                      setNewLineItem({
-                        ...newLineItem,
-                        budgetedAmount: parseFloat(e.target.value) || 0,
-                      })
-                    }
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Actual</Label>
                   <Input
                     min={0}
+                    onChange={(e) =>
+                      setNewLineItem({
+                        ...newLineItem,
+                        actualAmount: Number.parseFloat(e.target.value) || 0,
+                      })
+                    }
                     placeholder="0.00"
                     step="0.01"
                     type="number"
                     value={newLineItem.actualAmount || ""}
-                    onChange={(e) =>
-                      setNewLineItem({
-                        ...newLineItem,
-                        actualAmount: parseFloat(e.target.value) || 0,
-                      })
-                    }
                   />
                 </div>
                 <div className="flex items-end gap-2">
                   <Button
+                    className="flex-1"
                     disabled={!newLineItem.name}
                     onClick={handleAddLineItem}
-                    className="flex-1"
                   >
                     <PlusIcon className="mr-2 size-4" />
                     Add
@@ -650,11 +644,13 @@ export const BudgetDetailClient = ({
                 <TableBody>
                   {budget.line_items.map((item) => (
                     <LineItemRow
+                      editable={isBudgetEditable(budget.status)}
                       item={item}
                       key={item.id}
-                      editable={isBudgetEditable(budget.status)}
-                      onUpdate={(updates) => handleUpdateLineItem(item, updates)}
                       onDelete={() => handleDeleteLineItem(item)}
+                      onUpdate={(updates) =>
+                        handleUpdateLineItem(item, updates)
+                      }
                     />
                   ))}
                 </TableBody>
@@ -665,10 +661,7 @@ export const BudgetDetailClient = ({
       </Card>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog
-        onOpenChange={setDeleteDialogOpen}
-        open={deleteDialogOpen}
-      >
+      <AlertDialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Budget?</AlertDialogTitle>
@@ -679,7 +672,10 @@ export const BudgetDetailClient = ({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive">
+            <AlertDialogAction
+              className="bg-destructive"
+              onClick={handleDelete}
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -697,7 +693,12 @@ interface LineItemRowProps {
   onDelete: () => void;
 }
 
-const LineItemRow = ({ item, editable, onUpdate, onDelete }: LineItemRowProps) => {
+const LineItemRow = ({
+  item,
+  editable,
+  onUpdate,
+  onDelete,
+}: LineItemRowProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState({
     budgetedAmount: item.budgeted_amount,
@@ -732,15 +733,15 @@ const LineItemRow = ({ item, editable, onUpdate, onDelete }: LineItemRowProps) =
           <Input
             className="h-8 text-right"
             min={0}
-            step="0.01"
-            type="number"
-            value={editValues.budgetedAmount || ""}
             onChange={(e) =>
               setEditValues({
                 ...editValues,
-                budgetedAmount: parseFloat(e.target.value) || 0,
+                budgetedAmount: Number.parseFloat(e.target.value) || 0,
               })
             }
+            step="0.01"
+            type="number"
+            value={editValues.budgetedAmount || ""}
           />
         ) : (
           formatCurrency(item.budgeted_amount)
@@ -751,15 +752,15 @@ const LineItemRow = ({ item, editable, onUpdate, onDelete }: LineItemRowProps) =
           <Input
             className="h-8 text-right"
             min={0}
-            step="0.01"
-            type="number"
-            value={editValues.actualAmount || ""}
             onChange={(e) =>
               setEditValues({
                 ...editValues,
-                actualAmount: parseFloat(e.target.value) || 0,
+                actualAmount: Number.parseFloat(e.target.value) || 0,
               })
             }
+            step="0.01"
+            type="number"
+            value={editValues.actualAmount || ""}
           />
         ) : (
           formatCurrency(item.actual_amount)
@@ -774,14 +775,15 @@ const LineItemRow = ({ item, editable, onUpdate, onDelete }: LineItemRowProps) =
         {isEditing ? (
           <div className="flex justify-end gap-1">
             <Button
+              className="h-8 w-8"
               onClick={handleSave}
               size="icon"
               variant="ghost"
-              className="h-8 w-8"
             >
               <SaveIcon className="size-4" />
             </Button>
             <Button
+              className="h-8 w-8"
               onClick={() => {
                 setIsEditing(false);
                 setEditValues({
@@ -791,7 +793,6 @@ const LineItemRow = ({ item, editable, onUpdate, onDelete }: LineItemRowProps) =
               }}
               size="icon"
               variant="ghost"
-              className="h-8 w-8"
             >
               <XIcon className="size-4" />
             </Button>
@@ -801,19 +802,19 @@ const LineItemRow = ({ item, editable, onUpdate, onDelete }: LineItemRowProps) =
             {editable && (
               <>
                 <Button
+                  className="h-8 w-8"
                   onClick={() => setIsEditing(true)}
                   size="icon"
                   variant="ghost"
-                  className="h-8 w-8"
                 >
                   <PencilIcon className="size-4" />
                 </Button>
                 <Button
+                  className="h-8 w-8 text-destructive hover:text-destructive"
                   disabled={item.actual_amount > 0}
                   onClick={onDelete}
                   size="icon"
                   variant="ghost"
-                  className="h-8 w-8 text-destructive hover:text-destructive"
                 >
                   <TrashIcon className="size-4" />
                 </Button>

@@ -37,6 +37,10 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
+  getBudgetStatusLabel,
+  getVarianceColor,
+} from "../../../lib/use-budgets";
+import {
   addDishToEvent,
   getAvailableDishes,
   getEventDishes,
@@ -64,7 +68,6 @@ import {
   TaskBreakdownSkeleton,
 } from "../components/task-breakdown-display";
 import type { PrepTaskSummary } from "./prep-task-contract";
-import { getVarianceColor, getBudgetStatusLabel } from "../../../../lib/use-budgets";
 
 type EventDetailsClientProps = {
   budget: EventBudget | null;
@@ -506,7 +509,9 @@ export function EventDetailsClient({
             {budget ? (
               <div className="grid gap-4 md:grid-cols-4">
                 <div className="rounded-lg border p-4">
-                  <div className="text-muted-foreground text-xs">Total Budgeted</div>
+                  <div className="text-muted-foreground text-xs">
+                    Total Budgeted
+                  </div>
                   <div className="text-lg font-semibold">
                     {new Intl.NumberFormat("en-US", {
                       style: "currency",
@@ -515,7 +520,9 @@ export function EventDetailsClient({
                   </div>
                 </div>
                 <div className="rounded-lg border p-4">
-                  <div className="text-muted-foreground text-xs">Total Actual</div>
+                  <div className="text-muted-foreground text-xs">
+                    Total Actual
+                  </div>
                   <div className="text-lg font-semibold">
                     {new Intl.NumberFormat("en-US", {
                       style: "currency",
@@ -525,7 +532,9 @@ export function EventDetailsClient({
                 </div>
                 <div className="rounded-lg border p-4">
                   <div className="text-muted-foreground text-xs">Variance</div>
-                  <div className={`text-lg font-semibold ${getVarianceColor(budget.variance_amount)}`}>
+                  <div
+                    className={`text-lg font-semibold ${getVarianceColor(budget.variance_amount)}`}
+                  >
                     {new Intl.NumberFormat("en-US", {
                       style: "currency",
                       currency: "USD",

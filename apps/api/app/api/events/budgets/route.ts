@@ -10,19 +10,9 @@ import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import type { CreateBudgetRequest, EventBudgetStatus } from "./types";
 import { EVENT_BUDGET_STATUSES } from "./types";
-import type {
-  CreateBudgetRequest,
-  EventBudget,
-  EventBudgetStatus,
-  UpdateBudgetRequest,
-} from "./types";
-import {
-  verifyEditableBudget,
-  verifyEvent,
-  validateBudgetStatus,
-  validateBudgetStatusTransition,
-} from "./validation";
+import { verifyEvent } from "./validation";
 
 type PaginationParams = {
   page: number;
@@ -71,7 +61,9 @@ function parseBudgetFilters(searchParams: URLSearchParams): BudgetListFilters {
 /**
  * Validate create budget request body
  */
-function validateCreateBudgetRequest(data: unknown): asserts data is CreateBudgetRequest {
+function validateCreateBudgetRequest(
+  data: unknown
+): asserts data is CreateBudgetRequest {
   invariant(data, "Request body is required");
 
   const body = data as CreateBudgetRequest;
@@ -146,7 +138,9 @@ export async function GET(request: Request) {
     });
 
     // Get event details for budgets
-    const eventIds = budgets.map((b) => b.eventId).filter((id): id is string => id !== null);
+    const eventIds = budgets
+      .map((b) => b.eventId)
+      .filter((id): id is string => id !== null);
 
     const events = await database.event.findMany({
       where: {
@@ -165,7 +159,11 @@ export async function GET(request: Request) {
     const budgetIds = budgets.map((b) => b.id);
     const lineItems = await database.budgetLineItem.findMany({
       where: {
-        AND: [{ tenantId }, { budgetId: { in: budgetIds } }, { deletedAt: null }],
+        AND: [
+          { tenantId },
+          { budgetId: { in: budgetIds } },
+          { deletedAt: null },
+        ],
       },
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     });
@@ -182,7 +180,7 @@ export async function GET(request: Request) {
     const budgetsWithDetails = budgets.map((budget) => ({
       ...budget,
       line_items: lineItemsByBudget.get(budget.id) || [],
-      event: budget.eventId ? (eventMap.get(budget.eventId) || null) : null,
+      event: budget.eventId ? eventMap.get(budget.eventId) || null : null,
     }));
 
     // Get total count for pagination
@@ -233,7 +231,10 @@ export async function POST(request: Request) {
     const data = body as CreateBudgetRequest;
 
     // Verify event exists
-    const { event, error: eventError } = await verifyEvent(tenantId, data.eventId);
+    const { event, error: eventError } = await verifyEvent(
+      tenantId,
+      data.eventId
+    );
     if (eventError) {
       return eventError;
     }

@@ -1,15 +1,5 @@
 "use client";
 
-import { CheckIcon, PlusIcon, TrashIcon, XIcon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
-import {
-  type BudgetCategory,
-  type CreateBudgetLineItemRequest,
-  type EventBudgetStatus,
-  getCategoryLabel,
-  createBudget,
-} from "../../../../lib/use-budgets";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
@@ -37,7 +27,15 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { invariant } from "../../../../lib/invariant";
+import { PlusIcon, TrashIcon } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import {
+  type BudgetCategory,
+  type CreateBudgetLineItemRequest,
+  createBudget,
+  type EventBudgetStatus,
+} from "../../../../lib/use-budgets";
 
 interface LineItemForm extends CreateBudgetLineItemRequest {
   id: string;
@@ -87,7 +85,9 @@ export const CreateBudgetModal = ({
   const updateLineItem = useCallback(
     (id: string, updates: Partial<LineItemForm>) => {
       setLineItems(
-        lineItems.map((item) => (item.id === id ? { ...item, ...updates } : item))
+        lineItems.map((item) =>
+          item.id === id ? { ...item, ...updates } : item
+        )
       );
     },
     [lineItems]
@@ -167,7 +167,10 @@ export const CreateBudgetModal = ({
     (sum, item) => sum + item.budgetedAmount,
     0
   );
-  const totalActual = lineItems.reduce((sum, item) => sum + (item.actualAmount || 0), 0);
+  const totalActual = lineItems.reduce(
+    (sum, item) => sum + (item.actualAmount || 0),
+    0
+  );
 
   // For now, we'll use a simple text input for event ID
   // In production, this should be a searchable dropdown of events
@@ -187,9 +190,9 @@ export const CreateBudgetModal = ({
             <Label htmlFor="eventId">Event ID *</Label>
             <Input
               id="eventId"
+              onChange={(e) => setEventId(e.target.value)}
               placeholder="Enter event ID"
               value={eventId}
-              onChange={(e) => setEventId(e.target.value)}
             />
             <p className="text-muted-foreground text-xs">
               Enter the ID of the event you want to create a budget for
@@ -199,7 +202,10 @@ export const CreateBudgetModal = ({
           {/* Status */}
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Select onValueChange={(v) => setStatus(v as EventBudgetStatus)} value={status}>
+            <Select
+              onValueChange={(v) => setStatus(v as EventBudgetStatus)}
+              value={status}
+            >
               <SelectTrigger id="status">
                 <SelectValue />
               </SelectTrigger>
@@ -216,10 +222,10 @@ export const CreateBudgetModal = ({
             <Label htmlFor="notes">Notes</Label>
             <Textarea
               id="notes"
-              placeholder="Optional notes for this budget..."
-              value={notes}
               onChange={(e) => setNotes(e.target.value)}
+              placeholder="Optional notes for this budget..."
               rows={3}
+              value={notes}
             />
           </div>
 
@@ -246,7 +252,9 @@ export const CreateBudgetModal = ({
                     <TableRow>
                       <TableHead className="w-32">Category</TableHead>
                       <TableHead>Name</TableHead>
-                      <TableHead className="w-24 text-right">Budgeted</TableHead>
+                      <TableHead className="w-24 text-right">
+                        Budgeted
+                      </TableHead>
                       <TableHead className="w-24 text-right">Actual</TableHead>
                       <TableHead className="w-16" />
                     </TableRow>
@@ -257,7 +265,9 @@ export const CreateBudgetModal = ({
                         <TableCell>
                           <Select
                             onValueChange={(v) =>
-                              updateLineItem(item.id, { category: v as BudgetCategory })
+                              updateLineItem(item.id, {
+                                category: v as BudgetCategory,
+                              })
                             }
                             value={item.category}
                           >
@@ -277,49 +287,51 @@ export const CreateBudgetModal = ({
                         <TableCell>
                           <Input
                             className="h-8"
-                            placeholder="Item name"
-                            value={item.name}
                             onChange={(e) =>
                               updateLineItem(item.id, { name: e.target.value })
                             }
+                            placeholder="Item name"
+                            value={item.name}
                           />
                         </TableCell>
                         <TableCell>
                           <Input
                             className="h-8 text-right"
                             min={0}
+                            onChange={(e) =>
+                              updateLineItem(item.id, {
+                                budgetedAmount:
+                                  Number.parseFloat(e.target.value) || 0,
+                              })
+                            }
                             placeholder="0.00"
                             step="0.01"
                             type="number"
                             value={item.budgetedAmount || ""}
-                            onChange={(e) =>
-                              updateLineItem(item.id, {
-                                budgetedAmount: parseFloat(e.target.value) || 0,
-                              })
-                            }
                           />
                         </TableCell>
                         <TableCell>
                           <Input
                             className="h-8 text-right"
                             min={0}
+                            onChange={(e) =>
+                              updateLineItem(item.id, {
+                                actualAmount:
+                                  Number.parseFloat(e.target.value) || 0,
+                              })
+                            }
                             placeholder="0.00"
                             step="0.01"
                             type="number"
                             value={item.actualAmount || ""}
-                            onChange={(e) =>
-                              updateLineItem(item.id, {
-                                actualAmount: parseFloat(e.target.value) || 0,
-                              })
-                            }
                           />
                         </TableCell>
                         <TableCell>
                           <Button
+                            className="h-8 w-8 text-destructive"
                             onClick={() => removeLineItem(item.id)}
                             size="icon"
                             variant="ghost"
-                            className="h-8 w-8 text-destructive"
                           >
                             <TrashIcon className="size-4" />
                           </Button>
@@ -335,12 +347,20 @@ export const CreateBudgetModal = ({
             {lineItems.length > 0 && (
               <div className="flex justify-end gap-6 rounded-md bg-muted p-4">
                 <div className="text-right">
-                  <div className="text-muted-foreground text-xs">Total Budgeted</div>
-                  <div className="font-semibold">{formatCurrency(totalBudgeted)}</div>
+                  <div className="text-muted-foreground text-xs">
+                    Total Budgeted
+                  </div>
+                  <div className="font-semibold">
+                    {formatCurrency(totalBudgeted)}
+                  </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-muted-foreground text-xs">Total Actual</div>
-                  <div className="font-semibold">{formatCurrency(totalActual)}</div>
+                  <div className="text-muted-foreground text-xs">
+                    Total Actual
+                  </div>
+                  <div className="font-semibold">
+                    {formatCurrency(totalActual)}
+                  </div>
                 </div>
                 <div className="text-right">
                   <div className="text-muted-foreground text-xs">Variance</div>
@@ -349,8 +369,8 @@ export const CreateBudgetModal = ({
                       totalBudgeted - totalActual < 0
                         ? "text-red-600"
                         : totalBudgeted - totalActual === 0
-                        ? "text-gray-600"
-                        : "text-green-600"
+                          ? "text-gray-600"
+                          : "text-green-600"
                     }`}
                   >
                     {formatCurrency(totalBudgeted - totalActual)}
@@ -362,11 +382,7 @@ export const CreateBudgetModal = ({
         </div>
 
         <DialogFooter>
-          <Button
-            disabled={isSubmitting}
-            onClick={onClose}
-            variant="outline"
-          >
+          <Button disabled={isSubmitting} onClick={onClose} variant="outline">
             Cancel
           </Button>
           <Button disabled={isSubmitting} onClick={handleSubmit}>

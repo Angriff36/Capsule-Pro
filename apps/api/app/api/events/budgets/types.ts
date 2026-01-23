@@ -5,11 +5,7 @@
 /**
  * Budget status values
  */
-export const EVENT_BUDGET_STATUSES = [
-  "draft",
-  "approved",
-  "locked",
-] as const;
+export const EVENT_BUDGET_STATUSES = ["draft", "approved", "locked"] as const;
 
 export type EventBudgetStatus = (typeof EVENT_BUDGET_STATUSES)[number];
 

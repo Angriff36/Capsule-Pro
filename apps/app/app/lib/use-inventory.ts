@@ -1,7 +1,5 @@
 "use client";
 
-import { invariant } from "./invariant";
-
 // Type definitions matching the API response
 export const FSA_STATUSES = [
   "unknown",
@@ -114,7 +112,9 @@ export async function listInventoryItems(params: {
   if (params.page) searchParams.set("page", params.page.toString());
   if (params.limit) searchParams.set("limit", params.limit.toString());
 
-  const response = await fetch(`/api/inventory/items?${searchParams.toString()}`);
+  const response = await fetch(
+    `/api/inventory/items?${searchParams.toString()}`
+  );
 
   if (!response.ok) {
     const error = await response.json();

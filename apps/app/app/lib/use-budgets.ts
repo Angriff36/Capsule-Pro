@@ -1,7 +1,5 @@
 "use client";
 
-import { invariant } from "./invariant";
-
 // Type definitions matching the API response
 export type EventBudgetStatus = "draft" | "approved" | "locked";
 export type BudgetCategory = "food" | "labor" | "rentals" | "miscellaneous";
@@ -118,7 +116,9 @@ export async function listBudgets(params: {
   if (params.page) searchParams.set("page", params.page.toString());
   if (params.limit) searchParams.set("limit", params.limit.toString());
 
-  const response = await fetch(`/api/events/budgets?${searchParams.toString()}`);
+  const response = await fetch(
+    `/api/events/budgets?${searchParams.toString()}`
+  );
 
   if (!response.ok) {
     const error = await response.json();
@@ -193,7 +193,9 @@ export async function deleteBudget(budgetId: string): Promise<void> {
 }
 
 // Get line items for a budget
-export async function getLineItems(budgetId: string): Promise<BudgetLineItem[]> {
+export async function getLineItems(
+  budgetId: string
+): Promise<BudgetLineItem[]> {
   const response = await fetch(`/api/events/budgets/${budgetId}/line-items`);
 
   if (!response.ok) {

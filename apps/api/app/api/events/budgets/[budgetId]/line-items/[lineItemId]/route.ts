@@ -13,10 +13,10 @@ import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { UpdateLineItemRequest } from "../../../types";
 import {
-  verifyEditableBudget,
-  verifyLineItem,
   validateBudgetCategory,
   validateLineItemAmount,
+  verifyEditableBudget,
+  verifyLineItem,
 } from "../../../validation";
 
 type Params = Promise<{ budgetId: string; lineItemId: string }>;
@@ -208,11 +208,13 @@ export async function PUT(request: Request, { params }: { params: Params }) {
 
     if (updateData.notes !== undefined) {
       updateFields.push(`notes = $${updateValues.length + 1}`);
-      updateValues.push(updateData.notes ? String(updateData.notes).trim() : null);
+      updateValues.push(
+        updateData.notes ? String(updateData.notes).trim() : null
+      );
     }
 
     // Always update updated_at
-    updateFields.push(`updated_at = NOW()`);
+    updateFields.push("updated_at = NOW()");
 
     // Add tenant_id, budget_id, and lineItemId for WHERE clause
     updateValues.push(tenantId);
@@ -287,10 +289,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
  * DELETE /api/events/budgets/[budgetId]/line-items/[lineItemId]
  * Delete a line item
  */
-export async function DELETE(
-  request: Request,
-  { params }: { params: Params }
-) {
+export async function DELETE(request: Request, { params }: { params: Params }) {
   try {
     const { orgId } = await auth();
     if (!orgId) {

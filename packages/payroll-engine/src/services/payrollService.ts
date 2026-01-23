@@ -1,8 +1,5 @@
 import { randomUUID } from "crypto";
-import {
-  calculatePayroll,
-  verifyPayrollBalances,
-} from "../core/calculator";
+import { calculatePayroll, verifyPayrollBalances } from "../core/calculator";
 import {
   type ExportOptions,
   type ExportResult,

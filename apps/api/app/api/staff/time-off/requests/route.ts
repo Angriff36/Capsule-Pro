@@ -48,28 +48,28 @@ export async function GET(request: Request) {
 
   const requests = await database.$queryRaw<
     Array<{
-        id: string;
-        tenant_id: string;
-        employee_id: string;
-        employee_first_name: string | null;
-        employee_last_name: string | null;
-        employee_email: string;
-        employee_role: string;
-        start_date: Date;
-        end_date: Date;
-        reason: string | null;
-        status: string;
-        request_type: string;
-        created_at: Date;
-        updated_at: Date;
-        processed_at: Date | null;
-        processed_by: string | null;
-        processed_by_first_name: string | null;
-        processed_by_last_name: string | null;
-        rejection_reason: string | null;
-      }>
-    >(
-      Prisma.sql`
+      id: string;
+      tenant_id: string;
+      employee_id: string;
+      employee_first_name: string | null;
+      employee_last_name: string | null;
+      employee_email: string;
+      employee_role: string;
+      start_date: Date;
+      end_date: Date;
+      reason: string | null;
+      status: string;
+      request_type: string;
+      created_at: Date;
+      updated_at: Date;
+      processed_at: Date | null;
+      processed_by: string | null;
+      processed_by_first_name: string | null;
+      processed_by_last_name: string | null;
+      rejection_reason: string | null;
+    }>
+  >(
+    Prisma.sql`
         SELECT
           tor.id,
           tor.tenant_id,
@@ -108,7 +108,7 @@ export async function GET(request: Request) {
         LIMIT ${limit}
         OFFSET ${offset}
       `
-    );
+  );
 
   // Get total count
   const totalCountResult = await database.$queryRaw<[{ count: bigint }]>(

@@ -17,6 +17,7 @@
     "@repo/analytics": "workspace:*",
     "@repo/auth": "workspace:*",
     "@repo/database": "workspace:*",
+    "@repo/pdf": "workspace:*",
     "@repo/payroll-engine": "workspace:*",
     "@repo/design-system": "workspace:*",
     "@repo/next-config": "workspace:*",

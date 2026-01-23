@@ -1,25 +1,16 @@
 "use client";
 
-import { PlusIcon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
-import {
-  type InventoryItemWithStatus,
-  type StockStatus,
-  type FSAStatus,
-  type ItemCategory,
-  listInventoryItems,
-  deleteInventoryItem,
-  getStockStatusColor,
-  getStockStatusLabel,
-  getFSAStatusColor,
-  getFSAStatusLabel,
-  getCategoryLabel,
-  formatCurrency,
-  ITEM_CATEGORIES,
-  FSA_STATUSES,
-} from "../../../lib/use-inventory";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -35,16 +26,25 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { PlusIcon } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@repo/design-system/components/ui/dialog";
-import { Input } from "@repo/design-system/components/ui/input";
+  deleteInventoryItem,
+  FSA_STATUSES,
+  type FSAStatus,
+  formatCurrency,
+  getCategoryLabel,
+  getFSAStatusColor,
+  getFSAStatusLabel,
+  getStockStatusColor,
+  getStockStatusLabel,
+  type InventoryItemWithStatus,
+  ITEM_CATEGORIES,
+  type ItemCategory,
+  listInventoryItems,
+  type StockStatus,
+} from "../../../lib/use-inventory";
 import { CreateInventoryItemModal } from "./components/create-inventory-item-modal";
 
 export const InventoryItemsPageClient = () => {
@@ -68,7 +68,8 @@ export const InventoryItemsPageClient = () => {
   const [itemToDelete, setItemToDelete] =
     useState<InventoryItemWithStatus | null>(null);
   const [editItem, setEditItem] = useState<InventoryItemWithStatus | null>(
-    null);
+    null
+  );
 
   const loadItems = useCallback(async () => {
     setIsLoading(true);
@@ -77,7 +78,8 @@ export const InventoryItemsPageClient = () => {
         page,
         limit: 20,
         category: categoryFilter === "all" ? undefined : categoryFilter,
-        stockStatus: stockStatusFilter === "all" ? undefined : stockStatusFilter,
+        stockStatus:
+          stockStatusFilter === "all" ? undefined : stockStatusFilter,
         fsaStatus: fsaStatusFilter === "all" ? undefined : fsaStatusFilter,
       });
       setItems(response.data);
@@ -86,7 +88,9 @@ export const InventoryItemsPageClient = () => {
     } catch (error) {
       console.error("Failed to load inventory items:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to load inventory items"
+        error instanceof Error
+          ? error.message
+          : "Failed to load inventory items"
       );
     } finally {
       setIsLoading(false);
@@ -118,7 +122,9 @@ export const InventoryItemsPageClient = () => {
     } catch (error) {
       console.error("Failed to delete inventory item:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to delete inventory item"
+        error instanceof Error
+          ? error.message
+          : "Failed to delete inventory item"
       );
     }
   }, [itemToDelete, loadItems]);
@@ -156,10 +162,10 @@ export const InventoryItemsPageClient = () => {
             <div className="relative">
               <Input
                 className="w-64"
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search items..."
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <Select
@@ -235,7 +241,9 @@ export const InventoryItemsPageClient = () => {
           </div>
           <div className="rounded-xl border bg-card p-4">
             <div className="text-muted-foreground text-sm">Total Value</div>
-            <div className="text-2xl font-bold">{formatCurrency(totalValue)}</div>
+            <div className="text-2xl font-bold">
+              {formatCurrency(totalValue)}
+            </div>
           </div>
           <div className="rounded-xl border bg-card p-4">
             <div className="text-muted-foreground text-sm">Low Stock</div>
@@ -377,10 +385,10 @@ export const InventoryItemsPageClient = () => {
                           Edit
                         </Button>
                         <Button
+                          className="text-destructive hover:text-destructive"
                           onClick={() => confirmDelete(item)}
                           size="sm"
                           variant="ghost"
-                          className="text-destructive hover:text-destructive"
                         >
                           Delete
                         </Button>
@@ -434,16 +442,14 @@ export const InventoryItemsPageClient = () => {
       />
 
       {/* Delete Confirmation Dialog */}
-      <Dialog
-        onOpenChange={setDeleteDialogOpen}
-        open={deleteDialogOpen}
-      >
+      <Dialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Inventory Item?</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete <strong>{itemToDelete?.name}</strong>?
-              This action cannot be undone.
+              Are you sure you want to delete{" "}
+              <strong>{itemToDelete?.name}</strong>? This action cannot be
+              undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
