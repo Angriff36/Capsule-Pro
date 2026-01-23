@@ -387,3 +387,89 @@ export async function getEventStaff(eventId: string) {
     };
   });
 }
+
+/**
+ * Calculate and update the critical path for all tasks in an event.
+ *
+ * This function:
+ * 1. Fetches all tasks for the event
+ * 2. Calculates the critical path using the CPM algorithm
+ * 3. Updates the is_on_critical_path and slack_minutes fields for each task
+ * 4. Returns the updated critical path results
+ *
+ * @param eventId - The ID of the event
+ * @returns Map of task ID to critical path calculation results
+ */
+export async function calculateCriticalPath(eventId: string) {
+  const { orgId } = await auth();
+
+  if (!orgId) {
+    throw new Error("Unauthorized");
+  }
+
+  const tenantId = await getTenantIdForOrg(orgId);
+
+  // Fetch all tasks for the event
+  const tasks = await database.$queryRawUnsafe<
+    Array<{
+      id: string;
+      start_time: string;
+      end_time: string;
+      dependencies: string[];
+    }>
+  >(
+    `SELECT
+        id,
+        start_time,
+        end_time,
+        COALESCE(dependencies, ARRAY[]::text[]) as dependencies
+      FROM tenant_events.timeline_tasks
+      WHERE tenant_id = $1
+        AND event_id = $2
+        AND deleted_at IS NULL
+      ORDER BY start_time ASC`,
+    [tenantId, eventId]
+  );
+
+  if (tasks.length === 0) {
+    return new Map();
+  }
+
+  // Import the CPM algorithm
+  const { calculateCriticalPath: cpm } = await import("@repo/database");
+
+  // Transform tasks to the format expected by the CPM algorithm
+  const tasksForCPM = tasks.map((task) => ({
+    id: task.id,
+    startTime: new Date(task.start_time),
+    endTime: new Date(task.end_time),
+    dependencies: task.dependencies,
+  }));
+
+  // Calculate the critical path
+  const results = cpm(tasksForCPM);
+
+  // Update each task with its critical path status and slack
+  for (const [taskId, result] of results) {
+    await database.$executeRawUnsafe(
+      `UPDATE tenant_events.timeline_tasks
+       SET is_on_critical_path = $1,
+           slack_minutes = $2,
+           updated_at = NOW()
+       WHERE tenant_id = $3
+         AND id = $4
+         AND event_id = $5`,
+      [
+        result.isOnCriticalPath,
+        result.slackMinutes,
+        tenantId,
+        taskId,
+        eventId,
+      ]
+    );
+  }
+
+  revalidatePath(`/events/${eventId}/battle-board`);
+
+  return results;
+}

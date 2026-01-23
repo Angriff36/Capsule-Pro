@@ -11,6 +11,7 @@ import {
   MoreHorizontalIcon,
   MoveIcon,
   PlusIcon,
+  RefreshCwIcon,
   Redo2Icon,
   Undo2Icon,
   UsersIcon,
@@ -26,7 +27,7 @@ import {
   useState,
 } from "react";
 import { toast } from "sonner";
-import { deleteTimelineTask, updateTimelineTask } from "../actions/tasks";
+import { calculateCriticalPath, deleteTimelineTask, updateTimelineTask } from "../actions/tasks";
 import {
   PRIORITY_ORDER,
   type StaffMember,
@@ -76,6 +77,7 @@ export function Timeline({
   const [undoStack, setUndoStack] = useState<TaskAction[]>([]);
   const [redoStack, setRedoStack] = useState<TaskAction[]>([]);
   const [conflicts, setConflicts] = useState<Map<string, string[]>>(new Map());
+  const [isCalculatingCriticalPath, setIsCalculatingCriticalPath] = useState(false);
 
   const [dragState, setDragState] = useState({
     isDragging: false,
@@ -398,6 +400,43 @@ export function Timeline({
     toast.success("Task created");
   }, []);
 
+  const handleCalculateCriticalPath = useCallback(async () => {
+    setIsCalculatingCriticalPath(true);
+    try {
+      const results = await calculateCriticalPath(eventId);
+
+      // Convert Map to array of updated task data
+      const updatedTasks = tasks.map((task) => {
+        const result = results.get(task.id);
+        if (result) {
+          return {
+            ...task,
+            isOnCriticalPath: result.isOnCriticalPath,
+            slackMinutes: result.slackMinutes,
+          };
+        }
+        return task;
+      });
+
+      setTasks(updatedTasks);
+
+      const criticalCount = Array.from(results.values()).filter(
+        (r) => r.isOnCriticalPath
+      ).length;
+
+      toast.success(
+        `Critical path calculated: ${criticalCount} critical task${criticalCount !== 1 ? "s" : ""} identified`
+      );
+    } catch (error) {
+      console.error("Failed to calculate critical path:", error);
+      toast.error(
+        `Failed to calculate critical path: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    } finally {
+      setIsCalculatingCriticalPath(false);
+    }
+  }, [eventId, tasks]);
+
   const handleZoomIn = useCallback(() => {
     setZoom((prev) => Math.min(200, prev + 25));
   }, []);
@@ -597,13 +636,24 @@ export function Timeline({
           >
             Show Dependencies
           </Button>
-          <Button
-            onClick={() => setShowCriticalPath((prev) => !prev)}
-            size="sm"
-            variant={showCriticalPath ? "default" : "outline"}
-          >
-            Critical Path
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              onClick={() => setShowCriticalPath((prev) => !prev)}
+              size="sm"
+              variant={showCriticalPath ? "default" : "outline"}
+            >
+              Critical Path
+            </Button>
+            <Button
+              disabled={isCalculatingCriticalPath}
+              onClick={handleCalculateCriticalPath}
+              size="sm"
+              title="Recalculate critical path"
+              variant="outline"
+            >
+              <RefreshCwIcon className={`h-3 w-3 ${isCalculatingCriticalPath ? "animate-spin" : ""}`} />
+            </Button>
+          </div>
           <div className="flex items-center gap-1 rounded-md border bg-background">
             <Button onClick={handleZoomOut} size="sm" variant="ghost">
               <ZoomOutIcon className="h-4 w-4" />

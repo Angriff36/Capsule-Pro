@@ -9,7 +9,8 @@
     "generate": "prisma generate --schema=./prisma/schema.prisma",
     "postinstall": "node -e \"process.exit(process.env.VERCEL_ENV && !process.env.DATABASE_URL ? 0 : 1)\" || prisma generate --no-hints --schema=./prisma/schema.prisma",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "test": "vitest run"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
@@ -28,6 +29,7 @@
     "@types/ws": "^8.18.1",
     "bufferutil": "^4.0.9",
     "prisma": "7.1.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
   }
 }
