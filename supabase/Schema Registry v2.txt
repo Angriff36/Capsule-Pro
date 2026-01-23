@@ -541,6 +541,36 @@ tenant_crm.proposal_line_items
   notes text
   created_at, updated_at, deleted_at
 
+tenant_crm.venues
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  UNIQUE: (tenant_id, id)  -- For composite FK references
+  name text NOT NULL
+  venue_type text  -- 'banquet_hall', 'outdoor', 'restaurant', 'hotel', 'private_home', 'corporate', 'other'
+  address_line1 text
+  address_line2 text
+  city text
+  state_province text
+  postal_code text
+  country_code char(2)
+  capacity integer
+  contact_name text
+  contact_phone text
+  contact_email text
+  equipment_list jsonb DEFAULT '[]'::jsonb
+  preferred_vendors jsonb DEFAULT '{}'::jsonb
+  access_notes text
+  catering_notes text
+  layout_image_url text
+  is_active boolean NOT NULL DEFAULT true
+  tags text[] DEFAULT '{}'
+  created_at, updated_at, deleted_at
+  CHECK: capacity > 0 OR capacity IS NULL
+  CHECK: contact_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$' OR contact_email IS NULL
+  UNIQUE (tenant_id, lower(name)) WHERE deleted_at IS NULL
+  -- Purpose: Track event venues with full details, equipment, and event history
+
 ================================================================================
 TENANT.KITCHEN SCHEMA
 ================================================================================
@@ -896,6 +926,7 @@ tenant_events.events
   event_timezone text  -- Override tenant/location timezone
   setup_start_time time
   guest_count int NOT NULL
+  venue_id uuid  -- FK to tenant_crm.venues
   venue_name text
   venue_address_line1 text
   venue_address_line2 text
@@ -1498,6 +1529,7 @@ CROSS-MODULE FK SUMMARY (for 090_cross_module_fks.sql)
 -- crm.leads.converted_to_client_id -> crm.clients
 -- crm.client_interactions -> crm.clients, crm.leads, staff.employees
 -- crm.proposals -> crm.clients, crm.leads, events.events
+-- crm.venues <- events.events (optional venue reference)
 
 -- kitchen.recipe_versions -> kitchen.recipes
 -- kitchen.recipe_ingredients -> kitchen.recipe_versions, kitchen.ingredients

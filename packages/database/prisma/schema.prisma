@@ -37,6 +37,7 @@ model Account {
   leads                 Lead[]
   interactions          ClientInteraction[]
   proposals             Proposal[]
+  venues                Venue[]
   recipes               Recipe[]
   recipeVersions        RecipeVersion[]
   recipeIngredients     RecipeIngredient[]
@@ -317,6 +318,7 @@ model Event {
   status       String    @default("confirmed")
   budget       Decimal?  @db.Decimal(12, 2)
   assignedTo   String?   @map("assigned_to") @db.Uuid
+  venueId      String?   @map("venue_id") @db.Uuid
   venueName    String?   @map("venue_name")
   venueAddress String?   @map("venue_address")
   notes        String?
@@ -527,6 +529,43 @@ model ClientInteraction {
   @@id([tenantId, id])
   @@index([employeeId], map: "client_interactions_employee_idx")
   @@map("client_interactions")
+  @@schema("tenant_crm")
+}
+
+model Venue {
+  tenantId         String    @map("tenant_id") @db.Uuid
+  id               String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String
+  venueType        String?   @map("venue_type")
+  addressLine1     String?   @map("address_line1")
+  addressLine2     String?   @map("address_line2")
+  city             String?
+  stateProvince    String?   @map("state_province")
+  postalCode       String?   @map("postal_code")
+  countryCode      String?   @map("country_code") @db.Char(2)
+  capacity         Int?
+  contactName      String?   @map("contact_name")
+  contactPhone     String?   @map("contact_phone")
+  contactEmail     String?   @map("contact_email")
+  equipmentList    Json?     @default("[]") @map("equipment_list") @db.JsonB
+  preferredVendors Json?     @default("{}") @map("preferred_vendors") @db.JsonB
+  accessNotes      String?   @map("access_notes")
+  cateringNotes    String?   @map("catering_notes")
+  layoutImageUrl   String?   @map("layout_image_url")
+  isActive         Boolean   @default(true) @map("is_active")
+  tags             String[]  @default([])
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt        DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant           Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, id])
+  @@index([tenantId, isActive], map: "idx_venues_active")
+  @@index([tenantId, venueType], map: "idx_venues_type")
+  @@index([tenantId, city], map: "idx_venues_city")
+  @@index([tenantId, capacity], map: "idx_venues_capacity")
+  @@map("venues")
   @@schema("tenant_crm")
 }
 
