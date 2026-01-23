@@ -1,10 +1,10 @@
-import { ModuleSection } from "../../components/module-section";
+import { VenuesClient } from "./components/venues-client";
 
-const CrmVenuesPage = () => (
-  <ModuleSection
-    summary="Venue profiles with layouts, constraints, and preferred vendors."
-    title="Venues"
-  />
-);
+export default function CrmVenuesPage() {
+  return <VenuesClient />;
+}
 
-export default CrmVenuesPage;
+export const metadata = {
+  title: "Venues",
+  description: "Manage event venues, facilities, and equipment information.",
+};
