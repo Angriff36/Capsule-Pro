@@ -1,7 +1,11 @@
 "use server";
 
+import { openai } from "@ai-sdk/openai";
 import { database, Prisma } from "@repo/database";
+import { generateText } from "ai";
 import { requireTenantId } from "../../../lib/tenant";
+
+const AI_MODEL = "gpt-4o-mini";
 
 export type TaskSection = "prep" | "setup" | "cleanup";
 
@@ -77,12 +81,58 @@ export async function generateTaskBreakdown({
     `
   );
 
+  // Fetch event dishes/menu items for AI analysis
+  const eventDishesResult = await database.$queryRaw<
+    Array<{
+      link_id: string;
+      dish_id: string;
+      name: string;
+      category: string | null;
+      course: string | null;
+      quantity_servings: number;
+      dietary_tags: string[] | null;
+      allergens: string[] | null;
+    }>
+  >(
+    Prisma.sql`
+      SELECT
+        ed.link_id,
+        ed.dish_id,
+        d.name,
+        d.category,
+        ed.course,
+        ed.quantity_servings,
+        COALESCE(d.dietary_tags, ARRAY[]::text[]) as dietary_tags,
+        COALESCE(d.allergens, ARRAY[]::text[]) as allergens
+      FROM tenant_events.event_dishes ed
+      JOIN tenant_dishes.dishes d ON ed.dish_id = d.id
+      WHERE ed.tenant_id = ${tenantId}
+        AND ed.event_id = ${eventId}
+        AND ed.deleted_at IS NULL
+      ORDER BY ed.created_at
+    `
+  );
+
+  const dishesData = eventDishesResult.map((d) => ({
+    name: d.name,
+    category: d.category,
+    course: d.course,
+    servings: d.quantity_servings,
+    dietaryTags: d.dietary_tags,
+    allergens: d.allergens,
+  }));
+
   const historicalContext =
     similarEvents.length > 0
       ? `Based on ${similarEvents.length} similar events`
       : undefined;
 
-  const tasks = generateTasksFromAI(event, customInstructions, similarEvents);
+  const tasks = await generateTasksFromAI(
+    event,
+    customInstructions,
+    similarEvents,
+    dishesData
+  );
 
   const totalPrepTime = tasks.prep.reduce(
     (sum, t) => sum + t.durationMinutes,
@@ -113,7 +163,7 @@ export async function generateTaskBreakdown({
   };
 }
 
-function generateTasksFromAI(
+async function generateTasksFromAI(
   event: {
     id: string;
     title: string;
@@ -131,47 +181,224 @@ function generateTasksFromAI(
     title: string;
     event_date: Date;
     guest_count: number;
-  }[]
+  }[],
+  dishesData?: Array<{
+    name: string;
+    category: string | null;
+    course: string | null;
+    servings: number;
+    dietaryTags: string[] | null;
+    allergens: string[] | null;
+  }>
+): Promise<{
+  prep: TaskBreakdownItem[];
+  setup: TaskBreakdownItem[];
+  cleanup: TaskBreakdownItem[];
+}> {
+  const systemPrompt = `You are an expert catering operations manager that generates comprehensive kitchen task breakdowns for events. Your task is to analyze event details and create actionable tasks organized into three sections: PREP, SETUP, and CLEANUP.
+
+Your task breakdowns must be:
+1. SPECIFIC - Each task should be concrete and actionable
+2. TIMED - Include realistic duration estimates in minutes
+3. SEQUENCED - Tasks should be ordered logically with relative timing
+4. STATION-ASSIGNED - Each prep task should indicate which kitchen station (hot line, cold prep, pastry, etc.)
+5. CRITICAL FLAGS - Mark tasks that are on the critical path or have hard deadlines
+
+OUTPUT FORMAT (JSON only, no markdown):
+{
+  "prep": [
+    {
+      "name": "Task name",
+      "description": "Detailed description of what needs to be done",
+      "durationMinutes": number,
+      "relativeTime": "e.g., '48 hours before event', '24 hours before event', 'day of event'",
+      "station": "kitchen station name",
+      "isCritical": boolean,
+      "steps": ["step1", "step2"] // optional, for complex tasks
+    }
+  ],
+  "setup": [...],
+  "cleanup": [...]
+}
+
+GUIDELINES:
+- Scale task durations based on guest count (use ~15 min per 25 guests as base, adjusted for complexity)
+- For events >50 guests, add additional prep tasks for batch cooking
+- For events >100 guests, add setup tasks for additional equipment/staff
+- Always include a team briefing task 30 minutes before event
+- Critical tasks include: special orders, defrosting, time-sensitive prep
+- Consider dietary restrictions and allergens when generating tasks
+- Include tasks for equipment transport if venue is off-site
+- Factor in event type (wedding vs corporate vs casual) for appropriate complexity
+- If dishes are provided, create tasks specific to those menu items`;
+
+  const eventData = {
+    id: event.id,
+    title: event.title,
+    eventType: event.eventType,
+    eventDate: event.eventDate.toISOString(),
+    guestCount: event.guestCount,
+    venueName: event.venueName,
+    venueAddress: event.venueAddress,
+    notes: event.notes,
+    tags: event.tags,
+  };
+
+  const userPrompt = `Generate a comprehensive task breakdown for this catering event:
+
+EVENT DETAILS:
+${JSON.stringify(eventData, null, 2)}
+
+${dishesData && dishesData.length > 0 ? `
+MENU/DISHES (${dishesData.length} items):
+${JSON.stringify(dishesData, null, 2)}
+` : ''}
+
+${similarEvents && similarEvents.length > 0 ? `
+SIMILAR PAST EVENTS (${similarEvents.length} events):
+${JSON.stringify(similarEvents.map(e => ({ title: e.title, date: e.event_date, guests: e.guest_count })), null, 2)}
+` : ''}
+
+${customInstructions ? `
+CUSTOM INSTRUCTIONS:
+${customInstructions}
+` : ''}
+
+Please generate a complete task breakdown following the system prompt guidelines. Return ONLY valid JSON, no markdown formatting.`;
+
+  try {
+    const result = await generateText({
+      model: openai(AI_MODEL),
+      system: systemPrompt,
+      prompt: userPrompt,
+      temperature: 0.6,
+    });
+
+    // Parse AI response
+    let aiTasks: {
+      prep: Array<{
+        name: string;
+        description: string;
+        durationMinutes: number;
+        relativeTime: string;
+        station?: string;
+        isCritical: boolean;
+        steps?: string[];
+      }>;
+      setup: Array<{
+        name: string;
+        description: string;
+        durationMinutes: number;
+        relativeTime: string;
+        station?: string;
+        isCritical: boolean;
+        steps?: string[];
+      }>;
+      cleanup: Array<{
+        name: string;
+        description: string;
+        durationMinutes: number;
+        relativeTime: string;
+        station?: string;
+        isCritical: boolean;
+        steps?: string[];
+      }>;
+    };
+
+    try {
+      // Extract JSON from response (handle potential markdown code blocks)
+      const jsonMatch = result.text.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/) ||
+                       result.text.match(/\{[\s\S]*\}/);
+
+      if (jsonMatch) {
+        const jsonText = jsonMatch[1] || jsonMatch[0];
+        aiTasks = JSON.parse(jsonText);
+      } else {
+        throw new Error("No JSON found in response");
+      }
+    } catch (parseError) {
+      console.error("Failed to parse AI response:", parseError);
+      console.error("AI Response text:", result.text);
+      // Fall back to basic rule-based tasks if AI fails
+      return getFallbackTasks(event, dishesData);
+    }
+
+    // Transform AI tasks to TaskBreakdownItem format with proper IDs
+    const now = Date.now();
+    const transformTask = (
+      task: {
+        name: string;
+        description: string;
+        durationMinutes: number;
+        relativeTime: string;
+        station?: string;
+        isCritical: boolean;
+        steps?: string[];
+      },
+      section: "prep" | "setup" | "cleanup",
+      index: number
+    ): TaskBreakdownItem => ({
+      id: `${section}-${index}-${now}`,
+      name: task.name,
+      description: task.description,
+      section,
+      durationMinutes: Math.max(5, Math.round(task.durationMinutes)), // Minimum 5 minutes
+      relativeTime: task.relativeTime,
+      ...(task.station && { station: task.station }),
+      isCritical: task.isCritical,
+      steps: task.steps,
+      confidence: 0.85, // AI-generated tasks have moderate confidence
+    });
+
+    return {
+      prep: (aiTasks.prep || []).map((t, i) => transformTask(t, "prep", i)),
+      setup: (aiTasks.setup || []).map((t, i) => transformTask(t, "setup", i)),
+      cleanup: (aiTasks.cleanup || []).map((t, i) => transformTask(t, "cleanup", i)),
+    };
+  } catch (aiError) {
+    console.error("AI generation failed:", aiError);
+    // Fall back to basic rule-based tasks if AI call fails
+    return getFallbackTasks(event, dishesData);
+  }
+}
+
+/**
+ * Fallback rule-based task generation when AI is unavailable
+ */
+function getFallbackTasks(
+  event: {
+    title: string;
+    eventType: string;
+    eventDate: Date;
+    guestCount: number;
+    venueName?: string | null;
+  },
+  dishesData?: Array<{
+    name: string;
+    category: string | null;
+  }>
 ): {
   prep: TaskBreakdownItem[];
   setup: TaskBreakdownItem[];
   cleanup: TaskBreakdownItem[];
 } {
   const guestCount = event.guestCount;
-  const eventDate = new Date(event.eventDate);
-
   const scaleFactor = guestCount / 25;
+  const now = Date.now();
 
-  const getPrepTasks = (): TaskBreakdownItem[] => {
-    const tasks: TaskBreakdownItem[] = [];
-
-    tasks.push({
-      id: `prep-1-${Date.now()}`,
+  const prepTasks: TaskBreakdownItem[] = [
+    {
+      id: `prep-1-${now}`,
       name: "Review event details and menu",
       description: "Finalize menu items, guest count, and special requirements",
       section: "prep",
       durationMinutes: Math.round(30 * Math.min(scaleFactor, 2)),
       relativeTime: "48 hours before event",
       isCritical: false,
-      confidence: 0.95,
-    });
-
-    if (guestCount >= 10) {
-      tasks.push({
-        id: `prep-2-${Date.now()}`,
-        name: "Create shopping list",
-        description: "Generate and review ingredient list based on menu",
-        section: "prep",
-        durationMinutes: Math.round(45 * Math.min(scaleFactor, 2)),
-        relativeTime: "48 hours before event",
-        isCritical: false,
-        ingredients: generateIngredientList(guestCount),
-        confidence: 0.9,
-      });
-    }
-
-    tasks.push({
-      id: `prep-3-${Date.now()}`,
+      confidence: 0.7,
+    },
+    {
+      id: `prep-2-${now}`,
       name: "Order special ingredients",
       description: "Place orders for items requiring advance procurement",
       section: "prep",
@@ -179,37 +406,20 @@ function generateTasksFromAI(
       relativeTime: "72 hours before event",
       isCritical: true,
       dueInHours: 72,
-      confidence: 0.95,
-    });
-
-    if (guestCount >= 25) {
-      tasks.push({
-        id: `prep-4-${Date.now()}`,
-        name: "Defrost proteins",
-        description: "Begin defrosting frozen proteins and key ingredients",
-        section: "prep",
-        durationMinutes: 15,
-        relativeTime: "24 hours before event",
-        isCritical: true,
-        dueInHours: 24,
-        confidence: 0.9,
-      });
-    }
-
-    tasks.push({
-      id: `prep-5-${Date.now()}`,
+      confidence: 0.7,
+    },
+    {
+      id: `prep-3-${now}`,
       name: "Prep sauces and marinades",
-      description:
-        "Prepare bases, sauces, and marinades that benefit from resting",
+      description: "Prepare bases, sauces, and marinades that benefit from resting",
       section: "prep",
       durationMinutes: Math.round(60 * Math.min(scaleFactor, 1.5)),
       relativeTime: "12 hours before event",
       isCritical: false,
-      confidence: 0.85,
-    });
-
-    tasks.push({
-      id: `prep-6-${Date.now()}`,
+      confidence: 0.7,
+    },
+    {
+      id: `prep-4-${now}`,
       name: "Chop vegetables and mise en place",
       description: "Complete all vegetable prep and station setup",
       section: "prep",
@@ -222,179 +432,85 @@ function generateTasksFromAI(
         "Portion and label all prep items",
         "Set up work stations",
       ],
-      confidence: 0.9,
-    });
+      confidence: 0.7,
+    },
+  ];
 
-    if (guestCount >= 50) {
-      tasks.push({
-        id: `prep-7-${Date.now()}`,
-        name: "Prepare make-ahead dishes",
-        description: "Complete items that can be prepared in advance",
-        section: "prep",
-        durationMinutes: Math.round(120 * scaleFactor),
-        relativeTime: "24 hours before event",
-        isCritical: false,
-        confidence: 0.8,
-      });
-    }
-
-    return tasks;
-  };
-
-  const getSetupTasks = (): TaskBreakdownItem[] => {
-    const tasks: TaskBreakdownItem[] = [];
-
-    tasks.push({
-      id: `setup-1-${Date.now()}`,
-      name: "Transport equipment to venue",
-      description: "Load and transport all cooking equipment and supplies",
-      section: "setup",
-      durationMinutes: Math.round(45 * Math.min(scaleFactor, 1.5)),
-      relativeTime: "4 hours before event",
-      isCritical: false,
-      confidence: 0.95,
-    });
-
-    tasks.push({
-      id: `setup-2-${Date.now()}`,
-      name: "Set up cooking stations",
-      description: "Configure cooking equipment and work areas",
+  const setupTasks: TaskBreakdownItem[] = [
+    {
+      id: `setup-1-${now}`,
+      name: event.venueName ? "Transport equipment to venue" : "Set up cooking stations",
+      description: event.venueName
+        ? "Load and transport all cooking equipment and supplies"
+        : "Configure cooking equipment and work areas",
       section: "setup",
       durationMinutes: Math.round(60 * Math.min(scaleFactor, 1.5)),
       relativeTime: "3 hours before event",
       isCritical: false,
-      confidence: 0.9,
-    });
-
-    tasks.push({
-      id: `setup-3-${Date.now()}`,
-      name: "Set up serving stations",
-      description:
-        "Arrange chafing dishes, serving utensils, and display areas",
-      section: "setup",
-      durationMinutes: Math.round(45 * Math.min(scaleFactor, 1.5)),
-      relativeTime: "2 hours before event",
-      isCritical: false,
-      confidence: 0.9,
-    });
-
-    tasks.push({
-      id: `setup-4-${Date.now()}`,
+      confidence: 0.7,
+    },
+    {
+      id: `setup-2-${now}`,
       name: "Final food prep and plating setup",
       description: "Complete final prep and arrange plating stations",
       section: "setup",
       durationMinutes: Math.round(60 * scaleFactor),
       relativeTime: "1 hour before event",
       isCritical: true,
-      confidence: 0.85,
-    });
-
-    tasks.push({
-      id: `setup-5-${Date.now()}`,
+      confidence: 0.7,
+    },
+    {
+      id: `setup-3-${now}`,
       name: "Team briefing",
       description: "Review timeline, assignments, and special requirements",
       section: "setup",
       durationMinutes: 15,
       relativeTime: "30 minutes before event",
       isCritical: false,
-      confidence: 0.95,
-    });
+      confidence: 0.7,
+    },
+  ];
 
-    return tasks;
-  };
-
-  const getCleanupTasks = (): TaskBreakdownItem[] => {
-    const tasks: TaskBreakdownItem[] = [];
-
-    tasks.push({
-      id: `cleanup-1-${Date.now()}`,
+  const cleanupTasks: TaskBreakdownItem[] = [
+    {
+      id: `cleanup-1-${now}`,
       name: "Initial breakdown of serving stations",
       description: "Remove empty containers and organize service ware",
       section: "cleanup",
       durationMinutes: Math.round(30 * Math.min(scaleFactor, 1.5)),
       relativeTime: "During service",
       isCritical: false,
-      confidence: 0.9,
-    });
-
-    tasks.push({
-      id: `cleanup-2-${Date.now()}`,
-      name: "Pack remaining food",
-      description: "Properly store and package leftover food for client",
-      section: "cleanup",
-      durationMinutes: Math.round(30 * Math.min(scaleFactor, 1.5)),
-      relativeTime: "During service",
-      isCritical: false,
-      confidence: 0.9,
-    });
-
-    tasks.push({
-      id: `cleanup-3-${Date.now()}`,
+      confidence: 0.7,
+    },
+    {
+      id: `cleanup-2-${now}`,
       name: "Clean cooking equipment",
       description: "Wash, sanitize, and store all cooking equipment",
       section: "cleanup",
       durationMinutes: Math.round(60 * scaleFactor),
       relativeTime: "After service",
       isCritical: false,
-      confidence: 0.9,
-    });
-
-    tasks.push({
-      id: `cleanup-4-${Date.now()}`,
-      name: "Clean serving equipment",
-      description: "Wash and sanitize all serving dishes and utensils",
+      confidence: 0.7,
+    },
+    {
+      id: `cleanup-3-${now}`,
+      name: event.venueName ? "Transport equipment back" : "Final kitchen clean",
+      description: event.venueName
+        ? "Load and transport all equipment to home base"
+        : "Complete final cleaning and organize storage",
       section: "cleanup",
       durationMinutes: Math.round(45 * scaleFactor),
       relativeTime: "After service",
       isCritical: false,
-      confidence: 0.9,
-    });
-
-    tasks.push({
-      id: `cleanup-5-${Date.now()}`,
-      name: "Transport equipment back",
-      description: "Load and transport all equipment to home base",
-      section: "cleanup",
-      durationMinutes: Math.round(45 * Math.min(scaleFactor, 1.5)),
-      relativeTime: "After service",
-      isCritical: false,
-      confidence: 0.95,
-    });
-
-    tasks.push({
-      id: `cleanup-6-${Date.now()}`,
-      name: "Final kitchen clean",
-      description: "Complete final cleaning and organize storage",
-      section: "cleanup",
-      durationMinutes: Math.round(30 * scaleFactor),
-      relativeTime: "After returning",
-      isCritical: false,
-      confidence: 0.9,
-    });
-
-    return tasks;
-  };
-
-  return {
-    prep: getPrepTasks(),
-    setup: getSetupTasks(),
-    cleanup: getCleanupTasks(),
-  };
-}
-
-function generateIngredientList(guestCount: number): string[] {
-  const baseList = [
-    `${Math.round(0.4 * guestCount)} lbs protein (chicken/beef/fish)`,
-    `${Math.round(0.5 * guestCount)} lbs vegetables`,
-    `${Math.round(0.3 * guestCount)} lbs starches`,
-    `${guestCount * 0.5} cups sauces and marinades`,
-    `${guestCount * 0.2} lbs cheese and dairy`,
-    `${guestCount * 0.1} bunches fresh herbs`,
-    `${Math.ceil(guestCount / 10)} loaves bread/crackers`,
-    `${guestCount * 0.05} gallons beverages`,
+      confidence: 0.7,
+    },
   ];
 
-  return baseList;
+  return {
+    prep: prepTasks,
+    setup: setupTasks,
+    cleanup: cleanupTasks,
+  };
 }
 
 export async function saveTaskBreakdown(
