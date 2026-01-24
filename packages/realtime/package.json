@@ -1,0 +1,27 @@
+{
+  "name": "@repo/realtime",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "vitest": "^4.0.15"
+  },
+  "peerDependencies": {
+    "@repo/database": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@repo/database": {
+      "optional": true
+    }
+  }
+}
