@@ -253,7 +253,7 @@ export async function GET(request: Request) {
     // Build finance alerts
     const financeAlerts = budgetAlerts.map((alert) => ({
       message: alert.message || `Budget alert: ${alert.alertType}`,
-      severity: alert.utilization >= 100 ? "High" : alert.utilization >= 90 ? "Medium" : "Low",
+      severity: Number(alert.utilization) >= 100 ? "High" : Number(alert.utilization) >= 90 ? "Medium" : "Low",
     }));
 
     // If no alerts, add default alerts

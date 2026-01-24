@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 
 // Types for kitchen analytics data
 export interface StationThroughput {
@@ -59,6 +59,13 @@ export interface KitchenAnalyticsResponse {
   topPerformers: TopPerformer[];
 }
 
+export interface UseKitchenAnalyticsResult {
+  data: KitchenAnalyticsResponse | null;
+  isLoading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+}
+
 async function fetchKitchenAnalytics(
   period?: string,
   locationId?: string
@@ -78,12 +85,37 @@ async function fetchKitchenAnalytics(
   return response.json();
 }
 
-export function useKitchenAnalytics(period?: string, locationId?: string) {
-  return useQuery({
-    queryKey: ["kitchen-analytics", period, locationId],
-    queryFn: () => fetchKitchenAnalytics(period, locationId),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+export function useKitchenAnalytics(
+  period?: string,
+  locationId?: string
+): UseKitchenAnalyticsResult {
+  const [data, setData] = useState<KitchenAnalyticsResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await fetchKitchenAnalytics(period, locationId);
+      setData(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [period, locationId]);
+
+  return {
+    data,
+    isLoading,
+    error,
+    refetch: fetchData,
+  };
 }
 
 // Helper function to format completion time

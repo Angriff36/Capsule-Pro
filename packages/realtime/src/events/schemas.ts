@@ -56,7 +56,7 @@ export const CommandBoardCardCreatedPayloadSchema = z.object({
 export const CommandBoardCardUpdatedPayloadSchema = z.object({
   boardId: z.string().min(1),
   cardId: z.string().min(1),
-  changes: z.record(z.unknown()),
+  changes: z.record(z.string(), z.unknown()),
   updatedBy: z.string().min(1),
   updatedAt: z.string().datetime(),
 });
@@ -86,7 +86,7 @@ export const CommandBoardCardDeletedPayloadSchema = z.object({
 export const CommandBoardUpdatedPayloadSchema = z.object({
   boardId: z.string().min(1),
   name: z.string(),
-  changes: z.record(z.unknown()),
+  changes: z.record(z.string(), z.unknown()),
   updatedBy: z.string().min(1),
   updatedAt: z.string().datetime(),
 });
