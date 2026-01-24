@@ -72,7 +72,7 @@ Non-goals:
 ## Warehouse Receiving Workflow Implementation Notes
 
 - Added PurchaseOrder and PurchaseOrderItem Prisma models to packages/database/prisma/schema.prisma
-- Created SQL migration: supabase/migrations/20260122000001_purchase_orders_receiving.sql following Schema Contract v2
+- Created SQL migration: docs/legacy-migrations/supabase-migrations/20260122000001_purchase_orders_receiving.sql (archived) following Schema Contract v2
   - Composite PK (tenant_id, id), RLS policies (5 each), tenant-aware indexes
   - Standard triggers (update timestamp, prevent tenant mutation, audit), REPLICA IDENTITY for real-time
   - FK constraints to inventory_suppliers, locations, inventory_items, core.units
@@ -88,3 +88,40 @@ Non-goals:
   - Discrepancy breakdown by type with visual progress bars
   - Summary metrics cards for POs received, items received, quality score, discrepancies
 - Validation: `pnpm check` shows pre-existing lint issues in analytics/components, API routes, config files - NOT related to warehouse receiving implementation
+
+## Database Schema Synchronization Issue (2026-01-23)
+
+**Problem:** Runtime PrismaClientKnownRequestError when querying `database.event.findMany()`:
+```
+The column `(not available)` does not exist in the current database.
+```
+
+**Root Cause:** Prisma schema had `venueId` column and `venue` relation on Event model, but the actual `tenant_events.events` table in the database was missing this column. The schema and database were out of sync.
+
+**Investigation Steps:**
+1. Verified Prisma schema at `packages/database/prisma/schema.prisma:307-333` - Event model had `venueId`
+2. Checked migration status - reported "Database schema is up to date!" (incorrect)
+3. Ran `prisma db pull` to introspect actual database schema
+4. Confirmed `tenant_events.events` table structure via `psql` - no `venue_id` column existed
+
+**Fix Applied:**
+1. Added column to database:
+   ```sql
+   ALTER TABLE tenant_events.events ADD COLUMN venue_id uuid;
+   CREATE INDEX idx_events_venue_id ON tenant_events.events (tenant_id, venue_id) WHERE venue_id IS NOT NULL;
+   ```
+2. Restored `venueId` field to Event model in Prisma schema
+3. Added index definition: `@@index([tenantId, venueId], map: "idx_events_venue_id")`
+4. Regenerated Prisma client: `npx prisma generate`
+5. Validated schema: `npx prisma validate` - schema is valid
+
+**Note:** No FK constraint was added since `tenant_crm.venues` table doesn't exist yet. When Venue table is created, add:
+```sql
+ALTER TABLE tenant_events.events
+ADD CONSTRAINT fk_events_venue
+FOREIGN KEY (tenant_id, venue_id)
+REFERENCES tenant_crm.venues(tenant_id, id)
+ON DELETE SET NULL;
+```
+
+**Lesson:** `prisma migrate status` only checks if migrations are applied, not if schema matches. Always run `prisma db pull` to sync when encountering column-not-found errors. The `prisma.config.ts` setup required running commands from `packages/database` directory.
