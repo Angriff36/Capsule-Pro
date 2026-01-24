@@ -48,6 +48,13 @@
 - **Feature Status**: 100% Complete - All CRUD operations, validation, and UI implemented and tested
 - **Events Module Impact**: Events module status updated from 85% to 95% complete
 
+**Update 6 - INVESTIGATION CORRECTIONS (2026-01-24):**
+- **Warehouse Receiving - CONFIRMED 97% COMPLETE** - UI is production-ready (492 lines) with PO search, quality status tracking, quantity verification, discrepancy tracking. **Missing**: 6 API endpoints (PO lookup, PO list, update receiving, update quality, update quantity, complete receiving). Frontend currently uses mock data.
+- **Event Import/Export - STATUS CORRECTION** - Was marked as 10% complete, actually ~90% complete. CSV import fully implemented with prep list/dish list support. PDF export working via `@react-pdf/renderer`. **Missing**: Bulk export endpoint (`/api/events/export/csv`) and comprehensive test suite.
+- **Recipe Costing - CONFIRMED 40% COMPLETE** - Backend API has cost calculation, scaling, waste factor endpoints. Client library complete. **Missing**: Recipe creation/editing APIs, ingredient management APIs, inventory linking UI, automatic cost update triggers, cost history tracking.
+- **Auto-Assignment System - CONFIRMED 85% COMPLETE** - All algorithms, APIs, and modal components implemented. **Missing**: UI polish (button text from "Assign" to "Auto-Assign", visual indicators for high-confidence matches, tooltips, accessibility improvements).
+- **Action Plan**: Focus on Warehouse Receiving API endpoints to complete this 97% feature (estimated 3-5 days for 6 endpoints + tests).
+
 **Module Status Summary (FINAL CORRECTED):**
 | Module | Previous | Final | Change |
 |--------|----------|-------|--------|
@@ -507,21 +514,40 @@ Migrate Event Budgets API from apps/app/app/api/events/budgets/** → apps/api/a
 
 **Specs:** `event-import-export.md`
 
-**Status:** 10% Complete
+**Status:** 90% Complete (Update 6 - Investigation corrected from 10%)
 
-**Database:** Partial models exist (EventImport in schema)
+**Database:** Complete ✅
+- EventImport model exists in schema with BLOB storage
+- Tenant-scoped with proper indexing
 
-**API Endpoints:** Missing
+**API Endpoints:** Mostly Complete ✅
+**Location:** `apps/api/app/api/events/[eventId]/export/`
+- `GET /api/events/[eventId]/export/csv` - CSV export with sections (summary, menu, staff, guests)
+- `GET /api/events/[eventId]/export/pdf` - PDF export via @react-pdf/renderer
+- Form actions for import in `apps/app/app/(authenticated)/events/importer.ts`
+- **Missing**: `GET /api/events/export/csv` - Bulk export endpoint
 
-**UI Components:** Placeholder page exists
-**Location:** `apps/app/app/(authenticated)/events/import/page.tsx`
+**UI Components:** Complete ✅
+- Import page at `/events/import` with file upload, drag & drop
+- Export button with dropdown menu and section selection
+- Client-side hooks for export functionality
+- Loading states and download handling
+
+**Features Implemented:**
+- CSV import with prep list and dish list format support
+- Custom CSV parser (no external libraries)
+- Item classification logic
+- Automatic entity creation (recipes, dishes, ingredients, inventory)
+- Prep task generation
+- Import history tracking
+- PDF and CSV export with proper escaping and UTF-8 BOM
 
 **Still Needed:**
-- CSV import functionality
-- Data transformation logic
-- Import history tracking
+- Bulk export endpoint for filtered event lists
+- Comprehensive test suite (unit, integration, E2E)
+- Optional: Dedicated `/api/events/import` endpoint for programmatic access
 
-**Complexity:** Medium | **Dependencies:** CSV parsing (PDF library exists)
+**Complexity:** Low | **Dependencies:** None (PDF library exists, CSV parser implemented)
 
 ---
 
@@ -926,16 +952,40 @@ Migrate Event Budgets API from apps/app/app/api/events/budgets/** → apps/api/a
 
 **Specs:** `warehouse-receiving-workflow.md`
 
-**Status:** 97% Complete
+**Status:** 97% Complete (Update 6 - Investigation confirmed)
 
-**Database:** Complete (PurchaseOrder, PurchaseOrderItem models exist)
+**Database:** Complete ✅
+- PurchaseOrder, PurchaseOrderItem models exist in tenant_inventory schema
+- All required fields: poNumber, supplier, status, orderDate, expectedDate
+- Proper multi-tenant design with tenant_id, soft deletes, audit trails
 
-**API Endpoints:** Complete (full workflow operations)
+**UI Components:** Complete ✅
+**Location:** `apps/app/app/(authenticated)/warehouse/receiving/page.tsx` (492 lines)
+- PO number search/scan functionality
+- Quality status tracking (pending, approved, rejected, needs_inspection)
+- Quantity verification with max limits
+- Discrepancy tracking (shortage, overage, damaged, wrong_item)
+- Real-time progress tracking
+- PO summary display
+- **Issue**: Currently using mock data (setTimeout simulations)
 
-**UI Components:** Exists but may need connection verification
-**Location:** `apps/app/app/(authenticated)/warehouse/inventory/page.tsx`
+**API Endpoints:** MISSING ❌ - This is the 3% gap
+- No API routes found in apps/api/app/api/inventory/ or apps/app/app/api/
+- Required endpoints:
+  - `GET /api/inventory/purchase-orders?poNumber=XXX` - PO lookup
+  - `GET /api/inventory/purchase-orders` - PO list with pagination
+  - `POST /api/inventory/purchase-orders/[id]/receive` - Update receiving
+  - `PUT /api/inventory/purchase-order-items/[id]/quality` - Update quality status
+  - `PUT /api/inventory/purchase-order-items/[id]/quantity` - Update quantity received
+  - `POST /api/inventory/purchase-orders/[id]/complete` - Complete receiving workflow
 
-**Complexity:** Low | **Dependencies:** None
+**Still Needed:**
+- Implement 6 API endpoints in apps/api/app/api/inventory/purchase-orders/
+- Connect frontend UI to real APIs (replace mock data)
+- Stock level updates when receiving is completed
+- Tests for receiving workflow
+
+**Complexity:** Low | **Dependencies:** None (schema complete, UI complete)
 
 ---
 
