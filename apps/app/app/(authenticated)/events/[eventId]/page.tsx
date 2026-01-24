@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 import { EventDetailsClient } from "./event-details-client";
+import { EventExportButton } from "./components/export-button";
 import { validatePrepTasks } from "./prep-task-contract";
 
 type EventDetailsPageProps = {
@@ -68,6 +69,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
           >
             Battle Board
           </a>
+          <EventExportButton eventId={eventId} eventName={event.title} />
           <a
             className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md px-4 py-2 font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
             href="/events"

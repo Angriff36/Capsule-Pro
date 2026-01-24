@@ -146,7 +146,7 @@ export async function GET(request: Request) {
       }),
 
       // Average time to completion for prep tasks
-      database.$queryRawUnsafe<Array<{ avg_minutes: string } }>(
+      database.$queryRawUnsafe<Array<{ avg_minutes: string }>>(
         `
         SELECT COALESCE(AVG(
           CASE

@@ -28,7 +28,7 @@ const VALID_CARD_STATUSES = [
  * Validate card_type field
  */
 function validateCardType(cardType: string): ValidationError {
-  if (!VALID_CARD_TYPES.includes(cardType)) {
+  if (!(VALID_CARD_TYPES as readonly string[]).includes(cardType)) {
     return NextResponse.json(
       {
         error: `Invalid card_type. Must be one of: ${VALID_CARD_TYPES.join(", ")}`,
@@ -43,7 +43,7 @@ function validateCardType(cardType: string): ValidationError {
  * Validate status field
  */
 function validateCardStatus(status: string): ValidationError {
-  if (!VALID_CARD_STATUSES.includes(status)) {
+  if (!(VALID_CARD_STATUSES as readonly string[]).includes(status)) {
     return NextResponse.json(
       {
         error: `Invalid status. Must be one of: ${VALID_CARD_STATUSES.join(", ")}`,
@@ -130,7 +130,7 @@ function buildUpdateFields(body: UpdateCommandBoardCardRequest): {
       continue;
     }
 
-    if (config.validator) {
+    if ("validator" in config && config.validator) {
       const error = config.validator(value as never);
       if (error) {
         return { result: updateFields, error };
@@ -140,7 +140,8 @@ function buildUpdateFields(body: UpdateCommandBoardCardRequest): {
     updateFields.fields.push(
       `${config.field} = $${updateFields.values.length + 1}`
     );
-    updateFields.values.push(value);
+    // Cast value to acceptable type for Prisma query
+    updateFields.values.push(value as string | number | boolean | Date | null);
   }
 
   // Handle metadata separately (requires JSON stringify)
