@@ -40,7 +40,82 @@ export const KitchenTaskProgressPayloadSchema = z.object({
 });
 
 /**
- * Full event schemas with discriminator.
+ * Command Board event payload schemas.
+ */
+export const CommandBoardCardCreatedPayloadSchema = z.object({
+  boardId: z.string().min(1),
+  cardId: z.string().min(1),
+  cardType: z.string().min(1),
+  title: z.string(),
+  positionX: z.number(),
+  positionY: z.number(),
+  createdBy: z.string().min(1),
+  createdAt: z.string().datetime(),
+});
+
+export const CommandBoardCardUpdatedPayloadSchema = z.object({
+  boardId: z.string().min(1),
+  cardId: z.string().min(1),
+  changes: z.record(z.unknown()),
+  updatedBy: z.string().min(1),
+  updatedAt: z.string().datetime(),
+});
+
+export const CommandBoardCardMovedPayloadSchema = z.object({
+  boardId: z.string().min(1),
+  cardId: z.string().min(1),
+  previousPosition: z.object({
+    x: z.number(),
+    y: z.number(),
+  }),
+  newPosition: z.object({
+    x: z.number(),
+    y: z.number(),
+  }),
+  movedBy: z.string().min(1),
+  movedAt: z.string().datetime(),
+});
+
+export const CommandBoardCardDeletedPayloadSchema = z.object({
+  boardId: z.string().min(1),
+  cardId: z.string().min(1),
+  deletedBy: z.string().min(1),
+  deletedAt: z.string().datetime(),
+});
+
+export const CommandBoardUpdatedPayloadSchema = z.object({
+  boardId: z.string().min(1),
+  name: z.string(),
+  changes: z.record(z.unknown()),
+  updatedBy: z.string().min(1),
+  updatedAt: z.string().datetime(),
+});
+
+export const CommandBoardUserJoinedPayloadSchema = z.object({
+  boardId: z.string().min(1),
+  userId: z.string().min(1),
+  userName: z.string(),
+  joinedAt: z.string().datetime(),
+});
+
+export const CommandBoardUserLeftPayloadSchema = z.object({
+  boardId: z.string().min(1),
+  userId: z.string().min(1),
+  leftAt: z.string().datetime(),
+});
+
+export const CommandBoardCursorMovedPayloadSchema = z.object({
+  boardId: z.string().min(1),
+  userId: z.string().min(1),
+  position: z.object({
+    x: z.number(),
+    y: z.number(),
+  }),
+  movedAt: z.string().datetime(),
+});
+
+/**
+ * Full event schemas with discriminator - Kitchen events.
  */
 export const KitchenTaskClaimedEventSchema = RealtimeEventBaseSchema.extend({
   eventType: z.literal("kitchen.task.claimed"),
@@ -58,6 +133,49 @@ export const KitchenTaskProgressEventSchema = RealtimeEventBaseSchema.extend({
 });
 
 /**
+ * Full event schemas with discriminator - Command Board events.
+ */
+export const CommandBoardCardCreatedEventSchema = RealtimeEventBaseSchema.extend({
+  eventType: z.literal("command.board.card.created"),
+  payload: CommandBoardCardCreatedPayloadSchema,
+});
+
+export const CommandBoardCardUpdatedEventSchema = RealtimeEventBaseSchema.extend({
+  eventType: z.literal("command.board.card.updated"),
+  payload: CommandBoardCardUpdatedPayloadSchema,
+});
+
+export const CommandBoardCardMovedEventSchema = RealtimeEventBaseSchema.extend({
+  eventType: z.literal("command.board.card.moved"),
+  payload: CommandBoardCardMovedPayloadSchema,
+});
+
+export const CommandBoardCardDeletedEventSchema = RealtimeEventBaseSchema.extend({
+  eventType: z.literal("command.board.card.deleted"),
+  payload: CommandBoardCardDeletedPayloadSchema,
+});
+
+export const CommandBoardUpdatedEventSchema = RealtimeEventBaseSchema.extend({
+  eventType: z.literal("command.board.updated"),
+  payload: CommandBoardUpdatedPayloadSchema,
+});
+
+export const CommandBoardUserJoinedEventSchema = RealtimeEventBaseSchema.extend({
+  eventType: z.literal("command.board.user.joined"),
+  payload: CommandBoardUserJoinedPayloadSchema,
+});
+
+export const CommandBoardUserLeftEventSchema = RealtimeEventBaseSchema.extend({
+  eventType: z.literal("command.board.user.left"),
+  payload: CommandBoardUserLeftPayloadSchema,
+});
+
+export const CommandBoardCursorMovedEventSchema = RealtimeEventBaseSchema.extend({
+  eventType: z.literal("command.board.cursor.moved"),
+  payload: CommandBoardCursorMovedPayloadSchema,
+});
+
+/**
  * Discriminated union of all event schemas.
  * Use this for validating unknown realtime events.
  */
@@ -65,6 +183,14 @@ export const RealtimeEventSchema = z.discriminatedUnion("eventType", [
   KitchenTaskClaimedEventSchema,
   KitchenTaskReleasedEventSchema,
   KitchenTaskProgressEventSchema,
+  CommandBoardCardCreatedEventSchema,
+  CommandBoardCardUpdatedEventSchema,
+  CommandBoardCardMovedEventSchema,
+  CommandBoardCardDeletedEventSchema,
+  CommandBoardUpdatedEventSchema,
+  CommandBoardUserJoinedEventSchema,
+  CommandBoardUserLeftEventSchema,
+  CommandBoardCursorMovedEventSchema,
 ]);
 
 /**
@@ -80,7 +206,23 @@ export function parseRealtimeEvent(data: unknown) {
 /**
  * Type guard for kitchen events.
  */
-export function isKitchenEvent(data: unknown): data is z.infer<typeof RealtimeEventSchema> {
+export function isKitchenEvent(
+  data: unknown
+): data is z.infer<typeof RealtimeEventSchema> {
   const result = parseRealtimeEvent(data);
   return result.success;
+}
+
+/**
+ * Type guard for command board events.
+ */
+export function isCommandBoardEvent(
+  data: unknown
+): data is z.infer<typeof RealtimeEventSchema> {
+  const result = parseRealtimeEvent(data);
+  if (!result.success) {
+    return false;
+  }
+  // Check if event type starts with "command.board."
+  return result.data.eventType.startsWith("command.board.");
 }

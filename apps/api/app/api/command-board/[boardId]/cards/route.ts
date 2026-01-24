@@ -7,6 +7,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
+import { createOutboxEvent } from "@repo/realtime";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -149,8 +150,8 @@ export async function GET(request: Request, context: RouteContext) {
  */
 export async function POST(request: Request, context: RouteContext) {
   try {
-    const { orgId } = await auth();
-    if (!orgId) {
+    const { orgId, userId } = await auth();
+    if (!orgId || !userId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
@@ -170,23 +171,48 @@ export async function POST(request: Request, context: RouteContext) {
 
     const defaultZIndex = await getNextZIndex(tenantId, boardId);
 
-    const card = await database.commandBoardCard.create({
-      data: {
+    const positionX = data.positionX ?? 0;
+    const positionY = data.positionY ?? 0;
+
+    const card = await database.$transaction(async (tx) => {
+      const createdCard = await tx.commandBoardCard.create({
+        data: {
+          tenantId,
+          boardId,
+          title: data.title.trim(),
+          content: data.content?.trim() || null,
+          cardType: data.cardType || "task",
+          status: data.status || "pending",
+          positionX,
+          positionY,
+          width: data.width ?? 200,
+          height: data.height ?? 150,
+          zIndex: data.zIndex ?? defaultZIndex,
+          color: data.color || null,
+          metadata: (data.metadata || {}) as Prisma.InputJsonValue,
+        },
+        select: CARD_SELECT,
+      });
+
+      // Publish outbox event for real-time sync
+      await createOutboxEvent(tx, {
         tenantId,
-        boardId,
-        title: data.title.trim(),
-        content: data.content?.trim() || null,
-        cardType: data.cardType || "task",
-        status: data.status || "pending",
-        positionX: data.positionX ?? 0,
-        positionY: data.positionY ?? 0,
-        width: data.width ?? 200,
-        height: data.height ?? 150,
-        zIndex: data.zIndex ?? defaultZIndex,
-        color: data.color || null,
-        metadata: (data.metadata || {}) as Prisma.InputJsonValue,
-      },
-      select: CARD_SELECT,
+        aggregateType: "CommandBoardCard",
+        aggregateId: createdCard.id,
+        eventType: "command.board.card.created",
+        payload: {
+          boardId,
+          cardId: createdCard.id,
+          cardType: createdCard.cardType,
+          title: createdCard.title,
+          positionX,
+          positionY,
+          createdBy: userId,
+          createdAt: createdCard.createdAt.toISOString(),
+        },
+      });
+
+      return createdCard;
     });
 
     return NextResponse.json({ data: card }, { status: 201 });

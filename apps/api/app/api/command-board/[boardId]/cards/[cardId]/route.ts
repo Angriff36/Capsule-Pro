@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { createOutboxEvent } from "@repo/realtime";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { UpdateCommandBoardCardRequest } from "../../../types";
@@ -242,9 +243,9 @@ export async function GET(_request: NextRequest, context: RouteContext) {
  */
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
-    const { orgId } = await auth();
+    const { orgId, userId } = await auth();
 
-    if (!orgId) {
+    if (!orgId || !userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -252,11 +253,16 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     const { boardId, cardId } = await context.params;
     const body = (await request.json()) as UpdateCommandBoardCardRequest;
 
-    // Check if the card exists and belongs to the specified board
-    const existingCard = await database.$queryRaw<
-      Array<{ id: string; board_id: string }>
+    // Get current card state to detect position changes
+    const currentCard = await database.$queryRaw<
+      Array<{
+        id: string;
+        board_id: string;
+        position_x: number;
+        position_y: number;
+      }>
     >`
-      SELECT id, board_id
+      SELECT id, board_id, position_x, position_y
       FROM tenant_events.command_board_cards
       WHERE tenant_id = ${tenantId}
         AND board_id = ${boardId}
@@ -264,9 +270,15 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         AND deleted_at IS NULL
     `;
 
-    if (existingCard.length === 0) {
+    if (currentCard.length === 0) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
+
+    // Track if position changed
+    const previousPosition = {
+      x: currentCard[0].position_x,
+      y: currentCard[0].position_y,
+    };
 
     // Build update fields with validation
     const { result: updateFields, error: validationError } =
@@ -284,64 +296,119 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       );
     }
 
-    updateFields.fields.push("updated_at = NOW()");
-    updateFields.values.push(cardId, tenantId, boardId);
+    // Execute update and publish event in transaction
+    const result = await database.$transaction(async (tx) => {
+      updateFields.fields.push("updated_at = NOW()");
+      updateFields.values.push(cardId, tenantId, boardId);
 
-    const result = await database.$queryRaw<
-      Array<{
-        id: string;
-        tenant_id: string;
-        board_id: string;
-        title: string;
-        content: string | null;
-        card_type: string;
-        status: string;
-        position_x: number;
-        position_y: number;
-        width: number;
-        height: number;
-        z_index: number;
-        color: string | null;
-        metadata: Record<string, unknown>;
-        created_at: Date;
-        updated_at: Date;
-        deleted_at: Date | null;
-      }>
-    >(
-      Prisma.raw(
-        `UPDATE tenant_events.command_board_cards
-         SET ${updateFields.fields.join(", ")}
-         WHERE id = $${updateFields.values.length - 2}
-           AND tenant_id = $${updateFields.values.length - 1}
-           AND board_id = $${updateFields.values.length}
-           AND deleted_at IS NULL
-         RETURNING
-           id,
-           tenant_id,
-           board_id,
-           title,
-           content,
-           card_type,
-           status,
-           position_x,
-           position_y,
-           width,
-           height,
-           z_index,
-           color,
-           metadata,
-           created_at,
-           updated_at,
-           deleted_at`
-      ),
-      updateFields.values
-    );
+      const updatedCards = await tx.$queryRaw<
+        Array<{
+          id: string;
+          tenant_id: string;
+          board_id: string;
+          title: string;
+          content: string | null;
+          card_type: string;
+          status: string;
+          position_x: number;
+          position_y: number;
+          width: number;
+          height: number;
+          z_index: number;
+          color: string | null;
+          metadata: Record<string, unknown>;
+          created_at: Date;
+          updated_at: Date;
+          deleted_at: Date | null;
+        }>
+      >(
+        Prisma.raw(
+          `UPDATE tenant_events.command_board_cards
+           SET ${updateFields.fields.join(", ")}
+           WHERE id = $${updateFields.values.length - 2}
+             AND tenant_id = $${updateFields.values.length - 1}
+             AND board_id = $${updateFields.values.length}
+             AND deleted_at IS NULL
+           RETURNING
+             id,
+             tenant_id,
+             board_id,
+             title,
+             content,
+             card_type,
+             status,
+             position_x,
+             position_y,
+             width,
+             height,
+             z_index,
+             color,
+             metadata,
+             created_at,
+             updated_at,
+             deleted_at`
+        ),
+        updateFields.values
+      );
 
-    if (result.length === 0) {
-      return NextResponse.json({ error: "Card not found" }, { status: 404 });
-    }
+      if (updatedCards.length === 0) {
+        throw new Error("Card not found after update");
+      }
 
-    return NextResponse.json(result[0]);
+      const updatedCard = updatedCards[0];
+
+      // Determine if this is a position change or general update
+      const positionChanged =
+        "position_x" in body ||
+        "position_y" in body ||
+        updatedCard.position_x !== previousPosition.x ||
+        updatedCard.position_y !== previousPosition.y;
+
+      // Publish appropriate event
+      if (positionChanged) {
+        await createOutboxEvent(tx, {
+          tenantId,
+          aggregateType: "CommandBoardCard",
+          aggregateId: cardId,
+          eventType: "command.board.card.moved",
+          payload: {
+            boardId,
+            cardId,
+            previousPosition,
+            newPosition: {
+              x: updatedCard.position_x,
+              y: updatedCard.position_y,
+            },
+            movedBy: userId,
+            movedAt: updatedCard.updated_at.toISOString(),
+          },
+        });
+      } else {
+        // For non-position changes, track the actual changes
+        const changes: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(body)) {
+          changes[key] = value;
+        }
+
+        await createOutboxEvent(tx, {
+          tenantId,
+          aggregateType: "CommandBoardCard",
+          aggregateId: cardId,
+          eventType: "command.board.card.updated",
+          payload: {
+            boardId,
+            cardId,
+            changes,
+            updatedBy: userId,
+            updatedAt: updatedCard.updated_at.toISOString(),
+          },
+        });
+      }
+
+      return updatedCard;
+    });
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error updating card:", error);
     return NextResponse.json(
@@ -357,9 +424,9 @@ export async function PUT(request: NextRequest, context: RouteContext) {
  */
 export async function DELETE(_request: NextRequest, context: RouteContext) {
   try {
-    const { orgId } = await auth();
+    const { orgId, userId } = await auth();
 
-    if (!orgId) {
+    if (!orgId || !userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -382,15 +449,31 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
 
-    // Soft delete the card
-    await database.$executeRaw`
-      UPDATE tenant_events.command_board_cards
-      SET deleted_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND board_id = ${boardId}
-        AND id = ${cardId}
-        AND deleted_at IS NULL
-    `;
+    // Soft delete the card and publish event in transaction
+    await database.$transaction(async (tx) => {
+      await tx.$executeRaw`
+        UPDATE tenant_events.command_board_cards
+        SET deleted_at = NOW()
+        WHERE tenant_id = ${tenantId}
+          AND board_id = ${boardId}
+          AND id = ${cardId}
+          AND deleted_at IS NULL
+      `;
+
+      // Publish outbox event for real-time sync
+      await createOutboxEvent(tx, {
+        tenantId,
+        aggregateType: "CommandBoardCard",
+        aggregateId: cardId,
+        eventType: "command.board.card.deleted",
+        payload: {
+          boardId,
+          cardId,
+          deletedBy: userId,
+          deletedAt: new Date().toISOString(),
+        },
+      });
+    });
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {

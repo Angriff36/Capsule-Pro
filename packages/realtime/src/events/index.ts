@@ -4,27 +4,65 @@
  */
 
 // Envelope types
-export type { RealtimeEventBase, RealtimeEvent } from "./envelope.js";
-export { REALTIME_EVENT_VERSION } from "./envelope.js";
+export type { RealtimeEvent, RealtimeEventBase } from "./envelope";
+export { REALTIME_EVENT_VERSION } from "./envelope";
 
 // Kitchen event types
 export type {
   KitchenEvent,
   KitchenTaskClaimedEvent,
-  KitchenTaskReleasedEvent,
   KitchenTaskProgressEvent,
-} from "./kitchen.js";
+  KitchenTaskReleasedEvent,
+} from "./kitchen";
 
-// Zod schemas
+// Command Board event types
+export type {
+  CommandBoardEvent,
+  CommandBoardCardCreatedEvent,
+  CommandBoardCardUpdatedEvent,
+  CommandBoardCardMovedEvent,
+  CommandBoardCardDeletedEvent,
+  CommandBoardUpdatedEvent,
+  CommandBoardUserJoinedEvent,
+  CommandBoardUserLeftEvent,
+  CommandBoardCursorMovedEvent,
+} from "./command";
+
+// Zod schemas - Kitchen
 export {
-  RealtimeEventBaseSchema,
-  KitchenTaskClaimedPayloadSchema,
-  KitchenTaskReleasedPayloadSchema,
-  KitchenTaskProgressPayloadSchema,
-  KitchenTaskClaimedEventSchema,
-  KitchenTaskReleasedEventSchema,
-  KitchenTaskProgressEventSchema,
-  RealtimeEventSchema,
-  parseRealtimeEvent,
   isKitchenEvent,
-} from "./schemas.js";
+  KitchenTaskClaimedEventSchema,
+  KitchenTaskClaimedPayloadSchema,
+  KitchenTaskProgressEventSchema,
+  KitchenTaskProgressPayloadSchema,
+  KitchenTaskReleasedEventSchema,
+  KitchenTaskReleasedPayloadSchema,
+} from "./schemas";
+
+// Zod schemas - Command Board
+export {
+  isCommandBoardEvent,
+  CommandBoardCardCreatedEventSchema,
+  CommandBoardCardCreatedPayloadSchema,
+  CommandBoardCardUpdatedEventSchema,
+  CommandBoardCardUpdatedPayloadSchema,
+  CommandBoardCardMovedEventSchema,
+  CommandBoardCardMovedPayloadSchema,
+  CommandBoardCardDeletedEventSchema,
+  CommandBoardCardDeletedPayloadSchema,
+  CommandBoardUpdatedEventSchema,
+  CommandBoardUpdatedPayloadSchema,
+  CommandBoardUserJoinedEventSchema,
+  CommandBoardUserJoinedPayloadSchema,
+  CommandBoardUserLeftEventSchema,
+  CommandBoardUserLeftPayloadSchema,
+  CommandBoardCursorMovedEventSchema,
+  CommandBoardCursorMovedPayloadSchema,
+} from "./schemas";
+
+// Core Zod schemas and utilities
+export {
+  parseRealtimeEvent,
+  RealtimeEventBaseSchema,
+  RealtimeEventSchema,
+} from "./schemas";
