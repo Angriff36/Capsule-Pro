@@ -72,6 +72,23 @@ function getMessageSize(message: unknown): number {
   return Buffer.byteLength(JSON.stringify(message), "utf8");
 }
 
+/**
+ * Raw OutboxEvent type for $queryRaw results.
+ * Prisma doesn't expose SKIP LOCKED, so we use raw SQL.
+ */
+type RawOutboxEvent = {
+  id: string;
+  tenantId: string;
+  aggregateType: string;
+  aggregateId: string;
+  eventType: string;
+  payload: unknown;
+  status: string;
+  error: string | null;
+  createdAt: Date;
+  publishedAt: Date | null;
+};
+
 export async function POST(request: Request) {
   if (!isAuthorized(request.headers.get("authorization"))) {
     return new Response("Unauthorized", { status: 401 });
@@ -93,11 +110,17 @@ export async function POST(request: Request) {
     ? (Date.now() - oldestPending.createdAt.getTime()) / 1000
     : 0;
 
-  const pendingEvents = await database.outboxEvent.findMany({
-    where: { status: "pending" },
-    orderBy: { createdAt: "asc" },
-    take: limit,
-  });
+  // Use SKIP LOCKED for concurrent publisher safety
+  // Prisma doesn't expose SKIP LOCKED, so we use $queryRaw
+  const pendingEvents = await database.$queryRaw<RawOutboxEvent[]>`
+    SELECT "id", "tenantId", "aggregateType", "aggregateId", "eventType", "payload",
+           "status", "error", "createdAt", "publishedAt"
+    FROM "OutboxEvent"
+    WHERE "status" = 'pending'
+    ORDER BY "createdAt" ASC
+    LIMIT ${limit}
+    FOR UPDATE SKIP LOCKED
+  `;
 
   if (pendingEvents.length === 0) {
     return Response.json({
@@ -114,6 +137,12 @@ export async function POST(request: Request) {
   let skipped = 0;
 
   for (const event of pendingEvents) {
+    // Double-check status (another publisher may have processed it)
+    if (event.status !== "pending") {
+      skipped += 1;
+      continue;
+    }
+
     const envelope = buildEventEnvelope(event);
     const messageSize = getMessageSize(envelope);
 
