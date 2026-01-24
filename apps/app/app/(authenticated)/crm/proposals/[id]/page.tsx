@@ -39,7 +39,7 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProposalById } from "../../actions";
+import { getProposalById } from "../actions";
 
 interface ProposalPageProps {
   params: Promise<{ id: string }>;

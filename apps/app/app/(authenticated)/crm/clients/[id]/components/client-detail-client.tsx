@@ -29,7 +29,7 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { deleteClient } from "../../../actions";
+import { deleteClient } from "../../actions";
 import { CommunicationsTab } from "./tabs/communications-tab";
 import { ContactInfoTab } from "./tabs/contact-info-tab";
 import { ContactsTab } from "./tabs/contacts-tab";

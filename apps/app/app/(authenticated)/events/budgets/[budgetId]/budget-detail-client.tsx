@@ -57,7 +57,7 @@ import {
   type UpdateLineItemRequest,
   updateBudget,
   updateLineItem,
-} from "../../../../../lib/use-budgets";
+} from "@/app/lib/use-budgets";
 
 interface BudgetDetailClientProps {
   budgetId: string;

@@ -16,7 +16,7 @@ import type {
   TimeOffRequest,
   TimeOffStatus,
   TimeOffType,
-} from "@/app/app/api/staff/time-off/types";
+} from "@api/staff/time-off/types";
 import { deleteTimeOffRequest, updateTimeOffStatus } from "../actions";
 
 interface TimeOffDetailModalProps {

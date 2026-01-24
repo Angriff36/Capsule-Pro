@@ -1,8 +1,8 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { notFound } from "next/navigation";
-import { getTenantIdForOrg } from "../../../../../lib/tenant";
-import { Header } from "../../../../components/header";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { Header } from "../../../components/header";
 import { BudgetDetailClient } from "./budget-detail-client";
 
 type BudgetDetailPageProps = {

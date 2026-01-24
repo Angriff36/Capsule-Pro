@@ -3,6 +3,25 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
+type WasteEntryDetail = {
+  id: string;
+  tenant_id: string;
+  ingredient_id: string;
+  quantity: string;
+  unit: string;
+  reason: string;
+  notes: string | null;
+  event_id: string | null;
+  created_by: string | null;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+  ingredient_name: string | null;
+  ingredient_category: string | null;
+  user_name: string | null;
+  event_name: string | null;
+};
+
 /**
  * GET /api/kitchen/waste/entries/[id]
  * Get a waste entry by ID
@@ -21,7 +40,7 @@ export async function GET(
     const tenantId = await getTenantIdForOrg(orgId);
     const { id } = await params;
 
-    const wasteEntry = await database.$queryRaw`
+    const wasteEntry = await database.$queryRaw<WasteEntryDetail[]>`
       SELECT
         we.*,
         i.name AS ingredient_name,
@@ -83,7 +102,7 @@ export async function PUT(
     }
 
     // Check if the entry exists and belongs to the tenant
-    const existingEntry = await database.$queryRaw`
+    const existingEntry = await database.$queryRaw<{ id: string }[]>`
       SELECT id FROM tenant_kitchen.waste_entries
       WHERE tenant_id = ${tenantId} AND id = ${id} AND deleted_at IS NULL
     `;

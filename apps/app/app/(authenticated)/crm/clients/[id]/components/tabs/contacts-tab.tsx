@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { createClientContact, getClientContacts } from "../../../../actions";
+import { createClientContact, getClientContacts } from "../../../actions";
 
 interface ContactsTabProps {
   client: {

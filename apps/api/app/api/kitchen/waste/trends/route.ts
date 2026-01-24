@@ -58,7 +58,7 @@ export async function GET(request: Request) {
         select: {
           id: true,
           name: true,
-          sku: true,
+          item_number: true,
         },
       },
     },
@@ -185,15 +185,14 @@ export async function GET(request: Request) {
   const maxReasonCost = Math.max(
     ...Object.values(reasonCounts).map((r) => r.cost)
   );
-  if (maxReasonCost > totalPeriodCost * 0.3) {
+  const reasonKeys = Object.keys(reasonCounts).map((key) => Number(key));
+  if (maxReasonCost > totalPeriodCost * 0.3 && reasonKeys.length > 0) {
+    const topReasonId = reasonKeys.reduce((best, next) =>
+      reasonCounts[best].cost > reasonCounts[next].cost ? best : next
+    );
     const topReason = await database.wasteReason.findUnique({
       where: {
-        id: Number.parseInt(
-          Object.keys(reasonCounts).reduce((a, b) =>
-            reasonCounts[a].cost > reasonCounts[b].cost ? a : b
-          ),
-          10
-        ),
+        id: topReasonId,
       },
     });
     reductionOpportunities.push({

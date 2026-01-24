@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import type {
   AvailabilityFilters,
   DayOfWeek,
-} from "@/app/app/api/staff/availability/types";
+} from "@api/staff/availability/types";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**

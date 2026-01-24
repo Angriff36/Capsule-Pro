@@ -144,6 +144,10 @@ export async function GET(
     }
 
     // Prepare PDF data
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter((task) => task.status === "completed").length;
+    const pendingTasks = totalTasks - completedTasks;
+
     const pdfData = {
       event: {
         id: event.id,
@@ -169,6 +173,11 @@ export async function GET(
         slackMinutes: task.slack_minutes,
         notes: task.notes || undefined,
       })),
+      summary: {
+        totalTasks,
+        completedTasks,
+        pendingTasks,
+      },
       staff: staff.map((s) => ({
         id: s.id,
         name: s.name,

@@ -263,7 +263,11 @@ export async function POST(request: Request) {
       );
 
       if (result && result.error) {
-        results.failed.push(result);
+        results.failed.push({
+          taskId: claimAction.taskId || "unknown",
+          action: claimAction.action || "unknown",
+          error: result.error,
+        });
       } else if (result) {
         results.successful.push(result);
       }

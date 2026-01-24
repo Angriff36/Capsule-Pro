@@ -11,7 +11,7 @@ import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { UpdateLineItemRequest } from "../../types";
+import type { UpdateLineItemRequest } from "../../../types";
 import {
   validateBudgetCategory,
   validateLineItemAmount,

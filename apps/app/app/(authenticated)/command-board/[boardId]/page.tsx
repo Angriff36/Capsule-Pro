@@ -105,6 +105,7 @@ export default async function CommandBoardPage({
       boardId={boardData.id}
       initialCards={boardData.cards}
       orgId={orgId}
+      tenantId={tenantId}
     />
   );
 }

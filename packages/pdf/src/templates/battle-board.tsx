@@ -140,8 +140,8 @@ export const BattleBoardPDF: React.FC<BattleBoardPDFProps> = ({ data }) => {
           <Text style={styles.title}>Battle Board</Text>
           <Text style={styles.subtitle}>{event.name}</Text>
           <Text style={styles.eventInfo}>
-            Date: {new Date(event.startDate).toLocaleDateString()} |
-            Location: {event.location || 'TBD'}
+            Date: {new Date(event.date).toLocaleDateString()} |
+            Location: {event.venue || event.address || 'TBD'}
           </Text>
         </View>
 
@@ -179,10 +179,12 @@ export const BattleBoardPDF: React.FC<BattleBoardPDFProps> = ({ data }) => {
                 <Text>{task.title}</Text>
               </View>
               <View style={styles.tableRow}>
-                <Text>Assigned To: {task.assignedTo || 'Unassigned'}</Text>
+                <Text>Assigned To: {task.assignee || 'Unassigned'}</Text>
               </View>
               <View style={styles.tableRow}>
-                <Text>Due: {task.dueDate ? new Date(task.dueDate).toLocaleString() : 'TBD'}</Text>
+                <Text>
+                  Due: {task.endTime ? new Date(task.endTime).toLocaleString() : 'TBD'}
+                </Text>
               </View>
               <View style={styles.tableRow}>
                 <Text>Status: </Text>

@@ -42,7 +42,7 @@ import {
   deleteClientInteraction,
   getClientInteractions,
   updateClientInteraction,
-} from "../../../../actions";
+} from "../../../actions";
 
 interface CommunicationsTabProps {
   clientId: string;

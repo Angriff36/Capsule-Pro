@@ -2,10 +2,26 @@ import "server-only";
 import { Liveblocks as LiveblocksNode } from "@liveblocks/node";
 import { keys } from "./keys";
 
+type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | Json[]
+  | {
+      [key: string]: Json | undefined;
+    };
+
+type LiveblocksUserInfo = {
+  [key: string]: Json | undefined;
+  name?: string;
+  avatar?: string;
+};
+
 type AuthenticateOptions = {
   userId: string;
   orgId: string;
-  userInfo: Liveblocks["UserMeta"]["info"];
+  userInfo?: LiveblocksUserInfo;
 };
 
 const secret = keys().LIVEBLOCKS_SECRET;

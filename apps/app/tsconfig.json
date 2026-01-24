@@ -4,7 +4,8 @@
     "ignoreDeprecations": "5.0",
     "paths": {
       "@/*": ["./*"],
-      "@repo/*": ["../../packages/*"]
+      "@repo/*": ["../../packages/*"],
+      "@api/staff/*": ["../api/app/api/staff/*"]
     }
   },
   "include": [

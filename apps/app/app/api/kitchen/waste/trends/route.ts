@@ -58,7 +58,7 @@ export async function GET(request: Request) {
         select: {
           id: true,
           name: true,
-          sku: true,
+          item_number: true,
         },
       },
     },

@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import type {
   CreateTimeOffRequestInput,
   TimeOffType,
-} from "@/app/app/api/staff/time-off/types";
+} from "@api/staff/time-off/types";
 import { createTimeOffRequest, getEmployees, timeOffTypes } from "../actions";
 
 interface TimeOffRequest {

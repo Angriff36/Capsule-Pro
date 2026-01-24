@@ -28,7 +28,7 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { deleteVenue, getVenueById } from "../../actions";
+import { deleteVenue, getVenueById } from "../actions";
 
 interface UpcomingEvent {
   id: string;

@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getClientEventHistory } from "../../../../actions";
+import { getClientEventHistory } from "../../../actions";
 
 interface EventsTabProps {
   clientId: string;

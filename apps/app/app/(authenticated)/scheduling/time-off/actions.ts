@@ -10,12 +10,12 @@ import type {
   TimeOffStatus,
   TimeOffType,
   UpdateTimeOffStatusInput,
-} from "@/app/app/api/staff/time-off/types";
+} from "@api/staff/time-off/types";
 import {
   checkOverlappingTimeOffRequests,
   validateTimeOffDates,
   verifyEmployee,
-} from "@/app/app/api/staff/time-off/validation";
+} from "@api/staff/time-off/validation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**

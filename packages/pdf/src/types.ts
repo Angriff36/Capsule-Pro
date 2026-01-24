@@ -43,6 +43,11 @@ export interface BattleBoardPDFData {
     slackMinutes: number;
     notes?: string;
   }>;
+  summary: {
+    totalTasks: number;
+    completedTasks: number;
+    pendingTasks: number;
+  };
   staff: Array<{
     id: string;
     name: string;

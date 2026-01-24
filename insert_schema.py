@@ -4,7 +4,7 @@ import re
 
 def insert_tables():
     # Read the original file
-    with open('supabase/Schema Registry v2.txt', 'r') as f:
+    with open('docs/legacy-contracts/schema-registry-v2.txt', 'r') as f:
         content = f.read()
 
     # Define the event_guests table to insert after catering_orders
@@ -83,7 +83,7 @@ tenant_kitchen.allergen_warnings
         lines.insert(insert_allergen_line, allergen_warnings_table.strip())
 
     # Write the updated content back
-    with open('supabase/Schema Registry v2.txt', 'w') as f:
+    with open('docs/legacy-contracts/schema-registry-v2.txt', 'w') as f:
         f.write('\n'.join(lines))
 
     print("Tables inserted successfully")
