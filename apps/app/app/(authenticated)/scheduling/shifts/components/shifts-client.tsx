@@ -24,13 +24,15 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { FilterIcon, Loader2Icon, PlusIcon } from "lucide-react";
+import { FilterIcon, Loader2Icon, PlusIcon, UserCheckIcon, UsersIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getEmployees, getLocations, getShifts } from "../actions";
 import { ShiftDetailModal } from "./shift-detail-modal";
 import { ShiftForm } from "./shift-form";
+import { AutoAssignmentModal } from "./auto-assignment-modal";
+import { BulkAssignmentModal } from "./bulk-assignment-modal";
 
 interface Shift {
   id: string;
@@ -91,6 +93,8 @@ export function ShiftsClient() {
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
+  const [bulkAssignmentModalOpen, setBulkAssignmentModalOpen] = useState(false);
 
   // Fetch shifts
   const fetchShifts = useCallback(async () => {
@@ -150,6 +154,12 @@ export function ShiftsClient() {
   const handleRowClick = (shift: Shift) => {
     setSelectedShift(shift);
     setModalOpen(true);
+  };
+
+  const handleAutoAssignClick = (shift: Shift, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedShift(shift);
+    setAssignmentModalOpen(true);
   };
 
   const formatDate = (date: Date) => {
@@ -228,6 +238,21 @@ export function ShiftsClient() {
           <Badge variant="secondary">{row.original.employee_role}</Badge>
         ),
     },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => handleAutoAssignClick(row.original, e)}
+          className="text-primary hover:text-primary"
+        >
+          <UserCheckIcon className="h-4 w-4 mr-1" />
+          Assign
+        </Button>
+      ),
+    },
   ];
 
   const table = useReactTable({
@@ -246,10 +271,19 @@ export function ShiftsClient() {
             Manage employee shifts by role, station, and event.
           </p>
         </div>
-        <Button onClick={() => setCreateModalOpen(true)}>
-          <PlusIcon className="h-4 w-4 mr-2" />
-          New Shift
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setBulkAssignmentModalOpen(true)}
+          >
+            <UsersIcon className="h-4 w-4 mr-2" />
+            Bulk Assign
+          </Button>
+          <Button onClick={() => setCreateModalOpen(true)}>
+            <PlusIcon className="h-4 w-4 mr-2" />
+            New Shift
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -448,6 +482,36 @@ export function ShiftsClient() {
           </div>
         </div>
       )}
+
+      {/* Auto-Assignment Modal */}
+      <AutoAssignmentModal
+        open={assignmentModalOpen}
+        onClose={() => {
+          setAssignmentModalOpen(false);
+          setSelectedShift(null);
+        }}
+        shiftId={selectedShift?.id || ""}
+        shiftDetails={selectedShift ? {
+          title: `Shift for ${selectedShift.employee_first_name} ${selectedShift.employee_last_name}`,
+          startTime: selectedShift.shift_start,
+          endTime: selectedShift.shift_end,
+          locationName: selectedShift.location_name,
+          role: selectedShift.role_during_shift || undefined,
+        } : undefined}
+      />
+
+      {/* Bulk Assignment Modal */}
+      <BulkAssignmentModal
+        open={bulkAssignmentModalOpen}
+        onClose={() => {
+          setBulkAssignmentModalOpen(false);
+        }}
+        filters={{
+          startDate: filters.startDate || undefined,
+          endDate: filters.endDate || undefined,
+          locationId: filters.locationId || undefined,
+        }}
+      />
     </div>
   );
 }
