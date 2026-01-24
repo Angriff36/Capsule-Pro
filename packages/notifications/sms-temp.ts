@@ -1,1 +1,2 @@
-if (notE164_REGEX.test(trimmed)) {
+// Temporary file for SMS notification development
+// TODO: Implement SMS notification system
