@@ -58,17 +58,19 @@ export async function calculateDepletionForecast(
 
   invariant(sku, "SKU is required for forecasting");
 
-  // Get current stock level
-  const stockLevel = await database.inventoryStock.findFirst({
+  // Get current stock level from InventoryItem
+  // Note: SKU maps to item_number in the database
+  const stockLevel = await database.inventoryItem.findFirst({
     where: {
       tenantId,
-      sku,
+      item_number: sku,
       deletedAt: null,
     },
-    orderBy: { updatedAt: "desc" },
   });
 
-  const currentStock = stockLevel?.quantity ?? 0;
+  const currentStock = stockLevel?.quantityOnHand
+    ? Number(stockLevel.quantityOnHand)
+    : 0;
 
   // Get upcoming events that use this inventory item
   const events = await getUpcomingEventsUsingInventory(tenantId, sku, horizonDays);
@@ -153,16 +155,25 @@ export async function generateReorderSuggestions(
     skusToCheck = [sku];
   } else {
     // Get all items below reorder point
-    const lowStockItems = await database.inventoryStock.findMany({
+    // Note: SKU maps to item_number, reorderLevel maps to reorder_level
+    const lowStockItems = await database.inventoryItem.findMany({
       where: {
         tenantId,
         deletedAt: null,
       },
+      select: {
+        item_number: true,
+        quantityOnHand: true,
+        reorder_level: true,
+      },
     });
 
     skusToCheck = lowStockItems
-      .filter((item) => item.quantity <= (item.reorderLevel || 0))
-      .map((item) => item.sku);
+      .filter(
+        (item) =>
+          Number(item.quantityOnHand) <= Number(item.reorder_level)
+      )
+      .map((item) => item.item_number);
   }
 
   for (const itemSku of skusToCheck) {
@@ -199,7 +210,7 @@ async function getUpcomingEventsUsingInventory(
   const events = await database.event.findMany({
     where: {
       tenantId,
-      startDate: {
+      eventDate: {
         gte: today,
         lte: horizonDate,
       },
@@ -211,7 +222,7 @@ async function getUpcomingEventsUsingInventory(
     select: {
       id: true,
       title: true,
-      startDate: true,
+      eventDate: true,
       guestCount: true,
     },
   });
@@ -222,7 +233,7 @@ async function getUpcomingEventsUsingInventory(
     events.map((event) => ({
       eventId: event.id,
       eventName: event.title || `Event ${event.id}`,
-      startDate: event.startDate,
+      startDate: event.eventDate,
       // Simplified usage calculation: 0.1 units per guest per event
       // In production, this would be based on actual menu items and recipes
       usage: Math.ceil((event.guestCount || 0) * 0.1),
@@ -285,13 +296,14 @@ function calculateConfidenceLevel(
 async function calculateReorderSuggestion(
   request: ReorderSuggestionRequest
 ): Promise<ReorderSuggestionResult | null> {
-  const { tenantId, sku, leadTimeDays, safetyStockDays } = request;
+  const { tenantId, sku, leadTimeDays = 7, safetyStockDays = 3 } = request;
 
-  // Get current stock and item info
-  const stockLevel = await database.inventoryStock.findFirst({
+  // Get current stock and item info from InventoryItem
+  // Note: SKU maps to item_number
+  const stockLevel = await database.inventoryItem.findFirst({
     where: {
       tenantId,
-      sku,
+      item_number: sku,
       deletedAt: null,
     },
   });
@@ -300,13 +312,13 @@ async function calculateReorderSuggestion(
     return null;
   }
 
-  const currentStock = stockLevel.quantity;
-  const reorderLevel = stockLevel.reorderLevel || 0;
+  const currentStock = Number(stockLevel.quantityOnHand);
+  const reorderLevel = Number(stockLevel.reorder_level || 0);
 
   // Get forecast to determine depletion
   const forecast = await calculateDepletionForecast({
     tenantId,
-    sku,
+    sku: sku!, // sku is defined here because we filtered for it earlier
     horizonDays: leadTimeDays + safetyStockDays,
   });
 
@@ -344,7 +356,7 @@ async function calculateReorderSuggestion(
   }
 
   return {
-    sku,
+    sku: sku!,
     currentStock,
     reorderPoint: reorderLevel,
     recommendedOrderQty,
@@ -362,6 +374,8 @@ export async function batchCalculateForecasts(
   skus: string[],
   horizonDays: number = 30
 ): Promise<Map<string, ForecastResult>> {
+  invariant(tenantId, "tenantId is required");
+  invariant(skus?.length, "skus is required");
   const results = new Map<string, ForecastResult>();
 
   for (const sku of skus) {
@@ -383,6 +397,7 @@ export async function batchCalculateForecasts(
 
 /**
  * Save forecast results to database
+ * Note: Uses findFirst + create/update pattern since there's no unique constraint on tenantId+sku+date
  */
 export async function saveForecastToDatabase(
   tenantId: string,
@@ -390,33 +405,51 @@ export async function saveForecastToDatabase(
 ): Promise<void> {
   // Save each forecast point
   for (const point of forecast.forecast) {
-    await database.inventoryForecast.upsert({
+    const existing = await database.inventoryForecast.findFirst({
       where: {
-        tenantId_sku_date: {
-          tenantId,
-          sku: forecast.sku,
-          date: point.date,
-        },
-      },
-      create: {
         tenantId,
         sku: forecast.sku,
         date: point.date,
-        forecast: point.projectedStock,
-        lower_bound: point.projectedStock * 0.9, // 90% confidence
-        upper_bound: point.projectedStock * 1.1, // 110% confidence
-        confidence: forecast.confidence === "high" ? 0.9 : forecast.confidence === "medium" ? 0.6 : 0.3,
-        horizon_days: forecast.daysUntilDepletion ?? 30,
-      },
-      update: {
-        forecast: point.projectedStock,
-        lower_bound: point.projectedStock * 0.9,
-        upper_bound: point.projectedStock * 1.1,
-        confidence: forecast.confidence === "high" ? 0.9 : forecast.confidence === "medium" ? 0.6 : 0.3,
-        horizon_days: forecast.daysUntilDepletion ?? 30,
-        last_updated: new Date(),
       },
     });
+
+    const forecastValue = point.projectedStock;
+    const lowerBound = forecastValue * 0.9;
+    const upperBound = forecastValue * 1.1;
+    const confidenceValue =
+      forecast.confidence === "high" ? 0.9 : forecast.confidence === "medium" ? 0.6 : 0.3;
+
+    if (existing) {
+      await database.inventoryForecast.update({
+        where: {
+          tenantId_id: {
+            tenantId,
+            id: existing.id,
+          },
+        },
+        data: {
+          forecast: forecastValue,
+          lower_bound: lowerBound,
+          upper_bound: upperBound,
+          confidence: confidenceValue,
+          horizon_days: forecast.daysUntilDepletion ?? 30,
+          last_updated: new Date(),
+        },
+      });
+    } else {
+      await database.inventoryForecast.create({
+        data: {
+          tenantId,
+          sku: forecast.sku,
+          date: point.date,
+          forecast: forecastValue,
+          lower_bound: lowerBound,
+          upper_bound: upperBound,
+          confidence: confidenceValue,
+          horizon_days: forecast.daysUntilDepletion ?? 30,
+        },
+      });
+    }
   }
 }
 

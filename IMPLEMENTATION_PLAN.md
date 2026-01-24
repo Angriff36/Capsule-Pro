@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-01-24
 **Status:** Implementation in Progress - Critical Infrastructure Complete ✅
-**Overall Progress:** ~98% Complete (Update 13 - Critical findings documented)
+**Overall Progress:** ~99% Complete (Update 15 - Additional fixes applied)
 
 **CRITICAL FINDINGS (2026-01-24 Investigation):**
 
@@ -168,6 +168,35 @@
 - **All PDF endpoints now properly populate venue and client data**
 - **Status:** REMOVED from P0 blockers - feature is now functional
 - **Overall:** Remains **98%** (PDF fixes improve functionality without changing completion percentage)
+
+**Update 15 - FIXES APPLIED (2026-01-24):**
+
+**Cycle Counting Navigation - FIXED ✅**
+- Added "Cycle Counting" entry to Warehouse sidebar navigation
+- File modified: `apps/app/app/(authenticated)/components/module-nav.ts`
+- Feature is now accessible via sidebar
+- Status: Previously documented as 90% complete with navigation integration missing - now 100% accessible
+
+**Depletion Forecasting Model References - FIXED ✅**
+- Fixed incorrect database model references in `apps/api/app/lib/inventory-forecasting.ts`
+- Changed from `inventoryStock` (which doesn't have `sku` or `quantity` fields) to `inventoryItem`
+- Fixed field names:
+  - `sku` → `item_number` (correct field name in InventoryItem)
+  - `quantity` → `quantityOnHand` (correct field name)
+  - `reorderLevel` → `reorder_level` (correct field name)
+- Fixed Event model references:
+  - `startDate` → `eventDate` (correct field name)
+- Fixed upsert to use findFirst + create/update pattern (no unique constraint exists on tenantId+sku+date)
+- Added default values for undefined parameters (leadTimeDays, safetyStockDays)
+- All TypeScript errors resolved for inventory-forecasting.ts
+
+**Cycle Counting DELETE Endpoint - VERIFIED EXISTS ✅**
+- DELETE endpoint already exists at `apps/api/app/api/inventory/cycle-count/records/[id]/route.ts`
+- Previous investigation was incorrect - endpoint is fully implemented
+
+**Status Update:**
+- Cycle Counting: Navigation integration complete (feature now accessible)
+- Depletion Forecasting: Model reference bugs fixed, code now compiles without errors
 
 **Update 13 - CRITICAL FINDINGS (2026-01-24):**
 - ~~**PDF Generation Features BROKEN Due to Missing Schema Relations:**~~ ✅ RESOLVED in Update 14
@@ -2284,7 +2313,7 @@ All 6 endpoints fully implemented with proper authentication, tenant resolution,
 
 ## SUMMARY
 
-**Overall Progress:** ~98% Complete (Update 13 - Critical findings documented)
+**Overall Progress:** ~99% Complete (Update 15 - Additional fixes applied)
 
 **Key Achievements:**
 - **ALL CRITICAL INFRASTRUCTURE IS COMPLETE** ✅

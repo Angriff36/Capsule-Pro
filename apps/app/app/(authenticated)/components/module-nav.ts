@@ -82,6 +82,7 @@ export const modules: ModuleDefinition[] = [
           { title: "Receiving", href: "/warehouse/receiving" },
           { title: "Shipments", href: "/warehouse/shipments" },
           { title: "Audits", href: "/warehouse/audits" },
+          { title: "Cycle Counting", href: "/cycle-counting" },
         ],
       },
     ],
