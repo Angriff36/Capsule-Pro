@@ -21,97 +21,53 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import {
+  searchPurchaseOrderByNumber,
+  updatePurchaseOrderItemQuantity,
+  updatePurchaseOrderItemQuality,
+  completePurchaseOrderReceiving,
+  type PurchaseOrderWithDetails,
+  type QualityStatus,
+  type DiscrepancyType,
+} from "@/app/lib/use-purchase-orders";
 
-type QualityStatus = "pending" | "approved" | "rejected" | "needs_inspection";
-type DiscrepancyType =
-  | "shortage"
-  | "overage"
-  | "damaged"
-  | "wrong_item"
-  | "none";
-
-type POItem = {
-  id: string;
-  item_number: string;
-  name: string;
-  quantity_ordered: number;
-  quantity_received: number;
-  unit_cost: number;
-  total_cost: number;
-  quality_status: QualityStatus;
-  discrepancy_type: DiscrepancyType | null;
-  discrepancy_amount: number | null;
-  notes: string;
+// Local state type that extends API response with isDirty flag
+type POItemLocal = PurchaseOrderWithDetails["items"][number] & {
+  isDirty?: boolean;
 };
 
-type PurchaseOrder = {
-  id: string;
-  po_number: string;
-  vendor_name: string;
-  status: string;
-  order_date: string;
-  expected_delivery_date: string | null;
-  subtotal: number;
-  tax_amount: number;
-  total: number;
-  items: POItem[];
+type PurchaseOrderLocal = Omit<PurchaseOrderWithDetails, "items"> & {
+  items: POItemLocal[];
 };
 
 export default function ReceivingPage() {
   const [searchPO, setSearchPO] = useState("");
-  const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
+  const [selectedPO, setSelectedPO] = useState<PurchaseOrderLocal | null>(null);
   const [scanning, setScanning] = useState(false);
 
-  const handlePOSearch = () => {
+  const handlePOSearch = async () => {
     if (!searchPO.trim()) {
       toast.error("Please enter a PO number");
       return;
     }
 
     setScanning(true);
-    setTimeout(() => {
+    try {
+      const po = await searchPurchaseOrderByNumber(searchPO.trim());
+      if (!po) {
+        toast.error(`PO ${searchPO} not found`);
+        return;
+      }
       setSelectedPO({
-        id: "1",
-        po_number: searchPO,
-        vendor_name: "Fresh Farms Supply Co.",
-        status: "confirmed",
-        order_date: "2026-01-20",
-        expected_delivery_date: "2026-01-22",
-        subtotal: 1250.0,
-        tax_amount: 100.0,
-        total: 1350.0,
-        items: [
-          {
-            id: "1",
-            item_number: "PROD-001",
-            name: "Organic Tomatoes",
-            quantity_ordered: 50,
-            quantity_received: 0,
-            unit_cost: 15.0,
-            total_cost: 750.0,
-            quality_status: "pending",
-            discrepancy_type: null,
-            discrepancy_amount: null,
-            notes: "",
-          },
-          {
-            id: "2",
-            item_number: "PROD-002",
-            name: "Fresh Lettuce",
-            quantity_ordered: 30,
-            quantity_received: 0,
-            unit_cost: 8.5,
-            total_cost: 255.0,
-            quality_status: "pending",
-            discrepancy_type: null,
-            discrepancy_amount: null,
-            notes: "",
-          },
-        ],
+        ...po,
+        items: po.items.map((item) => ({ ...item, isDirty: false })),
       });
-      setScanning(false);
       toast.success(`PO ${searchPO} loaded successfully`);
-    }, 1000);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to load PO");
+    } finally {
+      setScanning(false);
+    }
   };
 
   const handleScan = () => {
@@ -122,33 +78,129 @@ export default function ReceivingPage() {
     }, 1500);
   };
 
-  const updateItemQuality = (itemId: string, status: QualityStatus) => {
+  const updateItemQuality = async (
+    itemId: string,
+    status: QualityStatus,
+    discrepancyType?: DiscrepancyType,
+    discrepancyAmount?: number,
+    notes?: string
+  ) => {
     if (!selectedPO) {
       return;
     }
+
+    // Optimistically update UI
     const updatedItems = selectedPO.items.map((item) =>
-      item.id === itemId ? { ...item, quality_status: status } : item
+      item.id === itemId
+        ? {
+            ...item,
+            quality_status: status,
+            discrepancy_type: discrepancyType || item.discrepancy_type,
+            discrepancy_amount: discrepancyAmount ?? item.discrepancy_amount,
+            notes: notes ?? item.notes,
+            isDirty: true,
+          }
+        : item
     );
     setSelectedPO({ ...selectedPO, items: updatedItems });
+
+    // Call API to persist
+    try {
+      await updatePurchaseOrderItemQuality(selectedPO.id, itemId, {
+        quality_status: status,
+        discrepancy_type: discrepancyType,
+        discrepancy_amount: discrepancyAmount,
+        notes,
+      });
+
+      // Mark as synced
+      setSelectedPO((prev) =>
+        prev
+          ? {
+              ...prev,
+              items: prev.items.map((item) =>
+                item.id === itemId ? { ...item, isDirty: false } : item
+              ),
+            }
+          : null
+      );
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update quality status"
+      );
+      // Revert optimistic update
+      setSelectedPO({ ...selectedPO, items: selectedPO.items });
+    }
   };
 
-  const updateReceivedQuantity = (itemId: string, quantity: number) => {
+  const updateReceivedQuantity = async (itemId: string, quantity: number) => {
     if (!selectedPO) {
       return;
     }
+
+    // Optimistically update UI
     const updatedItems = selectedPO.items.map((item) =>
-      item.id === itemId ? { ...item, quantity_received: quantity } : item
+      item.id === itemId
+        ? { ...item, quantity_received: quantity, isDirty: true }
+        : item
     );
     setSelectedPO({ ...selectedPO, items: updatedItems });
+
+    // Call API to persist
+    try {
+      await updatePurchaseOrderItemQuantity(selectedPO.id, itemId, {
+        quantity_received: quantity,
+      });
+
+      // Mark as synced
+      setSelectedPO((prev) =>
+        prev
+          ? {
+              ...prev,
+              items: prev.items.map((item) =>
+                item.id === itemId ? { ...item, isDirty: false } : item
+              ),
+            }
+          : null
+      );
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update quantity"
+      );
+      // Revert optimistic update
+      setSelectedPO({ ...selectedPO, items: selectedPO.items });
+    }
   };
 
-  const completeReceiving = () => {
+  const completeReceiving = async () => {
     if (!selectedPO) {
       return;
     }
-    toast.success("Receiving completed. Stock levels updated.");
-    setSelectedPO(null);
-    setSearchPO("");
+
+    try {
+      // Build request with all items
+      const itemsRequest = selectedPO.items.map((item) => ({
+        id: item.id,
+        quantity_received: item.quantity_received,
+        quality_status: item.quality_status,
+        discrepancy_type: item.discrepancy_type ?? undefined,
+        discrepancy_amount: item.discrepancy_amount ?? undefined,
+        notes: item.notes ?? undefined,
+      }));
+
+      await completePurchaseOrderReceiving(selectedPO.id, {
+        items: itemsRequest,
+        notes: selectedPO.notes ?? undefined,
+      });
+
+      toast.success("Receiving completed. Stock levels updated.");
+      setSelectedPO(null);
+      setSearchPO("");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to complete receiving"
+      );
+    }
   };
 
   const getQualityBadge = (status: QualityStatus) => {
@@ -255,7 +307,7 @@ export default function ReceivingPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold">{item.name}</h3>
+                          <h3 className="font-semibold">{item.item_name || "Unknown Item"}</h3>
                           <Badge variant="secondary">{item.item_number}</Badge>
                           <Badge
                             className={getQualityBadge(item.quality_status)}
@@ -348,6 +400,16 @@ export default function ReceivingPage() {
                         <select
                           className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
                           id={`discrepancy-${item.id}`}
+                          onChange={(e) => {
+                            const value = e.target.value as DiscrepancyType;
+                            updateItemQuality(
+                              item.id,
+                              item.quality_status,
+                              value === "none" ? undefined : value,
+                              undefined,
+                              undefined
+                            );
+                          }}
                           value={item.discrepancy_type || "none"}
                         >
                           <option value="none">None</option>
@@ -392,14 +454,18 @@ export default function ReceivingPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Order Date</span>
-                  <span className="font-semibold">{selectedPO.order_date}</span>
+                  <span className="font-semibold">
+                    {new Date(selectedPO.order_date).toLocaleDateString()}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
                     Expected Delivery
                   </span>
                   <span className="font-semibold">
-                    {selectedPO.expected_delivery_date || "N/A"}
+                    {selectedPO.expected_delivery_date
+                      ? new Date(selectedPO.expected_delivery_date).toLocaleDateString()
+                      : "N/A"}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
