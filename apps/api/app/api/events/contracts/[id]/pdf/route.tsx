@@ -40,7 +40,12 @@ export async function GET(
         deletedAt: null,
       },
       include: {
-        event: true,
+        event: {
+          include: {
+            location: true,
+            venue: true,
+          },
+        },
         client: true,
         signatures: {
           where: {
@@ -106,8 +111,15 @@ export async function GET(
         eventDate: contract.event.eventDate,
         eventType: contract.event.eventType,
         guestCount: contract.event.guestCount,
-        venueName: contract.event.venueName,
-        venueAddress: contract.event.venueAddress,
+        venueName: contract.event.venue?.name || contract.event.location?.name || contract.event.venueName || "Not specified",
+        venueAddress: contract.event.venue || contract.event.location ? {
+          addressLine1: contract.event.venue?.addressLine1 || contract.event.location?.addressLine1,
+          addressLine2: contract.event.venue?.addressLine2 || contract.event.location?.addressLine2,
+          city: contract.event.venue?.city || contract.event.location?.city,
+          stateProvince: contract.event.venue?.stateProvince || contract.event.location?.stateProvince,
+          postalCode: contract.event.venue?.postalCode || contract.event.location?.postalCode,
+          countryCode: contract.event.venue?.countryCode || contract.event.location?.countryCode,
+        } : contract.event.venueAddress || undefined,
       } : undefined,
       client: contract.client ? {
         id: contract.client.id,

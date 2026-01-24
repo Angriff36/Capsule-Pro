@@ -149,11 +149,13 @@ export async function GET(
         id: event.id,
         name: event.title,
         date: event.eventDate,
-        venue: event.venue?.name || event.venueName,
+        venue: event.venue?.name || event.venueName || "Venue not specified",
         address: event.venue
           ? `${event.venue.addressLine1 || ""}${event.venue.addressLine2 ? " " + event.venue.addressLine2 : ""}${event.venue.city ? ", " + event.venue.city : ""}${event.venue.stateProvince ? ", " + event.venue.stateProvince : ""} ${event.venue.postalCode || ""}`.trim()
-          : event.venueAddress,
-        clientName: event.client?.company_name || event.client?.first_name && event.client?.last_name ? `${event.client.first_name} ${event.client.last_name}` : undefined,
+          : event.venueAddress || "Address not specified",
+        clientName: event.client?.company_name ||
+                     (event.client?.first_name && event.client?.last_name ? `${event.client.first_name} ${event.client.last_name}` : null) ||
+                     "Client not specified",
       },
       tasks: tasks.map((task) => ({
         id: task.id,

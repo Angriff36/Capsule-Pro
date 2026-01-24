@@ -42,7 +42,12 @@ export async function GET(
       include: {
         client: true,
         lead: true,
-        event: true,
+        event: {
+          include: {
+            location: true,
+            venue: true,
+          },
+        },
         lineItems: {
           where: {
             deletedAt: null,
@@ -131,8 +136,15 @@ export async function GET(
         eventDate: proposal.event.eventDate,
         eventType: proposal.event.eventType,
         guestCount: proposal.event.guestCount,
-        venueName: proposal.event.venueName,
-        venueAddress: proposal.event.venueAddress,
+        venueName: proposal.event.venue?.name || proposal.event.location?.name || proposal.event.venueName || "Not specified",
+        venueAddress: proposal.event.venue || proposal.event.location ? {
+          addressLine1: proposal.event.venue?.addressLine1 || proposal.event.location?.addressLine1,
+          addressLine2: proposal.event.venue?.addressLine2 || proposal.event.location?.addressLine2,
+          city: proposal.event.venue?.city || proposal.event.location?.city,
+          stateProvince: proposal.event.venue?.stateProvince || proposal.event.location?.stateProvince,
+          postalCode: proposal.event.venue?.postalCode || proposal.event.location?.postalCode,
+          countryCode: proposal.event.venue?.countryCode || proposal.event.location?.countryCode,
+        } : proposal.event.venueAddress || undefined,
         status: proposal.event.status,
       } : undefined,
       lineItems: proposal.lineItems.map((item) => ({
