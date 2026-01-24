@@ -64,6 +64,7 @@ ENUMS (immutable only):
   core.employment_type: 'full_time', 'part_time', 'contractor', 'temp'
   core.unit_system: 'metric', 'imperial', 'custom'
   core.unit_type: 'volume', 'weight', 'count', 'length', 'temperature', 'time'
+  public.shipment_status: 'draft', 'scheduled', 'preparing', 'in_transit', 'delivered', 'returned', 'cancelled'
   tenant_staff.time_off_status: 'PENDING', 'APPROVED', 'REJECTED', 'CANCELLED'
   tenant_staff.time_off_type: 'VACATION', 'SICK_LEAVE', 'PERSONAL_DAY', 'BEREAVEMENT', 'MATERNITY_LEAVE', 'PATERNITY_LEAVE', 'OTHER'
 
@@ -1394,6 +1395,63 @@ tenant_inventory.inventory_count_items
   counted_by uuid NOT NULL
   counted_at timestamptz NOT NULL DEFAULT now()
   created_at
+
+tenant_inventory.shipments
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  UNIQUE (tenant_id, id)
+  shipment_number text NOT NULL UNIQUE
+  status text NOT NULL DEFAULT 'draft'  -- draft, scheduled, preparing, in_transit, delivered, returned, cancelled
+  event_id uuid  -- FK to tenant_events.events
+  supplier_id uuid  -- FK to tenant_inventory.inventory_suppliers
+  location_id uuid  -- FK to tenant.locations
+  scheduled_date timestamptz
+  shipped_date timestamptz
+  estimated_delivery_date timestamptz
+  actual_delivery_date timestamptz
+  total_items int NOT NULL DEFAULT 0
+  shipping_cost numeric(12,2) DEFAULT 0
+  total_value numeric(12,2) DEFAULT 0
+  tracking_number text
+  carrier text
+  shipping_method text
+  delivered_by uuid  -- FK to tenant_staff.employees
+  received_by text
+  signature text
+  notes text
+  reference text
+  created_at, updated_at, deleted_at
+  FK: (tenant_id, event_id) -> tenant_events.events
+  FK: (tenant_id, supplier_id) -> tenant_inventory.inventory_suppliers
+  FK: (tenant_id, location_id) -> tenant.locations
+  INDEX: (tenant_id, status), (tenant_id, event_id), (tenant_id, supplier_id), (tracking_number)
+  -- Purpose: Track outbound shipments to event sites with packing lists, delivery status, and confirmation
+  -- Supports delivery confirmation with timestamp and recipient signature
+
+tenant_inventory.shipment_items
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  UNIQUE (tenant_id, id)
+  shipment_id uuid NOT NULL
+  item_id uuid NOT NULL
+  quantity_shipped numeric(12,3) DEFAULT 0
+  quantity_received numeric(12,3) DEFAULT 0
+  quantity_damaged numeric(12,3) DEFAULT 0
+  unit_id smallint  -- FK to core.units
+  unit_cost numeric(10,4) DEFAULT 0
+  total_cost numeric(12,2) DEFAULT 0
+  condition text DEFAULT 'good'
+  condition_notes text
+  lot_number text
+  expiration_date timestamptz
+  created_at, updated_at, deleted_at
+  FK: (tenant_id, shipment_id) -> tenant_inventory.shipments ON DELETE CASCADE
+  FK: (tenant_id, item_id) -> tenant_inventory.inventory_items
+  INDEX: (tenant_id, shipment_id), (tenant_id, item_id), (tenant_id, lot_number)
+  -- Purpose: Track individual items within a shipment (packing list)
+  -- Supports condition tracking, lot numbers, and delivery confirmation
 
 ================================================================================
 TENANT.ADMIN SCHEMA

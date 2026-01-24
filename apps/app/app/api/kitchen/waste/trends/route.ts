@@ -1,20 +1,20 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
  * GET /api/kitchen/waste/trends
  * View waste trends over time with analytics
  */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { orgId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  const { searchParams } = new URL(request.url);
+  const { searchParams } = request.nextUrl;
 
   // Trend parameters
   const period = searchParams.get("period") || "30d"; // 7d, 30d, 90d, 12m

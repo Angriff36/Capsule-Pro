@@ -1,26 +1,56 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { invariant } from "@/app/lib/invariant";
 
 /**
  * GET /api/kitchen/waste/trends
  * View waste trends over time with analytics
  */
-export async function GET(request: Request) {
+const allowedPeriods = ["7d", "30d", "90d", "12m"] as const;
+const allowedGroupBys = ["day", "week", "month"] as const;
+
+type Period = (typeof allowedPeriods)[number];
+type GroupBy = (typeof allowedGroupBys)[number];
+
+const isUuid = (value: string) =>
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+    value
+  );
+
+export async function GET(request: NextRequest) {
   const { orgId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  const { searchParams } = new URL(request.url);
+  const { searchParams } = request.nextUrl;
 
-  // Trend parameters
-  const period = searchParams.get("period") || "30d"; // 7d, 30d, 90d, 12m
-  const groupBy = searchParams.get("groupBy") || "day"; // day, week, month
-  const locationId = searchParams.get("locationId");
-  const inventoryItemId = searchParams.get("inventoryItemId");
+  const periodParam = searchParams.get("period") ?? "30d";
+  const groupByParam = searchParams.get("groupBy") ?? "day";
+  invariant(
+    allowedPeriods.includes(periodParam as Period),
+    `period must be one of ${allowedPeriods.join(", ")}`
+  );
+  invariant(
+    allowedGroupBys.includes(groupByParam as GroupBy),
+    `groupBy must be one of ${allowedGroupBys.join(", ")}`
+  );
+  const period = periodParam as Period;
+  const groupBy = groupByParam as GroupBy;
+
+  const locationIdParam = searchParams.get("locationId");
+  if (locationIdParam) {
+    invariant(isUuid(locationIdParam), "locationId must be a UUID");
+  }
+  const inventoryItemIdParam = searchParams.get("inventoryItemId");
+  if (inventoryItemIdParam) {
+    invariant(isUuid(inventoryItemIdParam), "inventoryItemId must be a UUID");
+  }
+  const locationId = locationIdParam ?? undefined;
+  const inventoryItemId = inventoryItemIdParam ?? undefined;
 
   // Calculate date range based on period
   const now = new Date();

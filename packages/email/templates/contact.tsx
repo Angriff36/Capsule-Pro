@@ -10,7 +10,7 @@ import {
   Text,
 } from "@react-email/components";
 
-type ContactTemplateProps = {
+export type ContactTemplateProps = {
   readonly name: string;
   readonly email: string;
   readonly message: string;

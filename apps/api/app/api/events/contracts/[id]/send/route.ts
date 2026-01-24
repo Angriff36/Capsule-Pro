@@ -9,6 +9,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { resend, ContractTemplate } from "@repo/email";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -115,13 +116,26 @@ export async function POST(
       },
     });
 
-    // TODO: Implement email sending logic
-    // await sendContractEmail({
-    //   to: client.email,
-    //   contractId: contract.id,
-    //   contractTitle: contract.title,
-    //   message: message,
-    // });
+    // Send email with contract signing link
+    const signingUrl = `${process.env.APP_URL || "https://app.convoy.com"}/contracts/${contractId}/sign`;
+    const clientName = client.first_name || client.company_name || "Valued Client";
+
+    try {
+      await resend.emails.send({
+        from: process.env.RESEND_FROM || "noreply@convoy.com",
+        to: client.email,
+        subject: `Contract for Signature: ${contract.title}`,
+        react: ContractTemplate({
+          clientName,
+          contractTitle: contract.title,
+          signingUrl,
+          message,
+        }),
+      });
+    } catch (emailError) {
+      console.error("Failed to send contract email:", emailError);
+      // Continue with the response even if email fails
+    }
 
     return NextResponse.json({
       success: true,

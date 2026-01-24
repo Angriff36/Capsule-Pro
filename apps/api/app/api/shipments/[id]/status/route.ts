@@ -10,6 +10,12 @@ import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
+/**
+ * Transaction types for inventory transactions
+ * When a shipment is delivered, items are added to stock via "purchase" transaction
+ */
+const TRANSACTION_TYPE_PURCHASE = "purchase";
+
 const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
   draft: ["scheduled", "cancelled"],
   scheduled: ["preparing", "cancelled"],
@@ -152,8 +158,90 @@ export async function POST(
       deleted_at: updated.deletedAt,
     };
 
-    // TODO: Integrate with inventory system to update stock when delivered
-    // This should create inventory transactions for received items
+    // Integrate with inventory system to update stock when delivered
+    if (updated.status === "delivered" && existing.status !== "delivered") {
+      try {
+        // Get shipment items to add to inventory
+        const shipmentItems = await database.$queryRaw<
+          Array<{
+            id: string;
+            item_id: string;
+            quantity_shipped: number;
+            quantity_received: number;
+            quantity_damaged: number;
+            unit_cost: number;
+            lot_number: string | null;
+            expiration_date: Date | null;
+          }>
+        >`
+          SELECT si.id,
+                 si.item_id,
+                 si.quantity_shipped,
+                 si.quantity_received,
+                 si.quantity_damaged,
+                 si.unit_cost,
+                 si.lot_number,
+                 si.expiration_date
+          FROM "tenant_inventory"."shipment_items" AS si
+          WHERE si.shipment_id = ${id}::uuid
+            AND si.deleted_at IS NULL
+        `;
+
+        // Get user ID for transaction records
+        const userId = updated.deliveredBy || updated.receivedBy;
+
+        // Process each shipment item
+        for (const item of shipmentItems) {
+          const receivedQuantity = Number(item.quantity_received) > 0
+            ? Number(item.quantity_received)
+            : Number(item.quantity_shipped);
+
+          const damagedQuantity = Number(item.quantity_damaged) || 0;
+          const goodQuantity = receivedQuantity - damagedQuantity;
+
+          if (goodQuantity <= 0) continue;
+
+          // Create inventory transaction for received items
+          await database.$executeRaw`
+            INSERT INTO "tenant_inventory"."inventory_transactions"
+              (tenant_id, item_id, transaction_type, quantity, unit_cost, total_cost,
+               reference, notes, transaction_date, employee_id, reference_type, reference_id,
+               storage_location_id, reason)
+            VALUES (
+              ${tenantId}::uuid,
+              ${item.item_id}::uuid,
+              ${TRANSACTION_TYPE_PURCHASE}::text,
+              ${goodQuantity}::numeric,
+              ${item.unit_cost}::numeric,
+              ${goodQuantity * Number(item.unit_cost)}::numeric,
+              ${updated.shipmentNumber}::text,
+              ${`Received from shipment ${updated.shipmentNumber}` +
+                (item.lot_number ? ` (Lot: ${item.lot_number})` : "") +
+                (item.expiration_date ? ` (Expires: ${item.expiration_date.toISOString().split("T")[0]})` : "")}::text,
+              CURRENT_TIMESTAMP,
+              ${userId}::uuid,
+              ${"shipment"}::text,
+              ${id}::uuid,
+              ${updated.locationId || "00000000-0000-0000-0000-000000000000"}::uuid,
+              ${"shipment_receipt"}::text
+            )
+          `;
+
+          // Update inventory item quantity on hand
+          await database.$executeRaw`
+            UPDATE "tenant_inventory"."inventory_items"
+            SET "quantity_on_hand" = "quantity_on_hand" + ${goodQuantity}::numeric,
+                "updated_at" = CURRENT_TIMESTAMP
+            WHERE "tenant_id" = ${tenantId}::uuid
+              AND "id" = ${item.item_id}::uuid
+              AND "deleted_at" IS NULL
+          `;
+        }
+      } catch (inventoryError) {
+        console.error("Failed to update inventory for delivered shipment:", inventoryError);
+        // Continue with the response even if inventory update fails
+      }
+    }
 
     return NextResponse.json(mappedShipment);
   } catch (error) {

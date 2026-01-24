@@ -6,9 +6,11 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { resend, ProposalTemplate } from "@repo/email";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import type { SendProposalRequest } from "../../types";
 import { validateSendProposalRequest } from "../../validation";
 
 type RouteParams = {
@@ -77,8 +79,9 @@ export async function POST(request: Request, { params }: RouteParams) {
     }
 
     // Validate request body (optional message, custom recipient)
-    const body = await request.json().catch(() => ({}));
-    validateSendProposalRequest(body);
+    const rawBody = await request.json().catch(() => ({}));
+    validateSendProposalRequest(rawBody);
+    const body = rawBody as SendProposalRequest;
 
     // Determine recipient email
     const recipientEmail =
@@ -167,23 +170,48 @@ export async function POST(request: Request, { params }: RouteParams) {
       lineItems,
     };
 
-    // TODO: Send email with proposal PDF
-    // This would integrate with the email package to:
-    // 1. Generate PDF from proposal template
-    // 2. Send email with PDF attachment to recipientEmail
-    // 3. Include custom message if provided
-    //
-    // Example:
-    // await sendProposalEmail({
-    //   to: recipientEmail,
-    //   proposal,
-    //   message: body.message,
-    // });
+    // Send email with proposal link
+    const proposalUrl = `${process.env.APP_URL || "https://app.convoy.com"}/proposals/${id}`;
+    const clientFirstName = client?.first_name as string | undefined;
+    const clientCompanyName = client?.company_name as string | undefined;
+    const leadContactName = lead?.contactName as string | undefined;
+    const leadCompanyName = lead?.companyName as string | undefined;
 
-    // Log the action (for now, until email integration is complete)
-    console.log(
-      `[Proposal Send] Proposal ${id} sent to ${recipientEmail} by user ${userId}`
-    );
+    const recipientName =
+      (clientFirstName || leadContactName) ||
+      (clientCompanyName || leadCompanyName) ||
+      "Valued Client";
+
+    // Calculate total amount from line items
+    const totalAmount = lineItems.length > 0
+      ? new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
+        }).format(
+          lineItems.reduce(
+            (sum, item) => sum + Number(item.quantity || 0) * Number(item.unit_price || 0),
+            0
+          )
+        )
+      : undefined;
+
+    try {
+      await resend.emails.send({
+        from: process.env.RESEND_FROM || "noreply@convoy.com",
+        to: recipientEmail,
+        subject: `Proposal: ${proposal.title}`,
+        react: ProposalTemplate({
+          recipientName,
+          proposalTitle: proposal.title,
+          proposalUrl,
+          message: body.message,
+          totalAmount,
+        }),
+      });
+    } catch (emailError) {
+      console.error("Failed to send proposal email:", emailError);
+      // Continue with the response even if email fails
+    }
 
     return NextResponse.json({
       data: proposalWithLineItems,

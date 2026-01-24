@@ -122,10 +122,14 @@ export async function POST(request: Request) {
     );
   }
 
-  // Validate inventory item exists
+  // Validate inventory item exists and get unit cost
   const inventoryItem = await database.inventoryItem.findFirst({
     where: {
       AND: [{ tenantId }, { id: body.inventoryItemId }, { deletedAt: null }],
+    },
+    select: {
+      id: true,
+      unitCost: true,
     },
   });
 
@@ -139,8 +143,8 @@ export async function POST(request: Request) {
   // Get unit cost from inventory item if not provided
   let unitCost = body.unitCost;
   if (!unitCost) {
-    // Try to get cost from inventory item or use 0
-    unitCost = 0; // TODO: Implement actual cost lookup
+    // Use the inventory item's unit cost
+    unitCost = inventoryItem.unitCost;
   }
 
   // Calculate total cost
