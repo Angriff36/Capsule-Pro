@@ -1,10 +1,5 @@
-import { ModuleSection } from "../../components/module-section";
+import { ShipmentsPageClient } from "./shipments-page-client";
 
-const WarehouseShipmentsPage = () => (
-  <ModuleSection
-    summary="Prepare outbound shipments for events and track dispatch."
-    title="Shipments"
-  />
-);
-
-export default WarehouseShipmentsPage;
+export default function WarehouseShipmentsPage() {
+  return <ShipmentsPageClient />;
+}
