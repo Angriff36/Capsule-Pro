@@ -7,33 +7,13 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import {
   autoAssignShift,
   getAssignmentSuggestionsForMultipleShifts,
   getEligibleEmployeesForShift,
   type ShiftRequirement,
 } from "@/lib/staff/auto-assignment";
-
-// Mock the database module
-vi.mock("@repo/database", () => ({
-  database: {
-    $queryRaw: vi.fn(),
-  },
-  Prisma: {
-    sql: vi.fn((strings: TemplateStringsArray, ...values: unknown[]) => ({
-      strings,
-      values,
-      // Mock the sql tag function for type checking
-      get sql() {
-        return strings.reduce(
-          (acc, str, i) =>
-            acc + str + (values[i] !== undefined ? String(values[i]) : ""),
-          ""
-        );
-      },
-    })),
-  },
-}));
 
 import { database } from "@repo/database";
 

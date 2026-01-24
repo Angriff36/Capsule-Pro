@@ -8,14 +8,53 @@ export default defineConfig({
     {
       name: "vitest-database-mock",
       enforce: "pre",
-      resolveId(id) {
-        // Intercept imports to the database package's generated client
-        if (id.includes("packages/database/generated/client")) {
+      resolveId(id, importer) {
+        // Intercept imports to the database package (multiple patterns)
+        if (id === "@repo/database" ||
+            id === "C:\\Projects\\capsule-pro\\packages\\database" ||
+            id === "C:/Projects/capsule-pro/packages/database" ||
+            id.endsWith("\\packages\\database") ||
+            id.endsWith("/packages/database") ||
+            (importer && importer.includes("auto-assignment") && id.includes("database"))) {
+          console.log(`[vitest-database-mock] INTERCEPTED database: ${id}`);
+          return path.resolve(__dirname, "./test/mocks/@repo/database.ts");
+        }
+        // Intercept imports to the database generated client - multiple patterns
+        const normalizedId = id.replace(/\\/g, "/");
+        if (
+          id.includes("database/generated/client") ||
+          id.includes("generated\\client") ||
+          normalizedId.includes("database/generated/client") ||
+          normalizedId.includes("packages/database/generated") ||
+          normalizedId.endsWith("/generated/client") ||
+          normalizedId.endsWith("\\generated\\client") ||
+          id === "C:\\Projects\\capsule-pro\\packages\\database\\generated\\client" ||
+          id === "C:/Projects/capsule-pro/packages/database/generated/client" ||
+          id.includes("packages\\database\\generated\\client") ||
+          id.includes("packages/database/generated/client") ||
+          (importer && importer.includes("database") && id.includes("generated/client"))
+        ) {
+          console.log(`[vitest-database-mock] INTERCEPTED client: ${id}`);
           return path.resolve(__dirname, "./test/mocks/@repo/generated/client.ts");
         }
-        // Also intercept imports to the database package itself
-        if (id === "@repo/database") {
-          return path.resolve(__dirname, "./test/mocks/@repo/database.ts");
+        return undefined;
+      },
+      load(id) {
+        // Intercept loading of the actual database index.ts file
+        if (id.includes("\\packages\\database\\index.ts") ||
+            id.includes("/packages/database/index.ts") ||
+            id.includes("packages/database/index.js")) {
+          console.log(`[vitest-database-mock] LOAD intercepted: ${id}`);
+          // Return the mock content directly instead of loading the actual file
+          return `
+            export const Prisma = {
+              sql: () => ({}),
+              PrismaClient: class {},
+            };
+            export const PrismaClient = class {};
+            export const database = { $queryRaw: () => {} };
+            export const tenantDatabase = () => ({});
+          `;
         }
         return undefined;
       },
