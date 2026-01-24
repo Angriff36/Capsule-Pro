@@ -1,10 +1,5 @@
-import { ModuleSection } from "../../components/module-section";
+import { RecipesPageClient } from "./recipes-page-client";
 
-const InventoryRecipesPage = () => (
-  <ModuleSection
-    summary="Recipe definitions with yields, costs, and production notes."
-    title="Recipes"
-  />
-);
+const InventoryRecipesPage = () => <RecipesPageClient />;
 
 export default InventoryRecipesPage;
