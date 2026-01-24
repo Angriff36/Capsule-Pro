@@ -87,5 +87,8 @@ export interface BudgetSummary {
   totalVariancePercentage: number;
   budgetCount: number;
   byStatus: Record<string, number>;
-  byCategory: Record<string, { budgeted: number; actual: number; variance: number }>;
+  byCategory: Record<
+    string,
+    { budgeted: number; actual: number; variance: number }
+  >;
 }

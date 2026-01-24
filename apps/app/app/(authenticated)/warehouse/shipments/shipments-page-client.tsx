@@ -33,39 +33,33 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
-  AlertTriangleIcon,
   BoxIcon,
-  CalendarIcon,
-  CheckCircleIcon,
   DollarSignIcon,
   PlusIcon,
   RefreshCwIcon,
   TruckIcon,
 } from "lucide-react";
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { listInventoryItems } from "../../../lib/use-inventory";
 import {
+  type CreateShipmentRequest,
   createShipment,
-  formatDate,
   formatCurrency,
+  formatDate,
   getAllowedStatusTransitions,
   getItemConditionLabel,
-  getShipmentStatusLabel,
   getShipmentStatusColor,
+  getShipmentStatusLabel,
   listShipments,
-  updateShipment,
-  updateShipmentStatus,
-  type CreateShipmentRequest,
   type Shipment,
   type ShipmentItem,
   type ShipmentStatus,
   type UpdateShipmentStatusRequest,
+  updateShipmentStatus,
 } from "../../../lib/use-shipments";
-import { listInventoryItems } from "../../../lib/use-inventory";
 
 // Status filter options
 const STATUS_FILTERS = [
@@ -82,7 +76,9 @@ const STATUS_FILTERS = [
 export const ShipmentsPageClient = () => {
   // Main data state
   const [shipments, setShipments] = useState<Shipment[]>([]);
-  const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
+  const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(
+    null
+  );
   const [shipmentItems, setShipmentItems] = useState<ShipmentItem[]>([]);
 
   // Loading state
@@ -96,7 +92,9 @@ export const ShipmentsPageClient = () => {
   const [totalCount, setTotalCount] = useState(0);
 
   // Filters
-  const [statusFilter, setStatusFilter] = useState<ShipmentStatus | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<ShipmentStatus | "all">(
+    "all"
+  );
   const [searchQuery, setSearchQuery] = useState("");
 
   // Summary stats
@@ -137,7 +135,14 @@ export const ShipmentsPageClient = () => {
   });
 
   // Available inventory items for adding to shipment
-  const [inventoryItems, setInventoryItems] = useState<Array<{ id: string; item_number: string; name: string; quantity_on_hand: number }>>([]);
+  const [inventoryItems, setInventoryItems] = useState<
+    Array<{
+      id: string;
+      item_number: string;
+      name: string;
+      quantity_on_hand: number;
+    }>
+  >([]);
 
   // Add item form
   const [addItemForm, setAddItemForm] = useState({
@@ -278,18 +283,21 @@ export const ShipmentsPageClient = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/shipments/${selectedShipment.id}/items`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          item_id: addItemForm.item_id,
-          quantity_shipped: addItemForm.quantity_shipped,
-          unit_cost: addItemForm.unit_cost || 0,
-          condition: addItemForm.condition,
-          condition_notes: addItemForm.condition_notes || undefined,
-          lot_number: addItemForm.lot_number || undefined,
-        }),
-      });
+      const response = await fetch(
+        `/api/shipments/${selectedShipment.id}/items`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            item_id: addItemForm.item_id,
+            quantity_shipped: addItemForm.quantity_shipped,
+            unit_cost: addItemForm.unit_cost || 0,
+            condition: addItemForm.condition,
+            condition_notes: addItemForm.condition_notes || undefined,
+            lot_number: addItemForm.lot_number || undefined,
+          }),
+        }
+      );
 
       if (response.ok) {
         toast.success("Item added to shipment");
@@ -327,7 +335,9 @@ export const ShipmentsPageClient = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Shipments</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Shipments
+            </CardTitle>
             <BoxIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -387,22 +397,22 @@ export const ShipmentsPageClient = () => {
               <Label htmlFor="search">Search</Label>
               <Input
                 id="search"
-                placeholder="Search shipments..."
-                value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
                   setPage(1);
                 }}
+                placeholder="Search shipments..."
+                value={searchQuery}
               />
             </div>
             <div className="min-w-[180px]">
               <Label htmlFor="status">Status</Label>
               <Select
-                value={statusFilter}
                 onValueChange={(v) => {
                   setStatusFilter(v as ShipmentStatus | "all");
                   setPage(1);
                 }}
+                value={statusFilter}
               >
                 <SelectTrigger id="status">
                   <SelectValue />
@@ -436,13 +446,19 @@ export const ShipmentsPageClient = () => {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-muted-foreground">
+                    <TableCell
+                      className="text-center text-muted-foreground"
+                      colSpan={8}
+                    >
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : shipments.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-muted-foreground">
+                    <TableCell
+                      className="text-center text-muted-foreground"
+                      colSpan={8}
+                    >
                       No shipments found
                     </TableCell>
                   </TableRow>
@@ -450,10 +466,13 @@ export const ShipmentsPageClient = () => {
                   shipments.map((shipment) => (
                     <TableRow key={shipment.id}>
                       <TableCell className="font-medium">
-                        {shipment.shipment_number || `SHP-${shipment.id.slice(0, 8)}`}
+                        {shipment.shipment_number ||
+                          `SHP-${shipment.id.slice(0, 8)}`}
                       </TableCell>
                       <TableCell>
-                        <Badge className={getShipmentStatusColor(shipment.status)}>
+                        <Badge
+                          className={getShipmentStatusColor(shipment.status)}
+                        >
                           {getShipmentStatusLabel(shipment.status)}
                         </Badge>
                       </TableCell>
@@ -481,20 +500,20 @@ export const ShipmentsPageClient = () => {
                       <TableCell>
                         <div className="flex gap-2">
                           <Button
-                            variant="outline"
-                            size="sm"
                             onClick={() => {
                               setSelectedShipment(shipment);
                               loadShipmentItems(shipment.id);
                             }}
+                            size="sm"
+                            variant="outline"
                           >
                             View
                           </Button>
                           {getAllowedTransitions(shipment).length > 0 && (
                             <Button
-                              variant="outline"
-                              size="sm"
                               onClick={() => openStatusModal(shipment)}
+                              size="sm"
+                              variant="outline"
                             >
                               Update Status
                             </Button>
@@ -512,22 +531,23 @@ export const ShipmentsPageClient = () => {
           {totalPages > 1 && (
             <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
-                Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, totalCount)} of {totalCount} shipments
+                Showing {(page - 1) * limit + 1} to{" "}
+                {Math.min(page * limit, totalCount)} of {totalCount} shipments
               </div>
               <div className="flex gap-2">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  size="sm"
+                  variant="outline"
                 >
                   Previous
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  size="sm"
+                  variant="outline"
                 >
                   Next
                 </Button>
@@ -544,17 +564,20 @@ export const ShipmentsPageClient = () => {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>
-                  {selectedShipment.shipment_number || `SHP-${selectedShipment.id.slice(0, 8)}`}
+                  {selectedShipment.shipment_number ||
+                    `SHP-${selectedShipment.id.slice(0, 8)}`}
                 </CardTitle>
                 <div className="flex gap-2 mt-2">
-                  <Badge className={getShipmentStatusColor(selectedShipment.status)}>
+                  <Badge
+                    className={getShipmentStatusColor(selectedShipment.status)}
+                  >
                     {getShipmentStatusLabel(selectedShipment.status)}
                   </Badge>
                 </div>
               </div>
               <Button
-                variant="outline"
                 onClick={() => setSelectedShipment(null)}
+                variant="outline"
               >
                 Close
               </Button>
@@ -585,11 +608,15 @@ export const ShipmentsPageClient = () => {
               </div>
               <div>
                 <Label>Tracking Number</Label>
-                <div className="text-sm">{selectedShipment.tracking_number || "-"}</div>
+                <div className="text-sm">
+                  {selectedShipment.tracking_number || "-"}
+                </div>
               </div>
               <div>
                 <Label>Shipping Method</Label>
-                <div className="text-sm">{selectedShipment.shipping_method || "-"}</div>
+                <div className="text-sm">
+                  {selectedShipment.shipping_method || "-"}
+                </div>
               </div>
               <div>
                 <Label>Shipping Cost</Label>
@@ -608,10 +635,15 @@ export const ShipmentsPageClient = () => {
             {/* Items */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Packing List ({selectedShipment.total_items} items)</h3>
-                <Button size="sm" onClick={() => {
-                  /* Open add item modal */
-                }}>
+                <h3 className="text-lg font-semibold">
+                  Packing List ({selectedShipment.total_items} items)
+                </h3>
+                <Button
+                  onClick={() => {
+                    /* Open add item modal */
+                  }}
+                  size="sm"
+                >
                   <PlusIcon className="mr-2 h-4 w-4" />
                   Add Item
                 </Button>
@@ -619,7 +651,8 @@ export const ShipmentsPageClient = () => {
 
               {shipmentItems.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  No items in this shipment yet. Add items to create a packing list.
+                  No items in this shipment yet. Add items to create a packing
+                  list.
                 </div>
               ) : (
                 <div className="rounded-md border">
@@ -645,10 +678,14 @@ export const ShipmentsPageClient = () => {
                               <Badge variant="outline">
                                 {getItemConditionLabel(item.condition as any)}
                               </Badge>
-                            ) : "-"}
+                            ) : (
+                              "-"
+                            )}
                           </TableCell>
                           <TableCell>
-                            {item.unit_cost ? formatCurrency(item.unit_cost) : "-"}
+                            {item.unit_cost
+                              ? formatCurrency(item.unit_cost)
+                              : "-"}
                           </TableCell>
                           <TableCell>
                             {formatCurrency(item.total_cost)}
@@ -665,7 +702,7 @@ export const ShipmentsPageClient = () => {
       )}
 
       {/* Create Shipment Modal */}
-      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+      <Dialog onOpenChange={setIsCreateModalOpen} open={isCreateModalOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create New Shipment</DialogTitle>
@@ -675,30 +712,49 @@ export const ShipmentsPageClient = () => {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="shipment_number">Shipment Number (Optional)</Label>
+              <Label htmlFor="shipment_number">
+                Shipment Number (Optional)
+              </Label>
               <Input
                 id="shipment_number"
+                onChange={(e) =>
+                  setCreateForm({
+                    ...createForm,
+                    shipment_number: e.target.value,
+                  })
+                }
                 placeholder="Auto-generated if blank"
                 value={createForm.shipment_number || ""}
-                onChange={(e) => setCreateForm({ ...createForm, shipment_number: e.target.value })}
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="scheduled_date">Scheduled Date *</Label>
               <Input
                 id="scheduled_date"
+                onChange={(e) =>
+                  setCreateForm({
+                    ...createForm,
+                    scheduled_date: e.target.value,
+                  })
+                }
                 type="date"
                 value={createForm.scheduled_date || ""}
-                onChange={(e) => setCreateForm({ ...createForm, scheduled_date: e.target.value })}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="estimated_delivery_date">Estimated Delivery Date</Label>
+              <Label htmlFor="estimated_delivery_date">
+                Estimated Delivery Date
+              </Label>
               <Input
                 id="estimated_delivery_date"
+                onChange={(e) =>
+                  setCreateForm({
+                    ...createForm,
+                    estimated_delivery_date: e.target.value,
+                  })
+                }
                 type="date"
                 value={createForm.estimated_delivery_date || ""}
-                onChange={(e) => setCreateForm({ ...createForm, estimated_delivery_date: e.target.value })}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -706,18 +762,25 @@ export const ShipmentsPageClient = () => {
                 <Label htmlFor="carrier">Carrier</Label>
                 <Input
                   id="carrier"
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, carrier: e.target.value })
+                  }
                   placeholder="FedEx, UPS, etc."
                   value={createForm.carrier || ""}
-                  onChange={(e) => setCreateForm({ ...createForm, carrier: e.target.value })}
                 />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="shipping_method">Shipping Method</Label>
                 <Input
                   id="shipping_method"
+                  onChange={(e) =>
+                    setCreateForm({
+                      ...createForm,
+                      shipping_method: e.target.value,
+                    })
+                  }
                   placeholder="Ground, Overnight, etc."
                   value={createForm.shipping_method || ""}
-                  onChange={(e) => setCreateForm({ ...createForm, shipping_method: e.target.value })}
                 />
               </div>
             </div>
@@ -726,20 +789,30 @@ export const ShipmentsPageClient = () => {
                 <Label htmlFor="shipping_cost">Shipping Cost</Label>
                 <Input
                   id="shipping_cost"
-                  type="number"
-                  step="0.01"
+                  onChange={(e) =>
+                    setCreateForm({
+                      ...createForm,
+                      shipping_cost: Number.parseFloat(e.target.value) || 0,
+                    })
+                  }
                   placeholder="0.00"
+                  step="0.01"
+                  type="number"
                   value={createForm.shipping_cost || ""}
-                  onChange={(e) => setCreateForm({ ...createForm, shipping_cost: parseFloat(e.target.value) || 0 })}
                 />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="tracking_number">Tracking Number</Label>
                 <Input
                   id="tracking_number"
+                  onChange={(e) =>
+                    setCreateForm({
+                      ...createForm,
+                      tracking_number: e.target.value,
+                    })
+                  }
                   placeholder="Tracking number"
                   value={createForm.tracking_number || ""}
-                  onChange={(e) => setCreateForm({ ...createForm, tracking_number: e.target.value })}
                 />
               </div>
             </div>
@@ -747,26 +820,39 @@ export const ShipmentsPageClient = () => {
               <Label htmlFor="notes">Notes</Label>
               <Textarea
                 id="notes"
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, notes: e.target.value })
+                }
                 placeholder="Delivery instructions, special handling, etc."
                 value={createForm.notes || ""}
-                onChange={(e) => setCreateForm({ ...createForm, notes: e.target.value })}
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="internal_notes">Internal Notes</Label>
               <Textarea
                 id="internal_notes"
+                onChange={(e) =>
+                  setCreateForm({
+                    ...createForm,
+                    internal_notes: e.target.value,
+                  })
+                }
                 placeholder="Internal notes not visible to recipients"
                 value={createForm.internal_notes || ""}
-                onChange={(e) => setCreateForm({ ...createForm, internal_notes: e.target.value })}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+            <Button
+              onClick={() => setIsCreateModalOpen(false)}
+              variant="outline"
+            >
               Cancel
             </Button>
-            <Button onClick={handleCreateShipment} disabled={isSubmitting || !createForm.scheduled_date}>
+            <Button
+              disabled={isSubmitting || !createForm.scheduled_date}
+              onClick={handleCreateShipment}
+            >
               {isSubmitting ? "Creating..." : "Create Shipment"}
             </Button>
           </DialogFooter>
@@ -774,7 +860,7 @@ export const ShipmentsPageClient = () => {
       </Dialog>
 
       {/* Status Update Modal */}
-      <Dialog open={isStatusModalOpen} onOpenChange={setIsStatusModalOpen}>
+      <Dialog onOpenChange={setIsStatusModalOpen} open={isStatusModalOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Update Shipment Status</DialogTitle>
@@ -787,8 +873,13 @@ export const ShipmentsPageClient = () => {
               <div className="grid gap-2">
                 <Label htmlFor="status">New Status *</Label>
                 <Select
+                  onValueChange={(v) =>
+                    setStatusForm({
+                      ...statusForm,
+                      status: v as ShipmentStatus,
+                    })
+                  }
                   value={statusForm.status}
-                  onValueChange={(v) => setStatusForm({ ...statusForm, status: v as ShipmentStatus })}
                 >
                   <SelectTrigger id="status">
                     <SelectValue />
@@ -803,24 +894,37 @@ export const ShipmentsPageClient = () => {
                 </Select>
               </div>
 
-              {(statusForm.status === "delivered" || statusForm.status === "returned") && (
+              {(statusForm.status === "delivered" ||
+                statusForm.status === "returned") && (
                 <>
                   <div className="grid gap-2">
-                    <Label htmlFor="actual_delivery_date">Actual Delivery Date *</Label>
+                    <Label htmlFor="actual_delivery_date">
+                      Actual Delivery Date *
+                    </Label>
                     <Input
                       id="actual_delivery_date"
+                      onChange={(e) =>
+                        setStatusForm({
+                          ...statusForm,
+                          actual_delivery_date: e.target.value,
+                        })
+                      }
                       type="date"
                       value={statusForm.actual_delivery_date || ""}
-                      onChange={(e) => setStatusForm({ ...statusForm, actual_delivery_date: e.target.value })}
                     />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="received_by">Received By *</Label>
                     <Input
                       id="received_by"
+                      onChange={(e) =>
+                        setStatusForm({
+                          ...statusForm,
+                          received_by: e.target.value,
+                        })
+                      }
                       placeholder="Recipient name"
                       value={statusForm.received_by || ""}
-                      onChange={(e) => setStatusForm({ ...statusForm, received_by: e.target.value })}
                     />
                   </div>
                 </>
@@ -832,8 +936,6 @@ export const ShipmentsPageClient = () => {
                     <Label htmlFor="tracking_number">Tracking Number</Label>
                     <Input
                       id="tracking_number"
-                      placeholder="Carrier tracking number"
-                      value={selectedShipment.tracking_number || ""}
                       onChange={(e) => {
                         if (selectedShipment) {
                           setSelectedShipment({
@@ -842,6 +944,8 @@ export const ShipmentsPageClient = () => {
                           });
                         }
                       }}
+                      placeholder="Carrier tracking number"
+                      value={selectedShipment.tracking_number || ""}
                     />
                   </div>
                 </>
@@ -851,21 +955,23 @@ export const ShipmentsPageClient = () => {
                 <Label htmlFor="delivery_notes">Delivery Notes</Label>
                 <Textarea
                   id="delivery_notes"
+                  onChange={(e) =>
+                    setStatusForm({ ...statusForm, notes: e.target.value })
+                  }
                   placeholder="Any additional notes about the delivery"
                   value={statusForm.notes || ""}
-                  onChange={(e) => setStatusForm({ ...statusForm, notes: e.target.value })}
                 />
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsStatusModalOpen(false)}>
+            <Button
+              onClick={() => setIsStatusModalOpen(false)}
+              variant="outline"
+            >
               Cancel
             </Button>
-            <Button
-              onClick={handleStatusUpdate}
-              disabled={isSubmitting}
-            >
+            <Button disabled={isSubmitting} onClick={handleStatusUpdate}>
               {isSubmitting ? "Updating..." : "Update Status"}
             </Button>
           </DialogFooter>

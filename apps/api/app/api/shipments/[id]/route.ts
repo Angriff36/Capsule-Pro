@@ -25,7 +25,10 @@ export async function GET(
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const { id } = await params;
@@ -46,7 +49,10 @@ export async function GET(
     });
 
     if (!shipment) {
-      return NextResponse.json({ message: "Shipment not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Shipment not found" },
+        { status: 404 }
+      );
     }
 
     const mappedShipment = {
@@ -62,7 +68,9 @@ export async function GET(
       estimated_delivery_date: shipment.estimatedDeliveryDate,
       actual_delivery_date: shipment.actualDeliveryDate,
       total_items: shipment.totalItems,
-      shipping_cost: shipment.shippingCost ? Number(shipment.shippingCost) : null,
+      shipping_cost: shipment.shippingCost
+        ? Number(shipment.shippingCost)
+        : null,
       total_value: shipment.totalValue ? Number(shipment.totalValue) : null,
       tracking_number: shipment.trackingNumber,
       carrier: shipment.carrier,
@@ -94,18 +102,23 @@ export async function GET(
         created_at: item.createdAt,
         updated_at: item.updatedAt,
         deleted_at: item.deletedAt,
-        item: item.item ? {
-          id: item.item.id,
-          name: item.item.name,
-          item_number: item.item.item_number,
-        } : null,
+        item: item.item
+          ? {
+              id: item.item.id,
+              name: item.item.name,
+              item_number: item.item.item_number,
+            }
+          : null,
       })),
     };
 
     return NextResponse.json(mappedShipment);
   } catch (error) {
     console.error("Failed to get shipment:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -121,7 +134,10 @@ export async function PUT(
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const { id } = await params;
@@ -134,11 +150,17 @@ export async function PUT(
     });
 
     if (!existing) {
-      return NextResponse.json({ message: "Shipment not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Shipment not found" },
+        { status: 404 }
+      );
     }
 
     // Check shipment number uniqueness if changed
-    if (body.shipment_number && body.shipment_number !== existing.shipmentNumber) {
+    if (
+      body.shipment_number &&
+      body.shipment_number !== existing.shipmentNumber
+    ) {
       const duplicate = await database.shipment.findFirst({
         where: {
           tenantId,
@@ -148,31 +170,60 @@ export async function PUT(
         },
       });
       if (duplicate) {
-        return NextResponse.json({ message: "Shipment number already exists" }, { status: 409 });
+        return NextResponse.json(
+          { message: "Shipment number already exists" },
+          { status: 409 }
+        );
       }
     }
 
     // Build update data
     const updateData: any = {};
-    if (body.shipment_number !== undefined) updateData.shipmentNumber = body.shipment_number;
+    if (body.shipment_number !== undefined)
+      updateData.shipmentNumber = body.shipment_number;
     if (body.status !== undefined) updateData.status = body.status;
     if (body.event_id !== undefined) updateData.eventId = body.event_id;
-    if (body.supplier_id !== undefined) updateData.supplierId = body.supplier_id;
-    if (body.location_id !== undefined) updateData.locationId = body.location_id;
-    if (body.scheduled_date !== undefined) updateData.scheduledDate = body.scheduled_date ? new Date(body.scheduled_date) : null;
-    if (body.shipped_date !== undefined) updateData.shippedDate = body.shipped_date ? new Date(body.shipped_date) : null;
-    if (body.estimated_delivery_date !== undefined) updateData.estimatedDeliveryDate = body.estimated_delivery_date ? new Date(body.estimated_delivery_date) : null;
-    if (body.actual_delivery_date !== undefined) updateData.actualDeliveryDate = body.actual_delivery_date ? new Date(body.actual_delivery_date) : null;
-    if (body.shipping_cost !== undefined) updateData.shippingCost = body.shipping_cost ? body.shipping_cost.toString() : null;
-    if (body.total_value !== undefined) updateData.totalValue = body.total_value ? body.total_value.toString() : null;
-    if (body.tracking_number !== undefined) updateData.trackingNumber = body.tracking_number;
+    if (body.supplier_id !== undefined)
+      updateData.supplierId = body.supplier_id;
+    if (body.location_id !== undefined)
+      updateData.locationId = body.location_id;
+    if (body.scheduled_date !== undefined)
+      updateData.scheduledDate = body.scheduled_date
+        ? new Date(body.scheduled_date)
+        : null;
+    if (body.shipped_date !== undefined)
+      updateData.shippedDate = body.shipped_date
+        ? new Date(body.shipped_date)
+        : null;
+    if (body.estimated_delivery_date !== undefined)
+      updateData.estimatedDeliveryDate = body.estimated_delivery_date
+        ? new Date(body.estimated_delivery_date)
+        : null;
+    if (body.actual_delivery_date !== undefined)
+      updateData.actualDeliveryDate = body.actual_delivery_date
+        ? new Date(body.actual_delivery_date)
+        : null;
+    if (body.shipping_cost !== undefined)
+      updateData.shippingCost = body.shipping_cost
+        ? body.shipping_cost.toString()
+        : null;
+    if (body.total_value !== undefined)
+      updateData.totalValue = body.total_value
+        ? body.total_value.toString()
+        : null;
+    if (body.tracking_number !== undefined)
+      updateData.trackingNumber = body.tracking_number;
     if (body.carrier !== undefined) updateData.carrier = body.carrier;
-    if (body.shipping_method !== undefined) updateData.shippingMethod = body.shipping_method;
-    if (body.delivered_by !== undefined) updateData.deliveredBy = body.delivered_by;
-    if (body.received_by !== undefined) updateData.receivedBy = body.received_by;
+    if (body.shipping_method !== undefined)
+      updateData.shippingMethod = body.shipping_method;
+    if (body.delivered_by !== undefined)
+      updateData.deliveredBy = body.delivered_by;
+    if (body.received_by !== undefined)
+      updateData.receivedBy = body.received_by;
     if (body.signature !== undefined) updateData.signature = body.signature;
     if (body.notes !== undefined) updateData.notes = body.notes;
-    if (body.internal_notes !== undefined) updateData.internalNotes = body.internal_notes;
+    if (body.internal_notes !== undefined)
+      updateData.internalNotes = body.internal_notes;
     if (body.reference !== undefined) updateData.reference = body.reference;
 
     // Use raw SQL for composite key update
@@ -208,7 +259,10 @@ export async function PUT(
     });
 
     if (!updated) {
-      return NextResponse.json({ message: "Shipment not found after update" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Shipment not found after update" },
+        { status: 404 }
+      );
     }
 
     const mappedShipment = {
@@ -246,7 +300,10 @@ export async function PUT(
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
     console.error("Failed to update shipment:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -262,7 +319,10 @@ export async function DELETE(
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const { id } = await params;
@@ -273,7 +333,10 @@ export async function DELETE(
     });
 
     if (!existing) {
-      return NextResponse.json({ message: "Shipment not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Shipment not found" },
+        { status: 404 }
+      );
     }
 
     // Prevent deletion of non-draft shipments
@@ -294,6 +357,9 @@ export async function DELETE(
     return NextResponse.json({ message: "Shipment deleted" }, { status: 200 });
   } catch (error) {
     console.error("Failed to delete shipment:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

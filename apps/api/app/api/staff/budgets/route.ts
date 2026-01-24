@@ -1,10 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import {
-  createLaborBudget,
-  getLaborBudgets,
-} from "@/lib/staff/labor-budget";
+import { createLaborBudget, getLaborBudgets } from "@/lib/staff/labor-budget";
 
 /**
  * GET /api/staff/budgets
@@ -81,8 +78,7 @@ export async function POST(request: Request) {
   if (!(body.name && body.budgetType && body.budgetTarget && body.budgetUnit)) {
     return NextResponse.json(
       {
-        message:
-          "Name, budget type, target, and unit are required",
+        message: "Name, budget type, target, and unit are required",
       },
       { status: 400 }
     );
@@ -123,7 +119,7 @@ export async function POST(request: Request) {
   // Validate period budgets have dates
   if (
     (body.budgetType === "week" || body.budgetType === "month") &&
-    (!body.periodStart || !body.periodEnd)
+    !(body.periodStart && body.periodEnd)
   ) {
     return NextResponse.json(
       { message: "Period budgets must have periodStart and periodEnd dates" },
@@ -151,10 +147,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ budget }, { status: 201 });
   } catch (error) {
     console.error("Error creating labor budget:", error);
-    const errorMessage = error instanceof Error ? error.message : "Failed to create labor budget";
-    return NextResponse.json(
-      { message: errorMessage },
-      { status: 500 }
-    );
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to create labor budget";
+    return NextResponse.json({ message: errorMessage }, { status: 500 });
   }
 }

@@ -2,7 +2,13 @@
 
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import {
   Select,
@@ -19,19 +25,24 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { ChevronLeftIcon, ChevronRightIcon, CalculatorIcon, DollarSignIcon } from "lucide-react";
+import {
+  CalculatorIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  DollarSignIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
+  type CuisineType,
   formatCurrency,
   getCuisineTypeLabel,
-  getRecipeCategories,
   getCuisineTypes,
+  getRecipeCategories,
   getRecipeCategoryLabel,
+  listRecipes,
   type Recipe,
   type RecipeCategory,
-  type CuisineType,
-  listRecipes,
 } from "../../../lib/use-recipe-costing";
 
 export const RecipesPageClient = () => {
@@ -40,8 +51,12 @@ export const RecipesPageClient = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [categoryFilter, setCategoryFilter] = useState<RecipeCategory | "all">("all");
-  const [cuisineFilter, setCuisineFilter] = useState<CuisineType | "all">("all");
+  const [categoryFilter, setCategoryFilter] = useState<RecipeCategory | "all">(
+    "all"
+  );
+  const [cuisineFilter, setCuisineFilter] = useState<CuisineType | "all">(
+    "all"
+  );
   const [activeFilter, setActiveFilter] = useState<boolean | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -94,11 +109,15 @@ export const RecipesPageClient = () => {
   };
 
   // Calculate summary stats
-  const recipesWithCost = recipes.filter(r => r.currentVersion?.totalCost !== null);
-  const totalRecipeValue = recipesWithCost.reduce((sum, recipe) => sum + (recipe.currentVersion?.totalCost || 0), 0);
-  const averageCostPerYield = recipesWithCost.length > 0
-    ? totalRecipeValue / recipesWithCost.length
-    : 0;
+  const recipesWithCost = recipes.filter(
+    (r) => r.currentVersion?.totalCost !== null
+  );
+  const totalRecipeValue = recipesWithCost.reduce(
+    (sum, recipe) => sum + (recipe.currentVersion?.totalCost || 0),
+    0
+  );
+  const averageCostPerYield =
+    recipesWithCost.length > 0 ? totalRecipeValue / recipesWithCost.length : 0;
 
   return (
     <div className="space-y-6">
@@ -112,19 +131,22 @@ export const RecipesPageClient = () => {
           <CardContent>
             <div className="text-2xl font-bold">{totalCount}</div>
             <p className="text-xs text-muted-foreground">
-              {recipes.filter(r => r.isActive).length} active
+              {recipes.filter((r) => r.isActive).length} active
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">With Cost Data</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              With Cost Data
+            </CardTitle>
             <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{recipesWithCost.length}</div>
             <p className="text-xs text-muted-foreground">
-              {((recipesWithCost.length / recipes.length) * 100).toFixed(0)}% of total
+              {((recipesWithCost.length / recipes.length) * 100).toFixed(0)}% of
+              total
             </p>
           </CardContent>
         </Card>
@@ -134,7 +156,9 @@ export const RecipesPageClient = () => {
             <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalRecipeValue)}</div>
+            <div className="text-2xl font-bold">
+              {formatCurrency(totalRecipeValue)}
+            </div>
             <p className="text-xs text-muted-foreground">
               Sum of all recipe costs
             </p>
@@ -142,11 +166,15 @@ export const RecipesPageClient = () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Cost/Yield</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Avg Cost/Yield
+            </CardTitle>
             <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(averageCostPerYield)}</div>
+            <div className="text-2xl font-bold">
+              {formatCurrency(averageCostPerYield)}
+            </div>
             <p className="text-xs text-muted-foreground">
               Per yield unit average
             </p>
@@ -165,14 +193,16 @@ export const RecipesPageClient = () => {
         <CardContent>
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
             <Input
+              className="max-w-sm"
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search recipes..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="max-w-sm"
             />
             <Select
+              onValueChange={(value) =>
+                setCategoryFilter(value as RecipeCategory | "all")
+              }
               value={categoryFilter}
-              onValueChange={(value) => setCategoryFilter(value as RecipeCategory | "all")}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Category" />
@@ -187,8 +217,10 @@ export const RecipesPageClient = () => {
               </SelectContent>
             </Select>
             <Select
+              onValueChange={(value) =>
+                setCuisineFilter(value as CuisineType | "all")
+              }
               value={cuisineFilter}
-              onValueChange={(value) => setCuisineFilter(value as CuisineType | "all")}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Cuisine" />
@@ -203,10 +235,10 @@ export const RecipesPageClient = () => {
               </SelectContent>
             </Select>
             <Select
-              value={activeFilter.toString()}
               onValueChange={(value) =>
                 setActiveFilter(value === "all" ? "all" : value === "true")
               }
+              value={activeFilter.toString()}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Status" />
@@ -234,19 +266,19 @@ export const RecipesPageClient = () => {
                 <TableHead className="text-right">Total Cost</TableHead>
                 <TableHead className="text-right">Cost/Yield</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead></TableHead>
+                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
+                  <TableCell className="text-center py-8" colSpan={8}>
                     Loading recipes...
                   </TableCell>
                 </TableRow>
               ) : filteredRecipes.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
+                  <TableCell className="text-center py-8" colSpan={8}>
                     No recipes found
                   </TableCell>
                 </TableRow>
@@ -285,40 +317,46 @@ export const RecipesPageClient = () => {
                       {recipe.yieldQuantity ? (
                         <span>
                           {recipe.yieldQuantity}{" "}
-                          {recipe.yieldUnitId ? `units` : ""}
+                          {recipe.yieldUnitId ? "units" : ""}
                         </span>
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      {recipe.currentVersion?.totalCost !== null && recipe.currentVersion?.totalCost !== undefined ? (
+                      {recipe.currentVersion?.totalCost !== null &&
+                      recipe.currentVersion?.totalCost !== undefined ? (
                         <span className="font-medium">
                           {formatCurrency(recipe.currentVersion.totalCost)}
                         </span>
                       ) : (
-                        <span className="text-muted-foreground">Not calculated</span>
+                        <span className="text-muted-foreground">
+                          Not calculated
+                        </span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      {recipe.currentVersion?.costPerYield !== null && recipe.currentVersion?.costPerYield !== undefined ? (
-                        <span>{formatCurrency(recipe.currentVersion.costPerYield)}</span>
+                      {recipe.currentVersion?.costPerYield !== null &&
+                      recipe.currentVersion?.costPerYield !== undefined ? (
+                        <span>
+                          {formatCurrency(recipe.currentVersion.costPerYield)}
+                        </span>
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={recipe.isActive ? "default" : "secondary"}>
+                      <Badge
+                        variant={recipe.isActive ? "default" : "secondary"}
+                      >
                         {recipe.isActive ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        asChild
-                      >
-                        <a href={`/inventory/recipes/${recipe.currentVersion?.id || recipe.id}`}>
+                      <Button asChild size="sm" variant="ghost">
+                        <a
+                          href={`/inventory/recipes/${recipe.currentVersion?.id || recipe.id}`}
+                        >
                           View Details
                         </a>
                       </Button>
@@ -334,14 +372,15 @@ export const RecipesPageClient = () => {
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Showing {((page - 1) * 20) + 1} to {Math.min(page * 20, totalCount)} of {totalCount} recipes
+          Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, totalCount)} of{" "}
+          {totalCount} recipes
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePreviousPage}
             disabled={page === 1}
+            onClick={handlePreviousPage}
+            size="sm"
+            variant="outline"
           >
             <ChevronLeftIcon className="h-4 w-4" />
             Previous
@@ -350,10 +389,10 @@ export const RecipesPageClient = () => {
             Page {page} of {totalPages}
           </div>
           <Button
-            variant="outline"
-            size="sm"
-            onClick={handleNextPage}
             disabled={page === totalPages}
+            onClick={handleNextPage}
+            size="sm"
+            variant="outline"
           >
             Next
             <ChevronRightIcon className="h-4 w-4" />

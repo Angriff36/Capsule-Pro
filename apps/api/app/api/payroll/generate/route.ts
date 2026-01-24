@@ -1,12 +1,12 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   GeneratePayrollRequestSchema,
-  PrismaPayrollDataSource,
   PayrollService,
+  PrismaPayrollDataSource,
 } from "@repo/payroll-engine";
 import { type NextRequest, NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
  * POST /api/payroll/generate
@@ -38,10 +38,7 @@ export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
     if (!orgId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
@@ -85,10 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create payroll service with Prisma data source
-    const dataSource = new PrismaPayrollDataSource(
-      database,
-      () => tenantId
-    );
+    const dataSource = new PrismaPayrollDataSource(database, () => tenantId);
     const payrollService = new PayrollService({
       dataSource,
       defaultJurisdiction: "US",

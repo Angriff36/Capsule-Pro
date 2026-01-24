@@ -2,7 +2,12 @@
 
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -18,22 +23,25 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import type { AlertType, BudgetAlert, AlertFilters } from "@/app/lib/use-labor-budgets";
-import {
-  acknowledgeAlert,
-  getBudgetAlerts,
-  resolveAlert,
-  getAlertTypeColor,
-} from "@/app/lib/use-labor-budgets";
 import {
   AlertTriangleIcon,
   CheckIcon,
   Loader2Icon,
   RefreshCwIcon,
-  XIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import type {
+  AlertFilters,
+  AlertType,
+  BudgetAlert,
+} from "@/app/lib/use-labor-budgets";
+import {
+  acknowledgeAlert,
+  getAlertTypeColor,
+  getBudgetAlerts,
+  resolveAlert,
+} from "@/app/lib/use-labor-budgets";
 
 export function BudgetAlerts() {
   const [alerts, setAlerts] = useState<BudgetAlert[]>([]);
@@ -47,7 +55,9 @@ export function BudgetAlerts() {
       const data = await getBudgetAlerts(filters);
       setAlerts(data);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to fetch alerts");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to fetch alerts"
+      );
     } finally {
       setLoading(false);
     }
@@ -64,7 +74,9 @@ export function BudgetAlerts() {
       toast.success("Alert acknowledged");
       await fetchAlerts();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to acknowledge alert");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to acknowledge alert"
+      );
     } finally {
       setActionLoading(false);
     }
@@ -77,7 +89,9 @@ export function BudgetAlerts() {
       toast.success("Alert resolved");
       await fetchAlerts();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to resolve alert");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to resolve alert"
+      );
     } finally {
       setActionLoading(false);
     }
@@ -106,7 +120,12 @@ export function BudgetAlerts() {
             Monitor and manage budget threshold alerts
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchAlerts} disabled={loading}>
+        <Button
+          disabled={loading}
+          onClick={fetchAlerts}
+          size="sm"
+          variant="outline"
+        >
           {loading ? (
             <Loader2Icon className="h-4 w-4 animate-spin" />
           ) : (
@@ -130,7 +149,9 @@ export function BudgetAlerts() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unacknowledged</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Unacknowledged
+            </CardTitle>
             <AlertTriangleIcon className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
@@ -146,7 +167,9 @@ export function BudgetAlerts() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{resolvedCount}</div>
-            <p className="text-xs text-muted-foreground">Successfully resolved</p>
+            <p className="text-xs text-muted-foreground">
+              Successfully resolved
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -154,13 +177,13 @@ export function BudgetAlerts() {
       {/* Filters */}
       <div className="flex gap-4">
         <Select
-          value={filters.alertType || "all"}
           onValueChange={(value) =>
             setFilters({
               ...filters,
               alertType: value === "all" ? undefined : (value as AlertType),
             })
           }
+          value={filters.alertType || "all"}
         >
           <SelectTrigger className="w-48">
             <SelectValue placeholder="Alert Type" />
@@ -175,21 +198,19 @@ export function BudgetAlerts() {
         </Select>
 
         <Select
+          onValueChange={(value) =>
+            setFilters({
+              ...filters,
+              isAcknowledged:
+                value === "all" ? undefined : value === "acknowledged",
+            })
+          }
           value={
             filters.isAcknowledged === undefined
               ? "all"
               : filters.isAcknowledged
                 ? "acknowledged"
                 : "unacknowledged"
-          }
-          onValueChange={(value) =>
-            setFilters({
-              ...filters,
-              isAcknowledged:
-                value === "all"
-                  ? undefined
-                  : value === "acknowledged",
-            })
           }
         >
           <SelectTrigger className="w-48">
@@ -203,9 +224,9 @@ export function BudgetAlerts() {
         </Select>
 
         <Button
-          variant="outline"
-          onClick={() => setFilters({})}
           disabled={Object.keys(filters).length === 0}
+          onClick={() => setFilters({})}
+          variant="outline"
         >
           Clear Filters
         </Button>
@@ -228,13 +249,16 @@ export function BudgetAlerts() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell className="h-24 text-center" colSpan={6}>
                     <Loader2Icon className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
                   </TableCell>
                 </TableRow>
               ) : alerts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  <TableCell
+                    className="h-24 text-center text-muted-foreground"
+                    colSpan={6}
+                  >
                     {Object.keys(filters).length > 0
                       ? "No alerts match your filters"
                       : "No budget alerts. You will see alerts here when budgets approach or exceed their thresholds."}
@@ -257,22 +281,33 @@ export function BudgetAlerts() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="font-medium">{alert.utilization.toFixed(1)}%</span>
+                      <span className="font-medium">
+                        {alert.utilization.toFixed(1)}%
+                      </span>
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
                         {alert.is_resolved && (
-                          <Badge variant="outline" className="bg-green-50 text-green-700">
+                          <Badge
+                            className="bg-green-50 text-green-700"
+                            variant="outline"
+                          >
                             Resolved
                           </Badge>
                         )}
                         {alert.is_acknowledged && !alert.is_resolved && (
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                          <Badge
+                            className="bg-blue-50 text-blue-700"
+                            variant="outline"
+                          >
                             Acknowledged
                           </Badge>
                         )}
-                        {!alert.is_acknowledged && !alert.is_resolved && (
-                          <Badge variant="outline" className="bg-red-50 text-red-700">
+                        {!(alert.is_acknowledged || alert.is_resolved) && (
+                          <Badge
+                            className="bg-red-50 text-red-700"
+                            variant="outline"
+                          >
                             New
                           </Badge>
                         )}
@@ -285,12 +320,12 @@ export function BudgetAlerts() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        {!alert.is_acknowledged && !alert.is_resolved && (
+                        {!(alert.is_acknowledged || alert.is_resolved) && (
                           <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleAcknowledge(alert.id)}
                             disabled={actionLoading}
+                            onClick={() => handleAcknowledge(alert.id)}
+                            size="sm"
+                            variant="outline"
                           >
                             <CheckIcon className="mr-2 h-4 w-4" />
                             Acknowledge
@@ -298,10 +333,10 @@ export function BudgetAlerts() {
                         )}
                         {!alert.is_resolved && (
                           <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleResolve(alert.id)}
                             disabled={actionLoading}
+                            onClick={() => handleResolve(alert.id)}
+                            size="sm"
+                            variant="outline"
                           >
                             Resolve
                           </Button>

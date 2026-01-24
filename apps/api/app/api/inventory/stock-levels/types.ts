@@ -42,7 +42,11 @@ export type AdjustmentReason =
 /**
  * Status for adjustment requests
  */
-export type AdjustmentStatus = "pending" | "approved" | "rejected" | "completed";
+export type AdjustmentStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "completed";
 
 // ============================================================================
 // Stock Level Types

@@ -40,15 +40,18 @@ async function detectSchedulingConflicts(
   const conflicts: Conflict[] = [];
   const now = new Date();
   const startDate = timeRange?.start || now;
-  const endDate = timeRange?.end || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const endDate =
+    timeRange?.end || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   // Find overlapping shifts for the same employee
-  const overlappingShifts = await database.$queryRaw<Array<{
-    employee_id: string;
-    employee_name: string;
-    shift_count: number;
-    date: Date;
-  }>>`
+  const overlappingShifts = await database.$queryRaw<
+    Array<{
+      employee_id: string;
+      employee_name: string;
+      shift_count: number;
+      date: Date;
+    }>
+  >`
     SELECT
       e.id as employee_id,
       e.name as employee_name,
@@ -100,15 +103,18 @@ async function detectStaffConflicts(
   const conflicts: Conflict[] = [];
   const now = new Date();
   const startDate = timeRange?.start || now;
-  const endDate = timeRange?.end || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const endDate =
+    timeRange?.end || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   // Find shifts scheduled during time-off requests
-  const shiftsDuringTimeOff = await database.$queryRaw<Array<{
-    employee_id: string;
-    employee_name: string;
-    time_off_date: Date;
-    shift_count: number;
-  }>>`
+  const shiftsDuringTimeOff = await database.$queryRaw<
+    Array<{
+      employee_id: string;
+      employee_name: string;
+      time_off_date: Date;
+      shift_count: number;
+    }>
+  >`
     SELECT
       e.id as employee_id,
       e.name as employee_name,
@@ -161,17 +167,20 @@ async function detectInventoryConflicts(
   const conflicts: Conflict[] = [];
   const now = new Date();
   const startDate = timeRange?.start || now;
-  const endDate = timeRange?.end || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const endDate =
+    timeRange?.end || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   // Find active inventory alerts
-  const activeAlerts = await database.$queryRaw<Array<{
-    alert_id: string;
-    item_id: string;
-    item_name: string;
-    alert_type: string;
-    threshold_value: string;
-    triggered_at: Date;
-  }>>`
+  const activeAlerts = await database.$queryRaw<
+    Array<{
+      alert_id: string;
+      item_id: string;
+      item_name: string;
+      alert_type: string;
+      threshold_value: string;
+      triggered_at: Date;
+    }>
+  >`
     SELECT
       ia.id as alert_id,
       ia.item_id,
@@ -205,9 +214,10 @@ async function detectInventoryConflicts(
           name: alert.item_name,
         },
       ],
-      suggestedAction: severity === "critical"
-        ? "Reorder stock immediately or find alternative"
-        : "Monitor stock levels and consider reordering",
+      suggestedAction:
+        severity === "critical"
+          ? "Reorder stock immediately or find alternative"
+          : "Monitor stock levels and consider reordering",
       createdAt: alert.triggered_at,
     });
   }
@@ -225,16 +235,19 @@ async function detectTimelineConflicts(
   const conflicts: Conflict[] = [];
   const now = new Date();
   const startDate = timeRange?.start || now;
-  const endDate = timeRange?.end || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const endDate =
+    timeRange?.end || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   // Find incomplete high-priority tasks past due date
-  const overdueTasks = await database.$queryRaw<Array<{
-    task_id: string;
-    task_name: string;
-    due_date: Date;
-    priority: string;
-    days_overdue: number;
-  }>>`
+  const overdueTasks = await database.$queryRaw<
+    Array<{
+      task_id: string;
+      task_name: string;
+      due_date: Date;
+      priority: string;
+      days_overdue: number;
+    }>
+  >`
     SELECT
       pt.id as task_id,
       pt.name as task_name,
@@ -315,7 +328,10 @@ export async function POST(request: Request) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const body = (await request.json()) as ConflictDetectionRequest;
@@ -325,23 +341,25 @@ export async function POST(request: Request) {
 
     // Detect conflicts by type
     if (!entityTypes || entityTypes.includes("scheduling")) {
-      conflicts.push(...await detectSchedulingConflicts(tenantId, timeRange));
+      conflicts.push(...(await detectSchedulingConflicts(tenantId, timeRange)));
     }
 
     if (!entityTypes || entityTypes.includes("staff")) {
-      conflicts.push(...await detectStaffConflicts(tenantId, timeRange));
+      conflicts.push(...(await detectStaffConflicts(tenantId, timeRange)));
     }
 
     if (!entityTypes || entityTypes.includes("inventory")) {
-      conflicts.push(...await detectInventoryConflicts(tenantId, timeRange));
+      conflicts.push(...(await detectInventoryConflicts(tenantId, timeRange)));
     }
 
     if (!entityTypes || entityTypes.includes("timeline")) {
-      conflicts.push(...await detectTimelineConflicts(tenantId, timeRange));
+      conflicts.push(...(await detectTimelineConflicts(tenantId, timeRange)));
     }
 
     // Sort by severity (critical first)
-    conflicts.sort((a, b) => SEVERITY_ORDER[b.severity] - SEVERITY_ORDER[a.severity]);
+    conflicts.sort(
+      (a, b) => SEVERITY_ORDER[b.severity] - SEVERITY_ORDER[a.severity]
+    );
 
     const result: ConflictDetectionResult = {
       conflicts,

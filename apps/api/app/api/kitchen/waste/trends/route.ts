@@ -1,8 +1,8 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { type NextRequest, NextResponse } from "next/server";
 import { invariant } from "@/app/lib/invariant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
  * GET /api/kitchen/waste/trends

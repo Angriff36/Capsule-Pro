@@ -1,7 +1,7 @@
 import { openai } from "@ai-sdk/openai";
-import { generateText } from "ai";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { generateText } from "ai";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
@@ -19,7 +19,11 @@ const TEMPERATURE = 0.7;
 // Suggestion type configurations
 const SUGGESTION_TYPES: Record<
   string,
-  { type: SuggestionType; defaultCategory: SuggestionCategory; defaultPriority: SuggestionPriority }
+  {
+    type: SuggestionType;
+    defaultCategory: SuggestionCategory;
+    defaultPriority: SuggestionPriority;
+  }
 > = {
   task_assignment: {
     type: "deadline_alert",
@@ -58,7 +62,10 @@ const SUGGESTION_TYPES: Record<
   },
 };
 
-async function getContextData(tenantId: string, timeframe: "today" | "week" | "month" = "week") {
+async function getContextData(
+  tenantId: string,
+  timeframe: "today" | "week" | "month" = "week"
+) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -84,40 +91,44 @@ async function getContextData(tenantId: string, timeframe: "today" | "week" | "m
 
   // Fetch event dishes separately (junction table)
   const eventIds = upcomingEvents.map((e) => e.id);
-  const eventDishes = eventIds.length > 0
-    ? await database.$queryRaw<Array<{
-        tenant_id: string;
-        id: string;
-        event_id: string;
-        dish_id: string;
-        course: string | null;
-        quantity_servings: number;
-      }>>`
+  const eventDishes =
+    eventIds.length > 0
+      ? await database.$queryRaw<
+          Array<{
+            tenant_id: string;
+            id: string;
+            event_id: string;
+            dish_id: string;
+            course: string | null;
+            quantity_servings: number;
+          }>
+        >`
       SELECT tenant_id, id, event_id, dish_id, course, quantity_servings
       FROM tenant_events.event_dishes
       WHERE tenant_id = ${tenantId}::uuid
         AND deleted_at IS NULL
         AND event_id = ANY(${eventIds}::uuid[])
       `
-    : [];
+      : [];
 
   // Fetch dishes for the event dishes
   const dishIds = [...new Set(eventDishes.map((ed) => ed.dish_id))];
-  const dishes = dishIds.length > 0
-    ? await database.dish.findMany({
-        where: {
-          tenantId,
-          id: { in: dishIds },
-          deletedAt: null,
-        },
-        select: {
-          id: true,
-          name: true,
-          allergens: true,
-          dietaryTags: true,
-        },
-      })
-    : [];
+  const dishes =
+    dishIds.length > 0
+      ? await database.dish.findMany({
+          where: {
+            tenantId,
+            id: { in: dishIds },
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+            name: true,
+            allergens: true,
+            dietaryTags: true,
+          },
+        })
+      : [];
 
   const dishMap = new Map(dishes.map((d) => [d.id, d]));
 
@@ -146,19 +157,20 @@ async function getContextData(tenantId: string, timeframe: "today" | "week" | "m
 
   // Get item IDs and fetch item names
   const itemIds = [...new Set(inventoryAlertsRaw.map((a) => a.itemId))];
-  const inventoryItems = itemIds.length > 0
-    ? await database.inventoryItem.findMany({
-        where: {
-          tenantId,
-          id: { in: itemIds },
-          deletedAt: null,
-        },
-        select: {
-          id: true,
-          name: true,
-        },
-      })
-    : [];
+  const inventoryItems =
+    itemIds.length > 0
+      ? await database.inventoryItem.findMany({
+          where: {
+            tenantId,
+            id: { in: itemIds },
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+            name: true,
+          },
+        })
+      : [];
 
   const itemMap = new Map(inventoryItems.map((item) => [item.id, item.name]));
 
@@ -173,20 +185,21 @@ async function getContextData(tenantId: string, timeframe: "today" | "week" | "m
 
   // Get events for staff assignments
   const staffEventIds = [...new Set(staffAssignments.map((s) => s.eventId))];
-  const staffEvents = staffEventIds.length > 0
-    ? await database.event.findMany({
-        where: {
-          id: { in: staffEventIds },
-          eventDate: { gte: today, lte: endDate },
-          deletedAt: null,
-        },
-        select: {
-          id: true,
-          title: true,
-          eventDate: true,
-        },
-      })
-    : [];
+  const staffEvents =
+    staffEventIds.length > 0
+      ? await database.event.findMany({
+          where: {
+            id: { in: staffEventIds },
+            eventDate: { gte: today, lte: endDate },
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+            title: true,
+            eventDate: true,
+          },
+        })
+      : [];
 
   const staffEventIdsFiltered = new Set(staffEvents.map((e) => e.id));
   const filteredStaffAssignments = staffAssignments.filter((s) =>
@@ -260,7 +273,8 @@ async function getContextData(tenantId: string, timeframe: "today" | "week" | "m
       startTime: s.startTime,
       endTime: s.endTime,
     })),
-    incompleteTaskCount: prepTasks.filter((t) => t.status !== "completed").length,
+    incompleteTaskCount: prepTasks.filter((t) => t.status !== "completed")
+      .length,
     highVolumeDays,
     totalEvents: eventsWithDishes.length,
     timeframe,
@@ -270,7 +284,7 @@ async function getContextData(tenantId: string, timeframe: "today" | "week" | "m
 async function generateAISuggestions(
   tenantId: string,
   context: Awaited<ReturnType<typeof getContextData>>,
-  maxSuggestions: number = 5
+  maxSuggestions = 5
 ): Promise<SuggestedAction[]> {
   // Build system prompt
   const systemPrompt = `You are an expert catering operations advisor with deep knowledge of kitchen workflows, event planning, inventory management, and staff scheduling.
@@ -376,16 +390,17 @@ Generate ${maxSuggestions} prioritized suggestions based on this state.`;
             reasoning: s.reasoning,
             source: "ai-suggestions",
           },
-          action: s.actionType === "api_call"
-            ? {
-                type: "api_call" as const,
-                method: "GET" as const,
-                endpoint: s.actionPath,
-              }
-            : {
-                type: "navigate" as const,
-                path: s.actionPath || "/kitchen",
-              },
+          action:
+            s.actionType === "api_call"
+              ? {
+                  type: "api_call" as const,
+                  method: "GET" as const,
+                  endpoint: s.actionPath,
+                }
+              : {
+                  type: "navigate" as const,
+                  path: s.actionPath || "/kitchen",
+                },
           estimatedImpact: s.estimatedImpact,
           createdAt: new Date(),
           dismissed: false,
@@ -439,7 +454,9 @@ function generateFallbackSuggestions(
   }
 
   // Critical inventory alerts
-  const criticalAlerts = context.inventoryAlerts.filter((a) => a.alertType === "critical");
+  const criticalAlerts = context.inventoryAlerts.filter(
+    (a) => a.alertType === "critical"
+  );
   if (criticalAlerts.length > 0) {
     suggestions.push({
       id: `suggestion-${Date.now()}-2`,
@@ -450,7 +467,10 @@ function generateFallbackSuggestions(
       title: `${criticalAlerts.length} critical inventory alert${
         criticalAlerts.length > 1 ? "s" : ""
       }`,
-      description: criticalAlerts.slice(0, 3).map((a) => `${a.itemName}: ${a.alertType}`).join("; "),
+      description: criticalAlerts
+        .slice(0, 3)
+        .map((a) => `${a.itemName}: ${a.alertType}`)
+        .join("; "),
       action: { type: "navigate", path: "/inventory" },
       estimatedImpact: "Prevent stockouts before events",
       createdAt: new Date(),
@@ -529,8 +549,14 @@ export async function GET(request: Request) {
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
-    const maxSuggestions = Number.parseInt(searchParams.get("maxSuggestions") || "5", 10);
-    const timeframe = (searchParams.get("timeframe") || "week") as "today" | "week" | "month";
+    const maxSuggestions = Number.parseInt(
+      searchParams.get("maxSuggestions") || "5",
+      10
+    );
+    const timeframe = (searchParams.get("timeframe") || "week") as
+      | "today"
+      | "week"
+      | "month";
     const boardId = searchParams.get("boardId") || undefined;
     const eventId = searchParams.get("eventId") || undefined;
 
@@ -546,7 +572,11 @@ export async function GET(request: Request) {
     const contextData = await getContextData(tenantId, timeframe);
 
     // Generate AI suggestions (with fallback)
-    const suggestions = await generateAISuggestions(tenantId, contextData, maxSuggestions);
+    const suggestions = await generateAISuggestions(
+      tenantId,
+      contextData,
+      maxSuggestions
+    );
 
     // Return response
     return NextResponse.json({
@@ -576,4 +606,10 @@ export async function GET(request: Request) {
 }
 
 // Export types for reuse
-export type { SuggestedAction, SuggestionCategory, SuggestionPriority, SuggestionType, ActionHandler };
+export type {
+  SuggestedAction,
+  SuggestionCategory,
+  SuggestionPriority,
+  SuggestionType,
+  ActionHandler,
+};

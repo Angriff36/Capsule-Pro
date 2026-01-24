@@ -77,7 +77,8 @@ const CrmVenuesPage = () => (
       </p>
       <h1 className="text-2xl font-semibold">Venue Management</h1>
       <p className="text-sm text-muted-foreground">
-        Surface venue readiness, capacity, and coordination notes for every site.
+        Surface venue readiness, capacity, and coordination notes for every
+        site.
       </p>
     </div>
 
@@ -117,7 +118,9 @@ const CrmVenuesPage = () => (
     <Card>
       <CardHeader>
         <CardTitle>Upcoming Events by Venue</CardTitle>
-        <CardDescription>Coordination status for each property.</CardDescription>
+        <CardDescription>
+          Coordination status for each property.
+        </CardDescription>
       </CardHeader>
       <CardContent className="overflow-x-auto">
         <div className="rounded-md border">

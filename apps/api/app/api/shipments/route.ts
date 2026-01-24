@@ -10,12 +10,17 @@ import { database, type Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { PaginationParams, Shipment, ShipmentFilters } from "./types";
+import type { PaginationParams, ShipmentFilters } from "./types";
 import { validateCreateShipmentRequest } from "./validation";
 
-function parsePaginationParams(searchParams: URLSearchParams): PaginationParams {
+function parsePaginationParams(
+  searchParams: URLSearchParams
+): PaginationParams {
   const page = Number.parseInt(searchParams.get("page") || "1", 10);
-  const limit = Math.min(Math.max(Number.parseInt(searchParams.get("limit") || "20", 10), 1), 100);
+  const limit = Math.min(
+    Math.max(Number.parseInt(searchParams.get("limit") || "20", 10), 1),
+    100
+  );
   return { page, limit };
 }
 
@@ -46,7 +51,10 @@ export async function GET(request: Request) {
     }
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
     const { searchParams } = new URL(request.url);
     const { page, limit } = parsePaginationParams(searchParams);
@@ -64,7 +72,8 @@ export async function GET(request: Request) {
     if (filters.location_id) where.locationId = filters.location_id;
     if (filters.date_from || filters.date_to) {
       where.scheduledDate = {};
-      if (filters.date_from) where.scheduledDate.gte = new Date(filters.date_from);
+      if (filters.date_from)
+        where.scheduledDate.gte = new Date(filters.date_from);
       if (filters.date_to) where.scheduledDate.lte = new Date(filters.date_to);
     }
     const total = await database.shipment.count({ where });
@@ -107,7 +116,10 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error("Failed to list shipments:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -119,7 +131,10 @@ export async function POST(request: Request) {
     }
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
     const body = await request.json();
     validateCreateShipmentRequest(body);
@@ -128,7 +143,10 @@ export async function POST(request: Request) {
       where: { tenantId, shipmentNumber, deletedAt: null },
     });
     if (existing) {
-      return NextResponse.json({ message: "Shipment number already exists" }, { status: 409 });
+      return NextResponse.json(
+        { message: "Shipment number already exists" },
+        { status: 409 }
+      );
     }
     const shipment = await database.shipment.create({
       data: {
@@ -138,8 +156,12 @@ export async function POST(request: Request) {
         eventId: body.event_id,
         supplierId: body.supplier_id,
         locationId: body.location_id,
-        scheduledDate: body.scheduled_date ? new Date(body.scheduled_date) : null,
-        estimatedDeliveryDate: body.estimated_delivery_date ? new Date(body.estimated_delivery_date) : null,
+        scheduledDate: body.scheduled_date
+          ? new Date(body.scheduled_date)
+          : null,
+        estimatedDeliveryDate: body.estimated_delivery_date
+          ? new Date(body.estimated_delivery_date)
+          : null,
         shippingCost: body.shipping_cost ? body.shipping_cost.toString() : null,
         trackingNumber: body.tracking_number,
         carrier: body.carrier,
@@ -161,7 +183,9 @@ export async function POST(request: Request) {
       estimated_delivery_date: shipment.estimatedDeliveryDate,
       actual_delivery_date: shipment.actualDeliveryDate,
       total_items: shipment.totalItems,
-      shipping_cost: shipment.shippingCost ? Number(shipment.shippingCost) : null,
+      shipping_cost: shipment.shippingCost
+        ? Number(shipment.shippingCost)
+        : null,
       total_value: shipment.totalValue ? Number(shipment.totalValue) : null,
       tracking_number: shipment.trackingNumber,
       carrier: shipment.carrier,
@@ -181,6 +205,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
     console.error("Failed to create shipment:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

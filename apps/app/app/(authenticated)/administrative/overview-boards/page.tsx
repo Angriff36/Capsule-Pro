@@ -76,7 +76,7 @@ const AdministrativeOverviewBoardsPage = () => (
 
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       {boardSnapshots.map((snapshot) => (
-        <Card key={snapshot.title} className="h-full">
+        <Card className="h-full" key={snapshot.title}>
           <CardHeader>
             <CardTitle>{snapshot.title}</CardTitle>
             <CardDescription>{snapshot.description}</CardDescription>
@@ -96,7 +96,10 @@ const AdministrativeOverviewBoardsPage = () => (
       </CardHeader>
       <CardContent className="grid gap-4 md:grid-cols-3">
         {executiveActions.map((action) => (
-          <div key={action.title} className="space-y-1 rounded border border-border/60 p-4">
+          <div
+            className="space-y-1 rounded border border-border/60 p-4"
+            key={action.title}
+          >
             <p className="text-sm font-semibold">{action.title}</p>
             <p className="text-xs text-muted-foreground">{action.owner}</p>
             <p className="text-xs text-muted-foreground">{action.eta}</p>
@@ -110,12 +113,14 @@ const AdministrativeOverviewBoardsPage = () => (
       <Card>
         <CardHeader>
           <CardTitle>Critical Alerts</CardTitle>
-          <CardDescription>Issues that need cross-team attention.</CardDescription>
+          <CardDescription>
+            Issues that need cross-team attention.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="divide-y divide-border">
             {criticalAlerts.map((alert) => (
-              <div key={alert.label} className="space-y-1 py-3">
+              <div className="space-y-1 py-3" key={alert.label}>
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-semibold">{alert.label}</p>
                   <Badge variant="destructive">Action</Badge>
@@ -129,7 +134,9 @@ const AdministrativeOverviewBoardsPage = () => (
       <Card>
         <CardHeader>
           <CardTitle>Board Health</CardTitle>
-          <CardDescription>Freshness of updates across channels.</CardDescription>
+          <CardDescription>
+            Freshness of updates across channels.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">

@@ -1,6 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**

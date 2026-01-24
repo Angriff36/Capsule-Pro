@@ -2,7 +2,12 @@
 
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Progress } from "@repo/design-system/components/ui/progress";
 import {
@@ -20,28 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import type {
-  BudgetType,
-  BudgetStatus,
-  LaborBudget,
-  CreateBudgetInput,
-  UpdateBudgetInput,
-  BudgetFilters,
-} from "@/app/lib/use-labor-budgets";
 import {
-  createBudget,
-  deleteBudget,
-  getBudgets,
-  updateBudget,
-  getBudgetTypeName,
-  getBudgetUnitSymbol,
-  getStatusColor,
-  getUtilizationColor,
-  getProgressBarColor,
-  formatUtilization,
-} from "@/app/lib/use-labor-budgets";
-import {
-  AlertTriangleIcon,
   CalendarIcon,
   CheckCircle2Icon,
   DollarSignIcon,
@@ -57,6 +41,25 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import type {
+  BudgetFilters,
+  BudgetStatus,
+  BudgetType,
+  CreateBudgetInput,
+  LaborBudget,
+  UpdateBudgetInput,
+} from "@/app/lib/use-labor-budgets";
+import {
+  createBudget,
+  deleteBudget,
+  formatUtilization,
+  getBudgets,
+  getBudgetTypeName,
+  getBudgetUnitSymbol,
+  getStatusColor,
+  getUtilizationColor,
+  updateBudget,
+} from "@/app/lib/use-labor-budgets";
 import { BudgetFormModal } from "./budget-form-modal";
 
 export function BudgetsClient() {
@@ -74,9 +77,13 @@ export function BudgetsClient() {
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedBudget, setSelectedBudget] = useState<LaborBudget | null>(null);
+  const [selectedBudget, setSelectedBudget] = useState<LaborBudget | null>(
+    null
+  );
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [budgetToDelete, setBudgetToDelete] = useState<LaborBudget | null>(null);
+  const [budgetToDelete, setBudgetToDelete] = useState<LaborBudget | null>(
+    null
+  );
 
   // Fetch budgets
   const fetchBudgets = useCallback(async () => {
@@ -85,7 +92,9 @@ export function BudgetsClient() {
       const data = await getBudgets(filters);
       setBudgets(data);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to fetch budgets");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to fetch budgets"
+      );
     } finally {
       setLoading(false);
     }
@@ -110,7 +119,9 @@ export function BudgetsClient() {
       setSelectedBudget(null);
       await fetchBudgets();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to save budget");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save budget"
+      );
     } finally {
       setActionLoading(false);
     }
@@ -140,7 +151,9 @@ export function BudgetsClient() {
       setBudgetToDelete(null);
       await fetchBudgets();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to delete budget");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete budget"
+      );
     } finally {
       setActionLoading(false);
     }
@@ -168,7 +181,9 @@ export function BudgetsClient() {
     .filter((b) => b.status === "active" && b.budget_unit === "cost")
     .reduce((sum, b) => sum + b.budget_target, 0);
   const totalActualSpend = budgets
-    .filter((b) => b.status === "active" && b.budget_unit === "cost" && b.actual_spend)
+    .filter(
+      (b) => b.status === "active" && b.budget_unit === "cost" && b.actual_spend
+    )
     .reduce((sum, b) => sum + (b.actual_spend || 0), 0);
 
   return (
@@ -182,14 +197,19 @@ export function BudgetsClient() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={fetchBudgets} disabled={loading}>
+          <Button
+            disabled={loading}
+            onClick={fetchBudgets}
+            size="sm"
+            variant="outline"
+          >
             {loading ? (
               <Loader2Icon className="h-4 w-4 animate-spin" />
             ) : (
               <RefreshCwIcon className="h-4 w-4" />
             )}
           </Button>
-          <Button size="sm" onClick={handleCreate}>
+          <Button onClick={handleCreate} size="sm">
             <PlusIcon className="mr-2 h-4 w-4" />
             New Budget
           </Button>
@@ -200,7 +220,9 @@ export function BudgetsClient() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Budgets</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Active Budgets
+            </CardTitle>
             <CheckCircle2Icon className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -213,11 +235,15 @@ export function BudgetsClient() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Budget Target</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Budget Target
+            </CardTitle>
             <DollarSignIcon className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalBudgetTarget.toFixed(2)}</div>
+            <div className="text-2xl font-bold">
+              ${totalBudgetTarget.toFixed(2)}
+            </div>
             <p className="text-xs text-muted-foreground">
               Cost-based budgets only
             </p>
@@ -230,7 +256,9 @@ export function BudgetsClient() {
             <DollarSignIcon className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalActualSpend.toFixed(2)}</div>
+            <div className="text-2xl font-bold">
+              ${totalActualSpend.toFixed(2)}
+            </div>
             <p className="text-xs text-muted-foreground">
               {totalBudgetTarget > 0
                 ? `${((totalActualSpend / totalBudgetTarget) * 100).toFixed(1)}% utilized`
@@ -245,16 +273,16 @@ export function BudgetsClient() {
         <div className="relative flex-1">
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
+            className="pl-10"
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search budgets..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
           />
         </div>
         <Button
-          variant="outline"
-          size="sm"
           onClick={() => setShowFilters(!showFilters)}
+          size="sm"
+          variant="outline"
         >
           <FilterIcon className="mr-2 h-4 w-4" />
           Filters
@@ -264,13 +292,13 @@ export function BudgetsClient() {
       {showFilters && (
         <div className="grid gap-4 md:grid-cols-4">
           <Select
-            value={filters.budgetType || "all"}
             onValueChange={(value) =>
               setFilters({
                 ...filters,
                 budgetType: value === "all" ? undefined : (value as BudgetType),
               })
             }
+            value={filters.budgetType || "all"}
           >
             <SelectTrigger>
               <SelectValue placeholder="Budget Type" />
@@ -284,13 +312,13 @@ export function BudgetsClient() {
           </Select>
 
           <Select
-            value={filters.status || "all"}
             onValueChange={(value) =>
               setFilters({
                 ...filters,
                 status: value === "all" ? undefined : (value as BudgetStatus),
               })
             }
+            value={filters.status || "all"}
           >
             <SelectTrigger>
               <SelectValue placeholder="Status" />
@@ -304,9 +332,9 @@ export function BudgetsClient() {
           </Select>
 
           <Button
-            variant="outline"
-            onClick={() => setFilters({})}
             disabled={Object.keys(filters).length === 0}
+            onClick={() => setFilters({})}
+            variant="outline"
           >
             Clear Filters
           </Button>
@@ -331,13 +359,16 @@ export function BudgetsClient() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell className="h-24 text-center" colSpan={7}>
                     <Loader2Icon className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
                   </TableCell>
                 </TableRow>
               ) : filteredBudgets.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                  <TableCell
+                    className="h-24 text-center text-muted-foreground"
+                    colSpan={7}
+                  >
                     {searchQuery || Object.keys(filters).length > 0
                       ? "No budgets match your search criteria"
                       : "No budgets found. Create your first budget to get started."}
@@ -363,19 +394,25 @@ export function BudgetsClient() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">{getBudgetTypeName(budget.budget_type)}</Badge>
+                        <Badge variant="outline">
+                          {getBudgetTypeName(budget.budget_type)}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         {budget.period_start && budget.period_end ? (
                           <div className="flex items-center gap-2 text-sm">
                             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                            {new Date(budget.period_start).toLocaleDateString()} -{" "}
-                            {new Date(budget.period_end).toLocaleDateString()}
+                            {new Date(budget.period_start).toLocaleDateString()}{" "}
+                            - {new Date(budget.period_end).toLocaleDateString()}
                           </div>
                         ) : budget.event_id ? (
-                          <span className="text-sm">Event: {budget.event_id.slice(0, 8)}...</span>
+                          <span className="text-sm">
+                            Event: {budget.event_id.slice(0, 8)}...
+                          </span>
                         ) : (
-                          <span className="text-sm text-muted-foreground">Ongoing</span>
+                          <span className="text-sm text-muted-foreground">
+                            Ongoing
+                          </span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -393,9 +430,7 @@ export function BudgetsClient() {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-sm">
                             <span
-                              className={getUtilizationColor(
-                                utilizationPct
-                              )}
+                              className={getUtilizationColor(utilizationPct)}
                             >
                               {budget.actual_spend !== null
                                 ? formatUtilization(
@@ -417,8 +452,8 @@ export function BudgetsClient() {
                           </div>
                           {budget.actual_spend !== null && (
                             <Progress
-                              value={Math.min(utilizationPct, 100)}
                               className="h-2"
+                              value={Math.min(utilizationPct, 100)}
                             />
                           )}
                         </div>
@@ -431,16 +466,16 @@ export function BudgetsClient() {
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button
-                            variant="ghost"
-                            size="sm"
                             onClick={() => handleEdit(budget)}
+                            size="sm"
+                            variant="ghost"
                           >
                             <EditIcon className="h-4 w-4" />
                           </Button>
                           <Button
-                            variant="ghost"
-                            size="sm"
                             onClick={() => handleDeleteClick(budget)}
+                            size="sm"
+                            variant="ghost"
                           >
                             <Trash2Icon className="h-4 w-4" />
                           </Button>
@@ -457,26 +492,26 @@ export function BudgetsClient() {
 
       {/* Create/Edit Modal */}
       <BudgetFormModal
-        open={modalOpen}
+        budget={selectedBudget || undefined}
+        loading={actionLoading}
         onClose={() => {
           setModalOpen(false);
           setSelectedBudget(null);
         }}
         onSave={handleSave}
-        budget={selectedBudget || undefined}
-        loading={actionLoading}
+        open={modalOpen}
       />
 
       {/* Delete Confirmation */}
       <BudgetDeleteModal
-        open={deleteConfirmOpen}
+        budget={budgetToDelete}
+        loading={actionLoading}
         onClose={() => {
           setDeleteConfirmOpen(false);
           setBudgetToDelete(null);
         }}
         onConfirm={handleDelete}
-        budget={budgetToDelete}
-        loading={actionLoading}
+        open={deleteConfirmOpen}
       />
     </div>
   );
@@ -509,14 +544,14 @@ function BudgetDeleteModal({
         </div>
         <h3 className="text-lg font-semibold">Delete Budget</h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          Are you sure you want to delete the budget &quot;{budget?.name}&quot;? This
-          action cannot be undone.
+          Are you sure you want to delete the budget &quot;{budget?.name}&quot;?
+          This action cannot be undone.
         </p>
         <div className="mt-6 flex justify-end gap-3">
-          <Button variant="outline" onClick={onClose} disabled={loading}>
+          <Button disabled={loading} onClick={onClose} variant="outline">
             Cancel
           </Button>
-          <Button variant="destructive" onClick={onConfirm} disabled={loading}>
+          <Button disabled={loading} onClick={onConfirm} variant="destructive">
             {loading && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
             Delete Budget
           </Button>

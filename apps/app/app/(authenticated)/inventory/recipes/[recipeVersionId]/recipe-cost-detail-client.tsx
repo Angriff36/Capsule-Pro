@@ -2,7 +2,13 @@
 
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -21,8 +27,18 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { ArrowLeftIcon, CalculatorIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, DollarSignIcon, EditIcon, LoaderIcon, PlusIcon, RefreshCwIcon, ScaleIcon, TrendingUpIcon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import {
+  CalculatorIcon,
+  CheckIcon,
+  ChevronLeftIcon,
+  DollarSignIcon,
+  EditIcon,
+  LoaderIcon,
+  RefreshCwIcon,
+  ScaleIcon,
+  TrendingUpIcon,
+} from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import {
   calculateCostPercentage,
@@ -30,14 +46,12 @@ import {
   formatDate,
   formatQuantity,
   formatWasteFactor,
-  recalculateRecipeCost,
   type IngredientCostBreakdown,
-  type RecipeCostBreakdown,
-  scaleRecipe,
   type ScaleRecipeRequest,
+  scaleRecipe,
+  type UpdateWasteFactorRequest,
   updateEventBudgets,
   updateWasteFactor,
-  type UpdateWasteFactorRequest,
   useRecipeCost,
 } from "../../../../lib/use-recipe-costing";
 
@@ -45,16 +59,29 @@ interface RecipeCostDetailClientProps {
   recipeVersionId: string;
 }
 
-export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClientProps) => {
-  const { data: costData, loading, error, refetch, recalculate } = useRecipeCost(recipeVersionId);
+export const RecipeCostDetailClient = ({
+  recipeVersionId,
+}: RecipeCostDetailClientProps) => {
+  const {
+    data: costData,
+    loading,
+    error,
+    refetch,
+    recalculate,
+  } = useRecipeCost(recipeVersionId);
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [isUpdatingBudgets, setIsUpdatingBudgets] = useState(false);
   const [scaleModalOpen, setScaleModalOpen] = useState(false);
   const [wasteModalOpen, setWasteModalOpen] = useState(false);
-  const [selectedIngredient, setSelectedIngredient] = useState<IngredientCostBreakdown | null>(null);
+  const [selectedIngredient, setSelectedIngredient] =
+    useState<IngredientCostBreakdown | null>(null);
   const [targetPortions, setTargetPortions] = useState("");
   const [wasteFactor, setWasteFactor] = useState("");
-  const [scaledCost, setScaledCost] = useState<{ original: number; scaled: number; scaleFactor: number } | null>(null);
+  const [scaledCost, setScaledCost] = useState<{
+    original: number;
+    scaled: number;
+    scaleFactor: number;
+  } | null>(null);
 
   const handleRecalculate = async () => {
     setIsRecalculating(true);
@@ -63,16 +90,18 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
       toast.success("Recipe costs recalculated successfully");
     } catch (err) {
       console.error("Failed to recalculate costs:", err);
-      toast.error(err instanceof Error ? err.message : "Failed to recalculate costs");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to recalculate costs"
+      );
     } finally {
       setIsRecalculating(false);
     }
   };
 
   const handleScaleRecipe = async () => {
-    if (!costData || !targetPortions) return;
+    if (!(costData && targetPortions)) return;
 
-    const portions = parseInt(targetPortions, 10);
+    const portions = Number.parseInt(targetPortions, 10);
     if (isNaN(portions) || portions <= 0) {
       toast.error("Please enter a valid number of portions");
       return;
@@ -96,14 +125,16 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
       setTargetPortions("");
     } catch (err) {
       console.error("Failed to scale recipe:", err);
-      toast.error(err instanceof Error ? err.message : "Failed to scale recipe");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to scale recipe"
+      );
     }
   };
 
   const handleUpdateWasteFactor = async () => {
     if (!selectedIngredient) return;
 
-    const factor = parseFloat(wasteFactor);
+    const factor = Number.parseFloat(wasteFactor);
     if (isNaN(factor) || factor < 1) {
       toast.error("Please enter a valid waste factor (1.0 or greater)");
       return;
@@ -123,7 +154,9 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
       refetch();
     } catch (err) {
       console.error("Failed to update waste factor:", err);
-      toast.error(err instanceof Error ? err.message : "Failed to update waste factor");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to update waste factor"
+      );
     }
   };
 
@@ -134,7 +167,9 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
       toast.success(`Updated ${result.affectedEvents} event budgets`);
     } catch (err) {
       console.error("Failed to update event budgets:", err);
-      toast.error(err instanceof Error ? err.message : "Failed to update event budgets");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to update event budgets"
+      );
     } finally {
       setIsUpdatingBudgets(false);
     }
@@ -157,7 +192,9 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
       <div className="flex items-center justify-center h-96">
         <div className="flex flex-col items-center gap-4">
           <LoaderIcon className="h-8 w-8 animate-spin text-muted-foreground" />
-          <p className="text-muted-foreground">Loading recipe cost details...</p>
+          <p className="text-muted-foreground">
+            Loading recipe cost details...
+          </p>
         </div>
       </div>
     );
@@ -179,13 +216,20 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
     );
   }
 
-  const { recipe, totalCost, costPerYield, costPerPortion, lastCalculated, ingredients } = costData;
+  const {
+    recipe,
+    totalCost,
+    costPerYield,
+    costPerPortion,
+    lastCalculated,
+    ingredients,
+  } = costData;
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" asChild>
+        <Button asChild size="sm" variant="ghost">
           <a href="/inventory/recipes">
             <ChevronLeftIcon className="h-4 w-4 mr-1" />
             Back to Recipes
@@ -207,7 +251,9 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
             <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalCost)}</div>
+            <div className="text-2xl font-bold">
+              {formatCurrency(totalCost)}
+            </div>
             <p className="text-xs text-muted-foreground">
               For {recipe.yieldQuantity || 0} {recipe.yieldUnit || "units"}
             </p>
@@ -215,11 +261,15 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Cost Per Yield</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Cost Per Yield
+            </CardTitle>
             <TrendingUpIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(costPerYield)}</div>
+            <div className="text-2xl font-bold">
+              {formatCurrency(costPerYield)}
+            </div>
             <p className="text-xs text-muted-foreground">
               Per {recipe.yieldUnit || "unit"}
             </p>
@@ -227,7 +277,9 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Cost Per Portion</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Cost Per Portion
+            </CardTitle>
             <CalculatorIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -235,17 +287,23 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
               {costPerPortion ? formatCurrency(costPerPortion) : "-"}
             </div>
             <p className="text-xs text-muted-foreground">
-              {recipe.portionSize ? `For ${recipe.portionSize} ${recipe.portionUnit || "portion"}` : "Portion size not set"}
+              {recipe.portionSize
+                ? `For ${recipe.portionSize} ${recipe.portionUnit || "portion"}`
+                : "Portion size not set"}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Last Calculated</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Last Calculated
+            </CardTitle>
             <RefreshCwIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-sm font-medium">{formatDate(lastCalculated)}</div>
+            <div className="text-sm font-medium">
+              {formatDate(lastCalculated)}
+            </div>
             <p className="text-xs text-muted-foreground">
               {ingredients.length} ingredients
             </p>
@@ -269,7 +327,9 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
             <div className="flex items-center gap-8">
               <div>
                 <p className="text-sm text-muted-foreground">Original Cost</p>
-                <p className="text-2xl font-bold">{formatCurrency(scaledCost.original)}</p>
+                <p className="text-2xl font-bold">
+                  {formatCurrency(scaledCost.original)}
+                </p>
               </div>
               <div className="text-2xl">→</div>
               <div>
@@ -285,26 +345,24 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
 
       {/* Actions */}
       <div className="flex flex-wrap gap-2">
-        <Button
-          onClick={handleRecalculate}
-          disabled={isRecalculating}
-        >
-          <RefreshCwIcon className={`h-4 w-4 mr-2 ${isRecalculating ? "animate-spin" : ""}`} />
+        <Button disabled={isRecalculating} onClick={handleRecalculate}>
+          <RefreshCwIcon
+            className={`h-4 w-4 mr-2 ${isRecalculating ? "animate-spin" : ""}`}
+          />
           {isRecalculating ? "Recalculating..." : "Recalculate Costs"}
         </Button>
-        <Button
-          onClick={() => setScaleModalOpen(true)}
-          variant="outline"
-        >
+        <Button onClick={() => setScaleModalOpen(true)} variant="outline">
           <ScaleIcon className="h-4 w-4 mr-2" />
           Scale Recipe
         </Button>
         <Button
-          onClick={handleUpdateEventBudgets}
           disabled={isUpdatingBudgets}
+          onClick={handleUpdateEventBudgets}
           variant="outline"
         >
-          <TrendingUpIcon className={`h-4 w-4 mr-2 ${isUpdatingBudgets ? "animate-spin" : ""}`} />
+          <TrendingUpIcon
+            className={`h-4 w-4 mr-2 ${isUpdatingBudgets ? "animate-spin" : ""}`}
+          />
           {isUpdatingBudgets ? "Updating..." : "Update Event Budgets"}
         </Button>
       </div>
@@ -329,12 +387,15 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
                 <TableHead className="text-right">Total Cost</TableHead>
                 <TableHead className="text-right">% of Total</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead></TableHead>
+                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
               {ingredients.map((ingredient) => {
-                const costPercentage = calculateCostPercentage(ingredient.cost, totalCost);
+                const costPercentage = calculateCostPercentage(
+                  ingredient.cost,
+                  totalCost
+                );
                 return (
                   <TableRow key={ingredient.id}>
                     <TableCell className="font-medium">
@@ -347,17 +408,18 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
                       <div className="flex items-center justify-end gap-2">
                         <span>{formatWasteFactor(ingredient.wasteFactor)}</span>
                         <Button
-                          variant="ghost"
-                          size="sm"
                           className="h-6 w-6 p-0"
                           onClick={() => openWasteModal(ingredient)}
+                          size="sm"
+                          variant="ghost"
                         >
                           <EditIcon className="h-3 w-3" />
                         </Button>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      {formatQuantity(ingredient.adjustedQuantity)} {ingredient.unit}
+                      {formatQuantity(ingredient.adjustedQuantity)}{" "}
+                      {ingredient.unit}
                     </TableCell>
                     <TableCell className="text-right">
                       {formatCurrency(ingredient.unitCost)}
@@ -370,32 +432,32 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
                         <div className="w-16 bg-gray-200 rounded-full h-2">
                           <div
                             className="bg-blue-600 h-2 rounded-full"
-                            style={{ width: `${Math.min(costPercentage, 100)}%` }}
+                            style={{
+                              width: `${Math.min(costPercentage, 100)}%`,
+                            }}
                           />
                         </div>
-                        <span className="text-sm">{costPercentage.toFixed(1)}%</span>
+                        <span className="text-sm">
+                          {costPercentage.toFixed(1)}%
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>
                       {ingredient.hasInventoryItem ? (
-                        <Badge variant="default" className="bg-green-600">
+                        <Badge className="bg-green-600" variant="default">
                           <CheckIcon className="h-3 w-3 mr-1" />
                           Linked
                         </Badge>
                       ) : (
-                        <Badge variant="outline">
-                          Unlinked
-                        </Badge>
+                        <Badge variant="outline">Unlinked</Badge>
                       )}
                     </TableCell>
                     <TableCell>
                       {ingredient.hasInventoryItem && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          asChild
-                        >
-                          <a href={`/inventory/items/${ingredient.inventoryItemId}`}>
+                        <Button asChild size="sm" variant="ghost">
+                          <a
+                            href={`/inventory/items/${ingredient.inventoryItemId}`}
+                          >
                             View Item
                           </a>
                         </Button>
@@ -406,14 +468,16 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
               })}
               <TableRow className="font-bold bg-muted">
                 <TableCell>Total</TableCell>
-                <TableCell></TableCell>
-                <TableCell></TableCell>
-                <TableCell></TableCell>
-                <TableCell></TableCell>
-                <TableCell className="text-right">{formatCurrency(totalCost)}</TableCell>
+                <TableCell />
+                <TableCell />
+                <TableCell />
+                <TableCell />
+                <TableCell className="text-right">
+                  {formatCurrency(totalCost)}
+                </TableCell>
                 <TableCell className="text-right">100%</TableCell>
-                <TableCell></TableCell>
-                <TableCell></TableCell>
+                <TableCell />
+                <TableCell />
               </TableRow>
             </TableBody>
           </Table>
@@ -421,12 +485,13 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
       </Card>
 
       {/* Scale Recipe Modal */}
-      <Dialog open={scaleModalOpen} onOpenChange={setScaleModalOpen}>
+      <Dialog onOpenChange={setScaleModalOpen} open={scaleModalOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Scale Recipe</DialogTitle>
             <DialogDescription>
-              Enter the target number of portions to scale the recipe and calculate new costs.
+              Enter the target number of portions to scale the recipe and
+              calculate new costs.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -434,22 +499,23 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
               <Label htmlFor="portions">Target Portions</Label>
               <Input
                 id="portions"
-                type="number"
                 min="1"
-                value={targetPortions}
                 onChange={(e) => setTargetPortions(e.target.value)}
                 placeholder={recipe.yieldQuantity?.toString() || "1"}
+                type="number"
+                value={targetPortions}
               />
               <p className="text-sm text-muted-foreground">
-                Current yield: {recipe.yieldQuantity || 0} {recipe.yieldUnit || "units"}
+                Current yield: {recipe.yieldQuantity || 0}{" "}
+                {recipe.yieldUnit || "units"}
               </p>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={closeScaleModal}>
+            <Button onClick={closeScaleModal} variant="outline">
               Cancel
             </Button>
-            <Button onClick={handleScaleRecipe} disabled={!targetPortions}>
+            <Button disabled={!targetPortions} onClick={handleScaleRecipe}>
               <ScaleIcon className="h-4 w-4 mr-2" />
               Scale Recipe
             </Button>
@@ -458,7 +524,7 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
       </Dialog>
 
       {/* Edit Waste Factor Modal */}
-      <Dialog open={wasteModalOpen} onOpenChange={setWasteModalOpen}>
+      <Dialog onOpenChange={setWasteModalOpen} open={wasteModalOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Waste Factor</DialogTitle>
@@ -471,12 +537,12 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
               <Label htmlFor="wasteFactor">Waste Factor</Label>
               <Input
                 id="wasteFactor"
-                type="number"
                 min="1"
-                step="0.01"
-                value={wasteFactor}
                 onChange={(e) => setWasteFactor(e.target.value)}
                 placeholder="1.00"
+                step="0.01"
+                type="number"
+                value={wasteFactor}
               />
               <p className="text-sm text-muted-foreground">
                 A waste factor of 1.0 means no waste. 1.10 means 10% waste.
@@ -485,17 +551,21 @@ export const RecipeCostDetailClient = ({ recipeVersionId }: RecipeCostDetailClie
             {selectedIngredient && (
               <div className="p-4 bg-muted rounded-lg">
                 <p className="text-sm">
-                  <strong>Current:</strong> {formatQuantity(selectedIngredient.quantity)} {selectedIngredient.unit}
-                  × {formatWasteFactor(selectedIngredient.wasteFactor)} = {formatQuantity(selectedIngredient.adjustedQuantity)} {selectedIngredient.unit}
+                  <strong>Current:</strong>{" "}
+                  {formatQuantity(selectedIngredient.quantity)}{" "}
+                  {selectedIngredient.unit}×{" "}
+                  {formatWasteFactor(selectedIngredient.wasteFactor)} ={" "}
+                  {formatQuantity(selectedIngredient.adjustedQuantity)}{" "}
+                  {selectedIngredient.unit}
                 </p>
               </div>
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setWasteModalOpen(false)}>
+            <Button onClick={() => setWasteModalOpen(false)} variant="outline">
               Cancel
             </Button>
-            <Button onClick={handleUpdateWasteFactor} disabled={!wasteFactor}>
+            <Button disabled={!wasteFactor} onClick={handleUpdateWasteFactor}>
               <CheckIcon className="h-4 w-4 mr-2" />
               Update Waste Factor
             </Button>

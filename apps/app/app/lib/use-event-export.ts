@@ -57,8 +57,10 @@ export async function exportEvent(
     // For downloads, the response is the file directly
     const blob = await response.blob();
     const filename =
-      response.headers.get("Content-Disposition")?.split("filename=")[1]?.replace(/"/g, "") ||
-      `event-export.${format}`;
+      response.headers
+        .get("Content-Disposition")
+        ?.split("filename=")[1]
+        ?.replace(/"/g, "") || `event-export.${format}`;
 
     // Create download link
     const url = window.URL.createObjectURL(blob);
@@ -70,7 +72,11 @@ export async function exportEvent(
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
 
-    return { filename, contentType: response.headers.get("Content-Type") || `application/${format}` };
+    return {
+      filename,
+      contentType:
+        response.headers.get("Content-Type") || `application/${format}`,
+    };
   }
 
   // For non-downloads, parse the JSON response
@@ -94,7 +100,9 @@ export function downloadExportResult(
     // Base64 data URL (for PDFs)
     const link = document.createElement("a");
     link.href = dataUrl;
-    link.download = filename || `${defaultFilename}.${contentType.includes("pdf") ? "pdf" : "csv"}`;
+    link.download =
+      filename ||
+      `${defaultFilename}.${contentType.includes("pdf") ? "pdf" : "csv"}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

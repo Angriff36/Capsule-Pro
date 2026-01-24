@@ -33,14 +33,27 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system/components/ui/tabs";
-import { ActivityIcon, AlertTriangleIcon, BoxIcon, DollarSignIcon } from "lucide-react";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import {
+  ActivityIcon,
+  AlertTriangleIcon,
+  BoxIcon,
+  DollarSignIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { ITEM_CATEGORIES, type ItemCategory } from "../../../lib/use-inventory";
 import {
+  type AdjustmentReason,
+  type CreateAdjustmentRequest,
   createAdjustment,
-  formatDate,
   formatCurrency,
+  formatDate,
   formatQuantity,
   getAdjustmentReasonLabel,
   getAdjustmentReasons,
@@ -48,27 +61,25 @@ import {
   getReorderStatusLabel,
   getTransactionTypeColor,
   getTransactionTypeLabel,
+  type InventoryTransaction,
   listLocations,
   listStockLevels,
   listTransactions,
-  type CreateAdjustmentRequest,
   type StockLevelWithStatus,
   type StockReorderStatus,
-  type InventoryTransaction,
   type StorageLocation,
-  type AdjustmentReason,
-  type TransactionType,
 } from "../../../lib/use-stock-levels";
-import { ITEM_CATEGORIES, type ItemCategory } from "../../../lib/use-inventory";
 
 // Filter options
-const REORDER_STATUSES: Array<{ value: StockReorderStatus | "all"; label: string }> =
-  [
-    { value: "all", label: "All Statuses" },
-    { value: "below_par", label: "Below Par" },
-    { value: "at_par", label: "At Par" },
-    { value: "above_par", label: "Above Par" },
-  ];
+const REORDER_STATUSES: Array<{
+  value: StockReorderStatus | "all";
+  label: string;
+}> = [
+  { value: "all", label: "All Statuses" },
+  { value: "below_par", label: "Below Par" },
+  { value: "at_par", label: "At Par" },
+  { value: "above_par", label: "Above Par" },
+];
 
 export const StockLevelsPageClient = () => {
   // Main data state
@@ -114,9 +125,7 @@ export const StockLevelsPageClient = () => {
   });
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<"stock" | "transactions">(
-    "stock"
-  );
+  const [activeTab, setActiveTab] = useState<"stock" | "transactions">("stock");
 
   // Transaction filters
   const [transactionPage, setTransactionPage] = useState(1);
@@ -287,32 +296,32 @@ export const StockLevelsPageClient = () => {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+      <Tabs onValueChange={(v) => setActiveTab(v as any)} value={activeTab}>
         <TabsList>
           <TabsTrigger value="stock">Stock Levels</TabsTrigger>
           <TabsTrigger value="transactions">Transaction History</TabsTrigger>
         </TabsList>
 
         {/* Stock Levels Tab */}
-        <TabsContent value="stock" className="space-y-4">
+        <TabsContent className="space-y-4" value="stock">
           {/* Filters */}
           <div className="flex flex-wrap gap-4">
             <Input
-              placeholder="Search items..."
-              value={searchQuery}
+              className="max-w-sm"
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 setPage(1);
               }}
-              className="max-w-sm"
+              placeholder="Search items..."
+              value={searchQuery}
             />
 
             <Select
-              value={categoryFilter}
               onValueChange={(v) => {
                 setCategoryFilter(v as any);
                 setPage(1);
               }}
+              value={categoryFilter}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Category" />
@@ -321,18 +330,20 @@ export const StockLevelsPageClient = () => {
                 <SelectItem value="all">All Categories</SelectItem>
                 {ITEM_CATEGORIES.map((cat) => (
                   <SelectItem key={cat} value={cat}>
-                    {cat.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                    {cat
+                      .replace(/_/g, " ")
+                      .replace(/\b\w/g, (l) => l.toUpperCase())}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
             <Select
-              value={locationFilter}
               onValueChange={(v) => {
                 setLocationFilter(v);
                 setPage(1);
               }}
+              value={locationFilter}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Location" />
@@ -348,11 +359,11 @@ export const StockLevelsPageClient = () => {
             </Select>
 
             <Select
-              value={reorderStatusFilter}
               onValueChange={(v) => {
                 setReorderStatusFilter(v as any);
                 setPage(1);
               }}
+              value={reorderStatusFilter}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Status" />
@@ -385,13 +396,13 @@ export const StockLevelsPageClient = () => {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center">
+                    <TableCell className="text-center" colSpan={8}>
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : stockLevels.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center">
+                    <TableCell className="text-center" colSpan={8}>
                       No stock levels found
                     </TableCell>
                   </TableRow>
@@ -421,7 +432,9 @@ export const StockLevelsPageClient = () => {
                           : "Not set"}
                       </TableCell>
                       <TableCell>
-                        <Badge className={getReorderStatusColor(level.reorderStatus)}>
+                        <Badge
+                          className={getReorderStatusColor(level.reorderStatus)}
+                        >
                           {getReorderStatusLabel(level.reorderStatus)}
                         </Badge>
                       </TableCell>
@@ -430,9 +443,9 @@ export const StockLevelsPageClient = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <Button
-                          variant="outline"
-                          size="sm"
                           onClick={() => openAdjustmentModal(level)}
+                          size="sm"
+                          variant="outline"
                         >
                           Adjust
                         </Button>
@@ -450,18 +463,18 @@ export const StockLevelsPageClient = () => {
               </div>
               <div className="flex gap-2">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  size="sm"
+                  variant="outline"
                 >
                   Previous
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page >= totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  size="sm"
+                  variant="outline"
                 >
                   Next
                 </Button>
@@ -471,7 +484,7 @@ export const StockLevelsPageClient = () => {
         </TabsContent>
 
         {/* Transactions Tab */}
-        <TabsContent value="transactions" className="space-y-4">
+        <TabsContent className="space-y-4" value="transactions">
           <Card>
             <Table>
               <TableHeader>
@@ -487,7 +500,7 @@ export const StockLevelsPageClient = () => {
               <TableBody>
                 {transactions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center">
+                    <TableCell className="text-center" colSpan={6}>
                       No transactions found
                     </TableCell>
                   </TableRow>
@@ -496,10 +509,15 @@ export const StockLevelsPageClient = () => {
                     <TableRow key={tx.id}>
                       <TableCell>{formatDate(tx.createdAt)}</TableCell>
                       <TableCell>
-                        {tx.item?.name || "Unknown"} ({tx.item?.itemNumber || ""})
+                        {tx.item?.name || "Unknown"} (
+                        {tx.item?.itemNumber || ""})
                       </TableCell>
                       <TableCell>
-                        <Badge className={getTransactionTypeColor(tx.transactionType)}>
+                        <Badge
+                          className={getTransactionTypeColor(
+                            tx.transactionType
+                          )}
+                        >
                           {getTransactionTypeLabel(tx.transactionType)}
                         </Badge>
                       </TableCell>
@@ -508,9 +526,7 @@ export const StockLevelsPageClient = () => {
                         {formatQuantity(tx.quantity)}
                       </TableCell>
                       <TableCell>
-                        {tx.reason
-                          ? getAdjustmentReasonLabel(tx.reason)
-                          : "-"}
+                        {tx.reason ? getAdjustmentReasonLabel(tx.reason) : "-"}
                       </TableCell>
                       <TableCell>
                         {tx.performedByUser?.name || "System"}
@@ -528,24 +544,22 @@ export const StockLevelsPageClient = () => {
               </div>
               <div className="flex gap-2">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setTransactionPage((p) => Math.max(1, p - 1))
-                  }
                   disabled={transactionPage === 1}
+                  onClick={() => setTransactionPage((p) => Math.max(1, p - 1))}
+                  size="sm"
+                  variant="outline"
                 >
                   Previous
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
+                  disabled={transactionPage >= transactionTotalPages}
                   onClick={() =>
                     setTransactionPage((p) =>
                       Math.min(transactionTotalPages, p + 1)
                     )
                   }
-                  disabled={transactionPage >= transactionTotalPages}
+                  size="sm"
+                  variant="outline"
                 >
                   Next
                 </Button>
@@ -557,8 +571,8 @@ export const StockLevelsPageClient = () => {
 
       {/* Adjustment Modal */}
       <Dialog
-        open={isAdjustmentModalOpen}
         onOpenChange={setIsAdjustmentModalOpen}
+        open={isAdjustmentModalOpen}
       >
         <DialogContent>
           <DialogHeader>
@@ -571,19 +585,21 @@ export const StockLevelsPageClient = () => {
           <div className="space-y-4 py-4">
             <div className="text-sm text-muted-foreground">
               Current quantity:{" "}
-              {adjustmentItem ? formatQuantity(adjustmentItem.quantityOnHand) : "0"}
+              {adjustmentItem
+                ? formatQuantity(adjustmentItem.quantityOnHand)
+                : "0"}
             </div>
 
             <div className="grid gap-2">
               <Label htmlFor="adjustmentType">Adjustment Type</Label>
               <Select
-                value={adjustmentForm.adjustmentType}
                 onValueChange={(v) =>
                   setAdjustmentForm({
                     ...adjustmentForm,
                     adjustmentType: v as "increase" | "decrease",
                   })
                 }
+                value={adjustmentForm.adjustmentType}
               >
                 <SelectTrigger id="adjustmentType">
                   <SelectValue />
@@ -599,29 +615,29 @@ export const StockLevelsPageClient = () => {
               <Label htmlFor="quantity">Quantity</Label>
               <Input
                 id="quantity"
-                type="number"
-                step="0.01"
                 min="0"
-                value={adjustmentForm.quantity}
                 onChange={(e) =>
                   setAdjustmentForm({
                     ...adjustmentForm,
                     quantity: e.target.value,
                   })
                 }
+                step="0.01"
+                type="number"
+                value={adjustmentForm.quantity}
               />
             </div>
 
             <div className="grid gap-2">
               <Label htmlFor="reason">Reason</Label>
               <Select
-                value={adjustmentForm.reason}
                 onValueChange={(v) =>
                   setAdjustmentForm({
                     ...adjustmentForm,
                     reason: v as AdjustmentReason,
                   })
                 }
+                value={adjustmentForm.reason}
               >
                 <SelectTrigger id="reason">
                   <SelectValue />
@@ -640,27 +656,25 @@ export const StockLevelsPageClient = () => {
               <Label htmlFor="notes">Notes (Optional)</Label>
               <Input
                 id="notes"
-                value={adjustmentForm.notes}
                 onChange={(e) =>
                   setAdjustmentForm({
                     ...adjustmentForm,
                     notes: e.target.value,
                   })
                 }
+                value={adjustmentForm.notes}
               />
             </div>
           </div>
 
           <DialogFooter>
             <Button
-              variant="outline"
               onClick={() => setIsAdjustmentModalOpen(false)}
+              variant="outline"
             >
               Cancel
             </Button>
-            <Button onClick={handleAdjustmentSubmit}>
-              Submit Adjustment
-            </Button>
+            <Button onClick={handleAdjustmentSubmit}>Submit Adjustment</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

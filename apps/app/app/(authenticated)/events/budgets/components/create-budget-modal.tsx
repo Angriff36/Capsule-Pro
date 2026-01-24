@@ -11,21 +11,22 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import type {
-  EventBudget,
-  EventBudgetStatus,
-  BudgetLineItemCategory,
-  CreateEventBudgetInput,
-  CreateBudgetLineItemInput,
-  UpdateEventBudgetInput,
-} from "@/app/lib/use-event-budgets";
 import { XIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import type {
+  BudgetLineItemCategory,
+  CreateEventBudgetInput,
+  EventBudget,
+  EventBudgetStatus,
+  UpdateEventBudgetInput,
+} from "@/app/lib/use-event-budgets";
 
 interface CreateBudgetModalProps {
   open: boolean;
   onClose: () => void;
-  onSave: (data: CreateEventBudgetInput | UpdateEventBudgetInput) => Promise<void>;
+  onSave: (
+    data: CreateEventBudgetInput | UpdateEventBudgetInput
+  ) => Promise<void>;
   budget?: EventBudget;
   loading: boolean;
 }
@@ -113,7 +114,7 @@ export function CreateBudgetModal({
       newErrors.eventId = "Event ID is required";
     }
 
-    if (!totalBudgetAmount || parseFloat(totalBudgetAmount) < 0) {
+    if (!totalBudgetAmount || Number.parseFloat(totalBudgetAmount) < 0) {
       newErrors.totalBudgetAmount = "Valid budget amount is required";
     }
 
@@ -122,7 +123,7 @@ export function CreateBudgetModal({
       if (!item.name.trim()) {
         newErrors[`lineItem_${index}_name`] = "Line item name is required";
       }
-      if (!item.budgetedAmount || parseFloat(item.budgetedAmount) < 0) {
+      if (!item.budgetedAmount || Number.parseFloat(item.budgetedAmount) < 0) {
         newErrors[`lineItem_${index}_amount`] = "Valid amount is required";
       }
     });
@@ -140,13 +141,13 @@ export function CreateBudgetModal({
     const data: CreateEventBudgetInput | UpdateEventBudgetInput = {
       ...(isEditing && { status, notes }),
       eventId,
-      totalBudgetAmount: parseFloat(totalBudgetAmount),
+      totalBudgetAmount: Number.parseFloat(totalBudgetAmount),
       notes: notes || undefined,
       lineItems: lineItems.map((item) => ({
         category: item.category,
         name: item.name,
         description: item.description || undefined,
-        budgetedAmount: parseFloat(item.budgetedAmount),
+        budgetedAmount: Number.parseFloat(item.budgetedAmount),
         sortOrder: item.sortOrder,
         notes: item.notes || undefined,
       })),
@@ -191,7 +192,7 @@ export function CreateBudgetModal({
 
   // Calculate total from line items
   const lineItemsTotal = lineItems.reduce(
-    (sum, item) => sum + (parseFloat(item.budgetedAmount) || 0),
+    (sum, item) => sum + (Number.parseFloat(item.budgetedAmount) || 0),
     0
   );
 
@@ -205,7 +206,7 @@ export function CreateBudgetModal({
           <h2 className="text-xl font-semibold">
             {isEditing ? "Edit Budget" : "Create Budget"}
           </h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button onClick={onClose} size="sm" variant="ghost">
             <XIcon className="h-4 w-4" />
           </Button>
         </div>
@@ -215,12 +216,12 @@ export function CreateBudgetModal({
           <div>
             <Label htmlFor="eventId">Event ID *</Label>
             <Input
-              id="eventId"
-              value={eventId}
-              onChange={(e) => setEventId(e.target.value)}
-              disabled={isEditing}
-              placeholder="Enter event ID"
               className={errors.eventId ? "border-red-500" : ""}
+              disabled={isEditing}
+              id="eventId"
+              onChange={(e) => setEventId(e.target.value)}
+              placeholder="Enter event ID"
+              value={eventId}
             />
             {errors.eventId && (
               <p className="text-sm text-red-500 mt-1">{errors.eventId}</p>
@@ -231,7 +232,10 @@ export function CreateBudgetModal({
           {isEditing && (
             <div>
               <Label htmlFor="status">Status</Label>
-              <Select value={status} onValueChange={(v) => setStatus(v as EventBudgetStatus)}>
+              <Select
+                onValueChange={(v) => setStatus(v as EventBudgetStatus)}
+                value={status}
+              >
                 <SelectTrigger id="status">
                   <SelectValue />
                 </SelectTrigger>
@@ -250,16 +254,18 @@ export function CreateBudgetModal({
           <div>
             <Label htmlFor="totalBudgetAmount">Total Budget Amount *</Label>
             <Input
+              className={errors.totalBudgetAmount ? "border-red-500" : ""}
               id="totalBudgetAmount"
-              type="number"
-              step="0.01"
-              value={totalBudgetAmount}
               onChange={(e) => setTotalBudgetAmount(e.target.value)}
               placeholder="0.00"
-              className={errors.totalBudgetAmount ? "border-red-500" : ""}
+              step="0.01"
+              type="number"
+              value={totalBudgetAmount}
             />
             {errors.totalBudgetAmount && (
-              <p className="text-sm text-red-500 mt-1">{errors.totalBudgetAmount}</p>
+              <p className="text-sm text-red-500 mt-1">
+                {errors.totalBudgetAmount}
+              </p>
             )}
             {!isEditing && lineItemsTotal > 0 && (
               <p className="text-sm text-muted-foreground mt-1">
@@ -273,10 +279,10 @@ export function CreateBudgetModal({
             <Label htmlFor="notes">Notes</Label>
             <Textarea
               id="notes"
-              value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Optional notes about this budget"
               rows={3}
+              value={notes}
             />
           </div>
 
@@ -284,7 +290,12 @@ export function CreateBudgetModal({
           <div className="border-t pt-4">
             <div className="flex items-center justify-between mb-2">
               <Label>Line Items</Label>
-              <Button type="button" variant="outline" size="sm" onClick={addLineItem}>
+              <Button
+                onClick={addLineItem}
+                size="sm"
+                type="button"
+                variant="outline"
+              >
                 Add Line Item
               </Button>
             </div>
@@ -296,14 +307,19 @@ export function CreateBudgetModal({
             ) : (
               <div className="space-y-3">
                 {lineItems.map((item, index) => (
-                  <div key={item.id} className="border rounded-lg p-3 space-y-2">
+                  <div
+                    className="border rounded-lg p-3 space-y-2"
+                    key={item.id}
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Line Item {index + 1}</span>
+                      <span className="text-sm font-medium">
+                        Line Item {index + 1}
+                      </span>
                       <Button
+                        onClick={() => removeLineItem(item.id)}
+                        size="sm"
                         type="button"
                         variant="ghost"
-                        size="sm"
-                        onClick={() => removeLineItem(item.id)}
                       >
                         <XIcon className="h-3 w-3" />
                       </Button>
@@ -311,10 +327,21 @@ export function CreateBudgetModal({
 
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <Label htmlFor={`category_${item.id}`} className="text-xs">Category</Label>
+                        <Label
+                          className="text-xs"
+                          htmlFor={`category_${item.id}`}
+                        >
+                          Category
+                        </Label>
                         <Select
+                          onValueChange={(v) =>
+                            updateLineItem(
+                              item.id,
+                              "category",
+                              v as BudgetLineItemCategory
+                            )
+                          }
                           value={item.category}
-                          onValueChange={(v) => updateLineItem(item.id, "category", v as BudgetLineItemCategory)}
                         >
                           <SelectTrigger id={`category_${item.id}`}>
                             <SelectValue />
@@ -331,43 +358,74 @@ export function CreateBudgetModal({
                       </div>
 
                       <div>
-                        <Label htmlFor={`amount_${item.id}`} className="text-xs">Amount</Label>
+                        <Label
+                          className="text-xs"
+                          htmlFor={`amount_${item.id}`}
+                        >
+                          Amount
+                        </Label>
                         <Input
+                          className={
+                            errors[`lineItem_${index}_amount`]
+                              ? "border-red-500"
+                              : ""
+                          }
                           id={`amount_${item.id}`}
-                          type="number"
-                          step="0.01"
-                          value={item.budgetedAmount}
-                          onChange={(e) => updateLineItem(item.id, "budgetedAmount", e.target.value)}
+                          onChange={(e) =>
+                            updateLineItem(
+                              item.id,
+                              "budgetedAmount",
+                              e.target.value
+                            )
+                          }
                           placeholder="0.00"
-                          className={errors[`lineItem_${index}_amount`] ? "border-red-500" : ""}
+                          step="0.01"
+                          type="number"
+                          value={item.budgetedAmount}
                         />
                         {errors[`lineItem_${index}_amount`] && (
-                          <p className="text-xs text-red-500">{errors[`lineItem_${index}_amount`]}</p>
+                          <p className="text-xs text-red-500">
+                            {errors[`lineItem_${index}_amount`]}
+                          </p>
                         )}
                       </div>
                     </div>
 
                     <div>
-                      <Label htmlFor={`name_${item.id}`} className="text-xs">Name *</Label>
+                      <Label className="text-xs" htmlFor={`name_${item.id}`}>
+                        Name *
+                      </Label>
                       <Input
+                        className={
+                          errors[`lineItem_${index}_name`]
+                            ? "border-red-500"
+                            : ""
+                        }
                         id={`name_${item.id}`}
-                        value={item.name}
-                        onChange={(e) => updateLineItem(item.id, "name", e.target.value)}
+                        onChange={(e) =>
+                          updateLineItem(item.id, "name", e.target.value)
+                        }
                         placeholder="Line item name"
-                        className={errors[`lineItem_${index}_name`] ? "border-red-500" : ""}
+                        value={item.name}
                       />
                       {errors[`lineItem_${index}_name`] && (
-                        <p className="text-xs text-red-500">{errors[`lineItem_${index}_name`]}</p>
+                        <p className="text-xs text-red-500">
+                          {errors[`lineItem_${index}_name`]}
+                        </p>
                       )}
                     </div>
 
                     <div>
-                      <Label htmlFor={`desc_${item.id}`} className="text-xs">Description</Label>
+                      <Label className="text-xs" htmlFor={`desc_${item.id}`}>
+                        Description
+                      </Label>
                       <Input
                         id={`desc_${item.id}`}
-                        value={item.description}
-                        onChange={(e) => updateLineItem(item.id, "description", e.target.value)}
+                        onChange={(e) =>
+                          updateLineItem(item.id, "description", e.target.value)
+                        }
                         placeholder="Optional description"
+                        value={item.description}
                       />
                     </div>
                   </div>
@@ -378,11 +436,15 @@ export function CreateBudgetModal({
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button variant="outline" onClick={onClose} disabled={loading}>
+            <Button disabled={loading} onClick={onClose} variant="outline">
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={loading}>
-              {loading ? "Saving..." : isEditing ? "Update Budget" : "Create Budget"}
+            <Button disabled={loading} onClick={handleSave}>
+              {loading
+                ? "Saving..."
+                : isEditing
+                  ? "Update Budget"
+                  : "Create Budget"}
             </Button>
           </div>
         </div>

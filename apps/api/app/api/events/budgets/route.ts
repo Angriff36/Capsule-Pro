@@ -10,7 +10,6 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { CreateEventBudgetRequest } from "./types";
 import {
   parseEventBudgetListFilters,
   validateCreateEventBudget,
@@ -117,10 +116,7 @@ export async function POST(request: Request) {
     });
 
     if (!event) {
-      return NextResponse.json(
-        { message: "Event not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Event not found" }, { status: 404 });
     }
 
     // Check if a budget already exists for this event
@@ -215,10 +211,7 @@ export async function POST(request: Request) {
         );
       }
       if (error instanceof InvariantError) {
-        return NextResponse.json(
-          { message: error.message },
-          { status: 400 }
-        );
+        return NextResponse.json({ message: error.message }, { status: 400 });
       }
     }
     console.error("Error creating event budget:", error);

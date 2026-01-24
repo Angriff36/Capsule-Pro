@@ -63,9 +63,9 @@ const SchedulingRequestsPage = () => {
         </CardHeader>
         <CardContent className="flex flex-col gap-3 md:flex-row">
           <Input
+            onChange={(event) => setFilter(event.target.value)}
             placeholder="Search by team member"
             value={filter}
-            onChange={(event) => setFilter(event.target.value)}
           />
           <Button variant="outline">Show all</Button>
         </CardContent>
@@ -73,7 +73,7 @@ const SchedulingRequestsPage = () => {
 
       <div className="space-y-3">
         {filteredRequests.map((request) => (
-          <Card key={request.id} className="border-primary/30">
+          <Card className="border-primary/30" key={request.id}>
             <CardHeader className="flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <p className="text-lg font-semibold">{request.employee}</p>

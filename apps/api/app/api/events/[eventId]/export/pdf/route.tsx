@@ -45,7 +45,8 @@ export async function GET(
 
     // Parse include parameter
     const url = new URL(request.url);
-    const includeParam = url.searchParams.get("include") || "summary,menu,staff";
+    const includeParam =
+      url.searchParams.get("include") || "summary,menu,staff";
     const sections = includeParam.split(",").map((s) => s.trim());
     const shouldDownload = url.searchParams.get("download") === "true";
 
@@ -283,7 +284,8 @@ export async function GET(
     });
 
     if (user) {
-      pdfData.metadata.generatedBy = user.email || `${user.firstName} ${user.lastName}`;
+      pdfData.metadata.generatedBy =
+        user.email || `${user.firstName} ${user.lastName}`;
     }
 
     const pdfComponent = <EventDetailPDF data={pdfData} />;

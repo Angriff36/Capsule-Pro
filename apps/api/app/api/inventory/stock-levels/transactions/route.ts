@@ -136,9 +136,7 @@ export async function GET(request: Request) {
     });
 
     // Get related item details
-    const itemIds = [
-      ...new Set(transactions.map((t) => t.itemId)),
-    ];
+    const itemIds = [...new Set(transactions.map((t) => t.itemId))];
     const items = await database.inventoryItem.findMany({
       where: {
         tenantId,
@@ -152,34 +150,31 @@ export async function GET(request: Request) {
       },
     });
 
-    const itemsMap = new Map(
-      items.map((item) => [item.id, item])
-    );
+    const itemsMap = new Map(items.map((item) => [item.id, item]));
 
     // Get storage locations for name lookup
     const locationIds = [
       ...new Set(
         transactions
           .map((t) => t.storage_location_id)
-          .filter((id): id is string => id !== "00000000-0000-0000-0000-000000000000")
+          .filter(
+            (id): id is string => id !== "00000000-0000-0000-0000-000000000000"
+          )
       ),
     ];
 
-    const locations = locationIds.length > 0
-      ? await database.$queryRaw<
-          Array<{ id: string; name: string }>
-        >`
+    const locations =
+      locationIds.length > 0
+        ? await database.$queryRaw<Array<{ id: string; name: string }>>`
         SELECT id, name
         FROM tenant_inventory.storage_locations
         WHERE tenant_id = ${tenantId}
           AND id = ANY(${locationIds}::uuid[])
           AND deleted_at IS NULL
       `
-      : [];
+        : [];
 
-    const locationsMap = new Map(
-      locations.map((loc) => [loc.id, loc])
-    );
+    const locationsMap = new Map(locations.map((loc) => [loc.id, loc]));
 
     // Get user details for employee_id
     const userIds = [
@@ -190,23 +185,22 @@ export async function GET(request: Request) {
       ),
     ];
 
-    const users = userIds.length > 0
-      ? await database.user.findMany({
-          where: {
-            id: { in: userIds },
-          },
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        })
-      : [];
+    const users =
+      userIds.length > 0
+        ? await database.user.findMany({
+            where: {
+              id: { in: userIds },
+            },
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          })
+        : [];
 
-    const usersMap = new Map(
-      users.map((user) => [user.id, user])
-    );
+    const usersMap = new Map(users.map((user) => [user.id, user]));
 
     // Build response with details
     const data = transactions.map((transaction) => {

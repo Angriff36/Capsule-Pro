@@ -104,12 +104,14 @@ const AnalyticsPage = () => (
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           {focusMetrics.map((metric) => (
-            <div key={metric.title} className="space-y-1">
+            <div className="space-y-1" key={metric.title}>
               <p className="text-xl font-semibold">{metric.value}</p>
               <p className="text-xs uppercase tracking-wide text-muted-foreground">
                 {metric.title}
               </p>
-              <p className="text-xs text-muted-foreground">{metric.description}</p>
+              <p className="text-xs text-muted-foreground">
+                {metric.description}
+              </p>
             </div>
           ))}
         </CardContent>
@@ -134,10 +136,16 @@ const AnalyticsPage = () => (
                 {topEvents.map((event) => (
                   <TableRow key={event.name}>
                     <TableCell>{event.name}</TableCell>
-                    <TableCell className="text-right">{event.revenue}</TableCell>
+                    <TableCell className="text-right">
+                      {event.revenue}
+                    </TableCell>
                     <TableCell className="text-right">{event.margin}</TableCell>
                     <TableCell>
-                      <Badge variant={event.status === "On track" ? "secondary" : "outline"}>
+                      <Badge
+                        variant={
+                          event.status === "On track" ? "secondary" : "outline"
+                        }
+                      >
                         {event.status}
                       </Badge>
                     </TableCell>

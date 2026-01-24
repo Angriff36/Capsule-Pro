@@ -78,7 +78,9 @@ const WarehouseInventoryPage = () => (
                   <TableCell>{item.name}</TableCell>
                   <TableCell>{item.location}</TableCell>
                   <TableCell className="text-right">{item.stock}</TableCell>
-                  <TableCell className="text-right">{item.dailyUsage}</TableCell>
+                  <TableCell className="text-right">
+                    {item.dailyUsage}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={statusVariant[item.status] ?? "outline"}>
                       {item.status}

@@ -1,30 +1,13 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
-import type {
-  EventBudget,
-  BudgetLineItem,
-  BudgetLineItemCategory,
-  CreateBudgetLineItemInput,
-  UpdateBudgetLineItemInput,
-} from "@/app/lib/use-event-budgets";
-import {
-  getBudget,
-  updateBudget,
-  createLineItem,
-  updateLineItem,
-  deleteLineItem,
-  getStatusColor,
-  getCategoryColor,
-  formatCurrency,
-} from "@/app/lib/use-event-budgets";
-import {
-  Badge,
-} from "@repo/design-system/components/ui/badge";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import { Progress } from "@repo/design-system/components/ui/progress";
@@ -46,7 +29,6 @@ import {
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   ArrowLeftIcon,
-  CalendarIcon,
   CheckCircle2Icon,
   DollarSignIcon,
   EditIcon,
@@ -56,6 +38,24 @@ import {
   Trash2Icon,
   XIcon,
 } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import type {
+  BudgetLineItem,
+  BudgetLineItemCategory,
+  EventBudget,
+} from "@/app/lib/use-event-budgets";
+import {
+  createLineItem,
+  deleteLineItem,
+  formatCurrency,
+  getBudget,
+  getCategoryColor,
+  getStatusColor,
+  updateBudget,
+  updateLineItem,
+} from "@/app/lib/use-event-budgets";
 
 export function BudgetDetailClient() {
   const params = useParams();
@@ -74,7 +74,8 @@ export function BudgetDetailClient() {
 
   // Line item modal
   const [lineItemModalOpen, setLineItemModalOpen] = useState(false);
-  const [selectedLineItem, setSelectedLineItem] = useState<BudgetLineItem | null>(null);
+  const [selectedLineItem, setSelectedLineItem] =
+    useState<BudgetLineItem | null>(null);
   const [lineItemForm, setLineItemForm] = useState({
     category: "other" as BudgetLineItemCategory,
     name: "",
@@ -93,7 +94,9 @@ export function BudgetDetailClient() {
       setEditStatus(data.status);
       setEditNotes(data.notes || "");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to fetch budget");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to fetch budget"
+      );
       router.push("/events/budgets");
     } finally {
       setLoading(false);
@@ -118,7 +121,9 @@ export function BudgetDetailClient() {
       setEditMode(false);
       await fetchBudget();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update budget");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update budget"
+      );
     } finally {
       setActionLoading(false);
     }
@@ -162,7 +167,7 @@ export function BudgetDetailClient() {
         category: lineItemForm.category,
         name: lineItemForm.name,
         description: lineItemForm.description || undefined,
-        budgetedAmount: parseFloat(lineItemForm.budgetedAmount) || 0,
+        budgetedAmount: Number.parseFloat(lineItemForm.budgetedAmount) || 0,
         notes: lineItemForm.notes || undefined,
       };
 
@@ -170,7 +175,7 @@ export function BudgetDetailClient() {
         // Update existing line item
         await updateLineItem(budgetId, selectedLineItem.id, {
           ...data,
-          actualAmount: parseFloat(lineItemForm.actualAmount) || 0,
+          actualAmount: Number.parseFloat(lineItemForm.actualAmount) || 0,
         });
         toast.success("Line item updated successfully");
       } else {
@@ -182,7 +187,9 @@ export function BudgetDetailClient() {
       setLineItemModalOpen(false);
       await fetchBudget();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to save line item");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save line item"
+      );
     } finally {
       setActionLoading(false);
     }
@@ -198,7 +205,9 @@ export function BudgetDetailClient() {
       toast.success("Line item deleted successfully");
       await fetchBudget();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to delete line item");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete line item"
+      );
     } finally {
       setActionLoading(false);
     }
@@ -216,7 +225,11 @@ export function BudgetDetailClient() {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">Budget not found</p>
-        <Button variant="outline" className="mt-4" onClick={() => router.push("/events/budgets")}>
+        <Button
+          className="mt-4"
+          onClick={() => router.push("/events/budgets")}
+          variant="outline"
+        >
           <ArrowLeftIcon className="mr-2 h-4 w-4" />
           Back to Budgets
         </Button>
@@ -234,18 +247,29 @@ export function BudgetDetailClient() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => router.push("/events/budgets")}>
+          <Button
+            onClick={() => router.push("/events/budgets")}
+            size="sm"
+            variant="ghost"
+          >
             <ArrowLeftIcon className="mr-2 h-4 w-4" />
             Back
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Event Budget Details</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Event Budget Details
+            </h1>
             <p className="text-muted-foreground">
               Event ID: {budget.eventId.slice(0, 8)}...
             </p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchBudget} disabled={loading}>
+        <Button
+          disabled={loading}
+          onClick={fetchBudget}
+          size="sm"
+          variant="outline"
+        >
           {loading ? (
             <Loader2Icon className="h-4 w-4 animate-spin" />
           ) : (
@@ -262,7 +286,9 @@ export function BudgetDetailClient() {
             <CheckCircle2Icon className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <Badge className={getStatusColor(budget.status)}>{budget.status}</Badge>
+            <Badge className={getStatusColor(budget.status)}>
+              {budget.status}
+            </Badge>
           </CardContent>
         </Card>
 
@@ -272,7 +298,9 @@ export function BudgetDetailClient() {
             <DollarSignIcon className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(budget.totalBudgetAmount)}</div>
+            <div className="text-2xl font-bold">
+              {formatCurrency(budget.totalBudgetAmount)}
+            </div>
           </CardContent>
         </Card>
 
@@ -282,8 +310,12 @@ export function BudgetDetailClient() {
             <DollarSignIcon className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(budget.totalActualAmount)}</div>
-            <p className="text-xs text-muted-foreground">{utilizationPct.toFixed(1)}% utilized</p>
+            <div className="text-2xl font-bold">
+              {formatCurrency(budget.totalActualAmount)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {utilizationPct.toFixed(1)}% utilized
+            </p>
           </CardContent>
         </Card>
 
@@ -298,13 +330,15 @@ export function BudgetDetailClient() {
                 budget.varianceAmount < 0
                   ? "text-red-600"
                   : budget.varianceAmount > 0
-                  ? "text-green-600"
-                  : ""
+                    ? "text-green-600"
+                    : ""
               }`}
             >
               {formatCurrency(Math.abs(budget.varianceAmount))}
             </div>
-            <p className="text-xs text-muted-foreground">{budget.variancePercentage.toFixed(1)}%</p>
+            <p className="text-xs text-muted-foreground">
+              {budget.variancePercentage.toFixed(1)}%
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -320,7 +354,7 @@ export function BudgetDetailClient() {
               <span className="text-muted-foreground">Progress</span>
               <span className="font-medium">{utilizationPct.toFixed(1)}%</span>
             </div>
-            <Progress value={Math.min(utilizationPct, 100)} className="h-3" />
+            <Progress className="h-3" value={Math.min(utilizationPct, 100)} />
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>{formatCurrency(budget.totalActualAmount)} spent</span>
               <span>of {formatCurrency(budget.totalBudgetAmount)}</span>
@@ -335,8 +369,7 @@ export function BudgetDetailClient() {
           <div className="flex items-center justify-between">
             <CardTitle>Budget Settings</CardTitle>
             <Button
-              variant="outline"
-              size="sm"
+              disabled={actionLoading}
               onClick={() => {
                 if (editMode) {
                   handleUpdateBudget();
@@ -344,7 +377,8 @@ export function BudgetDetailClient() {
                   setEditMode(true);
                 }
               }}
-              disabled={actionLoading}
+              size="sm"
+              variant="outline"
             >
               {editMode ? (
                 <>
@@ -364,9 +398,9 @@ export function BudgetDetailClient() {
           <div>
             <Label htmlFor="status">Status</Label>
             <Select
-              value={editMode ? editStatus : budget.status}
-              onValueChange={setEditStatus}
               disabled={!editMode}
+              onValueChange={setEditStatus}
+              value={editMode ? editStatus : budget.status}
             >
               <SelectTrigger id="status">
                 <SelectValue />
@@ -386,10 +420,10 @@ export function BudgetDetailClient() {
             {editMode ? (
               <Textarea
                 id="notes"
-                value={editNotes}
                 onChange={(e) => setEditNotes(e.target.value)}
                 placeholder="Optional notes about this budget"
                 rows={3}
+                value={editNotes}
               />
             ) : (
               <p className="text-sm text-muted-foreground mt-1">
@@ -400,7 +434,8 @@ export function BudgetDetailClient() {
 
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-muted-foreground">Version:</span> {budget.version}
+              <span className="text-muted-foreground">Version:</span>{" "}
+              {budget.version}
             </div>
             <div>
               <span className="text-muted-foreground">Created:</span>{" "}
@@ -411,7 +446,8 @@ export function BudgetDetailClient() {
               {new Date(budget.updatedAt).toLocaleDateString()}
             </div>
             <div>
-              <span className="text-muted-foreground">ID:</span> {budget.id.slice(0, 8)}...
+              <span className="text-muted-foreground">ID:</span>{" "}
+              {budget.id.slice(0, 8)}...
             </div>
           </div>
         </CardContent>
@@ -422,7 +458,7 @@ export function BudgetDetailClient() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Line Items</CardTitle>
-            <Button size="sm" onClick={handleAddLineItem}>
+            <Button onClick={handleAddLineItem} size="sm">
               <PlusIcon className="mr-2 h-4 w-4" />
               Add Line Item
             </Button>
@@ -443,8 +479,12 @@ export function BudgetDetailClient() {
             <TableBody>
               {!budget.lineItems || budget.lineItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                    No line items yet. Add your first line item to track expenses.
+                  <TableCell
+                    className="h-24 text-center text-muted-foreground"
+                    colSpan={6}
+                  >
+                    No line items yet. Add your first line item to track
+                    expenses.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -484,8 +524,8 @@ export function BudgetDetailClient() {
                             itemVariance < 0
                               ? "text-red-600"
                               : itemVariance > 0
-                              ? "text-green-600"
-                              : ""
+                                ? "text-green-600"
+                                : ""
                           }
                         >
                           {itemVariance < 0 ? "-" : itemVariance > 0 ? "+" : ""}
@@ -498,17 +538,17 @@ export function BudgetDetailClient() {
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button
-                            variant="ghost"
-                            size="sm"
                             onClick={() => handleEditLineItem(item)}
+                            size="sm"
+                            variant="ghost"
                           >
                             <EditIcon className="h-4 w-4" />
                           </Button>
                           <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteLineItem(item.id)}
                             disabled={actionLoading}
+                            onClick={() => handleDeleteLineItem(item.id)}
+                            size="sm"
+                            variant="ghost"
                           >
                             <Trash2Icon className="h-4 w-4" />
                           </Button>
@@ -536,9 +576,9 @@ export function BudgetDetailClient() {
                 {selectedLineItem ? "Edit Line Item" : "Add Line Item"}
               </h2>
               <Button
-                variant="ghost"
-                size="sm"
                 onClick={() => setLineItemModalOpen(false)}
+                size="sm"
+                variant="ghost"
               >
                 <XIcon className="h-4 w-4" />
               </Button>
@@ -548,10 +588,13 @@ export function BudgetDetailClient() {
               <div>
                 <Label htmlFor="li-category">Category</Label>
                 <Select
-                  value={lineItemForm.category}
                   onValueChange={(v) =>
-                    setLineItemForm({ ...lineItemForm, category: v as BudgetLineItemCategory })
+                    setLineItemForm({
+                      ...lineItemForm,
+                      category: v as BudgetLineItemCategory,
+                    })
                   }
+                  value={lineItemForm.category}
                 >
                   <SelectTrigger id="li-category">
                     <SelectValue />
@@ -571,9 +614,11 @@ export function BudgetDetailClient() {
                 <Label htmlFor="li-name">Name</Label>
                 <Input
                   id="li-name"
-                  value={lineItemForm.name}
-                  onChange={(e) => setLineItemForm({ ...lineItemForm, name: e.target.value })}
+                  onChange={(e) =>
+                    setLineItemForm({ ...lineItemForm, name: e.target.value })
+                  }
                   placeholder="Line item name"
+                  value={lineItemForm.name}
                 />
               </div>
 
@@ -581,11 +626,14 @@ export function BudgetDetailClient() {
                 <Label htmlFor="li-description">Description</Label>
                 <Input
                   id="li-description"
-                  value={lineItemForm.description}
                   onChange={(e) =>
-                    setLineItemForm({ ...lineItemForm, description: e.target.value })
+                    setLineItemForm({
+                      ...lineItemForm,
+                      description: e.target.value,
+                    })
                   }
                   placeholder="Optional description"
+                  value={lineItemForm.description}
                 />
               </div>
 
@@ -594,13 +642,16 @@ export function BudgetDetailClient() {
                   <Label htmlFor="li-budgeted">Budgeted</Label>
                   <Input
                     id="li-budgeted"
-                    type="number"
-                    step="0.01"
-                    value={lineItemForm.budgetedAmount}
                     onChange={(e) =>
-                      setLineItemForm({ ...lineItemForm, budgetedAmount: e.target.value })
+                      setLineItemForm({
+                        ...lineItemForm,
+                        budgetedAmount: e.target.value,
+                      })
                     }
                     placeholder="0.00"
+                    step="0.01"
+                    type="number"
+                    value={lineItemForm.budgetedAmount}
                   />
                 </div>
 
@@ -608,13 +659,16 @@ export function BudgetDetailClient() {
                   <Label htmlFor="li-actual">Actual</Label>
                   <Input
                     id="li-actual"
-                    type="number"
-                    step="0.01"
-                    value={lineItemForm.actualAmount}
                     onChange={(e) =>
-                      setLineItemForm({ ...lineItemForm, actualAmount: e.target.value })
+                      setLineItemForm({
+                        ...lineItemForm,
+                        actualAmount: e.target.value,
+                      })
                     }
                     placeholder="0.00"
+                    step="0.01"
+                    type="number"
+                    value={lineItemForm.actualAmount}
                   />
                 </div>
               </div>
@@ -623,25 +677,29 @@ export function BudgetDetailClient() {
                 <Label htmlFor="li-notes">Notes</Label>
                 <Textarea
                   id="li-notes"
-                  value={lineItemForm.notes}
                   onChange={(e) =>
                     setLineItemForm({ ...lineItemForm, notes: e.target.value })
                   }
                   placeholder="Optional notes"
                   rows={2}
+                  value={lineItemForm.notes}
                 />
               </div>
 
               <div className="flex justify-end gap-3 pt-4">
                 <Button
-                  variant="outline"
-                  onClick={() => setLineItemModalOpen(false)}
                   disabled={actionLoading}
+                  onClick={() => setLineItemModalOpen(false)}
+                  variant="outline"
                 >
                   Cancel
                 </Button>
-                <Button onClick={handleSaveLineItem} disabled={actionLoading}>
-                  {actionLoading ? "Saving..." : selectedLineItem ? "Update" : "Add"}
+                <Button disabled={actionLoading} onClick={handleSaveLineItem}>
+                  {actionLoading
+                    ? "Saving..."
+                    : selectedLineItem
+                      ? "Update"
+                      : "Add"}
                 </Button>
               </div>
             </div>

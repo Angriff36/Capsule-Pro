@@ -76,7 +76,9 @@ export async function POST(request: Request, context: RouteContext) {
     for (const updateItem of body.items) {
       if (!validItemIds.has(updateItem.id)) {
         return NextResponse.json(
-          { message: `Item ${updateItem.id} does not belong to this purchase order` },
+          {
+            message: `Item ${updateItem.id} does not belong to this purchase order`,
+          },
           { status: 400 }
         );
       }
@@ -136,7 +138,8 @@ export async function POST(request: Request, context: RouteContext) {
                 quantity: quantityReceived,
                 unit_cost: unitCost,
                 reference: purchaseOrder.poNumber,
-                notes: body.notes ?? `Received via PO ${purchaseOrder.poNumber}`,
+                notes:
+                  body.notes ?? `Received via PO ${purchaseOrder.poNumber}`,
                 transaction_date: new Date(),
                 storage_location_id: purchaseOrder.locationId,
                 reason: "purchase",

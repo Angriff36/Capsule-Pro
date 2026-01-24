@@ -15,11 +15,13 @@ export function useKitchenAnalytics(period: string) {
     const multiplier = period === "30d" ? 1 : 1;
     const data = {
       ...seedKitchenAnalytics,
-      stationThroughput: seedKitchenAnalytics.stationThroughput.map((station) => ({
-        ...station,
-        load: Math.min(100, Math.round(station.load * multiplier)),
-        completed: Math.min(100, Math.round(station.completed * multiplier)),
-      })),
+      stationThroughput: seedKitchenAnalytics.stationThroughput.map(
+        (station) => ({
+          ...station,
+          load: Math.min(100, Math.round(station.load * multiplier)),
+          completed: Math.min(100, Math.round(station.completed * multiplier)),
+        })
+      ),
     };
 
     return {

@@ -249,20 +249,40 @@ GUIDELINES:
 EVENT DETAILS:
 ${JSON.stringify(eventData, null, 2)}
 
-${dishesData && dishesData.length > 0 ? `
+${
+  dishesData && dishesData.length > 0
+    ? `
 MENU/DISHES (${dishesData.length} items):
 ${JSON.stringify(dishesData, null, 2)}
-` : ''}
+`
+    : ""
+}
 
-${similarEvents && similarEvents.length > 0 ? `
+${
+  similarEvents && similarEvents.length > 0
+    ? `
 SIMILAR PAST EVENTS (${similarEvents.length} events):
-${JSON.stringify(similarEvents.map(e => ({ title: e.title, date: e.event_date, guests: e.guest_count })), null, 2)}
-` : ''}
+${JSON.stringify(
+  similarEvents.map((e) => ({
+    title: e.title,
+    date: e.event_date,
+    guests: e.guest_count,
+  })),
+  null,
+  2
+)}
+`
+    : ""
+}
 
-${customInstructions ? `
+${
+  customInstructions
+    ? `
 CUSTOM INSTRUCTIONS:
 ${customInstructions}
-` : ''}
+`
+    : ""
+}
 
 Please generate a complete task breakdown following the system prompt guidelines. Return ONLY valid JSON, no markdown formatting.`;
 
@@ -307,8 +327,9 @@ Please generate a complete task breakdown following the system prompt guidelines
 
     try {
       // Extract JSON from response (handle potential markdown code blocks)
-      const jsonMatch = result.text.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/) ||
-                       result.text.match(/\{[\s\S]*\}/);
+      const jsonMatch =
+        result.text.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/) ||
+        result.text.match(/\{[\s\S]*\}/);
 
       if (jsonMatch) {
         const jsonText = jsonMatch[1] || jsonMatch[0];
@@ -353,7 +374,9 @@ Please generate a complete task breakdown following the system prompt guidelines
     return {
       prep: (aiTasks.prep || []).map((t, i) => transformTask(t, "prep", i)),
       setup: (aiTasks.setup || []).map((t, i) => transformTask(t, "setup", i)),
-      cleanup: (aiTasks.cleanup || []).map((t, i) => transformTask(t, "cleanup", i)),
+      cleanup: (aiTasks.cleanup || []).map((t, i) =>
+        transformTask(t, "cleanup", i)
+      ),
     };
   } catch (aiError) {
     console.error("AI generation failed:", aiError);
@@ -411,7 +434,8 @@ function getFallbackTasks(
     {
       id: `prep-3-${now}`,
       name: "Prep sauces and marinades",
-      description: "Prepare bases, sauces, and marinades that benefit from resting",
+      description:
+        "Prepare bases, sauces, and marinades that benefit from resting",
       section: "prep",
       durationMinutes: Math.round(60 * Math.min(scaleFactor, 1.5)),
       relativeTime: "12 hours before event",
@@ -439,7 +463,9 @@ function getFallbackTasks(
   const setupTasks: TaskBreakdownItem[] = [
     {
       id: `setup-1-${now}`,
-      name: event.venueName ? "Transport equipment to venue" : "Set up cooking stations",
+      name: event.venueName
+        ? "Transport equipment to venue"
+        : "Set up cooking stations",
       description: event.venueName
         ? "Load and transport all cooking equipment and supplies"
         : "Configure cooking equipment and work areas",
@@ -494,7 +520,9 @@ function getFallbackTasks(
     },
     {
       id: `cleanup-3-${now}`,
-      name: event.venueName ? "Transport equipment back" : "Final kitchen clean",
+      name: event.venueName
+        ? "Transport equipment back"
+        : "Final kitchen clean",
       description: event.venueName
         ? "Load and transport all equipment to home base"
         : "Complete final cleaning and organize storage",

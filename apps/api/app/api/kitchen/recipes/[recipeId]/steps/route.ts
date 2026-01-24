@@ -99,10 +99,7 @@ export async function GET(
     );
 
     if (recipes.length === 0) {
-      return NextResponse.json(
-        { error: "Recipe not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
     }
 
     const recipe = recipes[0];

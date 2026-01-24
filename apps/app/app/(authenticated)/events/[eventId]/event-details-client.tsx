@@ -39,21 +39,17 @@ import {
   SparklesIcon,
   TrashIcon,
   UtensilsIcon,
-  X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-
-// Import suggestions from kitchen module (shared across modules)
-import { SuggestionsPanel } from "../../kitchen/components/suggestions-panel";
-import { useSuggestions } from "../../kitchen/lib/use-suggestions";
-import type { SuggestedAction } from "../../kitchen/lib/suggestions-types";
-
 import {
   getBudgetStatusLabel,
   getVarianceColor,
 } from "../../../lib/use-budgets";
+// Import suggestions from kitchen module (shared across modules)
+import { SuggestionsPanel } from "../../kitchen/components/suggestions-panel";
+import { useSuggestions } from "../../kitchen/lib/use-suggestions";
 import {
   addDishToEvent,
   getAvailableDishes,
@@ -720,12 +716,12 @@ export function EventDetailsClient({
         {showSuggestions ? (
           <Card className="border-slate-200 shadow-sm">
             <SuggestionsPanel
-              suggestions={suggestions}
               isLoading={suggestionsLoading}
-              onDismiss={dismissSuggestion}
-              onRefresh={fetchSuggestions}
               onAction={handleAction}
               onClose={() => setShowSuggestions(false)}
+              onDismiss={dismissSuggestion}
+              onRefresh={fetchSuggestions}
+              suggestions={suggestions}
             />
           </Card>
         ) : suggestions.length > 0 ? (
@@ -738,7 +734,9 @@ export function EventDetailsClient({
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-purple-700 text-xs">
-                You have {suggestions.length} suggestion{suggestions.length !== 1 ? "s" : ""} that could help optimize this event.
+                You have {suggestions.length} suggestion
+                {suggestions.length !== 1 ? "s" : ""} that could help optimize
+                this event.
               </p>
               <Button
                 className="w-full bg-purple-600 text-white hover:bg-purple-700"

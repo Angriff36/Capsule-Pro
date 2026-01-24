@@ -7,7 +7,6 @@
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
-import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
   StockLevelFilters,
@@ -277,10 +276,7 @@ export async function GET(request: Request) {
         parLevel,
         reorderLevel
       );
-      const stockOutRisk = calculateStockOutRisk(
-        quantityOnHand,
-        reorderLevel
-      );
+      const stockOutRisk = calculateStockOutRisk(quantityOnHand, reorderLevel);
       const totalValueItem = quantityOnHand * unitCost;
 
       // Apply filters that require calculation

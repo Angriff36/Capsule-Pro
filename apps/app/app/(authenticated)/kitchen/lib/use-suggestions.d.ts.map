@@ -1,0 +1,1 @@
+{"version":3,"file":"use-suggestions.d.ts","sourceRoot":"","sources":["use-suggestions.ts"],"names":[],"mappings":"AAIA,OAAO,KAAK,EAAE,eAAe,EAAuB,MAAM,qBAAqB,CAAC;AAEhF,wBAAgB,cAAc,CAAC,QAAQ,CAAC,EAAE,MAAM,GAAG,IAAI;;;;iCAMX;QACxC,cAAc,CAAC,EAAE,MAAM,CAAC;QACxB,SAAS,CAAC,EAAE,OAAO,GAAG,MAAM,GAAG,OAAO,CAAC;KACxC;sCA+BwC,MAAM;+BAIb,eAAe;EAoBlD"}

@@ -8,8 +8,8 @@ import type {
   DiscrepancyType,
   POStatus,
   QualityStatus,
-  UpdateQuantityReceivedRequest,
   UpdateQualityStatusRequest,
+  UpdateQuantityReceivedRequest,
 } from "./types";
 import { DISCREPANCY_TYPES, PO_STATUSES, QUALITY_STATUSES } from "./types";
 
@@ -91,10 +91,7 @@ export function validateUpdateQuantityReceivedRequest(
   const body = data as UpdateQuantityReceivedRequest;
 
   // Required fields
-  if (
-    body.quantity_received === undefined ||
-    body.quantity_received === null
-  ) {
+  if (body.quantity_received === undefined || body.quantity_received === null) {
     throw new InvariantError("quantity_received is required");
   }
 
@@ -149,7 +146,7 @@ export function validateCompleteReceivingRequest(
   const body = data as CompleteReceivingRequest;
 
   // Required fields
-  if (!body.items || !Array.isArray(body.items)) {
+  if (!(body.items && Array.isArray(body.items))) {
     throw new InvariantError("items array is required");
   }
 
@@ -162,16 +159,16 @@ export function validateCompleteReceivingRequest(
     const item = body.items[i];
 
     if (!item.id || typeof item.id !== "string") {
-      throw new InvariantError(`items[${i}].id is required and must be a string`);
+      throw new InvariantError(
+        `items[${i}].id is required and must be a string`
+      );
     }
 
     if (
       item.quantity_received === undefined ||
       item.quantity_received === null
     ) {
-      throw new InvariantError(
-        `items[${i}].quantity_received is required`
-      );
+      throw new InvariantError(`items[${i}].quantity_received is required`);
     }
 
     validateNonNegativeNumber(

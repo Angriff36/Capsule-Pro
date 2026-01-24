@@ -35,7 +35,7 @@ export async function PUT(request: Request, context: RouteContext) {
 
     const { id, itemId } = await context.params;
 
-    if (!id || !itemId) {
+    if (!(id && itemId)) {
       return NextResponse.json(
         { message: "Purchase order ID and item ID are required" },
         { status: 400 }

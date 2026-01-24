@@ -73,7 +73,11 @@ const PayrollPayoutsPage = () => (
                   <TableCell className="text-right">{payout.amount}</TableCell>
                   <TableCell>{payout.runDate}</TableCell>
                   <TableCell>
-                    <Badge variant={payout.status === "Scheduled" ? "secondary" : "outline"}>
+                    <Badge
+                      variant={
+                        payout.status === "Scheduled" ? "secondary" : "outline"
+                      }
+                    >
                       {payout.status}
                     </Badge>
                   </TableCell>

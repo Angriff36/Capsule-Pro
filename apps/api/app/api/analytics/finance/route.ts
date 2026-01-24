@@ -82,7 +82,9 @@ export async function GET(request: Request) {
         AND e.deleted_at IS NULL
       ${locationId ? "AND e.location_id = $4" : ""}
       `,
-      locationId ? [tenantId, startDate, now, locationId] : [tenantId, startDate, now]
+      locationId
+        ? [tenantId, startDate, now, locationId]
+        : [tenantId, startDate, now]
     );
 
     // Get event financial data for previous period (comparison)
@@ -111,7 +113,9 @@ export async function GET(request: Request) {
         AND e.deleted_at IS NULL
       ${locationId ? "AND e.location_id = $4" : ""}
       `,
-      locationId ? [tenantId, previousStartDate, startDate, locationId] : [tenantId, previousStartDate, startDate]
+      locationId
+        ? [tenantId, previousStartDate, startDate, locationId]
+        : [tenantId, previousStartDate, startDate]
     );
 
     const current = currentPeriodMetrics[0] || {
@@ -149,17 +153,30 @@ export async function GET(request: Request) {
     const previousLaborCost = Number(previous.actual_labor_cost);
 
     // Revenue vs Budget
-    const revenueVariance = budgetedRevenue > 0 ? ((actualRevenue - budgetedRevenue) / budgetedRevenue) * 100 : 0;
-    const revenueTrend = previousRevenue > 0 ? ((actualRevenue - previousRevenue) / previousRevenue) * 100 : 0;
+    const revenueVariance =
+      budgetedRevenue > 0
+        ? ((actualRevenue - budgetedRevenue) / budgetedRevenue) * 100
+        : 0;
+    const revenueTrend =
+      previousRevenue > 0
+        ? ((actualRevenue - previousRevenue) / previousRevenue) * 100
+        : 0;
 
     // Cost of Goods Sold (COGS)
     const totalCost = actualFoodCost + actualOtherCost;
-    const cogsPercentage = actualRevenue > 0 ? (totalCost / actualRevenue) * 100 : 0;
+    const cogsPercentage =
+      actualRevenue > 0 ? (totalCost / actualRevenue) * 100 : 0;
     const previousTotalCost = previousFoodCost; // Simplified
-    const cogsTrend = previousRevenue > 0 ? ((totalCost - previousTotalCost) / previousRevenue) * 100 : 0;
+    const cogsTrend =
+      previousRevenue > 0
+        ? ((totalCost - previousTotalCost) / previousRevenue) * 100
+        : 0;
 
     // Labor Cadence
-    const laborTrend = previousLaborCost > 0 ? ((actualLaborCost - previousLaborCost) / previousLaborCost) * 100 : 0;
+    const laborTrend =
+      previousLaborCost > 0
+        ? ((actualLaborCost - previousLaborCost) / previousLaborCost) * 100
+        : 0;
 
     // Get contract and proposal values for ledger summary
     const ledgerData = await database.$queryRawUnsafe<
@@ -201,7 +218,9 @@ export async function GET(request: Request) {
             ${locationId ? "AND e.location_id = $4" : ""}
         ) as deposits_received
       `,
-      locationId ? [tenantId, locationId, startDate, now, locationId] : [tenantId, startDate, now]
+      locationId
+        ? [tenantId, locationId, startDate, now, locationId]
+        : [tenantId, startDate, now]
     );
 
     const ledger = ledgerData[0] || {
@@ -224,8 +243,14 @@ export async function GET(request: Request) {
     const financeHighlights = [
       {
         label: "Revenue vs Budget",
-        value: formatCurrency(actualRevenue) + " / " + formatCurrency(budgetedRevenue),
-        trend: revenueVariance >= 0 ? `+${revenueVariance.toFixed(1)}% ahead` : `${revenueVariance.toFixed(1)}% behind`,
+        value:
+          formatCurrency(actualRevenue) +
+          " / " +
+          formatCurrency(budgetedRevenue),
+        trend:
+          revenueVariance >= 0
+            ? `+${revenueVariance.toFixed(1)}% ahead`
+            : `${revenueVariance.toFixed(1)}% behind`,
         isPositive: revenueVariance >= 0,
       },
       {
@@ -237,29 +262,54 @@ export async function GET(request: Request) {
       {
         label: "Labor cadence",
         value: formatCurrency(actualLaborCost),
-        trend: laborTrend > 0 ? `+${laborTrend.toFixed(1)}% vs. prior cycle` : laborTrend < 0 ? `${laborTrend.toFixed(1)}% vs. prior cycle` : "No change",
+        trend:
+          laborTrend > 0
+            ? `+${laborTrend.toFixed(1)}% vs. prior cycle`
+            : laborTrend < 0
+              ? `${laborTrend.toFixed(1)}% vs. prior cycle`
+              : "No change",
         isPositive: laborTrend <= 0,
       },
     ];
 
     // Build ledger summary
     const ledgerSummary = [
-      { label: "Deposits cleared", amount: formatCurrency(Number(ledger.deposits_received)) },
-      { label: "Active contracts", amount: formatCurrency(Number(ledger.active_contracts)) },
-      { label: "Pending proposals", amount: Number(ledger.pending_proposals).toString() },
+      {
+        label: "Deposits cleared",
+        amount: formatCurrency(Number(ledger.deposits_received)),
+      },
+      {
+        label: "Active contracts",
+        amount: formatCurrency(Number(ledger.active_contracts)),
+      },
+      {
+        label: "Pending proposals",
+        amount: Number(ledger.pending_proposals).toString(),
+      },
     ];
 
     // Build finance alerts
     const financeAlerts = budgetAlerts.map((alert) => ({
       message: alert.message || `Budget alert: ${alert.alertType}`,
-      severity: Number(alert.utilization) >= 100 ? "High" : Number(alert.utilization) >= 90 ? "Medium" : "Low",
+      severity:
+        Number(alert.utilization) >= 100
+          ? "High"
+          : Number(alert.utilization) >= 90
+            ? "Medium"
+            : "Low",
     }));
 
     // If no alerts, add default alerts
     if (financeAlerts.length === 0) {
       financeAlerts.push(
-        { message: "Review event budgets before next cycle.", severity: "Low" as const },
-        { message: "All financial metrics within normal range.", severity: "Low" as const }
+        {
+          message: "Review event budgets before next cycle.",
+          severity: "Low" as const,
+        },
+        {
+          message: "All financial metrics within normal range.",
+          severity: "Low" as const,
+        }
       );
     }
 
@@ -285,7 +335,11 @@ export async function GET(request: Request) {
         actualOtherCost,
         totalCost,
         grossProfit: actualRevenue - totalCost - actualLaborCost,
-        grossProfitMargin: actualRevenue > 0 ? ((actualRevenue - totalCost - actualLaborCost) / actualRevenue) * 100 : 0,
+        grossProfitMargin:
+          actualRevenue > 0
+            ? ((actualRevenue - totalCost - actualLaborCost) / actualRevenue) *
+              100
+            : 0,
       },
     });
   } catch (error) {
@@ -298,11 +352,11 @@ export async function GET(request: Request) {
 }
 
 function formatCurrency(amount: number): string {
-  if (amount >= 1000000) {
-    return `$${(amount / 1000000).toFixed(1)}M`;
-  } else if (amount >= 1000) {
-    return `$${(amount / 1000).toFixed(0)}k`;
-  } else {
-    return `$${amount.toFixed(0)}`;
+  if (amount >= 1_000_000) {
+    return `$${(amount / 1_000_000).toFixed(1)}M`;
   }
+  if (amount >= 1000) {
+    return `$${(amount / 1000).toFixed(0)}k`;
+  }
+  return `$${amount.toFixed(0)}`;
 }

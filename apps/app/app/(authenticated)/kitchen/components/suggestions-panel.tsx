@@ -18,7 +18,10 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import type { SuggestedAction, SuggestionPriority } from "../lib/suggestions-types";
+import type {
+  SuggestedAction,
+  SuggestionPriority,
+} from "../lib/suggestions-types";
 
 type SuggestionsPanelProps = {
   suggestions: SuggestedAction[];

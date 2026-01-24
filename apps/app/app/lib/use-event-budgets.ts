@@ -3,8 +3,19 @@
 import { toast } from "sonner";
 
 // Types
-export type EventBudgetStatus = "draft" | "approved" | "active" | "completed" | "exceeded";
-export type BudgetLineItemCategory = "venue" | "catering" | "beverages" | "labor" | "equipment" | "other";
+export type EventBudgetStatus =
+  | "draft"
+  | "approved"
+  | "active"
+  | "completed"
+  | "exceeded";
+export type BudgetLineItemCategory =
+  | "venue"
+  | "catering"
+  | "beverages"
+  | "labor"
+  | "equipment"
+  | "other";
 
 export interface BudgetLineItem {
   id: string;
@@ -97,7 +108,8 @@ export function getStatusColor(status: EventBudgetStatus): string {
     draft: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
     approved: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
     active: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
-    completed: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100",
+    completed:
+      "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100",
     exceeded: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100",
   };
   return colors[status] || colors.draft;
@@ -106,10 +118,13 @@ export function getStatusColor(status: EventBudgetStatus): string {
 export function getCategoryColor(category: BudgetLineItemCategory): string {
   const colors = {
     venue: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
-    catering: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100",
-    beverages: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100",
+    catering:
+      "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100",
+    beverages:
+      "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100",
     labor: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
-    equipment: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100",
+    equipment:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100",
     other: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
   };
   return colors[category] || colors.other;
@@ -231,7 +246,9 @@ export async function deleteBudget(budgetId: string): Promise<void> {
 }
 
 // Line Item Functions
-export async function getLineItems(budgetId: string): Promise<BudgetLineItem[]> {
+export async function getLineItems(
+  budgetId: string
+): Promise<BudgetLineItem[]> {
   try {
     const response = await fetch(`${API_BASE}/${budgetId}/line-items`);
     if (!response.ok) {

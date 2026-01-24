@@ -82,7 +82,8 @@ export async function GET(request: Request) {
     const stationThroughput = stationMetrics.map((station) => {
       const totalItems = Number(station.total_items);
       const completedItems = Number(station.completed_items);
-      const completionRate = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+      const completionRate =
+        totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
       const avgMinutes = Number(station.avg_completion_minutes);
       const avgTime =
         avgMinutes > 0
@@ -93,14 +94,21 @@ export async function GET(request: Request) {
 
       // Calculate load based on pending items vs completed
       const pendingItems = totalItems - completedItems;
-      const load = totalItems > 0 ? Math.min(100, ((pendingItems + completedItems) / Math.max(1, completedItems)) * 50) : 0;
+      const load =
+        totalItems > 0
+          ? Math.min(
+              100,
+              ((pendingItems + completedItems) / Math.max(1, completedItems)) *
+                50
+            )
+          : 0;
 
       return {
         stationId: station.station_id,
         stationName: station.station_name,
         load: Math.round(load),
         completed: Math.round(completionRate),
-        avgTime: avgTime,
+        avgTime,
         totalItems,
         completedItems,
         pendingItems,
@@ -108,12 +116,11 @@ export async function GET(request: Request) {
     });
 
     // Get kitchen health metrics
-    const [prepListsSync, allergenWarnings, wasteAlerts, timeToCompletion] = await Promise.all([
-      // Prep lists sync rate
-      database.$queryRawUnsafe<
-        Array<{ total: string; completed: string }>
-      >(
-        `
+    const [prepListsSync, allergenWarnings, wasteAlerts, timeToCompletion] =
+      await Promise.all([
+        // Prep lists sync rate
+        database.$queryRawUnsafe<Array<{ total: string; completed: string }>>(
+          `
         SELECT
           COUNT(*)::int as total,
           COUNT(CASE WHEN status = 'finalized' THEN 1 END)::int as completed
@@ -122,32 +129,32 @@ export async function GET(request: Request) {
           AND generated_at >= $2
           AND deleted_at IS NULL
         `,
-        [tenantId, startDate]
-      ),
+          [tenantId, startDate]
+        ),
 
-      // Active allergen warnings
-      database.allergenWarning.count({
-        where: {
-          tenantId,
-          isAcknowledged: false,
-          deletedAt: null,
-          ...(locationId ? { tenantId: locationId } as any : {}),
-        },
-      }),
+        // Active allergen warnings
+        database.allergenWarning.count({
+          where: {
+            tenantId,
+            isAcknowledged: false,
+            deletedAt: null,
+            ...(locationId ? ({ tenantId: locationId } as any) : {}),
+          },
+        }),
 
-      // Waste entries in period (as alerts)
-      database.wasteEntry.count({
-        where: {
-          tenantId,
-          deletedAt: null,
-          loggedAt: { gte: startDate },
-          ...(locationId ? { locationId } : {}),
-        },
-      }),
+        // Waste entries in period (as alerts)
+        database.wasteEntry.count({
+          where: {
+            tenantId,
+            deletedAt: null,
+            loggedAt: { gte: startDate },
+            ...(locationId ? { locationId } : {}),
+          },
+        }),
 
-      // Average time to completion for prep tasks
-      database.$queryRawUnsafe<Array<{ avg_minutes: string }>>(
-        `
+        // Average time to completion for prep tasks
+        database.$queryRawUnsafe<Array<{ avg_minutes: string }>>(
+          `
         SELECT COALESCE(AVG(
           CASE
             WHEN pt.actual_minutes IS NOT NULL THEN pt.actual_minutes
@@ -162,14 +169,15 @@ export async function GET(request: Request) {
           AND pt.status = 'completed'
           AND pt.deleted_at IS NULL
         `,
-        [tenantId, startDate]
-      ),
-    ]);
+          [tenantId, startDate]
+        ),
+      ]);
 
     const prepListsData = prepListsSync[0] || { total: "0", completed: "0" };
     const totalPrepLists = Number(prepListsData.total);
     const completedPrepLists = Number(prepListsData.completed);
-    const prepListsSyncRate = totalPrepLists > 0 ? (completedPrepLists / totalPrepLists) * 100 : 100;
+    const prepListsSyncRate =
+      totalPrepLists > 0 ? (completedPrepLists / totalPrepLists) * 100 : 100;
 
     const avgCompletionMinutes = Number(timeToCompletion[0]?.avg_minutes || 0);
     const avgCompletionTime =
@@ -220,7 +228,10 @@ export async function GET(request: Request) {
     );
 
     // Group trends by date
-    const trendsByDate: Record<string, Record<string, { total: number; completed: number }>> = {};
+    const trendsByDate: Record<
+      string,
+      Record<string, { total: number; completed: number }>
+    > = {};
     for (const trend of stationTrends) {
       const date = trend.date;
       const station = trend.station_name;
@@ -243,7 +254,8 @@ export async function GET(request: Request) {
         stationName,
         total: data.total,
         completed: data.completed,
-        completionRate: data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0,
+        completionRate:
+          data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0,
       })),
     }));
 

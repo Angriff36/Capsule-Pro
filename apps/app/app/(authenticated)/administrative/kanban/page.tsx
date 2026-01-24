@@ -117,7 +117,7 @@ const AdministrativeKanbanPage = () => (
           Keep critical cross-functional requests visible and moving.
         </p>
       </div>
-      <Button variant="outline" className="gap-2">
+      <Button className="gap-2" variant="outline">
         Add board item
       </Button>
     </div>
@@ -132,8 +132,8 @@ const AdministrativeKanbanPage = () => (
           <CardContent className="space-y-3 overflow-hidden">
             {column.tasks.map((task) => (
               <div
-                key={task.id}
                 className="flex flex-col gap-2 rounded-md border border-border/50 bg-card/50 p-3"
+                key={task.id}
               >
                 <div className="flex items-center justify-between gap-2">
                   <h2 className="text-sm font-semibold leading-tight">

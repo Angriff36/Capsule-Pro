@@ -14,7 +14,9 @@ import type {
 } from "./types";
 import { ITEM_CONDITIONS, SHIPMENT_STATUSES } from "./types";
 
-export function validateShipmentStatus(value: unknown): asserts value is ShipmentStatus {
+export function validateShipmentStatus(
+  value: unknown
+): asserts value is ShipmentStatus {
   if (!value) {
     throw new InvariantError("Status is required");
   }
@@ -24,7 +26,9 @@ export function validateShipmentStatus(value: unknown): asserts value is Shipmen
   }
 }
 
-export function validateItemCondition(value: unknown): asserts value is ItemCondition {
+export function validateItemCondition(
+  value: unknown
+): asserts value is ItemCondition {
   if (!value) return;
   const condition = value as string;
   if (!ITEM_CONDITIONS.includes(condition as ItemCondition)) {
@@ -32,18 +36,26 @@ export function validateItemCondition(value: unknown): asserts value is ItemCond
   }
 }
 
-export function validateDateString(value: unknown, fieldName: string): asserts value is string {
+export function validateDateString(
+  value: unknown,
+  fieldName: string
+): asserts value is string {
   if (value === undefined || value === null) return;
   if (typeof value !== "string") {
     throw new InvariantError(fieldName + " must be a string");
   }
   const date = new Date(value);
   if (isNaN(date.getTime())) {
-    throw new InvariantError(fieldName + " must be a valid ISO 8601 date string");
+    throw new InvariantError(
+      fieldName + " must be a valid ISO 8601 date string"
+    );
   }
 }
 
-export function validateNonNegativeNumber(value: unknown, fieldName: string): asserts value is number {
+export function validateNonNegativeNumber(
+  value: unknown,
+  fieldName: string
+): asserts value is number {
   if (value === undefined || value === null) return;
   const num = Number(value);
   if (isNaN(num) || num < 0) {
@@ -51,7 +63,10 @@ export function validateNonNegativeNumber(value: unknown, fieldName: string): as
   }
 }
 
-export function validatePositiveNumber(value: unknown, fieldName: string): asserts value is number {
+export function validatePositiveNumber(
+  value: unknown,
+  fieldName: string
+): asserts value is number {
   if (value === undefined || value === null) {
     throw new InvariantError(fieldName + " is required");
   }
@@ -61,18 +76,24 @@ export function validatePositiveNumber(value: unknown, fieldName: string): asser
   }
 }
 
-export function validateUUID(value: unknown, fieldName: string): asserts value is string {
+export function validateUUID(
+  value: unknown,
+  fieldName: string
+): asserts value is string {
   if (value === undefined || value === null) return;
   if (typeof value !== "string") {
     throw new InvariantError(fieldName + " must be a string");
   }
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuidRegex.test(value)) {
     throw new InvariantError(fieldName + " must be a valid UUID");
   }
 }
 
-export function validateCreateShipmentRequest(data: unknown): asserts data is CreateShipmentRequest {
+export function validateCreateShipmentRequest(
+  data: unknown
+): asserts data is CreateShipmentRequest {
   if (!data || typeof data !== "object") {
     throw new InvariantError("Request body is required");
   }
@@ -84,12 +105,17 @@ export function validateCreateShipmentRequest(data: unknown): asserts data is Cr
   validateDateString(body.scheduled_date, "scheduled_date");
   validateDateString(body.estimated_delivery_date, "estimated_delivery_date");
   validateNonNegativeNumber(body.shipping_cost, "shipping_cost");
-  if (body.shipment_number !== undefined && typeof body.shipment_number !== "string") {
+  if (
+    body.shipment_number !== undefined &&
+    typeof body.shipment_number !== "string"
+  ) {
     throw new InvariantError("shipment_number must be a string");
   }
 }
 
-export function validateUpdateShipmentRequest(data: unknown): asserts data is UpdateShipmentRequest {
+export function validateUpdateShipmentRequest(
+  data: unknown
+): asserts data is UpdateShipmentRequest {
   if (!data || typeof data !== "object") {
     throw new InvariantError("Request body is required");
   }
@@ -104,7 +130,9 @@ export function validateUpdateShipmentRequest(data: unknown): asserts data is Up
   validateUUID(body.delivered_by, "delivered_by");
 }
 
-export function validateUpdateShipmentStatusRequest(data: unknown): asserts data is UpdateShipmentStatusRequest {
+export function validateUpdateShipmentStatusRequest(
+  data: unknown
+): asserts data is UpdateShipmentStatusRequest {
   if (!data || typeof data !== "object") {
     throw new InvariantError("Request body is required");
   }
@@ -117,7 +145,9 @@ export function validateUpdateShipmentStatusRequest(data: unknown): asserts data
   validateUUID(body.delivered_by, "delivered_by");
 }
 
-export function validateCreateShipmentItemRequest(data: unknown): asserts data is CreateShipmentItemRequest {
+export function validateCreateShipmentItemRequest(
+  data: unknown
+): asserts data is CreateShipmentItemRequest {
   if (!data || typeof data !== "object") {
     throw new InvariantError("Request body is required");
   }
@@ -132,7 +162,9 @@ export function validateCreateShipmentItemRequest(data: unknown): asserts data i
   if (body.condition) validateItemCondition(body.condition);
 }
 
-export function validateUpdateShipmentItemRequest(data: unknown): asserts data is UpdateShipmentItemRequest {
+export function validateUpdateShipmentItemRequest(
+  data: unknown
+): asserts data is UpdateShipmentItemRequest {
   if (!data || typeof data !== "object") {
     throw new InvariantError("Request body is required");
   }

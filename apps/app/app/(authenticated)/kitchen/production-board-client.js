@@ -1,0 +1,497 @@
+"use client";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ProductionBoardClient = ProductionBoardClient;
+const badge_1 = require("@repo/design-system/components/ui/badge");
+const button_1 = require("@repo/design-system/components/ui/button");
+const card_1 = require("@repo/design-system/components/ui/card");
+const input_1 = require("@repo/design-system/components/ui/input");
+const progress_1 = require("@repo/design-system/components/ui/progress");
+const date_fns_1 = require("date-fns");
+const lucide_react_1 = require("lucide-react");
+const navigation_1 = require("next/navigation");
+const react_1 = require("react");
+const task_card_1 = require("./task-card");
+const suggestions_panel_1 = require("./components/suggestions-panel");
+const use_suggestions_1 = require("./lib/use-suggestions");
+const STATIONS = [
+  { id: "all", label: "All Stations", icon: lucide_react_1.UtensilsCrossed },
+  { id: "hot-line", label: "Hot Line", icon: lucide_react_1.Flame },
+  { id: "cold-prep", label: "Cold Prep", icon: lucide_react_1.Snowflake },
+  { id: "bakery", label: "Bakery", icon: lucide_react_1.ChefHat },
+];
+function formatDateLabel(date) {
+  if ((0, date_fns_1.isToday)(date)) return "Today";
+  if ((0, date_fns_1.isYesterday)(date)) return "Yesterday";
+  return (0, date_fns_1.format)(date, "EEEE, MMM d");
+}
+function KitchenClock() {
+  const [time, setTime] = (0, react_1.useState)(new Date());
+  (0, react_1.useEffect)(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  return (
+    <div className="flex items-center gap-2 font-medium text-slate-600 text-sm">
+      <lucide_react_1.Clock className="h-4 w-4" />
+      <span>{(0, date_fns_1.format)(time, "h:mm:ss a")}</span>
+    </div>
+  );
+}
+function WeatherWidget() {
+  // Mock weather data - replace with real API in production
+  const weather = {
+    temp: 72,
+    condition: "sunny",
+    icon: lucide_react_1.Sun,
+  };
+  const Icon = weather.icon;
+  return (
+    <div className="flex items-center gap-3 rounded-lg bg-white px-3 py-2 shadow-sm ring-1 ring-slate-100">
+      <div className="flex items-center gap-1.5 text-amber-500">
+        <Icon className="h-5 w-5" />
+        <span className="font-semibold text-lg">{weather.temp}</span>
+      </div>
+      <div className="hidden sm:block">
+        <div className="font-medium text-slate-600 text-xs">Sunny</div>
+        <div className="text-slate-400 text-xs">Kitchen temp normal</div>
+      </div>
+    </div>
+  );
+}
+function DateNavigator({ selectedDate, onDateChange }) {
+  return (
+    <div className="flex items-center gap-2">
+      <button_1.Button
+        className="h-8 w-8 rounded-full"
+        onClick={() => onDateChange((0, date_fns_1.subDays)(selectedDate, 1))}
+        size="icon"
+        variant="outline"
+      >
+        <lucide_react_1.ChevronLeft className="h-4 w-4" />
+      </button_1.Button>
+      <div className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 shadow-sm ring-1 ring-slate-100">
+        <lucide_react_1.Calendar className="h-4 w-4 text-slate-400" />
+        <span className="font-medium text-slate-700">
+          {formatDateLabel(selectedDate)}
+        </span>
+      </div>
+      <button_1.Button
+        className="h-8 w-8 rounded-full"
+        onClick={() => onDateChange((0, date_fns_1.addDays)(selectedDate, 1))}
+        size="icon"
+        variant="outline"
+      >
+        <lucide_react_1.ChevronRight className="h-4 w-4" />
+      </button_1.Button>
+      <button_1.Button
+        className="ml-1 h-8 text-slate-500 hover:text-slate-700"
+        onClick={() => onDateChange(new Date())}
+        size="sm"
+        variant="ghost"
+      >
+        Today
+      </button_1.Button>
+    </div>
+  );
+}
+function StatsSidebar({
+  totalTasks,
+  pendingTasks,
+  inProgressTasks,
+  completedTasks,
+  myTasks,
+}) {
+  const completionRate =
+    totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  const stats = [
+    {
+      label: "Total Tasks",
+      value: totalTasks,
+      icon: lucide_react_1.Circle,
+      color: "text-slate-600",
+      bgColor: "bg-slate-100",
+    },
+    {
+      label: "Completed",
+      value: completedTasks,
+      icon: lucide_react_1.CheckCircle2,
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-100",
+    },
+    {
+      label: "In Progress",
+      value: inProgressTasks,
+      icon: lucide_react_1.Clock3,
+      color: "text-blue-600",
+      bgColor: "bg-blue-100",
+    },
+    {
+      label: "My Tasks",
+      value: myTasks,
+      icon: lucide_react_1.User,
+      color: "text-violet-600",
+      bgColor: "bg-violet-100",
+    },
+  ];
+  return (
+    <div className="space-y-4">
+      {/* Progress Card */}
+      <card_1.Card className="border-slate-200 shadow-sm">
+        <card_1.CardHeader className="pb-3">
+          <card_1.CardTitle className="flex items-center gap-2 font-semibold text-sm">
+            <lucide_react_1.TrendingUp className="h-4 w-4 text-slate-500" />
+            Shift Progress
+          </card_1.CardTitle>
+        </card_1.CardHeader>
+        <card_1.CardContent className="space-y-4">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-slate-600">Completion Rate</span>
+              <span className="font-semibold text-slate-800">
+                {completionRate}%
+              </span>
+            </div>
+            <progress_1.Progress className="h-2" value={completionRate} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {stats.slice(0, 2).map((stat) => (
+              <div
+                className="rounded-lg bg-slate-50 p-3 text-center"
+                key={stat.label}
+              >
+                <div className={`font-bold text-2xl ${stat.color}`}>
+                  {stat.value}
+                </div>
+                <div className="text-slate-500 text-xs">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </card_1.CardContent>
+      </card_1.Card>
+
+      {/* Quick Stats */}
+      <card_1.Card className="border-slate-200 shadow-sm">
+        <card_1.CardHeader className="pb-3">
+          <card_1.CardTitle className="font-semibold text-sm">
+            Quick Stats
+          </card_1.CardTitle>
+        </card_1.CardHeader>
+        <card_1.CardContent className="space-y-3">
+          {stats.slice(2).map((stat) => (
+            <div
+              className="flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-slate-50"
+              key={stat.label}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`rounded-md p-1.5 ${stat.bgColor}`}>
+                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                </div>
+                <span className="text-slate-600 text-sm">{stat.label}</span>
+              </div>
+              <span className="font-semibold text-slate-800">{stat.value}</span>
+            </div>
+          ))}
+        </card_1.CardContent>
+      </card_1.Card>
+
+      {/* Team Activity */}
+      <card_1.Card className="border-slate-200 shadow-sm">
+        <card_1.CardHeader className="pb-3">
+          <card_1.CardTitle className="font-semibold text-sm">
+            Team Activity
+          </card_1.CardTitle>
+        </card_1.CardHeader>
+        <card_1.CardContent className="space-y-3">
+          <div className="text-center py-4 text-muted-foreground text-sm">
+            Team activity tracking coming soon
+          </div>
+        </card_1.CardContent>
+      </card_1.Card>
+    </div>
+  );
+}
+function TaskColumn({
+  title,
+  tasks,
+  currentUserId,
+  icon: Icon,
+  count,
+  iconColor,
+}) {
+  return (
+    <div className="flex flex-col rounded-2xl bg-slate-50/50 p-4">
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className={`rounded-lg p-1.5 ${iconColor}`}>
+            <Icon className="h-4 w-4" />
+          </div>
+          <h3 className="font-semibold text-slate-700">{title}</h3>
+        </div>
+        <badge_1.Badge className="font-medium text-xs" variant="secondary">
+          {count}
+        </badge_1.Badge>
+      </div>
+      <div className="flex-1 space-y-3 overflow-y-auto">
+        {tasks.length === 0 ? (
+          <div className="flex h-32 flex-col items-center justify-center rounded-xl border-2 border-slate-200 border-dashed text-center">
+            <Icon className="h-6 w-6 text-slate-300" />
+            <p className="mt-2 text-slate-400 text-sm">No tasks</p>
+          </div>
+        ) : (
+          tasks.map((task) => (
+            <task_card_1.TaskCard
+              currentUserId={currentUserId}
+              key={task.id}
+              task={task}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+function ProductionBoardClient({ initialTasks, currentUserId, tenantId }) {
+  const router = (0, navigation_1.useRouter)();
+  const [selectedDate, setSelectedDate] = (0, react_1.useState)(new Date());
+  const [selectedStation, setSelectedStation] = (0, react_1.useState)("all");
+  const [searchQuery, setSearchQuery] = (0, react_1.useState)("");
+  const [showSuggestions, setShowSuggestions] = (0, react_1.useState)(false);
+  // Suggestions hook
+  const {
+    suggestions,
+    isLoading: suggestionsLoading,
+    fetchSuggestions,
+    dismissSuggestion,
+    handleAction,
+  } = (0, use_suggestions_1.useSuggestions)(tenantId);
+  // Fetch suggestions on mount
+  (0, react_1.useEffect)(() => {
+    if (tenantId && showSuggestions) {
+      fetchSuggestions();
+    }
+  }, [tenantId, showSuggestions, fetchSuggestions]);
+  // Filter tasks by search query and station
+  const filteredTasks = initialTasks.filter((task) => {
+    const matchesSearch =
+      searchQuery === "" ||
+      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.summary?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStation =
+      selectedStation === "all" ||
+      task.tags.includes(selectedStation.toLowerCase().replace(" ", "-"));
+    return matchesSearch && matchesStation;
+  });
+  // Group tasks by status
+  const pendingTasks = filteredTasks.filter(
+    (task) => task.status === "pending"
+  );
+  const inProgressTasks = filteredTasks.filter(
+    (task) => task.status === "in_progress"
+  );
+  const completedTasks = filteredTasks.filter(
+    (task) => task.status === "completed"
+  );
+  // Calculate my tasks
+  const myTasks = filteredTasks.filter((task) =>
+    task.claims.some(
+      (claim) => claim.employeeId === currentUserId && !claim.releasedAt
+    )
+  );
+  const handleCreateTask = (0, react_1.useCallback)(() => {
+    router.push("/kitchen/tasks/new");
+  }, [router]);
+  const currentStation = STATIONS.find((s) => s.id === selectedStation);
+  return (
+    <div className="flex min-h-screen flex-col bg-slate-50">
+      {/* Header */}
+      <header className="sticky top-0 z-10 border-slate-200 border-b bg-white/80 backdrop-blur-md">
+        <div className="flex flex-col gap-4 px-6 py-4">
+          {/* Top Row: Date Navigation and Actions */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <DateNavigator
+                onDateChange={setSelectedDate}
+                selectedDate={selectedDate}
+              />
+              <div className="hidden sm:block">
+                <KitchenClock />
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <WeatherWidget />
+              <button_1.Button
+                className="gap-2"
+                onClick={() => setShowSuggestions((prev) => !prev)}
+                size="sm"
+                variant={showSuggestions ? "default" : "outline"}
+              >
+                <lucide_react_1.Sparkles className="h-4 w-4" />
+                <span className="hidden sm:inline">AI Tips</span>
+                {suggestions.length > 0 && (
+                  <badge_1.Badge className="ml-1 h-5 px-1" variant="secondary">
+                    {suggestions.length}
+                  </badge_1.Badge>
+                )}
+              </button_1.Button>
+              <button_1.Button
+                className="gap-2 bg-slate-900 text-white hover:bg-slate-800"
+                onClick={handleCreateTask}
+              >
+                <lucide_react_1.Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Add Task</span>
+              </button_1.Button>
+            </div>
+          </div>
+
+          {/* Bottom Row: Station Tabs and Search */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            {/* Station Tabs */}
+            <div className="flex items-center gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1">
+              {STATIONS.map((station) => {
+                const Icon = station.icon;
+                const isActive = selectedStation === station.id;
+                return (
+                  <button
+                    className={`flex items-center gap-2 rounded-lg px-4 py-2 font-medium text-sm transition-all ${
+                      isActive
+                        ? "bg-white text-slate-900 shadow-sm"
+                        : "text-slate-500 hover:text-slate-700"
+                    }`}
+                    key={station.id}
+                    onClick={() => setSelectedStation(station.id)}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span className="xs:inline hidden">{station.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Search */}
+            <div className="relative w-full sm:w-72">
+              <lucide_react_1.Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input_1.Input
+                className="pl-10"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search tasks..."
+                value={searchQuery}
+              />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 p-6">
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+          {/* Task Board */}
+          <div className="space-y-6">
+            {/* My Tasks Section */}
+            {myTasks.length > 0 && (
+              <section className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-semibold text-lg text-slate-800">
+                    My Tasks
+                  </h2>
+                  <badge_1.Badge variant="secondary">
+                    {myTasks.length} assigned
+                  </badge_1.Badge>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {myTasks.map((task) => (
+                    <task_card_1.TaskCard
+                      currentUserId={currentUserId}
+                      key={task.id}
+                      task={task}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Kanban Board */}
+            <div className="grid gap-4 lg:grid-cols-3">
+              <TaskColumn
+                count={pendingTasks.length}
+                currentUserId={currentUserId}
+                icon={lucide_react_1.Circle}
+                iconColor="bg-amber-100 text-amber-600"
+                tasks={pendingTasks}
+                title="Pending"
+              />
+              <TaskColumn
+                count={inProgressTasks.length}
+                currentUserId={currentUserId}
+                icon={lucide_react_1.Clock3}
+                iconColor="bg-blue-100 text-blue-600"
+                tasks={inProgressTasks}
+                title="In Progress"
+              />
+              <TaskColumn
+                count={completedTasks.length}
+                currentUserId={currentUserId}
+                icon={lucide_react_1.CheckCircle2}
+                iconColor="bg-emerald-100 text-emerald-600"
+                tasks={completedTasks}
+                title="Completed"
+              />
+            </div>
+          </div>
+
+          {/* Stats Sidebar / Suggestions Panel */}
+          <aside className="space-y-4">
+            {showSuggestions ? (
+              <card_1.Card className="border-slate-200 shadow-sm">
+                <suggestions_panel_1.SuggestionsPanel
+                  isLoading={suggestionsLoading}
+                  onAction={handleAction}
+                  onClose={() => setShowSuggestions(false)}
+                  onDismiss={dismissSuggestion}
+                  onRefresh={fetchSuggestions}
+                  suggestions={suggestions}
+                />
+              </card_1.Card>
+            ) : (
+              <>
+                <StatsSidebar
+                  completedTasks={completedTasks.length}
+                  inProgressTasks={inProgressTasks.length}
+                  myTasks={myTasks.length}
+                  pendingTasks={pendingTasks.length}
+                  totalTasks={filteredTasks.length}
+                />
+                {/* AI Suggestions teaser */}
+                {suggestions.length > 0 && (
+                  <card_1.Card className="border-purple-200 bg-purple-50/50 shadow-sm">
+                    <card_1.CardHeader className="pb-3">
+                      <card_1.CardTitle className="flex items-center gap-2 font-semibold text-sm text-purple-900">
+                        <lucide_react_1.Lightbulb className="h-4 w-4 text-purple-600" />
+                        AI Suggestions Available
+                      </card_1.CardTitle>
+                    </card_1.CardHeader>
+                    <card_1.CardContent className="space-y-3">
+                      <p className="text-purple-700 text-xs">
+                        You have {suggestions.length} suggestion
+                        {suggestions.length !== 1 ? "s" : ""} that could help
+                        optimize your kitchen operations.
+                      </p>
+                      <button_1.Button
+                        className="w-full bg-purple-600 text-white hover:bg-purple-700"
+                        onClick={() => setShowSuggestions(true)}
+                        size="sm"
+                      >
+                        <lucide_react_1.Sparkles className="h-3 w-3" />
+                        View Suggestions
+                      </button_1.Button>
+                    </card_1.CardContent>
+                  </card_1.Card>
+                )}
+              </>
+            )}
+          </aside>
+        </div>
+      </main>
+    </div>
+  );
+}

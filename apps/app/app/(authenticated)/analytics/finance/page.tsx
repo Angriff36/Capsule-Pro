@@ -5,7 +5,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { useFinanceAnalytics, getSeverityVariant } from "@/app/lib/use-finance-analytics";
+import {
+  getSeverityVariant,
+  useFinanceAnalytics,
+} from "@/app/lib/use-finance-analytics";
 
 function FinanceAnalyticsPageClient() {
   const { data, isLoading, error, refetch } = useFinanceAnalytics({
@@ -18,7 +21,7 @@ function FinanceAnalyticsPageClient() {
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-3">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
+            <Card className="animate-pulse" key={i}>
               <CardHeader>
                 <div className="h-6 bg-muted rounded w-24" />
               </CardHeader>
@@ -38,11 +41,13 @@ function FinanceAnalyticsPageClient() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
-        <p className="text-lg font-medium text-destructive">Failed to load finance analytics</p>
+        <p className="text-lg font-medium text-destructive">
+          Failed to load finance analytics
+        </p>
         <p className="text-sm text-muted-foreground mt-2">{error.message}</p>
         <button
-          onClick={() => refetch()}
           className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+          onClick={() => refetch()}
         >
           Retry
         </button>
@@ -62,13 +67,23 @@ function FinanceAnalyticsPageClient() {
         {financeHighlights.map((item) => (
           <Card key={item.label}>
             <CardHeader>
-              <CardTitle className={item.isPositive !== undefined ? (item.isPositive ? "text-green-600" : "text-orange-600") : ""}>
+              <CardTitle
+                className={
+                  item.isPositive !== undefined
+                    ? item.isPositive
+                      ? "text-green-600"
+                      : "text-orange-600"
+                    : ""
+                }
+              >
                 {item.value}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">{item.label}</p>
-              <p className={`text-xs ${item.isPositive !== undefined ? (item.isPositive ? "text-green-600" : "text-orange-600") : "text-muted-foreground"}`}>
+              <p
+                className={`text-xs ${item.isPositive !== undefined ? (item.isPositive ? "text-green-600" : "text-orange-600") : "text-muted-foreground"}`}
+              >
                 {item.trend}
               </p>
             </CardContent>
@@ -83,7 +98,10 @@ function FinanceAnalyticsPageClient() {
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             {ledgerSummary.map((row) => (
-              <div key={row.label} className="flex items-center justify-between">
+              <div
+                className="flex items-center justify-between"
+                key={row.label}
+              >
                 <p className="text-muted-foreground">{row.label}</p>
                 <p className="font-semibold">{row.amount}</p>
               </div>
@@ -98,8 +116,8 @@ function FinanceAnalyticsPageClient() {
           <CardContent className="space-y-3 text-sm">
             {financeAlerts.map((alert, index) => (
               <div
-                key={index}
                 className="flex items-center justify-between rounded-md border border-border/70 px-4 py-3"
+                key={index}
               >
                 <p>{alert.message}</p>
                 <Badge variant={getSeverityVariant(alert.severity)}>

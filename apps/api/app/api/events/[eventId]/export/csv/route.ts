@@ -25,7 +25,11 @@ function escapeCSV(value: string | number | null | undefined): string {
   }
   const strValue = String(value);
   // If value contains comma, quote, or newline, wrap in quotes and escape quotes
-  if (strValue.includes(",") || strValue.includes('"') || strValue.includes("\n")) {
+  if (
+    strValue.includes(",") ||
+    strValue.includes('"') ||
+    strValue.includes("\n")
+  ) {
     return `"${strValue.replace(/"/g, '""')}"`;
   }
   return strValue;
@@ -211,7 +215,9 @@ export async function GET(
 
       if (guests.length > 0) {
         csvRows.push("Guest List");
-        csvRows.push("Guest Name,Dietary Restrictions,Meal Choice,Table Number");
+        csvRows.push(
+          "Guest Name,Dietary Restrictions,Meal Choice,Table Number"
+        );
         for (const guest of guests) {
           csvRows.push(
             `${escapeCSV(guest.guest_name)},${escapeCSV(guest.dietary_restrictions)},${escapeCSV(guest.meal_choice)},${escapeCSV(guest.table_number)}`

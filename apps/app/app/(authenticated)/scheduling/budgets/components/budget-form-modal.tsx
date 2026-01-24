@@ -20,16 +20,16 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Switch } from "@repo/design-system/components/ui/switch";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import type {
-  BudgetType,
-  BudgetUnit,
-  BudgetStatus,
-  CreateBudgetInput,
-  UpdateBudgetInput,
-  LaborBudget,
-} from "@/app/lib/use-labor-budgets";
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
+import type {
+  BudgetStatus,
+  BudgetType,
+  BudgetUnit,
+  CreateBudgetInput,
+  LaborBudget,
+  UpdateBudgetInput,
+} from "@/app/lib/use-labor-budgets";
 
 interface BudgetFormModalProps {
   open: boolean;
@@ -84,10 +84,9 @@ export function BudgetFormModal({
     }
     if (
       (formData.budgetType === "week" || formData.budgetType === "month") &&
-      (!formData.periodStart || !formData.periodEnd)
+      !(formData.periodStart && formData.periodEnd)
     ) {
-      newErrors.period =
-        "Start and end dates are required for period budgets";
+      newErrors.period = "Start and end dates are required for period budgets";
     }
 
     setErrors(newErrors);
@@ -134,7 +133,7 @@ export function BudgetFormModal({
   const showEventField = formData.budgetType === "event";
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog onOpenChange={onClose} open={open}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
@@ -147,7 +146,7 @@ export function BudgetFormModal({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form className="space-y-6" onSubmit={handleSubmit}>
           {/* Basic Info */}
           <div className="space-y-4">
             <div className="space-y-2">
@@ -155,13 +154,13 @@ export function BudgetFormModal({
                 Budget Name <span className="text-red-500">*</span>
               </Label>
               <Input
+                disabled={loading}
                 id="name"
-                value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
                 placeholder="e.g., Weekly Kitchen Staff Budget"
-                disabled={loading}
+                value={formData.name}
               />
               {errors.name && (
                 <p className="text-sm text-red-500">{errors.name}</p>
@@ -171,14 +170,14 @@ export function BudgetFormModal({
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
+                disabled={loading}
                 id="description"
-                value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
                 placeholder="Optional description of this budget..."
                 rows={2}
-                disabled={loading}
+                value={formData.description}
               />
             </div>
           </div>
@@ -191,11 +190,11 @@ export function BudgetFormModal({
                   Budget Type <span className="text-red-500">*</span>
                 </Label>
                 <Select
-                  value={formData.budgetType}
+                  disabled={loading}
                   onValueChange={(value: BudgetType) =>
                     setFormData({ ...formData, budgetType: value })
                   }
-                  disabled={loading}
+                  value={formData.budgetType}
                 >
                   <SelectTrigger id="budgetType">
                     <SelectValue placeholder="Select type" />
@@ -213,11 +212,11 @@ export function BudgetFormModal({
                   Budget Unit <span className="text-red-500">*</span>
                 </Label>
                 <Select
-                  value={formData.budgetUnit}
+                  disabled={loading}
                   onValueChange={(value: BudgetUnit) =>
                     setFormData({ ...formData, budgetUnit: value })
                   }
-                  disabled={loading}
+                  value={formData.budgetUnit}
                 >
                   <SelectTrigger id="budgetUnit">
                     <SelectValue placeholder="Select unit" />
@@ -241,21 +240,21 @@ export function BudgetFormModal({
               <span className="text-red-500">*</span>
             </Label>
             <Input
+              disabled={loading}
               id="budgetTarget"
-              type="number"
-              step="0.01"
               min="0"
-              value={formData.budgetTarget}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  budgetTarget: parseFloat(e.target.value) || 0,
+                  budgetTarget: Number.parseFloat(e.target.value) || 0,
                 })
               }
               placeholder={
                 formData.budgetUnit === "cost" ? "5000.00" : "160.00"
               }
-              disabled={loading}
+              step="0.01"
+              type="number"
+              value={formData.budgetTarget}
             />
             {errors.budgetTarget && (
               <p className="text-sm text-red-500">{errors.budgetTarget}</p>
@@ -269,13 +268,13 @@ export function BudgetFormModal({
                 Event ID <span className="text-red-500">*</span>
               </Label>
               <Input
+                disabled={loading}
                 id="eventId"
-                value={formData.eventId}
                 onChange={(e) =>
                   setFormData({ ...formData, eventId: e.target.value })
                 }
                 placeholder="Enter event ID..."
-                disabled={loading}
+                value={formData.eventId}
               />
               {errors.eventId && (
                 <p className="text-sm text-red-500">{errors.eventId}</p>
@@ -291,13 +290,13 @@ export function BudgetFormModal({
             <div className="space-y-2">
               <Label htmlFor="locationId">Location ID (Optional)</Label>
               <Input
+                disabled={loading}
                 id="locationId"
-                value={formData.locationId}
                 onChange={(e) =>
                   setFormData({ ...formData, locationId: e.target.value })
                 }
                 placeholder="Leave blank for tenant-wide budget"
-                disabled={loading}
+                value={formData.locationId}
               />
               <p className="text-xs text-gray-500">
                 If specified, this budget applies only to this location.
@@ -313,13 +312,13 @@ export function BudgetFormModal({
                   Period Start <span className="text-red-500">*</span>
                 </Label>
                 <Input
+                  disabled={loading}
                   id="periodStart"
-                  type="date"
-                  value={formData.periodStart}
                   onChange={(e) =>
                     setFormData({ ...formData, periodStart: e.target.value })
                   }
-                  disabled={loading}
+                  type="date"
+                  value={formData.periodStart}
                 />
               </div>
 
@@ -328,13 +327,13 @@ export function BudgetFormModal({
                   Period End <span className="text-red-500">*</span>
                 </Label>
                 <Input
+                  disabled={loading}
                   id="periodEnd"
-                  type="date"
-                  value={formData.periodEnd}
                   onChange={(e) =>
                     setFormData({ ...formData, periodEnd: e.target.value })
                   }
-                  disabled={loading}
+                  type="date"
+                  value={formData.periodEnd}
                 />
               </div>
               {errors.period && (
@@ -350,11 +349,11 @@ export function BudgetFormModal({
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <Select
-                value={formData.status}
+                disabled={loading}
                 onValueChange={(value: BudgetStatus) =>
                   setFormData({ ...formData, status: value })
                 }
-                disabled={loading}
+                value={formData.status}
               >
                 <SelectTrigger id="status">
                   <SelectValue />
@@ -373,14 +372,14 @@ export function BudgetFormModal({
             <div className="space-y-2">
               <Label htmlFor="overrideReason">Override Reason</Label>
               <Textarea
+                disabled={loading}
                 id="overrideReason"
-                value={formData.overrideReason}
                 onChange={(e) =>
                   setFormData({ ...formData, overrideReason: e.target.value })
                 }
                 placeholder="Explain why this budget is being overridden..."
                 rows={2}
-                disabled={loading}
+                value={formData.overrideReason}
               />
             </div>
           )}
@@ -394,7 +393,7 @@ export function BudgetFormModal({
 
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="threshold80Pct" className="cursor-pointer">
+                <Label className="cursor-pointer" htmlFor="threshold80Pct">
                   80% Alert
                 </Label>
                 <p className="text-xs text-gray-500">
@@ -402,18 +401,18 @@ export function BudgetFormModal({
                 </p>
               </div>
               <Switch
-                id="threshold80Pct"
                 checked={formData.threshold80Pct}
+                disabled={loading}
+                id="threshold80Pct"
                 onCheckedChange={(checked) =>
                   setFormData({ ...formData, threshold80Pct: checked })
                 }
-                disabled={loading}
               />
             </div>
 
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="threshold90Pct" className="cursor-pointer">
+                <Label className="cursor-pointer" htmlFor="threshold90Pct">
                   90% Warning
                 </Label>
                 <p className="text-xs text-gray-500">
@@ -421,18 +420,18 @@ export function BudgetFormModal({
                 </p>
               </div>
               <Switch
-                id="threshold90Pct"
                 checked={formData.threshold90Pct}
+                disabled={loading}
+                id="threshold90Pct"
                 onCheckedChange={(checked) =>
                   setFormData({ ...formData, threshold90Pct: checked })
                 }
-                disabled={loading}
               />
             </div>
 
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="threshold100Pct" className="cursor-pointer">
+                <Label className="cursor-pointer" htmlFor="threshold100Pct">
                   100% Critical
                 </Label>
                 <p className="text-xs text-gray-500">
@@ -440,26 +439,26 @@ export function BudgetFormModal({
                 </p>
               </div>
               <Switch
-                id="threshold100Pct"
                 checked={formData.threshold100Pct}
+                disabled={loading}
+                id="threshold100Pct"
                 onCheckedChange={(checked) =>
                   setFormData({ ...formData, threshold100Pct: checked })
                 }
-                disabled={loading}
               />
             </div>
           </div>
 
           <DialogFooter>
             <Button
+              disabled={loading}
+              onClick={onClose}
               type="button"
               variant="outline"
-              onClick={onClose}
-              disabled={loading}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button disabled={loading} type="submit">
               {loading && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
               {isEditing ? "Save Changes" : "Create Budget"}
             </Button>

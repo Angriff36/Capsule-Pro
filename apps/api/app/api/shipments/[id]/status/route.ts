@@ -38,10 +38,14 @@ function validateStatusTransition(currentStatus: string, newStatus: string) {
 function validateDeliveryConfirmation(status: string, body: any) {
   if (status === "delivered") {
     if (!body.actual_delivery_date) {
-      throw new InvariantError("actual_delivery_date is required when marking as delivered");
+      throw new InvariantError(
+        "actual_delivery_date is required when marking as delivered"
+      );
     }
     if (!body.delivered_by) {
-      throw new InvariantError("delivered_by is required when marking as delivered");
+      throw new InvariantError(
+        "delivered_by is required when marking as delivered"
+      );
     }
   }
 }
@@ -58,7 +62,10 @@ export async function POST(
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const { id } = await params;
@@ -74,7 +81,10 @@ export async function POST(
     });
 
     if (!existing) {
-      return NextResponse.json({ message: "Shipment not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Shipment not found" },
+        { status: 404 }
+      );
     }
 
     // Validate status transition
@@ -87,10 +97,14 @@ export async function POST(
     const updateData: any = { status: body.status };
 
     if (body.shipped_date !== undefined) {
-      updateData.shippedDate = body.shipped_date ? new Date(body.shipped_date) : null;
+      updateData.shippedDate = body.shipped_date
+        ? new Date(body.shipped_date)
+        : null;
     }
     if (body.actual_delivery_date !== undefined) {
-      updateData.actualDeliveryDate = body.actual_delivery_date ? new Date(body.actual_delivery_date) : null;
+      updateData.actualDeliveryDate = body.actual_delivery_date
+        ? new Date(body.actual_delivery_date)
+        : null;
     }
     if (body.delivered_by !== undefined) {
       updateData.deliveredBy = body.delivered_by;
@@ -126,7 +140,10 @@ export async function POST(
     });
 
     if (!updated) {
-      return NextResponse.json({ message: "Shipment not found after update" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Shipment not found after update" },
+        { status: 404 }
+      );
     }
 
     const mappedShipment = {
@@ -192,9 +209,10 @@ export async function POST(
 
         // Process each shipment item
         for (const item of shipmentItems) {
-          const receivedQuantity = Number(item.quantity_received) > 0
-            ? Number(item.quantity_received)
-            : Number(item.quantity_shipped);
+          const receivedQuantity =
+            Number(item.quantity_received) > 0
+              ? Number(item.quantity_received)
+              : Number(item.quantity_shipped);
 
           const damagedQuantity = Number(item.quantity_damaged) || 0;
           const goodQuantity = receivedQuantity - damagedQuantity;
@@ -215,9 +233,13 @@ export async function POST(
               ${item.unit_cost}::numeric,
               ${goodQuantity * Number(item.unit_cost)}::numeric,
               ${updated.shipmentNumber}::text,
-              ${`Received from shipment ${updated.shipmentNumber}` +
+              ${
+                `Received from shipment ${updated.shipmentNumber}` +
                 (item.lot_number ? ` (Lot: ${item.lot_number})` : "") +
-                (item.expiration_date ? ` (Expires: ${item.expiration_date.toISOString().split("T")[0]})` : "")}::text,
+                (item.expiration_date
+                  ? ` (Expires: ${item.expiration_date.toISOString().split("T")[0]})`
+                  : "")
+              }::text,
               CURRENT_TIMESTAMP,
               ${userId}::uuid,
               ${"shipment"}::text,
@@ -238,7 +260,10 @@ export async function POST(
           `;
         }
       } catch (inventoryError) {
-        console.error("Failed to update inventory for delivered shipment:", inventoryError);
+        console.error(
+          "Failed to update inventory for delivered shipment:",
+          inventoryError
+        );
         // Continue with the response even if inventory update fails
       }
     }
@@ -249,6 +274,9 @@ export async function POST(
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
     console.error("Failed to update shipment status:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

@@ -2,8 +2,8 @@ import { auth } from "@repo/auth/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  getBudgetAlerts,
   acknowledgeBudgetAlert,
+  getBudgetAlerts,
   resolveBudgetAlert,
 } from "@/lib/staff/labor-budget";
 
@@ -32,7 +32,12 @@ export async function GET(request: Request) {
   try {
     const alerts = await getBudgetAlerts(tenantId, {
       budgetId,
-      isAcknowledged: isAcknowledged === "true" ? true : isAcknowledged === "false" ? false : undefined,
+      isAcknowledged:
+        isAcknowledged === "true"
+          ? true
+          : isAcknowledged === "false"
+            ? false
+            : undefined,
       alertType,
     });
 
@@ -70,7 +75,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!action || !["acknowledge", "resolve"].includes(action)) {
+  if (!(action && ["acknowledge", "resolve"].includes(action))) {
     return NextResponse.json(
       { message: "Action must be either 'acknowledge' or 'resolve'" },
       { status: 400 }

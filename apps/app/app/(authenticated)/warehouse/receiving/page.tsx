@@ -22,13 +22,13 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import {
-  searchPurchaseOrderByNumber,
-  updatePurchaseOrderItemQuantity,
-  updatePurchaseOrderItemQuality,
   completePurchaseOrderReceiving,
+  type DiscrepancyType,
   type PurchaseOrderWithDetails,
   type QualityStatus,
-  type DiscrepancyType,
+  searchPurchaseOrderByNumber,
+  updatePurchaseOrderItemQuality,
+  updatePurchaseOrderItemQuantity,
 } from "@/app/lib/use-purchase-orders";
 
 // Local state type that extends API response with isDirty flag
@@ -126,7 +126,9 @@ export default function ReceivingPage() {
       );
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update quality status"
+        error instanceof Error
+          ? error.message
+          : "Failed to update quality status"
       );
       // Revert optimistic update
       setSelectedPO({ ...selectedPO, items: selectedPO.items });
@@ -307,7 +309,9 @@ export default function ReceivingPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold">{item.item_name || "Unknown Item"}</h3>
+                          <h3 className="font-semibold">
+                            {item.item_name || "Unknown Item"}
+                          </h3>
                           <Badge variant="secondary">{item.item_number}</Badge>
                           <Badge
                             className={getQualityBadge(item.quality_status)}
@@ -464,7 +468,9 @@ export default function ReceivingPage() {
                   </span>
                   <span className="font-semibold">
                     {selectedPO.expected_delivery_date
-                      ? new Date(selectedPO.expected_delivery_date).toLocaleDateString()
+                      ? new Date(
+                          selectedPO.expected_delivery_date
+                        ).toLocaleDateString()
                       : "N/A"}
                   </span>
                 </div>

@@ -35,13 +35,12 @@ import {
   TrendingUp,
   User as UserIcon,
   UtensilsCrossed,
-  X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { TaskCard } from "./task-card";
 import { SuggestionsPanel } from "./components/suggestions-panel";
 import { useSuggestions } from "./lib/use-suggestions";
+import { TaskCard } from "./task-card";
 
 type UserSelect = Pick<
   DbUser,
@@ -524,12 +523,12 @@ export function ProductionBoardClient({
             {showSuggestions ? (
               <Card className="border-slate-200 shadow-sm">
                 <SuggestionsPanel
-                  suggestions={suggestions}
                   isLoading={suggestionsLoading}
-                  onDismiss={dismissSuggestion}
-                  onRefresh={fetchSuggestions}
                   onAction={handleAction}
                   onClose={() => setShowSuggestions(false)}
+                  onDismiss={dismissSuggestion}
+                  onRefresh={fetchSuggestions}
+                  suggestions={suggestions}
                 />
               </Card>
             ) : (
@@ -552,7 +551,9 @@ export function ProductionBoardClient({
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <p className="text-purple-700 text-xs">
-                        You have {suggestions.length} suggestion{suggestions.length !== 1 ? "s" : ""} that could help optimize your kitchen operations.
+                        You have {suggestions.length} suggestion
+                        {suggestions.length !== 1 ? "s" : ""} that could help
+                        optimize your kitchen operations.
                       </p>
                       <Button
                         className="w-full bg-purple-600 text-white hover:bg-purple-700"

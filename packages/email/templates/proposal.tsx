@@ -39,7 +39,8 @@ export const ProposalTemplate = ({
               </Text>
               <Text className="m-0 text-zinc-500">Dear {recipientName},</Text>
               <Text className="mt-4 text-zinc-500">
-                We are pleased to present our proposal: <strong>{proposalTitle}</strong>
+                We are pleased to present our proposal:{" "}
+                <strong>{proposalTitle}</strong>
               </Text>
               {totalAmount && (
                 <Text className="mt-2 text-zinc-500">
@@ -61,8 +62,8 @@ export const ProposalTemplate = ({
                 </Button>
               </Section>
               <Text className="m-0 text-sm text-zinc-400">
-                If the button above doesn't work, you can copy and paste this link into
-                your browser:
+                If the button above doesn't work, you can copy and paste this
+                link into your browser:
               </Text>
               <Text className="text-sm text-zinc-400">{proposalUrl}</Text>
               <Hr className="my-6 border-zinc-200" />

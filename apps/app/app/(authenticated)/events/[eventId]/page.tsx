@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
-import { EventDetailsClient } from "./event-details-client";
 import { EventExportButton } from "./components/export-button";
+import { EventDetailsClient } from "./event-details-client";
 import { validatePrepTasks } from "./prep-task-contract";
 
 type EventDetailsPageProps = {

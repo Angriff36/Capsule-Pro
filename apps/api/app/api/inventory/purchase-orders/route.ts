@@ -7,7 +7,6 @@
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
-import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
   PurchaseOrderListFilters,
@@ -74,7 +73,9 @@ function parsePurchaseOrderFilters(
 /**
  * Calculate receiving progress for a purchase order
  */
-function calculateProgress(items: Array<{ quantity_ordered: number; quantity_received: number }>) {
+function calculateProgress(
+  items: Array<{ quantity_ordered: number; quantity_received: number }>
+) {
   const totalItems = items.length;
   const receivedItems = items.filter(
     (item) => Number(item.quantity_received) >= Number(item.quantity_ordered)

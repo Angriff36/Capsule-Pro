@@ -133,10 +133,7 @@ export async function POST(request: Request, context: RouteContext) {
         );
       }
       if (error instanceof InvariantError) {
-        return NextResponse.json(
-          { message: error.message },
-          { status: 400 }
-        );
+        return NextResponse.json({ message: error.message }, { status: 400 });
       }
     }
     console.error("Error creating budget line item:", error);
@@ -161,10 +158,17 @@ async function updateBudgetTotals(tenantId: string, budgetId: string) {
   });
 
   // Calculate totals
-  const totalBudgeted = lineItems.reduce((sum, item) => sum + Number(item.budgetedAmount), 0);
-  const totalActual = lineItems.reduce((sum, item) => sum + Number(item.actualAmount), 0);
+  const totalBudgeted = lineItems.reduce(
+    (sum, item) => sum + Number(item.budgetedAmount),
+    0
+  );
+  const totalActual = lineItems.reduce(
+    (sum, item) => sum + Number(item.actualAmount),
+    0
+  );
   const varianceAmount = totalBudgeted - totalActual;
-  const variancePercentage = totalBudgeted > 0 ? (varianceAmount / totalBudgeted) * 100 : 0;
+  const variancePercentage =
+    totalBudgeted > 0 ? (varianceAmount / totalBudgeted) * 100 : 0;
 
   // Update budget
   await database.eventBudget.update({

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import type { SuggestedAction, SuggestionsResponse } from "./suggestions-types";
 
 export function useSuggestions(tenantId?: string | null) {

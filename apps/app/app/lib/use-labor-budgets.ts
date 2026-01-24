@@ -5,7 +5,11 @@
 export type BudgetType = "event" | "week" | "month";
 export type BudgetUnit = "hours" | "cost";
 export type BudgetStatus = "active" | "paused" | "archived";
-export type AlertType = "threshold_80" | "threshold_90" | "threshold_100" | "exceeded";
+export type AlertType =
+  | "threshold_80"
+  | "threshold_90"
+  | "threshold_100"
+  | "exceeded";
 
 export interface LaborBudget {
   id: string;
@@ -107,7 +111,9 @@ const API_BASE = "/api/staff/budgets";
 /**
  * Get all labor budgets with optional filters
  */
-export async function getBudgets(filters?: BudgetFilters): Promise<LaborBudget[]> {
+export async function getBudgets(
+  filters?: BudgetFilters
+): Promise<LaborBudget[]> {
   const params = new URLSearchParams();
   if (filters?.locationId) params.set("locationId", filters.locationId);
   if (filters?.eventId) params.set("eventId", filters.eventId);
@@ -126,7 +132,9 @@ export async function getBudgets(filters?: BudgetFilters): Promise<LaborBudget[]
 /**
  * Get a single budget by ID with utilization
  */
-export async function getBudgetById(id: string): Promise<BudgetWithUtilization> {
+export async function getBudgetById(
+  id: string
+): Promise<BudgetWithUtilization> {
   const response = await fetch(`${API_BASE}/${id}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch budget: ${response.statusText}`);
@@ -139,7 +147,9 @@ export async function getBudgetById(id: string): Promise<BudgetWithUtilization> 
 /**
  * Create a new labor budget
  */
-export async function createBudget(input: CreateBudgetInput): Promise<LaborBudget> {
+export async function createBudget(
+  input: CreateBudgetInput
+): Promise<LaborBudget> {
   const response = await fetch(API_BASE, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -195,7 +205,9 @@ export async function deleteBudget(id: string): Promise<{ success: boolean }> {
 /**
  * Get budget alerts with optional filters
  */
-export async function getBudgetAlerts(filters?: AlertFilters): Promise<BudgetAlert[]> {
+export async function getBudgetAlerts(
+  filters?: AlertFilters
+): Promise<BudgetAlert[]> {
   const params = new URLSearchParams();
   if (filters?.budgetId) params.set("budgetId", filters.budgetId);
   if (filters?.isAcknowledged !== undefined) {
@@ -215,7 +227,9 @@ export async function getBudgetAlerts(filters?: AlertFilters): Promise<BudgetAle
 /**
  * Acknowledge a budget alert
  */
-export async function acknowledgeAlert(alertId: string): Promise<{ success: boolean }> {
+export async function acknowledgeAlert(
+  alertId: string
+): Promise<{ success: boolean }> {
   const response = await fetch(`${API_BASE}/alerts`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -232,7 +246,9 @@ export async function acknowledgeAlert(alertId: string): Promise<{ success: bool
 /**
  * Resolve a budget alert
  */
-export async function resolveAlert(alertId: string): Promise<{ success: boolean }> {
+export async function resolveAlert(
+  alertId: string
+): Promise<{ success: boolean }> {
   const response = await fetch(`${API_BASE}/alerts`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

@@ -6,7 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { resend, ProposalTemplate } from "@repo/email";
+import { ProposalTemplate, resend } from "@repo/email";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -178,22 +178,26 @@ export async function POST(request: Request, { params }: RouteParams) {
     const leadCompanyName = lead?.companyName as string | undefined;
 
     const recipientName =
-      (clientFirstName || leadContactName) ||
-      (clientCompanyName || leadCompanyName) ||
+      clientFirstName ||
+      leadContactName ||
+      clientCompanyName ||
+      leadCompanyName ||
       "Valued Client";
 
     // Calculate total amount from line items
-    const totalAmount = lineItems.length > 0
-      ? new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-        }).format(
-          lineItems.reduce(
-            (sum, item) => sum + Number(item.quantity || 0) * Number(item.unit_price || 0),
-            0
+    const totalAmount =
+      lineItems.length > 0
+        ? new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "USD",
+          }).format(
+            lineItems.reduce(
+              (sum, item) =>
+                sum + Number(item.quantity || 0) * Number(item.unit_price || 0),
+              0
+            )
           )
-        )
-      : undefined;
+        : undefined;
 
     try {
       await resend.emails.send({

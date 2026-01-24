@@ -1,0 +1,1 @@
+{"version":3,"file":"conflict-warning-panel.d.ts","sourceRoot":"","sources":["conflict-warning-panel.tsx"],"names":[],"mappings":"AAWA,OAAO,KAAK,EACV,QAAQ,EAGT,MAAM,mBAAmB,CAAC;AAE3B,KAAK,yBAAyB,GAAG;IAC/B,SAAS,EAAE,QAAQ,EAAE,CAAC;IACtB,OAAO,CAAC,EAAE,MAAM,IAAI,CAAC;CACtB,CAAC;AAgDF,wBAAgB,oBAAoB,CAAC,EACnC,SAAS,EACT,OAAO,GACR,EAAE,yBAAyB,sCAkI3B"}

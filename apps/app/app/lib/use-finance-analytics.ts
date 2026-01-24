@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // TypeScript types for Finance Analytics
 export interface FinanceHighlight {
@@ -77,7 +77,9 @@ export function formatPercentage(value: number, decimals = 1): string {
 }
 
 // Helper function to get severity color variant
-export function getSeverityVariant(severity: string): "destructive" | "outline" | "secondary" {
+export function getSeverityVariant(
+  severity: string
+): "destructive" | "outline" | "secondary" {
   switch (severity) {
     case "High":
       return "destructive";
@@ -101,7 +103,9 @@ export async function fetchFinanceAnalytics(
   const response = await fetch(`/api/analytics/finance?${params.toString()}`);
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Failed to fetch finance analytics" }));
+    const error = await response
+      .json()
+      .catch(() => ({ message: "Failed to fetch finance analytics" }));
     throw new Error(error.message || "Failed to fetch finance analytics");
   }
 
@@ -127,7 +131,11 @@ export function useFinanceAnalytics(
       const result = await fetchFinanceAnalytics(fetchOptions);
       setData(result);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error("Failed to fetch finance analytics"));
+      setError(
+        err instanceof Error
+          ? err
+          : new Error("Failed to fetch finance analytics")
+      );
     } finally {
       setIsLoading(false);
     }

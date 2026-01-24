@@ -18,7 +18,7 @@ import { validateCreateAdjustmentRequest } from "../validation";
 export async function POST(request: Request) {
   try {
     const { orgId, userId } = await auth();
-    if (!orgId || !userId) {
+    if (!(orgId && userId)) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
@@ -63,9 +63,7 @@ export async function POST(request: Request) {
 
     // If location is provided, verify it exists
     if (storageLocationId) {
-      const location = await database.$queryRaw<
-        Array<{ id: string }>
-      >`
+      const location = await database.$queryRaw<Array<{ id: string }>>`
         SELECT id
         FROM tenant_inventory.storage_locations
         WHERE tenant_id = ${tenantId}
@@ -111,9 +109,7 @@ export async function POST(request: Request) {
       `);
 
       // Create inventory transaction record
-      const transactionResult = await tx.$queryRaw<
-        Array<{ id: string }>
-      >`
+      const transactionResult = await tx.$queryRaw<Array<{ id: string }>>`
         INSERT INTO tenant_inventory.inventory_transactions (
           tenant_id,
           id,
@@ -171,7 +167,8 @@ export async function POST(request: Request) {
       reorderLevel > 0
         ? newQuantity < reorderLevel
           ? "below_par"
-          : Math.abs(newQuantity - reorderLevel) <= Math.max(reorderLevel * 0.05, 1)
+          : Math.abs(newQuantity - reorderLevel) <=
+              Math.max(reorderLevel * 0.05, 1)
             ? "at_par"
             : "above_par"
         : "no_par_set";
@@ -190,7 +187,7 @@ export async function POST(request: Request) {
         tenantId: item.tenantId,
         id: item.id,
         inventoryItemId: item.id,
-        storageLocationId: storageLocationId,
+        storageLocationId,
         quantityOnHand: result.newQuantity,
         reorderLevel,
         parLevel: item.reorder_level ? Number(item.reorder_level) : null,
@@ -211,7 +208,8 @@ export async function POST(request: Request) {
         reorderStatus,
         totalValue: result.newQuantity * Number(item.unitCost),
         parStatus,
-        stockOutRisk: result.newQuantity <= reorderLevel && result.newQuantity > 0,
+        stockOutRisk:
+          result.newQuantity <= reorderLevel && result.newQuantity > 0,
       },
     };
 

@@ -231,13 +231,16 @@ export async function createLaborBudget(input: LaborBudgetInput) {
   }
 
   // Validate period budgets have dates
-  if ((budgetType === "week" || budgetType === "month") && (!periodStart || !periodEnd)) {
-    throw new Error("Period budgets must have period_start and period_end dates");
+  if (
+    (budgetType === "week" || budgetType === "month") &&
+    !(periodStart && periodEnd)
+  ) {
+    throw new Error(
+      "Period budgets must have period_start and period_end dates"
+    );
   }
 
-  const result = await database.$queryRaw<
-    Array<{ id: string; name: string }>
-  >(
+  const result = await database.$queryRaw<Array<{ id: string; name: string }>>(
     Prisma.sql`
       INSERT INTO tenant_staff.labor_budgets (
         tenant_id,
@@ -327,12 +330,13 @@ export async function updateLaborBudget(
 
   updateFields.push("updated_at = CURRENT_TIMESTAMP");
 
-  const result = await database.$queryRaw<
-    Array<{ id: string; name: string }>
-  >(
+  const result = await database.$queryRaw<Array<{ id: string; name: string }>>(
     Prisma.sql`
       UPDATE tenant_staff.labor_budgets
-      SET ${Prisma.join(updateFields.map((f) => Prisma.raw(f)), ", ")}
+      SET ${Prisma.join(
+        updateFields.map((f) => Prisma.raw(f)),
+        ", "
+      )}
       WHERE tenant_id = ${tenantId}
         AND id = ${budgetId}
         AND deleted_at IS NULL
@@ -407,17 +411,9 @@ export async function calculateBudgetUtilization(
   let actualSpend = 0;
 
   if (budgetData.budget_unit === "hours") {
-    actualSpend = await calculateScheduledHours(
-      tenantId,
-      budgetId,
-      budgetData
-    );
+    actualSpend = await calculateScheduledHours(tenantId, budgetId, budgetData);
   } else {
-    actualSpend = await calculateScheduledCost(
-      tenantId,
-      budgetId,
-      budgetData
-    );
+    actualSpend = await calculateScheduledCost(tenantId, budgetId, budgetData);
   }
 
   const utilizationPct = (actualSpend / budgetData.budget_target) * 100;
@@ -469,9 +465,7 @@ async function calculateScheduledHours(
     );
   }
 
-  const result = await database.$queryRaw<
-    Array<{ total_hours: number }>
-  >(
+  const result = await database.$queryRaw<Array<{ total_hours: number }>>(
     Prisma.sql`
       SELECT
         COALESCE(SUM(EXTRACT(EPOCH FROM (ss.shift_end - ss.shift_start)) / 3600), 0) AS total_hours
@@ -514,9 +508,7 @@ async function calculateScheduledCost(
     );
   }
 
-  const result = await database.$queryRaw<
-    Array<{ total_cost: number }>
-  >(
+  const result = await database.$queryRaw<Array<{ total_cost: number }>>(
     Prisma.sql`
       SELECT
         COALESCE(
@@ -567,7 +559,8 @@ export async function checkBudgetForShift(
 
   // Calculate the cost/hours for this shift
   const shiftHours =
-    (shiftRequirement.shiftEnd.getTime() - shiftRequirement.shiftStart.getTime()) /
+    (shiftRequirement.shiftEnd.getTime() -
+      shiftRequirement.shiftStart.getTime()) /
     (1000 * 60 * 60);
   const shiftCost = (shiftRequirement.hourlyRate || 0) * shiftHours;
   const shiftValue = shiftCost > 0 ? shiftCost : shiftHours;
@@ -579,10 +572,8 @@ export async function checkBudgetForShift(
     const utilization = await calculateBudgetUtilization(tenantId, budget.id);
     if (!utilization) continue;
 
-    const newUtilization =
-      utilization.actualSpend + shiftValue;
-    const newUtilizationPct =
-      (newUtilization / utilization.budgetTarget) * 100;
+    const newUtilization = utilization.actualSpend + shiftValue;
+    const newUtilizationPct = (newUtilization / utilization.budgetTarget) * 100;
 
     if (newUtilizationPct >= 100) {
       return {
@@ -596,7 +587,9 @@ export async function checkBudgetForShift(
       worstWarning = `Warning: This shift would bring the "${utilization.budgetName}" budget to ${newUtilizationPct.toFixed(0)}%`;
       worstUtilization = Math.max(worstUtilization, newUtilizationPct);
     } else if (newUtilizationPct >= 80 && budget.threshold_80_pct) {
-      worstWarning = worstWarning || `Notice: This shift would bring the "${utilization.budgetName}" budget to ${newUtilizationPct.toFixed(0)}%`;
+      worstWarning =
+        worstWarning ||
+        `Notice: This shift would bring the "${utilization.budgetName}" budget to ${newUtilizationPct.toFixed(0)}%`;
       worstUtilization = Math.max(worstUtilization, newUtilizationPct);
     }
   }
@@ -637,7 +630,9 @@ async function getApplicableBudgets(
 
   // Match event if specified
   if (eventId) {
-    conditions.push(Prisma.sql`(lb.event_id = ${eventId} OR lb.event_id IS NULL)`);
+    conditions.push(
+      Prisma.sql`(lb.event_id = ${eventId} OR lb.event_id IS NULL)`
+    );
   } else {
     conditions.push(Prisma.sql`lb.event_id IS NULL`);
   }
@@ -797,10 +792,7 @@ export async function acknowledgeBudgetAlert(
 /**
  * Resolve a budget alert
  */
-export async function resolveBudgetAlert(
-  tenantId: string,
-  alertId: string
-) {
+export async function resolveBudgetAlert(tenantId: string, alertId: string) {
   await database.$queryRaw(
     Prisma.sql`
       UPDATE tenant_staff.budget_alerts

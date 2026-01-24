@@ -36,19 +36,19 @@ const clientMetrics = [
 const topClients = [
   {
     name: "Harmonic Events",
-    ltv: 248000,
+    ltv: 248_000,
     proposals: 6,
     lastActivity: "Jan 22",
   },
   {
     name: "Grove & Co.",
-    ltv: 193500,
+    ltv: 193_500,
     proposals: 4,
     lastActivity: "Jan 21",
   },
   {
     name: "Windward Hospitality",
-    ltv: 171200,
+    ltv: 171_200,
     proposals: 3,
     lastActivity: "Jan 20",
   },
@@ -145,18 +145,18 @@ const CrmPage = () => (
         <CardContent className="space-y-3">
           {recentCommunications.map((note) => (
             <div
-              key={note.client}
               className="rounded-lg border border-border/70 px-4 py-3"
+              key={note.client}
             >
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold">{note.client}</p>
-                <Badge variant={note.status === "Resolved" ? "secondary" : "outline"}>
+                <Badge
+                  variant={note.status === "Resolved" ? "secondary" : "outline"}
+                >
                   {note.status}
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {note.channel}
-              </p>
+              <p className="text-xs text-muted-foreground">{note.channel}</p>
               <p className="text-sm text-muted-foreground">{note.summary}</p>
             </div>
           ))}

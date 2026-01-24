@@ -9,7 +9,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { resend, ContractTemplate } from "@repo/email";
+import { ContractTemplate, resend } from "@repo/email";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -118,7 +118,8 @@ export async function POST(
 
     // Send email with contract signing link
     const signingUrl = `${process.env.APP_URL || "https://app.convoy.com"}/contracts/${contractId}/sign`;
-    const clientName = client.first_name || client.company_name || "Valued Client";
+    const clientName =
+      client.first_name || client.company_name || "Valued Client";
 
     try {
       await resend.emails.send({

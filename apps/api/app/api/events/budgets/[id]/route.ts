@@ -108,10 +108,13 @@ export async function PUT(request: Request, context: RouteContext) {
     if (validatedData.totalBudgetAmount !== undefined) {
       updateData.totalBudgetAmount = validatedData.totalBudgetAmount;
       // Recalculate variance
-      const newVarianceAmount = validatedData.totalBudgetAmount - Number(existingBudget.totalActualAmount);
+      const newVarianceAmount =
+        validatedData.totalBudgetAmount -
+        Number(existingBudget.totalActualAmount);
       updateData.varianceAmount = newVarianceAmount;
       if (validatedData.totalBudgetAmount > 0) {
-        updateData.variancePercentage = (newVarianceAmount / validatedData.totalBudgetAmount) * 100;
+        updateData.variancePercentage =
+          (newVarianceAmount / validatedData.totalBudgetAmount) * 100;
       }
     }
     if (validatedData.notes !== undefined) {
@@ -155,10 +158,7 @@ export async function PUT(request: Request, context: RouteContext) {
         );
       }
       if (error instanceof InvariantError) {
-        return NextResponse.json(
-          { message: error.message },
-          { status: 400 }
-        );
+        return NextResponse.json({ message: error.message }, { status: 400 });
       }
     }
     console.error("Error updating event budget:", error);

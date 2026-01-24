@@ -110,10 +110,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
         effective_date: {
           lte: new Date(),
         },
-        OR: [
-          { end_date: null },
-          { end_date: { gte: new Date() } },
-        ],
+        OR: [{ end_date: null }, { end_date: { gte: new Date() } }],
       },
     });
 
@@ -124,7 +121,9 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       type: deduction.type,
       name: deduction.name,
       amount: deduction.amount ? Number(deduction.amount) : undefined,
-      percentage: deduction.percentage ? Number(deduction.percentage) : undefined,
+      percentage: deduction.percentage
+        ? Number(deduction.percentage)
+        : undefined,
       isPreTax: deduction.is_pre_tax,
       effectiveDate: deduction.effective_date,
       endDate: deduction.end_date || undefined,

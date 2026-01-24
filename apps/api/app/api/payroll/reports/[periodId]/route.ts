@@ -1,12 +1,12 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   ExportFormat,
-  PrismaPayrollDataSource,
   PayrollService,
+  PrismaPayrollDataSource,
 } from "@repo/payroll-engine";
 import { type NextRequest, NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
  * GET /api/payroll/reports/{periodId}?format={csv|qbxml|qbOnlineCsv|json}
@@ -27,10 +27,7 @@ export async function GET(
   try {
     const { orgId } = await auth();
     if (!orgId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
@@ -54,10 +51,7 @@ export async function GET(
     const format = formatResult.data;
 
     // Create payroll service with Prisma data source
-    const dataSource = new PrismaPayrollDataSource(
-      database,
-      () => tenantId
-    );
+    const dataSource = new PrismaPayrollDataSource(database, () => tenantId);
     const payrollService = new PayrollService({
       dataSource,
       defaultJurisdiction: "US",

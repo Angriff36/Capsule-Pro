@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { ArrowLeft, Clock } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../../../lib/tenant";
@@ -29,8 +29,8 @@ const MobileRecipePage = async ({
     <>
       <header className="sticky top-0 z-50 flex items-center gap-3 border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <Link
-          href={`/kitchen/recipes/${recipeId}`}
           className="rounded-full p-2 hover:bg-muted"
+          href={`/kitchen/recipes/${recipeId}`}
         >
           <ArrowLeft className="h-5 w-5" />
         </Link>

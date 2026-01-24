@@ -35,7 +35,10 @@ export async function PUT(
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const { id, itemId } = await params;
@@ -53,24 +56,37 @@ export async function PUT(
     });
 
     if (!existing) {
-      return NextResponse.json({ message: "Shipment item not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Shipment item not found" },
+        { status: 404 }
+      );
     }
 
     // Build update data
     const updateData: any = {};
-    if (body.quantity_shipped !== undefined) updateData.quantityShipped = body.quantity_shipped.toString();
-    if (body.quantity_received !== undefined) updateData.quantityReceived = body.quantity_received.toString();
-    if (body.quantity_damaged !== undefined) updateData.quantityDamaged = body.quantity_damaged.toString();
+    if (body.quantity_shipped !== undefined)
+      updateData.quantityShipped = body.quantity_shipped.toString();
+    if (body.quantity_received !== undefined)
+      updateData.quantityReceived = body.quantity_received.toString();
+    if (body.quantity_damaged !== undefined)
+      updateData.quantityDamaged = body.quantity_damaged.toString();
     if (body.unit_id !== undefined) updateData.unitId = body.unit_id;
-    if (body.unit_cost !== undefined) updateData.unitCost = body.unit_cost ? body.unit_cost.toString() : null;
+    if (body.unit_cost !== undefined)
+      updateData.unitCost = body.unit_cost ? body.unit_cost.toString() : null;
     if (body.condition !== undefined) updateData.condition = body.condition;
-    if (body.condition_notes !== undefined) updateData.conditionNotes = body.condition_notes;
+    if (body.condition_notes !== undefined)
+      updateData.conditionNotes = body.condition_notes;
     if (body.lot_number !== undefined) updateData.lotNumber = body.lot_number;
-    if (body.expiration_date !== undefined) updateData.expirationDate = body.expiration_date ? new Date(body.expiration_date) : null;
+    if (body.expiration_date !== undefined)
+      updateData.expirationDate = body.expiration_date
+        ? new Date(body.expiration_date)
+        : null;
 
     // Recalculate total cost if quantities or unit cost changed
-    const newQuantityShipped = body.quantity_shipped ?? Number(existing.quantityShipped);
-    const newUnitCost = body.unit_cost ?? (existing.unitCost ? Number(existing.unitCost) : 0);
+    const newQuantityShipped =
+      body.quantity_shipped ?? Number(existing.quantityShipped);
+    const newUnitCost =
+      body.unit_cost ?? (existing.unitCost ? Number(existing.unitCost) : 0);
     updateData.totalCost = (newQuantityShipped * newUnitCost).toString();
 
     // Use raw SQL for composite key update
@@ -96,8 +112,14 @@ export async function PUT(
       where: { tenantId, shipmentId: id, deletedAt: null },
     });
 
-    const totalItems = allItems.reduce((sum, i) => sum + Number(i.quantityShipped), 0);
-    const totalValue = allItems.reduce((sum, i) => sum + Number(i.totalCost), 0);
+    const totalItems = allItems.reduce(
+      (sum, i) => sum + Number(i.quantityShipped),
+      0
+    );
+    const totalValue = allItems.reduce(
+      (sum, i) => sum + Number(i.totalCost),
+      0
+    );
 
     await database.$executeRaw`
       UPDATE "tenant_inventory"."shipments"
@@ -113,7 +135,10 @@ export async function PUT(
     });
 
     if (!updated) {
-      return NextResponse.json({ message: "Shipment item not found after update" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Shipment item not found after update" },
+        { status: 404 }
+      );
     }
 
     const mappedItem = {
@@ -133,7 +158,13 @@ export async function PUT(
       expiration_date: updated.expirationDate,
       created_at: updated.createdAt,
       updated_at: updated.updatedAt,
-      item: updated.item ? { id: updated.item.id, name: updated.item.name, item_number: updated.item.item_number } : null,
+      item: updated.item
+        ? {
+            id: updated.item.id,
+            name: updated.item.name,
+            item_number: updated.item.item_number,
+          }
+        : null,
     };
 
     return NextResponse.json(mappedItem);
@@ -142,7 +173,10 @@ export async function PUT(
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
     console.error("Failed to update shipment item:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -158,7 +192,10 @@ export async function DELETE(
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const { id, itemId } = await params;
@@ -174,7 +211,10 @@ export async function DELETE(
     });
 
     if (!existing) {
-      return NextResponse.json({ message: "Shipment item not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Shipment item not found" },
+        { status: 404 }
+      );
     }
 
     // Prevent deleting items from shipped/delivered shipments
@@ -185,7 +225,10 @@ export async function DELETE(
 
     if (shipment && ["in_transit", "delivered"].includes(shipment.status)) {
       return NextResponse.json(
-        { message: "Cannot modify items for shipments with status: " + shipment.status },
+        {
+          message:
+            "Cannot modify items for shipments with status: " + shipment.status,
+        },
         { status: 400 }
       );
     }
@@ -202,8 +245,14 @@ export async function DELETE(
       where: { tenantId, shipmentId: id, deletedAt: null },
     });
 
-    const totalItems = allItems.reduce((sum, i) => sum + Number(i.quantityShipped), 0);
-    const totalValue = allItems.reduce((sum, i) => sum + Number(i.totalCost), 0);
+    const totalItems = allItems.reduce(
+      (sum, i) => sum + Number(i.quantityShipped),
+      0
+    );
+    const totalValue = allItems.reduce(
+      (sum, i) => sum + Number(i.totalCost),
+      0
+    );
 
     await database.$executeRaw`
       UPDATE "tenant_inventory"."shipments"
@@ -213,9 +262,15 @@ export async function DELETE(
       WHERE "tenant_id" = ${tenantId}::uuid AND "id" = ${id}::uuid
     `;
 
-    return NextResponse.json({ message: "Shipment item deleted" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Shipment item deleted" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Failed to delete shipment item:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

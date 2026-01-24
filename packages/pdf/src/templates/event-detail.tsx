@@ -1,11 +1,4 @@
-import {
-  Document,
-  Page,
-  StyleSheet,
-  Text,
-  View,
-  Image,
-} from "@react-pdf/renderer";
+import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type React from "react";
 
 const styles = StyleSheet.create({
@@ -248,9 +241,8 @@ export const EventDetailPDF: React.FC<EventDetailPDFProps> = ({ data }) => {
           <Text style={styles.title}>Event Details</Text>
           <Text style={styles.subtitle}>{event.name}</Text>
           <Text style={styles.eventInfo}>
-            <Text style={styles.label}>Date:</Text>{" "}
-            {formatDate(event.date)} | <Text style={styles.label}>Type:</Text>{" "}
-            {event.type}
+            <Text style={styles.label}>Date:</Text> {formatDate(event.date)} |{" "}
+            <Text style={styles.label}>Type:</Text> {event.type}
           </Text>
           <Text style={styles.eventInfo}>
             Status:{" "}
@@ -349,7 +341,8 @@ export const EventDetailPDF: React.FC<EventDetailPDFProps> = ({ data }) => {
                 </View>
                 <View style={styles.tableRow}>
                   <Text>
-                    Time: {formatTime(task.startTime)} - {formatTime(task.endTime)}
+                    Time: {formatTime(task.startTime)} -{" "}
+                    {formatTime(task.endTime)}
                   </Text>
                 </View>
                 <View style={styles.tableRow}>
@@ -363,7 +356,10 @@ export const EventDetailPDF: React.FC<EventDetailPDFProps> = ({ data }) => {
                     {" | "}
                     Priority:{" "}
                     <Text
-                      style={[styles.priorityBadge, getPriorityStyle(task.priority)]}
+                      style={[
+                        styles.priorityBadge,
+                        getPriorityStyle(task.priority),
+                      ]}
                     >
                       {task.priority}
                     </Text>

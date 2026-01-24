@@ -66,7 +66,10 @@ const PayrollOverviewPage = () => (
         </CardHeader>
         <CardContent className="space-y-3">
           {approvals.map((approval) => (
-            <div key={approval.title} className="rounded-md border border-border/60 px-4 py-3">
+            <div
+              className="rounded-md border border-border/60 px-4 py-3"
+              key={approval.title}
+            >
               <div className="flex items-center justify-between">
                 <p className="font-semibold">{approval.title}</p>
                 <Badge variant="secondary">{approval.status}</Badge>
@@ -85,9 +88,14 @@ const PayrollOverviewPage = () => (
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           {payrollIssues.map((issue) => (
-            <div key={issue.label} className="flex items-center justify-between">
+            <div
+              className="flex items-center justify-between"
+              key={issue.label}
+            >
               <p className="text-muted-foreground">{issue.label}</p>
-              <Badge variant={issue.severity === "High" ? "destructive" : "outline"}>
+              <Badge
+                variant={issue.severity === "High" ? "destructive" : "outline"}
+              >
                 {issue.severity}
               </Badge>
             </div>

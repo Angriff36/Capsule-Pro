@@ -115,7 +115,8 @@ export async function PUT(request: Request, context: RouteContext) {
     if (validatedData.actualAmount !== undefined) {
       updateData.actualAmount = validatedData.actualAmount;
       // Recalculate variance
-      const budgetedAmount = validatedData.budgetedAmount ?? Number(existingLineItem.budgetedAmount);
+      const budgetedAmount =
+        validatedData.budgetedAmount ?? Number(existingLineItem.budgetedAmount);
       const newVarianceAmount = budgetedAmount - validatedData.actualAmount;
       updateData.varianceAmount = newVarianceAmount;
     }
@@ -150,10 +151,7 @@ export async function PUT(request: Request, context: RouteContext) {
         );
       }
       if (error instanceof InvariantError) {
-        return NextResponse.json(
-          { message: error.message },
-          { status: 400 }
-        );
+        return NextResponse.json({ message: error.message }, { status: 400 });
       }
     }
     console.error("Error updating budget line item:", error);
@@ -235,10 +233,17 @@ async function updateBudgetTotals(tenantId: string, budgetId: string) {
   });
 
   // Calculate totals
-  const totalBudgeted = lineItems.reduce((sum, item) => sum + Number(item.budgetedAmount), 0);
-  const totalActual = lineItems.reduce((sum, item) => sum + Number(item.actualAmount), 0);
+  const totalBudgeted = lineItems.reduce(
+    (sum, item) => sum + Number(item.budgetedAmount),
+    0
+  );
+  const totalActual = lineItems.reduce(
+    (sum, item) => sum + Number(item.actualAmount),
+    0
+  );
   const varianceAmount = totalBudgeted - totalActual;
-  const variancePercentage = totalBudgeted > 0 ? (varianceAmount / totalBudgeted) * 100 : 0;
+  const variancePercentage =
+    totalBudgeted > 0 ? (varianceAmount / totalBudgeted) * 100 : 0;
 
   // Update budget
   await database.eventBudget.update({

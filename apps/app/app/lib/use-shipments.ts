@@ -314,9 +314,14 @@ export async function listShipments(
       },
       {} as Record<string, number>
     ) as Record<ShipmentStatus, number>,
-    totalValue: data.data.reduce((sum: number, s: Shipment) => sum + (s.total_value || 0), 0),
-    inTransitCount: data.data.filter((s: Shipment) => s.status === "in_transit").length,
-    preparingCount: data.data.filter((s: Shipment) => s.status === "preparing").length,
+    totalValue: data.data.reduce(
+      (sum: number, s: Shipment) => sum + (s.total_value || 0),
+      0
+    ),
+    inTransitCount: data.data.filter((s: Shipment) => s.status === "in_transit")
+      .length,
+    preparingCount: data.data.filter((s: Shipment) => s.status === "preparing")
+      .length,
   };
 
   return { ...data, summary };
@@ -325,7 +330,9 @@ export async function listShipments(
 /**
  * Get a single shipment with items
  */
-export async function getShipment(shipmentId: string): Promise<ShipmentWithItems> {
+export async function getShipment(
+  shipmentId: string
+): Promise<ShipmentWithItems> {
   const response = await fetch(`/api/shipments/${shipmentId}`);
 
   if (!response.ok) {
@@ -690,7 +697,9 @@ export function calculateShipmentProgress(shipment: {
     0
   );
 
-  return totalShipped > 0 ? Math.round((totalReceived / totalShipped) * 100) : 0;
+  return totalShipped > 0
+    ? Math.round((totalReceived / totalShipped) * 100)
+    : 0;
 }
 
 /**

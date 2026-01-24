@@ -6,20 +6,20 @@
 
 import { invariant } from "@/app/lib/invariant";
 import {
+  ADJUSTMENT_REASONS,
   type AdjustmentReason,
   type CreateAdjustmentRequest,
-  type StockReorderStatus,
-  type TransactionType,
-  ADJUSTMENT_REASONS,
   STOCK_REORDER_STATUSES,
+  type StockReorderStatus,
   TRANSACTION_TYPES,
+  type TransactionType,
 } from "./types";
 
 // ============================================================================
 // Validation Constants
 // ============================================================================
 
-const MAX_QUANTITY = 999999999.999;
+const MAX_QUANTITY = 999_999_999.999;
 const MAX_NOTES_LENGTH = 1000;
 const MAX_REFERENCE_LENGTH = 255;
 
@@ -86,10 +86,7 @@ export function validateNonNegativeNumber(
     typeof value === "number",
     `${fieldName} must be a number, received ${typeof value}`
   );
-  invariant(
-    value >= 0,
-    `${fieldName} must be non-negative, received ${value}`
-  );
+  invariant(value >= 0, `${fieldName} must be non-negative, received ${value}`);
   invariant(
     value <= MAX_QUANTITY,
     `${fieldName} must not exceed ${MAX_QUANTITY}, received ${value}`
@@ -107,10 +104,7 @@ export function validatePositiveNumber(
     typeof value === "number",
     `${fieldName} must be a number, received ${typeof value}`
   );
-  invariant(
-    value > 0,
-    `${fieldName} must be positive, received ${value}`
-  );
+  invariant(value > 0, `${fieldName} must be positive, received ${value}`);
 }
 
 /**
@@ -124,10 +118,7 @@ export function validateNonEmptyString(
     typeof value === "string",
     `${fieldName} must be a string, received ${typeof value}`
   );
-  invariant(
-    value.trim().length > 0,
-    `${fieldName} must not be empty`
-  );
+  invariant(value.trim().length > 0, `${fieldName} must not be empty`);
 }
 
 /**
@@ -201,8 +192,15 @@ export function validateCreateAdjustmentRequest(
     "request must be an object"
   );
 
-  const { inventoryItemId, storageLocationId, quantity, adjustmentType, reason, notes, referenceId } =
-    request as Record<string, unknown>;
+  const {
+    inventoryItemId,
+    storageLocationId,
+    quantity,
+    adjustmentType,
+    reason,
+    notes,
+    referenceId,
+  } = request as Record<string, unknown>;
 
   // inventoryItemId is required
   validateUUID(inventoryItemId, "inventoryItemId");
@@ -225,7 +223,11 @@ export function validateCreateAdjustmentRequest(
   validateOptionalStringLength(notes, "notes", MAX_NOTES_LENGTH);
 
   // referenceId is optional
-  validateOptionalStringLength(referenceId, "referenceId", MAX_REFERENCE_LENGTH);
+  validateOptionalStringLength(
+    referenceId,
+    "referenceId",
+    MAX_REFERENCE_LENGTH
+  );
 }
 
 /**
@@ -302,9 +304,7 @@ export function validateStockLevelFilters(
 /**
  * Validates transaction filters
  */
-export function validateTransactionFilters(
-  filters: unknown
-): void {
+export function validateTransactionFilters(filters: unknown): void {
   if (typeof filters !== "object" || filters === null) {
     return; // Empty filters are valid
   }

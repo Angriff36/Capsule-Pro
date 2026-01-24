@@ -32,7 +32,10 @@ export async function GET(
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const { id } = await params;
@@ -43,7 +46,10 @@ export async function GET(
     });
 
     if (!shipment) {
-      return NextResponse.json({ message: "Shipment not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Shipment not found" },
+        { status: 404 }
+      );
     }
 
     const items = await database.shipmentItem.findMany({
@@ -76,17 +82,22 @@ export async function GET(
       created_at: item.createdAt,
       updated_at: item.updatedAt,
       deleted_at: item.deletedAt,
-      item: item.item ? {
-        id: item.item.id,
-        name: item.item.name,
-        item_number: item.item.item_number,
-      } : null,
+      item: item.item
+        ? {
+            id: item.item.id,
+            name: item.item.name,
+            item_number: item.item.item_number,
+          }
+        : null,
     }));
 
     return NextResponse.json({ data: mappedItems });
   } catch (error) {
     console.error("Failed to list shipment items:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -102,7 +113,10 @@ export async function POST(
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const { id } = await params;
@@ -114,7 +128,10 @@ export async function POST(
     });
 
     if (!shipment) {
-      return NextResponse.json({ message: "Shipment not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Shipment not found" },
+        { status: 404 }
+      );
     }
 
     const items = Array.isArray(body) ? body : [body];
@@ -151,7 +168,9 @@ export async function POST(
           condition: item.condition || "good",
           conditionNotes: item.condition_notes,
           lotNumber: item.lot_number,
-          expirationDate: item.expiration_date ? new Date(item.expiration_date) : null,
+          expirationDate: item.expiration_date
+            ? new Date(item.expiration_date)
+            : null,
         },
       });
 
@@ -160,8 +179,14 @@ export async function POST(
         where: { tenantId, shipmentId: id, deletedAt: null },
       });
 
-      const totalItems = allItems.reduce((sum, i) => sum + Number(i.quantityShipped), 0);
-      const totalValue = allItems.reduce((sum, i) => sum + Number(i.totalCost), 0);
+      const totalItems = allItems.reduce(
+        (sum, i) => sum + Number(i.quantityShipped),
+        0
+      );
+      const totalValue = allItems.reduce(
+        (sum, i) => sum + Number(i.totalCost),
+        0
+      );
 
       await database.$executeRaw`
         UPDATE "tenant_inventory"."shipments"
@@ -197,6 +222,9 @@ export async function POST(
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
     console.error("Failed to create shipment items:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

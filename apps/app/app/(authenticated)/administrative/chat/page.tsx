@@ -139,12 +139,12 @@ const AdministrativeChatPage = () => {
         <CardContent className="space-y-3">
           {threads.map((thread) => (
             <button
-              key={thread.id}
               className={`w-full rounded-md border px-3 py-3 text-left transition outline-none focus:border-primary ${
                 selectedThreadId === thread.id
                   ? "border-primary/60 bg-primary/5"
                   : "border-border/50 bg-card"
               }`}
+              key={thread.id}
               onClick={() => setSelectedThreadId(thread.id)}
             >
               <div className="flex items-center justify-between">
@@ -173,10 +173,12 @@ const AdministrativeChatPage = () => {
           <div className="space-y-3">
             {currentMessages.map((message) => (
               <div
-                key={message.id}
                 className={`rounded-lg border p-3 ${
-                  message.fromMe ? "border-transparent bg-primary/10" : "border-border"
+                  message.fromMe
+                    ? "border-transparent bg-primary/10"
+                    : "border-border"
                 }`}
+                key={message.id}
               >
                 <div className="flex items-baseline justify-between gap-2">
                   <p className="text-sm font-semibold">{message.author}</p>
@@ -191,12 +193,12 @@ const AdministrativeChatPage = () => {
           <div className="space-y-2">
             <Textarea
               className="min-h-[120px]"
+              onChange={(event) => setDraft(event.target.value)}
               placeholder="Send a quick update..."
               value={draft}
-              onChange={(event) => setDraft(event.target.value)}
             />
             <div className="flex justify-end">
-              <Button onClick={handleSend} disabled={!draft.trim()}>
+              <Button disabled={!draft.trim()} onClick={handleSend}>
                 Send update
               </Button>
             </div>

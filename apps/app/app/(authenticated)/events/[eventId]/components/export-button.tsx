@@ -1,24 +1,23 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
 import { DownloadIcon, FileIcon, FileTextIcon, LoaderIcon } from "lucide-react";
+import { useState } from "react";
 import {
-  exportEvent,
-  downloadExportResult,
+  type EventExportOptions,
   type ExportFormat,
   type ExportSection,
-  type EventExportOptions,
+  exportEvent,
 } from "../../../../lib/use-event-export";
 
 interface EventExportButtonProps {
@@ -34,11 +33,17 @@ interface EventExportButtonProps {
  * - Format-specific options (CSV, PDF)
  * - Section selection for granular exports
  */
-export function EventExportButton({ eventId, eventName }: EventExportButtonProps) {
+export function EventExportButton({
+  eventId,
+  eventName,
+}: EventExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [exportFormat, setExportFormat] = useState<ExportFormat | null>(null);
 
-  const handleExport = async (format: ExportFormat, include: ExportSection[]) => {
+  const handleExport = async (
+    format: ExportFormat,
+    include: ExportSection[]
+  ) => {
     setIsExporting(true);
     setExportFormat(format);
 
@@ -64,7 +69,7 @@ export function EventExportButton({ eventId, eventName }: EventExportButtonProps
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" disabled={isLoading}>
+        <Button disabled={isLoading} size="sm" variant="outline">
           {isLoading ? (
             <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
           ) : (
@@ -75,7 +80,9 @@ export function EventExportButton({ eventId, eventName }: EventExportButtonProps
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         {/* Quick Export Options */}
-        <DropdownMenuItem onClick={() => handleExport("pdf", ["summary", "menu", "staff"])}>
+        <DropdownMenuItem
+          onClick={() => handleExport("pdf", ["summary", "menu", "staff"])}
+        >
           <FileTextIcon className="mr-2 h-4 w-4" />
           PDF Full Export
         </DropdownMenuItem>
@@ -96,20 +103,38 @@ export function EventExportButton({ eventId, eventName }: EventExportButtonProps
             <DropdownMenuItem onClick={() => handleExport("csv", ["summary"])}>
               Summary
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport("csv", ["summary", "menu"])}>
+            <DropdownMenuItem
+              onClick={() => handleExport("csv", ["summary", "menu"])}
+            >
               Summary + Menu
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport("csv", ["summary", "staff"])}>
+            <DropdownMenuItem
+              onClick={() => handleExport("csv", ["summary", "staff"])}
+            >
               Summary + Staff
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport("csv", ["summary", "guests"])}>
+            <DropdownMenuItem
+              onClick={() => handleExport("csv", ["summary", "guests"])}
+            >
               Summary + Guests
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport("csv", ["summary", "tasks"])}>
+            <DropdownMenuItem
+              onClick={() => handleExport("csv", ["summary", "tasks"])}
+            >
               Summary + Tasks
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleExport("csv", ["summary", "menu", "staff", "guests", "tasks"])}>
+            <DropdownMenuItem
+              onClick={() =>
+                handleExport("csv", [
+                  "summary",
+                  "menu",
+                  "staff",
+                  "guests",
+                  "tasks",
+                ])
+              }
+            >
               Full CSV Export
             </DropdownMenuItem>
           </DropdownMenuSubContent>
@@ -125,20 +150,38 @@ export function EventExportButton({ eventId, eventName }: EventExportButtonProps
             <DropdownMenuItem onClick={() => handleExport("pdf", ["summary"])}>
               Summary Only
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport("pdf", ["summary", "menu"])}>
+            <DropdownMenuItem
+              onClick={() => handleExport("pdf", ["summary", "menu"])}
+            >
               Summary + Menu
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport("pdf", ["summary", "staff"])}>
+            <DropdownMenuItem
+              onClick={() => handleExport("pdf", ["summary", "staff"])}
+            >
               Summary + Staff
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport("pdf", ["summary", "guests"])}>
+            <DropdownMenuItem
+              onClick={() => handleExport("pdf", ["summary", "guests"])}
+            >
               Summary + Guests
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport("pdf", ["summary", "tasks"])}>
+            <DropdownMenuItem
+              onClick={() => handleExport("pdf", ["summary", "tasks"])}
+            >
               Summary + Tasks
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleExport("pdf", ["summary", "menu", "staff", "guests", "tasks"])}>
+            <DropdownMenuItem
+              onClick={() =>
+                handleExport("pdf", [
+                  "summary",
+                  "menu",
+                  "staff",
+                  "guests",
+                  "tasks",
+                ])
+              }
+            >
               Full PDF Export
             </DropdownMenuItem>
           </DropdownMenuSubContent>
@@ -179,7 +222,12 @@ export function EventExportButtonSimple({
   };
 
   return (
-    <Button variant="outline" size="sm" onClick={handleExport} disabled={isExporting}>
+    <Button
+      disabled={isExporting}
+      onClick={handleExport}
+      size="sm"
+      variant="outline"
+    >
       {isExporting ? (
         <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
       ) : (

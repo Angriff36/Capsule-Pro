@@ -144,9 +144,7 @@ export async function listRecipes(
   if (filters.page) params.set("page", filters.page.toString());
   if (filters.limit) params.set("limit", filters.limit.toString());
 
-  const response = await fetch(
-    `/api/kitchen/recipes?${params.toString()}`
-  );
+  const response = await fetch(`/api/kitchen/recipes?${params.toString()}`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -162,9 +160,7 @@ export async function listRecipes(
 export async function getRecipeCost(
   recipeVersionId: string
 ): Promise<RecipeCostBreakdown> {
-  const response = await fetch(
-    `/api/kitchen/recipes/${recipeVersionId}/cost`
-  );
+  const response = await fetch(`/api/kitchen/recipes/${recipeVersionId}/cost`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -180,12 +176,9 @@ export async function getRecipeCost(
 export async function recalculateRecipeCost(
   recipeVersionId: string
 ): Promise<RecipeCostBreakdown> {
-  const response = await fetch(
-    `/api/kitchen/recipes/${recipeVersionId}/cost`,
-    {
-      method: "POST",
-    }
-  );
+  const response = await fetch(`/api/kitchen/recipes/${recipeVersionId}/cost`, {
+    method: "POST",
+  });
 
   if (!response.ok) {
     const error = await response.json();
@@ -272,7 +265,7 @@ export async function updateEventBudgets(
 // React Hooks
 // ============================================================================
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export interface UseRecipeCostResult {
   data: RecipeCostBreakdown | null;
@@ -374,7 +367,9 @@ export function useRecipes(filters: RecipeListFilters = {}): UseRecipesResult {
 /**
  * Get label for recipe category
  */
-export function getRecipeCategoryLabel(category: RecipeCategory | null | undefined): string {
+export function getRecipeCategoryLabel(
+  category: RecipeCategory | null | undefined
+): string {
   if (!category) return "All Categories";
   return category
     .split("_")
@@ -385,7 +380,9 @@ export function getRecipeCategoryLabel(category: RecipeCategory | null | undefin
 /**
  * Get label for cuisine type
  */
-export function getCuisineTypeLabel(cuisineType: CuisineType | null | undefined): string {
+export function getCuisineTypeLabel(
+  cuisineType: CuisineType | null | undefined
+): string {
   if (!cuisineType) return "All Cuisines";
   return cuisineType
     .split("_")
@@ -396,7 +393,10 @@ export function getCuisineTypeLabel(cuisineType: CuisineType | null | undefined)
 /**
  * Get all recipe categories
  */
-export function getRecipeCategories(): { value: RecipeCategory; label: string }[] {
+export function getRecipeCategories(): {
+  value: RecipeCategory;
+  label: string;
+}[] {
   const categories: RecipeCategory[] = [
     "appetizer",
     "soup",

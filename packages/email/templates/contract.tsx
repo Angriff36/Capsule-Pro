@@ -35,11 +35,10 @@ export const ContractTemplate = ({
               <Text className="mt-0 mb-4 font-semibold text-2xl text-zinc-950">
                 Contract for Signature
               </Text>
-              <Text className="m-0 text-zinc-500">
-                Dear {clientName},
-              </Text>
+              <Text className="m-0 text-zinc-500">Dear {clientName},</Text>
               <Text className="mt-4 text-zinc-500">
-                Please review and sign the contract: <strong>{contractTitle}</strong>
+                Please review and sign the contract:{" "}
+                <strong>{contractTitle}</strong>
               </Text>
               {message && (
                 <>
@@ -56,8 +55,8 @@ export const ContractTemplate = ({
                 </Button>
               </Section>
               <Text className="m-0 text-sm text-zinc-400">
-                If the button above doesn't work, you can copy and paste this link into
-                your browser:
+                If the button above doesn't work, you can copy and paste this
+                link into your browser:
               </Text>
               <Text className="text-sm text-zinc-400">{signingUrl}</Text>
               <Hr className="my-6 border-zinc-200" />
