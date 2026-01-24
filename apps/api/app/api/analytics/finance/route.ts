@@ -215,7 +215,6 @@ export async function GET(request: Request) {
       where: {
         tenantId,
         resolvedAt: null,
-        ...(locationId ? { budget: { locationId } } : {}),
       },
       take: 10,
       orderBy: { createdAt: "desc" },

@@ -1,26 +1,5 @@
-// Budget model does not exist in schema - this page is disabled
-
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
+import { BudgetDetailClient } from "./budget-detail-client";
 
 export default function BudgetDetailPage() {
-  return (
-    <div className="container mx-auto py-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>Budget Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            Budget detail view is not yet implemented. The Budget model needs to
-            be added to the database schema.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return <BudgetDetailClient />;
 }
