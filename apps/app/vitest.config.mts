@@ -7,11 +7,12 @@ export default defineConfig({
   test: {
     // API route tests need node environment (server-only), most specific first
     environmentMatchGlobs: [
-      ["**/__tests__/api/**/*.test.ts", "node"],
-      ["**/__tests__/api/**/*.test.tsx", "node"],
+      ["**/__tests__/api/**/*.test.{ts,js}", "node"],
+      ["**/__tests__/api/**/*.test.{tsx,jsx}", "node"],
     ],
     // Default to jsdom for everything else
     environment: "jsdom",
+    include: ["**/__tests__/**/*.test.{ts,tsx,js,jsx}"],
     exclude: ["**/e2e/**", "**/node_modules/**"],
   },
   resolve: {
