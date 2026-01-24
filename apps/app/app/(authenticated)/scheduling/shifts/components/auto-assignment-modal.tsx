@@ -61,12 +61,6 @@ export function AutoAssignmentModal({
     useState<AssignmentSuggestion | null>(null);
   const [_forceMode, setForceMode] = useState(false);
 
-  useEffect(() => {
-    if (open && shiftId) {
-      loadSuggestions();
-    }
-  }, [open, shiftId, loadSuggestions]);
-
   const loadSuggestions = async () => {
     setLoading(true);
     setError(null);
@@ -88,6 +82,12 @@ export function AutoAssignmentModal({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (open && shiftId) {
+      loadSuggestions();
+    }
+  }, [open, shiftId, loadSuggestions]);
 
   const handleAssign = async (employeeId?: string, force = false) => {
     if (!shiftId) {

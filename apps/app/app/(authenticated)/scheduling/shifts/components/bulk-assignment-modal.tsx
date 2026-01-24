@@ -65,12 +65,6 @@ export function BulkAssignmentModal({
   const [expandedShifts, setExpandedShifts] = useState<ExpandedShifts>({});
   const [forceMode, setForceMode] = useState(false);
 
-  useEffect(() => {
-    if (open) {
-      loadSuggestions();
-    }
-  }, [open, loadSuggestions]);
-
   const loadSuggestions = async () => {
     setLoading(true);
     setError(null);
@@ -116,6 +110,12 @@ export function BulkAssignmentModal({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (open) {
+      loadSuggestions();
+    }
+  }, [open, loadSuggestions]);
 
   const handleAssign = async () => {
     if (selectedShifts.size === 0) {
