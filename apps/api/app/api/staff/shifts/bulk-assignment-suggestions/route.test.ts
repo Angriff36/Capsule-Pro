@@ -5,9 +5,9 @@
  * for multiple shifts at once.
  */
 
-import { describe, expect, it, beforeEach, vi } from "vitest";
-import { GET, POST } from "./route";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { GET, POST } from "./route";
 
 // Mock dependencies
 vi.mock("server-only", () => ({}));
@@ -33,10 +33,10 @@ vi.mock("@/lib/staff/auto-assignment", () => ({
 }));
 
 import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { getAssignmentSuggestionsForMultipleShifts } from "@/lib/staff/auto-assignment";
 
-import { database } from "@repo/database";
 describe("bulk-assignment-suggestions route", () => {
   const mockTenantId = "tenant-123";
   const mockOrgId = "org-123";
@@ -149,7 +149,9 @@ describe("bulk-assignment-suggestions route", () => {
   describe("GET", () => {
     it("should return suggestions for all open shifts", async () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(mockOpenShifts);
-      vi.mocked(getAssignmentSuggestionsForMultipleShifts).mockResolvedValue(mockBulkResults);
+      vi.mocked(getAssignmentSuggestionsForMultipleShifts).mockResolvedValue(
+        mockBulkResults
+      );
 
       const request = new NextRequest(
         "https://example.com/api/staff/shifts/bulk-assignment-suggestions"
@@ -212,7 +214,9 @@ describe("bulk-assignment-suggestions route", () => {
 
     it("should filter by locationId query parameter", async () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(mockOpenShifts);
-      vi.mocked(getAssignmentSuggestionsForMultipleShifts).mockResolvedValue(mockBulkResults);
+      vi.mocked(getAssignmentSuggestionsForMultipleShifts).mockResolvedValue(
+        mockBulkResults
+      );
 
       const request = new NextRequest(
         `https://example.com/api/staff/shifts/bulk-assignment-suggestions?locationId=${mockLocationId}`
@@ -225,7 +229,9 @@ describe("bulk-assignment-suggestions route", () => {
 
     it("should filter by date range", async () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(mockOpenShifts);
-      vi.mocked(getAssignmentSuggestionsForMultipleShifts).mockResolvedValue(mockBulkResults);
+      vi.mocked(getAssignmentSuggestionsForMultipleShifts).mockResolvedValue(
+        mockBulkResults
+      );
 
       const startDate = "2025-01-27T00:00:00Z";
       const endDate = "2025-01-27T23:59:59Z";
@@ -276,7 +282,9 @@ describe("bulk-assignment-suggestions route", () => {
     });
 
     it("should return 500 on internal error", async () => {
-      vi.mocked(database.$queryRaw).mockRejectedValue(new Error("Database error"));
+      vi.mocked(database.$queryRaw).mockRejectedValue(
+        new Error("Database error")
+      );
 
       const request = new NextRequest(
         "https://example.com/api/staff/shifts/bulk-assignment-suggestions"
@@ -294,7 +302,9 @@ describe("bulk-assignment-suggestions route", () => {
   describe("POST", () => {
     it("should return suggestions for specific shifts", async () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(mockOpenShifts);
-      vi.mocked(getAssignmentSuggestionsForMultipleShifts).mockResolvedValue(mockBulkResults);
+      vi.mocked(getAssignmentSuggestionsForMultipleShifts).mockResolvedValue(
+        mockBulkResults
+      );
 
       const request = new NextRequest(
         "https://example.com/api/staff/shifts/bulk-assignment-suggestions",
@@ -318,7 +328,9 @@ describe("bulk-assignment-suggestions route", () => {
 
     it("should support locationId in request body", async () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(mockOpenShifts);
-      vi.mocked(getAssignmentSuggestionsForMultipleShifts).mockResolvedValue(mockBulkResults);
+      vi.mocked(getAssignmentSuggestionsForMultipleShifts).mockResolvedValue(
+        mockBulkResults
+      );
 
       const customLocationId = "custom-location-123";
       const request = new NextRequest(
@@ -387,7 +399,9 @@ describe("bulk-assignment-suggestions route", () => {
       const response = await POST(request);
 
       expect(response.status).toBe(400);
-      expect(await response.json()).toEqual({ message: "Invalid request body" });
+      expect(await response.json()).toEqual({
+        message: "Invalid request body",
+      });
     });
 
     it("should return 400 when shifts array is missing", async () => {
@@ -402,7 +416,9 @@ describe("bulk-assignment-suggestions route", () => {
       const response = await POST(request);
 
       expect(response.status).toBe(400);
-      expect(await response.json()).toEqual({ message: "Invalid request body" });
+      expect(await response.json()).toEqual({
+        message: "Invalid request body",
+      });
     });
 
     it("should return 401 when unauthorized", async () => {
@@ -425,7 +441,9 @@ describe("bulk-assignment-suggestions route", () => {
     });
 
     it("should return 500 on internal error", async () => {
-      vi.mocked(database.$queryRaw).mockRejectedValue(new Error("Database error"));
+      vi.mocked(database.$queryRaw).mockRejectedValue(
+        new Error("Database error")
+      );
 
       const request = new NextRequest(
         "https://example.com/api/staff/shifts/bulk-assignment-suggestions",

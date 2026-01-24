@@ -5,9 +5,9 @@
  * and auto-assigning employees to shifts.
  */
 
-import { describe, expect, it, beforeEach, vi } from "vitest";
-import { GET, POST } from "./route";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { GET, POST } from "./route";
 
 // Mock dependencies
 vi.mock("server-only", () => ({}));
@@ -36,7 +36,10 @@ vi.mock("@/lib/staff/auto-assignment", () => ({
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { getEligibleEmployeesForShift, autoAssignShift } from "@/lib/staff/auto-assignment";
+import {
+  autoAssignShift,
+  getEligibleEmployeesForShift,
+} from "@/lib/staff/auto-assignment";
 
 describe("assignment-suggestions route", () => {
   const mockTenantId = "tenant-123";
@@ -73,7 +76,11 @@ describe("assignment-suggestions route", () => {
           hourlyRate: 20,
           seniority: { level: "senior", rank: 4 },
           skills: [
-            { skillId: "skill-1", skillName: "Bartending", proficiencyLevel: 5 },
+            {
+              skillId: "skill-1",
+              skillName: "Bartending",
+              proficiencyLevel: 5,
+            },
           ],
           availability: [],
           hasConflictingShift: false,
@@ -125,18 +132,34 @@ describe("assignment-suggestions route", () => {
   };
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     vi.mocked(auth).mockResolvedValue({
       userId: "user-1",
       orgId: mockOrgId,
     });
     vi.mocked(getTenantIdForOrg).mockResolvedValue(mockTenantId);
+    // Set default mocks that return empty results
+    vi.mocked(database.$queryRaw).mockResolvedValue([]);
+    vi.mocked(getEligibleEmployeesForShift).mockResolvedValue({
+      shiftId: mockShiftId,
+      suggestions: [],
+      bestMatch: null,
+      canAutoAssign: false,
+    });
+    vi.mocked(autoAssignShift).mockResolvedValue({
+      success: false,
+      message: "No mock configured",
+      shiftId: mockShiftId,
+      employeeId: "",
+    });
   });
 
   describe("GET", () => {
     it("should return assignment suggestions for a shift", async () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(mockShiftData);
-      vi.mocked(getEligibleEmployeesForShift).mockResolvedValue(mockAssignmentResult);
+      vi.mocked(getEligibleEmployeesForShift).mockResolvedValue(
+        mockAssignmentResult
+      );
 
       const request = new NextRequest(
         `https://example.com/api/staff/shifts/${mockShiftId}/assignment-suggestions`
@@ -186,7 +209,9 @@ describe("assignment-suggestions route", () => {
 
     it("should support requiredSkills query parameter", async () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(mockShiftData);
-      vi.mocked(getEligibleEmployeesForShift).mockResolvedValue(mockAssignmentResult);
+      vi.mocked(getEligibleEmployeesForShift).mockResolvedValue(
+        mockAssignmentResult
+      );
 
       const request = new NextRequest(
         `https://example.com/api/staff/shifts/${mockShiftId}/assignment-suggestions?requiredSkills=skill-1,skill-2`
@@ -207,7 +232,9 @@ describe("assignment-suggestions route", () => {
 
     it("should support locationId query parameter", async () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(mockShiftData);
-      vi.mocked(getEligibleEmployeesForShift).mockResolvedValue(mockAssignmentResult);
+      vi.mocked(getEligibleEmployeesForShift).mockResolvedValue(
+        mockAssignmentResult
+      );
 
       const customLocationId = "custom-location-123";
       const request = new NextRequest(
@@ -228,7 +255,9 @@ describe("assignment-suggestions route", () => {
     });
 
     it("should return 500 on internal error", async () => {
-      vi.mocked(database.$queryRaw).mockRejectedValue(new Error("Database error"));
+      vi.mocked(database.$queryRaw).mockRejectedValue(
+        new Error("Database error")
+      );
 
       const request = new NextRequest(
         `https://example.com/api/staff/shifts/${mockShiftId}/assignment-suggestions`
@@ -250,7 +279,9 @@ describe("assignment-suggestions route", () => {
       vi.mocked(database.$queryRaw)
         .mockResolvedValueOnce(mockShiftData) // First call - get shift
         .mockResolvedValueOnce(mockShiftData); // Second call - get shift again
-      vi.mocked(getEligibleEmployeesForShift).mockResolvedValue(mockAssignmentResult);
+      vi.mocked(getEligibleEmployeesForShift).mockResolvedValue(
+        mockAssignmentResult
+      );
       vi.mocked(autoAssignShift).mockResolvedValue({
         success: true,
         message: "Successfully assigned John Senior to shift",
@@ -298,7 +329,11 @@ describe("assignment-suggestions route", () => {
       });
 
       expect(response.status).toBe(200);
-      expect(autoAssignShift).toHaveBeenCalledWith(mockTenantId, mockShiftId, "emp-2");
+      expect(autoAssignShift).toHaveBeenCalledWith(
+        mockTenantId,
+        mockShiftId,
+        "emp-2"
+      );
     });
 
     it("should return 400 when assignment fails", async () => {
@@ -400,7 +435,9 @@ describe("assignment-suggestions route", () => {
     });
 
     it("should return 500 on internal error", async () => {
-      vi.mocked(database.$queryRaw).mockRejectedValue(new Error("Database error"));
+      vi.mocked(database.$queryRaw).mockRejectedValue(
+        new Error("Database error")
+      );
 
       const request = new NextRequest(
         `https://example.com/api/staff/shifts/${mockShiftId}/assignment-suggestions`,

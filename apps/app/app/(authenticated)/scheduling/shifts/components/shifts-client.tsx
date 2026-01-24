@@ -24,15 +24,21 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { FilterIcon, Loader2Icon, PlusIcon, UserCheckIcon, UsersIcon } from "lucide-react";
+import {
+  FilterIcon,
+  Loader2Icon,
+  PlusIcon,
+  UserCheckIcon,
+  UsersIcon,
+} from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getEmployees, getLocations, getShifts } from "../actions";
-import { ShiftDetailModal } from "./shift-detail-modal";
-import { ShiftForm } from "./shift-form";
 import { AutoAssignmentModal } from "./auto-assignment-modal";
 import { BulkAssignmentModal } from "./bulk-assignment-modal";
+import { ShiftDetailModal } from "./shift-detail-modal";
+import { ShiftForm } from "./shift-form";
 
 interface Shift {
   id: string;
@@ -243,10 +249,10 @@ export function ShiftsClient() {
       header: "",
       cell: ({ row }) => (
         <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => handleAutoAssignClick(row.original, e)}
           className="text-primary hover:text-primary"
+          onClick={(e) => handleAutoAssignClick(row.original, e)}
+          size="sm"
+          variant="ghost"
         >
           <UserCheckIcon className="h-4 w-4 mr-1" />
           Assign
@@ -273,8 +279,8 @@ export function ShiftsClient() {
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
             onClick={() => setBulkAssignmentModalOpen(true)}
+            variant="outline"
           >
             <UsersIcon className="h-4 w-4 mr-2" />
             Bulk Assign
@@ -485,32 +491,36 @@ export function ShiftsClient() {
 
       {/* Auto-Assignment Modal */}
       <AutoAssignmentModal
-        open={assignmentModalOpen}
         onClose={() => {
           setAssignmentModalOpen(false);
           setSelectedShift(null);
         }}
+        open={assignmentModalOpen}
+        shiftDetails={
+          selectedShift
+            ? {
+                title: `Shift for ${selectedShift.employee_first_name} ${selectedShift.employee_last_name}`,
+                startTime: selectedShift.shift_start,
+                endTime: selectedShift.shift_end,
+                locationName: selectedShift.location_name,
+                role: selectedShift.role_during_shift || undefined,
+              }
+            : undefined
+        }
         shiftId={selectedShift?.id || ""}
-        shiftDetails={selectedShift ? {
-          title: `Shift for ${selectedShift.employee_first_name} ${selectedShift.employee_last_name}`,
-          startTime: selectedShift.shift_start,
-          endTime: selectedShift.shift_end,
-          locationName: selectedShift.location_name,
-          role: selectedShift.role_during_shift || undefined,
-        } : undefined}
       />
 
       {/* Bulk Assignment Modal */}
       <BulkAssignmentModal
-        open={bulkAssignmentModalOpen}
-        onClose={() => {
-          setBulkAssignmentModalOpen(false);
-        }}
         filters={{
           startDate: filters.startDate || undefined,
           endDate: filters.endDate || undefined,
           locationId: filters.locationId || undefined,
         }}
+        onClose={() => {
+          setBulkAssignmentModalOpen(false);
+        }}
+        open={bulkAssignmentModalOpen}
       />
     </div>
   );

@@ -151,7 +151,7 @@ export async function GET(request: Request, context: RouteContext) {
 export async function POST(request: Request, context: RouteContext) {
   try {
     const { orgId, userId } = await auth();
-    if (!orgId || !userId) {
+    if (!(orgId && userId)) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 

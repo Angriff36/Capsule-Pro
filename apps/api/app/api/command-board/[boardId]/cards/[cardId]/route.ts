@@ -245,7 +245,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   try {
     const { orgId, userId } = await auth();
 
-    if (!orgId || !userId) {
+    if (!(orgId && userId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -426,7 +426,7 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
   try {
     const { orgId, userId } = await auth();
 
-    if (!orgId || !userId) {
+    if (!(orgId && userId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

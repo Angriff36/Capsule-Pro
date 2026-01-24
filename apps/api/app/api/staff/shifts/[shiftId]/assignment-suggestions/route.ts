@@ -1,13 +1,12 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
-import { Prisma } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import {
-  getEligibleEmployeesForShift,
-  autoAssignShift,
-} from "@/lib/staff/auto-assignment";
 import type { ShiftRequirement } from "@/lib/staff/auto-assignment";
+import {
+  autoAssignShift,
+  getEligibleEmployeesForShift,
+} from "@/lib/staff/auto-assignment";
 
 /**
  * GET /api/staff/shifts/[shiftId]/assignment-suggestions
@@ -115,9 +114,12 @@ export async function POST(
 
   try {
     const body = await request.json();
-    const { employeeId, force = false } = body as { employeeId?: string; force?: boolean };
+    const { employeeId, force = false } = body as {
+      employeeId?: string;
+      force?: boolean;
+    };
 
-    // Get the shift details
+    // Always verify the shift exists first
     const shift = await database.$queryRaw<
       Array<{
         tenant_id: string;
@@ -158,9 +160,8 @@ export async function POST(
       const result = await autoAssignShift(tenantId, shiftId, employeeId);
       if (result.success) {
         return NextResponse.json(result);
-      } else {
-        return NextResponse.json(result, { status: 400 });
       }
+      return NextResponse.json(result, { status: 400 });
     }
 
     // Otherwise, get suggestions and assign best match
@@ -175,7 +176,7 @@ export async function POST(
 
     const result = await getEligibleEmployeesForShift(tenantId, requirement);
 
-    if (!result.canAutoAssign && !force) {
+    if (!(result.canAutoAssign || force)) {
       return NextResponse.json({
         message: "No high-confidence match found",
         result,
@@ -183,7 +184,11 @@ export async function POST(
     }
 
     if (result.bestMatch) {
-      const assignResult = await autoAssignShift(tenantId, shiftId, result.bestMatch.employee.id);
+      const assignResult = await autoAssignShift(
+        tenantId,
+        shiftId,
+        result.bestMatch.employee.id
+      );
       return NextResponse.json({
         ...assignResult,
         suggestion: result.bestMatch,

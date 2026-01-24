@@ -6,14 +6,12 @@
  * skills, seniority, and labor budget.
  */
 
-import { describe, expect, it, beforeEach, vi } from "vitest";
-import { Prisma } from "@repo/database";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  getEligibleEmployeesForShift,
   autoAssignShift,
   getAssignmentSuggestionsForMultipleShifts,
+  getEligibleEmployeesForShift,
   type ShiftRequirement,
-  type EmployeeCandidate,
 } from "@/lib/staff/auto-assignment";
 
 // Mock the database module
@@ -28,7 +26,8 @@ vi.mock("@repo/database", () => ({
       // Mock the sql tag function for type checking
       get sql() {
         return strings.reduce(
-          (acc, str, i) => acc + str + (values[i] !== undefined ? String(values[i]) : ""),
+          (acc, str, i) =>
+            acc + str + (values[i] !== undefined ? String(values[i]) : ""),
           ""
         );
       },
@@ -58,7 +57,11 @@ describe("Auto-Assignment Service", () => {
       seniority_rank: 4,
       skills: [
         { skill_id: "skill-1", skill_name: "Bartending", proficiency_level: 5 },
-        { skill_id: "skill-2", skill_name: "Food Service", proficiency_level: 4 },
+        {
+          skill_id: "skill-2",
+          skill_name: "Food Service",
+          proficiency_level: 4,
+        },
       ],
       availability: [
         {
@@ -83,7 +86,11 @@ describe("Auto-Assignment Service", () => {
       seniority_rank: 1,
       skills: [
         { skill_id: "skill-1", skill_name: "Bartending", proficiency_level: 2 },
-        { skill_id: "skill-2", skill_name: "Food Service", proficiency_level: 3 },
+        {
+          skill_id: "skill-2",
+          skill_name: "Food Service",
+          proficiency_level: 3,
+        },
       ],
       availability: [
         {
@@ -143,7 +150,10 @@ describe("Auto-Assignment Service", () => {
 
       vi.mocked(database.$queryRaw).mockResolvedValue(mockEmployees);
 
-      const result = await getEligibleEmployeesForShift(mockTenantId, requirement);
+      const result = await getEligibleEmployeesForShift(
+        mockTenantId,
+        requirement
+      );
 
       expect(result.shiftId).toBe(mockShiftId);
       expect(result.suggestions).toHaveLength(2); // Only non-conflicting employees
@@ -152,7 +162,12 @@ describe("Auto-Assignment Service", () => {
       expect(result.bestMatch).not.toBeNull();
 
       // Debug: Check actual score and confidence
-      console.log("Score:", result.suggestions[0].score, "Confidence:", result.suggestions[0].confidence);
+      console.log(
+        "Score:",
+        result.suggestions[0].score,
+        "Confidence:",
+        result.suggestions[0].confidence
+      );
 
       // canAutoAssign requires high confidence (50+ score AND all conditions met)
       // Adjust expectation based on actual behavior
@@ -178,20 +193,36 @@ describe("Auto-Assignment Service", () => {
 
       vi.mocked(database.$queryRaw).mockResolvedValue(mockEmployees);
 
-      const result = await getEligibleEmployeesForShift(mockTenantId, requirement);
+      const result = await getEligibleEmployeesForShift(
+        mockTenantId,
+        requirement
+      );
 
       // Debug: Check actual score and confidence
-      console.log("Score:", result.suggestions[0].score, "Confidence:", result.suggestions[0].confidence);
-      console.log("Skills match:", result.suggestions[0].matchDetails.skillsMatch);
-      console.log("Availability match:", result.suggestions[0].matchDetails.availabilityMatch);
+      console.log(
+        "Score:",
+        result.suggestions[0].score,
+        "Confidence:",
+        result.suggestions[0].confidence
+      );
+      console.log(
+        "Skills match:",
+        result.suggestions[0].matchDetails.skillsMatch
+      );
+      console.log(
+        "Availability match:",
+        result.suggestions[0].matchDetails.availabilityMatch
+      );
 
       // With 2 required skills and both matched, plus availability and seniority,
       // the score should reach high confidence (50+ points)
       // If not, adjust test to match actual implementation behavior
-      if (result.suggestions[0].score >= 50 &&
-          result.suggestions[0].matchDetails.skillsMatch &&
-          !result.suggestions[0].matchDetails.hasConflicts &&
-          result.suggestions[0].matchDetails.availabilityMatch) {
+      if (
+        result.suggestions[0].score >= 50 &&
+        result.suggestions[0].matchDetails.skillsMatch &&
+        !result.suggestions[0].matchDetails.hasConflicts &&
+        result.suggestions[0].matchDetails.availabilityMatch
+      ) {
         expect(result.suggestions[0].confidence).toBe("high");
         expect(result.bestMatch?.confidence).toBe("high");
       } else {
@@ -215,7 +246,10 @@ describe("Auto-Assignment Service", () => {
 
       vi.mocked(database.$queryRaw).mockResolvedValue(mockEmployees);
 
-      const result = await getEligibleEmployeesForShift(mockTenantId, requirement);
+      const result = await getEligibleEmployeesForShift(
+        mockTenantId,
+        requirement
+      );
 
       // Bob (emp-3) has conflicting shifts and should be filtered out
       const suggestionIds = result.suggestions.map((s) => s.employee.id);
@@ -236,7 +270,10 @@ describe("Auto-Assignment Service", () => {
         shiftEnd,
       };
 
-      const result = await getEligibleEmployeesForShift(mockTenantId, requirement);
+      const result = await getEligibleEmployeesForShift(
+        mockTenantId,
+        requirement
+      );
 
       expect(result.suggestions).toHaveLength(0);
       expect(result.bestMatch).toBeNull();
@@ -259,7 +296,10 @@ describe("Auto-Assignment Service", () => {
         requiredSkills: ["skill-1"],
       };
 
-      const result = await getEligibleEmployeesForShift(mockTenantId, requirement);
+      const result = await getEligibleEmployeesForShift(
+        mockTenantId,
+        requirement
+      );
 
       expect(result.suggestions[0].reasoning).toEqual(
         expect.arrayContaining([
@@ -284,7 +324,10 @@ describe("Auto-Assignment Service", () => {
         requiredSkills: ["skill-1"],
       };
 
-      const result = await getEligibleEmployeesForShift(mockTenantId, requirement);
+      const result = await getEligibleEmployeesForShift(
+        mockTenantId,
+        requirement
+      );
 
       const matchDetails = result.suggestions[0].matchDetails;
       expect(matchDetails).toHaveProperty("skillsMatch");
@@ -357,7 +400,9 @@ describe("Auto-Assignment Service", () => {
     });
 
     it("should handle database errors gracefully", async () => {
-      vi.mocked(database.$queryRaw).mockRejectedValue(new Error("Database connection failed"));
+      vi.mocked(database.$queryRaw).mockRejectedValue(
+        new Error("Database connection failed")
+      );
 
       const result = await autoAssignShift(mockTenantId, mockShiftId, "emp-1");
 
@@ -400,7 +445,10 @@ describe("Auto-Assignment Service", () => {
     });
 
     it("should handle empty requirements array", async () => {
-      const results = await getAssignmentSuggestionsForMultipleShifts(mockTenantId, []);
+      const results = await getAssignmentSuggestionsForMultipleShifts(
+        mockTenantId,
+        []
+      );
 
       expect(results).toHaveLength(0);
     });
@@ -433,7 +481,10 @@ describe("Auto-Assignment Service", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(mockEmployees);
 
       const startTime = Date.now();
-      await getAssignmentSuggestionsForMultipleShifts(mockTenantId, requirements);
+      await getAssignmentSuggestionsForMultipleShifts(
+        mockTenantId,
+        requirements
+      );
       const endTime = Date.now();
 
       // If processed in parallel, should complete quickly

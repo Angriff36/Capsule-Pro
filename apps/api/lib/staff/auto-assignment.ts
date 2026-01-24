@@ -82,7 +82,14 @@ export async function getEligibleEmployeesForShift(
   tenantId: string,
   requirement: ShiftRequirement
 ): Promise<AutoAssignmentResult> {
-  const { shiftId, locationId, shiftStart, shiftEnd, roleDuringShift, requiredSkills = [] } = requirement;
+  const {
+    shiftId,
+    locationId,
+    shiftStart,
+    shiftEnd,
+    roleDuringShift,
+    requiredSkills = [],
+  } = requirement;
 
   // Get employees with their seniority, skills, and conflict information
   const employees = await database.$queryRaw<
@@ -220,7 +227,8 @@ export async function getEligibleEmployeesForShift(
 
   // Determine if auto-assignment is appropriate
   const bestMatch = suggestions[0] || null;
-  const canAutoAssign = bestMatch && bestMatch.confidence === "high" && suggestions.length > 0;
+  const canAutoAssign =
+    bestMatch && bestMatch.confidence === "high" && suggestions.length > 0;
 
   return {
     shiftId,
@@ -284,7 +292,7 @@ function scoreEmployeeForShift(
           score += 10 + skill.proficiency_level * 2; // 12-20 points per skill
         }
       } else {
-        skillsMissing.push(`Missing required skill`);
+        skillsMissing.push("Missing required skill");
       }
     });
   }
@@ -300,7 +308,9 @@ function scoreEmployeeForShift(
   const seniorityScore = employee.seniority_rank || 0;
   score += Math.min(seniorityScore * 4, 20);
   if (employee.seniority_level) {
-    reasoning.push(`Seniority level: ${employee.seniority_level} (rank ${seniorityScore})`);
+    reasoning.push(
+      `Seniority level: ${employee.seniority_level} (rank ${seniorityScore})`
+    );
   }
 
   // 3. Availability checking (20 points max)
@@ -336,21 +346,30 @@ function scoreEmployeeForShift(
   }
 
   // 5. Role matching (10 points)
-  if (requirement.roleDuringShift && employee.role === requirement.roleDuringShift) {
+  if (
+    requirement.roleDuringShift &&
+    employee.role === requirement.roleDuringShift
+  ) {
     score += 10;
     reasoning.push(`Role matches: ${employee.role}`);
   }
 
   // Calculate confidence level
   let confidence: "high" | "medium" | "low" = "low";
-  if (skillsMatch && !employee.has_conflicting_shift && availabilityMatch && score >= 50) {
+  if (
+    skillsMatch &&
+    !employee.has_conflicting_shift &&
+    availabilityMatch &&
+    score >= 50
+  ) {
     confidence = "high";
   } else if (!employee.has_conflicting_shift && score >= 30) {
     confidence = "medium";
   }
 
   // Cost estimate for the shift
-  const shiftHours = (shiftEnd.getTime() - shiftStart.getTime()) / (1000 * 60 * 60);
+  const shiftHours =
+    (shiftEnd.getTime() - shiftStart.getTime()) / (1000 * 60 * 60);
   const costEstimate = hourlyRate * shiftHours;
 
   return {
@@ -363,7 +382,10 @@ function scoreEmployeeForShift(
       isActive: employee.is_active,
       hourlyRate: employee.hourly_rate,
       seniority: employee.seniority_level
-        ? { level: employee.seniority_level, rank: employee.seniority_rank || 0 }
+        ? {
+            level: employee.seniority_level,
+            rank: employee.seniority_rank || 0,
+          }
         : undefined,
       skills: employee.skills.map((s) => ({
         skillId: s.skill_id,
@@ -406,7 +428,12 @@ export async function autoAssignShift(
   tenantId: string,
   shiftId: string,
   employeeId: string
-): Promise<{ success: boolean; message: string; shiftId: string; employeeId: string }> {
+): Promise<{
+  success: boolean;
+  message: string;
+  shiftId: string;
+  employeeId: string;
+}> {
   try {
     // Get the shift details using raw SQL
     const shift = await database.$queryRaw<
@@ -476,7 +503,8 @@ export async function autoAssignShift(
     console.error("Error auto-assigning shift:", error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Failed to assign shift",
+      message:
+        error instanceof Error ? error.message : "Failed to assign shift",
       shiftId,
       employeeId,
     };
@@ -491,7 +519,9 @@ export async function getAssignmentSuggestionsForMultipleShifts(
   shiftRequirements: ShiftRequirement[]
 ): Promise<AutoAssignmentResult[]> {
   const results = await Promise.all(
-    shiftRequirements.map((requirement) => getEligibleEmployeesForShift(tenantId, requirement))
+    shiftRequirements.map((requirement) =>
+      getEligibleEmployeesForShift(tenantId, requirement)
+    )
   );
 
   return results;

@@ -135,45 +135,51 @@ export const KitchenTaskProgressEventSchema = RealtimeEventBaseSchema.extend({
 /**
  * Full event schemas with discriminator - Command Board events.
  */
-export const CommandBoardCardCreatedEventSchema = RealtimeEventBaseSchema.extend({
-  eventType: z.literal("command.board.card.created"),
-  payload: CommandBoardCardCreatedPayloadSchema,
-});
+export const CommandBoardCardCreatedEventSchema =
+  RealtimeEventBaseSchema.extend({
+    eventType: z.literal("command.board.card.created"),
+    payload: CommandBoardCardCreatedPayloadSchema,
+  });
 
-export const CommandBoardCardUpdatedEventSchema = RealtimeEventBaseSchema.extend({
-  eventType: z.literal("command.board.card.updated"),
-  payload: CommandBoardCardUpdatedPayloadSchema,
-});
+export const CommandBoardCardUpdatedEventSchema =
+  RealtimeEventBaseSchema.extend({
+    eventType: z.literal("command.board.card.updated"),
+    payload: CommandBoardCardUpdatedPayloadSchema,
+  });
 
 export const CommandBoardCardMovedEventSchema = RealtimeEventBaseSchema.extend({
   eventType: z.literal("command.board.card.moved"),
   payload: CommandBoardCardMovedPayloadSchema,
 });
 
-export const CommandBoardCardDeletedEventSchema = RealtimeEventBaseSchema.extend({
-  eventType: z.literal("command.board.card.deleted"),
-  payload: CommandBoardCardDeletedPayloadSchema,
-});
+export const CommandBoardCardDeletedEventSchema =
+  RealtimeEventBaseSchema.extend({
+    eventType: z.literal("command.board.card.deleted"),
+    payload: CommandBoardCardDeletedPayloadSchema,
+  });
 
 export const CommandBoardUpdatedEventSchema = RealtimeEventBaseSchema.extend({
   eventType: z.literal("command.board.updated"),
   payload: CommandBoardUpdatedPayloadSchema,
 });
 
-export const CommandBoardUserJoinedEventSchema = RealtimeEventBaseSchema.extend({
-  eventType: z.literal("command.board.user.joined"),
-  payload: CommandBoardUserJoinedPayloadSchema,
-});
+export const CommandBoardUserJoinedEventSchema = RealtimeEventBaseSchema.extend(
+  {
+    eventType: z.literal("command.board.user.joined"),
+    payload: CommandBoardUserJoinedPayloadSchema,
+  }
+);
 
 export const CommandBoardUserLeftEventSchema = RealtimeEventBaseSchema.extend({
   eventType: z.literal("command.board.user.left"),
   payload: CommandBoardUserLeftPayloadSchema,
 });
 
-export const CommandBoardCursorMovedEventSchema = RealtimeEventBaseSchema.extend({
-  eventType: z.literal("command.board.cursor.moved"),
-  payload: CommandBoardCursorMovedPayloadSchema,
-});
+export const CommandBoardCursorMovedEventSchema =
+  RealtimeEventBaseSchema.extend({
+    eventType: z.literal("command.board.cursor.moved"),
+    payload: CommandBoardCursorMovedPayloadSchema,
+  });
 
 /**
  * Discriminated union of all event schemas.

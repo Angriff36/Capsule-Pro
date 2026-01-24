@@ -28,10 +28,32 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { shifts } = body as { shifts: Array<{ shiftId: string; locationId?: string; requiredSkills?: string[] }> };
+    const { shifts } = body as {
+      shifts: Array<{
+        shiftId: string;
+        locationId?: string;
+        requiredSkills?: string[];
+      }>;
+    };
 
-    if (!shifts || !Array.isArray(shifts)) {
-      return NextResponse.json({ message: "Invalid request body" }, { status: 400 });
+    if (!(shifts && Array.isArray(shifts))) {
+      return NextResponse.json(
+        { message: "Invalid request body" },
+        { status: 400 }
+      );
+    }
+
+    // Handle empty shifts array
+    if (shifts.length === 0) {
+      return NextResponse.json({
+        results: [],
+        summary: {
+          total: 0,
+          canAutoAssign: 0,
+          hasSuggestions: 0,
+          noSuggestions: 0,
+        },
+      });
     }
 
     // Get all shift details using raw query
@@ -75,7 +97,10 @@ export async function POST(request: Request) {
       };
     });
 
-    const results = await getAssignmentSuggestionsForMultipleShifts(tenantId, requirements);
+    const results = await getAssignmentSuggestionsForMultipleShifts(
+      tenantId,
+      requirements
+    );
 
     return NextResponse.json({
       results,
@@ -175,7 +200,10 @@ export async function GET(request: Request) {
       roleDuringShift: shift.role_during_shift || undefined,
     }));
 
-    const results = await getAssignmentSuggestionsForMultipleShifts(tenantId, requirements);
+    const results = await getAssignmentSuggestionsForMultipleShifts(
+      tenantId,
+      requirements
+    );
 
     return NextResponse.json({
       results,
