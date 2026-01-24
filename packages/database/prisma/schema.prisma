@@ -135,7 +135,9 @@ model User {
   terminationDate DateTime?      @map("termination_date") @db.Date
   isActive        Boolean        @default(true) @map("is_active")
   avatarUrl       String?        @map("avatar_url")
+  roleId          String?        @map("role_id") @db.Uuid
   tenant          Account        @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  payrollRole     Role?          @relation("EmployeeRole", fields: [roleId, tenantId], references: [id, tenant_id])
 
   @@id([tenantId, id])
   @@unique([tenantId, id], map: "employees_tenant_id_unique_idx")
@@ -2379,6 +2381,54 @@ model skills {
 
   @@id([tenant_id, id])
   @@unique([tenant_id, name], map: "skills_name_unique")
+  @@schema("tenant_staff")
+}
+
+/// This table contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Role {
+  tenant_id                String    @db.Uuid
+  id                       String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                     String
+  base_rate                Decimal   @db.Decimal(10, 2)
+  overtime_multiplier      Decimal   @default(1.5) @db.Decimal(4, 2)
+  overtime_threshold_hours Int       @default(40) @db.SmallInt
+  description              String?
+  is_active                Boolean   @default(true)
+  created_at               DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at               DateTime? @db.Timestamptz(6)
+  users                    User[]    @relation("EmployeeRole")
+
+  @@id([tenant_id, id])
+  @@unique([tenant_id, name], map: "roles_name_unique")
+  @@schema("tenant_staff")
+}
+
+// ============================================
+// RELATION DEFINITIONS
+// ============================================
+// Role relations are defined inline with the models:
+// - Role.users -> User.roleId (relation: "EmployeeRole")
+
+/// This table contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model EmployeeDeduction {
+  tenant_id         String    @db.Uuid
+  id                String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employee_id       String    @db.Uuid
+  type              String
+  name              String
+  amount            Decimal?  @db.Decimal(10, 2)
+  percentage        Decimal?  @db.Decimal(5, 2)
+  is_pre_tax        Boolean   @default(false)
+  effective_date    DateTime  @db.Date
+  end_date          DateTime? @db.Date
+  max_annual_amount Decimal?  @db.Decimal(10, 2)
+  created_at        DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at        DateTime? @db.Timestamptz(6)
+
+  @@id([tenant_id, id])
+  @@index([employee_id], map: "employee_deductions_employee_idx")
   @@schema("tenant_staff")
 }
 

@@ -1,18 +1,12 @@
+import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   GeneratePayrollRequestSchema,
-  InMemoryPayrollDataSource,
+  PrismaPayrollDataSource,
   PayrollService,
 } from "@repo/payroll-engine";
 import { type NextRequest, NextResponse } from "next/server";
-
-// Note: In production, this would use the actual database
-// For now, we use an in-memory data source that can be swapped
-const dataSource = new InMemoryPayrollDataSource();
-const payrollService = new PayrollService({
-  dataSource,
-  defaultJurisdiction: "US",
-  enableAuditLog: true,
-});
 
 /**
  * POST /api/payroll/generate
@@ -42,6 +36,16 @@ const payrollService = new PayrollService({
  */
 export async function POST(request: NextRequest) {
   try {
+    const { orgId, userId } = await auth();
+    if (!orgId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const tenantId = await getTenantIdForOrg(orgId);
+
     const body = await request.json();
 
     // Validate request body
@@ -80,10 +84,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Extract tenant ID from auth context
-    const tenantId = request.headers.get("x-tenant-id") || "demo-tenant";
-    // TODO: Extract user ID from auth context
-    const userId = request.headers.get("x-user-id") || undefined;
+    // Create payroll service with Prisma data source
+    const dataSource = new PrismaPayrollDataSource(
+      database,
+      () => tenantId
+    );
+    const payrollService = new PayrollService({
+      dataSource,
+      defaultJurisdiction: "US",
+      enableAuditLog: true,
+    });
 
     // Generate payroll
     const result = await payrollService.generatePayroll(

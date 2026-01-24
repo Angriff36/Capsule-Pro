@@ -1,17 +1,12 @@
+import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   ExportFormat,
-  InMemoryPayrollDataSource,
+  PrismaPayrollDataSource,
   PayrollService,
 } from "@repo/payroll-engine";
 import { type NextRequest, NextResponse } from "next/server";
-
-// Note: In production, this would use the actual database
-const dataSource = new InMemoryPayrollDataSource();
-const payrollService = new PayrollService({
-  dataSource,
-  defaultJurisdiction: "US",
-  enableAuditLog: true,
-});
 
 /**
  * GET /api/payroll/reports/{periodId}?format={csv|qbxml|qbOnlineCsv|json}
@@ -30,6 +25,15 @@ export async function GET(
   context: { params: Promise<{ periodId: string }> }
 ) {
   try {
+    const { orgId } = await auth();
+    if (!orgId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const tenantId = await getTenantIdForOrg(orgId);
     const { periodId } = await context.params;
     const { searchParams } = new URL(request.url);
     const formatParam = searchParams.get("format") || "json";
@@ -49,8 +53,16 @@ export async function GET(
 
     const format = formatResult.data;
 
-    // TODO: Extract tenant ID from auth context
-    const tenantId = request.headers.get("x-tenant-id") || "demo-tenant";
+    // Create payroll service with Prisma data source
+    const dataSource = new PrismaPayrollDataSource(
+      database,
+      () => tenantId
+    );
+    const payrollService = new PayrollService({
+      dataSource,
+      defaultJurisdiction: "US",
+      enableAuditLog: true,
+    });
 
     // Get report
     const result = await payrollService.getReport(tenantId, periodId, {

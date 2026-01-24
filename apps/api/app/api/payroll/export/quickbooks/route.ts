@@ -1,17 +1,12 @@
+import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  InMemoryPayrollDataSource,
+  PrismaPayrollDataSource,
   PayrollService,
 } from "@repo/payroll-engine";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-
-// Note: In production, this would use the actual database
-const dataSource = new InMemoryPayrollDataSource();
-const payrollService = new PayrollService({
-  dataSource,
-  defaultJurisdiction: "US",
-  enableAuditLog: true,
-});
 
 const ExportQuickBooksRequestSchema = z.object({
   periodId: z.string().min(1),
@@ -37,6 +32,16 @@ const ExportQuickBooksRequestSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   try {
+    const { orgId, userId } = await auth();
+    if (!orgId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const tenantId = await getTenantIdForOrg(orgId);
+
     const body = await request.json();
 
     // Validate request body
@@ -53,9 +58,16 @@ export async function POST(request: NextRequest) {
 
     const { periodId, target } = parseResult.data;
 
-    // TODO: Extract tenant ID from auth context
-    const tenantId = request.headers.get("x-tenant-id") || "demo-tenant";
-    const userId = request.headers.get("x-user-id") || undefined;
+    // Create payroll service with Prisma data source
+    const dataSource = new PrismaPayrollDataSource(
+      database,
+      () => tenantId
+    );
+    const payrollService = new PayrollService({
+      dataSource,
+      defaultJurisdiction: "US",
+      enableAuditLog: true,
+    });
 
     // Export to QuickBooks
     const result = await payrollService.exportToQuickBooks(

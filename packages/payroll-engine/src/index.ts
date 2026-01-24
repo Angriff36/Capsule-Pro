@@ -10,3 +10,6 @@ export * from "./models";
 
 // Re-export services
 export * from "./services";
+
+// Re-export data sources
+export * from "./dataSource";
