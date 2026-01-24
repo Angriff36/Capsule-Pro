@@ -1,10 +1,5 @@
-import { ModuleSection } from "../../components/module-section";
+import { StockLevelsPageClient } from "./stock-levels-page-client";
 
-const InventoryLevelsPage = () => (
-  <ModuleSection
-    summary="Set and review par levels for key inventory categories."
-    title="Par Levels"
-  />
-);
+const InventoryLevelsPage = () => <StockLevelsPageClient />;
 
 export default InventoryLevelsPage;
