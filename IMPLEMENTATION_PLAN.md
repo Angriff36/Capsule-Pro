@@ -24,6 +24,13 @@
 - **Waste Tracking - FINAL STATUS CORRECTION** - Investigation report was incorrect about "cross-service communication issues." The app server has its own complete implementation: `apps/app/app/api/kitchen/waste/entries/route.ts` (GET and POST - 168 lines), `apps/app/app/api/kitchen/waste/trends/route.ts` (GET - 226 lines), `apps/app/app/api/kitchen/waste/reports/route.ts` (GET - 172 lines). All routes have full database integration, authentication, and validation. Cost lookup fix already applied (uses inventoryItem.unitCost). Full analytics and reporting features implemented. **Status corrected from 40% to 100% complete ✅**
 - **Investigation Summary:** Initial investigation reports contained inaccuracies about feature completion. Upon closer inspection: Auto-Assignment is 85% complete (not 0%), Stock Levels is 100% complete (not 80%), Waste Tracking is 100% complete (not 40%), Command Board is 90% complete with LiveBlocks (not Ably) for UI collaboration. Correct overall project status is **87% complete** (not 79% or 83%).
 
+**Update 4 - EVENT BUDGET TRACKING SCHEMA IMPLEMENTATION (2026-01-24):**
+- **Event Budget Tracking - SCHEMA MODELS ADDED** - Added EventBudget and BudgetLineItem models to tenant_events schema. Updated Event model with budgets relation. Updated Account model with eventBudgets and budgetLineItems relations. Fixed BudgetAlert model to properly reference EventBudget.
+- **Migration Blocker Identified** - Prisma migration blocked by database state mismatch: "relation 'idx_events_venue_id' already exists". The database has indexes that don't match the schema file. Manual SQL migration or database sync required before feature can be enabled.
+- **Schema Changes Committed** - Commit `b453bd583` includes all schema changes. Feature status changed from "100% Complete (but disabled)" to "Schema models added, pending migration".
+- **Current Status**: Database models exist in schema, but migration is blocked. API endpoints are stub files (disabled), UI components are disabled. Feature remains non-functional until migration is completed.
+- **CRM Client Segmentation - STATUS CORRECTION** - Previous investigation reported 0% complete, but actual status is 70-80% complete. Basic tag storage, display, and filtering functionality exists. Missing: dedicated tag management UI and advanced features.
+
 **Module Status Summary (FINAL CORRECTED):**
 | Module | Previous | Final | Change |
 |--------|----------|-------|--------|
