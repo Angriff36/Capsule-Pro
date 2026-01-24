@@ -32,14 +32,17 @@ export async function GET(
 
     const tenantId = await getTenantIdForOrg(orgId);
 
-    // Fetch event details
-    // TODO: Add client, venue relations to Prisma schema
+    // Fetch event details with relations
     const event = await database.event.findUnique({
       where: {
         tenantId_id: {
           tenantId,
           id: eventId,
         },
+      },
+      include: {
+        client: true,
+        venue: true,
       },
     });
 
@@ -146,9 +149,11 @@ export async function GET(
         id: event.id,
         name: event.title,
         date: event.eventDate,
-        venue: event.venueName,
-        address: event.venueAddress,
-        clientName: undefined, // TODO: Fetch from client relation when added
+        venue: event.venue?.name || event.venueName,
+        address: event.venue
+          ? `${event.venue.addressLine1 || ""}${event.venue.addressLine2 ? " " + event.venue.addressLine2 : ""}${event.venue.city ? ", " + event.venue.city : ""}${event.venue.stateProvince ? ", " + event.venue.stateProvince : ""} ${event.venue.postalCode || ""}`.trim()
+          : event.venueAddress,
+        clientName: event.client?.company_name || event.client?.first_name && event.client?.last_name ? `${event.client.first_name} ${event.client.last_name}` : undefined,
       },
       tasks: tasks.map((task) => ({
         id: task.id,

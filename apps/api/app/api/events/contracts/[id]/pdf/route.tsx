@@ -32,13 +32,24 @@ export async function GET(
 
     const tenantId = await getTenantIdForOrg(orgId);
 
-    // Fetch contract
-    // TODO: Add event, client, signatures relations to Prisma schema
+    // Fetch contract with relations
     const contract = await database.eventContract.findFirst({
       where: {
         id: contractId,
         tenantId,
         deletedAt: null,
+      },
+      include: {
+        event: true,
+        client: true,
+        signatures: {
+          where: {
+            deletedAt: null,
+          },
+          orderBy: {
+            signedAt: "asc",
+          },
+        },
       },
     });
 
@@ -88,9 +99,39 @@ export async function GET(
         expiresAt: contract.expiresAt || undefined,
         createdAt: contract.createdAt,
       },
-      event: undefined, // TODO: Fetch from Event relation when added
-      client: undefined, // TODO: Fetch from Client relation when added
-      signatures: [], // TODO: Fetch from ContractSignature relation when added
+      event: contract.event ? {
+        id: contract.event.id,
+        title: contract.event.title,
+        eventNumber: contract.event.eventNumber,
+        eventDate: contract.event.eventDate,
+        eventType: contract.event.eventType,
+        guestCount: contract.event.guestCount,
+        venueName: contract.event.venueName,
+        venueAddress: contract.event.venueAddress,
+      } : undefined,
+      client: contract.client ? {
+        id: contract.client.id,
+        companyName: contract.client.company_name,
+        firstName: contract.client.first_name,
+        lastName: contract.client.last_name,
+        email: contract.client.email,
+        phone: contract.client.phone,
+        address: {
+          addressLine1: contract.client.addressLine1,
+          addressLine2: contract.client.addressLine2,
+          city: contract.client.city,
+          stateProvince: contract.client.stateProvince,
+          postalCode: contract.client.postalCode,
+          countryCode: contract.client.countryCode,
+        },
+      } : undefined,
+      signatures: contract.signatures.map((sig) => ({
+        id: sig.id,
+        signerName: sig.signerName,
+        signerEmail: sig.signerEmail,
+        signedAt: sig.signedAt,
+        signatureData: sig.signatureData,
+      })),
       terms: defaultTerms,
       metadata: {
         generatedAt: new Date(),

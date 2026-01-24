@@ -32,13 +32,25 @@ export async function GET(
 
     const tenantId = await getTenantIdForOrg(orgId);
 
-    // Fetch proposal
-    // TODO: Add client, lead, event, lineItems relations to Prisma schema
+    // Fetch proposal with relations
     const proposal = await database.proposal.findFirst({
       where: {
         id: proposalId,
         tenantId,
         deletedAt: null,
+      },
+      include: {
+        client: true,
+        lead: true,
+        event: true,
+        lineItems: {
+          where: {
+            deletedAt: null,
+          },
+          orderBy: {
+            sortOrder: "asc",
+          },
+        },
       },
     });
 
@@ -85,10 +97,54 @@ export async function GET(
         venueName: proposal.venueName,
         venueAddress: proposal.venueAddress,
       },
-      client: undefined, // TODO: Fetch client data separately when relation is added
-      lead: undefined, // TODO: Fetch lead data separately when relation is added
-      event: undefined, // TODO: Fetch event data separately when relation is added
-      lineItems: [], // TODO: Fetch line items separately when relation is added
+      client: proposal.client ? {
+        id: proposal.client.id,
+        companyName: proposal.client.company_name,
+        firstName: proposal.client.first_name,
+        lastName: proposal.client.last_name,
+        email: proposal.client.email,
+        phone: proposal.client.phone,
+        address: {
+          addressLine1: proposal.client.addressLine1,
+          addressLine2: proposal.client.addressLine2,
+          city: proposal.client.city,
+          stateProvince: proposal.client.stateProvince,
+          postalCode: proposal.client.postalCode,
+          countryCode: proposal.client.countryCode,
+        },
+      } : undefined,
+      lead: proposal.lead ? {
+        id: proposal.lead.id,
+        companyName: proposal.lead.companyName,
+        contactName: proposal.lead.contactName,
+        contactEmail: proposal.lead.contactEmail,
+        contactPhone: proposal.lead.contactPhone,
+        eventType: proposal.lead.eventType,
+        eventDate: proposal.lead.eventDate,
+        estimatedGuests: proposal.lead.estimatedGuests,
+        estimatedValue: proposal.lead.estimatedValue ? Number(proposal.lead.estimatedValue) : undefined,
+      } : undefined,
+      event: proposal.event ? {
+        id: proposal.event.id,
+        title: proposal.event.title,
+        eventNumber: proposal.event.eventNumber,
+        eventDate: proposal.event.eventDate,
+        eventType: proposal.event.eventType,
+        guestCount: proposal.event.guestCount,
+        venueName: proposal.event.venueName,
+        venueAddress: proposal.event.venueAddress,
+        status: proposal.event.status,
+      } : undefined,
+      lineItems: proposal.lineItems.map((item) => ({
+        id: item.id,
+        category: item.category,
+        description: item.description,
+        quantity: Number(item.quantity),
+        unitOfMeasure: item.unitOfMeasure,
+        unitPrice: Number(item.unitPrice),
+        totalPrice: Number(item.totalPrice),
+        sortOrder: item.sortOrder,
+      })),
       metadata: {
         generatedAt: new Date(),
         generatedBy: user.email || `${user.firstName} ${user.lastName}`,
