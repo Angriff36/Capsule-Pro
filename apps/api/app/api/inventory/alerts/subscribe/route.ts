@@ -1,10 +1,23 @@
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
+import { auth } from "@repo/auth/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 // POST /api/inventory/alerts/subscribe
 // Body: {channel: "email"|"slack"|"webhook", destination}
 export async function POST(request: NextRequest) {
   try {
+    // Get authenticated user and tenant
+    const { orgId, userId: clerkId } = await auth();
+    if (!(orgId && clerkId)) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const tenantId = await getTenantIdForOrg(orgId);
+
     const { channel, destination } = await request.json();
 
     if (!(channel && destination)) {
@@ -13,9 +26,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    // TODO: Get tenant from auth
-    const tenantId = "placeholder";
 
     const config = await database.alertsConfig.create({
       data: {

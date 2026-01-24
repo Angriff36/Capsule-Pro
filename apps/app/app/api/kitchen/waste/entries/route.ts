@@ -139,8 +139,8 @@ export async function POST(request: Request) {
   // Get unit cost from inventory item if not provided
   let unitCost = body.unitCost;
   if (!unitCost) {
-    // Try to get cost from inventory item or use 0
-    unitCost = 0; // TODO: Implement actual cost lookup
+    // Use cost from inventory item
+    unitCost = inventoryItem.unitCost;
   }
 
   // Calculate total cost
