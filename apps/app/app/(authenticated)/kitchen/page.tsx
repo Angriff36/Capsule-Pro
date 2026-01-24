@@ -86,6 +86,7 @@ const KitchenPage = async () => {
       <ProductionBoardClient
         currentUserId={dbUser?.id}
         initialTasks={tasksWithUsers}
+        tenantId={tenantId}
       />
       <ProductionBoardRealtime tenantId={tenantId} userId={dbUser?.id} />
     </>

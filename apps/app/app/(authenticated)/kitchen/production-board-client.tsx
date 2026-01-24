@@ -26,17 +26,22 @@ import {
   Clock,
   Clock3,
   Flame,
+  Lightbulb,
   Plus,
   Search,
   Snowflake,
+  Sparkles,
   Sun,
   TrendingUp,
   User as UserIcon,
   UtensilsCrossed,
+  X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { TaskCard } from "./task-card";
+import { SuggestionsPanel } from "./components/suggestions-panel";
+import { useSuggestions } from "./lib/use-suggestions";
 
 type UserSelect = Pick<
   DbUser,
@@ -50,6 +55,7 @@ type TaskWithRelations = KitchenTask & {
 type ProductionBoardClientProps = {
   initialTasks: TaskWithRelations[];
   currentUserId?: string | null;
+  tenantId?: string;
 };
 
 const STATIONS = [
@@ -316,11 +322,29 @@ function TaskColumn({
 export function ProductionBoardClient({
   initialTasks,
   currentUserId,
+  tenantId,
 }: ProductionBoardClientProps) {
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedStation, setSelectedStation] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Suggestions hook
+  const {
+    suggestions,
+    isLoading: suggestionsLoading,
+    fetchSuggestions,
+    dismissSuggestion,
+    handleAction,
+  } = useSuggestions(tenantId);
+
+  // Fetch suggestions on mount
+  useEffect(() => {
+    if (tenantId && showSuggestions) {
+      fetchSuggestions();
+    }
+  }, [tenantId, showSuggestions, fetchSuggestions]);
 
   // Filter tasks by search query and station
   const filteredTasks = initialTasks.filter((task) => {
@@ -378,6 +402,20 @@ export function ProductionBoardClient({
             </div>
             <div className="flex items-center gap-3">
               <WeatherWidget />
+              <Button
+                className="gap-2"
+                onClick={() => setShowSuggestions((prev) => !prev)}
+                size="sm"
+                variant={showSuggestions ? "default" : "outline"}
+              >
+                <Sparkles className="h-4 w-4" />
+                <span className="hidden sm:inline">AI Tips</span>
+                {suggestions.length > 0 && (
+                  <Badge className="ml-1 h-5 px-1" variant="secondary">
+                    {suggestions.length}
+                  </Badge>
+                )}
+              </Button>
               <Button
                 className="gap-2 bg-slate-900 text-white hover:bg-slate-800"
                 onClick={handleCreateTask}
@@ -481,15 +519,54 @@ export function ProductionBoardClient({
             </div>
           </div>
 
-          {/* Stats Sidebar */}
+          {/* Stats Sidebar / Suggestions Panel */}
           <aside className="space-y-4">
-            <StatsSidebar
-              completedTasks={completedTasks.length}
-              inProgressTasks={inProgressTasks.length}
-              myTasks={myTasks.length}
-              pendingTasks={pendingTasks.length}
-              totalTasks={filteredTasks.length}
-            />
+            {showSuggestions ? (
+              <Card className="border-slate-200 shadow-sm">
+                <SuggestionsPanel
+                  suggestions={suggestions}
+                  isLoading={suggestionsLoading}
+                  onDismiss={dismissSuggestion}
+                  onRefresh={fetchSuggestions}
+                  onAction={handleAction}
+                  onClose={() => setShowSuggestions(false)}
+                />
+              </Card>
+            ) : (
+              <>
+                <StatsSidebar
+                  completedTasks={completedTasks.length}
+                  inProgressTasks={inProgressTasks.length}
+                  myTasks={myTasks.length}
+                  pendingTasks={pendingTasks.length}
+                  totalTasks={filteredTasks.length}
+                />
+                {/* AI Suggestions teaser */}
+                {suggestions.length > 0 && (
+                  <Card className="border-purple-200 bg-purple-50/50 shadow-sm">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="flex items-center gap-2 font-semibold text-sm text-purple-900">
+                        <Lightbulb className="h-4 w-4 text-purple-600" />
+                        AI Suggestions Available
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <p className="text-purple-700 text-xs">
+                        You have {suggestions.length} suggestion{suggestions.length !== 1 ? "s" : ""} that could help optimize your kitchen operations.
+                      </p>
+                      <Button
+                        className="w-full bg-purple-600 text-white hover:bg-purple-700"
+                        onClick={() => setShowSuggestions(true)}
+                        size="sm"
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        View Suggestions
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            )}
           </aside>
         </div>
       </main>

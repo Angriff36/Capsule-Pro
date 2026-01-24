@@ -84,7 +84,12 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
           </a>
         </div>
       </Header>
-      <EventDetailsClient budget={budget} event={event} prepTasks={prepTasks} />
+      <EventDetailsClient
+        budget={budget}
+        event={event}
+        prepTasks={prepTasks}
+        tenantId={tenantId}
+      />
     </>
   );
 };

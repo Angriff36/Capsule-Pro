@@ -4,6 +4,12 @@ import type { Event } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
@@ -28,14 +34,22 @@ import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   ChevronDownIcon,
   DollarSignIcon,
+  Lightbulb,
   PlusIcon,
   SparklesIcon,
   TrashIcon,
   UtensilsIcon,
+  X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+
+// Import suggestions from kitchen module (shared across modules)
+import { SuggestionsPanel } from "../../kitchen/components/suggestions-panel";
+import { useSuggestions } from "../../kitchen/lib/use-suggestions";
+import type { SuggestedAction } from "../../kitchen/lib/suggestions-types";
+
 import {
   getBudgetStatusLabel,
   getVarianceColor,
@@ -93,6 +107,7 @@ type EventDetailsClientProps = {
   budget: Budget | null;
   event: Event;
   prepTasks: PrepTaskSummary[];
+  tenantId?: string;
 };
 
 type EventDish = {
@@ -117,6 +132,7 @@ export function EventDetailsClient({
   budget,
   event,
   prepTasks: initialPrepTasks,
+  tenantId,
 }: EventDetailsClientProps) {
   const router = useRouter();
   const [breakdown, setBreakdown] = useState<TaskBreakdown | null>(null);
@@ -139,6 +155,16 @@ export function EventDetailsClient({
   const [showAddDishDialog, setShowAddDishDialog] = useState(false);
   const [selectedDishId, setSelectedDishId] = useState<string>("");
   const [selectedCourse, setSelectedCourse] = useState<string>("");
+
+  // Suggestions state
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const {
+    suggestions,
+    isLoading: suggestionsLoading,
+    fetchSuggestions,
+    dismissSuggestion,
+    handleAction,
+  } = useSuggestions(tenantId);
 
   // Load summary
   useEffect(() => {
@@ -181,6 +207,13 @@ export function EventDetailsClient({
   useEffect(() => {
     loadDishes();
   }, [loadDishes]);
+
+  // Fetch suggestions on mount or when suggestions panel is opened
+  useEffect(() => {
+    if (tenantId && showSuggestions) {
+      fetchSuggestions();
+    }
+  }, [tenantId, showSuggestions, fetchSuggestions]);
 
   const handleAddDish = useCallback(async () => {
     if (!selectedDishId) {
@@ -661,6 +694,63 @@ export function EventDetailsClient({
             onGenerate={handleGenerateSummary}
           />
         )}
+
+        <Separator />
+
+        {/* AI Suggestions Section */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Lightbulb className="size-5 text-amber-500" />
+            <h2 className="font-semibold text-lg">AI Suggestions</h2>
+          </div>
+          <Button
+            onClick={() => setShowSuggestions((prev) => !prev)}
+            variant={showSuggestions ? "default" : "outline"}
+          >
+            <SparklesIcon className="mr-2 size-4" />
+            {showSuggestions ? "Hide Suggestions" : "Show Suggestions"}
+            {suggestions.length > 0 && (
+              <Badge className="ml-2" variant="secondary">
+                {suggestions.length}
+              </Badge>
+            )}
+          </Button>
+        </div>
+
+        {showSuggestions ? (
+          <Card className="border-slate-200 shadow-sm">
+            <SuggestionsPanel
+              suggestions={suggestions}
+              isLoading={suggestionsLoading}
+              onDismiss={dismissSuggestion}
+              onRefresh={fetchSuggestions}
+              onAction={handleAction}
+              onClose={() => setShowSuggestions(false)}
+            />
+          </Card>
+        ) : suggestions.length > 0 ? (
+          <Card className="border-purple-200 bg-purple-50/50 shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 font-semibold text-sm text-purple-900">
+                <Lightbulb className="size-4 text-purple-600" />
+                AI Suggestions Available
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-purple-700 text-xs">
+                You have {suggestions.length} suggestion{suggestions.length !== 1 ? "s" : ""} that could help optimize this event.
+              </p>
+              <Button
+                className="w-full bg-purple-600 text-white hover:bg-purple-700"
+                onClick={() => setShowSuggestions(true)}
+                size="sm"
+              >
+                <SparklesIcon className="mr-2 size-3" />
+                View Suggestions
+              </Button>
+            </CardContent>
+          </Card>
+        ) : null}
 
         <Separator />
 
