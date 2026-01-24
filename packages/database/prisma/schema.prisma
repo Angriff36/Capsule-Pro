@@ -84,6 +84,8 @@ model Account {
   eventContracts        EventContract[]
   contractSignatures    ContractSignature[]
   laborBudgets          LaborBudget[]
+  eventBudgets          EventBudget[]
+  budgetLineItems       BudgetLineItem[]
   budgetAlerts          BudgetAlert[]
 
   @@map("accounts")
@@ -334,6 +336,7 @@ model Event {
   updatedAt    DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt    DateTime?    @map("deleted_at") @db.Timestamptz(6)
   tenant       Account      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  budgets      EventBudget[]
   wasteEntries WasteEntry[]
   shipments    Shipment[]
 
@@ -403,6 +406,59 @@ model EventSummary {
   @@index([tenantId, eventId])
   @@index([generatedAt(sort: Desc)])
   @@map("event_summaries")
+  @@schema("tenant_events")
+}
+
+model EventBudget {
+  tenantId             String                @map("tenant_id") @db.Uuid
+  id                   String                @unique @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  eventId              String                @map("event_id") @db.Uuid
+  version              Int                   @default(1)
+  status               String                @default("draft")
+  totalBudgetAmount    Decimal               @default(0) @map("total_budget_amount") @db.Decimal(12, 2)
+  totalActualAmount    Decimal               @default(0) @map("total_actual_amount") @db.Decimal(12, 2)
+  varianceAmount       Decimal               @default(0) @map("variance_amount") @db.Decimal(12, 2)
+  variancePercentage   Decimal               @default(0) @map("variance_percentage") @db.Decimal(5, 2)
+  notes                String?
+  createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime              @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt            DateTime?             @map("deleted_at") @db.Timestamptz(6)
+
+  tenant               Account               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  event                Event                 @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  lineItems            BudgetLineItem[]
+  alerts               BudgetAlert[]
+
+  @@id([tenantId, id])
+  @@index([tenantId, eventId], map: "event_budgets_event_id_idx")
+  @@index([tenantId, status], map: "event_budgets_status_idx")
+  @@map("event_budgets")
+  @@schema("tenant_events")
+}
+
+model BudgetLineItem {
+  tenantId         String                @map("tenant_id") @db.Uuid
+  id               String                @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  budgetId         String                @map("budget_id") @db.Uuid
+  category         String
+  name             String
+  description      String?
+  budgetedAmount   Decimal               @default(0) @map("budgeted_amount") @db.Decimal(12, 2)
+  actualAmount     Decimal               @default(0) @map("actual_amount") @db.Decimal(12, 2)
+  varianceAmount   Decimal               @default(0) @map("variance_amount") @db.Decimal(12, 2)
+  sortOrder        Int                   @default(0) @map("sort_order")
+  notes            String?
+  createdAt        DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime              @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt        DateTime?             @map("deleted_at") @db.Timestamptz(6)
+
+  tenant           Account               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  budget           EventBudget           @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([tenantId, budgetId], map: "budget_line_items_budget_id_idx")
+  @@index([tenantId, category], map: "budget_line_items_category_idx")
+  @@map("budget_line_items")
   @@schema("tenant_events")
 }
 
@@ -1657,6 +1713,7 @@ model BudgetAlert {
   updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant         Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  budget         EventBudget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
 
   @@id([tenantId, id])
   @@index([tenantId, budgetId], map: "budget_alerts_budget_idx")
