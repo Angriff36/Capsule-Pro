@@ -6,6 +6,7 @@
  */
 
 import { database, Prisma } from "@repo/database";
+import { checkBudgetForShift } from "./labor-budget";
 
 // Types for auto-assignment
 export interface ShiftRequirement {
@@ -16,6 +17,7 @@ export interface ShiftRequirement {
   shiftEnd: Date;
   roleDuringShift?: string;
   requiredSkills?: string[]; // Array of skill IDs
+  eventId?: string; // Event ID for budget tracking
   notes?: string;
 }
 
@@ -230,11 +232,37 @@ export async function getEligibleEmployeesForShift(
   const canAutoAssign =
     bestMatch && bestMatch.confidence === "high" && suggestions.length > 0;
 
+  // Check labor budget
+  let laborBudgetWarning: string | undefined;
+  if (canAutoAssign && bestMatch) {
+    const budgetCheck = await checkBudgetForShift(tenantId, {
+      locationId,
+      eventId: requirement.eventId,
+      shiftStart,
+      shiftEnd,
+      hourlyRate: bestMatch.employee.hourlyRate || undefined,
+    });
+
+    if (!budgetCheck.withinBudget) {
+      // Override canAutoAssign if over budget
+      return {
+        shiftId,
+        suggestions,
+        bestMatch,
+        canAutoAssign: false,
+        laborBudgetWarning: budgetCheck.budgetWarning,
+      };
+    }
+
+    laborBudgetWarning = budgetCheck.budgetWarning;
+  }
+
   return {
     shiftId,
     suggestions,
     bestMatch,
     canAutoAssign,
+    laborBudgetWarning,
   };
 }
 

@@ -412,6 +412,46 @@ tenant_staff.open_shifts
   -- Purpose: Track unassigned shifts that can be claimed or filled by employees
   -- Used for shift marketplace/claiming functionality
 
+tenant_staff.labor_budgets
+  tenant_id uuid NOT NULL REFERENCES platform.accounts(id) ON DELETE RESTRICT
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  location_id uuid  -- NULL for tenant-wide budgets
+  event_id uuid  -- For event-specific budgets (NULL for period budgets)
+  name text NOT NULL
+  description text
+  budget_type text NOT NULL  -- 'event', 'week', 'month'
+  period_start date  -- Required for week/month budgets
+  period_end date  -- Required for week/month budgets
+  budget_target numeric(10,2) NOT NULL  -- Target hours or cost
+  budget_unit text NOT NULL  -- 'hours', 'cost'
+  actual_spend numeric(10,2)  -- Calculated field
+  threshold_80_pct boolean NOT NULL DEFAULT true
+  threshold_90_pct boolean NOT NULL DEFAULT true
+  threshold_100_pct boolean NOT NULL DEFAULT true
+  status text NOT NULL DEFAULT 'active'  -- 'active', 'paused', 'archived'
+  override_reason text
+  created_at, updated_at, deleted_at
+  CHECK: budget_target > 0
+  CHECK: (budget_type = 'event' AND event_id IS NOT NULL) OR (budget_type IN ('week', 'month') AND period_start IS NOT NULL AND period_end IS NOT NULL)
+  -- Purpose: Track labor budgets per event or time period with real-time utilization and alert thresholds
+
+tenant_staff.budget_alerts
+  tenant_id uuid NOT NULL REFERENCES platform.accounts(id) ON DELETE RESTRICT
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  budget_id uuid NOT NULL  -- FK to tenant_staff.labor_budgets
+  alert_type text NOT NULL  -- 'threshold_80', 'threshold_90', 'threshold_100', 'exceeded'
+  utilization numeric(5,2) NOT NULL  -- Percentage
+  message text NOT NULL
+  is_acknowledged boolean NOT NULL DEFAULT false
+  acknowledged_by uuid
+  acknowledged_at timestamptz
+  resolved boolean NOT NULL DEFAULT false
+  resolved_at timestamptz
+  created_at, updated_at, deleted_at
+  -- Purpose: Track budget threshold alerts with acknowledgment workflow
+
 ================================================================================
 TENANT.CRM SCHEMA
 ================================================================================

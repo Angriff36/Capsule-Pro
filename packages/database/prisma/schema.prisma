@@ -81,6 +81,8 @@ model Account {
   eventGuests           EventGuest[]
   eventContracts        EventContract[]
   contractSignatures    ContractSignature[]
+  laborBudgets          LaborBudget[]
+  budgetAlerts          BudgetAlert[]
 
   @@map("accounts")
   @@schema("platform")
@@ -1487,6 +1489,62 @@ model EmployeeLocation {
   @@index([employeeId], map: "employee_locations_employee_idx")
   @@index([locationId], map: "employee_locations_location_idx")
   @@map("employee_locations")
+  @@schema("tenant_staff")
+}
+
+model LaborBudget {
+  tenantId        String    @map("tenant_id") @db.Uuid
+  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  locationId      String?   @map("location_id") @db.Uuid
+  eventId         String?   @map("event_id") @db.Uuid
+  name            String
+  description     String?
+  budgetType      String    @map("budget_type")
+  periodStart     DateTime? @map("period_start") @db.Date
+  periodEnd       DateTime? @map("period_end") @db.Date
+  budgetTarget    Decimal   @map("budget_target") @db.Decimal(10, 2)
+  budgetUnit      String    @map("budget_unit")
+  actualSpend     Decimal?  @map("actual_spend") @db.Decimal(10, 2)
+  threshold80Pct  Boolean   @default(true) @map("threshold_80_pct")
+  threshold90Pct  Boolean   @default(true) @map("threshold_90_pct")
+  threshold100Pct Boolean   @default(true) @map("threshold_100_pct")
+  status          String    @default("active")
+  overrideReason  String?   @map("override_reason")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant          Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([tenantId, locationId], map: "labor_budgets_location_idx")
+  @@index([tenantId, eventId], map: "labor_budgets_event_idx")
+  @@index([tenantId, periodStart, periodEnd], map: "labor_budgets_period_idx")
+  @@map("labor_budgets")
+  @@schema("tenant_staff")
+}
+
+model BudgetAlert {
+  tenantId       String    @map("tenant_id") @db.Uuid
+  id             String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  budgetId       String    @map("budget_id") @db.Uuid
+  alertType      String    @map("alert_type")
+  utilization    Decimal   @db.Decimal(5, 2)
+  message        String
+  isAcknowledged Boolean   @default(false) @map("is_acknowledged")
+  acknowledgedBy String?   @map("acknowledged_by") @db.Uuid
+  acknowledgedAt DateTime? @map("acknowledged_at") @db.Timestamptz(6)
+  resolved       Boolean   @default(false)
+  resolvedAt     DateTime? @map("resolved_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant         Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([tenantId, budgetId], map: "budget_alerts_budget_idx")
+  @@index([tenantId, alertType], map: "budget_alerts_type_idx")
+  @@index([isAcknowledged], map: "budget_alerts_acknowledged_idx")
+  @@map("budget_alerts")
   @@schema("tenant_staff")
 }
 
