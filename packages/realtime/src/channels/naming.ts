@@ -40,9 +40,7 @@ export function getModuleFromEventType(eventType: string): string {
  * @param channel - The channel name (e.g., "tenant:abc-123")
  * @returns Object with tenantId, or null if not a tenant channel
  */
-export function parseChannelName(
-  channel: string,
-): { tenantId: string } | null {
+export function parseChannelName(channel: string): { tenantId: string } | null {
   const match = channel.match(/^tenant:(.+)$/);
   return match ? { tenantId: match[1] } : null;
 }

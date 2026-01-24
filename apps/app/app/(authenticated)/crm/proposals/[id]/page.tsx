@@ -67,9 +67,75 @@ export default async function ProposalDetailPage({
 }: ProposalPageProps) {
   const { id } = await params;
 
-  let proposal;
+  // Type with relations as returned by getProposalById
+  type ProposalWithRelations = {
+    id: string;
+    tenantId: string;
+    proposalNumber: string;
+    title: string;
+    clientId: string | null;
+    leadId: string | null;
+    eventId: string | null;
+    eventDate: string | null;
+    eventType: string | null;
+    guestCount: number | null;
+    venueName: string | null;
+    venueAddress: string | null;
+    subtotal: number | null;
+    taxRate: number | null;
+    taxAmount: number | null;
+    discountAmount: number | null;
+    total: number | null;
+    status: string | null;
+    sentAt: Date | null;
+    viewedAt: Date | null;
+    acceptedAt: Date | null;
+    rejectedAt: Date | null;
+    validUntil: string | null;
+    notes: string | null;
+    termsAndConditions: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date | null;
+    client?: {
+      id: string;
+      company_name: string | null;
+      first_name: string | null;
+      last_name: string | null;
+      email: string | null;
+      phone: string | null;
+      addressLine1: string | null;
+      city: string | null;
+      stateProvince: string | null;
+      postalCode: string | null;
+    } | null;
+    lead?: {
+      id: string;
+      company_name: string | null;
+      first_name: string | null;
+      last_name: string | null;
+      email: string | null;
+      phone: string | null;
+    } | null;
+    event?: {
+      id: string;
+      name: string;
+    } | null;
+    lineItems: Array<{
+      id: string;
+      sortOrder: number | null;
+      itemType: string;
+      description: string;
+      quantity: number;
+      unitPrice: number;
+      total: number | null;
+      notes: string | null;
+    }>;
+  };
+
+  let proposal: ProposalWithRelations;
   try {
-    proposal = await getProposalById(id);
+    proposal = (await getProposalById(id)) as unknown as ProposalWithRelations;
   } catch {
     notFound();
   }
@@ -132,8 +198,15 @@ export default async function ProposalDetailPage({
               <h1 className="text-3xl font-bold tracking-tight">
                 {proposal.title}
               </h1>
-              <Badge variant={statusVariants[proposal.status] || "default"}>
-                {statusLabels[proposal.status] || proposal.status}
+              <Badge
+                variant={
+                  (proposal.status && statusVariants[proposal.status]) ||
+                  "default"
+                }
+              >
+                {(proposal.status && statusLabels[proposal.status]) ||
+                  proposal.status ||
+                  "Unknown"}
               </Badge>
             </div>
             <p className="text-muted-foreground">
@@ -281,7 +354,7 @@ export default async function ProposalDetailPage({
                           ${item.unitPrice.toFixed(2)}
                         </TableCell>
                         <TableCell className="text-right font-medium">
-                          ${item.total.toFixed(2)}
+                          ${item.total?.toFixed(2) ?? "0.00"}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -365,7 +438,7 @@ export default async function ProposalDetailPage({
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
                 <span className="font-medium">
-                  ${proposal.subtotal.toFixed(2)}
+                  ${proposal.subtotal?.toFixed(2) ?? "0.00"}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -375,21 +448,21 @@ export default async function ProposalDetailPage({
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Tax Amount</span>
                 <span className="font-medium">
-                  ${proposal.taxAmount.toFixed(2)}
+                  ${proposal.taxAmount?.toFixed(2) ?? "0.00"}
                 </span>
               </div>
-              {proposal.discountAmount > 0 && (
+              {(proposal.discountAmount ?? 0) > 0 && (
                 <div className="flex justify-between text-green-600">
                   <span>Discount</span>
                   <span className="font-medium">
-                    -${proposal.discountAmount.toFixed(2)}
+                    -${proposal.discountAmount?.toFixed(2) ?? "0.00"}
                   </span>
                 </div>
               )}
               <Separator />
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>
-                <span>${proposal.total.toFixed(2)}</span>
+                <span>${proposal.total?.toFixed(2) ?? "0.00"}</span>
               </div>
             </CardContent>
           </Card>

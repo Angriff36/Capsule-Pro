@@ -1,21 +1,26 @@
-import { auth } from "@repo/auth/server";
-import { notFound } from "next/navigation";
-import { Header } from "../../components/header";
-import { BudgetsPageClient } from "./budgets-page-client";
+// Budget model does not exist in schema - this page is disabled
 
-const BudgetsPage = async () => {
-  const { orgId } = await auth();
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 
-  if (!orgId) {
-    notFound();
-  }
-
+export default function BudgetsPage() {
   return (
-    <>
-      <Header page="Budgets" pages={["Operations", "Events"]} />
-      <BudgetsPageClient />
-    </>
+    <div className="container mx-auto py-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>Event Budgets</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Event budget management is not yet implemented. The Budget model
+            needs to be added to the database schema.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
   );
-};
-
-export default BudgetsPage;
+}

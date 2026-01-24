@@ -92,29 +92,7 @@ export default function AllergenManagementPage() {
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
 
-  // Fetch all data on mount
-  useEffect(() => {
-    Promise.all([fetchWarnings(), fetchEvents(), fetchDishes(), fetchRecipes()])
-      .then(() => setLoading(false))
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-        toast.error("Failed to load allergen data");
-        setLoading(false);
-      });
-  }, []);
-
-  // Listen for allergen updates and refresh data
-  useEffect(() => {
-    const handleAllergenUpdate = () => {
-      fetchDishes();
-    };
-
-    window.addEventListener("allergen-updated", handleAllergenUpdate);
-    return () => {
-      window.removeEventListener("allergen-updated", handleAllergenUpdate);
-    };
-  }, [fetchDishes]);
-
+  // Fetch function declarations (must be before useEffect hooks that use them)
   const fetchWarnings = async () => {
     try {
       const response = await fetch("/api/kitchen/allergens/warnings");
@@ -162,6 +140,29 @@ export default function AllergenManagementPage() {
       throw error;
     }
   };
+
+  // Fetch all data on mount
+  useEffect(() => {
+    Promise.all([fetchWarnings(), fetchEvents(), fetchDishes(), fetchRecipes()])
+      .then(() => setLoading(false))
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load allergen data");
+        setLoading(false);
+      });
+  }, []);
+
+  // Listen for allergen updates and refresh data
+  useEffect(() => {
+    const handleAllergenUpdate = () => {
+      fetchDishes();
+    };
+
+    window.addEventListener("allergen-updated", handleAllergenUpdate);
+    return () => {
+      window.removeEventListener("allergen-updated", handleAllergenUpdate);
+    };
+  }, [fetchDishes]);
 
   // Filter data based on search term
   const filteredWarnings = warnings.filter(

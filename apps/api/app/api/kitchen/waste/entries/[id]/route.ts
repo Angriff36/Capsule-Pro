@@ -94,7 +94,7 @@ export async function PUT(
     const { ingredientId, quantity, unit, reason, notes, eventId } = body;
 
     // Validate required fields
-    if (!ingredientId || !quantity || !unit || !reason) {
+    if (!(ingredientId && quantity && unit && reason)) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }

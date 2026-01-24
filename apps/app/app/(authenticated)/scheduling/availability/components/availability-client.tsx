@@ -1,5 +1,6 @@
 "use client";
 
+import type { DayOfWeek } from "@api/staff/availability/types";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import {
@@ -100,7 +101,7 @@ export function AvailabilityClient() {
     try {
       const data = await getAvailability({
         employeeId: filters.employeeId || undefined,
-        dayOfWeek: filters.dayOfWeek,
+        dayOfWeek: filters.dayOfWeek as DayOfWeek | undefined,
         effectiveDate: filters.effectiveDate || undefined,
         isActive: filters.isActive,
         page: pagination.page,

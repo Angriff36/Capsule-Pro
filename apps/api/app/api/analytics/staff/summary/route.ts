@@ -194,7 +194,8 @@ export async function GET(request: Request) {
 
     const averageQualityScore =
       employees.length > 0
-        ? employees.reduce((sum, e) => sum + e.qualityScore, 0) / employees.length
+        ? employees.reduce((sum, e) => sum + e.qualityScore, 0) /
+          employees.length
         : 0;
 
     const averageEfficiencyScore =

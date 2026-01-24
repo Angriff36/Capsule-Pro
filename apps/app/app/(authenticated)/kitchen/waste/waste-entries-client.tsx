@@ -11,12 +11,11 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { useToast } from "@repo/design-system/hooks/use-toast";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export function WasteEntriesClient() {
-  const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     inventoryItemId: "",
@@ -50,11 +49,9 @@ export function WasteEntriesClient() {
 
       const result = await response.json();
 
-      toast({
-        title: "Waste entry logged",
-        description: `Cost: $${result.entry.totalCost?.toFixed(2) || "0.00"}`,
-        variant: "default",
-      });
+      toast.success(
+        `Waste entry logged - Cost: $${result.entry.totalCost?.toFixed(2) || "0.00"}`
+      );
 
       // Reset form
       setFormData({
@@ -65,12 +62,9 @@ export function WasteEntriesClient() {
         notes: "",
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to log waste entry",
-        variant: "destructive",
-      });
+      toast.error(
+        error instanceof Error ? error.message : "Failed to log waste entry"
+      );
     } finally {
       setSubmitting(false);
     }

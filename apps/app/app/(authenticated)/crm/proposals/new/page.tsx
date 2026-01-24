@@ -16,7 +16,10 @@ export const metadata: Metadata = {
   description: "Create a new event proposal for a client",
 };
 
-async function handleCreate(formData: FormData) {
+async function handleCreate(
+  previousState: { redirect: string } | null,
+  formData: FormData
+) {
   "use server";
 
   const lineItemsJson = formData.get("lineItems") as string;

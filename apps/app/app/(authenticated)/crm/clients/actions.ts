@@ -208,19 +208,25 @@ export async function getClientById(id: string) {
   // Get event count
   const eventCount = await database.cateringOrder.count({
     where: {
-      AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
+      AND: [{ tenantId }, { customer_id: id }, { deletedAt: null }],
     },
   });
 
   // Get total revenue
   const revenueResult = await database.cateringOrder.aggregate({
     where: {
-      AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
+      AND: [{ tenantId }, { customer_id: id }, { deletedAt: null }],
     },
     _sum: {
-      total: true,
+      totalAmount: true,
     },
   });
+
+  // Transform Decimal to match component's expected type
+  const totalRevenue =
+    revenueResult._sum.totalAmount !== null
+      ? { total: revenueResult._sum.totalAmount.toString() }
+      : null;
 
   return {
     ...client,
@@ -228,7 +234,7 @@ export async function getClientById(id: string) {
     preferences,
     interactionCount,
     eventCount,
-    totalRevenue: revenueResult._sum.total,
+    totalRevenue,
   };
 }
 
@@ -555,7 +561,7 @@ export async function createClientInteraction(
   clientId: string,
   input: CreateClientInteractionInput
 ) {
-  const { orgId } = await auth();
+  const { orgId, userId } = await auth();
   invariant(orgId, "Unauthorized");
 
   const tenantId = await getTenantId();
@@ -570,20 +576,15 @@ export async function createClientInteraction(
 
   invariant(client, "Client not found");
 
-  // Get current user's employee record
-  const employee = await database.employee.findFirst({
-    where: {
-      AND: [{ tenantId }, { deletedAt: null }],
-    },
-  });
-
-  invariant(employee, "Employee record not found for current user");
+  // Note: Using userId since Employee model doesn't exist in schema
+  // TODO: Add Employee model and proper employee lookup
+  invariant(userId, "User ID not found");
 
   const interaction = await database.clientInteraction.create({
     data: {
       tenantId,
       clientId,
-      employeeId: employee.id,
+      employeeId: userId,
       interactionType: input.interactionType.trim(),
       subject: input.subject?.trim() || null,
       description: input.description?.trim() || null,
@@ -740,17 +741,7 @@ export async function getClientEventHistory(
 
   const events = await database.cateringOrder.findMany({
     where: {
-      AND: [{ tenantId }, { clientId }, { deletedAt: null }],
-    },
-    include: {
-      event: {
-        select: {
-          id: true,
-          name: true,
-          eventDate: true,
-          status: true,
-        },
-      },
+      AND: [{ tenantId }, { customer_id: clientId }, { deletedAt: null }],
     },
     orderBy: [{ createdAt: "desc" }],
     take: limit,
@@ -759,7 +750,7 @@ export async function getClientEventHistory(
 
   const totalCount = await database.cateringOrder.count({
     where: {
-      AND: [{ tenantId }, { clientId }, { deletedAt: null }],
+      AND: [{ tenantId }, { customer_id: clientId }, { deletedAt: null }],
     },
   });
 

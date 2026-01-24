@@ -13,13 +13,13 @@ export async function GET(
     invariant(eventId, "params.eventId must exist");
 
     // Authenticate the user
-    const session = await auth();
-    if (!session?.user?.id) {
+    const { userId, orgId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const { orgId } = session;
-    invariant(orgId, "auth.orgId must exist");
+    if (!orgId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     // Get tenant ID
     const tenantId = await getTenantIdForOrg(orgId);
@@ -53,43 +53,10 @@ export async function GET(
       where.isAcknowledged = isAcknowledged === "true";
     }
 
-    // Fetch warnings with related dish and guest information
+    // Fetch warnings
     const warnings = await database.allergenWarning.findMany({
       where,
-      include: {
-        dish: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            category: true,
-          },
-        },
-        guest: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            dietaryRestrictions: true,
-          },
-        },
-        createdBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        acknowledgedBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-      orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
+      orderBy: [{ createdAt: "desc" }],
     });
 
     return NextResponse.json(warnings);

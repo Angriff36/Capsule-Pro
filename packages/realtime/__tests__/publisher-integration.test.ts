@@ -3,9 +3,8 @@
  * These tests validate the publisher logic without requiring actual DB or Ably connections.
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { RealtimeEventBase } from "../src/events";
-import { getMessageSize } from "../src/__mocks__/publisher-utils";
 
 // Mock helper functions that mirror the publisher route logic
 function getMessageSizeLocal(message: unknown): number {
@@ -21,7 +20,9 @@ function buildEventEnvelope(outboxEvent: {
   payload: unknown;
   createdAt: Date;
 }): RealtimeEventBase & { eventType: string; payload: unknown } {
-  const payloadData = outboxEvent.payload as Record<string, unknown> | undefined;
+  const payloadData = outboxEvent.payload as
+    | Record<string, unknown>
+    | undefined;
   const occurredAt =
     payloadData?.occurredAt && typeof payloadData.occurredAt === "string"
       ? payloadData.occurredAt

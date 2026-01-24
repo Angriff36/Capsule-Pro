@@ -44,7 +44,7 @@ export interface CreateTimeOffRequestInput {
 }
 
 export interface UpdateTimeOffStatusInput {
-  status: "APPROVED" | "REJECTED";
+  status: TimeOffStatus;
   rejectionReason?: string; // Required when status is REJECTED
 }
 

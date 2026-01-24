@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { BattleBoardPDF } from "@repo/pdf";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export const runtime = "nodejs";
@@ -26,11 +26,8 @@ export async function GET(
     const { eventId } = await params;
     const { orgId, userId } = await auth();
 
-    if (!orgId || !userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+    if (!(orgId && userId)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
@@ -47,10 +44,7 @@ export async function GET(
     });
 
     if (!event || event.deletedAt) {
-      return NextResponse.json(
-        { error: "Event not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
     // Fetch timeline tasks with staff assignments
@@ -137,15 +131,14 @@ export async function GET(
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Prepare PDF data
     const totalTasks = tasks.length;
-    const completedTasks = tasks.filter((task) => task.status === "completed").length;
+    const completedTasks = tasks.filter(
+      (task) => task.status === "completed"
+    ).length;
     const pendingTasks = totalTasks - completedTasks;
 
     const pdfData = {
@@ -195,7 +188,7 @@ export async function GET(
     const url = new URL(request.url);
     const shouldDownload = url.searchParams.get("download") === "true";
 
-    // @ts-ignore - React-PDF renderer needs proper types
+    // @ts-expect-error - React-PDF renderer needs proper types
     const pdfComponent = <BattleBoardPDF data={pdfData} />;
 
     if (shouldDownload) {
@@ -210,25 +203,24 @@ export async function GET(
           "Content-Disposition": `attachment; filename="battle-board-${event.title.replace(/\s+/g, "-").toLowerCase()}.pdf"`,
         },
       });
-    } else {
-      // Return as base64 for client-side handling
-      const { pdf } = await import("@react-pdf/renderer");
-      const doc = await pdf(pdfComponent);
-      const blob = await doc.toBlob();
-      const arrayBuffer = await blob.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-
-      let binary = "";
-      for (let i = 0; i < uint8Array.length; i++) {
-        binary += String.fromCharCode(uint8Array[i]);
-      }
-      const base64 = btoa(binary);
-
-      return NextResponse.json({
-        dataUrl: `data:application/pdf;base64,${base64}`,
-        filename: `battle-board-${event.title.replace(/\s+/g, "-").toLowerCase()}.pdf`,
-      });
     }
+    // Return as base64 for client-side handling
+    const { pdf } = await import("@react-pdf/renderer");
+    const doc = await pdf(pdfComponent);
+    const blob = await doc.toBlob();
+    const arrayBuffer = await blob.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+
+    let binary = "";
+    for (let i = 0; i < uint8Array.length; i++) {
+      binary += String.fromCharCode(uint8Array[i]);
+    }
+    const base64 = btoa(binary);
+
+    return NextResponse.json({
+      dataUrl: `data:application/pdf;base64,${base64}`,
+      filename: `battle-board-${event.title.replace(/\s+/g, "-").toLowerCase()}.pdf`,
+    });
   } catch (error) {
     console.error("Failed to generate Battle Board PDF:", error);
     return NextResponse.json(

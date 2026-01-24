@@ -263,6 +263,18 @@ tenant_staff.employee_certifications
   document_url text
   created_at, updated_at, deleted_at
 
+tenant_staff.employee_seniority
+  tenant_id uuid NOT NULL
+  id uuid DEFAULT gen_random_uuid()
+  PK: (tenant_id, id)
+  employee_id uuid NOT NULL
+  level text NOT NULL  -- 'junior', 'mid', 'senior', 'lead', 'executive'
+  rank integer NOT NULL  -- Numeric rank for sorting (1 = lowest, higher = more senior)
+  effective_at timestamptz NOT NULL DEFAULT now()
+  created_at, updated_at, deleted_at
+  -- Purpose: Track employee seniority levels for auto-assignment and shift prioritization
+  -- Supports historical tracking via effective_at and soft deletes
+
 tenant_staff.employee_availability
   tenant_id uuid NOT NULL
   id uuid DEFAULT gen_random_uuid()

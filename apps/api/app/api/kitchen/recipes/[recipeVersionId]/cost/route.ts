@@ -1,6 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export type UnitConversion = {
@@ -189,10 +189,7 @@ export async function GET(
     const { orgId } = await auth();
 
     if (!orgId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
@@ -224,14 +221,14 @@ export async function POST(
     const { orgId } = await auth();
 
     if (!orgId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    const costSummary = await calculateAllRecipeCosts(tenantId, recipeVersionId);
+    const costSummary = await calculateAllRecipeCosts(
+      tenantId,
+      recipeVersionId
+    );
 
     if (!costSummary) {
       return NextResponse.json(

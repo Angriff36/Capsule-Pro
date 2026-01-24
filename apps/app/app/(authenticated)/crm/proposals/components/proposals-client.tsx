@@ -42,7 +42,6 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { toast } from "@repo/design-system/components/ui/use-toast";
 import {
   type ColumnDef,
   flexRender,
@@ -61,8 +60,10 @@ import {
   Trash2,
   View,
 } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Proposal {
   id: string;
@@ -200,10 +201,8 @@ export function ProposalsClient({
       setPagination(data.pagination);
     } catch (error) {
       console.error("Error fetching proposals:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load proposals",
-        variant: "destructive",
+      toast.error("Failed to load proposals", {
+        description: error instanceof Error ? error.message : "Unknown error",
       });
     } finally {
       setIsLoading(false);
@@ -265,20 +264,15 @@ export function ProposalsClient({
 
       if (!response.ok) throw new Error("Failed to delete proposal");
 
-      toast({
-        title: "Success",
-        description: "Proposal deleted successfully",
-      });
+      toast.success("Proposal deleted successfully");
 
       setDeleteDialogOpen(false);
       setProposalToDelete(null);
       fetchProposals();
     } catch (error) {
       console.error("Error deleting proposal:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete proposal",
-        variant: "destructive",
+      toast.error("Failed to delete proposal", {
+        description: error instanceof Error ? error.message : "Unknown error",
       });
     } finally {
       setIsDeleting(false);
@@ -296,18 +290,13 @@ export function ProposalsClient({
 
       if (!response.ok) throw new Error("Failed to send proposal");
 
-      toast({
-        title: "Success",
-        description: `Proposal sent to ${proposal.client?.email || proposal.lead?.email || "client"}`,
-      });
+      toast.success("Proposal sent successfully");
 
       fetchProposals();
     } catch (error) {
       console.error("Error sending proposal:", error);
-      toast({
-        title: "Error",
-        description: "Failed to send proposal",
-        variant: "destructive",
+      toast.error("Failed to send proposal", {
+        description: error instanceof Error ? error.message : "Unknown error",
       });
     } finally {
       setIsSending(false);
@@ -339,18 +328,13 @@ export function ProposalsClient({
 
       if (!createResponse.ok) throw new Error("Failed to duplicate proposal");
 
-      toast({
-        title: "Success",
-        description: "Proposal duplicated successfully",
-      });
+      toast.success("Proposal duplicated successfully");
 
       fetchProposals();
     } catch (error) {
       console.error("Error duplicating proposal:", error);
-      toast({
-        title: "Error",
-        description: "Failed to duplicate proposal",
-        variant: "destructive",
+      toast.error("Failed to duplicate proposal", {
+        description: error instanceof Error ? error.message : "Unknown error",
       });
     }
   };

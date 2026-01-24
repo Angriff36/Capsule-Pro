@@ -55,18 +55,8 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
     )
   );
 
-  // Fetch budget for this event
-  const budget = await database.budget.findFirst({
-    where: {
-      AND: [
-        { tenantId },
-        { eventId },
-        { status: { in: ["draft", "approved"] } },
-        { deletedAt: null },
-      ],
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  // Budget model does not exist in schema - set to null
+  const budget = null;
 
   return (
     <>

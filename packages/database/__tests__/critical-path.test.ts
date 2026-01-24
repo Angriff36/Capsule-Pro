@@ -175,29 +175,61 @@ describe("Critical Path Method (CPM) Algorithm", () => {
       const results = calculateCriticalPath(tasks);
 
       // Task A
-      expect(results.get("A")?.earliestStart).toEqual(new Date("2026-01-23T08:00:00Z"));
-      expect(results.get("A")?.earliestFinish).toEqual(new Date("2026-01-23T09:00:00Z"));
-      expect(results.get("A")?.latestStart).toEqual(new Date("2026-01-23T08:00:00Z"));
-      expect(results.get("A")?.latestFinish).toEqual(new Date("2026-01-23T09:00:00Z"));
+      expect(results.get("A")?.earliestStart).toEqual(
+        new Date("2026-01-23T08:00:00Z")
+      );
+      expect(results.get("A")?.earliestFinish).toEqual(
+        new Date("2026-01-23T09:00:00Z")
+      );
+      expect(results.get("A")?.latestStart).toEqual(
+        new Date("2026-01-23T08:00:00Z")
+      );
+      expect(results.get("A")?.latestFinish).toEqual(
+        new Date("2026-01-23T09:00:00Z")
+      );
 
       // Task B (on critical path)
-      expect(results.get("B")?.earliestStart).toEqual(new Date("2026-01-23T09:00:00Z"));
-      expect(results.get("B")?.earliestFinish).toEqual(new Date("2026-01-23T11:00:00Z"));
-      expect(results.get("B")?.latestStart).toEqual(new Date("2026-01-23T09:00:00Z"));
-      expect(results.get("B")?.latestFinish).toEqual(new Date("2026-01-23T11:00:00Z"));
+      expect(results.get("B")?.earliestStart).toEqual(
+        new Date("2026-01-23T09:00:00Z")
+      );
+      expect(results.get("B")?.earliestFinish).toEqual(
+        new Date("2026-01-23T11:00:00Z")
+      );
+      expect(results.get("B")?.latestStart).toEqual(
+        new Date("2026-01-23T09:00:00Z")
+      );
+      expect(results.get("B")?.latestFinish).toEqual(
+        new Date("2026-01-23T11:00:00Z")
+      );
 
       // Task C (NOT on critical path, has 90 min slack)
-      expect(results.get("C")?.earliestStart).toEqual(new Date("2026-01-23T09:00:00Z"));
-      expect(results.get("C")?.earliestFinish).toEqual(new Date("2026-01-23T09:30:00Z"));
-      expect(results.get("C")?.latestStart).toEqual(new Date("2026-01-23T10:30:00Z"));
-      expect(results.get("C")?.latestFinish).toEqual(new Date("2026-01-23T11:00:00Z"));
+      expect(results.get("C")?.earliestStart).toEqual(
+        new Date("2026-01-23T09:00:00Z")
+      );
+      expect(results.get("C")?.earliestFinish).toEqual(
+        new Date("2026-01-23T09:30:00Z")
+      );
+      expect(results.get("C")?.latestStart).toEqual(
+        new Date("2026-01-23T10:30:00Z")
+      );
+      expect(results.get("C")?.latestFinish).toEqual(
+        new Date("2026-01-23T11:00:00Z")
+      );
       expect(results.get("C")?.slackMinutes).toBe(90);
 
       // Task D (on critical path)
-      expect(results.get("D")?.earliestStart).toEqual(new Date("2026-01-23T11:00:00Z"));
-      expect(results.get("D")?.earliestFinish).toEqual(new Date("2026-01-23T12:00:00Z"));
-      expect(results.get("D")?.latestStart).toEqual(new Date("2026-01-23T11:00:00Z"));
-      expect(results.get("D")?.latestFinish).toEqual(new Date("2026-01-23T12:00:00Z"));
+      expect(results.get("D")?.earliestStart).toEqual(
+        new Date("2026-01-23T11:00:00Z")
+      );
+      expect(results.get("D")?.earliestFinish).toEqual(
+        new Date("2026-01-23T12:00:00Z")
+      );
+      expect(results.get("D")?.latestStart).toEqual(
+        new Date("2026-01-23T11:00:00Z")
+      );
+      expect(results.get("D")?.latestFinish).toEqual(
+        new Date("2026-01-23T12:00:00Z")
+      );
     });
 
     test("should handle tasks with different start times", () => {

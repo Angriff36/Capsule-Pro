@@ -186,14 +186,14 @@ export async function GET(request: Request) {
     ...Object.values(reasonCounts).map((r) => r.cost)
   );
   if (maxReasonCost > totalPeriodCost * 0.3) {
+    const topReasonId = Object.keys(reasonCounts).reduce((a, b) => {
+      const aNum = Number(a);
+      const bNum = Number(b);
+      return reasonCounts[aNum].cost > reasonCounts[bNum].cost ? a : b;
+    });
     const topReason = await database.wasteReason.findUnique({
       where: {
-        id: Number.parseInt(
-          Object.keys(reasonCounts).reduce((a, b) =>
-            reasonCounts[a].cost > reasonCounts[b].cost ? a : b
-          ),
-          10
-        ),
+        id: Number.parseInt(topReasonId, 10),
       },
     });
     reductionOpportunities.push({

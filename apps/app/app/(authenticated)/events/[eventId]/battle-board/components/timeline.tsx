@@ -11,8 +11,8 @@ import {
   MoreHorizontalIcon,
   MoveIcon,
   PlusIcon,
-  RefreshCwIcon,
   Redo2Icon,
+  RefreshCwIcon,
   Undo2Icon,
   UsersIcon,
   ZoomInIcon,
@@ -27,7 +27,11 @@ import {
   useState,
 } from "react";
 import { toast } from "sonner";
-import { calculateCriticalPath, deleteTimelineTask, updateTimelineTask } from "../actions/tasks";
+import {
+  calculateCriticalPath,
+  deleteTimelineTask,
+  updateTimelineTask,
+} from "../actions/tasks";
 import {
   PRIORITY_ORDER,
   type StaffMember,
@@ -77,7 +81,8 @@ export function Timeline({
   const [undoStack, setUndoStack] = useState<TaskAction[]>([]);
   const [redoStack, setRedoStack] = useState<TaskAction[]>([]);
   const [conflicts, setConflicts] = useState<Map<string, string[]>>(new Map());
-  const [isCalculatingCriticalPath, setIsCalculatingCriticalPath] = useState(false);
+  const [isCalculatingCriticalPath, setIsCalculatingCriticalPath] =
+    useState(false);
 
   const [dragState, setDragState] = useState({
     isDragging: false,
@@ -651,7 +656,9 @@ export function Timeline({
               title="Recalculate critical path"
               variant="outline"
             >
-              <RefreshCwIcon className={`h-3 w-3 ${isCalculatingCriticalPath ? "animate-spin" : ""}`} />
+              <RefreshCwIcon
+                className={`h-3 w-3 ${isCalculatingCriticalPath ? "animate-spin" : ""}`}
+              />
             </Button>
           </div>
           <div className="flex items-center gap-1 rounded-md border bg-background">

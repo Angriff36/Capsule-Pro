@@ -1,5 +1,10 @@
 "use client";
 
+import type {
+  TimeOffRequest,
+  TimeOffStatus,
+  TimeOffType,
+} from "@api/staff/time-off/types";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -12,11 +17,6 @@ import {
 import { ClockIcon, Loader2Icon, Trash2Icon, UserIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import type {
-  TimeOffRequest,
-  TimeOffStatus,
-  TimeOffType,
-} from "@api/staff/time-off/types";
 import { deleteTimeOffRequest, updateTimeOffStatus } from "../actions";
 
 interface TimeOffDetailModalProps {

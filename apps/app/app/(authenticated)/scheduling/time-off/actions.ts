@@ -1,8 +1,5 @@
 "use server";
 
-import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
-import { revalidatePath } from "next/cache";
 import type {
   CreateTimeOffRequestInput,
   TimeOffRequest,
@@ -16,6 +13,9 @@ import {
   validateTimeOffDates,
   verifyEmployee,
 } from "@api/staff/time-off/validation";
+import { auth } from "@repo/auth/server";
+import { database, Prisma } from "@repo/database";
+import { revalidatePath } from "next/cache";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
@@ -256,7 +256,7 @@ export async function createTimeOffRequest(
   );
 
   revalidatePath("/scheduling/time-off");
-  return { request: result[0] };
+  return { request: result[0] as TimeOffRequest };
 }
 
 /**
@@ -272,7 +272,7 @@ export async function updateTimeOffStatus(
   if (!tenantId) throw new Error("No tenant found");
 
   // Get current request
-  const { request: timeOffRequest, error } = await database.$queryRaw<
+  const timeOffRequests = await database.$queryRaw<
     Array<{
       id: string;
       status: string;
@@ -290,15 +290,15 @@ export async function updateTimeOffStatus(
     `
   );
 
-  if (!timeOffRequest || timeOffRequest.length === 0) {
+  if (!timeOffRequests || timeOffRequests.length === 0) {
     throw new Error("Time-off request not found");
   }
 
-  const currentRequest = timeOffRequest[0];
+  const timeOffRequest = timeOffRequests[0];
 
   // Validate status transition
   const statusTransitionError = await validateStatusTransition(
-    currentRequest.status as TimeOffStatus,
+    timeOffRequest.status as TimeOffStatus,
     input.status,
     input.rejectionReason
   );
@@ -366,7 +366,7 @@ export async function updateTimeOffStatus(
   );
 
   revalidatePath("/scheduling/time-off");
-  return { request: result[0] };
+  return { request: result[0] as TimeOffRequest };
 }
 
 /**
@@ -381,7 +381,7 @@ export async function deleteTimeOffRequest(
   if (!tenantId) throw new Error("No tenant found");
 
   // Get current request to check if it can be deleted
-  const { request: timeOffRequest, error } = await database.$queryRaw<
+  const timeOffRequests = await database.$queryRaw<
     Array<{ id: string; status: string }>
   >(
     Prisma.sql`
@@ -393,11 +393,11 @@ export async function deleteTimeOffRequest(
     `
   );
 
-  if (!timeOffRequest || timeOffRequest.length === 0) {
+  if (!timeOffRequests || timeOffRequests.length === 0) {
     throw new Error("Time-off request not found");
   }
 
-  const currentRequest = timeOffRequest[0];
+  const currentRequest = timeOffRequests[0];
 
   // Only allow deletion of PENDING or CANCELLED requests
   if (

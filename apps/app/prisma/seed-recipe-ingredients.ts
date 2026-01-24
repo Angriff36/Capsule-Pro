@@ -1,6 +1,6 @@
-import { PrismaClient } from "@repo/database";
+import { database } from "@repo/database";
 
-const prisma = new PrismaClient();
+const prisma = database;
 
 // Tenant ID - replace with actual tenant ID
 const TENANT_ID = "00000000-0000-0000-0000-000000000001";

@@ -44,7 +44,10 @@ export default async function EditProposalPage({
     notFound();
   }
 
-  async function handleUpdate(formData: FormData) {
+  async function handleUpdate(
+    previousState: { redirect: string } | null,
+    formData: FormData
+  ) {
     "use server";
 
     const id = formData.get("proposalId") as string;
@@ -91,6 +94,7 @@ export default async function EditProposalPage({
     };
 
     await updateProposal(id, input);
+    return { redirect: `/crm/proposals/${id}` };
   }
 
   return (

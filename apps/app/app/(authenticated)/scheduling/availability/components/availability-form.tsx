@@ -38,6 +38,10 @@ interface AvailabilityFormProps {
     email: string;
     role: string;
   }>;
+  locationOptions?: Array<{
+    id: string;
+    name: string;
+  }>;
   onCancel: () => void;
   onSuccess: () => void;
 }

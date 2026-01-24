@@ -39,7 +39,14 @@ export interface CreateProposalInput {
   taxAmount?: number | null;
   discountAmount?: number | null;
   total?: number | null;
-  status?: "draft" | "sent" | "viewed" | "accepted" | "rejected" | "expired";
+  status?:
+    | "draft"
+    | "sent"
+    | "viewed"
+    | "accepted"
+    | "rejected"
+    | "expired"
+    | null;
   validUntil?: string | null;
   notes?: string | null;
   termsAndConditions?: string | null;
@@ -138,24 +145,6 @@ export async function getProposals(
     orderBy: [{ createdAt: "desc" }],
     take: limit,
     skip: offset,
-    include: {
-      client: {
-        select: {
-          id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
-        },
-      },
-      lead: {
-        select: {
-          id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
-        },
-      },
-    },
   });
 
   const totalCount = await database.proposal.count({
@@ -186,41 +175,6 @@ export async function getProposalById(id: string) {
   const proposal = await database.proposal.findFirst({
     where: {
       AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-    include: {
-      lineItems: {
-        orderBy: [{ sortOrder: "asc" }],
-      },
-      client: {
-        select: {
-          id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
-          email: true,
-          phone: true,
-          addressLine1: true,
-          city: true,
-          stateProvince: true,
-          postalCode: true,
-        },
-      },
-      lead: {
-        select: {
-          id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
-          email: true,
-          phone: true,
-        },
-      },
-      event: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
     },
   });
 
@@ -296,23 +250,6 @@ export async function createProposal(input: CreateProposalInput) {
       validUntil: input.validUntil ? new Date(input.validUntil) : null,
       notes: input.notes?.trim() || null,
       termsAndConditions: input.termsAndConditions?.trim() || null,
-      lineItems: input.lineItems
-        ? {
-            create: input.lineItems.map((item, index) => ({
-              tenantId,
-              sortOrder: item.sortOrder ?? index,
-              itemType: item.itemType.trim(),
-              description: item.description.trim(),
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-              total: item.total ?? item.quantity * item.unitPrice,
-              notes: item.notes?.trim() || null,
-            })),
-          }
-        : undefined,
-    },
-    include: {
-      lineItems: true,
     },
   });
 
@@ -353,14 +290,23 @@ export async function updateProposal(
       (sum, item) => sum + item.quantity * item.unitPrice,
       0
     );
-    const taxRate = input.taxRate ?? existingProposal.taxRate;
+    const taxRateValue = input.taxRate ?? existingProposal.taxRate;
+    const taxRate =
+      typeof taxRateValue === "number"
+        ? taxRateValue
+        : (taxRateValue?.toNumber() ?? 0);
     calculatedTax = calculatedSubtotal * (taxRate / 100);
-    const discount = input.discountAmount ?? existingProposal.discountAmount;
+    const discountValue =
+      input.discountAmount ?? existingProposal.discountAmount;
+    const discount =
+      typeof discountValue === "number"
+        ? discountValue
+        : (discountValue?.toNumber() ?? 0);
     calculatedTotal = calculatedSubtotal + calculatedTax - discount;
   }
 
   const proposal = await database.proposal.update({
-    where: { id },
+    where: { tenantId_id: { tenantId, id } },
     data: {
       ...(input.title !== undefined && { title: input.title?.trim() }),
       ...(input.clientId !== undefined && { clientId: input.clientId }),
@@ -396,25 +342,6 @@ export async function updateProposal(
       ...(input.termsAndConditions !== undefined && {
         termsAndConditions: input.termsAndConditions?.trim() || null,
       }),
-      // Update line items if provided
-      ...(input.lineItems && {
-        lineItems: {
-          deleteMany: {},
-          create: input.lineItems.map((item, index) => ({
-            tenantId,
-            sortOrder: item.sortOrder ?? index,
-            itemType: item.itemType.trim(),
-            description: item.description.trim(),
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            total: item.total ?? item.quantity * item.unitPrice,
-            notes: item.notes?.trim() || null,
-          })),
-        },
-      }),
-    },
-    include: {
-      lineItems: true,
     },
   });
 
@@ -468,40 +395,17 @@ export async function sendProposal(id: string, input: SendProposalInput = {}) {
     where: {
       AND: [{ tenantId }, { id }, { deletedAt: null }],
     },
-    include: {
-      client: {
-        select: {
-          id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
-          email: true,
-        },
-      },
-      lead: {
-        select: {
-          id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
-          email: true,
-        },
-      },
-    },
   });
 
   invariant(existingProposal, "Proposal not found");
 
-  const recipientEmail =
-    input.recipientEmail?.trim() ||
-    existingProposal.client?.email ||
-    existingProposal.lead?.email;
+  const recipientEmail = input.recipientEmail?.trim();
 
-  invariant(recipientEmail, "No recipient email available");
+  invariant(recipientEmail, "Recipient email is required");
 
   // Update proposal status
   const proposal = await database.proposal.update({
-    where: { id },
+    where: { tenantId_id: { tenantId, id } },
     data: {
       status: "sent",
       sentAt: new Date(),

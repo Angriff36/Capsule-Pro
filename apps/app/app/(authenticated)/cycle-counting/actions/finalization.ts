@@ -2,7 +2,11 @@
 
 import { database } from "@repo/database";
 import { requireTenantId } from "../../../lib/tenant";
-import type { FinalizeResult, VarianceReport } from "../types";
+import type {
+  FinalizeResult,
+  VarianceReport,
+  VarianceReportStatus,
+} from "../types";
 
 function toNumber(value: { toNumber: () => number }): number {
   return value.toNumber();
@@ -18,9 +22,6 @@ export async function generateVarianceReports(
       tenantId,
       sessionId,
       deletedAt: null,
-    },
-    include: {
-      session: true,
     },
   });
 
@@ -46,7 +47,7 @@ export async function generateVarianceReports(
       variance,
       variancePct,
       accuracyScore,
-      status: "pending",
+      status: "pending" as VarianceReportStatus,
       adjustmentType: null,
       adjustmentAmount: null,
       adjustmentDate: null,
@@ -79,13 +80,6 @@ export async function finalizeCycleCountSession(input: {
         id: input.sessionId,
         deletedAt: null,
       },
-      include: {
-        records: {
-          where: {
-            deletedAt: null,
-          },
-        },
-      },
     });
 
     if (!session) {
@@ -102,7 +96,14 @@ export async function finalizeCycleCountSession(input: {
       };
     }
 
-    const records = session.records || [];
+    // Fetch records separately since there's no relation
+    const records = await database.cycleCountRecord.findMany({
+      where: {
+        tenantId,
+        sessionId: input.sessionId,
+        deletedAt: null,
+      },
+    });
 
     let totalVariance = 0;
     let totalExpected = 0;

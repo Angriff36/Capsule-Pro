@@ -1,112 +1,106 @@
-import React from 'react';
-import {
-  Document,
-  Page,
-  View,
-  Text,
-  StyleSheet,
-} from '@react-pdf/renderer';
-import type { ContractPDFData } from '../types';
+import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import type React from "react";
+import type { ContractPDFData } from "../types";
 
 const styles = StyleSheet.create({
   page: {
     padding: 40,
     fontSize: 10,
-    fontFamily: 'Helvetica',
+    fontFamily: "Helvetica",
   },
   header: {
     marginBottom: 30,
-    borderBottom: '2pt solid #1e3a5f',
+    borderBottom: "2pt solid #1e3a5f",
     paddingBottom: 15,
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1e3a5f',
+    fontWeight: "bold",
+    color: "#1e3a5f",
     marginBottom: 5,
   },
   contractId: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
     marginBottom: 15,
   },
   statusBadge: {
-    padding: '4 8',
+    padding: "4 8",
     borderRadius: 3,
     fontSize: 9,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    alignSelf: 'flex-start',
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    alignSelf: "flex-start",
   },
   statusDraft: {
-    backgroundColor: '#e5e7eb',
-    color: '#374151',
+    backgroundColor: "#e5e7eb",
+    color: "#374151",
   },
   statusPending: {
-    backgroundColor: '#dbeafe',
-    color: '#1d4ed8',
+    backgroundColor: "#dbeafe",
+    color: "#1d4ed8",
   },
   statusSigned: {
-    backgroundColor: '#d1fae5',
-    color: '#047857',
+    backgroundColor: "#d1fae5",
+    color: "#047857",
   },
   statusExpired: {
-    backgroundColor: '#fee2e2',
-    color: '#dc2626',
+    backgroundColor: "#fee2e2",
+    color: "#dc2626",
   },
   statusCancelled: {
-    backgroundColor: '#fef3c7',
-    color: '#b45309',
+    backgroundColor: "#fef3c7",
+    color: "#b45309",
   },
   section: {
     marginBottom: 25,
   },
   sectionTitle: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#1e3a5f',
+    fontWeight: "bold",
+    color: "#1e3a5f",
     marginBottom: 10,
-    borderBottom: '1pt solid #ccc',
+    borderBottom: "1pt solid #ccc",
     paddingBottom: 5,
   },
   infoRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 8,
   },
   infoLabel: {
-    width: '30%',
+    width: "30%",
     fontSize: 9,
-    color: '#666',
+    color: "#666",
   },
   infoValue: {
-    width: '70%',
+    width: "70%",
     fontSize: 10,
   },
   partiesSection: {
-    backgroundColor: '#f9fafb',
+    backgroundColor: "#f9fafb",
     padding: 15,
     borderRadius: 4,
     marginBottom: 20,
   },
   partyTitle: {
     fontSize: 11,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 8,
-    color: '#1e3a5f',
+    color: "#1e3a5f",
   },
   termsSection: {
     marginBottom: 20,
   },
   termItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 8,
     paddingLeft: 15,
   },
   termNumber: {
     fontSize: 9,
-    color: '#1e3a5f',
+    color: "#1e3a5f",
     marginRight: 8,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   termText: {
     flex: 1,
@@ -116,37 +110,37 @@ const styles = StyleSheet.create({
   signaturesSection: {
     marginTop: 30,
     paddingTop: 20,
-    borderTop: '2pt solid #1e3a5f',
+    borderTop: "2pt solid #1e3a5f",
   },
   signatureCard: {
     marginBottom: 15,
     padding: 12,
-    border: '0.5pt solid #e5e7eb',
+    border: "0.5pt solid #e5e7eb",
     borderRadius: 4,
   },
   signatureLabel: {
     fontSize: 9,
-    color: '#666',
+    color: "#666",
     marginBottom: 3,
   },
   signatureValue: {
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 5,
   },
   signatureDate: {
     fontSize: 8,
-    color: '#999',
+    color: "#999",
   },
   notes: {
     marginTop: 20,
     padding: 15,
-    backgroundColor: '#fef9e7',
-    borderLeft: '3pt solid #f59e0b',
+    backgroundColor: "#fef9e7",
+    borderLeft: "3pt solid #f59e0b",
   },
   notesTitle: {
     fontSize: 11,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 5,
   },
   notesText: {
@@ -156,25 +150,25 @@ const styles = StyleSheet.create({
   footer: {
     marginTop: 30,
     paddingTop: 15,
-    borderTop: '1pt solid #ccc',
+    borderTop: "1pt solid #ccc",
     fontSize: 8,
-    color: '#999',
-    textAlign: 'center',
+    color: "#999",
+    textAlign: "center",
   },
   metadata: {
     fontSize: 7,
-    color: '#999',
+    color: "#999",
     marginTop: 5,
   },
   expiryNotice: {
     marginTop: 15,
     padding: 10,
-    backgroundColor: '#fee2e2',
-    borderLeft: '3pt solid #dc2626',
+    backgroundColor: "#fee2e2",
+    borderLeft: "3pt solid #dc2626",
   },
   expiryText: {
     fontSize: 9,
-    color: '#dc2626',
+    color: "#dc2626",
   },
 });
 
@@ -195,38 +189,40 @@ interface ContractPDFProps {
  */
 export const ContractPDF: React.FC<ContractPDFProps> = ({ data }) => {
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   const formatDateTime = (date: Date) => {
     const d = new Date(date);
-    return d.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }) +
-      ' at ' +
-      d.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+    return (
+      d.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }) +
+      " at " +
+      d.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    );
   };
 
   const getStatusStyle = (status: string) => {
     switch (status) {
-      case 'draft':
+      case "draft":
         return styles.statusDraft;
-      case 'pending':
+      case "pending":
         return styles.statusPending;
-      case 'signed':
+      case "signed":
         return styles.statusSigned;
-      case 'expired':
+      case "expired":
         return styles.statusExpired;
-      case 'cancelled':
+      case "cancelled":
         return styles.statusCancelled;
       default:
         return styles.statusDraft;
@@ -248,10 +244,12 @@ export const ContractPDF: React.FC<ContractPDFProps> = ({ data }) => {
         <View style={styles.header}>
           <Text style={styles.title}>Event Contract</Text>
           <Text style={styles.contractId}>{data.contract.title}</Text>
-          <View style={[styles.statusBadge, getStatusStyle(data.contract.status)]}>
+          <View
+            style={[styles.statusBadge, getStatusStyle(data.contract.status)]}
+          >
             <Text>{formatStatus(data.contract.status)}</Text>
           </View>
-          <Text style={{ marginTop: 10, fontSize: 9, color: '#666' }}>
+          <Text style={{ marginTop: 10, fontSize: 9, color: "#666" }}>
             Created: {formatDate(data.contract.createdAt)}
           </Text>
         </View>
@@ -334,16 +332,20 @@ export const ContractPDF: React.FC<ContractPDFProps> = ({ data }) => {
             data.signatures.map((signature) => (
               <View key={signature.id} style={styles.signatureCard}>
                 <Text style={styles.signatureLabel}>Signer Name</Text>
-                <Text style={styles.signatureValue}>{signature.signerName}</Text>
+                <Text style={styles.signatureValue}>
+                  {signature.signerName}
+                </Text>
                 <Text style={styles.signatureLabel}>Email</Text>
-                <Text style={styles.signatureValue}>{signature.signerEmail}</Text>
+                <Text style={styles.signatureValue}>
+                  {signature.signerEmail}
+                </Text>
                 <Text style={styles.signatureDate}>
                   Signed: {formatDateTime(signature.signedAt)}
                 </Text>
               </View>
             ))
           ) : (
-            <Text style={{ fontSize: 9, color: '#999', fontStyle: 'italic' }}>
+            <Text style={{ fontSize: 9, color: "#999", fontStyle: "italic" }}>
               No signatures yet
             </Text>
           )}
@@ -370,7 +372,7 @@ export const ContractPDF: React.FC<ContractPDFProps> = ({ data }) => {
         {/* Footer */}
         <View style={styles.footer}>
           <Text>
-            Generated on {formatDate(data.metadata.generatedAt)} by{' '}
+            Generated on {formatDate(data.metadata.generatedAt)} by{" "}
             {data.metadata.generatedBy}
           </Text>
           <Text style={styles.metadata}>

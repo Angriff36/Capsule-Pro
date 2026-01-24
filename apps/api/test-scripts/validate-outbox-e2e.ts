@@ -143,7 +143,9 @@ async function validatePayloadSize(envelope: unknown) {
   const MAX_PAYLOAD_SIZE = 64 * 1024; // 64 KiB
 
   if (messageSize > MAX_PAYLOAD_SIZE) {
-    throw new Error(`Payload too large: ${messageSize} bytes (max ${MAX_PAYLOAD_SIZE})`);
+    throw new Error(
+      `Payload too large: ${messageSize} bytes (max ${MAX_PAYLOAD_SIZE})`
+    );
   }
 
   if (messageSize > WARN_PAYLOAD_SIZE) {
@@ -189,7 +191,9 @@ async function main() {
     console.log("  1. Set up Ably API key in .env.local");
     console.log("  2. Set up OUTBOX_PUBLISH_TOKEN in .env.local");
     console.log("  3. Test with curl:");
-    console.log(`     curl -X POST http://localhost:3001/api/outbox/publish \\`);
+    console.log(
+      "     curl -X POST http://localhost:3001/api/outbox/publish \\"
+    );
     console.log(`       -H "Authorization: Bearer YOUR_TOKEN" \\`);
     console.log(`       -H "Content-Type: application/json" \\`);
     console.log(`       -d '{"limit": 100}'`);

@@ -1,6 +1,6 @@
 "use client";
 
-import type { Event, EventBudget } from "@repo/database";
+import type { Event } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -69,8 +69,28 @@ import {
 } from "../components/task-breakdown-display";
 import type { PrepTaskSummary } from "./prep-task-contract";
 
+// Budget type - defined locally since Budget model doesn't exist in schema
+// Using snake_case to match API response format
+type EventBudgetStatus = "draft" | "approved" | "locked";
+
+type Budget = {
+  id: string;
+  tenant_id: string;
+  event_id: string | null;
+  version: number | null;
+  status: EventBudgetStatus | null;
+  total_budget_amount: number | null;
+  total_actual_amount: number | null;
+  variance_amount: number | null;
+  variance_percentage: number | null;
+  notes: string | null;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+};
+
 type EventDetailsClientProps = {
-  budget: EventBudget | null;
+  budget: Budget | null;
   event: Event;
   prepTasks: PrepTaskSummary[];
 };
@@ -491,8 +511,8 @@ export function EventDetailsClient({
               <div>
                 <div className="font-semibold text-sm">Event Budget</div>
                 <div className="text-muted-foreground text-sm">
-                  {budget
-                    ? `${getBudgetStatusLabel(budget.status)} - v${budget.version}`
+                  {budget && budget.status
+                    ? `${getBudgetStatusLabel(budget.status)} - v${budget.version ?? 1}`
                     : "No budget created yet"}
                 </div>
               </div>
@@ -516,7 +536,7 @@ export function EventDetailsClient({
                     {new Intl.NumberFormat("en-US", {
                       style: "currency",
                       currency: "USD",
-                    }).format(budget.total_budget_amount)}
+                    }).format(budget.total_budget_amount ?? 0)}
                   </div>
                 </div>
                 <div className="rounded-lg border p-4">
@@ -527,18 +547,18 @@ export function EventDetailsClient({
                     {new Intl.NumberFormat("en-US", {
                       style: "currency",
                       currency: "USD",
-                    }).format(budget.total_actual_amount)}
+                    }).format(budget.total_actual_amount ?? 0)}
                   </div>
                 </div>
                 <div className="rounded-lg border p-4">
                   <div className="text-muted-foreground text-xs">Variance</div>
                   <div
-                    className={`text-lg font-semibold ${getVarianceColor(budget.variance_amount)}`}
+                    className={`text-lg font-semibold ${getVarianceColor(budget.variance_amount ?? 0)}`}
                   >
                     {new Intl.NumberFormat("en-US", {
                       style: "currency",
                       currency: "USD",
-                    }).format(budget.variance_amount)}
+                    }).format(budget.variance_amount ?? 0)}
                   </div>
                 </div>
                 <div className="flex items-center">

@@ -1,6 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export type PortionScaleRequest = {
@@ -90,10 +90,7 @@ export async function POST(
     }
 
     if (!orgId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
@@ -132,14 +129,15 @@ export async function PATCH(
     }
 
     if (!orgId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    await updateRecipeIngredientWasteFactor(recipeIngredientId, wasteFactor, tenantId);
+    await updateRecipeIngredientWasteFactor(
+      recipeIngredientId,
+      wasteFactor,
+      tenantId
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {

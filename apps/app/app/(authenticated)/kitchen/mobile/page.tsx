@@ -113,11 +113,9 @@ export default function KitchenMobilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("available");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [syncQueue, setSyncQueue]: {
-    taskId: string;
-    action: "claim" | "release";
-    timestamp: string;
-  }[] = [];
+  const [syncQueue, setSyncQueue] = useState<
+    { taskId: string; action: "claim" | "release"; timestamp: string }[]
+  >([]);
 
   // Fetch available tasks
   const fetchAvailableTasks = async () => {

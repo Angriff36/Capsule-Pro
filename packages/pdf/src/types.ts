@@ -1,5 +1,3 @@
-import { DocumentProps } from '@react-pdf/renderer';
-
 export interface PDFConfig {
   filename?: string;
   author?: string;
@@ -12,9 +10,9 @@ export interface PDFConfig {
 }
 
 export interface PDFGenerationOptions {
-  size?: 'A4' | 'LETTER' | 'LEGAL';
-  orientation?: 'portrait' | 'landscape';
-  quality?: 'low' | 'medium' | 'high';
+  size?: "A4" | "LETTER" | "LEGAL";
+  orientation?: "portrait" | "landscape";
+  quality?: "low" | "medium" | "high";
   compression?: boolean;
 }
 

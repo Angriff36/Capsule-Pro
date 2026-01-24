@@ -1,5 +1,6 @@
 "use client";
 
+import type { TimeOffRequest } from "@api/staff/time-off/types";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
@@ -34,29 +35,6 @@ import { calculateDuration, formatDate } from "../utils";
 import { TimeOffDetailModal } from "./time-off-detail-modal";
 import { TimeOffForm } from "./time-off-form";
 
-interface TimeOff {
-  id: string;
-  tenant_id: string;
-  employee_id: string;
-  employee_first_name: string | null;
-  employee_last_name: string | null;
-  employee_email: string;
-  employee_role: string;
-  start_date: Date;
-  end_date: Date;
-  reason: string | null;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
-  request_type: string;
-  created_at: Date;
-  updated_at: Date;
-  processed_at: Date | null;
-  processed_by: string | null;
-  processed_by_first_name: string | null;
-  processed_by_last_name: string | null;
-  rejection_reason: string | null;
-  location_name?: string; // Optional since it might not be returned by the query
-}
-
 interface Employee {
   id: string;
   first_name: string | null;
@@ -75,7 +53,7 @@ export function TimeOffClient() {
   const searchParams = useSearchParams();
 
   // State
-  const [timeOffRequests, setTimeOffRequests] = useState<TimeOff[]>([]);
+  const [timeOffRequests, setTimeOffRequests] = useState<TimeOffRequest[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
@@ -97,7 +75,9 @@ export function TimeOffClient() {
   });
 
   // Modal state
-  const [selectedTimeOff, setSelectedTimeOff] = useState<TimeOff | null>(null);
+  const [selectedTimeOff, setSelectedTimeOff] = useState<TimeOffRequest | null>(
+    null
+  );
   const [modalOpen, setModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
@@ -165,13 +145,13 @@ export function TimeOffClient() {
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
-  const handleRowClick = (timeOff: TimeOff) => {
+  const handleRowClick = (timeOff: TimeOffRequest) => {
     setSelectedTimeOff(timeOff);
     setModalOpen(true);
   };
 
   // Table columns
-  const columns: ColumnDef<TimeOff>[] = [
+  const columns: ColumnDef<TimeOffRequest>[] = [
     {
       accessorKey: "employee",
       header: "Employee",
@@ -201,11 +181,6 @@ export function TimeOffClient() {
           </div>
         </div>
       ),
-    },
-    {
-      accessorKey: "location_name",
-      header: "Location",
-      cell: ({ row }) => row.original.location_name || "N/A",
     },
     {
       accessorKey: "request_type",

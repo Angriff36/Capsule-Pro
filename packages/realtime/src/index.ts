@@ -23,11 +23,10 @@
  * ```
  */
 
-// Event types and schemas
-export * from "./events/index.js";
-
 // Channel naming utilities
-export * from "./channels/index.js";
+export * from "./channels/index";
+// Event types and schemas
+export * from "./events/index";
 
 // Outbox helpers
-export * from "./outbox/index.js";
+export * from "./outbox/index";

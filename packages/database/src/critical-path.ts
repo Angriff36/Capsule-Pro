@@ -115,7 +115,7 @@ export function calculateCriticalPath(
   }
 
   // Use the earliest root start time as baseline
-  let baselineTime = new Date(8640000000000000); // Max date
+  let baselineTime = new Date(8_640_000_000_000_000); // Max date
   for (const rootId of roots) {
     const root = taskMap.get(rootId)!;
     if (root.startTime < baselineTime) {
@@ -197,7 +197,7 @@ export function calculateCriticalPath(
       }
 
       // LF = min(LS of all successors)
-      let minLS = new Date(8640000000000000); // Max date
+      let minLS = new Date(8_640_000_000_000_000); // Max date
       for (const succId of successors) {
         const succLS = latestStart.get(succId);
         invariant(
@@ -313,12 +313,8 @@ export function validateTasksForCPM(tasks: TaskForCPM[]): void {
   };
 
   for (const task of tasks) {
-    if (!visited.has(task.id)) {
-      if (hasCycle(task.id)) {
-        throw new Error(
-          "Circular dependency detected in task dependencies"
-        );
-      }
+    if (!visited.has(task.id) && hasCycle(task.id)) {
+      throw new Error("Circular dependency detected in task dependencies");
     }
   }
 }
@@ -344,7 +340,9 @@ export function getCriticalPathOrder(
   }
 
   // Sort by earliest start time
-  criticalTasks.sort((a, b) => a.earliestStart.getTime() - b.earliestStart.getTime());
+  criticalTasks.sort(
+    (a, b) => a.earliestStart.getTime() - b.earliestStart.getTime()
+  );
 
   return criticalTasks.map((t) => t.id);
 }

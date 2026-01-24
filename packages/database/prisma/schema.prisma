@@ -329,9 +329,9 @@ model Event {
   wasteEntries WasteEntry[]
 
   @@id([tenantId, id])
+  @@index([tenantId, venueId], map: "idx_events_venue_id")
   @@map("events")
   @@schema("tenant_events")
-  @@index([tenantId, venueId], map: "idx_events_venue_id")
 }
 
 model EventProfitability {
@@ -2085,6 +2085,25 @@ model employee_skills {
   updated_at        DateTime  @default(now()) @db.Timestamptz(6)
 
   @@id([tenant_id, employee_id, skill_id])
+  @@schema("tenant_staff")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model employee_seniority {
+  tenant_id    String    @db.Uuid
+  id           String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employee_id  String    @db.Uuid
+  level        String // e.g., "junior", "mid", "senior", "lead", "executive"
+  rank         Int // Numeric rank for sorting (1 = lowest, higher = more senior)
+  effective_at DateTime  @db.Timestamptz(6)
+  created_at   DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at   DateTime? @db.Timestamptz(6)
+
+  @@id([tenant_id, id])
+  @@index([employee_id], map: "employee_seniority_employee_idx")
+  @@index([tenant_id, employee_id, effective_at(sort: Desc)], map: "employee_seniority_current_idx")
   @@schema("tenant_staff")
 }
 

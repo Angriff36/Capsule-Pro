@@ -47,7 +47,9 @@ function buildEventEnvelope(outboxEvent: {
   createdAt: Date;
 }): RealtimeEventBase & { eventType: string; payload: unknown } {
   // Extract occurredAt from payload if present (set by producer), otherwise use createdAt
-  const payloadData = outboxEvent.payload as Record<string, unknown> | undefined;
+  const payloadData = outboxEvent.payload as
+    | Record<string, unknown>
+    | undefined;
   const occurredAt =
     payloadData?.occurredAt && typeof payloadData.occurredAt === "string"
       ? payloadData.occurredAt
@@ -162,7 +164,7 @@ export async function POST(request: Request) {
     if (messageSize > WARN_PAYLOAD_SIZE) {
       // Log warning but continue publishing
       console.warn(
-        `[OutboxPublisher] Large payload for event ${event.id}: ${messageSize} bytes`,
+        `[OutboxPublisher] Large payload for event ${event.id}: ${messageSize} bytes`
       );
     }
 

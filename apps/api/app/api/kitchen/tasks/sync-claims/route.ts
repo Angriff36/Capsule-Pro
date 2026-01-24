@@ -70,7 +70,12 @@ async function processClaimAction(
         progressType: "status_change",
         oldStatus: "pending",
         newStatus: "in_progress",
-        notes: "Task claimed by " + (currentUser.firstName || "") + " " + (currentUser.lastName || "") + " (offline sync)",
+        notes:
+          "Task claimed by " +
+          (currentUser.firstName || "") +
+          " " +
+          (currentUser.lastName || "") +
+          " (offline sync)",
       },
     });
   }
@@ -154,7 +159,12 @@ async function processReleaseAction(
           progressType: "status_change",
           oldStatus: "in_progress",
           newStatus: "pending",
-          notes: "Task released by " + (currentUser.firstName || "") + " " + (currentUser.lastName || "") + " (offline sync)",
+          notes:
+            "Task released by " +
+            (currentUser.firstName || "") +
+            " " +
+            (currentUser.lastName || "") +
+            " (offline sync)",
         },
       });
     }

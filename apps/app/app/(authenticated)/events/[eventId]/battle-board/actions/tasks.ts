@@ -459,13 +459,7 @@ export async function calculateCriticalPath(eventId: string) {
        WHERE tenant_id = $3
          AND id = $4
          AND event_id = $5`,
-      [
-        result.isOnCriticalPath,
-        result.slackMinutes,
-        tenantId,
-        taskId,
-        eventId,
-      ]
+      [result.isOnCriticalPath, result.slackMinutes, tenantId, taskId, eventId]
     );
   }
 

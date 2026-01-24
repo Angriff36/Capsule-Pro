@@ -2,19 +2,21 @@
  * Unit tests for channel naming utilities.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
   getChannelName,
   getModuleFromEventType,
-  parseChannelName,
   isValidTenantChannel,
+  parseChannelName,
 } from "../src/channels";
 
 describe("getChannelName", () => {
   it("formats tenant channel correctly", () => {
     expect(getChannelName("tenant-abc")).toBe("tenant:tenant-abc");
     expect(getChannelName("123")).toBe("tenant:123");
-    expect(getChannelName("tenant-with-dashes")).toBe("tenant:tenant-with-dashes");
+    expect(getChannelName("tenant-with-dashes")).toBe(
+      "tenant:tenant-with-dashes"
+    );
   });
 
   it("throws on empty tenantId", () => {

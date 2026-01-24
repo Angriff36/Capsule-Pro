@@ -2,14 +2,14 @@
  * Unit tests for event schemas and types.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-  parseRealtimeEvent,
-  KitchenTaskClaimedEventSchema,
-  KitchenTaskReleasedEventSchema,
-  KitchenTaskProgressEventSchema,
-  RealtimeEventBaseSchema,
   type KitchenTaskClaimedEvent,
+  KitchenTaskClaimedEventSchema,
+  KitchenTaskProgressEventSchema,
+  KitchenTaskReleasedEventSchema,
+  parseRealtimeEvent,
+  RealtimeEventBaseSchema,
 } from "../src/events";
 
 const validClaimedEvent = {

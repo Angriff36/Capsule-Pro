@@ -3,12 +3,7 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
-import {
-  CalendarIcon,
-  ChevronRightIcon,
-  DollarSignIcon,
-  LinkIcon,
-} from "lucide-react";
+import { CalendarIcon, ChevronRightIcon, DollarSignIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getClientEventHistory } from "../../../actions";
@@ -22,13 +17,9 @@ export function EventsTab({ clientId }: EventsTabProps) {
     Array<{
       id: string;
       createdAt: Date;
-      total: { toString: () => string };
-      event: {
-        id: string;
-        name: string;
-        eventDate: Date;
-        status: string;
-      } | null;
+      orderNumber: string;
+      order_status: string;
+      totalAmount: { toString: () => string };
     }>
   >([]);
   const [loading, setLoading] = useState(true);
@@ -97,26 +88,12 @@ export function EventsTab({ clientId }: EventsTabProps) {
                   </div>
                   <div>
                     <div className="font-medium">
-                      {event.event?.name || "Unnamed Event"}
+                      Order #{event.orderNumber}
                     </div>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      {event.event?.eventDate && (
-                        <span>
-                          {new Date(event.event.eventDate).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            }
-                          )}
-                        </span>
-                      )}
-                      {event.event?.status && (
-                        <Badge className="text-xs" variant="outline">
-                          {event.event.status}
-                        </Badge>
-                      )}
+                      <Badge className="text-xs" variant="outline">
+                        {event.order_status}
+                      </Badge>
                     </div>
                   </div>
                 </div>
@@ -125,7 +102,7 @@ export function EventsTab({ clientId }: EventsTabProps) {
                     <div className="flex items-center gap-1 text-sm">
                       <DollarSignIcon className="h-3 w-3 text-muted-foreground" />
                       <span className="font-medium">
-                        {Number(event.total.toString()).toLocaleString()}
+                        {Number(event.totalAmount.toString()).toLocaleString()}
                       </span>
                     </div>
                     <div className="text-xs text-muted-foreground">
@@ -136,13 +113,11 @@ export function EventsTab({ clientId }: EventsTabProps) {
                       })}
                     </div>
                   </div>
-                  {event.event && (
-                    <Button asChild size="sm" variant="ghost">
-                      <a href={`/events/${event.event.id}`}>
-                        <LinkIcon className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  )}
+                  <Button asChild size="sm" variant="ghost">
+                    <a href={`/crm/clients/${clientId}`}>
+                      <ChevronRightIcon className="h-4 w-4" />
+                    </a>
+                  </Button>
                 </div>
               </CardContent>
             </Card>

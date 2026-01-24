@@ -7,6 +7,7 @@
  */
 
 import type { Proposal } from "@repo/database";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -34,11 +35,11 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { toast } from "@repo/design-system/components/ui/use-toast";
 import { format } from "date-fns";
 import { Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface LineItem {
   id: string;
@@ -59,7 +60,10 @@ interface ClientOption {
 
 interface ProposalFormProps {
   proposal: Proposal | null;
-  action: (formData: FormData) => Promise<void | { redirect: string }>;
+  action: (
+    previousState: { redirect: string } | null,
+    formData: FormData
+  ) => Promise<{ redirect: string } | null>;
   submitLabel: string;
 }
 
@@ -97,21 +101,15 @@ export function ProposalForm({
   submitLabel,
 }: ProposalFormProps) {
   const router = useRouter();
-  const [state, formAction, isPending] = useActionState(action, null);
+  const [state, formAction, isPending] = useActionState(
+    action,
+    null as { redirect: string } | null
+  );
 
   const [clients, setClients] = useState<ClientOption[]>([]);
   const [isLoadingClients, setIsLoadingClients] = useState(true);
 
-  const [lineItems, setLineItems] = useState<LineItem[]>(
-    proposal?.lineItems.map((item) => ({
-      id: item.id,
-      itemType: item.itemType,
-      description: item.description,
-      quantity: item.quantity,
-      unitPrice: Number(item.unitPrice),
-      notes: item.notes || undefined,
-    })) || []
-  );
+  const [lineItems, setLineItems] = useState<LineItem[]>([]);
 
   const [newItem, setNewItem] = useState<Partial<LineItem>>({
     itemType: "menu",
@@ -125,9 +123,17 @@ export function ProposalForm({
     (sum, item) => sum + item.quantity * item.unitPrice,
     0
   );
-  const taxRate = proposal?.taxRate || 0;
+  const taxRate = proposal?.taxRate
+    ? typeof proposal.taxRate === "number"
+      ? proposal.taxRate
+      : Number(proposal.taxRate)
+    : 0;
   const taxAmount = subtotal * (taxRate / 100);
-  const discountAmount = proposal?.discountAmount || 0;
+  const discountAmount = proposal?.discountAmount
+    ? typeof proposal.discountAmount === "number"
+      ? proposal.discountAmount
+      : Number(proposal.discountAmount)
+    : 0;
   const total = subtotal + taxAmount - discountAmount;
 
   // Fetch clients on mount
@@ -140,10 +146,8 @@ export function ProposalForm({
         setClients(data.data || []);
       } catch (error) {
         console.error("Error fetching clients:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load clients",
-          variant: "destructive",
+        toast.error("Failed to load clients", {
+          description: error instanceof Error ? error.message : "Unknown error",
         });
       } finally {
         setIsLoadingClients(false);
@@ -161,11 +165,7 @@ export function ProposalForm({
 
   const addLineItem = () => {
     if (!(newItem.description && newItem.itemType)) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in the required line item fields",
-        variant: "destructive",
-      });
+      toast.error("Please fill in the required line item fields");
       return;
     }
 
@@ -539,7 +539,13 @@ export function ProposalForm({
               <div className="space-y-2">
                 <Label htmlFor="taxRate">Tax Rate (%)</Label>
                 <Input
-                  defaultValue={proposal?.taxRate || 0}
+                  defaultValue={
+                    proposal?.taxRate
+                      ? typeof proposal.taxRate === "number"
+                        ? proposal.taxRate
+                        : Number(proposal.taxRate)
+                      : 0
+                  }
                   id="taxRate"
                   min="0"
                   name="taxRate"
@@ -552,7 +558,13 @@ export function ProposalForm({
               <div className="space-y-2">
                 <Label htmlFor="discountAmount">Discount Amount</Label>
                 <Input
-                  defaultValue={proposal?.discountAmount || 0}
+                  defaultValue={
+                    proposal?.discountAmount
+                      ? typeof proposal.discountAmount === "number"
+                        ? proposal.discountAmount
+                        : Number(proposal.discountAmount)
+                      : 0
+                  }
                   id="discountAmount"
                   min="0"
                   name="discountAmount"

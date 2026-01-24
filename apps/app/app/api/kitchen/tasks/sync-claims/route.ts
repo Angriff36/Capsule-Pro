@@ -139,7 +139,7 @@ async function processReleaseAction(
 
   // Release the claim
   await database.kitchenTaskClaim.update({
-    where: { id: existingClaim.id },
+    where: { tenantId_id: { tenantId, id: existingClaim.id } },
     data: {
       releasedAt: new Date(),
       releaseReason: "Released via offline sync",
@@ -294,7 +294,11 @@ export async function POST(request: Request) {
       );
 
       if (result && result.error) {
-        results.failed.push(result);
+        results.failed.push({
+          taskId: result.taskId,
+          action: result.action,
+          error: result.error,
+        });
       } else if (result) {
         results.successful.push(result);
       }

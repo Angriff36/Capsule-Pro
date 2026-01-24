@@ -3,7 +3,7 @@
  * This function can be called within Prisma transactions for atomicity.
  */
 
-import type { PrismaClient, Prisma } from "@repo/database";
+import type { Prisma, PrismaClient } from "@repo/database";
 
 /**
  * Input for creating an outbox event.
@@ -49,7 +49,7 @@ export type CreateOutboxEventInput = {
  */
 export async function createOutboxEvent(
   db: PrismaClient | Prisma.TransactionClient,
-  input: CreateOutboxEventInput,
+  input: CreateOutboxEventInput
 ) {
   const occurredAt = input.occurredAt ?? new Date();
 

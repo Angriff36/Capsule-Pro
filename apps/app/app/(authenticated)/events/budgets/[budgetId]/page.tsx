@@ -1,50 +1,26 @@
-import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
-import { notFound } from "next/navigation";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { Header } from "../../../components/header";
-import { BudgetDetailClient } from "./budget-detail-client";
+// Budget model does not exist in schema - this page is disabled
 
-type BudgetDetailPageProps = {
-  params: Promise<{
-    budgetId: string;
-  }>;
-};
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 
-const BudgetDetailPage = async ({ params }: BudgetDetailPageProps) => {
-  const { budgetId } = await params;
-  const { orgId } = await auth();
-
-  if (!orgId) {
-    notFound();
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-
-  // Fetch the budget with related data
-  const budget = await database.eventBudget.findFirst({
-    where: {
-      AND: [{ tenantId }, { id: budgetId }, { deletedAt: null }],
-    },
-  });
-
-  if (!budget) {
-    notFound();
-  }
-
+export default function BudgetDetailPage() {
   return (
-    <>
-      <Header page="Budget Details" pages={["Operations", "Events", "Budgets"]}>
-        <a
-          className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-input bg-background px-4 py-2 font-medium text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-          href="/events/budgets"
-        >
-          Back to Budgets
-        </a>
-      </Header>
-      <BudgetDetailClient budgetId={budgetId} tenantId={tenantId} />
-    </>
+    <div className="container mx-auto py-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>Budget Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Budget detail view is not yet implemented. The Budget model needs to
+            be added to the database schema.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
   );
-};
-
-export default BudgetDetailPage;
+}
