@@ -292,7 +292,7 @@ export const RecipesPageClient = () => {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      {recipe.currentVersion?.totalCost !== null ? (
+                      {recipe.currentVersion?.totalCost !== null && recipe.currentVersion?.totalCost !== undefined ? (
                         <span className="font-medium">
                           {formatCurrency(recipe.currentVersion.totalCost)}
                         </span>
@@ -301,7 +301,7 @@ export const RecipesPageClient = () => {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      {recipe.currentVersion?.costPerYield !== null ? (
+                      {recipe.currentVersion?.costPerYield !== null && recipe.currentVersion?.costPerYield !== undefined ? (
                         <span>{formatCurrency(recipe.currentVersion.costPerYield)}</span>
                       ) : (
                         <span className="text-muted-foreground">-</span>
