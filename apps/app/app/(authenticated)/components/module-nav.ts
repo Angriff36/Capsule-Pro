@@ -57,6 +57,7 @@ export const modules: ModuleDefinition[] = [
           { title: "Recipes", href: "/kitchen/recipes" },
           { title: "Prep Lists", href: "/kitchen/prep-lists" },
           { title: "Inventory", href: "/kitchen/inventory" },
+          { title: "Waste Tracking", href: "/kitchen/waste" },
         ],
       },
       {

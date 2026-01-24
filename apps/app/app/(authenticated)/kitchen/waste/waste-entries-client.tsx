@@ -12,11 +12,39 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+
+interface InventoryItem {
+  id: string;
+  name: string;
+  item_number: string;
+}
+
+interface WasteReason {
+  id: number;
+  code: string;
+  name: string;
+  description: string | null;
+  colorHex: string | null;
+  sortOrder: number;
+}
+
+interface Unit {
+  id: number;
+  code: string;
+  name: string;
+  name_plural: string;
+  unit_system: string;
+  unit_type: string;
+}
 
 export function WasteEntriesClient() {
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+  const [wasteReasons, setWasteReasons] = useState<WasteReason[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
   const [formData, setFormData] = useState({
     inventoryItemId: "",
     quantity: "",
@@ -25,21 +53,50 @@ export function WasteEntriesClient() {
     notes: "",
   });
 
+  // Fetch dropdown data on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch inventory items, waste reasons, and units in parallel
+        const [itemsRes, reasonsRes, unitsRes] = await Promise.all([
+          fetch("/api/inventory/items?limit=500"),
+          fetch("/api/kitchen/waste/reasons"),
+          fetch("/api/kitchen/waste/units"),
+        ]);
+
+        if (!itemsRes.ok) throw new Error("Failed to fetch inventory items");
+        if (!reasonsRes.ok) throw new Error("Failed to fetch waste reasons");
+        if (!unitsRes.ok) throw new Error("Failed to fetch units");
+
+        const itemsData = await itemsRes.json();
+        const reasonsData = await reasonsRes.json();
+        const unitsData = await unitsRes.json();
+
+        setInventoryItems(itemsData.data || []);
+        setWasteReasons(reasonsData.data || []);
+        setUnits(unitsData.data || []);
+      } catch (error) {
+        console.error("Failed to fetch dropdown data:", error);
+        toast.error("Failed to load form data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
 
     try {
-      // Get current user ID from auth context (TODO: implement properly)
-      const loggedBy = "current-user-id"; // Placeholder
-
       const response = await fetch("/api/kitchen/waste/entries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          loggedBy,
-        }),
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
@@ -70,12 +127,17 @@ export function WasteEntriesClient() {
     }
   };
 
+  if (loading) {
+    return <div className="text-center py-8">Loading form...</div>;
+  }
+
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       {/* Inventory Item */}
       <div className="space-y-2">
         <Label htmlFor="inventoryItemId">Item *</Label>
         <Select
+          disabled={inventoryItems.length === 0}
           onValueChange={(value) =>
             setFormData({ ...formData, inventoryItemId: value })
           }
@@ -83,14 +145,20 @@ export function WasteEntriesClient() {
           value={formData.inventoryItemId}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select item" />
+            <SelectValue
+              placeholder={
+                inventoryItems.length === 0
+                  ? "No items available"
+                  : "Select item"
+              }
+            />
           </SelectTrigger>
           <SelectContent>
-            {/* TODO: Fetch actual inventory items */}
-            <SelectItem value="item-1">Tomatoes</SelectItem>
-            <SelectItem value="item-2">Lettuce</SelectItem>
-            <SelectItem value="item-3">Chicken Breast</SelectItem>
-            <SelectItem value="item-4">Flour</SelectItem>
+            {inventoryItems.map((item) => (
+              <SelectItem key={item.id} value={item.id}>
+                {item.item_number} - {item.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -99,6 +167,7 @@ export function WasteEntriesClient() {
       <div className="space-y-2">
         <Label htmlFor="quantity">Quantity *</Label>
         <Input
+          disabled={submitting}
           id="quantity"
           min="0.001"
           onChange={(e) =>
@@ -116,6 +185,7 @@ export function WasteEntriesClient() {
       <div className="space-y-2">
         <Label htmlFor="reasonId">Reason *</Label>
         <Select
+          disabled={wasteReasons.length === 0}
           onValueChange={(value) =>
             setFormData({ ...formData, reasonId: value })
           }
@@ -123,19 +193,20 @@ export function WasteEntriesClient() {
           value={formData.reasonId}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select reason" />
+            <SelectValue
+              placeholder={
+                wasteReasons.length === 0
+                  ? "No reasons available"
+                  : "Select reason"
+              }
+            />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">Spoilage</SelectItem>
-            <SelectItem value="2">Overproduction</SelectItem>
-            <SelectItem value="3">Preparation Error</SelectItem>
-            <SelectItem value="4">Burnt</SelectItem>
-            <SelectItem value="5">Expired</SelectItem>
-            <SelectItem value="6">Quality Issues</SelectItem>
-            <SelectItem value="7">Dropped/Spilled</SelectItem>
-            <SelectItem value="8">Leftovers</SelectItem>
-            <SelectItem value="9">Customer Return</SelectItem>
-            <SelectItem value="10">Other</SelectItem>
+            {wasteReasons.map((reason) => (
+              <SelectItem key={reason.id} value={reason.id.toString()}>
+                {reason.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -144,21 +215,23 @@ export function WasteEntriesClient() {
       <div className="space-y-2">
         <Label htmlFor="unitId">Unit (optional)</Label>
         <Select
+          disabled={units.length === 0}
           onValueChange={(value) => setFormData({ ...formData, unitId: value })}
           value={formData.unitId}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select unit" />
+            <SelectValue
+              placeholder={
+                units.length === 0 ? "No units available" : "Select unit"
+              }
+            />
           </SelectTrigger>
           <SelectContent>
-            {/* TODO: Fetch actual units */}
-            <SelectItem value="1">Grams</SelectItem>
-            <SelectItem value="2">Kilograms</SelectItem>
-            <SelectItem value="3">Ounces</SelectItem>
-            <SelectItem value="4">Pounds</SelectItem>
-            <SelectItem value="5">Liters</SelectItem>
-            <SelectItem value="6">Milliliters</SelectItem>
-            <SelectItem value="7">Count</SelectItem>
+            {units.map((unit) => (
+              <SelectItem key={unit.id} value={unit.id.toString()}>
+                {unit.name_plural}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -167,6 +240,7 @@ export function WasteEntriesClient() {
       <div className="space-y-2">
         <Label htmlFor="notes">Notes (optional)</Label>
         <Textarea
+          disabled={submitting}
           id="notes"
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           placeholder="Additional context about this waste entry..."
