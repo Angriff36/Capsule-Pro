@@ -151,9 +151,9 @@ export async function GET(request: Request) {
     // Fetch line items separately for each proposal
     const proposalsWithLineItems = await Promise.all(
       proposals.map(async (proposal) => {
-        const lineItems = await database.proposal_line_items.findMany({
-          where: { proposal_id: proposal.id },
-          orderBy: [{ sort_order: "asc" }],
+        const lineItems = await database.proposalLineItem.findMany({
+          where: { proposalId: proposal.id },
+          orderBy: [{ sortOrder: "asc" }],
         });
         return {
           ...proposal,
@@ -306,16 +306,20 @@ export async function POST(request: Request) {
     // Create line items in a transaction
     if (data.lineItems && data.lineItems.length > 0) {
       await database.$transaction(async (tx) => {
-        await tx.proposal_line_items.createMany({
+        await tx.proposalLineItem.createMany({
           data: data.lineItems!.map((item, index) => ({
-            proposal_id: proposal.id,
-            tenant_id: tenantId,
-            sort_order: item.sortOrder ?? index,
-            item_type: item.itemType.trim(),
+            proposalId: proposal.id,
+            tenantId,
+            sortOrder: item.sortOrder ?? index,
+            itemType: item.itemType.trim(),
+            category: item.category?.trim() || item.itemType.trim(),
             description: item.description.trim(),
             quantity: new Prisma.Decimal(item.quantity),
-            unit_price: new Prisma.Decimal(item.unitPrice),
+            unitPrice: new Prisma.Decimal(item.unitPrice),
             total: new Prisma.Decimal(
+              item.total ?? item.quantity * item.unitPrice
+            ),
+            totalPrice: new Prisma.Decimal(
               item.total ?? item.quantity * item.unitPrice
             ),
             notes: item.notes?.trim() || null,

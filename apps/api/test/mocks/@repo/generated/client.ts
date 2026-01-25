@@ -8,7 +8,7 @@
 import { vi } from "vitest";
 
 // Mock Prisma sql tag function
-export const Prisma = {
+export const Prisma: Record<string, unknown> = {
   sql: vi.fn((strings: TemplateStringsArray, ...values: unknown[]) => ({
     strings,
     values,
@@ -29,4 +29,4 @@ export const Prisma = {
 };
 
 // Re-export everything that would normally come from generated/client
-export const PrismaClient = vi.fn();
+export const PrismaClient: unknown = vi.fn();

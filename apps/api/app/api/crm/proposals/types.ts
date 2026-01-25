@@ -50,6 +50,7 @@ export type UpdateProposalRequest = Partial<CreateProposalRequest> & {
 export type CreateLineItemRequest = {
   sortOrder?: number;
   itemType: string;
+  category?: string | null;
   description: string;
   quantity: number;
   unitPrice: number;

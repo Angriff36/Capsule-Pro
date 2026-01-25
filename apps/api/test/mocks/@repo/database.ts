@@ -8,7 +8,7 @@
 import { vi } from "vitest";
 
 // Mock Prisma sql tag function and all exports from generated/client
-export const Prisma = {
+export const Prisma: Record<string, unknown> = {
   sql: vi.fn((strings: TemplateStringsArray, ...values: unknown[]) => ({
     strings,
     values,
@@ -29,10 +29,10 @@ export const Prisma = {
 };
 
 // Re-export all Prisma types (you can add more as needed)
-export const PrismaClient = vi.fn();
+export const PrismaClient: unknown = vi.fn();
 
 // Mock database instance
-export const database = {
+export const database: Record<string, unknown> = {
   $queryRaw: vi.fn(),
   $transaction: vi.fn(),
   $connect: vi.fn(),

@@ -98,9 +98,9 @@ export async function GET(request: Request, { params }: RouteParams) {
     }
 
     // Fetch line items separately
-    const lineItems = await database.proposal_line_items.findMany({
-      where: { proposal_id: proposal.id },
-      orderBy: [{ sort_order: "asc" }],
+    const lineItems = await database.proposalLineItem.findMany({
+      where: { proposalId: proposal.id },
+      orderBy: [{ sortOrder: "asc" }],
     });
 
     const proposalWithLineItems = {
@@ -277,21 +277,25 @@ export async function PUT(request: Request, { params }: RouteParams) {
     if (data.lineItems && data.lineItems.length > 0) {
       await database.$transaction(async (tx) => {
         // Delete existing line items
-        await tx.proposal_line_items.deleteMany({
-          where: { proposal_id: updatedProposal.id },
+        await tx.proposalLineItem.deleteMany({
+          where: { proposalId: updatedProposal.id },
         });
 
         // Create new line items
-        await tx.proposal_line_items.createMany({
+        await tx.proposalLineItem.createMany({
           data: data.lineItems!.map((item, index) => ({
-            proposal_id: updatedProposal.id,
-            tenant_id: tenantId,
-            sort_order: item.sortOrder ?? index,
-            item_type: item.itemType.trim(),
+            proposalId: updatedProposal.id,
+            tenantId,
+            sortOrder: item.sortOrder ?? index,
+            itemType: item.itemType.trim(),
+            category: item.category?.trim() || item.itemType.trim(),
             description: item.description.trim(),
             quantity: new Prisma.Decimal(item.quantity),
-            unit_price: new Prisma.Decimal(item.unitPrice),
+            unitPrice: new Prisma.Decimal(item.unitPrice),
             total: new Prisma.Decimal(
+              item.total ?? item.quantity * item.unitPrice
+            ),
+            totalPrice: new Prisma.Decimal(
               item.total ?? item.quantity * item.unitPrice
             ),
             notes: item.notes?.trim() || null,

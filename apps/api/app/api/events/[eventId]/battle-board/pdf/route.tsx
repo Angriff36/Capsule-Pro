@@ -195,7 +195,7 @@ export async function GET(
     const url = new URL(request.url);
     const shouldDownload = url.searchParams.get("download") === "true";
 
-    // @ts-expect-error - React-PDF renderer needs proper types
+    // React-PDF renderer needs proper types
     const pdfComponent = <BattleBoardPDF data={pdfData} />;
 
     if (shouldDownload) {

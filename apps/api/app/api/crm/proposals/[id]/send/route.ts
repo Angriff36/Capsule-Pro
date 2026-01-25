@@ -158,9 +158,9 @@ export async function POST(request: Request, { params }: RouteParams) {
     }
 
     // Fetch line items separately
-    const lineItems = await database.proposal_line_items.findMany({
-      where: { proposal_id: proposal.id },
-      orderBy: [{ sort_order: "asc" }],
+    const lineItems = await database.proposalLineItem.findMany({
+      where: { proposalId: proposal.id },
+      orderBy: [{ sortOrder: "asc" }],
     });
 
     const proposalWithLineItems = {
@@ -193,7 +193,7 @@ export async function POST(request: Request, { params }: RouteParams) {
           }).format(
             lineItems.reduce(
               (sum, item) =>
-                sum + Number(item.quantity || 0) * Number(item.unit_price || 0),
+              sum + Number(item.quantity || 0) * Number(item.unitPrice || 0),
               0
             )
           )
