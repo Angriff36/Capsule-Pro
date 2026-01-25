@@ -11,6 +11,10 @@ export type PrepTaskSummary = Pick<
   | "isEventFinish"
 >;
 
+export type PrepTaskSummaryClient = Omit<PrepTaskSummary, "quantityTotal"> & {
+  quantityTotal: number;
+};
+
 type RecordShape = Record<string, unknown>;
 
 const isRecord = (value: unknown): value is RecordShape =>
@@ -96,3 +100,11 @@ export const validatePrepTasks = (value: unknown): PrepTaskSummary[] => {
   assertPrepTaskContract(value);
   return value as PrepTaskSummary[];
 };
+
+export const serializePrepTasks = (
+  tasks: PrepTaskSummary[]
+): PrepTaskSummaryClient[] =>
+  tasks.map((task) => ({
+    ...task,
+    quantityTotal: Number(task.quantityTotal),
+  }));

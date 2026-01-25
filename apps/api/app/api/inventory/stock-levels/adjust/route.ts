@@ -99,14 +99,14 @@ export async function POST(request: Request) {
     // Use a transaction to update item and create transaction record
     const result = await database.$transaction(async (tx) => {
       // Update inventory item quantity
-      await tx.$executeRawUnsafe(`
+      await tx.$executeRaw`
         UPDATE tenant_inventory.inventory_items
         SET quantity_on_hand = ${newQuantity},
             updated_at = NOW()
-        WHERE tenant_id = '${tenantId}'
-          AND id = '${inventoryItemId}'
+        WHERE tenant_id = ${tenantId}
+          AND id = ${inventoryItemId}
           AND deleted_at IS NULL
-      `);
+      `;
 
       // Create inventory transaction record
       const transactionResult = await tx.$queryRaw<Array<{ id: string }>>`

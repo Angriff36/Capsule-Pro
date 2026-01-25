@@ -3,15 +3,9 @@
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { DollarSign, Scale, Trash2, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
+import { fetchWasteTrends, type WasteTrendsData } from "./lib/waste-analytics";
 
-interface WasteStats {
-  totalCost: number;
-  totalQuantity: number;
-  totalEntries: number;
-  avgCostPerEntry: number;
-  periodCost: number;
-  periodChange: number;
-}
+type WasteStats = WasteTrendsData["summary"];
 
 export function WasteStatsCards() {
   const [stats, setStats] = useState<WasteStats | null>(null);
@@ -20,11 +14,8 @@ export function WasteStatsCards() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const trendsResponse = await fetch(
-          "/api/kitchen/waste/trends?period=30d"
-        );
-        const trends = await trendsResponse.json();
-        setStats(trends.trends.summary);
+        const trends = await fetchWasteTrends();
+        setStats(trends.summary);
       } catch (error) {
         console.error("Failed to fetch waste stats:", error);
       } finally {

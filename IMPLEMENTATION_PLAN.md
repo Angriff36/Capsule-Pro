@@ -4,6 +4,18 @@
 **Status:** Implementation in Progress - Critical Infrastructure Complete ✅
 **Overall Progress:** ~99% Complete (Update 17 - Depletion Forecasting UI completed)
 
+**Update 18 - Validation Failure (2026-01-25):**
+- `pnpm check` failed (Ultracite lint). Stopped per backpressure rule.
+- Notable blockers reported:
+  - `apps/api/__tests__/outbox-publish-e2e.test.ts` top-level regex rule violations.
+  - `apps/api/app/api/analytics/kitchen/route.ts` excessive cognitive complexity, nested ternaries, explicit `any`.
+  - `apps/api/app/api/analytics/staff/summary/route.ts` excessive complexity + unused param.
+  - `apps/api/app/api/analytics/staff/employees/[employeeId]/route.ts` excessive complexity.
+  - `apps/api/app/api/command-board/[boardId]/cards/validation.ts` block statement lint.
+  - `apps/api/app/api/command-board/[boardId]/route.ts` explicit `any`.
+  - `vitest.config.ts` missing `node:` import protocol.
+- Diagnostics exceeded limit (2143 errors total). No fixes applied during this run.
+
 **CRITICAL FINDINGS (2026-01-24 Investigation):**
 
 **Update 17 - DEPLETION FORECASTING COMPLETED (2026-01-24):**
@@ -60,13 +72,13 @@
 **Update 2 - MAJOR STATUS CORRECTIONS:**
 - **Auto-Assignment System - STATUS CORRECTION** - Was marked as 0% complete, actually ~85% complete. Database models (employee_skills, employee_seniority) exist, full algorithm implemented, API endpoints complete, comprehensive UI components exist. Only missing: UI integration into scheduling interface and configuration options.
 - **Stock Levels Management - STATUS CORRECTION** - Was marked as 30% complete, actually ~80% complete. Complete UI with dashboard, table, transaction history, adjustment modal. Complete database models and API endpoints. Only missing: client-side utility functions, validation schema, and real-time updates.
-- **Waste Tracking - ROOT CAUSE IDENTIFIED** - Cross-service API communication issue: App (apps/app) tries to call /api/kitchen/waste/* but these routes only exist in API server (apps/api). Need proxy routes or configure API server for public access.
+- **Waste Tracking - ROOT CAUSE IDENTIFIED** - Cross-service API communication issue: App (apps/app) calls /api/kitchen/waste/* but routes live in apps/api. Requires rewrites (proxy) from apps/app to apps/api and the API app running in dev.
 - **Command Board - LIVEBLOCKS VS ABLY CLARIFIED** - Real-time sync uses LiveBlocks (NOT Ably as documented). LiveBlocks used for UI collaboration (cursors, presence, selection state). Ably still used for outbox pattern events.
 - **Depletion Forecasting - STATUS CONFIRMED** - 30% complete is accurate. Complete database models and basic API structure exist. Missing: actual forecasting algorithm (Python service is placeholder), UI dashboard, service integration.
 
 **Update 3 - FINAL CORRECTIONS:**
 - **Stock Levels Management - FINAL STATUS CORRECTION** - Investigation report was incorrect about missing client utility functions. ALL required files exist and are fully implemented: client utility functions (`apps/app/app/lib/use-stock-levels.ts` - 450 lines), inventory utilities (`apps/app/app/lib/use-inventory.ts` - 270 lines with ITEM_CATEGORIES), validation schema (`apps/api/app/api/inventory/stock-levels/validation.ts`), all API endpoints, complete UI (`stock-levels-page-client.tsx` - 670 lines). All 60 tests pass (API: 54, App: 6). **Status corrected from 80% to 100% complete ✅**
-- **Waste Tracking - FINAL STATUS CORRECTION** - Investigation report was incorrect about "cross-service communication issues." The app server has its own complete implementation: `apps/app/app/api/kitchen/waste/entries/route.ts` (GET and POST - 168 lines), `apps/app/app/api/kitchen/waste/trends/route.ts` (GET - 226 lines), `apps/app/app/api/kitchen/waste/reports/route.ts` (GET - 172 lines). All routes have full database integration, authentication, and validation. Cost lookup fix already applied (uses inventoryItem.unitCost). Full analytics and reporting features implemented. **Status corrected from 40% to 100% complete ✅**
+- **Waste Tracking - FINAL STATUS CORRECTION** - Implementation is complete in `apps/api/app/api/kitchen/waste/` (entries, trends, reports). Apps/app uses `/api/...` calls with rewrites in `apps/app/next.config.ts` (waste + inventory items). Duplicate app routes were removed to comply with architecture. Cost lookup fix already applied (uses inventoryItem.unitCost). Full analytics and reporting features implemented. **Status corrected from 40% to 100% complete ✅**
 - **Investigation Summary:** Initial investigation reports contained inaccuracies about feature completion. Upon closer inspection: Auto-Assignment is 85% complete (not 0%), Stock Levels is 100% complete (not 80%), Waste Tracking is 100% complete (not 40%), Command Board is 90% complete with LiveBlocks (not Ably) for UI collaboration. Correct overall project status is **87% complete** (not 79% or 83%).
 
 **Update 4 - EVENT BUDGET TRACKING SCHEMA IMPLEMENTATION (2026-01-24):**
@@ -531,12 +543,13 @@ Migrate Event Budgets API from apps/app/app/api/events/budgets/** → apps/api/a
 **Database:** Complete (WasteReason in core, WasteEntry in tenant_kitchen)
 
 **API Endpoints:** Complete ✅
-**Location:** `apps/app/app/api/kitchen/waste/` (App server has its own complete implementation)
+**Location:** `apps/api/app/api/kitchen/waste/` (API app is the sole /api implementation)
 - `GET /api/kitchen/waste/entries` - List waste entries (168 lines)
 - `POST /api/kitchen/waste/entries` - Create waste entry (168 lines)
 - `GET /api/kitchen/waste/trends` - Analytics and trends (226 lines)
 - `GET /api/kitchen/waste/reports` - Detailed reports (172 lines)
 - All routes have full database integration, authentication, and validation
+- apps/app proxies `/api/kitchen/waste/*` (and `/api/inventory/items`) to apps/api via rewrites in `apps/app/next.config.ts`
 
 **UI Components:** Complete ✅
 **Location:** `apps/app/app/(authenticated)/kitchen/waste/page.tsx`
@@ -554,7 +567,7 @@ Migrate Event Budgets API from apps/app/app/api/events/budgets/** → apps/api/a
 
 **Investigation Correction (Update 3):**
 - Initial report incorrectly identified "cross-service communication issues"
-- App server has its own complete implementation - no cross-service communication needed
+- /api routes live only in apps/api; apps/app uses rewrites to proxy calls
 - All endpoints fully functional with database integration
 - Cost lookup fix already applied
 
@@ -2252,7 +2265,7 @@ All 6 endpoints fully implemented with proper authentication, tenant resolution,
    - Severity: ~~MEDIUM~~
    - Impact: ~~Waste tracking non-functional due to API routing issue~~
    - Action: ~~Resolve cross-service communication (proxy routes or API server configuration)~~
-   - **RESOLVED:** Investigation revealed app server has its own complete implementation
+  - **RESOLVED:** API routes live in apps/api with rewrites from apps/app
    - **COMPLETED:** 100% complete - All endpoints fully functional with database integration (entries: 168 lines, trends: 226 lines, reports: 172 lines)
 
 ---
@@ -2405,13 +2418,13 @@ All 6 endpoints fully implemented with proper authentication, tenant resolution,
 **Major Status Corrections (Update 2 - 2026-01-24):**
 - ✅ **Auto-Assignment System corrected from 0% to 85% complete** - Database models exist, full 100-point scoring algorithm implemented, API endpoints complete, comprehensive UI components exist. Only missing: UI integration into scheduling interface and configuration options.
 - ✅ **Stock Levels Management corrected from 30% to 80% complete** - Complete UI with dashboard, table, transaction history, adjustment modal. Complete database models and API endpoints. Only missing: client-side utility functions, validation schema, and real-time updates.
-- ✅ **Waste Tracking corrected from 40% to 100% complete** - Investigation revealed app server has its own complete implementation.
+- ✅ **Waste Tracking corrected from 40% to 100% complete** - Confirmed apps/api has full waste endpoints; apps/app proxies via rewrites.
 - ✅ **Command Board real-time clarified** - Uses LiveBlocks for UI collaboration (cursors, presence) and Ably for domain events (not Ably for everything as originally documented).
 - ✅ **Depletion Forecasting status confirmed** - 30% complete is accurate (database models and basic API structure exist, missing forecasting algorithm and UI).
 
 **Final Status Corrections (Update 3 - 2026-01-24):**
 - ✅ **Stock Levels Management corrected from 80% to 100% complete** - Investigation revealed ALL client utility functions exist (use-stock-levels.ts: 450 lines, use-inventory.ts: 270 lines, validation.ts). All 60 tests pass (API: 54, App: 6).
-- ✅ **Waste Tracking corrected from 40% to 100% complete** - Investigation revealed app server has its own complete implementation (entries: 168 lines, trends: 226 lines, reports: 172 lines). All routes have full database integration, authentication, and validation.
+- ✅ **Waste Tracking corrected from 40% to 100% complete** - Confirmed apps/api waste endpoints (entries: 168 lines, trends: 226 lines, reports: 172 lines). All routes have full database integration, authentication, and validation; apps/app proxies via rewrites.
 - **Investigation Summary:** Initial investigation reports contained inaccuracies. Upon closer inspection: Stock Levels is 100% complete, Waste Tracking is 100% complete, Command Board is 90% complete with LiveBlocks for UI collaboration.
 
 **Update 7 - Auto-Assignment Final Completion (2026-01-24):**
@@ -2439,7 +2452,7 @@ All previously identified critical infrastructure has been completed:
 **Quick Wins (Nearly complete, needs minor integration work):**
 - ~~**AI Features UI**~~ ✅ COMPLETE - All UI components implemented and integrated
 - ~~**Stock Levels Management**~~ ✅ COMPLETE - All client-side utilities exist, all tests pass
-- ~~**Waste Tracking**~~ ✅ COMPLETE - App server implementation fully functional
+- ~~**Waste Tracking**~~ ✅ COMPLETE - Apps/api implementation fully functional (apps/app proxies via rewrites)
 - ~~**Auto-Assignment UI Integration**~~ ✅ COMPLETE (Update 7) - All UI integration finished with Auto-Assign and Bulk Assign buttons
 - ~~**Mobile Recipe Viewer**~~ ✅ COMPLETE (Update 10) - Full mobile-optimized interface with timers and keyboard navigation
 - ~~**Labor Budget Management UI**~~ ✅ MOSTLY COMPLETE (Update 10) - Full UI with filtering, search, and CRUD operations
@@ -2570,3 +2583,10 @@ All previously identified critical infrastructure has been completed:
 - **Workaround:** Test file skipped for now; other tests pass (health.test.ts, outbox-publish-e2e.test.ts)
 - **Impact:** Test infrastructure issue only; auto-assignment feature is 100% complete per Update 7
 - **Action Required:** Proper solution may require Vite plugin that transforms source imports at load time, or restructuring how database mocking works
+
+**Update 17 - WASTE TRACKING ROUTING + CLIENT FETCH FIX (2026-01-25):**
+- **Architecture Alignment:** Removed duplicate waste route handlers from `apps/app/app/api/kitchen/waste/**`; API is now solely in `apps/api/app/api/kitchen/waste/**`
+- **Rewrites Added:** `apps/app/next.config.ts` now proxies `/api/kitchen/waste/*` and `/api/inventory/items/*` to apps/api
+- **UI Fetch Fix:** Waste trends/reports moved to client components to avoid server `cookies()`/`headers()` stack-trace source map errors in Turbopack
+- **Invariant Parsing:** Added runtime payload parsing in `apps/app/app/(authenticated)/kitchen/waste/lib/waste-analytics.ts` with regression tests for missing fields
+- **Dev Requirement:** `pnpm dev` (or otherwise running apps/api) is required for waste endpoints to resolve in app UI

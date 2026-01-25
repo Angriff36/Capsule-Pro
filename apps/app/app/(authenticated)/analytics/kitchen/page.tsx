@@ -22,7 +22,7 @@ import {
 } from "./lib/use-kitchen-analytics";
 
 const AnalyticsKitchenPage = () => {
-  const { data, isLoading, error } = useKitchenAnalytics("30d");
+  const { data, isLoading, error } = useKitchenAnalytics({ period: "30d" });
 
   if (isLoading) {
     return (

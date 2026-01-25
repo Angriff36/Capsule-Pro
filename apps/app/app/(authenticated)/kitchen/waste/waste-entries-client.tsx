@@ -58,12 +58,17 @@ export function WasteEntriesClient() {
     const fetchData = async () => {
       try {
         setLoading(true);
-
         // Fetch inventory items, waste reasons, and units in parallel
         const [itemsRes, reasonsRes, unitsRes] = await Promise.all([
-          fetch("/api/inventory/items?limit=500"),
-          fetch("/api/kitchen/waste/reasons"),
-          fetch("/api/kitchen/waste/units"),
+          fetch("/api/inventory/items?limit=500", {
+            credentials: "include",
+          }),
+          fetch("/api/kitchen/waste/reasons", {
+            credentials: "include",
+          }),
+          fetch("/api/kitchen/waste/units", {
+            credentials: "include",
+          }),
         ]);
 
         if (!itemsRes.ok) throw new Error("Failed to fetch inventory items");
@@ -96,6 +101,7 @@ export function WasteEntriesClient() {
       const response = await fetch("/api/kitchen/waste/entries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(formData),
       });
 

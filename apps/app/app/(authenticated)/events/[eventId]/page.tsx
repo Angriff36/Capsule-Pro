@@ -6,7 +6,7 @@ import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 import { EventExportButton } from "./components/export-button";
 import { EventDetailsClient } from "./event-details-client";
-import { validatePrepTasks } from "./prep-task-contract";
+import { serializePrepTasks, validatePrepTasks } from "./prep-task-contract";
 
 type EventDetailsPageProps = {
   params: Promise<{
@@ -55,6 +55,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
     `
     )
   );
+  const prepTasksForClient = serializePrepTasks(prepTasks);
 
   // Budget model does not exist in schema - set to null
   const budget = null;
@@ -86,8 +87,11 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
       </Header>
       <EventDetailsClient
         budget={budget}
-        event={event}
-        prepTasks={prepTasks}
+        event={{
+          ...event,
+          budget: event.budget === null ? null : Number(event.budget),
+        }}
+        prepTasks={prepTasksForClient}
         tenantId={tenantId}
       />
     </>

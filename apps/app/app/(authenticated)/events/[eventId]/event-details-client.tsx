@@ -77,7 +77,7 @@ import {
   TaskBreakdownDisplay,
   TaskBreakdownSkeleton,
 } from "../components/task-breakdown-display";
-import type { PrepTaskSummary } from "./prep-task-contract";
+import type { PrepTaskSummaryClient } from "./prep-task-contract";
 
 // Budget type - defined locally since Budget model doesn't exist in schema
 // Using snake_case to match API response format
@@ -101,8 +101,8 @@ type Budget = {
 
 type EventDetailsClientProps = {
   budget: Budget | null;
-  event: Event;
-  prepTasks: PrepTaskSummary[];
+  event: Omit<Event, "budget"> & { budget: number | null };
+  prepTasks: PrepTaskSummaryClient[];
   tenantId?: string;
 };
 

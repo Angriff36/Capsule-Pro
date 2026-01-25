@@ -203,7 +203,7 @@ export async function GET(request: Request) {
             AND ec.status = 'active'
             AND ec.deleted_at IS NULL
             AND e.deleted_at IS NULL
-            ${locationId ? "AND e.location_id = $2" : ""}
+            ${locationId ? "AND e.location_id = $4" : ""}
         ) as active_contracts,
         (
           SELECT COALESCE(SUM(ec.total_value * 0.5), 0)::numeric
@@ -219,7 +219,7 @@ export async function GET(request: Request) {
         ) as deposits_received
       `,
       locationId
-        ? [tenantId, locationId, startDate, now, locationId]
+        ? [tenantId, startDate, now, locationId]
         : [tenantId, startDate, now]
     );
 

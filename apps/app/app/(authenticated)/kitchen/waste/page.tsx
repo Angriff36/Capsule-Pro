@@ -5,18 +5,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import { BarChart3, Trash2, TrendingUp } from "lucide-react";
-import { Suspense } from "react";
 import { WasteEntriesClient } from "./waste-entries-client";
+import { WasteReportsClient } from "./waste-reports-client";
 import { WasteStatsCards } from "./waste-stats-cards";
+import { WasteTrendsClient } from "./waste-trends-client";
 
 export const dynamic = "force-dynamic";
 
 export default function WasteTrackingPage() {
   return (
     <div className="space-y-6 p-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Waste Tracking</h1>
@@ -26,14 +25,9 @@ export default function WasteTrackingPage() {
         </div>
       </div>
 
-      {/* Stats Overview */}
-      <Suspense fallback={<WasteStatsSkeleton />}>
-        <WasteStatsCards />
-      </Suspense>
+      <WasteStatsCards />
 
-      {/* Main Content Grid */}
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Waste Entry Form */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -45,13 +39,10 @@ export default function WasteTrackingPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Suspense fallback={<WasteFormSkeleton />}>
-              <WasteEntriesClient />
-            </Suspense>
+            <WasteEntriesClient />
           </CardContent>
         </Card>
 
-        {/* Reports & Trends */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -63,14 +54,11 @@ export default function WasteTrackingPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Suspense fallback={<WasteTrendsSkeleton />}>
-              <WasteTrendsView />
-            </Suspense>
+            <WasteTrendsClient />
           </CardContent>
         </Card>
       </div>
 
-      {/* Detailed Reports */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -82,161 +70,9 @@ export default function WasteTrackingPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Suspense fallback={<WasteReportsSkeleton />}>
-            <WasteReportsView />
-          </Suspense>
+          <WasteReportsClient />
         </CardContent>
       </Card>
-    </div>
-  );
-}
-
-// Skeleton loaders
-function WasteStatsSkeleton() {
-  return (
-    <div className="grid gap-4 md:grid-cols-4">
-      {[1, 2, 3, 4].map((i) => (
-        <Card key={i}>
-          <CardContent className="p-6">
-            <Skeleton className="h-4 w-24 mb-2" />
-            <Skeleton className="h-8 w-32" />
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
-function WasteFormSkeleton() {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-10 w-32" />
-    </div>
-  );
-}
-
-function WasteTrendsSkeleton() {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="h-40 w-full" />
-      <Skeleton className="h-32 w-full" />
-    </div>
-  );
-}
-
-function WasteReportsSkeleton() {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="h-12 w-full" />
-      <Skeleton className="h-64 w-full" />
-    </div>
-  );
-}
-
-// Client components for data fetching
-async function WasteTrendsView() {
-  const trendsResponse = await fetch(
-    "/api/kitchen/waste/trends?period=30d&groupBy=day"
-  );
-  const trends = await trendsResponse.json();
-
-  return (
-    <div className="space-y-4">
-      <div className="text-sm text-muted-foreground">
-        {trends.trends.summary.totalEntries} entries in the last 30 days
-      </div>
-      <div className="space-y-2">
-        {trends.trends.topReasons.map((item: any) => (
-          <div
-            className="flex items-center justify-between text-sm"
-            key={item.reason.id}
-          >
-            <span>{item.reason.name}</span>
-            <span className="font-medium">${item.cost.toFixed(2)}</span>
-          </div>
-        ))}
-      </div>
-      {trends.trends.reductionOpportunities.length > 0 && (
-        <div className="rounded-md bg-muted p-4 text-sm">
-          <p className="font-medium mb-2">Reduction Opportunities:</p>
-          <ul className="space-y-1 list-disc list-inside">
-            {trends.trends.reductionOpportunities.map((opp: any, i: number) => (
-              <li key={i}>
-                {opp.description} - Save ${opp.potentialSavings.toFixed(2)}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
-}
-
-async function WasteReportsView() {
-  const reportsResponse = await fetch(
-    "/api/kitchen/waste/reports?groupBy=reason"
-  );
-  const reports = await reportsResponse.json();
-
-  return (
-    <div className="space-y-6">
-      {/* Summary */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <div>
-          <p className="text-sm text-muted-foreground">Total Cost</p>
-          <p className="text-2xl font-bold">
-            ${reports.report.summary.totalCost.toFixed(2)}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-muted-foreground">Total Quantity</p>
-          <p className="text-2xl font-bold">
-            {reports.report.summary.totalQuantity.toFixed(2)}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-muted-foreground">Entries</p>
-          <p className="text-2xl font-bold">
-            {reports.report.summary.entryCount}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-muted-foreground">Avg Cost/Entry</p>
-          <p className="text-2xl font-bold">
-            ${reports.report.summary.avgCostPerEntry.toFixed(2)}
-          </p>
-        </div>
-      </div>
-
-      {/* Grouped Data */}
-      <div className="space-y-4">
-        <h3 className="font-semibold">Waste by Reason</h3>
-        <div className="space-y-2">
-          {reports.report.data.map((item: any) => (
-            <div
-              className="flex items-center justify-between rounded-lg border p-4"
-              key={item.key}
-            >
-              <div>
-                <p className="font-medium">{item.label}</p>
-                <p className="text-sm text-muted-foreground">
-                  {item.count} entries • {item.avgQuantityPerEntry.toFixed(2)}{" "}
-                  avg qty
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">${item.totalCost.toFixed(2)}</p>
-                <p className="text-sm text-muted-foreground">
-                  ${item.avgCostPerEntry.toFixed(2)}/entry
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

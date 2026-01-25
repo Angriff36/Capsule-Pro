@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     const now = new Date();
     const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1);
 
-    const employeePerformanceRaw = await database.$queryRawUnsafe<
+    const employeePerformanceRaw = await database.$queryRaw<
       Array<{
         employee_id: string;
         first_name: string;
@@ -39,91 +39,87 @@ export async function GET(request: Request) {
         client_interactions: string;
         event_participation: string;
       }>
-    >(
-      `
-    SELECT
-      u.id as employee_id,
-      u.first_name,
-      u.last_name,
-      u.role,
-      COALESCE(task_stats.total_tasks, 0) as total_tasks,
-      COALESCE(task_stats.completed_tasks, 0) as completed_tasks,
-      COALESCE(task_stats.avg_duration_hours, 0) as avg_duration_hours,
-      COALESCE(task_stats.on_time_tasks, 0) as on_time_tasks,
-      COALESCE(time_stats.total_shifts, 0) as total_shifts,
-      COALESCE(time_stats.attended_shifts, 0) as attended_shifts,
-      COALESCE(time_stats.punctual_shifts, 0) as punctual_shifts,
-      COALESCE(time_stats.total_hours, 0) as total_hours,
-      COALESCE(progress_stats.progress_count, 0) as progress_count,
-      COALESCE(progress_stats.rework_count, 0) as rework_count,
-      COALESCE(client_stats.interaction_count, 0) as client_interactions,
-      COALESCE(event_stats.event_count, 0) as event_participation
-    FROM tenant_staff.employees u
-    LEFT JOIN (
+    >`
       SELECT
-        tp.employee_id,
-        COUNT(DISTINCT pt.id) as total_tasks,
-        COUNT(DISTINCT CASE WHEN pt.status = 'completed' THEN pt.id END) as completed_tasks,
-        COALESCE(AVG(CASE WHEN pt.actual_minutes IS NOT NULL THEN pt.actual_minutes / 60.0 END), 0) as avg_duration_hours,
-        COUNT(DISTINCT CASE
-          WHEN pt.status = 'completed' AND pt.due_by_time IS NOT NULL
-          AND (pt.completed_at::date <= pt.due_by_date OR pt.completed_at::time <= pt.due_by_time)
-          THEN pt.id
-        END) as on_time_tasks
-      FROM tenant_kitchen.task_progress tp
-      JOIN tenant_kitchen.prep_tasks pt ON tp.tenant_id = pt.tenant_id AND tp.task_id = pt.id
-      WHERE tp.tenant_id = $1 AND pt.created_at >= $2
-      GROUP BY tp.employee_id
-    ) task_stats ON u.id = task_stats.employee_id
-    LEFT JOIN (
-      SELECT
-        te.employee_id,
-        COUNT(*) as total_shifts,
-        COUNT(*) as attended_shifts,
-        COUNT(DISTINCT CASE
-          WHEN te.clock_in::time <= COALESCE(ss.start_time::time, '00:00'::time) + INTERVAL '15 minutes'
-          THEN te.id
-        END) as punctual_shifts,
-        COALESCE(SUM(
-          CASE
-            WHEN te.clock_out IS NOT NULL THEN
-              EXTRACT(EPOCH FROM (te.clock_out - te.clock_in)) / 3600 - te.break_minutes / 60
-            ELSE 0
-          END
-        ), 0) as total_hours
-      FROM tenant_staff.time_entries te
-      LEFT JOIN tenant_staff.schedule_shifts ss
-        ON te.tenant_id = ss.tenant_id AND te.employee_id = ss.employee_id
-        AND DATE(te.clock_in) = ss.shift_date
-      WHERE te.tenant_id = $1 AND te.clock_in >= $2 AND te.deleted_at IS NULL
-      GROUP BY te.employee_id
-    ) time_stats ON u.id = time_stats.employee_id
-    LEFT JOIN (
-      SELECT
-        employee_id,
-        COUNT(*) as progress_count,
-        COUNT(CASE WHEN progress_type = 'status_change' AND old_status = 'in_progress' AND new_status = 'pending' THEN 1 END) as rework_count
-      FROM tenant_kitchen.task_progress
-      WHERE tenant_id = $1 AND created_at >= $2
-      GROUP BY employee_id
-    ) progress_stats ON u.id = progress_stats.employee_id
-    LEFT JOIN (
-      SELECT employee_id, COUNT(*) as interaction_count
-      FROM tenant_crm.client_interactions
-      WHERE tenant_id = $1 AND interaction_date >= $2 AND deleted_at IS NULL
-      GROUP BY employee_id
-    ) client_stats ON u.id = client_stats.employee_id
-    LEFT JOIN (
-      SELECT employee_id, COUNT(DISTINCT event_id) as event_count
-      FROM tenant_events.event_staff_assignments
-      WHERE tenant_id = $1 AND deleted_at IS NULL
-      GROUP BY employee_id
-    ) event_stats ON u.id = event_stats.employee_id
-    WHERE u.tenant_id = $1 AND u.deleted_at IS NULL
-    `,
-      tenantId,
-      threeMonthsAgo
-    );
+        u.id as employee_id,
+        u.first_name,
+        u.last_name,
+        u.role,
+        COALESCE(task_stats.total_tasks, 0) as total_tasks,
+        COALESCE(task_stats.completed_tasks, 0) as completed_tasks,
+        COALESCE(task_stats.avg_duration_hours, 0) as avg_duration_hours,
+        COALESCE(task_stats.on_time_tasks, 0) as on_time_tasks,
+        COALESCE(time_stats.total_shifts, 0) as total_shifts,
+        COALESCE(time_stats.attended_shifts, 0) as attended_shifts,
+        COALESCE(time_stats.punctual_shifts, 0) as punctual_shifts,
+        COALESCE(time_stats.total_hours, 0) as total_hours,
+        COALESCE(progress_stats.progress_count, 0) as progress_count,
+        COALESCE(progress_stats.rework_count, 0) as rework_count,
+        COALESCE(client_stats.interaction_count, 0) as client_interactions,
+        COALESCE(event_stats.event_count, 0) as event_participation
+      FROM tenant_staff.employees u
+      LEFT JOIN (
+        SELECT
+          tp.employee_id,
+          COUNT(DISTINCT pt.id) as total_tasks,
+          COUNT(DISTINCT CASE WHEN pt.status = 'completed' THEN pt.id END) as completed_tasks,
+          COALESCE(AVG(CASE WHEN pt.actual_minutes IS NOT NULL THEN pt.actual_minutes / 60.0 END), 0) as avg_duration_hours,
+          COUNT(DISTINCT CASE
+            WHEN pt.status = 'completed' AND pt.due_by_time IS NOT NULL
+            AND (pt.completed_at::date <= pt.due_by_date OR pt.completed_at::time <= pt.due_by_time)
+            THEN pt.id
+          END) as on_time_tasks
+        FROM tenant_kitchen.task_progress tp
+        JOIN tenant_kitchen.prep_tasks pt ON tp.tenant_id = pt.tenant_id AND tp.task_id = pt.id
+        WHERE tp.tenant_id = ${tenantId} AND pt.created_at >= ${threeMonthsAgo}
+        GROUP BY tp.employee_id
+      ) task_stats ON u.id = task_stats.employee_id
+      LEFT JOIN (
+        SELECT
+          te.employee_id,
+          COUNT(*) as total_shifts,
+          COUNT(*) as attended_shifts,
+          COUNT(DISTINCT CASE
+            WHEN te.clock_in::time <= COALESCE(ss.start_time::time, '00:00'::time) + INTERVAL '15 minutes'
+            THEN te.id
+          END) as punctual_shifts,
+          COALESCE(SUM(
+            CASE
+              WHEN te.clock_out IS NOT NULL THEN
+                EXTRACT(EPOCH FROM (te.clock_out - te.clock_in)) / 3600 - te.break_minutes / 60
+              ELSE 0
+            END
+          ), 0) as total_hours
+        FROM tenant_staff.time_entries te
+        LEFT JOIN tenant_staff.schedule_shifts ss
+          ON te.tenant_id = ss.tenant_id AND te.employee_id = ss.employee_id
+          AND DATE(te.clock_in) = ss.shift_date
+        WHERE te.tenant_id = ${tenantId} AND te.clock_in >= ${threeMonthsAgo} AND te.deleted_at IS NULL
+        GROUP BY te.employee_id
+      ) time_stats ON u.id = time_stats.employee_id
+      LEFT JOIN (
+        SELECT
+          employee_id,
+          COUNT(*) as progress_count,
+          COUNT(CASE WHEN progress_type = 'status_change' AND old_status = 'in_progress' AND new_status = 'pending' THEN 1 END) as rework_count
+        FROM tenant_kitchen.task_progress
+        WHERE tenant_id = ${tenantId} AND created_at >= ${threeMonthsAgo}
+        GROUP BY employee_id
+      ) progress_stats ON u.id = progress_stats.employee_id
+      LEFT JOIN (
+        SELECT employee_id, COUNT(*) as interaction_count
+        FROM tenant_crm.client_interactions
+        WHERE tenant_id = ${tenantId} AND interaction_date >= ${threeMonthsAgo} AND deleted_at IS NULL
+        GROUP BY employee_id
+      ) client_stats ON u.id = client_stats.employee_id
+      LEFT JOIN (
+        SELECT employee_id, COUNT(DISTINCT event_id) as event_count
+        FROM tenant_events.event_staff_assignments
+        WHERE tenant_id = ${tenantId} AND deleted_at IS NULL
+        GROUP BY employee_id
+      ) event_stats ON u.id = event_stats.employee_id
+      WHERE u.tenant_id = ${tenantId} AND u.deleted_at IS NULL
+    `;
 
     const employees = employeePerformanceRaw.map((emp) => {
       const totalTasks = Number(emp.total_tasks);
@@ -275,46 +271,43 @@ export async function GET(request: Request) {
         emps.reduce((sum, e) => sum + e.efficiencyScore, 0) / emps.length,
     }));
 
-    const monthlyTrends = await database.$queryRawUnsafe<
+    const monthlyTrends = await database.$queryRaw<
       Array<{
         month: string;
         avg_task_completion_rate: string;
         avg_quality_score: string;
         avg_efficiency_score: string;
       }>
-    >(
-      `
-    SELECT
-      TO_CHAR(pt.created_at, 'YYYY-MM') as month,
-      COALESCE(AVG(
-        CASE
-          WHEN pt.status = 'completed' THEN 100.0
-          ELSE 0.0
-        END
-      ), 0)::numeric as avg_task_completion_rate,
-      COALESCE(100 - AVG(
-        CASE
-          WHEN tp.progress_type = 'status_change' AND tp.old_status = 'in_progress' AND tp.new_status = 'pending' THEN 1
-          ELSE 0
-        END
-      ) * 100, 100)::numeric as avg_quality_score,
-      COALESCE(AVG(
-        CASE
-          WHEN pt.status = 'completed' THEN 50.0
-          ELSE 0.0
-        END
-      ), 0)::numeric as avg_efficiency_score
-    FROM tenant_kitchen.prep_tasks pt
-    LEFT JOIN tenant_kitchen.task_progress tp
-      ON pt.tenant_id = tp.tenant_id AND pt.id = tp.task_id
-    WHERE pt.tenant_id = $1
-      AND pt.created_at >= NOW() - INTERVAL '6 months'
-      AND pt.deleted_at IS NULL
-    GROUP BY TO_CHAR(pt.created_at, 'YYYY-MM')
-    ORDER BY month ASC
-    `,
-      tenantId
-    );
+    >`
+      SELECT
+        TO_CHAR(pt.created_at, 'YYYY-MM') as month,
+        COALESCE(AVG(
+          CASE
+            WHEN pt.status = 'completed' THEN 100.0
+            ELSE 0.0
+          END
+        ), 0)::numeric as avg_task_completion_rate,
+        COALESCE(100 - AVG(
+          CASE
+            WHEN tp.progress_type = 'status_change' AND tp.old_status = 'in_progress' AND tp.new_status = 'pending' THEN 1
+            ELSE 0
+          END
+        ) * 100, 100)::numeric as avg_quality_score,
+        COALESCE(AVG(
+          CASE
+            WHEN pt.status = 'completed' THEN 50.0
+            ELSE 0.0
+          END
+        ), 0)::numeric as avg_efficiency_score
+      FROM tenant_kitchen.prep_tasks pt
+      LEFT JOIN tenant_kitchen.task_progress tp
+        ON pt.tenant_id = tp.tenant_id AND pt.id = tp.task_id
+      WHERE pt.tenant_id = ${tenantId}
+        AND pt.created_at >= NOW() - INTERVAL '6 months'
+        AND pt.deleted_at IS NULL
+      GROUP BY TO_CHAR(pt.created_at, 'YYYY-MM')
+      ORDER BY month ASC
+    `;
 
     const summary = {
       totalEmployees,

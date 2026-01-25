@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -22,44 +22,19 @@ export async function GET(request: NextRequest) {
     const station = searchParams.get("station");
 
     // Build dynamic SQL for filters
-    const filters: string[] = [];
-    const values: any[] = [tenantId];
+    const filters: Prisma.Sql[] = [
+      Prisma.sql`pl.tenant_id = ${tenantId}`,
+      Prisma.sql`pl.deleted_at IS NULL`,
+    ];
 
     if (eventId) {
-      filters.push(`AND pl.event_id = $${values.length + 1}`);
-      values.push(eventId);
+      filters.push(Prisma.sql`pl.event_id = ${eventId}`);
     }
     if (status) {
-      filters.push(`AND pl.status = $${values.length + 1}`);
-      values.push(status);
+      filters.push(Prisma.sql`pl.status = ${status}`);
     }
 
-    const filterClause = filters.join(" ");
-    const sql = `
-      SELECT
-        pl.id,
-        pl.name,
-        pl.event_id,
-        e.title AS event_title,
-        e.event_date,
-        pl.batch_multiplier,
-        pl.dietary_restrictions,
-        pl.status,
-        pl.total_items,
-        pl.total_estimated_time,
-        pl.generated_at,
-        pl.finalized_at,
-        pl.created_at
-      FROM tenant_kitchen.prep_lists pl
-      JOIN tenant_events.events e
-        ON e.tenant_id = pl.tenant_id
-        AND e.id = pl.event_id
-        AND e.deleted_at IS NULL
-      WHERE pl.tenant_id = $1
-        AND pl.deleted_at IS NULL
-        ${filterClause}
-      ORDER BY pl.generated_at DESC
-    `;
+    const whereClause = Prisma.join(filters, Prisma.sql` AND `);
 
     const prepLists = await database.$queryRaw<
       Array<{
@@ -77,7 +52,31 @@ export async function GET(request: NextRequest) {
         finalizedAt: Date | null;
         createdAt: Date;
       }>
-    >(database.$queryRawUnsafe(sql, values) as any);
+    >(
+      Prisma.sql`
+        SELECT
+          pl.id,
+          pl.name,
+          pl.event_id,
+          e.title AS event_title,
+          e.event_date,
+          pl.batch_multiplier,
+          pl.dietary_restrictions,
+          pl.status,
+          pl.total_items,
+          pl.total_estimated_time,
+          pl.generated_at,
+          pl.finalized_at,
+          pl.created_at
+        FROM tenant_kitchen.prep_lists pl
+        JOIN tenant_events.events e
+          ON e.tenant_id = pl.tenant_id
+          AND e.id = pl.event_id
+          AND e.deleted_at IS NULL
+        WHERE ${whereClause}
+        ORDER BY pl.generated_at DESC
+      `
+    );
 
     // If station filter is provided, we need to check if any items match
     let filteredLists = prepLists;
