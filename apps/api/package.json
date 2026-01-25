@@ -24,6 +24,7 @@
     "@repo/next-config": "workspace:*",
     "@repo/observability": "workspace:*",
     "@repo/payments": "workspace:*",
+    "@repo/realtime": "workspace:*",
     "@sentry/nextjs": "^10.29.0",
     "@t3-oss/env-nextjs": "^0.13.8",
     "ably": "^2.10.0",

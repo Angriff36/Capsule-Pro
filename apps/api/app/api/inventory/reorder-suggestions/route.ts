@@ -1,10 +1,10 @@
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { requireTenantId } from "@/lib/tenant";
+import { requireTenantId } from "@/app/lib/tenant";
 import {
   generateReorderSuggestions,
   saveReorderSuggestionToDatabase,
-} from "@/lib/inventory-forecasting";
+} from "@/app/lib/inventory-forecasting";
 
 // GET /api/inventory/reorder-suggestions?sku={sku}&leadTimeDays={7}&safetyStockDays={3}
 // Returns: Array of ReorderSuggestionResult for the SKU or all low-stock items

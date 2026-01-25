@@ -1,10 +1,10 @@
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { requireTenantId } from "@/lib/tenant";
+import { requireTenantId } from "@/app/lib/tenant";
 import {
   calculateDepletionForecast,
   saveForecastToDatabase,
-} from "@/lib/inventory-forecasting";
+} from "@/app/lib/inventory-forecasting";
 
 // GET /api/inventory/forecasts?sku={sku}&from={date}&to={date}&horizon={days}&save={true|false}
 // Returns: ForecastResult for the SKU with optional date range filter or new calculation
