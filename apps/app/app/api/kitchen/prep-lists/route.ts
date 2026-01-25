@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       filters.push(Prisma.sql`pl.status = ${status}`);
     }
 
-    const whereClause = Prisma.join(filters, Prisma.sql` AND `);
+    const whereClause = Prisma.join(filters, " AND ");
 
     const prepLists = await database.$queryRaw<
       Array<{

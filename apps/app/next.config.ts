@@ -8,8 +8,15 @@ const apiBaseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223")
   .replace(/\/$/, "");
 
 const rewrites: NextConfig["rewrites"] = async () => {
-  const baseRewrites =
+  const baseRewritesResult =
     typeof config.rewrites === "function" ? await config.rewrites() : [];
+  const baseRewrites = Array.isArray(baseRewritesResult)
+    ? baseRewritesResult
+    : [
+        ...(baseRewritesResult.beforeFiles ?? []),
+        ...(baseRewritesResult.afterFiles ?? []),
+        ...(baseRewritesResult.fallback ?? []),
+      ];
 
   return [
     ...baseRewrites,

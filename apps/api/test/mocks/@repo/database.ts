@@ -7,22 +7,42 @@
 
 import { vi } from "vitest";
 
+type PrismaSqlFn = (
+  strings: TemplateStringsArray,
+  ...values: unknown[]
+) => {
+  strings: TemplateStringsArray;
+  values: unknown[];
+  readonly sql: string;
+};
+
+type PrismaJoinFn = (parts: unknown[], separator: unknown) => string;
+
 // Mock Prisma sql tag function and all exports from generated/client
-export const Prisma: Record<string, unknown> = {
-  sql: vi.fn((strings: TemplateStringsArray, ...values: unknown[]) => ({
-    strings,
-    values,
+const sqlImpl: PrismaSqlFn = vi.fn((strings, ...values) => ({
+  strings,
+  values,
     get sql() {
       return strings.reduce(
-        (acc, str, i) =>
+        (acc: string, str: string, i: number) =>
           acc + str + (values[i] !== undefined ? String(values[i]) : ""),
         ""
       );
     },
-  })),
-  join: vi.fn((parts: unknown[], separator: string) => {
-    return parts.filter(Boolean).join(separator);
-  }),
+}));
+
+const joinImpl: PrismaJoinFn = vi.fn((parts, separator) => {
+  return parts.filter(Boolean).join(separator);
+});
+
+export const Prisma: {
+  sql: PrismaSqlFn;
+  join: PrismaJoinFn;
+  empty: {};
+  PrismaClient: unknown;
+} = {
+  sql: sqlImpl,
+  join: joinImpl,
   empty: {},
   // Add other commonly used Prisma types/mocks
   PrismaClient: vi.fn(),
