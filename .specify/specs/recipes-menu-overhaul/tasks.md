@@ -104,7 +104,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check`
   - **Commit**: `feat(recipes): implement step management in edit modal`
 
-- [ ] T009 [VERIFY] Quality checkpoint - Recipe Editing POC
+- [x] T009 [VERIFY] Quality checkpoint - Recipe Editing POC
   - **Do**: Run quality commands, test edit flow end-to-end
   - **Verify**: `pnpm check && cd apps/app && npx tsc --noEmit`
   - **Done when**: Can edit recipe, save creates new version
