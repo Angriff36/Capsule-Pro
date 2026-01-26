@@ -227,7 +227,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm migrate:status && pnpm prisma:generate && pnpm check`
   - **Commit**: `feat(database): add Menu and MenuDish models`
 
-- [ ] T020 [VERIFY] Quality checkpoint - Database Migration
+- [x] T020 [VERIFY] Quality checkpoint - Database Migration
   - **Do**: Verify migration applies, Prisma client regenerated
   - **Verify**: `cd packages/database && npx prisma migrate status && pnpm check`
   - **Done when**: Migration shows as applied
