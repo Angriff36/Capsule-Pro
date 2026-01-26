@@ -29,9 +29,9 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
-  getRecipeCostSummary,
+  getRecipeCost,
   type RecipeCostBreakdown,
-} from "@/app/lib/recipe-costing";
+} from "@/app/lib/use-recipe-costing";
 
 type RecipeDetailRow = {
   id: string;
@@ -407,7 +407,7 @@ export function RecipeDetailTabs({
     const fetchCostData = async () => {
       setLoading(true);
       try {
-        const data = await getRecipeCostSummary(recipeVersionId);
+        const data = await getRecipeCost(recipeVersionId);
         setCostData(data);
       } catch (error) {
         console.error("Failed to fetch cost data:", error);

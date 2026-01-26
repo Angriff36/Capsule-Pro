@@ -51,6 +51,12 @@
   - `apps/api/app/api/conflicts/detect/route.ts` unused variables.
   - `vitest.config.ts` missing `node:` import protocol.
 
+**Update 22 - Validation Failure (2026-01-26):**
+- `pnpm build` failed. Stopped per backpressure rule.
+- Build blocker:
+  - `apps/app/app/api/recipes/[recipeId]/versions/route.ts` route handler signature mismatch.
+  - Error: handler `GET` uses `{ params: { recipeId: string } }` but Next.js expects `{ params: Promise<{ recipeId: string }> }`.
+
 **CRITICAL FINDINGS (2026-01-24 Investigation):**
 
 **Update 17 - DEPLETION FORECASTING COMPLETED (2026-01-24):**
