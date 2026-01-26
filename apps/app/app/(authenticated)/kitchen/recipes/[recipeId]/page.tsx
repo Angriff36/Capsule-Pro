@@ -13,6 +13,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 import { Header } from "../../../components/header";
+import { RecipeDetailTabs } from "./components/recipe-detail-tabs";
 
 type RecipeDetailRow = {
   id: string;
@@ -38,6 +39,18 @@ type IngredientRow = {
   unit_code: string;
   notes: string | null;
   order_index: number;
+};
+
+type RecipeStepRow = {
+  step_number: number;
+  instruction: string;
+  duration_minutes: number | null;
+  temperature_value: number | null;
+  temperature_unit: string | null;
+  equipment_needed: string[] | null;
+  tips: string | null;
+  video_url: string | null;
+  image_url: string | null;
 };
 
 const formatMinutes = (minutes?: number | null) =>
@@ -138,6 +151,42 @@ const RecipeDetailPage = async ({
     `
   );
 
+  // Get the latest recipe version ID
+  const recipeVersion = await database.$queryRaw<{ version_id: string }[]>(
+    Prisma.sql`
+      SELECT rv.id AS version_id
+      FROM tenant_kitchen.recipe_versions rv
+      WHERE rv.tenant_id = ${tenantId}
+        AND rv.recipe_id = ${recipeId}
+        AND rv.deleted_at IS NULL
+      ORDER BY rv.version_number DESC
+      LIMIT 1
+    `
+  );
+
+  // Fetch recipe steps
+  const steps: RecipeStepRow[] = recipeVersion.length > 0
+    ? await database.$queryRaw<RecipeStepRow[]>(
+        Prisma.sql`
+          SELECT
+            step_number,
+            instruction,
+            duration_minutes,
+            temperature_value,
+            temperature_unit,
+            equipment_needed,
+            tips,
+            video_url,
+            image_url
+          FROM tenant_kitchen.recipe_steps
+          WHERE tenant_id = ${tenantId}
+            AND recipe_version_id = ${recipeVersion[0].version_id}
+            AND deleted_at IS NULL
+          ORDER BY step_number ASC
+        `
+      )
+    : [];
+
   return (
     <>
       <Header page={recipe.name} pages={["Kitchen Ops", "Recipes"]}>
@@ -175,7 +224,7 @@ const RecipeDetailPage = async ({
           <p className="text-muted-foreground">{recipe.description}</p>
         )}
 
-        {/* Time and Yield Info */}
+        {/* Metadata Bar */}
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="flex items-center gap-3 pt-6">
@@ -201,17 +250,6 @@ const RecipeDetailPage = async ({
           </Card>
           <Card>
             <CardContent className="flex items-center gap-3 pt-6">
-              <Clock className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <div className="text-sm text-muted-foreground">Rest Time</div>
-                <div className="font-semibold">
-                  {formatMinutes(recipe.rest_time_minutes)}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex items-center gap-3 pt-6">
               <Users className="h-5 w-5 text-muted-foreground" />
               <div>
                 <div className="text-sm text-muted-foreground">Yield</div>
@@ -221,77 +259,19 @@ const RecipeDetailPage = async ({
               </div>
             </CardContent>
           </Card>
+          <Card>
+            <CardContent className="flex items-center gap-3 pt-6">
+              <Badge className="h-5 w-5" />
+              <div>
+                <div className="text-sm text-muted-foreground">Difficulty</div>
+                <div className="font-semibold">Medium</div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Ingredients */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Ingredients</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {ingredients.length === 0 ? (
-              <p className="text-muted-foreground">No ingredients added yet.</p>
-            ) : (
-              <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-                {ingredients.map((ingredient) => (
-                  <div
-                    className="flex items-center justify-between rounded-lg border p-3"
-                    key={ingredient.id}
-                  >
-                    <span className="font-medium">{ingredient.name}</span>
-                    <span className="text-muted-foreground">
-                      {ingredient.quantity} {ingredient.unit_code}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Instructions */}
-        {recipe.instructions && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Instructions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="prose prose-sm max-w-none">
-                <p className="whitespace-pre-wrap">{recipe.instructions}</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Notes */}
-        {recipe.notes && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Notes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">{recipe.notes}</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Tags */}
-        {recipe.tags && recipe.tags.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Tags</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {recipe.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Recipe Detail Tabs */}
+        <RecipeDetailTabs recipe={recipe} ingredients={ingredients} />
       </div>
     </>
   );

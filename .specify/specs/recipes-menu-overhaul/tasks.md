@@ -125,7 +125,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check`
   - **Commit**: `feat(recipes): create recipe detail tabbed interface`
 
-- [ ] T011 [US2] Refactor recipe detail page to use tabs `apps/app/app/(authenticated)/kitchen/recipes/[recipeId]/page.tsx`
+- [x] T011 [US2] Refactor recipe detail page to use tabs `apps/app/app/(authenticated)/kitchen/recipes/[recipeId]/page.tsx`
   - **Do**:
     1. Replace current card-based layout with RecipeDetailTabs
     2. Keep hero image with name overlay
