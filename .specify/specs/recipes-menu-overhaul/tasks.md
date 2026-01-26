@@ -93,7 +93,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check`
   - **Commit**: `feat(recipes): implement ingredient management in edit modal`
 
-- [ ] T008 [US1] Implement step management in edit modal
+- [x] T008 [US1] Implement step management in edit modal
   - **Do**:
     1. Add steps list state with add/remove/reorder
     2. Create step row component with instruction textarea

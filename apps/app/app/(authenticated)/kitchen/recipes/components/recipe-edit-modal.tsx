@@ -29,6 +29,12 @@ type Ingredient = {
   notes?: string;
 };
 
+type Step = {
+  id?: string;
+  instruction: string;
+  step_number: number;
+};
+
 type RecipeEditModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -164,6 +170,72 @@ function IngredientRow({
   );
 }
 
+/** Step row component for displaying and editing a single step */
+function StepRow({
+  step,
+  index,
+  onUpdate,
+  onRemove,
+  onMoveUp,
+  onMoveDown,
+}: {
+  step: Step;
+  index: number;
+  onUpdate: (index: number, field: keyof Step, value: string | number) => void;
+  onRemove: (index: number) => void;
+  onMoveUp: (index: number) => void;
+  onMoveDown: (index: number) => void;
+}) {
+  return (
+    <div className="flex items-start gap-2 p-3 border rounded-md">
+      <div className="flex flex-col gap-1">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6"
+          onClick={() => onMoveUp(index)}
+          disabled={index === 0}
+        >
+          ↑
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6"
+          onClick={() => onMoveDown(index)}
+        >
+          ↓
+        </Button>
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center gap-2 mb-2">
+          <Label className="text-sm text-muted-foreground">Step {index + 1}</Label>
+        </div>
+        <Textarea
+          className="w-full"
+          placeholder="Enter instruction for this step"
+          rows={3}
+          value={step.instruction}
+          onChange={(e) => onUpdate(index, "instruction", e.target.value)}
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="mt-2 text-destructive hover:text-destructive"
+          onClick={() => onRemove(index)}
+          title="Remove step"
+        >
+          Remove Step
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+
 /** Reusable time input field */
 function TimeInput({
   id,
@@ -203,6 +275,7 @@ export const RecipeEditModal = ({
   const [ingredients, setIngredients] = useState<Ingredient[]>(
     recipe?.ingredients ?? []
   );
+  const [steps, setSteps] = useState<Step[]>([]);
 
   const handleAddTag = () => {
     const trimmed = tagInput.trim();
@@ -249,7 +322,47 @@ export const RecipeEditModal = ({
     const updated = [...ingredients];
     [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
     setIngredients(updated);
+  };  const handleAddStep = () => {
+    setSteps([
+      ...steps,
+      { instruction: "", step_number: steps.length + 1 },
+    ]);
   };
+
+  const handleRemoveStep = (index: number) => {
+    setSteps(steps.filter((_, i) => i !== index));
+    // Update step numbers
+    const updated = steps
+      .filter((_, i) => i !== index)
+      .map((step, idx) => ({ ...step, step_number: idx + 1 }));
+    setSteps(updated);
+  };
+
+  const handleUpdateStep = (
+    index: number,
+    field: keyof Step,
+    value: string | number
+  ) => {
+    const updated = [...steps];
+    updated[index] = { ...updated[index], [field]: value };
+    setSteps(updated);
+  };
+
+  const handleMoveStep = (index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (
+      newIndex < 0 ||
+      newIndex >= steps.length ||
+      (direction === "up" && index === 0)
+    ) {
+      return;
+    }
+    const updated = [...steps];
+    [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+    setSteps(updated);
+  };
+
+
 
   const handleSubmit = async (formData: FormData) => {
     if (!onSave) {
@@ -259,6 +372,7 @@ export const RecipeEditModal = ({
     try {
       formData.set("tags", tags.join(","));
       formData.set("ingredients", JSON.stringify(ingredients));
+      formData.set("steps", JSON.stringify(steps));
       await onSave(formData);
       onOpenChange(false);
     } finally {
@@ -392,6 +506,42 @@ export const RecipeEditModal = ({
               </p>
             )}
           </div>
+
+          {/* Steps section */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="font-medium text-base">Steps</Label>
+              <Button
+                onClick={handleAddStep}
+                type="button"
+                variant="outline"
+                size="sm"
+              >
+                Add Step
+              </Button>
+            </div>
+            {steps.length > 0 && (
+              <div className="space-y-2">
+                {steps.map((step, index) => (
+                  <StepRow
+                    key={index}
+                    step={step}
+                    index={index}
+                    onUpdate={handleUpdateStep}
+                    onRemove={handleRemoveStep}
+                    onMoveUp={(index) => handleMoveStep(index, "up")}
+                    onMoveDown={(index) => handleMoveStep(index, "down")}
+                  />
+                ))}
+              </div>
+            )}
+            {steps.length === 0 && (
+              <p className="text-sm text-muted-foreground italic">
+                No steps added yet. Click "Add Step" to get started.
+              </p>
+            )}
+          </div>
+
 
           {/* Yield section */}
           <div className="space-y-4">
