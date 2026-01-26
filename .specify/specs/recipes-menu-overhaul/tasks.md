@@ -68,7 +68,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check`
   - **Commit**: `feat(recipes): add getRecipeForEdit data fetcher`
 
-- [ ] T006 [US1] Wire edit modal to recipe cards `apps/app/app/(authenticated)/kitchen/recipes/page.tsx`
+- [x] T006 [US1] Wire edit modal to recipe cards `apps/app/app/(authenticated)/kitchen/recipes/page.tsx`
   - **Do**:
     1. Import RecipeEditModal component
     2. Add state for selected recipeId and modal open state

@@ -34,6 +34,7 @@ import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 import { updateRecipeImage } from "./actions";
+import { RecipeEditButton } from "./recipe-edit-button";
 import { RecipeFavoriteButton } from "./recipe-favorite-button";
 import { RecipeImagePlaceholder } from "./recipe-image-placeholder";
 import { RecipesPageClient } from "./recipes-page-client";
@@ -474,15 +475,10 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                           />
                         )}
                         <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 via-transparent to-transparent p-3 opacity-0 transition-opacity group-hover:opacity-100">
-                          <Button
-                            aria-label={`Edit ${recipe.name}`}
-                            className="text-white"
-                            size="sm"
-                            type="button"
-                            variant="secondary"
-                          >
-                            Edit
-                          </Button>
+                          <RecipeEditButton
+                            recipeId={recipe.id}
+                            recipeName={recipe.name}
+                          />
                         </div>
                         <RecipeFavoriteButton recipeName={recipe.name} />
                       </AspectRatio>
