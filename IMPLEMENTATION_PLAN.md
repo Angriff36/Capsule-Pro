@@ -27,6 +27,30 @@
   - `apps/api/app/api/command-board/[boardId]/route.ts` explicit `any`.
   - `vitest.config.ts` missing `node:` import protocol.
 
+**Update 20 - Validation Failure (2026-01-26):**
+- `pnpm check` failed (Ultracite lint). Stopped per backpressure rule.
+- Diagnostics exceeded limit (12886 errors total). No fixes applied during this run.
+- Notable blockers reported:
+  - `apps/api/__tests__/outbox-publish-e2e.test.ts` top-level regex lint.
+  - `apps/api/app/api/analytics/finance/route.ts` excessive complexity + nested ternary.
+  - `apps/api/app/api/analytics/kitchen/route.ts` excessive complexity + nested ternaries + explicit `any`.
+  - `apps/api/app/api/analytics/staff/employees/[employeeId]/route.ts` excessive complexity.
+  - `apps/api/app/api/command-board/[boardId]/cards/validation.ts` block statement lint.
+  - `apps/api/app/api/command-board/[boardId]/route.ts` explicit `any`.
+  - `vitest.config.ts` missing `node:` import protocol.
+
+**Update 21 - Validation Failure (2026-01-26):**
+- `pnpm check` failed (Ultracite lint). Stopped per backpressure rule.
+- Diagnostics exceeded limit (12884 errors total). No fixes applied during this run.
+- Notable blockers reported:
+  - `apps/api/app/api/analytics/finance/route.ts` excessive complexity + nested ternaries + unused variable.
+  - `apps/api/app/api/analytics/kitchen/route.ts` excessive complexity + nested ternaries + explicit `any`.
+  - `apps/api/app/api/analytics/staff/employees/[employeeId]/route.ts` excessive complexity.
+  - `apps/api/app/api/analytics/staff/summary/route.ts` excessive complexity + unused param.
+  - `apps/api/app/api/command-board/[boardId]/cards/validation.ts` block statement lint.
+  - `apps/api/app/api/conflicts/detect/route.ts` unused variables.
+  - `vitest.config.ts` missing `node:` import protocol.
+
 **CRITICAL FINDINGS (2026-01-24 Investigation):**
 
 **Update 17 - DEPLETION FORECASTING COMPLETED (2026-01-24):**

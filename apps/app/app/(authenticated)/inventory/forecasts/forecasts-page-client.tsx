@@ -9,14 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -43,7 +35,6 @@ import {
 import {
   ActivityIcon,
   AlertTriangleIcon,
-  CalendarIcon,
   CheckCircle2Icon,
   RefreshCwIcon,
   SearchIcon,
@@ -55,16 +46,14 @@ import { toast } from "sonner";
 import {
   type DepletionForecast,
   type ForecastPoint,
-  type ReorderSuggestion,
   formatDate,
-  formatDateTime,
-  getConfidenceColor,
-  getDepletionText,
-  getUrgencyColor,
-  getDepletionForecast,
-  getReorderSuggestions,
   generateReorderSuggestions,
-  useForecasts,
+  getConfidenceColor,
+  getDepletionForecast,
+  getDepletionText,
+  getReorderSuggestions,
+  getUrgencyColor,
+  type ReorderSuggestion,
 } from "../../../lib/use-forecasts";
 
 // Get all inventory items (simplified - in production would use real API)
@@ -98,7 +87,8 @@ export const ForecastsPageClient = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Dialog state
-  const [selectedForecastDetail, setSelectedForecastDetail] = useState<DepletionForecast | null>(null);
+  const [selectedForecastDetail, setSelectedForecastDetail] =
+    useState<DepletionForecast | null>(null);
 
   // Fetch forecast for selected SKU
   const fetchForecast = useCallback(async () => {
@@ -113,11 +103,16 @@ export const ForecastsPageClient = () => {
       setForecast(data);
       setSelectedForecastDetail(data);
       // Also fetch suggestions for this SKU
-      const suggestionData = await getReorderSuggestions(selectedSku, leadTimeDays, safetyStockDays);
+      const suggestionData = await getReorderSuggestions(
+        selectedSku,
+        leadTimeDays,
+        safetyStockDays
+      );
       setSuggestions(suggestionData);
       toast.success(`Forecast loaded for ${selectedSku}`);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to fetch forecast";
+      const message =
+        error instanceof Error ? error.message : "Failed to fetch forecast";
       toast.error(message);
       setForecast(null);
       setSuggestions([]);
@@ -130,11 +125,16 @@ export const ForecastsPageClient = () => {
   const fetchAllSuggestions = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await getReorderSuggestions(undefined, leadTimeDays, safetyStockDays);
+      const data = await getReorderSuggestions(
+        undefined,
+        leadTimeDays,
+        safetyStockDays
+      );
       setAllSuggestions(data);
       toast.success(`Loaded ${data.length} reorder suggestions`);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to fetch suggestions";
+      const message =
+        error instanceof Error ? error.message : "Failed to fetch suggestions";
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -142,22 +142,37 @@ export const ForecastsPageClient = () => {
   }, [leadTimeDays, safetyStockDays]);
 
   // Generate new suggestions
-  const handleGenerateSuggestions = useCallback(async (save: boolean = false) => {
-    setIsGenerating(true);
-    try {
-      const data = await generateReorderSuggestions(selectedSku, leadTimeDays, safetyStockDays, save);
-      setAllSuggestions(data.suggestions);
-      if (selectedSku) {
-        setSuggestions(data.suggestions.filter((s: ReorderSuggestion) => s.sku === selectedSku));
+  const handleGenerateSuggestions = useCallback(
+    async (save = false) => {
+      setIsGenerating(true);
+      try {
+        const data = await generateReorderSuggestions(
+          selectedSku,
+          leadTimeDays,
+          safetyStockDays,
+          save
+        );
+        setAllSuggestions(data.suggestions);
+        if (selectedSku) {
+          setSuggestions(
+            data.suggestions.filter(
+              (s: ReorderSuggestion) => s.sku === selectedSku
+            )
+          );
+        }
+        toast.success(`Generated ${data.count} reorder suggestions`);
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to generate suggestions";
+        toast.error(message);
+      } finally {
+        setIsGenerating(false);
       }
-      toast.success(`Generated ${data.count} reorder suggestions`);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to generate suggestions";
-      toast.error(message);
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [selectedSku, leadTimeDays, safetyStockDays]);
+    },
+    [selectedSku, leadTimeDays, safetyStockDays]
+  );
 
   // Load all suggestions on mount
   useEffect(() => {
@@ -165,27 +180,40 @@ export const ForecastsPageClient = () => {
   }, [fetchAllSuggestions]);
 
   // Calculate summary stats
-  const criticalCount = allSuggestions.filter((s) => s.urgency === "critical").length;
-  const warningCount = allSuggestions.filter((s) => s.urgency === "warning").length;
-  const depletingSoonCount = forecast && forecast.daysUntilDepletion !== null && forecast.daysUntilDepletion <= 7 ? 1 : 0;
+  const criticalCount = allSuggestions.filter(
+    (s) => s.urgency === "critical"
+  ).length;
+  const warningCount = allSuggestions.filter(
+    (s) => s.urgency === "warning"
+  ).length;
+  const depletingSoonCount =
+    forecast &&
+    forecast.daysUntilDepletion !== null &&
+    forecast.daysUntilDepletion <= 7
+      ? 1
+      : 0;
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Depletion Forecasting</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Depletion Forecasting
+          </h1>
           <p className="text-muted-foreground">
             Predict inventory depletion and generate reorder alerts
           </p>
         </div>
         <Button
-          onClick={fetchAllSuggestions}
-          variant="outline"
-          size="sm"
           disabled={isLoading}
+          onClick={fetchAllSuggestions}
+          size="sm"
+          variant="outline"
         >
-          <RefreshCwIcon className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+          <RefreshCwIcon
+            className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+          />
           Refresh
         </Button>
       </div>
@@ -199,7 +227,9 @@ export const ForecastsPageClient = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{allSuggestions.length}</div>
-            <p className="text-xs text-muted-foreground">Items requiring attention</p>
+            <p className="text-xs text-muted-foreground">
+              Items requiring attention
+            </p>
           </CardContent>
         </Card>
 
@@ -209,8 +239,12 @@ export const ForecastsPageClient = () => {
             <XCircleIcon className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">{criticalCount}</div>
-            <p className="text-xs text-muted-foreground">Immediate action required</p>
+            <div className="text-2xl font-bold text-destructive">
+              {criticalCount}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Immediate action required
+            </p>
           </CardContent>
         </Card>
 
@@ -220,14 +254,18 @@ export const ForecastsPageClient = () => {
             <AlertTriangleIcon className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{warningCount}</div>
+            <div className="text-2xl font-bold text-yellow-600">
+              {warningCount}
+            </div>
             <p className="text-xs text-muted-foreground">May deplete soon</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Depleting Soon</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Depleting Soon
+            </CardTitle>
             <TrendingDownIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -238,13 +276,13 @@ export const ForecastsPageClient = () => {
       </div>
 
       {/* Main Tabs */}
-      <Tabs defaultValue="forecast" className="space-y-4">
+      <Tabs className="space-y-4" defaultValue="forecast">
         <TabsList>
           <TabsTrigger value="forecast">Forecast Analysis</TabsTrigger>
           <TabsTrigger value="alerts">
             Reorder Alerts
             {allSuggestions.length > 0 && (
-              <Badge variant="destructive" className="ml-2">
+              <Badge className="ml-2" variant="destructive">
                 {allSuggestions.length}
               </Badge>
             )}
@@ -252,13 +290,14 @@ export const ForecastsPageClient = () => {
         </TabsList>
 
         {/* Forecast Analysis Tab */}
-        <TabsContent value="forecast" className="space-y-4">
+        <TabsContent className="space-y-4" value="forecast">
           {/* Search/Filter Card */}
           <Card>
             <CardHeader>
               <CardTitle>Generate Forecast</CardTitle>
               <CardDescription>
-                Enter a SKU to predict when inventory will deplete based on upcoming events
+                Enter a SKU to predict when inventory will deplete based on
+                upcoming events
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -266,8 +305,8 @@ export const ForecastsPageClient = () => {
                 <div className="space-y-2">
                   <Label htmlFor="sku">SKU</Label>
                   <div className="flex gap-2">
-                    <Select value={selectedSku} onValueChange={setSelectedSku}>
-                      <SelectTrigger id="sku" className="flex-1">
+                    <Select onValueChange={setSelectedSku} value={selectedSku}>
+                      <SelectTrigger className="flex-1" id="sku">
                         <SelectValue placeholder="Select SKU" />
                       </SelectTrigger>
                       <SelectContent>
@@ -279,27 +318,29 @@ export const ForecastsPageClient = () => {
                       </SelectContent>
                     </Select>
                     <Button
-                      size="icon"
-                      variant="outline"
                       onClick={() => {
-                        const input = document.getElementById("manual-sku") as HTMLInputElement;
+                        const input = document.getElementById(
+                          "manual-sku"
+                        ) as HTMLInputElement;
                         if (input?.value) {
                           setSelectedSku(input.value);
                         }
                       }}
+                      size="icon"
+                      variant="outline"
                     >
                       <SearchIcon className="h-4 w-4" />
                     </Button>
                   </div>
                   <Input
-                    id="manual-sku"
-                    placeholder="Or enter custom SKU"
                     className="mt-2"
+                    id="manual-sku"
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         setSelectedSku((e.target as HTMLInputElement).value);
                       }
                     }}
+                    placeholder="Or enter custom SKU"
                   />
                 </div>
 
@@ -307,11 +348,13 @@ export const ForecastsPageClient = () => {
                   <Label htmlFor="horizon">Forecast Horizon (Days)</Label>
                   <Input
                     id="horizon"
-                    type="number"
-                    min={1}
                     max={365}
+                    min={1}
+                    onChange={(e) =>
+                      setHorizonDays(Number.parseInt(e.target.value) || 30)
+                    }
+                    type="number"
                     value={horizonDays}
-                    onChange={(e) => setHorizonDays(parseInt(e.target.value) || 30)}
                   />
                 </div>
 
@@ -319,11 +362,13 @@ export const ForecastsPageClient = () => {
                   <Label htmlFor="leadTime">Lead Time (Days)</Label>
                   <Input
                     id="leadTime"
-                    type="number"
-                    min={1}
                     max={90}
+                    min={1}
+                    onChange={(e) =>
+                      setLeadTimeDays(Number.parseInt(e.target.value) || 7)
+                    }
+                    type="number"
                     value={leadTimeDays}
-                    onChange={(e) => setLeadTimeDays(parseInt(e.target.value) || 7)}
                   />
                 </div>
 
@@ -331,26 +376,33 @@ export const ForecastsPageClient = () => {
                   <Label htmlFor="safetyStock">Safety Stock (Days)</Label>
                   <Input
                     id="safetyStock"
-                    type="number"
-                    min={0}
                     max={30}
+                    min={0}
+                    onChange={(e) =>
+                      setSafetyStockDays(Number.parseInt(e.target.value) || 3)
+                    }
+                    type="number"
                     value={safetyStockDays}
-                    onChange={(e) => setSafetyStockDays(parseInt(e.target.value) || 3)}
                   />
                 </div>
               </div>
 
               <div className="mt-4 flex gap-2">
-                <Button onClick={fetchForecast} disabled={!selectedSku || isLoading}>
+                <Button
+                  disabled={!selectedSku || isLoading}
+                  onClick={fetchForecast}
+                >
                   <ActivityIcon className="mr-2 h-4 w-4" />
                   Generate Forecast
                 </Button>
                 <Button
+                  disabled={isLoading}
                   onClick={fetchAllSuggestions}
                   variant="outline"
-                  disabled={isLoading}
                 >
-                  <RefreshCwIcon className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+                  <RefreshCwIcon
+                    className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+                  />
                   Refresh Suggestions
                 </Button>
               </div>
@@ -368,31 +420,45 @@ export const ForecastsPageClient = () => {
                   </Badge>
                 </CardTitle>
                 <CardDescription>
-                  Current Stock: {forecast.currentStock} units |
-                  Depletion: {getDepletionText(forecast.daysUntilDepletion)}
-                  {forecast.depletionDate && ` (${formatDate(forecast.depletionDate)})`}
+                  Current Stock: {forecast.currentStock} units | Depletion:{" "}
+                  {getDepletionText(forecast.daysUntilDepletion)}
+                  {forecast.depletionDate &&
+                    ` (${formatDate(forecast.depletionDate)})`}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {/* Summary Stats */}
                 <div className="mb-6 grid gap-4 md:grid-cols-3">
                   <div className="rounded-lg border p-4">
-                    <div className="text-sm text-muted-foreground">Current Stock</div>
-                    <div className="text-2xl font-bold">{forecast.currentStock}</div>
+                    <div className="text-sm text-muted-foreground">
+                      Current Stock
+                    </div>
+                    <div className="text-2xl font-bold">
+                      {forecast.currentStock}
+                    </div>
                   </div>
                   <div className="rounded-lg border p-4">
-                    <div className="text-sm text-muted-foreground">Days Until Depletion</div>
-                    <div className={`text-2xl font-bold ${
-                      forecast.daysUntilDepletion !== null && forecast.daysUntilDepletion <= 7
-                        ? "text-destructive"
-                        : ""
-                    }`}>
+                    <div className="text-sm text-muted-foreground">
+                      Days Until Depletion
+                    </div>
+                    <div
+                      className={`text-2xl font-bold ${
+                        forecast.daysUntilDepletion !== null &&
+                        forecast.daysUntilDepletion <= 7
+                          ? "text-destructive"
+                          : ""
+                      }`}
+                    >
                       {forecast.daysUntilDepletion ?? "N/A"}
                     </div>
                   </div>
                   <div className="rounded-lg border p-4">
-                    <div className="text-sm text-muted-foreground">Confidence Level</div>
-                    <div className="text-2xl font-bold capitalize">{forecast.confidence}</div>
+                    <div className="text-sm text-muted-foreground">
+                      Confidence Level
+                    </div>
+                    <div className="text-2xl font-bold capitalize">
+                      {forecast.confidence}
+                    </div>
                   </div>
                 </div>
 
@@ -402,38 +468,48 @@ export const ForecastsPageClient = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Date</TableHead>
-                        <TableHead className="text-right">Projected Stock</TableHead>
+                        <TableHead className="text-right">
+                          Projected Stock
+                        </TableHead>
                         <TableHead className="text-right">Usage</TableHead>
                         <TableHead>Event</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {forecast.forecast.map((point: ForecastPoint, index: number) => (
-                        <TableRow key={index}>
-                          <TableCell className="font-medium">
-                            {formatDate(point.date)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <span className={`font-bold ${
-                              point.projectedStock <= 0 ? "text-destructive" : ""
-                            }`}>
-                              {point.projectedStock.toFixed(0)}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {point.usage > 0 ? point.usage.toFixed(1) : "-"}
-                          </TableCell>
-                          <TableCell>
-                            {point.eventName ? (
-                              <span className="text-xs text-muted-foreground">
-                                {point.eventName}
+                      {forecast.forecast.map(
+                        (point: ForecastPoint, index: number) => (
+                          <TableRow key={index}>
+                            <TableCell className="font-medium">
+                              {formatDate(point.date)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <span
+                                className={`font-bold ${
+                                  point.projectedStock <= 0
+                                    ? "text-destructive"
+                                    : ""
+                                }`}
+                              >
+                                {point.projectedStock.toFixed(0)}
                               </span>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">-</span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {point.usage > 0 ? point.usage.toFixed(1) : "-"}
+                            </TableCell>
+                            <TableCell>
+                              {point.eventName ? (
+                                <span className="text-xs text-muted-foreground">
+                                  {point.eventName}
+                                </span>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">
+                                  -
+                                </span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        )
+                      )}
                     </TableBody>
                   </Table>
                 </div>
@@ -448,8 +524,10 @@ export const ForecastsPageClient = () => {
                       </div>
                     </div>
                     <p className="mt-1 text-sm text-destructive/80">
-                      This item is predicted to run out of stock on {formatDate(forecast.depletionDate)}{" "}
-                      ({forecast.daysUntilDepletion} days from now). Consider placing a reorder soon.
+                      This item is predicted to run out of stock on{" "}
+                      {formatDate(forecast.depletionDate)} (
+                      {forecast.daysUntilDepletion} days from now). Consider
+                      placing a reorder soon.
                     </p>
                   </div>
                 )}
@@ -467,8 +545,8 @@ export const ForecastsPageClient = () => {
                 <div className="space-y-4">
                   {suggestions.map((suggestion, index) => (
                     <div
-                      key={index}
                       className="flex items-start gap-4 rounded-lg border p-4"
+                      key={index}
                     >
                       <Badge variant={getUrgencyColor(suggestion.urgency)}>
                         {suggestion.urgency.toUpperCase()}
@@ -479,9 +557,13 @@ export const ForecastsPageClient = () => {
                           {suggestion.justification}
                         </div>
                         <div className="mt-2 text-sm">
-                          <span className="font-medium">Current Stock:</span> {suggestion.currentStock} |{" "}
-                          <span className="font-medium">Reorder Point:</span> {suggestion.reorderPoint} |{" "}
-                          <span className="font-medium">Recommended Order:</span>{" "}
+                          <span className="font-medium">Current Stock:</span>{" "}
+                          {suggestion.currentStock} |{" "}
+                          <span className="font-medium">Reorder Point:</span>{" "}
+                          {suggestion.reorderPoint} |{" "}
+                          <span className="font-medium">
+                            Recommended Order:
+                          </span>{" "}
                           <span className="font-bold text-primary">
                             {suggestion.recommendedOrderQty} units
                           </span>
@@ -496,17 +578,19 @@ export const ForecastsPageClient = () => {
         </TabsContent>
 
         {/* Reorder Alerts Tab */}
-        <TabsContent value="alerts" className="space-y-4">
+        <TabsContent className="space-y-4" value="alerts">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Reorder Alerts</span>
                 <Button
-                  size="sm"
-                  onClick={() => handleGenerateSuggestions(false)}
                   disabled={isGenerating}
+                  onClick={() => handleGenerateSuggestions(false)}
+                  size="sm"
                 >
-                  <RefreshCwIcon className={`mr-2 h-4 w-4 ${isGenerating ? "animate-spin" : ""}`} />
+                  <RefreshCwIcon
+                    className={`mr-2 h-4 w-4 ${isGenerating ? "animate-spin" : ""}`}
+                  />
                   Regenerate
                 </Button>
               </CardTitle>
@@ -520,15 +604,16 @@ export const ForecastsPageClient = () => {
                   <CheckCircle2Icon className="mb-4 h-12 w-12 text-green-500" />
                   <h3 className="text-lg font-semibold">All Clear!</h3>
                   <p className="text-sm text-muted-foreground">
-                    No reorder alerts at this time. All inventory is above reorder points.
+                    No reorder alerts at this time. All inventory is above
+                    reorder points.
                   </p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {allSuggestions.map((suggestion, index) => (
                     <div
-                      key={index}
                       className="flex items-start gap-4 rounded-lg border p-4"
+                      key={index}
                     >
                       <Badge variant={getUrgencyColor(suggestion.urgency)}>
                         {suggestion.urgency.toUpperCase()}
@@ -540,13 +625,16 @@ export const ForecastsPageClient = () => {
                         </div>
                         <div className="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-sm">
                           <span>
-                            <span className="font-medium">Current:</span> {suggestion.currentStock}
+                            <span className="font-medium">Current:</span>{" "}
+                            {suggestion.currentStock}
                           </span>
                           <span>
-                            <span className="font-medium">Reorder Point:</span> {suggestion.reorderPoint}
+                            <span className="font-medium">Reorder Point:</span>{" "}
+                            {suggestion.reorderPoint}
                           </span>
                           <span>
-                            <span className="font-medium">Lead Time:</span> {suggestion.leadTimeDays} days
+                            <span className="font-medium">Lead Time:</span>{" "}
+                            {suggestion.leadTimeDays} days
                           </span>
                           <span className="font-bold text-primary">
                             <span className="font-medium">Order:</span>{" "}

@@ -104,39 +104,62 @@ export async function GET(
         expiresAt: contract.expiresAt || undefined,
         createdAt: contract.createdAt,
       },
-      event: contract.event ? {
-        id: contract.event.id,
-        title: contract.event.title,
-        eventNumber: contract.event.eventNumber,
-        eventDate: contract.event.eventDate,
-        eventType: contract.event.eventType,
-        guestCount: contract.event.guestCount,
-        venueName: contract.event.venue?.name || contract.event.location?.name || contract.event.venueName || "Not specified",
-        venueAddress: contract.event.venue || contract.event.location ? {
-          addressLine1: contract.event.venue?.addressLine1 || contract.event.location?.addressLine1,
-          addressLine2: contract.event.venue?.addressLine2 || contract.event.location?.addressLine2,
-          city: contract.event.venue?.city || contract.event.location?.city,
-          stateProvince: contract.event.venue?.stateProvince || contract.event.location?.stateProvince,
-          postalCode: contract.event.venue?.postalCode || contract.event.location?.postalCode,
-          countryCode: contract.event.venue?.countryCode || contract.event.location?.countryCode,
-        } : contract.event.venueAddress || undefined,
-      } : undefined,
-      client: contract.client ? {
-        id: contract.client.id,
-        companyName: contract.client.company_name,
-        firstName: contract.client.first_name,
-        lastName: contract.client.last_name,
-        email: contract.client.email,
-        phone: contract.client.phone,
-        address: {
-          addressLine1: contract.client.addressLine1,
-          addressLine2: contract.client.addressLine2,
-          city: contract.client.city,
-          stateProvince: contract.client.stateProvince,
-          postalCode: contract.client.postalCode,
-          countryCode: contract.client.countryCode,
-        },
-      } : undefined,
+      event: contract.event
+        ? {
+            id: contract.event.id,
+            title: contract.event.title,
+            eventNumber: contract.event.eventNumber,
+            eventDate: contract.event.eventDate,
+            eventType: contract.event.eventType,
+            guestCount: contract.event.guestCount,
+            venueName:
+              contract.event.venue?.name ||
+              contract.event.location?.name ||
+              contract.event.venueName ||
+              "Not specified",
+            venueAddress:
+              contract.event.venue || contract.event.location
+                ? {
+                    addressLine1:
+                      contract.event.venue?.addressLine1 ||
+                      contract.event.location?.addressLine1,
+                    addressLine2:
+                      contract.event.venue?.addressLine2 ||
+                      contract.event.location?.addressLine2,
+                    city:
+                      contract.event.venue?.city ||
+                      contract.event.location?.city,
+                    stateProvince:
+                      contract.event.venue?.stateProvince ||
+                      contract.event.location?.stateProvince,
+                    postalCode:
+                      contract.event.venue?.postalCode ||
+                      contract.event.location?.postalCode,
+                    countryCode:
+                      contract.event.venue?.countryCode ||
+                      contract.event.location?.countryCode,
+                  }
+                : contract.event.venueAddress || undefined,
+          }
+        : undefined,
+      client: contract.client
+        ? {
+            id: contract.client.id,
+            companyName: contract.client.company_name,
+            firstName: contract.client.first_name,
+            lastName: contract.client.last_name,
+            email: contract.client.email,
+            phone: contract.client.phone,
+            address: {
+              addressLine1: contract.client.addressLine1,
+              addressLine2: contract.client.addressLine2,
+              city: contract.client.city,
+              stateProvince: contract.client.stateProvince,
+              postalCode: contract.client.postalCode,
+              countryCode: contract.client.countryCode,
+            },
+          }
+        : undefined,
       signatures: contract.signatures.map((sig) => ({
         id: sig.id,
         signerName: sig.signerName,

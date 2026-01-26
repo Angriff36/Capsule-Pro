@@ -1,10 +1,10 @@
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { requireTenantId } from "@/app/lib/tenant";
 import {
   calculateDepletionForecast,
   saveForecastToDatabase,
 } from "@/app/lib/inventory-forecasting";
+import { requireTenantId } from "@/app/lib/tenant";
 
 // GET /api/inventory/forecasts?sku={sku}&from={date}&to={date}&horizon={days}&save={true|false}
 // Returns: ForecastResult for the SKU with optional date range filter or new calculation
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 
     // If no date range, calculate new forecast using the forecasting service
     const horizonDays = searchParams.get("horizon")
-      ? parseInt(searchParams.get("horizon")!)
+      ? Number.parseInt(searchParams.get("horizon")!)
       : 30;
 
     const forecast = await calculateDepletionForecast({
@@ -62,7 +62,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Failed to fetch forecasts:", error);
     return NextResponse.json(
-      { error: "Failed to fetch forecasts", details: error instanceof Error ? error.message : "Unknown error" },
+      {
+        error: "Failed to fetch forecasts",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }

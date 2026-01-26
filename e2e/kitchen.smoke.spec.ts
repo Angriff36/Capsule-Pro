@@ -34,7 +34,9 @@ test.describe("Kitchen: route existence + no dead-ends (AUTH REQUIRED)", () => {
       expect(res?.status() ?? 200).not.toBe(404);
       await expect(page).not.toHaveTitle(/404/i);
       // Basic sanity: page has at least one main landmark or heading.
-      expect(await page.locator("main, [role='main'], h1").count()).toBeGreaterThan(0);
+      expect(
+        await page.locator("main, [role='main'], h1").count()
+      ).toBeGreaterThan(0);
     });
   }
 
@@ -47,11 +49,7 @@ test.describe("Kitchen: route existence + no dead-ends (AUTH REQUIRED)", () => {
     // - anchor with href
     // - button-like elements that navigate (data-href, role=link)
     const candidates = page.locator(
-      [
-        "a[href]",
-        "[role='link'][data-href]",
-        "button[data-href]",
-      ].join(",")
+      ["a[href]", "[role='link'][data-href]", "button[data-href]"].join(",")
     );
 
     const count = await candidates.count();

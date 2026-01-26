@@ -18,6 +18,15 @@ export class MetricsCollector {
   private readonly maxEntries: number;
   private readonly exportConfig?: MetricsExportConfig;
   private exportInterval?: ReturnType<typeof setInterval>;
+  private readonly exportStrategies: Record<
+    MetricsExportConfig["format"],
+    () => Promise<string> | string
+  > = {
+    json: () => JSON.stringify(this.entries, null, 2),
+    prometheus: () => this.exportToPrometheus(),
+    datadog: () => this.exportToDatadog(),
+    webhook: () => this.exportToWebhook(),
+  };
 
   constructor(options: MetricsCollectorOptions = {}) {
     this.maxEntries = options.maxEntries ?? 1000;
@@ -99,20 +108,13 @@ export class MetricsCollector {
       throw new Error("Export not configured");
     }
 
-    switch (this.exportConfig.format) {
-      case "json":
-        return JSON.stringify(this.entries, null, 2);
-      case "prometheus":
-        return this.exportToPrometheus();
-      case "datadog":
-        return this.exportToDatadog();
-      case "webhook":
-        return this.exportToWebhook();
-      default:
-        throw new Error(
-          `Unsupported export format: ${this.exportConfig.format}`
-        );
+    const strategy = this.exportStrategies[this.exportConfig.format];
+
+    if (!strategy) {
+      throw new Error(`Unsupported export format: ${this.exportConfig.format}`);
     }
+
+    return await strategy();
   }
 
   private startExportInterval(): void {

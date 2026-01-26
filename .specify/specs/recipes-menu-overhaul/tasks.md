@@ -137,7 +137,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check && pnpm dev:apps`
   - **Commit**: `feat(recipes): refactor recipe detail to tabbed layout`
 
-- [ ] T012 [US2] Build Costing tab content
+- [x] T012 [US2] Build Costing tab content
   - **Do**:
     1. Fetch ingredient costs from recipe_ingredients
     2. Display cost breakdown table

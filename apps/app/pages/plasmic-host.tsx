@@ -1,6 +1,6 @@
-import { PlasmicCanvasHost } from "@plasmicapp/react-web/lib/host"
-import "@/plasmic/register-components"
+import { PlasmicCanvasHost } from "@plasmicapp/react-web/lib/host";
+import "@/plasmic/register-components";
 
-const PlasmicHostPage = () => <PlasmicCanvasHost />
+const PlasmicHostPage = () => <PlasmicCanvasHost />;
 
-export default PlasmicHostPage
+export default PlasmicHostPage;

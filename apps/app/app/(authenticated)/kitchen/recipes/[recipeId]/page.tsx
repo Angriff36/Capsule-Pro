@@ -164,6 +164,8 @@ const RecipeDetailPage = async ({
     `
   );
 
+  const recipeVersionId = recipeVersion.length > 0 ? recipeVersion[0].version_id : null;
+
   // Fetch recipe steps
   const steps: RecipeStepRow[] = recipeVersion.length > 0
     ? await database.$queryRaw<RecipeStepRow[]>(
@@ -271,7 +273,11 @@ const RecipeDetailPage = async ({
         </div>
 
         {/* Recipe Detail Tabs */}
-        <RecipeDetailTabs recipe={recipe} ingredients={ingredients} />
+        <RecipeDetailTabs
+          recipe={recipe}
+          ingredients={ingredients}
+          recipeVersionId={recipeVersionId}
+        />
       </div>
     </>
   );

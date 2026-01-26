@@ -4,8 +4,9 @@ import { withLogging, withSentry } from "@repo/observability/next-config";
 import type { NextConfig } from "next";
 import { env } from "./env";
 
-const apiBaseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223")
-  .replace(/\/$/, "");
+const apiBaseUrl = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223"
+).replace(/\/$/, "");
 
 const rewrites: NextConfig["rewrites"] = async () => {
   const baseRewritesResult =

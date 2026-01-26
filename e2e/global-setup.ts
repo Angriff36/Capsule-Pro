@@ -94,17 +94,21 @@ export default async function globalSetup(config: FullConfig) {
       });
 
       if (attemptResponse.status === "complete") {
-        const createdSessionId = (attemptResponse as {
-          createdSessionId?: string;
-        }).createdSessionId;
+        const createdSessionId = (
+          attemptResponse as {
+            createdSessionId?: string;
+          }
+        ).createdSessionId;
 
         if (!createdSessionId) {
           throw new Error("Clerk did not return createdSessionId on success");
         }
 
-        await (clerk as {
-          setActive?: (args: { session: string }) => Promise<void>;
-        }).setActive?.({ session: createdSessionId });
+        await (
+          clerk as {
+            setActive?: (args: { session: string }) => Promise<void>;
+          }
+        ).setActive?.({ session: createdSessionId });
       }
 
       return attemptResponse.status;

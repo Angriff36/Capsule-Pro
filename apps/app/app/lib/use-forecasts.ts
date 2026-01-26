@@ -50,8 +50,8 @@ export interface SavedForecast {
  */
 export async function getDepletionForecast(
   sku: string,
-  horizonDays: number = 30,
-  save: boolean = false
+  horizonDays = 30,
+  save = false
 ): Promise<DepletionForecast> {
   const params = new URLSearchParams({
     sku,
@@ -135,8 +135,8 @@ export async function getBatchForecasts(
  */
 export async function getReorderSuggestions(
   sku?: string,
-  leadTimeDays: number = 7,
-  safetyStockDays: number = 3
+  leadTimeDays = 7,
+  safetyStockDays = 3
 ): Promise<ReorderSuggestion[]> {
   const params = new URLSearchParams();
   if (sku) params.set("sku", sku);
@@ -157,10 +157,14 @@ export async function getReorderSuggestions(
  */
 export async function generateReorderSuggestions(
   sku?: string,
-  leadTimeDays: number = 7,
-  safetyStockDays: number = 3,
-  save: boolean = false
-): Promise<{ success: boolean; count: number; suggestions: ReorderSuggestion[] }> {
+  leadTimeDays = 7,
+  safetyStockDays = 3,
+  save = false
+): Promise<{
+  success: boolean;
+  count: number;
+  suggestions: ReorderSuggestion[];
+}> {
   const response = await fetch("/api/inventory/reorder-suggestions", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -252,7 +256,7 @@ export function getDepletionText(daysUntilDepletion: number | null): string {
 
 // React Hook
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface UseForecastsOptions {
   sku?: string;
@@ -285,7 +289,8 @@ export function useForecasts(options: UseForecastsOptions = {}) {
         const data = await getDepletionForecast(skuToFetch, horizonDays);
         setForecast(data);
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to fetch forecast";
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch forecast";
         setError(message);
         toast.error(message);
       } finally {
@@ -301,10 +306,15 @@ export function useForecasts(options: UseForecastsOptions = {}) {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await getReorderSuggestions(skuToFetch, leadTimeDays, safetyStockDays);
+        const data = await getReorderSuggestions(
+          skuToFetch,
+          leadTimeDays,
+          safetyStockDays
+        );
         setSuggestions(data);
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to fetch suggestions";
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch suggestions";
         setError(message);
         toast.error(message);
       } finally {
@@ -316,16 +326,22 @@ export function useForecasts(options: UseForecastsOptions = {}) {
 
   // Generate new suggestions
   const generateSuggestions = useCallback(
-    async (skuToGenerate?: string, save: boolean = false) => {
+    async (skuToGenerate?: string, save = false) => {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await generateReorderSuggestions(skuToGenerate, leadTimeDays, safetyStockDays, save);
+        const data = await generateReorderSuggestions(
+          skuToGenerate,
+          leadTimeDays,
+          safetyStockDays,
+          save
+        );
         setSuggestions(data.suggestions);
         toast.success(`Generated ${data.count} reorder suggestions`);
         return data;
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to generate suggestions";
+        const message =
+          err instanceof Error ? err.message : "Failed to generate suggestions";
         setError(message);
         toast.error(message);
         throw err;

@@ -153,9 +153,12 @@ export async function GET(
         address: event.venue
           ? `${event.venue.addressLine1 || ""}${event.venue.addressLine2 ? " " + event.venue.addressLine2 : ""}${event.venue.city ? ", " + event.venue.city : ""}${event.venue.stateProvince ? ", " + event.venue.stateProvince : ""} ${event.venue.postalCode || ""}`.trim()
           : event.venueAddress || "Address not specified",
-        clientName: event.client?.company_name ||
-                     (event.client?.first_name && event.client?.last_name ? `${event.client.first_name} ${event.client.last_name}` : null) ||
-                     "Client not specified",
+        clientName:
+          event.client?.company_name ||
+          (event.client?.first_name && event.client?.last_name
+            ? `${event.client.first_name} ${event.client.last_name}`
+            : null) ||
+          "Client not specified",
       },
       tasks: tasks.map((task) => ({
         id: task.id,

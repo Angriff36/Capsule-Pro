@@ -10,12 +10,16 @@ export default defineConfig({
       enforce: "pre",
       resolveId(id, importer) {
         // Intercept imports to the database package (multiple patterns)
-        if (id === "@repo/database" ||
-            id === "C:\\Projects\\capsule-pro\\packages\\database" ||
-            id === "C:/Projects/capsule-pro/packages/database" ||
-            id.endsWith("\\packages\\database") ||
-            id.endsWith("/packages/database") ||
-            (importer && importer.includes("auto-assignment") && id.includes("database"))) {
+        if (
+          id === "@repo/database" ||
+          id === "C:\\Projects\\capsule-pro\\packages\\database" ||
+          id === "C:/Projects/capsule-pro/packages/database" ||
+          id.endsWith("\\packages\\database") ||
+          id.endsWith("/packages/database") ||
+          (importer &&
+            importer.includes("auto-assignment") &&
+            id.includes("database"))
+        ) {
           console.log(`[vitest-database-mock] INTERCEPTED database: ${id}`);
           return path.resolve(__dirname, "./test/mocks/@repo/database.ts");
         }
@@ -28,22 +32,30 @@ export default defineConfig({
           normalizedId.includes("packages/database/generated") ||
           normalizedId.endsWith("/generated/client") ||
           normalizedId.endsWith("\\generated\\client") ||
-          id === "C:\\Projects\\capsule-pro\\packages\\database\\generated\\client" ||
+          id ===
+            "C:\\Projects\\capsule-pro\\packages\\database\\generated\\client" ||
           id === "C:/Projects/capsule-pro/packages/database/generated/client" ||
           id.includes("packages\\database\\generated\\client") ||
           id.includes("packages/database/generated/client") ||
-          (importer && importer.includes("database") && id.includes("generated/client"))
+          (importer &&
+            importer.includes("database") &&
+            id.includes("generated/client"))
         ) {
           console.log(`[vitest-database-mock] INTERCEPTED client: ${id}`);
-          return path.resolve(__dirname, "./test/mocks/@repo/generated/client.ts");
+          return path.resolve(
+            __dirname,
+            "./test/mocks/@repo/generated/client.ts"
+          );
         }
         return undefined;
       },
       load(id) {
         // Intercept loading of the actual database index.ts file
-        if (id.includes("\\packages\\database\\index.ts") ||
-            id.includes("/packages/database/index.ts") ||
-            id.includes("packages/database/index.js")) {
+        if (
+          id.includes("\\packages\\database\\index.ts") ||
+          id.includes("/packages/database/index.ts") ||
+          id.includes("packages/database/index.js")
+        ) {
           console.log(`[vitest-database-mock] LOAD intercepted: ${id}`);
           // Return the mock content directly instead of loading the actual file
           return `

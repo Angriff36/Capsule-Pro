@@ -117,7 +117,9 @@ export async function GET(request: Request) {
     }
 
     if (search) {
-      whereConditions.push(`(title ILIKE $${paramIndex++} OR event_number ILIKE $${paramIndex++})`);
+      whereConditions.push(
+        `(title ILIKE $${paramIndex++} OR event_number ILIKE $${paramIndex++})`
+      );
       queryParams.push(`%${search}%`, `%${search}%`);
     }
 
@@ -166,7 +168,10 @@ export async function GET(request: Request) {
     );
 
     if (events.length === 0) {
-      return NextResponse.json({ error: "No events found matching criteria" }, { status: 404 });
+      return NextResponse.json(
+        { error: "No events found matching criteria" },
+        { status: 404 }
+      );
     }
 
     // Build CSV content
@@ -206,17 +211,19 @@ export async function GET(request: Request) {
     csvRows.push("Summary");
     csvRows.push(`Total Events Exported,${events.length}`);
     csvRows.push(`Export Date,${formatDateForCSV(new Date())}`);
-    csvRows.push(`Filters Applied,${Object.entries({
-      start_date: startDate || "N/A",
-      end_date: endDate || "N/A",
-      status: status || "N/A",
-      event_type: eventType || "N/A",
-      venue_id: venueId || "N/A",
-      search: search || "N/A",
-    })
-      .filter(([_, v]) => v !== "N/A")
-      .map(([k, v]) => `${k}: ${v}`)
-      .join("; ")}`);
+    csvRows.push(
+      `Filters Applied,${Object.entries({
+        start_date: startDate || "N/A",
+        end_date: endDate || "N/A",
+        status: status || "N/A",
+        event_type: eventType || "N/A",
+        venue_id: venueId || "N/A",
+        search: search || "N/A",
+      })
+        .filter(([_, v]) => v !== "N/A")
+        .map(([k, v]) => `${k}: ${v}`)
+        .join("; ")}`
+    );
 
     // Combine rows with newlines
     const csvContent = csvRows.join("\n");

@@ -117,21 +117,21 @@ function IngredientRow({
     <div className="flex items-start gap-2 p-3 border rounded-md">
       <div className="flex flex-col gap-1">
         <Button
+          className="h-6 w-6"
+          disabled={index === 0}
+          onClick={() => onMoveUp(index)}
+          size="icon"
           type="button"
           variant="ghost"
-          size="icon"
-          className="h-6 w-6"
-          onClick={() => onMoveUp(index)}
-          disabled={index === 0}
         >
           ↑
         </Button>
         <Button
-          type="button"
-          variant="ghost"
-          size="icon"
           className="h-6 w-6"
           onClick={() => onMoveDown(index)}
+          size="icon"
+          type="button"
+          variant="ghost"
         >
           ↓
         </Button>
@@ -139,29 +139,29 @@ function IngredientRow({
       <div className="flex-1 grid grid-cols-12 gap-2">
         <Input
           className="col-span-3"
+          onChange={(e) => onUpdate(index, "quantity", e.target.value)}
           placeholder="Qty"
           value={ingredient.quantity}
-          onChange={(e) => onUpdate(index, "quantity", e.target.value)}
         />
         <Input
           className="col-span-3"
+          onChange={(e) => onUpdate(index, "unit", e.target.value)}
           placeholder="Unit"
           value={ingredient.unit}
-          onChange={(e) => onUpdate(index, "unit", e.target.value)}
         />
         <Input
           className="col-span-5"
+          onChange={(e) => onUpdate(index, "name", e.target.value)}
           placeholder="Ingredient name"
           value={ingredient.name}
-          onChange={(e) => onUpdate(index, "name", e.target.value)}
         />
         <Button
-          type="button"
-          variant="ghost"
-          size="icon"
           className="col-span-1 h-9 w-9 text-destructive hover:text-destructive"
           onClick={() => onRemove(index)}
+          size="icon"
           title="Remove ingredient"
+          type="button"
+          variant="ghost"
         >
           ×
         </Button>
@@ -190,43 +190,45 @@ function StepRow({
     <div className="flex items-start gap-2 p-3 border rounded-md">
       <div className="flex flex-col gap-1">
         <Button
+          className="h-6 w-6"
+          disabled={index === 0}
+          onClick={() => onMoveUp(index)}
+          size="icon"
           type="button"
           variant="ghost"
-          size="icon"
-          className="h-6 w-6"
-          onClick={() => onMoveUp(index)}
-          disabled={index === 0}
         >
           ↑
         </Button>
         <Button
-          type="button"
-          variant="ghost"
-          size="icon"
           className="h-6 w-6"
           onClick={() => onMoveDown(index)}
+          size="icon"
+          type="button"
+          variant="ghost"
         >
           ↓
         </Button>
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2 mb-2">
-          <Label className="text-sm text-muted-foreground">Step {index + 1}</Label>
+          <Label className="text-sm text-muted-foreground">
+            Step {index + 1}
+          </Label>
         </div>
         <Textarea
           className="w-full"
+          onChange={(e) => onUpdate(index, "instruction", e.target.value)}
           placeholder="Enter instruction for this step"
           rows={3}
           value={step.instruction}
-          onChange={(e) => onUpdate(index, "instruction", e.target.value)}
         />
         <Button
-          type="button"
-          variant="ghost"
-          size="sm"
           className="mt-2 text-destructive hover:text-destructive"
           onClick={() => onRemove(index)}
+          size="sm"
           title="Remove step"
+          type="button"
+          variant="ghost"
         >
           Remove Step
         </Button>
@@ -234,7 +236,6 @@ function StepRow({
     </div>
   );
 }
-
 
 /** Reusable time input field */
 function TimeInput({
@@ -290,10 +291,7 @@ export const RecipeEditModal = ({
   };
 
   const handleAddIngredient = () => {
-    setIngredients([
-      ...ingredients,
-      { name: "", quantity: "", unit: "" },
-    ]);
+    setIngredients([...ingredients, { name: "", quantity: "", unit: "" }]);
   };
 
   const handleRemoveIngredient = (index: number) => {
@@ -322,11 +320,9 @@ export const RecipeEditModal = ({
     const updated = [...ingredients];
     [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
     setIngredients(updated);
-  };  const handleAddStep = () => {
-    setSteps([
-      ...steps,
-      { instruction: "", step_number: steps.length + 1 },
-    ]);
+  };
+  const handleAddStep = () => {
+    setSteps([...steps, { instruction: "", step_number: steps.length + 1 }]);
   };
 
   const handleRemoveStep = (index: number) => {
@@ -361,8 +357,6 @@ export const RecipeEditModal = ({
     [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
     setSteps(updated);
   };
-
-
 
   const handleSubmit = async (formData: FormData) => {
     if (!onSave) {
@@ -478,9 +472,9 @@ export const RecipeEditModal = ({
               <Label className="font-medium text-base">Ingredients</Label>
               <Button
                 onClick={handleAddIngredient}
+                size="sm"
                 type="button"
                 variant="outline"
-                size="sm"
               >
                 Add Ingredient
               </Button>
@@ -489,13 +483,13 @@ export const RecipeEditModal = ({
               <div className="space-y-2">
                 {ingredients.map((ingredient, index) => (
                   <IngredientRow
-                    key={index}
-                    ingredient={ingredient}
                     index={index}
-                    onUpdate={handleUpdateIngredient}
-                    onRemove={handleRemoveIngredient}
-                    onMoveUp={(index) => handleMoveIngredient(index, "up")}
+                    ingredient={ingredient}
+                    key={index}
                     onMoveDown={(index) => handleMoveIngredient(index, "down")}
+                    onMoveUp={(index) => handleMoveIngredient(index, "up")}
+                    onRemove={handleRemoveIngredient}
+                    onUpdate={handleUpdateIngredient}
                   />
                 ))}
               </div>
@@ -513,9 +507,9 @@ export const RecipeEditModal = ({
               <Label className="font-medium text-base">Steps</Label>
               <Button
                 onClick={handleAddStep}
+                size="sm"
                 type="button"
                 variant="outline"
-                size="sm"
               >
                 Add Step
               </Button>
@@ -524,13 +518,13 @@ export const RecipeEditModal = ({
               <div className="space-y-2">
                 {steps.map((step, index) => (
                   <StepRow
-                    key={index}
-                    step={step}
                     index={index}
-                    onUpdate={handleUpdateStep}
-                    onRemove={handleRemoveStep}
-                    onMoveUp={(index) => handleMoveStep(index, "up")}
+                    key={index}
                     onMoveDown={(index) => handleMoveStep(index, "down")}
+                    onMoveUp={(index) => handleMoveStep(index, "up")}
+                    onRemove={handleRemoveStep}
+                    onUpdate={handleUpdateStep}
+                    step={step}
                   />
                 ))}
               </div>
@@ -541,7 +535,6 @@ export const RecipeEditModal = ({
               </p>
             )}
           </div>
-
 
           {/* Yield section */}
           <div className="space-y-4">

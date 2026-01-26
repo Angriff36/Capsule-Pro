@@ -24,13 +24,13 @@ const WAREHOUSE_ROUTES = [
 ];
 
 // Routes that warehouse dashboard links to
-const LINKED_ROUTES = [
-  "/inventory/items",
-];
+const LINKED_ROUTES = ["/inventory/items"];
 
 test.describe("Warehouse Dashboard", () => {
   test("unauthenticated users do not see a 404", async ({ page }) => {
-    const res = await page.goto(WAREHOUSE_ENTRY, { waitUntil: "domcontentloaded" });
+    const res = await page.goto(WAREHOUSE_ENTRY, {
+      waitUntil: "domcontentloaded",
+    });
     expect(res).not.toBeNull();
     expect(res!.status()).not.toBe(404);
     await expect(page).not.toHaveTitle(/404/i);
@@ -43,7 +43,9 @@ test.describe("Warehouse Dashboard", () => {
         expect(res?.status() ?? 200).not.toBe(404);
         await expect(page).not.toHaveTitle(/404/i);
         // Page has at least one main landmark or heading
-        expect(await page.locator("main, [role='main'], h1").count()).toBeGreaterThan(0);
+        expect(
+          await page.locator("main, [role='main'], h1").count()
+        ).toBeGreaterThan(0);
       });
     }
   });
@@ -88,15 +90,21 @@ test.describe("Warehouse Dashboard", () => {
       await page.goto(WAREHOUSE_ENTRY, { waitUntil: "domcontentloaded" });
 
       // Find refresh link
-      const refreshLink = page.locator("a[href='/warehouse']").filter({ hasText: /refresh/i });
+      const refreshLink = page
+        .locator("a[href='/warehouse']")
+        .filter({ hasText: /refresh/i });
       expect(await refreshLink.count()).toBeGreaterThan(0);
     });
 
-    test("receive stock button exists and links to receiving", async ({ page }) => {
+    test("receive stock button exists and links to receiving", async ({
+      page,
+    }) => {
       await page.goto(WAREHOUSE_ENTRY, { waitUntil: "domcontentloaded" });
 
       // Find receive stock link
-      const receiveLink = page.locator("a[href='/warehouse/receiving']").filter({ hasText: /receive/i });
+      const receiveLink = page
+        .locator("a[href='/warehouse/receiving']")
+        .filter({ hasText: /receive/i });
       expect(await receiveLink.count()).toBeGreaterThan(0);
     });
   });
@@ -115,10 +123,15 @@ test.describe("Warehouse Dashboard", () => {
       ];
 
       for (const { href, text } of quickActionLinks) {
-        const link = page.locator(`a[href='${href}']`).filter({ hasText: text }).first();
+        const link = page
+          .locator(`a[href='${href}']`)
+          .filter({ hasText: text })
+          .first();
         if (await link.isVisible()) {
           const res = await page.goto(href, { waitUntil: "domcontentloaded" });
-          expect(res?.status() ?? 200, `Link ${href} returned 404`).not.toBe(404);
+          expect(res?.status() ?? 200, `Link ${href} returned 404`).not.toBe(
+            404
+          );
           await expect(page).not.toHaveTitle(/404/i);
         }
       }
@@ -142,7 +155,8 @@ test.describe("Warehouse Dashboard", () => {
         if (href.includes("highlight=") || href.includes("filter=")) continue; // skip query params that need data
         if (href.includes("?po=")) continue; // skip PO links that need specific data
         if (href.includes("webhook")) continue; // skip webhook endpoints
-        if (!href.startsWith("/warehouse") && !href.startsWith("/inventory")) continue; // only test warehouse-related routes
+        if (!(href.startsWith("/warehouse") || href.startsWith("/inventory")))
+          continue; // only test warehouse-related routes
         hrefs.add(href);
       }
 
@@ -171,7 +185,9 @@ test.describe("Warehouse Dashboard", () => {
       await expect(recentActivityCard).toBeVisible();
 
       // Check for Pending Purchase Orders section
-      const pendingOrdersCard = page.locator("text=Pending Purchase Orders").first();
+      const pendingOrdersCard = page
+        .locator("text=Pending Purchase Orders")
+        .first();
       await expect(pendingOrdersCard).toBeVisible();
     });
 

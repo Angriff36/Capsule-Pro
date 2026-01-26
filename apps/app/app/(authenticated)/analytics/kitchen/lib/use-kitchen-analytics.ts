@@ -113,10 +113,7 @@ export const parseKitchenAnalyticsResponse = (
     payload.stationThroughput,
     "payload.stationThroughput"
   ).map((station, index) => {
-    const record = expectRecord(
-      station,
-      `payload.stationThroughput[${index}]`
-    );
+    const record = expectRecord(station, `payload.stationThroughput[${index}]`);
     return {
       stationId: expectString(
         record.stationId,
@@ -237,10 +234,7 @@ export const parseKitchenAnalyticsResponse = (
       locationId:
         summary.locationId === null
           ? null
-          : expectString(
-              summary.locationId,
-              "payload.summary.locationId"
-            ),
+          : expectString(summary.locationId, "payload.summary.locationId"),
     },
     stationThroughput,
     kitchenHealth: {

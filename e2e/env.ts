@@ -52,10 +52,7 @@ function parseEnvLine(
     : trimmed;
 
   const equalsIndex = withoutExport.indexOf("=");
-  invariant(
-    equalsIndex > 0,
-    `${sourceLabel}:${lineNumber} must be KEY=VALUE`
-  );
+  invariant(equalsIndex > 0, `${sourceLabel}:${lineNumber} must be KEY=VALUE`);
 
   const rawKey = withoutExport.slice(0, equalsIndex).trim();
   invariant(

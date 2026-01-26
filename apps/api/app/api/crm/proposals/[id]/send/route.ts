@@ -193,7 +193,7 @@ export async function POST(request: Request, { params }: RouteParams) {
           }).format(
             lineItems.reduce(
               (sum, item) =>
-              sum + Number(item.quantity || 0) * Number(item.unitPrice || 0),
+                sum + Number(item.quantity || 0) * Number(item.unitPrice || 0),
               0
             )
           )

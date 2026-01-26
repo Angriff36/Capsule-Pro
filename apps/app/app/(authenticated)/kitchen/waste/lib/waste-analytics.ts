@@ -90,10 +90,7 @@ export const parseWasteTrendsResponse = (payload: unknown): WasteTrendsData => {
     trends.topReasons,
     "payload.trends.topReasons"
   ).map((item, index) => {
-    const record = expectRecord(
-      item,
-      `payload.trends.topReasons[${index}]`
-    );
+    const record = expectRecord(item, `payload.trends.topReasons[${index}]`);
     const reason = expectRecord(
       record.reason,
       `payload.trends.topReasons[${index}].reason`

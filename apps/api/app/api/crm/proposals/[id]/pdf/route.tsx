@@ -102,51 +102,78 @@ export async function GET(
         venueName: proposal.venueName,
         venueAddress: proposal.venueAddress,
       },
-      client: proposal.client ? {
-        id: proposal.client.id,
-        companyName: proposal.client.company_name,
-        firstName: proposal.client.first_name,
-        lastName: proposal.client.last_name,
-        email: proposal.client.email,
-        phone: proposal.client.phone,
-        address: {
-          addressLine1: proposal.client.addressLine1,
-          addressLine2: proposal.client.addressLine2,
-          city: proposal.client.city,
-          stateProvince: proposal.client.stateProvince,
-          postalCode: proposal.client.postalCode,
-          countryCode: proposal.client.countryCode,
-        },
-      } : undefined,
-      lead: proposal.lead ? {
-        id: proposal.lead.id,
-        companyName: proposal.lead.companyName,
-        contactName: proposal.lead.contactName,
-        contactEmail: proposal.lead.contactEmail,
-        contactPhone: proposal.lead.contactPhone,
-        eventType: proposal.lead.eventType,
-        eventDate: proposal.lead.eventDate,
-        estimatedGuests: proposal.lead.estimatedGuests,
-        estimatedValue: proposal.lead.estimatedValue ? Number(proposal.lead.estimatedValue) : undefined,
-      } : undefined,
-      event: proposal.event ? {
-        id: proposal.event.id,
-        title: proposal.event.title,
-        eventNumber: proposal.event.eventNumber,
-        eventDate: proposal.event.eventDate,
-        eventType: proposal.event.eventType,
-        guestCount: proposal.event.guestCount,
-        venueName: proposal.event.venue?.name || proposal.event.location?.name || proposal.event.venueName || "Not specified",
-        venueAddress: proposal.event.venue || proposal.event.location ? {
-          addressLine1: proposal.event.venue?.addressLine1 || proposal.event.location?.addressLine1,
-          addressLine2: proposal.event.venue?.addressLine2 || proposal.event.location?.addressLine2,
-          city: proposal.event.venue?.city || proposal.event.location?.city,
-          stateProvince: proposal.event.venue?.stateProvince || proposal.event.location?.stateProvince,
-          postalCode: proposal.event.venue?.postalCode || proposal.event.location?.postalCode,
-          countryCode: proposal.event.venue?.countryCode || proposal.event.location?.countryCode,
-        } : proposal.event.venueAddress || undefined,
-        status: proposal.event.status,
-      } : undefined,
+      client: proposal.client
+        ? {
+            id: proposal.client.id,
+            companyName: proposal.client.company_name,
+            firstName: proposal.client.first_name,
+            lastName: proposal.client.last_name,
+            email: proposal.client.email,
+            phone: proposal.client.phone,
+            address: {
+              addressLine1: proposal.client.addressLine1,
+              addressLine2: proposal.client.addressLine2,
+              city: proposal.client.city,
+              stateProvince: proposal.client.stateProvince,
+              postalCode: proposal.client.postalCode,
+              countryCode: proposal.client.countryCode,
+            },
+          }
+        : undefined,
+      lead: proposal.lead
+        ? {
+            id: proposal.lead.id,
+            companyName: proposal.lead.companyName,
+            contactName: proposal.lead.contactName,
+            contactEmail: proposal.lead.contactEmail,
+            contactPhone: proposal.lead.contactPhone,
+            eventType: proposal.lead.eventType,
+            eventDate: proposal.lead.eventDate,
+            estimatedGuests: proposal.lead.estimatedGuests,
+            estimatedValue: proposal.lead.estimatedValue
+              ? Number(proposal.lead.estimatedValue)
+              : undefined,
+          }
+        : undefined,
+      event: proposal.event
+        ? {
+            id: proposal.event.id,
+            title: proposal.event.title,
+            eventNumber: proposal.event.eventNumber,
+            eventDate: proposal.event.eventDate,
+            eventType: proposal.event.eventType,
+            guestCount: proposal.event.guestCount,
+            venueName:
+              proposal.event.venue?.name ||
+              proposal.event.location?.name ||
+              proposal.event.venueName ||
+              "Not specified",
+            venueAddress:
+              proposal.event.venue || proposal.event.location
+                ? {
+                    addressLine1:
+                      proposal.event.venue?.addressLine1 ||
+                      proposal.event.location?.addressLine1,
+                    addressLine2:
+                      proposal.event.venue?.addressLine2 ||
+                      proposal.event.location?.addressLine2,
+                    city:
+                      proposal.event.venue?.city ||
+                      proposal.event.location?.city,
+                    stateProvince:
+                      proposal.event.venue?.stateProvince ||
+                      proposal.event.location?.stateProvince,
+                    postalCode:
+                      proposal.event.venue?.postalCode ||
+                      proposal.event.location?.postalCode,
+                    countryCode:
+                      proposal.event.venue?.countryCode ||
+                      proposal.event.location?.countryCode,
+                  }
+                : proposal.event.venueAddress || undefined,
+            status: proposal.event.status,
+          }
+        : undefined,
       lineItems: proposal.lineItems.map((item) => ({
         id: item.id,
         category: item.category,

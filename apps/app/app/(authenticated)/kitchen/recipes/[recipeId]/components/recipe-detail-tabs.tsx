@@ -13,7 +13,12 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
-import { ChefHat, Clock, Users } from "lucide-react";
+import { ChefHat, Clock, DollarSign, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  getRecipeCostSummary,
+  type RecipeCostBreakdown,
+} from "@/app/lib/recipe-costing";
 
 type RecipeDetailRow = {
   id: string;
@@ -44,15 +49,199 @@ type IngredientRow = {
 type RecipeDetailTabsProps = {
   recipe: RecipeDetailRow;
   ingredients: IngredientRow[];
+  recipeVersionId: string | null;
 };
 
 const formatMinutes = (minutes?: number | null) =>
   minutes && minutes > 0 ? `${minutes}m` : "-";
 
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(value);
+
+function CostingTabContent({
+  recipeVersionId,
+  loading,
+  hasCostData,
+  costData,
+  yield_unit,
+}: {
+  recipeVersionId: string | null;
+  loading: boolean;
+  hasCostData: boolean;
+  costData: RecipeCostBreakdown | null;
+  yield_unit: string | null;
+}) {
+  if (!recipeVersionId) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Costing</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            No recipe version available for costing calculation.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Costing</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Loading cost data...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!hasCostData) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Costing</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <DollarSign className="mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="mb-2 text-lg font-semibold">Costs not calculated</h3>
+            <p className="text-sm text-muted-foreground">
+              Add ingredients with inventory costs to see cost breakdown.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <>
+      {/* Cost Summary Cards */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardContent className="flex items-center gap-3 pt-6">
+            <DollarSign className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <div className="text-sm text-muted-foreground">Total Cost</div>
+              <div className="font-semibold">
+                {formatCurrency(costData?.totalCost || 0)}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 pt-6">
+            <Users className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <div className="text-sm text-muted-foreground">
+                Cost per {yield_unit || "Yield"}
+              </div>
+              <div className="font-semibold">
+                {formatCurrency(costData?.costPerYield || 0)}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 pt-6">
+            <ChefHat className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <div className="text-sm text-muted-foreground">
+                Cost per Serving
+              </div>
+              <div className="font-semibold">
+                {formatCurrency(
+                  costData?.costPerPortion || costData?.costPerYield || 0
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Cost Breakdown Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Ingredient Costs</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {costData?.ingredients.map((ingredient) => (
+              <div
+                className="flex items-center justify-between rounded-lg border p-3"
+                key={ingredient.id}
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{ingredient.name}</span>
+                    {!ingredient.hasInventoryItem && (
+                      <Badge className="text-xs" variant="outline">
+                        No cost data
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {ingredient.quantity} {ingredient.unit} ×{" "}
+                    {formatCurrency(ingredient.unitCost)}
+                    {ingredient.wasteFactor !== 1 &&
+                      ` (with ${(ingredient.wasteFactor * 100).toFixed(
+                        0
+                      )}% waste factor)`}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-semibold">
+                    {formatCurrency(ingredient.cost)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </>
+  );
+}
+
 export function RecipeDetailTabs({
   recipe,
   ingredients,
+  recipeVersionId,
 }: RecipeDetailTabsProps) {
+  const [costData, setCostData] = useState<RecipeCostBreakdown | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!recipeVersionId) {
+      setCostData(null);
+      return;
+    }
+
+    const fetchCostData = async () => {
+      setLoading(true);
+      try {
+        const data = await getRecipeCostSummary(recipeVersionId);
+        setCostData(data);
+      } catch (error) {
+        console.error("Failed to fetch cost data:", error);
+        setCostData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCostData();
+  }, [recipeVersionId]);
+
+  const hasCostData = costData && costData.ingredients.length > 0;
+
   return (
     <Tabs className="w-full" defaultValue="overview">
       <TabsList className="grid w-full grid-cols-5">
@@ -208,16 +397,13 @@ export function RecipeDetailTabs({
       </TabsContent>
 
       <TabsContent className="space-y-4" value="costing">
-        <Card>
-          <CardHeader>
-            <CardTitle>Costing</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Cost breakdown will be displayed here.
-            </p>
-          </CardContent>
-        </Card>
+        <CostingTabContent
+          costData={costData}
+          hasCostData={hasCostData}
+          loading={loading}
+          recipeVersionId={recipeVersionId}
+          yield_unit={recipe.yield_unit}
+        />
       </TabsContent>
 
       <TabsContent className="space-y-4" value="history">

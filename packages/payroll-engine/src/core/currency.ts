@@ -151,18 +151,17 @@ export function sumCurrency(amounts: Currency[]): Currency {
 /**
  * Format date for payroll exports
  */
-export function formatDate(
-  date: Date,
-  format: "iso" | "us" | "qb" = "iso"
-): string {
-  switch (format) {
-    case "iso":
-      return date.toISOString().split("T")[0];
-    case "us":
-      return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
-    case "qb":
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-    default:
-      return date.toISOString().split("T")[0];
-  }
+type DateFormat = "iso" | "us" | "qb";
+
+const dateFormatters: Record<DateFormat, (date: Date) => string> = {
+  iso: (date) => date.toISOString().split("T")[0],
+  us: (date) =>
+    `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+  qb: (date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`,
+};
+
+export function formatDate(date: Date, format: DateFormat = "iso"): string {
+  const formatter = dateFormatters[format] ?? dateFormatters.iso;
+  return formatter(date);
 }

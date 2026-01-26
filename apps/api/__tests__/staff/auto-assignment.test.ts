@@ -6,16 +6,14 @@
  * skills, seniority, and labor budget.
  */
 
+import { database } from "@repo/database";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
 import {
   autoAssignShift,
   getAssignmentSuggestionsForMultipleShifts,
   getEligibleEmployeesForShift,
   type ShiftRequirement,
 } from "@/lib/staff/auto-assignment";
-
-import { database } from "@repo/database";
 
 describe("Auto-Assignment Service", () => {
   const mockTenantId = "tenant-123";

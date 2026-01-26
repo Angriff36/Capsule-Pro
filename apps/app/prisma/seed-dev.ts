@@ -42,10 +42,7 @@ const resolveAccount = async (): Promise<AccountRecord> => {
     const account = await prisma.account.findUnique({
       where: { id: seedTenantId },
     });
-    invariant(
-      account,
-      `No account found for SEED_TENANT_ID=${seedTenantId}`
-    );
+    invariant(account, `No account found for SEED_TENANT_ID=${seedTenantId}`);
     return {
       id: account.id,
       slug: account.slug,
@@ -254,18 +251,18 @@ const ensureEventProfitability = async (
     data: events.map((event, index) => ({
       tenantId,
       eventId: event.id,
-      budgetedRevenue: decimal(index === 0 ? 85000 : 24000),
-      actualRevenue: decimal(index === 0 ? 91000 : 21000),
-      budgetedFoodCost: decimal(index === 0 ? 22000 : 6000),
-      actualFoodCost: decimal(index === 0 ? 23500 : 5800),
-      budgetedLaborCost: decimal(index === 0 ? 15000 : 4500),
-      actualLaborCost: decimal(index === 0 ? 16500 : 4200),
+      budgetedRevenue: decimal(index === 0 ? 85_000 : 24_000),
+      actualRevenue: decimal(index === 0 ? 91_000 : 21_000),
+      budgetedFoodCost: decimal(index === 0 ? 22_000 : 6000),
+      actualFoodCost: decimal(index === 0 ? 23_500 : 5800),
+      budgetedLaborCost: decimal(index === 0 ? 15_000 : 4500),
+      actualLaborCost: decimal(index === 0 ? 16_500 : 4200),
       budgetedOverhead: decimal(index === 0 ? 8000 : 2000),
       actualOverhead: decimal(index === 0 ? 7500 : 1800),
-      budgetedTotalCost: decimal(index === 0 ? 45000 : 12500),
-      actualTotalCost: decimal(index === 0 ? 47800 : 11800),
-      budgetedGrossMargin: decimal(index === 0 ? 40000 : 11500),
-      actualGrossMargin: decimal(index === 0 ? 43200 : 9200),
+      budgetedTotalCost: decimal(index === 0 ? 45_000 : 12_500),
+      actualTotalCost: decimal(index === 0 ? 47_800 : 11_800),
+      budgetedGrossMargin: decimal(index === 0 ? 40_000 : 11_500),
+      actualGrossMargin: decimal(index === 0 ? 43_200 : 9200),
       budgetedGrossMarginPct: decimal(index === 0 ? 47.1 : 47.9),
       actualGrossMarginPct: decimal(index === 0 ? 47.5 : 43.8),
     })),
@@ -677,7 +674,7 @@ const ensureCRMRecords = async (
         eventId,
         title: "Seeded Proposal",
         status: "draft",
-        total: decimal(12500),
+        total: decimal(12_500),
       },
     });
   }
@@ -719,17 +716,17 @@ const main = async () => {
     recipeSeed.unitCode,
     recipeSeed.ingredients
   );
-  await ensurePrepTasks(
-    tenantId,
-    events[0].id,
-    location.id,
-    recipeSeed.unitId
-  );
+  await ensurePrepTasks(tenantId, events[0].id, location.id, recipeSeed.unitId);
   await ensureKitchenTasks(tenantId);
 
   const inventoryItem = await ensureInventory(tenantId);
   const wasteReason = await ensureWasteReason();
-  await ensureWasteEntry(tenantId, inventoryItem.id, wasteReason.id, users[0].id);
+  await ensureWasteEntry(
+    tenantId,
+    inventoryItem.id,
+    wasteReason.id,
+    users[0].id
+  );
 
   await ensureAllergenWarning(tenantId, events[0].id, recipeSeed.dish.id);
   await ensureSchedule(tenantId, location.id, users[0].id);

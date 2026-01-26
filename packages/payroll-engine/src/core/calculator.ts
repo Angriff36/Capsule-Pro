@@ -17,6 +17,14 @@ function invariant(condition: unknown, message: string): asserts condition {
   }
 }
 
+type RoundingRule = "nearest_quarter" | "nearest_tenth" | "none";
+
+const roundingStrategies: Record<RoundingRule, (hours: number) => number> = {
+  nearest_quarter: (hours) => Math.round(hours * 4) / 4,
+  nearest_tenth: (hours) => Math.round(hours * 10) / 10,
+  none: (hours) => hours,
+};
+
 /**
  * Generate a deterministic UUID based on periodId and employeeId
  * This ensures idempotent payroll record generation
@@ -39,20 +47,50 @@ function generatePayrollRecordId(periodId: string, employeeId: string): string {
 /**
  * Round hours according to rounding rule
  */
-function roundHours(
-  hours: number,
-  rule: "nearest_quarter" | "nearest_tenth" | "none"
-): number {
-  switch (rule) {
-    case "nearest_quarter":
-      return Math.round(hours * 4) / 4;
-    case "nearest_tenth":
-      return Math.round(hours * 10) / 10;
-    case "none":
-    default:
-      return hours;
-  }
+function roundHours(hours: number, rule: RoundingRule): number {
+  const strategy = roundingStrategies[rule] ?? roundingStrategies.none;
+  return strategy(hours);
 }
+
+type TipAllocationContext = {
+  pool: TipPool;
+  employeeId: string;
+  employeeHours: number;
+  totalHoursAllEmployees: number;
+  employeeCount: number;
+};
+
+type TipAllocationStrategy = (context: TipAllocationContext) => Currency;
+
+const tipAllocationStrategies: Record<
+  TipPool["allocationRule"],
+  TipAllocationStrategy
+> = {
+  by_hours: ({
+    pool,
+    employeeHours,
+    totalHoursAllEmployees,
+  }: TipAllocationContext) => {
+    if (totalHoursAllEmployees <= 0) {
+      return Currency.zero();
+    }
+    const share = employeeHours / totalHoursAllEmployees;
+    return money(pool.totalTips).multiply(share);
+  },
+  by_headcount: ({ pool, employeeCount }: TipAllocationContext) => {
+    if (employeeCount <= 0) {
+      return Currency.zero();
+    }
+    return money(pool.totalTips).divide(employeeCount);
+  },
+  fixed_shares: ({ pool, employeeId }: TipAllocationContext) => {
+    const sharePercentage = pool.fixedShares?.[employeeId];
+    if (!sharePercentage) {
+      return Currency.zero();
+    }
+    return money(pool.totalTips).percentage(sharePercentage);
+  },
+};
 
 /**
  * Aggregate time entries for an employee in a period
@@ -96,31 +134,20 @@ function calculateTipAllocation(
   for (const pool of tipPools) {
     if (pool.totalTips <= 0) continue;
 
-    switch (pool.allocationRule) {
-      case "by_hours":
-        if (totalHoursAllEmployees > 0) {
-          const share = employeeHours / totalHoursAllEmployees;
-          totalTips = totalTips.add(money(pool.totalTips).multiply(share));
-        }
-        break;
-
-      case "by_headcount":
-        if (employeeCount > 0) {
-          totalTips = totalTips.add(
-            money(pool.totalTips).divide(employeeCount)
-          );
-        }
-        break;
-
-      case "fixed_shares":
-        if (pool.fixedShares && pool.fixedShares[employeeId]) {
-          const sharePercentage = pool.fixedShares[employeeId];
-          totalTips = totalTips.add(
-            money(pool.totalTips).percentage(sharePercentage)
-          );
-        }
-        break;
-    }
+    const strategy = tipAllocationStrategies[pool.allocationRule];
+    invariant(
+      strategy,
+      `Unsupported tip allocation rule: ${pool.allocationRule}`
+    );
+    totalTips = totalTips.add(
+      strategy({
+        pool,
+        employeeId,
+        employeeHours,
+        totalHoursAllEmployees,
+        employeeCount,
+      })
+    );
   }
 
   return totalTips;
@@ -383,18 +410,9 @@ export class PayrollRecordBuilder {
   build(): PayrollRecord {
     invariant(this.employee, "PayrollRecordBuilder.employee must be set");
     invariant(this.role, "PayrollRecordBuilder.role must be set");
-    invariant(
-      this.timeEntries,
-      "PayrollRecordBuilder.timeEntries must be set"
-    );
-    invariant(
-      this.periodId,
-      "PayrollRecordBuilder.periodId must be set"
-    );
-    invariant(
-      this.periodStart,
-      "PayrollRecordBuilder.periodStart must be set"
-    );
+    invariant(this.timeEntries, "PayrollRecordBuilder.timeEntries must be set");
+    invariant(this.periodId, "PayrollRecordBuilder.periodId must be set");
+    invariant(this.periodStart, "PayrollRecordBuilder.periodStart must be set");
     invariant(this.periodEnd, "PayrollRecordBuilder.periodEnd must be set");
     invariant(
       this.totalHoursAllEmployees !== undefined,

@@ -232,10 +232,7 @@ export class ConfigurationError extends SDKError {
   }
 }
 
-type SDKErrorFactory = (
-  message: string,
-  options: SDKErrorOptions
-) => SDKError;
+type SDKErrorFactory = (message: string, options: SDKErrorOptions) => SDKError;
 
 const SDK_ERROR_FACTORIES: Partial<Record<ErrorCode, SDKErrorFactory>> = {
   [ERROR_CODES.AUTH_INVALID]: (message, options) =>
@@ -244,7 +241,8 @@ const SDK_ERROR_FACTORIES: Partial<Record<ErrorCode, SDKErrorFactory>> = {
     new AuthenticationExpiredError(message, options),
   [ERROR_CODES.RATE_LIMIT_EXCEEDED]: (message, options) =>
     new RateLimitExceededError(message, options),
-  [ERROR_CODES.TIMEOUT]: (message, options) => new TimeoutError(message, options),
+  [ERROR_CODES.TIMEOUT]: (message, options) =>
+    new TimeoutError(message, options),
   [ERROR_CODES.TOOL_EXECUTION_FAILED]: (message, options) =>
     new ToolExecutionError(message, options),
   [ERROR_CODES.TOOL_VALIDATION_FAILED]: (message, options) =>

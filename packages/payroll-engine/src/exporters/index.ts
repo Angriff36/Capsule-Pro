@@ -2,16 +2,16 @@
 // Provides export functionality for CSV, QBXML, and QuickBooks Online formats
 
 export {
+  type CsvExportOptions,
   exportSummaryToCSV,
   exportToCSV,
-  type CsvExportOptions,
 } from "./csvExport";
 export {
-  QBOnlineJournalBuilder,
-  exportToQBOnlineCSVAggregate,
   exportToQBOnlineCSV,
+  exportToQBOnlineCSVAggregate,
   type QBOnlineAccountMappings,
   type QBOnlineCsvExportOptions,
+  QBOnlineJournalBuilder,
 } from "./qbOnlineCsvExport";
 export {
   exportToQBXML,
@@ -54,6 +54,86 @@ export interface ExportResult {
   mimeType: string;
 }
 
+type PayrollExportContext = {
+  format: ExportFormatType;
+  aggregate: boolean;
+  suffix: string;
+  periodSlug: (periodId: string) => string;
+};
+
+type PayrollExportStrategy = (
+  context: PayrollExportContext,
+  options: ExportOptions
+) => PayrollExporter;
+
+function createExportContext(options: ExportOptions): PayrollExportContext {
+  const aggregate = options.aggregate ?? false;
+  const suffix = aggregate ? "-aggregate" : "";
+  const periodSlug = (periodId: string) => periodId.slice(0, 8);
+
+  return {
+    format: options.format,
+    aggregate,
+    suffix,
+    periodSlug,
+  };
+}
+
+const exportStrategies: Record<ExportFormatType, PayrollExportStrategy> = {
+  csv: (context, options) => ({
+    format: context.format,
+    mimeType: "text/csv",
+    filename: (periodId) =>
+      `payroll-${context.periodSlug(periodId)}${context.suffix}.csv`,
+    exportContent: (records, period) =>
+      exportToCSV(records, period, options.csv),
+  }),
+  qbxml: (context, options) => ({
+    format: context.format,
+    mimeType: "application/xml",
+    filename: (periodId) =>
+      `payroll-${context.periodSlug(periodId)}${context.suffix}.qbxml`,
+    exportContent: (records, period) =>
+      context.aggregate
+        ? exportToQBXMLAggregate(records, period, options.qbxml)
+        : exportToQBXML(records, period, options.qbxml),
+  }),
+  qbOnlineCsv: (context, options) => ({
+    format: context.format,
+    mimeType: "text/csv",
+    filename: (periodId) =>
+      `payroll-qbo-${context.periodSlug(periodId)}${context.suffix}.csv`,
+    exportContent: (records, period) =>
+      context.aggregate
+        ? exportToQBOnlineCSVAggregate(records, period, options.qbOnlineCsv)
+        : exportToQBOnlineCSV(records, period, options.qbOnlineCsv),
+  }),
+  json: (context) => ({
+    format: context.format,
+    mimeType: "application/json",
+    filename: (periodId) => `payroll-${context.periodSlug(periodId)}.json`,
+    exportContent: (records, period) =>
+      JSON.stringify(
+        {
+          period: {
+            id: period.id,
+            startDate: period.startDate.toISOString(),
+            endDate: period.endDate.toISOString(),
+            status: period.status,
+            currency: period.currency,
+          },
+          records: records.map((r) => ({
+            ...r,
+            createdAt: r.createdAt?.toISOString(),
+          })),
+          generatedAt: new Date().toISOString(),
+        },
+        null,
+        2
+      ),
+  }),
+};
+
 /**
  * Factory for export strategies.
  */
@@ -65,72 +145,14 @@ export interface PayrollExporter {
 }
 
 export function createPayrollExporter(options: ExportOptions): PayrollExporter {
-  const { format, aggregate = false } = options;
-  const suffix = aggregate ? "-aggregate" : "";
-  const periodSlug = (periodId: string) => periodId.slice(0, 8);
+  const context = createExportContext(options);
+  const strategy = exportStrategies[context.format];
 
-  switch (format) {
-    case "csv":
-      return {
-        format,
-        mimeType: "text/csv",
-        filename: (periodId) => `payroll-${periodSlug(periodId)}${suffix}.csv`,
-        exportContent: (records, period) =>
-          exportToCSV(records, period, options.csv),
-      };
-
-    case "qbxml":
-      return {
-        format,
-        mimeType: "application/xml",
-        filename: (periodId) => `payroll-${periodSlug(periodId)}${suffix}.qbxml`,
-        exportContent: (records, period) =>
-          aggregate
-            ? exportToQBXMLAggregate(records, period, options.qbxml)
-            : exportToQBXML(records, period, options.qbxml),
-      };
-
-    case "qbOnlineCsv":
-      return {
-        format,
-        mimeType: "text/csv",
-        filename: (periodId) =>
-          `payroll-qbo-${periodSlug(periodId)}${suffix}.csv`,
-        exportContent: (records, period) =>
-          aggregate
-            ? exportToQBOnlineCSVAggregate(records, period, options.qbOnlineCsv)
-            : exportToQBOnlineCSV(records, period, options.qbOnlineCsv),
-      };
-
-    case "json":
-      return {
-        format,
-        mimeType: "application/json",
-        filename: (periodId) => `payroll-${periodSlug(periodId)}.json`,
-        exportContent: (records, period) =>
-          JSON.stringify(
-            {
-              period: {
-                id: period.id,
-                startDate: period.startDate.toISOString(),
-                endDate: period.endDate.toISOString(),
-                status: period.status,
-                currency: period.currency,
-              },
-              records: records.map((r) => ({
-                ...r,
-                createdAt: r.createdAt?.toISOString(),
-              })),
-              generatedAt: new Date().toISOString(),
-            },
-            null,
-            2
-          ),
-      };
-
-    default:
-      throw new Error(`Unsupported export format: ${format}`);
+  if (!strategy) {
+    throw new Error(`Unsupported export format: ${context.format}`);
   }
+
+  return strategy(context, options);
 }
 
 /**

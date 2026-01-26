@@ -22,13 +22,13 @@ type PrismaJoinFn = (parts: unknown[], separator: unknown) => string;
 const sqlImpl: PrismaSqlFn = vi.fn((strings, ...values) => ({
   strings,
   values,
-    get sql() {
-      return strings.reduce(
-        (acc: string, str: string, i: number) =>
-          acc + str + (values[i] !== undefined ? String(values[i]) : ""),
-        ""
-      );
-    },
+  get sql() {
+    return strings.reduce(
+      (acc: string, str: string, i: number) =>
+        acc + str + (values[i] !== undefined ? String(values[i]) : ""),
+      ""
+    );
+  },
 }));
 
 const joinImpl: PrismaJoinFn = vi.fn((parts, separator) => {

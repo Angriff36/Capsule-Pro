@@ -73,7 +73,11 @@ export async function calculateDepletionForecast(
     : 0;
 
   // Get upcoming events that use this inventory item
-  const events = await getUpcomingEventsUsingInventory(tenantId, sku, horizonDays);
+  const events = await getUpcomingEventsUsingInventory(
+    tenantId,
+    sku,
+    horizonDays
+  );
 
   // Calculate daily usage pattern
   const dailyUsage = calculateDailyUsage(events, currentStock);
@@ -88,7 +92,7 @@ export async function calculateDepletionForecast(
   }> = [];
 
   let projectedStock = currentStock;
-  let currentDate = new Date();
+  const currentDate = new Date();
   currentDate.setHours(0, 0, 0, 0);
 
   // Calculate depletion date
@@ -106,7 +110,10 @@ export async function calculateDepletionForecast(
       return eventDate.getTime() === forecastDate.getTime();
     });
 
-    const dayUsage = dayEvents.reduce((sum, event) => sum + (event.usage || 0), 0);
+    const dayUsage = dayEvents.reduce(
+      (sum, event) => sum + (event.usage || 0),
+      0
+    );
     projectedStock -= dayUsage;
 
     forecast.push({
@@ -126,7 +133,11 @@ export async function calculateDepletionForecast(
   }
 
   // Determine confidence level
-  const confidence = calculateConfidenceLevel(currentStock, events, horizonDays);
+  const confidence = calculateConfidenceLevel(
+    currentStock,
+    events,
+    horizonDays
+  );
 
   return {
     sku,
@@ -170,8 +181,7 @@ export async function generateReorderSuggestions(
 
     skusToCheck = lowStockItems
       .filter(
-        (item) =>
-          Number(item.quantityOnHand) <= Number(item.reorder_level)
+        (item) => Number(item.quantityOnHand) <= Number(item.reorder_level)
       )
       .map((item) => item.item_number);
   }
@@ -199,7 +209,9 @@ async function getUpcomingEventsUsingInventory(
   tenantId: string,
   sku: string,
   horizonDays: number
-): Promise<Array<{ eventId: string; eventName: string; startDate: Date; usage: number }>> {
+): Promise<
+  Array<{ eventId: string; eventName: string; startDate: Date; usage: number }>
+> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -229,15 +241,19 @@ async function getUpcomingEventsUsingInventory(
 
   // For each event, estimate usage of this SKU
   // This is a simplified calculation - in production, you'd use actual event menus
-  const eventUsage: Array<{ eventId: string; eventName: string; startDate: Date; usage: number }> =
-    events.map((event) => ({
-      eventId: event.id,
-      eventName: event.title || `Event ${event.id}`,
-      startDate: event.eventDate,
-      // Simplified usage calculation: 0.1 units per guest per event
-      // In production, this would be based on actual menu items and recipes
-      usage: Math.ceil((event.guestCount || 0) * 0.1),
-    }));
+  const eventUsage: Array<{
+    eventId: string;
+    eventName: string;
+    startDate: Date;
+    usage: number;
+  }> = events.map((event) => ({
+    eventId: event.id,
+    eventName: event.title || `Event ${event.id}`,
+    startDate: event.eventDate,
+    // Simplified usage calculation: 0.1 units per guest per event
+    // In production, this would be based on actual menu items and recipes
+    usage: Math.ceil((event.guestCount || 0) * 0.1),
+  }));
 
   return eventUsage;
 }
@@ -276,18 +292,19 @@ function calculateConfidenceLevel(
   // Calculate variability (standard deviation)
   const variance =
     dataPoints > 1
-      ? events.reduce((sum, e) => sum + Math.pow(e.usage - avgUsage, 2), 0) / dataPoints
+      ? events.reduce((sum, e) => sum + (e.usage - avgUsage) ** 2, 0) /
+        dataPoints
       : 0;
   const variability = Math.sqrt(variance);
 
   // Confidence criteria
   if (dataPoints >= 10 && variability < avgUsage * 0.2) {
     return "high";
-  } else if (dataPoints >= 5 || variability < avgUsage * 0.5) {
-    return "medium";
-  } else {
-    return "low";
   }
+  if (dataPoints >= 5 || variability < avgUsage * 0.5) {
+    return "medium";
+  }
+  return "low";
 }
 
 /**
@@ -324,7 +341,9 @@ async function calculateReorderSuggestion(
 
   // Calculate recommended order quantity
   const daysUntilDepletion = forecast.daysUntilDepletion ?? 999;
-  const avgDailyUsage = forecast.forecast.reduce((sum, f) => sum + f.usage, 0) / forecast.forecast.length;
+  const avgDailyUsage =
+    forecast.forecast.reduce((sum, f) => sum + f.usage, 0) /
+    forecast.forecast.length;
 
   let recommendedOrderQty = 0;
   let justification = "";
@@ -333,12 +352,16 @@ async function calculateReorderSuggestion(
   if (currentStock <= 0) {
     // Stock depleted - urgent
     urgency = "critical";
-    recommendedOrderQty = Math.ceil(avgDailyUsage * (leadTimeDays + safetyStockDays) * 1.5);
+    recommendedOrderQty = Math.ceil(
+      avgDailyUsage * (leadTimeDays + safetyStockDays) * 1.5
+    );
     justification = `Stock is depleted (${sku}). Reorder immediately to cover lead time and safety stock.`;
   } else if (daysUntilDepletion <= leadTimeDays) {
     // Will deplete during lead time - urgent
     urgency = "critical";
-    recommendedOrderQty = Math.ceil(avgDailyUsage * (leadTimeDays + safetyStockDays));
+    recommendedOrderQty = Math.ceil(
+      avgDailyUsage * (leadTimeDays + safetyStockDays)
+    );
     justification = `Stock will deplete in ${daysUntilDepletion} days, which is within the ${leadTimeDays}-day lead time.`;
   } else if (daysUntilDepletion <= leadTimeDays + safetyStockDays) {
     // Will deplete soon - warning
@@ -372,7 +395,7 @@ async function calculateReorderSuggestion(
 export async function batchCalculateForecasts(
   tenantId: string,
   skus: string[],
-  horizonDays: number = 30
+  horizonDays = 30
 ): Promise<Map<string, ForecastResult>> {
   invariant(tenantId, "tenantId is required");
   invariant(skus?.length, "skus is required");
@@ -417,7 +440,11 @@ export async function saveForecastToDatabase(
     const lowerBound = forecastValue * 0.9;
     const upperBound = forecastValue * 1.1;
     const confidenceValue =
-      forecast.confidence === "high" ? 0.9 : forecast.confidence === "medium" ? 0.6 : 0.3;
+      forecast.confidence === "high"
+        ? 0.9
+        : forecast.confidence === "medium"
+          ? 0.6
+          : 0.3;
 
     if (existing) {
       await database.inventoryForecast.update({
