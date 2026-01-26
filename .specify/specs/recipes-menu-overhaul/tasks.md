@@ -148,7 +148,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check`
   - **Commit**: `feat(recipes): add costing tab to recipe detail`
 
-- [ ] T013 [US2] Build History tab (version list)
+- [x] T013 [US2] Build History tab (version list)
   - **Do**:
     1. Fetch all recipe versions for recipe
     2. Display version list with created_at, version_number

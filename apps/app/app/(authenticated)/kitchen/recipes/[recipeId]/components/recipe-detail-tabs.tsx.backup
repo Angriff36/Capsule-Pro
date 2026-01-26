@@ -13,14 +13,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
-import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@repo/design-system/components/ui/dialog";
-import { ChefHat, Clock, DollarSign, Users, History as HistoryIcon } from "lucide-react";
+import { ChefHat, Clock, DollarSign, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   getRecipeCostSummary,
@@ -51,14 +44,6 @@ type IngredientRow = {
   unit_code: string;
   notes: string | null;
   order_index: number;
-};
-
-type RecipeVersionRow = {
-  id: string;
-  version_number: number;
-  created_at: string;
-  ingredient_count: number;
-  step_count: number;
 };
 
 type RecipeDetailTabsProps = {
@@ -138,6 +123,7 @@ function CostingTabContent({
 
   return (
     <>
+      {/* Cost Summary Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
@@ -180,6 +166,7 @@ function CostingTabContent({
         </Card>
       </div>
 
+      {/* Cost Breakdown Table */}
       <Card>
         <CardHeader>
           <CardTitle>Ingredient Costs</CardTitle>
@@ -219,165 +206,6 @@ function CostingTabContent({
           </div>
         </CardContent>
       </Card>
-    </>
-  );
-}
-
-function HistoryTabContent({
-  recipeId,
-  currentVersionId,
-}: {
-  recipeId: string;
-  currentVersionId: string | null;
-}) {
-  const [versions, setVersions] = useState<RecipeVersionRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [viewingVersion, setViewingVersion] = useState<RecipeVersionRow | null>(null);
-
-  useEffect(() => {
-    const fetchVersions = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(`/api/recipes/${recipeId}/versions`);
-        if (response.ok) {
-          const data = await response.json();
-          setVersions(data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch recipe versions:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchVersions();
-  }, [recipeId]);
-
-  if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Version History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Loading version history...</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (versions.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Version History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <HistoryIcon className="mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="mb-2 text-lg font-semibold">No versions yet</h3>
-            <p className="text-sm text-muted-foreground">
-              Recipe versions will appear here as the recipe is updated.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Version History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {versions.map((version) => (
-              <div
-                key={version.id}
-                className={`flex items-center justify-between rounded-lg border p-4 ${
-                  version.id === currentVersionId
-                    ? "border-primary bg-primary/5"
-                    : ""
-                }`}
-              >
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold">
-                      Version {version.version_number}
-                    </span>
-                    {version.id === currentVersionId && (
-                      <Badge variant="default">Current</Badge>
-                    )}
-                  </div>
-                  <div className="mt-1 text-sm text-muted-foreground">
-                    {new Date(version.created_at).toLocaleString()}
-                  </div>
-                  <div className="mt-2 flex gap-4 text-sm">
-                    <span>
-                      <strong>{version.ingredient_count}</strong> ingredients
-                    </span>
-                    <span>
-                      <strong>{version.step_count}</strong> steps
-                    </span>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setViewingVersion(version)}
-                >
-                  View
-                </Button>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Dialog
-        open={!!viewingVersion}
-        onOpenChange={() => setViewingVersion(null)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Version {viewingVersion?.version_number} -{" "}
-              {viewingVersion &&
-                new Date(viewingVersion.created_at).toLocaleString()}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="max-h-[60vh] overflow-y-auto">
-            <div className="space-y-4">
-              <div>
-                <h3 className="mb-2 font-semibold">Summary</h3>
-                <div className="rounded-lg border p-3 text-sm">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <strong>Ingredients:</strong>{" "}
-                      {viewingVersion?.ingredient_count}
-                    </div>
-                    <div>
-                      <strong>Steps:</strong> {viewingVersion?.step_count}
-                    </div>
-                    <div>
-                      <strong>Created:</strong>{" "}
-                      {viewingVersion &&
-                        new Date(viewingVersion.created_at).toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                This is a snapshot of version {viewingVersion?.version_number}.
-                Full version comparison and diff features will be available in a
-                future update.
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
@@ -443,6 +271,7 @@ export function RecipeDetailTabs({
               <p className="text-muted-foreground">{recipe.description}</p>
             )}
 
+            {/* Time and Yield Info */}
             <div className="grid gap-4 md:grid-cols-4">
               <Card>
                 <CardContent className="flex items-center gap-3 pt-6">
@@ -496,6 +325,7 @@ export function RecipeDetailTabs({
               </Card>
             </div>
 
+            {/* Notes */}
             {recipe.notes && (
               <div>
                 <h3 className="mb-2 font-semibold">Notes</h3>
@@ -503,6 +333,7 @@ export function RecipeDetailTabs({
               </div>
             )}
 
+            {/* Tags */}
             {recipe.tags && recipe.tags.length > 0 && (
               <div>
                 <h3 className="mb-2 font-semibold">Tags</h3>
@@ -576,10 +407,16 @@ export function RecipeDetailTabs({
       </TabsContent>
 
       <TabsContent className="space-y-4" value="history">
-        <HistoryTabContent
-          recipeId={recipe.id}
-          currentVersionId={recipeVersionId}
-        />
+        <Card>
+          <CardHeader>
+            <CardTitle>Version History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              Version history will be displayed here.
+            </p>
+          </CardContent>
+        </Card>
       </TabsContent>
     </Tabs>
   );
