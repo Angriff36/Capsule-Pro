@@ -38,6 +38,7 @@ import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 import { updateRecipeImage } from "./actions";
+import { DifficultyRating } from "./components/difficulty-stars";
 import { RecipeEditButton } from "./recipe-edit-button";
 import { RecipeFavoriteButton } from "./recipe-favorite-button";
 import { RecipeImagePlaceholder } from "./recipe-image-placeholder";
@@ -502,6 +503,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                         <Badge variant="outline">
                           {formatMinutes(recipe.prep_time_minutes)}
                         </Badge>
+                        <DifficultyRating rating={3} />
                       </div>
                       {recipe.description && (
                         <p className="line-clamp-2 text-muted-foreground text-sm">
