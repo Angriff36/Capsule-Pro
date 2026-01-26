@@ -8,7 +8,7 @@ Constitution: 1.0.0
 
 ## Phase 1: Setup & Foundation
 
-- [ ] T001 [P] [US1] Create recipe-edit-modal component shell `apps/app/app/(authenticated)/kitchen/recipes/components/recipe-edit-modal.tsx`
+- [x] T001 [P] [US1] Create recipe-edit-modal component shell `apps/app/app/(authenticated)/kitchen/recipes/components/recipe-edit-modal.tsx`
   - **Do**:
     1. Create `components/` directory under recipes
     2. Create modal component with Sheet from design-system
