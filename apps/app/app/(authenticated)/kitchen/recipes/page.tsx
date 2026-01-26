@@ -27,11 +27,11 @@ import {
   BookOpenIcon,
   CheckCircleIcon,
   ChefHatIcon,
-  SettingsIcon,
-  UtensilsIcon,
-  PackageIcon,
   ClipboardListIcon,
+  PackageIcon,
+  SettingsIcon,
   TrendingUpIcon,
+  UtensilsIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -379,6 +379,9 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
     if (activeTab === "dishes") {
       return { label: "Add Dish", href: "/kitchen/recipes/dishes/new" };
     }
+    if (activeTab === "ingredients") {
+      return { label: "Add Ingredient", href: "/kitchen/recipes/ingredients/new" };
+    }
     return;
   })();
 
@@ -437,15 +440,16 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                     <EmptyMedia variant="icon">
                       <ChefHatIcon />
                     </EmptyMedia>
-                    <EmptyTitle>No recipes yet</EmptyTitle>
+                    <EmptyTitle>Create your first recipe</EmptyTitle>
                     <EmptyDescription>
-                      Add your first recipe so it can be reused across dishes,
-                      prep lists, and events.
+                      Start building your recipe collection. Recipes can be reused
+                      across multiple dishes, prep lists, and events to streamline
+                      your kitchen operations.
                     </EmptyDescription>
                   </EmptyHeader>
                   <EmptyContent>
                     <Button asChild>
-                      <Link href="/kitchen/recipes/new">Add Recipe</Link>
+                      <Link href="/kitchen/recipes/new">Create New Recipe</Link>
                     </Button>
                   </EmptyContent>
                 </Empty>
@@ -517,17 +521,18 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                 <Empty className="bg-card/50">
                   <EmptyHeader>
                     <EmptyMedia variant="icon">
-                      <BookOpenIcon />
+                      <UtensilsIcon />
                     </EmptyMedia>
-                    <EmptyTitle>No dishes yet</EmptyTitle>
+                    <EmptyTitle>Build your first dish</EmptyTitle>
                     <EmptyDescription>
-                      Dishes bundle recipes with service details so they can be
-                      scheduled on events and prep runs.
+                      Transform recipes into marketable dishes with pricing,
+                      dietary information, and presentation details. Dishes are
+                      what clients see on menus and what gets scheduled for events.
                     </EmptyDescription>
                   </EmptyHeader>
                   <EmptyContent>
                     <Button asChild>
-                      <Link href="/kitchen/recipes/dishes/new">Add Dish</Link>
+                      <Link href="/kitchen/recipes/dishes/new">Create New Dish</Link>
                     </Button>
                   </EmptyContent>
                 </Empty>
@@ -545,7 +550,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                           />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-slate-200 via-slate-100 to-white text-muted-foreground">
-                            <BookOpenIcon size={32} />
+                            <UtensilsIcon size={32} />
                           </div>
                         )}
                         <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
@@ -627,14 +632,20 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                 <Empty className="bg-card/50">
                   <EmptyHeader>
                     <EmptyMedia variant="icon">
-                      <ChefHatIcon />
+                      <PackageIcon />
                     </EmptyMedia>
-                    <EmptyTitle>No ingredients yet</EmptyTitle>
+                    <EmptyTitle>Add your ingredients</EmptyTitle>
                     <EmptyDescription>
-                      Add ingredients to keep recipe scaling and costing
-                      accurate.
+                      Build your ingredient library with units, categories, and
+                      allergen information. This ensures accurate recipe scaling
+                      and helps with dietary restrictions and cost calculations.
                     </EmptyDescription>
                   </EmptyHeader>
+                  <EmptyContent>
+                    <Button asChild>
+                      <Link href="/kitchen/recipes/ingredients/new">Add Ingredient</Link>
+                    </Button>
+                  </EmptyContent>
                 </Empty>
               ) : (
                 ingredients.map((ingredient) => (
@@ -684,14 +695,20 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
             <Empty className="bg-card/50">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
-                  <BookOpenIcon />
+                  <UtensilsIcon />
                 </EmptyMedia>
                 <EmptyTitle>Menus are coming next</EmptyTitle>
                 <EmptyDescription>
-                  Menus will bundle dishes into event-ready collections with
-                  pricing and dietary breakdowns.
+                  Soon you'll be able to create curated menu collections that group
+                  dishes together for events. Each menu will include pricing tiers,
+                  dietary breakdowns, and can be customized for different client needs.
                 </EmptyDescription>
               </EmptyHeader>
+              <EmptyContent>
+                <Button variant="outline" asChild>
+                  <Link href="/kitchen/recipes">Browse Recipes & Dishes</Link>
+                </Button>
+              </EmptyContent>
             </Empty>
           )}
 
@@ -701,13 +718,20 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                 <Empty className="bg-card/50">
                   <EmptyHeader>
                     <EmptyMedia variant="icon">
-                      <BookOpenIcon />
+                      <UtensilsIcon />
                     </EmptyMedia>
                     <EmptyTitle>No costing data yet</EmptyTitle>
                     <EmptyDescription>
-                      Add dishes with pricing and cost details to see margins.
+                      Add dishes with pricing and cost details to unlock powerful
+                      margin analysis. Track food costs, menu prices, and profitability
+                      across your entire operation.
                     </EmptyDescription>
                   </EmptyHeader>
+                  <EmptyContent>
+                    <Button asChild>
+                      <Link href="/kitchen/recipes/dishes/new">Add Your First Dish</Link>
+                    </Button>
+                  </EmptyContent>
                 </Empty>
               ) : (
                 dishes.map((dish) => {

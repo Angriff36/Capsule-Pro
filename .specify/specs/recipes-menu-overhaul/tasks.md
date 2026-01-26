@@ -193,7 +193,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check`
   - **Commit**: `feat(recipes): add skeleton loading states`
 
-- [ ] T017 [P] [US9] Improve empty states
+- [x] T017 [P] [US9] Improve empty states
   - **Do**:
     1. Enhance empty state illustrations (use lucide icons creatively)
     2. Add more descriptive CTAs
