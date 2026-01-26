@@ -114,7 +114,7 @@ Constitution: 1.0.0
 
 ## Phase 3: Recipe Detail Enhancement
 
-- [ ] T010 [US2] Create tabbed interface for recipe detail `apps/app/app/(authenticated)/kitchen/recipes/[recipeId]/components/recipe-detail-tabs.tsx`
+- [x] T010 [US2] Create tabbed interface for recipe detail `apps/app/app/(authenticated)/kitchen/recipes/[recipeId]/components/recipe-detail-tabs.tsx`
   - **Do**:
     1. Create components directory
     2. Create RecipeDetailTabs component using Tabs from design-system
