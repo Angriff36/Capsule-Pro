@@ -32,9 +32,13 @@ export const generateMetadata = async ({
 };
 
 export const generateStaticParams = async (): Promise<{ slug: string }[]> => {
-  const posts = await legal.getPosts();
-
-  return posts.map(({ _slug }) => ({ slug: _slug }));
+  try {
+    const posts = await legal.getPosts();
+    return posts.map(({ _slug }) => ({ slug: _slug }));
+  } catch (error) {
+    console.error("Failed to fetch legal posts for static generation:", error);
+    return [];
+  }
 };
 
 const LegalPage = async ({ params }: LegalPageProperties) => {
