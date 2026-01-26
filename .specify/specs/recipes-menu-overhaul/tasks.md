@@ -203,7 +203,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check`
   - **Commit**: `style(recipes): improve empty state designs`
 
-- [ ] T018 [VERIFY] Quality checkpoint - UI Polish
+- [x] T018 [VERIFY] Quality checkpoint - UI Polish
   - **Do**: Run quality commands, visual review
   - **Verify**: `pnpm check && pnpm dev:apps`
   - **Done when**: UI feels polished, no console errors

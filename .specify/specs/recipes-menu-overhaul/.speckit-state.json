@@ -3,11 +3,11 @@
   "featureName": "recipes-menu-overhaul",
   "basePath": ".specify/specs/recipes-menu-overhaul",
   "phase": "execution",
-  "taskIndex": 14,
+  "taskIndex": 17,
   "totalTasks": 34,
   "taskIteration": 1,
   "maxTaskIterations": 5,
-  "globalIteration": 15,
+  "globalIteration": 18,
   "maxGlobalIterations": 100,
   "awaitingApproval": false
 }
