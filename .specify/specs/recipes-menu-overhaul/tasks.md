@@ -169,7 +169,7 @@ Constitution: 1.0.0
 
 ## Phase 4: UI Polish
 
-- [ ] T015 [P] [US9] Polish recipe cards `apps/app/app/(authenticated)/kitchen/recipes/page.tsx`
+- [x] T015 [P] [US9] Polish recipe cards `apps/app/app/(authenticated)/kitchen/recipes/page.tsx`
   - **Do**:
     1. Add stronger shadows (shadow-md on hover)
     2. Add subtle border
