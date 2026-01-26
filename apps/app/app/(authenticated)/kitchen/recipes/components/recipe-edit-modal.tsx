@@ -21,6 +21,14 @@ import {
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { useState } from "react";
 
+type Ingredient = {
+  id?: string;
+  name: string;
+  quantity: string;
+  unit: string;
+  notes?: string;
+};
+
 type RecipeEditModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -30,6 +38,7 @@ type RecipeEditModalProps = {
     category?: string;
     description?: string;
     tags?: string[];
+    ingredients?: Ingredient[];
     yieldQuantity?: number;
     yieldUnit?: string;
     yieldDescription?: string;
@@ -82,6 +91,79 @@ function TagChip({
   );
 }
 
+/** Ingredient row component for displaying and editing a single ingredient */
+function IngredientRow({
+  ingredient,
+  index,
+  onUpdate,
+  onRemove,
+  onMoveUp,
+  onMoveDown,
+}: {
+  ingredient: Ingredient;
+  index: number;
+  onUpdate: (index: number, field: keyof Ingredient, value: string) => void;
+  onRemove: (index: number) => void;
+  onMoveUp: (index: number) => void;
+  onMoveDown: (index: number) => void;
+}) {
+  return (
+    <div className="flex items-start gap-2 p-3 border rounded-md">
+      <div className="flex flex-col gap-1">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6"
+          onClick={() => onMoveUp(index)}
+          disabled={index === 0}
+        >
+          ↑
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6"
+          onClick={() => onMoveDown(index)}
+        >
+          ↓
+        </Button>
+      </div>
+      <div className="flex-1 grid grid-cols-12 gap-2">
+        <Input
+          className="col-span-3"
+          placeholder="Qty"
+          value={ingredient.quantity}
+          onChange={(e) => onUpdate(index, "quantity", e.target.value)}
+        />
+        <Input
+          className="col-span-3"
+          placeholder="Unit"
+          value={ingredient.unit}
+          onChange={(e) => onUpdate(index, "unit", e.target.value)}
+        />
+        <Input
+          className="col-span-5"
+          placeholder="Ingredient name"
+          value={ingredient.name}
+          onChange={(e) => onUpdate(index, "name", e.target.value)}
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="col-span-1 h-9 w-9 text-destructive hover:text-destructive"
+          onClick={() => onRemove(index)}
+          title="Remove ingredient"
+        >
+          ×
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 /** Reusable time input field */
 function TimeInput({
   id,
@@ -118,6 +200,9 @@ export const RecipeEditModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>(recipe?.tags ?? []);
+  const [ingredients, setIngredients] = useState<Ingredient[]>(
+    recipe?.ingredients ?? []
+  );
 
   const handleAddTag = () => {
     const trimmed = tagInput.trim();
@@ -131,6 +216,41 @@ export const RecipeEditModal = ({
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
+  const handleAddIngredient = () => {
+    setIngredients([
+      ...ingredients,
+      { name: "", quantity: "", unit: "" },
+    ]);
+  };
+
+  const handleRemoveIngredient = (index: number) => {
+    setIngredients(ingredients.filter((_, i) => i !== index));
+  };
+
+  const handleUpdateIngredient = (
+    index: number,
+    field: keyof Ingredient,
+    value: string
+  ) => {
+    const updated = [...ingredients];
+    updated[index] = { ...updated[index], [field]: value };
+    setIngredients(updated);
+  };
+
+  const handleMoveIngredient = (index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (
+      newIndex < 0 ||
+      newIndex >= ingredients.length ||
+      (direction === "up" && index === 0)
+    ) {
+      return;
+    }
+    const updated = [...ingredients];
+    [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+    setIngredients(updated);
+  };
+
   const handleSubmit = async (formData: FormData) => {
     if (!onSave) {
       return;
@@ -138,6 +258,7 @@ export const RecipeEditModal = ({
     setIsSubmitting(true);
     try {
       formData.set("tags", tags.join(","));
+      formData.set("ingredients", JSON.stringify(ingredients));
       await onSave(formData);
       onOpenChange(false);
     } finally {
@@ -234,6 +355,41 @@ export const RecipeEditModal = ({
                   <TagChip key={tag} onRemove={handleRemoveTag} tag={tag} />
                 ))}
               </div>
+            )}
+          </div>
+
+          {/* Ingredients section */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="font-medium text-base">Ingredients</Label>
+              <Button
+                onClick={handleAddIngredient}
+                type="button"
+                variant="outline"
+                size="sm"
+              >
+                Add Ingredient
+              </Button>
+            </div>
+            {ingredients.length > 0 && (
+              <div className="space-y-2">
+                {ingredients.map((ingredient, index) => (
+                  <IngredientRow
+                    key={index}
+                    ingredient={ingredient}
+                    index={index}
+                    onUpdate={handleUpdateIngredient}
+                    onRemove={handleRemoveIngredient}
+                    onMoveUp={(index) => handleMoveIngredient(index, "up")}
+                    onMoveDown={(index) => handleMoveIngredient(index, "down")}
+                  />
+                ))}
+              </div>
+            )}
+            {ingredients.length === 0 && (
+              <p className="text-sm text-muted-foreground italic">
+                No ingredients added yet. Click "Add Ingredient" to get started.
+              </p>
             )}
           </div>
 
