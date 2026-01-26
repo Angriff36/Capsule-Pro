@@ -251,7 +251,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check && cd apps/app && npx tsc --noEmit`
   - **Commit**: `feat(menus): implement menu CRUD server actions`
 
-- [ ] T022 [US3] Add menu-dish management actions
+- [x] T022 [US3] Add menu-dish management actions
   - **Do**:
     1. Add `addDishToMenu(menuId, dishId, course?)` - create MenuDish
     2. Add `removeDishFromMenu(menuId, dishId)` - soft delete MenuDish

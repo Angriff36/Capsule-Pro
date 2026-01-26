@@ -406,3 +406,245 @@ export const getMenuById = async (menuId: string): Promise<MenuDetail | null> =>
     })),
   };
 };
+
+
+export const addDishToMenu = async (
+  menuId: string,
+  dishId: string,
+  course?: string
+) => {
+  const tenantId = await requireTenantId();
+
+  if (!menuId) {
+    throw new Error("Menu ID is required.");
+  }
+
+  if (!dishId) {
+    throw new Error("Dish ID is required.");
+  }
+
+  // Verify menu exists and belongs to tenant
+  const [menu] = await database.$queryRaw<
+    { id: string; tenant_id: string; name: string }[]
+  >(
+    Prisma.sql`
+      SELECT id, tenant_id, name
+      FROM tenant_kitchen.menus
+      WHERE id = ${menuId}
+        AND tenant_id = ${tenantId}
+        AND deleted_at IS NULL
+      LIMIT 1
+    `
+  );
+
+  if (!menu) {
+    throw new Error("Menu not found or access denied.");
+  }
+
+  // Verify dish exists and belongs to tenant
+  const [dish] = await database.$queryRaw<
+    { id: string; tenant_id: string; name: string }[]
+  >(
+    Prisma.sql`
+      SELECT id, tenant_id, name
+      FROM tenant_kitchen.dishes
+      WHERE id = ${dishId}
+        AND tenant_id = ${tenantId}
+        AND deleted_at IS NULL
+      LIMIT 1
+    `
+  );
+
+  if (!dish) {
+    throw new Error("Dish not found or access denied.");
+  }
+
+  // Check if dish is already in menu
+  const [existingMenuDish] = await database.$queryRaw<
+    { id: string }[]
+  >(
+    Prisma.sql`
+      SELECT id
+      FROM tenant_kitchen.menu_dishes
+      WHERE menu_id = ${menuId}
+        AND dish_id = ${dishId}
+        AND tenant_id = ${tenantId}
+        AND deleted_at IS NULL
+      LIMIT 1
+    `
+  );
+
+  if (existingMenuDish) {
+    throw new Error("Dish is already in the menu.");
+  }
+
+  // Get the next sort order for this menu
+  const [maxSortOrder] = await database.$queryRaw<
+    { max_sort_order: number | null }[]
+  >(
+    Prisma.sql`
+      SELECT MAX(sort_order) as max_sort_order
+      FROM tenant_kitchen.menu_dishes
+      WHERE menu_id = ${menuId}
+        AND tenant_id = ${tenantId}
+        AND deleted_at IS NULL
+    `
+  );
+
+  const nextSortOrder = (maxSortOrder?.max_sort_order ?? 0) + 1;
+  const menuDishId = randomUUID();
+
+  await database.$executeRaw(
+    Prisma.sql`
+      INSERT INTO tenant_kitchen.menu_dishes (
+        tenant_id,
+        id,
+        menu_id,
+        dish_id,
+        course,
+        sort_order,
+        is_optional
+      )
+      VALUES (
+        ${tenantId},
+        ${menuDishId},
+        ${menuId},
+        ${dishId},
+        ${course || null},
+        ${nextSortOrder},
+        false
+      )
+    `
+  );
+
+  await enqueueOutboxEvent(tenantId, "menu", menuId, "menu.dish_added", {
+    menuId,
+    dishId,
+    menuDishId,
+    course: course || null,
+  });
+
+  revalidatePath("/kitchen/recipes/menus");
+  revalidatePath(`/kitchen/recipes/menus/${menuId}`);
+};
+
+export const removeDishFromMenu = async (menuId: string, dishId: string) => {
+  const tenantId = await requireTenantId();
+
+  if (!menuId) {
+    throw new Error("Menu ID is required.");
+  }
+
+  if (!dishId) {
+    throw new Error("Dish ID is required.");
+  }
+
+  // Verify menu-dish relationship exists and belongs to tenant
+  const [menuDish] = await database.$queryRaw<
+    { id: string; menu_id: string; dish_id: string }[]
+  >(
+    Prisma.sql`
+      SELECT id, menu_id, dish_id
+      FROM tenant_kitchen.menu_dishes
+      WHERE menu_id = ${menuId}
+        AND dish_id = ${dishId}
+        AND tenant_id = ${tenantId}
+        AND deleted_at IS NULL
+      LIMIT 1
+    `
+  );
+
+  if (!menuDish) {
+    throw new Error("Dish is not in the menu or access denied.");
+  }
+
+  // Soft delete the menu-dish relationship
+  await database.$executeRaw(
+    Prisma.sql`
+      UPDATE tenant_kitchen.menu_dishes
+      SET deleted_at = NOW()
+      WHERE menu_id = ${menuId}
+        AND dish_id = ${dishId}
+        AND tenant_id = ${tenantId}
+    `
+  );
+
+  await enqueueOutboxEvent(tenantId, "menu", menuId, "menu.dish_removed", {
+    menuId,
+    dishId,
+    menuDishId: menuDish.id,
+  });
+
+  revalidatePath("/kitchen/recipes/menus");
+  revalidatePath(`/kitchen/recipes/menus/${menuId}`);
+};
+
+export const reorderMenuDishes = async (menuId: string, dishIds: string[]) => {
+  const tenantId = await requireTenantId();
+
+  if (!menuId) {
+    throw new Error("Menu ID is required.");
+  }
+
+  if (!dishIds || !Array.isArray(dishIds) || dishIds.length === 0) {
+    throw new Error("Dish IDs array is required.");
+  }
+
+  // Verify menu exists and belongs to tenant
+  const [menu] = await database.$queryRaw<
+    { id: string; tenant_id: string }[]
+  >(
+    Prisma.sql`
+      SELECT id, tenant_id
+      FROM tenant_kitchen.menus
+      WHERE id = ${menuId}
+        AND tenant_id = ${tenantId}
+        AND deleted_at IS NULL
+      LIMIT 1
+    `
+  );
+
+  if (!menu) {
+    throw new Error("Menu not found or access denied.");
+  }
+
+  // Verify all dishes are in the menu and belong to tenant
+  const menuDishes = await database.$queryRaw<
+    { dish_id: string }[]
+  >(
+    Prisma.sql`
+      SELECT dish_id
+      FROM tenant_kitchen.menu_dishes
+      WHERE menu_id = ${menuId}
+        AND tenant_id = ${tenantId}
+        AND dish_id = ANY(${dishIds})
+        AND deleted_at IS NULL
+    `
+  );
+
+  if (menuDishes.length !== dishIds.length) {
+    throw new Error("One or more dishes not found in menu or access denied.");
+  }
+
+  // Update sort order for all dishes
+  for (let i = 0; i < dishIds.length; i++) {
+    await database.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.menu_dishes
+        SET sort_order = ${i + 1},
+            updated_at = NOW()
+        WHERE menu_id = ${menuId}
+          AND dish_id = ${dishIds[i]}
+          AND tenant_id = ${tenantId}
+      `
+    );
+  }
+
+  await enqueueOutboxEvent(tenantId, "menu", menuId, "menu.dishes_reordered", {
+    menuId,
+    dishIds,
+  });
+
+  revalidatePath("/kitchen/recipes/menus");
+  revalidatePath(`/kitchen/recipes/menus/${menuId}`);
+};
