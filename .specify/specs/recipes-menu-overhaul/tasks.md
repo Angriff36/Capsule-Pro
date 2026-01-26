@@ -181,7 +181,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check && pnpm dev:apps` visual inspection
   - **Commit**: `style(recipes): polish recipe card visual design`
 
-- [ ] T016 [P] [US9] Add loading states with skeletons
+- [x] T016 [P] [US9] Add loading states with skeletons
   - **Do**:
     1. Add Suspense boundary around recipe grid
     2. Create loading.tsx with skeleton cards
