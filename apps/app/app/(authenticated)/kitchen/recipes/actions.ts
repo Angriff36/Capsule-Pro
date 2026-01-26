@@ -778,3 +778,208 @@ export const updateRecipe = async (recipeId: string, formData: FormData) => {
   revalidatePath("/kitchen/recipes");
   revalidatePath(`/kitchen/recipes/${recipeId}`);
 };
+
+export type RecipeForEdit = {
+  id: string;
+  name: string;
+  category: string | null;
+  description: string | null;
+  tags: string[];
+  version: {
+    id: string;
+    versionNumber: number;
+    yieldQuantity: number;
+    yieldUnit: string;
+    yieldDescription: string | null;
+    prepTimeMinutes: number | null;
+    cookTimeMinutes: number | null;
+    restTimeMinutes: number | null;
+    difficultyLevel: number | null;
+    notes: string | null;
+  };
+  ingredients: {
+    id: string;
+    ingredientId: string;
+    name: string;
+    quantity: number;
+    unit: string;
+    isOptional: boolean;
+    sortOrder: number;
+  }[];
+  steps: {
+    id: string;
+    stepNumber: number;
+    instruction: string;
+    imageUrl: string | null;
+  }[];
+};
+
+export const getRecipeForEdit = async (
+  recipeId: string
+): Promise<RecipeForEdit | null> => {
+  const tenantId = await requireTenantId();
+
+  if (!recipeId) {
+    return null;
+  }
+
+  // Fetch recipe base data
+  const [recipe] = await database.$queryRaw<
+    {
+      id: string;
+      name: string;
+      category: string | null;
+      description: string | null;
+      tags: string[] | null;
+    }[]
+  >(
+    Prisma.sql`
+      SELECT id, name, category, description, tags
+      FROM tenant_kitchen.recipes
+      WHERE id = ${recipeId}
+        AND tenant_id = ${tenantId}
+        AND deleted_at IS NULL
+      LIMIT 1
+    `
+  );
+
+  if (!recipe) {
+    return null;
+  }
+
+  // Fetch latest version
+  const [version] = await database.$queryRaw<
+    {
+      id: string;
+      version_number: number;
+      yield_quantity: number;
+      yield_unit_id: number;
+      yield_description: string | null;
+      prep_time_minutes: number | null;
+      cook_time_minutes: number | null;
+      rest_time_minutes: number | null;
+      difficulty_level: number | null;
+      notes: string | null;
+    }[]
+  >(
+    Prisma.sql`
+      SELECT
+        id,
+        version_number,
+        yield_quantity,
+        yield_unit_id,
+        yield_description,
+        prep_time_minutes,
+        cook_time_minutes,
+        rest_time_minutes,
+        difficulty_level,
+        notes
+      FROM tenant_kitchen.recipe_versions
+      WHERE recipe_id = ${recipeId}
+        AND tenant_id = ${tenantId}
+        AND deleted_at IS NULL
+      ORDER BY version_number DESC
+      LIMIT 1
+    `
+  );
+
+  if (!version) {
+    return null;
+  }
+
+  // Fetch unit code for yield
+  const [yieldUnitRow] = await database.$queryRaw<{ code: string }[]>(
+    Prisma.sql`
+      SELECT code
+      FROM core.units
+      WHERE id = ${version.yield_unit_id}
+      LIMIT 1
+    `
+  );
+  const yieldUnit = yieldUnitRow?.code ?? "";
+
+  // Fetch ingredients with their names and unit codes
+  const ingredients = await database.$queryRaw<
+    {
+      id: string;
+      ingredient_id: string;
+      ingredient_name: string;
+      quantity: number;
+      unit_code: string;
+      is_optional: boolean;
+      sort_order: number;
+    }[]
+  >(
+    Prisma.sql`
+      SELECT
+        ri.id,
+        ri.ingredient_id,
+        i.name AS ingredient_name,
+        ri.quantity,
+        u.code AS unit_code,
+        COALESCE(ri.is_optional, false) AS is_optional,
+        ri.sort_order
+      FROM tenant_kitchen.recipe_ingredients ri
+      JOIN tenant_kitchen.ingredients i ON i.id = ri.ingredient_id
+      JOIN core.units u ON u.id = ri.unit_id
+      WHERE ri.recipe_version_id = ${version.id}
+        AND ri.tenant_id = ${tenantId}
+        AND ri.deleted_at IS NULL
+      ORDER BY ri.sort_order ASC
+    `
+  );
+
+  // Fetch steps
+  const steps = await database.$queryRaw<
+    {
+      id: string;
+      step_number: number;
+      instruction: string;
+      image_url: string | null;
+    }[]
+  >(
+    Prisma.sql`
+      SELECT id, step_number, instruction, image_url
+      FROM tenant_kitchen.recipe_steps
+      WHERE recipe_version_id = ${version.id}
+        AND tenant_id = ${tenantId}
+        AND deleted_at IS NULL
+      ORDER BY step_number ASC
+    `
+  );
+
+  return {
+    id: recipe.id,
+    name: recipe.name,
+    category: recipe.category,
+    description: recipe.description,
+    tags: recipe.tags ?? [],
+    version: {
+      id: version.id,
+      versionNumber: version.version_number,
+      yieldQuantity: version.yield_quantity,
+      yieldUnit,
+      yieldDescription: version.yield_description,
+      prepTimeMinutes: version.prep_time_minutes,
+      cookTimeMinutes: version.cook_time_minutes,
+      restTimeMinutes: version.rest_time_minutes,
+      difficultyLevel: version.difficulty_level,
+      notes: version.notes,
+    },
+    ingredients: ingredients.map((ing) => ({
+      id: ing.id,
+      ingredientId: ing.ingredient_id,
+      name: ing.ingredient_name,
+      quantity: ing.quantity,
+      unit: ing.unit_code,
+      isOptional: ing.is_optional,
+      sortOrder: ing.sort_order,
+    })),
+    steps: steps.map((step) => ({
+      id: step.id,
+      stepNumber: step.step_number,
+      instruction: step.instruction,
+      imageUrl: step.image_url,
+    })),
+  };
+};

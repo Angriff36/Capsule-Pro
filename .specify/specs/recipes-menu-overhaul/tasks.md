@@ -58,7 +58,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check && cd apps/app && npx tsc --noEmit`
   - **Commit**: `feat(recipes): implement updateRecipe server action with versioning`
 
-- [ ] T005 [US1] Fetch recipe data for edit modal
+- [x] T005 [US1] Fetch recipe data for edit modal
   - **Do**:
     1. Create `getRecipeForEdit(recipeId)` data fetcher in actions.ts
     2. Fetch recipe, latest version, ingredients, steps
