@@ -57,6 +57,10 @@
   - `apps/app/app/api/recipes/[recipeId]/versions/route.ts` route handler signature mismatch.
   - Error: handler `GET` uses `{ params: { recipeId: string } }` but Next.js expects `{ params: Promise<{ recipeId: string }> }`.
 
+**Update 23 - Validation Failure (2026-01-26):**
+- `pnpm build` timed out after 120s. Stopped per backpressure rule.
+- Build needs rerun to confirm resolution of route handler signature mismatch.
+
 **CRITICAL FINDINGS (2026-01-24 Investigation):**
 
 **Update 17 - DEPLETION FORECASTING COMPLETED (2026-01-24):**

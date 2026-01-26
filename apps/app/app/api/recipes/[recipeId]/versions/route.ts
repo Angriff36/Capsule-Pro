@@ -1,13 +1,16 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 
 export async function GET(
-  _request: Request,
-  { params }: { params: { recipeId: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ recipeId: string }> }
 ) {
   try {
+    const { recipeId } = await params;
+    invariant(recipeId, "params.recipeId must exist");
     const { orgId } = await auth();
 
     if (!orgId) {
@@ -15,7 +18,6 @@ export async function GET(
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    const recipeId = params.recipeId;
 
     const versions = await database.$queryRaw<
       Array<{
@@ -55,6 +57,9 @@ export async function GET(
 
     return NextResponse.json(versions);
   } catch (error) {
+    if (error instanceof InvariantError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     console.error("Failed to fetch recipe versions:", error);
     return NextResponse.json(
       { error: "Failed to fetch recipe versions" },
