@@ -42,7 +42,7 @@ Constitution: 1.0.0
 
 ## Phase 2: Recipe Editing (Core POC)
 
-- [ ] T004 [US1] Implement updateRecipe server action `apps/app/app/(authenticated)/kitchen/recipes/actions.ts`
+- [x] T004 [US1] Implement updateRecipe server action `apps/app/app/(authenticated)/kitchen/recipes/actions.ts`
   - **Do**:
     1. Add `updateRecipe(recipeId: string, formData: FormData)` function
     2. Fetch existing recipe to verify ownership
