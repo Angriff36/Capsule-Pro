@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import type { Agent, ExecutionResult } from "./agent.js";
-import { ERROR_CODES, SDKError } from "./errors.js";
+import { ERROR_CODES, SDKError, createSDKError } from "./errors.js";
 import {
   AgentEventEmitter,
   type GenericListener,
@@ -74,7 +74,7 @@ export class AgentWorkflow {
 
     const topologicalSort = (stepId: string) => {
       if (tempVisited.has(stepId)) {
-        throw new SDKError(`Circular dependency detected: ${stepId}`, {
+        throw createSDKError(`Circular dependency detected: ${stepId}`, {
           code: ERROR_CODES.WORKFLOW_ERROR,
           retryable: false,
         });
@@ -90,7 +90,7 @@ export class AgentWorkflow {
       if (step) {
         for (const depId of step.dependsOn) {
           if (!stepIds.has(depId)) {
-            throw new SDKError(
+            throw createSDKError(
               `Invalid dependency: ${depId} for step ${stepId}`,
               {
                 code: ERROR_CODES.WORKFLOW_ERROR,
@@ -154,7 +154,7 @@ export class AgentWorkflow {
       const sdkError =
         error instanceof SDKError
           ? error
-          : new SDKError(String(error), {
+          : createSDKError(String(error), {
               code: ERROR_CODES.WORKFLOW_ERROR,
               retryable: true,
             });
@@ -223,7 +223,7 @@ export class AgentWorkflow {
       }
 
       if (currentLevel.length === 0) {
-        throw new SDKError(
+        throw createSDKError(
           "Cannot determine execution order - possible circular dependency",
           {
             code: ERROR_CODES.WORKFLOW_ERROR,
@@ -269,7 +269,7 @@ export class AgentWorkflow {
       const sdkError =
         error instanceof SDKError
           ? error
-          : new SDKError(String(error), {
+          : createSDKError(String(error), {
               code: ERROR_CODES.AGENT_EXECUTION_FAILED,
               retryable: false,
             });

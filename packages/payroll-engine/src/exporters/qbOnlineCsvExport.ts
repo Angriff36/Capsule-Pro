@@ -1,6 +1,12 @@
 import { formatDate } from "../core/currency";
 import type { PayrollPeriod, PayrollRecord } from "../models";
 
+function invariant(condition: unknown, message: string): asserts condition {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
+
 /**
  * QuickBooks Online CSV Export Configuration
  */
@@ -77,16 +83,16 @@ function formatAmountOrEmpty(amount: number): string {
   return amount.toFixed(2);
 }
 
-/**
- * Create journal entry lines for a single payroll record
- */
-function createEmployeeJournalLines(
-  record: PayrollRecord,
-  period: PayrollPeriod,
-  journalNo: string,
-  accounts: QBOnlineAccountMappings,
-  options: QBOnlineCsvExportOptions
-): string[][] {
+type QBOJournalBuildInput = {
+  record: PayrollRecord;
+  period: PayrollPeriod;
+  journalNo: string;
+  accounts: QBOnlineAccountMappings;
+  options: QBOnlineCsvExportOptions;
+};
+
+function buildEmployeeJournalLines(input: QBOJournalBuildInput): string[][] {
+  const { record, period, journalNo, accounts, options } = input;
   const dateFormat = options.dateFormat || "us";
   const journalDate = formatDate(period.endDate, dateFormat);
   const memo = `Payroll - ${record.employeeName}`;
@@ -274,6 +280,54 @@ function createEmployeeJournalLines(
   return lines;
 }
 
+export class QBOnlineJournalBuilder {
+  private record?: PayrollRecord;
+  private period?: PayrollPeriod;
+  private journalNo?: string;
+  private accounts?: QBOnlineAccountMappings;
+  private options: QBOnlineCsvExportOptions = {};
+
+  setRecord(record: PayrollRecord): this {
+    this.record = record;
+    return this;
+  }
+
+  setPeriod(period: PayrollPeriod): this {
+    this.period = period;
+    return this;
+  }
+
+  setJournalNo(journalNo: string): this {
+    this.journalNo = journalNo;
+    return this;
+  }
+
+  setAccounts(accounts: QBOnlineAccountMappings): this {
+    this.accounts = accounts;
+    return this;
+  }
+
+  setOptions(options: QBOnlineCsvExportOptions): this {
+    this.options = options;
+    return this;
+  }
+
+  build(): string[][] {
+    invariant(this.record, "QBOnlineJournalBuilder.record must be set");
+    invariant(this.period, "QBOnlineJournalBuilder.period must be set");
+    invariant(this.journalNo, "QBOnlineJournalBuilder.journalNo must be set");
+    invariant(this.accounts, "QBOnlineJournalBuilder.accounts must be set");
+
+    return buildEmployeeJournalLines({
+      record: this.record,
+      period: this.period,
+      journalNo: this.journalNo,
+      accounts: this.accounts,
+      options: this.options,
+    });
+  }
+}
+
 /**
  * Export payroll to QuickBooks Online CSV format
  */
@@ -298,13 +352,13 @@ export function exportToQBOnlineCSV(
   // Generate journal entries for each employee
   records.forEach((record, index) => {
     const journalNo = `PR-${period.id.slice(0, 8)}-${String(index + 1).padStart(3, "0")}`;
-    const lines = createEmployeeJournalLines(
-      record,
-      period,
-      journalNo,
-      accounts,
-      options
-    );
+    const lines = new QBOnlineJournalBuilder()
+      .setRecord(record)
+      .setPeriod(period)
+      .setJournalNo(journalNo)
+      .setAccounts(accounts)
+      .setOptions(options)
+      .build();
     allLines.push(...lines);
   });
 

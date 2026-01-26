@@ -25,5 +25,14 @@
   "prettier.enable": false,
   "typescript.tsdk": "node_modules/typescript/lib",
   "tailwindCSS.experimental.configFile": "packages/design-system/styles/globals.css",
-  "markdown.validate.enabled": true
+  "markdown.validate.enabled": true,
+  "files.watcherExclude": {
+    "**/node_modules": true,
+    "**/pnpm-lock.yaml": true,
+    "**/.next": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.turbo": true,
+    "**/.git": true
   }
+}

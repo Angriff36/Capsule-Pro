@@ -21,24 +21,20 @@ const KITCHEN_ROUTES = [
 
 test("Kitchen: unauthenticated users do not see a 404", async ({ page }) => {
   const res = await page.goto(KITCHEN_ENTRY, { waitUntil: "domcontentloaded" });
-  // Allow redirects, but the final page should not be a hard 404.
-  expect(res?.status() ?? 200).not.toBe(404);
+  // Allow redirects, but navigation must succeed and not be a hard 404.
+  expect(res).not.toBeNull();
+  expect(res!.status()).not.toBe(404);
   await expect(page).not.toHaveTitle(/404/i);
 });
 
 test.describe("Kitchen: route existence + no dead-ends (AUTH REQUIRED)", () => {
-  test.skip(
-    !process.env.PLAYWRIGHT_AUTH_READY,
-    "Set PLAYWRIGHT_AUTH_READY=1 once storageState/login is wired."
-  );
-
   for (const route of KITCHEN_ROUTES) {
     test(`Kitchen route loads: ${route}`, async ({ page }) => {
       const res = await page.goto(route, { waitUntil: "domcontentloaded" });
       expect(res?.status() ?? 200).not.toBe(404);
       await expect(page).not.toHaveTitle(/404/i);
       // Basic sanity: page has at least one main landmark or heading.
-      await expect(page.locator("main, [role='main'], h1")).toHaveCount(1);
+      expect(await page.locator("main, [role='main'], h1").count()).toBeGreaterThan(0);
     });
   }
 
@@ -50,13 +46,11 @@ test.describe("Kitchen: route existence + no dead-ends (AUTH REQUIRED)", () => {
     // Collect candidate click targets:
     // - anchor with href
     // - button-like elements that navigate (data-href, role=link)
-    // We deliberately keep this conservative to avoid clicking destructive actions.
     const candidates = page.locator(
       [
         "a[href]",
-        "[role='link'][href]",
+        "[role='link'][data-href]",
         "button[data-href]",
-        "[data-testid='kitchen-nav'] a[href]",
       ].join(",")
     );
 
@@ -69,16 +63,16 @@ test.describe("Kitchen: route existence + no dead-ends (AUTH REQUIRED)", () => {
       const el = candidates.nth(i);
       const href =
         (await el.getAttribute("href")) ?? (await el.getAttribute("data-href"));
-      if (!href) continue;
-      if (href.startsWith("http")) continue; // ignore external
+      if (!href) continue; // skip if no href
+      if (href.startsWith("http") || href.startsWith("//")) continue; // ignore external
       if (href.startsWith("#")) continue; // ignore hash
       hrefs.add(href);
     }
 
-    // Enforce: every in-app href resolves (no 404).
     for (const href of hrefs) {
       const res = await page.goto(href, { waitUntil: "domcontentloaded" });
-      expect(res?.status() ?? 200).not.toBe(404);
+      expect(res, `Navigation to ${href} failed`).not.toBeNull();
+      expect(res!.status()).not.toBe(404);
       await expect(page).not.toHaveTitle(/404/i);
     }
   });

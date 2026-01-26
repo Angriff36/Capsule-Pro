@@ -1,4 +1,4 @@
-import { ERROR_CODES, type ErrorCode, SDKError } from "./errors.js";
+import { ERROR_CODES, type ErrorCode, SDKError, createSDKError } from "./errors.js";
 
 export interface RetryOptions {
   maxAttempts?: number;
@@ -43,7 +43,7 @@ export class RetryManager {
     while (attempt < this.maxAttempts) {
       try {
         if (abortSignal?.aborted) {
-          throw new SDKError("Operation was cancelled", {
+          throw createSDKError("Operation was cancelled", {
             code: ERROR_CODES.CANCELLATION_FAILED,
             retryable: false,
           });
@@ -84,7 +84,7 @@ export class RetryManager {
     return new Promise((resolve, reject) => {
       if (abortSignal?.aborted) {
         reject(
-          new SDKError("Operation was cancelled during retry delay", {
+          createSDKError("Operation was cancelled during retry delay", {
             code: ERROR_CODES.CANCELLATION_FAILED,
             retryable: false,
           })
@@ -97,7 +97,7 @@ export class RetryManager {
       abortSignal?.addEventListener("abort", () => {
         clearTimeout(timeoutId);
         reject(
-          new SDKError("Operation was cancelled during retry delay", {
+          createSDKError("Operation was cancelled during retry delay", {
             code: ERROR_CODES.CANCELLATION_FAILED,
             retryable: false,
           })
@@ -114,7 +114,7 @@ export class RetryManager {
     const message = error instanceof Error ? error.message : "Unknown error";
     const stack = error instanceof Error ? error.stack : undefined;
 
-    const sdkError = new SDKError(message, {
+    const sdkError = createSDKError(message, {
       code: ERROR_CODES.INTERNAL_ERROR,
       retryable: false,
     });

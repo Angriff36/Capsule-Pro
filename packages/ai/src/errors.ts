@@ -231,3 +231,46 @@ export class ConfigurationError extends SDKError {
     this.name = "ConfigurationError";
   }
 }
+
+type SDKErrorFactory = (
+  message: string,
+  options: SDKErrorOptions
+) => SDKError;
+
+const SDK_ERROR_FACTORIES: Partial<Record<ErrorCode, SDKErrorFactory>> = {
+  [ERROR_CODES.AUTH_INVALID]: (message, options) =>
+    new AuthenticationError(message, options),
+  [ERROR_CODES.AUTH_EXPIRED]: (message, options) =>
+    new AuthenticationExpiredError(message, options),
+  [ERROR_CODES.RATE_LIMIT_EXCEEDED]: (message, options) =>
+    new RateLimitExceededError(message, options),
+  [ERROR_CODES.TIMEOUT]: (message, options) => new TimeoutError(message, options),
+  [ERROR_CODES.TOOL_EXECUTION_FAILED]: (message, options) =>
+    new ToolExecutionError(message, options),
+  [ERROR_CODES.TOOL_VALIDATION_FAILED]: (message, options) =>
+    new ToolValidationError(message, options),
+  [ERROR_CODES.AGENT_EXECUTION_FAILED]: (message, options) =>
+    new AgentExecutionError(message, options),
+  [ERROR_CODES.WORKFLOW_ERROR]: (message, options) =>
+    new WorkflowError(message, options),
+  [ERROR_CODES.STATE_ERROR]: (message, options) =>
+    new StateError(message, options),
+  [ERROR_CODES.CANCELLATION_FAILED]: (message, options) =>
+    new CancellationError(message, options),
+  [ERROR_CODES.INTERNAL_ERROR]: (message, options) =>
+    new SDKError(message, options),
+  [ERROR_CODES.TOOL_NOT_FOUND]: (message, options) =>
+    new SDKError(message, options),
+  [ERROR_CODES.AGENT_NOT_FOUND]: (message, options) =>
+    new SDKError(message, options),
+  [ERROR_CODES.CONFIG_INVALID]: (message, options) =>
+    new SDKError(message, options),
+};
+
+export function createSDKError(
+  message: string,
+  options: SDKErrorOptions
+): SDKError {
+  const factory = SDK_ERROR_FACTORIES[options.code];
+  return factory ? factory(message, options) : new SDKError(message, options);
+}

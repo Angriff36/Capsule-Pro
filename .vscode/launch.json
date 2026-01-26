@@ -1,6 +1,7 @@
 {
   "version": "0.2.0",
   "configurations": [
+    
     {
       "name": "Next.js: debug server-side",
       "type": "node-terminal",
@@ -11,37 +12,37 @@
       "name": "Next.js: debug client-side (app)",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:3000"
+      "url": "http://localhost:2221"
     },
     {
       "name": "Next.js: debug client-side (web)",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:3001"
+      "url": "http://localhost:2222"
     },
     {
       "name": "Next.js: debug client-side (api)",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:3002"
+      "url": "http://localhost:2223"
     },
     {
       "name": "Next.js: debug client-side (email)",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:3003"
+      "url": "http://localhost:2225"
     },
     {
       "name": "Next.js: debug client-side (app)",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:3004"
+      "url": "http://localhost:2221"
     },
     {
       "name": "Next.js: debug client-side (studio)",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:3005"
+      "url": "http://localhost:2226"
     },
     {
       "name": "Next.js: debug full stack",

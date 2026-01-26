@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ERROR_CODES, SDKError } from "./errors.js";
+import { ERROR_CODES, SDKError, createSDKError } from "./errors.js";
 
 export type ToolParameterSchema = z.ZodType<unknown>;
 
@@ -78,7 +78,7 @@ export class Tool<
         error:
           error instanceof SDKError
             ? error
-            : new SDKError(`Tool execution failed: ${String(error)}`, {
+            : createSDKError(`Tool execution failed: ${String(error)}`, {
                 code: ERROR_CODES.TOOL_EXECUTION_FAILED,
                 toolName: this.name,
                 retryable: this.retryable,
@@ -96,7 +96,7 @@ export class Tool<
       const errorMessages = result.error.issues
         .map((e: { message: string }) => e.message)
         .join(", ");
-      throw new SDKError(`Invalid parameters: ${errorMessages}`, {
+      throw createSDKError(`Invalid parameters: ${errorMessages}`, {
         code: ERROR_CODES.TOOL_VALIDATION_FAILED,
         toolName: this.name,
         retryable: false,
@@ -133,7 +133,7 @@ export class ToolRegistry {
 
   register(tool: Tool): void {
     if (this.tools.has(tool.name)) {
-      throw new SDKError(`Tool already registered: ${tool.name}`, {
+      throw createSDKError(`Tool already registered: ${tool.name}`, {
         code: ERROR_CODES.TOOL_NOT_FOUND,
         toolName: tool.name,
         retryable: false,

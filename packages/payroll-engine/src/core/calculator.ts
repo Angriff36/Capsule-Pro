@@ -11,6 +11,12 @@ import type {
 import { Currency, money } from "./currency";
 import { calculateTaxes } from "./taxEngine";
 
+function invariant(condition: unknown, message: string): asserts condition {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
+
 /**
  * Generate a deterministic UUID based on periodId and employeeId
  * This ensures idempotent payroll record generation
@@ -185,21 +191,33 @@ function applyDeductions(
   return { preTax, postTax, preTaxTotal, postTaxTotal };
 }
 
-/**
- * Calculate payroll for a single employee
- */
-export function calculateEmployeePayroll(
-  employee: Employee,
-  role: Role,
-  timeEntries: TimeEntryInput[],
-  tipPools: TipPool[],
-  deductions: Deduction[],
-  periodId: string,
-  periodStart: Date,
-  periodEnd: Date,
-  totalHoursAllEmployees: number,
-  employeeCount: number
-): PayrollRecord {
+type PayrollRecordBuildInput = {
+  employee: Employee;
+  role: Role;
+  timeEntries: TimeEntryInput[];
+  tipPools: TipPool[];
+  deductions: Deduction[];
+  periodId: string;
+  periodStart: Date;
+  periodEnd: Date;
+  totalHoursAllEmployees: number;
+  employeeCount: number;
+};
+
+function buildPayrollRecord(input: PayrollRecordBuildInput): PayrollRecord {
+  const {
+    employee,
+    role,
+    timeEntries,
+    tipPools,
+    deductions,
+    periodId,
+    periodStart,
+    periodEnd,
+    totalHoursAllEmployees,
+    employeeCount,
+  } = input;
+
   const roundingRule = employee.payrollPrefs?.roundingRule || "none";
   const payPeriodFrequency =
     employee.payrollPrefs?.payPeriodFrequency || "biweekly";
@@ -252,7 +270,6 @@ export function calculateEmployeePayroll(
   });
 
   // 7. Calculate net pay
-  const totalDeductions = preTaxTotal.add(postTaxTotal);
   const netPay = grossPay
     .subtract(preTaxTotal)
     .subtract(taxResult.totalTax)
@@ -311,6 +328,96 @@ export function calculateEmployeePayroll(
     currency: employee.currency,
     createdAt: new Date(),
   };
+}
+
+export class PayrollRecordBuilder {
+  private employee?: Employee;
+  private role?: Role;
+  private timeEntries?: TimeEntryInput[];
+  private tipPools: TipPool[] = [];
+  private deductions: Deduction[] = [];
+  private periodId?: string;
+  private periodStart?: Date;
+  private periodEnd?: Date;
+  private totalHoursAllEmployees?: number;
+  private employeeCount?: number;
+
+  setEmployee(employee: Employee): this {
+    this.employee = employee;
+    return this;
+  }
+
+  setRole(role: Role): this {
+    this.role = role;
+    return this;
+  }
+
+  setTimeEntries(timeEntries: TimeEntryInput[]): this {
+    this.timeEntries = timeEntries;
+    return this;
+  }
+
+  setTipPools(tipPools: TipPool[]): this {
+    this.tipPools = tipPools;
+    return this;
+  }
+
+  setDeductions(deductions: Deduction[]): this {
+    this.deductions = deductions;
+    return this;
+  }
+
+  setPeriod(periodId: string, periodStart: Date, periodEnd: Date): this {
+    this.periodId = periodId;
+    this.periodStart = periodStart;
+    this.periodEnd = periodEnd;
+    return this;
+  }
+
+  setTotals(totalHoursAllEmployees: number, employeeCount: number): this {
+    this.totalHoursAllEmployees = totalHoursAllEmployees;
+    this.employeeCount = employeeCount;
+    return this;
+  }
+
+  build(): PayrollRecord {
+    invariant(this.employee, "PayrollRecordBuilder.employee must be set");
+    invariant(this.role, "PayrollRecordBuilder.role must be set");
+    invariant(
+      this.timeEntries,
+      "PayrollRecordBuilder.timeEntries must be set"
+    );
+    invariant(
+      this.periodId,
+      "PayrollRecordBuilder.periodId must be set"
+    );
+    invariant(
+      this.periodStart,
+      "PayrollRecordBuilder.periodStart must be set"
+    );
+    invariant(this.periodEnd, "PayrollRecordBuilder.periodEnd must be set");
+    invariant(
+      this.totalHoursAllEmployees !== undefined,
+      "PayrollRecordBuilder.totalHoursAllEmployees must be set"
+    );
+    invariant(
+      this.employeeCount !== undefined,
+      "PayrollRecordBuilder.employeeCount must be set"
+    );
+
+    return buildPayrollRecord({
+      employee: this.employee,
+      role: this.role,
+      timeEntries: this.timeEntries,
+      tipPools: this.tipPools,
+      deductions: this.deductions,
+      periodId: this.periodId,
+      periodStart: this.periodStart,
+      periodEnd: this.periodEnd,
+      totalHoursAllEmployees: this.totalHoursAllEmployees,
+      employeeCount: this.employeeCount,
+    });
+  }
 }
 
 /**
@@ -382,18 +489,15 @@ export function calculatePayroll(input: PayrollCalculationInput): {
     }
 
     try {
-      const record = calculateEmployeePayroll(
-        employee,
-        role,
-        approvedEntries,
-        tipPools,
-        deductions,
-        periodId,
-        periodStart,
-        periodEnd,
-        totalHoursAllEmployees,
-        employeeCount
-      );
+      const record = new PayrollRecordBuilder()
+        .setEmployee(employee)
+        .setRole(role)
+        .setTimeEntries(approvedEntries)
+        .setTipPools(tipPools)
+        .setDeductions(deductions)
+        .setPeriod(periodId, periodStart, periodEnd)
+        .setTotals(totalHoursAllEmployees, employeeCount)
+        .build();
 
       records.push(record);
     } catch (error) {

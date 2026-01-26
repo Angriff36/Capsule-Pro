@@ -22,6 +22,18 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
     notFound();
   }
 
+  // Invariant: eventId must be a valid UUID to avoid DB errors
+  const isUUID = (value: string) =>
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(
+      value
+    );
+
+  if (!isUUID(eventId)) {
+    // Invalid path segment like "/events/settings" should not reach this page
+    // Fail fast to avoid "invalid input syntax for type uuid" errors from Postgres
+    notFound();
+  }
+
   const tenantId = await getTenantIdForOrg(orgId);
 
   const event = await database.event.findUnique({

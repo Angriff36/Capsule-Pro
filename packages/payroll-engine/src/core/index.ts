@@ -1,5 +1,15 @@
 // Core Payroll Calculation Modules
 
-export * from "./calculator";
-export * from "./currency";
-export * from "./taxEngine";
+export {
+  calculatePayroll,
+  PayrollRecordBuilder,
+  verifyPayrollBalances,
+} from "./calculator";
+export { Currency, formatDate, money, sumCurrency } from "./currency";
+export {
+  calculateTaxes,
+  getFicaRates,
+  getSupportedJurisdictions,
+  type TaxCalculationInput,
+  type TaxCalculationResult,
+} from "./taxEngine";

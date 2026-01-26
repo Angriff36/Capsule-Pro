@@ -13,8 +13,10 @@
   "dependencies": {
     "@ai-sdk/openai": "^2.0.89",
     "@clerk/nextjs": "latest",
-    "@tanstack/react-table": "^8.11.8",
+    "@plasmicapp/loader-nextjs": "^1.0.451",
+    "@plasmicapp/react-web": "^0.2.415",
     "@prisma/client": "7.1.0",
+    "@react-pdf/renderer": "^4.2.1",
     "@repo/analytics": "workspace:*",
     "@repo/auth": "workspace:*",
     "@repo/collaboration": "workspace:*",
@@ -29,6 +31,7 @@
     "@repo/webhooks": "workspace:*",
     "@sentry/nextjs": "^10.29.0",
     "@t3-oss/env-nextjs": "^0.13.8",
+    "@tanstack/react-table": "^8.11.8",
     "ably": "^2.10.0",
     "ai": "^5.0.121",
     "date-fns": "^4.1.0",
@@ -43,8 +46,7 @@
     "recharts": "^2.15.4",
     "require-in-the-middle": "8.0.1",
     "sonner": "^2.0.7",
-    "zod": "^4.1.13",
-    "@react-pdf/renderer": "^4.2.1"
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",

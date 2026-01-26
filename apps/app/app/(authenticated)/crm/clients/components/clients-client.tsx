@@ -364,6 +364,14 @@ export function ClientsClient() {
                       className="cursor-pointer hover:bg-muted/50"
                       key={row.id}
                       onClick={() => handleRowClick(row.original)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleRowClick(row.original);
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id}>

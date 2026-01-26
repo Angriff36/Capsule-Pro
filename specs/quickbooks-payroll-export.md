@@ -29,3 +29,8 @@ The system exports payroll summaries to QuickBooks in compatible format. This st
 - View export history → shows all exports with dates and file names
 - Export fails → error message shown with details
 - Export with invalid mapping → validation error shown before export
+
+## Implementation Notes
+- QuickBooks Online CSV journal lines are built via a builder (`QBOnlineJournalBuilder`) for fluent, ordered construction.
+- When adding new export fields, prefer adding a builder setter or extending the builder input rather than widening function signatures.
+- Export format selection is centralized in the payroll export factory (`createPayrollExporter`) to avoid scattered switch logic.

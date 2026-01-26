@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  calculateEmployeePayroll,
   calculatePayroll,
+  PayrollRecordBuilder,
   verifyPayrollBalances,
 } from "../src/core/calculator";
 import { money } from "../src/core/currency";
@@ -17,6 +17,29 @@ import type {
 // Test fixtures
 const testTenantId = "550e8400-e29b-41d4-a716-446655440000";
 const testPeriodId = "660e8400-e29b-41d4-a716-446655440000";
+
+function buildEmployeePayrollRecord(
+  employee: Employee,
+  role: Role,
+  timeEntries: TimeEntryInput[],
+  tipPools: TipPool[],
+  deductions: Deduction[],
+  periodId: string,
+  periodStart: Date,
+  periodEnd: Date,
+  totalHoursAllEmployees: number,
+  employeeCount: number
+) {
+  return new PayrollRecordBuilder()
+    .setEmployee(employee)
+    .setRole(role)
+    .setTimeEntries(timeEntries)
+    .setTipPools(tipPools)
+    .setDeductions(deductions)
+    .setPeriod(periodId, periodStart, periodEnd)
+    .setTotals(totalHoursAllEmployees, employeeCount)
+    .build();
+}
 
 function createTestEmployee(overrides: Partial<Employee> = {}): Employee {
   return {
@@ -125,7 +148,7 @@ describe("Basic payroll calculations", () => {
     const role = createTestRole({ baseRate: 25 });
     const timeEntries = [createTestTimeEntry(employee.id, 40)];
 
-    const result = calculateEmployeePayroll(
+    const result = buildEmployeePayrollRecord(
       employee,
       role,
       timeEntries,
@@ -150,7 +173,7 @@ describe("Basic payroll calculations", () => {
     const role = createTestRole({ baseRate: 20, overtimeMultiplier: 1.5 });
     const timeEntries = [createTestTimeEntry(employee.id, 50)];
 
-    const result = calculateEmployeePayroll(
+    const result = buildEmployeePayrollRecord(
       employee,
       role,
       timeEntries,
@@ -178,7 +201,7 @@ describe("Basic payroll calculations", () => {
       createTestTimeEntry(employee.id, 20, { approved: false }),
     ];
 
-    const result = calculateEmployeePayroll(
+    const result = buildEmployeePayrollRecord(
       employee,
       role,
       timeEntries,
@@ -217,7 +240,7 @@ describe("Tip allocation", () => {
       createTestTimeEntry(employee2.id, 10),
     ];
 
-    const result1 = calculateEmployeePayroll(
+    const result1 = buildEmployeePayrollRecord(
       employee1,
       role,
       timeEntries,
@@ -230,7 +253,7 @@ describe("Tip allocation", () => {
       2 // employee count
     );
 
-    const result2 = calculateEmployeePayroll(
+    const result2 = buildEmployeePayrollRecord(
       employee2,
       role,
       timeEntries,
@@ -267,7 +290,7 @@ describe("Tip allocation", () => {
       createTestTimeEntry(employee2.id, 20),
     ];
 
-    const result1 = calculateEmployeePayroll(
+    const result1 = buildEmployeePayrollRecord(
       employee1,
       role,
       timeEntries,
@@ -302,7 +325,7 @@ describe("Tip allocation", () => {
 
     const timeEntries = [createTestTimeEntry(employee1.id, 40)];
 
-    const result = calculateEmployeePayroll(
+    const result = buildEmployeePayrollRecord(
       employee1,
       role,
       timeEntries,
@@ -337,7 +360,7 @@ describe("Deductions", () => {
 
     const timeEntries = [createTestTimeEntry(employee.id, 40)];
 
-    const result = calculateEmployeePayroll(
+    const result = buildEmployeePayrollRecord(
       employee,
       role,
       timeEntries,
@@ -372,7 +395,7 @@ describe("Deductions", () => {
 
     const timeEntries = [createTestTimeEntry(employee.id, 40)];
 
-    const result = calculateEmployeePayroll(
+    const result = buildEmployeePayrollRecord(
       employee,
       role,
       timeEntries,
@@ -418,7 +441,7 @@ describe("Deductions", () => {
 
     const timeEntries = [createTestTimeEntry(employee.id, 40)];
 
-    const result = calculateEmployeePayroll(
+    const result = buildEmployeePayrollRecord(
       employee,
       role,
       timeEntries,
@@ -452,7 +475,7 @@ describe("Tax calculations", () => {
     const role = createTestRole({ baseRate: 25 }); // $1000 gross
     const timeEntries = [createTestTimeEntry(employee.id, 40)];
 
-    const result = calculateEmployeePayroll(
+    const result = buildEmployeePayrollRecord(
       employee,
       role,
       timeEntries,
@@ -483,7 +506,7 @@ describe("Tax calculations", () => {
     const role = createTestRole({ baseRate: 25 });
     const timeEntries = [createTestTimeEntry(employee.id, 40)];
 
-    const result = calculateEmployeePayroll(
+    const result = buildEmployeePayrollRecord(
       employee,
       role,
       timeEntries,
@@ -514,7 +537,7 @@ describe("Tax calculations", () => {
     const role = createTestRole({ baseRate: 50 }); // Higher income to trigger state tax
     const timeEntries = [createTestTimeEntry(employee.id, 40)];
 
-    const result = calculateEmployeePayroll(
+    const result = buildEmployeePayrollRecord(
       employee,
       role,
       timeEntries,
@@ -546,7 +569,7 @@ describe("Tax calculations", () => {
     const role = createTestRole({ baseRate: 50 });
     const timeEntries = [createTestTimeEntry(employee.id, 40)];
 
-    const result = calculateEmployeePayroll(
+    const result = buildEmployeePayrollRecord(
       employee,
       role,
       timeEntries,

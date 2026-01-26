@@ -1,7 +1,12 @@
 import { Readable } from "node:stream";
 import { generateText } from "ai";
 import { v4 as uuidv4 } from "uuid";
-import { CancellationError, ERROR_CODES, SDKError } from "./errors.js";
+import {
+  CancellationError,
+  ERROR_CODES,
+  SDKError,
+  createSDKError,
+} from "./errors.js";
 import {
   type AgentEvent,
   AgentEventEmitter,
@@ -110,7 +115,7 @@ export class Agent {
 
   async execute(options: ExecutionOptions): Promise<ExecutionResult> {
     if (this.isExecuting) {
-      throw new SDKError("Agent is already executing", {
+      throw createSDKError("Agent is already executing", {
         code: ERROR_CODES.AGENT_EXECUTION_FAILED,
         agentId: this.id,
         retryable: false,
@@ -198,7 +203,7 @@ export class Agent {
       const sdkError =
         error instanceof SDKError
           ? error
-          : new SDKError(String(error), {
+          : createSDKError(String(error), {
               code: ERROR_CODES.AGENT_EXECUTION_FAILED,
               agentId: this.id,
               retryable: true,
@@ -259,7 +264,7 @@ export class Agent {
       });
 
       if (!(response instanceof Readable)) {
-        throw new SDKError(
+        throw createSDKError(
           "Execution handler must return a Readable stream for streaming execution",
           {
             code: ERROR_CODES.AGENT_EXECUTION_FAILED,
@@ -313,7 +318,7 @@ export class Agent {
       const sdkError =
         error instanceof SDKError
           ? error
-          : new SDKError(String(error), {
+          : createSDKError(String(error), {
               code: ERROR_CODES.AGENT_EXECUTION_FAILED,
               agentId: this.id,
               retryable: true,
@@ -474,7 +479,7 @@ export class Agent {
       }
 
       // Re-throw as SDKError for proper retry handling
-      throw new SDKError(
+      throw createSDKError(
         `LLM API call failed: ${error instanceof Error ? error.message : String(error)}`,
         {
           code: ERROR_CODES.AGENT_EXECUTION_FAILED,

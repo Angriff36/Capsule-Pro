@@ -23,4 +23,26 @@ export default defineConfig({
       "@/app": resolve(__dirname, "apps/app/app"),
     },
   },
+  projects: [
+    {
+      name: "app",
+      root: "./apps/app",
+    },
+    {
+      name: "api",
+      root: "./apps/api",
+    },
+    {
+      name: "database",
+      root: "./packages/database",
+    },
+    {
+      name: "payroll-engine",
+      root: "./packages/payroll-engine",
+    },
+    {
+      name: "realtime",
+      root: "./packages/realtime",
+    },
+  ],
 });

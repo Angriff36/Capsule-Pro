@@ -16,6 +16,17 @@
   - `vitest.config.ts` missing `node:` import protocol.
 - Diagnostics exceeded limit (2143 errors total). No fixes applied during this run.
 
+**Update 19 - Validation Failure (2026-01-26):**
+- `pnpm check` failed (Ultracite lint). Stopped per backpressure rule.
+- Diagnostics exceeded limit (12813 errors total). No fixes applied during this run.
+- Notable blockers reported:
+  - `apps/api/app/api/analytics/finance/route.ts` excessive complexity + nested ternaries + unused variable.
+  - `apps/api/app/api/analytics/kitchen/route.ts` excessive complexity + nested ternaries + explicit `any`.
+  - `apps/api/app/api/analytics/staff/employees/[employeeId]/route.ts` excessive complexity.
+  - `apps/api/app/api/command-board/[boardId]/cards/validation.ts` block statement lint.
+  - `apps/api/app/api/command-board/[boardId]/route.ts` explicit `any`.
+  - `vitest.config.ts` missing `node:` import protocol.
+
 **CRITICAL FINDINGS (2026-01-24 Investigation):**
 
 **Update 17 - DEPLETION FORECASTING COMPLETED (2026-01-24):**

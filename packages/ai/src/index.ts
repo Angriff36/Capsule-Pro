@@ -6,6 +6,7 @@ import {
   AgentNotFoundError,
   AuthenticationError,
   CancellationError,
+  createSDKError,
   ERROR_CODES,
   RateLimitExceededError,
   SDKError,
@@ -184,7 +185,7 @@ export function initializeSDK(options?: SDKOptions): AISDK {
 
 export function getSDK(): AISDK {
   if (!sdkInstance) {
-    throw new SDKError("SDK not initialized. Call initializeSDK() first.", {
+    throw createSDKError("SDK not initialized. Call initializeSDK() first.", {
       code: ERROR_CODES.CONFIG_INVALID,
       retryable: false,
       troubleshootingUrl:
@@ -209,6 +210,7 @@ export {
   type ProgressEvent,
   type ToolEvent,
   SDKError,
+  createSDKError,
   MetricsCollector,
   RetryManager,
   ERROR_CODES,

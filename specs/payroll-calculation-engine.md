@@ -33,3 +33,7 @@ The system calculates gross pay, overtime, deductions, and net pay based on time
 - Calculate payroll for multiple pay periods → each period calculated independently
 - Calculate payroll with different pay rates → correct rate applied for each hour type
 - Attempt to calculate payroll with unapproved timecards → error shown
+
+## Implementation Notes
+- Payroll record construction uses a builder (`PayrollRecordBuilder`) to avoid long positional argument lists.
+- When adding new optional inputs, add a builder setter rather than expanding function signatures.
