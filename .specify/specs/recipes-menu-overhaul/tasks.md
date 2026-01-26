@@ -261,7 +261,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check`
   - **Commit**: `feat(menus): add menu-dish management actions`
 
-- [ ] T023 [VERIFY] Quality checkpoint - Menu Actions
+- [x] T023 [VERIFY] Quality checkpoint - Menu Actions
   - **Do**: Run quality commands
   - **Verify**: `pnpm check && cd apps/app && npx tsc --noEmit`
   - **Done when**: All actions type-check, no lint errors
