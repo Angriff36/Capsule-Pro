@@ -82,7 +82,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check && pnpm dev:apps` then manual navigation
   - **Commit**: `feat(recipes): wire edit modal to recipe cards`
 
-- [ ] T007 [US1] Implement ingredient management in edit modal
+- [x] T007 [US1] Implement ingredient management in edit modal
   - **Do**:
     1. Add ingredient list state with add/remove/reorder
     2. Create ingredient row component with quantity, unit, name
