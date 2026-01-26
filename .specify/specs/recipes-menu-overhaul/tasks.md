@@ -271,7 +271,7 @@ Constitution: 1.0.0
 
 ## Phase 7: Menus Module - UI Components
 
-- [ ] T024 [P] [US3] Create MenuCard component `apps/app/app/(authenticated)/kitchen/recipes/components/menu-card.tsx`
+- [x] T024 [P] [US3] Create MenuCard component `apps/app/app/(authenticated)/kitchen/recipes/components/menu-card.tsx`
   - **Do**:
     1. Create card showing menu name, description
     2. Display dish count, price range
