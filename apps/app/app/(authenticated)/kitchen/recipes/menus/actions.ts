@@ -648,3 +648,37 @@ export const reorderMenuDishes = async (menuId: string, dishIds: string[]) => {
   revalidatePath("/kitchen/recipes/menus");
   revalidatePath(`/kitchen/recipes/menus/${menuId}`);
 };
+export type DishSummary = {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+};
+
+export const getDishes = async (): Promise<DishSummary[]> => {
+  const tenantId = await requireTenantId();
+
+  const dishes = await database.$queryRaw<
+    {
+      id: string;
+      name: string;
+      description: string | null;
+      category: string | null;
+    }[]
+  >(
+    Prisma.sql`
+      SELECT
+        id,
+        name,
+        description,
+        category
+      FROM tenant_kitchen.dishes
+      WHERE tenant_id = ${tenantId}
+        AND deleted_at IS NULL
+        AND is_active = true
+      ORDER BY name ASC
+    `
+  );
+
+  return dishes;
+};

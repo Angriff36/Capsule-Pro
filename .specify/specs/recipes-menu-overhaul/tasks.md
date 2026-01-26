@@ -282,7 +282,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check`
   - **Commit**: `feat(menus): create menu card component`
 
-- [ ] T025 [P] [US3] Create MenuEditor component `apps/app/app/(authenticated)/kitchen/recipes/menus/components/menu-editor.tsx`
+- [x] T025 [P] [US3] Create MenuEditor component `apps/app/app/(authenticated)/kitchen/recipes/menus/components/menu-editor.tsx`
   - **Do**:
     1. Create menus/components directory
     2. Build form with name, description, category, pricing fields
