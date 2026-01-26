@@ -60,6 +60,55 @@ const categoryOptions = [
   "Other",
 ] as const;
 
+/** Tag chip component for displaying removable tags */
+function TagChip({
+  tag,
+  onRemove,
+}: {
+  tag: string;
+  onRemove: (tag: string) => void;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-secondary-foreground text-sm">
+      {tag}
+      <button
+        className="hover:text-destructive"
+        onClick={() => onRemove(tag)}
+        type="button"
+      >
+        &times;
+      </button>
+    </span>
+  );
+}
+
+/** Reusable time input field */
+function TimeInput({
+  id,
+  label,
+  defaultValue,
+  placeholder,
+}: {
+  id: string;
+  label: string;
+  defaultValue?: number;
+  placeholder: string;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        defaultValue={defaultValue ?? ""}
+        id={id}
+        min="0"
+        name={id}
+        placeholder={placeholder}
+        type="number"
+      />
+    </div>
+  );
+}
+
 export const RecipeEditModal = ({
   open,
   onOpenChange,
@@ -83,7 +132,9 @@ export const RecipeEditModal = ({
   };
 
   const handleSubmit = async (formData: FormData) => {
-    if (!onSave) return;
+    if (!onSave) {
+      return;
+    }
     setIsSubmitting(true);
     try {
       formData.set("tags", tags.join(","));
@@ -94,16 +145,18 @@ export const RecipeEditModal = ({
     }
   };
 
+  const isEditMode = Boolean(recipe?.id);
+  const modalTitle = isEditMode ? "Edit Recipe" : "New Recipe";
+  const modalDescription = isEditMode
+    ? "Update recipe details below. Changes create a new version."
+    : "Fill in the recipe details to create a new recipe.";
+
   return (
     <Sheet onOpenChange={onOpenChange} open={open}>
       <SheetContent className="w-full overflow-y-auto sm:max-w-lg" side="right">
         <SheetHeader>
-          <SheetTitle>{recipe?.id ? "Edit Recipe" : "New Recipe"}</SheetTitle>
-          <SheetDescription>
-            {recipe?.id
-              ? "Update recipe details below. Changes create a new version."
-              : "Fill in the recipe details to create a new recipe."}
-          </SheetDescription>
+          <SheetTitle>{modalTitle}</SheetTitle>
+          <SheetDescription>{modalDescription}</SheetDescription>
         </SheetHeader>
 
         <form action={handleSubmit} className="flex flex-1 flex-col gap-6 p-4">
@@ -178,19 +231,7 @@ export const RecipeEditModal = ({
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-2 pt-2">
                 {tags.map((tag) => (
-                  <span
-                    className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-secondary-foreground text-sm"
-                    key={tag}
-                  >
-                    {tag}
-                    <button
-                      className="hover:text-destructive"
-                      onClick={() => handleRemoveTag(tag)}
-                      type="button"
-                    >
-                      &times;
-                    </button>
-                  </span>
+                  <TagChip key={tag} onRemove={handleRemoveTag} tag={tag} />
                 ))}
               </div>
             )}
@@ -236,39 +277,24 @@ export const RecipeEditModal = ({
           <div className="space-y-4">
             <Label className="font-medium text-base">Times (minutes)</Label>
             <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="prepTimeMinutes">Prep</Label>
-                <Input
-                  defaultValue={recipe?.prepTimeMinutes ?? ""}
-                  id="prepTimeMinutes"
-                  min="0"
-                  name="prepTimeMinutes"
-                  placeholder="15"
-                  type="number"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="cookTimeMinutes">Cook</Label>
-                <Input
-                  defaultValue={recipe?.cookTimeMinutes ?? ""}
-                  id="cookTimeMinutes"
-                  min="0"
-                  name="cookTimeMinutes"
-                  placeholder="30"
-                  type="number"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="restTimeMinutes">Rest</Label>
-                <Input
-                  defaultValue={recipe?.restTimeMinutes ?? ""}
-                  id="restTimeMinutes"
-                  min="0"
-                  name="restTimeMinutes"
-                  placeholder="10"
-                  type="number"
-                />
-              </div>
+              <TimeInput
+                defaultValue={recipe?.prepTimeMinutes}
+                id="prepTimeMinutes"
+                label="Prep"
+                placeholder="15"
+              />
+              <TimeInput
+                defaultValue={recipe?.cookTimeMinutes}
+                id="cookTimeMinutes"
+                label="Cook"
+                placeholder="30"
+              />
+              <TimeInput
+                defaultValue={recipe?.restTimeMinutes}
+                id="restTimeMinutes"
+                label="Rest"
+                placeholder="10"
+              />
             </div>
           </div>
 

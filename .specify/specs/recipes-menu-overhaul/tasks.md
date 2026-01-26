@@ -32,7 +32,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check`
   - **Commit**: `feat(recipes): add shared UI components (skeleton, stars, time badges)`
 
-- [ ] T003 [VERIFY] Quality checkpoint - Phase 1 Setup
+- [x] T003 [VERIFY] Quality checkpoint - Phase 1 Setup
   - **Do**: Run lint/typecheck, verify new components
   - **Verify**: `pnpm check && cd apps/app && npx tsc --noEmit`
   - **Done when**: No errors, components importable
