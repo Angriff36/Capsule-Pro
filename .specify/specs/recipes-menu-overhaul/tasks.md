@@ -19,7 +19,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check && cd apps/app && npx tsc --noEmit`
   - **Commit**: `feat(recipes): create recipe edit modal component shell`
 
-- [ ] T002 [P] [US9] Create shared UI components `apps/app/app/(authenticated)/kitchen/recipes/components/`
+- [x] T002 [P] [US9] Create shared UI components `apps/app/app/(authenticated)/kitchen/recipes/components/`
   - **Do**:
     1. Create `skeleton-card.tsx` with shimmer animation matching recipe card dimensions
     2. Create `difficulty-stars.tsx` for 1-5 star rating display
