@@ -1,15 +1,15 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { getTenantIdForOrg } from "../../../lib/tenant";
 import { NextResponse } from "next/server";
+import { getTenantIdForOrg } from "../../../lib/tenant";
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: { recipeId: string } }
 ) {
   try {
     const { orgId } = await auth();
-    
+
     if (!orgId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

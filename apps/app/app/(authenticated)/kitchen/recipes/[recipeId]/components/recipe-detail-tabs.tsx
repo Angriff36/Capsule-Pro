@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,19 +9,24 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
-import { Button } from "@repo/design-system/components/ui/button";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
-import { ChefHat, Clock, DollarSign, Users, History as HistoryIcon } from "lucide-react";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import {
+  ChefHat,
+  Clock,
+  DollarSign,
+  History as HistoryIcon,
+  Users,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   getRecipeCostSummary,
@@ -232,7 +238,9 @@ function HistoryTabContent({
 }) {
   const [versions, setVersions] = useState<RecipeVersionRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewingVersion, setViewingVersion] = useState<RecipeVersionRow | null>(null);
+  const [viewingVersion, setViewingVersion] = useState<RecipeVersionRow | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchVersions = async () => {
@@ -295,12 +303,12 @@ function HistoryTabContent({
           <div className="space-y-3">
             {versions.map((version) => (
               <div
-                key={version.id}
                 className={`flex items-center justify-between rounded-lg border p-4 ${
                   version.id === currentVersionId
                     ? "border-primary bg-primary/5"
                     : ""
                 }`}
+                key={version.id}
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
@@ -324,9 +332,9 @@ function HistoryTabContent({
                   </div>
                 </div>
                 <Button
-                  variant="outline"
-                  size="sm"
                   onClick={() => setViewingVersion(version)}
+                  size="sm"
+                  variant="outline"
                 >
                   View
                 </Button>
@@ -337,8 +345,8 @@ function HistoryTabContent({
       </Card>
 
       <Dialog
-        open={!!viewingVersion}
         onOpenChange={() => setViewingVersion(null)}
+        open={!!viewingVersion}
       >
         <DialogContent>
           <DialogHeader>
@@ -577,8 +585,8 @@ export function RecipeDetailTabs({
 
       <TabsContent className="space-y-4" value="history">
         <HistoryTabContent
-          recipeId={recipe.id}
           currentVersionId={recipeVersionId}
+          recipeId={recipe.id}
         />
       </TabsContent>
     </Tabs>
