@@ -213,7 +213,7 @@ Constitution: 1.0.0
 
 ## Phase 5: Menus Module - Database
 
-- [ ] T019 [US3] Create Prisma migration for Menu and MenuDish models
+- [x] T019 [US3] Create Prisma migration for Menu and MenuDish models
   - **Do**:
     1. Add Menu model to schema.prisma in tenant_kitchen schema
     2. Add MenuDish model with FK to Menu and Dish

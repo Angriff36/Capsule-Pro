@@ -45,6 +45,8 @@ model Account {
   prepMethods           PrepMethod[]
   containers            Container[]
   dishes                Dish[]
+  menus                 Menu[]
+  menuDishes            MenuDish[]
   prepComments          PrepComment[]
   eventStaffAssignments EventStaffAssignment[]
   eventTimelines        EventTimeline[]
@@ -828,10 +830,56 @@ model Dish {
   updatedAt              DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt              DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant                 Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  menuDishes            MenuDish[]
 
   @@id([tenantId, id])
   @@index([recipeId])
   @@map("dishes")
+  @@schema("tenant_kitchen")
+}
+
+model Menu {
+  tenantId          String    @map("tenant_id") @db.Uuid
+  id                String    @default(cuid()) @db.Uuid
+  name              String
+  description       String?
+  category          String?
+  isActive          Boolean   @default(true) @map("is_active")
+  basePrice         Decimal?  @db.Decimal(10, 2) @map("base_price")
+  pricePerPerson    Decimal?  @db.Decimal(10, 2) @map("price_per_person")
+  minGuests         Int?      @map("min_guests") @db.SmallInt
+  maxGuests         Int?      @map("max_guests") @db.SmallInt
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant            Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  menuDishes        MenuDish[]
+
+  @@id([tenantId, id])
+  @@map("menus")
+  @@schema("tenant_kitchen")
+}
+
+model MenuDish {
+  tenantId          String    @map("tenant_id") @db.Uuid
+  id                String    @default(cuid()) @db.Uuid
+  menuId            String    @map("menu_id") @db.Uuid
+  dishId            String    @map("dish_id") @db.Uuid
+  course            String?
+  sortOrder         Int       @default(0) @map("sort_order") @db.SmallInt
+  isOptional        Boolean   @default(false) @map("is_optional")
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant            Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  menu              Menu      @relation(fields: [tenantId, menuId], references: [tenantId, id], onDelete: Restrict)
+  dish              Dish      @relation(fields: [tenantId, dishId], references: [tenantId, id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, menuId, dishId])
+  @@index([menuId])
+  @@index([dishId])
+  @@map("menu_dishes")
   @@schema("tenant_kitchen")
 }
 
