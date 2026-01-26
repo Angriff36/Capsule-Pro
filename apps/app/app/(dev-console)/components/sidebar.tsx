@@ -36,7 +36,7 @@ const navSections = [
 ];
 
 export const DevConsoleSidebar = () => {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
 
   return (
     <aside className="dev-console-sidebar">

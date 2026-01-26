@@ -60,7 +60,7 @@ import {
 export function BudgetDetailClient() {
   const params = useParams();
   const router = useRouter();
-  const budgetId = params.budgetId as string;
+  const budgetId = (params?.budgetId as string) ?? "";
 
   // State
   const [budget, setBudget] = useState<EventBudget | null>(null);

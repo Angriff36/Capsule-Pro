@@ -143,7 +143,7 @@ function getExceptionBadge(exceptionType: string | null) {
 
 export default function TimecardsPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams() ?? new URLSearchParams();
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,

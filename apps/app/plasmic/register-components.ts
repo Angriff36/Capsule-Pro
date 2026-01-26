@@ -69,7 +69,7 @@ type RegisterFn = (
     name: string
     importPath: string
     importName: string
-    props?: Record<string, unknown>
+    props: Record<string, unknown>
   }
 ) => void
 
@@ -84,7 +84,7 @@ const register = (
     return
   }
 
-  const finalProps = withChildren ? { children: "slot", ...(props ?? {}) } : props
+  const finalProps = withChildren ? { children: "slot", ...(props ?? {}) } : (props ?? {})
 
   registerFn(component as ComponentType, {
     name,
@@ -113,7 +113,7 @@ const registerFrom = (
 }
 
 export const registerPlasmicComponents = (
-  registerFn: RegisterFn = registerComponent,
+  registerFn: RegisterFn = registerComponent as RegisterFn,
   target = "host"
 ) => {
   if (registeredTargets.has(target)) {

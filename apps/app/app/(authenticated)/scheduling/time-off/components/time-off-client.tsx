@@ -50,7 +50,7 @@ interface Location {
 
 export function TimeOffClient() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams() ?? new URLSearchParams();
 
   // State
   const [timeOffRequests, setTimeOffRequests] = useState<TimeOffRequest[]>([]);

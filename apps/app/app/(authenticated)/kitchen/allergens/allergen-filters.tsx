@@ -59,7 +59,7 @@ export function AllergenFilters({
   initialDietary = "all",
 }: AllergenFiltersProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams() ?? new URLSearchParams();
 
   const updateFilters = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());

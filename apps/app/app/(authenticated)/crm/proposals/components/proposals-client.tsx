@@ -157,7 +157,7 @@ export function ProposalsClient({
   initialClientId = "",
 }: ProposalsClientProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams() ?? new URLSearchParams();
 
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [pagination, setPagination] = useState<PaginationData>({

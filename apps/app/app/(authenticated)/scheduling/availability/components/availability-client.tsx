@@ -65,7 +65,7 @@ interface Location {
 
 export function AvailabilityClient() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams() ?? new URLSearchParams();
 
   // State
   const [availability, setAvailability] = useState<Availability[]>([]);

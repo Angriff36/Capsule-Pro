@@ -55,7 +55,7 @@ interface ClientFilters {
 
 export function ClientsClient() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams() ?? new URLSearchParams();
 
   // State
   const [clients, setClients] = useState<Client[]>([]);

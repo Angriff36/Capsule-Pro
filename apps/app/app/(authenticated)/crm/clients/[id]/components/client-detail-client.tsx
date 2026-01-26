@@ -89,7 +89,7 @@ interface ClientDetailProps {
 export function ClientDetailClient({ client }: ClientDetailProps) {
   const router = useRouter();
   const params = useParams();
-  const clientId = params.id as string;
+  const clientId = (params?.id as string) ?? "";
 
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);

@@ -63,7 +63,7 @@ export const RecipesToolbar = ({
   primaryAction,
 }: RecipesToolbarProps) => {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams() ?? new URLSearchParams();
   const [query, setQuery] = useState(initialQuery ?? "");
 
   const currentParams = useMemo(

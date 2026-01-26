@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { getModuleKeyFromPathname, modules } from "./module-nav";
 
 export const ModuleHeader = () => {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const activeModuleKey = getModuleKeyFromPathname(pathname);
 
   return (

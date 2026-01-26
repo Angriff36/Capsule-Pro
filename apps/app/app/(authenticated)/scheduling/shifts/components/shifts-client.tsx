@@ -73,7 +73,7 @@ interface Location {
 
 export function ShiftsClient() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams() ?? new URLSearchParams();
 
   // State
   const [shifts, setShifts] = useState<Shift[]>([]);

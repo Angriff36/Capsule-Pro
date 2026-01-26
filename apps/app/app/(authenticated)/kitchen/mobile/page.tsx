@@ -106,7 +106,7 @@ function formatDueStatus(
 }
 
 export default function KitchenMobilePage() {
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams() ?? new URLSearchParams();
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [myTasks, setMyTasks] = useState<Task[]>([]);
   const [isOnline, setIsOnline] = useState(true);

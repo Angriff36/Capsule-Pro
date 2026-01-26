@@ -21,7 +21,7 @@ export const ModuleShell = ({
   navItems,
   children,
 }: ModuleShellProperties) => {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
 
   return (
     <div className="flex min-h-[calc(100vh-6rem)] gap-6 px-6 py-6">

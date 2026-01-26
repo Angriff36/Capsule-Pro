@@ -53,7 +53,7 @@ const data = {
 
 export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
   const sidebar = useSidebar();
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const activeModuleKey = getModuleKeyFromPathname(pathname);
   const activeModule =
     modules.find((module) => module.key === activeModuleKey) ?? modules[0];
