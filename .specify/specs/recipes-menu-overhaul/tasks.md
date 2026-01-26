@@ -237,7 +237,7 @@ Constitution: 1.0.0
 
 ## Phase 6: Menus Module - Server Actions
 
-- [ ] T021 [US3] Create menu server actions `apps/app/app/(authenticated)/kitchen/recipes/menus/actions.ts`
+- [x] T021 [US3] Create menu server actions `apps/app/app/(authenticated)/kitchen/recipes/menus/actions.ts`
   - **Do**:
     1. Create menus directory
     2. Add `createMenu(formData)` - insert menu with basic fields
