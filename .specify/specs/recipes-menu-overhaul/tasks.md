@@ -159,7 +159,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check`
   - **Commit**: `feat(recipes): add version history tab to recipe detail`
 
-- [ ] T014 [VERIFY] Quality checkpoint - Recipe Detail
+- [x] T014 [VERIFY] Quality checkpoint - Recipe Detail
   - **Do**: Run quality commands, verify tabs work
   - **Verify**: `pnpm check && cd apps/app && npx tsc --noEmit`
   - **Done when**: All tabs render correctly with data

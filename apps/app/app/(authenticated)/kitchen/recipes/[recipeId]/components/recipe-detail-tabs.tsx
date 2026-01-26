@@ -420,7 +420,7 @@ export function RecipeDetailTabs({
     fetchCostData();
   }, [recipeVersionId]);
 
-  const hasCostData = costData && costData.ingredients.length > 0;
+  const hasCostData = Boolean(costData && costData.ingredients.length > 0);
 
   return (
     <Tabs className="w-full" defaultValue="overview">

@@ -2,12 +2,7 @@ import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { ArrowLeft, ChefHat, Clock, Edit, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -164,12 +159,14 @@ const RecipeDetailPage = async ({
     `
   );
 
-  const recipeVersionId = recipeVersion.length > 0 ? recipeVersion[0].version_id : null;
+  const recipeVersionId =
+    recipeVersion.length > 0 ? recipeVersion[0].version_id : null;
 
   // Fetch recipe steps
-  const steps: RecipeStepRow[] = recipeVersion.length > 0
-    ? await database.$queryRaw<RecipeStepRow[]>(
-        Prisma.sql`
+  const _steps: RecipeStepRow[] =
+    recipeVersion.length > 0
+      ? await database.$queryRaw<RecipeStepRow[]>(
+          Prisma.sql`
           SELECT
             step_number,
             instruction,
@@ -186,8 +183,8 @@ const RecipeDetailPage = async ({
             AND deleted_at IS NULL
           ORDER BY step_number ASC
         `
-      )
-    : [];
+        )
+      : [];
 
   return (
     <>
@@ -274,8 +271,8 @@ const RecipeDetailPage = async ({
 
         {/* Recipe Detail Tabs */}
         <RecipeDetailTabs
-          recipe={recipe}
           ingredients={ingredients}
+          recipe={recipe}
           recipeVersionId={recipeVersionId}
         />
       </div>
