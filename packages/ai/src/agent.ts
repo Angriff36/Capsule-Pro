@@ -25,13 +25,13 @@ import {
   type Metrics,
 } from "./types.js";
 
-export interface ExecutionResult {
+export type ExecutionResult = {
   agentId: string;
   executionId: string;
   response: string;
   metrics: Metrics;
   streamed?: boolean;
-}
+};
 
 export interface StreamingResult extends ExecutionResult {
   stream: Readable;
@@ -140,7 +140,7 @@ export class Agent {
 
       const retryManager = new RetryManager({
         maxAttempts: this.maxRetries,
-        onRetry: (attempt, error) => {
+        onRetry: (_attempt, error) => {
           this.eventEmitter.emit("toolError", {
             type: "toolError",
             toolName: "agent",
@@ -520,14 +520,6 @@ export class Agent {
       error,
     };
     this.eventEmitter.emit("error", event);
-  }
-
-  private emitToolError(
-    executionId: string,
-    toolName: string,
-    event: import("./events.js").ToolEvent
-  ): void {
-    this.eventEmitter.emit("toolError", event);
   }
 
   private estimateTokenCount(text: string): number {

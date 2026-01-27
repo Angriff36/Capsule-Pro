@@ -8,9 +8,9 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getClientEventHistory } from "../../../actions";
 
-interface EventsTabProps {
+type EventsTabProps = {
   clientId: string;
-}
+};
 
 export function EventsTab({ clientId }: EventsTabProps) {
   const [events, setEvents] = useState<
@@ -39,7 +39,7 @@ export function EventsTab({ clientId }: EventsTabProps) {
       );
       setEvents(data.data);
       setPagination((prev) => ({ ...prev, total: data.pagination.total }));
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to load events");
     } finally {
       setLoading(false);
@@ -48,7 +48,7 @@ export function EventsTab({ clientId }: EventsTabProps) {
 
   useEffect(() => {
     fetchEvents();
-  }, [clientId, pagination.offset]);
+  }, [fetchEvents]);
 
   const loadMore = () => {
     setPagination((prev) => ({

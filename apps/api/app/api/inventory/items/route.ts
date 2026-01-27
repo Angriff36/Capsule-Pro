@@ -85,8 +85,12 @@ function calculateStockStatus(
   quantityOnHand: number,
   reorderLevel: number
 ): StockStatus {
-  if (quantityOnHand <= 0) return "out_of_stock";
-  if (quantityOnHand <= reorderLevel) return "low_stock";
+  if (quantityOnHand <= 0) {
+    return "out_of_stock";
+  }
+  if (quantityOnHand <= reorderLevel) {
+    return "low_stock";
+  }
   return "in_stock";
 }
 

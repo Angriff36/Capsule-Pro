@@ -27,7 +27,7 @@ export type RecipeIngredient = {
  * Fetch ingredients for the latest version of a recipe
  */
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ recipeId: string }> }
 ) {
   try {

@@ -64,23 +64,35 @@ export async function PUT(
 
     // Build update data
     const updateData: any = {};
-    if (body.quantity_shipped !== undefined)
+    if (body.quantity_shipped !== undefined) {
       updateData.quantityShipped = body.quantity_shipped.toString();
-    if (body.quantity_received !== undefined)
+    }
+    if (body.quantity_received !== undefined) {
       updateData.quantityReceived = body.quantity_received.toString();
-    if (body.quantity_damaged !== undefined)
+    }
+    if (body.quantity_damaged !== undefined) {
       updateData.quantityDamaged = body.quantity_damaged.toString();
-    if (body.unit_id !== undefined) updateData.unitId = body.unit_id;
-    if (body.unit_cost !== undefined)
+    }
+    if (body.unit_id !== undefined) {
+      updateData.unitId = body.unit_id;
+    }
+    if (body.unit_cost !== undefined) {
       updateData.unitCost = body.unit_cost ? body.unit_cost.toString() : null;
-    if (body.condition !== undefined) updateData.condition = body.condition;
-    if (body.condition_notes !== undefined)
+    }
+    if (body.condition !== undefined) {
+      updateData.condition = body.condition;
+    }
+    if (body.condition_notes !== undefined) {
       updateData.conditionNotes = body.condition_notes;
-    if (body.lot_number !== undefined) updateData.lotNumber = body.lot_number;
-    if (body.expiration_date !== undefined)
+    }
+    if (body.lot_number !== undefined) {
+      updateData.lotNumber = body.lot_number;
+    }
+    if (body.expiration_date !== undefined) {
       updateData.expirationDate = body.expiration_date
         ? new Date(body.expiration_date)
         : null;
+    }
 
     // Recalculate total cost if quantities or unit cost changed
     const newQuantityShipped =
@@ -181,7 +193,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string; itemId: string }> }
 ) {
   try {
@@ -226,8 +238,7 @@ export async function DELETE(
     if (shipment && ["in_transit", "delivered"].includes(shipment.status)) {
       return NextResponse.json(
         {
-          message:
-            "Cannot modify items for shipments with status: " + shipment.status,
+          message: `Cannot modify items for shipments with status: ${shipment.status}`,
         },
         { status: 400 }
       );

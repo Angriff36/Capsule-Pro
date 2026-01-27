@@ -28,7 +28,7 @@ export type IngredientCostBreakdown = {
   hasInventoryItem: boolean;
 };
 
-const loadUnitConversions = async () => {
+const _loadUnitConversions = async () => {
   const rows = await database.$queryRaw<UnitConversion[]>(
     Prisma.sql`
       SELECT from_unit_id, to_unit_id, multiplier
@@ -40,7 +40,7 @@ const loadUnitConversions = async () => {
   );
 };
 
-const convertQuantity = (
+const _convertQuantity = (
   quantity: number,
   fromUnitId: number,
   toUnitId: number,
@@ -181,7 +181,7 @@ const calculateAllRecipeCosts = async (
 };
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ recipeVersionId: string }> }
 ) {
   try {
@@ -213,7 +213,7 @@ export async function GET(
 }
 
 export async function POST(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ recipeVersionId: string }> }
 ) {
   try {

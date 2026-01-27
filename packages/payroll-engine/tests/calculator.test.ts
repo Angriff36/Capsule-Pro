@@ -493,12 +493,12 @@ describe("Tax calculations", () => {
       (t) => t.type === "social_security"
     );
     expect(ssTax).toBeDefined();
-    expect(ssTax!.amount).toBe(62); // 6.2% of 1000
+    expect(ssTax?.amount).toBe(62); // 6.2% of 1000
 
     // Check for Medicare tax (1.45%)
     const medicareTax = result.taxesWithheld.find((t) => t.type === "medicare");
     expect(medicareTax).toBeDefined();
-    expect(medicareTax!.amount).toBe(14.5); // 1.45% of 1000
+    expect(medicareTax?.amount).toBe(14.5); // 1.45% of 1000
   });
 
   it("should calculate federal income tax", () => {
@@ -521,7 +521,7 @@ describe("Tax calculations", () => {
 
     const federalTax = result.taxesWithheld.find((t) => t.type === "federal");
     expect(federalTax).toBeDefined();
-    expect(federalTax!.amount).toBeGreaterThan(0);
+    expect(federalTax?.amount).toBeGreaterThan(0);
   });
 
   it("should apply state tax for applicable jurisdictions", () => {
@@ -552,8 +552,8 @@ describe("Tax calculations", () => {
 
     const stateTax = result.taxesWithheld.find((t) => t.type === "state");
     expect(stateTax).toBeDefined();
-    expect(stateTax!.jurisdiction).toBe("CA");
-    expect(stateTax!.amount).toBeGreaterThan(0);
+    expect(stateTax?.jurisdiction).toBe("CA");
+    expect(stateTax?.amount).toBeGreaterThan(0);
   });
 
   it("should not apply state tax for tax-free states", () => {

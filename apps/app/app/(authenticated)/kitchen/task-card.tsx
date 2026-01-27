@@ -126,7 +126,9 @@ function formatDueStatus(dueDate: Date | null): {
   isOverdue: boolean;
   isUrgent: boolean;
 } | null {
-  if (!dueDate) return null;
+  if (!dueDate) {
+    return null;
+  }
 
   const now = new Date();
   const due = new Date(dueDate);
@@ -201,7 +203,9 @@ export function TaskCard({
   );
 
   const handleClaim = async () => {
-    if (!currentUserId) return;
+    if (!currentUserId) {
+      return;
+    }
     setIsLoading(true);
     try {
       const response = await fetch(`/api/kitchen/tasks/${task.id}/claim`, {
@@ -209,7 +213,9 @@ export function TaskCard({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ employeeId: currentUserId }),
       });
-      if (!response.ok) throw new Error("Failed to claim task");
+      if (!response.ok) {
+        throw new Error("Failed to claim task");
+      }
       router.refresh();
     } catch (error) {
       console.error("Error claiming task:", error);
@@ -220,7 +226,9 @@ export function TaskCard({
   };
 
   const handleRelease = async () => {
-    if (!currentUserId) return;
+    if (!currentUserId) {
+      return;
+    }
     setIsLoading(true);
     try {
       const response = await fetch(`/api/kitchen/tasks/${task.id}/release`, {
@@ -228,7 +236,9 @@ export function TaskCard({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ employeeId: currentUserId }),
       });
-      if (!response.ok) throw new Error("Failed to release task");
+      if (!response.ok) {
+        throw new Error("Failed to release task");
+      }
       router.refresh();
     } catch (error) {
       console.error("Error releasing task:", error);
@@ -246,7 +256,9 @@ export function TaskCard({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
-      if (!response.ok) throw new Error("Failed to update task status");
+      if (!response.ok) {
+        throw new Error("Failed to update task status");
+      }
       router.refresh();
     } catch (error) {
       console.error("Error updating task status:", error);

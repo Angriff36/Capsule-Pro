@@ -9,7 +9,7 @@ type Params = Promise<{ guestId: string }>;
  * GET /api/events/guests/[guestId]
  * Get a single guest by ID
  */
-export async function GET(request: Request, { params }: { params: Params }) {
+export async function GET(_request: Request, { params }: { params: Params }) {
   const { orgId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -201,7 +201,10 @@ export async function PUT(request: Request, { params }: { params: Params }) {
  * DELETE /api/events/guests/[guestId]
  * Soft delete a guest
  */
-export async function DELETE(request: Request, { params }: { params: Params }) {
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Params }
+) {
   const { orgId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });

@@ -21,7 +21,7 @@ function validateShipmentItemData(item: any) {
 }
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -146,7 +146,7 @@ export async function POST(
       });
 
       if (!inventoryItem) {
-        throw new InvariantError("Inventory item not found: " + item.item_id);
+        throw new InvariantError(`Inventory item not found: ${item.item_id}`);
       }
 
       // Calculate total cost

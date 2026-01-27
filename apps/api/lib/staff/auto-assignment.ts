@@ -9,7 +9,7 @@ import { database, Prisma } from "@repo/database";
 import { checkBudgetForShift } from "./labor-budget";
 
 // Types for auto-assignment
-export interface ShiftRequirement {
+export type ShiftRequirement = {
   shiftId: string;
   scheduleId: string;
   locationId: string;
@@ -19,9 +19,9 @@ export interface ShiftRequirement {
   requiredSkills?: string[]; // Array of skill IDs
   eventId?: string; // Event ID for budget tracking
   notes?: string;
-}
+};
 
-export interface EmployeeCandidate {
+export type EmployeeCandidate = {
   id: string;
   firstName: string | null;
   lastName: string | null;
@@ -51,9 +51,9 @@ export interface EmployeeCandidate {
     shiftEnd: Date;
     locationName: string;
   }>;
-}
+};
 
-export interface AssignmentSuggestion {
+export type AssignmentSuggestion = {
   employee: EmployeeCandidate;
   score: number;
   reasoning: string[];
@@ -67,15 +67,15 @@ export interface AssignmentSuggestion {
     hasConflicts: boolean;
     costEstimate: number;
   };
-}
+};
 
-export interface AutoAssignmentResult {
+export type AutoAssignmentResult = {
   shiftId: string;
   suggestions: AssignmentSuggestion[];
   bestMatch: AssignmentSuggestion | null;
   canAutoAssign: boolean;
   laborBudgetWarning?: string;
-}
+};
 
 /**
  * Get eligible employees for a shift with scoring

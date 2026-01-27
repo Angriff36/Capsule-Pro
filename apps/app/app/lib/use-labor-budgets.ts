@@ -11,7 +11,7 @@ export type AlertType =
   | "threshold_100"
   | "exceeded";
 
-export interface LaborBudget {
+export type LaborBudget = {
   id: string;
   tenant_id: string;
   location_id: string | null;
@@ -31,9 +31,9 @@ export interface LaborBudget {
   override_reason: string | null;
   created_at: Date;
   updated_at: Date;
-}
+};
 
-export interface BudgetUtilization {
+export type BudgetUtilization = {
   budgetId: string;
   budgetName: string;
   budgetType: string;
@@ -45,9 +45,9 @@ export interface BudgetUtilization {
   periodStart?: Date;
   periodEnd?: Date;
   status: BudgetStatus;
-}
+};
 
-export interface BudgetAlert {
+export type BudgetAlert = {
   id: string;
   tenant_id: string;
   budget_id: string;
@@ -60,13 +60,13 @@ export interface BudgetAlert {
   is_resolved: boolean;
   resolved_at: Date | null;
   created_at: Date;
-}
+};
 
 export interface BudgetWithUtilization extends LaborBudget {
   utilization?: BudgetUtilization;
 }
 
-export interface CreateBudgetInput {
+export type CreateBudgetInput = {
   name: string;
   description?: string;
   budgetType: BudgetType;
@@ -79,9 +79,9 @@ export interface CreateBudgetInput {
   threshold80Pct?: boolean;
   threshold90Pct?: boolean;
   threshold100Pct?: boolean;
-}
+};
 
-export interface UpdateBudgetInput {
+export type UpdateBudgetInput = {
   name?: string;
   description?: string;
   budgetTarget?: number;
@@ -90,20 +90,20 @@ export interface UpdateBudgetInput {
   threshold80Pct?: boolean;
   threshold90Pct?: boolean;
   threshold100Pct?: boolean;
-}
+};
 
-export interface BudgetFilters {
+export type BudgetFilters = {
   locationId?: string;
   eventId?: string;
   budgetType?: BudgetType;
   status?: BudgetStatus;
-}
+};
 
-export interface AlertFilters {
+export type AlertFilters = {
   budgetId?: string;
   isAcknowledged?: boolean;
   alertType?: AlertType;
-}
+};
 
 // API Client Functions
 const API_BASE = "/api/staff/budgets";
@@ -115,10 +115,18 @@ export async function getBudgets(
   filters?: BudgetFilters
 ): Promise<LaborBudget[]> {
   const params = new URLSearchParams();
-  if (filters?.locationId) params.set("locationId", filters.locationId);
-  if (filters?.eventId) params.set("eventId", filters.eventId);
-  if (filters?.budgetType) params.set("budgetType", filters.budgetType);
-  if (filters?.status) params.set("status", filters.status);
+  if (filters?.locationId) {
+    params.set("locationId", filters.locationId);
+  }
+  if (filters?.eventId) {
+    params.set("eventId", filters.eventId);
+  }
+  if (filters?.budgetType) {
+    params.set("budgetType", filters.budgetType);
+  }
+  if (filters?.status) {
+    params.set("status", filters.status);
+  }
 
   const response = await fetch(`${API_BASE}?${params.toString()}`);
   if (!response.ok) {
@@ -209,11 +217,15 @@ export async function getBudgetAlerts(
   filters?: AlertFilters
 ): Promise<BudgetAlert[]> {
   const params = new URLSearchParams();
-  if (filters?.budgetId) params.set("budgetId", filters.budgetId);
+  if (filters?.budgetId) {
+    params.set("budgetId", filters.budgetId);
+  }
   if (filters?.isAcknowledged !== undefined) {
     params.set("isAcknowledged", filters.isAcknowledged.toString());
   }
-  if (filters?.alertType) params.set("alertType", filters.alertType);
+  if (filters?.alertType) {
+    params.set("alertType", filters.alertType);
+  }
 
   const response = await fetch(`${API_BASE}/alerts?${params.toString()}`);
   if (!response.ok) {
@@ -312,9 +324,15 @@ export function getAlertTypeColor(alertType: AlertType): string {
  * Get utilization color based on percentage
  */
 export function getUtilizationColor(utilizationPct: number): string {
-  if (utilizationPct >= 100) return "text-red-600";
-  if (utilizationPct >= 90) return "text-orange-600";
-  if (utilizationPct >= 80) return "text-yellow-600";
+  if (utilizationPct >= 100) {
+    return "text-red-600";
+  }
+  if (utilizationPct >= 90) {
+    return "text-orange-600";
+  }
+  if (utilizationPct >= 80) {
+    return "text-yellow-600";
+  }
   return "text-green-600";
 }
 
@@ -322,9 +340,15 @@ export function getUtilizationColor(utilizationPct: number): string {
  * Get progress bar color based on percentage
  */
 export function getProgressBarColor(utilizationPct: number): string {
-  if (utilizationPct >= 100) return "bg-red-500";
-  if (utilizationPct >= 90) return "bg-orange-500";
-  if (utilizationPct >= 80) return "bg-yellow-500";
+  if (utilizationPct >= 100) {
+    return "bg-red-500";
+  }
+  if (utilizationPct >= 90) {
+    return "bg-orange-500";
+  }
+  if (utilizationPct >= 80) {
+    return "bg-yellow-500";
+  }
   return "bg-green-500";
 }
 

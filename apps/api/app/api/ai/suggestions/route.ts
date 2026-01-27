@@ -5,7 +5,6 @@ import { generateText } from "ai";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
-  ActionHandler,
   SuggestedAction,
   SuggestionCategory,
   SuggestionPriority,

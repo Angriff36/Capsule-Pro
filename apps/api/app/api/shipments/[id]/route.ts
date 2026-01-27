@@ -14,7 +14,7 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { validateUpdateShipmentRequest } from "../validation";
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -179,52 +179,78 @@ export async function PUT(
 
     // Build update data
     const updateData: any = {};
-    if (body.shipment_number !== undefined)
+    if (body.shipment_number !== undefined) {
       updateData.shipmentNumber = body.shipment_number;
-    if (body.status !== undefined) updateData.status = body.status;
-    if (body.event_id !== undefined) updateData.eventId = body.event_id;
-    if (body.supplier_id !== undefined)
+    }
+    if (body.status !== undefined) {
+      updateData.status = body.status;
+    }
+    if (body.event_id !== undefined) {
+      updateData.eventId = body.event_id;
+    }
+    if (body.supplier_id !== undefined) {
       updateData.supplierId = body.supplier_id;
-    if (body.location_id !== undefined)
+    }
+    if (body.location_id !== undefined) {
       updateData.locationId = body.location_id;
-    if (body.scheduled_date !== undefined)
+    }
+    if (body.scheduled_date !== undefined) {
       updateData.scheduledDate = body.scheduled_date
         ? new Date(body.scheduled_date)
         : null;
-    if (body.shipped_date !== undefined)
+    }
+    if (body.shipped_date !== undefined) {
       updateData.shippedDate = body.shipped_date
         ? new Date(body.shipped_date)
         : null;
-    if (body.estimated_delivery_date !== undefined)
+    }
+    if (body.estimated_delivery_date !== undefined) {
       updateData.estimatedDeliveryDate = body.estimated_delivery_date
         ? new Date(body.estimated_delivery_date)
         : null;
-    if (body.actual_delivery_date !== undefined)
+    }
+    if (body.actual_delivery_date !== undefined) {
       updateData.actualDeliveryDate = body.actual_delivery_date
         ? new Date(body.actual_delivery_date)
         : null;
-    if (body.shipping_cost !== undefined)
+    }
+    if (body.shipping_cost !== undefined) {
       updateData.shippingCost = body.shipping_cost
         ? body.shipping_cost.toString()
         : null;
-    if (body.total_value !== undefined)
+    }
+    if (body.total_value !== undefined) {
       updateData.totalValue = body.total_value
         ? body.total_value.toString()
         : null;
-    if (body.tracking_number !== undefined)
+    }
+    if (body.tracking_number !== undefined) {
       updateData.trackingNumber = body.tracking_number;
-    if (body.carrier !== undefined) updateData.carrier = body.carrier;
-    if (body.shipping_method !== undefined)
+    }
+    if (body.carrier !== undefined) {
+      updateData.carrier = body.carrier;
+    }
+    if (body.shipping_method !== undefined) {
       updateData.shippingMethod = body.shipping_method;
-    if (body.delivered_by !== undefined)
+    }
+    if (body.delivered_by !== undefined) {
       updateData.deliveredBy = body.delivered_by;
-    if (body.received_by !== undefined)
+    }
+    if (body.received_by !== undefined) {
       updateData.receivedBy = body.received_by;
-    if (body.signature !== undefined) updateData.signature = body.signature;
-    if (body.notes !== undefined) updateData.notes = body.notes;
-    if (body.internal_notes !== undefined)
+    }
+    if (body.signature !== undefined) {
+      updateData.signature = body.signature;
+    }
+    if (body.notes !== undefined) {
+      updateData.notes = body.notes;
+    }
+    if (body.internal_notes !== undefined) {
       updateData.internalNotes = body.internal_notes;
-    if (body.reference !== undefined) updateData.reference = body.reference;
+    }
+    if (body.reference !== undefined) {
+      updateData.reference = body.reference;
+    }
 
     // Use raw SQL for composite key update
     await database.$executeRaw`
@@ -308,7 +334,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -342,7 +368,7 @@ export async function DELETE(
     // Prevent deletion of non-draft shipments
     if (existing.status !== "draft" && existing.status !== "cancelled") {
       return NextResponse.json(
-        { message: "Cannot delete shipment with status: " + existing.status },
+        { message: `Cannot delete shipment with status: ${existing.status}` },
         { status: 400 }
       );
     }

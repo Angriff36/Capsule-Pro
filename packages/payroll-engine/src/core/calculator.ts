@@ -37,7 +37,7 @@ function generatePayrollRecordId(periodId: string, employeeId: string): string {
   for (let i = 0; i < combined.length; i++) {
     const char = combined.charCodeAt(i);
     hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32bit integer
+    hash &= hash; // Convert to 32bit integer
   }
   // Format as UUID-like string
   const hex = Math.abs(hash).toString(16).padStart(8, "0");
@@ -132,7 +132,9 @@ function calculateTipAllocation(
   let totalTips = Currency.zero();
 
   for (const pool of tipPools) {
-    if (pool.totalTips <= 0) continue;
+    if (pool.totalTips <= 0) {
+      continue;
+    }
 
     const strategy = tipAllocationStrategies[pool.allocationRule];
     invariant(
@@ -175,9 +177,15 @@ function applyDeductions(
 
   // Filter deductions for this employee and period
   const applicableDeductions = deductions.filter((d) => {
-    if (d.employeeId !== employeeId) return false;
-    if (d.effectiveDate > periodEnd) return false;
-    if (d.endDate && d.endDate < periodStart) return false;
+    if (d.employeeId !== employeeId) {
+      return false;
+    }
+    if (d.effectiveDate > periodEnd) {
+      return false;
+    }
+    if (d.endDate && d.endDate < periodStart) {
+      return false;
+    }
     return true;
   });
 

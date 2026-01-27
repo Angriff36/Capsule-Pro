@@ -25,15 +25,19 @@ function calculateStockStatus(
   quantityOnHand: number,
   reorderLevel: number
 ): "in_stock" | "low_stock" | "out_of_stock" {
-  if (quantityOnHand <= 0) return "out_of_stock";
-  if (quantityOnHand <= reorderLevel) return "low_stock";
+  if (quantityOnHand <= 0) {
+    return "out_of_stock";
+  }
+  if (quantityOnHand <= reorderLevel) {
+    return "low_stock";
+  }
   return "in_stock";
 }
 
 /**
  * GET /api/inventory/items/[id] - Get a single inventory item
  */
-export async function GET(request: Request, context: RouteContext) {
+export async function GET(_request: Request, context: RouteContext) {
   try {
     const { orgId } = await auth();
     if (!orgId) {
@@ -172,21 +176,36 @@ export async function PUT(request: Request, context: RouteContext) {
     // Build update data with only provided fields
     const updateData: Record<string, unknown> = {};
 
-    if (body.name !== undefined) updateData.name = body.name;
-    if (body.category !== undefined) updateData.category = body.category;
-    if (body.unit_cost !== undefined) updateData.unitCost = body.unit_cost;
-    if (body.quantity_on_hand !== undefined)
+    if (body.name !== undefined) {
+      updateData.name = body.name;
+    }
+    if (body.category !== undefined) {
+      updateData.category = body.category;
+    }
+    if (body.unit_cost !== undefined) {
+      updateData.unitCost = body.unit_cost;
+    }
+    if (body.quantity_on_hand !== undefined) {
       updateData.quantityOnHand = body.quantity_on_hand;
-    if (body.reorder_level !== undefined)
+    }
+    if (body.reorder_level !== undefined) {
       updateData.reorder_level = body.reorder_level;
-    if (body.tags !== undefined) updateData.tags = body.tags;
-    if (body.fsa_status !== undefined) updateData.fsa_status = body.fsa_status;
-    if (body.fsa_temp_logged !== undefined)
+    }
+    if (body.tags !== undefined) {
+      updateData.tags = body.tags;
+    }
+    if (body.fsa_status !== undefined) {
+      updateData.fsa_status = body.fsa_status;
+    }
+    if (body.fsa_temp_logged !== undefined) {
       updateData.fsa_temp_logged = body.fsa_temp_logged;
-    if (body.fsa_allergen_info !== undefined)
+    }
+    if (body.fsa_allergen_info !== undefined) {
       updateData.fsa_allergen_info = body.fsa_allergen_info;
-    if (body.fsa_traceable !== undefined)
+    }
+    if (body.fsa_traceable !== undefined) {
       updateData.fsa_traceable = body.fsa_traceable;
+    }
 
     // Update inventory item using raw SQL for composite key
     await database.$executeRaw`
@@ -263,7 +282,7 @@ export async function PUT(request: Request, context: RouteContext) {
 /**
  * DELETE /api/inventory/items/[id] - Soft delete an inventory item
  */
-export async function DELETE(request: Request, context: RouteContext) {
+export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const { orgId } = await auth();
     if (!orgId) {

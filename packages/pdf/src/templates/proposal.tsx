@@ -179,9 +179,9 @@ const styles = StyleSheet.create({
   },
 });
 
-interface ProposalPDFProps {
+type ProposalPDFProps = {
   data: ProposalPDFData;
-}
+};
 
 /**
  * Proposal PDF Template

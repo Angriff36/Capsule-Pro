@@ -88,11 +88,13 @@ export const RecipesPageClient = () => {
   }, [loadRecipes]);
 
   const filteredRecipes = recipes.filter((recipe) => {
-    if (!searchQuery) return true;
+    if (!searchQuery) {
+      return true;
+    }
     const query = searchQuery.toLowerCase();
     return (
       recipe.name.toLowerCase().includes(query) ||
-      (recipe.description && recipe.description.toLowerCase().includes(query))
+      recipe.description?.toLowerCase().includes(query)
     );
   });
 

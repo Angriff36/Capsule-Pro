@@ -55,9 +55,9 @@ import {
   useRecipeCost,
 } from "../../../../lib/use-recipe-costing";
 
-interface RecipeCostDetailClientProps {
+type RecipeCostDetailClientProps = {
   recipeVersionId: string;
-}
+};
 
 export const RecipeCostDetailClient = ({
   recipeVersionId,
@@ -99,10 +99,12 @@ export const RecipeCostDetailClient = ({
   };
 
   const handleScaleRecipe = async () => {
-    if (!(costData && targetPortions)) return;
+    if (!(costData && targetPortions)) {
+      return;
+    }
 
     const portions = Number.parseInt(targetPortions, 10);
-    if (isNaN(portions) || portions <= 0) {
+    if (Number.isNaN(portions) || portions <= 0) {
       toast.error("Please enter a valid number of portions");
       return;
     }
@@ -132,10 +134,12 @@ export const RecipeCostDetailClient = ({
   };
 
   const handleUpdateWasteFactor = async () => {
-    if (!selectedIngredient) return;
+    if (!selectedIngredient) {
+      return;
+    }
 
     const factor = Number.parseFloat(wasteFactor);
-    if (isNaN(factor) || factor < 1) {
+    if (Number.isNaN(factor) || factor < 1) {
       toast.error("Please enter a valid waste factor (1.0 or greater)");
       return;
     }

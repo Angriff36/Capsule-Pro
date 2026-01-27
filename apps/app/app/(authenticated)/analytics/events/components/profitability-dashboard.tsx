@@ -13,9 +13,9 @@ import type {
   HistoricalProfitabilityData,
 } from "../actions/get-event-profitability";
 
-interface ProfitabilityDashboardProps {
+type ProfitabilityDashboardProps = {
   eventId?: string;
-}
+};
 
 export function ProfitabilityDashboard({
   eventId,
@@ -58,7 +58,7 @@ export function ProfitabilityDashboard({
   if (loading) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
+        {[...new Array(4)].map((_, i) => (
           <Card key={i}>
             <CardHeader>
               <div className="h-4 w-24 animate-pulse bg-muted rounded" />

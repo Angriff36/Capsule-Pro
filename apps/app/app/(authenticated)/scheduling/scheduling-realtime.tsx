@@ -25,7 +25,9 @@ const SchedulingRealtime = ({ tenantId, userId }: SchedulingRealtimeProps) => {
   const router = useRouter();
 
   useEffect(() => {
-    if (!tenantId) return;
+    if (!tenantId) {
+      return;
+    }
 
     const apiBaseUrl = getApiBaseUrl();
     if (!apiBaseUrl) {
@@ -56,7 +58,9 @@ const SchedulingRealtime = ({ tenantId, userId }: SchedulingRealtimeProps) => {
 
     const channel = client.channels.get(`tenant:${tenantId}`);
     const handleMessage = (message: { name?: string }) => {
-      if (!isOpenShiftEvent(message.name)) return;
+      if (!isOpenShiftEvent(message.name)) {
+        return;
+      }
       router.refresh();
     };
 
@@ -69,7 +73,7 @@ const SchedulingRealtime = ({ tenantId, userId }: SchedulingRealtimeProps) => {
       // 2. The connection lifecycle should be managed at the app level
       // 3. Closing and recreating connections causes "Connection closed" errors
     };
-  }, [tenantId, userId, router]);
+  }, [tenantId, router]);
 
   return null;
 };

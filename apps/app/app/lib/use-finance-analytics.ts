@@ -3,24 +3,24 @@
 import { useEffect, useState } from "react";
 
 // TypeScript types for Finance Analytics
-export interface FinanceHighlight {
+export type FinanceHighlight = {
   label: string;
   value: string;
   trend: string;
   isPositive?: boolean;
-}
+};
 
-export interface LedgerEntry {
+export type LedgerEntry = {
   label: string;
   amount: string;
-}
+};
 
-export interface FinanceAlert {
+export type FinanceAlert = {
   message: string;
   severity: "High" | "Medium" | "Low";
-}
+};
 
-export interface FinanceMetrics {
+export type FinanceMetrics = {
   totalEvents: number;
   budgetedRevenue: number;
   actualRevenue: number;
@@ -33,9 +33,9 @@ export interface FinanceMetrics {
   totalCost: number;
   grossProfit: number;
   grossProfitMargin: number;
-}
+};
 
-export interface FinanceAnalyticsData {
+export type FinanceAnalyticsData = {
   summary: {
     period: string;
     startDate: string;
@@ -46,20 +46,20 @@ export interface FinanceAnalyticsData {
   ledgerSummary: LedgerEntry[];
   financeAlerts: FinanceAlert[];
   metrics: FinanceMetrics;
-}
+};
 
-export interface UseFinanceAnalyticsOptions {
+export type UseFinanceAnalyticsOptions = {
   period?: "7d" | "30d" | "90d" | "12m";
   locationId?: string;
   enabled?: boolean;
-}
+};
 
-export interface UseFinanceAnalyticsReturn {
+export type UseFinanceAnalyticsReturn = {
   data: FinanceAnalyticsData | null;
   isLoading: boolean;
   error: Error | null;
   refetch: () => void;
-}
+};
 
 // Helper function to format currency for display
 export function formatCurrency(amount: number): string {
@@ -97,8 +97,12 @@ export async function fetchFinanceAnalytics(
   const { period = "30d", locationId } = options;
 
   const params = new URLSearchParams();
-  if (period) params.set("period", period);
-  if (locationId) params.set("locationId", locationId);
+  if (period) {
+    params.set("period", period);
+  }
+  if (locationId) {
+    params.set("locationId", locationId);
+  }
 
   const response = await fetch(`/api/analytics/finance?${params.toString()}`);
 
@@ -122,7 +126,9 @@ export function useFinanceAnalytics(
   const [error, setError] = useState<Error | null>(null);
 
   const fetchData = async () => {
-    if (!enabled) return;
+    if (!enabled) {
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -143,7 +149,7 @@ export function useFinanceAnalytics(
 
   useEffect(() => {
     fetchData();
-  }, [enabled, fetchOptions.period, fetchOptions.locationId]);
+  }, [fetchData]);
 
   return {
     data,

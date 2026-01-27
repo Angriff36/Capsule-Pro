@@ -8,10 +8,10 @@ export const MetricsExportSchema = z.object({
 
 export type MetricsExportConfig = z.infer<typeof MetricsExportSchema>;
 
-export interface MetricsCollectorOptions {
+export type MetricsCollectorOptions = {
   maxEntries?: number;
   exportConfig?: MetricsExportConfig;
-}
+};
 
 export class MetricsCollector {
   private readonly entries: Metrics[] = [];
@@ -51,7 +51,7 @@ export class MetricsCollector {
 
   getLatestByAgentId(agentId: string): Metrics | undefined {
     const agentMetrics = this.getByAgentId(agentId);
-    return agentMetrics[agentMetrics.length - 1];
+    return agentMetrics.at(-1);
   }
 
   getAggregateByAgentId(agentId: string): AggregateMetrics {
@@ -172,7 +172,7 @@ export class MetricsCollector {
   }
 
   private exportToDatadog(): Promise<string> {
-    const series = this.entries.map((metric) => ({
+    const _series = this.entries.map((metric) => ({
       metric: "agent.execution",
       points: [
         [Math.floor(metric.timestamp.getTime() / 1000), metric.duration],
@@ -194,7 +194,7 @@ export class MetricsCollector {
   }
 }
 
-export interface AggregateMetrics {
+export type AggregateMetrics = {
   totalExecutions: number;
   successRate: number;
   averageDuration: number;
@@ -202,4 +202,4 @@ export interface AggregateMetrics {
   totalToolCalls: number;
   totalRetries: number;
   totalErrors: number;
-}
+};

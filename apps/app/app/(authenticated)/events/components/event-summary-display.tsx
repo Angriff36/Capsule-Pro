@@ -45,13 +45,13 @@ import type {
   SummaryItem,
 } from "../actions/event-summary";
 
-interface EventSummaryDisplayProps {
+type EventSummaryDisplayProps = {
   eventId: string;
   eventTitle: string;
   initialSummary?: GeneratedEventSummary | null;
   onGenerate?: () => Promise<GeneratedEventSummary>;
   onDelete?: () => Promise<void>;
-}
+};
 
 const SEVERITY_CONFIG = {
   info: {
@@ -229,7 +229,9 @@ export function EventSummaryDisplay({
   }, [initialSummary]);
 
   const handleGenerate = useCallback(async () => {
-    if (!onGenerate) return;
+    if (!onGenerate) {
+      return;
+    }
 
     setIsGenerating(true);
     setGenerationProgress("Analyzing event data...");
@@ -275,7 +277,9 @@ export function EventSummaryDisplay({
   }, [onGenerate]);
 
   const handleDelete = useCallback(async () => {
-    if (!onDelete) return;
+    if (!onDelete) {
+      return;
+    }
 
     try {
       await onDelete();
@@ -288,7 +292,9 @@ export function EventSummaryDisplay({
   }, [onDelete]);
 
   const handleCopyToClipboard = useCallback(() => {
-    if (!summary) return;
+    if (!summary) {
+      return;
+    }
 
     const text = `
 EVENT SUMMARY: ${eventTitle}
@@ -319,7 +325,9 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
   }, [summary, eventTitle]);
 
   const handleExportPDF = useCallback(() => {
-    if (!summary) return;
+    if (!summary) {
+      return;
+    }
 
     const content = `
       <html>
@@ -728,13 +736,13 @@ export function EventSummarySkeleton() {
   );
 }
 
-interface GenerateEventSummaryModalProps {
+type GenerateEventSummaryModalProps = {
   eventId: string;
   eventTitle: string;
   onGenerate: () => Promise<GeneratedEventSummary>;
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
-}
+};
 
 export function GenerateEventSummaryModal({
   eventId,

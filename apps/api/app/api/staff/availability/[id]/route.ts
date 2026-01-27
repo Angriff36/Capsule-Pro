@@ -19,7 +19,7 @@ type RouteContext = {
  * GET /api/staff/availability/[id]
  * Get a single availability record by ID
  */
-export async function GET(request: Request, context: RouteContext) {
+export async function GET(_request: Request, context: RouteContext) {
   const { orgId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -122,13 +122,17 @@ export async function PATCH(request: Request, context: RouteContext) {
   // Validate provided fields
   if (body.dayOfWeek !== undefined) {
     const dayError = validateDayOfWeek(body.dayOfWeek);
-    if (dayError) return dayError;
+    if (dayError) {
+      return dayError;
+    }
   }
 
   // Validate time range if both provided
   if (body.startTime && body.endTime) {
     const timeError = validateTimeRange(body.startTime, body.endTime);
-    if (timeError) return timeError;
+    if (timeError) {
+      return timeError;
+    }
   }
 
   // Validate effective dates if both provided
@@ -148,18 +152,20 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     const dateError = validateEffectiveDates(effectiveFrom, effectiveUntil);
-    if (dateError) return dateError;
+    if (dateError) {
+      return dateError;
+    }
   }
 
   // Check for overlapping availability if day or time is changing
   const newDayOfWeek: DayOfWeek = (body.dayOfWeek ??
     existingAvail.day_of_week) as DayOfWeek;
-  const newStartTime = body.startTime ?? "00:00"; // Will be validated on overlap check
-  const newEndTime = body.endTime ?? "23:59";
-  const newEffectiveFrom = body.effectiveFrom
+  const _newStartTime = body.startTime ?? "00:00"; // Will be validated on overlap check
+  const _newEndTime = body.endTime ?? "23:59";
+  const _newEffectiveFrom = body.effectiveFrom
     ? new Date(body.effectiveFrom)
     : new Date();
-  const newEffectiveUntil = body.effectiveUntil
+  const _newEffectiveUntil = body.effectiveUntil
     ? new Date(body.effectiveUntil)
     : null;
 
@@ -327,7 +333,7 @@ export async function PATCH(request: Request, context: RouteContext) {
  * DELETE /api/staff/availability/[id]
  * Soft delete an availability record
  */
-export async function DELETE(request: Request, context: RouteContext) {
+export async function DELETE(_request: Request, context: RouteContext) {
   const { orgId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });

@@ -93,7 +93,7 @@ async function main() {
         if (newIng.length > 0) {
           ingredientMap.set(ing.name, newIng[0].id);
         }
-      } catch (e) {
+      } catch (_e) {
         // Ignore duplicates
       }
     }
@@ -201,7 +201,7 @@ async function main() {
             )
           `;
           ingredientsAdded++;
-        } catch (e) {
+        } catch (_e) {
           // Ignore errors (likely duplicates)
         }
       }

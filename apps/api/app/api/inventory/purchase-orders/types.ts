@@ -65,7 +65,7 @@ export interface POItemWithDetails extends POItem {
 /**
  * Purchase Order response shape
  */
-export interface PurchaseOrder {
+export type PurchaseOrder = {
   id: string;
   tenant_id: string;
   po_number: string;
@@ -87,7 +87,7 @@ export interface PurchaseOrder {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-}
+};
 
 /**
  * Purchase Order with items and vendor details
@@ -106,35 +106,35 @@ export interface PurchaseOrderWithDetails extends PurchaseOrder {
 /**
  * List filters for purchase orders
  */
-export interface PurchaseOrderListFilters {
+export type PurchaseOrderListFilters = {
   search?: string;
   status?: POStatus;
   vendor_id?: string;
   location_id?: string;
   po_number?: string;
-}
+};
 
 /**
  * Update quantity received request
  */
-export interface UpdateQuantityReceivedRequest {
+export type UpdateQuantityReceivedRequest = {
   quantity_received: number;
-}
+};
 
 /**
  * Update quality status request
  */
-export interface UpdateQualityStatusRequest {
+export type UpdateQualityStatusRequest = {
   quality_status: QualityStatus;
   discrepancy_type?: DiscrepancyType;
   discrepancy_amount?: number;
   notes?: string;
-}
+};
 
 /**
  * Complete receiving request
  */
-export interface CompleteReceivingRequest {
+export type CompleteReceivingRequest = {
   items: Array<{
     id: string;
     quantity_received: number;
@@ -144,12 +144,12 @@ export interface CompleteReceivingRequest {
     notes?: string;
   }>;
   notes?: string;
-}
+};
 
 /**
  * Paginated list response
  */
-export interface PurchaseOrderListResponse {
+export type PurchaseOrderListResponse = {
   data: PurchaseOrderWithDetails[];
   pagination: {
     page: number;
@@ -157,4 +157,4 @@ export interface PurchaseOrderListResponse {
     total: number;
     totalPages: number;
   };
-}
+};

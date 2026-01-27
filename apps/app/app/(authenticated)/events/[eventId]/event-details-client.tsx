@@ -315,7 +315,7 @@ export function EventDetailsClient({
     }, [event.id, router]);
 
   const handleDeleteSummary = useCallback(async () => {
-    if (!(summary && summary.id)) {
+    if (!summary?.id) {
       return;
     }
 
@@ -335,7 +335,7 @@ export function EventDetailsClient({
     link.setAttribute("href", url);
     link.setAttribute(
       "download",
-      event.title.replace(/[^a-z0-9]/gi, "_") + "_task_breakdown.csv"
+      `${event.title.replace(/[^a-z0-9]/gi, "_")}_task_breakdown.csv`
     );
     link.style.visibility = "hidden";
     document.body.appendChild(link);
@@ -400,7 +400,7 @@ export function EventDetailsClient({
                             availableDishes.map((dish) => (
                               <SelectItem key={dish.id} value={dish.id}>
                                 {dish.name}
-                                {dish.category && " (" + dish.category + ")"}
+                                {dish.category && ` (${dish.category})`}
                               </SelectItem>
                             ))
                           )}
@@ -540,7 +540,7 @@ export function EventDetailsClient({
               <div>
                 <div className="font-semibold text-sm">Event Budget</div>
                 <div className="text-muted-foreground text-sm">
-                  {budget && budget.status
+                  {budget?.status
                     ? `${getBudgetStatusLabel(budget.status)} - v${budget.version ?? 1}`
                     : "No budget created yet"}
                 </div>
@@ -906,8 +906,8 @@ function generateCSV(breakdown: TaskBreakdown): string {
 
   for (const task of allTasks) {
     const row = [
-      '"' + task.name.replace(/"/g, '""') + '"',
-      '"' + (task.description || "").replace(/"/g, '""') + '"',
+      `"${task.name.replace(/"/g, '""')}"`,
+      `"${(task.description || "").replace(/"/g, '""')}"`,
       task.section,
       task.durationMinutes.toString(),
       task.relativeTime || "",
@@ -918,9 +918,9 @@ function generateCSV(breakdown: TaskBreakdown): string {
   }
 
   rows.push("");
-  rows.push('"Total Prep Time",' + breakdown.totalPrepTime + " min");
-  rows.push('"Total Setup Time",' + breakdown.totalSetupTime + " min");
-  rows.push('"Total Cleanup Time",' + breakdown.totalCleanupTime + " min");
+  rows.push(`"Total Prep Time",${breakdown.totalPrepTime} min`);
+  rows.push(`"Total Setup Time",${breakdown.totalSetupTime} min`);
+  rows.push(`"Total Cleanup Time",${breakdown.totalCleanupTime} min`);
   rows.push(
     '"Grand Total",' +
       (breakdown.totalPrepTime +
@@ -929,9 +929,9 @@ function generateCSV(breakdown: TaskBreakdown): string {
       " min"
   );
   rows.push("");
-  rows.push('"Generated At",' + breakdown.generatedAt.toISOString());
-  rows.push('"Event Date",' + breakdown.eventDate.toISOString());
-  rows.push('"Guest Count",' + breakdown.guestCount);
+  rows.push(`"Generated At",${breakdown.generatedAt.toISOString()}`);
+  rows.push(`"Event Date",${breakdown.eventDate.toISOString()}`);
+  rows.push(`"Guest Count",${breakdown.guestCount}`);
 
   return rows.join("\n");
 }

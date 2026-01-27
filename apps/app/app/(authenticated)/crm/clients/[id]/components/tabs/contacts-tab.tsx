@@ -30,11 +30,11 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { createClientContact, getClientContacts } from "../../../actions";
 
-interface ContactsTabProps {
+type ContactsTabProps = {
   client: {
     id: string;
   };
-}
+};
 
 export function ContactsTab({ client }: ContactsTabProps) {
   const [contacts, setContacts] = useState<
@@ -67,7 +67,7 @@ export function ContactsTab({ client }: ContactsTabProps) {
     try {
       const data = await getClientContacts(client.id);
       setContacts(data);
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to load contacts");
     } finally {
       setLoading(false);
@@ -76,7 +76,7 @@ export function ContactsTab({ client }: ContactsTabProps) {
 
   useEffect(() => {
     fetchContacts();
-  }, [client.id]);
+  }, [fetchContacts]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -37,7 +37,7 @@ import { EventsTab } from "./tabs/events-tab";
 import { FinancialTab } from "./tabs/financial-tab";
 import { PreferencesTab } from "./tabs/preferences-tab";
 
-interface ClientDetailProps {
+type ClientDetailProps = {
   client: {
     id: string;
     tenantId: string;
@@ -84,14 +84,14 @@ interface ClientDetailProps {
     eventCount: number;
     totalRevenue: { total: string } | null;
   };
-}
+};
 
 export function ClientDetailClient({ client }: ClientDetailProps) {
   const router = useRouter();
   const params = useParams();
   const clientId = (params?.id as string) ?? "";
 
-  const [isEditing, setIsEditing] = useState(false);
+  const [_isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState("contact");
 
@@ -105,18 +105,30 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
     return client.email || "Unnamed Client";
   };
 
-  const getFullAddress = () => {
+  const _getFullAddress = () => {
     const parts: string[] = [];
-    if (client.addressLine1) parts.push(client.addressLine1);
-    if (client.addressLine2) parts.push(client.addressLine2);
+    if (client.addressLine1) {
+      parts.push(client.addressLine1);
+    }
+    if (client.addressLine2) {
+      parts.push(client.addressLine2);
+    }
     if (client.city || client.stateProvince || client.postalCode) {
       const cityParts: string[] = [];
-      if (client.city) cityParts.push(client.city);
-      if (client.stateProvince) cityParts.push(client.stateProvince);
-      if (client.postalCode) cityParts.push(client.postalCode);
+      if (client.city) {
+        cityParts.push(client.city);
+      }
+      if (client.stateProvince) {
+        cityParts.push(client.stateProvince);
+      }
+      if (client.postalCode) {
+        cityParts.push(client.postalCode);
+      }
       parts.push(cityParts.join(", "));
     }
-    if (client.countryCode) parts.push(client.countryCode);
+    if (client.countryCode) {
+      parts.push(client.countryCode);
+    }
     return parts.join("\n") || "No address on file";
   };
 

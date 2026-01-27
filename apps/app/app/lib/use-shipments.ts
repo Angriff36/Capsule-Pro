@@ -31,7 +31,7 @@ export type ItemCondition = (typeof ITEM_CONDITIONS)[number];
 /**
  * Shipment response shape matching Prisma model
  */
-export interface Shipment {
+export type Shipment = {
   id: string;
   tenant_id: string;
   shipment_number: string;
@@ -72,7 +72,7 @@ export interface Shipment {
   created_at: Date | string;
   updated_at: Date | string;
   deleted_at: Date | string | null;
-}
+};
 
 /**
  * Shipment with items
@@ -84,7 +84,7 @@ export interface ShipmentWithItems extends Shipment {
 /**
  * Shipment Item response shape matching Prisma model
  */
-export interface ShipmentItem {
+export type ShipmentItem = {
   id: string;
   tenant_id: string;
   shipment_id: string;
@@ -115,12 +115,12 @@ export interface ShipmentItem {
   // Audit fields
   created_at: Date | string;
   updated_at: Date | string;
-}
+};
 
 /**
  * Create shipment request
  */
-export interface CreateShipmentRequest {
+export type CreateShipmentRequest = {
   shipment_number?: string;
   status?: ShipmentStatus;
   event_id?: string;
@@ -134,12 +134,12 @@ export interface CreateShipmentRequest {
   shipping_method?: string;
   notes?: string;
   internal_notes?: string;
-}
+};
 
 /**
  * Update shipment request
  */
-export interface UpdateShipmentRequest {
+export type UpdateShipmentRequest = {
   shipment_number?: string;
   status?: ShipmentStatus;
   event_id?: string;
@@ -160,24 +160,24 @@ export interface UpdateShipmentRequest {
   notes?: string;
   internal_notes?: string;
   reference?: string;
-}
+};
 
 /**
  * Update shipment status request
  */
-export interface UpdateShipmentStatusRequest {
+export type UpdateShipmentStatusRequest = {
   status: ShipmentStatus;
   actual_delivery_date?: string;
   delivered_by?: string;
   received_by?: string;
   signature?: string;
   notes?: string;
-}
+};
 
 /**
  * Create shipment item request
  */
-export interface CreateShipmentItemRequest {
+export type CreateShipmentItemRequest = {
   item_id: string;
   quantity_shipped: number;
   quantity_received?: number;
@@ -188,12 +188,12 @@ export interface CreateShipmentItemRequest {
   condition_notes?: string;
   lot_number?: string;
   expiration_date?: string;
-}
+};
 
 /**
  * Update shipment item request
  */
-export interface UpdateShipmentItemRequest {
+export type UpdateShipmentItemRequest = {
   quantity_shipped?: number;
   quantity_received?: number;
   quantity_damaged?: number;
@@ -203,12 +203,12 @@ export interface UpdateShipmentItemRequest {
   condition_notes?: string;
   lot_number?: string;
   expiration_date?: string;
-}
+};
 
 /**
  * List filters
  */
-export interface ShipmentFilters {
+export type ShipmentFilters = {
   search?: string;
   status?: ShipmentStatus;
   event_id?: string;
@@ -216,20 +216,20 @@ export interface ShipmentFilters {
   location_id?: string;
   date_from?: string;
   date_to?: string;
-}
+};
 
 /**
  * Pagination params
  */
-export interface PaginationParams {
+export type PaginationParams = {
   page: number;
   limit: number;
-}
+};
 
 /**
  * Paginated list response
  */
-export interface ShipmentListResponse {
+export type ShipmentListResponse = {
   data: Shipment[];
   pagination: {
     page: number;
@@ -237,7 +237,7 @@ export interface ShipmentListResponse {
     total: number;
     totalPages: number;
   };
-}
+};
 
 // Extended types with computed fields
 export interface ShipmentWithComputed extends Shipment {
@@ -257,7 +257,7 @@ export interface ShipmentWithComputed extends Shipment {
   } | null;
 }
 
-export interface ShipmentListResponseWithMeta {
+export type ShipmentListResponseWithMeta = {
   data: ShipmentWithComputed[];
   pagination: {
     page: number;
@@ -272,7 +272,7 @@ export interface ShipmentListResponseWithMeta {
     inTransitCount: number;
     preparingCount: number;
   };
-}
+};
 
 // ============================================================================
 // Shipments API
@@ -286,15 +286,33 @@ export async function listShipments(
 ): Promise<ShipmentListResponseWithMeta> {
   const params = new URLSearchParams();
 
-  if (filters.search) params.set("search", filters.search);
-  if (filters.status) params.set("status", filters.status);
-  if (filters.event_id) params.set("event_id", filters.event_id);
-  if (filters.supplier_id) params.set("supplier_id", filters.supplier_id);
-  if (filters.location_id) params.set("location_id", filters.location_id);
-  if (filters.date_from) params.set("date_from", filters.date_from);
-  if (filters.date_to) params.set("date_to", filters.date_to);
-  if (filters.page) params.set("page", filters.page.toString());
-  if (filters.limit) params.set("limit", filters.limit.toString());
+  if (filters.search) {
+    params.set("search", filters.search);
+  }
+  if (filters.status) {
+    params.set("status", filters.status);
+  }
+  if (filters.event_id) {
+    params.set("event_id", filters.event_id);
+  }
+  if (filters.supplier_id) {
+    params.set("supplier_id", filters.supplier_id);
+  }
+  if (filters.location_id) {
+    params.set("location_id", filters.location_id);
+  }
+  if (filters.date_from) {
+    params.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    params.set("date_to", filters.date_to);
+  }
+  if (filters.page) {
+    params.set("page", filters.page.toString());
+  }
+  if (filters.limit) {
+    params.set("limit", filters.limit.toString());
+  }
 
   const response = await fetch(`/api/shipments?${params.toString()}`);
 
@@ -648,7 +666,9 @@ export function formatCurrency(value: number): string {
  * Format date for display
  */
 export function formatDate(date: Date | string | null): string {
-  if (!date) return "-";
+  if (!date) {
+    return "-";
+  }
   const d = typeof date === "string" ? new Date(date) : date;
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -661,7 +681,9 @@ export function formatDate(date: Date | string | null): string {
  * Format date and time for display
  */
 export function formatDateTime(date: Date | string | null): string {
-  if (!date) return "-";
+  if (!date) {
+    return "-";
+  }
   const d = typeof date === "string" ? new Date(date) : date;
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -686,7 +708,9 @@ export function formatDateForInput(date: Date | string): string {
 export function calculateShipmentProgress(shipment: {
   items: { quantity_shipped: number; quantity_received: number }[];
 }): number {
-  if (!shipment.items.length) return 0;
+  if (!shipment.items.length) {
+    return 0;
+  }
 
   const totalShipped = shipment.items.reduce(
     (sum, item) => sum + item.quantity_shipped,

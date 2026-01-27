@@ -35,18 +35,18 @@ import { calculateDuration, formatDate } from "../utils";
 import { TimeOffDetailModal } from "./time-off-detail-modal";
 import { TimeOffForm } from "./time-off-form";
 
-interface Employee {
+type Employee = {
   id: string;
   first_name: string | null;
   last_name: string | null;
   email: string;
   role: string;
-}
+};
 
-interface Location {
+type Location = {
   id: string;
   name: string;
-}
+};
 
 export function TimeOffClient() {
   const router = useRouter();
@@ -108,7 +108,7 @@ export function TimeOffClient() {
     } finally {
       setLoading(false);
     }
-  }, [filters, pagination.page]);
+  }, [filters, pagination.page, pagination]);
 
   // Fetch filter options
   const fetchFilterOptions = useCallback(async () => {
@@ -134,7 +134,9 @@ export function TimeOffClient() {
   useEffect(() => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
-      if (value) params.set(key, value);
+      if (value) {
+        params.set(key, value);
+      }
     });
     const queryString = params.toString();
     router.push(`/scheduling/time-off${queryString ? `?${queryString}` : ""}`);
@@ -201,9 +203,15 @@ export function TimeOffClient() {
           "secondary";
         const label = row.original.status;
 
-        if (row.original.status === "APPROVED") variant = "default";
-        if (row.original.status === "REJECTED") variant = "destructive";
-        if (row.original.status === "PENDING") variant = "outline";
+        if (row.original.status === "APPROVED") {
+          variant = "default";
+        }
+        if (row.original.status === "REJECTED") {
+          variant = "destructive";
+        }
+        if (row.original.status === "PENDING") {
+          variant = "outline";
+        }
 
         return <Badge variant={variant}>{label}</Badge>;
       },

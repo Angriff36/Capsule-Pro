@@ -25,7 +25,9 @@ const RecipesRealtime = ({ tenantId, userId }: RecipesRealtimeProps) => {
   const router = useRouter();
 
   useEffect(() => {
-    if (!tenantId) return;
+    if (!tenantId) {
+      return;
+    }
 
     const apiBaseUrl = getApiBaseUrl();
     if (!apiBaseUrl) {
@@ -56,7 +58,9 @@ const RecipesRealtime = ({ tenantId, userId }: RecipesRealtimeProps) => {
 
     const channel = client.channels.get(`tenant:${tenantId}`);
     const handleMessage = (message: { name?: string }) => {
-      if (!isRecipeEvent(message.name)) return;
+      if (!isRecipeEvent(message.name)) {
+        return;
+      }
       router.refresh();
     };
 
@@ -69,7 +73,7 @@ const RecipesRealtime = ({ tenantId, userId }: RecipesRealtimeProps) => {
       // 2. The connection lifecycle should be managed at the app level
       // 3. Closing and recreating connections causes "Connection closed" errors
     };
-  }, [tenantId, userId, router]);
+  }, [tenantId, router]);
 
   return null;
 };

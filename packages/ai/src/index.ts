@@ -34,14 +34,14 @@ import type {
 } from "./types.js";
 import { AgentWorkflow, createWorkflow } from "./workflow.js";
 
-export interface SDKOptions {
+export type SDKOptions = {
   apiKey?: string;
   baseUrl?: string;
   defaultTimeout?: number;
   defaultMaxRetries?: number;
   debug?: boolean;
   metricsCollector?: MetricsCollector;
-}
+};
 
 class AISDK {
   private readonly config: Required<SDKOptions>;

@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 async function handleCreate(
-  previousState: { redirect: string } | null,
+  _previousState: { redirect: string } | null,
   formData: FormData
 ) {
   "use server";

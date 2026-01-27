@@ -12,7 +12,7 @@ import {
  * Get a single labor budget by ID with current utilization
  */
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { orgId } = await auth();
@@ -120,7 +120,7 @@ export async function PUT(
  * Delete (soft delete) a labor budget
  */
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { orgId } = await auth();

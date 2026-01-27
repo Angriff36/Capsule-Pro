@@ -120,8 +120,12 @@ export const BattleBoardPDF: React.FC<BattleBoardPDFProps> = ({ data }) => {
   };
 
   const getRowStyle = (task: any) => {
-    if (task.status === "completed") return styles.tableRowCompleted;
-    if (task.isCritical) return styles.tableRowCritical;
+    if (task.status === "completed") {
+      return styles.tableRowCompleted;
+    }
+    if (task.isCritical) {
+      return styles.tableRowCritical;
+    }
     return styles.tableRow;
   };
 

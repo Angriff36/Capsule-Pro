@@ -146,7 +146,9 @@ export function BudgetsPageClient() {
 
   // Handle delete
   const handleDelete = async () => {
-    if (!budgetToDelete) return;
+    if (!budgetToDelete) {
+      return;
+    }
 
     setActionLoading(true);
     try {
@@ -172,7 +174,9 @@ export function BudgetsPageClient() {
 
   // Filter budgets by search query
   const filteredBudgets = budgets.filter((budget) => {
-    if (!searchQuery) return true;
+    if (!searchQuery) {
+      return true;
+    }
     const query = searchQuery.toLowerCase();
     return (
       budget.eventId.toLowerCase().includes(query) ||
@@ -491,13 +495,13 @@ export function BudgetsPageClient() {
 }
 
 // Delete Confirmation Modal
-interface BudgetDeleteModalProps {
+type BudgetDeleteModalProps = {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
   budget: EventBudget | null;
   loading: boolean;
-}
+};
 
 function BudgetDeleteModal({
   open,

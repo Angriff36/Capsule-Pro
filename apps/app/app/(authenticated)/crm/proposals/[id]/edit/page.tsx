@@ -12,9 +12,9 @@ import { notFound } from "next/navigation";
 import { getProposalById, updateProposal } from "../../actions";
 import { ProposalForm } from "../../components/proposal-form";
 
-interface EditProposalPageProps {
+type EditProposalPageProps = {
   params: Promise<{ id: string }>;
-}
+};
 
 export async function generateMetadata({
   params,
@@ -45,13 +45,15 @@ export default async function EditProposalPage({
   }
 
   async function handleUpdate(
-    previousState: { redirect: string } | null,
+    _previousState: { redirect: string } | null,
     formData: FormData
   ) {
     "use server";
 
     const id = formData.get("proposalId") as string;
-    if (!id) throw new Error("Proposal ID is required");
+    if (!id) {
+      throw new Error("Proposal ID is required");
+    }
 
     const lineItemsJson = formData.get("lineItems") as string;
     let lineItems = [];

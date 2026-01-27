@@ -21,7 +21,7 @@ import type {
   UpdateEventBudgetInput,
 } from "@/app/lib/use-event-budgets";
 
-interface CreateBudgetModalProps {
+type CreateBudgetModalProps = {
   open: boolean;
   onClose: () => void;
   onSave: (
@@ -29,7 +29,7 @@ interface CreateBudgetModalProps {
   ) => Promise<void>;
   budget?: EventBudget;
   loading: boolean;
-}
+};
 
 export function CreateBudgetModal({
   open,
@@ -196,7 +196,9 @@ export function CreateBudgetModal({
     0
   );
 
-  if (!open) return null;
+  if (!open) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">

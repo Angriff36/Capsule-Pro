@@ -117,7 +117,7 @@ function calculateReorderStatus(
 function calculateParStatus(
   quantityOnHand: number,
   parLevel: number | null,
-  reorderLevel: number
+  _reorderLevel: number
 ): "below_par" | "at_par" | "above_par" | "no_par_set" {
   if (!parLevel || parLevel <= 0) {
     return "no_par_set";
@@ -208,7 +208,7 @@ export async function GET(request: Request) {
       : null;
 
     // Get total count for pagination
-    const total = await database.inventoryItem.count({ where });
+    const _total = await database.inventoryItem.count({ where });
 
     // Get items with pagination
     const items = await database.inventoryItem.findMany({

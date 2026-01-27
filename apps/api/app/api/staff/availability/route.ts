@@ -53,7 +53,9 @@ export async function GET(request: Request) {
   // Validate day of week if provided
   if (dayOfWeek !== null) {
     const dayError = validateDayOfWeek(dayOfWeek);
-    if (dayError) return dayError;
+    if (dayError) {
+      return dayError;
+    }
   }
 
   const [availability, totalCount] = await Promise.all([
@@ -207,11 +209,15 @@ export async function POST(request: Request) {
 
   // Validate day of week
   const dayError = validateDayOfWeek(body.dayOfWeek);
-  if (dayError) return dayError;
+  if (dayError) {
+    return dayError;
+  }
 
   // Validate time range
   const timeError = validateTimeRange(body.startTime, body.endTime);
-  if (timeError) return timeError;
+  if (timeError) {
+    return timeError;
+  }
 
   // Set defaults
   const effectiveFrom = body.effectiveFrom
@@ -228,7 +234,9 @@ export async function POST(request: Request) {
 
   // Validate effective dates
   const dateError = validateEffectiveDates(effectiveFrom, effectiveUntil);
-  if (dateError) return dateError;
+  if (dateError) {
+    return dateError;
+  }
 
   // Verify employee exists and is active
   const { employee, error: employeeError } = await verifyEmployee(

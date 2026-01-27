@@ -56,7 +56,7 @@ export async function POST(
 ) {
   try {
     const { recipeVersionId } = await params;
-    const body = await request.json();
+    const _body = await request.json();
     const { orgId } = await auth();
 
     if (!orgId) {

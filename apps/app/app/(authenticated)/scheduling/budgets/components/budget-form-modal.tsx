@@ -31,13 +31,13 @@ import type {
   UpdateBudgetInput,
 } from "@/app/lib/use-labor-budgets";
 
-interface BudgetFormModalProps {
+type BudgetFormModalProps = {
   open: boolean;
   onClose: () => void;
   onSave: (data: CreateBudgetInput | UpdateBudgetInput) => Promise<void>;
   budget?: LaborBudget;
   loading?: boolean;
-}
+};
 
 export function BudgetFormModal({
   open,
@@ -96,7 +96,9 @@ export function BudgetFormModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
 
     const data: CreateBudgetInput | UpdateBudgetInput = isEditing
       ? ({

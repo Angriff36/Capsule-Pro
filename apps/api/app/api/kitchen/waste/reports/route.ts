@@ -119,7 +119,7 @@ export async function GET(request: Request) {
   const labeledData = reportData.map((group) => {
     const label =
       groupBy === "reason" && reasonMap.has(group.key)
-        ? reasonMap.get(group.key)!.name
+        ? reasonMap.get(group.key)?.name
         : group.key;
 
     return {

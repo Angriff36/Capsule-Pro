@@ -134,6 +134,7 @@ export function TaskModal({
       eventDate,
       staff,
       onTaskCreated,
+      handleClose,
     ]
   );
 

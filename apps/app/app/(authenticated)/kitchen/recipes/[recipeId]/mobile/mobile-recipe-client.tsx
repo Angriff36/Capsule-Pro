@@ -79,7 +79,9 @@ const formatTime = (seconds: number): string => {
 };
 
 const formatMinutes = (minutes?: number | null): string => {
-  if (!minutes || minutes <= 0) return "-";
+  if (!minutes || minutes <= 0) {
+    return "-";
+  }
   return `${minutes}m`;
 };
 
@@ -152,7 +154,9 @@ export const MobileRecipeClient = ({
       }, 1000);
     }
     return () => {
-      if (interval) clearInterval(interval);
+      if (interval) {
+        clearInterval(interval);
+      }
     };
   }, [timerRunning, timerSeconds]);
 

@@ -32,7 +32,7 @@ test.describe("Warehouse Dashboard", () => {
       waitUntil: "domcontentloaded",
     });
     expect(res).not.toBeNull();
-    expect(res!.status()).not.toBe(404);
+    expect(res?.status()).not.toBe(404);
     await expect(page).not.toHaveTitle(/404/i);
   });
 
@@ -149,14 +149,27 @@ test.describe("Warehouse Dashboard", () => {
       for (let i = 0; i < count; i++) {
         const el = candidates.nth(i);
         const href = await el.getAttribute("href");
-        if (!href) continue;
-        if (href.startsWith("http") || href.startsWith("//")) continue; // ignore external
-        if (href.startsWith("#")) continue; // ignore hash
-        if (href.includes("highlight=") || href.includes("filter=")) continue; // skip query params that need data
-        if (href.includes("?po=")) continue; // skip PO links that need specific data
-        if (href.includes("webhook")) continue; // skip webhook endpoints
-        if (!(href.startsWith("/warehouse") || href.startsWith("/inventory")))
+        if (!href) {
+          continue;
+        }
+        if (href.startsWith("http") || href.startsWith("//")) {
+          continue; // ignore external
+        }
+        if (href.startsWith("#")) {
+          continue; // ignore hash
+        }
+        if (href.includes("highlight=") || href.includes("filter=")) {
+          continue; // skip query params that need data
+        }
+        if (href.includes("?po=")) {
+          continue; // skip PO links that need specific data
+        }
+        if (href.includes("webhook")) {
+          continue; // skip webhook endpoints
+        }
+        if (!(href.startsWith("/warehouse") || href.startsWith("/inventory"))) {
           continue; // only test warehouse-related routes
+        }
         hrefs.add(href);
       }
 
@@ -165,7 +178,7 @@ test.describe("Warehouse Dashboard", () => {
       for (const href of hrefsToTest) {
         const res = await page.goto(href, { waitUntil: "domcontentloaded" });
         expect(res, `Navigation to ${href} failed`).not.toBeNull();
-        expect(res!.status(), `${href} returned 404`).not.toBe(404);
+        expect(res?.status(), `${href} returned 404`).not.toBe(404);
         await expect(page).not.toHaveTitle(/404/i);
       }
     });

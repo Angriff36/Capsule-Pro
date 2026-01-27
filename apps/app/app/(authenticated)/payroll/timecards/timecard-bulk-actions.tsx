@@ -19,7 +19,7 @@ type TimecardBulkActionsProps = {
 export default function TimecardBulkActions({
   totalEntries,
 }: TimecardBulkActionsProps) {
-  const [selectedCount, setSelectedCount] = useState(0);
+  const [selectedCount, _setSelectedCount] = useState(0);
 
   return (
     <Card className="bg-card/60">

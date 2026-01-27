@@ -14,7 +14,7 @@ import { invariant } from "@/app/lib/invariant";
 import { getTenantId } from "@/app/lib/tenant";
 
 // Types matching the API
-export interface ProposalFilters {
+export type ProposalFilters = {
   search?: string;
   status?: string;
   clientId?: string;
@@ -22,9 +22,9 @@ export interface ProposalFilters {
   eventId?: string;
   dateFrom?: string;
   dateTo?: string;
-}
+};
 
-export interface CreateProposalInput {
+export type CreateProposalInput = {
   clientId?: string | null;
   leadId?: string | null;
   eventId?: string | null;
@@ -51,9 +51,9 @@ export interface CreateProposalInput {
   notes?: string | null;
   termsAndConditions?: string | null;
   lineItems?: CreateLineItemInput[];
-}
+};
 
-export interface CreateLineItemInput {
+export type CreateLineItemInput = {
   sortOrder?: number;
   itemType: string;
   description: string;
@@ -61,12 +61,12 @@ export interface CreateLineItemInput {
   unitPrice: number;
   total?: number | null;
   notes?: string | null;
-}
+};
 
-export interface SendProposalInput {
+export type SendProposalInput = {
   recipientEmail?: string;
   message?: string;
-}
+};
 
 /**
  * Get list of proposals with filters and pagination
@@ -88,7 +88,7 @@ export async function getProposals(
   // Add search filter
   if (filters.search) {
     const searchLower = filters.search.toLowerCase();
-    (whereClause.AND as Array<Record<string, unknown>>).push({
+    (whereClause.AND as Record<string, unknown>[]).push({
       OR: [
         { title: { contains: searchLower, mode: "insensitive" } },
         { proposalNumber: { contains: searchLower, mode: "insensitive" } },
@@ -99,41 +99,41 @@ export async function getProposals(
 
   // Add status filter
   if (filters.status) {
-    (whereClause.AND as Array<Record<string, unknown>>).push({
+    (whereClause.AND as Record<string, unknown>[]).push({
       status: filters.status,
     });
   }
 
   // Add client filter
   if (filters.clientId) {
-    (whereClause.AND as Array<Record<string, unknown>>).push({
+    (whereClause.AND as Record<string, unknown>[]).push({
       clientId: filters.clientId,
     });
   }
 
   // Add lead filter
   if (filters.leadId) {
-    (whereClause.AND as Array<Record<string, unknown>>).push({
+    (whereClause.AND as Record<string, unknown>[]).push({
       leadId: filters.leadId,
     });
   }
 
   // Add event filter
   if (filters.eventId) {
-    (whereClause.AND as Array<Record<string, unknown>>).push({
+    (whereClause.AND as Record<string, unknown>[]).push({
       eventId: filters.eventId,
     });
   }
 
   // Add date range filters
   if (filters.dateFrom) {
-    (whereClause.AND as Array<Record<string, unknown>>).push({
+    (whereClause.AND as Record<string, unknown>[]).push({
       eventDate: { gte: new Date(filters.dateFrom) },
     });
   }
 
   if (filters.dateTo) {
-    (whereClause.AND as Array<Record<string, unknown>>).push({
+    (whereClause.AND as Record<string, unknown>[]).push({
       eventDate: { lte: new Date(filters.dateTo) },
     });
   }

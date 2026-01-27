@@ -28,7 +28,7 @@ export const DISCREPANCY_TYPES = [
 ] as const;
 export type DiscrepancyType = (typeof DISCREPANCY_TYPES)[number];
 
-export interface POItem {
+export type POItem = {
   id: string;
   tenant_id: string;
   purchase_order_id: string;
@@ -45,14 +45,14 @@ export interface POItem {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-}
+};
 
 export interface POItemWithDetails extends POItem {
   item_number?: string;
   item_name?: string;
 }
 
-export interface PurchaseOrder {
+export type PurchaseOrder = {
   id: string;
   tenant_id: string;
   po_number: string;
@@ -74,7 +74,7 @@ export interface PurchaseOrder {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-}
+};
 
 export interface PurchaseOrderWithDetails extends PurchaseOrder {
   items: POItemWithDetails[];
@@ -87,26 +87,26 @@ export interface PurchaseOrderWithDetails extends PurchaseOrder {
   };
 }
 
-export interface PurchaseOrderListFilters {
+export type PurchaseOrderListFilters = {
   search?: string;
   status?: POStatus;
   vendor_id?: string;
   location_id?: string;
   po_number?: string;
-}
+};
 
-export interface UpdateQuantityReceivedRequest {
+export type UpdateQuantityReceivedRequest = {
   quantity_received: number;
-}
+};
 
-export interface UpdateQualityStatusRequest {
+export type UpdateQualityStatusRequest = {
   quality_status: QualityStatus;
   discrepancy_type?: DiscrepancyType;
   discrepancy_amount?: number;
   notes?: string;
-}
+};
 
-export interface CompleteReceivingRequest {
+export type CompleteReceivingRequest = {
   items: Array<{
     id: string;
     quantity_received: number;
@@ -116,9 +116,9 @@ export interface CompleteReceivingRequest {
     notes?: string;
   }>;
   notes?: string;
-}
+};
 
-export interface PurchaseOrderListResponse {
+export type PurchaseOrderListResponse = {
   data: PurchaseOrderWithDetails[];
   pagination: {
     page: number;
@@ -126,7 +126,7 @@ export interface PurchaseOrderListResponse {
     total: number;
     totalPages: number;
   };
-}
+};
 
 /**
  * Client-side functions for purchase order operations
@@ -143,13 +143,27 @@ export async function listPurchaseOrders(params: {
   limit?: number;
 }): Promise<PurchaseOrderListResponse> {
   const searchParams = new URLSearchParams();
-  if (params.search) searchParams.set("search", params.search);
-  if (params.status) searchParams.set("status", params.status);
-  if (params.vendor_id) searchParams.set("vendor_id", params.vendor_id);
-  if (params.location_id) searchParams.set("location_id", params.location_id);
-  if (params.po_number) searchParams.set("po_number", params.po_number);
-  if (params.page) searchParams.set("page", params.page.toString());
-  if (params.limit) searchParams.set("limit", params.limit.toString());
+  if (params.search) {
+    searchParams.set("search", params.search);
+  }
+  if (params.status) {
+    searchParams.set("status", params.status);
+  }
+  if (params.vendor_id) {
+    searchParams.set("vendor_id", params.vendor_id);
+  }
+  if (params.location_id) {
+    searchParams.set("location_id", params.location_id);
+  }
+  if (params.po_number) {
+    searchParams.set("po_number", params.po_number);
+  }
+  if (params.page) {
+    searchParams.set("page", params.page.toString());
+  }
+  if (params.limit) {
+    searchParams.set("limit", params.limit.toString());
+  }
 
   const response = await fetch(
     `/api/inventory/purchase-orders?${searchParams.toString()}`

@@ -293,7 +293,7 @@ export async function POST(request: Request) {
         currentUser
       );
 
-      if (result && result.error) {
+      if (result?.error) {
         results.failed.push({
           taskId: result.taskId,
           action: result.action,

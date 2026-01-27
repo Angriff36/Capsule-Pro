@@ -4,7 +4,7 @@
 export type EventBudgetStatus = "draft" | "approved" | "locked";
 export type BudgetCategory = "food" | "labor" | "rentals" | "miscellaneous";
 
-export interface BudgetLineItem {
+export type BudgetLineItem = {
   id: string;
   tenant_id: string;
   budget_id: string;
@@ -19,9 +19,9 @@ export interface BudgetLineItem {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-}
+};
 
-export interface EventBudget {
+export type EventBudget = {
   id: string;
   tenant_id: string;
   event_id: string;
@@ -42,9 +42,9 @@ export interface EventBudget {
     event_date: Date;
     client_name?: string;
   };
-}
+};
 
-export interface BudgetListResponse {
+export type BudgetListResponse = {
   data: EventBudget[];
   pagination: {
     page: number;
@@ -52,17 +52,17 @@ export interface BudgetListResponse {
     total: number;
     totalPages: number;
   };
-}
+};
 
-export interface CreateBudgetRequest {
+export type CreateBudgetRequest = {
   eventId: string;
   version?: number;
   status?: EventBudgetStatus;
   notes?: string;
   lineItems?: CreateBudgetLineItemRequest[];
-}
+};
 
-export interface CreateBudgetLineItemRequest {
+export type CreateBudgetLineItemRequest = {
   category: BudgetCategory;
   name: string;
   description?: string;
@@ -70,15 +70,15 @@ export interface CreateBudgetLineItemRequest {
   actualAmount?: number;
   sortOrder?: number;
   notes?: string;
-}
+};
 
-export interface UpdateBudgetRequest {
+export type UpdateBudgetRequest = {
   version?: number;
   status?: EventBudgetStatus;
   notes?: string;
-}
+};
 
-export interface CreateLineItemRequest {
+export type CreateLineItemRequest = {
   budgetId: string;
   category: BudgetCategory;
   name: string;
@@ -87,9 +87,9 @@ export interface CreateLineItemRequest {
   actualAmount?: number;
   sortOrder?: number;
   notes?: string;
-}
+};
 
-export interface UpdateLineItemRequest {
+export type UpdateLineItemRequest = {
   category?: BudgetCategory;
   name?: string;
   description?: string;
@@ -97,7 +97,7 @@ export interface UpdateLineItemRequest {
   actualAmount?: number;
   sortOrder?: number;
   notes?: string;
-}
+};
 
 /**
  * Client-side hooks for budget operations
@@ -111,10 +111,18 @@ export async function listBudgets(params: {
   limit?: number;
 }): Promise<BudgetListResponse> {
   const searchParams = new URLSearchParams();
-  if (params.eventId) searchParams.set("eventId", params.eventId);
-  if (params.status) searchParams.set("status", params.status);
-  if (params.page) searchParams.set("page", params.page.toString());
-  if (params.limit) searchParams.set("limit", params.limit.toString());
+  if (params.eventId) {
+    searchParams.set("eventId", params.eventId);
+  }
+  if (params.status) {
+    searchParams.set("status", params.status);
+  }
+  if (params.page) {
+    searchParams.set("page", params.page.toString());
+  }
+  if (params.limit) {
+    searchParams.set("limit", params.limit.toString());
+  }
 
   const response = await fetch(
     `/api/events/budgets?${searchParams.toString()}`

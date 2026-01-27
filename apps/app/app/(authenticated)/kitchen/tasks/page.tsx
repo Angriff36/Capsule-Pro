@@ -158,7 +158,7 @@ const KitchenTasksPage = async () => {
                 </TableHeader>
                 <TableBody>
                   {tasks.map((task) => {
-                    const isClaimedByMe = myClaimedTaskIds.has(task.id);
+                    const _isClaimedByMe = myClaimedTaskIds.has(task.id);
                     const claimedBy = myClaims.find(
                       (c) => c.taskId === task.id
                     );

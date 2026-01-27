@@ -27,7 +27,7 @@ type WasteEntryDetail = {
  * Get a waste entry by ID
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -146,7 +146,7 @@ export async function PUT(
  * Delete a waste entry (soft delete)
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

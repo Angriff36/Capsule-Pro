@@ -85,7 +85,7 @@ export function calculateCriticalPath(
       if (!reverseMap.has(depId)) {
         reverseMap.set(depId, []);
       }
-      reverseMap.get(depId)!.push(task.id);
+      reverseMap.get(depId)?.push(task.id);
     }
   }
 
@@ -126,7 +126,9 @@ export function calculateCriticalPath(
   // Topological sort for forward pass
   const visited = new Set<string>();
   const processForward = (taskId: string): void => {
-    if (visited.has(taskId)) return;
+    if (visited.has(taskId)) {
+      return;
+    }
     visited.add(taskId);
 
     const task = taskMap.get(taskId)!;
@@ -168,7 +170,7 @@ export function calculateCriticalPath(
 
   // Find the project end time (max EF of all tasks)
   let projectEnd = new Date(0);
-  for (const [taskId, ef] of earliestFinish) {
+  for (const [_taskId, ef] of earliestFinish) {
     if (ef > projectEnd) {
       projectEnd = ef;
     }
@@ -180,10 +182,12 @@ export function calculateCriticalPath(
 
   const visitedBackward = new Set<string>();
   const processBackward = (taskId: string): void => {
-    if (visitedBackward.has(taskId)) return;
+    if (visitedBackward.has(taskId)) {
+      return;
+    }
     visitedBackward.add(taskId);
 
-    const task = taskMap.get(taskId)!;
+    const _task = taskMap.get(taskId)!;
     const duration = taskDurationMinutes.get(taskId)!;
     const successors = reverseMap.get(taskId) || [];
 
@@ -227,9 +231,9 @@ export function calculateCriticalPath(
 
   for (const task of tasks) {
     const es = earliestStart.get(task.id)!;
-    const ef = earliestFinish.get(task.id)!;
+    const _ef = earliestFinish.get(task.id)!;
     const ls = latestStart.get(task.id)!;
-    const lf = latestFinish.get(task.id)!;
+    const _lf = latestFinish.get(task.id)!;
 
     // Slack = LS - ES (or LF - EF, should be the same)
     const slackMinutesValue = Math.round(

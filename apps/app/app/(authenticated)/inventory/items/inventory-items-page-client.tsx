@@ -102,7 +102,9 @@ export const InventoryItemsPageClient = () => {
   }, [loadItems]);
 
   const filteredItems = items.filter((item) => {
-    if (!searchQuery) return true;
+    if (!searchQuery) {
+      return true;
+    }
     const query = searchQuery.toLowerCase();
     return (
       item.name.toLowerCase().includes(query) ||
@@ -111,7 +113,9 @@ export const InventoryItemsPageClient = () => {
   });
 
   const handleDelete = useCallback(async () => {
-    if (!itemToDelete) return;
+    if (!itemToDelete) {
+      return;
+    }
 
     try {
       await deleteInventoryItem(itemToDelete.id);

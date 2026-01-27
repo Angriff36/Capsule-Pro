@@ -125,9 +125,13 @@ export async function getShifts(params: {
  */
 export async function getShift(shiftId: string) {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   const [shift] = await database.$queryRaw<
     Array<{
@@ -196,9 +200,13 @@ export async function getAvailableEmployees(params: {
   requiredRole?: string;
 }) {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   const startDate = new Date(params.shiftStart);
   const endDate = new Date(params.shiftEnd);
@@ -309,9 +317,13 @@ export async function getAvailableEmployees(params: {
  */
 export async function createShift(formData: FormData) {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   const scheduleId = formData.get("scheduleId") as string;
   const employeeId = formData.get("employeeId") as string;
@@ -382,9 +394,13 @@ export async function createShift(formData: FormData) {
  */
 export async function updateShift(shiftId: string, formData: FormData) {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   const scheduleId = formData.get("scheduleId") as string;
   const employeeId = formData.get("employeeId") as string;
@@ -456,9 +472,13 @@ export async function updateShift(shiftId: string, formData: FormData) {
  */
 export async function deleteShift(shiftId: string) {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   await database.scheduleShift.update({
     where: {
@@ -481,9 +501,13 @@ export async function deleteShift(shiftId: string) {
  */
 export async function getEmployees() {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   const employees = await database.$queryRaw<
     Array<{
@@ -519,9 +543,13 @@ export async function getEmployees() {
  */
 export async function getLocations() {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   const locations = await database.$queryRaw<
     Array<{
@@ -551,9 +579,13 @@ export async function getLocations() {
  */
 export async function getSchedules() {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   const schedules = await database.$queryRaw<
     Array<{

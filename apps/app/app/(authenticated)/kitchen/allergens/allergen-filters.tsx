@@ -47,11 +47,11 @@ const DIETARY_RESTRICTIONS = [
   { value: "nut-free", label: "Nut-Free" },
 ] as const;
 
-interface AllergenFiltersProps {
+type AllergenFiltersProps = {
   initialQuery?: string;
   initialAllergen?: string;
   initialDietary?: string;
-}
+};
 
 export function AllergenFilters({
   initialQuery = "",

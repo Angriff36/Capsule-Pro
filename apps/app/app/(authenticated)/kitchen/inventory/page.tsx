@@ -45,8 +45,12 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 });
 
 const formatQuantity = (qty: number) => {
-  if (qty === 0) return "0";
-  if (qty < 0.01) return "<0.01";
+  if (qty === 0) {
+    return "0";
+  }
+  if (qty < 0.01) {
+    return "<0.01";
+  }
   return qty.toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 3,

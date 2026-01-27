@@ -14,15 +14,15 @@ import { invariant } from "@/app/lib/invariant";
 import { getTenantId } from "@/app/lib/tenant";
 
 // Types matching the API
-export interface ClientFilters {
+export type ClientFilters = {
   search?: string;
   tags?: string[];
   assignedTo?: string;
   clientType?: "company" | "individual";
   source?: string;
-}
+};
 
-export interface CreateClientInput {
+export type CreateClientInput = {
   clientType?: "company" | "individual";
   company_name?: string;
   first_name?: string;
@@ -43,9 +43,9 @@ export interface CreateClientInput {
   tags?: string[];
   source?: string;
   assignedTo?: string;
-}
+};
 
-export interface CreateClientContactInput {
+export type CreateClientContactInput = {
   first_name: string;
   last_name: string;
   title?: string;
@@ -55,14 +55,14 @@ export interface CreateClientContactInput {
   isPrimary?: boolean;
   isBillingContact?: boolean;
   notes?: string;
-}
+};
 
-export interface CreateClientInteractionInput {
+export type CreateClientInteractionInput = {
   interactionType: string;
   subject?: string;
   description?: string;
   followUpDate?: string;
-}
+};
 
 /**
  * Get list of clients with filters and pagination
@@ -84,7 +84,7 @@ export async function getClients(
   // Add search filter
   if (filters.search) {
     const searchLower = filters.search.toLowerCase();
-    (whereClause.AND as Array<Record<string, unknown>>).push({
+    (whereClause.AND as Record<string, unknown>[]).push({
       OR: [
         { company_name: { contains: searchLower, mode: "insensitive" } },
         { first_name: { contains: searchLower, mode: "insensitive" } },
@@ -96,28 +96,28 @@ export async function getClients(
 
   // Add tag filter
   if (filters.tags && filters.tags.length > 0) {
-    (whereClause.AND as Array<Record<string, unknown>>).push({
+    (whereClause.AND as Record<string, unknown>[]).push({
       tags: { hasSome: filters.tags },
     });
   }
 
   // Add assignedTo filter
   if (filters.assignedTo) {
-    (whereClause.AND as Array<Record<string, unknown>>).push({
+    (whereClause.AND as Record<string, unknown>[]).push({
       assignedTo: filters.assignedTo,
     });
   }
 
   // Add clientType filter
   if (filters.clientType) {
-    (whereClause.AND as Array<Record<string, unknown>>).push({
+    (whereClause.AND as Record<string, unknown>[]).push({
       clientType: filters.clientType,
     });
   }
 
   // Add source filter
   if (filters.source) {
-    (whereClause.AND as Array<Record<string, unknown>>).push({
+    (whereClause.AND as Record<string, unknown>[]).push({
       source: filters.source,
     });
   }
@@ -248,7 +248,7 @@ export async function createClient(input: CreateClientInput) {
   const tenantId = await getTenantId();
 
   // Check for duplicate email
-  if (input.email && input.email.trim()) {
+  if (input.email?.trim()) {
     const existingClient = await database.client.findFirst({
       where: {
         AND: [{ tenantId }, { email: input.email.trim() }, { deletedAt: null }],
@@ -315,11 +315,7 @@ export async function updateClient(
   invariant(existingClient, "Client not found");
 
   // Check for duplicate email if changing
-  if (
-    input.email &&
-    input.email.trim() &&
-    input.email !== existingClient.email
-  ) {
+  if (input.email?.trim() && input.email !== existingClient.email) {
     const duplicateClient = await database.client.findFirst({
       where: {
         AND: [
@@ -597,13 +593,13 @@ export async function createClientInteraction(
   return interaction;
 }
 
-export interface UpdateClientInteractionInput {
+export type UpdateClientInteractionInput = {
   interactionType?: string;
   subject?: string;
   description?: string;
   followUpDate?: string;
   followUpCompleted?: boolean;
-}
+};
 
 /**
  * Update a client interaction

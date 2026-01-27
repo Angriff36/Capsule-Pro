@@ -65,7 +65,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-interface Proposal {
+type Proposal = {
   id: string;
   proposalNumber: string;
   title: string;
@@ -90,19 +90,19 @@ interface Proposal {
     first_name: string | null;
     last_name: string | null;
   } | null;
-}
+};
 
-interface PaginationData {
+type PaginationData = {
   page: number;
   limit: number;
   total: number;
   totalPages: number;
-}
+};
 
-interface ProposalsResponse {
+type ProposalsResponse = {
   data: Proposal[];
   pagination: PaginationData;
-}
+};
 
 const statusVariants: Record<
   string,
@@ -126,14 +126,18 @@ const statusLabels: Record<string, string> = {
 };
 
 function getClientName(proposal: Proposal): string {
-  if (proposal.client?.company_name) return proposal.client.company_name;
+  if (proposal.client?.company_name) {
+    return proposal.client.company_name;
+  }
   if (proposal.client) {
     return (
       `${proposal.client.first_name || ""} ${proposal.client.last_name || ""}`.trim() ||
       "No name"
     );
   }
-  if (proposal.lead?.company_name) return proposal.lead.company_name;
+  if (proposal.lead?.company_name) {
+    return proposal.lead.company_name;
+  }
   if (proposal.lead) {
     return (
       `${proposal.lead.first_name || ""} ${proposal.lead.last_name || ""}`.trim() ||
@@ -143,12 +147,12 @@ function getClientName(proposal: Proposal): string {
   return "No client";
 }
 
-interface ProposalsClientProps {
+type ProposalsClientProps = {
   initialPage?: number;
   initialSearch?: string;
   initialStatus?: string;
   initialClientId?: string;
-}
+};
 
 export function ProposalsClient({
   initialPage = 1,
@@ -179,22 +183,27 @@ export function ProposalsClient({
   // Fetch proposals
   useEffect(() => {
     fetchProposals();
-  }, [searchParams]);
+  }, [fetchProposals]);
 
   const fetchProposals = async () => {
     setIsLoading(true);
     try {
       const params = new URLSearchParams();
       params.set("page", String(searchParams.get("page") || initialPage));
-      if (searchParams.get("search"))
+      if (searchParams.get("search")) {
         params.set("search", searchParams.get("search")!);
-      if (searchParams.get("status"))
+      }
+      if (searchParams.get("status")) {
         params.set("status", searchParams.get("status")!);
-      if (searchParams.get("clientId"))
+      }
+      if (searchParams.get("clientId")) {
         params.set("clientId", searchParams.get("clientId")!);
+      }
 
       const response = await fetch(`/api/crm/proposals?${params.toString()}`);
-      if (!response.ok) throw new Error("Failed to fetch proposals");
+      if (!response.ok) {
+        throw new Error("Failed to fetch proposals");
+      }
 
       const data: ProposalsResponse = await response.json();
       setProposals(data.data);
@@ -212,9 +221,15 @@ export function ProposalsClient({
   const updateFilters = () => {
     const params = new URLSearchParams();
     params.set("page", "1");
-    if (searchInput) params.set("search", searchInput);
-    if (statusFilter) params.set("status", statusFilter);
-    if (initialClientId) params.set("clientId", initialClientId);
+    if (searchInput) {
+      params.set("search", searchInput);
+    }
+    if (statusFilter) {
+      params.set("status", statusFilter);
+    }
+    if (initialClientId) {
+      params.set("clientId", initialClientId);
+    }
 
     router.push(`/crm/proposals?${params.toString()}`);
   };
@@ -233,7 +248,7 @@ export function ProposalsClient({
     setStatusFilter(value);
   };
 
-  const handleStatusChangeOpen = (open: boolean) => {
+  const _handleStatusChangeOpen = (open: boolean) => {
     if (!open && statusFilter !== "") {
       updateFilters();
     }
@@ -251,7 +266,9 @@ export function ProposalsClient({
   };
 
   const handleDeleteConfirm = async () => {
-    if (!proposalToDelete) return;
+    if (!proposalToDelete) {
+      return;
+    }
 
     setIsDeleting(true);
     try {
@@ -262,7 +279,9 @@ export function ProposalsClient({
         }
       );
 
-      if (!response.ok) throw new Error("Failed to delete proposal");
+      if (!response.ok) {
+        throw new Error("Failed to delete proposal");
+      }
 
       toast.success("Proposal deleted successfully");
 
@@ -288,7 +307,9 @@ export function ProposalsClient({
         body: JSON.stringify({}),
       });
 
-      if (!response.ok) throw new Error("Failed to send proposal");
+      if (!response.ok) {
+        throw new Error("Failed to send proposal");
+      }
 
       toast.success("Proposal sent successfully");
 
@@ -307,7 +328,9 @@ export function ProposalsClient({
     try {
       // Fetch full proposal with line items
       const response = await fetch(`/api/crm/proposals/${proposal.id}`);
-      if (!response.ok) throw new Error("Failed to fetch proposal");
+      if (!response.ok) {
+        throw new Error("Failed to fetch proposal");
+      }
 
       const fullProposal = await response.json();
 
@@ -326,7 +349,9 @@ export function ProposalsClient({
         }),
       });
 
-      if (!createResponse.ok) throw new Error("Failed to duplicate proposal");
+      if (!createResponse.ok) {
+        throw new Error("Failed to duplicate proposal");
+      }
 
       toast.success("Proposal duplicated successfully");
 

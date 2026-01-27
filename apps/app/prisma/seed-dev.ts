@@ -17,7 +17,9 @@ const invariant = (condition: unknown, message: string): asserts condition => {
 
 const optionalEnv = (key: string): string | undefined => {
   const value = process.env[key];
-  if (value === undefined) return undefined;
+  if (value === undefined) {
+    return undefined;
+  }
   invariant(value.trim().length > 0, `${key} must not be empty`);
   return value;
 };
@@ -104,7 +106,9 @@ const ensureLocation = async (tenantId: string) => {
     where: { tenantId, deletedAt: null },
     orderBy: { createdAt: "asc" },
   });
-  if (existing) return existing;
+  if (existing) {
+    return existing;
+  }
 
   return prisma.location.create({
     data: {
@@ -128,7 +132,9 @@ const ensureUsers = async (tenantId: string) => {
     take: 3,
   });
 
-  if (existing.length >= 2) return existing;
+  if (existing.length >= 2) {
+    return existing;
+  }
 
   const seedUsers = [
     {
@@ -169,7 +175,9 @@ const ensureClient = async (tenantId: string) => {
     where: { tenantId, deletedAt: null },
     orderBy: { createdAt: "asc" },
   });
-  if (existing) return existing;
+  if (existing) {
+    return existing;
+  }
 
   return prisma.client.create({
     data: {
@@ -194,7 +202,9 @@ const ensureEvents = async (
     orderBy: [{ eventDate: "asc" }, { createdAt: "asc" }],
     take: 2,
   });
-  if (existing.length > 0) return existing;
+  if (existing.length > 0) {
+    return existing;
+  }
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -245,7 +255,9 @@ const ensureEventProfitability = async (
   const existing = await prisma.eventProfitability.count({
     where: { tenantId },
   });
-  if (existing > 0) return;
+  if (existing > 0) {
+    return;
+  }
 
   await prisma.eventProfitability.createMany({
     data: events.map((event, index) => ({
@@ -402,7 +414,9 @@ const ensureEventDishes = async (
     LIMIT 1
   `;
 
-  if (existing.length > 0) return;
+  if (existing.length > 0) {
+    return;
+  }
 
   await prisma.$executeRaw`
     INSERT INTO tenant_events.event_dishes (
@@ -432,7 +446,9 @@ const ensurePrepList = async (
     orderBy: { createdAt: "asc" },
   });
 
-  if (existing) return existing;
+  if (existing) {
+    return existing;
+  }
 
   const prepList = await prisma.prepList.create({
     data: {
@@ -480,7 +496,9 @@ const ensurePrepTasks = async (
   const existing = await prisma.prepTask.findFirst({
     where: { tenantId, eventId, deletedAt: null },
   });
-  if (existing) return;
+  if (existing) {
+    return;
+  }
 
   const today = new Date();
   const dueDate = new Date();
@@ -510,7 +528,9 @@ const ensureKitchenTasks = async (tenantId: string) => {
   const existing = await prisma.kitchenTask.findFirst({
     where: { tenantId, deletedAt: null },
   });
-  if (existing) return;
+  if (existing) {
+    return;
+  }
 
   await prisma.kitchenTask.createMany({
     data: [
@@ -541,7 +561,9 @@ const ensureInventory = async (tenantId: string) => {
     where: { tenantId, deletedAt: null },
     orderBy: { createdAt: "asc" },
   });
-  if (existing) return existing;
+  if (existing) {
+    return existing;
+  }
 
   return prisma.inventoryItem.create({
     data: {
@@ -562,7 +584,9 @@ const ensureWasteReason = async () => {
     where: { isActive: true },
     orderBy: { id: "asc" },
   });
-  if (existing) return existing;
+  if (existing) {
+    return existing;
+  }
 
   return prisma.wasteReason.create({
     data: {
@@ -585,7 +609,9 @@ const ensureWasteEntry = async (
   const existing = await prisma.wasteEntry.findFirst({
     where: { tenantId, deletedAt: null },
   });
-  if (existing) return;
+  if (existing) {
+    return;
+  }
 
   await prisma.wasteEntry.create({
     data: {
@@ -607,7 +633,9 @@ const ensureAllergenWarning = async (
   const existing = await prisma.allergenWarning.findFirst({
     where: { tenantId, eventId, deletedAt: null },
   });
-  if (existing) return;
+  if (existing) {
+    return;
+  }
 
   await prisma.allergenWarning.create({
     data: {
@@ -630,7 +658,9 @@ const ensureSchedule = async (
   const existing = await prisma.schedule.findFirst({
     where: { tenantId, deletedAt: null },
   });
-  if (existing) return existing;
+  if (existing) {
+    return existing;
+  }
 
   const schedule = await prisma.schedule.create({
     data: {
@@ -669,7 +699,7 @@ const ensureCRMRecords = async (
     await prisma.proposal.create({
       data: {
         tenantId,
-        proposalNumber: `SEED-${new Date().getTime()}`,
+        proposalNumber: `SEED-${Date.now()}`,
         clientId,
         eventId,
         title: "Seeded Proposal",

@@ -109,7 +109,9 @@ export function BudgetDetailClient() {
 
   // Handle budget update
   const handleUpdateBudget = async () => {
-    if (!budget) return;
+    if (!budget) {
+      return;
+    }
 
     setActionLoading(true);
     try {
@@ -159,7 +161,9 @@ export function BudgetDetailClient() {
 
   // Save line item
   const handleSaveLineItem = async () => {
-    if (!budget) return;
+    if (!budget) {
+      return;
+    }
 
     setActionLoading(true);
     try {
@@ -197,7 +201,9 @@ export function BudgetDetailClient() {
 
   // Delete line item
   const handleDeleteLineItem = async (itemId: string) => {
-    if (!budget) return;
+    if (!budget) {
+      return;
+    }
 
     setActionLoading(true);
     try {

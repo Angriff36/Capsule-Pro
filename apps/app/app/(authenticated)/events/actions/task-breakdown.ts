@@ -9,7 +9,7 @@ const AI_MODEL = "gpt-4o-mini";
 
 export type TaskSection = "prep" | "setup" | "cleanup";
 
-export interface TaskBreakdownItem {
+export type TaskBreakdownItem = {
   id: string;
   name: string;
   description?: string;
@@ -25,9 +25,9 @@ export interface TaskBreakdownItem {
   dueInHours?: number;
   historicalContext?: string;
   confidence?: number;
-}
+};
 
-export interface TaskBreakdown {
+export type TaskBreakdown = {
   prep: TaskBreakdownItem[];
   setup: TaskBreakdownItem[];
   cleanup: TaskBreakdownItem[];
@@ -39,12 +39,12 @@ export interface TaskBreakdown {
   generatedAt: Date;
   historicalEventCount?: number;
   disclaimer?: string;
-}
+};
 
-export interface GenerateTaskBreakdownParams {
+export type GenerateTaskBreakdownParams = {
   eventId: string;
   customInstructions?: string;
-}
+};
 
 export async function generateTaskBreakdown({
   eventId,
@@ -122,7 +122,7 @@ export async function generateTaskBreakdown({
     allergens: d.allergens,
   }));
 
-  const historicalContext =
+  const _historicalContext =
     similarEvents.length > 0
       ? `Based on ${similarEvents.length} similar events`
       : undefined;
@@ -396,7 +396,7 @@ function getFallbackTasks(
     guestCount: number;
     venueName?: string | null;
   },
-  dishesData?: Array<{
+  _dishesData?: Array<{
     name: string;
     category: string | null;
   }>
@@ -571,7 +571,8 @@ export async function saveTaskBreakdown(
 
     if (task.relativeTime?.includes("hours before")) {
       const hoursBefore = Number.parseInt(
-        task.relativeTime.match(/\d+/)?.[0] || "0"
+        task.relativeTime.match(/\d+/)?.[0] || "0",
+        10
       );
       dueByDate.setHours(dueByDate.getHours() - hoursBefore);
     } else if (task.relativeTime?.includes("before event")) {

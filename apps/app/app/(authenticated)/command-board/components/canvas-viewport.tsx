@@ -26,7 +26,7 @@ import {
 // Types
 // =============================================================================
 
-interface CanvasViewportProps {
+type CanvasViewportProps = {
   /** Child elements to render within the viewport */
   children?: ReactNode;
   /** Additional CSS classes for the viewport container */
@@ -55,23 +55,23 @@ interface CanvasViewportProps {
   maxZoom?: number;
   /** Function to get all content bounds for fit-to-screen */
   getContentBounds?: () => BoundingBox[];
-}
+};
 
-interface PanState {
+type PanState = {
   isPanning: boolean;
   startX: number;
   startY: number;
   startPanX: number;
   startPanY: number;
-}
+};
 
 // Public API exposed via ref
-export interface ViewportRef {
+export type ViewportRef = {
   zoomIn: () => void;
   zoomOut: () => void;
   resetViewport: () => void;
   setZoom: (zoom: number) => void;
-}
+};
 
 // =============================================================================
 // Hook: useViewportState
@@ -325,7 +325,9 @@ export const CanvasViewport = forwardRef<ViewportRef, CanvasViewportProps>(
     // Handle mouse move for panning
     const handleMouseMove = useCallback(
       (e: MouseEvent) => {
-        if (!panState.isPanning) return;
+        if (!panState.isPanning) {
+          return;
+        }
 
         const deltaX = e.clientX - panState.startX;
         const deltaY = e.clientY - panState.startY;
@@ -349,7 +351,9 @@ export const CanvasViewport = forwardRef<ViewportRef, CanvasViewportProps>(
     // Handle click on canvas
     const handleClick = useCallback(
       (e: MouseEvent) => {
-        if (!onCanvasClick || panState.isPanning) return;
+        if (!onCanvasClick || panState.isPanning) {
+          return;
+        }
 
         // Don't trigger click if we just finished panning
         const target = e.target as HTMLElement;
@@ -367,7 +371,9 @@ export const CanvasViewport = forwardRef<ViewportRef, CanvasViewportProps>(
     // Handle double-click on canvas
     const handleDoubleClick = useCallback(
       (e: MouseEvent) => {
-        if (!onCanvasDoubleClick) return;
+        if (!onCanvasDoubleClick) {
+          return;
+        }
 
         const target = e.target as HTMLElement;
         if (target !== containerRef.current && target !== contentRef.current) {
@@ -384,7 +390,9 @@ export const CanvasViewport = forwardRef<ViewportRef, CanvasViewportProps>(
     // Handle keyboard events
     const handleKeyDown = useCallback(
       (e: KeyboardEvent) => {
-        if (!enableKeyboardShortcuts) return;
+        if (!enableKeyboardShortcuts) {
+          return;
+        }
 
         // Track space key for space+drag panning
         if (e.code === "Space") {
@@ -466,8 +474,12 @@ export const CanvasViewport = forwardRef<ViewportRef, CanvasViewportProps>(
 
     // Calculate cursor style based on state
     const getCursorStyle = () => {
-      if (panState.isPanning) return "grabbing";
-      if (isSpacePressed) return "grab";
+      if (panState.isPanning) {
+        return "grabbing";
+      }
+      if (isSpacePressed) {
+        return "grab";
+      }
       return "default";
     };
 
@@ -503,7 +515,6 @@ export const CanvasViewport = forwardRef<ViewportRef, CanvasViewportProps>(
           ref={containerRef}
           role="application"
           style={{ cursor: getCursorStyle() }}
-          tabIndex={0}
         >
           {/* Transformed Content Layer */}
           <div
@@ -532,14 +543,14 @@ export const CanvasViewport = forwardRef<ViewportRef, CanvasViewportProps>(
 // Sub-component: ViewportControlBar
 // =============================================================================
 
-interface ViewportControlBarProps {
+type ViewportControlBarProps = {
   viewport: ViewportState;
   onZoomIn: () => void;
   onZoomOut: () => void;
   onReset: () => void;
   minZoom: number;
   maxZoom: number;
-}
+};
 
 function ViewportControlBar({
   viewport,

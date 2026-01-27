@@ -279,9 +279,15 @@ export const parseKitchenAnalyticsResponse = (
 };
 
 export function getCompletionColor(value: number) {
-  if (value >= 80) return "bg-emerald-500";
-  if (value >= 60) return "bg-amber-500";
-  if (value >= 40) return "bg-orange-500";
+  if (value >= 80) {
+    return "bg-emerald-500";
+  }
+  if (value >= 60) {
+    return "bg-amber-500";
+  }
+  if (value >= 40) {
+    return "bg-orange-500";
+  }
   return "bg-red-500";
 }
 
@@ -292,7 +298,9 @@ export async function fetchKitchenAnalytics(
 
   const params = new URLSearchParams();
   params.set("period", period);
-  if (locationId) params.set("locationId", locationId);
+  if (locationId) {
+    params.set("locationId", locationId);
+  }
 
   const response = await fetch(`/api/analytics/kitchen?${params.toString()}`);
 
@@ -316,7 +324,9 @@ export function useKitchenAnalytics(
   const [error, setError] = useState<Error | null>(null);
 
   const fetchData = async () => {
-    if (!enabled) return;
+    if (!enabled) {
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -337,7 +347,7 @@ export function useKitchenAnalytics(
 
   useEffect(() => {
     fetchData();
-  }, [enabled, fetchOptions.period, fetchOptions.locationId]);
+  }, [fetchData]);
 
   return {
     data,

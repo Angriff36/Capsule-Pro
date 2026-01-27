@@ -69,7 +69,7 @@ const KitchenPage = async () => {
     if (!taskClaimsMap.has(claim.taskId)) {
       taskClaimsMap.set(claim.taskId, []);
     }
-    taskClaimsMap.get(claim.taskId)!.push(claim);
+    taskClaimsMap.get(claim.taskId)?.push(claim);
   });
 
   // Attach users to claims and to tasks

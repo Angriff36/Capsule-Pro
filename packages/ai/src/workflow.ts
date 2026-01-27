@@ -7,36 +7,36 @@ import {
   type LifecycleEvent,
 } from "./events.js";
 
-export interface WorkflowStep {
+export type WorkflowStep = {
   id: string;
   agent: Agent;
   dependsOn: string[];
   inputMapping?: Record<string, string>;
   outputMapping?: Record<string, string>;
   condition?: (context: WorkflowContext) => boolean;
-}
+};
 
-export interface WorkflowConfig {
+export type WorkflowConfig = {
   name: string;
   steps: WorkflowStep[];
   parallelExecution?: boolean;
   timeout?: number;
-}
+};
 
-export interface WorkflowContext {
+export type WorkflowContext = {
   workflowId: string;
   stepResults: Map<string, unknown>;
   sharedState: Record<string, unknown>;
   startTime: Date;
-}
+};
 
-export interface WorkflowResult {
+export type WorkflowResult = {
   workflowId: string;
   success: boolean;
   stepResults: Map<string, ExecutionResult>;
   duration: number;
   error?: SDKError;
-}
+};
 
 export class AgentWorkflow {
   public readonly id: string;
@@ -45,9 +45,8 @@ export class AgentWorkflow {
   public readonly parallelExecution: boolean;
   public readonly timeout: number;
   private readonly eventEmitter: AgentEventEmitter;
-  private context: WorkflowContext;
-  private stepExecutionOrder: string[] = [];
-  private executionStartTime?: Date;
+  private readonly context: WorkflowContext;
+  private readonly stepExecutionOrder: string[] = [];
 
   constructor(config: WorkflowConfig) {
     this.id = uuidv4();
@@ -174,7 +173,9 @@ export class AgentWorkflow {
   private async executeSequential(): Promise<void> {
     for (const stepId of this.stepExecutionOrder) {
       const step = this.steps.find((s) => s.id === stepId);
-      if (!step) continue;
+      if (!step) {
+        continue;
+      }
 
       if (step.condition && !step.condition(this.context)) {
         continue;
@@ -190,7 +191,9 @@ export class AgentWorkflow {
     for (const level of levels) {
       const promises = level.map(async (stepId) => {
         const step = this.steps.find((s) => s.id === stepId);
-        if (!step) return;
+        if (!step) {
+          return;
+        }
 
         if (step.condition && !step.condition(this.context)) {
           return;
@@ -212,7 +215,9 @@ export class AgentWorkflow {
 
       for (const stepId of remainingSteps) {
         const step = this.steps.find((s) => s.id === stepId);
-        if (!step) continue;
+        if (!step) {
+          continue;
+        }
 
         const allDepsExecuted = step.dependsOn.every(
           (depId) => !remainingSteps.has(depId)

@@ -15,29 +15,29 @@ import { Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-interface InventoryItem {
+type InventoryItem = {
   id: string;
   name: string;
   item_number: string;
-}
+};
 
-interface WasteReason {
+type WasteReason = {
   id: number;
   code: string;
   name: string;
   description: string | null;
   colorHex: string | null;
   sortOrder: number;
-}
+};
 
-interface Unit {
+type Unit = {
   id: number;
   code: string;
   name: string;
   name_plural: string;
   unit_system: string;
   unit_type: string;
-}
+};
 
 export function WasteEntriesClient() {
   const [submitting, setSubmitting] = useState(false);
@@ -71,9 +71,15 @@ export function WasteEntriesClient() {
           }),
         ]);
 
-        if (!itemsRes.ok) throw new Error("Failed to fetch inventory items");
-        if (!reasonsRes.ok) throw new Error("Failed to fetch waste reasons");
-        if (!unitsRes.ok) throw new Error("Failed to fetch units");
+        if (!itemsRes.ok) {
+          throw new Error("Failed to fetch inventory items");
+        }
+        if (!reasonsRes.ok) {
+          throw new Error("Failed to fetch waste reasons");
+        }
+        if (!unitsRes.ok) {
+          throw new Error("Failed to fetch units");
+        }
 
         const itemsData = await itemsRes.json();
         const reasonsData = await reasonsRes.json();

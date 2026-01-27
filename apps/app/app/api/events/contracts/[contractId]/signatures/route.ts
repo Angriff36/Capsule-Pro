@@ -106,7 +106,7 @@ export async function POST(
  * Get all signatures for a contract
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: ContractSignaturesAPIContext
 ) {
   const { contractId } = await context.params;

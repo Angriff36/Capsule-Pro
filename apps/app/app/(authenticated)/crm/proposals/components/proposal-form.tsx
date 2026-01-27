@@ -41,31 +41,31 @@ import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-interface LineItem {
+type LineItem = {
   id: string;
   itemType: string;
   description: string;
   quantity: number;
   unitPrice: number;
   notes?: string;
-}
+};
 
-interface ClientOption {
+type ClientOption = {
   id: string;
   company_name: string | null;
   first_name: string | null;
   last_name: string | null;
   email: string | null;
-}
+};
 
-interface ProposalFormProps {
+type ProposalFormProps = {
   proposal: Proposal | null;
   action: (
     previousState: { redirect: string } | null,
     formData: FormData
   ) => Promise<{ redirect: string } | null>;
   submitLabel: string;
-}
+};
 
 const itemTypes = [
   { value: "menu", label: "Menu Item" },
@@ -89,7 +89,9 @@ const eventTypes = [
 ];
 
 function getClientDisplayName(client: ClientOption): string {
-  if (client.company_name) return client.company_name;
+  if (client.company_name) {
+    return client.company_name;
+  }
   return (
     `${client.first_name || ""} ${client.last_name || ""}`.trim() || "No name"
   );
@@ -141,7 +143,9 @@ export function ProposalForm({
     async function fetchClients() {
       try {
         const response = await fetch("/api/crm/clients?limit=1000");
-        if (!response.ok) throw new Error("Failed to fetch clients");
+        if (!response.ok) {
+          throw new Error("Failed to fetch clients");
+        }
         const data = await response.json();
         setClients(data.data || []);
       } catch (error) {
@@ -194,8 +198,12 @@ export function ProposalForm({
   };
 
   const formatDateValue = (date: Date | string | null | undefined): string => {
-    if (!date) return "";
-    if (typeof date === "string") return date;
+    if (!date) {
+      return "";
+    }
+    if (typeof date === "string") {
+      return date;
+    }
     return format(date, "yyyy-MM-dd");
   };
 

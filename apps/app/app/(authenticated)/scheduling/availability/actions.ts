@@ -113,9 +113,13 @@ export async function getAvailability(params: AvailabilityFilters = {}) {
  */
 export async function getAvailabilityById(availabilityId: string) {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   const [availability] = await database.$queryRaw<
     Array<{
@@ -173,9 +177,13 @@ export async function getAvailabilityById(availabilityId: string) {
  */
 export async function createAvailability(formData: FormData) {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   const employeeId = formData.get("employeeId") as string;
   const dayOfWeek = formData.get("dayOfWeek") as unknown as DayOfWeek;
@@ -266,9 +274,13 @@ export async function updateAvailability(
   formData: FormData
 ) {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   const dayOfWeek = formData.get("dayOfWeek") as unknown as
     | DayOfWeek
@@ -307,10 +319,18 @@ export async function updateAvailability(
     id: availabilityId,
   };
 
-  if (dayOfWeek !== undefined) updateData.day_of_week = dayOfWeek;
-  if (startTime !== undefined) updateData.start_time = startTime;
-  if (endTime !== undefined) updateData.end_time = endTime;
-  if (isAvailable !== undefined) updateData.is_available = isAvailable;
+  if (dayOfWeek !== undefined) {
+    updateData.day_of_week = dayOfWeek;
+  }
+  if (startTime !== undefined) {
+    updateData.start_time = startTime;
+  }
+  if (endTime !== undefined) {
+    updateData.end_time = endTime;
+  }
+  if (isAvailable !== undefined) {
+    updateData.is_available = isAvailable;
+  }
   if (effectiveFrom !== undefined) {
     const updateEffectiveFrom = new Date(effectiveFrom);
     updateData.effective_from = updateEffectiveFrom;
@@ -366,9 +386,13 @@ export async function updateAvailability(
  */
 export async function deleteAvailability(availabilityId: string) {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   await database.employee_availability.update({
     where: {
@@ -391,9 +415,13 @@ export async function deleteAvailability(availabilityId: string) {
  */
 export async function createBatchAvailability(formData: FormData) {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   const employeeId = formData.get("employeeId") as string;
   const patternsJson = formData.get("patterns") as string;
@@ -512,9 +540,13 @@ export async function getEmployeeAvailability(params: {
   includeTimeOff?: boolean;
 }) {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   const startDate = new Date(params.startDate);
   const endDate = new Date(params.endDate);
@@ -646,9 +678,13 @@ export async function getEmployeeAvailability(params: {
  */
 export async function getEmployees() {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   const employees = await database.$queryRaw<
     Array<{

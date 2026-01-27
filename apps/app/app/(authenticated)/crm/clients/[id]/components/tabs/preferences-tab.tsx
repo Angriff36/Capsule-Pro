@@ -4,7 +4,7 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { TagIcon } from "lucide-react";
 
-interface PreferencesTabProps {
+type PreferencesTabProps = {
   client: {
     preferences: Array<{
       id: string;
@@ -14,7 +14,7 @@ interface PreferencesTabProps {
       notes: string | null;
     }>;
   };
-}
+};
 
 export function PreferencesTab({ client }: PreferencesTabProps) {
   const formatValue = (value: unknown): string => {

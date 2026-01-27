@@ -85,7 +85,7 @@ export async function PATCH(
  * Delete a prep list item (soft delete)
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

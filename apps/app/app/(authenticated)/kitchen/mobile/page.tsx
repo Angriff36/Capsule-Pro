@@ -63,7 +63,7 @@ const priorityConfig: Record<number, { label: string; color: string }> = {
   10: { label: "NONE", color: "bg-slate-400" },
 };
 
-function getInitials(
+function _getInitials(
   firstName?: string | null,
   lastName?: string | null
 ): string {
@@ -75,7 +75,9 @@ function getInitials(
 function formatDueStatus(
   dueDate: string | null
 ): { label: string; isOverdue: boolean; isUrgent: boolean } | null {
-  if (!dueDate) return null;
+  if (!dueDate) {
+    return null;
+  }
 
   const now = new Date();
   const due = new Date(dueDate);
@@ -106,13 +108,13 @@ function formatDueStatus(
 }
 
 export default function KitchenMobilePage() {
-  const searchParams = useSearchParams() ?? new URLSearchParams();
+  const _searchParams = useSearchParams() ?? new URLSearchParams();
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [myTasks, setMyTasks] = useState<Task[]>([]);
   const [isOnline, setIsOnline] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("available");
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [_currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [syncQueue, setSyncQueue] = useState<
     { taskId: string; action: "claim" | "release"; timestamp: string }[]
   >([]);
@@ -149,7 +151,7 @@ export default function KitchenMobilePage() {
   useEffect(() => {
     fetchAvailableTasks();
     fetchMyTasks();
-  }, []);
+  }, [fetchAvailableTasks, fetchMyTasks]);
 
   // Monitor online/offline status
   useEffect(() => {
@@ -172,10 +174,12 @@ export default function KitchenMobilePage() {
     if (isOnline && syncQueue && syncQueue.length > 0) {
       syncOfflineClaims();
     }
-  }, [isOnline]);
+  }, [isOnline, syncOfflineClaims, syncQueue]);
 
   const syncOfflineClaims = async () => {
-    if (!syncQueue || syncQueue.length === 0) return;
+    if (!syncQueue || syncQueue.length === 0) {
+      return;
+    }
 
     try {
       const response = await fetch("/api/kitchen/tasks/sync-claims", {
@@ -431,8 +435,12 @@ export default function KitchenMobilePage() {
           className="flex flex-1 flex-col"
           onValueChange={(value) => {
             setActiveTab(value);
-            if (value === "available") fetchAvailableTasks();
-            if (value === "my-tasks") fetchMyTasks();
+            if (value === "available") {
+              fetchAvailableTasks();
+            }
+            if (value === "my-tasks") {
+              fetchMyTasks();
+            }
           }}
           value={activeTab}
         >

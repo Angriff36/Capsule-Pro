@@ -64,9 +64,15 @@ export default async function MenuDetailPage({
   const sortedCourses = Object.keys(dishesByCourse).sort((a, b) => {
     const aIndex = courseOrder.indexOf(a.toLowerCase());
     const bIndex = courseOrder.indexOf(b.toLowerCase());
-    if (aIndex === -1 && bIndex === -1) return a.localeCompare(b);
-    if (aIndex === -1) return 1;
-    if (bIndex === -1) return -1;
+    if (aIndex === -1 && bIndex === -1) {
+      return a.localeCompare(b);
+    }
+    if (aIndex === -1) {
+      return 1;
+    }
+    if (bIndex === -1) {
+      return -1;
+    }
     return aIndex - bIndex;
   });
 

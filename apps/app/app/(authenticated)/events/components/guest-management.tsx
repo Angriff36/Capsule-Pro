@@ -55,35 +55,35 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-interface EventDish {
+type EventDish = {
   link_id: string;
   dish_id: string;
   name: string;
   category: string | null;
   dietary_tags: string[] | null;
   course: string | null;
-}
+};
 
-interface ConflictAlert {
+type ConflictAlert = {
   type: "allergen" | "dietary";
   severity: "critical" | "warning";
   dishName: string;
   restriction: string;
   message: string;
-}
+};
 
-interface GuestManagementProps {
+type GuestManagementProps = {
   eventId: string;
-}
+};
 
-interface GuestsResponse {
+type GuestsResponse = {
   guests: EventGuest[];
   pagination: {
     limit: number;
     offset: number;
     total: number;
   };
-}
+};
 
 // Common dietary restrictions and allergens
 const COMMON_DIETARY_RESTRICTIONS = [
@@ -156,7 +156,9 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
       setIsLoading(true);
       try {
         const params = new URLSearchParams();
-        if (query) params.append("guestName", query);
+        if (query) {
+          params.append("guestName", query);
+        }
 
         const response = await fetch(
           `/api/events/${eventId}/guests${params.toString() ? `?${params.toString()}` : ""}`
@@ -415,7 +417,9 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
 
   // Update guest
   const updateGuest = async () => {
-    if (!selectedGuest) return;
+    if (!selectedGuest) {
+      return;
+    }
 
     if (!formData.guestName.trim()) {
       toast.error("Guest name is required");

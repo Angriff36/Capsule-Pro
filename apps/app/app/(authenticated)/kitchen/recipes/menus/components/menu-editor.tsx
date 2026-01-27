@@ -41,7 +41,7 @@ const COURSE_OPTIONS = [
 
 export function MenuEditor({ menuId }: MenuEditorProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isPending, _startTransition] = useTransition();
   const [selectedDishes, setSelectedDishes] = useState<SelectedDish[]>([]);
 
   // Form state
@@ -67,10 +67,18 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
     formData.append("name", name);
     formData.append("description", description);
     formData.append("category", category);
-    if (basePrice) formData.append("basePrice", basePrice);
-    if (pricePerPerson) formData.append("pricePerPerson", pricePerPerson);
-    if (minGuests) formData.append("minGuests", minGuests);
-    if (maxGuests) formData.append("maxGuests", maxGuests);
+    if (basePrice) {
+      formData.append("basePrice", basePrice);
+    }
+    if (pricePerPerson) {
+      formData.append("pricePerPerson", pricePerPerson);
+    }
+    if (minGuests) {
+      formData.append("minGuests", minGuests);
+    }
+    if (maxGuests) {
+      formData.append("maxGuests", maxGuests);
+    }
 
     try {
       if (menuId) {

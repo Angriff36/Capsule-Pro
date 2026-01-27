@@ -23,7 +23,7 @@ type ContractAPIContext = {
  * Delete a contract (soft delete)
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   context: ContractAPIContext
 ) {
   const { contractId } = await context.params;

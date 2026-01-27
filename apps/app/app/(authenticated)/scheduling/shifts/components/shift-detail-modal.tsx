@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { deleteShift } from "../actions";
 import { ShiftForm } from "./shift-form";
 
-interface Shift {
+type Shift = {
   id: string;
   schedule_id: string;
   employee_id: string;
@@ -38,14 +38,14 @@ interface Shift {
   notes: string | null;
   created_at: Date;
   updated_at: Date;
-}
+};
 
-interface ShiftDetailModalProps {
+type ShiftDetailModalProps = {
   open: boolean;
   onClose: () => void;
   shift: Shift | null;
   onDelete?: () => void;
-}
+};
 
 export function ShiftDetailModal({
   open,
@@ -56,10 +56,14 @@ export function ShiftDetailModal({
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  if (!shift) return null;
+  if (!shift) {
+    return null;
+  }
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this shift?")) return;
+    if (!confirm("Are you sure you want to delete this shift?")) {
+      return;
+    }
 
     setIsDeleting(true);
     try {

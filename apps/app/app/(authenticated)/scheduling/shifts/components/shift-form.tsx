@@ -24,7 +24,7 @@ import {
   updateShift,
 } from "../actions";
 
-interface Shift {
+type Shift = {
   id?: string;
   schedule_id?: string;
   employee_id?: string;
@@ -33,16 +33,16 @@ interface Shift {
   shift_end?: string;
   role_during_shift?: string | null;
   notes?: string | null;
-}
+};
 
-interface ShiftFormProps {
+type ShiftFormProps = {
   shift?: Shift | null;
   scheduleId?: string;
   onSuccess?: () => void;
   onCancel?: () => void;
-}
+};
 
-interface Employee {
+type Employee = {
   id: string;
   first_name: string | null;
   last_name: string | null;
@@ -50,21 +50,23 @@ interface Employee {
   role: string;
   is_active: boolean;
   hasConflictingShift?: boolean;
-}
+};
 
-interface Location {
+type Location = {
   id: string;
   name: string;
-}
+};
 
-interface Schedule {
+type Schedule = {
   id: string;
   schedule_date: Date;
   status: string;
-}
+};
 
 const formatDateTimeLocal = (dateStr: string | undefined) => {
-  if (!dateStr) return "";
+  if (!dateStr) {
+    return "";
+  }
   const date = new Date(dateStr);
   // Format: YYYY-MM-DDTHH:mm
   const year = date.getFullYear();
@@ -157,11 +159,21 @@ export function ShiftForm({
 
     // Basic validation
     const newErrors: Record<string, string> = {};
-    if (!formData.scheduleId) newErrors.scheduleId = "Schedule is required";
-    if (!formData.employeeId) newErrors.employeeId = "Employee is required";
-    if (!formData.locationId) newErrors.locationId = "Location is required";
-    if (!formData.shiftStart) newErrors.shiftStart = "Start time is required";
-    if (!formData.shiftEnd) newErrors.shiftEnd = "End time is required";
+    if (!formData.scheduleId) {
+      newErrors.scheduleId = "Schedule is required";
+    }
+    if (!formData.employeeId) {
+      newErrors.employeeId = "Employee is required";
+    }
+    if (!formData.locationId) {
+      newErrors.locationId = "Location is required";
+    }
+    if (!formData.shiftStart) {
+      newErrors.shiftStart = "Start time is required";
+    }
+    if (!formData.shiftEnd) {
+      newErrors.shiftEnd = "End time is required";
+    }
     if (
       formData.shiftStart &&
       formData.shiftEnd &&
@@ -185,10 +197,15 @@ export function ShiftForm({
       new Date(formData.shiftStart).toISOString()
     );
     submitData.append("shiftEnd", new Date(formData.shiftEnd).toISOString());
-    if (formData.roleDuringShift)
+    if (formData.roleDuringShift) {
       submitData.append("roleDuringShift", formData.roleDuringShift);
-    if (formData.notes) submitData.append("notes", formData.notes);
-    if (formData.allowOverlap) submitData.append("allowOverlap", "true");
+    }
+    if (formData.notes) {
+      submitData.append("notes", formData.notes);
+    }
+    if (formData.allowOverlap) {
+      submitData.append("allowOverlap", "true");
+    }
 
     try {
       if (isEditing && shift?.id) {

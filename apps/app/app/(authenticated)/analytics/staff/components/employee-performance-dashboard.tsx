@@ -13,9 +13,9 @@ import type {
   EmployeePerformanceSummary,
 } from "../actions/get-employee-performance";
 
-interface EmployeePerformanceDashboardProps {
+type EmployeePerformanceDashboardProps = {
   employeeId?: string;
-}
+};
 
 export function EmployeePerformanceDashboard({
   employeeId,
@@ -60,7 +60,7 @@ export function EmployeePerformanceDashboard({
   if (loading) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
+        {[...new Array(4)].map((_, i) => (
           <Card key={i}>
             <CardHeader>
               <div className="h-4 w-24 animate-pulse bg-muted rounded" />
@@ -606,7 +606,7 @@ export function EmployeePerformanceDashboard({
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {summary.monthlyTrends.map((trend, index) => (
+                  {summary.monthlyTrends.map((trend, _index) => (
                     <div
                       className="flex items-center gap-2 text-sm"
                       key={trend.month}

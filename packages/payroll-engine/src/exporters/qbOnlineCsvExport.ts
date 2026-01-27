@@ -10,16 +10,16 @@ function invariant(condition: unknown, message: string): asserts condition {
 /**
  * QuickBooks Online CSV Export Configuration
  */
-export interface QBOnlineCsvExportOptions {
+export type QBOnlineCsvExportOptions = {
   includeHeader?: boolean;
   dateFormat?: "us" | "iso";
   accountMappings?: QBOnlineAccountMappings;
-}
+};
 
 /**
  * QuickBooks Online Account Mappings
  */
-export interface QBOnlineAccountMappings {
+export type QBOnlineAccountMappings = {
   wagesAccount: string;
   overtimeAccount: string;
   tipsAccount: string;
@@ -29,7 +29,7 @@ export interface QBOnlineAccountMappings {
   benefitsAccount: string;
   retirementAccount: string;
   cashAccount: string;
-}
+};
 
 /**
  * Default QB Online account mappings
@@ -67,7 +67,9 @@ const QBO_JOURNAL_COLUMNS = [
  * Escape CSV field for QBO
  */
 function escapeQBOCSV(value: string | number | undefined): string {
-  if (value === undefined || value === null) return "";
+  if (value === undefined || value === null) {
+    return "";
+  }
   const str = String(value);
   if (str.includes(",") || str.includes('"') || str.includes("\n")) {
     return `"${str.replace(/"/g, '""')}"`;
@@ -79,7 +81,9 @@ function escapeQBOCSV(value: string | number | undefined): string {
  * Format amount as string with 2 decimals, or empty if zero
  */
 function formatAmountOrEmpty(amount: number): string {
-  if (Math.abs(amount) < 0.01) return "";
+  if (Math.abs(amount) < 0.01) {
+    return "";
+  }
   return amount.toFixed(2);
 }
 

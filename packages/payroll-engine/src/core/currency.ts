@@ -12,7 +12,7 @@ Decimal.set({
  * Output is rounded to 2 decimal places (cents)
  */
 export class Currency {
-  private value: Decimal;
+  private readonly value: Decimal;
 
   constructor(amount: number | string | Decimal) {
     this.value = new Decimal(amount);

@@ -74,7 +74,7 @@ export const PDFDocument: React.FC<{
  */
 export async function generatePDF(
   component: React.ReactElement,
-  filename?: string
+  _filename?: string
 ): Promise<Uint8Array> {
   try {
     // @ts-expect-error

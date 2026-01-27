@@ -52,9 +52,6 @@ export const BoardCard = memo(function BoardCard({
         return <EmployeeCard card={card} />;
       case "inventory":
         return <InventoryCard card={card} />;
-      case "recipe":
-      case "note":
-      case "generic":
       default: {
         // Generic card with better visual hierarchy
         return (

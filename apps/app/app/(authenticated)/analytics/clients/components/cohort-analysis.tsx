@@ -29,11 +29,21 @@ type CohortAnalysisProps = {
 };
 
 function getRetentionColor(value: number): string {
-  if (value >= 80) return "bg-emerald-500/90";
-  if (value >= 60) return "bg-emerald-400/80";
-  if (value >= 40) return "bg-emerald-300/70";
-  if (value >= 20) return "bg-amber-300/60";
-  if (value > 0) return "bg-amber-200/50";
+  if (value >= 80) {
+    return "bg-emerald-500/90";
+  }
+  if (value >= 60) {
+    return "bg-emerald-400/80";
+  }
+  if (value >= 40) {
+    return "bg-emerald-300/70";
+  }
+  if (value >= 20) {
+    return "bg-amber-300/60";
+  }
+  if (value > 0) {
+    return "bg-amber-200/50";
+  }
   return "bg-muted/50";
 }
 

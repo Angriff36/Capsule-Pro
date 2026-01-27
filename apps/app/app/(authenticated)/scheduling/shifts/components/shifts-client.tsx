@@ -40,7 +40,7 @@ import { BulkAssignmentModal } from "./bulk-assignment-modal";
 import { ShiftDetailModal } from "./shift-detail-modal";
 import { ShiftForm } from "./shift-form";
 
-interface Shift {
+type Shift = {
   id: string;
   schedule_id: string;
   employee_id: string;
@@ -56,20 +56,20 @@ interface Shift {
   notes: string | null;
   created_at: Date;
   updated_at: Date;
-}
+};
 
-interface Employee {
+type Employee = {
   id: string;
   first_name: string | null;
   last_name: string | null;
   email: string;
   role: string;
-}
+};
 
-interface Location {
+type Location = {
   id: string;
   name: string;
-}
+};
 
 export function ShiftsClient() {
   const router = useRouter();
@@ -120,7 +120,7 @@ export function ShiftsClient() {
     } finally {
       setLoading(false);
     }
-  }, [filters, pagination.page]);
+  }, [filters, pagination.page, pagination]);
 
   // Fetch filter options
   const fetchFilterOptions = useCallback(async () => {
@@ -146,7 +146,9 @@ export function ShiftsClient() {
   useEffect(() => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
-      if (value) params.set(key, value);
+      if (value) {
+        params.set(key, value);
+      }
     });
     const queryString = params.toString();
     router.push(`/scheduling/shifts${queryString ? `?${queryString}` : ""}`);

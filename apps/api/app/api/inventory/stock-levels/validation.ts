@@ -329,7 +329,7 @@ export function validateTransactionFilters(filters: unknown): void {
   // Validate startDate if provided
   if (f.startDate !== undefined) {
     invariant(
-      typeof f.startDate === "string" && !isNaN(Date.parse(f.startDate)),
+      typeof f.startDate === "string" && !Number.isNaN(Date.parse(f.startDate)),
       `startDate must be a valid ISO date string, received "${f.startDate}"`
     );
   }
@@ -337,7 +337,7 @@ export function validateTransactionFilters(filters: unknown): void {
   // Validate endDate if provided
   if (f.endDate !== undefined) {
     invariant(
-      typeof f.endDate === "string" && !isNaN(Date.parse(f.endDate)),
+      typeof f.endDate === "string" && !Number.isNaN(Date.parse(f.endDate)),
       `endDate must be a valid ISO date string, received "${f.endDate}"`
     );
   }

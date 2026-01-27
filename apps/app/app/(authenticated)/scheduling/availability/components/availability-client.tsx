@@ -33,7 +33,7 @@ import { getAvailability, getEmployees } from "../actions";
 import { AvailabilityDetailModal } from "./availability-detail-modal";
 import { AvailabilityForm } from "./availability-form";
 
-interface Availability {
+type Availability = {
   id: string;
   employee_id: string;
   employee_first_name: string | null;
@@ -48,20 +48,20 @@ interface Availability {
   effective_until: Date | null;
   created_at: Date;
   updated_at: Date;
-}
+};
 
-interface Employee {
+type Employee = {
   id: string;
   first_name: string | null;
   last_name: string | null;
   email: string;
   role: string;
-}
+};
 
-interface Location {
+type Location = {
   id: string;
   name: string;
-}
+};
 
 export function AvailabilityClient() {
   const router = useRouter();
@@ -70,7 +70,7 @@ export function AvailabilityClient() {
   // State
   const [availability, setAvailability] = useState<Availability[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [locations, setLocations] = useState<Location[]>([]);
+  const [_locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -83,7 +83,7 @@ export function AvailabilityClient() {
   const [filters, setFilters] = useState({
     employeeId: searchParams.get("employeeId") || "",
     dayOfWeek: searchParams.get("dayOfWeek")
-      ? Number.parseInt(searchParams.get("dayOfWeek")!)
+      ? Number.parseInt(searchParams.get("dayOfWeek")!, 10)
       : undefined,
     effectiveDate: searchParams.get("effectiveDate") || "",
     isActive: searchParams.get("isActive") === "true" ? true : undefined,
@@ -116,7 +116,7 @@ export function AvailabilityClient() {
     } finally {
       setLoading(false);
     }
-  }, [filters, pagination.page]);
+  }, [filters, pagination.page, pagination]);
 
   // Fetch filter options
   const fetchFilterOptions = useCallback(async () => {
@@ -142,8 +142,9 @@ export function AvailabilityClient() {
   useEffect(() => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== "")
+      if (value !== undefined && value !== "") {
         params.set(key, value.toString());
+      }
     });
     const queryString = params.toString();
     router.push(
@@ -289,7 +290,7 @@ export function AvailabilityClient() {
           onValueChange={(value) =>
             handleFilterChange(
               "dayOfWeek",
-              value ? Number.parseInt(value) : undefined
+              value ? Number.parseInt(value, 10) : undefined
             )
           }
           value={filters.dayOfWeek?.toString() || ""}

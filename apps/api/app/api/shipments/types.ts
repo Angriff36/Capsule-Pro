@@ -27,7 +27,7 @@ export type ItemCondition = (typeof ITEM_CONDITIONS)[number];
 /**
  * Shipment response shape matching Prisma model
  */
-export interface Shipment {
+export type Shipment = {
   id: string;
   tenant_id: string;
   shipment_number: string;
@@ -68,7 +68,7 @@ export interface Shipment {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-}
+};
 
 /**
  * Shipment with items
@@ -80,7 +80,7 @@ export interface ShipmentWithItems extends Shipment {
 /**
  * Shipment Item response shape matching Prisma model
  */
-export interface ShipmentItem {
+export type ShipmentItem = {
   id: string;
   tenant_id: string;
   shipment_id: string;
@@ -111,12 +111,12 @@ export interface ShipmentItem {
   // Audit fields
   created_at: Date;
   updated_at: Date;
-}
+};
 
 /**
  * Create shipment request
  */
-export interface CreateShipmentRequest {
+export type CreateShipmentRequest = {
   shipment_number?: string;
   status?: ShipmentStatus;
   event_id?: string;
@@ -130,12 +130,12 @@ export interface CreateShipmentRequest {
   shipping_method?: string;
   notes?: string;
   internal_notes?: string;
-}
+};
 
 /**
  * Update shipment request
  */
-export interface UpdateShipmentRequest {
+export type UpdateShipmentRequest = {
   shipment_number?: string;
   status?: ShipmentStatus;
   event_id?: string;
@@ -156,24 +156,24 @@ export interface UpdateShipmentRequest {
   notes?: string;
   internal_notes?: string;
   reference?: string;
-}
+};
 
 /**
  * Update shipment status request
  */
-export interface UpdateShipmentStatusRequest {
+export type UpdateShipmentStatusRequest = {
   status: ShipmentStatus;
   actual_delivery_date?: string;
   delivered_by?: string;
   received_by?: string;
   signature?: string;
   notes?: string;
-}
+};
 
 /**
  * Create shipment item request
  */
-export interface CreateShipmentItemRequest {
+export type CreateShipmentItemRequest = {
   item_id: string;
   quantity_shipped: number;
   quantity_received?: number;
@@ -184,12 +184,12 @@ export interface CreateShipmentItemRequest {
   condition_notes?: string;
   lot_number?: string;
   expiration_date?: string;
-}
+};
 
 /**
  * Update shipment item request
  */
-export interface UpdateShipmentItemRequest {
+export type UpdateShipmentItemRequest = {
   quantity_shipped?: number;
   quantity_received?: number;
   quantity_damaged?: number;
@@ -199,12 +199,12 @@ export interface UpdateShipmentItemRequest {
   condition_notes?: string;
   lot_number?: string;
   expiration_date?: string;
-}
+};
 
 /**
  * List filters
  */
-export interface ShipmentFilters {
+export type ShipmentFilters = {
   search?: string;
   status?: ShipmentStatus;
   event_id?: string;
@@ -212,20 +212,20 @@ export interface ShipmentFilters {
   location_id?: string;
   date_from?: string;
   date_to?: string;
-}
+};
 
 /**
  * Pagination params
  */
-export interface PaginationParams {
+export type PaginationParams = {
   page: number;
   limit: number;
-}
+};
 
 /**
  * Paginated list response
  */
-export interface ShipmentListResponse {
+export type ShipmentListResponse = {
   data: Shipment[];
   pagination: {
     page: number;
@@ -233,4 +233,4 @@ export interface ShipmentListResponse {
     total: number;
     totalPages: number;
   };
-}
+};

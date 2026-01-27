@@ -452,9 +452,9 @@ export async function GET(request: Request) {
       }
     );
     const financeAlerts = buildFinanceAlerts(
-      budgetAlerts.map(alert => ({
+      budgetAlerts.map((alert) => ({
         ...alert,
-        utilization: Number(alert.utilization)
+        utilization: Number(alert.utilization),
       }))
     );
 

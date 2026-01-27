@@ -12,7 +12,9 @@ export function loadEnvFiles(fileNames = [".env", ".env.playwright"]) {
   }
 
   for (const filePath of candidates) {
-    if (!fs.existsSync(filePath)) continue;
+    if (!fs.existsSync(filePath)) {
+      continue;
+    }
     const contents = fs.readFileSync(filePath, "utf8");
     const parsed = parseEnvContents(contents, filePath);
     for (const [key, value] of Object.entries(parsed)) {
@@ -30,7 +32,9 @@ export function parseEnvContents(contents: string, sourceLabel: string) {
     const lineNumber = index + 1;
     const line = lines[index] ?? "";
     const entry = parseEnvLine(line, sourceLabel, lineNumber);
-    if (!entry) continue;
+    if (!entry) {
+      continue;
+    }
     const [key, value] = entry;
     result[key] = value;
   }

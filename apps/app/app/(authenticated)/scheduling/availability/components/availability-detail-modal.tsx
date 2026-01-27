@@ -20,7 +20,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { deleteAvailability } from "../actions";
 
-interface AvailabilityDetailModalProps {
+type AvailabilityDetailModalProps = {
   open: boolean;
   onClose: () => void;
   onDelete: () => void;
@@ -40,7 +40,7 @@ interface AvailabilityDetailModalProps {
     created_at: Date;
     updated_at: Date;
   } | null;
-}
+};
 
 export function AvailabilityDetailModal({
   open,
@@ -51,7 +51,9 @@ export function AvailabilityDetailModal({
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
-    if (!availability) return;
+    if (!availability) {
+      return;
+    }
 
     setLoading(true);
     try {

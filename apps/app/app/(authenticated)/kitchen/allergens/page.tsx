@@ -30,7 +30,7 @@ import { toast } from "sonner";
 import { AllergenManagementModal } from "./allergen-management-modal";
 
 // Types matching database schema
-interface AllergenWarning {
+type AllergenWarning = {
   id: string;
   eventId?: string;
   dishId?: string;
@@ -57,29 +57,29 @@ interface AllergenWarning {
     id: string;
     name: string;
   };
-}
+};
 
-interface Event {
+type Event = {
   id: string;
   title: string;
   eventDate: Date;
   venueName?: string;
   status: string;
-}
+};
 
-interface Dish {
+type Dish = {
   id: string;
   name: string;
   allergens: string[];
   dietaryTags: string[];
-}
+};
 
-interface Recipe {
+type Recipe = {
   id: string;
   name: string;
   tags: string[];
   category?: string;
-}
+};
 
 export default function AllergenManagementPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -96,7 +96,9 @@ export default function AllergenManagementPage() {
   const fetchWarnings = async () => {
     try {
       const response = await fetch("/api/kitchen/allergens/warnings");
-      if (!response.ok) throw new Error("Failed to fetch warnings");
+      if (!response.ok) {
+        throw new Error("Failed to fetch warnings");
+      }
       const data = await response.json();
       setWarnings(data.warnings || []);
     } catch (error) {
@@ -108,7 +110,9 @@ export default function AllergenManagementPage() {
   const fetchEvents = async () => {
     try {
       const response = await fetch("/api/events?limit=50");
-      if (!response.ok) throw new Error("Failed to fetch events");
+      if (!response.ok) {
+        throw new Error("Failed to fetch events");
+      }
       const data = await response.json();
       setEvents(data.data || []);
     } catch (error) {
@@ -120,7 +124,9 @@ export default function AllergenManagementPage() {
   const fetchDishes = async () => {
     try {
       const response = await fetch("/api/kitchen/dishes?limit=100");
-      if (!response.ok) throw new Error("Failed to fetch dishes");
+      if (!response.ok) {
+        throw new Error("Failed to fetch dishes");
+      }
       const data = await response.json();
       setDishes(data.data || []);
     } catch (error) {
@@ -132,7 +138,9 @@ export default function AllergenManagementPage() {
   const fetchRecipes = async () => {
     try {
       const response = await fetch("/api/kitchen/recipes?limit=100");
-      if (!response.ok) throw new Error("Failed to fetch recipes");
+      if (!response.ok) {
+        throw new Error("Failed to fetch recipes");
+      }
       const data = await response.json();
       setRecipes(data.data || []);
     } catch (error) {
@@ -150,7 +158,7 @@ export default function AllergenManagementPage() {
         toast.error("Failed to load allergen data");
         setLoading(false);
       });
-  }, []);
+  }, [fetchDishes, fetchEvents, fetchRecipes, fetchWarnings]);
 
   // Listen for allergen updates and refresh data
   useEffect(() => {
@@ -177,8 +185,7 @@ export default function AllergenManagementPage() {
   const filteredEvents = events.filter(
     (event) =>
       event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (event.venueName &&
-        event.venueName.toLowerCase().includes(searchTerm.toLowerCase()))
+      event.venueName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredDishes = dishes.filter((dish) =>
@@ -204,7 +211,9 @@ export default function AllergenManagementPage() {
         }
       );
 
-      if (!response.ok) throw new Error("Failed to acknowledge warning");
+      if (!response.ok) {
+        throw new Error("Failed to acknowledge warning");
+      }
 
       toast.success("Warning acknowledged");
 
@@ -237,7 +246,9 @@ export default function AllergenManagementPage() {
         }
       );
 
-      if (!response.ok) throw new Error("Failed to resolve warning");
+      if (!response.ok) {
+        throw new Error("Failed to resolve warning");
+      }
 
       toast.success("Warning resolved");
 

@@ -79,18 +79,18 @@ const COLOR_VARIANTS = {
   orange: "bg-orange-50 border-orange-200 text-orange-900",
 } as const;
 
-const SECTION_COLORS = {
+const _SECTION_COLORS = {
   prep: "bg-blue-500",
   setup: "bg-green-500",
   cleanup: "bg-orange-500",
 } as const;
 
-interface TaskCardProps {
+type TaskCardProps = {
   task: TaskBreakdownItem;
   section: TaskSection;
   onComplete?: (taskId: string, completed: boolean) => void;
   onAssign?: (taskId: string) => void;
-}
+};
 
 function TaskCard({ task, section, onComplete, onAssign }: TaskCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -274,12 +274,12 @@ function TaskCard({ task, section, onComplete, onAssign }: TaskCardProps) {
   );
 }
 
-interface TaskSectionProps {
+type TaskSectionProps = {
   section: TaskSection;
   tasks: TaskBreakdownItem[];
   onComplete?: (taskId: string, completed: boolean) => void;
   onAssign?: (taskId: string) => void;
-}
+};
 
 function TaskSectionComponent({
   section,
@@ -291,7 +291,7 @@ function TaskSectionComponent({
   const config = SECTION_CONFIG[section];
 
   const totalTime = tasks.reduce((sum, t) => sum + t.durationMinutes, 0);
-  const completedCount = 0;
+  const _completedCount = 0;
 
   const formatTotalTime = (minutes: number): string => {
     if (minutes < 60) {
@@ -356,14 +356,14 @@ function TaskSectionComponent({
   );
 }
 
-interface TaskBreakdownDisplayProps {
+type TaskBreakdownDisplayProps = {
   breakdown: TaskBreakdown;
   onRegenerate?: () => void;
   onExport?: () => void;
   onSave?: () => void;
   isGenerating?: boolean;
   generationProgress?: string;
-}
+};
 
 export function TaskBreakdownDisplay({
   breakdown,
@@ -373,7 +373,7 @@ export function TaskBreakdownDisplay({
   isGenerating,
   generationProgress,
 }: TaskBreakdownDisplayProps) {
-  const [streamingTasks, setStreamingTasks] = useState<
+  const [_streamingTasks, setStreamingTasks] = useState<
     { section: TaskSection; taskIndex: number }[]
   >([]);
   const [displayedTasks, setDisplayedTasks] = useState<
@@ -453,8 +453,12 @@ export function TaskBreakdownDisplay({
   const formatGrandTotal = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    if (hours === 0) return `${mins} min`;
-    if (mins === 0) return `${hours}h`;
+    if (hours === 0) {
+      return `${mins} min`;
+    }
+    if (mins === 0) {
+      return `${hours}h`;
+    }
     return `${hours}h ${mins}m`;
   };
 
@@ -596,9 +600,9 @@ export function TaskBreakdownDisplay({
   );
 }
 
-interface TaskBreakdownSkeletonProps {
+type TaskBreakdownSkeletonProps = {
   sections?: number;
-}
+};
 
 export function TaskBreakdownSkeleton({
   sections = 3,
@@ -634,7 +638,7 @@ export function TaskBreakdownSkeleton({
   );
 }
 
-interface GenerateTaskBreakdownModalProps {
+type GenerateTaskBreakdownModalProps = {
   eventId: string;
   eventTitle: string;
   eventDate: string;
@@ -643,7 +647,7 @@ interface GenerateTaskBreakdownModalProps {
   onGenerate: (customInstructions?: string) => Promise<void>;
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
-}
+};
 
 export function GenerateTaskBreakdownModal({
   eventId,

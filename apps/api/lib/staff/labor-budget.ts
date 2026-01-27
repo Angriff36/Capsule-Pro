@@ -8,7 +8,7 @@
 import { database, Prisma } from "@repo/database";
 
 // Types for labor budget operations
-export interface LaborBudgetInput {
+export type LaborBudgetInput = {
   tenantId: string;
   locationId?: string;
   eventId?: string;
@@ -24,9 +24,9 @@ export interface LaborBudgetInput {
   threshold100Pct?: boolean;
   status?: "active" | "paused" | "archived";
   overrideReason?: string;
-}
+};
 
-export interface BudgetUtilization {
+export type BudgetUtilization = {
   budgetId: string;
   budgetName: string;
   budgetType: string;
@@ -38,23 +38,23 @@ export interface BudgetUtilization {
   periodStart?: Date;
   periodEnd?: Date;
   status: "active" | "paused" | "archived";
-}
+};
 
-export interface BudgetAlertInput {
+export type BudgetAlertInput = {
   tenantId: string;
   budgetId: string;
   alertType: "threshold_80" | "threshold_90" | "threshold_100" | "exceeded";
   utilization: number;
   message: string;
-}
+};
 
-export interface ShiftCostCalculation {
+export type ShiftCostCalculation = {
   shiftId: string;
   employeeId: string;
   hourlyRate: number | null;
   shiftHours: number;
   cost: number;
-}
+};
 
 /**
  * Get all budgets for a tenant with optional filtering
@@ -439,7 +439,7 @@ export async function calculateBudgetUtilization(
  */
 async function calculateScheduledHours(
   tenantId: string,
-  budgetId: string,
+  _budgetId: string,
   budget: {
     location_id: string | null;
     event_id: string | null;
@@ -482,7 +482,7 @@ async function calculateScheduledHours(
  */
 async function calculateScheduledCost(
   tenantId: string,
-  budgetId: string,
+  _budgetId: string,
   budget: {
     location_id: string | null;
     event_id: string | null;
@@ -570,7 +570,9 @@ export async function checkBudgetForShift(
 
   for (const budget of budgets) {
     const utilization = await calculateBudgetUtilization(tenantId, budget.id);
-    if (!utilization) continue;
+    if (!utilization) {
+      continue;
+    }
 
     const newUtilization = utilization.actualSpend + shiftValue;
     const newUtilizationPct = (newUtilization / utilization.budgetTarget) * 100;

@@ -13,7 +13,7 @@ import type { LocationListResponse } from "../types";
 /**
  * GET /api/inventory/stock-levels/locations - List storage locations
  */
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   try {
     const { orgId } = await auth();
     if (!orgId) {

@@ -27,7 +27,7 @@ export type ItemCategory = (typeof ITEM_CATEGORIES)[number];
 
 export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
 
-export interface InventoryItem {
+export type InventoryItem = {
   id: string;
   tenant_id: string;
   item_number: string;
@@ -44,14 +44,14 @@ export interface InventoryItem {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-}
+};
 
 export interface InventoryItemWithStatus extends InventoryItem {
   stock_status: StockStatus;
   total_value: number;
 }
 
-export interface InventoryItemListResponse {
+export type InventoryItemListResponse = {
   data: InventoryItemWithStatus[];
   pagination: {
     page: number;
@@ -59,9 +59,9 @@ export interface InventoryItemListResponse {
     total: number;
     totalPages: number;
   };
-}
+};
 
-export interface CreateInventoryItemRequest {
+export type CreateInventoryItemRequest = {
   item_number: string;
   name: string;
   category: string;
@@ -73,9 +73,9 @@ export interface CreateInventoryItemRequest {
   fsa_temp_logged?: boolean;
   fsa_allergen_info?: boolean;
   fsa_traceable?: boolean;
-}
+};
 
-export interface UpdateInventoryItemRequest {
+export type UpdateInventoryItemRequest = {
   item_number?: string;
   name?: string;
   category?: string;
@@ -87,7 +87,7 @@ export interface UpdateInventoryItemRequest {
   fsa_temp_logged?: boolean;
   fsa_allergen_info?: boolean;
   fsa_traceable?: boolean;
-}
+};
 
 /**
  * Client-side functions for inventory operations
@@ -104,13 +104,27 @@ export async function listInventoryItems(params: {
   limit?: number;
 }): Promise<InventoryItemListResponse> {
   const searchParams = new URLSearchParams();
-  if (params.search) searchParams.set("search", params.search);
-  if (params.category) searchParams.set("category", params.category);
-  if (params.stockStatus) searchParams.set("stock_status", params.stockStatus);
-  if (params.fsaStatus) searchParams.set("fsa_status", params.fsaStatus);
-  if (params.tags?.length) searchParams.set("tags", params.tags.join(","));
-  if (params.page) searchParams.set("page", params.page.toString());
-  if (params.limit) searchParams.set("limit", params.limit.toString());
+  if (params.search) {
+    searchParams.set("search", params.search);
+  }
+  if (params.category) {
+    searchParams.set("category", params.category);
+  }
+  if (params.stockStatus) {
+    searchParams.set("stock_status", params.stockStatus);
+  }
+  if (params.fsaStatus) {
+    searchParams.set("fsa_status", params.fsaStatus);
+  }
+  if (params.tags?.length) {
+    searchParams.set("tags", params.tags.join(","));
+  }
+  if (params.page) {
+    searchParams.set("page", params.page.toString());
+  }
+  if (params.limit) {
+    searchParams.set("limit", params.limit.toString());
+  }
 
   const response = await fetch(
     `/api/inventory/items?${searchParams.toString()}`

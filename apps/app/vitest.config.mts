@@ -39,9 +39,7 @@ export default defineConfig({
           id === "C:/Projects/capsule-pro/packages/database/generated/client" ||
           id.includes("packages\\database\\generated\\client") ||
           id.includes("packages/database/generated/client") ||
-          (importer &&
-            importer.includes("database") &&
-            id.includes("generated/client"))
+          (importer?.includes("database") && id.includes("generated/client"))
         ) {
           console.log(`[vitest-database-mock] INTERCEPTED client: ${id}`);
           return path.resolve(

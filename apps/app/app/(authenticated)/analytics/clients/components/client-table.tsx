@@ -50,8 +50,12 @@ const formatDate = (date: Date | null) =>
 
 export function ClientTable({ clients, className }: ClientTableProps) {
   const getBadgeVariant = (index: number) => {
-    if (index === 0) return "default";
-    if (index === 1) return "secondary";
+    if (index === 0) {
+      return "default";
+    }
+    if (index === 1) {
+      return "secondary";
+    }
     return "outline";
   };
 

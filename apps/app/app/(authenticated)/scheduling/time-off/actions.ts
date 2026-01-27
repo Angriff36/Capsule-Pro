@@ -52,7 +52,7 @@ export async function getTimeOffRequests(params: {
 
   // Fetch requests and count
   const [requests, totalCount] = await Promise.all([
-    database.$queryRaw<Array<TimeOffRequest>>(
+    database.$queryRaw<TimeOffRequest[]>(
       Prisma.sql`
         SELECT
           tor.id,
@@ -126,11 +126,15 @@ export async function getTimeOffRequestById(
   requestId: string
 ): Promise<{ request: TimeOffRequest }> {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
-  const [request] = await database.$queryRaw<Array<TimeOffRequest>>(
+  const [request] = await database.$queryRaw<TimeOffRequest[]>(
     Prisma.sql`
       SELECT
         tor.id,
@@ -179,9 +183,13 @@ export async function createTimeOffRequest(
   input: CreateTimeOffRequestInput
 ): Promise<{ request: TimeOffRequest }> {
   const { orgId, userId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   const startDate = new Date(input.startDate);
   const endDate = new Date(input.endDate);
@@ -267,9 +275,13 @@ export async function updateTimeOffStatus(
   input: UpdateTimeOffStatusInput
 ): Promise<{ request: TimeOffRequest }> {
   const { orgId, userId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   // Get current request
   const timeOffRequests = await database.$queryRaw<
@@ -376,9 +388,13 @@ export async function deleteTimeOffRequest(
   requestId: string
 ): Promise<{ success: boolean }> {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   // Get current request to check if it can be deleted
   const timeOffRequests = await database.$queryRaw<
@@ -426,9 +442,13 @@ export async function deleteTimeOffRequest(
  */
 export async function getEmployees() {
   const { orgId } = await auth();
-  if (!orgId) throw new Error("Not authenticated");
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) throw new Error("No tenant found");
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
 
   const employees = await database.$queryRaw<
     Array<{

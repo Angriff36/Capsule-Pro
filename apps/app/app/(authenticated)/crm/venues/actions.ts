@@ -17,16 +17,16 @@ export type VenueType =
   | "corporate"
   | "other";
 
-export interface VenueFilters {
+export type VenueFilters = {
   search?: string;
   tags?: string[];
   venueType?: VenueType;
   city?: string;
   isActive?: boolean;
   minCapacity?: number;
-}
+};
 
-export interface CreateVenueInput {
+export type CreateVenueInput = {
   name: string;
   venueType?: VenueType;
   addressLine1?: string;
@@ -46,7 +46,7 @@ export interface CreateVenueInput {
   layoutImageUrl?: string;
   isActive?: boolean;
   tags?: string[];
-}
+};
 
 // Stub implementations that throw errors since Venue model doesn't exist
 export async function getVenues(

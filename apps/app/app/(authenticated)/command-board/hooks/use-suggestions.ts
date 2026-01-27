@@ -13,7 +13,9 @@ export function useSuggestions(
   const [error, setError] = useState<string | null>(null);
 
   const fetchSuggestions = async () => {
-    if (!tenantId) return;
+    if (!tenantId) {
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -21,8 +23,12 @@ export function useSuggestions(
     try {
       const params = new URLSearchParams();
       params.append("maxSuggestions", "5");
-      if (boardId) params.append("boardId", boardId);
-      if (eventId) params.append("eventId", eventId);
+      if (boardId) {
+        params.append("boardId", boardId);
+      }
+      if (eventId) {
+        params.append("eventId", eventId);
+      }
 
       const response = await fetch(`/api/ai/suggestions?${params.toString()}`);
 

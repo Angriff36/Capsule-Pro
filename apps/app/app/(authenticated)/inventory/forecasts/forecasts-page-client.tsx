@@ -87,7 +87,7 @@ export const ForecastsPageClient = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Dialog state
-  const [selectedForecastDetail, setSelectedForecastDetail] =
+  const [_selectedForecastDetail, setSelectedForecastDetail] =
     useState<DepletionForecast | null>(null);
 
   // Fetch forecast for selected SKU
@@ -351,7 +351,7 @@ export const ForecastsPageClient = () => {
                     max={365}
                     min={1}
                     onChange={(e) =>
-                      setHorizonDays(Number.parseInt(e.target.value) || 30)
+                      setHorizonDays(Number.parseInt(e.target.value, 10) || 30)
                     }
                     type="number"
                     value={horizonDays}
@@ -365,7 +365,7 @@ export const ForecastsPageClient = () => {
                     max={90}
                     min={1}
                     onChange={(e) =>
-                      setLeadTimeDays(Number.parseInt(e.target.value) || 7)
+                      setLeadTimeDays(Number.parseInt(e.target.value, 10) || 7)
                     }
                     type="number"
                     value={leadTimeDays}
@@ -379,7 +379,9 @@ export const ForecastsPageClient = () => {
                     max={30}
                     min={0}
                     onChange={(e) =>
-                      setSafetyStockDays(Number.parseInt(e.target.value) || 3)
+                      setSafetyStockDays(
+                        Number.parseInt(e.target.value, 10) || 3
+                      )
                     }
                     type="number"
                     value={safetyStockDays}

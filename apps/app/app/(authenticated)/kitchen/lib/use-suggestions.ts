@@ -25,7 +25,9 @@ export function useSuggestions(tenantId?: string | null) {
     try {
       const params = new URLSearchParams();
       params.append("maxSuggestions", String(options?.maxSuggestions || 5));
-      if (options?.timeframe) params.append("timeframe", options.timeframe);
+      if (options?.timeframe) {
+        params.append("timeframe", options.timeframe);
+      }
 
       const response = await fetch(`/api/ai/suggestions?${params.toString()}`);
 

@@ -221,7 +221,7 @@ async function processSingleAction(
   return {
     taskId,
     action,
-    error: "Unknown action: " + action,
+    error: `Unknown action: ${action}`,
   };
 }
 
@@ -272,7 +272,7 @@ export async function POST(request: Request) {
         currentUser
       );
 
-      if (result && result.error) {
+      if (result?.error) {
         results.failed.push({
           taskId: claimAction.taskId || "unknown",
           action: claimAction.action || "unknown",

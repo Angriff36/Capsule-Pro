@@ -41,10 +41,14 @@ export function validateTimeRange(
   endTime: string
 ): NextResponse | null {
   const startError = validateTimeFormat(startTime);
-  if (startError) return startError;
+  if (startError) {
+    return startError;
+  }
 
   const endError = validateTimeFormat(endTime);
-  if (endError) return endError;
+  if (endError) {
+    return endError;
+  }
 
   if (endTime <= startTime) {
     return NextResponse.json(
@@ -291,10 +295,14 @@ export function validateBatchAvailabilityInput(
   // Validate each pattern
   for (const pattern of patterns) {
     const dayError = validateDayOfWeek(pattern.dayOfWeek);
-    if (dayError) return dayError;
+    if (dayError) {
+      return dayError;
+    }
 
     const timeError = validateTimeRange(pattern.startTime, pattern.endTime);
-    if (timeError) return timeError;
+    if (timeError) {
+      return timeError;
+    }
   }
 
   return null;

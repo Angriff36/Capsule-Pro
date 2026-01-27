@@ -29,7 +29,7 @@ interface _MutationGenqlSelection extends MutationGenqlSelection {}
 interface _FragmentsMap extends FragmentsMap {}
 interface _Scalars extends Scalars {}
 
-export interface Scalars {
+export type Scalars = {
   BSHBEventSchema: ({
     name: string;
     required: boolean;
@@ -70,11 +70,11 @@ export interface Scalars {
   Int: number;
   JSON: any;
   String: string;
-}
+};
 
 export type AnalyticsKeyScope = "query" | "send";
 
-export interface Authors {
+export type Authors = {
   _analyticsKey: Scalars["String"];
   _dashboardUrl: Scalars["String"];
   _id: Scalars["String"];
@@ -91,9 +91,9 @@ export interface Authors {
   /** Returns the list of items after filtering and paginating according to the arguments sent by the client. */
   items: AuthorsItem[];
   __typename: "Authors";
-}
+};
 
-export interface AuthorsItem {
+export type AuthorsItem = {
   _analyticsKey: Scalars["String"];
   _dashboardUrl: Scalars["String"];
   /** Array of search highlight information with field names and HTML markup */
@@ -107,7 +107,7 @@ export interface AuthorsItem {
   avatar: BlockImage;
   xUrl: Scalars["String"] | null;
   __typename: "AuthorsItem";
-}
+};
 
 export type AuthorsItemOrderByEnum =
   | "_sys_createdAt__ASC"
@@ -127,14 +127,14 @@ export type AuthorsItemOrderByEnum =
   | "xUrl__ASC"
   | "xUrl__DESC";
 
-export interface BaseRichTextJson {
+export type BaseRichTextJson = {
   blocks: Scalars["String"];
   content: Scalars["BSHBRichTextContentSchema"];
   toc: Scalars["BSHBRichTextTOCSchema"];
   __typename: "BaseRichTextJson";
-}
+};
 
-export interface BlockAudio {
+export type BlockAudio = {
   /** The duration of the audio in seconds. If the duration is not available, it will be estimated based on the file size. */
   duration: Scalars["Float"];
   fileName: Scalars["String"];
@@ -143,18 +143,18 @@ export interface BlockAudio {
   mimeType: Scalars["String"];
   url: Scalars["String"];
   __typename: "BlockAudio";
-}
+};
 
-export interface BlockCodeSnippet {
+export type BlockCodeSnippet = {
   allowedLanguages: Scalars["CodeSnippetLanguage"][];
   code: Scalars["String"];
   /** @deprecated Figuring out the correct api. */
   html: Scalars["String"];
   language: Scalars["CodeSnippetLanguage"];
   __typename: "BlockCodeSnippet";
-}
+};
 
-export interface BlockColor {
+export type BlockColor = {
   b: Scalars["Int"];
   g: Scalars["Int"];
   hex: Scalars["String"];
@@ -162,7 +162,7 @@ export interface BlockColor {
   r: Scalars["Int"];
   rgb: Scalars["String"];
   __typename: "BlockColor";
-}
+};
 
 export type BlockDocument = (
   | Authors
@@ -181,7 +181,7 @@ export type BlockDocument = (
   | postsItem_AsList
 ) & { __isUnion?: true };
 
-export interface BlockDocumentSys {
+export type BlockDocumentSys = {
   apiNamePath: Scalars["String"];
   createdAt: Scalars["String"];
   hash: Scalars["String"];
@@ -192,18 +192,18 @@ export interface BlockDocumentSys {
   slugPath: Scalars["String"];
   title: Scalars["String"];
   __typename: "BlockDocumentSys";
-}
+};
 
-export interface BlockFile {
+export type BlockFile = {
   fileName: Scalars["String"];
   fileSize: Scalars["Int"];
   lastModified: Scalars["Float"];
   mimeType: Scalars["String"];
   url: Scalars["String"];
   __typename: "BlockFile";
-}
+};
 
-export interface BlockImage {
+export type BlockImage = {
   alt: Scalars["String"] | null;
   aspectRatio: Scalars["String"];
   blurDataURL: Scalars["String"];
@@ -236,7 +236,7 @@ export interface BlockImage {
   url: Scalars["String"];
   width: Scalars["Int"];
   __typename: "BlockImage";
-}
+};
 
 export type BlockList = (
   | Authors
@@ -249,17 +249,17 @@ export type BlockList = (
   | postsItem_AsList
 ) & { __isUnion?: true };
 
-export interface BlockOgImage {
+export type BlockOgImage = {
   height: Scalars["Int"];
   url: Scalars["String"];
   width: Scalars["Int"];
   __typename: "BlockOgImage";
-}
+};
 
 /** Rich text block */
 export type BlockRichText = (Body | Body_1) & { __isUnion?: true };
 
-export interface BlockVideo {
+export type BlockVideo = {
   aspectRatio: Scalars["String"];
   /** The duration of the video in seconds. If the duration is not available, it will be estimated based on the file size. */
   duration: Scalars["Float"];
@@ -271,9 +271,9 @@ export interface BlockVideo {
   url: Scalars["String"];
   width: Scalars["Int"];
   __typename: "BlockVideo";
-}
+};
 
-export interface Blog {
+export type Blog = {
   _analyticsKey: Scalars["String"];
   _dashboardUrl: Scalars["String"];
   _id: Scalars["String"];
@@ -286,39 +286,39 @@ export interface Blog {
   categories: Categories;
   posts: Posts;
   __typename: "Blog";
-}
+};
 
-export interface Body {
+export type Body = {
   html: Scalars["String"];
   json: BodyRichText;
   markdown: Scalars["String"];
   plainText: Scalars["String"];
   readingTime: Scalars["Int"];
   __typename: "Body";
-}
+};
 
-export interface BodyRichText {
+export type BodyRichText = {
   content: Scalars["BSHBRichTextContentSchema"];
   toc: Scalars["BSHBRichTextTOCSchema"];
   __typename: "BodyRichText";
-}
+};
 
-export interface Body_1 {
+export type Body_1 = {
   html: Scalars["String"];
   json: Body_1RichText;
   markdown: Scalars["String"];
   plainText: Scalars["String"];
   readingTime: Scalars["Int"];
   __typename: "Body_1";
-}
+};
 
-export interface Body_1RichText {
+export type Body_1RichText = {
   content: Scalars["BSHBRichTextContentSchema"];
   toc: Scalars["BSHBRichTextTOCSchema"];
   __typename: "Body_1RichText";
-}
+};
 
-export interface Categories {
+export type Categories = {
   _analyticsKey: Scalars["String"];
   _dashboardUrl: Scalars["String"];
   _id: Scalars["String"];
@@ -335,9 +335,9 @@ export interface Categories {
   /** Returns the list of items after filtering and paginating according to the arguments sent by the client. */
   items: CategoriesItem[];
   __typename: "Categories";
-}
+};
 
-export interface CategoriesItem {
+export type CategoriesItem = {
   _analyticsKey: Scalars["String"];
   _dashboardUrl: Scalars["String"];
   /** Array of search highlight information with field names and HTML markup */
@@ -349,7 +349,7 @@ export interface CategoriesItem {
   _sys: BlockDocumentSys;
   _title: Scalars["String"];
   __typename: "CategoriesItem";
-}
+};
 
 export type CategoriesItemOrderByEnum =
   | "_sys_createdAt__ASC"
@@ -365,13 +365,13 @@ export type CategoriesItemOrderByEnum =
   | "_sys_title__ASC"
   | "_sys_title__DESC";
 
-export interface GetUploadSignedURL {
+export type GetUploadSignedURL = {
   signedURL: Scalars["String"];
   uploadURL: Scalars["String"];
   __typename: "GetUploadSignedURL";
-}
+};
 
-export interface LegalPages {
+export type LegalPages = {
   _analyticsKey: Scalars["String"];
   _dashboardUrl: Scalars["String"];
   _id: Scalars["String"];
@@ -388,9 +388,9 @@ export interface LegalPages {
   /** Returns the list of items after filtering and paginating according to the arguments sent by the client. */
   items: LegalPagesItem[];
   __typename: "LegalPages";
-}
+};
 
-export interface LegalPagesItem {
+export type LegalPagesItem = {
   _analyticsKey: Scalars["String"];
   _dashboardUrl: Scalars["String"];
   /** Array of search highlight information with field names and HTML markup */
@@ -404,7 +404,7 @@ export interface LegalPagesItem {
   body: Body_1;
   description: Scalars["String"];
   __typename: "LegalPagesItem";
-}
+};
 
 export type LegalPagesItemOrderByEnum =
   | "_sys_createdAt__ASC"
@@ -424,13 +424,13 @@ export type LegalPagesItemOrderByEnum =
   | "description__ASC"
   | "description__DESC";
 
-export interface ListMeta {
+export type ListMeta = {
   /** Number of items after applying filters but before pagination */
   filteredCount: Scalars["Int"];
   /** Total number of items in collection before any filtering/pagination */
   totalCount: Scalars["Int"];
   __typename: "ListMeta";
-}
+};
 
 export type MediaBlock = (BlockAudio | BlockFile | BlockImage | BlockVideo) & {
   __isUnion?: true;
@@ -443,7 +443,7 @@ export type MediaBlockUnion = (
   | BlockVideo
 ) & { __isUnion?: true };
 
-export interface Mutation {
+export type Mutation = {
   /**
    * Returns a signed url and an upload url so that you can upload files into your repository.
    *
@@ -474,9 +474,9 @@ export interface Mutation {
   transactionAsync: Scalars["String"];
   transactionStatus: TransactionStatus;
   __typename: "Mutation";
-}
+};
 
-export interface Posts {
+export type Posts = {
   _analyticsKey: Scalars["String"];
   _dashboardUrl: Scalars["String"];
   _id: Scalars["String"];
@@ -493,9 +493,9 @@ export interface Posts {
   /** Returns the list of items after filtering and paginating according to the arguments sent by the client. */
   items: PostsItem[];
   __typename: "Posts";
-}
+};
 
-export interface PostsItem {
+export type PostsItem = {
   _analyticsKey: Scalars["String"];
   _dashboardUrl: Scalars["String"];
   /** Array of search highlight information with field names and HTML markup */
@@ -514,7 +514,7 @@ export interface PostsItem {
   description: Scalars["String"];
   image: BlockImage;
   __typename: "PostsItem";
-}
+};
 
 export type PostsItemOrderByEnum =
   | "_sys_createdAt__ASC"
@@ -542,7 +542,7 @@ export type PostsItemOrderByEnum =
   | "image__ASC"
   | "image__DESC";
 
-export interface Query {
+export type Query = {
   _agent: _AgentStart | null;
   /** Query across the custom AI agents in the repository. */
   _agents: _agents;
@@ -556,9 +556,9 @@ export interface Query {
   blog: Blog;
   legalPages: LegalPages;
   __typename: "Query";
-}
+};
 
-export interface RepoSys {
+export type RepoSys = {
   branches: _Branches;
   dashboardUrl: Scalars["String"];
   forkUrl: Scalars["String"];
@@ -568,7 +568,7 @@ export interface RepoSys {
   slug: Scalars["String"];
   title: Scalars["String"];
   __typename: "RepoSys";
-}
+};
 
 export type RichTextJson = (
   | BaseRichTextJson
@@ -576,15 +576,15 @@ export type RichTextJson = (
   | Body_1RichText
 ) & { __isUnion?: true };
 
-export interface SearchHighlight {
+export type SearchHighlight = {
   /** The field/path that was matched (e.g., "title", "body.content") */
   by: Scalars["String"];
   /** HTML snippet with <mark> tags around the matched terms */
   snippet: Scalars["String"];
   __typename: "SearchHighlight";
-}
+};
 
-export interface TransactionStatus {
+export type TransactionStatus = {
   /** Duration in milliseconds. */
   duration: Scalars["Int"] | null;
   endedAt: Scalars["String"] | null;
@@ -593,7 +593,7 @@ export interface TransactionStatus {
   startedAt: Scalars["String"];
   status: TransactionStatusEnum;
   __typename: "TransactionStatus";
-}
+};
 
 export type TransactionStatusEnum =
   | "Cancelled"
@@ -602,16 +602,16 @@ export type TransactionStatusEnum =
   | "Running"
   | "Scheduled";
 
-export interface Variant {
+export type Variant = {
   apiName: Scalars["String"];
   color: Scalars["String"];
   id: Scalars["String"];
   isDefault: Scalars["Boolean"];
   label: Scalars["String"];
   __typename: "Variant";
-}
+};
 
-export interface _AgentStart {
+export type _AgentStart = {
   _agentKey: Scalars["String"];
   _analyticsKey: Scalars["String"];
   _dashboardUrl: Scalars["String"];
@@ -638,9 +638,9 @@ export interface _AgentStart {
   slackInstallUrl: Scalars["String"];
   systemPrompt: Scalars["String"];
   __typename: "_AgentStart";
-}
+};
 
-export interface _BranchInfo {
+export type _BranchInfo = {
   archivedAt: Scalars["String"] | null;
   archivedBy: Scalars["String"] | null;
   authorId: Scalars["String"] | null;
@@ -662,15 +662,15 @@ export interface _BranchInfo {
   updatedAt: Scalars["String"] | null;
   workingRootBlockId: Scalars["String"] | null;
   __typename: "_BranchInfo";
-}
+};
 
-export interface _Branches {
+export type _Branches = {
   _meta: ListMeta;
   items: _BranchInfo[];
   __typename: "_Branches";
-}
+};
 
-export interface _CommitInfo {
+export type _CommitInfo = {
   authorId: Scalars["String"];
   branchId: Scalars["String"];
   contributors: Scalars["String"][] | null;
@@ -685,40 +685,40 @@ export interface _CommitInfo {
   repoId: Scalars["String"];
   rootBlockId: Scalars["String"];
   __typename: "_CommitInfo";
-}
+};
 
-export interface _GitInfo {
+export type _GitInfo = {
   branch: Scalars["String"];
   deploymentUrl: Scalars["String"] | null;
   __typename: "_GitInfo";
-}
+};
 
-export interface _PlaygroundInfo {
+export type _PlaygroundInfo = {
   claimUrl: Scalars["String"] | null;
   editUrl: Scalars["String"];
   expiresAt: Scalars["String"] | null;
   id: Scalars["String"] | null;
   __typename: "_PlaygroundInfo";
-}
+};
 
 export type _ResolveTargetsWithEnum = "id" | "objectName";
 
 export type _StructureFormatEnum = "json" | "xml";
 
-export interface _agents {
+export type _agents = {
   start: _AgentStart;
   __typename: "_agents";
-}
+};
 
-export interface _components {
+export type _components = {
   authorsItem: authorsItem_AsList;
   categoriesItem: categoriesItem_AsList;
   legalPagesItem: legalPagesItem_AsList;
   postsItem: postsItem_AsList;
   __typename: "_components";
-}
+};
 
-export interface authorsItem_AsList {
+export type authorsItem_AsList = {
   _analyticsKey: Scalars["String"];
   _dashboardUrl: Scalars["String"];
   _id: Scalars["String"];
@@ -735,9 +735,9 @@ export interface authorsItem_AsList {
   /** Returns the list of items after filtering and paginating according to the arguments sent by the client. */
   items: AuthorsItem[];
   __typename: "authorsItem_AsList";
-}
+};
 
-export interface categoriesItem_AsList {
+export type categoriesItem_AsList = {
   _analyticsKey: Scalars["String"];
   _dashboardUrl: Scalars["String"];
   _id: Scalars["String"];
@@ -754,9 +754,9 @@ export interface categoriesItem_AsList {
   /** Returns the list of items after filtering and paginating according to the arguments sent by the client. */
   items: CategoriesItem[];
   __typename: "categoriesItem_AsList";
-}
+};
 
-export interface legalPagesItem_AsList {
+export type legalPagesItem_AsList = {
   _analyticsKey: Scalars["String"];
   _dashboardUrl: Scalars["String"];
   _id: Scalars["String"];
@@ -773,9 +773,9 @@ export interface legalPagesItem_AsList {
   /** Returns the list of items after filtering and paginating according to the arguments sent by the client. */
   items: LegalPagesItem[];
   __typename: "legalPagesItem_AsList";
-}
+};
 
-export interface postsItem_AsList {
+export type postsItem_AsList = {
   _analyticsKey: Scalars["String"];
   _dashboardUrl: Scalars["String"];
   _id: Scalars["String"];
@@ -792,9 +792,9 @@ export interface postsItem_AsList {
   /** Returns the list of items after filtering and paginating according to the arguments sent by the client. */
   items: PostsItem[];
   __typename: "postsItem_AsList";
-}
+};
 
-export interface AuthorsGenqlSelection {
+export type AuthorsGenqlSelection = {
   _analyticsKey?:
     | {
         __args: {
@@ -824,9 +824,9 @@ export interface AuthorsGenqlSelection {
   items?: AuthorsItemGenqlSelection;
   __typename?: boolean | number;
   __fragmentOn?: "Authors";
-}
+};
 
-export interface AuthorsItemGenqlSelection {
+export type AuthorsItemGenqlSelection = {
   _analyticsKey?:
     | {
         __args: {
@@ -853,9 +853,9 @@ export interface AuthorsItemGenqlSelection {
   xUrl?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "AuthorsItem";
-}
+};
 
-export interface AuthorsItemFilterInput {
+export type AuthorsItemFilterInput = {
   AND?: AuthorsItemFilterInput | null;
   OR?: AuthorsItemFilterInput | null;
   _id?: StringFilter | null;
@@ -871,24 +871,24 @@ export interface AuthorsItemFilterInput {
   _sys_title?: StringFilter | null;
   _title?: StringFilter | null;
   xUrl?: StringFilter | null;
-}
+};
 
-export interface AuthorsItemSearchInput {
+export type AuthorsItemSearchInput = {
   /** Searchable fields for query */
   by?: Scalars["String"][] | null;
   /** Search query */
   q?: Scalars["String"] | null;
-}
+};
 
-export interface BaseRichTextJsonGenqlSelection {
+export type BaseRichTextJsonGenqlSelection = {
   blocks?: boolean | number;
   content?: boolean | number;
   toc?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "BaseRichTextJson";
-}
+};
 
-export interface BlockAudioGenqlSelection {
+export type BlockAudioGenqlSelection = {
   /** The duration of the audio in seconds. If the duration is not available, it will be estimated based on the file size. */
   duration?: boolean | number;
   fileName?: boolean | number;
@@ -898,9 +898,9 @@ export interface BlockAudioGenqlSelection {
   url?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "BlockAudio";
-}
+};
 
-export interface BlockCodeSnippetGenqlSelection {
+export type BlockCodeSnippetGenqlSelection = {
   allowedLanguages?: boolean | number;
   code?: boolean | number;
   /** @deprecated Figuring out the correct api. */
@@ -916,9 +916,9 @@ export interface BlockCodeSnippetGenqlSelection {
   language?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "BlockCodeSnippet";
-}
+};
 
-export interface BlockColorGenqlSelection {
+export type BlockColorGenqlSelection = {
   b?: boolean | number;
   g?: boolean | number;
   hex?: boolean | number;
@@ -927,9 +927,9 @@ export interface BlockColorGenqlSelection {
   rgb?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "BlockColor";
-}
+};
 
-export interface BlockDocumentGenqlSelection {
+export type BlockDocumentGenqlSelection = {
   _analyticsKey?:
     | {
         __args: {
@@ -966,9 +966,9 @@ export interface BlockDocumentGenqlSelection {
   on_postsItem_AsList?: postsItem_AsListGenqlSelection;
   __typename?: boolean | number;
   __fragmentOn?: "BlockDocument";
-}
+};
 
-export interface BlockDocumentSysGenqlSelection {
+export type BlockDocumentSysGenqlSelection = {
   apiNamePath?: boolean | number;
   createdAt?: boolean | number;
   hash?: boolean | number;
@@ -980,9 +980,9 @@ export interface BlockDocumentSysGenqlSelection {
   title?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "BlockDocumentSys";
-}
+};
 
-export interface BlockFileGenqlSelection {
+export type BlockFileGenqlSelection = {
   fileName?: boolean | number;
   fileSize?: boolean | number;
   lastModified?: boolean | number;
@@ -990,9 +990,9 @@ export interface BlockFileGenqlSelection {
   url?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "BlockFile";
-}
+};
 
-export interface BlockImageGenqlSelection {
+export type BlockImageGenqlSelection = {
   alt?: boolean | number;
   aspectRatio?: boolean | number;
   blurDataURL?: boolean | number;
@@ -1051,9 +1051,9 @@ export interface BlockImageGenqlSelection {
   width?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "BlockImage";
-}
+};
 
-export interface BlockListGenqlSelection {
+export type BlockListGenqlSelection = {
   _analyticsKey?:
     | {
         __args: {
@@ -1087,18 +1087,18 @@ export interface BlockListGenqlSelection {
   on_postsItem_AsList?: postsItem_AsListGenqlSelection;
   __typename?: boolean | number;
   __fragmentOn?: "BlockList";
-}
+};
 
-export interface BlockOgImageGenqlSelection {
+export type BlockOgImageGenqlSelection = {
   height?: boolean | number;
   url?: boolean | number;
   width?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "BlockOgImage";
-}
+};
 
 /** Rich text block */
-export interface BlockRichTextGenqlSelection {
+export type BlockRichTextGenqlSelection = {
   html?:
     | {
         __args: {
@@ -1126,9 +1126,9 @@ export interface BlockRichTextGenqlSelection {
   on_Body_1?: Body_1GenqlSelection;
   __typename?: boolean | number;
   __fragmentOn?: "BlockRichText";
-}
+};
 
-export interface BlockVideoGenqlSelection {
+export type BlockVideoGenqlSelection = {
   aspectRatio?: boolean | number;
   /** The duration of the video in seconds. If the duration is not available, it will be estimated based on the file size. */
   duration?: boolean | number;
@@ -1141,9 +1141,9 @@ export interface BlockVideoGenqlSelection {
   width?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "BlockVideo";
-}
+};
 
-export interface BlogGenqlSelection {
+export type BlogGenqlSelection = {
   _analyticsKey?:
     | {
         __args: {
@@ -1208,9 +1208,9 @@ export interface BlogGenqlSelection {
   };
   __typename?: boolean | number;
   __fragmentOn?: "Blog";
-}
+};
 
-export interface BodyGenqlSelection {
+export type BodyGenqlSelection = {
   html?:
     | {
         __args: {
@@ -1236,16 +1236,16 @@ export interface BodyGenqlSelection {
     | number;
   __typename?: boolean | number;
   __fragmentOn?: "Body";
-}
+};
 
-export interface BodyRichTextGenqlSelection {
+export type BodyRichTextGenqlSelection = {
   content?: boolean | number;
   toc?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "BodyRichText";
-}
+};
 
-export interface Body_1GenqlSelection {
+export type Body_1GenqlSelection = {
   html?:
     | {
         __args: {
@@ -1271,16 +1271,16 @@ export interface Body_1GenqlSelection {
     | number;
   __typename?: boolean | number;
   __fragmentOn?: "Body_1";
-}
+};
 
-export interface Body_1RichTextGenqlSelection {
+export type Body_1RichTextGenqlSelection = {
   content?: boolean | number;
   toc?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "Body_1RichText";
-}
+};
 
-export interface CategoriesGenqlSelection {
+export type CategoriesGenqlSelection = {
   _analyticsKey?:
     | {
         __args: {
@@ -1310,9 +1310,9 @@ export interface CategoriesGenqlSelection {
   items?: CategoriesItemGenqlSelection;
   __typename?: boolean | number;
   __fragmentOn?: "Categories";
-}
+};
 
-export interface CategoriesItemGenqlSelection {
+export type CategoriesItemGenqlSelection = {
   _analyticsKey?:
     | {
         __args: {
@@ -1337,9 +1337,9 @@ export interface CategoriesItemGenqlSelection {
   _title?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "CategoriesItem";
-}
+};
 
-export interface CategoriesItemFilterInput {
+export type CategoriesItemFilterInput = {
   AND?: CategoriesItemFilterInput | null;
   OR?: CategoriesItemFilterInput | null;
   _id?: StringFilter | null;
@@ -1354,16 +1354,16 @@ export interface CategoriesItemFilterInput {
   _sys_slugPath?: StringFilter | null;
   _sys_title?: StringFilter | null;
   _title?: StringFilter | null;
-}
+};
 
-export interface CategoriesItemSearchInput {
+export type CategoriesItemSearchInput = {
   /** Searchable fields for query */
   by?: Scalars["String"][] | null;
   /** Search query */
   q?: Scalars["String"] | null;
-}
+};
 
-export interface DateFilter {
+export type DateFilter = {
   eq?: Scalars["DateTime"] | null;
   isAfter?: Scalars["DateTime"] | null;
   isBefore?: Scalars["DateTime"] | null;
@@ -1371,16 +1371,16 @@ export interface DateFilter {
   neq?: Scalars["DateTime"] | null;
   onOrAfter?: Scalars["DateTime"] | null;
   onOrBefore?: Scalars["DateTime"] | null;
-}
+};
 
-export interface GetUploadSignedURLGenqlSelection {
+export type GetUploadSignedURLGenqlSelection = {
   signedURL?: boolean | number;
   uploadURL?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "GetUploadSignedURL";
-}
+};
 
-export interface LegalPagesGenqlSelection {
+export type LegalPagesGenqlSelection = {
   _analyticsKey?:
     | {
         __args: {
@@ -1410,9 +1410,9 @@ export interface LegalPagesGenqlSelection {
   items?: LegalPagesItemGenqlSelection;
   __typename?: boolean | number;
   __fragmentOn?: "LegalPages";
-}
+};
 
-export interface LegalPagesItemGenqlSelection {
+export type LegalPagesItemGenqlSelection = {
   _analyticsKey?:
     | {
         __args: {
@@ -1439,9 +1439,9 @@ export interface LegalPagesItemGenqlSelection {
   description?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "LegalPagesItem";
-}
+};
 
-export interface LegalPagesItemFilterInput {
+export type LegalPagesItemFilterInput = {
   AND?: LegalPagesItemFilterInput | null;
   OR?: LegalPagesItemFilterInput | null;
   _id?: StringFilter | null;
@@ -1457,30 +1457,30 @@ export interface LegalPagesItemFilterInput {
   _sys_title?: StringFilter | null;
   _title?: StringFilter | null;
   description?: StringFilter | null;
-}
+};
 
-export interface LegalPagesItemSearchInput {
+export type LegalPagesItemSearchInput = {
   /** Searchable fields for query */
   by?: Scalars["String"][] | null;
   /** Search query */
   q?: Scalars["String"] | null;
-}
+};
 
-export interface ListFilter {
+export type ListFilter = {
   isEmpty?: Scalars["Boolean"] | null;
   length?: Scalars["Int"] | null;
-}
+};
 
-export interface ListMetaGenqlSelection {
+export type ListMetaGenqlSelection = {
   /** Number of items after applying filters but before pagination */
   filteredCount?: boolean | number;
   /** Total number of items in collection before any filtering/pagination */
   totalCount?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "ListMeta";
-}
+};
 
-export interface MediaBlockGenqlSelection {
+export type MediaBlockGenqlSelection = {
   fileName?: boolean | number;
   fileSize?: boolean | number;
   lastModified?: boolean | number;
@@ -1492,9 +1492,9 @@ export interface MediaBlockGenqlSelection {
   on_BlockVideo?: BlockVideoGenqlSelection;
   __typename?: boolean | number;
   __fragmentOn?: "MediaBlock";
-}
+};
 
-export interface MediaBlockUnionGenqlSelection {
+export type MediaBlockUnionGenqlSelection = {
   on_BlockAudio?: BlockAudioGenqlSelection;
   on_BlockFile?: BlockFileGenqlSelection;
   on_BlockImage?: BlockImageGenqlSelection;
@@ -1502,9 +1502,9 @@ export interface MediaBlockUnionGenqlSelection {
   on_MediaBlock?: MediaBlockGenqlSelection;
   __typename?: boolean | number;
   __fragmentOn?: "MediaBlockUnion";
-}
+};
 
-export interface MutationGenqlSelection {
+export type MutationGenqlSelection = {
   /**
    * Returns a signed url and an upload url so that you can upload files into your repository.
    *
@@ -1572,9 +1572,9 @@ export interface MutationGenqlSelection {
   };
   __typename?: boolean | number;
   __fragmentOn?: "Mutation";
-}
+};
 
-export interface NumberFilter {
+export type NumberFilter = {
   eq?: Scalars["Float"] | null;
   gt?: Scalars["Float"] | null;
   gte?: Scalars["Float"] | null;
@@ -1582,9 +1582,9 @@ export interface NumberFilter {
   lt?: Scalars["Float"] | null;
   lte?: Scalars["Float"] | null;
   neq?: Scalars["Float"] | null;
-}
+};
 
-export interface PostsGenqlSelection {
+export type PostsGenqlSelection = {
   _analyticsKey?:
     | {
         __args: {
@@ -1614,9 +1614,9 @@ export interface PostsGenqlSelection {
   items?: PostsItemGenqlSelection;
   __typename?: boolean | number;
   __fragmentOn?: "Posts";
-}
+};
 
-export interface PostsItemGenqlSelection {
+export type PostsItemGenqlSelection = {
   _analyticsKey?:
     | {
         __args: {
@@ -1648,9 +1648,9 @@ export interface PostsItemGenqlSelection {
   image?: BlockImageGenqlSelection;
   __typename?: boolean | number;
   __fragmentOn?: "PostsItem";
-}
+};
 
-export interface PostsItemFilterInput {
+export type PostsItemFilterInput = {
   AND?: PostsItemFilterInput | null;
   OR?: PostsItemFilterInput | null;
   _id?: StringFilter | null;
@@ -1669,9 +1669,9 @@ export interface PostsItemFilterInput {
   categories?: PostsItemFilterInput__categories_0___untitled | null;
   date?: DateFilter | null;
   description?: StringFilter | null;
-}
+};
 
-export interface PostsItemFilterInput__authors_0___untitled {
+export type PostsItemFilterInput__authors_0___untitled = {
   _id?: StringFilter | null;
   _slug?: StringFilter | null;
   _sys_apiNamePath?: StringFilter | null;
@@ -1685,9 +1685,9 @@ export interface PostsItemFilterInput__authors_0___untitled {
   _sys_title?: StringFilter | null;
   _title?: StringFilter | null;
   xUrl?: StringFilter | null;
-}
+};
 
-export interface PostsItemFilterInput__categories_0___untitled {
+export type PostsItemFilterInput__categories_0___untitled = {
   _id?: StringFilter | null;
   _slug?: StringFilter | null;
   _sys_apiNamePath?: StringFilter | null;
@@ -1700,16 +1700,16 @@ export interface PostsItemFilterInput__categories_0___untitled {
   _sys_slugPath?: StringFilter | null;
   _sys_title?: StringFilter | null;
   _title?: StringFilter | null;
-}
+};
 
-export interface PostsItemSearchInput {
+export type PostsItemSearchInput = {
   /** Searchable fields for query */
   by?: Scalars["String"][] | null;
   /** Search query */
   q?: Scalars["String"] | null;
-}
+};
 
-export interface QueryGenqlSelection {
+export type QueryGenqlSelection = {
   _agent?: _AgentStartGenqlSelection & {
     __args: {
       /** The ID of the agent. */
@@ -1768,9 +1768,9 @@ export interface QueryGenqlSelection {
   };
   __typename?: boolean | number;
   __fragmentOn?: "Query";
-}
+};
 
-export interface RepoSysGenqlSelection {
+export type RepoSysGenqlSelection = {
   branches?: _BranchesGenqlSelection & {
     __args?: { limit?: Scalars["Int"] | null; offset?: Scalars["Int"] | null };
   };
@@ -1783,9 +1783,9 @@ export interface RepoSysGenqlSelection {
   title?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "RepoSys";
-}
+};
 
-export interface RichTextJsonGenqlSelection {
+export type RichTextJsonGenqlSelection = {
   content?: boolean | number;
   toc?: boolean | number;
   on_BaseRichTextJson?: BaseRichTextJsonGenqlSelection;
@@ -1793,27 +1793,27 @@ export interface RichTextJsonGenqlSelection {
   on_Body_1RichText?: Body_1RichTextGenqlSelection;
   __typename?: boolean | number;
   __fragmentOn?: "RichTextJson";
-}
+};
 
-export interface SearchHighlightGenqlSelection {
+export type SearchHighlightGenqlSelection = {
   /** The field/path that was matched (e.g., "title", "body.content") */
   by?: boolean | number;
   /** HTML snippet with <mark> tags around the matched terms */
   snippet?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "SearchHighlight";
-}
+};
 
-export interface SelectFilter {
+export type SelectFilter = {
   excludes?: Scalars["String"] | null;
   excludesAll?: Scalars["String"][] | null;
   includes?: Scalars["String"] | null;
   includesAll?: Scalars["String"][] | null;
   includesAny?: Scalars["String"][] | null;
   isEmpty?: Scalars["Boolean"] | null;
-}
+};
 
-export interface StringFilter {
+export type StringFilter = {
   contains?: Scalars["String"] | null;
   endsWith?: Scalars["String"] | null;
   eq?: Scalars["String"] | null;
@@ -1823,20 +1823,20 @@ export interface StringFilter {
   notEq?: Scalars["String"] | null;
   notIn?: Scalars["String"][] | null;
   startsWith?: Scalars["String"] | null;
-}
+};
 
-export interface StringMatchesFilter {
+export type StringMatchesFilter = {
   caseSensitive?: Scalars["Boolean"] | null;
   pattern: Scalars["String"];
-}
+};
 
-export interface TargetBlock {
+export type TargetBlock = {
   focus?: Scalars["Boolean"] | null;
   id: Scalars["String"];
   label: Scalars["String"];
-}
+};
 
-export interface TransactionStatusGenqlSelection {
+export type TransactionStatusGenqlSelection = {
   /** Duration in milliseconds. */
   duration?: boolean | number;
   endedAt?: boolean | number;
@@ -1846,9 +1846,9 @@ export interface TransactionStatusGenqlSelection {
   status?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "TransactionStatus";
-}
+};
 
-export interface VariantGenqlSelection {
+export type VariantGenqlSelection = {
   apiName?: boolean | number;
   color?: boolean | number;
   id?: boolean | number;
@@ -1856,9 +1856,9 @@ export interface VariantGenqlSelection {
   label?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "Variant";
-}
+};
 
-export interface _AgentStartGenqlSelection {
+export type _AgentStartGenqlSelection = {
   _agentKey?: boolean | number;
   _analyticsKey?:
     | {
@@ -1898,9 +1898,9 @@ export interface _AgentStartGenqlSelection {
   systemPrompt?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "_AgentStart";
-}
+};
 
-export interface _BranchInfoGenqlSelection {
+export type _BranchInfoGenqlSelection = {
   archivedAt?: boolean | number;
   archivedBy?: boolean | number;
   authorId?: boolean | number;
@@ -1923,16 +1923,16 @@ export interface _BranchInfoGenqlSelection {
   workingRootBlockId?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "_BranchInfo";
-}
+};
 
-export interface _BranchesGenqlSelection {
+export type _BranchesGenqlSelection = {
   _meta?: ListMetaGenqlSelection;
   items?: _BranchInfoGenqlSelection;
   __typename?: boolean | number;
   __fragmentOn?: "_Branches";
-}
+};
 
-export interface _CommitInfoGenqlSelection {
+export type _CommitInfoGenqlSelection = {
   authorId?: boolean | number;
   branchId?: boolean | number;
   contributors?: boolean | number;
@@ -1948,31 +1948,31 @@ export interface _CommitInfoGenqlSelection {
   rootBlockId?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "_CommitInfo";
-}
+};
 
-export interface _GitInfoGenqlSelection {
+export type _GitInfoGenqlSelection = {
   branch?: boolean | number;
   deploymentUrl?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "_GitInfo";
-}
+};
 
-export interface _PlaygroundInfoGenqlSelection {
+export type _PlaygroundInfoGenqlSelection = {
   claimUrl?: boolean | number;
   editUrl?: boolean | number;
   expiresAt?: boolean | number;
   id?: boolean | number;
   __typename?: boolean | number;
   __fragmentOn?: "_PlaygroundInfo";
-}
+};
 
-export interface _agentsGenqlSelection {
+export type _agentsGenqlSelection = {
   start?: _AgentStartGenqlSelection;
   __typename?: boolean | number;
   __fragmentOn?: "_agents";
-}
+};
 
-export interface _componentsGenqlSelection {
+export type _componentsGenqlSelection = {
   authorsItem?: authorsItem_AsListGenqlSelection & {
     __args?: {
       /** Filter by a field. */
@@ -2031,9 +2031,9 @@ export interface _componentsGenqlSelection {
   };
   __typename?: boolean | number;
   __fragmentOn?: "_components";
-}
+};
 
-export interface authorsItem_AsListGenqlSelection {
+export type authorsItem_AsListGenqlSelection = {
   _analyticsKey?:
     | {
         __args: {
@@ -2063,9 +2063,9 @@ export interface authorsItem_AsListGenqlSelection {
   items?: AuthorsItemGenqlSelection;
   __typename?: boolean | number;
   __fragmentOn?: "authorsItem_AsList";
-}
+};
 
-export interface categoriesItem_AsListGenqlSelection {
+export type categoriesItem_AsListGenqlSelection = {
   _analyticsKey?:
     | {
         __args: {
@@ -2095,9 +2095,9 @@ export interface categoriesItem_AsListGenqlSelection {
   items?: CategoriesItemGenqlSelection;
   __typename?: boolean | number;
   __fragmentOn?: "categoriesItem_AsList";
-}
+};
 
-export interface legalPagesItem_AsListGenqlSelection {
+export type legalPagesItem_AsListGenqlSelection = {
   _analyticsKey?:
     | {
         __args: {
@@ -2127,9 +2127,9 @@ export interface legalPagesItem_AsListGenqlSelection {
   items?: LegalPagesItemGenqlSelection;
   __typename?: boolean | number;
   __fragmentOn?: "legalPagesItem_AsList";
-}
+};
 
-export interface postsItem_AsListGenqlSelection {
+export type postsItem_AsListGenqlSelection = {
   _analyticsKey?:
     | {
         __args: {
@@ -2159,9 +2159,9 @@ export interface postsItem_AsListGenqlSelection {
   items?: PostsItemGenqlSelection;
   __typename?: boolean | number;
   __fragmentOn?: "postsItem_AsList";
-}
+};
 
-export interface FragmentsMap {
+export type FragmentsMap = {
   Authors: {
     root: Authors;
     selection: AuthorsGenqlSelection;
@@ -2350,4 +2350,4 @@ export interface FragmentsMap {
     root: postsItem_AsList;
     selection: postsItem_AsListGenqlSelection;
   };
-}
+};

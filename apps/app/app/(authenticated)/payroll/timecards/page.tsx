@@ -77,7 +77,9 @@ type PaginationInfo = {
 };
 
 function formatCurrency(value: number | null) {
-  if (value === null) return "N/A";
+  if (value === null) {
+    return "N/A";
+  }
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -85,7 +87,9 @@ function formatCurrency(value: number | null) {
 }
 
 function formatHours(value: number | null) {
-  if (value === null) return "N/A";
+  if (value === null) {
+    return "N/A";
+  }
   const hours = Math.floor(value);
   const minutes = Math.round((value - hours) * 60);
   return `${hours}h ${minutes}m`;
@@ -112,7 +116,9 @@ function getEmployeeName(firstName: string | null, lastName: string | null) {
 }
 
 function getExceptionBadge(exceptionType: string | null) {
-  if (!exceptionType) return null;
+  if (!exceptionType) {
+    return null;
+  }
 
   const colors: Record<string, "secondary" | "destructive"> = {
     missing_clock_out: "destructive",
@@ -143,7 +149,7 @@ function getExceptionBadge(exceptionType: string | null) {
 
 export default function TimecardsPage() {
   const router = useRouter();
-  const searchParams = useSearchParams() ?? new URLSearchParams();
+  const _searchParams = useSearchParams() ?? new URLSearchParams();
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
@@ -175,9 +181,15 @@ export default function TimecardsPage() {
         limit: pagination.limit.toString(),
       });
 
-      if (searchQuery) params.set("employeeId", searchQuery);
-      if (startDate) params.set("startDate", startDate);
-      if (endDate) params.set("endDate", endDate);
+      if (searchQuery) {
+        params.set("employeeId", searchQuery);
+      }
+      if (startDate) {
+        params.set("startDate", startDate);
+      }
+      if (endDate) {
+        params.set("endDate", endDate);
+      }
 
       const response = await fetch(`/api/timecards?${params.toString()}`);
 
@@ -201,6 +213,7 @@ export default function TimecardsPage() {
     searchQuery,
     startDate,
     endDate,
+    pagination,
   ]);
 
   useEffect(() => {

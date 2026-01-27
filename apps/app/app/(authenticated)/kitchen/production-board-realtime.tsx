@@ -28,7 +28,9 @@ export function ProductionBoardRealtime({
   const router = useRouter();
 
   useEffect(() => {
-    if (!tenantId) return;
+    if (!tenantId) {
+      return;
+    }
 
     const apiBaseUrl = getApiBaseUrl();
     if (!apiBaseUrl) {
@@ -59,7 +61,9 @@ export function ProductionBoardRealtime({
 
     const channel = client.channels.get(`tenant:${tenantId}`);
     const handleMessage = (message: { name?: string }) => {
-      if (!isKitchenTaskEvent(message.name)) return;
+      if (!isKitchenTaskEvent(message.name)) {
+        return;
+      }
       router.refresh();
     };
 
@@ -72,7 +76,7 @@ export function ProductionBoardRealtime({
       // 2. The connection lifecycle should be managed at the app level
       // 3. Closing and recreating connections causes "Connection closed" errors
     };
-  }, [tenantId, userId, router]);
+  }, [tenantId, router]);
 
   return null;
 }

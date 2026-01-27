@@ -172,9 +172,9 @@ const styles = StyleSheet.create({
   },
 });
 
-interface ContractPDFProps {
+type ContractPDFProps = {
   data: ContractPDFData;
-}
+};
 
 /**
  * Contract PDF Template

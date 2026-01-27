@@ -30,7 +30,7 @@ export type AdjustmentReason =
   | "spoilage"
   | "other";
 
-export interface StockLevelWithStatus {
+export type StockLevelWithStatus = {
   tenantId: string;
   id: string;
   inventoryItemId: string;
@@ -57,9 +57,9 @@ export interface StockLevelWithStatus {
   totalValue: number;
   parStatus: "below_par" | "at_par" | "above_par" | "no_par_set";
   stockOutRisk: boolean;
-}
+};
 
-export interface StockLevelFilters {
+export type StockLevelFilters = {
   search?: string;
   category?: string;
   locationId?: string;
@@ -68,9 +68,9 @@ export interface StockLevelFilters {
   outOfStock?: boolean;
   page?: number;
   limit?: number;
-}
+};
 
-export interface StockLevelListResponse {
+export type StockLevelListResponse = {
   data: StockLevelWithStatus[];
   pagination: {
     page: number;
@@ -84,9 +84,9 @@ export interface StockLevelListResponse {
     belowParCount: number;
     outOfStockCount: number;
   };
-}
+};
 
-export interface CreateAdjustmentRequest {
+export type CreateAdjustmentRequest = {
   inventoryItemId: string;
   storageLocationId: string | null;
   quantity: number;
@@ -94,9 +94,9 @@ export interface CreateAdjustmentRequest {
   reason: AdjustmentReason;
   notes?: string;
   referenceId?: string;
-}
+};
 
-export interface CreateAdjustmentResponse {
+export type CreateAdjustmentResponse = {
   success: boolean;
   message: string;
   adjustment: {
@@ -107,9 +107,9 @@ export interface CreateAdjustmentResponse {
     transactionId: string;
   };
   stockLevel: StockLevelWithStatus;
-}
+};
 
-export interface InventoryTransaction {
+export type InventoryTransaction = {
   tenantId: string;
   id: string;
   inventoryItemId: string;
@@ -139,9 +139,9 @@ export interface InventoryTransaction {
     name: string;
     email: string;
   } | null;
-}
+};
 
-export interface TransactionFilters {
+export type TransactionFilters = {
   inventoryItemId?: string;
   transactionType?: TransactionType;
   locationId?: string;
@@ -149,9 +149,9 @@ export interface TransactionFilters {
   endDate?: string;
   page?: number;
   limit?: number;
-}
+};
 
-export interface TransactionListResponse {
+export type TransactionListResponse = {
   data: InventoryTransaction[];
   pagination: {
     page: number;
@@ -159,9 +159,9 @@ export interface TransactionListResponse {
     total: number;
     totalPages: number;
   };
-}
+};
 
-export interface StorageLocation {
+export type StorageLocation = {
   id: string;
   tenantId: string;
   name: string;
@@ -170,11 +170,11 @@ export interface StorageLocation {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-}
+};
 
-export interface LocationListResponse {
+export type LocationListResponse = {
   data: StorageLocation[];
-}
+};
 
 // ============================================================================
 // Stock Levels API
@@ -188,14 +188,30 @@ export async function listStockLevels(
 ): Promise<StockLevelListResponse> {
   const params = new URLSearchParams();
 
-  if (filters.search) params.set("search", filters.search);
-  if (filters.category) params.set("category", filters.category);
-  if (filters.locationId) params.set("locationId", filters.locationId);
-  if (filters.reorderStatus) params.set("reorderStatus", filters.reorderStatus);
-  if (filters.lowStock) params.set("lowStock", "true");
-  if (filters.outOfStock) params.set("outOfStock", "true");
-  if (filters.page) params.set("page", filters.page.toString());
-  if (filters.limit) params.set("limit", filters.limit.toString());
+  if (filters.search) {
+    params.set("search", filters.search);
+  }
+  if (filters.category) {
+    params.set("category", filters.category);
+  }
+  if (filters.locationId) {
+    params.set("locationId", filters.locationId);
+  }
+  if (filters.reorderStatus) {
+    params.set("reorderStatus", filters.reorderStatus);
+  }
+  if (filters.lowStock) {
+    params.set("lowStock", "true");
+  }
+  if (filters.outOfStock) {
+    params.set("outOfStock", "true");
+  }
+  if (filters.page) {
+    params.set("page", filters.page.toString());
+  }
+  if (filters.limit) {
+    params.set("limit", filters.limit.toString());
+  }
 
   const response = await fetch(
     `/api/inventory/stock-levels?${params.toString()}`
@@ -243,15 +259,27 @@ export async function listTransactions(
 ): Promise<TransactionListResponse> {
   const params = new URLSearchParams();
 
-  if (filters.inventoryItemId)
+  if (filters.inventoryItemId) {
     params.set("inventoryItemId", filters.inventoryItemId);
-  if (filters.transactionType)
+  }
+  if (filters.transactionType) {
     params.set("transactionType", filters.transactionType);
-  if (filters.locationId) params.set("locationId", filters.locationId);
-  if (filters.startDate) params.set("startDate", filters.startDate);
-  if (filters.endDate) params.set("endDate", filters.endDate);
-  if (filters.page) params.set("page", filters.page.toString());
-  if (filters.limit) params.set("limit", filters.limit.toString());
+  }
+  if (filters.locationId) {
+    params.set("locationId", filters.locationId);
+  }
+  if (filters.startDate) {
+    params.set("startDate", filters.startDate);
+  }
+  if (filters.endDate) {
+    params.set("endDate", filters.endDate);
+  }
+  if (filters.page) {
+    params.set("page", filters.page.toString());
+  }
+  if (filters.limit) {
+    params.set("limit", filters.limit.toString());
+  }
 
   const response = await fetch(
     `/api/inventory/stock-levels/transactions?${params.toString()}`

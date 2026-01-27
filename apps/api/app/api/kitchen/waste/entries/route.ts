@@ -101,7 +101,7 @@ export async function POST(request: Request) {
 
   // Validate quantity > 0
   const quantity = Number(body.quantity);
-  if (isNaN(quantity) || quantity <= 0) {
+  if (Number.isNaN(quantity) || quantity <= 0) {
     return NextResponse.json(
       { message: "Quantity must be a positive number" },
       { status: 400 }

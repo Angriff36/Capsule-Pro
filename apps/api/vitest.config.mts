@@ -16,9 +16,7 @@ export default defineConfig({
           id === "C:/Projects/capsule-pro/packages/database" ||
           id.endsWith("\\packages\\database") ||
           id.endsWith("/packages/database") ||
-          (importer &&
-            importer.includes("auto-assignment") &&
-            id.includes("database"))
+          (importer?.includes("auto-assignment") && id.includes("database"))
         ) {
           console.log(`[vitest-database-mock] INTERCEPTED database: ${id}`);
           return path.resolve(__dirname, "./test/mocks/@repo/database.ts");
@@ -37,9 +35,7 @@ export default defineConfig({
           id === "C:/Projects/capsule-pro/packages/database/generated/client" ||
           id.includes("packages\\database\\generated\\client") ||
           id.includes("packages/database/generated/client") ||
-          (importer &&
-            importer.includes("database") &&
-            id.includes("generated/client"))
+          (importer?.includes("database") && id.includes("generated/client"))
         ) {
           console.log(`[vitest-database-mock] INTERCEPTED client: ${id}`);
           return path.resolve(

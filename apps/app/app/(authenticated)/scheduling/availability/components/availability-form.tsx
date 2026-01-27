@@ -14,7 +14,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { createAvailability, updateAvailability } from "../actions";
 
-interface AvailabilityFormProps {
+type AvailabilityFormProps = {
   availability?: {
     id: string;
     employee_id: string;
@@ -44,7 +44,7 @@ interface AvailabilityFormProps {
   }>;
   onCancel: () => void;
   onSuccess: () => void;
-}
+};
 
 export function AvailabilityForm({
   availability,

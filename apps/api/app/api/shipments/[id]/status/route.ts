@@ -217,7 +217,9 @@ export async function POST(
           const damagedQuantity = Number(item.quantity_damaged) || 0;
           const goodQuantity = receivedQuantity - damagedQuantity;
 
-          if (goodQuantity <= 0) continue;
+          if (goodQuantity <= 0) {
+            continue;
+          }
 
           // Create inventory transaction for received items
           await database.$executeRaw`

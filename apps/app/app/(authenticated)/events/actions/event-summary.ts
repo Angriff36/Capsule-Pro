@@ -15,23 +15,23 @@ export type SummarySection =
   | "clientFeedback"
   | "insights";
 
-export interface SummaryItem {
+export type SummaryItem = {
   title: string;
   description: string;
   severity?: "info" | "success" | "warning" | "critical";
   metric?: string;
-}
+};
 
-export interface EventSummaryData {
+export type EventSummaryData = {
   highlights: SummaryItem[];
   issues: SummaryItem[];
   financialPerformance: SummaryItem[];
   clientFeedback: SummaryItem[];
   insights: SummaryItem[];
   overallSummary: string;
-}
+};
 
-export interface GeneratedEventSummary {
+export type GeneratedEventSummary = {
   id: string;
   eventId: string;
   highlights: SummaryItem[];
@@ -42,13 +42,13 @@ export interface GeneratedEventSummary {
   overallSummary: string;
   generatedAt: Date;
   generationDurationMs: number;
-}
+};
 
-export interface GetEventSummaryResult {
+export type GetEventSummaryResult = {
   success: boolean;
   summary?: GeneratedEventSummary;
   error?: string;
-}
+};
 
 export async function getEventSummary(
   eventId: string

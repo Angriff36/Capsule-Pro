@@ -53,7 +53,9 @@ export function validateQualityStatus(
 export function validateDiscrepancyType(
   value: unknown
 ): asserts value is DiscrepancyType {
-  if (!value) return; // Optional field
+  if (!value) {
+    return; // Optional field
+  }
 
   const type = value as string;
   if (!DISCREPANCY_TYPES.includes(type as DiscrepancyType)) {
@@ -70,10 +72,12 @@ export function validateNonNegativeNumber(
   value: unknown,
   fieldName: string
 ): asserts value is number {
-  if (value === undefined || value === null) return;
+  if (value === undefined || value === null) {
+    return;
+  }
 
   const num = Number(value);
-  if (isNaN(num) || num < 0) {
+  if (Number.isNaN(num) || num < 0) {
     throw new InvariantError(`${fieldName} must be a non-negative number`);
   }
 }

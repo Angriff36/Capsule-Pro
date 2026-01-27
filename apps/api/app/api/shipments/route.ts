@@ -27,19 +27,33 @@ function parsePaginationParams(
 function parseShipmentFilters(searchParams: URLSearchParams): ShipmentFilters {
   const filters: ShipmentFilters = {};
   const search = searchParams.get("search");
-  if (search) filters.search = search;
+  if (search) {
+    filters.search = search;
+  }
   const status = searchParams.get("status");
-  if (status) filters.status = status as any;
+  if (status) {
+    filters.status = status as any;
+  }
   const eventId = searchParams.get("event_id");
-  if (eventId) filters.event_id = eventId;
+  if (eventId) {
+    filters.event_id = eventId;
+  }
   const supplierId = searchParams.get("supplier_id");
-  if (supplierId) filters.supplier_id = supplierId;
+  if (supplierId) {
+    filters.supplier_id = supplierId;
+  }
   const locationId = searchParams.get("location_id");
-  if (locationId) filters.location_id = locationId;
+  if (locationId) {
+    filters.location_id = locationId;
+  }
   const dateFrom = searchParams.get("date_from");
-  if (dateFrom) filters.date_from = dateFrom;
+  if (dateFrom) {
+    filters.date_from = dateFrom;
+  }
   const dateTo = searchParams.get("date_to");
-  if (dateTo) filters.date_to = dateTo;
+  if (dateTo) {
+    filters.date_to = dateTo;
+  }
   return filters;
 }
 
@@ -66,15 +80,26 @@ export async function GET(request: Request) {
         { trackingNumber: { contains: filters.search, mode: "insensitive" } },
       ];
     }
-    if (filters.status) where.status = filters.status;
-    if (filters.event_id) where.eventId = filters.event_id;
-    if (filters.supplier_id) where.supplierId = filters.supplier_id;
-    if (filters.location_id) where.locationId = filters.location_id;
+    if (filters.status) {
+      where.status = filters.status;
+    }
+    if (filters.event_id) {
+      where.eventId = filters.event_id;
+    }
+    if (filters.supplier_id) {
+      where.supplierId = filters.supplier_id;
+    }
+    if (filters.location_id) {
+      where.locationId = filters.location_id;
+    }
     if (filters.date_from || filters.date_to) {
       where.scheduledDate = {};
-      if (filters.date_from)
+      if (filters.date_from) {
         where.scheduledDate.gte = new Date(filters.date_from);
-      if (filters.date_to) where.scheduledDate.lte = new Date(filters.date_to);
+      }
+      if (filters.date_to) {
+        where.scheduledDate.lte = new Date(filters.date_to);
+      }
     }
     const total = await database.shipment.count({ where });
     const shipments = await database.shipment.findMany({
@@ -138,7 +163,7 @@ export async function POST(request: Request) {
     }
     const body = await request.json();
     validateCreateShipmentRequest(body);
-    const shipmentNumber = body.shipment_number || "SHP-" + Date.now();
+    const shipmentNumber = body.shipment_number || `SHP-${Date.now()}`;
     const existing = await database.shipment.findFirst({
       where: { tenantId, shipmentNumber, deletedAt: null },
     });

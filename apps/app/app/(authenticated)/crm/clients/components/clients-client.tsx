@@ -30,7 +30,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getClients } from "../actions";
 
-interface Client {
+type Client = {
   id: string;
   tenantId: string;
   clientType: string;
@@ -43,15 +43,15 @@ interface Client {
   stateProvince: string | null;
   tags: string[];
   createdAt: Date;
-}
+};
 
-interface ClientFilters {
+type ClientFilters = {
   search?: string;
   tags?: string[];
   assignedTo?: string;
   clientType?: "company" | "individual";
   source?: string;
-}
+};
 
 export function ClientsClient() {
   const router = useRouter();
@@ -103,7 +103,7 @@ export function ClientsClient() {
     } finally {
       setLoading(false);
     }
-  }, [filters, pagination.page, pagination.limit]);
+  }, [filters, pagination.page, pagination.limit, pagination]);
 
   // Initial load
   useEffect(() => {
@@ -113,9 +113,15 @@ export function ClientsClient() {
   // Update URL when filters change
   useEffect(() => {
     const params = new URLSearchParams();
-    if (filters.search) params.set("search", filters.search);
-    if (filters.clientType) params.set("clientType", filters.clientType);
-    if (filters.source) params.set("source", filters.source);
+    if (filters.search) {
+      params.set("search", filters.search);
+    }
+    if (filters.clientType) {
+      params.set("clientType", filters.clientType);
+    }
+    if (filters.source) {
+      params.set("source", filters.source);
+    }
     const queryString = params.toString();
     router.push(`/crm/clients${queryString ? `?${queryString}` : ""}`);
   }, [filters, router]);
@@ -159,14 +165,20 @@ export function ClientsClient() {
     ) {
       parts.push(`${client.first_name || ""} ${client.last_name || ""}`.trim());
     }
-    if (client.email) parts.push(client.email);
+    if (client.email) {
+      parts.push(client.email);
+    }
     return parts.join(" • ");
   };
 
   const getLocation = (client: Client) => {
     const parts: string[] = [];
-    if (client.city) parts.push(client.city);
-    if (client.stateProvince) parts.push(client.stateProvince);
+    if (client.city) {
+      parts.push(client.city);
+    }
+    if (client.stateProvince) {
+      parts.push(client.stateProvince);
+    }
     return parts.join(", ") || "—";
   };
 

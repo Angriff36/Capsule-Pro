@@ -72,7 +72,9 @@ type TimecardDetailModalProps = {
 };
 
 function formatCurrency(value: number | null) {
-  if (value === null) return "N/A";
+  if (value === null) {
+    return "N/A";
+  }
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -80,7 +82,9 @@ function formatCurrency(value: number | null) {
 }
 
 function formatHours(value: number | null) {
-  if (value === null) return "N/A";
+  if (value === null) {
+    return "N/A";
+  }
   const hours = Math.floor(value);
   const minutes = Math.round((value - hours) * 60);
   return `${hours}h ${minutes}m`;
@@ -114,7 +118,9 @@ export default function TimecardDetailModal({
   onEditRequest,
   onFlagException,
 }: TimecardDetailModalProps) {
-  if (!timeEntry) return null;
+  if (!timeEntry) {
+    return null;
+  }
 
   const isApproved = timeEntry.approved_at !== null;
   const isPending = timeEntry.clock_out !== null && !isApproved;

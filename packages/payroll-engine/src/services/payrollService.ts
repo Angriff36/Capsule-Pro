@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
 import { calculatePayroll, verifyPayrollBalances } from "../core/calculator";
 import {
   type ExportOptions,
@@ -23,7 +23,7 @@ import type {
  * Data source interface for fetching payroll inputs
  * Implement this interface to connect to your database
  */
-export interface PayrollDataSource {
+export type PayrollDataSource = {
   getEmployees(tenantId: string): Promise<Employee[]>;
   getRoles(tenantId: string): Promise<Role[]>;
   getTimeEntries(
@@ -48,25 +48,25 @@ export interface PayrollDataSource {
     tenantId: string,
     periodId: string
   ): Promise<PayrollRecord[]>;
-}
+};
 
 /**
  * Payroll Service Configuration
  */
-export interface PayrollServiceConfig {
+export type PayrollServiceConfig = {
   dataSource: PayrollDataSource;
   defaultJurisdiction?: string;
   enableAuditLog?: boolean;
-}
+};
 
 /**
  * Payroll Service
  * Orchestrates payroll generation, validation, and export
  */
 export class PayrollService {
-  private dataSource: PayrollDataSource;
-  private defaultJurisdiction: string;
-  private enableAuditLog: boolean;
+  private readonly dataSource: PayrollDataSource;
+  private readonly defaultJurisdiction: string;
+  private readonly enableAuditLog: boolean;
 
   constructor(config: PayrollServiceConfig) {
     this.dataSource = config.dataSource;
@@ -278,7 +278,7 @@ export class PayrollService {
     for (let i = 0; i < combined.length; i++) {
       const char = combined.charCodeAt(i);
       hash = (hash << 5) - hash + char;
-      hash = hash & hash;
+      hash &= hash;
     }
 
     const hex = Math.abs(hash).toString(16).padStart(8, "0");
@@ -295,9 +295,9 @@ export class InMemoryPayrollDataSource implements PayrollDataSource {
   private timeEntries: TimeEntryInput[] = [];
   private tipPools: TipPool[] = [];
   private deductions: Deduction[] = [];
-  private periods: Map<string, PayrollPeriod> = new Map();
-  private records: Map<string, PayrollRecord[]> = new Map();
-  private audits: PayrollAudit[] = [];
+  private readonly periods: Map<string, PayrollPeriod> = new Map();
+  private readonly records: Map<string, PayrollRecord[]> = new Map();
+  private readonly audits: PayrollAudit[] = [];
 
   setEmployees(employees: Employee[]): void {
     this.employees = employees;

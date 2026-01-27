@@ -1,8 +1,8 @@
 import { RecipeCostDetailClient } from "./recipe-cost-detail-client";
 
-interface RecipeCostPageProps {
+type RecipeCostPageProps = {
   params: Promise<{ recipeVersionId: string }>;
-}
+};
 
 export default async function RecipeCostPage({ params }: RecipeCostPageProps) {
   const { recipeVersionId } = await params;

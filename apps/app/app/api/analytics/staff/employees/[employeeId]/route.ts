@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ employeeId: string }> }
 ) {
   const { orgId } = await auth();

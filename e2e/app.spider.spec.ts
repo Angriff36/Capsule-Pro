@@ -36,10 +36,18 @@ function isSameOrigin(target: string, baseURL: string): boolean {
 }
 
 function shouldSkip(href: string): boolean {
-  if (!href) return true;
-  if (href.startsWith("#")) return true;
-  if (href.startsWith("mailto:")) return true;
-  if (href.startsWith("tel:")) return true;
+  if (!href) {
+    return true;
+  }
+  if (href.startsWith("#")) {
+    return true;
+  }
+  if (href.startsWith("mailto:")) {
+    return true;
+  }
+  if (href.startsWith("tel:")) {
+    return true;
+  }
   return SKIP_PATTERNS.some((re) => re.test(href));
 }
 
@@ -80,10 +88,14 @@ test("App spider: authenticated crawl logs errors", async ({
     const text = msg.text();
     if (type === "error") {
       // Skip known dev-mode noise
-      if (IGNORE_CONSOLE_PATTERNS.some((re) => re.test(text))) return;
+      if (IGNORE_CONSOLE_PATTERNS.some((re) => re.test(text))) {
+        return;
+      }
       errors.push({ url: page.url(), text });
     } else if (type === "warning") {
-      if (IGNORE_CONSOLE_PATTERNS.some((re) => re.test(text))) return;
+      if (IGNORE_CONSOLE_PATTERNS.some((re) => re.test(text))) {
+        return;
+      }
       warnings.push({ url: page.url(), text });
     }
   });
@@ -93,10 +105,14 @@ test("App spider: authenticated crawl logs errors", async ({
     const errorText = request.failure()?.errorText || "unknown error";
 
     // Skip external resources (analytics, CDNs, etc.)
-    if (!isSameOrigin(url, baseURL!)) return;
+    if (!isSameOrigin(url, baseURL!)) {
+      return;
+    }
 
     // Skip ERR_ABORTED which happens during redirects/navigation
-    if (errorText.includes("ERR_ABORTED")) return;
+    if (errorText.includes("ERR_ABORTED")) {
+      return;
+    }
 
     failedRequests.push({
       pageUrl: page.url(),
@@ -126,7 +142,9 @@ test("App spider: authenticated crawl logs errors", async ({
 
   while (queue.length && visited.size < MAX_VISITS) {
     const path = queue.shift()!;
-    if (visited.has(path)) continue;
+    if (visited.has(path)) {
+      continue;
+    }
     visited.add(path);
 
     const target = new URL(path, baseURL).toString();
@@ -147,7 +165,9 @@ test("App spider: authenticated crawl logs errors", async ({
       .waitForLoadState("networkidle", { timeout: 5000 })
       .catch(() => undefined);
 
-    if (page.isClosed()) break;
+    if (page.isClosed()) {
+      break;
+    }
 
     // Try clicking interactive elements to trigger state/API calls
     const clickables = await page
@@ -160,13 +180,17 @@ test("App spider: authenticated crawl logs errors", async ({
     let clickCount = 0;
     let clicksAttempted = 0;
     for (const el of clickables) {
-      if (clickCount >= MAX_CLICKS_PER_PAGE) break;
+      if (clickCount >= MAX_CLICKS_PER_PAGE) {
+        break;
+      }
 
       const text = await el.textContent().catch(() => "");
       const ariaLabel = await el.getAttribute("aria-label").catch(() => "");
       const role = await el.getAttribute("role").catch(() => "");
 
-      if (shouldSkipClick(text || "", ariaLabel || "", role || "")) continue;
+      if (shouldSkipClick(text || "", ariaLabel || "", role || "")) {
+        continue;
+      }
 
       clicksAttempted++;
       await el.click({ timeout: 2000 }).catch(() => undefined);
@@ -191,7 +215,9 @@ test("App spider: authenticated crawl logs errors", async ({
 
       clickCount++;
 
-      if (errors.length || failures.length || failedRequests.length) break;
+      if (errors.length || failures.length || failedRequests.length) {
+        break;
+      }
     }
 
     visitLog.push({ url: target, clicksAttempted });
@@ -217,8 +243,12 @@ test("App spider: authenticated crawl logs errors", async ({
       .catch(() => [] as string[]);
 
     for (const href of hrefs) {
-      if (shouldSkip(href)) continue;
-      if (!isSameOrigin(href, baseURL!)) continue;
+      if (shouldSkip(href)) {
+        continue;
+      }
+      if (!isSameOrigin(href, baseURL!)) {
+        continue;
+      }
       const normalized =
         new URL(href, baseURL!).pathname +
         (new URL(href, baseURL!).search || "");
@@ -227,7 +257,9 @@ test("App spider: authenticated crawl logs errors", async ({
       }
     }
 
-    if (errors.length || failures.length || failedRequests.length) break;
+    if (errors.length || failures.length || failedRequests.length) {
+      break;
+    }
   }
 
   console.log(
@@ -241,11 +273,18 @@ test("App spider: authenticated crawl logs errors", async ({
     warnings.length
   ) {
     console.log("[SPIDER] Visit log:", visitLog);
-    if (errors.length) console.log("[SPIDER] Console errors:", errors);
-    if (warnings.length) console.log("[SPIDER] Console warnings:", warnings);
-    if (failures.length) console.log("[SPIDER] Network failures:", failures);
-    if (failedRequests.length)
+    if (errors.length) {
+      console.log("[SPIDER] Console errors:", errors);
+    }
+    if (warnings.length) {
+      console.log("[SPIDER] Console warnings:", warnings);
+    }
+    if (failures.length) {
+      console.log("[SPIDER] Network failures:", failures);
+    }
+    if (failedRequests.length) {
       console.log("[SPIDER] Failed requests:", failedRequests);
+    }
   }
 
   expect(errors, "Console errors found during crawl").toEqual([]);

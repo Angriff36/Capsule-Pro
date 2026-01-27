@@ -135,7 +135,7 @@ export const ShipmentsPageClient = () => {
   });
 
   // Available inventory items for adding to shipment
-  const [inventoryItems, setInventoryItems] = useState<
+  const [_inventoryItems, setInventoryItems] = useState<
     Array<{
       id: string;
       item_number: string;
@@ -242,7 +242,9 @@ export const ShipmentsPageClient = () => {
 
   // Handle status update
   const handleStatusUpdate = async () => {
-    if (!selectedShipment) return;
+    if (!selectedShipment) {
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -278,8 +280,10 @@ export const ShipmentsPageClient = () => {
   };
 
   // Handle add item to shipment
-  const handleAddItem = async () => {
-    if (!selectedShipment) return;
+  const _handleAddItem = async () => {
+    if (!selectedShipment) {
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -931,24 +935,22 @@ export const ShipmentsPageClient = () => {
               )}
 
               {statusForm.status === "in_transit" && (
-                <>
-                  <div className="grid gap-2">
-                    <Label htmlFor="tracking_number">Tracking Number</Label>
-                    <Input
-                      id="tracking_number"
-                      onChange={(e) => {
-                        if (selectedShipment) {
-                          setSelectedShipment({
-                            ...selectedShipment,
-                            tracking_number: e.target.value,
-                          });
-                        }
-                      }}
-                      placeholder="Carrier tracking number"
-                      value={selectedShipment.tracking_number || ""}
-                    />
-                  </div>
-                </>
+                <div className="grid gap-2">
+                  <Label htmlFor="tracking_number">Tracking Number</Label>
+                  <Input
+                    id="tracking_number"
+                    onChange={(e) => {
+                      if (selectedShipment) {
+                        setSelectedShipment({
+                          ...selectedShipment,
+                          tracking_number: e.target.value,
+                        });
+                      }
+                    }}
+                    placeholder="Carrier tracking number"
+                    value={selectedShipment.tracking_number || ""}
+                  />
+                </div>
               )}
 
               <div className="grid gap-2">

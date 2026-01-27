@@ -13,7 +13,7 @@ import {
  * Get a single time-off request by ID
  */
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { orgId } = await auth();
@@ -191,7 +191,7 @@ export async function PATCH(
  * Soft delete a time-off request (only allowed for PENDING or CANCELLED requests)
  */
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { orgId } = await auth();

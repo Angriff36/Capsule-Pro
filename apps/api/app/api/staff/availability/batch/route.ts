@@ -48,7 +48,9 @@ export async function POST(request: Request) {
 
   // Validate batch input
   const batchError = validateBatchAvailabilityInput(body.patterns);
-  if (batchError) return batchError;
+  if (batchError) {
+    return batchError;
+  }
 
   // Set defaults for effective dates
   const effectiveFrom = body.effectiveFrom
@@ -65,7 +67,9 @@ export async function POST(request: Request) {
 
   // Validate effective dates
   const dateError = validateEffectiveDates(effectiveFrom, effectiveUntil);
-  if (dateError) return dateError;
+  if (dateError) {
+    return dateError;
+  }
 
   // Verify employee exists and is active
   const { employee, error: employeeError } = await verifyEmployee(

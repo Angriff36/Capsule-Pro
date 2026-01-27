@@ -200,7 +200,9 @@ export const StockLevelsPageClient = () => {
 
   // Handle adjustment form submit
   const handleAdjustmentSubmit = async () => {
-    if (!adjustmentItem) return;
+    if (!adjustmentItem) {
+      return;
+    }
 
     try {
       const request: CreateAdjustmentRequest = {

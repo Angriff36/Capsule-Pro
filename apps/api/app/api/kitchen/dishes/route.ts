@@ -32,16 +32,24 @@ function parseDishFilters(searchParams: URLSearchParams): DishListFilters {
   const filters: DishListFilters = {};
 
   const category = searchParams.get("category");
-  if (category) filters.category = category;
+  if (category) {
+    filters.category = category;
+  }
 
   const search = searchParams.get("search");
-  if (search) filters.search = search;
+  if (search) {
+    filters.search = search;
+  }
 
   const hasAllergens = searchParams.get("hasAllergens");
-  if (hasAllergens) filters.hasAllergens = hasAllergens === "true";
+  if (hasAllergens) {
+    filters.hasAllergens = hasAllergens === "true";
+  }
 
   const dietaryTag = searchParams.get("dietaryTag");
-  if (dietaryTag) filters.dietaryTag = dietaryTag;
+  if (dietaryTag) {
+    filters.dietaryTag = dietaryTag;
+  }
 
   return filters;
 }
@@ -88,7 +96,7 @@ export async function GET(request: Request) {
     // Add category filter
     if (filters.category) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         { category: filters.category },
       ];
     }
@@ -97,7 +105,7 @@ export async function GET(request: Request) {
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         {
           OR: [
             { name: { contains: searchLower, mode: "insensitive" } },
@@ -110,7 +118,7 @@ export async function GET(request: Request) {
     // Add allergens filter
     if (filters.hasAllergens !== undefined) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         filters.hasAllergens
           ? { allergens: { isEmpty: false } }
           : { allergens: { isEmpty: true } },
@@ -120,7 +128,7 @@ export async function GET(request: Request) {
     // Add dietary tag filter
     if (filters.dietaryTag) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         { dietaryTags: { has: filters.dietaryTag } },
       ];
     }

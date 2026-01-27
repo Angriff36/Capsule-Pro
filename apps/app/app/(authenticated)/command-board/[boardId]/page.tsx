@@ -66,7 +66,7 @@ export default async function CommandBoardPage({
   // If board doesn't exist, create it automatically
   if (!boardData) {
     try {
-      const board = await database.commandBoard.create({
+      const _board = await database.commandBoard.create({
         data: {
           tenantId,
           id: actualBoardId,

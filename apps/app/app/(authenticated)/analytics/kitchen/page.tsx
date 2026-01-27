@@ -96,7 +96,7 @@ const AnalyticsKitchenPage = () => {
     (sum, s) => sum + s.load,
     0
   );
-  const avgLoad =
+  const _avgLoad =
     stationThroughput.length > 0
       ? Math.round(totalStationLoad / stationThroughput.length)
       : 0;

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 // Types for kitchen analytics data
-export interface StationThroughput {
+export type StationThroughput = {
   stationId: string;
   stationName: string;
   load: number;
@@ -12,9 +12,9 @@ export interface StationThroughput {
   totalItems: number;
   completedItems: number;
   pendingItems: number;
-}
+};
 
-export interface KitchenHealth {
+export type KitchenHealth = {
   prepListsSync: {
     rate: number;
     total: number;
@@ -24,29 +24,29 @@ export interface KitchenHealth {
   wasteAlerts: number;
   timeToCompletion: string;
   avgMinutes: number;
-}
+};
 
-export interface StationTrend {
+export type StationTrend = {
   stationName: string;
   total: number;
   completed: number;
   completionRate: number;
-}
+};
 
-export interface DateTrend {
+export type DateTrend = {
   date: string;
   stations: StationTrend[];
-}
+};
 
-export interface TopPerformer {
+export type TopPerformer = {
   employeeId: string;
   firstName: string;
   lastName: string;
   completedTasks: number;
   avgMinutes: number;
-}
+};
 
-export interface KitchenAnalyticsResponse {
+export type KitchenAnalyticsResponse = {
   summary: {
     period: string;
     startDate: string;
@@ -57,22 +57,26 @@ export interface KitchenAnalyticsResponse {
   kitchenHealth: KitchenHealth;
   trends: DateTrend[];
   topPerformers: TopPerformer[];
-}
+};
 
-export interface UseKitchenAnalyticsResult {
+export type UseKitchenAnalyticsResult = {
   data: KitchenAnalyticsResponse | null;
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
-}
+};
 
 async function fetchKitchenAnalytics(
   period?: string,
   locationId?: string
 ): Promise<KitchenAnalyticsResponse> {
   const params = new URLSearchParams();
-  if (period) params.set("period", period);
-  if (locationId) params.set("locationId", locationId);
+  if (period) {
+    params.set("period", period);
+  }
+  if (locationId) {
+    params.set("locationId", locationId);
+  }
 
   const response = await fetch(
     `/api/analytics/kitchen${params.toString() ? `?${params.toString()}` : ""}`
@@ -108,7 +112,7 @@ export function useKitchenAnalytics(
 
   useEffect(() => {
     fetchData();
-  }, [period, locationId]);
+  }, [fetchData]);
 
   return {
     data,
@@ -130,16 +134,28 @@ export function formatCompletionTime(minutes: number): string {
 
 // Helper function to get load color
 export function getLoadColor(load: number): string {
-  if (load >= 80) return "bg-red-500";
-  if (load >= 60) return "bg-orange-500";
-  if (load >= 40) return "bg-yellow-500";
+  if (load >= 80) {
+    return "bg-red-500";
+  }
+  if (load >= 60) {
+    return "bg-orange-500";
+  }
+  if (load >= 40) {
+    return "bg-yellow-500";
+  }
   return "bg-green-500";
 }
 
 // Helper function to get completion color
 export function getCompletionColor(rate: number): string {
-  if (rate >= 90) return "bg-emerald-500";
-  if (rate >= 70) return "bg-blue-500";
-  if (rate >= 50) return "bg-yellow-500";
+  if (rate >= 90) {
+    return "bg-emerald-500";
+  }
+  if (rate >= 70) {
+    return "bg-blue-500";
+  }
+  if (rate >= 50) {
+    return "bg-yellow-500";
+  }
   return "bg-red-500";
 }

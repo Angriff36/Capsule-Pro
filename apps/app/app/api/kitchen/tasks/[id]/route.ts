@@ -54,14 +54,27 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   // Update task
   const updateData: Record<string, any> = {};
-  if (body.status) updateData.status = body.status;
-  if (body.priority !== undefined) updateData.priority = body.priority;
-  if (body.summary !== undefined) updateData.summary = body.summary;
-  if (body.complexity !== undefined) updateData.complexity = body.complexity;
-  if (body.tags !== undefined) updateData.tags = body.tags;
-  if (body.dueDate !== undefined)
+  if (body.status) {
+    updateData.status = body.status;
+  }
+  if (body.priority !== undefined) {
+    updateData.priority = body.priority;
+  }
+  if (body.summary !== undefined) {
+    updateData.summary = body.summary;
+  }
+  if (body.complexity !== undefined) {
+    updateData.complexity = body.complexity;
+  }
+  if (body.tags !== undefined) {
+    updateData.tags = body.tags;
+  }
+  if (body.dueDate !== undefined) {
     updateData.dueDate = body.dueDate ? new Date(body.dueDate) : null;
-  if (body.status === "completed") updateData.completedAt = new Date();
+  }
+  if (body.status === "completed") {
+    updateData.completedAt = new Date();
+  }
 
   const task = await database.kitchenTask.update({
     where: { tenantId_id: { tenantId, id } },

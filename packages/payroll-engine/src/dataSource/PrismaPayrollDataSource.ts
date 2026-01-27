@@ -19,8 +19,7 @@ import type { PayrollDataSource } from "../services";
  */
 export class PrismaPayrollDataSource implements PayrollDataSource {
   constructor(
-    private prisma: any, // PrismaClient type
-    private getTenantId: () => string
+    private readonly prisma: any // PrismaClient type_getTenantId: () => string
   ) {}
 
   async getEmployees(tenantId: string): Promise<Employee[]> {
@@ -96,7 +95,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
     }));
   }
 
-  async getTipPools(tenantId: string, periodId: string): Promise<TipPool[]> {
+  async getTipPools(_tenantId: string, _periodId: string): Promise<TipPool[]> {
     // TODO: Implement tip pools when model exists
     return [];
   }
@@ -158,7 +157,9 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
   }
 
   async savePayrollRecords(records: PayrollRecord[]): Promise<void> {
-    if (records.length === 0) return;
+    if (records.length === 0) {
+      return;
+    }
 
     const tenantId = records[0].tenantId;
     const periodId = records[0].periodId;
@@ -268,7 +269,9 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       },
     });
 
-    if (!period) return null;
+    if (!period) {
+      return null;
+    }
 
     return {
       id: period.id,
@@ -293,7 +296,9 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       },
     });
 
-    if (!payrollRun) return [];
+    if (!payrollRun) {
+      return [];
+    }
 
     const lineItems = await this.prisma.payrollLineItem.findMany({
       where: {

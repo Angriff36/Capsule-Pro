@@ -17,9 +17,9 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
     const locationId = searchParams.get("locationId");
-    const limit = Number.parseInt(searchParams.get("limit") || "50");
-    const page = Number.parseInt(searchParams.get("page") || "1");
-    const skip = (page - 1) * limit;
+    const limit = Number.parseInt(searchParams.get("limit") || "50", 10);
+    const page = Number.parseInt(searchParams.get("page") || "1", 10);
+    const _skip = (page - 1) * limit;
 
     // Fetch schedules using SQL query
     const [schedulesList, totalCount] = await Promise.all([

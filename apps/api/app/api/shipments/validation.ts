@@ -29,7 +29,9 @@ export function validateShipmentStatus(
 export function validateItemCondition(
   value: unknown
 ): asserts value is ItemCondition {
-  if (!value) return;
+  if (!value) {
+    return;
+  }
   const condition = value as string;
   if (!ITEM_CONDITIONS.includes(condition as ItemCondition)) {
     throw new InvariantError("Invalid item condition");
@@ -40,14 +42,16 @@ export function validateDateString(
   value: unknown,
   fieldName: string
 ): asserts value is string {
-  if (value === undefined || value === null) return;
+  if (value === undefined || value === null) {
+    return;
+  }
   if (typeof value !== "string") {
-    throw new InvariantError(fieldName + " must be a string");
+    throw new InvariantError(`${fieldName} must be a string`);
   }
   const date = new Date(value);
-  if (isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime())) {
     throw new InvariantError(
-      fieldName + " must be a valid ISO 8601 date string"
+      `${fieldName} must be a valid ISO 8601 date string`
     );
   }
 }
@@ -56,10 +60,12 @@ export function validateNonNegativeNumber(
   value: unknown,
   fieldName: string
 ): asserts value is number {
-  if (value === undefined || value === null) return;
+  if (value === undefined || value === null) {
+    return;
+  }
   const num = Number(value);
-  if (isNaN(num) || num < 0) {
-    throw new InvariantError(fieldName + " must be a non-negative number");
+  if (Number.isNaN(num) || num < 0) {
+    throw new InvariantError(`${fieldName} must be a non-negative number`);
   }
 }
 
@@ -68,11 +74,11 @@ export function validatePositiveNumber(
   fieldName: string
 ): asserts value is number {
   if (value === undefined || value === null) {
-    throw new InvariantError(fieldName + " is required");
+    throw new InvariantError(`${fieldName} is required`);
   }
   const num = Number(value);
-  if (isNaN(num) || num <= 0) {
-    throw new InvariantError(fieldName + " must be a positive number");
+  if (Number.isNaN(num) || num <= 0) {
+    throw new InvariantError(`${fieldName} must be a positive number`);
   }
 }
 
@@ -80,14 +86,16 @@ export function validateUUID(
   value: unknown,
   fieldName: string
 ): asserts value is string {
-  if (value === undefined || value === null) return;
+  if (value === undefined || value === null) {
+    return;
+  }
   if (typeof value !== "string") {
-    throw new InvariantError(fieldName + " must be a string");
+    throw new InvariantError(`${fieldName} must be a string`);
   }
   const uuidRegex =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuidRegex.test(value)) {
-    throw new InvariantError(fieldName + " must be a valid UUID");
+    throw new InvariantError(`${fieldName} must be a valid UUID`);
   }
 }
 
@@ -98,7 +106,9 @@ export function validateCreateShipmentRequest(
     throw new InvariantError("Request body is required");
   }
   const body = data as CreateShipmentRequest;
-  if (body.status) validateShipmentStatus(body.status);
+  if (body.status) {
+    validateShipmentStatus(body.status);
+  }
   validateUUID(body.event_id, "event_id");
   validateUUID(body.supplier_id, "supplier_id");
   validateUUID(body.location_id, "location_id");
@@ -123,7 +133,9 @@ export function validateUpdateShipmentRequest(
   if (Object.keys(body).length === 0) {
     throw new InvariantError("At least one field must be provided for update");
   }
-  if (body.status) validateShipmentStatus(body.status);
+  if (body.status) {
+    validateShipmentStatus(body.status);
+  }
   validateUUID(body.event_id, "event_id");
   validateUUID(body.supplier_id, "supplier_id");
   validateUUID(body.location_id, "location_id");
@@ -159,7 +171,9 @@ export function validateCreateShipmentItemRequest(
   validatePositiveNumber(body.quantity_shipped, "quantity_shipped");
   validateNonNegativeNumber(body.quantity_received, "quantity_received");
   validateNonNegativeNumber(body.quantity_damaged, "quantity_damaged");
-  if (body.condition) validateItemCondition(body.condition);
+  if (body.condition) {
+    validateItemCondition(body.condition);
+  }
 }
 
 export function validateUpdateShipmentItemRequest(
@@ -175,5 +189,7 @@ export function validateUpdateShipmentItemRequest(
   validateNonNegativeNumber(body.quantity_shipped, "quantity_shipped");
   validateNonNegativeNumber(body.quantity_received, "quantity_received");
   validateNonNegativeNumber(body.quantity_damaged, "quantity_damaged");
-  if (body.condition) validateItemCondition(body.condition);
+  if (body.condition) {
+    validateItemCondition(body.condition);
+  }
 }

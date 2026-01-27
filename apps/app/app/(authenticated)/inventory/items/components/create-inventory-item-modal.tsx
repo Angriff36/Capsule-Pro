@@ -38,12 +38,12 @@ import {
   updateInventoryItem,
 } from "../../../../lib/use-inventory";
 
-interface CreateInventoryItemModalProps {
+type CreateInventoryItemModalProps = {
   open: boolean;
   onClose: () => void;
   onCreated: () => void;
   editItem?: InventoryItemWithStatus | null;
-}
+};
 
 export const CreateInventoryItemModal = ({
   open,
@@ -98,7 +98,7 @@ export const CreateInventoryItemModal = ({
       });
     }
     setTagInput("");
-  }, [editItem, open]);
+  }, [editItem]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

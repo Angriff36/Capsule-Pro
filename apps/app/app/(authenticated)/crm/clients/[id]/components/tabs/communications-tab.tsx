@@ -44,11 +44,11 @@ import {
   updateClientInteraction,
 } from "../../../actions";
 
-interface CommunicationsTabProps {
+type CommunicationsTabProps = {
   clientId: string;
-}
+};
 
-interface Interaction {
+type Interaction = {
   id: string;
   interactionType: string;
   subject: string | null;
@@ -56,7 +56,7 @@ interface Interaction {
   interactionDate: Date;
   followUpDate: Date | null;
   followUpCompleted: boolean;
-}
+};
 
 const INTERACTION_TYPES = [
   { value: "email", label: "Email", icon: MailIcon },
@@ -86,7 +86,7 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
     try {
       const data = await getClientInteractions(clientId);
       setInteractions(data.data);
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to load communications");
     } finally {
       setLoading(false);
@@ -95,7 +95,7 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
 
   useEffect(() => {
     fetchInteractions();
-  }, [clientId]);
+  }, [fetchInteractions]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,7 +122,9 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedInteraction) return;
+    if (!selectedInteraction) {
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -147,7 +149,9 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
   };
 
   const handleDelete = async () => {
-    if (!selectedInteraction) return;
+    if (!selectedInteraction) {
+      return;
+    }
 
     setSubmitting(true);
     try {

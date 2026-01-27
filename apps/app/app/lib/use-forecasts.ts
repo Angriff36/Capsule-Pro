@@ -3,24 +3,24 @@
 import { toast } from "sonner";
 
 // Types
-export interface ForecastPoint {
+export type ForecastPoint = {
   date: Date;
   projectedStock: number;
   usage: number;
   eventId?: string;
   eventName?: string;
-}
+};
 
-export interface DepletionForecast {
+export type DepletionForecast = {
   sku: string;
   currentStock: number;
   depletionDate: Date | null;
   daysUntilDepletion: number | null;
   confidence: "high" | "medium" | "low";
   forecast: ForecastPoint[];
-}
+};
 
-export interface ReorderSuggestion {
+export type ReorderSuggestion = {
   sku: string;
   currentStock: number;
   reorderPoint: number;
@@ -28,9 +28,9 @@ export interface ReorderSuggestion {
   leadTimeDays: number;
   justification: string;
   urgency: "critical" | "warning" | "info";
-}
+};
 
-export interface SavedForecast {
+export type SavedForecast = {
   id: string;
   tenantId: string;
   sku: string;
@@ -41,7 +41,7 @@ export interface SavedForecast {
   confidence: number;
   horizon_days: number;
   last_updated: Date;
-}
+};
 
 // API Functions
 
@@ -139,7 +139,9 @@ export async function getReorderSuggestions(
   safetyStockDays = 3
 ): Promise<ReorderSuggestion[]> {
   const params = new URLSearchParams();
-  if (sku) params.set("sku", sku);
+  if (sku) {
+    params.set("sku", sku);
+  }
   params.set("leadTimeDays", leadTimeDays.toString());
   params.set("safetyStockDays", safetyStockDays.toString());
 
@@ -258,13 +260,13 @@ export function getDepletionText(daysUntilDepletion: number | null): string {
 
 import { useCallback, useEffect, useState } from "react";
 
-interface UseForecastsOptions {
+type UseForecastsOptions = {
   sku?: string;
   horizonDays?: number;
   leadTimeDays?: number;
   safetyStockDays?: number;
   autoFetch?: boolean;
-}
+};
 
 export function useForecasts(options: UseForecastsOptions = {}) {
   const {

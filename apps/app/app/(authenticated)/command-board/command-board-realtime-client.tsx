@@ -122,7 +122,9 @@ export function BoardCanvas({
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      if (!containerRef.current) return;
+      if (!containerRef.current) {
+        return;
+      }
 
       const rect = containerRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -175,7 +177,9 @@ export function BoardCanvas({
 
   const handleCardClick = useCallback(
     (cardId: string) => {
-      if (!canEdit) return;
+      if (!canEdit) {
+        return;
+      }
 
       updateSelectedCard(cardId);
       setState((prev) => {
@@ -191,7 +195,9 @@ export function BoardCanvas({
 
   const handlePositionChange = useCallback(
     async (cardId: string, position: { x: number; y: number }) => {
-      if (!canEdit) return;
+      if (!canEdit) {
+        return;
+      }
 
       const gridSnapEnabled = snapToGrid;
       const snapSize = gridSnapEnabled ? gridSize : 1;
@@ -236,15 +242,21 @@ export function BoardCanvas({
     [canEdit, snapToGrid, gridSize, broadcast]
   );
 
-  const handleDragStart = useCallback(
+  const _handleDragStart = useCallback(
     (e: MouseEvent, cardId: string) => {
-      if (!canEdit) return;
+      if (!canEdit) {
+        return;
+      }
 
       const card = state.cards.find((c) => c.id === cardId);
-      if (!card) return;
+      if (!card) {
+        return;
+      }
 
       const container = containerRef.current;
-      if (!container) return;
+      if (!container) {
+        return;
+      }
 
       const rect = container.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
@@ -264,24 +276,27 @@ export function BoardCanvas({
 
   const handleDrag = useCallback(
     (e: MouseEvent) => {
-      if (!(dragStateRef.current.isDragging && dragStateRef.current.cardId))
+      if (!(dragStateRef.current.isDragging && dragStateRef.current.cardId)) {
         return;
+      }
 
       const container = containerRef.current;
-      if (!container) return;
+      if (!container) {
+        return;
+      }
 
       const rect = container.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
-      const deltaX = mouseX - dragStateRef.current.startPosition!.x;
-      const deltaY = mouseY - dragStateRef.current.startPosition!.y;
+      const deltaX = mouseX - dragStateRef.current.startPosition?.x;
+      const deltaY = mouseY - dragStateRef.current.startPosition?.y;
 
       const newX =
-        dragStateRef.current.cardStartPosition!.x +
+        dragStateRef.current.cardStartPosition?.x +
         deltaX / state.viewport.zoom;
       const newY =
-        dragStateRef.current.cardStartPosition!.y +
+        dragStateRef.current.cardStartPosition?.y +
         deltaY / state.viewport.zoom;
 
       setState((prev) => ({
@@ -304,11 +319,14 @@ export function BoardCanvas({
   );
 
   const handleDragEnd = useCallback(async () => {
-    if (!(dragStateRef.current.isDragging && dragStateRef.current.cardId))
+    if (!(dragStateRef.current.isDragging && dragStateRef.current.cardId)) {
       return;
+    }
 
     const card = state.cards.find((c) => c.id === dragStateRef.current.cardId);
-    if (!card) return;
+    if (!card) {
+      return;
+    }
 
     const gridSnapEnabled = snapToGrid;
     const snapSize = gridSnapEnabled ? gridSize : 1;
@@ -362,7 +380,9 @@ export function BoardCanvas({
 
   const handleDeleteCard = useCallback(
     async (cardId: string) => {
-      if (!canEdit) return;
+      if (!canEdit) {
+        return;
+      }
 
       const result = await deleteCard(cardId);
 
@@ -381,8 +401,10 @@ export function BoardCanvas({
     [canEdit, broadcast]
   );
 
-  const handleFitToScreen = useCallback(() => {
-    if (state.cards.length === 0 || !containerRef.current) return;
+  const _handleFitToScreen = useCallback(() => {
+    if (state.cards.length === 0 || !containerRef.current) {
+      return;
+    }
 
     const bounds = state.cards.map((card) => ({
       x: card.position.x,
@@ -407,7 +429,9 @@ export function BoardCanvas({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (!canEdit) return;
+      if (!canEdit) {
+        return;
+      }
 
       if (
         (e.key === "Delete" || e.key === "Backspace") &&
@@ -514,7 +538,6 @@ export function BoardCanvas({
       onKeyDown={handleKeyDown}
       ref={containerRef}
       role="region"
-      tabIndex={0}
     >
       <LiveCursors
         containerRef={containerRef as React.RefObject<HTMLDivElement>}

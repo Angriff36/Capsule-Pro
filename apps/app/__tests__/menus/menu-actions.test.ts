@@ -85,11 +85,9 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuInsertCall = executeRawCalls.find((call) => {
         const sql = call[0];
-        return (
-          sql &&
-          sql.strings &&
-          sql.strings.join("").includes("INSERT INTO tenant_kitchen.menus")
-        );
+        return sql?.strings
+          ?.join("")
+          .includes("INSERT INTO tenant_kitchen.menus");
       });
 
       expect(menuInsertCall).toBeDefined();
@@ -154,11 +152,9 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuInsertCall = executeRawCalls.find((call) => {
         const sql = call[0];
-        return (
-          sql &&
-          sql.strings &&
-          sql.strings.join("").includes("INSERT INTO tenant_kitchen.menus")
-        );
+        return sql?.strings
+          ?.join("")
+          .includes("INSERT INTO tenant_kitchen.menus");
       });
 
       expect(menuInsertCall).toBeDefined();
@@ -196,11 +192,7 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuUpdateCall = executeRawCalls.find((call) => {
         const sql = call[0];
-        return (
-          sql &&
-          sql.strings &&
-          sql.strings.join("").includes("UPDATE tenant_kitchen.menus")
-        );
+        return sql?.strings?.join("").includes("UPDATE tenant_kitchen.menus");
       });
 
       expect(menuUpdateCall).toBeDefined();
@@ -314,11 +306,7 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuUpdateCall = executeRawCalls.find((call) => {
         const sql = call[0];
-        return (
-          sql &&
-          sql.strings &&
-          sql.strings.join("").includes("UPDATE tenant_kitchen.menus")
-        );
+        return sql?.strings?.join("").includes("UPDATE tenant_kitchen.menus");
       });
 
       expect(menuUpdateCall).toBeDefined();
@@ -355,9 +343,7 @@ describe("menu actions", () => {
       const menuDeleteCall = executeRawCalls.find((call) => {
         const sql = call[0];
         return (
-          sql &&
-          sql.strings &&
-          sql.strings.join("").includes("UPDATE tenant_kitchen.menus") &&
+          sql?.strings?.join("").includes("UPDATE tenant_kitchen.menus") &&
           sql.strings.join("").includes("SET deleted_at = NOW()")
         );
       });
@@ -460,13 +446,9 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuDishInsertCall = executeRawCalls.find((call) => {
         const sql = call[0];
-        return (
-          sql &&
-          sql.strings &&
-          sql.strings
-            .join("")
-            .includes("INSERT INTO tenant_kitchen.menu_dishes")
-        );
+        return sql?.strings
+          ?.join("")
+          .includes("INSERT INTO tenant_kitchen.menu_dishes");
       });
 
       expect(menuDishInsertCall).toBeDefined();
@@ -597,13 +579,9 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuDishInsertCall = executeRawCalls.find((call) => {
         const sql = call[0];
-        return (
-          sql &&
-          sql.strings &&
-          sql.strings
-            .join("")
-            .includes("INSERT INTO tenant_kitchen.menu_dishes")
-        );
+        return sql?.strings
+          ?.join("")
+          .includes("INSERT INTO tenant_kitchen.menu_dishes");
       });
 
       // First dish should have sort order 1
@@ -635,9 +613,9 @@ describe("menu actions", () => {
       const menuDishDeleteCall = executeRawCalls.find((call) => {
         const sql = call[0];
         return (
-          sql &&
-          sql.strings &&
-          sql.strings.join("").includes("UPDATE tenant_kitchen.menu_dishes") &&
+          sql?.strings
+            ?.join("")
+            .includes("UPDATE tenant_kitchen.menu_dishes") &&
           sql.strings.join("").includes("SET deleted_at = NOW()")
         );
       });
@@ -720,9 +698,9 @@ describe("menu actions", () => {
       const sortOrderUpdates = executeRawCalls.filter((call) => {
         const sql = call[0];
         return (
-          sql &&
-          sql.strings &&
-          sql.strings.join("").includes("UPDATE tenant_kitchen.menu_dishes") &&
+          sql?.strings
+            ?.join("")
+            .includes("UPDATE tenant_kitchen.menu_dishes") &&
           sql.strings.join("").includes("sort_order")
         );
       });

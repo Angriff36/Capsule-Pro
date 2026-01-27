@@ -31,7 +31,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("updateRecipe", () => {
-  const mockTenantId = "test-tenant-id";
+  const _mockTenantId = "test-tenant-id";
   const mockRecipeId = "test-recipe-id";
 
   describe("validation errors", () => {

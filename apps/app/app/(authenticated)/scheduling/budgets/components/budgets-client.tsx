@@ -63,7 +63,7 @@ import {
 import { BudgetFormModal } from "./budget-form-modal";
 
 export function BudgetsClient() {
-  const router = useRouter();
+  const _router = useRouter();
 
   // State
   const [budgets, setBudgets] = useState<LaborBudget[]>([]);
@@ -141,7 +141,9 @@ export function BudgetsClient() {
 
   // Handle delete
   const handleDelete = async () => {
-    if (!budgetToDelete) return;
+    if (!budgetToDelete) {
+      return;
+    }
 
     setActionLoading(true);
     try {
@@ -167,7 +169,9 @@ export function BudgetsClient() {
 
   // Filter budgets by search query
   const filteredBudgets = budgets.filter((budget) => {
-    if (!searchQuery) return true;
+    if (!searchQuery) {
+      return true;
+    }
     const query = searchQuery.toLowerCase();
     return (
       budget.name.toLowerCase().includes(query) ||
@@ -518,13 +522,13 @@ export function BudgetsClient() {
 }
 
 // Delete Confirmation Modal
-interface BudgetDeleteModalProps {
+type BudgetDeleteModalProps = {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
   budget: LaborBudget | null;
   loading: boolean;
-}
+};
 
 function BudgetDeleteModal({
   open,

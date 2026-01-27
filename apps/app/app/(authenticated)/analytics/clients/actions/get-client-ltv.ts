@@ -358,7 +358,9 @@ function calculatePredictiveLTV(clientData: ClientLTVData[]): {
     {
       segment: "At Risk",
       clients: clientData.filter((c) => {
-        if (c.lifetimeValue === 0 || c.lastOrderDate === null) return false;
+        if (c.lifetimeValue === 0 || c.lastOrderDate === null) {
+          return false;
+        }
         const daysSinceLastOrder =
           (Date.now() - new Date(c.lastOrderDate).getTime()) /
           (1000 * 60 * 60 * 24);

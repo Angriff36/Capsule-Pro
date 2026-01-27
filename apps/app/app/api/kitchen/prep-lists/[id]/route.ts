@@ -8,7 +8,7 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
  * Get a prep list by ID with all items
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -236,7 +236,7 @@ export async function PATCH(
  * Delete a prep list (soft delete)
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

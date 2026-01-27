@@ -65,8 +65,12 @@ const STATIONS = [
 ];
 
 function formatDateLabel(date: Date): string {
-  if (isToday(date)) return "Today";
-  if (isYesterday(date)) return "Yesterday";
+  if (isToday(date)) {
+    return "Today";
+  }
+  if (isYesterday(date)) {
+    return "Yesterday";
+  }
   return format(date, "EEEE, MMM d");
 }
 
@@ -381,7 +385,7 @@ export function ProductionBoardClient({
     router.push("/kitchen/tasks/new");
   }, [router]);
 
-  const currentStation = STATIONS.find((s) => s.id === selectedStation);
+  const _currentStation = STATIONS.find((s) => s.id === selectedStation);
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">

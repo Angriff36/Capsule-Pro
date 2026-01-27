@@ -22,29 +22,29 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { createTimeOffRequest, getEmployees, timeOffTypes } from "../actions";
 
-interface TimeOffRequest {
+type TimeOffRequest = {
   id?: string;
   employeeId?: string;
   startDate?: string;
   endDate?: string;
   reason?: string;
   requestType?: TimeOffType;
-}
+};
 
-interface TimeOffFormProps {
+type TimeOffFormProps = {
   request?: TimeOffRequest | null;
   onSuccess?: () => void;
   onCancel?: () => void;
-}
+};
 
-interface Employee {
+type Employee = {
   id: string;
   first_name: string | null;
   last_name: string | null;
   email: string;
   role: string;
   is_active: boolean;
-}
+};
 
 export function TimeOffForm({
   request,
@@ -93,7 +93,9 @@ export function TimeOffForm({
 
   // Calculate duration
   const calculateDuration = () => {
-    if (!(formData.startDate && formData.endDate)) return 0;
+    if (!(formData.startDate && formData.endDate)) {
+      return 0;
+    }
 
     const start = new Date(formData.startDate);
     const end = new Date(formData.endDate);
@@ -179,17 +181,29 @@ export function TimeOffForm({
       const timeoutId = setTimeout(checkConflicts, 500);
       return () => clearTimeout(timeoutId);
     }
-  }, [formData.employeeId, formData.startDate, formData.endDate]);
+  }, [
+    formData.employeeId,
+    formData.startDate,
+    formData.endDate,
+    checkConflicts,
+  ]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
     // Required fields
-    if (!formData.employeeId) newErrors.employeeId = "Employee is required";
-    if (!formData.startDate) newErrors.startDate = "Start date is required";
-    if (!formData.endDate) newErrors.endDate = "End date is required";
-    if (!formData.requestType)
+    if (!formData.employeeId) {
+      newErrors.employeeId = "Employee is required";
+    }
+    if (!formData.startDate) {
+      newErrors.startDate = "Start date is required";
+    }
+    if (!formData.endDate) {
+      newErrors.endDate = "End date is required";
+    }
+    if (!formData.requestType) {
       newErrors.requestType = "Request type is required";
+    }
 
     // Date validation
     if (formData.startDate && formData.endDate) {
@@ -252,7 +266,7 @@ export function TimeOffForm({
         submitData.reason = formData.reason.trim();
       }
 
-      const result = await createTimeOffRequest(submitData);
+      const _result = await createTimeOffRequest(submitData);
       toast.success(
         `Time-off request created successfully for ${duration} ${duration === 1 ? "day" : "days"}`
       );

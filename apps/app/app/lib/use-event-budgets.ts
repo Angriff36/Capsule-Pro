@@ -17,7 +17,7 @@ export type BudgetLineItemCategory =
   | "equipment"
   | "other";
 
-export interface BudgetLineItem {
+export type BudgetLineItem = {
   id: string;
   tenantId: string;
   budgetId: string;
@@ -32,9 +32,9 @@ export interface BudgetLineItem {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-}
+};
 
-export interface EventBudget {
+export type EventBudget = {
   tenantId: string;
   id: string;
   eventId: string;
@@ -49,32 +49,32 @@ export interface EventBudget {
   updatedAt: Date;
   deletedAt: Date | null;
   lineItems?: BudgetLineItem[];
-}
+};
 
-export interface CreateEventBudgetInput {
+export type CreateEventBudgetInput = {
   eventId: string;
   status?: EventBudgetStatus;
   totalBudgetAmount?: number;
   notes?: string;
   lineItems?: CreateBudgetLineItemInput[];
-}
+};
 
-export interface CreateBudgetLineItemInput {
+export type CreateBudgetLineItemInput = {
   category: BudgetLineItemCategory;
   name: string;
   description?: string;
   budgetedAmount: number;
   sortOrder?: number;
   notes?: string;
-}
+};
 
-export interface UpdateEventBudgetInput {
+export type UpdateEventBudgetInput = {
   status?: EventBudgetStatus;
   totalBudgetAmount?: number;
   notes?: string;
-}
+};
 
-export interface UpdateBudgetLineItemInput {
+export type UpdateBudgetLineItemInput = {
   category?: BudgetLineItemCategory;
   name?: string;
   description?: string;
@@ -82,22 +82,22 @@ export interface UpdateBudgetLineItemInput {
   actualAmount?: number;
   sortOrder?: number;
   notes?: string;
-}
+};
 
-export interface EventBudgetFilters {
+export type EventBudgetFilters = {
   eventId?: string;
   status?: EventBudgetStatus;
   page?: number;
   limit?: number;
-}
+};
 
-export interface EventBudgetListResponse {
+export type EventBudgetListResponse = {
   budgets: EventBudget[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
-}
+};
 
 // API Base URL
 const API_BASE = "/api/events/budgets";
@@ -138,9 +138,15 @@ export function formatCurrency(amount: number): string {
 }
 
 export function getUtilizationColor(percentage: number): string {
-  if (percentage >= 100) return "text-red-600 dark:text-red-400";
-  if (percentage >= 90) return "text-yellow-600 dark:text-yellow-400";
-  if (percentage >= 75) return "text-blue-600 dark:text-blue-400";
+  if (percentage >= 100) {
+    return "text-red-600 dark:text-red-400";
+  }
+  if (percentage >= 90) {
+    return "text-yellow-600 dark:text-yellow-400";
+  }
+  if (percentage >= 75) {
+    return "text-blue-600 dark:text-blue-400";
+  }
   return "text-green-600 dark:text-green-400";
 }
 
@@ -150,8 +156,12 @@ export async function getBudgets(
 ): Promise<EventBudget[]> {
   try {
     const params = new URLSearchParams();
-    if (filters.eventId) params.set("eventId", filters.eventId);
-    if (filters.status) params.set("status", filters.status);
+    if (filters.eventId) {
+      params.set("eventId", filters.eventId);
+    }
+    if (filters.status) {
+      params.set("status", filters.status);
+    }
     params.set("page", String(filters.page || 1));
     params.set("limit", String(filters.limit || 50));
 

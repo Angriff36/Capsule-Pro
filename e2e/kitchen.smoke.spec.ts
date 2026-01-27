@@ -23,7 +23,7 @@ test("Kitchen: unauthenticated users do not see a 404", async ({ page }) => {
   const res = await page.goto(KITCHEN_ENTRY, { waitUntil: "domcontentloaded" });
   // Allow redirects, but navigation must succeed and not be a hard 404.
   expect(res).not.toBeNull();
-  expect(res!.status()).not.toBe(404);
+  expect(res?.status()).not.toBe(404);
   await expect(page).not.toHaveTitle(/404/i);
 });
 
@@ -61,16 +61,22 @@ test.describe("Kitchen: route existence + no dead-ends (AUTH REQUIRED)", () => {
       const el = candidates.nth(i);
       const href =
         (await el.getAttribute("href")) ?? (await el.getAttribute("data-href"));
-      if (!href) continue; // skip if no href
-      if (href.startsWith("http") || href.startsWith("//")) continue; // ignore external
-      if (href.startsWith("#")) continue; // ignore hash
+      if (!href) {
+        continue; // skip if no href
+      }
+      if (href.startsWith("http") || href.startsWith("//")) {
+        continue; // ignore external
+      }
+      if (href.startsWith("#")) {
+        continue; // ignore hash
+      }
       hrefs.add(href);
     }
 
     for (const href of hrefs) {
       const res = await page.goto(href, { waitUntil: "domcontentloaded" });
       expect(res, `Navigation to ${href} failed`).not.toBeNull();
-      expect(res!.status()).not.toBe(404);
+      expect(res?.status()).not.toBe(404);
       await expect(page).not.toHaveTitle(/404/i);
     }
   });

@@ -70,12 +70,12 @@ export function Timeline({
 }: TimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [tasks, setTasks] = useState<TimelineTask[]>(initialTasks);
-  const [staff, setStaff] = useState<StaffMember[]>(initialStaff);
+  const [staff, _setStaff] = useState<StaffMember[]>(initialStaff);
   const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
   const [showDependencies, setShowDependencies] = useState(true);
   const [showCriticalPath, setShowCriticalPath] = useState(true);
   const [zoom, setZoom] = useState(100);
-  const [scrollX, setScrollX] = useState(0);
+  const [_scrollX, setScrollX] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [undoStack, setUndoStack] = useState<TaskAction[]>([]);
@@ -94,8 +94,8 @@ export function Timeline({
     originalRow: 0,
   });
 
-  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
-  const [showStaffPanel, setShowStaffPanel] = useState(true);
+  const [_editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [_showStaffPanel, _setShowStaffPanel] = useState(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
@@ -138,7 +138,7 @@ export function Timeline({
       const taskA = taskList[i];
       const taskAStart = new Date(taskA.startTime).getTime();
       const taskAEnd = new Date(taskA.endTime).getTime();
-      const taskAAssignees = taskA.assigneeId ? [taskA.assigneeId] : [];
+      const _taskAAssignees = taskA.assigneeId ? [taskA.assigneeId] : [];
 
       for (let j = i + 1; j < taskList.length; j++) {
         const taskB = taskList[j];
@@ -208,7 +208,9 @@ export function Timeline({
     (e: React.MouseEvent, taskId: string) => {
       e.preventDefault();
       const task = tasks.find((t) => t.id === taskId);
-      if (!task) return;
+      if (!task) {
+        return;
+      }
 
       const rect = (e.target as HTMLElement).getBoundingClientRect();
       setDragState({
@@ -232,17 +234,21 @@ export function Timeline({
 
   const handleDragMove = useCallback(
     (e: MouseEvent) => {
-      if (!(dragState.isDragging && dragState.taskId)) return;
+      if (!(dragState.isDragging && dragState.taskId)) {
+        return;
+      }
 
       const container = containerRef.current;
-      if (!container) return;
+      if (!container) {
+        return;
+      }
 
       const rect = container.getBoundingClientRect();
       const x = e.clientX - rect.left - dragState.startX;
       const y = e.clientY - rect.top - dragState.startY;
 
       const newStartTime = Math.round(x / (PIXELS_PER_MINUTE * (zoom / 100)));
-      const newRow = Math.max(0, Math.floor(y / ROW_HEIGHT));
+      const _newRow = Math.max(0, Math.floor(y / ROW_HEIGHT));
 
       const snappedStartTime =
         Math.round(newStartTime / SNAP_INTERVAL) * SNAP_INTERVAL;
@@ -272,10 +278,14 @@ export function Timeline({
   );
 
   const handleDragEnd = useCallback(async () => {
-    if (!dragState.taskId) return;
+    if (!dragState.taskId) {
+      return;
+    }
 
     const task = tasks.find((t) => t.id === dragState.taskId);
-    if (!task) return;
+    if (!task) {
+      return;
+    }
 
     await updateTimelineTask({
       id: dragState.taskId,
@@ -297,7 +307,7 @@ export function Timeline({
     toast.success("Task updated");
   }, [dragState, tasks, eventId]);
 
-  const handleStatusChange = useCallback(
+  const _handleStatusChange = useCallback(
     async (taskId: string, newStatus: TimelineTask["status"]) => {
       await updateTimelineTask({
         id: taskId,
@@ -316,7 +326,7 @@ export function Timeline({
     [eventId]
   );
 
-  const handleProgressChange = useCallback(
+  const _handleProgressChange = useCallback(
     async (taskId: string, newProgress: number) => {
       await updateTimelineTask({
         id: taskId,
@@ -335,7 +345,9 @@ export function Timeline({
 
   const handleDeleteTask = useCallback(
     async (taskId: string) => {
-      if (!confirm("Are you sure you want to delete this task?")) return;
+      if (!confirm("Are you sure you want to delete this task?")) {
+        return;
+      }
 
       const taskToDelete = tasks.find((t) => t.id === taskId);
 
@@ -362,7 +374,9 @@ export function Timeline({
   );
 
   const handleUndo = useCallback(() => {
-    if (undoStack.length === 0) return;
+    if (undoStack.length === 0) {
+      return;
+    }
 
     const action = undoStack[0];
     const newUndoStack = undoStack.slice(1);
@@ -377,13 +391,15 @@ export function Timeline({
   }, [undoStack]);
 
   const handleRedo = useCallback(() => {
-    if (redoStack.length === 0) return;
+    if (redoStack.length === 0) {
+      return;
+    }
 
     const action = redoStack[0];
     const newRedoStack = redoStack.slice(1);
 
     if (action.type === "delete" && action.previousState) {
-      setTasks((prev) => prev.filter((t) => t.id !== action.previousState!.id));
+      setTasks((prev) => prev.filter((t) => t.id !== action.previousState?.id));
       setUndoStack((prev) => [action, ...prev]);
     }
 
@@ -517,7 +533,9 @@ export function Timeline({
   const renderCurrentTimeIndicator = () => {
     const nowMinutes = differenceInMinutes(currentTime, eventDate);
 
-    if (nowMinutes < 0 || nowMinutes > 24 * 60) return null;
+    if (nowMinutes < 0 || nowMinutes > 24 * 60) {
+      return null;
+    }
 
     const left = nowMinutes * PIXELS_PER_MINUTE * (zoom / 100);
 
@@ -547,7 +565,9 @@ export function Timeline({
   const sortedTasks = [...tasks].sort((a, b) => {
     const priorityCompare =
       PRIORITY_ORDER[b.priority] - PRIORITY_ORDER[a.priority];
-    if (priorityCompare !== 0) return priorityCompare;
+    if (priorityCompare !== 0) {
+      return priorityCompare;
+    }
 
     const timeCompare =
       new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
@@ -569,7 +589,6 @@ export function Timeline({
       onKeyDown={handleKeyDown}
       ref={containerRef}
       role="region"
-      tabIndex={0}
     >
       <header className="flex items-center justify-between border-b bg-background px-4 py-3">
         <div className="flex items-center gap-4">
@@ -705,7 +724,7 @@ export function Timeline({
               zoom={zoom}
             />
 
-            {sortedTasks.map((task, index) => {
+            {sortedTasks.map((task, _index) => {
               const position = calculateTaskPosition(task);
               const isSelected = selectedTaskIds.includes(task.id);
               const statusClasses = TASK_STATUS_COLORS[task.status];

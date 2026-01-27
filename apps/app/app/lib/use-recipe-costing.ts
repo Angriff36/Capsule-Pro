@@ -29,7 +29,7 @@ export type CuisineType =
   | "indian"
   | "other";
 
-export interface Recipe {
+export type Recipe = {
   id: string;
   tenantId: string;
   name: string;
@@ -52,9 +52,9 @@ export interface Recipe {
   } | null;
   createdAt: Date;
   updatedAt: Date;
-}
+};
 
-export interface RecipeCostBreakdown {
+export type RecipeCostBreakdown = {
   totalCost: number;
   costPerYield: number;
   costPerPortion: number | null;
@@ -69,9 +69,9 @@ export interface RecipeCostBreakdown {
     portionSize: number | null;
     portionUnit: string | null;
   };
-}
+};
 
-export interface IngredientCostBreakdown {
+export type IngredientCostBreakdown = {
   id: string;
   recipeIngredientId: string;
   name: string;
@@ -83,9 +83,9 @@ export interface IngredientCostBreakdown {
   cost: number;
   hasInventoryItem: boolean;
   inventoryItemId: string | null;
-}
+};
 
-export interface RecipeListResponse {
+export type RecipeListResponse = {
   data: Recipe[];
   pagination: {
     page: number;
@@ -93,9 +93,9 @@ export interface RecipeListResponse {
     total: number;
     totalPages: number;
   };
-}
+};
 
-export interface RecipeListFilters {
+export type RecipeListFilters = {
   search?: string;
   category?: RecipeCategory;
   cuisineType?: CuisineType;
@@ -103,25 +103,25 @@ export interface RecipeListFilters {
   isActive?: boolean;
   page?: number;
   limit?: number;
-}
+};
 
-export interface ScaleRecipeRequest {
+export type ScaleRecipeRequest = {
   targetPortions: number;
   currentYield: number;
-}
+};
 
-export interface ScaledRecipeCost {
+export type ScaledRecipeCost = {
   scaledTotalCost: number;
   scaledCostPerYield: number;
   scaledCostPerPortion: number | null;
   scaleFactor: number;
   originalCost: number;
-}
+};
 
-export interface UpdateWasteFactorRequest {
+export type UpdateWasteFactorRequest = {
   recipeIngredientId: string;
   wasteFactor: number;
-}
+};
 
 // ============================================================================
 // Recipes API
@@ -135,14 +135,27 @@ export async function listRecipes(
 ): Promise<RecipeListResponse> {
   const params = new URLSearchParams();
 
-  if (filters.search) params.set("search", filters.search);
-  if (filters.category) params.set("category", filters.category);
-  if (filters.cuisineType) params.set("cuisineType", filters.cuisineType);
-  if (filters.tag) params.set("tag", filters.tag);
-  if (filters.isActive !== undefined)
+  if (filters.search) {
+    params.set("search", filters.search);
+  }
+  if (filters.category) {
+    params.set("category", filters.category);
+  }
+  if (filters.cuisineType) {
+    params.set("cuisineType", filters.cuisineType);
+  }
+  if (filters.tag) {
+    params.set("tag", filters.tag);
+  }
+  if (filters.isActive !== undefined) {
     params.set("isActive", filters.isActive.toString());
-  if (filters.page) params.set("page", filters.page.toString());
-  if (filters.limit) params.set("limit", filters.limit.toString());
+  }
+  if (filters.page) {
+    params.set("page", filters.page.toString());
+  }
+  if (filters.limit) {
+    params.set("limit", filters.limit.toString());
+  }
 
   const response = await fetch(`/api/kitchen/recipes?${params.toString()}`);
 
@@ -267,13 +280,13 @@ export async function updateEventBudgets(
 
 import { useEffect, useState } from "react";
 
-export interface UseRecipeCostResult {
+export type UseRecipeCostResult = {
   data: RecipeCostBreakdown | null;
   loading: boolean;
   error: Error | null;
   refetch: () => Promise<void>;
   recalculate: () => Promise<void>;
-}
+};
 
 export function useRecipeCost(recipeVersionId: string): UseRecipeCostResult {
   const [data, setData] = useState<RecipeCostBreakdown | null>(null);
@@ -310,12 +323,12 @@ export function useRecipeCost(recipeVersionId: string): UseRecipeCostResult {
     if (recipeVersionId) {
       fetchCost();
     }
-  }, [recipeVersionId]);
+  }, [recipeVersionId, fetchCost]);
 
   return { data, loading, error, refetch: fetchCost, recalculate };
 }
 
-export interface UseRecipesResult {
+export type UseRecipesResult = {
   data: Recipe[];
   loading: boolean;
   error: Error | null;
@@ -326,7 +339,7 @@ export interface UseRecipesResult {
     totalPages: number;
   } | null;
   refetch: () => Promise<void>;
-}
+};
 
 export function useRecipes(filters: RecipeListFilters = {}): UseRecipesResult {
   const [data, setData] = useState<Recipe[]>([]);
@@ -355,7 +368,7 @@ export function useRecipes(filters: RecipeListFilters = {}): UseRecipesResult {
 
   useEffect(() => {
     fetchRecipes();
-  }, [JSON.stringify(filters)]);
+  }, [fetchRecipes]);
 
   return { data, loading, error, pagination, refetch: fetchRecipes };
 }
@@ -370,7 +383,9 @@ export function useRecipes(filters: RecipeListFilters = {}): UseRecipesResult {
 export function getRecipeCategoryLabel(
   category: RecipeCategory | null | undefined
 ): string {
-  if (!category) return "All Categories";
+  if (!category) {
+    return "All Categories";
+  }
   return category
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -383,7 +398,9 @@ export function getRecipeCategoryLabel(
 export function getCuisineTypeLabel(
   cuisineType: CuisineType | null | undefined
 ): string {
-  if (!cuisineType) return "All Cuisines";
+  if (!cuisineType) {
+    return "All Cuisines";
+  }
   return cuisineType
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -463,7 +480,9 @@ export function formatWasteFactor(wasteFactor: number): string {
  * Format date for display
  */
 export function formatDate(date: Date | string | null): string {
-  if (!date) return "Never";
+  if (!date) {
+    return "Never";
+  }
   const d = typeof date === "string" ? new Date(date) : date;
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -481,6 +500,8 @@ export function calculateCostPercentage(
   ingredientCost: number,
   totalCost: number
 ): number {
-  if (totalCost === 0) return 0;
+  if (totalCost === 0) {
+    return 0;
+  }
   return (ingredientCost / totalCost) * 100;
 }

@@ -27,7 +27,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { updateClient } from "../../../actions";
 
-interface ContactInfoTabProps {
+type ContactInfoTabProps = {
   client: {
     id: string;
     clientType: string;
@@ -51,7 +51,7 @@ interface ContactInfoTabProps {
     source: string | null;
   };
   onEdit?: () => void;
-}
+};
 
 export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -101,7 +101,9 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
       });
       toast.success("Client updated successfully");
       setIsEditing(false);
-      if (onEdit) onEdit();
+      if (onEdit) {
+        onEdit();
+      }
     } catch (error) {
       toast.error("Failed to update client", {
         description: error instanceof Error ? error.message : "Unknown error",
@@ -134,16 +136,28 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
 
   const getFullAddress = () => {
     const parts: string[] = [];
-    if (client.addressLine1) parts.push(client.addressLine1);
-    if (client.addressLine2) parts.push(client.addressLine2);
+    if (client.addressLine1) {
+      parts.push(client.addressLine1);
+    }
+    if (client.addressLine2) {
+      parts.push(client.addressLine2);
+    }
     if (client.city || client.stateProvince || client.postalCode) {
       const cityParts: string[] = [];
-      if (client.city) cityParts.push(client.city);
-      if (client.stateProvince) cityParts.push(client.stateProvince);
-      if (client.postalCode) cityParts.push(client.postalCode);
+      if (client.city) {
+        cityParts.push(client.city);
+      }
+      if (client.stateProvince) {
+        cityParts.push(client.stateProvince);
+      }
+      if (client.postalCode) {
+        cityParts.push(client.postalCode);
+      }
       parts.push(cityParts.join(", "));
     }
-    if (client.countryCode) parts.push(client.countryCode);
+    if (client.countryCode) {
+      parts.push(client.countryCode);
+    }
     return parts.join(", ") || "No address on file";
   };
 

@@ -100,7 +100,9 @@ export function BoardCanvas({
 
   const handleCardClick = useCallback(
     (cardId: string) => {
-      if (!canEdit) return;
+      if (!canEdit) {
+        return;
+      }
 
       setState((prev) => {
         const isSelected = prev.selectedCardIds.includes(cardId);
@@ -112,7 +114,9 @@ export function BoardCanvas({
 
   const handleCardPositionChange = useCallback(
     (cardId: string, position: Point) => {
-      if (!canEdit) return;
+      if (!canEdit) {
+        return;
+      }
 
       setState((prev) => ({
         ...prev,
@@ -129,7 +133,9 @@ export function BoardCanvas({
 
   const handleCardSizeChange = useCallback(
     (cardId: string, width: number, height: number) => {
-      if (!canEdit) return;
+      if (!canEdit) {
+        return;
+      }
 
       setState((prev) => ({
         ...prev,
@@ -149,7 +155,9 @@ export function BoardCanvas({
 
   const handleDeleteCard = useCallback(
     (cardId: string) => {
-      if (!canEdit) return;
+      if (!canEdit) {
+        return;
+      }
 
       setState((prev) => ({
         ...prev,
@@ -161,7 +169,9 @@ export function BoardCanvas({
   );
 
   const handleFitToScreen = useCallback(() => {
-    if (state.cards.length === 0 || !containerRef.current) return;
+    if (state.cards.length === 0 || !containerRef.current) {
+      return;
+    }
 
     const bounds = state.cards.map((card) => ({
       x: card.position.x,
@@ -183,7 +193,9 @@ export function BoardCanvas({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (!canEdit) return;
+      if (!canEdit) {
+        return;
+      }
 
       if (
         (e.key === "Delete" || e.key === "Backspace") &&
@@ -204,7 +216,7 @@ export function BoardCanvas({
         }));
       }
     },
-    [canEdit, state.selectedCardIds, state.cards, handleDeleteCard]
+    [canEdit, state.selectedCardIds, handleDeleteCard]
   );
 
   return (
@@ -214,7 +226,6 @@ export function BoardCanvas({
       onKeyDown={handleKeyDown}
       ref={containerRef}
       role="region"
-      tabIndex={0}
     >
       <div className="flex items-center justify-between border-b bg-background px-4 py-2">
         <div className="flex items-center gap-2">

@@ -96,13 +96,27 @@ async function validateEnvelopeStructure(event: typeof database.outboxEvent) {
   });
 
   // Validate required fields
-  if (!envelope.id) throw new Error("Missing id");
-  if (envelope.version !== 1) throw new Error("Wrong version");
-  if (!envelope.tenantId) throw new Error("Missing tenantId");
-  if (!envelope.aggregateType) throw new Error("Missing aggregateType");
-  if (!envelope.aggregateId) throw new Error("Missing aggregateId");
-  if (!envelope.occurredAt) throw new Error("Missing occurredAt");
-  if (!envelope.eventType) throw new Error("Missing eventType");
+  if (!envelope.id) {
+    throw new Error("Missing id");
+  }
+  if (envelope.version !== 1) {
+    throw new Error("Wrong version");
+  }
+  if (!envelope.tenantId) {
+    throw new Error("Missing tenantId");
+  }
+  if (!envelope.aggregateType) {
+    throw new Error("Missing aggregateType");
+  }
+  if (!envelope.aggregateId) {
+    throw new Error("Missing aggregateId");
+  }
+  if (!envelope.occurredAt) {
+    throw new Error("Missing occurredAt");
+  }
+  if (!envelope.eventType) {
+    throw new Error("Missing eventType");
+  }
 
   console.log("   Envelope validation PASSED");
   return envelope;

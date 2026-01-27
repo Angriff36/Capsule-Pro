@@ -41,9 +41,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProposalById } from "../actions";
 
-interface ProposalPageProps {
+type ProposalPageProps = {
   params: Promise<{ id: string }>;
-}
+};
 
 export async function generateMetadata({
   params,
@@ -162,14 +162,18 @@ export default async function ProposalDetailPage({
   };
 
   function getClientName(): string {
-    if (proposal.client?.company_name) return proposal.client.company_name;
+    if (proposal.client?.company_name) {
+      return proposal.client.company_name;
+    }
     if (proposal.client) {
       return (
         `${proposal.client.first_name || ""} ${proposal.client.last_name || ""}`.trim() ||
         "No name"
       );
     }
-    if (proposal.lead?.company_name) return proposal.lead.company_name;
+    if (proposal.lead?.company_name) {
+      return proposal.lead.company_name;
+    }
     if (proposal.lead) {
       return (
         `${proposal.lead.first_name || ""} ${proposal.lead.last_name || ""}`.trim() ||

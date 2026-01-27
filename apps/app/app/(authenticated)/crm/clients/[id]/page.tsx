@@ -13,7 +13,7 @@ export default async function ClientDetailPage({
     const client = await getClientById(id);
 
     return <ClientDetailClient client={client} />;
-  } catch (error) {
+  } catch (_error) {
     notFound();
   }
 }

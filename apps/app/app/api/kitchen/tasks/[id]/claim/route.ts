@@ -15,7 +15,7 @@ export async function POST(request: Request, context: RouteContext) {
 
   const tenantId = await getTenantIdForOrg(orgId);
   const { id } = await context.params;
-  const body = await request.json();
+  const _body = await request.json();
 
   // Get current user by Clerk ID
   const currentUser = await database.user.findFirst({

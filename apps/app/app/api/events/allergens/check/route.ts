@@ -121,7 +121,7 @@ export async function POST(request: Request) {
 
       // Verify all requested dishes exist
       const foundDishIds = dishes.map((d) => d.id);
-      const missingDishIds = body.dishIds?.filter((id) => !foundDishIds);
+      const missingDishIds = body.dishIds?.filter((_id) => !foundDishIds);
       if (missingDishIds && missingDishIds.length > 0) {
         return NextResponse.json(
           {

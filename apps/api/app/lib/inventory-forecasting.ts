@@ -10,13 +10,13 @@ import { database } from "@repo/database";
 import { invariant } from "./invariant";
 
 // Types for forecasting
-export interface ForecastRequest {
+export type ForecastRequest = {
   tenantId: string;
   sku: string;
   horizonDays?: number; // Forecast horizon in days (default: 30)
-}
+};
 
-export interface ForecastResult {
+export type ForecastResult = {
   sku: string;
   currentStock: number;
   depletionDate: Date | null;
@@ -29,16 +29,16 @@ export interface ForecastResult {
     eventId?: string;
     eventName?: string;
   }>;
-}
+};
 
-export interface ReorderSuggestionRequest {
+export type ReorderSuggestionRequest = {
   tenantId: string;
   sku?: string; // If not provided, generates for all low-stock items
   leadTimeDays?: number;
   safetyStockDays?: number;
-}
+};
 
-export interface ReorderSuggestionResult {
+export type ReorderSuggestionResult = {
   sku: string;
   currentStock: number;
   reorderPoint: number;
@@ -46,7 +46,7 @@ export interface ReorderSuggestionResult {
   leadTimeDays: number;
   justification: string;
   urgency: "critical" | "warning" | "info";
-}
+};
 
 /**
  * Calculate depletion forecast for an inventory item
@@ -80,7 +80,7 @@ export async function calculateDepletionForecast(
   );
 
   // Calculate daily usage pattern
-  const dailyUsage = calculateDailyUsage(events, currentStock);
+  const _dailyUsage = calculateDailyUsage(events, currentStock);
 
   // Generate forecast points
   const forecast: Array<{
@@ -207,7 +207,7 @@ export async function generateReorderSuggestions(
  */
 async function getUpcomingEventsUsingInventory(
   tenantId: string,
-  sku: string,
+  _sku: string,
   horizonDays: number
 ): Promise<
   Array<{ eventId: string; eventName: string; startDate: Date; usage: number }>
@@ -263,7 +263,7 @@ async function getUpcomingEventsUsingInventory(
  */
 function calculateDailyUsage(
   events: Array<{ startDate: Date; usage: number }>,
-  currentStock: number
+  _currentStock: number
 ): number {
   if (events.length === 0) {
     return 0;
@@ -277,9 +277,9 @@ function calculateDailyUsage(
  * Helper: Calculate confidence level for forecast
  */
 function calculateConfidenceLevel(
-  currentStock: number,
+  _currentStock: number,
   events: Array<{ usage: number }>,
-  horizonDays: number
+  _horizonDays: number
 ): "high" | "medium" | "low" {
   // High confidence: lots of historical data, stable usage pattern
   // Medium confidence: some data, some variability

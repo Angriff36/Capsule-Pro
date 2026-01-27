@@ -4,13 +4,13 @@ import type { PayrollPeriod, PayrollRecord } from "../models";
 /**
  * CSV Export Configuration
  */
-export interface CsvExportOptions {
+export type CsvExportOptions = {
   includeHeader?: boolean;
   delimiter?: string;
   dateFormat?: "iso" | "us" | "qb";
   maskSensitiveData?: boolean;
   customColumns?: string[];
-}
+};
 
 /**
  * Standard CSV column definitions
@@ -48,7 +48,9 @@ function escapeCSV(
   value: string | number | undefined,
   delimiter = ","
 ): string {
-  if (value === undefined || value === null) return "";
+  if (value === undefined || value === null) {
+    return "";
+  }
   const str = String(value);
   // Escape if contains delimiter, quote, or newline
   if (str.includes(delimiter) || str.includes('"') || str.includes("\n")) {
@@ -79,8 +81,12 @@ function sumDeductions(record: PayrollRecord, preTax: boolean): number {
  * Mask employee ID for external processors
  */
 function maskId(id: string, mask: boolean): string {
-  if (!mask) return id;
-  if (id.length <= 4) return "****";
+  if (!mask) {
+    return id;
+  }
+  if (id.length <= 4) {
+    return "****";
+  }
   return `****-${id.slice(-4)}`;
 }
 

@@ -12,10 +12,10 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const sku = searchParams.get("sku");
   const leadTimeDays = searchParams.get("leadTimeDays")
-    ? Number.parseInt(searchParams.get("leadTimeDays")!)
+    ? Number.parseInt(searchParams.get("leadTimeDays")!, 10)
     : undefined;
   const safetyStockDays = searchParams.get("safetyStockDays")
-    ? Number.parseInt(searchParams.get("safetyStockDays")!)
+    ? Number.parseInt(searchParams.get("safetyStockDays")!, 10)
     : undefined;
 
   try {

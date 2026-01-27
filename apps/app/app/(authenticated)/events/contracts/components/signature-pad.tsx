@@ -40,10 +40,14 @@ export function SignaturePad({
   // Initialize canvas
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      return;
+    }
 
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
 
     // Set canvas size
     const rect = canvas.getBoundingClientRect();
@@ -60,7 +64,9 @@ export function SignaturePad({
 
   const getCoordinates = useCallback((event: MouseEvent | TouchEvent) => {
     const canvas = canvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
+    if (!canvas) {
+      return { x: 0, y: 0 };
+    }
 
     const rect = canvas.getBoundingClientRect();
 
@@ -92,10 +98,14 @@ export function SignaturePad({
       setError("");
 
       const canvas = canvasRef.current;
-      if (!canvas) return;
+      if (!canvas) {
+        return;
+      }
 
       const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+      if (!ctx) {
+        return;
+      }
 
       const coords = getCoordinates(event.nativeEvent);
       ctx.beginPath();
@@ -112,13 +122,19 @@ export function SignaturePad({
     ) => {
       event.preventDefault();
 
-      if (!isDrawing) return;
+      if (!isDrawing) {
+        return;
+      }
 
       const canvas = canvasRef.current;
-      if (!canvas) return;
+      if (!canvas) {
+        return;
+      }
 
       const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+      if (!ctx) {
+        return;
+      }
 
       const coords = getCoordinates(event.nativeEvent);
       ctx.lineTo(coords.x, coords.y);
@@ -134,10 +150,14 @@ export function SignaturePad({
 
   const clearCanvas = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      return;
+    }
 
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setHasSignature(false);
@@ -170,7 +190,9 @@ export function SignaturePad({
     }
 
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      return;
+    }
 
     const signatureData = canvas.toDataURL("image/png");
     onSave(signatureData, signerName.trim(), signerEmail.trim() || undefined);

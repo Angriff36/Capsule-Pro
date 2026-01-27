@@ -101,20 +101,20 @@ const PAY_PERIODS_PER_YEAR: Record<string, number> = {
   monthly: 12,
 };
 
-export interface TaxCalculationInput {
+export type TaxCalculationInput = {
   grossPay: Currency;
   preTaxDeductions: Currency;
   employee: Employee;
   ytdGrossPay?: Currency;
   ytdSocialSecurityWages?: Currency;
   payPeriodFrequency?: "weekly" | "biweekly" | "semimonthly" | "monthly";
-}
+};
 
-export interface TaxCalculationResult {
+export type TaxCalculationResult = {
   taxableIncome: Currency;
   withholdings: TaxWithholding[];
   totalTax: Currency;
-}
+};
 
 /**
  * Calculate progressive tax using bracket system
@@ -217,7 +217,7 @@ export function calculateTaxes(
     // Apply additional Medicare tax on amounts over threshold
     const excessAmount = annualGross - medicareThreshold;
     const excessPerPeriod = excessAmount / periodsPerYear;
-    const additionalMedicare = money(
+    const _additionalMedicare = money(
       excessPerPeriod * MEDICARE_ADDITIONAL_RATE
     );
     medicareRate = MEDICARE_RATE;

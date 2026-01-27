@@ -123,7 +123,7 @@ export function ContractDetailClient({
 }: ContractDetailClientProps) {
   const router = useRouter();
   const [signatures, setSignatures] = useState(initialSignatures);
-  const [isSigning, setIsSigning] = useState(false);
+  const [_isSigning, _setIsSigning] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [showSignatureDialog, setShowSignatureDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -231,7 +231,7 @@ export function ContractDetailClient({
           throw new Error("Failed to upload document");
         }
 
-        const result = await response.json();
+        const _result = await response.json();
         toast.success("Document uploaded successfully");
         router.refresh();
       } catch (error) {

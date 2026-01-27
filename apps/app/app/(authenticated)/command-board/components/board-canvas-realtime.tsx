@@ -76,7 +76,7 @@ export function BoardCanvas({
 
   useEffect(() => {
     const autoGenerateConnections = () => {
-      const cardById = new Map(state.cards.map((card) => [card.id, card]));
+      const _cardById = new Map(state.cards.map((card) => [card.id, card]));
       const newConnections: CardConnection[] = [];
 
       for (const card of state.cards) {
@@ -244,7 +244,9 @@ export function BoardCanvas({
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      if (!containerRef.current) return;
+      if (!containerRef.current) {
+        return;
+      }
 
       const rect = containerRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -297,7 +299,9 @@ export function BoardCanvas({
 
   const handleCardClick = useCallback(
     (cardId: string) => {
-      if (!canEdit) return;
+      if (!canEdit) {
+        return;
+      }
 
       updateSelectedCard(cardId);
       setSelectedConnectionId(null);
@@ -316,7 +320,9 @@ export function BoardCanvas({
   // Unified position/size change handler using react-moveable (single interaction engine)
   const handleCardPositionChange = useCallback(
     async (cardId: string, position: Point) => {
-      if (!canEdit) return;
+      if (!canEdit) {
+        return;
+      }
 
       // Optimistic update
       setState((prev) => ({
@@ -350,7 +356,9 @@ export function BoardCanvas({
 
   const handleCardSizeChange = useCallback(
     async (cardId: string, width: number, height: number) => {
-      if (!canEdit) return;
+      if (!canEdit) {
+        return;
+      }
 
       // Optimistic update
       setState((prev) => ({
@@ -377,7 +385,9 @@ export function BoardCanvas({
 
   const handleDeleteCard = useCallback(
     async (cardId: string) => {
-      if (!canEdit) return;
+      if (!canEdit) {
+        return;
+      }
 
       const result = await deleteCard(cardId);
 
@@ -396,8 +406,10 @@ export function BoardCanvas({
     [canEdit, broadcast]
   );
 
-  const handleFitToScreen = useCallback(() => {
-    if (state.cards.length === 0 || !containerRef.current) return;
+  const _handleFitToScreen = useCallback(() => {
+    if (state.cards.length === 0 || !containerRef.current) {
+      return;
+    }
 
     const bounds = state.cards.map((card) => ({
       x: card.position.x,
@@ -422,7 +434,9 @@ export function BoardCanvas({
 
   const handleConnectionClick = useCallback(
     (connectionId: string) => {
-      if (!canEdit) return;
+      if (!canEdit) {
+        return;
+      }
       setSelectedConnectionId(connectionId);
       updateSelectedCard(null);
       setState((prev) => ({
@@ -436,7 +450,9 @@ export function BoardCanvas({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (!canEdit) return;
+      if (!canEdit) {
+        return;
+      }
 
       if (e.key === "Escape") {
         updateSelectedCard(null);
@@ -544,7 +560,6 @@ export function BoardCanvas({
       onKeyDown={handleKeyDown}
       ref={containerRef}
       role="region"
-      tabIndex={0}
     >
       <LiveCursors
         containerRef={containerRef as React.RefObject<HTMLDivElement>}

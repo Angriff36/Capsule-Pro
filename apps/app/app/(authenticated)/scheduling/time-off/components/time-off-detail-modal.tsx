@@ -19,12 +19,12 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { deleteTimeOffRequest, updateTimeOffStatus } from "../actions";
 
-interface TimeOffDetailModalProps {
+type TimeOffDetailModalProps = {
   open: boolean;
   onClose: () => void;
   timeOffRequest: TimeOffRequest | null;
   onDelete?: () => void;
-}
+};
 
 // Helper to get status badge style
 const getStatusBadgeVariant = (
@@ -45,7 +45,7 @@ const getStatusBadgeVariant = (
 };
 
 // Helper to get type badge style
-const getTypeBadgeVariant = (
+const _getTypeBadgeVariant = (
   type: TimeOffType
 ): "default" | "secondary" | "destructive" | "outline" => {
   switch (type) {
@@ -100,7 +100,9 @@ export function TimeOffDetailModal({
   const [showRejectionDialog, setShowRejectionDialog] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
 
-  if (!timeOffRequest) return null;
+  if (!timeOffRequest) {
+    return null;
+  }
 
   const handleApprove = async () => {
     setIsLoading(true);
@@ -147,8 +149,9 @@ export function TimeOffDetailModal({
   };
 
   const handleCancel = async () => {
-    if (!confirm("Are you sure you want to cancel this time-off request?"))
+    if (!confirm("Are you sure you want to cancel this time-off request?")) {
       return;
+    }
 
     setIsLoading(true);
     try {
@@ -172,8 +175,9 @@ export function TimeOffDetailModal({
       !confirm(
         "Are you sure you want to delete this time-off request? This action cannot be undone."
       )
-    )
+    ) {
       return;
+    }
 
     setIsLoading(true);
     try {

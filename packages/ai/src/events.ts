@@ -12,36 +12,36 @@ export type EventType =
   | "toolCompleted"
   | "toolError";
 
-export interface ProgressEvent {
+export type ProgressEvent = {
   type: "progress";
   stage: string;
   percentage: number;
   message: string;
   estimatedTimeRemaining?: number;
-}
+};
 
-export interface ToolEvent {
+export type ToolEvent = {
   type: "toolStarted" | "toolProgress" | "toolCompleted" | "toolError";
   toolName: string;
   toolCallId: string;
   data?: unknown;
   error?: SDKError;
-}
+};
 
-export interface LifecycleEvent {
+export type LifecycleEvent = {
   type: "started" | "completed" | "error" | "cancelled";
   agentId: string;
   timestamp: Date;
   data?: unknown;
   error?: SDKError;
-}
+};
 
 export type AgentEvent = ProgressEvent | ToolEvent | LifecycleEvent;
 
 export type GenericListener = (event: AgentEvent) => void;
 
 export class AgentEventEmitter {
-  private emitter: NodeEventEmitter;
+  private readonly emitter: NodeEventEmitter;
 
   constructor() {
     this.emitter = new NodeEventEmitter();

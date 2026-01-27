@@ -20,10 +20,10 @@ import {
   exportEvent,
 } from "../../../../lib/use-event-export";
 
-interface EventExportButtonProps {
+type EventExportButtonProps = {
   eventId: string;
   eventName?: string;
-}
+};
 
 /**
  * Export button with dropdown menu for different export options
@@ -38,7 +38,7 @@ export function EventExportButton({
   eventName,
 }: EventExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
-  const [exportFormat, setExportFormat] = useState<ExportFormat | null>(null);
+  const [_exportFormat, setExportFormat] = useState<ExportFormat | null>(null);
 
   const handleExport = async (
     format: ExportFormat,
