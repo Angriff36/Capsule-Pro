@@ -8,7 +8,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import type { Database } from "@repo/database";
+import type { PrismaClient as Database } from "@repo/database";
 import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
