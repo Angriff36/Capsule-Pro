@@ -6,7 +6,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, PrismaClient } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -185,7 +185,7 @@ function buildCreateClientData(
  * Check for duplicate email
  */
 async function checkDuplicateEmail(
-  database: typeof import("@repo/database"),
+  database: PrismaClient,
   tenantId: string,
   email: string
 ) {
