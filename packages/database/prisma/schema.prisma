@@ -88,6 +88,7 @@ model Account {
   contractSignatures    ContractSignature[]
   laborBudgets          LaborBudget[]
   eventBudgets          EventBudget[]
+  eventReports          EventReport[]
   budgetLineItems       BudgetLineItem[]
   budgetAlerts          BudgetAlert[]
 
@@ -345,6 +346,7 @@ model Event {
   location     Location?     @relation("EventLocation", fields: [locationId], references: [id], onDelete: SetNull)
   venue        Location?     @relation("LocationVenue", fields: [venueId], references: [id], onDelete: SetNull)
   budgets      EventBudget[]
+  reports      EventReport[]
   wasteEntries WasteEntry[]
   shipments    Shipment[]
   proposals    Proposal[]
@@ -416,6 +418,36 @@ model EventSummary {
   @@index([tenantId, eventId])
   @@index([generatedAt(sort: Desc)])
   @@map("event_summaries")
+  @@schema("tenant_events")
+}
+
+// Pre-Event Review checklist for kitchen team
+model EventReport {
+  tenantId       String    @map("tenant_id") @db.Uuid
+  id             String    @unique @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  eventId        String    @map("event_id") @db.Uuid
+  version        String    @default("2025-01-01")
+  status         String    @default("draft") // draft, in_progress, completed, approved
+  completion     Int       @default(0) // 0-100 percentage
+  checklistData  Json      @default("{}") @map("checklist_data") // EventChecklist structure
+  parsedEventData Json?    @map("parsed_event_data") // Extracted event data from PDFs
+  autoFillScore  Int?      @map("auto_fill_score") // How many questions auto-answered
+  reviewNotes    String?   @map("review_notes")
+  reviewedBy     String?   @map("reviewed_by") @db.Uuid
+  reviewedAt     DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  completedAt    DateTime? @map("completed_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  event  Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([tenantId, eventId], map: "event_reports_event_id_idx")
+  @@index([tenantId, status], map: "event_reports_status_idx")
+  @@index([checklistData], map: "idx_event_reports_data_gin", type: Gin)
+  @@map("event_reports")
   @@schema("tenant_events")
 }
 
@@ -943,19 +975,32 @@ model EventTimeline {
 }
 
 model EventImport {
-  tenantId  String   @map("tenant_id") @db.Uuid
-  id        String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  event_id  String   @db.Uuid
-  file_name String
-  mime_type String
-  file_size Int      @default(0)
-  content   Bytes
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  tenant    Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenantId        String    @map("tenant_id") @db.Uuid
+  id              String    @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId         String?   @map("event_id") @db.Uuid
+  fileName        String    @map("file_name")
+  mimeType        String    @map("mime_type")
+  fileSize        Int       @default(0) @map("file_size")
+  content         Bytes?    // File content if stored in DB
+  blobUrl         String?   @map("blob_url") // Vercel Blob URL if stored externally
+  fileType        String    @default("pdf") @map("file_type") // pdf, csv
+  detectedFormat  String?   @map("detected_format") // tpp, generic, staff_roster
+  parseStatus     String    @default("pending") @map("parse_status") // pending, parsing, parsed, failed
+  extractedData   Json?     @map("extracted_data") // Parsed event/staff data
+  confidence      Int?      @default(0) // 0-100 confidence score
+  parseErrors     String[]  @map("parse_errors")
+  reportId        String?   @map("report_id") @db.Uuid // Link to generated EventReport
+  battleBoardId   String?   @map("battle_board_id") @db.Uuid // Link to generated BattleBoard
+  parsedAt        DateTime? @map("parsed_at") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant          Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
   @@index([tenantId, createdAt(sort: Desc)], map: "event_imports_created_idx")
-  @@index([tenantId, event_id], map: "event_imports_event_idx")
+  @@index([tenantId, eventId], map: "event_imports_event_idx")
+  @@index([tenantId, parseStatus], map: "event_imports_status_idx")
   @@map("event_imports")
   @@schema("tenant_events")
 }

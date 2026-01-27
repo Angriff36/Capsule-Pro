@@ -107,7 +107,8 @@ function buildUpdatePayload(
     updatePayload.documentUrl = updatePayload.documentUrl?.trim() || undefined;
   }
   if (updatePayload.documentType !== undefined) {
-    updatePayload.documentType = updatePayload.documentType?.trim() || undefined;
+    updatePayload.documentType =
+      updatePayload.documentType?.trim() || undefined;
   }
 
   return updatePayload;
@@ -118,7 +119,7 @@ async function getEventDetails(
   tenantId: string,
   eventId: string | null,
   existingEventId: string | null
-): Promise<{ id: string; title: string; eventDate: Date; } | null> {
+): Promise<{ id: string; title: string; eventDate: Date } | null> {
   const targetEventId = eventId || existingEventId;
 
   if (!targetEventId) {
@@ -144,7 +145,12 @@ async function getClientDetails(
   tenantId: string,
   clientId: string | null,
   existingClientId: string | null
-): Promise<{ id: string; company_name: string | null; first_name: string | null; last_name: string | null; } | null> {
+): Promise<{
+  id: string;
+  company_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
+} | null> {
   const targetClientId = clientId || existingClientId;
 
   if (!targetClientId) {

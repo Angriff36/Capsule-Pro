@@ -6,7 +6,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma, PrismaClient } from "@repo/database";
+import { database, Prisma, type PrismaClient } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";

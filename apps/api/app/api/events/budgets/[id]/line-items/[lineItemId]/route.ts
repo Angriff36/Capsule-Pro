@@ -141,7 +141,8 @@ function prepareUpdateData(
     updateData.budgetedAmount = (validatedData as any).budgetedAmount;
     // Recalculate variance if actual amount exists
     const actualAmount = Number(existingLineItem?.actualAmount ?? 0);
-    const newVarianceAmount = (validatedData as any).budgetedAmount - actualAmount;
+    const newVarianceAmount =
+      (validatedData as any).budgetedAmount - actualAmount;
     updateData.varianceAmount = newVarianceAmount;
   }
   if ((validatedData as any).actualAmount !== undefined) {
@@ -150,7 +151,8 @@ function prepareUpdateData(
     const budgetedAmount =
       (validatedData as any).budgetedAmount ??
       Number(existingLineItem?.budgetedAmount ?? 0);
-    const newVarianceAmount = budgetedAmount - (validatedData as any).actualAmount;
+    const newVarianceAmount =
+      budgetedAmount - (validatedData as any).actualAmount;
     updateData.varianceAmount = newVarianceAmount;
   }
   if ((validatedData as any).sortOrder !== undefined) {

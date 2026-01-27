@@ -8,11 +8,15 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { CardType } from "../types";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { BoardStatus, CardStatus, CommandBoardWithCards } from "../types";
+import type {
+  BoardStatus,
+  CardStatus,
+  CardType,
+  CommandBoardWithCards,
+} from "../types";
 import { validateUpdateCommandBoardRequest } from "../validation";
 
 type RouteContext = {

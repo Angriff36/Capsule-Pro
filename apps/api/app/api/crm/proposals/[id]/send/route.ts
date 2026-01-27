@@ -5,7 +5,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database, PrismaClient } from "@repo/database";
+import { database, type PrismaClient } from "@repo/database";
 import { ProposalTemplate, resend } from "@repo/email";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";

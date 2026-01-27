@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, PrismaClient } from "@repo/database";
+import { database, type PrismaClient } from "@repo/database";
 import { BattleBoardPDF } from "@repo/pdf";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -114,10 +114,7 @@ function fetchTimelineTasks(
 /**
  * Fetch staff with assignment counts
  */
-function fetchStaff(
-  database: PrismaClient,
-  tenantId: string
-): any {
+function fetchStaff(database: PrismaClient, tenantId: string): any {
   return database.$queryRawUnsafe<
     Array<{
       id: string;
@@ -363,10 +360,7 @@ export async function GET(
 /**
  * Generate downloadable PDF response
  */
-async function generateDownloadResponse(
-  pdfComponent: any,
-  eventTitle: string
-) {
+async function generateDownloadResponse(pdfComponent: any, eventTitle: string) {
   const { pdf } = await import("@react-pdf/renderer");
   const doc = await pdf(pdfComponent as any);
   const blob = await doc.toBlob();

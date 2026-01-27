@@ -33,16 +33,13 @@
   ],
   "files": {
     "includes": [
-      "**/*",
+      "apps/**/*",
+      "packages/**/*",
+      "!apps/docs/**/*",
       "!packages/design-system/components/ui",
-      "!packages/design-system/lib",
+      "!packages/design-system/lib", 
       "!packages/design-system/hooks",
       "!packages/collaboration/config.ts",
-      "!docs/components/ui",
-      "!docs/lib",
-      "!docs/hooks",
-      "!apps/docs/**/*.json",
-      "!apps/email/.react-email",
       "!packages/cms/basehub-types.d.ts"
     ]
   }
