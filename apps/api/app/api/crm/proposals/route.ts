@@ -254,7 +254,7 @@ function buildCreateProposalData(
  * Create line items for a proposal
  */
 async function createLineItems(
-  database: typeof import("@repo/database"),
+  database: PrismaClient,
   proposalId: string,
   tenantId: string,
   lineItems: NonNullable<CreateProposalRequest["lineItems"]>
