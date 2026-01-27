@@ -144,9 +144,7 @@ async function getClientDetails(
   tenantId: string,
   clientId: string | null,
   existingClientId: string | null
-): Promise<
-  NonNullable<Awaited<ReturnType<typeof database.client.findFirst>>> | null
-> {
+): Promise<{ id: string; company_name: string | null; first_name: string | null; last_name: string | null; } | null> {
   const targetClientId = clientId || existingClientId;
 
   if (!targetClientId) {
