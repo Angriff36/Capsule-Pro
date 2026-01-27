@@ -317,7 +317,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check && pnpm dev:apps`
   - **Commit**: `feat(menus): create menu detail page`
 
-- [ ] T028 [US3] Create new menu page `apps/app/app/(authenticated)/kitchen/recipes/menus/new/page.tsx`
+- [x] T028 [US3] Create new menu page `apps/app/app/(authenticated)/kitchen/recipes/menus/new/page.tsx`
   - **Do**:
     1. Create new page with MenuEditor
     2. Wire to createMenu action

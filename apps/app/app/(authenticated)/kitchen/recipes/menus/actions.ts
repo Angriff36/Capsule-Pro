@@ -84,7 +84,7 @@ export const createMenu = async (formData: FormData) => {
     menuId,
     name,
   });
-  redirect("/kitchen/recipes/menus");
+  redirect("/kitchen/recipes?tab=menus");
 };
 
 export const updateMenu = async (menuId: string, formData: FormData) => {
