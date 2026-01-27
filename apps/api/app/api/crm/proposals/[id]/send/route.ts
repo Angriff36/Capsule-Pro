@@ -148,7 +148,7 @@ function calculateTotalAmount(
  * Determine recipient name from client/lead data
  */
 function determineRecipientName(
-  client: { first_name?: string; company_name?: string } | null,
+  client: { first_name?: string | null; company_name?: string | null } | null,
   lead: { contactName?: string; companyName?: string } | null
 ): string {
   const clientFirstName = client?.first_name as string | undefined;
