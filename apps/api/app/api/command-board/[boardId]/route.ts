@@ -8,7 +8,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { CardType, CardStatus } from "../types";
+import { CardType } from "../types";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
