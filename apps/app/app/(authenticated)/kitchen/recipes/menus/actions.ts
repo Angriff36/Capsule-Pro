@@ -300,6 +300,8 @@ export type MenuDetail = {
     course: string | null;
     sortOrder: number;
     isOptional: boolean;
+    dietaryTags: string[];
+    allergens: string[];
   }[];
 };
 
@@ -360,6 +362,8 @@ export const getMenuById = async (menuId: string): Promise<MenuDetail | null> =>
       course: string | null;
       sort_order: number;
       is_optional: boolean;
+      dietary_tags: string[] | null;
+      allergens: string[] | null;
     }[]
   >(
     Prisma.sql`
@@ -369,7 +373,9 @@ export const getMenuById = async (menuId: string): Promise<MenuDetail | null> =>
         d.name AS dish_name,
         md.course,
         md.sort_order,
-        md.is_optional
+        md.is_optional,
+        d.dietary_tags,
+        d.allergens
       FROM tenant_kitchen.menu_dishes md
       JOIN tenant_kitchen.dishes d
         ON md.tenant_id = d.tenant_id
@@ -403,6 +409,8 @@ export const getMenuById = async (menuId: string): Promise<MenuDetail | null> =>
       course: dish.course,
       sortOrder: dish.sort_order,
       isOptional: dish.is_optional,
+      dietaryTags: dish.dietary_tags || [],
+      allergens: dish.allergens || [],
     })),
   };
 };
