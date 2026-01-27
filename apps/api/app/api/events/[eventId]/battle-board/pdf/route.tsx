@@ -364,7 +364,7 @@ export async function GET(
  * Generate downloadable PDF response
  */
 async function generateDownloadResponse(
-  pdfComponent: React.ReactElement<DocumentProps>,
+  pdfComponent: any,
   eventTitle: string
 ) {
   const { pdf } = await import("@react-pdf/renderer");
