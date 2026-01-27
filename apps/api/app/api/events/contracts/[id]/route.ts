@@ -42,7 +42,7 @@ async function validateAndGetContract(
 async function validateAndGetEvent(
   tenantId: string,
   eventId: string
-): Promise<NonNullable<Awaited<ReturnType<typeof database.event.findFirst>>>> {
+): Promise<{ id: string; title: string }> {
   const event = await database.event.findFirst({
     where: {
       AND: [{ tenantId }, { id: eventId }, { deletedAt: null }],
