@@ -87,7 +87,7 @@ function handleUpdateErrors(error: unknown): NextResponse | null {
  */
 function prepareUpdateData(
   validatedData: unknown,
-  existingBudget: { totalActualAmount: number }
+  existingBudget: any
 ): Record<string, unknown> {
   const updateData: Record<string, unknown> = {};
   const data = validatedData as {
