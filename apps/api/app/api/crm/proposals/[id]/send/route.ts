@@ -5,7 +5,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, PrismaClient } from "@repo/database";
 import { ProposalTemplate, resend } from "@repo/email";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
@@ -29,7 +29,7 @@ type LeadSelect = {
  * Fetch client email
  */
 async function fetchClientEmail(
-  database: typeof import("@repo/database"),
+  database: PrismaClient,
   tenantId: string,
   clientId: string | null
 ): Promise<string | null> {
