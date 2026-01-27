@@ -327,7 +327,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check && pnpm dev:apps`
   - **Commit**: `feat(menus): create new menu page`
 
-- [ ] T029 [VERIFY] Quality checkpoint - Menus UI
+- [x] T029 [VERIFY] Quality checkpoint - Menus UI
   - **Do**: Run quality commands, test menu flow
   - **Verify**: `pnpm check && cd apps/app && npx tsc --noEmit`
   - **Done when**: Menu CRUD works end-to-end in UI
