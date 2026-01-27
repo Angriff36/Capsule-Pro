@@ -268,7 +268,7 @@ function preparePdfData(
 
 async function generatePdfBlob(pdfComponent: unknown): Promise<Blob> {
   const { pdf } = await import("@react-pdf/renderer");
-  const doc = await pdf(pdfComponent);
+  const doc = await pdf(pdfComponent as any);
   return await doc.toBlob();
 }
 
