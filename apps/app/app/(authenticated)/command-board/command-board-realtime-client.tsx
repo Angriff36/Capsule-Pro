@@ -289,14 +289,14 @@ export function BoardCanvas({
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
-      const deltaX = mouseX - dragStateRef.current.startPosition?.x;
-      const deltaY = mouseY - dragStateRef.current.startPosition?.y;
+      const deltaX = mouseX - (dragStateRef.current.startPosition?.x ?? 0);
+      const deltaY = mouseY - (dragStateRef.current.startPosition?.y ?? 0);
 
       const newX =
-        dragStateRef.current.cardStartPosition?.x +
+        (dragStateRef.current.cardStartPosition?.x ?? 0) +
         deltaX / state.viewport.zoom;
       const newY =
-        dragStateRef.current.cardStartPosition?.y +
+        (dragStateRef.current.cardStartPosition?.y ?? 0) +
         deltaY / state.viewport.zoom;
 
       setState((prev) => ({
