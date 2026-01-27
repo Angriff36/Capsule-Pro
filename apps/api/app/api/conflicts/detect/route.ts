@@ -167,7 +167,7 @@ async function detectInventoryConflicts(
   const conflicts: Conflict[] = [];
   const now = new Date();
   const startDate = timeRange?.start || now;
-  const endDate =
+  const _endDate =
     timeRange?.end || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   // Find active inventory alerts
@@ -234,8 +234,8 @@ async function detectTimelineConflicts(
 ): Promise<Conflict[]> {
   const conflicts: Conflict[] = [];
   const now = new Date();
-  const startDate = timeRange?.start || now;
-  const endDate =
+  const _startDate = timeRange?.start || now;
+  const _endDate =
     timeRange?.end || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   // Find incomplete high-priority tasks past due date

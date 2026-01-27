@@ -15,7 +15,9 @@ import { FSA_STATUSES, ITEM_CATEGORIES } from "./types";
  * Validate FSA status
  */
 export function validateFSAStatus(value: unknown): asserts value is FSAStatus {
-  if (!value) return; // Optional field
+  if (!value) {
+    return; // Optional field
+  }
 
   const status = value as string;
   if (!FSA_STATUSES.includes(status as FSAStatus)) {
@@ -50,10 +52,12 @@ export function validateNonNegativeNumber(
   value: unknown,
   fieldName: string
 ): asserts value is number {
-  if (value === undefined || value === null) return;
+  if (value === undefined || value === null) {
+    return;
+  }
 
   const num = Number(value);
-  if (isNaN(num) || num < 0) {
+  if (Number.isNaN(num) || num < 0) {
     throw new InvariantError(`${fieldName} must be a non-negative number`);
   }
 }

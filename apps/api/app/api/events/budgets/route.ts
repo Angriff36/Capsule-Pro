@@ -11,6 +11,8 @@ import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
+  type CreateBudgetLineItemInput,
+  type CreateEventBudgetInput,
   parseEventBudgetListFilters,
   validateCreateEventBudget,
 } from "./validation";
@@ -41,12 +43,12 @@ export async function GET(request: Request) {
 
     // Add eventId filter
     if (eventId) {
-      (whereClause.AND as Array<Record<string, unknown>>).push({ eventId });
+      (whereClause.AND as Record<string, unknown>[]).push({ eventId });
     }
 
     // Add status filter
     if (status) {
-      (whereClause.AND as Array<Record<string, unknown>>).push({ status });
+      (whereClause.AND as Record<string, unknown>[]).push({ status });
     }
 
     // Fetch budgets
@@ -87,6 +89,119 @@ export async function GET(request: Request) {
   }
 }
 
+// Helper function to validate event exists
+async function validateEventExists(tenantId: string, eventId: string) {
+  const event = await database.event.findUnique({
+    where: {
+      tenantId_id: {
+        tenantId,
+        id: eventId,
+      },
+    },
+  });
+
+  if (!event) {
+    throw new Error("Event not found");
+  }
+
+  return event;
+}
+
+// Helper function to check if budget already exists
+async function checkBudgetExists(tenantId: string, eventId: string) {
+  const existingBudget = await database.eventBudget.findFirst({
+    where: {
+      tenantId,
+      eventId,
+      deletedAt: null,
+    },
+  });
+
+  if (existingBudget) {
+    throw new Error("A budget already exists for this event");
+  }
+}
+
+// Helper function to calculate total budget amount
+function calculateTotalBudgetAmount(
+  totalBudgetAmount: number,
+  lineItems?: { budgetedAmount: number }[]
+) {
+  if (lineItems && lineItems.length > 0) {
+    const lineItemsTotal = lineItems.reduce(
+      (sum, item) => sum + item.budgetedAmount,
+      0
+    );
+    // If totalBudgetAmount was not explicitly set or is 0, use line items total
+    if (totalBudgetAmount === 0) {
+      return lineItemsTotal;
+    }
+  }
+  return totalBudgetAmount;
+}
+
+// Helper function to create budget with line items
+async function createBudgetWithLineItems(
+  tenantId: string,
+  validatedData: CreateEventBudgetInput
+) {
+  return await database.$transaction(async (tx) => {
+    // Create the budget
+    const newBudget = await tx.eventBudget.create({
+      data: {
+        tenantId,
+        eventId: validatedData.eventId,
+        status: validatedData.status || "draft",
+        totalBudgetAmount: validatedData.totalBudgetAmount,
+        totalActualAmount: 0,
+        varianceAmount: validatedData.totalBudgetAmount, // Initially variance is the full budget
+        variancePercentage: 0,
+        notes: validatedData.notes || null,
+      },
+    });
+
+    // Create line items if provided
+    if (validatedData.lineItems && validatedData.lineItems.length > 0) {
+      await tx.budgetLineItem.createMany({
+        data: validatedData.lineItems.map(
+          (item: CreateBudgetLineItemInput) => ({
+            tenantId,
+            budgetId: newBudget.id,
+            category: item.category,
+            name: item.name,
+            description: item.description || null,
+            budgetedAmount: item.budgetedAmount,
+            actualAmount: 0,
+            varianceAmount: item.budgetedAmount,
+            sortOrder: item.sortOrder || 0,
+            notes: item.notes || null,
+          })
+        ),
+      });
+    }
+
+    return newBudget;
+  });
+}
+
+// Helper function to fetch created budget with line items
+async function fetchCreatedBudget(tenantId: string, budgetId: string) {
+  return await database.eventBudget.findUnique({
+    where: {
+      tenantId_id: {
+        tenantId,
+        id: budgetId,
+      },
+    },
+    include: {
+      lineItems: {
+        where: { deletedAt: null },
+        orderBy: { sortOrder: "asc" },
+      },
+    },
+  });
+}
+
 /**
  * POST /api/events/budgets
  * Create a new event budget
@@ -105,101 +220,26 @@ export async function POST(request: Request) {
     const validatedData = validateCreateEventBudget(body);
     invariant(validatedData.eventId, "Event ID is required");
 
-    // Check if event exists
-    const event = await database.event.findUnique({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: validatedData.eventId,
-        },
-      },
-    });
-
-    if (!event) {
-      return NextResponse.json({ message: "Event not found" }, { status: 404 });
-    }
+    // Validate event exists
+    await validateEventExists(tenantId, validatedData.eventId);
 
     // Check if a budget already exists for this event
-    const existingBudget = await database.eventBudget.findFirst({
-      where: {
-        tenantId,
-        eventId: validatedData.eventId,
-        deletedAt: null,
-      },
-    });
+    await checkBudgetExists(tenantId, validatedData.eventId);
 
-    if (existingBudget) {
-      return NextResponse.json(
-        { message: "A budget already exists for this event" },
-        { status: 409 }
-      );
-    }
+    // Calculate total budget amount
+    const totalBudgetAmount = calculateTotalBudgetAmount(
+      validatedData.totalBudgetAmount,
+      validatedData.lineItems
+    );
 
-    // Calculate total from line items if provided
-    let totalBudgetAmount = validatedData.totalBudgetAmount;
-    if (validatedData.lineItems && validatedData.lineItems.length > 0) {
-      const lineItemsTotal = validatedData.lineItems.reduce(
-        (sum, item) => sum + item.budgetedAmount,
-        0
-      );
-      // If totalBudgetAmount was not explicitly set or is 0, use line items total
-      if (validatedData.totalBudgetAmount === 0) {
-        totalBudgetAmount = lineItemsTotal;
-      }
-    }
+    // Update validated data with calculated total
+    validatedData.totalBudgetAmount = totalBudgetAmount;
 
     // Create budget with line items in a transaction
-    const budget = await database.$transaction(async (tx) => {
-      // Create the budget
-      const newBudget = await tx.eventBudget.create({
-        data: {
-          tenantId,
-          eventId: validatedData.eventId,
-          status: validatedData.status || "draft",
-          totalBudgetAmount,
-          totalActualAmount: 0,
-          varianceAmount: totalBudgetAmount, // Initially variance is the full budget
-          variancePercentage: 0,
-          notes: validatedData.notes || null,
-        },
-      });
-
-      // Create line items if provided
-      if (validatedData.lineItems && validatedData.lineItems.length > 0) {
-        await tx.budgetLineItem.createMany({
-          data: validatedData.lineItems.map((item) => ({
-            tenantId,
-            budgetId: newBudget.id,
-            category: item.category,
-            name: item.name,
-            description: item.description || null,
-            budgetedAmount: item.budgetedAmount,
-            actualAmount: 0,
-            varianceAmount: item.budgetedAmount,
-            sortOrder: item.sortOrder || 0,
-            notes: item.notes || null,
-          })),
-        });
-      }
-
-      return newBudget;
-    });
+    const budget = await createBudgetWithLineItems(tenantId, validatedData);
 
     // Fetch the created budget with line items
-    const budgetWithLineItems = await database.eventBudget.findUnique({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: budget.id,
-        },
-      },
-      include: {
-        lineItems: {
-          where: { deletedAt: null },
-          orderBy: { sortOrder: "asc" },
-        },
-      },
-    });
+    const budgetWithLineItems = await fetchCreatedBudget(tenantId, budget.id);
 
     return NextResponse.json(budgetWithLineItems, { status: 201 });
   } catch (error) {

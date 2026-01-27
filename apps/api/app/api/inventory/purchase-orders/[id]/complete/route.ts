@@ -9,6 +9,7 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import type { CompleteReceivingRequest } from "../../types";
 import { validateCompleteReceivingRequest } from "../../validation";
 
 type RouteContext = {
@@ -66,11 +67,6 @@ export async function POST(request: Request, context: RouteContext) {
       );
     }
 
-    // Create a map of item IDs to their updates
-    const itemUpdatesMap = new Map(
-      body.items.map((item: any) => [item.id, item])
-    );
-
     // Validate all items belong to this purchase order
     const validItemIds = new Set(purchaseOrder.items.map((item) => item.id));
     for (const updateItem of body.items) {
@@ -88,38 +84,45 @@ export async function POST(request: Request, context: RouteContext) {
     const result = await database.$transaction(async (tx) => {
       // Update all purchase order items
       const updatedItems = await Promise.all(
-        body.items.map(async (updateItem: any) => {
-          const poItem = purchaseOrder.items.find(
-            (item) => item.id === updateItem.id
-          )!;
-
-          const quantityOrdered = Number(poItem.quantityOrdered);
-          const quantityReceived = Number(updateItem.quantity_received);
-
-          // Validate quantity received doesn't exceed quantity ordered
-          if (quantityReceived > quantityOrdered) {
-            throw new InvariantError(
-              `Quantity received (${quantityReceived}) for item ${updateItem.id} cannot exceed quantity ordered (${quantityOrdered})`
+        body.items.map(
+          async (updateItem: CompleteReceivingRequest["items"][number]) => {
+            const poItem = purchaseOrder.items.find(
+              (item) => item.id === updateItem.id
             );
+            if (!poItem) {
+              throw new InvariantError(
+                `Item ${updateItem.id} not found in purchase order`
+              );
+            }
+
+            const quantityOrdered = Number(poItem.quantityOrdered);
+            const quantityReceived = Number(updateItem.quantity_received);
+
+            // Validate quantity received doesn't exceed quantity ordered
+            if (quantityReceived > quantityOrdered) {
+              throw new InvariantError(
+                `Quantity received (${quantityReceived}) for item ${updateItem.id} cannot exceed quantity ordered (${quantityOrdered})`
+              );
+            }
+
+            // Update the purchase order item
+            const updated = await tx.purchaseOrderItem.update({
+              where: { tenantId_id: { tenantId, id: updateItem.id } },
+              data: {
+                quantityReceived: updateItem.quantity_received,
+                qualityStatus: updateItem.quality_status,
+                discrepancyType:
+                  updateItem.discrepancy_type === "none"
+                    ? null
+                    : updateItem.discrepancy_type,
+                discrepancyAmount: updateItem.discrepancy_amount ?? null,
+                notes: updateItem.notes,
+              },
+            });
+
+            return updated;
           }
-
-          // Update the purchase order item
-          const updated = await tx.purchaseOrderItem.update({
-            where: { tenantId_id: { tenantId, id: updateItem.id } },
-            data: {
-              quantityReceived: updateItem.quantity_received,
-              qualityStatus: updateItem.quality_status,
-              discrepancyType:
-                updateItem.discrepancy_type === "none"
-                  ? null
-                  : updateItem.discrepancy_type,
-              discrepancyAmount: updateItem.discrepancy_amount ?? null,
-              notes: updateItem.notes,
-            },
-          });
-
-          return updated;
-        })
+        )
       );
 
       // Create inventory transactions for received items

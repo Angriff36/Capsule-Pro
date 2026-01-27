@@ -2,7 +2,7 @@
  * Event Budget API Types
  */
 
-export interface EventBudget {
+export type EventBudget = {
   tenantId: string;
   id: string;
   eventId: string;
@@ -16,9 +16,9 @@ export interface EventBudget {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-}
+};
 
-export interface BudgetLineItem {
+export type BudgetLineItem = {
   tenantId: string;
   id: string;
   budgetId: string;
@@ -33,32 +33,32 @@ export interface BudgetLineItem {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-}
+};
 
-export interface CreateEventBudgetRequest {
+export type CreateEventBudgetRequest = {
   eventId: string;
   status?: "draft" | "approved" | "active" | "completed" | "exceeded";
   totalBudgetAmount: number;
   notes?: string;
   lineItems?: CreateBudgetLineItemRequest[];
-}
+};
 
-export interface UpdateEventBudgetRequest {
+export type UpdateEventBudgetRequest = {
   status?: "draft" | "approved" | "active" | "completed" | "exceeded";
   totalBudgetAmount?: number;
   notes?: string;
-}
+};
 
-export interface CreateBudgetLineItemRequest {
+export type CreateBudgetLineItemRequest = {
   category: string;
   name: string;
   description?: string;
   budgetedAmount: number;
   sortOrder?: number;
   notes?: string;
-}
+};
 
-export interface UpdateBudgetLineItemRequest {
+export type UpdateBudgetLineItemRequest = {
   category?: string;
   name?: string;
   description?: string;
@@ -66,21 +66,21 @@ export interface UpdateBudgetLineItemRequest {
   actualAmount?: number;
   sortOrder?: number;
   notes?: string;
-}
+};
 
-export interface EventBudgetWithLineItems extends EventBudget {
+export type EventBudgetWithLineItems = EventBudget & {
   lineItems: BudgetLineItem[];
-}
+};
 
-export interface EventBudgetListResponse {
+export type EventBudgetListResponse = {
   budgets: EventBudget[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
-}
+};
 
-export interface BudgetSummary {
+export type BudgetSummary = {
   totalBudgetAmount: number;
   totalActualAmount: number;
   totalVarianceAmount: number;
@@ -91,4 +91,4 @@ export interface BudgetSummary {
     string,
     { budgeted: number; actual: number; variance: number }
   >;
-}
+};

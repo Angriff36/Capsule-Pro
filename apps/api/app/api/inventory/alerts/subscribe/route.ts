@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(config);
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       { error: "Failed to subscribe to alerts" },
       { status: 500 }

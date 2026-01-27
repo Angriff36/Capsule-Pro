@@ -8,7 +8,12 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { PurchaseOrderWithDetails } from "../types";
+import type {
+  DiscrepancyType,
+  POStatus,
+  PurchaseOrderWithDetails,
+  QualityStatus,
+} from "../types";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -17,7 +22,7 @@ type RouteContext = {
 /**
  * GET /api/inventory/purchase-orders/[id] - Get a single purchase order by ID
  */
-export async function GET(request: Request, context: RouteContext) {
+export async function GET(_request: Request, context: RouteContext) {
   try {
     const { orgId } = await auth();
     if (!orgId) {
@@ -89,8 +94,8 @@ export async function GET(request: Request, context: RouteContext) {
         unit_id: item.unitId,
         unit_cost: Number(item.unitCost),
         total_cost: Number(item.totalCost),
-        quality_status: (item.qualityStatus ?? "pending") as any,
-        discrepancy_type: item.discrepancyType as any | null,
+        quality_status: (item.qualityStatus ?? "pending") as QualityStatus,
+        discrepancy_type: item.discrepancyType as DiscrepancyType | null,
         discrepancy_amount: item.discrepancyAmount
           ? Number(item.discrepancyAmount)
           : null,
@@ -124,7 +129,7 @@ export async function GET(request: Request, context: RouteContext) {
       order_date: order.orderDate,
       expected_delivery_date: order.expectedDeliveryDate,
       actual_delivery_date: order.actualDeliveryDate,
-      status: order.status as any,
+      status: order.status as POStatus,
       subtotal: Number(order.subtotal),
       tax_amount: Number(order.taxAmount),
       shipping_amount: Number(order.shippingAmount),

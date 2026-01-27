@@ -11,7 +11,7 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { CommandBoardWithCards } from "../types";
+import type { BoardStatus, CardStatus, CommandBoardWithCards } from "../types";
 import { validateUpdateCommandBoardRequest } from "../validation";
 
 type RouteContext = {
@@ -75,7 +75,7 @@ export async function GET(_request: Request, context: RouteContext) {
       event_id: board.eventId,
       name: board.name,
       description: board.description,
-      status: board.status as any,
+      status: board.status as BoardStatus,
       is_template: board.isTemplate,
       tags: board.tags,
       created_at: board.createdAt,
@@ -87,8 +87,8 @@ export async function GET(_request: Request, context: RouteContext) {
         board_id: card.boardId,
         title: card.title,
         content: card.content,
-        card_type: card.cardType as any,
-        status: card.status as any,
+        card_type: card.cardType,
+        status: card.status as CardStatus,
         position_x: card.positionX,
         position_y: card.positionY,
         width: card.width,
@@ -225,7 +225,7 @@ export async function PUT(request: Request, context: RouteContext) {
       event_id: updatedBoard.eventId,
       name: updatedBoard.name,
       description: updatedBoard.description,
-      status: updatedBoard.status as any,
+      status: updatedBoard.status as BoardStatus,
       is_template: updatedBoard.isTemplate,
       tags: updatedBoard.tags,
       created_at: updatedBoard.createdAt,
@@ -237,8 +237,8 @@ export async function PUT(request: Request, context: RouteContext) {
         board_id: card.boardId,
         title: card.title,
         content: card.content,
-        card_type: card.cardType as any,
-        status: card.status as any,
+        card_type: card.cardType,
+        status: card.status as CardStatus,
         position_x: card.positionX,
         position_y: card.positionY,
         width: card.width,

@@ -8,7 +8,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, type Event } from "@repo/database";
 import { EventDetailPDF } from "@repo/pdf";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -18,6 +18,190 @@ export const runtime = "nodejs";
 type RouteParams = Promise<{
   eventId: string;
 }>;
+
+// Helper function to parse sections from URL
+function parseSections(url: URL) {
+  const includeParam = url.searchParams.get("include") || "summary,menu,staff";
+  const sections = includeParam.split(",").map((s) => s.trim());
+
+  return {
+    _includeSummary: sections.includes("summary"),
+    includeMenu: sections.includes("menu"),
+    includeStaff: sections.includes("staff"),
+    includeGuests: sections.includes("guests"),
+    includeTasks: sections.includes("tasks"),
+  };
+}
+
+// Helper function to prepare event data
+function prepareEventData(event: Event) {
+  return {
+    event: {
+      id: event.id,
+      name: event.title,
+      date: event.eventDate,
+      type: event.eventType,
+      status: event.status,
+      guestCount: event.guestCount,
+      venue: event.venueName,
+      address: event.venueAddress,
+      budget: event.budget ? Number(event.budget) : null,
+      notes: event.notes,
+      tags: event.tags,
+    },
+  };
+}
+
+// Helper function to fetch dishes data
+async function fetchDishes(tenantId: string, eventId: string) {
+  const dishes = await database.$queryRawUnsafe<
+    Array<{
+      dish_name: string;
+      quantity_servings: number;
+      special_instructions: string | null;
+    }>
+  >(
+    `SELECT
+            d.name as dish_name,
+            ed.quantity_servings,
+            ed.special_instructions
+          FROM tenant_events.event_dishes ed
+          JOIN tenant_kitchen.dishes d ON d.id = ed.dish_id
+          WHERE ed.tenant_id = $1
+            AND ed.event_id = $2
+            AND ed.deleted_at IS NULL
+          ORDER BY d.name`,
+    tenantId,
+    eventId
+  );
+
+  return dishes.map((d) => ({
+    name: d.dish_name,
+    servings: d.quantity_servings,
+    instructions: d.special_instructions,
+  }));
+}
+
+// Helper function to fetch tasks data
+async function fetchTasks(tenantId: string, eventId: string) {
+  const tasks = await database.$queryRawUnsafe<
+    Array<{
+      title: string;
+      assignee_name: string | null;
+      start_time: string;
+      end_time: string;
+      status: string;
+      priority: string;
+      notes: string | null;
+    }>
+  >(
+    `SELECT
+            t.title,
+            u.first_name || ' ' || u.last_name as assignee_name,
+            t.start_time,
+            t.end_time,
+            t.status,
+            t.priority,
+            t.notes
+          FROM tenant_events.timeline_tasks t
+          LEFT JOIN tenant_staff.employees u ON u.tenant_id = t.tenant_id AND u.id = t.assignee_id
+          WHERE t.tenant_id = $1
+            AND t.event_id = $2
+            AND t.deleted_at IS NULL
+          ORDER BY t.start_time ASC`,
+    tenantId,
+    eventId
+  );
+
+  return tasks.map((t) => ({
+    title: t.title,
+    assignee: t.assignee_name,
+    startTime: t.start_time,
+    endTime: t.end_time,
+    status: t.status,
+    priority: t.priority,
+    notes: t.notes,
+  }));
+}
+
+// Helper function to fetch guests data
+async function fetchGuests(tenantId: string, eventId: string) {
+  const guests = await database.$queryRawUnsafe<
+    Array<{
+      guest_name: string;
+      dietary_restrictions: string | null;
+      meal_choice: string | null;
+      table_number: string | null;
+    }>
+  >(
+    `SELECT
+            name as guest_name,
+            dietary_restrictions,
+            meal_choice,
+            table_number
+          FROM tenant_events.event_guests
+          WHERE tenant_id = $1
+            AND event_id = $2
+            AND deleted_at IS NULL
+          ORDER BY table_number NULLS LAST, name`,
+    tenantId,
+    eventId
+  );
+
+  return guests.map((g) => ({
+    name: g.guest_name,
+    dietaryRestrictions: g.dietary_restrictions,
+    mealChoice: g.meal_choice,
+    tableNumber: g.table_number,
+  }));
+}
+
+// Helper function to fetch staff data
+async function fetchStaff(tenantId: string) {
+  const staff = await database.$queryRawUnsafe<
+    Array<{
+      name: string;
+      role: string | null;
+      assignment_count: bigint;
+    }>
+  >(
+    `SELECT
+            u.first_name || ' ' || u.last_name as name,
+            u.role,
+            COUNT(DISTINCT t.id) as assignment_count
+          FROM tenant_staff.employees u
+          LEFT JOIN tenant_events.timeline_tasks t ON t.tenant_id = u.tenant_id AND t.assignee_id = u.id AND t.deleted_at IS NULL
+          WHERE u.tenant_id = $1
+            AND u.deleted_at IS NULL
+          GROUP BY u.id, u.first_name, u.last_name, u.role
+          HAVING COUNT(DISTINCT t.id) > 0
+          ORDER BY u.first_name, u.last_name`,
+    tenantId
+  );
+
+  return staff.map((s) => ({
+    name: s.name,
+    role: s.role,
+    assignments: Number(s.assignment_count),
+  }));
+}
+
+// Helper function to get user info
+async function getUserInfo(tenantId: string, userId: string) {
+  const user = await database.user.findFirst({
+    where: {
+      tenantId,
+      authUserId: userId,
+    },
+    select: {
+      firstName: true,
+      lastName: true,
+      email: true,
+    },
+  });
+
+  return user;
+}
 
 /**
  * GET /api/events/[eventId]/export/pdf
@@ -45,16 +229,14 @@ export async function GET(
 
     // Parse include parameter
     const url = new URL(request.url);
-    const includeParam =
-      url.searchParams.get("include") || "summary,menu,staff";
-    const sections = includeParam.split(",").map((s) => s.trim());
     const shouldDownload = url.searchParams.get("download") === "true";
-
-    const includeSummary = sections.includes("summary");
-    const includeMenu = sections.includes("menu");
-    const includeStaff = sections.includes("staff");
-    const includeGuests = sections.includes("guests");
-    const includeTasks = sections.includes("tasks");
+    const {
+      _includeSummary,
+      includeMenu,
+      includeStaff,
+      includeGuests,
+      includeTasks,
+    } = parseSections(url);
 
     // Fetch event details
     const event = await database.event.findUnique({
@@ -116,19 +298,7 @@ export async function GET(
         version: string;
       };
     } = {
-      event: {
-        id: event.id,
-        name: event.title,
-        date: event.eventDate,
-        type: event.eventType,
-        status: event.status,
-        guestCount: event.guestCount,
-        venue: event.venueName,
-        address: event.venueAddress,
-        budget: event.budget ? Number(event.budget) : null,
-        notes: event.notes,
-        tags: event.tags,
-      },
+      ...prepareEventData(event),
       metadata: {
         generatedAt: new Date(),
         generatedBy: userId,
@@ -138,150 +308,26 @@ export async function GET(
 
     // Fetch dishes if requested
     if (includeMenu) {
-      const dishes = await database.$queryRawUnsafe<
-        Array<{
-          dish_name: string;
-          quantity_servings: number;
-          special_instructions: string | null;
-        }>
-      >(
-        `SELECT
-            d.name as dish_name,
-            ed.quantity_servings,
-            ed.special_instructions
-          FROM tenant_events.event_dishes ed
-          JOIN tenant_kitchen.dishes d ON d.id = ed.dish_id
-          WHERE ed.tenant_id = $1
-            AND ed.event_id = $2
-            AND ed.deleted_at IS NULL
-          ORDER BY d.name`,
-        tenantId,
-        eventId
-      );
-
-      pdfData.dishes = dishes.map((d) => ({
-        name: d.dish_name,
-        servings: d.quantity_servings,
-        instructions: d.special_instructions,
-      }));
+      pdfData.dishes = await fetchDishes(tenantId, eventId);
     }
 
     // Fetch tasks if requested
     if (includeTasks) {
-      const tasks = await database.$queryRawUnsafe<
-        Array<{
-          title: string;
-          assignee_name: string | null;
-          start_time: string;
-          end_time: string;
-          status: string;
-          priority: string;
-          notes: string | null;
-        }>
-      >(
-        `SELECT
-            t.title,
-            u.first_name || ' ' || u.last_name as assignee_name,
-            t.start_time,
-            t.end_time,
-            t.status,
-            t.priority,
-            t.notes
-          FROM tenant_events.timeline_tasks t
-          LEFT JOIN tenant_staff.employees u ON u.tenant_id = t.tenant_id AND u.id = t.assignee_id
-          WHERE t.tenant_id = $1
-            AND t.event_id = $2
-            AND t.deleted_at IS NULL
-          ORDER BY t.start_time ASC`,
-        tenantId,
-        eventId
-      );
-
-      pdfData.tasks = tasks.map((t) => ({
-        title: t.title,
-        assignee: t.assignee_name,
-        startTime: t.start_time,
-        endTime: t.end_time,
-        status: t.status,
-        priority: t.priority,
-        notes: t.notes,
-      }));
+      pdfData.tasks = await fetchTasks(tenantId, eventId);
     }
 
     // Fetch guests if requested
     if (includeGuests) {
-      const guests = await database.$queryRawUnsafe<
-        Array<{
-          guest_name: string;
-          dietary_restrictions: string | null;
-          meal_choice: string | null;
-          table_number: string | null;
-        }>
-      >(
-        `SELECT
-            name as guest_name,
-            dietary_restrictions,
-            meal_choice,
-            table_number
-          FROM tenant_events.event_guests
-          WHERE tenant_id = $1
-            AND event_id = $2
-            AND deleted_at IS NULL
-          ORDER BY table_number NULLS LAST, name`,
-        tenantId,
-        eventId
-      );
-
-      pdfData.guests = guests.map((g) => ({
-        name: g.guest_name,
-        dietaryRestrictions: g.dietary_restrictions,
-        mealChoice: g.meal_choice,
-        tableNumber: g.table_number,
-      }));
+      pdfData.guests = await fetchGuests(tenantId, eventId);
     }
 
     // Fetch staff if requested
     if (includeStaff) {
-      const staff = await database.$queryRawUnsafe<
-        Array<{
-          name: string;
-          role: string | null;
-          assignment_count: bigint;
-        }>
-      >(
-        `SELECT
-            u.first_name || ' ' || u.last_name as name,
-            u.role,
-            COUNT(DISTINCT t.id) as assignment_count
-          FROM tenant_staff.employees u
-          LEFT JOIN tenant_events.timeline_tasks t ON t.tenant_id = u.tenant_id AND t.assignee_id = u.id AND t.deleted_at IS NULL
-          WHERE u.tenant_id = $1
-            AND u.deleted_at IS NULL
-          GROUP BY u.id, u.first_name, u.last_name, u.role
-          HAVING COUNT(DISTINCT t.id) > 0
-          ORDER BY u.first_name, u.last_name`,
-        tenantId
-      );
-
-      pdfData.staff = staff.map((s) => ({
-        name: s.name,
-        role: s.role,
-        assignments: Number(s.assignment_count),
-      }));
+      pdfData.staff = await fetchStaff(tenantId);
     }
 
     // Fetch user info for metadata
-    const user = await database.user.findFirst({
-      where: {
-        tenantId,
-        authUserId: userId,
-      },
-      select: {
-        firstName: true,
-        lastName: true,
-        email: true,
-      },
-    });
+    const user = await getUserInfo(tenantId, userId);
 
     if (user) {
       pdfData.metadata.generatedBy =
@@ -317,8 +363,8 @@ export async function GET(
     const uint8Array = new Uint8Array(arrayBuffer);
 
     let binary = "";
-    for (let i = 0; i < uint8Array.length; i++) {
-      binary += String.fromCharCode(uint8Array[i]);
+    for (const byte of uint8Array) {
+      binary += String.fromCharCode(byte);
     }
     const base64 = btoa(binary);
 

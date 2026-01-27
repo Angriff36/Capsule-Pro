@@ -31,17 +31,14 @@ export async function GET(request: Request) {
     const tenantId = await getTenantIdForOrg(orgId);
     const { searchParams } = new URL(request.url);
 
-    // Parse filters and pagination
     const filters = parseProposalFilters(searchParams);
     const { page, limit } = parsePaginationParams(searchParams);
     const offset = (page - 1) * limit;
 
-    // Build where clause
     const whereClause: Record<string, unknown> = {
       AND: [{ tenantId }, { deletedAt: null }],
     };
 
-    // Add search filter (searches title, proposal number, venue)
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       whereClause.AND = [
@@ -56,7 +53,6 @@ export async function GET(request: Request) {
       ];
     }
 
-    // Add status filter
     if (filters.status) {
       whereClause.AND = [
         ...(whereClause.AND as Record<string, unknown>[]),
@@ -64,7 +60,6 @@ export async function GET(request: Request) {
       ];
     }
 
-    // Add client filter
     if (filters.clientId) {
       whereClause.AND = [
         ...(whereClause.AND as Record<string, unknown>[]),
@@ -72,7 +67,6 @@ export async function GET(request: Request) {
       ];
     }
 
-    // Add lead filter
     if (filters.leadId) {
       whereClause.AND = [
         ...(whereClause.AND as Record<string, unknown>[]),
@@ -80,7 +74,6 @@ export async function GET(request: Request) {
       ];
     }
 
-    // Add event filter
     if (filters.eventId) {
       whereClause.AND = [
         ...(whereClause.AND as Record<string, unknown>[]),
@@ -88,7 +81,6 @@ export async function GET(request: Request) {
       ];
     }
 
-    // Add date range filters
     if (filters.dateFrom) {
       whereClause.AND = [
         ...(whereClause.AND as Record<string, unknown>[]),
@@ -103,7 +95,6 @@ export async function GET(request: Request) {
       ];
     }
 
-    // Fetch proposals
     const proposals = await database.proposal.findMany({
       where: whereClause,
       orderBy: [{ createdAt: "desc" }],
@@ -111,7 +102,6 @@ export async function GET(request: Request) {
       skip: offset,
     });
 
-    // Collect all client and lead IDs for batch query
     const clientIds = proposals
       .map((p) => p.clientId)
       .filter((id): id is string => id !== null);
@@ -119,36 +109,34 @@ export async function GET(request: Request) {
       .map((p) => p.leadId)
       .filter((id): id is string => id !== null);
 
-    // Batch fetch clients and leads
-    const clients = await database.client.findMany({
-      where: {
-        AND: [{ tenantId }, { id: { in: clientIds } }, { deletedAt: null }],
-      },
-      select: {
-        id: true,
-        company_name: true,
-        first_name: true,
-        last_name: true,
-      },
-    });
+    const [clients, leads] = await Promise.all([
+      database.client.findMany({
+        where: {
+          AND: [{ tenantId }, { id: { in: clientIds } }, { deletedAt: null }],
+        },
+        select: {
+          id: true,
+          company_name: true,
+          first_name: true,
+          last_name: true,
+        },
+      }),
+      database.lead.findMany({
+        where: {
+          AND: [{ tenantId }, { id: { in: leadIds } }, { deletedAt: null }],
+        },
+        select: {
+          id: true,
+          companyName: true,
+          contactName: true,
+          contactEmail: true,
+        },
+      }),
+    ]);
 
-    const leads = await database.lead.findMany({
-      where: {
-        AND: [{ tenantId }, { id: { in: leadIds } }, { deletedAt: null }],
-      },
-      select: {
-        id: true,
-        companyName: true,
-        contactName: true,
-        contactEmail: true,
-      },
-    });
-
-    // Create lookup maps
     const clientMap = new Map(clients.map((c) => [c.id, c]));
     const leadMap = new Map(leads.map((l) => [l.id, l]));
 
-    // Fetch line items separately for each proposal
     const proposalsWithLineItems = await Promise.all(
       proposals.map(async (proposal) => {
         const lineItems = await database.proposalLineItem.findMany({
@@ -166,21 +154,12 @@ export async function GET(request: Request) {
       })
     );
 
-    // Get total count for pagination
-    const totalCount = await database.proposal.count({
-      where: whereClause,
-    });
-
+    const totalCount = await database.proposal.count({ where: whereClause });
     const totalPages = Math.ceil(totalCount / limit);
 
     return NextResponse.json({
       data: proposalsWithLineItems,
-      pagination: {
-        page,
-        limit,
-        total: totalCount,
-        totalPages,
-      },
+      pagination: { page, limit, total: totalCount, totalPages },
     });
   } catch (error) {
     if (error instanceof InvariantError) {
@@ -192,6 +171,113 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * Generate a unique proposal number
+ */
+async function generateProposalNumber(
+  database: typeof import("@repo/database"),
+  tenantId: string
+): Promise<string> {
+  const year = new Date().getFullYear();
+  const count = await database.proposal.count({
+    where: {
+      AND: [
+        { tenantId },
+        { proposalNumber: { startsWith: `PROP-${year}` } },
+        { deletedAt: null },
+      ],
+    },
+  });
+  return `PROP-${year}-${String(count + 1).padStart(4, "0")}`;
+}
+
+/**
+ * Calculate proposal totals from line items
+ */
+function calculateTotals(data: CreateProposalRequest) {
+  let calculatedSubtotal = data.subtotal ?? 0;
+  let calculatedTax = data.taxAmount ?? 0;
+  let calculatedTotal = data.total ?? 0;
+
+  if (data.lineItems && data.lineItems.length > 0) {
+    calculatedSubtotal = data.lineItems.reduce(
+      (sum, item) => sum + item.quantity * item.unitPrice,
+      0
+    );
+    const taxRate = data.taxRate ?? 0;
+    calculatedTax = calculatedSubtotal * (taxRate / 100);
+    const discount = data.discountAmount ?? 0;
+    calculatedTotal = calculatedSubtotal + calculatedTax - discount;
+  }
+
+  return { calculatedSubtotal, calculatedTax, calculatedTotal };
+}
+
+/**
+ * Create proposal data object
+ */
+function buildCreateProposalData(
+  data: CreateProposalRequest,
+  tenantId: string,
+  proposalNumber: string,
+  calculatedSubtotal: number,
+  calculatedTax: number,
+  calculatedTotal: number
+) {
+  return {
+    tenantId,
+    proposalNumber,
+    clientId: data.clientId,
+    leadId: data.leadId,
+    eventId: data.eventId,
+    title: data.title.trim(),
+    eventDate: data.eventDate ? new Date(data.eventDate) : null,
+    eventType: data.eventType?.trim() || null,
+    guestCount: data.guestCount ?? null,
+    venueName: data.venueName?.trim() || null,
+    venueAddress: data.venueAddress?.trim() || null,
+    subtotal: new Prisma.Decimal(calculatedSubtotal),
+    taxRate: new Prisma.Decimal(data.taxRate ?? 0),
+    taxAmount: new Prisma.Decimal(calculatedTax),
+    discountAmount: new Prisma.Decimal(data.discountAmount ?? 0),
+    total: new Prisma.Decimal(calculatedTotal),
+    status: data.status ?? "draft",
+    validUntil: data.validUntil ? new Date(data.validUntil) : null,
+    notes: data.notes?.trim() || null,
+    termsAndConditions: data.termsAndConditions?.trim() || null,
+  };
+}
+
+/**
+ * Create line items for a proposal
+ */
+async function createLineItems(
+  database: typeof import("@repo/database"),
+  proposalId: string,
+  tenantId: string,
+  lineItems: NonNullable<CreateProposalRequest["lineItems"]>
+) {
+  await database.$transaction(async (tx) => {
+    await tx.proposalLineItem.createMany({
+      data: lineItems.map((item, index) => ({
+        proposalId,
+        tenantId,
+        sortOrder: item.sortOrder ?? index,
+        itemType: item.itemType.trim(),
+        category: item.category?.trim() || item.itemType.trim(),
+        description: item.description.trim(),
+        quantity: new Prisma.Decimal(item.quantity),
+        unitPrice: new Prisma.Decimal(item.unitPrice),
+        total: new Prisma.Decimal(item.total ?? item.quantity * item.unitPrice),
+        totalPrice: new Prisma.Decimal(
+          item.total ?? item.quantity * item.unitPrice
+        ),
+        notes: item.notes?.trim() || null,
+      })),
+    });
+  });
 }
 
 /**
@@ -208,130 +294,65 @@ export async function POST(request: Request) {
     const tenantId = await getTenantIdForOrg(orgId);
     const body = await request.json();
 
-    // Validate request body
     validateCreateProposalRequest(body);
-
     const data = body as CreateProposalRequest;
 
-    // Generate proposal number (PROP-YYYY-XXXX)
-    const year = new Date().getFullYear();
-    const count = await database.proposal.count({
-      where: {
-        AND: [
-          { tenantId },
-          { proposalNumber: { startsWith: `PROP-${year}` } },
-          { deletedAt: null },
-        ],
-      },
-    });
-    const proposalNumber = `PROP-${year}-${String(count + 1).padStart(4, "0")}`;
+    const proposalNumber = await generateProposalNumber(database, tenantId);
+    const { calculatedSubtotal, calculatedTax, calculatedTotal } =
+      calculateTotals(data);
 
-    // Calculate totals if line items provided
-    let calculatedSubtotal = data.subtotal ?? 0;
-    let calculatedTax = data.taxAmount ?? 0;
-    let calculatedTotal = data.total ?? 0;
+    const proposalData = buildCreateProposalData(
+      data,
+      tenantId,
+      proposalNumber,
+      calculatedSubtotal,
+      calculatedTax,
+      calculatedTotal
+    );
+    const proposal = await database.proposal.create({ data: proposalData });
 
     if (data.lineItems && data.lineItems.length > 0) {
-      calculatedSubtotal = data.lineItems.reduce(
-        (sum, item) => sum + item.quantity * item.unitPrice,
-        0
-      );
-      const taxRate = data.taxRate ?? 0;
-      calculatedTax = calculatedSubtotal * (taxRate / 100);
-      const discount = data.discountAmount ?? 0;
-      calculatedTotal = calculatedSubtotal + calculatedTax - discount;
+      await createLineItems(database, proposal.id, tenantId, data.lineItems);
     }
 
-    // Create proposal
-    const proposal = await database.proposal.create({
-      data: {
-        tenantId,
-        proposalNumber,
-        clientId: data.clientId,
-        leadId: data.leadId,
-        eventId: data.eventId,
-        title: data.title.trim(),
-        eventDate: data.eventDate ? new Date(data.eventDate) : null,
-        eventType: data.eventType?.trim() || null,
-        guestCount: data.guestCount ?? null,
-        venueName: data.venueName?.trim() || null,
-        venueAddress: data.venueAddress?.trim() || null,
-        subtotal: new Prisma.Decimal(calculatedSubtotal),
-        taxRate: new Prisma.Decimal(data.taxRate ?? 0),
-        taxAmount: new Prisma.Decimal(calculatedTax),
-        discountAmount: new Prisma.Decimal(data.discountAmount ?? 0),
-        total: new Prisma.Decimal(calculatedTotal),
-        status: (data.status as any) ?? "draft",
-        validUntil: data.validUntil ? new Date(data.validUntil) : null,
-        notes: data.notes?.trim() || null,
-        termsAndConditions: data.termsAndConditions?.trim() || null,
-      },
-    });
-
-    // Fetch client and lead separately
-    let client: Record<string, unknown> | null = null;
-    let lead: Record<string, unknown> | null = null;
-
-    if (proposal.clientId) {
-      client = await database.client.findFirst({
-        where: {
-          AND: [{ tenantId }, { id: proposal.clientId }, { deletedAt: null }],
-        },
-        select: {
-          id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
-          email: true,
-          phone: true,
-        },
-      });
-    }
-
-    if (proposal.leadId) {
-      lead = await database.lead.findFirst({
-        where: {
-          AND: [{ tenantId }, { id: proposal.leadId }, { deletedAt: null }],
-        },
-        select: {
-          id: true,
-          companyName: true,
-          contactName: true,
-          contactEmail: true,
-          contactPhone: true,
-        },
-      });
-    }
-
-    // Create line items in a transaction
-    if (data.lineItems && data.lineItems.length > 0) {
-      await database.$transaction(async (tx) => {
-        await tx.proposalLineItem.createMany({
-          data: data.lineItems!.map((item, index) => ({
-            proposalId: proposal.id,
-            tenantId,
-            sortOrder: item.sortOrder ?? index,
-            itemType: item.itemType.trim(),
-            category: item.category?.trim() || item.itemType.trim(),
-            description: item.description.trim(),
-            quantity: new Prisma.Decimal(item.quantity),
-            unitPrice: new Prisma.Decimal(item.unitPrice),
-            total: new Prisma.Decimal(
-              item.total ?? item.quantity * item.unitPrice
-            ),
-            totalPrice: new Prisma.Decimal(
-              item.total ?? item.quantity * item.unitPrice
-            ),
-            notes: item.notes?.trim() || null,
-          })),
-        });
-      });
-    }
+    const [client, lead] = await Promise.all([
+      proposal.clientId
+        ? database.client.findFirst({
+            where: {
+              AND: [
+                { tenantId },
+                { id: proposal.clientId },
+                { deletedAt: null },
+              ],
+            },
+            select: {
+              id: true,
+              company_name: true,
+              first_name: true,
+              last_name: true,
+              email: true,
+              phone: true,
+            },
+          })
+        : null,
+      proposal.leadId
+        ? database.lead.findFirst({
+            where: {
+              AND: [{ tenantId }, { id: proposal.leadId }, { deletedAt: null }],
+            },
+            select: {
+              id: true,
+              companyName: true,
+              contactName: true,
+              contactEmail: true,
+              contactPhone: true,
+            },
+          })
+        : null,
+    ]);
 
     return NextResponse.json(
-      {
-        data: { ...proposal, client, lead },
-      },
+      { data: { ...proposal, client, lead } },
       { status: 201 }
     );
   } catch (error) {

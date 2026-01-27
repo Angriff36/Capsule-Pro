@@ -19,7 +19,7 @@ import { validateUpdateClientRequest } from "../validation";
  * Get client details with contacts, preferences, and stats
  */
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -112,6 +112,58 @@ export async function GET(
 }
 
 /**
+ * Build update data from request, reducing complexity
+ */
+function buildUpdateData(data: UpdateClientRequest): Record<string, unknown> {
+  const updateData: Record<string, unknown> = {};
+
+  // Helper to conditionally add trimmed string fields
+  const addTrimmedString = (
+    key: keyof UpdateClientRequest,
+    altKey?: string
+  ) => {
+    const value = data[key];
+    if (value !== undefined) {
+      updateData[altKey ?? key] = (value as string)?.trim() || null;
+    }
+  };
+
+  // Helper to add non-string fields
+  const addValue = (key: keyof UpdateClientRequest, altKey?: string) => {
+    const value = data[key];
+    if (value !== undefined) {
+      updateData[altKey ?? key] = value;
+    }
+  };
+
+  // String fields that need trimming
+  addTrimmedString("company_name");
+  addTrimmedString("first_name");
+  addTrimmedString("last_name");
+  addTrimmedString("email");
+  addTrimmedString("phone");
+  addTrimmedString("website");
+  addTrimmedString("addressLine1");
+  addTrimmedString("addressLine2");
+  addTrimmedString("city");
+  addTrimmedString("stateProvince");
+  addTrimmedString("postalCode");
+  addTrimmedString("countryCode");
+  addTrimmedString("taxId");
+  addTrimmedString("notes");
+  addTrimmedString("source");
+
+  // Non-string fields
+  addValue("defaultPaymentTerms");
+  addValue("taxExempt");
+  addValue("tags");
+  addValue("assignedTo");
+  addValue("clientType");
+
+  return updateData;
+}
+
+/**
  * PUT /api/crm/clients/[id]
  * Update client
  */
@@ -151,11 +203,7 @@ export async function PUT(
     const data = body as UpdateClientRequest;
 
     // Check for duplicate email (if changing email)
-    if (
-      data.email &&
-      data.email.trim() &&
-      data.email !== existingClient.email
-    ) {
+    if (data.email?.trim() && data.email !== existingClient.email) {
       const duplicateClient = await database.client.findFirst({
         where: {
           AND: [
@@ -175,6 +223,9 @@ export async function PUT(
       }
     }
 
+    // Build update data
+    const updateData = buildUpdateData(data);
+
     // Update client
     const updatedClient = await database.client.update({
       where: {
@@ -183,52 +234,7 @@ export async function PUT(
           id,
         },
       },
-      data: {
-        ...(data.company_name !== undefined && {
-          company_name: data.company_name?.trim() || null,
-        }),
-        ...(data.first_name !== undefined && {
-          first_name: data.first_name?.trim() || null,
-        }),
-        ...(data.last_name !== undefined && {
-          last_name: data.last_name?.trim() || null,
-        }),
-        ...(data.email !== undefined && { email: data.email?.trim() || null }),
-        ...(data.phone !== undefined && { phone: data.phone?.trim() || null }),
-        ...(data.website !== undefined && {
-          website: data.website?.trim() || null,
-        }),
-        ...(data.addressLine1 !== undefined && {
-          addressLine1: data.addressLine1?.trim() || null,
-        }),
-        ...(data.addressLine2 !== undefined && {
-          addressLine2: data.addressLine2?.trim() || null,
-        }),
-        ...(data.city !== undefined && { city: data.city?.trim() || null }),
-        ...(data.stateProvince !== undefined && {
-          stateProvince: data.stateProvince?.trim() || null,
-        }),
-        ...(data.postalCode !== undefined && {
-          postalCode: data.postalCode?.trim() || null,
-        }),
-        ...(data.countryCode !== undefined && {
-          countryCode: data.countryCode?.trim() || null,
-        }),
-        ...(data.defaultPaymentTerms !== undefined && {
-          defaultPaymentTerms: data.defaultPaymentTerms,
-        }),
-        ...(data.taxExempt !== undefined && { taxExempt: data.taxExempt }),
-        ...(data.taxId !== undefined && { taxId: data.taxId?.trim() || null }),
-        ...(data.notes !== undefined && { notes: data.notes?.trim() || null }),
-        ...(data.tags !== undefined && { tags: data.tags }),
-        ...(data.source !== undefined && {
-          source: data.source?.trim() || null,
-        }),
-        ...(data.assignedTo !== undefined && {
-          assignedTo: data.assignedTo || null,
-        }),
-        ...(data.clientType !== undefined && { clientType: data.clientType }),
-      },
+      data: updateData,
     });
 
     return NextResponse.json({ data: updatedClient });
@@ -249,7 +255,7 @@ export async function PUT(
  * Soft delete client
  */
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

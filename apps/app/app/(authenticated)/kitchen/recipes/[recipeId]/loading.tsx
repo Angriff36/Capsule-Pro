@@ -1,8 +1,5 @@
-import { AspectRatio } from "@repo/design-system/components/ui/aspect-ratio";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 
 /**
@@ -15,7 +12,7 @@ export default function Loading() {
       {/* Header skeleton */}
       <div className="flex items-center justify-between border-b bg-background/80 p-4">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" disabled>
+          <Button disabled size="icon" variant="outline">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="h-6 w-24 bg-muted rounded" />

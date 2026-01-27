@@ -1,8 +1,13 @@
 import { auth } from "@repo/auth/server";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
-import { ArrowLeft, Edit, DollarSign, Users, AlertCircle } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { AlertCircle, ArrowLeft, DollarSign, Edit, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "../../../../components/header";
@@ -27,14 +32,17 @@ export default async function MenuDetailPage({
   }
 
   // Group dishes by course
-  const dishesByCourse = menu.dishes.reduce((acc, dish) => {
-    const course = dish.course || "Other";
-    if (!acc[course]) {
-      acc[course] = [];
-    }
-    acc[course].push(dish);
-    return acc;
-  }, {} as Record<string, typeof menu.dishes>);
+  const dishesByCourse = menu.dishes.reduce(
+    (acc, dish) => {
+      const course = dish.course || "Other";
+      if (!acc[course]) {
+        acc[course] = [];
+      }
+      acc[course].push(dish);
+      return acc;
+    },
+    {} as Record<string, typeof menu.dishes>
+  );
 
   // Aggregate dietary summary
   const allDietaryTags = new Set<string>();
@@ -45,7 +53,14 @@ export default async function MenuDetailPage({
     dish.allergens.forEach((allergen) => allAllergens.add(allergen));
   });
 
-  const courseOrder = ["appetizer", "main", "dessert", "beverage", "side", "other"];
+  const courseOrder = [
+    "appetizer",
+    "main",
+    "dessert",
+    "beverage",
+    "side",
+    "other",
+  ];
   const sortedCourses = Object.keys(dishesByCourse).sort((a, b) => {
     const aIndex = courseOrder.indexOf(a.toLowerCase());
     const bIndex = courseOrder.indexOf(b.toLowerCase());
@@ -64,8 +79,8 @@ export default async function MenuDetailPage({
           {/* Back navigation */}
           <div className="mb-6">
             <Link
-              href="/kitchen/recipes?tab=menus"
               className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+              href="/kitchen/recipes?tab=menus"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Menus
@@ -93,7 +108,9 @@ export default async function MenuDetailPage({
             {menu.category && (
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Category</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Category
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm">{menu.category}</p>
@@ -112,7 +129,9 @@ export default async function MenuDetailPage({
                 <CardContent>
                   <div className="space-y-1">
                     {menu.basePrice && (
-                      <p className="text-sm">Base: ${menu.basePrice.toFixed(2)}</p>
+                      <p className="text-sm">
+                        Base: ${menu.basePrice.toFixed(2)}
+                      </p>
                     )}
                     {menu.pricePerPerson && (
                       <p className="text-sm">
@@ -210,29 +229,38 @@ export default async function MenuDetailPage({
                   <div className="space-y-3">
                     {dishesByCourse[course].map((dish) => (
                       <div
-                        key={dish.dishId}
                         className="flex items-start justify-between rounded-lg border p-4"
+                        key={dish.dishId}
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <h3 className="font-medium">{dish.dishName}</h3>
                             {dish.isOptional && (
-                              <Badge variant="outline" className="text-xs">
+                              <Badge className="text-xs" variant="outline">
                                 Optional
                               </Badge>
                             )}
                           </div>
 
                           {/* Dish dietary tags and allergens */}
-                          {(dish.dietaryTags.length > 0 || dish.allergens.length > 0) && (
+                          {(dish.dietaryTags.length > 0 ||
+                            dish.allergens.length > 0) && (
                             <div className="mt-2 flex flex-wrap gap-1">
                               {dish.dietaryTags.map((tag) => (
-                                <Badge key={tag} variant="outline" className="text-xs">
+                                <Badge
+                                  className="text-xs"
+                                  key={tag}
+                                  variant="outline"
+                                >
                                   {tag}
                                 </Badge>
                               ))}
                               {dish.allergens.map((allergen) => (
-                                <Badge key={allergen} variant="destructive" className="text-xs">
+                                <Badge
+                                  className="text-xs"
+                                  key={allergen}
+                                  variant="destructive"
+                                >
                                   {allergen}
                                 </Badge>
                               ))}
@@ -258,7 +286,10 @@ export default async function MenuDetailPage({
                   <p className="text-muted-foreground">
                     No dishes have been added to this menu yet.
                   </p>
-                  <Link href={`/kitchen/recipes/menus/${menuId}/edit`} className="mt-4 inline-block">
+                  <Link
+                    className="mt-4 inline-block"
+                    href={`/kitchen/recipes/menus/${menuId}/edit`}
+                  >
                     <Button>Add Dishes</Button>
                   </Link>
                 </CardContent>

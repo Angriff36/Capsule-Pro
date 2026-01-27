@@ -28,216 +28,241 @@ type CheckAllergensResponse = {
   };
 };
 
+// Helper function to validate request body
+function validateRequest(body: CheckAllergensRequest): NextResponse | null {
+  if (!body.eventId) {
+    return NextResponse.json(
+      { message: "eventId is required" },
+      { status: 400 }
+    );
+  }
+  return null;
+}
+
+// Helper function to get authentication and tenant context
+async function getAuthContext(): Promise<{ tenantId: string } | NextResponse> {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  const tenantId = await getTenantIdForOrg(orgId);
+  return { tenantId };
+}
+
+// Helper function to get event details
+async function getEventDetails(
+  tenantId: string,
+  eventId: string
+): Promise<{ id: string; title: string } | NextResponse> {
+  const event = await database.event.findFirst({
+    where: {
+      tenantId,
+      id: eventId,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      title: true,
+    },
+  });
+
+  if (!event) {
+    return NextResponse.json({ message: "Event not found" }, { status: 404 });
+  }
+
+  return event;
+}
+
+// Helper function to get guests with their restrictions
+function getGuests(tenantId: string, eventId: string) {
+  return database.eventGuest.findMany({
+    where: {
+      tenantId,
+      eventId,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      guestName: true,
+      dietaryRestrictions: true,
+      allergenRestrictions: true,
+    },
+  });
+}
+
+// Helper function to check if allergens match
+function doAllergensMatch(allergen: string, dishAllergen: string): boolean {
+  const lowerAllergen = allergen.toLowerCase();
+  const lowerDishAllergen = dishAllergen.toLowerCase();
+
+  return (
+    lowerDishAllergen.includes(lowerAllergen) ||
+    lowerAllergen.includes(lowerDishAllergen)
+  );
+}
+
+// Helper function to check if dietary restrictions match
+function doDietaryRestrictionsMatch(
+  restriction: string,
+  dietaryTag: string
+): boolean {
+  const lowerRestriction = restriction.toLowerCase();
+  const lowerDietaryTag = dietaryTag.toLowerCase();
+
+  return (
+    lowerDietaryTag.includes(lowerRestriction) ||
+    lowerRestriction.includes(lowerDietaryTag)
+  );
+}
+
+// Helper function to find conflicting allergens for a guest and dish
+function findConflictingAllergens(
+  guest: {
+    id: string;
+    guestName: string;
+    dietaryRestrictions: string[] | null;
+    allergenRestrictions: string[] | null;
+  },
+  dish: {
+    id: string;
+    name: string;
+    allergens: string[];
+    dietaryTags: string[];
+  }
+): { conflictingAllergens: string[]; conflictingDietaryTags: string[] } {
+  const conflictingAllergens: string[] = [];
+  const conflictingDietaryTags: string[] = [];
+
+  // Check allergen conflicts (critical)
+  if (guest.allergenRestrictions && dish.allergens) {
+    for (const allergen of guest.allergenRestrictions) {
+      if (
+        dish.allergens.some((dishAllergen) =>
+          doAllergensMatch(allergen, dishAllergen)
+        )
+      ) {
+        conflictingAllergens.push(allergen);
+      }
+    }
+  }
+
+  // Check dietary restriction conflicts (warning)
+  if (guest.dietaryRestrictions && dish.dietaryTags) {
+    for (const restriction of guest.dietaryRestrictions) {
+      if (
+        dish.dietaryTags.some((dietaryTag) =>
+          doDietaryRestrictionsMatch(restriction, dietaryTag)
+        )
+      ) {
+        conflictingDietaryTags.push(restriction);
+      }
+    }
+  }
+
+  return { conflictingAllergens, conflictingDietaryTags };
+}
+
+// Helper function to check for allergen conflicts between guests and dishes
+function checkAllergenConflicts(
+  guests: Array<{
+    id: string;
+    guestName: string;
+    dietaryRestrictions: string[] | null;
+    allergenRestrictions: string[] | null;
+  }>,
+  dishes: Array<{
+    id: string;
+    name: string;
+    allergens: string[];
+    dietaryTags: string[];
+  }>
+): AllergenConflict[] {
+  const conflicts: AllergenConflict[] = [];
+
+  for (const guest of guests) {
+    for (const dish of dishes) {
+      const { conflictingAllergens, conflictingDietaryTags } =
+        findConflictingAllergens(guest, dish);
+
+      // Add conflicts to results
+      if (conflictingAllergens.length > 0) {
+        conflicts.push({
+          guestId: guest.id,
+          guestName: guest.guestName,
+          dishId: dish.id,
+          dishName: dish.name,
+          allergens: conflictingAllergens,
+          severity: "critical",
+          type: "allergen_conflict",
+        });
+      }
+
+      if (conflictingDietaryTags.length > 0) {
+        conflicts.push({
+          guestId: guest.id,
+          guestName: guest.guestName,
+          dishId: dish.id,
+          dishName: dish.name,
+          allergens: conflictingDietaryTags,
+          severity: "warning",
+          type: "dietary_conflict",
+        });
+      }
+    }
+  }
+
+  return conflicts;
+}
+
+// Helper function to create summary
+function createSummary(conflicts: AllergenConflict[]) {
+  return {
+    total: conflicts.length,
+    critical: conflicts.filter((c) => c.severity === "critical").length,
+    warning: conflicts.filter((c) => c.severity === "warning").length,
+  };
+}
+
 export async function POST(request: Request) {
   try {
     // Parse request body
     const body: CheckAllergensRequest = await request.json();
 
     // Validate required fields
-    if (!body.eventId) {
-      return NextResponse.json(
-        { message: "eventId is required" },
-        { status: 400 }
-      );
+    const validationError = validateRequest(body);
+    if (validationError) {
+      return validationError;
     }
 
     // Get authentication and tenant context
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const authResult = await getAuthContext();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
-
-    const tenantId = await getTenantIdForOrg(orgId);
+    const { tenantId } = authResult;
 
     // Get event details to verify it exists and belongs to the tenant
-    const event = await database.event.findFirst({
-      where: {
-        tenantId,
-        id: body.eventId,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        title: true,
-      },
-    });
-
-    if (!event) {
-      return NextResponse.json({ message: "Event not found" }, { status: 404 });
+    const eventResult = await getEventDetails(tenantId, body.eventId);
+    if (eventResult instanceof NextResponse) {
+      return eventResult;
     }
 
     // Get all guests for the event with their dietary and allergen restrictions
-    const guests = await database.eventGuest.findMany({
-      where: {
-        tenantId,
-        eventId: body.eventId,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        guestName: true,
-        dietaryRestrictions: true,
-        allergenRestrictions: true,
-      },
-    });
+    const guests = await getGuests(tenantId, body.eventId);
 
     // Get dishes for the event
-    let dishes: Array<{
-      id: string;
-      name: string;
-      allergens: string[];
-      dietaryTags: string[];
-    }>;
-    if (body.dishIds && body.dishIds.length > 0) {
-      // Check specific dish IDs through event_dishes junction table
-      const linkedDishes = await database.$queryRaw<
-        Array<{
-          dish_id: string;
-          dish_name: string;
-          allergens: string[] | null;
-          dietary_tags: string[] | null;
-        }>
-      >(
-        Prisma.sql`
-          SELECT
-            d.id AS dish_id,
-            d.name AS dish_name,
-            d.allergens,
-            d.dietary_tags
-          FROM tenant_kitchen.dishes d
-          WHERE d.tenant_id = ${tenantId}
-            AND d.id IN (SELECT UNNEST(ARRAY[${Prisma.raw(body.dishIds.map((id) => `'${id}'`).join(","))}]::uuid[]))
-            AND d.deleted_at IS NULL
-        `
-      );
-
-      // Convert to expected format and verify all requested dishes exist
-      dishes = linkedDishes.map((d) => ({
-        id: d.dish_id,
-        name: d.dish_name,
-        allergens: d.allergens || [],
-        dietaryTags: d.dietary_tags || [],
-      }));
-
-      // Verify all requested dishes exist
-      const foundDishIds = dishes.map((d) => d.id);
-      const missingDishIds = body.dishIds?.filter((id) => !foundDishIds);
-      if (missingDishIds && missingDishIds.length > 0) {
-        return NextResponse.json(
-          {
-            message: `The following dishes not found: ${missingDishIds.join(", ")}`,
-          },
-          { status: 404 }
-        );
-      }
-    } else {
-      // Get all dishes associated with the event through event_dishes junction table
-      const linkedDishes = await database.$queryRaw<
-        Array<{
-          dish_id: string;
-          dish_name: string;
-          allergens: string[] | null;
-          dietary_tags: string[] | null;
-        }>
-      >(
-        Prisma.sql`
-          SELECT
-            d.id AS dish_id,
-            d.name AS dish_name,
-            d.allergens,
-            d.dietary_tags
-          FROM tenant_kitchen.dishes d
-          JOIN tenant_events.event_dishes ed
-            ON ed.tenant_id = d.tenant_id
-            AND ed.dish_id = d.id
-            AND ed.deleted_at IS NULL
-          WHERE ed.tenant_id = ${tenantId}
-            AND ed.event_id = ${body.eventId}
-            AND d.deleted_at IS NULL
-        `
-      );
-
-      dishes = linkedDishes.map((d) => ({
-        id: d.dish_id,
-        name: d.dish_name,
-        allergens: d.allergens || [],
-        dietaryTags: d.dietary_tags || [],
-      }));
+    const dishesResult = await getDishes(tenantId, body.eventId, body.dishIds);
+    if (dishesResult instanceof NextResponse) {
+      return dishesResult;
     }
+    const dishes = dishesResult;
 
     // Check for conflicts
-    const conflicts: AllergenConflict[] = [];
-
-    for (const guest of guests) {
-      for (const dish of dishes) {
-        const conflictingAllergens: string[] = [];
-        const conflictingDietaryTags: string[] = [];
-
-        // Check allergen conflicts (critical)
-        if (guest.allergenRestrictions && dish.allergens) {
-          for (const allergen of guest.allergenRestrictions) {
-            if (
-              dish.allergens.some(
-                (dishAllergen) =>
-                  dishAllergen.toLowerCase().includes(allergen.toLowerCase()) ||
-                  allergen.toLowerCase().includes(dishAllergen.toLowerCase())
-              )
-            ) {
-              conflictingAllergens.push(allergen);
-            }
-          }
-        }
-
-        // Check dietary restriction conflicts (warning)
-        if (guest.dietaryRestrictions && dish.dietaryTags) {
-          for (const restriction of guest.dietaryRestrictions) {
-            if (
-              dish.dietaryTags.some(
-                (dietaryTag) =>
-                  dietaryTag
-                    .toLowerCase()
-                    .includes(restriction.toLowerCase()) ||
-                  restriction.toLowerCase().includes(dietaryTag.toLowerCase())
-              )
-            ) {
-              conflictingDietaryTags.push(restriction);
-            }
-          }
-        }
-
-        // Add conflicts to results
-        if (conflictingAllergens.length > 0) {
-          conflicts.push({
-            guestId: guest.id,
-            guestName: guest.guestName,
-            dishId: dish.id,
-            dishName: dish.name,
-            allergens: conflictingAllergens,
-            severity: "critical",
-            type: "allergen_conflict",
-          });
-        }
-
-        if (conflictingDietaryTags.length > 0) {
-          conflicts.push({
-            guestId: guest.id,
-            guestName: guest.guestName,
-            dishId: dish.id,
-            dishName: dish.name,
-            allergens: conflictingDietaryTags,
-            severity: "warning",
-            type: "dietary_conflict",
-          });
-        }
-      }
-    }
+    const conflicts = checkAllergenConflicts(guests, dishes);
 
     // Create summary
-    const summary = {
-      total: conflicts.length,
-      critical: conflicts.filter((c) => c.severity === "critical").length,
-      warning: conflicts.filter((c) => c.severity === "warning").length,
-    };
+    const summary = createSummary(conflicts);
 
     // Return response
     const response: CheckAllergensResponse = {
@@ -253,4 +278,127 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+// Helper function to get dishes for the event
+function getDishes(
+  tenantId: string,
+  eventId: string,
+  dishIds?: string[]
+): Promise<
+  | Array<{
+      id: string;
+      name: string;
+      allergens: string[];
+      dietaryTags: string[];
+    }>
+  | NextResponse
+> {
+  if (dishIds && dishIds.length > 0) {
+    return getSpecificDishes(tenantId, dishIds);
+  }
+  return getEventDishes(tenantId, eventId);
+}
+
+// Helper function to get specific dishes by IDs
+async function getSpecificDishes(
+  tenantId: string,
+  dishIds: string[]
+): Promise<
+  | Array<{
+      id: string;
+      name: string;
+      allergens: string[];
+      dietaryTags: string[];
+    }>
+  | NextResponse
+> {
+  const linkedDishes = await database.$queryRaw<
+    Array<{
+      dish_id: string;
+      dish_name: string;
+      allergens: string[] | null;
+      dietary_tags: string[] | null;
+    }>
+  >(
+    Prisma.sql`
+      SELECT
+        d.id AS dish_id,
+        d.name AS dish_name,
+        d.allergens,
+        d.dietary_tags
+      FROM tenant_kitchen.dishes d
+      WHERE d.tenant_id = ${tenantId}
+        AND d.id IN (SELECT UNNEST(ARRAY[${Prisma.raw(
+          dishIds.map((_id) => `'${_id}'`).join(",")
+        )}]::uuid[]))
+        AND d.deleted_at IS NULL
+    `
+  );
+
+  const dishes = linkedDishes.map((d) => ({
+    id: d.dish_id,
+    name: d.dish_name,
+    allergens: d.allergens || [],
+    dietaryTags: d.dietary_tags || [],
+  }));
+
+  // Verify all requested dishes exist
+  const foundDishIds = dishes.map((d) => d.id);
+  const missingDishIds = dishIds.filter((_id) => !foundDishIds.includes(_id));
+  if (missingDishIds.length > 0) {
+    return NextResponse.json(
+      {
+        message: `The following dishes not found: ${missingDishIds.join(", ")}`,
+      },
+      { status: 404 }
+    );
+  }
+
+  return dishes;
+}
+
+// Helper function to get dishes associated with an event
+async function getEventDishes(
+  tenantId: string,
+  eventId: string
+): Promise<
+  Array<{
+    id: string;
+    name: string;
+    allergens: string[];
+    dietaryTags: string[];
+  }>
+> {
+  const linkedDishes = await database.$queryRaw<
+    Array<{
+      dish_id: string;
+      dish_name: string;
+      allergens: string[] | null;
+      dietary_tags: string[] | null;
+    }>
+  >(
+    Prisma.sql`
+      SELECT
+        d.id AS dish_id,
+        d.name AS dish_name,
+        d.allergens,
+        d.dietary_tags
+      FROM tenant_kitchen.dishes d
+      JOIN tenant_events.event_dishes ed
+        ON ed.tenant_id = d.tenant_id
+        AND ed.dish_id = d.id
+        AND ed.deleted_at IS NULL
+      WHERE ed.tenant_id = ${tenantId}
+        AND ed.event_id = ${eventId}
+        AND d.deleted_at IS NULL
+    `
+  );
+
+  return linkedDishes.map((d) => ({
+    id: d.dish_id,
+    name: d.dish_name,
+    allergens: d.allergens || [],
+    dietaryTags: d.dietary_tags || [],
+  }));
 }

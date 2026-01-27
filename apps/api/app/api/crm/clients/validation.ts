@@ -20,10 +20,17 @@ import type {
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
+ * Phone number validation regex
+ */
+const PHONE_REGEX = /^\d+$/;
+
+/**
  * Validate email format
  */
 export function validateEmail(email: string | undefined | null): boolean {
-  if (!email) return true; // Email is optional
+  if (!email) {
+    return true; // Email is optional
+  }
   return EMAIL_REGEX.test(email);
 }
 
@@ -31,9 +38,11 @@ export function validateEmail(email: string | undefined | null): boolean {
  * Validate phone number format (basic check)
  */
 export function validatePhone(phone: string | undefined | null): boolean {
-  if (!phone) return true; // Phone is optional
+  if (!phone) {
+    return true; // Phone is optional
+  }
   const cleaned = phone.replace(/[\s\-()+]/g, "");
-  return cleaned.length >= 10 && /^\d+$/.test(cleaned);
+  return cleaned.length >= 10 && PHONE_REGEX.test(cleaned);
 }
 
 /**

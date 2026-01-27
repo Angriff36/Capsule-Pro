@@ -44,6 +44,39 @@ function toNumber(value: { toNumber: () => number }): number {
   return value.toNumber();
 }
 
+function validateSessionInput(body: Record<string, unknown>): asserts body is {
+  session_name: string;
+  location_id: string;
+  count_type: string;
+  scheduled_date?: string;
+  notes?: string;
+} {
+  if (!body.session_name || typeof body.session_name !== "string") {
+    throw new InvariantError("session_name is required and must be a string");
+  }
+
+  if (!body.location_id || typeof body.location_id !== "string") {
+    throw new InvariantError("location_id is required and must be a string");
+  }
+
+  if (!body.count_type || typeof body.count_type !== "string") {
+    throw new InvariantError("count_type is required and must be a string");
+  }
+
+  const validCountTypes: CycleCountSessionType[] = [
+    "ad_hoc",
+    "scheduled_daily",
+    "scheduled_weekly",
+    "scheduled_monthly",
+  ];
+
+  if (!validCountTypes.includes(body.count_type as CycleCountSessionType)) {
+    throw new InvariantError(
+      `count_type must be one of: ${validCountTypes.join(", ")}`
+    );
+  }
+}
+
 /**
  * GET /api/inventory/cycle-count/sessions - List cycle count sessions
  */
@@ -160,31 +193,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    // Validate required fields
-    if (!body.session_name || typeof body.session_name !== "string") {
-      throw new InvariantError("session_name is required and must be a string");
-    }
-
-    if (!body.location_id || typeof body.location_id !== "string") {
-      throw new InvariantError("location_id is required and must be a string");
-    }
-
-    if (!body.count_type || typeof body.count_type !== "string") {
-      throw new InvariantError("count_type is required and must be a string");
-    }
-
-    const validCountTypes: CycleCountSessionType[] = [
-      "ad_hoc",
-      "scheduled_daily",
-      "scheduled_weekly",
-      "scheduled_monthly",
-    ];
-
-    if (!validCountTypes.includes(body.count_type as CycleCountSessionType)) {
-      throw new InvariantError(
-        `count_type must be one of: ${validCountTypes.join(", ")}`
-      );
-    }
+    validateSessionInput(body);
 
     // Get the user's database ID
     const user = await database.user.findFirst({

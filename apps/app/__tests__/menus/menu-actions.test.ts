@@ -10,39 +10,17 @@
  * @vitest-environment node
  */
 
-// Mock database at the very top, before any other imports
-vi.mock("@repo/database", async () => {
-  const mockFn = vi.fn();
-  return {
-    Prisma: {
-      sql: () => ({ strings: [], values: [] }),
-      join: () => "",
-      empty: {},
-      PrismaClient: vi.fn(),
-    },
-    PrismaClient: vi.fn(),
-    database: {
-      $queryRaw: mockFn,
-      $executeRaw: mockFn,
-      outboxEvent: {
-        create: mockFn,
-      },
-    },
-  };
-});
-
+// Import database - this gets the mock from vitest config plugin
+import { database } from "@repo/database";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  createMenu,
-  updateMenu,
-  deleteMenu,
   addDishToMenu,
+  createMenu,
+  deleteMenu,
   removeDishFromMenu,
   reorderMenuDishes,
+  updateMenu,
 } from "../../app/(authenticated)/kitchen/recipes/menus/actions";
-
-// Import database for spying (uses the mock)
-import { database } from "@repo/database";
 
 // Mock the tenant module
 vi.mock(
@@ -54,14 +32,18 @@ vi.mock(
   }
 );
 
-// Mock next/cache for revalidatePath
-vi.mock("next/cache", () => ({
-  revalidatePath: vi.fn(),
+// Mock next/cache for revalidatePath - use vi.hoisted since vi.mock is hoisted
+const mocks = vi.hoisted(() => ({
+  mockRevalidatePath: vi.fn(),
+  mockRedirect: vi.fn(),
 }));
 
-// Mock next/navigation for redirect
+vi.mock("next/cache", () => ({
+  revalidatePath: mocks.mockRevalidatePath,
+}));
+
 vi.mock("next/navigation", () => ({
-  redirect: vi.fn(),
+  redirect: mocks.mockRedirect,
 }));
 
 // Mock crypto for randomUUID
@@ -70,27 +52,6 @@ vi.mock("crypto", async (importOriginal) => {
   return {
     ...actual,
     randomUUID: vi.fn().mockReturnValue("test-uuid-123"),
-  };
-});
-
-// Mock database
-vi.mock("@repo/database", async () => {
-  const mockFn = vi.fn();
-  return {
-    Prisma: {
-      sql: () => ({ strings: [], values: [] }),
-      join: () => "",
-      empty: {},
-      PrismaClient: vi.fn(),
-    },
-    PrismaClient: vi.fn(),
-    database: {
-      $queryRaw: mockFn,
-      $executeRaw: mockFn,
-      outboxEvent: {
-        create: mockFn,
-      },
-    },
   };
 });
 
@@ -105,6 +66,7 @@ describe("menu actions", () => {
 
   describe("createMenu", () => {
     it("should create a new menu successfully", async () => {
+      // Spy on the mock functions provided by vitest config
       const executeRawSpy = vi.spyOn(database, "$executeRaw");
       const createSpy = vi.spyOn(database.outboxEvent, "create");
 
@@ -123,7 +85,11 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuInsertCall = executeRawCalls.find((call) => {
         const sql = call[0];
-        return sql && sql.text && sql.text.includes("INSERT INTO tenant_kitchen.menus");
+        return (
+          sql &&
+          sql.strings &&
+          sql.strings.join("").includes("INSERT INTO tenant_kitchen.menus")
+        );
       });
 
       expect(menuInsertCall).toBeDefined();
@@ -147,12 +113,12 @@ describe("menu actions", () => {
       });
 
       // Verify revalidatePath was called
-      expect(vi.mocked(require("next/cache").revalidatePath)).toHaveBeenCalledWith(
+      expect(mocks.mockRevalidatePath).toHaveBeenCalledWith(
         "/kitchen/recipes/menus"
       );
 
       // Verify redirect was called
-      expect(vi.mocked(require("next/navigation").redirect)).toHaveBeenCalledWith(
+      expect(mocks.mockRedirect).toHaveBeenCalledWith(
         "/kitchen/recipes?tab=menus"
       );
     });
@@ -161,7 +127,9 @@ describe("menu actions", () => {
       const formData = new FormData();
       formData.append("description", "Menu without name");
 
-      await expect(createMenu(formData)).rejects.toThrow("Menu name is required.");
+      await expect(createMenu(formData)).rejects.toThrow(
+        "Menu name is required."
+      );
     });
 
     it("should throw error when menu name is whitespace", async () => {
@@ -169,7 +137,9 @@ describe("menu actions", () => {
       formData.append("name", "   ");
       formData.append("description", "Menu with whitespace name");
 
-      await expect(createMenu(formData)).rejects.toThrow("Menu name is required.");
+      await expect(createMenu(formData)).rejects.toThrow(
+        "Menu name is required."
+      );
     });
 
     it("should handle null/optional fields correctly", async () => {
@@ -184,7 +154,11 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuInsertCall = executeRawCalls.find((call) => {
         const sql = call[0];
-        return sql && sql.text && sql.text.includes("INSERT INTO tenant_kitchen.menus");
+        return (
+          sql &&
+          sql.strings &&
+          sql.strings.join("").includes("INSERT INTO tenant_kitchen.menus")
+        );
       });
 
       expect(menuInsertCall).toBeDefined();
@@ -204,7 +178,7 @@ describe("menu actions", () => {
       ];
 
       const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce(mockExistingMenu as never);
+      queryRawSpy.mockResolvedValueOnce(mockExistingMenu);
 
       const executeRawSpy = vi.spyOn(database, "$executeRaw");
       const createSpy = vi.spyOn(database.outboxEvent, "create");
@@ -222,7 +196,11 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuUpdateCall = executeRawCalls.find((call) => {
         const sql = call[0];
-        return sql && sql.text && sql.text.includes("UPDATE tenant_kitchen.menus");
+        return (
+          sql &&
+          sql.strings &&
+          sql.strings.join("").includes("UPDATE tenant_kitchen.menus")
+        );
       });
 
       expect(menuUpdateCall).toBeDefined();
@@ -245,11 +223,11 @@ describe("menu actions", () => {
       });
 
       // Verify revalidatePath was called twice (list and detail)
-      expect(vi.mocked(require("next/cache").revalidatePath)).toHaveBeenCalledTimes(2);
-      expect(vi.mocked(require("next/cache").revalidatePath)).toHaveBeenCalledWith(
+      expect(mocks.mockRevalidatePath).toHaveBeenCalledTimes(2);
+      expect(mocks.mockRevalidatePath).toHaveBeenCalledWith(
         "/kitchen/recipes/menus"
       );
-      expect(vi.mocked(require("next/cache").revalidatePath)).toHaveBeenCalledWith(
+      expect(mocks.mockRevalidatePath).toHaveBeenCalledWith(
         `/kitchen/recipes/menus/${mockMenuId}`
       );
     });
@@ -258,12 +236,14 @@ describe("menu actions", () => {
       const formData = new FormData();
       formData.append("name", "Menu");
 
-      await expect(updateMenu("", formData)).rejects.toThrow("Menu ID is required.");
+      await expect(updateMenu("", formData)).rejects.toThrow(
+        "Menu ID is required."
+      );
     });
 
     it("should throw error when menu is not found", async () => {
       const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce([] as never);
+      queryRawSpy.mockResolvedValueOnce([]);
 
       const formData = new FormData();
       formData.append("name", "Menu");
@@ -274,13 +254,13 @@ describe("menu actions", () => {
     });
 
     it("should throw error when menu belongs to different tenant", async () => {
-      const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce([
+      // Configure the mock directly instead of using spyOn
+      database.$queryRaw = vi.fn().mockResolvedValueOnce([
         {
           id: mockMenuId,
           tenant_id: "different-tenant",
         },
-      ] as never);
+      ]);
 
       const formData = new FormData();
       formData.append("name", "Menu");
@@ -299,7 +279,7 @@ describe("menu actions", () => {
       ];
 
       const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce(mockExistingMenu as never);
+      queryRawSpy.mockResolvedValueOnce(mockExistingMenu);
 
       const formData = new FormData();
       formData.append("name", "");
@@ -318,7 +298,7 @@ describe("menu actions", () => {
       ];
 
       const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce(mockExistingMenu as never);
+      queryRawSpy.mockResolvedValueOnce(mockExistingMenu);
 
       const executeRawSpy = vi.spyOn(database, "$executeRaw");
 
@@ -334,7 +314,11 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuUpdateCall = executeRawCalls.find((call) => {
         const sql = call[0];
-        return sql && sql.text && sql.text.includes("UPDATE tenant_kitchen.menus");
+        return (
+          sql &&
+          sql.strings &&
+          sql.strings.join("").includes("UPDATE tenant_kitchen.menus")
+        );
       });
 
       expect(menuUpdateCall).toBeDefined();
@@ -359,7 +343,7 @@ describe("menu actions", () => {
       ];
 
       const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce(mockExistingMenu as never);
+      queryRawSpy.mockResolvedValueOnce(mockExistingMenu);
 
       const executeRawSpy = vi.spyOn(database, "$executeRaw");
       const createSpy = vi.spyOn(database.outboxEvent, "create");
@@ -372,9 +356,9 @@ describe("menu actions", () => {
         const sql = call[0];
         return (
           sql &&
-          sql.text &&
-          sql.text.includes("UPDATE tenant_kitchen.menus") &&
-          sql.text.includes("SET deleted_at = NOW()")
+          sql.strings &&
+          sql.strings.join("").includes("UPDATE tenant_kitchen.menus") &&
+          sql.strings.join("").includes("SET deleted_at = NOW()")
         );
       });
 
@@ -397,11 +381,11 @@ describe("menu actions", () => {
       });
 
       // Verify revalidatePath was called twice
-      expect(vi.mocked(require("next/cache").revalidatePath)).toHaveBeenCalledTimes(2);
-      expect(vi.mocked(require("next/cache").revalidatePath)).toHaveBeenCalledWith(
+      expect(mocks.mockRevalidatePath).toHaveBeenCalledTimes(2);
+      expect(mocks.mockRevalidatePath).toHaveBeenCalledWith(
         "/kitchen/recipes/menus"
       );
-      expect(vi.mocked(require("next/cache").revalidatePath)).toHaveBeenCalledWith(
+      expect(mocks.mockRevalidatePath).toHaveBeenCalledWith(
         `/kitchen/recipes/menus/${mockMenuId}`
       );
     });
@@ -412,7 +396,7 @@ describe("menu actions", () => {
 
     it("should throw error when menu is not found", async () => {
       const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce([] as never);
+      queryRawSpy.mockResolvedValueOnce([]);
 
       await expect(deleteMenu(mockMenuId)).rejects.toThrow(
         "Menu not found or access denied."
@@ -420,14 +404,14 @@ describe("menu actions", () => {
     });
 
     it("should throw error when menu belongs to different tenant", async () => {
-      const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce([
+      // Configure the mock directly instead of using spyOn
+      database.$queryRaw = vi.fn().mockResolvedValueOnce([
         {
           id: mockMenuId,
           tenant_id: "different-tenant",
           name: "Menu",
         },
-      ] as never);
+      ]);
 
       await expect(deleteMenu(mockMenuId)).rejects.toThrow(
         "Menu not found or access denied."
@@ -462,10 +446,10 @@ describe("menu actions", () => {
       const mockMaxSortOrder = [{ max_sort_order: 2 }];
 
       const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce(mockMenu as never); // Verify menu
-      queryRawSpy.mockResolvedValueOnce(mockDish as never); // Verify dish
-      queryRawSpy.mockResolvedValueOnce(mockNoExisting as never); // Check existing
-      queryRawSpy.mockResolvedValueOnce(mockMaxSortOrder as never); // Get max sort order
+      queryRawSpy.mockResolvedValueOnce(mockMenu); // Verify menu
+      queryRawSpy.mockResolvedValueOnce(mockDish); // Verify dish
+      queryRawSpy.mockResolvedValueOnce(mockNoExisting); // Check existing
+      queryRawSpy.mockResolvedValueOnce(mockMaxSortOrder); // Get max sort order
 
       const executeRawSpy = vi.spyOn(database, "$executeRaw");
       const createSpy = vi.spyOn(database.outboxEvent, "create");
@@ -478,8 +462,10 @@ describe("menu actions", () => {
         const sql = call[0];
         return (
           sql &&
-          sql.text &&
-          sql.text.includes("INSERT INTO tenant_kitchen.menu_dishes")
+          sql.strings &&
+          sql.strings
+            .join("")
+            .includes("INSERT INTO tenant_kitchen.menu_dishes")
         );
       });
 
@@ -507,7 +493,7 @@ describe("menu actions", () => {
       });
 
       // Verify revalidatePath was called twice
-      expect(vi.mocked(require("next/cache").revalidatePath)).toHaveBeenCalledTimes(2);
+      expect(mocks.mockRevalidatePath).toHaveBeenCalledTimes(2);
     });
 
     it("should throw error when menu ID is missing", async () => {
@@ -524,7 +510,7 @@ describe("menu actions", () => {
 
     it("should throw error when menu is not found", async () => {
       const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce([] as never); // No menu found
+      queryRawSpy.mockResolvedValueOnce([]); // No menu found
 
       await expect(addDishToMenu(mockMenuId, mockDishId)).rejects.toThrow(
         "Menu not found or access denied."
@@ -541,8 +527,8 @@ describe("menu actions", () => {
       ];
 
       const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce(mockMenu as never);
-      queryRawSpy.mockResolvedValueOnce([] as never); // No dish found
+      queryRawSpy.mockResolvedValueOnce(mockMenu);
+      queryRawSpy.mockResolvedValueOnce([]); // No dish found
 
       await expect(addDishToMenu(mockMenuId, mockDishId)).rejects.toThrow(
         "Dish not found or access denied."
@@ -569,9 +555,9 @@ describe("menu actions", () => {
       const mockExistingMenuDish = [{ id: "existing-id" }];
 
       const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce(mockMenu as never);
-      queryRawSpy.mockResolvedValueOnce(mockDish as never);
-      queryRawSpy.mockResolvedValueOnce(mockExistingMenuDish as never); // Already exists
+      queryRawSpy.mockResolvedValueOnce(mockMenu);
+      queryRawSpy.mockResolvedValueOnce(mockDish);
+      queryRawSpy.mockResolvedValueOnce(mockExistingMenuDish); // Already exists
 
       await expect(addDishToMenu(mockMenuId, mockDishId)).rejects.toThrow(
         "Dish is already in the menu."
@@ -599,10 +585,10 @@ describe("menu actions", () => {
       const mockMaxSortOrder = [{ max_sort_order: null }]; // No existing dishes
 
       const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce(mockMenu as never);
-      queryRawSpy.mockResolvedValueOnce(mockDish as never);
-      queryRawSpy.mockResolvedValueOnce(mockNoExisting as never);
-      queryRawSpy.mockResolvedValueOnce(mockMaxSortOrder as never);
+      queryRawSpy.mockResolvedValueOnce(mockMenu);
+      queryRawSpy.mockResolvedValueOnce(mockDish);
+      queryRawSpy.mockResolvedValueOnce(mockNoExisting);
+      queryRawSpy.mockResolvedValueOnce(mockMaxSortOrder);
 
       const executeRawSpy = vi.spyOn(database, "$executeRaw");
 
@@ -613,8 +599,10 @@ describe("menu actions", () => {
         const sql = call[0];
         return (
           sql &&
-          sql.text &&
-          sql.text.includes("INSERT INTO tenant_kitchen.menu_dishes")
+          sql.strings &&
+          sql.strings
+            .join("")
+            .includes("INSERT INTO tenant_kitchen.menu_dishes")
         );
       });
 
@@ -635,7 +623,7 @@ describe("menu actions", () => {
       ];
 
       const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce(mockMenuDish as never);
+      queryRawSpy.mockResolvedValueOnce(mockMenuDish);
 
       const executeRawSpy = vi.spyOn(database, "$executeRaw");
       const createSpy = vi.spyOn(database.outboxEvent, "create");
@@ -648,9 +636,9 @@ describe("menu actions", () => {
         const sql = call[0];
         return (
           sql &&
-          sql.text &&
-          sql.text.includes("UPDATE tenant_kitchen.menu_dishes") &&
-          sql.text.includes("SET deleted_at = NOW()")
+          sql.strings &&
+          sql.strings.join("").includes("UPDATE tenant_kitchen.menu_dishes") &&
+          sql.strings.join("").includes("SET deleted_at = NOW()")
         );
       });
 
@@ -674,7 +662,7 @@ describe("menu actions", () => {
       });
 
       // Verify revalidatePath was called twice
-      expect(vi.mocked(require("next/cache").revalidatePath)).toHaveBeenCalledTimes(2);
+      expect(mocks.mockRevalidatePath).toHaveBeenCalledTimes(2);
     });
 
     it("should throw error when menu ID is missing", async () => {
@@ -691,7 +679,7 @@ describe("menu actions", () => {
 
     it("should throw error when dish is not in menu", async () => {
       const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce([] as never); // No relationship found
+      queryRawSpy.mockResolvedValueOnce([]); // No relationship found
 
       await expect(removeDishFromMenu(mockMenuId, mockDishId)).rejects.toThrow(
         "Dish is not in the menu or access denied."
@@ -719,8 +707,8 @@ describe("menu actions", () => {
       ];
 
       const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce(mockMenu as never); // Verify menu
-      queryRawSpy.mockResolvedValueOnce(mockMenuDishes as never); // Verify dishes
+      queryRawSpy.mockResolvedValueOnce(mockMenu); // Verify menu
+      queryRawSpy.mockResolvedValueOnce(mockMenuDishes); // Verify dishes
 
       const executeRawSpy = vi.spyOn(database, "$executeRaw");
       const createSpy = vi.spyOn(database.outboxEvent, "create");
@@ -733,9 +721,9 @@ describe("menu actions", () => {
         const sql = call[0];
         return (
           sql &&
-          sql.text &&
-          sql.text.includes("UPDATE tenant_kitchen.menu_dishes") &&
-          sql.text.includes("sort_order")
+          sql.strings &&
+          sql.strings.join("").includes("UPDATE tenant_kitchen.menu_dishes") &&
+          sql.strings.join("").includes("sort_order")
         );
       });
 
@@ -761,7 +749,7 @@ describe("menu actions", () => {
       });
 
       // Verify revalidatePath was called twice
-      expect(vi.mocked(require("next/cache").revalidatePath)).toHaveBeenCalledTimes(2);
+      expect(mocks.mockRevalidatePath).toHaveBeenCalledTimes(2);
     });
 
     it("should throw error when menu ID is missing", async () => {
@@ -784,7 +772,7 @@ describe("menu actions", () => {
 
     it("should throw error when menu is not found", async () => {
       const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce([] as never); // No menu found
+      queryRawSpy.mockResolvedValueOnce([]); // No menu found
 
       await expect(reorderMenuDishes(mockMenuId, ["dish-1"])).rejects.toThrow(
         "Menu not found or access denied."
@@ -801,16 +789,15 @@ describe("menu actions", () => {
       ];
 
       // Mock only 2 of 3 dishes found in menu
-      const mockMenuDishes = [
-        { dish_id: "dish-1" },
-        { dish_id: "dish-2" },
-      ];
+      const mockMenuDishes = [{ dish_id: "dish-1" }, { dish_id: "dish-2" }];
 
       const queryRawSpy = vi.spyOn(database, "$queryRaw");
-      queryRawSpy.mockResolvedValueOnce(mockMenu as never);
-      queryRawSpy.mockResolvedValueOnce(mockMenuDishes as never); // Only 2 found, but 3 requested
+      queryRawSpy.mockResolvedValueOnce(mockMenu);
+      queryRawSpy.mockResolvedValueOnce(mockMenuDishes); // Only 2 found, but 3 requested
 
-      await expect(reorderMenuDishes(mockMenuId, ["dish-1", "dish-2", "dish-3"])).rejects.toThrow(
+      await expect(
+        reorderMenuDishes(mockMenuId, ["dish-1", "dish-2", "dish-3"])
+      ).rejects.toThrow(
         "One or more dishes not found in menu or access denied."
       );
     });

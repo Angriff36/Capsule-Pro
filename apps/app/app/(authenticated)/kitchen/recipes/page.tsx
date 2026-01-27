@@ -24,13 +24,10 @@ import {
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
 import {
-  BookOpenIcon,
   CheckCircleIcon,
   ChefHatIcon,
-  ClipboardListIcon,
   PackageIcon,
   SettingsIcon,
-  TrendingUpIcon,
   UtensilsIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -40,13 +37,13 @@ import { Header } from "../../components/header";
 import { updateRecipeImage } from "./actions";
 import { DifficultyRating } from "./components/difficulty-stars";
 import { MenuCard } from "./components/menu-card";
+import { getMenus } from "./menus/actions";
 import { RecipeEditButton } from "./recipe-edit-button";
 import { RecipeFavoriteButton } from "./recipe-favorite-button";
 import { RecipeImagePlaceholder } from "./recipe-image-placeholder";
 import { RecipesPageClient } from "./recipes-page-client";
 import RecipesRealtime from "./recipes-realtime";
 import { RecipesToolbar } from "./recipes-toolbar";
-import { getMenus } from "./menus/actions";
 
 type RecipeRow = {
   id: string;
@@ -398,7 +395,10 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
       return { label: "Add Menu", href: "/kitchen/recipes/menus/new" };
     }
     if (activeTab === "ingredients") {
-      return { label: "Add Ingredient", href: "/kitchen/recipes/ingredients/new" };
+      return {
+        label: "Add Ingredient",
+        href: "/kitchen/recipes/ingredients/new",
+      };
     }
     return;
   })();
@@ -460,9 +460,9 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                     </EmptyMedia>
                     <EmptyTitle>Create your first recipe</EmptyTitle>
                     <EmptyDescription>
-                      Start building your recipe collection. Recipes can be reused
-                      across multiple dishes, prep lists, and events to streamline
-                      your kitchen operations.
+                      Start building your recipe collection. Recipes can be
+                      reused across multiple dishes, prep lists, and events to
+                      streamline your kitchen operations.
                     </EmptyDescription>
                   </EmptyHeader>
                   <EmptyContent>
@@ -546,12 +546,15 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                     <EmptyDescription>
                       Transform recipes into marketable dishes with pricing,
                       dietary information, and presentation details. Dishes are
-                      what clients see on menus and what gets scheduled for events.
+                      what clients see on menus and what gets scheduled for
+                      events.
                     </EmptyDescription>
                   </EmptyHeader>
                   <EmptyContent>
                     <Button asChild>
-                      <Link href="/kitchen/recipes/dishes/new">Create New Dish</Link>
+                      <Link href="/kitchen/recipes/dishes/new">
+                        Create New Dish
+                      </Link>
                     </Button>
                   </EmptyContent>
                 </Empty>
@@ -662,7 +665,9 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                   </EmptyHeader>
                   <EmptyContent>
                     <Button asChild>
-                      <Link href="/kitchen/recipes/ingredients/new">Add Ingredient</Link>
+                      <Link href="/kitchen/recipes/ingredients/new">
+                        Add Ingredient
+                      </Link>
                     </Button>
                   </EmptyContent>
                 </Empty>
@@ -720,31 +725,33 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                     </EmptyMedia>
                     <EmptyTitle>Create your first menu</EmptyTitle>
                     <EmptyDescription>
-                      Build curated menu collections that group dishes together for
-                      events. Each menu can include pricing tiers, dietary breakdowns,
-                      and be customized for different client needs.
+                      Build curated menu collections that group dishes together
+                      for events. Each menu can include pricing tiers, dietary
+                      breakdowns, and be customized for different client needs.
                     </EmptyDescription>
                   </EmptyHeader>
                   <EmptyContent>
                     <Button asChild>
-                      <Link href="/kitchen/recipes/menus/new">Create New Menu</Link>
+                      <Link href="/kitchen/recipes/menus/new">
+                        Create New Menu
+                      </Link>
                     </Button>
                   </EmptyContent>
                 </Empty>
               ) : (
                 menus.map((menu) => (
                   <MenuCard
-                    key={menu.id}
-                    id={menu.id}
-                    name={menu.name}
-                    description={menu.description}
-                    category={menu.category}
-                    isActive={menu.isActive}
                     basePrice={menu.basePrice}
-                    pricePerPerson={menu.pricePerPerson}
-                    minGuests={menu.minGuests}
-                    maxGuests={menu.maxGuests}
+                    category={menu.category}
+                    description={menu.description}
                     dishCount={menu.dishCount}
+                    id={menu.id}
+                    isActive={menu.isActive}
+                    key={menu.id}
+                    maxGuests={menu.maxGuests}
+                    minGuests={menu.minGuests}
+                    name={menu.name}
+                    pricePerPerson={menu.pricePerPerson}
                   />
                 ))
               )}
@@ -761,14 +768,16 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                     </EmptyMedia>
                     <EmptyTitle>No costing data yet</EmptyTitle>
                     <EmptyDescription>
-                      Add dishes with pricing and cost details to unlock powerful
-                      margin analysis. Track food costs, menu prices, and profitability
-                      across your entire operation.
+                      Add dishes with pricing and cost details to unlock
+                      powerful margin analysis. Track food costs, menu prices,
+                      and profitability across your entire operation.
                     </EmptyDescription>
                   </EmptyHeader>
                   <EmptyContent>
                     <Button asChild>
-                      <Link href="/kitchen/recipes/dishes/new">Add Your First Dish</Link>
+                      <Link href="/kitchen/recipes/dishes/new">
+                        Add Your First Dish
+                      </Link>
                     </Button>
                   </EmptyContent>
                 </Empty>

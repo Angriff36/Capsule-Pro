@@ -17,6 +17,202 @@ type RouteParams = {
   params: Promise<{ id: string }>;
 };
 
+type ClientSelect = {
+  email: true;
+};
+
+type LeadSelect = {
+  contactEmail: true;
+};
+
+/**
+ * Fetch client email
+ */
+async function fetchClientEmail(
+  database: typeof import("@repo/database"),
+  tenantId: string,
+  clientId: string | null
+): Promise<string | null> {
+  if (!clientId) {
+    return null;
+  }
+  const client = await database.client.findFirst({
+    where: {
+      AND: [{ tenantId }, { id: clientId }, { deletedAt: null }],
+    },
+    select: { email: true } as ClientSelect,
+  });
+  return client?.email ?? null;
+}
+
+/**
+ * Fetch lead email
+ */
+async function fetchLeadEmail(
+  database: typeof import("@repo/database"),
+  tenantId: string,
+  leadId: string | null
+): Promise<string | null> {
+  if (!leadId) {
+    return null;
+  }
+  const lead = await database.lead.findFirst({
+    where: {
+      AND: [{ tenantId }, { id: leadId }, { deletedAt: null }],
+    },
+    select: { contactEmail: true } as LeadSelect,
+  });
+  return lead?.contactEmail ?? null;
+}
+
+/**
+ * Fetch proposal with relations
+ */
+async function fetchProposalWithRelations(
+  database: typeof import("@repo/database"),
+  tenantId: string,
+  id: string
+) {
+  const proposal = await database.proposal.findFirst({
+    where: {
+      AND: [{ id }, { tenantId }, { deletedAt: null }],
+    },
+  });
+
+  if (!proposal) {
+    return null;
+  }
+
+  const [client, lead, lineItems] = await Promise.all([
+    proposal.clientId
+      ? database.client.findFirst({
+          where: {
+            AND: [{ tenantId }, { id: proposal.clientId }, { deletedAt: null }],
+          },
+          select: {
+            id: true,
+            company_name: true,
+            first_name: true,
+            last_name: true,
+            email: true,
+            phone: true,
+          },
+        })
+      : null,
+    proposal.leadId
+      ? database.lead.findFirst({
+          where: {
+            AND: [{ tenantId }, { id: proposal.leadId }, { deletedAt: null }],
+          },
+          select: {
+            id: true,
+            companyName: true,
+            contactName: true,
+            contactEmail: true,
+            contactPhone: true,
+          },
+        })
+      : null,
+    database.proposalLineItem.findMany({
+      where: { proposalId: proposal.id },
+      orderBy: [{ sortOrder: "asc" }],
+    }),
+  ]);
+
+  return { ...proposal, client, lead, lineItems };
+}
+
+/**
+ * Calculate total amount from line items
+ */
+function calculateTotalAmount(
+  lineItems: Array<{ quantity: unknown; unitPrice: unknown }>
+): string | undefined {
+  if (lineItems.length === 0) {
+    return undefined;
+  }
+
+  const total = lineItems.reduce(
+    (sum, item) =>
+      sum + Number(item.quantity || 0) * Number(item.unitPrice || 0),
+    0
+  );
+
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(total);
+}
+
+/**
+ * Determine recipient name from client/lead data
+ */
+function determineRecipientName(
+  client: { first_name?: string; company_name?: string } | null,
+  lead: { contactName?: string; companyName?: string } | null
+): string {
+  const clientFirstName = client?.first_name as string | undefined;
+  const clientCompanyName = client?.company_name as string | undefined;
+  const leadContactName = lead?.contactName as string | undefined;
+  const leadCompanyName = lead?.companyName as string | undefined;
+
+  return (
+    clientFirstName ||
+    leadContactName ||
+    clientCompanyName ||
+    leadCompanyName ||
+    "Valued Client"
+  );
+}
+
+/**
+ * Update proposal status to sent
+ */
+async function markProposalSent(
+  database: typeof import("@repo/database"),
+  tenantId: string,
+  id: string
+) {
+  await database.proposal.updateMany({
+    where: {
+      AND: [{ tenantId }, { id }],
+    },
+    data: {
+      status: "sent",
+      sentAt: new Date(),
+    },
+  });
+}
+
+/**
+ * Send proposal email
+ */
+async function sendProposalEmail(
+  recipientEmail: string,
+  recipientName: string,
+  proposalTitle: string,
+  proposalUrl: string,
+  message: string | undefined,
+  totalAmount: string | undefined
+) {
+  try {
+    await resend.emails.send({
+      from: process.env.RESEND_FROM || "noreply@convoy.com",
+      to: recipientEmail,
+      subject: `Proposal: ${proposalTitle}`,
+      react: ProposalTemplate({
+        recipientName,
+        proposalTitle,
+        proposalUrl,
+        message,
+        totalAmount,
+      }),
+    });
+  } catch (emailError) {
+    console.error("Failed to send proposal email:", emailError);
+  }
+}
+
 /**
  * POST /api/crm/proposals/[id]/send
  * Send a proposal to the client
@@ -24,7 +220,7 @@ type RouteParams = {
  */
 export async function POST(request: Request, { params }: RouteParams) {
   try {
-    const { orgId, userId } = await auth();
+    const { orgId } = await auth();
     if (!orgId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -32,58 +228,24 @@ export async function POST(request: Request, { params }: RouteParams) {
     const { id } = await params;
     const tenantId = await getTenantIdForOrg(orgId);
 
-    // Verify proposal exists and belongs to tenant
-    const existingProposal = await database.proposal.findFirst({
-      where: {
-        AND: [{ id }, { tenantId }, { deletedAt: null }],
-      },
-    });
+    const proposal = await fetchProposalWithRelations(database, tenantId, id);
 
-    if (!existingProposal) {
+    if (!proposal) {
       return NextResponse.json(
         { message: "Proposal not found" },
         { status: 404 }
       );
     }
 
-    // Fetch client and lead separately for email
-    let clientEmail: string | null = null;
-    let leadEmail: string | null = null;
+    const [clientEmail, leadEmail] = await Promise.all([
+      fetchClientEmail(database, tenantId, proposal.clientId),
+      fetchLeadEmail(database, tenantId, proposal.leadId),
+    ]);
 
-    if (existingProposal.clientId) {
-      const client = await database.client.findFirst({
-        where: {
-          AND: [
-            { tenantId },
-            { id: existingProposal.clientId },
-            { deletedAt: null },
-          ],
-        },
-        select: { email: true },
-      });
-      clientEmail = client?.email ?? null;
-    }
-
-    if (existingProposal.leadId) {
-      const lead = await database.lead.findFirst({
-        where: {
-          AND: [
-            { tenantId },
-            { id: existingProposal.leadId },
-            { deletedAt: null },
-          ],
-        },
-        select: { contactEmail: true },
-      });
-      leadEmail = lead?.contactEmail ?? null;
-    }
-
-    // Validate request body (optional message, custom recipient)
     const rawBody = await request.json().catch(() => ({}));
     validateSendProposalRequest(rawBody);
     const body = rawBody as SendProposalRequest;
 
-    // Determine recipient email
     const recipientEmail =
       body.recipientEmail?.trim() || clientEmail || leadEmail;
 
@@ -97,128 +259,28 @@ export async function POST(request: Request, { params }: RouteParams) {
       );
     }
 
-    // Update proposal status and record sent timestamp
-    await database.proposal.updateMany({
-      where: {
-        AND: [{ tenantId }, { id }],
-      },
-      data: {
-        status: "sent",
-        sentAt: new Date(),
-      },
-    });
+    await markProposalSent(database, tenantId, id);
 
-    // Fetch updated proposal
-    const proposal = await database.proposal.findFirst({
-      where: {
-        AND: [{ tenantId }, { id }],
-      },
-    });
-
-    if (!proposal) {
-      return NextResponse.json(
-        { message: "Proposal not found after update" },
-        { status: 404 }
-      );
-    }
-
-    // Fetch client and lead separately for response
-    let client: Record<string, unknown> | null = null;
-    let lead: Record<string, unknown> | null = null;
-
-    if (proposal.clientId) {
-      client = await database.client.findFirst({
-        where: {
-          AND: [{ tenantId }, { id: proposal.clientId }, { deletedAt: null }],
-        },
-        select: {
-          id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
-          email: true,
-          phone: true,
-        },
-      });
-    }
-
-    if (proposal.leadId) {
-      lead = await database.lead.findFirst({
-        where: {
-          AND: [{ tenantId }, { id: proposal.leadId }, { deletedAt: null }],
-        },
-        select: {
-          id: true,
-          companyName: true,
-          contactName: true,
-          contactEmail: true,
-          contactPhone: true,
-        },
-      });
-    }
-
-    // Fetch line items separately
-    const lineItems = await database.proposalLineItem.findMany({
-      where: { proposalId: proposal.id },
-      orderBy: [{ sortOrder: "asc" }],
-    });
-
-    const proposalWithLineItems = {
-      ...proposal,
-      client,
-      lead,
-      lineItems,
-    };
-
-    // Send email with proposal link
+    const recipientName = determineRecipientName(
+      proposal.client,
+      proposal.lead
+    );
+    const totalAmount = calculateTotalAmount(proposal.lineItems);
     const proposalUrl = `${process.env.APP_URL || "https://app.convoy.com"}/proposals/${id}`;
-    const clientFirstName = client?.first_name as string | undefined;
-    const clientCompanyName = client?.company_name as string | undefined;
-    const leadContactName = lead?.contactName as string | undefined;
-    const leadCompanyName = lead?.companyName as string | undefined;
 
-    const recipientName =
-      clientFirstName ||
-      leadContactName ||
-      clientCompanyName ||
-      leadCompanyName ||
-      "Valued Client";
+    await sendProposalEmail(
+      recipientEmail,
+      recipientName,
+      proposal.title,
+      proposalUrl,
+      body.message,
+      totalAmount
+    );
 
-    // Calculate total amount from line items
-    const totalAmount =
-      lineItems.length > 0
-        ? new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD",
-          }).format(
-            lineItems.reduce(
-              (sum, item) =>
-                sum + Number(item.quantity || 0) * Number(item.unitPrice || 0),
-              0
-            )
-          )
-        : undefined;
-
-    try {
-      await resend.emails.send({
-        from: process.env.RESEND_FROM || "noreply@convoy.com",
-        to: recipientEmail,
-        subject: `Proposal: ${proposal.title}`,
-        react: ProposalTemplate({
-          recipientName,
-          proposalTitle: proposal.title,
-          proposalUrl,
-          message: body.message,
-          totalAmount,
-        }),
-      });
-    } catch (emailError) {
-      console.error("Failed to send proposal email:", emailError);
-      // Continue with the response even if email fails
-    }
+    const { client, lead, lineItems } = proposal;
 
     return NextResponse.json({
-      data: proposalWithLineItems,
+      data: { ...proposal, client, lead, lineItems },
       message: "Proposal sent successfully",
       sentTo: recipientEmail,
     });

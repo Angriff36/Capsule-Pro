@@ -40,8 +40,7 @@ export const createMenu = async (formData: FormData) => {
     throw new Error("Menu name is required.");
   }
 
-  const description =
-    String(formData.get("description") || "").trim() || null;
+  const description = String(formData.get("description") || "").trim() || null;
   const category = String(formData.get("category") || "").trim() || null;
   const basePrice = parseNumber(formData.get("basePrice"));
   const pricePerPerson = parseNumber(formData.get("pricePerPerson"));
@@ -117,8 +116,7 @@ export const updateMenu = async (menuId: string, formData: FormData) => {
     throw new Error("Menu name is required.");
   }
 
-  const description =
-    String(formData.get("description") || "").trim() || null;
+  const description = String(formData.get("description") || "").trim() || null;
   const category = String(formData.get("category") || "").trim() || null;
   const basePrice = parseNumber(formData.get("basePrice"));
   const pricePerPerson = parseNumber(formData.get("pricePerPerson"));
@@ -270,9 +268,9 @@ export const getMenus = async (): Promise<MenuSummary[]> => {
     description: menu.description,
     category: menu.category,
     isActive: menu.is_active,
-    basePrice: menu.base_price ? parseFloat(menu.base_price) : null,
+    basePrice: menu.base_price ? Number.parseFloat(menu.base_price) : null,
     pricePerPerson: menu.price_per_person
-      ? parseFloat(menu.price_per_person)
+      ? Number.parseFloat(menu.price_per_person)
       : null,
     minGuests: menu.min_guests,
     maxGuests: menu.max_guests,
@@ -305,7 +303,9 @@ export type MenuDetail = {
   }[];
 };
 
-export const getMenuById = async (menuId: string): Promise<MenuDetail | null> => {
+export const getMenuById = async (
+  menuId: string
+): Promise<MenuDetail | null> => {
   const tenantId = await requireTenantId();
 
   if (!menuId) {
@@ -394,9 +394,9 @@ export const getMenuById = async (menuId: string): Promise<MenuDetail | null> =>
     description: menu.description,
     category: menu.category,
     isActive: menu.is_active,
-    basePrice: menu.base_price ? parseFloat(menu.base_price) : null,
+    basePrice: menu.base_price ? Number.parseFloat(menu.base_price) : null,
     pricePerPerson: menu.price_per_person
-      ? parseFloat(menu.price_per_person)
+      ? Number.parseFloat(menu.price_per_person)
       : null,
     minGuests: menu.min_guests,
     maxGuests: menu.max_guests,
@@ -414,7 +414,6 @@ export const getMenuById = async (menuId: string): Promise<MenuDetail | null> =>
     })),
   };
 };
-
 
 export const addDishToMenu = async (
   menuId: string,
@@ -468,9 +467,7 @@ export const addDishToMenu = async (
   }
 
   // Check if dish is already in menu
-  const [existingMenuDish] = await database.$queryRaw<
-    { id: string }[]
-  >(
+  const [existingMenuDish] = await database.$queryRaw<{ id: string }[]>(
     Prisma.sql`
       SELECT id
       FROM tenant_kitchen.menu_dishes
@@ -594,14 +591,12 @@ export const reorderMenuDishes = async (menuId: string, dishIds: string[]) => {
     throw new Error("Menu ID is required.");
   }
 
-  if (!dishIds || !Array.isArray(dishIds) || dishIds.length === 0) {
+  if (!(dishIds && Array.isArray(dishIds)) || dishIds.length === 0) {
     throw new Error("Dish IDs array is required.");
   }
 
   // Verify menu exists and belongs to tenant
-  const [menu] = await database.$queryRaw<
-    { id: string; tenant_id: string }[]
-  >(
+  const [menu] = await database.$queryRaw<{ id: string; tenant_id: string }[]>(
     Prisma.sql`
       SELECT id, tenant_id
       FROM tenant_kitchen.menus
@@ -617,9 +612,7 @@ export const reorderMenuDishes = async (menuId: string, dishIds: string[]) => {
   }
 
   // Verify all dishes are in the menu and belong to tenant
-  const menuDishes = await database.$queryRaw<
-    { dish_id: string }[]
-  >(
+  const menuDishes = await database.$queryRaw<{ dish_id: string }[]>(
     Prisma.sql`
       SELECT dish_id
       FROM tenant_kitchen.menu_dishes

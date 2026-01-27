@@ -18,11 +18,79 @@ type RouteParams = {
   params: Promise<{ id: string }>;
 };
 
+type ClientSelect = {
+  id: true;
+  company_name: true;
+  first_name: true;
+  last_name: true;
+  email: true;
+  phone: true;
+};
+
+type LeadSelect = {
+  id: true;
+  companyName: true;
+  contactName: true;
+  contactEmail: true;
+  contactPhone: true;
+};
+
+/**
+ * Fetch client for a proposal
+ */
+function fetchClient(
+  database: typeof import("@repo/database"),
+  tenantId: string,
+  clientId: string | null
+): Promise<Record<string, unknown> | null> {
+  if (!clientId) {
+    return Promise.resolve(null);
+  }
+  return database.client.findFirst({
+    where: {
+      AND: [{ tenantId }, { id: clientId }, { deletedAt: null }],
+    },
+    select: {
+      id: true,
+      company_name: true,
+      first_name: true,
+      last_name: true,
+      email: true,
+      phone: true,
+    } as ClientSelect,
+  });
+}
+
+/**
+ * Fetch lead for a proposal
+ */
+function fetchLead(
+  database: typeof import("@repo/database"),
+  tenantId: string,
+  leadId: string | null
+): Promise<Record<string, unknown> | null> {
+  if (!leadId) {
+    return Promise.resolve(null);
+  }
+  return database.lead.findFirst({
+    where: {
+      AND: [{ tenantId }, { id: leadId }, { deletedAt: null }],
+    },
+    select: {
+      id: true,
+      companyName: true,
+      contactName: true,
+      contactEmail: true,
+      contactPhone: true,
+    } as LeadSelect,
+  });
+}
+
 /**
  * GET /api/crm/proposals/[id]
  * Get a single proposal by ID
  */
-export async function GET(request: Request, { params }: RouteParams) {
+export async function GET(_request: Request, { params }: RouteParams) {
   try {
     const { orgId } = await auth();
     if (!orgId) {
@@ -45,73 +113,30 @@ export async function GET(request: Request, { params }: RouteParams) {
       );
     }
 
-    // Fetch client and lead separately
-    let client: Record<string, unknown> | null = null;
-    let lead: Record<string, unknown> | null = null;
-    let event: Record<string, unknown> | null = null;
+    const [client, lead, event, lineItems] = await Promise.all([
+      fetchClient(database, tenantId, proposal.clientId),
+      fetchLead(database, tenantId, proposal.leadId),
+      proposal.eventId
+        ? database.event.findFirst({
+            where: {
+              AND: [
+                { tenantId },
+                { id: proposal.eventId },
+                { deletedAt: null },
+              ],
+            },
+            select: { id: true, title: true },
+          })
+        : null,
+      database.proposalLineItem.findMany({
+        where: { proposalId: proposal.id },
+        orderBy: [{ sortOrder: "asc" }],
+      }),
+    ]);
 
-    if (proposal.clientId) {
-      client = await database.client.findFirst({
-        where: {
-          AND: [{ tenantId }, { id: proposal.clientId }, { deletedAt: null }],
-        },
-        select: {
-          id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
-          email: true,
-          phone: true,
-          addressLine1: true,
-          city: true,
-          stateProvince: true,
-          postalCode: true,
-        },
-      });
-    }
-
-    if (proposal.leadId) {
-      lead = await database.lead.findFirst({
-        where: {
-          AND: [{ tenantId }, { id: proposal.leadId }, { deletedAt: null }],
-        },
-        select: {
-          id: true,
-          companyName: true,
-          contactName: true,
-          contactEmail: true,
-          contactPhone: true,
-        },
-      });
-    }
-
-    if (proposal.eventId) {
-      event = await database.event.findFirst({
-        where: {
-          AND: [{ tenantId }, { id: proposal.eventId }, { deletedAt: null }],
-        },
-        select: {
-          id: true,
-          title: true,
-        },
-      });
-    }
-
-    // Fetch line items separately
-    const lineItems = await database.proposalLineItem.findMany({
-      where: { proposalId: proposal.id },
-      orderBy: [{ sortOrder: "asc" }],
+    return NextResponse.json({
+      data: { ...proposal, client, lead, event, lineItems },
     });
-
-    const proposalWithLineItems = {
-      ...proposal,
-      client,
-      lead,
-      event,
-      lineItems,
-    };
-
-    return NextResponse.json({ data: proposalWithLineItems });
   } catch (error) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
@@ -122,6 +147,112 @@ export async function GET(request: Request, { params }: RouteParams) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * Calculate proposal totals based on line items
+ */
+function calculateProposalTotals(
+  data: Partial<CreateProposalRequest>,
+  existingProposal: Awaited<typeof database.proposal.findFirst>
+) {
+  const existingSubtotal = Number(existingProposal.subtotal);
+  const existingTaxAmount = Number(existingProposal.taxAmount);
+  const existingTotal = Number(existingProposal.total);
+  const existingTaxRate = Number(existingProposal.taxRate);
+  const existingDiscountAmount = Number(existingProposal.discountAmount);
+
+  let calculatedSubtotal = data.subtotal ?? existingSubtotal;
+  let calculatedTax = data.taxAmount ?? existingTaxAmount;
+  let calculatedTotal = data.total ?? existingTotal;
+
+  if (data.lineItems && data.lineItems.length > 0) {
+    calculatedSubtotal = data.lineItems.reduce(
+      (sum, item) => sum + item.quantity * item.unitPrice,
+      0
+    );
+    const taxRate = data.taxRate ?? existingTaxRate;
+    calculatedTax = calculatedSubtotal * (taxRate / 100);
+    const discount = data.discountAmount ?? existingDiscountAmount;
+    calculatedTotal = calculatedSubtotal + calculatedTax - discount;
+  }
+
+  return { calculatedSubtotal, calculatedTax, calculatedTotal };
+}
+
+/**
+ * Build proposal update data
+ */
+function buildProposalUpdateData(
+  data: Partial<CreateProposalRequest>,
+  calculatedSubtotal: number,
+  calculatedTax: number,
+  calculatedTotal: number
+) {
+  return {
+    clientId: data.clientId,
+    leadId: data.leadId,
+    eventId: data.eventId,
+    title: data.title?.trim(),
+    eventDate: data.eventDate ? new Date(data.eventDate) : undefined,
+    eventType: data.eventType?.trim() || undefined,
+    guestCount: data.guestCount ?? undefined,
+    venueName: data.venueName?.trim() || undefined,
+    venueAddress: data.venueAddress?.trim() || undefined,
+    subtotal: new Prisma.Decimal(calculatedSubtotal),
+    taxRate:
+      data.taxRate !== undefined && data.taxRate !== null
+        ? new Prisma.Decimal(data.taxRate)
+        : undefined,
+    taxAmount: new Prisma.Decimal(calculatedTax),
+    discountAmount:
+      data.discountAmount !== undefined && data.discountAmount !== null
+        ? new Prisma.Decimal(data.discountAmount)
+        : undefined,
+    total: new Prisma.Decimal(calculatedTotal),
+    status: data.status ?? undefined,
+    validUntil: data.validUntil ? new Date(data.validUntil) : undefined,
+    notes: data.notes?.trim() || undefined,
+    termsAndConditions: data.termsAndConditions?.trim() || undefined,
+  };
+}
+
+/**
+ * Update line items for a proposal
+ */
+async function updateLineItems(
+  database: typeof import("@repo/database"),
+  proposalId: string,
+  tenantId: string,
+  lineItems: CreateProposalRequest["lineItems"]
+) {
+  await database.$transaction(async (tx) => {
+    await tx.proposalLineItem.deleteMany({
+      where: { proposalId },
+    });
+
+    if (lineItems && lineItems.length > 0) {
+      await tx.proposalLineItem.createMany({
+        data: lineItems.map((item, index) => ({
+          proposalId,
+          tenantId,
+          sortOrder: item.sortOrder ?? index,
+          itemType: item.itemType.trim(),
+          category: item.category?.trim() || item.itemType.trim(),
+          description: item.description.trim(),
+          quantity: new Prisma.Decimal(item.quantity),
+          unitPrice: new Prisma.Decimal(item.unitPrice),
+          total: new Prisma.Decimal(
+            item.total ?? item.quantity * item.unitPrice
+          ),
+          totalPrice: new Prisma.Decimal(
+            item.total ?? item.quantity * item.unitPrice
+          ),
+          notes: item.notes?.trim() || null,
+        })),
+      });
+    }
+  });
 }
 
 /**
@@ -137,8 +268,12 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     const { id } = await params;
     const tenantId = await getTenantIdForOrg(orgId);
+    const body = await request.json();
 
-    // Verify proposal exists and belongs to tenant
+    validateCreateProposalRequest(body);
+
+    const data = body as CreateProposalRequest;
+
     const existingProposal = await database.proposal.findFirst({
       where: {
         AND: [{ id }, { tenantId }, { deletedAt: null }],
@@ -152,157 +287,34 @@ export async function PUT(request: Request, { params }: RouteParams) {
       );
     }
 
-    const body = await request.json();
+    const { calculatedSubtotal, calculatedTax, calculatedTotal } =
+      calculateProposalTotals(data, existingProposal);
 
-    // Validate request body (allow partial updates)
-    if (body.title !== undefined) {
-      validateCreateProposalRequest(body);
-    }
+    const updateData = buildProposalUpdateData(
+      data,
+      calculatedSubtotal,
+      calculatedTax,
+      calculatedTotal
+    );
 
-    const data = body as Partial<CreateProposalRequest>;
-
-    // Calculate totals if line items provided
-    const existingSubtotal = Number(existingProposal.subtotal);
-    const existingTaxAmount = Number(existingProposal.taxAmount);
-    const existingTotal = Number(existingProposal.total);
-    const existingTaxRate = Number(existingProposal.taxRate);
-    const existingDiscountAmount = Number(existingProposal.discountAmount);
-
-    let calculatedSubtotal = data.subtotal ?? existingSubtotal;
-    let calculatedTax = data.taxAmount ?? existingTaxAmount;
-    let calculatedTotal = data.total ?? existingTotal;
-
-    if (data.lineItems && data.lineItems.length > 0) {
-      calculatedSubtotal = data.lineItems.reduce(
-        (sum, item) => sum + item.quantity * item.unitPrice,
-        0
-      );
-      const taxRate = data.taxRate ?? existingTaxRate;
-      calculatedTax = calculatedSubtotal * (taxRate / 100);
-      const discount = data.discountAmount ?? existingDiscountAmount;
-      calculatedTotal = calculatedSubtotal + calculatedTax - discount;
-    }
-
-    // Update proposal using updateMany with tenantId check
-    await database.proposal.updateMany({
+    const updatedProposal = await database.proposal.update({
       where: {
-        AND: [{ tenantId }, { id }],
+        tenantId_id: {
+          tenantId,
+          id,
+        },
       },
-      data: {
-        clientId: data.clientId,
-        leadId: data.leadId,
-        eventId: data.eventId,
-        title: data.title?.trim(),
-        eventDate: data.eventDate ? new Date(data.eventDate) : undefined,
-        eventType: data.eventType?.trim() || undefined,
-        guestCount: data.guestCount ?? undefined,
-        venueName: data.venueName?.trim() || undefined,
-        venueAddress: data.venueAddress?.trim() || undefined,
-        subtotal: new Prisma.Decimal(calculatedSubtotal),
-        taxRate:
-          data.taxRate !== undefined && data.taxRate !== null
-            ? new Prisma.Decimal(data.taxRate)
-            : undefined,
-        taxAmount: new Prisma.Decimal(calculatedTax),
-        discountAmount:
-          data.discountAmount !== undefined && data.discountAmount !== null
-            ? new Prisma.Decimal(data.discountAmount)
-            : undefined,
-        total: new Prisma.Decimal(calculatedTotal),
-        status: data.status ? (data.status as any) : undefined,
-        validUntil: data.validUntil ? new Date(data.validUntil) : undefined,
-        notes: data.notes?.trim() || undefined,
-        termsAndConditions: data.termsAndConditions?.trim() || undefined,
-      },
+      data: updateData,
     });
 
-    // Fetch updated proposal
-    const updatedProposal = await database.proposal.findFirst({
-      where: {
-        AND: [{ tenantId }, { id }],
-      },
-    });
-
-    if (!updatedProposal) {
-      return NextResponse.json(
-        { message: "Proposal not found after update" },
-        { status: 404 }
-      );
-    }
-
-    // Fetch client and lead separately
-    let client: Record<string, unknown> | null = null;
-    let lead: Record<string, unknown> | null = null;
-
-    if (updatedProposal.clientId) {
-      client = await database.client.findFirst({
-        where: {
-          AND: [
-            { tenantId },
-            { id: updatedProposal.clientId },
-            { deletedAt: null },
-          ],
-        },
-        select: {
-          id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
-          email: true,
-          phone: true,
-        },
-      });
-    }
-
-    if (updatedProposal.leadId) {
-      lead = await database.lead.findFirst({
-        where: {
-          AND: [
-            { tenantId },
-            { id: updatedProposal.leadId },
-            { deletedAt: null },
-          ],
-        },
-        select: {
-          id: true,
-          companyName: true,
-          contactName: true,
-          contactEmail: true,
-          contactPhone: true,
-        },
-      });
-    }
-
-    // Update line items if provided
     if (data.lineItems && data.lineItems.length > 0) {
-      await database.$transaction(async (tx) => {
-        // Delete existing line items
-        await tx.proposalLineItem.deleteMany({
-          where: { proposalId: updatedProposal.id },
-        });
-
-        // Create new line items
-        await tx.proposalLineItem.createMany({
-          data: data.lineItems!.map((item, index) => ({
-            proposalId: updatedProposal.id,
-            tenantId,
-            sortOrder: item.sortOrder ?? index,
-            itemType: item.itemType.trim(),
-            category: item.category?.trim() || item.itemType.trim(),
-            description: item.description.trim(),
-            quantity: new Prisma.Decimal(item.quantity),
-            unitPrice: new Prisma.Decimal(item.unitPrice),
-            total: new Prisma.Decimal(
-              item.total ?? item.quantity * item.unitPrice
-            ),
-            totalPrice: new Prisma.Decimal(
-              item.total ?? item.quantity * item.unitPrice
-            ),
-            notes: item.notes?.trim() || null,
-          })),
-        });
-      });
+      await updateLineItems(database, id, tenantId, data.lineItems);
     }
+
+    const [client, lead] = await Promise.all([
+      fetchClient(database, tenantId, updatedProposal.clientId),
+      fetchLead(database, tenantId, updatedProposal.leadId),
+    ]);
 
     return NextResponse.json({ data: { ...updatedProposal, client, lead } });
   } catch (error) {
@@ -321,7 +333,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
  * DELETE /api/crm/proposals/[id]
  * Soft delete a proposal
  */
-export async function DELETE(request: Request, { params }: RouteParams) {
+export async function DELETE(_request: Request, { params }: RouteParams) {
   try {
     const { orgId } = await auth();
     if (!orgId) {
@@ -331,7 +343,6 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     const { id } = await params;
     const tenantId = await getTenantIdForOrg(orgId);
 
-    // Verify proposal exists and belongs to tenant
     const existingProposal = await database.proposal.findFirst({
       where: {
         AND: [{ id }, { tenantId }, { deletedAt: null }],
@@ -345,7 +356,6 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       );
     }
 
-    // Soft delete the proposal
     await database.proposal.updateMany({
       where: {
         AND: [{ tenantId }, { id }],

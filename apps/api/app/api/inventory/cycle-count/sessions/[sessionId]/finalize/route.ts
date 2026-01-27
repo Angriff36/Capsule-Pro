@@ -14,6 +14,142 @@ function toNumber(value: { toNumber: () => number }): number {
   return value.toNumber();
 }
 
+function getAdjustmentType(variance: number): "increase" | "decrease" | "none" {
+  if (variance > 0) {
+    return "increase";
+  }
+  if (variance < 0) {
+    return "decrease";
+  }
+  return "none";
+}
+
+type VarianceRecord = {
+  id: string;
+  itemId: string;
+  itemNumber: string | null;
+  itemName: string | null;
+  expectedQuantity: { toNumber: () => number };
+  countedQuantity: { toNumber: () => number };
+  variance: { toNumber: () => number };
+  storageLocationId: string | null;
+};
+
+type SessionInfo = {
+  id: string;
+  sessionId: string;
+  status: string;
+  totalVariance: { toNumber: () => number };
+};
+
+function generateVarianceReport(
+  record: VarianceRecord,
+  tenantId: string,
+  session: SessionInfo
+) {
+  const expectedQuantity = toNumber(record.expectedQuantity);
+  const countedQuantity = toNumber(record.countedQuantity);
+  const variance = countedQuantity - expectedQuantity;
+  const variancePct =
+    expectedQuantity > 0 ? Math.abs((variance / expectedQuantity) * 100) : 0;
+  const accuracyScore =
+    expectedQuantity > 0 ? Math.max(0, 100 - variancePct) : 100;
+
+  return {
+    tenantId,
+    sessionId: session.id,
+    reportType: "item_variance" as const,
+    itemId: record.itemId,
+    itemNumber: record.itemNumber,
+    itemName: record.itemName,
+    expectedQuantity,
+    countedQuantity,
+    variance,
+    variancePct,
+    accuracyScore,
+    status: "pending" as const,
+    adjustmentType: null,
+    adjustmentAmount: null,
+    adjustmentDate: null,
+    notes: null,
+    generatedAt: new Date(),
+  };
+}
+
+async function processInventoryAdjustments(
+  tenantId: string,
+  session: SessionInfo,
+  records: VarianceRecord[]
+) {
+  for (const record of records) {
+    const expectedQuantity = toNumber(record.expectedQuantity);
+    const countedQuantity = toNumber(record.countedQuantity);
+    const variance = countedQuantity - expectedQuantity;
+
+    if (variance === 0) {
+      continue;
+    }
+
+    // Find the inventory item
+    const inventoryItem = await database.inventoryItem.findFirst({
+      where: {
+        tenantId,
+        id: record.itemId,
+        deletedAt: null,
+      },
+    });
+
+    if (!inventoryItem) {
+      continue;
+    }
+
+    // Create inventory transaction
+    await database.inventoryTransaction.create({
+      data: {
+        tenantId,
+        itemId: record.itemId,
+        transactionType: "adjustment",
+        quantity: variance,
+        unit_cost: inventoryItem.unitCost,
+        reason: `Cycle count session ${session.sessionId}`,
+        reference: session.sessionId,
+        referenceType: "cycle_count",
+        referenceId: session.id,
+        storage_location_id: record.storageLocationId || undefined,
+      },
+    });
+
+    // Update inventory item quantity
+    await database.inventoryItem.update({
+      where: {
+        tenantId_id: {
+          tenantId,
+          id: record.itemId,
+        },
+      },
+      data: {
+        quantityOnHand: countedQuantity,
+      },
+    });
+
+    // Update variance report with adjustment details
+    await database.varianceReport.updateMany({
+      where: {
+        tenantId,
+        sessionId: session.id,
+        itemId: record.itemId,
+        deletedAt: null,
+      },
+      data: {
+        status: "approved",
+        adjustmentType: getAdjustmentType(variance),
+        adjustmentAmount: Math.abs(variance),
+        adjustmentDate: new Date(),
+      },
+    });
+  }
+}
+
 type RouteContext = {
   params: Promise<{ sessionId: string }>;
 };
@@ -103,110 +239,16 @@ export async function POST(request: Request, context: RouteContext) {
       totalExpected > 0 ? Math.abs((totalVariance / totalExpected) * 100) : 0;
 
     // Generate variance reports
-    const varianceReports = records.map((record) => {
-      const expectedQuantity = toNumber(record.expectedQuantity);
-      const countedQuantity = toNumber(record.countedQuantity);
-      const variance = countedQuantity - expectedQuantity;
-      const variancePct =
-        expectedQuantity > 0
-          ? Math.abs((variance / expectedQuantity) * 100)
-          : 0;
-      const accuracyScore =
-        expectedQuantity > 0 ? Math.max(0, 100 - variancePct) : 100;
-
-      return {
-        tenantId,
-        sessionId: session.id,
-        reportType: "item_variance",
-        itemId: record.itemId,
-        itemNumber: record.itemNumber,
-        itemName: record.itemName,
-        expectedQuantity,
-        countedQuantity,
-        variance,
-        variancePct,
-        accuracyScore,
-        status: "pending" as const,
-        adjustmentType: null,
-        adjustmentAmount: null,
-        adjustmentDate: null,
-        notes: null,
-        generatedAt: new Date(),
-      };
-    });
+    const varianceReports = records.map((record) =>
+      generateVarianceReport(record, tenantId, session)
+    );
 
     await database.varianceReport.createMany({
       data: varianceReports,
     });
 
     // Process inventory adjustments for records with variance
-    for (const record of records) {
-      const expectedQuantity = toNumber(record.expectedQuantity);
-      const countedQuantity = toNumber(record.countedQuantity);
-      const variance = countedQuantity - expectedQuantity;
-
-      if (variance !== 0) {
-        // Find the inventory item
-        const inventoryItem = await database.inventoryItem.findFirst({
-          where: {
-            tenantId,
-            id: record.itemId,
-            deletedAt: null,
-          },
-        });
-
-        if (inventoryItem) {
-          // Create inventory transaction
-          await database.inventoryTransaction.create({
-            data: {
-              tenantId,
-              itemId: record.itemId,
-              transactionType: "adjustment",
-              quantity: variance,
-              unit_cost: inventoryItem.unitCost,
-              reason: `Cycle count session ${session.sessionId}`,
-              reference: session.sessionId,
-              referenceType: "cycle_count",
-              referenceId: session.id,
-              storage_location_id: record.storageLocationId || undefined,
-            },
-          });
-
-          // Update inventory item quantity
-          await database.inventoryItem.update({
-            where: {
-              tenantId_id: {
-                tenantId,
-                id: record.itemId,
-              },
-            },
-            data: {
-              quantityOnHand: countedQuantity,
-            },
-          });
-        }
-
-        // Update variance report with adjustment details
-        await database.varianceReport.updateMany({
-          where: {
-            tenantId,
-            sessionId: session.id,
-            itemId: record.itemId,
-            deletedAt: null,
-          },
-          data: {
-            status: "approved",
-            adjustmentType: (() => {
-              if (variance > 0) return "increase";
-              if (variance < 0) return "decrease";
-              return "none";
-            })(),
-            adjustmentAmount: Math.abs(variance),
-            adjustmentDate: new Date(),
-          },
-        });
-      }
-    }
+    await processInventoryAdjustments(tenantId, session, records);
 
     // Update session to finalized
     const updatedSession = await database.cycleCountSession.update({

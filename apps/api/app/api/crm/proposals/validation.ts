@@ -10,6 +10,20 @@ import type {
   SendProposalRequest,
 } from "./types";
 
+/**
+ * Email validation regex (defined at top level for performance)
+ */
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const VALID_STATUSES = [
+  "draft",
+  "sent",
+  "viewed",
+  "accepted",
+  "rejected",
+  "expired",
+];
+
 export function parseProposalFilters(
   searchParams: URLSearchParams
 ): ProposalFilters {
@@ -23,19 +37,10 @@ export function parseProposalFilters(
     dateTo: searchParams.get("dateTo") || undefined,
   };
 
-  // Validate status if provided
-  if (filters.status) {
-    const validStatuses = [
-      "draft",
-      "sent",
-      "viewed",
-      "accepted",
-      "rejected",
-      "expired",
-    ];
+  if (filters.status && !VALID_STATUSES.includes(filters.status)) {
     invariant(
-      validStatuses.includes(filters.status),
-      `Invalid status: ${filters.status}. Must be one of: ${validStatuses.join(", ")}`
+      false,
+      `Invalid status: ${filters.status}. Must be one of: ${VALID_STATUSES.join(", ")}`
     );
   }
 
@@ -52,23 +57,20 @@ export function parsePaginationParams(searchParams: URLSearchParams) {
   return { page, limit };
 }
 
-export function validateCreateProposalRequest(
-  body: unknown
-): asserts body is CreateProposalRequest {
-  invariant(
-    body && typeof body === "object",
-    "Request body must be a valid object"
-  );
-
-  const data = body as Record<string, unknown>;
-
-  // Title is required
+/**
+ * Validate required title field
+ */
+function validateTitle(data: Record<string, unknown>) {
   invariant(
     typeof data.title === "string" && data.title.trim().length > 0,
     "title is required and must be a non-empty string"
   );
+}
 
-  // Validate optional fields
+/**
+ * Validate optional string ID fields
+ */
+function validateIdFields(data: Record<string, unknown>) {
   if (data.clientId !== undefined && data.clientId !== null) {
     invariant(
       typeof data.clientId === "string" && data.clientId.trim().length > 0,
@@ -89,8 +91,12 @@ export function validateCreateProposalRequest(
       "eventId must be a string"
     );
   }
+}
 
-  // Either clientId, leadId, or eventId should be provided (but not conflicting)
+/**
+ * Validate that at least one reference is provided
+ */
+function validateAtLeastOneReference(data: Record<string, unknown>) {
   const hasClient = !!data.clientId;
   const hasLead = !!data.leadId;
   const hasEvent = !!data.eventId;
@@ -99,8 +105,12 @@ export function validateCreateProposalRequest(
     hasClient || hasLead || hasEvent,
     "At least one of clientId, leadId, or eventId must be provided"
   );
+}
 
-  // Validate eventDate if provided
+/**
+ * Validate optional date fields
+ */
+function validateDateFields(data: Record<string, unknown>) {
   if (data.eventDate !== undefined && data.eventDate !== null) {
     invariant(
       typeof data.eventDate === "string" || data.eventDate instanceof Date,
@@ -108,7 +118,18 @@ export function validateCreateProposalRequest(
     );
   }
 
-  // Validate guestCount if provided
+  if (data.validUntil !== undefined && data.validUntil !== null) {
+    invariant(
+      typeof data.validUntil === "string" || data.validUntil instanceof Date,
+      "validUntil must be a string or Date"
+    );
+  }
+}
+
+/**
+ * Validate optional numeric fields
+ */
+function validateNumericFields(data: Record<string, unknown>) {
   if (data.guestCount !== undefined && data.guestCount !== null) {
     invariant(
       typeof data.guestCount === "number" && data.guestCount >= 0,
@@ -116,7 +137,6 @@ export function validateCreateProposalRequest(
     );
   }
 
-  // Validate financial fields if provided
   if (data.subtotal !== undefined && data.subtotal !== null) {
     invariant(
       typeof data.subtotal === "number" && data.subtotal >= 0,
@@ -137,38 +157,49 @@ export function validateCreateProposalRequest(
       "total must be a non-negative number"
     );
   }
+}
 
-  // Validate status if provided
+/**
+ * Validate optional status field
+ */
+function validateStatus(data: Record<string, unknown>) {
   if (data.status) {
-    const validStatuses = [
-      "draft",
-      "sent",
-      "viewed",
-      "accepted",
-      "rejected",
-      "expired",
-    ];
     invariant(
-      validStatuses.includes(data.status as string),
-      `Invalid status: ${data.status}. Must be one of: ${validStatuses.join(", ")}`
+      VALID_STATUSES.includes(data.status as string),
+      `Invalid status: ${data.status}. Must be one of: ${VALID_STATUSES.join(", ")}`
     );
   }
+}
 
-  // Validate validUntil if provided
-  if (data.validUntil !== undefined && data.validUntil !== null) {
-    invariant(
-      typeof data.validUntil === "string" || data.validUntil instanceof Date,
-      "validUntil must be a string or Date"
-    );
-  }
-
-  // Validate lineItems if provided
+/**
+ * Validate line items array
+ */
+function validateLineItems(data: Record<string, unknown>) {
   if (data.lineItems !== undefined && data.lineItems !== null) {
     invariant(Array.isArray(data.lineItems), "lineItems must be an array");
     for (const item of data.lineItems) {
       validateLineItem(item);
     }
   }
+}
+
+export function validateCreateProposalRequest(
+  body: unknown
+): asserts body is CreateProposalRequest {
+  invariant(
+    body && typeof body === "object",
+    "Request body must be a valid object"
+  );
+
+  const data = body as Record<string, unknown>;
+
+  validateTitle(data);
+  validateIdFields(data);
+  validateAtLeastOneReference(data);
+  validateDateFields(data);
+  validateNumericFields(data);
+  validateStatus(data);
+  validateLineItems(data);
 }
 
 export function validateUpdateProposalRequest(
@@ -181,13 +212,11 @@ export function validateUpdateProposalRequest(
 
   const data = body as Record<string, unknown>;
 
-  // ID is required for updates
   invariant(
     typeof data.id === "string" && data.id.trim().length > 0,
     "id is required and must be a non-empty string"
   );
 
-  // Reuse create validation for the rest (all optional for updates)
   validateCreateProposalRequest(data);
 }
 
@@ -239,12 +268,10 @@ export function validateSendProposalRequest(
 
   const data = body as Record<string, unknown>;
 
-  // All fields are optional for sending
   if (data.recipientEmail !== undefined && data.recipientEmail !== null) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     invariant(
       typeof data.recipientEmail === "string" &&
-        emailRegex.test(data.recipientEmail.trim()),
+        EMAIL_REGEX.test(data.recipientEmail.trim()),
       "recipientEmail must be a valid email address"
     );
   }

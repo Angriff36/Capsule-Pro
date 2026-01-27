@@ -35,9 +35,150 @@ function escapeCSV(value: string | number | null | undefined): string {
  * Helper function to convert date to CSV-safe format
  */
 function formatDateForCSV(date: Date | string | null): string {
-  if (!date) return "";
+  if (!date) {
+    return "";
+  }
   const d = typeof date === "string" ? new Date(date) : date;
   return d.toISOString().split("T")[0]; // YYYY-MM-DD
+}
+
+/**
+ * Build where clause conditions from query parameters
+ */
+function buildWhereConditions(
+  tenantId: string,
+  params: {
+    startDate: string | null;
+    endDate: string | null;
+    status: string | null;
+    eventType: string | null;
+    venueId: string | null;
+    search: string | null;
+  }
+): { clause: string; params: (string | Date | number)[]; limit: number } {
+  const conditions: string[] = ["tenant_id = $1", "deleted_at IS NULL"];
+  const queryParams: (string | Date | number)[] = [tenantId];
+  let paramIndex = 2;
+
+  if (params.startDate) {
+    conditions.push(`event_date >= $${paramIndex++}`);
+    queryParams.push(params.startDate);
+  }
+
+  if (params.endDate) {
+    conditions.push(`event_date <= $${paramIndex++}`);
+    queryParams.push(params.endDate);
+  }
+
+  if (params.status) {
+    conditions.push(`status = $${paramIndex++}`);
+    queryParams.push(params.status);
+  }
+
+  if (params.eventType) {
+    conditions.push(`event_type = $${paramIndex++}`);
+    queryParams.push(params.eventType);
+  }
+
+  if (params.venueId) {
+    conditions.push(`venue_id = $${paramIndex++}`);
+    queryParams.push(params.venueId);
+  }
+
+  if (params.search) {
+    conditions.push(
+      `(title ILIKE $${paramIndex++} OR event_number ILIKE $${paramIndex++})`
+    );
+    queryParams.push(`%${params.search}%`, `%${params.search}%`);
+  }
+
+  return {
+    clause: conditions.join(" AND "),
+    params: queryParams,
+    limit: paramIndex,
+  };
+}
+
+/**
+ * Generate CSV rows from events
+ */
+function generateCSVRows(
+  events: Array<{
+    id: string;
+    event_number: string | null;
+    title: string;
+    event_date: Date;
+    event_type: string;
+    status: string;
+    guest_count: number;
+    venue_name: string | null;
+    venue_address: string | null;
+    budget: number | null;
+    notes: string | null;
+    tags: string[];
+    created_at: Date;
+    updated_at: Date;
+  }>,
+  filters: {
+    startDate: string | null;
+    endDate: string | null;
+    status: string | null;
+    eventType: string | null;
+    venueId: string | null;
+    search: string | null;
+  }
+): string[] {
+  const rows: string[] = [];
+
+  // Add BOM for Excel UTF-8 compatibility
+  rows.push("\uFEFF");
+
+  // Header row
+  rows.push(
+    "Event ID,Event Number,Title,Date,Type,Status,Guest Count,Venue,Address,Budget,Tags,Created,Updated"
+  );
+
+  // Data rows
+  for (const event of events) {
+    rows.push(
+      [
+        escapeCSV(event.id),
+        escapeCSV(event.event_number),
+        escapeCSV(event.title),
+        formatDateForCSV(event.event_date),
+        escapeCSV(event.event_type),
+        escapeCSV(event.status),
+        escapeCSV(event.guest_count),
+        escapeCSV(event.venue_name),
+        escapeCSV(event.venue_address),
+        escapeCSV(event.budget),
+        escapeCSV(event.tags.join("; ")),
+        formatDateForCSV(event.created_at),
+        formatDateForCSV(event.updated_at),
+      ].join(",")
+    );
+  }
+
+  // Summary row
+  rows.push(""); // Empty row
+  rows.push("Summary");
+  rows.push(`Total Events Exported,${events.length}`);
+  rows.push(`Export Date,${formatDateForCSV(new Date())}`);
+  rows.push(
+    `Filters Applied,${Object.entries({
+      start_date: filters.startDate || "N/A",
+      end_date: filters.endDate || "N/A",
+      status: filters.status || "N/A",
+      event_type: filters.eventType || "N/A",
+      venue_id: filters.venueId || "N/A",
+      search: filters.search || "N/A",
+    })
+      .filter(([, v]) => v !== "N/A")
+      .map(([k, v]) => `${k}: ${v}`)
+      .join("; ")}`
+  );
+
+  return rows;
 }
 
 /**
@@ -84,46 +225,21 @@ export async function GET(request: Request) {
     const limitParam = url.searchParams.get("limit") || "1000";
     const shouldDownload = url.searchParams.get("download") === "true";
 
-    const limit = Math.min(Number.parseInt(limitParam, 10), 5000); // Cap at 5000
+    const limit = Math.min(Number.parseInt(limitParam, 10), 5000);
 
     // Build where clause
-    const whereConditions: string[] = ["tenant_id = $1", "deleted_at IS NULL"];
-    const queryParams: (string | Date | number)[] = [tenantId];
-    let paramIndex = 2;
-
-    if (startDate) {
-      whereConditions.push(`event_date >= $${paramIndex++}`);
-      queryParams.push(startDate);
-    }
-
-    if (endDate) {
-      whereConditions.push(`event_date <= $${paramIndex++}`);
-      queryParams.push(endDate);
-    }
-
-    if (status) {
-      whereConditions.push(`status = $${paramIndex++}`);
-      queryParams.push(status);
-    }
-
-    if (eventType) {
-      whereConditions.push(`event_type = $${paramIndex++}`);
-      queryParams.push(eventType);
-    }
-
-    if (venueId) {
-      whereConditions.push(`venue_id = $${paramIndex++}`);
-      queryParams.push(venueId);
-    }
-
-    if (search) {
-      whereConditions.push(
-        `(title ILIKE $${paramIndex++} OR event_number ILIKE $${paramIndex++})`
-      );
-      queryParams.push(`%${search}%`, `%${search}%`);
-    }
-
-    const whereClause = whereConditions.join(" AND ");
+    const {
+      clause: whereClause,
+      params: queryParams,
+      limit: paramIndex,
+    } = buildWhereConditions(tenantId, {
+      startDate,
+      endDate,
+      status,
+      eventType,
+      venueId,
+      search,
+    });
 
     // Fetch events with pagination
     const events = await database.$queryRawUnsafe<
@@ -162,7 +278,7 @@ export async function GET(request: Request) {
         FROM tenant_events.events
         WHERE ${whereClause}
         ORDER BY event_date DESC, created_at DESC
-        LIMIT $${paramIndex++}`,
+        LIMIT $${paramIndex}`,
       ...queryParams,
       limit
     );
@@ -175,57 +291,14 @@ export async function GET(request: Request) {
     }
 
     // Build CSV content
-    const csvRows: string[] = [];
-
-    // Add BOM for Excel UTF-8 compatibility
-    csvRows.push("\uFEFF");
-
-    // Header row
-    csvRows.push(
-      "Event ID,Event Number,Title,Date,Type,Status,Guest Count,Venue,Address,Budget,Tags,Created,Updated"
-    );
-
-    // Data rows
-    for (const event of events) {
-      csvRows.push(
-        [
-          escapeCSV(event.id),
-          escapeCSV(event.event_number),
-          escapeCSV(event.title),
-          formatDateForCSV(event.event_date),
-          escapeCSV(event.event_type),
-          escapeCSV(event.status),
-          escapeCSV(event.guest_count),
-          escapeCSV(event.venue_name),
-          escapeCSV(event.venue_address),
-          escapeCSV(event.budget),
-          escapeCSV(event.tags.join("; ")),
-          formatDateForCSV(event.created_at),
-          formatDateForCSV(event.updated_at),
-        ].join(",")
-      );
-    }
-
-    // Summary row
-    csvRows.push(""); // Empty row
-    csvRows.push("Summary");
-    csvRows.push(`Total Events Exported,${events.length}`);
-    csvRows.push(`Export Date,${formatDateForCSV(new Date())}`);
-    csvRows.push(
-      `Filters Applied,${Object.entries({
-        start_date: startDate || "N/A",
-        end_date: endDate || "N/A",
-        status: status || "N/A",
-        event_type: eventType || "N/A",
-        venue_id: venueId || "N/A",
-        search: search || "N/A",
-      })
-        .filter(([_, v]) => v !== "N/A")
-        .map(([k, v]) => `${k}: ${v}`)
-        .join("; ")}`
-    );
-
-    // Combine rows with newlines
+    const csvRows = generateCSVRows(events, {
+      startDate,
+      endDate,
+      status,
+      eventType,
+      venueId,
+      search,
+    });
     const csvContent = csvRows.join("\n");
 
     // Generate filename
@@ -233,7 +306,6 @@ export async function GET(request: Request) {
     const filename = `events-export-${timestamp}.csv`;
 
     if (shouldDownload) {
-      // Return as downloadable file
       return new NextResponse(csvContent, {
         headers: {
           "Content-Type": "text/csv; charset=utf-8",
@@ -242,7 +314,6 @@ export async function GET(request: Request) {
       });
     }
 
-    // Return as JSON with content
     return NextResponse.json({
       filename,
       content: csvContent,

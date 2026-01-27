@@ -545,6 +545,12 @@ export const updateRecipe = async (recipeId: string, formData: FormData) => {
     throw new Error("Recipe ID is required.");
   }
 
+  // Validate name first before any database queries
+  const name = String(formData.get("name") || "").trim();
+  if (!name) {
+    throw new Error("Recipe name is required.");
+  }
+
   // Verify recipe exists and belongs to tenant
   const [existingRecipe] = await database.$queryRaw<
     { id: string; tenant_id: string }[]
@@ -561,11 +567,6 @@ export const updateRecipe = async (recipeId: string, formData: FormData) => {
 
   if (!existingRecipe) {
     throw new Error("Recipe not found or access denied.");
-  }
-
-  const name = String(formData.get("name") || "").trim();
-  if (!name) {
-    throw new Error("Recipe name is required.");
   }
 
   const category = String(formData.get("category") || "").trim() || null;

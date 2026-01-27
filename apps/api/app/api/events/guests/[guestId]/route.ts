@@ -5,11 +5,85 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 type Params = Promise<{ guestId: string }>;
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type UpdateGuestData = {
+  guestName?: string;
+  guestEmail?: string | null;
+  guestPhone?: string | null;
+  isPrimaryContact?: boolean;
+  dietaryRestrictions?: string[];
+  allergenRestrictions?: string[];
+  notes?: string | null;
+  specialMealRequired?: boolean;
+  specialMealNotes?: string | null;
+  tableAssignment?: string | null;
+  mealPreference?: string | null;
+};
+
+function validateGuestName(guestName: unknown): string | null {
+  if (!guestName || typeof guestName !== "string" || guestName.trim() === "") {
+    return "Guest name is required and cannot be empty";
+  }
+  return null;
+}
+
+function validateGuestEmail(guestEmail: unknown): string | null {
+  if (guestEmail !== null) {
+    if (typeof guestEmail !== "string" || guestEmail.trim() === "") {
+      return "Email must be a valid string or null";
+    }
+    if (!emailRegex.test(guestEmail.trim())) {
+      return "Invalid email format";
+    }
+  }
+  return null;
+}
+
+function validateGuestPhone(guestPhone: unknown): string | null {
+  if (
+    guestPhone !== null &&
+    (typeof guestPhone !== "string" || guestPhone.trim() === "")
+  ) {
+    return "Phone must be a valid string or null";
+  }
+  return null;
+}
+
+function validateDietaryRestrictions(
+  dietaryRestrictions: unknown
+): string | null {
+  if (!Array.isArray(dietaryRestrictions)) {
+    return "Dietary restrictions must be an array";
+  }
+  return null;
+}
+
+function validateAllergenRestrictions(
+  allergenRestrictions: unknown
+): string | null {
+  if (!Array.isArray(allergenRestrictions)) {
+    return "Allergen restrictions must be an array";
+  }
+  return null;
+}
+
+function sanitizeStringArray(restrictions: unknown[]): string[] {
+  return restrictions
+    .filter(
+      (restriction) =>
+        restriction !== null &&
+        restriction !== undefined &&
+        restriction.toString().trim() !== ""
+    )
+    .map((restriction) => restriction.toString().trim());
+}
+
 /**
  * GET /api/events/guests/[guestId]
  * Get a single guest by ID
  */
-export async function GET(request: Request, { params }: { params: Params }) {
+export async function GET(_request: Request, { params }: { params: Params }) {
   const { orgId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -57,62 +131,32 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   }
 
   // Build update data with validation
-  const updateData: any = {};
+  const updateData: UpdateGuestData = {};
 
   if (body.guestName !== undefined) {
-    if (
-      !body.guestName ||
-      typeof body.guestName !== "string" ||
-      body.guestName.trim() === ""
-    ) {
-      return NextResponse.json(
-        { message: "Guest name is required and cannot be empty" },
-        { status: 400 }
-      );
+    const error = validateGuestName(body.guestName);
+    if (error) {
+      return NextResponse.json({ message: error }, { status: 400 });
     }
     updateData.guestName = body.guestName.trim();
   }
 
   if (body.guestEmail !== undefined) {
-    if (body.guestEmail !== null) {
-      if (
-        typeof body.guestEmail !== "string" ||
-        body.guestEmail.trim() === ""
-      ) {
-        return NextResponse.json(
-          { message: "Email must be a valid string or null" },
-          { status: 400 }
-        );
-      }
-      // Basic email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(body.guestEmail.trim())) {
-        return NextResponse.json(
-          { message: "Invalid email format" },
-          { status: 400 }
-        );
-      }
-      updateData.guestEmail = body.guestEmail.trim();
-    } else {
-      updateData.guestEmail = null;
+    const error = validateGuestEmail(body.guestEmail);
+    if (error) {
+      return NextResponse.json({ message: error }, { status: 400 });
     }
+    updateData.guestEmail =
+      body.guestEmail === null ? null : body.guestEmail.trim();
   }
 
   if (body.guestPhone !== undefined) {
-    if (body.guestPhone !== null) {
-      if (
-        typeof body.guestPhone !== "string" ||
-        body.guestPhone.trim() === ""
-      ) {
-        return NextResponse.json(
-          { message: "Phone must be a valid string or null" },
-          { status: 400 }
-        );
-      }
-      updateData.guestPhone = body.guestPhone.trim();
-    } else {
-      updateData.guestPhone = null;
+    const error = validateGuestPhone(body.guestPhone);
+    if (error) {
+      return NextResponse.json({ message: error }, { status: 400 });
     }
+    updateData.guestPhone =
+      body.guestPhone === null ? null : body.guestPhone.trim();
   }
 
   if (body.isPrimaryContact !== undefined) {
@@ -120,37 +164,23 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   }
 
   if (body.dietaryRestrictions !== undefined) {
-    if (!Array.isArray(body.dietaryRestrictions)) {
-      return NextResponse.json(
-        { message: "Dietary restrictions must be an array" },
-        { status: 400 }
-      );
+    const error = validateDietaryRestrictions(body.dietaryRestrictions);
+    if (error) {
+      return NextResponse.json({ message: error }, { status: 400 });
     }
-    updateData.dietaryRestrictions = body.dietaryRestrictions
-      .filter(
-        (restriction: any) =>
-          restriction !== null &&
-          restriction !== undefined &&
-          restriction.toString().trim() !== ""
-      )
-      .map((restriction: any) => restriction.toString().trim());
+    updateData.dietaryRestrictions = sanitizeStringArray(
+      body.dietaryRestrictions
+    );
   }
 
   if (body.allergenRestrictions !== undefined) {
-    if (!Array.isArray(body.allergenRestrictions)) {
-      return NextResponse.json(
-        { message: "Allergen restrictions must be an array" },
-        { status: 400 }
-      );
+    const error = validateAllergenRestrictions(body.allergenRestrictions);
+    if (error) {
+      return NextResponse.json({ message: error }, { status: 400 });
     }
-    updateData.allergenRestrictions = body.allergenRestrictions
-      .filter(
-        (restriction: any) =>
-          restriction !== null &&
-          restriction !== undefined &&
-          restriction.toString().trim() !== ""
-      )
-      .map((restriction: any) => restriction.toString().trim());
+    updateData.allergenRestrictions = sanitizeStringArray(
+      body.allergenRestrictions
+    );
   }
 
   if (body.notes !== undefined) {
@@ -201,7 +231,10 @@ export async function PUT(request: Request, { params }: { params: Params }) {
  * DELETE /api/events/guests/[guestId]
  * Soft delete a guest
  */
-export async function DELETE(request: Request, { params }: { params: Params }) {
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Params }
+) {
   const { orgId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });

@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@repo/design-system/components/ui/button";
+import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -12,16 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Checkbox } from "@repo/design-system/components/ui/checkbox";
+import { useRouter } from "next/navigation";
+import React, { useState, useTransition } from "react";
 import {
-  createMenu,
-  updateMenu,
   addDishToMenu,
-  removeDishFromMenu,
-  getDishes,
-  getMenuById,
+  createMenu,
   type DishSummary,
-  type MenuDetail,
+  getDishes,
+  updateMenu,
 } from "../actions";
 
 type MenuEditorProps = {
@@ -82,7 +79,11 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
 
         // Add new dishes
         for (const selectedDish of selectedDishes) {
-          await addDishToMenu(menuId, selectedDish.dish.id, selectedDish.course || undefined);
+          await addDishToMenu(
+            menuId,
+            selectedDish.dish.id,
+            selectedDish.course || undefined
+          );
         }
       } else {
         // Create new menu
@@ -110,14 +111,12 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
 
   const handleCourseChange = (dishId: string, course: string) => {
     setSelectedDishes((prev) =>
-      prev.map((sd) =>
-        sd.dish.id === dishId ? { ...sd, course } : sd
-      )
+      prev.map((sd) => (sd.dish.id === dishId ? { ...sd, course } : sd))
     );
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="grid gap-6">
         {/* Basic Info Section */}
         <div className="space-y-4">
@@ -127,10 +126,10 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
             <Label htmlFor="name">Menu Name *</Label>
             <Input
               id="name"
-              value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter menu name"
               required
+              value={name}
             />
           </div>
 
@@ -138,9 +137,9 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
             <Label htmlFor="description">Description</Label>
             <Input
               id="description"
-              value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter menu description"
+              value={description}
             />
           </div>
 
@@ -148,9 +147,9 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
             <Label htmlFor="category">Category</Label>
             <Input
               id="category"
-              value={category}
               onChange={(e) => setCategory(e.target.value)}
               placeholder="e.g., Italian, Asian, Buffet"
+              value={category}
             />
           </div>
         </div>
@@ -164,11 +163,11 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
               <Label htmlFor="basePrice">Base Price ($)</Label>
               <Input
                 id="basePrice"
-                type="number"
-                step="0.01"
-                value={basePrice}
                 onChange={(e) => setBasePrice(e.target.value)}
                 placeholder="0.00"
+                step="0.01"
+                type="number"
+                value={basePrice}
               />
             </div>
 
@@ -176,11 +175,11 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
               <Label htmlFor="pricePerPerson">Price Per Person ($)</Label>
               <Input
                 id="pricePerPerson"
-                type="number"
-                step="0.01"
-                value={pricePerPerson}
                 onChange={(e) => setPricePerPerson(e.target.value)}
                 placeholder="0.00"
+                step="0.01"
+                type="number"
+                value={pricePerPerson}
               />
             </div>
           </div>
@@ -190,10 +189,10 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
               <Label htmlFor="minGuests">Min Guests</Label>
               <Input
                 id="minGuests"
-                type="number"
-                value={minGuests}
                 onChange={(e) => setMinGuests(e.target.value)}
                 placeholder="0"
+                type="number"
+                value={minGuests}
               />
             </div>
 
@@ -201,10 +200,10 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
               <Label htmlFor="maxGuests">Max Guests</Label>
               <Input
                 id="maxGuests"
-                type="number"
-                value={maxGuests}
                 onChange={(e) => setMaxGuests(e.target.value)}
                 placeholder="0"
+                type="number"
+                value={maxGuests}
               />
             </div>
           </div>
@@ -218,23 +217,23 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
           </p>
 
           <DishesSelector
-            selectedDishes={selectedDishes}
-            onDishToggle={handleDishToggle}
             onCourseChange={handleCourseChange}
+            onDishToggle={handleDishToggle}
+            selectedDishes={selectedDishes}
           />
         </div>
 
         {/* Submit Button */}
         <div className="flex justify-end gap-4">
           <Button
+            disabled={isPending}
+            onClick={() => router.back()}
             type="button"
             variant="outline"
-            onClick={() => router.back()}
-            disabled={isPending}
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isPending}>
+          <Button disabled={isPending} type="submit">
             {isPending ? "Saving..." : menuId ? "Update Menu" : "Create Menu"}
           </Button>
         </div>
@@ -271,17 +270,18 @@ function DishesSelector({
     fetchDishes();
   }, []);
 
-  const filteredDishes = dishes.filter((dish) =>
-    dish.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (dish.category?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+  const filteredDishes = dishes.filter(
+    (dish) =>
+      dish.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (dish.category?.toLowerCase() || "").includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="space-y-4">
       <Input
+        onChange={(e) => setSearchQuery(e.target.value)}
         placeholder="Search dishes..."
         value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
       />
 
       <div className="border rounded-md">
@@ -292,7 +292,9 @@ function DishesSelector({
             </div>
           ) : filteredDishes.length === 0 ? (
             <div className="p-4 text-center text-sm text-muted-foreground">
-              {searchQuery ? "No dishes found matching your search" : "No dishes available"}
+              {searchQuery
+                ? "No dishes found matching your search"
+                : "No dishes available"}
             </div>
           ) : (
             <div className="divide-y">
@@ -305,12 +307,12 @@ function DishesSelector({
                 );
 
                 return (
-                  <div key={dish.id} className="p-4 space-y-2">
+                  <div className="p-4 space-y-2" key={dish.id}>
                     <div className="flex items-start gap-3">
                       <Checkbox
                         checked={isSelected}
-                        onCheckedChange={() => onDishToggle(dish)}
                         className="mt-1"
+                        onCheckedChange={() => onDishToggle(dish)}
                       />
                       <div className="flex-1 space-y-1">
                         <div className="font-medium">{dish.name}</div>
@@ -330,17 +332,20 @@ function DishesSelector({
                     {isSelected && (
                       <div className="ml-7">
                         <Select
-                          value={selectedDish?.course || ""}
                           onValueChange={(value) =>
                             onCourseChange(dish.id, value)
                           }
+                          value={selectedDish?.course || ""}
                         >
                           <SelectTrigger className="w-48">
                             <SelectValue placeholder="Select course" />
                           </SelectTrigger>
                           <SelectContent>
                             {COURSE_OPTIONS.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                              >
                                 {option.label}
                               </SelectItem>
                             ))}
@@ -358,7 +363,8 @@ function DishesSelector({
 
       {selectedDishes.length > 0 && (
         <div className="text-sm text-muted-foreground">
-          {selectedDishes.length} dish{selectedDishes.length !== 1 ? "es" : ""} selected
+          {selectedDishes.length} dish{selectedDishes.length !== 1 ? "es" : ""}{" "}
+          selected
         </div>
       )}
     </div>

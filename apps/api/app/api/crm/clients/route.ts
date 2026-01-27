@@ -45,7 +45,7 @@ export async function GET(request: Request) {
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         {
           OR: [
             { company_name: { contains: searchLower, mode: "insensitive" } },
@@ -60,7 +60,7 @@ export async function GET(request: Request) {
     // Add tag filter
     if (filters.tags && filters.tags.length > 0) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         { tags: { hasSome: filters.tags } },
       ];
     }
@@ -68,7 +68,7 @@ export async function GET(request: Request) {
     // Add assignedTo filter
     if (filters.assignedTo) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         { assignedTo: filters.assignedTo },
       ];
     }
@@ -76,7 +76,7 @@ export async function GET(request: Request) {
     // Add clientType filter
     if (filters.clientType) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         { clientType: filters.clientType },
       ];
     }
@@ -84,7 +84,7 @@ export async function GET(request: Request) {
     // Add source filter
     if (filters.source) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         { source: filters.source },
       ];
     }
@@ -126,6 +126,78 @@ export async function GET(request: Request) {
 }
 
 /**
+ * Build client data for creation
+ */
+function buildCreateClientData(
+  data: CreateClientRequest,
+  tenantId: string,
+  clientType: string
+) {
+  const clientData: Record<string, unknown> = {
+    tenantId,
+    clientType,
+  };
+
+  // Helper to conditionally add trimmed string fields
+  const addTrimmedString = (key: keyof CreateClientRequest) => {
+    const value = data[key];
+    if (value !== undefined && value !== null) {
+      clientData[key] = (value as string)?.trim() || null;
+    }
+  };
+
+  // Helper to add optional values
+  const addOptional = <T>(key: keyof CreateClientRequest, defaultValue?: T) => {
+    const value = data[key];
+    if (value !== undefined) {
+      clientData[key] =
+        defaultValue !== undefined ? (value ?? defaultValue) : value;
+    }
+  };
+
+  // Add string fields that need trimming
+  addTrimmedString("company_name");
+  addTrimmedString("first_name");
+  addTrimmedString("last_name");
+  addTrimmedString("email");
+  addTrimmedString("phone");
+  addTrimmedString("website");
+  addTrimmedString("addressLine1");
+  addTrimmedString("addressLine2");
+  addTrimmedString("city");
+  addTrimmedString("stateProvince");
+  addTrimmedString("postalCode");
+  addTrimmedString("countryCode");
+  addTrimmedString("taxId");
+  addTrimmedString("notes");
+  addTrimmedString("source");
+
+  // Add optional fields with defaults
+  addOptional("defaultPaymentTerms", 30);
+  addOptional("taxExempt", false);
+  addOptional("tags", []);
+  addOptional("assignedTo", null);
+
+  return clientData;
+}
+
+/**
+ * Check for duplicate email
+ */
+async function checkDuplicateEmail(
+  database: typeof import("@repo/database"),
+  tenantId: string,
+  email: string
+) {
+  const existingClient = await database.client.findFirst({
+    where: {
+      AND: [{ tenantId }, { email: email.trim() }, { deletedAt: null }],
+    },
+  });
+  return existingClient;
+}
+
+/**
  * POST /api/crm/clients
  * Create a new client
  */
@@ -145,16 +217,12 @@ export async function POST(request: Request) {
     const data = body as CreateClientRequest;
 
     // Check for duplicate email (if provided)
-    if (data.email && data.email.trim()) {
-      const existingClient = await database.client.findFirst({
-        where: {
-          AND: [
-            { tenantId },
-            { email: data.email.trim() },
-            { deletedAt: null },
-          ],
-        },
-      });
+    if (data.email?.trim()) {
+      const existingClient = await checkDuplicateEmail(
+        database,
+        tenantId,
+        data.email
+      );
 
       if (existingClient) {
         return NextResponse.json(
@@ -169,30 +237,9 @@ export async function POST(request: Request) {
       data.clientType || (data.company_name ? "company" : "individual");
 
     // Create client
+    const clientData = buildCreateClientData(data, tenantId, clientType);
     const client = await database.client.create({
-      data: {
-        tenantId,
-        clientType,
-        company_name: data.company_name?.trim() || null,
-        first_name: data.first_name?.trim() || null,
-        last_name: data.last_name?.trim() || null,
-        email: data.email?.trim() || null,
-        phone: data.phone?.trim() || null,
-        website: data.website?.trim() || null,
-        addressLine1: data.addressLine1?.trim() || null,
-        addressLine2: data.addressLine2?.trim() || null,
-        city: data.city?.trim() || null,
-        stateProvince: data.stateProvince?.trim() || null,
-        postalCode: data.postalCode?.trim() || null,
-        countryCode: data.countryCode?.trim() || null,
-        defaultPaymentTerms: data.defaultPaymentTerms ?? 30,
-        taxExempt: data.taxExempt ?? false,
-        taxId: data.taxId?.trim() || null,
-        notes: data.notes?.trim() || null,
-        tags: data.tags || [],
-        source: data.source?.trim() || null,
-        assignedTo: data.assignedTo || null,
-      },
+      data: clientData,
     });
 
     return NextResponse.json({ data: client }, { status: 201 });

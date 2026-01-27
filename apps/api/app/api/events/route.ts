@@ -33,19 +33,29 @@ function parseEventFilters(searchParams: URLSearchParams): EventListFilters {
   const filters: EventListFilters = {};
 
   const status = searchParams.get("status");
-  if (status) filters.status = status;
+  if (status) {
+    filters.status = status;
+  }
 
   const eventType = searchParams.get("eventType");
-  if (eventType) filters.eventType = eventType;
+  if (eventType) {
+    filters.eventType = eventType;
+  }
 
   const clientId = searchParams.get("clientId");
-  if (clientId) filters.clientId = clientId;
+  if (clientId) {
+    filters.clientId = clientId;
+  }
 
   const venueId = searchParams.get("venueId");
-  if (venueId) filters.venueId = venueId;
+  if (venueId) {
+    filters.venueId = venueId;
+  }
 
   const search = searchParams.get("search");
-  if (search) filters.search = search;
+  if (search) {
+    filters.search = search;
+  }
 
   return filters;
 }
@@ -92,7 +102,7 @@ export async function GET(request: Request) {
     // Add status filter
     if (filters.status) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         { status: filters.status },
       ];
     }
@@ -100,7 +110,7 @@ export async function GET(request: Request) {
     // Add event type filter
     if (filters.eventType) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         { eventType: filters.eventType },
       ];
     }
@@ -108,7 +118,7 @@ export async function GET(request: Request) {
     // Add client filter
     if (filters.clientId) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         { clientId: filters.clientId },
       ];
     }
@@ -116,7 +126,7 @@ export async function GET(request: Request) {
     // Add venue filter
     if (filters.venueId) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         { venueId: filters.venueId },
       ];
     }
@@ -125,7 +135,7 @@ export async function GET(request: Request) {
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         {
           OR: [
             { title: { contains: searchLower, mode: "insensitive" } },

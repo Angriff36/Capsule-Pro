@@ -13,11 +13,168 @@ import {
 
 type Params = Promise<{ id: string }>;
 
+// Type for update payload with additional fields
+type UpdateContractPayload = UpdateContractRequest & {
+  updatedAt: Date;
+};
+
+// Helper function to validate and get contract
+async function validateAndGetContract(
+  tenantId: string,
+  id: string
+): Promise<
+  NonNullable<Awaited<ReturnType<typeof database.eventContract.findFirst>>>
+> {
+  const contract = await database.eventContract.findFirst({
+    where: {
+      AND: [{ tenantId }, { id }, { deletedAt: null }],
+    },
+  });
+
+  if (!contract) {
+    throw new Error("Contract not found");
+  }
+
+  return contract;
+}
+
+// Helper function to validate event exists
+async function validateAndGetEvent(
+  tenantId: string,
+  eventId: string
+): Promise<NonNullable<Awaited<ReturnType<typeof database.event.findFirst>>>> {
+  const event = await database.event.findFirst({
+    where: {
+      AND: [{ tenantId }, { id: eventId }, { deletedAt: null }],
+    },
+    select: {
+      id: true,
+      title: true,
+    },
+  });
+
+  if (!event) {
+    throw new Error("Event not found");
+  }
+
+  return event;
+}
+
+// Helper function to validate client exists
+async function validateAndGetClient(
+  tenantId: string,
+  clientId: string
+): Promise<NonNullable<Awaited<ReturnType<typeof database.client.findFirst>>>> {
+  const client = await database.client.findFirst({
+    where: {
+      AND: [{ tenantId }, { id: clientId }, { deletedAt: null }],
+    },
+    select: {
+      id: true,
+      company_name: true,
+    },
+  });
+
+  if (!client) {
+    throw new Error("Client not found");
+  }
+
+  return client;
+}
+
+// Helper function to build update payload
+function buildUpdatePayload(
+  updateData: UpdateContractRequest
+): UpdateContractPayload {
+  const updatePayload: UpdateContractPayload = {
+    ...updateData,
+    updatedAt: new Date(),
+  };
+
+  // Convert date fields
+  if (updatePayload.expiresAt) {
+    updatePayload.expiresAt = new Date(updatePayload.expiresAt);
+  }
+
+  // Trim string fields
+  if (updatePayload.title !== undefined) {
+    updatePayload.title = updatePayload.title.trim();
+  }
+  if (updatePayload.notes !== undefined) {
+    updatePayload.notes = updatePayload.notes?.trim() || null;
+  }
+  if (updatePayload.documentUrl !== undefined) {
+    updatePayload.documentUrl = updatePayload.documentUrl?.trim() || null;
+  }
+  if (updatePayload.documentType !== undefined) {
+    updatePayload.documentType = updatePayload.documentType?.trim() || null;
+  }
+
+  return updatePayload;
+}
+
+// Helper function to get event details
+async function getEventDetails(
+  tenantId: string,
+  eventId: string | null,
+  existingEventId: string | null
+): Promise<
+  NonNullable<Awaited<ReturnType<typeof database.event.findFirst>>>
+> | null {
+  const targetEventId = eventId || existingEventId;
+
+  if (!targetEventId) {
+    return null;
+  }
+
+  const event = await database.event.findFirst({
+    where: {
+      AND: [{ tenantId }, { id: targetEventId }, { deletedAt: null }],
+    },
+    select: {
+      id: true,
+      title: true,
+      eventDate: true,
+    },
+  });
+
+  return event;
+}
+
+// Helper function to get client details
+async function getClientDetails(
+  tenantId: string,
+  clientId: string | null,
+  existingClientId: string | null
+): Promise<
+  NonNullable<Awaited<ReturnType<typeof database.client.findFirst>>>
+> | null {
+  const targetClientId = clientId || existingClientId;
+
+  if (!targetClientId) {
+    return null;
+  }
+
+  const client = await database.client.findFirst({
+    where: {
+      AND: [{ tenantId }, { id: targetClientId }, { deletedAt: null }],
+    },
+    select: {
+      id: true,
+      company_name: true,
+      first_name: true,
+      last_name: true,
+    },
+  });
+
+  return client;
+}
+
 /**
  * GET /api/events/contracts/[id]
  * Get a single contract by ID with event and client details
  */
-export async function GET(request: Request, { params }: { params: Params }) {
+export async function GET(_request: Request, { params }: { params: Params }) {
   try {
     const { orgId } = await auth();
     if (!orgId) {
@@ -109,18 +266,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
     const updateData = body as UpdateContractRequest;
 
     // Validate contract exists and belongs to tenant
-    const existingContract = await database.eventContract.findFirst({
-      where: {
-        AND: [{ tenantId }, { id }, { deletedAt: null }],
-      },
-    });
-
-    if (!existingContract) {
-      return NextResponse.json(
-        { message: "Contract not found" },
-        { status: 404 }
-      );
-    }
+    const existingContract = await validateAndGetContract(tenantId, id);
 
     // Validate business rules for update
     validateContractBusinessRules(
@@ -141,70 +287,16 @@ export async function PUT(request: Request, { params }: { params: Params }) {
 
     // Handle event ID update if provided
     if (updateData.eventId !== undefined) {
-      // Validate event exists
-      const event = await database.event.findFirst({
-        where: {
-          AND: [{ tenantId }, { id: updateData.eventId }, { deletedAt: null }],
-        },
-        select: {
-          id: true,
-          title: true,
-        },
-      });
-
-      if (!event) {
-        return NextResponse.json(
-          { message: "Event not found" },
-          { status: 404 }
-        );
-      }
+      await validateAndGetEvent(tenantId, updateData.eventId);
     }
 
     // Handle client ID update if provided
     if (updateData.clientId !== undefined) {
-      // Validate client exists
-      const client = await database.client.findFirst({
-        where: {
-          AND: [{ tenantId }, { id: updateData.clientId }, { deletedAt: null }],
-        },
-        select: {
-          id: true,
-          company_name: true,
-        },
-      });
-
-      if (!client) {
-        return NextResponse.json(
-          { message: "Client not found" },
-          { status: 404 }
-        );
-      }
+      await validateAndGetClient(tenantId, updateData.clientId);
     }
 
     // Prepare update data
-    const updatePayload: any = {
-      ...updateData,
-      updatedAt: new Date(),
-    };
-
-    // Convert date fields
-    if (updatePayload.expiresAt) {
-      updatePayload.expiresAt = new Date(updatePayload.expiresAt);
-    }
-
-    // Trim string fields
-    if (updatePayload.title !== undefined) {
-      updatePayload.title = updatePayload.title.trim();
-    }
-    if (updatePayload.notes !== undefined) {
-      updatePayload.notes = updatePayload.notes?.trim() || null;
-    }
-    if (updatePayload.documentUrl !== undefined) {
-      updatePayload.documentUrl = updatePayload.documentUrl?.trim() || null;
-    }
-    if (updatePayload.documentType !== undefined) {
-      updatePayload.documentType = updatePayload.documentType?.trim() || null;
-    }
+    const updatePayload = buildUpdatePayload(updateData);
 
     // Update contract
     const updatedContract = await database.eventContract.update({
@@ -218,73 +310,17 @@ export async function PUT(request: Request, { params }: { params: Params }) {
     });
 
     // Fetch updated event and client details
-    const eventDetails =
-      updateData.eventId !== undefined
-        ? await database.event.findFirst({
-            where: {
-              AND: [
-                { tenantId },
-                { id: updateData.eventId },
-                { deletedAt: null },
-              ],
-            },
-            select: {
-              id: true,
-              title: true,
-              eventDate: true,
-            },
-          })
-        : existingContract.eventId
-          ? await database.event.findFirst({
-              where: {
-                AND: [
-                  { tenantId },
-                  { id: existingContract.eventId },
-                  { deletedAt: null },
-                ],
-              },
-              select: {
-                id: true,
-                title: true,
-                eventDate: true,
-              },
-            })
-          : null;
+    const eventDetails = await getEventDetails(
+      tenantId,
+      updateData.eventId ?? null,
+      existingContract.eventId
+    );
 
-    const clientDetails =
-      updateData.clientId !== undefined
-        ? await database.client.findFirst({
-            where: {
-              AND: [
-                { tenantId },
-                { id: updateData.clientId },
-                { deletedAt: null },
-              ],
-            },
-            select: {
-              id: true,
-              company_name: true,
-              first_name: true,
-              last_name: true,
-            },
-          })
-        : existingContract.clientId
-          ? await database.client.findFirst({
-              where: {
-                AND: [
-                  { tenantId },
-                  { id: existingContract.clientId },
-                  { deletedAt: null },
-                ],
-              },
-              select: {
-                id: true,
-                company_name: true,
-                first_name: true,
-                last_name: true,
-              },
-            })
-          : null;
+    const clientDetails = await getClientDetails(
+      tenantId,
+      updateData.clientId ?? null,
+      existingContract.clientId
+    );
 
     return NextResponse.json({
       contract: {
@@ -309,7 +345,10 @@ export async function PUT(request: Request, { params }: { params: Params }) {
  * DELETE /api/events/contracts/[id]
  * Soft delete a contract
  */
-export async function DELETE(request: Request, { params }: { params: Params }) {
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Params }
+) {
   try {
     const { orgId } = await auth();
     if (!orgId) {

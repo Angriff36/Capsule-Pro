@@ -104,7 +104,7 @@ function validateCreateContractRequest(
   if (body.expiresAt) {
     const date = new Date(body.expiresAt);
     invariant(
-      !isNaN(date.getTime()),
+      !Number.isNaN(date.getTime()),
       "expiresAt must be a valid ISO date string"
     );
   }
@@ -137,7 +137,7 @@ export async function GET(request: Request) {
     // Add status filter
     if (filters.status) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         { status: filters.status },
       ];
     }
@@ -145,7 +145,7 @@ export async function GET(request: Request) {
     // Add event filter
     if (filters.eventId) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         { eventId: filters.eventId },
       ];
     }
@@ -153,7 +153,7 @@ export async function GET(request: Request) {
     // Add client filter
     if (filters.clientId) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         { clientId: filters.clientId },
       ];
     }
@@ -164,7 +164,7 @@ export async function GET(request: Request) {
       thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
 
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         {
           AND: [
             { status: { in: ["draft", "sent", "viewed"] } },

@@ -5,6 +5,9 @@
 
 import { describe, expect, it } from "vitest";
 
+const KITCHEN_EVENT_REGEX = /^kitchen\.\w+\.\w+$/;
+const EVENT_LIFECYCLE_REGEX = /^event\.\w+$/;
+
 describe("Outbox Publish Envelope Logic", () => {
   describe("envelope building", () => {
     it("should build correct envelope structure with occurredAt from payload", () => {
@@ -190,7 +193,7 @@ describe("Outbox Publish Envelope Logic", () => {
       ];
 
       for (const eventType of events) {
-        expect(eventType).toMatch(/^kitchen\.\w+\.\w+$/);
+        expect(eventType).toMatch(KITCHEN_EVENT_REGEX);
       }
     });
 
@@ -204,7 +207,7 @@ describe("Outbox Publish Envelope Logic", () => {
       ];
 
       for (const eventType of events) {
-        expect(eventType).toMatch(/^event\.\w+$/);
+        expect(eventType).toMatch(EVENT_LIFECYCLE_REGEX);
       }
     });
   });

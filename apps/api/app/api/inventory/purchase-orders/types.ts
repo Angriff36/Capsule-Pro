@@ -35,7 +35,7 @@ export type DiscrepancyType = (typeof DISCREPANCY_TYPES)[number];
 /**
  * Purchase Order Item response shape
  */
-export interface POItem {
+export type POItem = {
   id: string;
   tenant_id: string;
   purchase_order_id: string;
@@ -52,7 +52,7 @@ export interface POItem {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-}
+};
 
 /**
  * Purchase Order Item with inventory details

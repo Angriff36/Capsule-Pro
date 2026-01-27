@@ -13,15 +13,15 @@ import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { validateUpdateBudgetLineItem } from "../../../validation";
 
-interface RouteContext {
+type RouteContext = {
   params: Promise<{ id: string; lineItemId: string }>;
-}
+};
 
 /**
  * GET /api/events/budgets/[id]/line-items/[lineItemId]
  * Get a specific line item
  */
-export async function GET(request: Request, context: RouteContext) {
+export async function GET(_request: Request, context: RouteContext) {
   try {
     const { orgId } = await auth();
     if (!orgId) {
@@ -95,37 +95,7 @@ export async function PUT(request: Request, context: RouteContext) {
     }
 
     // Prepare update data
-    const updateData: Record<string, unknown> = {};
-    if (validatedData.category !== undefined) {
-      updateData.category = validatedData.category;
-    }
-    if (validatedData.name !== undefined) {
-      updateData.name = validatedData.name;
-    }
-    if (validatedData.description !== undefined) {
-      updateData.description = validatedData.description;
-    }
-    if (validatedData.budgetedAmount !== undefined) {
-      updateData.budgetedAmount = validatedData.budgetedAmount;
-      // Recalculate variance if actual amount exists
-      const actualAmount = Number(existingLineItem.actualAmount);
-      const newVarianceAmount = validatedData.budgetedAmount - actualAmount;
-      updateData.varianceAmount = newVarianceAmount;
-    }
-    if (validatedData.actualAmount !== undefined) {
-      updateData.actualAmount = validatedData.actualAmount;
-      // Recalculate variance
-      const budgetedAmount =
-        validatedData.budgetedAmount ?? Number(existingLineItem.budgetedAmount);
-      const newVarianceAmount = budgetedAmount - validatedData.actualAmount;
-      updateData.varianceAmount = newVarianceAmount;
-    }
-    if (validatedData.sortOrder !== undefined) {
-      updateData.sortOrder = validatedData.sortOrder;
-    }
-    if (validatedData.notes !== undefined) {
-      updateData.notes = validatedData.notes;
-    }
+    const updateData = prepareUpdateData(validatedData, existingLineItem);
 
     // Update line item
     const updatedLineItem = await database.budgetLineItem.update({
@@ -143,30 +113,83 @@ export async function PUT(request: Request, context: RouteContext) {
 
     return NextResponse.json(updatedLineItem);
   } catch (error) {
-    if (error instanceof Error) {
-      if (error.name === "ZodError") {
-        return NextResponse.json(
-          { message: "Validation error", errors: error },
-          { status: 400 }
-        );
-      }
-      if (error instanceof InvariantError) {
-        return NextResponse.json({ message: error.message }, { status: 400 });
-      }
-    }
-    console.error("Error updating budget line item:", error);
-    return NextResponse.json(
-      { message: "Failed to update budget line item" },
-      { status: 500 }
-    );
+    return handleUpdateError(error);
   }
+}
+
+/**
+ * Prepare update data for budget line item
+ */
+function prepareUpdateData(
+  validatedData: Parameters<typeof validateUpdateBudgetLineItem>[0],
+  existingLineItem: Awaited<
+    ReturnType<typeof database.budgetLineItem.findUnique>
+  >
+) {
+  const updateData: Record<string, unknown> = {};
+
+  if (validatedData.category !== undefined) {
+    updateData.category = validatedData.category;
+  }
+  if (validatedData.name !== undefined) {
+    updateData.name = validatedData.name;
+  }
+  if (validatedData.description !== undefined) {
+    updateData.description = validatedData.description;
+  }
+  if (validatedData.budgetedAmount !== undefined) {
+    updateData.budgetedAmount = validatedData.budgetedAmount;
+    // Recalculate variance if actual amount exists
+    const actualAmount = Number(existingLineItem?.actualAmount ?? 0);
+    const newVarianceAmount = validatedData.budgetedAmount - actualAmount;
+    updateData.varianceAmount = newVarianceAmount;
+  }
+  if (validatedData.actualAmount !== undefined) {
+    updateData.actualAmount = validatedData.actualAmount;
+    // Recalculate variance
+    const budgetedAmount =
+      validatedData.budgetedAmount ??
+      Number(existingLineItem?.budgetedAmount ?? 0);
+    const newVarianceAmount = budgetedAmount - validatedData.actualAmount;
+    updateData.varianceAmount = newVarianceAmount;
+  }
+  if (validatedData.sortOrder !== undefined) {
+    updateData.sortOrder = validatedData.sortOrder;
+  }
+  if (validatedData.notes !== undefined) {
+    updateData.notes = validatedData.notes;
+  }
+
+  return updateData;
+}
+
+/**
+ * Handle update errors
+ */
+function handleUpdateError(error: unknown): NextResponse {
+  if (error instanceof Error) {
+    if (error.name === "ZodError") {
+      return NextResponse.json(
+        { message: "Validation error", errors: error },
+        { status: 400 }
+      );
+    }
+    if (error instanceof InvariantError) {
+      return NextResponse.json({ message: error.message }, { status: 400 });
+    }
+  }
+  console.error("Error updating budget line item:", error);
+  return NextResponse.json(
+    { message: "Failed to update budget line item" },
+    { status: 500 }
+  );
 }
 
 /**
  * DELETE /api/events/budgets/[id]/line-items/[lineItemId]
  * Delete a line item
  */
-export async function DELETE(request: Request, context: RouteContext) {
+export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const { orgId } = await auth();
     if (!orgId) {

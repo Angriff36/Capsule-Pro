@@ -10,6 +10,249 @@ type RouteParams = Promise<{
   id: string;
 }>;
 
+type ClientSelect = {
+  id: true;
+  company_name: true;
+  first_name: true;
+  last_name: true;
+  email: true;
+  phone: true;
+  addressLine1: true;
+  addressLine2: true;
+  city: true;
+  stateProvince: true;
+  postalCode: true;
+  countryCode: true;
+};
+
+type LeadSelect = {
+  id: true;
+  companyName: true;
+  contactName: true;
+  contactEmail: true;
+  contactPhone: true;
+  eventType: true;
+  eventDate: true;
+  estimatedGuests: true;
+  estimatedValue: true;
+};
+
+/**
+ * Fetch proposal with all related data
+ */
+function fetchProposal(
+  database: typeof import("@repo/database"),
+  proposalId: string,
+  tenantId: string
+): ReturnType<typeof database.proposal.findFirst> {
+  return database.proposal.findFirst({
+    where: {
+      id: proposalId,
+      tenantId,
+      deletedAt: null,
+    },
+    include: {
+      client: {
+        select: {
+          id: true,
+          company_name: true,
+          first_name: true,
+          last_name: true,
+          email: true,
+          phone: true,
+          addressLine1: true,
+          addressLine2: true,
+          city: true,
+          stateProvince: true,
+          postalCode: true,
+          countryCode: true,
+        } as ClientSelect,
+      },
+      lead: {
+        select: {
+          id: true,
+          companyName: true,
+          contactName: true,
+          contactEmail: true,
+          contactPhone: true,
+          eventType: true,
+          eventDate: true,
+          estimatedGuests: true,
+          estimatedValue: true,
+        } as LeadSelect,
+      },
+      event: {
+        include: {
+          location: true,
+          venue: true,
+        },
+      },
+      lineItems: {
+        where: {
+          deletedAt: null,
+        },
+        orderBy: {
+          sortOrder: "asc",
+        },
+      },
+    },
+  });
+}
+
+/**
+ * Fetch user info for metadata
+ */
+function fetchUser(
+  database: typeof import("@repo/database"),
+  tenantId: string,
+  authUserId: string
+): ReturnType<typeof database.user.findFirst> {
+  return database.user.findFirst({
+    where: {
+      tenantId,
+      authUserId,
+    },
+    select: {
+      firstName: true,
+      lastName: true,
+      email: true,
+    },
+  });
+}
+
+type ProposalClient = NonNullable<
+  Awaited<ReturnType<typeof fetchProposal>>["client"]
+>;
+type ProposalLead = NonNullable<
+  Awaited<ReturnType<typeof fetchProposal>>["lead"]
+>;
+type ProposalEvent = NonNullable<
+  Awaited<ReturnType<typeof fetchProposal>>["event"]
+>;
+type ProposalUser = NonNullable<Awaited<ReturnType<typeof fetchUser>>>;
+
+/**
+ * Transform client data for PDF
+ */
+function transformClientData(client: ProposalClient) {
+  return {
+    id: client.id,
+    companyName: client.company_name,
+    firstName: client.first_name,
+    lastName: client.last_name,
+    email: client.email,
+    phone: client.phone,
+    address: {
+      addressLine1: client.addressLine1,
+      addressLine2: client.addressLine2,
+      city: client.city,
+      stateProvince: client.stateProvince,
+      postalCode: client.postalCode,
+      countryCode: client.countryCode,
+    },
+  };
+}
+
+/**
+ * Transform lead data for PDF
+ */
+function transformLeadData(lead: ProposalLead) {
+  return {
+    id: lead.id,
+    companyName: lead.companyName,
+    contactName: lead.contactName,
+    contactEmail: lead.contactEmail,
+    contactPhone: lead.contactPhone,
+    eventType: lead.eventType,
+    eventDate: lead.eventDate,
+    estimatedGuests: lead.estimatedGuests,
+    estimatedValue: lead.estimatedValue
+      ? Number(lead.estimatedValue)
+      : undefined,
+  };
+}
+
+/**
+ * Transform event data for PDF
+ */
+function transformEventData(event: ProposalEvent) {
+  return {
+    id: event.id,
+    title: event.title,
+    eventNumber: event.eventNumber,
+    eventDate: event.eventDate,
+    eventType: event.eventType,
+    guestCount: event.guestCount,
+    venueName:
+      event.venue?.name ||
+      event.location?.name ||
+      event.venueName ||
+      "Not specified",
+    venueAddress:
+      event.venue || event.location
+        ? {
+            addressLine1:
+              event.venue?.addressLine1 || event.location?.addressLine1,
+            addressLine2:
+              event.venue?.addressLine2 || event.location?.addressLine2,
+            city: event.venue?.city || event.location?.city,
+            stateProvince:
+              event.venue?.stateProvince || event.location?.stateProvince,
+            postalCode: event.venue?.postalCode || event.location?.postalCode,
+            countryCode:
+              event.venue?.countryCode || event.location?.countryCode,
+          }
+        : event.venueAddress || undefined,
+    status: event.status,
+  };
+}
+
+/**
+ * Transform proposal data for PDF
+ */
+function transformProposalData(
+  proposal: NonNullable<Awaited<ReturnType<typeof fetchProposal>>>,
+  user: ProposalUser
+) {
+  return {
+    proposal: {
+      id: proposal.id,
+      proposalNumber: proposal.proposalNumber,
+      title: proposal.title,
+      status: proposal.status,
+      validUntil: proposal.validUntil,
+      subtotal: Number(proposal.subtotal),
+      taxAmount: Number(proposal.taxAmount),
+      total: Number(proposal.total),
+      notes: proposal.notes || undefined,
+      createdAt: proposal.createdAt,
+      eventDate: proposal.eventDate,
+      eventType: proposal.eventType,
+      guestCount: proposal.guestCount,
+      venueName: proposal.venueName,
+      venueAddress: proposal.venueAddress,
+    },
+    client: proposal.client ? transformClientData(proposal.client) : undefined,
+    lead: proposal.lead ? transformLeadData(proposal.lead) : undefined,
+    event: proposal.event ? transformEventData(proposal.event) : undefined,
+    lineItems: proposal.lineItems.map((item) => ({
+      id: item.id,
+      category: item.category,
+      description: item.description,
+      quantity: Number(item.quantity),
+      unitOfMeasure: item.unitOfMeasure,
+      unitPrice: Number(item.unitPrice),
+      totalPrice: Number(item.totalPrice),
+      sortOrder: item.sortOrder,
+    })),
+    metadata: {
+      generatedAt: new Date(),
+      generatedBy: user.email || `${user.firstName} ${user.lastName}`,
+      version: "1.0.0",
+    },
+  };
+}
+
 /**
  * GET /api/crm/proposals/[id]/pdf
  *
@@ -32,32 +275,7 @@ export async function GET(
 
     const tenantId = await getTenantIdForOrg(orgId);
 
-    // Fetch proposal with relations
-    const proposal = await database.proposal.findFirst({
-      where: {
-        id: proposalId,
-        tenantId,
-        deletedAt: null,
-      },
-      include: {
-        client: true,
-        lead: true,
-        event: {
-          include: {
-            location: true,
-            venue: true,
-          },
-        },
-        lineItems: {
-          where: {
-            deletedAt: null,
-          },
-          orderBy: {
-            sortOrder: "asc",
-          },
-        },
-      },
-    });
+    const proposal = await fetchProposal(database, proposalId, tenantId);
 
     if (!proposal) {
       return NextResponse.json(
@@ -66,132 +284,14 @@ export async function GET(
       );
     }
 
-    // Fetch user info for metadata
-    const user = await database.user.findFirst({
-      where: {
-        tenantId,
-        authUserId: userId,
-      },
-      select: {
-        firstName: true,
-        lastName: true,
-        email: true,
-      },
-    });
+    const user = await fetchUser(database, tenantId, userId);
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Prepare PDF data
-    const pdfData = {
-      proposal: {
-        id: proposal.id,
-        proposalNumber: proposal.proposalNumber,
-        title: proposal.title,
-        status: proposal.status,
-        validUntil: proposal.validUntil,
-        subtotal: Number(proposal.subtotal),
-        taxAmount: Number(proposal.taxAmount),
-        total: Number(proposal.total),
-        notes: proposal.notes || undefined,
-        createdAt: proposal.createdAt,
-        eventDate: proposal.eventDate,
-        eventType: proposal.eventType,
-        guestCount: proposal.guestCount,
-        venueName: proposal.venueName,
-        venueAddress: proposal.venueAddress,
-      },
-      client: proposal.client
-        ? {
-            id: proposal.client.id,
-            companyName: proposal.client.company_name,
-            firstName: proposal.client.first_name,
-            lastName: proposal.client.last_name,
-            email: proposal.client.email,
-            phone: proposal.client.phone,
-            address: {
-              addressLine1: proposal.client.addressLine1,
-              addressLine2: proposal.client.addressLine2,
-              city: proposal.client.city,
-              stateProvince: proposal.client.stateProvince,
-              postalCode: proposal.client.postalCode,
-              countryCode: proposal.client.countryCode,
-            },
-          }
-        : undefined,
-      lead: proposal.lead
-        ? {
-            id: proposal.lead.id,
-            companyName: proposal.lead.companyName,
-            contactName: proposal.lead.contactName,
-            contactEmail: proposal.lead.contactEmail,
-            contactPhone: proposal.lead.contactPhone,
-            eventType: proposal.lead.eventType,
-            eventDate: proposal.lead.eventDate,
-            estimatedGuests: proposal.lead.estimatedGuests,
-            estimatedValue: proposal.lead.estimatedValue
-              ? Number(proposal.lead.estimatedValue)
-              : undefined,
-          }
-        : undefined,
-      event: proposal.event
-        ? {
-            id: proposal.event.id,
-            title: proposal.event.title,
-            eventNumber: proposal.event.eventNumber,
-            eventDate: proposal.event.eventDate,
-            eventType: proposal.event.eventType,
-            guestCount: proposal.event.guestCount,
-            venueName:
-              proposal.event.venue?.name ||
-              proposal.event.location?.name ||
-              proposal.event.venueName ||
-              "Not specified",
-            venueAddress:
-              proposal.event.venue || proposal.event.location
-                ? {
-                    addressLine1:
-                      proposal.event.venue?.addressLine1 ||
-                      proposal.event.location?.addressLine1,
-                    addressLine2:
-                      proposal.event.venue?.addressLine2 ||
-                      proposal.event.location?.addressLine2,
-                    city:
-                      proposal.event.venue?.city ||
-                      proposal.event.location?.city,
-                    stateProvince:
-                      proposal.event.venue?.stateProvince ||
-                      proposal.event.location?.stateProvince,
-                    postalCode:
-                      proposal.event.venue?.postalCode ||
-                      proposal.event.location?.postalCode,
-                    countryCode:
-                      proposal.event.venue?.countryCode ||
-                      proposal.event.location?.countryCode,
-                  }
-                : proposal.event.venueAddress || undefined,
-            status: proposal.event.status,
-          }
-        : undefined,
-      lineItems: proposal.lineItems.map((item) => ({
-        id: item.id,
-        category: item.category,
-        description: item.description,
-        quantity: Number(item.quantity),
-        unitOfMeasure: item.unitOfMeasure,
-        unitPrice: Number(item.unitPrice),
-        totalPrice: Number(item.totalPrice),
-        sortOrder: item.sortOrder,
-      })),
-      metadata: {
-        generatedAt: new Date(),
-        generatedBy: user.email || `${user.firstName} ${user.lastName}`,
-        version: "1.0.0",
-      },
-    };
+    const pdfData = transformProposalData(proposal, user);
 
-    // Check if should return as download or base64
     const url = new URL(request.url);
     const shouldDownload = url.searchParams.get("download") === "true";
 
@@ -199,35 +299,10 @@ export async function GET(
     const pdfComponent = <ProposalPDF data={pdfData} />;
 
     if (shouldDownload) {
-      // Return as downloadable file
-      const { pdf } = await import("@react-pdf/renderer");
-      const doc = await pdf(pdfComponent);
-      const blob = await doc.toBlob();
-
-      return new NextResponse(blob, {
-        headers: {
-          "Content-Type": "application/pdf",
-          "Content-Disposition": `attachment; filename="proposal-${proposal.proposalNumber}.pdf"`,
-        },
-      });
+      return generateDownloadResponse(pdfComponent, proposal.proposalNumber);
     }
-    // Return as base64 for client-side handling
-    const { pdf } = await import("@react-pdf/renderer");
-    const doc = await pdf(pdfComponent);
-    const blob = await doc.toBlob();
-    const arrayBuffer = await blob.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
 
-    let binary = "";
-    for (let i = 0; i < uint8Array.length; i++) {
-      binary += String.fromCharCode(uint8Array[i]);
-    }
-    const base64 = btoa(binary);
-
-    return NextResponse.json({
-      dataUrl: `data:application/pdf;base64,${base64}`,
-      filename: `proposal-${proposal.proposalNumber}.pdf`,
-    });
+    return generateBase64Response(pdfComponent, proposal.proposalNumber);
   } catch (error) {
     console.error("Failed to generate Proposal PDF:", error);
     return NextResponse.json(
@@ -238,4 +313,48 @@ export async function GET(
       { status: 500 }
     );
   }
+}
+
+/**
+ * Generate downloadable PDF response
+ */
+async function generateDownloadResponse(
+  pdfComponent: React.ReactElement,
+  proposalNumber: string
+) {
+  const { pdf } = await import("@react-pdf/renderer");
+  const doc = await pdf(pdfComponent);
+  const blob = await doc.toBlob();
+
+  return new NextResponse(blob, {
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="proposal-${proposalNumber}.pdf"`,
+    },
+  });
+}
+
+/**
+ * Generate base64 PDF response
+ */
+async function generateBase64Response(
+  pdfComponent: React.ReactElement,
+  proposalNumber: string
+) {
+  const { pdf } = await import("@react-pdf/renderer");
+  const doc = await pdf(pdfComponent);
+  const blob = await doc.toBlob();
+  const arrayBuffer = await blob.arrayBuffer();
+  const uint8Array = new Uint8Array(arrayBuffer);
+
+  let binary = "";
+  for (const byte of uint8Array) {
+    binary += String.fromCharCode(byte);
+  }
+  const base64 = btoa(binary);
+
+  return NextResponse.json({
+    dataUrl: `data:application/pdf;base64,${base64}`,
+    filename: `proposal-${proposalNumber}.pdf`,
+  });
 }

@@ -1,6 +1,6 @@
 import { auth } from "@repo/auth/server";
-import { MenuEditor } from "../components/menu-editor";
 import { Header } from "../../../../components/header";
+import { MenuEditor } from "../components/menu-editor";
 
 export default async function NewMenuPage() {
   const { userId } = await auth();

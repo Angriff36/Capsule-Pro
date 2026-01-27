@@ -4,7 +4,8 @@ import { database } from "@repo/database";
 import { generateText } from "ai";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type {
+
+export type {
   ActionHandler,
   SuggestedAction,
   SuggestionCategory,
@@ -234,13 +235,15 @@ async function getContextData(
 
   // Calculate capacity metrics
   const eventsByDate = new Map<string, typeof eventsWithDishes>();
-  eventsWithDishes.forEach((event) => {
+  for (const event of eventsWithDishes) {
     const dateKey = event.eventDate.toDateString();
-    if (!eventsByDate.has(dateKey)) {
-      eventsByDate.set(dateKey, []);
+    const events = eventsByDate.get(dateKey);
+    if (events) {
+      events.push(event);
+    } else {
+      eventsByDate.set(dateKey, [event]);
     }
-    eventsByDate.get(dateKey)!.push(event);
-  });
+  }
 
   const highVolumeDays = Array.from(eventsByDate.entries())
     .filter(([_, events]) => events.length >= 2)
@@ -372,41 +375,54 @@ Generate ${maxSuggestions} prioritized suggestions based on this state.`;
     // Parse AI response
     const aiResponse = JSON.parse(result.text.trim());
 
-    // Convert to SuggestedAction format
-    const suggestions: SuggestedAction[] = (aiResponse.suggestions || []).map(
-      (s: any, index: number) => {
-        const config =
-          SUGGESTION_TYPES[s.suggestionType] || SUGGESTION_TYPES.optimization;
+    // Define type for AI response to avoid any
+    type AiSuggestion = {
+      suggestionType: string;
+      category: string;
+      priority: string;
+      title: string;
+      description: string;
+      reasoning: string;
+      actionType: string;
+      actionPath?: string;
+      estimatedImpact?: string;
+    };
 
-        return {
-          id: `suggestion-${Date.now()}-${index}`,
-          tenantId,
-          type: config.type,
-          category: s.category || config.defaultCategory,
-          priority: s.priority || config.defaultPriority,
-          title: s.title,
-          description: s.description,
-          context: {
-            reasoning: s.reasoning,
-            source: "ai-suggestions",
-          },
-          action:
-            s.actionType === "api_call"
-              ? {
-                  type: "api_call" as const,
-                  method: "GET" as const,
-                  endpoint: s.actionPath,
-                }
-              : {
-                  type: "navigate" as const,
-                  path: s.actionPath || "/kitchen",
-                },
-          estimatedImpact: s.estimatedImpact,
-          createdAt: new Date(),
-          dismissed: false,
-        };
-      }
-    );
+    // Convert to SuggestedAction format
+    const suggestions: SuggestedAction[] = (
+      (aiResponse.suggestions as AiSuggestion[]) || []
+    ).map((s, index) => {
+      const config =
+        SUGGESTION_TYPES[s.suggestionType] || SUGGESTION_TYPES.optimization;
+
+      return {
+        id: `suggestion-${Date.now()}-${index}`,
+        tenantId,
+        type: config.type,
+        category: s.category || config.defaultCategory,
+        priority: s.priority || config.defaultPriority,
+        title: s.title,
+        description: s.description,
+        context: {
+          reasoning: s.reasoning,
+          source: "ai-suggestions",
+        },
+        action:
+          s.actionType === "api_call"
+            ? {
+                type: "api_call" as const,
+                method: "GET" as const,
+                endpoint: s.actionPath,
+              }
+            : {
+                type: "navigate" as const,
+                path: s.actionPath || "/kitchen",
+              },
+        estimatedImpact: s.estimatedImpact,
+        createdAt: new Date(),
+        dismissed: false,
+      };
+    });
 
     return suggestions;
   } catch (error) {
@@ -604,12 +620,3 @@ export async function GET(request: Request) {
     );
   }
 }
-
-// Export types for reuse
-export type {
-  SuggestedAction,
-  SuggestionCategory,
-  SuggestionPriority,
-  SuggestionType,
-  ActionHandler,
-};

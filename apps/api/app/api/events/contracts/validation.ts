@@ -98,6 +98,46 @@ export function parsePaginationParams(searchParams: URLSearchParams) {
   return { page, limit };
 }
 
+// Helper to validate string field
+function validateOptionalString(
+  value: unknown,
+  fieldName: string,
+  allowEmpty = false
+): void {
+  if (value !== undefined && value !== null) {
+    invariant(
+      typeof value === "string" && (allowEmpty || value.trim().length > 0),
+      `${fieldName} must be a ${allowEmpty ? "string" : "non-empty string"} if provided`
+    );
+  }
+}
+
+// Helper to validate date field
+function validateOptionalDate(value: unknown, fieldName: string): void {
+  if (value !== undefined && value !== null) {
+    const date = value instanceof Date ? value : new Date(value as string);
+    invariant(
+      date instanceof Date && !Number.isNaN(date.getTime()),
+      `${fieldName} must be a valid date`
+    );
+  }
+}
+
+// Helper to validate URL field
+function validateOptionalUrl(value: unknown): void {
+  if (value !== undefined && value !== null) {
+    invariant(
+      typeof value === "string" && value.trim().length > 0,
+      "documentUrl must be a non-empty string if provided"
+    );
+    try {
+      new URL(value as string);
+    } catch {
+      invariant(false, "documentUrl must be a valid URL");
+    }
+  }
+}
+
 export function validateCreateContractRequest(
   body: unknown
 ): asserts body is CreateContractRequest {
@@ -120,62 +160,22 @@ export function validateCreateContractRequest(
     "clientId is required and must be a non-empty string"
   );
 
-  // Validate title if provided
-  if (data.title !== undefined && data.title !== null) {
-    invariant(
-      typeof data.title === "string" && data.title.trim().length > 0,
-      "title must be a non-empty string if provided"
-    );
-  }
+  // Validate optional fields
+  validateOptionalString(data.title, "title");
+  validateOptionalString(data.notes, "notes", true);
+  validateOptionalDate(data.expiresAt, "expiresAt");
 
-  // Validate notes if provided
-  if (data.notes !== undefined && data.notes !== null) {
-    invariant(
-      typeof data.notes === "string",
-      "notes must be a string if provided"
-    );
-  }
-
-  // Validate expiresAt if provided
+  // Validate expiresAt is in the future
   if (data.expiresAt !== undefined && data.expiresAt !== null) {
     const date =
       data.expiresAt instanceof Date
         ? data.expiresAt
         : new Date(data.expiresAt as string);
-
-    invariant(
-      date instanceof Date && !Number.isNaN(date.getTime()),
-      "expiresAt must be a valid date"
-    );
-
-    // Ensure the date is in the future
     invariant(date > new Date(), "expiresAt must be in the future");
   }
 
-  // Validate documentUrl if provided
-  if (data.documentUrl !== undefined && data.documentUrl !== null) {
-    invariant(
-      typeof data.documentUrl === "string" &&
-        data.documentUrl.trim().length > 0,
-      "documentUrl must be a non-empty string if provided"
-    );
-
-    // Validate it's a valid URL
-    try {
-      new URL(data.documentUrl as string);
-    } catch {
-      invariant(false, "documentUrl must be a valid URL");
-    }
-  }
-
-  // Validate documentType if provided
-  if (data.documentType !== undefined && data.documentType !== null) {
-    invariant(
-      typeof data.documentType === "string" &&
-        data.documentType.trim().length > 0,
-      "documentType must be a non-empty string if provided"
-    );
-  }
+  validateOptionalUrl(data.documentUrl);
+  validateOptionalString(data.documentType, "documentType");
 }
 
 export function validateUpdateContractRequest(
@@ -211,7 +211,7 @@ export function validateUpdateContractRequest(
 
   // Validate optional fields with create validation
   const optionalData = { ...data };
-  delete optionalData.id;
+  optionalData.id = undefined;
   validateCreateContractRequest(optionalData);
 }
 
@@ -251,6 +251,9 @@ export function validateContractStatusTransition(
   }
 }
 
+// Top-level email regex for performance
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function validateSignatureData(
   data: unknown
 ): asserts data is ContractSignatureData {
@@ -276,9 +279,8 @@ export function validateSignatureData(
   );
 
   // Validate email format
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   invariant(
-    emailRegex.test(signatureData.signerEmail as string),
+    EMAIL_REGEX.test(signatureData.signerEmail as string),
     "signerEmail must be a valid email address"
   );
 
@@ -333,9 +335,7 @@ export function validateSignatureData(
   }
 }
 
-export async function generateContractNumber(
-  tenantId: string
-): Promise<string> {
+export function generateContractNumber(_tenantId: string): Promise<string> {
   // This would typically call a database function to generate a unique contract number
   // For now, we'll implement a basic generator that could be replaced with a DB function
   // In a real implementation, this would be:
@@ -416,6 +416,10 @@ export function validateContractBusinessRules(
         contract.status !== "expired" && contract.status !== "canceled",
         "Cannot expire an already expired or canceled contract"
       );
+      break;
+
+    default:
+      invariant(false, `Unknown contract operation: ${operation}`);
       break;
   }
 

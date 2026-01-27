@@ -33,7 +33,9 @@ export async function GET(request: NextRequest) {
     // Group by sku
     const grouped = forecasts.reduce(
       (acc, forecast) => {
-        if (!acc[forecast.sku]) acc[forecast.sku] = [];
+        if (!acc[forecast.sku]) {
+          acc[forecast.sku] = [];
+        }
         acc[forecast.sku].push(forecast);
         return acc;
       },
@@ -41,7 +43,7 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json(grouped);
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       { error: "Failed to fetch batch forecasts" },
       { status: 500 }

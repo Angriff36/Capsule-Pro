@@ -13,15 +13,15 @@ import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { validateUpdateEventBudget } from "../validation";
 
-interface RouteContext {
+type RouteContext = {
   params: Promise<{ id: string }>;
-}
+};
 
 /**
  * GET /api/events/budgets/[id]
  * Get a specific budget with line items
  */
-export async function GET(request: Request, context: RouteContext) {
+export async function GET(_request: Request, context: RouteContext) {
   try {
     const { orgId } = await auth();
     if (!orgId) {
@@ -65,6 +65,59 @@ export async function GET(request: Request, context: RouteContext) {
 }
 
 /**
+ * Handle validation and known errors
+ */
+function handleUpdateErrors(error: unknown): NextResponse | null {
+  if (error instanceof Error) {
+    if (error.name === "ZodError") {
+      return NextResponse.json(
+        { message: "Validation error", errors: error },
+        { status: 400 }
+      );
+    }
+    if (error instanceof InvariantError) {
+      return NextResponse.json({ message: error.message }, { status: 400 });
+    }
+  }
+  return null;
+}
+
+/**
+ * Prepare update data from validated budget data
+ */
+function prepareUpdateData(
+  validatedData: unknown,
+  existingBudget: { totalActualAmount: number }
+): Record<string, unknown> {
+  const updateData: Record<string, unknown> = {};
+  const data = validatedData as {
+    status?: string;
+    totalBudgetAmount?: number;
+    notes?: string;
+  };
+
+  if (data.status !== undefined) {
+    updateData.status = data.status;
+  }
+  if (data.totalBudgetAmount !== undefined) {
+    updateData.totalBudgetAmount = data.totalBudgetAmount;
+    // Recalculate variance
+    const newVarianceAmount =
+      data.totalBudgetAmount - Number(existingBudget.totalActualAmount);
+    updateData.varianceAmount = newVarianceAmount;
+    if (data.totalBudgetAmount > 0) {
+      updateData.variancePercentage =
+        (newVarianceAmount / data.totalBudgetAmount) * 100;
+    }
+  }
+  if (data.notes !== undefined) {
+    updateData.notes = data.notes;
+  }
+
+  return updateData;
+}
+
+/**
  * PUT /api/events/budgets/[id]
  * Update a budget
  */
@@ -100,29 +153,11 @@ export async function PUT(request: Request, context: RouteContext) {
       );
     }
 
-    // Prepare update data
-    const updateData: Record<string, unknown> = {};
-    if (validatedData.status !== undefined) {
-      updateData.status = validatedData.status;
-    }
-    if (validatedData.totalBudgetAmount !== undefined) {
-      updateData.totalBudgetAmount = validatedData.totalBudgetAmount;
-      // Recalculate variance
-      const newVarianceAmount =
-        validatedData.totalBudgetAmount -
-        Number(existingBudget.totalActualAmount);
-      updateData.varianceAmount = newVarianceAmount;
-      if (validatedData.totalBudgetAmount > 0) {
-        updateData.variancePercentage =
-          (newVarianceAmount / validatedData.totalBudgetAmount) * 100;
-      }
-    }
-    if (validatedData.notes !== undefined) {
-      updateData.notes = validatedData.notes;
-    }
+    // Prepare and apply update
+    const updateData = prepareUpdateData(validatedData, existingBudget);
 
     // Update budget
-    const updatedBudget = await database.eventBudget.update({
+    const _updatedBudget = await database.eventBudget.update({
       where: {
         tenantId_id: {
           tenantId,
@@ -150,16 +185,9 @@ export async function PUT(request: Request, context: RouteContext) {
 
     return NextResponse.json(budgetWithLineItems);
   } catch (error) {
-    if (error instanceof Error) {
-      if (error.name === "ZodError") {
-        return NextResponse.json(
-          { message: "Validation error", errors: error },
-          { status: 400 }
-        );
-      }
-      if (error instanceof InvariantError) {
-        return NextResponse.json({ message: error.message }, { status: 400 });
-      }
+    const handledError = handleUpdateErrors(error);
+    if (handledError) {
+      return handledError;
     }
     console.error("Error updating event budget:", error);
     return NextResponse.json(
@@ -173,7 +201,7 @@ export async function PUT(request: Request, context: RouteContext) {
  * DELETE /api/events/budgets/[id]
  * Soft delete a budget
  */
-export async function DELETE(request: Request, context: RouteContext) {
+export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const { orgId } = await auth();
     if (!orgId) {

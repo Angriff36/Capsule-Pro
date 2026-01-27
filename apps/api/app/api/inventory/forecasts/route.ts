@@ -42,9 +42,8 @@ export async function GET(request: NextRequest) {
     }
 
     // If no date range, calculate new forecast using the forecasting service
-    const horizonDays = searchParams.get("horizon")
-      ? Number.parseInt(searchParams.get("horizon")!)
-      : 30;
+    const horizonParam = searchParams.get("horizon");
+    const horizonDays = horizonParam ? Number.parseInt(horizonParam, 10) : 30;
 
     const forecast = await calculateDepletionForecast({
       tenantId,

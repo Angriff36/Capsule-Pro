@@ -81,7 +81,7 @@ function parseSignatureFilters(
   const dateFrom = searchParams.get("dateFrom");
   if (dateFrom) {
     const date = new Date(dateFrom);
-    if (!isNaN(date.getTime())) {
+    if (!Number.isNaN(date.getTime())) {
       filters.dateFrom = dateFrom;
     }
   }
@@ -90,7 +90,7 @@ function parseSignatureFilters(
   const dateTo = searchParams.get("dateTo");
   if (dateTo) {
     const date = new Date(dateTo);
-    if (!isNaN(date.getTime())) {
+    if (!Number.isNaN(date.getTime())) {
       filters.dateTo = dateTo;
     }
   }
@@ -122,7 +122,7 @@ function buildSignatureWhereClause(
 
   // Add date range filters
   if (filters.dateFrom || filters.dateTo) {
-    const dateConditions: Array<Record<string, unknown>> = [];
+    const dateConditions: Record<string, unknown>[] = [];
 
     if (filters.dateFrom) {
       dateConditions.push({

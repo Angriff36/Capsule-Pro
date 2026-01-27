@@ -1,14 +1,14 @@
 "use client";
 
-import Link from "next/link";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { CheckCircleIcon, ClockIcon, UsersIcon } from "lucide-react";
+import { CheckCircleIcon, UsersIcon } from "lucide-react";
+import Link from "next/link";
 
 export type MenuCardProps = {
   id: string;
@@ -97,9 +97,7 @@ export const MenuCard = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {category ? (
-              <Badge variant="secondary">{category}</Badge>
-            ) : null}
+            {category ? <Badge variant="secondary">{category}</Badge> : null}
             <Badge variant="outline">
               <UsersIcon className="mr-1 size-3" />
               {dishCount} dish{dishCount !== 1 ? "es" : ""}
@@ -128,10 +126,10 @@ export const MenuCard = ({
                   {minGuests && maxGuests
                     ? `${minGuests}-${maxGuests}`
                     : minGuests
-                    ? `${minGuests}+`
-                    : maxGuests
-                    ? `Up to ${maxGuests}`
-                    : "-"}
+                      ? `${minGuests}+`
+                      : maxGuests
+                        ? `Up to ${maxGuests}`
+                        : "-"}
                 </div>
               </div>
             )}
@@ -141,12 +139,12 @@ export const MenuCard = ({
           {allDietaryTags.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {allDietaryTags.slice(0, 3).map((tag) => (
-                <Badge key={tag} className="bg-green-100 text-green-800">
+                <Badge className="bg-green-100 text-green-800" key={tag}>
                   {tag}
                 </Badge>
               ))}
               {allDietaryTags.length > 3 && (
-                <Badge variant="outline" className="text-xs">
+                <Badge className="text-xs" variant="outline">
                   +{allDietaryTags.length - 3} more
                 </Badge>
               )}
@@ -157,12 +155,12 @@ export const MenuCard = ({
           {allAllergens.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {allAllergens.slice(0, 2).map((allergen) => (
-                <Badge key={allergen} variant="destructive" className="text-xs">
+                <Badge className="text-xs" key={allergen} variant="destructive">
                   {allergen}
                 </Badge>
               ))}
               {allAllergens.length > 2 && (
-                <Badge variant="outline" className="text-xs">
+                <Badge className="text-xs" variant="outline">
                   +{allAllergens.length - 2} more
                 </Badge>
               )}
