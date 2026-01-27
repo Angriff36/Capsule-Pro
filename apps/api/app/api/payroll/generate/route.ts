@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create payroll service with Prisma data source
-    const dataSource = new PrismaPayrollDataSource(database, () => tenantId);
+    const dataSource = new PrismaPayrollDataSource(database);
     const payrollService = new PayrollService({
       dataSource,
       defaultJurisdiction: "US",
