@@ -118,9 +118,7 @@ async function getEventDetails(
   tenantId: string,
   eventId: string | null,
   existingEventId: string | null
-): Promise<
-  NonNullable<Awaited<ReturnType<typeof database.event.findFirst>>> | null
-> {
+): Promise<{ id: string; title: string; eventDate: Date; } | null> {
   const targetEventId = eventId || existingEventId;
 
   if (!targetEventId) {
