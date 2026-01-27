@@ -119,8 +119,8 @@ async function getEventDetails(
   eventId: string | null,
   existingEventId: string | null
 ): Promise<
-  NonNullable<Awaited<ReturnType<typeof database.event.findFirst>>>
-> | null {
+  NonNullable<Awaited<ReturnType<typeof database.event.findFirst>>> | null
+> {
   const targetEventId = eventId || existingEventId;
 
   if (!targetEventId) {
