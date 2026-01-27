@@ -64,6 +64,17 @@ export function TaskModal({
   const [duration, setDuration] = useState(30);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const handleClose = useCallback(() => {
+    setTitle("");
+    setDescription("");
+    setCategory("Service");
+    setPriority("medium");
+    setAssigneeId(undefined);
+    setStartTime("09:00");
+    setDuration(30);
+    onClose();
+  }, [onClose]);
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -137,17 +148,6 @@ export function TaskModal({
       handleClose,
     ]
   );
-
-  const handleClose = useCallback(() => {
-    setTitle("");
-    setDescription("");
-    setCategory("Service");
-    setPriority("medium");
-    setAssigneeId(undefined);
-    setStartTime("09:00");
-    setDuration(30);
-    onClose();
-  }, [onClose]);
 
   return (
     <Dialog onOpenChange={(open) => !open && handleClose()} open={isOpen}>
