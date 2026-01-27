@@ -238,7 +238,7 @@ export async function PUT(request: Request, context: RouteContext) {
         board_id: card.boardId,
         title: card.title,
         content: card.content,
-        card_type: card.cardType,
+        card_type: card.cardType as CardType,
         status: card.status as CardStatus,
         position_x: card.positionX,
         position_y: card.positionY,
