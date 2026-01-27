@@ -180,11 +180,6 @@ export function ProposalsClient({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
-  // Fetch proposals
-  useEffect(() => {
-    fetchProposals();
-  }, [fetchProposals]);
-
   const fetchProposals = async () => {
     setIsLoading(true);
     try {
@@ -217,6 +212,11 @@ export function ProposalsClient({
       setIsLoading(false);
     }
   };
+
+  // Fetch proposals
+  useEffect(() => {
+    fetchProposals();
+  }, []);
 
   const updateFilters = () => {
     const params = new URLSearchParams();
