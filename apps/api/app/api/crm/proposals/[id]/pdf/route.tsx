@@ -106,7 +106,7 @@ function fetchUser(
   database: PrismaClient,
   tenantId: string,
   authUserId: string
-): ReturnType<typeof database.user.findFirst> {
+) {
   return database.user.findFirst({
     where: {
       tenantId,
