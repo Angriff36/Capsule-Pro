@@ -399,7 +399,7 @@ Generate ${maxSuggestions} prioritized suggestions based on this state.`;
         tenantId,
         type: config.type,
         category: config.defaultCategory,
-        priority: s.priority || config.defaultPriority,
+        priority: config.defaultPriority,
         title: s.title,
         description: s.description,
         context: {
