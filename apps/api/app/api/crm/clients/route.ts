@@ -11,7 +11,7 @@ import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { CreateClientRequest } from "./types";
-import type { ClientCreateInput } from "@repo/database";
+import type { ClientCreateInput } from "@repo/database/generated/models/Client";
 import {
   parseClientListFilters,
   parsePaginationParams,
