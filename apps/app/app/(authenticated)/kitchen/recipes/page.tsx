@@ -39,12 +39,14 @@ import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 import { updateRecipeImage } from "./actions";
 import { DifficultyRating } from "./components/difficulty-stars";
+import { MenuCard } from "./components/menu-card";
 import { RecipeEditButton } from "./recipe-edit-button";
 import { RecipeFavoriteButton } from "./recipe-favorite-button";
 import { RecipeImagePlaceholder } from "./recipe-image-placeholder";
 import { RecipesPageClient } from "./recipes-page-client";
 import RecipesRealtime from "./recipes-realtime";
 import { RecipesToolbar } from "./recipes-toolbar";
+import { getMenus } from "./menus/actions";
 
 type RecipeRow = {
   id: string;
@@ -199,6 +201,15 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
     `
   );
 
+  const [menuTotals] = await database.$queryRaw<{ count: number }[]>(
+    Prisma.sql`
+      SELECT COUNT(*)::int AS count
+      FROM tenant_kitchen.menus
+      WHERE tenant_id = ${tenantId}
+        AND deleted_at IS NULL
+    `
+  );
+
   const recipeConditions = buildConditions(
     [Prisma.sql`r.tenant_id = ${tenantId}`, Prisma.sql`r.deleted_at IS NULL`],
     [
@@ -244,6 +255,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
   const showRecipes = activeTab === "recipes";
   const showDishes = activeTab === "dishes" || activeTab === "costing";
   const showIngredients = activeTab === "ingredients";
+  const showMenus = activeTab === "menus";
 
   const recipes = showRecipes
     ? await database.$queryRaw<RecipeRow[]>(
@@ -361,10 +373,12 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
       )
     : [];
 
+  const menus = showMenus ? await getMenus() : [];
+
   const tabs = [
     { value: "recipes", label: "Recipes", count: recipeTotals?.count ?? 0 },
     { value: "dishes", label: "Dishes", count: dishTotals?.count ?? 0 },
-    { value: "menus", label: "Menus", count: 0 },
+    { value: "menus", label: "Menus", count: menuTotals?.count ?? 0 },
     {
       value: "ingredients",
       label: "Ingredients",
@@ -379,6 +393,9 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
     }
     if (activeTab === "dishes") {
       return { label: "Add Dish", href: "/kitchen/recipes/dishes/new" };
+    }
+    if (activeTab === "menus") {
+      return { label: "Add Menu", href: "/kitchen/recipes/menus/new" };
     }
     if (activeTab === "ingredients") {
       return { label: "Add Ingredient", href: "/kitchen/recipes/ingredients/new" };
@@ -694,24 +711,44 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
           )}
 
           {activeTab === "menus" && (
-            <Empty className="bg-card/50">
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <UtensilsIcon />
-                </EmptyMedia>
-                <EmptyTitle>Menus are coming next</EmptyTitle>
-                <EmptyDescription>
-                  Soon you'll be able to create curated menu collections that group
-                  dishes together for events. Each menu will include pricing tiers,
-                  dietary breakdowns, and can be customized for different client needs.
-                </EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent>
-                <Button variant="outline" asChild>
-                  <Link href="/kitchen/recipes">Browse Recipes & Dishes</Link>
-                </Button>
-              </EmptyContent>
-            </Empty>
+            <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+              {menus.length === 0 ? (
+                <Empty className="bg-card/50">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <UtensilsIcon />
+                    </EmptyMedia>
+                    <EmptyTitle>Create your first menu</EmptyTitle>
+                    <EmptyDescription>
+                      Build curated menu collections that group dishes together for
+                      events. Each menu can include pricing tiers, dietary breakdowns,
+                      and be customized for different client needs.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <Button asChild>
+                      <Link href="/kitchen/recipes/menus/new">Create New Menu</Link>
+                    </Button>
+                  </EmptyContent>
+                </Empty>
+              ) : (
+                menus.map((menu) => (
+                  <MenuCard
+                    key={menu.id}
+                    id={menu.id}
+                    name={menu.name}
+                    description={menu.description}
+                    category={menu.category}
+                    isActive={menu.isActive}
+                    basePrice={menu.basePrice}
+                    pricePerPerson={menu.pricePerPerson}
+                    minGuests={menu.minGuests}
+                    maxGuests={menu.maxGuests}
+                    dishCount={menu.dishCount}
+                  />
+                ))
+              )}
+            </section>
           )}
 
           {activeTab === "costing" && (

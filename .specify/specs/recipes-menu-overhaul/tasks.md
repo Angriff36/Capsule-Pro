@@ -294,7 +294,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check`
   - **Commit**: `feat(menus): create menu editor component`
 
-- [ ] T026 [US3] Replace menus placeholder with menu grid `apps/app/app/(authenticated)/kitchen/recipes/page.tsx`
+- [x] T026 [US3] Replace menus placeholder with menu grid `apps/app/app/(authenticated)/kitchen/recipes/page.tsx`
   - **Do**:
     1. Fetch menus when activeTab === "menus"
     2. Replace Empty placeholder with MenuCard grid
