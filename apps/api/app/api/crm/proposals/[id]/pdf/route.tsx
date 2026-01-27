@@ -333,7 +333,7 @@ async function generateDownloadResponse(
  * Generate base64 PDF response
  */
 async function generateBase64Response(
-  pdfComponent: React.ReactElement,
+  pdfComponent: React.ReactElement<DocumentProps>,
   proposalNumber: string
 ) {
   const { pdf } = await import("@react-pdf/renderer");
