@@ -6,7 +6,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database, Prisma, PrismaClient } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -177,7 +177,7 @@ export async function GET(request: Request) {
  * Generate a unique proposal number
  */
 async function generateProposalNumber(
-  database: typeof import("@repo/database"),
+  database: PrismaClient,
   tenantId: string
 ): Promise<string> {
   const year = new Date().getFullYear();
