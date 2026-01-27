@@ -49,7 +49,7 @@ async function fetchClientEmail(
  * Fetch lead email
  */
 async function fetchLeadEmail(
-  database: typeof import("@repo/database"),
+  database: PrismaClient,
   tenantId: string,
   leadId: string | null
 ): Promise<string | null> {
@@ -69,7 +69,7 @@ async function fetchLeadEmail(
  * Fetch proposal with relations
  */
 async function fetchProposalWithRelations(
-  database: typeof import("@repo/database"),
+  database: PrismaClient,
   tenantId: string,
   id: string
 ) {
@@ -169,7 +169,7 @@ function determineRecipientName(
  * Update proposal status to sent
  */
 async function markProposalSent(
-  database: typeof import("@repo/database"),
+  database: PrismaClient,
   tenantId: string,
   id: string
 ) {
