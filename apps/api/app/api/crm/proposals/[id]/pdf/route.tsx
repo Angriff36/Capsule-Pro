@@ -3,6 +3,7 @@ import { database, PrismaClient } from "@repo/database";
 import { ProposalPDF } from "@repo/pdf";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import type { DocumentProps } from "@react-pdf/renderer";
 
 export const runtime = "nodejs";
 
@@ -313,7 +314,7 @@ export async function GET(
  * Generate downloadable PDF response
  */
 async function generateDownloadResponse(
-  pdfComponent: React.ReactElement,
+  pdfComponent: React.ReactElement<DocumentProps>,
   proposalNumber: string
 ) {
   const { pdf } = await import("@react-pdf/renderer");
