@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, PrismaClient } from "@repo/database";
 import { ProposalPDF } from "@repo/pdf";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -41,7 +41,7 @@ type LeadSelect = {
  * Fetch proposal with all related data
  */
 function fetchProposal(
-  database: typeof import("@repo/database"),
+  database: PrismaClient,
   proposalId: string,
   tenantId: string
 ): ReturnType<typeof database.proposal.findFirst> {
