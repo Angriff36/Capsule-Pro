@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, PrismaClient } from "@repo/database";
 import { BattleBoardPDF } from "@repo/pdf";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -39,10 +39,10 @@ type StaffMember = {
  * Fetch event details
  */
 function fetchEvent(
-  database: typeof import("@repo/database"),
+  database: PrismaClient,
   tenantId: string,
   eventId: string
-): ReturnType<typeof database.event.findUnique> {
+): any {
   return database.event.findUnique({
     where: {
       tenantId_id: {
@@ -61,10 +61,10 @@ function fetchEvent(
  * Fetch timeline tasks with staff assignments
  */
 function fetchTimelineTasks(
-  database: typeof import("@repo/database"),
+  database: PrismaClient,
   tenantId: string,
   eventId: string
-): ReturnType<typeof database.$queryRawUnsafe> {
+): any {
   return database.$queryRawUnsafe<
     Array<{
       id: string;
@@ -115,9 +115,9 @@ function fetchTimelineTasks(
  * Fetch staff with assignment counts
  */
 function fetchStaff(
-  database: typeof import("@repo/database"),
+  database: PrismaClient,
   tenantId: string
-): ReturnType<typeof database.$queryRawUnsafe> {
+): any {
   return database.$queryRawUnsafe<
     Array<{
       id: string;
@@ -146,10 +146,10 @@ function fetchStaff(
  * Fetch user for metadata
  */
 function fetchUser(
-  database: typeof import("@repo/database"),
+  database: PrismaClient,
   tenantId: string,
   authUserId: string
-): ReturnType<typeof database.user.findFirst> {
+): any {
   return database.user.findFirst({
     where: {
       tenantId,
