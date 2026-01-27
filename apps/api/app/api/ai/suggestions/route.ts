@@ -398,7 +398,7 @@ Generate ${maxSuggestions} prioritized suggestions based on this state.`;
         id: `suggestion-${Date.now()}-${index}`,
         tenantId,
         type: config.type,
-        category: s.category || config.defaultCategory,
+        category: config.defaultCategory,
         priority: s.priority || config.defaultPriority,
         title: s.title,
         description: s.description,
