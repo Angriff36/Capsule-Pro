@@ -16,8 +16,10 @@ export default defineConfig({
           id === "C:/Projects/capsule-pro/packages/database" ||
           id.endsWith("\\packages\\database") ||
           id.endsWith("/packages/database") ||
+          id.includes("packages/database") ||
+          id.includes("\\packages\\database") ||
           (importer &&
-            importer.includes("recipes") &&
+            (importer.includes("recipes") || importer.includes("menus")) &&
             id.includes("database"))
         ) {
           console.log(`[vitest-database-mock] INTERCEPTED database: ${id}`);
@@ -68,14 +70,34 @@ export default defineConfig({
         ) {
           console.log(`[vitest-database-mock] LOAD intercepted: ${id}`);
           // Return the mock content directly instead of loading the actual file
+          // This mocks all the imports and exports from the real database/index.ts
           return `
+            import { vi } from "vitest";
+
             export const Prisma = {
-              sql: () => ({}),
-              PrismaClient: class {},
+              sql: () => ({ strings: [], values: [] }),
+              join: () => "",
+              empty: {},
+              PrismaClient: vi.fn(),
             };
-            export const PrismaClient = class {};
-            export const database = { $queryRaw: () => {}, $executeRaw: () => {}, outboxEvent: { create: () => {} } };
-            export const tenantDatabase = () => ({});
+
+            export const PrismaClient = vi.fn();
+
+            const mockFn = vi.fn();
+            export const database = {
+              $queryRaw: mockFn,
+              $transaction: mockFn,
+              $connect: mockFn,
+              $disconnect: mockFn,
+              $on: mockFn,
+              $use: mockFn,
+              $executeRaw: mockFn,
+              outboxEvent: {
+                create: mockFn,
+              },
+            };
+
+            export const tenantDatabase = vi.fn(() => database);
           `;
         }
         return undefined;
@@ -83,10 +105,12 @@ export default defineConfig({
     },
   ],
   test: {
-    // API route tests need node environment (server-only), most specific first
+    // API route tests and server action tests need node environment (server-only), most specific first
     environmentMatchGlobs: [
       ["**/__tests__/api/**/*.test.{ts,js}", "node"],
       ["**/__tests__/api/**/*.test.{tsx,jsx}", "node"],
+      ["**/__tests__/menus/**/*.test.{ts,tsx,js,jsx}", "node"],
+      ["**/__tests__/recipes/**/*.test.{ts,tsx,js,jsx}", "node"],
     ],
     // Default to jsdom for everything else
     environment: "jsdom",
