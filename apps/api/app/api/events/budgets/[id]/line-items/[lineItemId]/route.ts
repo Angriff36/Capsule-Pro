@@ -128,36 +128,36 @@ function prepareUpdateData(
 ) {
   const updateData: Record<string, unknown> = {};
 
-  if (validatedData.category !== undefined) {
-    updateData.category = validatedData.category;
+  if ((validatedData as any).category !== undefined) {
+    updateData.category = (validatedData as any).category;
   }
-  if (validatedData.name !== undefined) {
-    updateData.name = validatedData.name;
+  if ((validatedData as any).name !== undefined) {
+    updateData.name = (validatedData as any).name;
   }
-  if (validatedData.description !== undefined) {
-    updateData.description = validatedData.description;
+  if ((validatedData as any).description !== undefined) {
+    updateData.description = (validatedData as any).description;
   }
-  if (validatedData.budgetedAmount !== undefined) {
-    updateData.budgetedAmount = validatedData.budgetedAmount;
+  if ((validatedData as any).budgetedAmount !== undefined) {
+    updateData.budgetedAmount = (validatedData as any).budgetedAmount;
     // Recalculate variance if actual amount exists
     const actualAmount = Number(existingLineItem?.actualAmount ?? 0);
-    const newVarianceAmount = validatedData.budgetedAmount - actualAmount;
+    const newVarianceAmount = (validatedData as any).budgetedAmount - actualAmount;
     updateData.varianceAmount = newVarianceAmount;
   }
-  if (validatedData.actualAmount !== undefined) {
-    updateData.actualAmount = validatedData.actualAmount;
+  if ((validatedData as any).actualAmount !== undefined) {
+    updateData.actualAmount = (validatedData as any).actualAmount;
     // Recalculate variance
     const budgetedAmount =
-      validatedData.budgetedAmount ??
+      (validatedData as any).budgetedAmount ??
       Number(existingLineItem?.budgetedAmount ?? 0);
-    const newVarianceAmount = budgetedAmount - validatedData.actualAmount;
+    const newVarianceAmount = budgetedAmount - (validatedData as any).actualAmount;
     updateData.varianceAmount = newVarianceAmount;
   }
-  if (validatedData.sortOrder !== undefined) {
-    updateData.sortOrder = validatedData.sortOrder;
+  if ((validatedData as any).sortOrder !== undefined) {
+    updateData.sortOrder = (validatedData as any).sortOrder;
   }
-  if (validatedData.notes !== undefined) {
-    updateData.notes = validatedData.notes;
+  if ((validatedData as any).notes !== undefined) {
+    updateData.notes = (validatedData as any).notes;
   }
 
   return updateData;
