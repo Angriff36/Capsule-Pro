@@ -295,7 +295,7 @@ export async function GET(
     const { id: contractId } = await params;
     const { orgId, userId } = await auth();
 
-    const authContext = await getAuthContext(orgId, userId ?? null, orgId);
+    const authContext = await getAuthContext(orgId ?? null, userId ?? null, orgId ?? null);
 
     const contract = await fetchContract(contractId, authContext.tenantId);
     const user = await fetchUser(authContext.tenantId, authContext.userId);
