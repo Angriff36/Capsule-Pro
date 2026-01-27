@@ -4,8 +4,7 @@ import { database } from "@repo/database";
 import { generateText } from "ai";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-
-export type {
+import type {
   ActionHandler,
   SuggestedAction,
   SuggestionCategory,
