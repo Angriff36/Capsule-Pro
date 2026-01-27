@@ -407,7 +407,7 @@ Generate ${maxSuggestions} prioritized suggestions based on this state.`;
           source: "ai-suggestions",
         },
         action:
-          s.actionType === "api_call"
+          s.actionType === "api_call" && s.actionPath
             ? {
                 type: "api_call" as const,
                 method: "GET" as const,
