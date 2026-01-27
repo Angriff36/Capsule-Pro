@@ -120,16 +120,10 @@ function fetchUser(
   });
 }
 
-type ProposalClient = NonNullable<
-  Awaited<ReturnType<typeof fetchProposal>>["client"]
->;
-type ProposalLead = NonNullable<
-  Awaited<ReturnType<typeof fetchProposal>>["lead"]
->;
-type ProposalEvent = NonNullable<
-  Awaited<ReturnType<typeof fetchProposal>>["event"]
->;
-type ProposalUser = NonNullable<Awaited<ReturnType<typeof fetchUser>>>;
+type ProposalClient = any;
+type ProposalLead = any;
+type ProposalEvent = any;
+type ProposalUser = any;
 
 /**
  * Transform client data for PDF
