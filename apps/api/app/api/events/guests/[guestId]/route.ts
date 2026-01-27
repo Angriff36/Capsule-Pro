@@ -74,9 +74,9 @@ function sanitizeStringArray(restrictions: unknown[]): string[] {
       (restriction) =>
         restriction !== null &&
         restriction !== undefined &&
-        restriction.toString().trim() !== ""
+        (restriction as any).toString().trim() !== ""
     )
-    .map((restriction) => restriction.toString().trim());
+    .map((restriction) => (restriction as any).toString().trim());
 }
 
 /**
