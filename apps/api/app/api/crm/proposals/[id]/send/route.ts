@@ -149,12 +149,12 @@ function calculateTotalAmount(
  */
 function determineRecipientName(
   client: { first_name?: string | null; company_name?: string | null } | null,
-  lead: { contactName?: string; companyName?: string } | null
+  lead: { contactName?: string | null; companyName?: string | null } | null
 ): string {
-  const clientFirstName = client?.first_name as string | undefined;
-  const clientCompanyName = client?.company_name as string | undefined;
-  const leadContactName = lead?.contactName as string | undefined;
-  const leadCompanyName = lead?.companyName as string | undefined;
+  const clientFirstName = client?.first_name || undefined;
+  const clientCompanyName = client?.company_name || undefined;
+  const leadContactName = lead?.contactName || undefined;
+  const leadCompanyName = lead?.companyName || undefined;
 
   return (
     clientFirstName ||
