@@ -451,7 +451,12 @@ export async function GET(request: Request) {
         deposits_received: "0",
       }
     );
-    const financeAlerts = buildFinanceAlerts(budgetAlerts);
+    const financeAlerts = buildFinanceAlerts(
+      budgetAlerts.map(alert => ({
+        ...alert,
+        utilization: Number(alert.utilization)
+      }))
+    );
 
     return NextResponse.json({
       summary: {
