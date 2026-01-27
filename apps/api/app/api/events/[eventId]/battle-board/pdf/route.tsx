@@ -368,7 +368,7 @@ async function generateDownloadResponse(
   eventTitle: string
 ) {
   const { pdf } = await import("@react-pdf/renderer");
-  const doc = await pdf(pdfComponent);
+  const doc = await pdf(pdfComponent as any);
   const blob = await doc.toBlob();
 
   return new NextResponse(blob, {
@@ -387,7 +387,7 @@ async function generateBase64Response(
   eventTitle: string
 ) {
   const { pdf } = await import("@react-pdf/renderer");
-  const doc = await pdf(pdfComponent);
+  const doc = await pdf(pdfComponent as any);
   const blob = await doc.toBlob();
   const arrayBuffer = await blob.arrayBuffer();
   const uint8Array = new Uint8Array(arrayBuffer);
