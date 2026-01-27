@@ -337,7 +337,7 @@ Constitution: 1.0.0
 
 ## Phase 8: Testing
 
-- [ ] T030 [US1] Add unit tests for updateRecipe action
+- [x] T030 [US1] Add unit tests for updateRecipe action
   - **Do**:
     1. Create test file `apps/app/__tests__/recipes/update-recipe.test.ts`
     2. Test versioning (new version created on update)
