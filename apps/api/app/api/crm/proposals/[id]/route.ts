@@ -7,7 +7,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database, Prisma, PrismaClient } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -39,7 +39,7 @@ type LeadSelect = {
  * Fetch client for a proposal
  */
 function fetchClient(
-  database: typeof import("@repo/database"),
+  database: PrismaClient,
   tenantId: string,
   clientId: string | null
 ): Promise<Record<string, unknown> | null> {
@@ -65,7 +65,7 @@ function fetchClient(
  * Fetch lead for a proposal
  */
 function fetchLead(
-  database: typeof import("@repo/database"),
+  database: PrismaClient,
   tenantId: string,
   leadId: string | null
 ): Promise<Record<string, unknown> | null> {
@@ -221,7 +221,7 @@ function buildProposalUpdateData(
  * Update line items for a proposal
  */
 async function updateLineItems(
-  database: typeof import("@repo/database"),
+  database: PrismaClient,
   proposalId: string,
   tenantId: string,
   lineItems: CreateProposalRequest["lineItems"]
