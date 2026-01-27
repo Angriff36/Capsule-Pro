@@ -169,13 +169,6 @@ export default function KitchenMobilePage() {
     };
   }, []);
 
-  // Sync offline queue when coming back online
-  useEffect(() => {
-    if (isOnline && syncQueue && syncQueue.length > 0) {
-      syncOfflineClaims();
-    }
-  }, [isOnline, syncOfflineClaims, syncQueue]);
-
   const syncOfflineClaims = async () => {
     if (!syncQueue || syncQueue.length === 0) {
       return;
@@ -197,6 +190,13 @@ export default function KitchenMobilePage() {
       console.error("Error syncing claims:", error);
     }
   };
+
+  // Sync offline queue when coming back online
+  useEffect(() => {
+    if (isOnline && syncQueue && syncQueue.length > 0) {
+      syncOfflineClaims();
+    }
+  }, [isOnline, syncOfflineClaims, syncQueue]);
 
   const handleClaim = async (taskId: string) => {
     setIsLoading(true);
