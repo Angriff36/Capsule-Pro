@@ -101,13 +101,13 @@ function buildUpdatePayload(
     updatePayload.title = updatePayload.title.trim();
   }
   if (updatePayload.notes !== undefined) {
-    updatePayload.notes = updatePayload.notes?.trim() || null;
+    updatePayload.notes = updatePayload.notes?.trim() || undefined;
   }
   if (updatePayload.documentUrl !== undefined) {
-    updatePayload.documentUrl = updatePayload.documentUrl?.trim() || null;
+    updatePayload.documentUrl = updatePayload.documentUrl?.trim() || undefined;
   }
   if (updatePayload.documentType !== undefined) {
-    updatePayload.documentType = updatePayload.documentType?.trim() || null;
+    updatePayload.documentType = updatePayload.documentType?.trim() || undefined;
   }
 
   return updatePayload;
