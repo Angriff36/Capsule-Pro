@@ -103,7 +103,7 @@ function fetchProposal(
  * Fetch user info for metadata
  */
 function fetchUser(
-  database: typeof import("@repo/database"),
+  database: PrismaClient,
   tenantId: string,
   authUserId: string
 ): ReturnType<typeof database.user.findFirst> {
