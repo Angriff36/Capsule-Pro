@@ -305,7 +305,7 @@ Constitution: 1.0.0
   - **Verify**: `pnpm check && pnpm dev:apps`
   - **Commit**: `feat(menus): replace placeholder with menu grid`
 
-- [ ] T027 [US3] Create menu detail page `apps/app/app/(authenticated)/kitchen/recipes/menus/[menuId]/page.tsx`
+- [x] T027 [US3] Create menu detail page `apps/app/app/(authenticated)/kitchen/recipes/menus/[menuId]/page.tsx`
   - **Do**:
     1. Create page with header showing menu name
     2. Display menu metadata (description, category, pricing)
