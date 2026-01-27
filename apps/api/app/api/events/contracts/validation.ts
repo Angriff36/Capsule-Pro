@@ -335,7 +335,7 @@ export function validateSignatureData(
   }
 }
 
-export function generateContractNumber(_tenantId: string): Promise<string> {
+export function generateContractNumber(_tenantId: string): string {
   // This would typically call a database function to generate a unique contract number
   // For now, we'll implement a basic generator that could be replaced with a DB function
   // In a real implementation, this would be:
