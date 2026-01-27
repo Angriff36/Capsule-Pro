@@ -44,7 +44,7 @@ function fetchProposal(
   database: PrismaClient,
   proposalId: string,
   tenantId: string
-): ReturnType<typeof database.proposal.findFirst> {
+) {
   return database.proposal.findFirst({
     where: {
       id: proposalId,
