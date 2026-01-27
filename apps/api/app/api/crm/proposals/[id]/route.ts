@@ -154,7 +154,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
  */
 function calculateProposalTotals(
   data: Partial<CreateProposalRequest>,
-  existingProposal: Awaited<typeof database.proposal.findFirst>
+  existingProposal: any
 ) {
   const existingSubtotal = Number(existingProposal.subtotal);
   const existingTaxAmount = Number(existingProposal.taxAmount);
