@@ -11,6 +11,7 @@ import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { CreateClientRequest } from "./types";
+import type { ClientCreateInput } from "@repo/database";
 import {
   parseClientListFilters,
   parsePaginationParams,
@@ -132,7 +133,7 @@ function buildCreateClientData(
   data: CreateClientRequest,
   tenantId: string,
   clientType: string
-) {
+): ClientCreateInput {
   const clientData: Record<string, unknown> = {
     tenantId,
     clientType,
@@ -178,7 +179,7 @@ function buildCreateClientData(
   addOptional("tags", []);
   addOptional("assignedTo", null);
 
-  return clientData;
+  return clientData as ClientCreateInput;
 }
 
 /**
