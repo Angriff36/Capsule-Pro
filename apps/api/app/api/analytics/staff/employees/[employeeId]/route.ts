@@ -250,7 +250,7 @@ function calculateEfficiencyMetrics(
 
 function buildMetricsResponse(
   employeeId: string,
-  employee: Awaited<ReturnType<typeof fetchEmployee>>,
+  employee: NonNullable<Awaited<ReturnType<typeof fetchEmployee>>>,
   taskMetrics: ReturnType<typeof calculateTaskMetrics>,
   timeMetrics: ReturnType<typeof calculateTimeMetrics>,
   qualityMetrics: ReturnType<typeof calculateQualityMetrics>,
@@ -350,7 +350,7 @@ export async function GET(
 
     const metrics = buildMetricsResponse(
       employeeId,
-      employee,
+      employee as NonNullable<typeof employee>,
       taskMetrics,
       timeMetrics,
       qualityMetrics,
