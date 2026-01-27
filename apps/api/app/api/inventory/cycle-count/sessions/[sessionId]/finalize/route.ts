@@ -244,7 +244,7 @@ export async function POST(request: Request, context: RouteContext) {
     );
 
     await database.varianceReport.createMany({
-      data: varianceReports,
+      data: varianceReports as any,
     });
 
     // Process inventory adjustments for records with variance
