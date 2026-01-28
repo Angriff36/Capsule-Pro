@@ -3,6 +3,34 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
+export interface StationGroup {
+  stationId: string;
+  stationName: string;
+  items: Array<{
+    id: string;
+    stationId: string;
+    stationName: string;
+    ingredientId: string;
+    ingredientName: string;
+    category: string | null;
+    baseQuantity: number;
+    baseUnit: string;
+    scaledQuantity: number;
+    scaledUnit: string;
+    isOptional: boolean;
+    preparationNotes: string | null;
+    allergens: string[];
+    dietarySubstitutions: string[];
+    dishId: string | null;
+    dishName: string | null;
+    recipeVersionId: string | null;
+    sortOrder: number;
+    isCompleted: boolean;
+    completedAt: Date | null;
+    completedBy: string | null;
+  }>;
+}
+
 /**
  * GET /api/kitchen/prep-lists/[id]
  * Get a prep list by ID with all items
@@ -132,12 +160,6 @@ export async function GET(
     `;
 
     // Group items by station
-    interface StationGroup {
-      stationId: string;
-      stationName: string;
-      items: Array<(typeof itemsResult)[number]>;
-    }
-
     const stationsMap = new Map<string, StationGroup>();
     for (const item of itemsResult) {
       const stationId = item.stationId as string;
