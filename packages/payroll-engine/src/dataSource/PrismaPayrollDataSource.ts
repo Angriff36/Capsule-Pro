@@ -45,17 +45,19 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       },
     });
 
-    return users.map((user) => ({
-      id: user.id,
-      tenantId: user.tenantId,
-      name: `${user.firstName} ${user.lastName}`,
-      department: undefined,
-      roleId: user.roleId || undefined,
-      currency: "USD",
-      hourlyRate: user.hourlyRate ? Number(user.hourlyRate) : 0,
-      taxInfo: undefined, // TODO: Add tax info when model exists
-      payrollPrefs: undefined, // TODO: Add payroll prefs when model exists
-    }));
+    return users
+      .filter((user) => user.roleId !== null)
+      .map((user) => ({
+        id: user.id,
+        tenantId: user.tenantId,
+        name: `${user.firstName} ${user.lastName}`,
+        department: undefined,
+        roleId: user.roleId!,
+        currency: "USD",
+        hourlyRate: user.hourlyRate ? Number(user.hourlyRate) : 0,
+        taxInfo: undefined, // TODO: Add tax info when model exists
+        payrollPrefs: undefined, // TODO: Add payroll prefs when model exists
+      }));
   }
 
   async getRoles(tenantId: string): Promise<Role[]> {
