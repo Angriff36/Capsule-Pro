@@ -305,44 +305,66 @@ export async function updateProposal(
     calculatedTotal = calculatedSubtotal + calculatedTax - discount;
   }
 
+  const data: any = {};
+
+  if (input.title !== undefined) {
+    data.title = input.title?.trim();
+  }
+  if (input.clientId !== undefined && input.clientId !== null) {
+    data.clientId = input.clientId;
+  }
+  if (input.leadId !== undefined && input.leadId !== null) {
+    data.leadId = input.leadId;
+  }
+  if (input.eventId !== undefined && input.eventId !== null) {
+    data.eventId = input.eventId;
+  }
+  if (input.eventDate !== undefined) {
+    data.eventDate = input.eventDate ? new Date(input.eventDate) : null;
+  }
+  if (input.eventType !== undefined) {
+    data.eventType = input.eventType?.trim() || null;
+  }
+  if (input.guestCount !== undefined) {
+    data.guestCount = input.guestCount ?? null;
+  }
+  if (input.venueName !== undefined) {
+    data.venueName = input.venueName?.trim() || null;
+  }
+  if (input.venueAddress !== undefined) {
+    data.venueAddress = input.venueAddress?.trim() || null;
+  }
+  if (input.subtotal !== undefined) {
+    data.subtotal = calculatedSubtotal;
+  }
+  if (input.taxRate !== undefined) {
+    data.taxRate = input.taxRate ?? 0;
+  }
+  if (input.taxAmount !== undefined) {
+    data.taxAmount = calculatedTax;
+  }
+  if (input.discountAmount !== undefined) {
+    data.discountAmount = input.discountAmount ?? 0;
+  }
+  if (input.total !== undefined) {
+    data.total = calculatedTotal;
+  }
+  if (input.status !== undefined) {
+    data.status = input.status;
+  }
+  if (input.validUntil !== undefined) {
+    data.validUntil = input.validUntil ? new Date(input.validUntil) : null;
+  }
+  if (input.notes !== undefined) {
+    data.notes = input.notes?.trim() || null;
+  }
+  if (input.termsAndConditions !== undefined) {
+    data.termsAndConditions = input.termsAndConditions?.trim() || null;
+  }
+
   const proposal = await database.proposal.update({
     where: { tenantId_id: { tenantId, id } },
-    data: {
-      ...(input.title !== undefined && { title: input.title?.trim() }),
-      ...(input.clientId !== undefined && input.clientId !== null && { clientId: input.clientId as string }),
-      ...(input.leadId !== undefined && input.leadId !== null && { leadId: input.leadId as string }),
-      ...(input.eventId !== undefined && input.eventId !== null && { eventId: input.eventId as string }),
-      ...(input.eventDate !== undefined && {
-        eventDate: input.eventDate ? new Date(input.eventDate) : null,
-      }),
-      ...(input.eventType !== undefined && {
-        eventType: input.eventType?.trim() || null,
-      }),
-      ...(input.guestCount !== undefined && {
-        guestCount: input.guestCount ?? null,
-      }),
-      ...(input.venueName !== undefined && {
-        venueName: input.venueName?.trim() || null,
-      }),
-      ...(input.venueAddress !== undefined && {
-        venueAddress: input.venueAddress?.trim() || null,
-      }),
-      ...(input.subtotal !== undefined && { subtotal: calculatedSubtotal }),
-      ...(input.taxRate !== undefined && { taxRate: input.taxRate ?? 0 }),
-      ...(input.taxAmount !== undefined && { taxAmount: calculatedTax }),
-      ...(input.discountAmount !== undefined && {
-        discountAmount: input.discountAmount ?? 0,
-      }),
-      ...(input.total !== undefined && { total: calculatedTotal }),
-      ...(input.status !== undefined && { status: input.status }),
-      ...(input.validUntil !== undefined && {
-        validUntil: input.validUntil ? new Date(input.validUntil) : null,
-      }),
-      ...(input.notes !== undefined && { notes: input.notes?.trim() || null }),
-      ...(input.termsAndConditions !== undefined && {
-        termsAndConditions: input.termsAndConditions?.trim() || null,
-      }),
-    },
+    data,
   });
 
   revalidatePath("/crm/proposals");
