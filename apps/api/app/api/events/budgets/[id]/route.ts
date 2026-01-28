@@ -7,7 +7,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -87,7 +87,7 @@ function handleUpdateErrors(error: unknown): NextResponse | null {
  */
 function prepareUpdateData(
   validatedData: unknown,
-  existingBudget: any
+  existingBudget: { totalActualAmount: Prisma.Decimal }
 ): Record<string, unknown> {
   const updateData: Record<string, unknown> = {};
   const data = validatedData as {

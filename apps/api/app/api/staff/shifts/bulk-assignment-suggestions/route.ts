@@ -3,6 +3,7 @@ import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
+  type AutoAssignmentResult,
   getAssignmentSuggestionsForMultipleShifts,
   type ShiftRequirement,
 } from "@/lib/staff/auto-assignment";
@@ -106,9 +107,15 @@ export async function POST(request: Request) {
       results,
       summary: {
         total: results.length,
-        canAutoAssign: results.filter((r) => r.canAutoAssign).length,
-        hasSuggestions: results.filter((r) => r.suggestions.length > 0).length,
-        noSuggestions: results.filter((r) => r.suggestions.length === 0).length,
+        canAutoAssign: results.filter(
+          (r: AutoAssignmentResult) => r.canAutoAssign
+        ).length,
+        hasSuggestions: results.filter(
+          (r: AutoAssignmentResult) => r.suggestions.length > 0
+        ).length,
+        noSuggestions: results.filter(
+          (r: AutoAssignmentResult) => r.suggestions.length === 0
+        ).length,
       },
     });
   } catch (error) {
@@ -209,9 +216,15 @@ export async function GET(request: Request) {
       results,
       summary: {
         total: results.length,
-        canAutoAssign: results.filter((r) => r.canAutoAssign).length,
-        hasSuggestions: results.filter((r) => r.suggestions.length > 0).length,
-        noSuggestions: results.filter((r) => r.suggestions.length === 0).length,
+        canAutoAssign: results.filter(
+          (r: AutoAssignmentResult) => r.canAutoAssign
+        ).length,
+        hasSuggestions: results.filter(
+          (r: AutoAssignmentResult) => r.suggestions.length > 0
+        ).length,
+        noSuggestions: results.filter(
+          (r: AutoAssignmentResult) => r.suggestions.length === 0
+        ).length,
       },
     });
   } catch (error) {

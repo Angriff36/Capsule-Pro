@@ -132,7 +132,13 @@ export async function GET(
     `;
 
     // Group items by station
-    const stationsMap = new Map<string, any>();
+    interface StationGroup {
+      stationId: string;
+      stationName: string;
+      items: Array<(typeof itemsResult)[number]>;
+    }
+
+    const stationsMap = new Map<string, StationGroup>();
     for (const item of itemsResult) {
       const stationId = item.stationId as string;
       if (!stationsMap.has(stationId)) {
@@ -142,7 +148,7 @@ export async function GET(
           items: [],
         });
       }
-      stationsMap.get(stationId).items.push(item);
+      stationsMap.get(stationId)!.items.push(item);
     }
 
     const stations = Array.from(stationsMap.values());
@@ -181,7 +187,7 @@ export async function PATCH(
     const { name, status, notes, batchMultiplier, dietaryRestrictions } = body;
 
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: Array<string | number | Date | string[]> = [];
 
     if (name !== undefined) {
       updates.push(`name = $${values.length + 1}`);
@@ -219,7 +225,7 @@ export async function PATCH(
       .join(", ");
     const sql = `UPDATE tenant_kitchen.prep_lists SET ${updateClause} WHERE tenant_id = $${updates.length + 1} AND id = $${updates.length + 2} AND deleted_at IS NULL`;
 
-    await database.$queryRawUnsafe(sql, values);
+    await database.$queryRawUnsafe(sql, values as unknown[]);
 
     return NextResponse.json({ message: "Prep list updated successfully" });
   } catch (error) {

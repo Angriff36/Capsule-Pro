@@ -71,12 +71,12 @@ function validateAllergenRestrictions(
 function sanitizeStringArray(restrictions: unknown[]): string[] {
   return restrictions
     .filter(
-      (restriction) =>
+      (restriction): restriction is string | number | boolean =>
         restriction !== null &&
         restriction !== undefined &&
-        (restriction as any).toString().trim() !== ""
+        String(restriction).trim() !== ""
     )
-    .map((restriction) => (restriction as any).toString().trim());
+    .map((restriction) => String(restriction).trim());
 }
 
 /**

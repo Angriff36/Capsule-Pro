@@ -112,7 +112,9 @@ const buildConditions = (base: Prisma.Sql[], extra: Prisma.Sql[]) => {
   return Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}`;
 };
 
-const parseSearchParams = async (searchParams?: Promise<any>) => {
+const parseSearchParams = async (
+  searchParams?: RecipesPageProps["searchParams"]
+) => {
   const params = searchParams ? await searchParams : {};
   const activeTab = params.tab ?? "recipes";
   const query = params.q?.trim();

@@ -6,15 +6,7 @@
   },
 
   "files": {
-    "includes": [
-      "**",
-      "!!**/.next",
-      "!!**/dist",
-      "!!**/build",
-      "!!**/out",
-      "!!**/coverage",
-      "!!**/.turbo"
-    ]
+    "includes": ["apps/**/*", "packages/**/*", "!apps/docs/**/*"]
   },
 
   "linter": {

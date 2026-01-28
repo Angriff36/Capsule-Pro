@@ -154,7 +154,15 @@ export async function GET(_request: Request, { params }: RouteParams) {
  */
 function calculateProposalTotals(
   data: Partial<CreateProposalRequest>,
-  existingProposal: any
+  existingProposal: Prisma.ProposalGetPayload<{
+    select: {
+      subtotal: true;
+      taxAmount: true;
+      total: true;
+      taxRate: true;
+      discountAmount: true;
+    };
+  }>
 ) {
   const existingSubtotal = Number(existingProposal.subtotal);
   const existingTaxAmount = Number(existingProposal.taxAmount);

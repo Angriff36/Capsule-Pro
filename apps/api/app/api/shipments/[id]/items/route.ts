@@ -11,7 +11,20 @@ import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-function validateShipmentItemData(item: any) {
+interface ShipmentItemInput {
+  item_id: string;
+  quantity_shipped: number;
+  quantity_received?: number;
+  quantity_damaged?: number;
+  unit_id?: string | null;
+  unit_cost?: number | null;
+  condition?: string;
+  condition_notes?: string | null;
+  lot_number?: string | null;
+  expiration_date?: string | null;
+}
+
+function validateShipmentItemData(item: ShipmentItemInput) {
   if (!item.item_id) {
     throw new InvariantError("item_id is required");
   }

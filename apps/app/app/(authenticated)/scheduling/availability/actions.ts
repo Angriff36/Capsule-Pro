@@ -314,10 +314,16 @@ export async function updateAvailability(
   }
 
   // Update only provided fields
-  const updateData: any = {
-    tenant_id: tenantId,
-    id: availabilityId,
+  type EmployeeAvailabilityUpdateData = {
+    day_of_week?: number;
+    start_time?: string;
+    end_time?: string;
+    is_available?: boolean;
+    effective_from?: Date;
+    effective_until?: Date | null;
   };
+
+  const updateData: EmployeeAvailabilityUpdateData = {};
 
   if (dayOfWeek !== undefined) {
     updateData.day_of_week = dayOfWeek;
@@ -375,7 +381,15 @@ export async function updateAvailability(
   }
 
   // Update the availability record
-  const availability = await database.employee_availability.update(updateData);
+  const availability = await database.employee_availability.update({
+    where: {
+      tenant_id_id: {
+        tenant_id: tenantId,
+        id: availabilityId,
+      },
+    },
+    data: updateData,
+  });
 
   revalidatePath("/scheduling/availability");
   return { availability };
@@ -428,7 +442,12 @@ export async function createBatchAvailability(formData: FormData) {
   const effectiveFrom = formData.get("effectiveFrom") as string;
   const effectiveUntil = formData.get("effectiveUntil") as string | null;
 
-  const patterns = JSON.parse(patternsJson);
+  const patterns = JSON.parse(patternsJson) as Array<{
+    dayOfWeek: DayOfWeek;
+    startTime: string;
+    endTime: string;
+    isAvailable?: boolean;
+  }>;
   const createEffectiveFrom = effectiveFrom
     ? new Date(effectiveFrom)
     : new Date();
@@ -440,7 +459,7 @@ export async function createBatchAvailability(formData: FormData) {
   }
 
   // Check for duplicate days
-  const days = patterns.map((p: any) => p.dayOfWeek);
+  const days = patterns.map((p) => p.dayOfWeek);
   const uniqueDays = new Set(days);
   if (days.length !== uniqueDays.size) {
     throw new Error(
@@ -510,12 +529,12 @@ export async function createBatchAvailability(formData: FormData) {
 
   // Create all availability records
   const createdAvailability = await Promise.all(
-    patterns.map(async (pattern: any) => {
+    patterns.map(async (pattern) => {
       return database.employee_availability.create({
         data: {
           tenant_id: tenantId,
           employee_id: employeeId,
-          day_of_week: pattern.dayOfWeek as DayOfWeek,
+          day_of_week: pattern.dayOfWeek,
           start_time: pattern.startTime,
           end_time: pattern.endTime,
           is_available: pattern.isAvailable ?? true,
@@ -617,11 +636,32 @@ export async function getEmployeeAvailability(params: {
       });
       return acc;
     },
-    {} as Record<string, any>
+    {} as Record<
+      string,
+      {
+        employeeId: string;
+        employee_first_name: string | null;
+        employee_last_name: string | null;
+        employee_email: string;
+        employee_role: string;
+        availability: Array<{
+          is_available: boolean;
+          day_of_week: number;
+          start_time: string;
+          end_time: string;
+        }>;
+      }
+    >
   );
 
   // Get time-off requests if requested
-  let timeOffRequests: any[] = [];
+  let timeOffRequests: Array<{
+    id: string;
+    employee_id: string;
+    start_date: Date;
+    end_date: Date;
+    status: string;
+  }> = [];
   if (params.includeTimeOff) {
     timeOffRequests = await database.$queryRaw<
       Array<{
@@ -652,7 +692,7 @@ export async function getEmployeeAvailability(params: {
 
   // Combine availability with time-off
   const employeesWithAvailability = Object.values(availabilityByEmployee).map(
-    (employee: any) => {
+    (employee) => {
       const employeeTimeOff = timeOffRequests.filter(
         (to) => to.employee_id === employee.employeeId
       );

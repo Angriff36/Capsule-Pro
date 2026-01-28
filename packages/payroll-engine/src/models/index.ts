@@ -227,7 +227,7 @@ export const PayrollAuditSchema = z.object({
   ]),
   userId: z.string().uuid().optional(),
   timestamp: z.coerce.date(),
-  inputSnapshot: z.any().optional(),
+  inputSnapshot: z.unknown().optional(),
   rulesVersion: z.string().optional(),
   resultSummary: z
     .object({

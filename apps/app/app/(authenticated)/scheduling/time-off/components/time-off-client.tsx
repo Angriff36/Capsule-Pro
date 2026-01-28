@@ -1,6 +1,6 @@
 "use client";
 
-import type { TimeOffRequest } from "@api/staff/time-off/types";
+import type { TimeOffRequest, TimeOffType } from "@api/staff/time-off/types";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
@@ -95,7 +95,7 @@ export function TimeOffClient() {
             | "CANCELLED") || undefined,
         startDate: filters.startDate || undefined,
         endDate: filters.endDate || undefined,
-        requestType: (filters.type as any) || undefined,
+        requestType: (filters.type as TimeOffType) || undefined,
         page: pagination.page,
         limit: pagination.limit,
       });

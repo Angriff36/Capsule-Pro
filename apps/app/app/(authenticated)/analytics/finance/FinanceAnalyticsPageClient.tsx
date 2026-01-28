@@ -8,7 +8,10 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import {
+  type FinanceAlert,
+  type FinanceHighlight,
   getSeverityVariant,
+  type LedgerEntry,
   useFinanceAnalytics,
 } from "@/app/lib/use-finance-analytics";
 
@@ -66,7 +69,7 @@ export function FinanceAnalyticsPageClient() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
-        {financeHighlights.map((item) => (
+        {financeHighlights.map((item: FinanceHighlight) => (
           <Card key={item.label}>
             <CardHeader>
               <CardTitle
@@ -99,7 +102,7 @@ export function FinanceAnalyticsPageClient() {
             <CardTitle>Ledger Summary</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            {ledgerSummary.map((row) => (
+            {ledgerSummary.map((row: LedgerEntry) => (
               <div
                 className="flex items-center justify-between"
                 key={row.label}
@@ -116,7 +119,7 @@ export function FinanceAnalyticsPageClient() {
             <CardTitle>Finance Alerts</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            {financeAlerts.map((alert, index) => (
+            {financeAlerts.map((alert: FinanceAlert, index: number) => (
               <div
                 className="flex items-center justify-between rounded-md border border-border/70 px-4 py-3"
                 key={index}

@@ -1,7 +1,9 @@
+import type { DocumentProps } from "@react-pdf/renderer";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { ContractPDF } from "@repo/pdf";
 import { type NextRequest, NextResponse } from "next/server";
+import type React from "react";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export const runtime = "nodejs";
@@ -266,13 +268,17 @@ function preparePdfData(
   };
 }
 
-async function generatePdfBlob(pdfComponent: unknown): Promise<Blob> {
+async function generatePdfBlob(
+  pdfComponent: React.ReactElement<DocumentProps>
+): Promise<Blob> {
   const { pdf } = await import("@react-pdf/renderer");
-  const doc = await pdf(pdfComponent as any);
+  const doc = await pdf(pdfComponent);
   return await doc.toBlob();
 }
 
-async function generateBase64Pdf(pdfComponent: unknown): Promise<string> {
+async function generateBase64Pdf(
+  pdfComponent: React.ReactElement<DocumentProps>
+): Promise<string> {
   const blob = await generatePdfBlob(pdfComponent);
   const arrayBuffer = await blob.arrayBuffer();
   const uint8Array = new Uint8Array(arrayBuffer);

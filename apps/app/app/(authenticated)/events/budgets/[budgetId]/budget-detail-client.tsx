@@ -45,6 +45,7 @@ import type {
   BudgetLineItem,
   BudgetLineItemCategory,
   EventBudget,
+  EventBudgetStatus,
 } from "@/app/lib/use-event-budgets";
 import {
   createLineItem,
@@ -71,6 +72,25 @@ export function BudgetDetailClient() {
   const [editMode, setEditMode] = useState(false);
   const [editStatus, setEditStatus] = useState("");
   const [editNotes, setEditNotes] = useState("");
+
+  // Valid status values for validation
+  const validStatuses: readonly string[] = [
+    "draft",
+    "approved",
+    "active",
+    "completed",
+    "exceeded",
+  ] as const;
+
+  // Handler for status change from Select component
+  const handleStatusChange = (value: string) => {
+    setEditStatus(value);
+  };
+
+  // Type guard to check if a string is a valid EventBudgetStatus
+  const isValidStatus = (value: string): value is EventBudgetStatus => {
+    return validStatuses.includes(value);
+  };
 
   // Line item modal
   const [lineItemModalOpen, setLineItemModalOpen] = useState(false);
@@ -115,10 +135,19 @@ export function BudgetDetailClient() {
 
     setActionLoading(true);
     try {
-      await updateBudget(budgetId, {
-        status: editStatus as any,
+      const updateData: {
+        status?: EventBudgetStatus;
+        notes?: string;
+      } = {
         notes: editNotes,
-      });
+      };
+
+      // Only include status if it's valid
+      if (editStatus && isValidStatus(editStatus)) {
+        updateData.status = editStatus;
+      }
+
+      await updateBudget(budgetId, updateData);
       toast.success("Budget updated successfully");
       setEditMode(false);
       await fetchBudget();
@@ -405,7 +434,7 @@ export function BudgetDetailClient() {
             <Label htmlFor="status">Status</Label>
             <Select
               disabled={!editMode}
-              onValueChange={setEditStatus}
+              onValueChange={handleStatusChange}
               value={editMode ? editStatus : budget.status}
             >
               <SelectTrigger id="status">
@@ -494,7 +523,7 @@ export function BudgetDetailClient() {
                   </TableCell>
                 </TableRow>
               ) : (
-                budget.lineItems.map((item) => {
+                budget.lineItems.map((item: BudgetLineItem) => {
                   const itemVariance = item.budgetedAmount - item.actualAmount;
                   const itemVariancePct =
                     item.budgetedAmount > 0

@@ -423,7 +423,7 @@ Generate ${maxSuggestions} prioritized suggestions based on this state.`;
     });
 
     return suggestions;
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("AI suggestion generation failed:", error);
 
     // Fallback to rule-based suggestions
@@ -606,7 +606,7 @@ export async function GET(request: Request) {
         inventoryAlerts: contextData.inventoryAlerts.length,
       },
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Suggestions API error:", error);
 
     return NextResponse.json(

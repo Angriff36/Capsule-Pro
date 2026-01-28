@@ -53,7 +53,16 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   // Update task
-  const updateData: Record<string, any> = {};
+  type KitchenTaskUpdateData = {
+    status?: string;
+    priority?: number;
+    summary?: string;
+    complexity?: number;
+    tags?: string[];
+    dueDate?: Date | null;
+    completedAt?: Date;
+  };
+  const updateData: KitchenTaskUpdateData = {};
   if (body.status) {
     updateData.status = body.status;
   }

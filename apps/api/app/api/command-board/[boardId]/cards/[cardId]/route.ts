@@ -16,6 +16,8 @@ type UpdateFields = {
   values: (string | number | boolean | Date | null)[];
 };
 
+type Validator = (value: unknown) => ValidationError;
+
 const VALID_CARD_TYPES = ["task", "note", "alert", "info"] as const;
 const VALID_CARD_STATUSES = [
   "pending",
@@ -89,39 +91,93 @@ function buildUpdateFields(body: UpdateCommandBoardCardRequest): {
 } {
   const updateFields: UpdateFields = { fields: [], values: [] };
 
-  // Field configuration map
-  const fieldConfigs = [
+  // Field configuration map - use Validator type to unify different validator signatures
+  const fieldConfigs: Array<{
+    key: string;
+    field: string;
+    validator?: Validator;
+  }> = [
     { key: "title", field: "title" },
     { key: "content", field: "content" },
-    { key: "card_type", field: "card_type", validator: validateCardType },
-    { key: "status", field: "status", validator: validateCardStatus },
+    {
+      key: "card_type",
+      field: "card_type",
+      validator: (v: unknown) =>
+        typeof v === "string"
+          ? validateCardType(v)
+          : NextResponse.json(
+              { error: "card_type must be a string" },
+              { status: 400 }
+            ),
+    },
+    {
+      key: "status",
+      field: "status",
+      validator: (v: unknown) =>
+        typeof v === "string"
+          ? validateCardStatus(v)
+          : NextResponse.json(
+              { error: "status must be a string" },
+              { status: 400 }
+            ),
+    },
     {
       key: "position_x",
       field: "position_x",
-      validator: (v: number) => validatePosition(v, "position_x"),
+      validator: (v: unknown) =>
+        typeof v === "number"
+          ? validatePosition(v, "position_x")
+          : NextResponse.json(
+              { error: "position_x must be a number" },
+              { status: 400 }
+            ),
     },
     {
       key: "position_y",
       field: "position_y",
-      validator: (v: number) => validatePosition(v, "position_y"),
+      validator: (v: unknown) =>
+        typeof v === "number"
+          ? validatePosition(v, "position_y")
+          : NextResponse.json(
+              { error: "position_y must be a number" },
+              { status: 400 }
+            ),
     },
     {
       key: "width",
       field: "width",
-      validator: (v: number) => validateDimension(v, "width"),
+      validator: (v: unknown) =>
+        typeof v === "number"
+          ? validateDimension(v, "width")
+          : NextResponse.json(
+              { error: "width must be a number" },
+              { status: 400 }
+            ),
     },
     {
       key: "height",
       field: "height",
-      validator: (v: number) => validateDimension(v, "height"),
+      validator: (v: unknown) =>
+        typeof v === "number"
+          ? validateDimension(v, "height")
+          : NextResponse.json(
+              { error: "height must be a number" },
+              { status: 400 }
+            ),
     },
     {
       key: "z_index",
       field: "z_index",
-      validator: (v: number) => validatePosition(v, "z_index"),
+      validator: (v: unknown) =>
+        typeof v === "number"
+          ? validatePosition(v, "z_index")
+          : NextResponse.json(
+              { error: "z_index must be a number" },
+              { status: 400 }
+            ),
     },
     { key: "color", field: "color" },
-  ] as const;
+  ];
 
   // Process fields with configuration
   for (const config of fieldConfigs) {
@@ -130,8 +186,8 @@ function buildUpdateFields(body: UpdateCommandBoardCardRequest): {
       continue;
     }
 
-    if ("validator" in config && config.validator) {
-      const error = config.validator(value as never);
+    if (config.validator) {
+      const error = config.validator(value);
       if (error) {
         return { result: updateFields, error };
       }

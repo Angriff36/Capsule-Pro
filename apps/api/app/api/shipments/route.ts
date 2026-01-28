@@ -10,7 +10,11 @@ import { database, type Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { PaginationParams, ShipmentFilters } from "./types";
+import type {
+  PaginationParams,
+  ShipmentFilters,
+  ShipmentStatus,
+} from "./types";
 import { validateCreateShipmentRequest } from "./validation";
 
 function parsePaginationParams(
@@ -32,7 +36,7 @@ function parseShipmentFilters(searchParams: URLSearchParams): ShipmentFilters {
   }
   const status = searchParams.get("status");
   if (status) {
-    filters.status = status as any;
+    filters.status = status as ShipmentStatus;
   }
   const eventId = searchParams.get("event_id");
   if (eventId) {

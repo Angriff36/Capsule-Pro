@@ -5,6 +5,20 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 type Params = Promise<{ guestId: string }>;
 
+type GuestUpdateData = {
+  guestName?: string;
+  guestEmail?: string | null;
+  guestPhone?: string | null;
+  isPrimaryContact?: boolean;
+  dietaryRestrictions?: string[];
+  allergenRestrictions?: string[];
+  notes?: string | null;
+  specialMealRequired?: boolean;
+  specialMealNotes?: string | null;
+  tableAssignment?: string | null;
+  mealPreference?: string | null;
+};
+
 /**
  * GET /api/events/guests/[guestId]
  * Get a single guest by ID
@@ -57,7 +71,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   }
 
   // Build update data with validation
-  const updateData: any = {};
+  const updateData: GuestUpdateData = {};
 
   if (body.guestName !== undefined) {
     if (
@@ -128,12 +142,10 @@ export async function PUT(request: Request, { params }: { params: Params }) {
     }
     updateData.dietaryRestrictions = body.dietaryRestrictions
       .filter(
-        (restriction: any) =>
-          restriction !== null &&
-          restriction !== undefined &&
-          restriction.toString().trim() !== ""
+        (restriction: unknown): restriction is string =>
+          typeof restriction === "string" && restriction.trim() !== ""
       )
-      .map((restriction: any) => restriction.toString().trim());
+      .map((restriction: string) => restriction.trim());
   }
 
   if (body.allergenRestrictions !== undefined) {
@@ -145,12 +157,10 @@ export async function PUT(request: Request, { params }: { params: Params }) {
     }
     updateData.allergenRestrictions = body.allergenRestrictions
       .filter(
-        (restriction: any) =>
-          restriction !== null &&
-          restriction !== undefined &&
-          restriction.toString().trim() !== ""
+        (restriction: unknown): restriction is string =>
+          typeof restriction === "string" && restriction.trim() !== ""
       )
-      .map((restriction: any) => restriction.toString().trim());
+      .map((restriction: string) => restriction.trim());
   }
 
   if (body.notes !== undefined) {

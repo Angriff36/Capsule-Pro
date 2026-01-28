@@ -96,15 +96,7 @@ export async function GET(request: NextRequest) {
   });
 
   // Group data by time period
-  type WasteEntry = (typeof entries)[number];
-  type TrendDataPoint = {
-    period: string;
-    totalCost: number;
-    totalQuantity: number;
-    count: number;
-    entries: WasteEntry[];
-  };
-  const trendData: Record<string, TrendDataPoint> = {};
+  const trendData: Record<string, any> = {};
   for (const entry of entries) {
     const date = new Date(entry.loggedAt);
     let key = "";

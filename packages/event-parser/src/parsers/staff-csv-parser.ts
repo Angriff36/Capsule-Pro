@@ -3,7 +3,7 @@
  * Parses Time & Attendance CSV exports to extract staff shift data
  */
 
-import type { StaffShift } from '../types';
+import type { StaffShift } from "../types";
 
 export interface StaffCsvParseResult {
   shifts: Map<string, StaffShift[]>; // eventName -> shifts
@@ -22,7 +22,7 @@ export function parseStaffCsv(csvContent: string): StaffCsvParseResult {
 
   const lines = csvContent.split(/\r?\n/).filter((line) => line.trim());
   if (lines.length < 2) {
-    errors.push('CSV file has no data rows');
+    errors.push("CSV file has no data rows");
     return { shifts, errors, totalShifts };
   }
 
@@ -31,44 +31,48 @@ export function parseStaffCsv(csvContent: string): StaffCsvParseResult {
 
   // Find column indices
   const eventNameIdx = findColumnIndex(headers, [
-    'event name',
-    'event',
-    'eventname',
+    "event name",
+    "event",
+    "eventname",
   ]);
   const firstNameIdx = findColumnIndex(headers, [
-    'first name',
-    'firstname',
-    'first',
+    "first name",
+    "firstname",
+    "first",
   ]);
-  const lastNameIdx = findColumnIndex(headers, ['last name', 'lastname', 'last']);
-  const positionIdx = findColumnIndex(headers, ['position', 'role', 'title']);
+  const lastNameIdx = findColumnIndex(headers, [
+    "last name",
+    "lastname",
+    "last",
+  ]);
+  const positionIdx = findColumnIndex(headers, ["position", "role", "title"]);
   const scheduledInIdx = findColumnIndex(headers, [
-    'scheduled in',
-    'start time',
-    'start',
-    'in',
+    "scheduled in",
+    "start time",
+    "start",
+    "in",
   ]);
   const scheduledOutIdx = findColumnIndex(headers, [
-    'scheduled out',
-    'end time',
-    'end',
-    'out',
+    "scheduled out",
+    "end time",
+    "end",
+    "out",
   ]);
   const hoursIdx = findColumnIndex(headers, [
-    'scheduled hours',
-    'hours',
-    'total hours',
+    "scheduled hours",
+    "hours",
+    "total hours",
   ]);
 
   // Validate required columns
   if (eventNameIdx === -1) {
-    errors.push('Missing required column: Event Name');
+    errors.push("Missing required column: Event Name");
   }
   if (firstNameIdx === -1 && lastNameIdx === -1) {
-    errors.push('Missing required column: First Name or Last Name');
+    errors.push("Missing required column: First Name or Last Name");
   }
   if (scheduledInIdx === -1) {
-    errors.push('Missing required column: Scheduled In');
+    errors.push("Missing required column: Scheduled In");
   }
 
   if (errors.length > 0) {
@@ -81,14 +85,14 @@ export function parseStaffCsv(csvContent: string): StaffCsvParseResult {
     if (row.length === 0) continue;
 
     try {
-      const eventName = row[eventNameIdx]?.trim() || 'Unknown Event';
-      const firstName = row[firstNameIdx]?.trim() || '';
-      const lastName = row[lastNameIdx]?.trim() || '';
-      const name = [firstName, lastName].filter(Boolean).join(' ') || 'Unknown';
-      const position = row[positionIdx]?.trim() || 'Staff';
-      const scheduledIn = row[scheduledInIdx]?.trim() || '';
-      const scheduledOut = row[scheduledOutIdx]?.trim() || '';
-      const hours = parseFloat(row[hoursIdx]?.trim() || '0') || 0;
+      const eventName = row[eventNameIdx]?.trim() || "Unknown Event";
+      const firstName = row[firstNameIdx]?.trim() || "";
+      const lastName = row[lastNameIdx]?.trim() || "";
+      const name = [firstName, lastName].filter(Boolean).join(" ") || "Unknown";
+      const position = row[positionIdx]?.trim() || "Staff";
+      const scheduledIn = row[scheduledInIdx]?.trim() || "";
+      const scheduledOut = row[scheduledOutIdx]?.trim() || "";
+      const hours = Number.parseFloat(row[hoursIdx]?.trim() || "0") || 0;
 
       // Parse times
       const { time: startTime24 } = parseTimeString(scheduledIn);
@@ -115,7 +119,9 @@ export function parseStaffCsv(csvContent: string): StaffCsvParseResult {
       shifts.get(eventName)!.push(shift);
       totalShifts++;
     } catch (e) {
-      errors.push(`Error parsing row ${i + 1}: ${e instanceof Error ? e.message : 'Unknown error'}`);
+      errors.push(
+        `Error parsing row ${i + 1}: ${e instanceof Error ? e.message : "Unknown error"}`
+      );
     }
   }
 
@@ -125,9 +131,7 @@ export function parseStaffCsv(csvContent: string): StaffCsvParseResult {
 /**
  * Get all event names from parsed shifts
  */
-export function getEventNamesFromShifts(
-  result: StaffCsvParseResult
-): string[] {
+export function getEventNamesFromShifts(result: StaffCsvParseResult): string[] {
   return Array.from(result.shifts.keys());
 }
 
@@ -145,7 +149,7 @@ export function getShiftsForEvent(
 
 function parseCSVRow(line: string): string[] {
   const result: string[] = [];
-  let current = '';
+  let current = "";
   let inQuotes = false;
 
   for (let i = 0; i < line.length; i++) {
@@ -163,17 +167,15 @@ function parseCSVRow(line: string): string[] {
       } else {
         current += char;
       }
+    } else if (char === '"') {
+      // Start of quoted field
+      inQuotes = true;
+    } else if (char === ",") {
+      // Field separator
+      result.push(current);
+      current = "";
     } else {
-      if (char === '"') {
-        // Start of quoted field
-        inQuotes = true;
-      } else if (char === ',') {
-        // Field separator
-        result.push(current);
-        current = '';
-      } else {
-        current += char;
-      }
+      current += char;
     }
   }
 
@@ -192,7 +194,7 @@ function findColumnIndex(headers: string[], candidates: string[]): number {
 }
 
 function parseTimeString(timeStr: string): { time: string; meridiem: string } {
-  if (!timeStr) return { time: '', meridiem: '' };
+  if (!timeStr) return { time: "", meridiem: "" };
 
   // Handle various time formats
   // HH:MM AM/PM, H:MM AM/PM, HH:MM, etc.
@@ -201,29 +203,29 @@ function parseTimeString(timeStr: string): { time: string; meridiem: string } {
   );
 
   if (!match) {
-    return { time: timeStr, meridiem: '' };
+    return { time: timeStr, meridiem: "" };
   }
 
-  let hours = parseInt(match[1], 10);
+  let hours = Number.parseInt(match[1], 10);
   const minutes = match[2];
-  const meridiem = (match[4] || '').toLowerCase().replace('.', '');
+  const meridiem = (match[4] || "").toLowerCase().replace(".", "");
 
   // Convert to 24-hour format
-  if (meridiem.includes('p') && hours < 12) {
+  if (meridiem.includes("p") && hours < 12) {
     hours += 12;
-  } else if (meridiem.includes('a') && hours === 12) {
+  } else if (meridiem.includes("a") && hours === 12) {
     hours = 0;
   }
 
-  const time24 = `${hours.toString().padStart(2, '0')}:${minutes}`;
+  const time24 = `${hours.toString().padStart(2, "0")}:${minutes}`;
   return { time: time24, meridiem };
 }
 
 function calculateHoursBetween(start: string, end: string): number {
-  const [startHours, startMins] = start.split(':').map(Number);
-  const [endHours, endMins] = end.split(':').map(Number);
+  const [startHours, startMins] = start.split(":").map(Number);
+  const [endHours, endMins] = end.split(":").map(Number);
 
-  let startMinutes = startHours * 60 + startMins;
+  const startMinutes = startHours * 60 + startMins;
   let endMinutes = endHours * 60 + endMins;
 
   // Handle overnight shifts

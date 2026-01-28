@@ -4,20 +4,33 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { TagIcon } from "lucide-react";
 
+/**
+ * Valid preference value types based on common use cases.
+ * Preferences can store various data types like strings, numbers, booleans,
+ * null, JSON objects, or arrays.
+ */
+type PreferenceValue =
+  | string
+  | number
+  | boolean
+  | null
+  | Record<string, unknown>
+  | unknown[];
+
 type PreferencesTabProps = {
   client: {
     preferences: Array<{
       id: string;
       preferenceType: string;
       preferenceKey: string;
-      preferenceValue: unknown;
+      preferenceValue: PreferenceValue;
       notes: string | null;
     }>;
   };
 };
 
 export function PreferencesTab({ client }: PreferencesTabProps) {
-  const formatValue = (value: unknown): string => {
+  const formatValue = (value: PreferenceValue): string => {
     if (typeof value === "object") {
       return JSON.stringify(value, null, 2);
     }

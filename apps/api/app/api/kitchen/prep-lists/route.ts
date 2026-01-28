@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 
     // Build dynamic SQL for filters
     const filters: string[] = [];
-    const values: any[] = [tenantId];
+    const values: (string | number)[] = [tenantId];
 
     if (eventId) {
       filters.push(`AND pl.event_id = $${values.length + 1}`);
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
       ORDER BY pl.generated_at DESC
     `;
 
-    const prepLists = await database.$queryRaw<
+    const prepLists = await database.$queryRawUnsafe<
       Array<{
         id: string;
         name: string;
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
         finalizedAt: Date | null;
         createdAt: Date;
       }>
-    >(database.$queryRawUnsafe(sql, values) as any);
+    >(sql, values);
 
     // If station filter is provided, we need to check if any items match
     let filteredLists = prepLists;

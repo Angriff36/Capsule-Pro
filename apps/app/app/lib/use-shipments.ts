@@ -105,7 +105,7 @@ export type ShipmentItem = {
   total_cost: number;
 
   // Quality/Condition
-  condition: string | null;
+  condition: ItemCondition | null;
   condition_notes: string | null;
 
   // Lot/Batch Information

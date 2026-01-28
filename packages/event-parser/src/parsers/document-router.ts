@@ -3,21 +3,15 @@
  * Routes uploaded files to appropriate parsers based on file type and detected format
  */
 
-import type {
-  ParsedEvent,
-  ParsedEventResult,
-  StaffShift,
-  BattleBoardData,
-  PartialBattleBoardData,
-} from '../types';
-import { extractPdfText, detectPdfFormat } from './pdf-extractor';
-import { parseTppEvent } from './tpp-event-parser';
-import { parseStaffCsv, getShiftsForEvent, getEventNamesFromShifts } from './staff-csv-parser';
+import type { ParsedEvent, ParsedEventResult, StaffShift } from "../types";
+import { detectPdfFormat, extractPdfText } from "./pdf-extractor";
+import { getEventNamesFromShifts, parseStaffCsv } from "./staff-csv-parser";
+import { parseTppEvent } from "./tpp-event-parser";
 
 export interface ProcessedDocument {
   id: string;
   fileName: string;
-  fileType: 'pdf' | 'csv';
+  fileType: "pdf" | "csv";
   detectedFormat: string;
   confidence: number;
   parsedEvent?: ParsedEventResult;
@@ -47,10 +41,10 @@ export async function processDocument(
   // Determine file type
   const fileType = detectFileType(fileName);
 
-  if (fileType === 'csv') {
+  if (fileType === "csv") {
     // Process CSV as staff roster
     const csvContent =
-      typeof fileContent === 'string'
+      typeof fileContent === "string"
         ? fileContent
         : new TextDecoder().decode(
             fileContent instanceof ArrayBuffer
@@ -66,8 +60,8 @@ export async function processDocument(
     return {
       id,
       fileName,
-      fileType: 'csv',
-      detectedFormat: 'staff_roster',
+      fileType: "csv",
+      detectedFormat: "staff_roster",
       confidence: parseResult.errors.length === 0 ? 90 : 60,
       staffShifts: parseResult.shifts,
       availableEventNames: eventNames,
@@ -76,7 +70,7 @@ export async function processDocument(
     };
   }
 
-  if (fileType === 'pdf') {
+  if (fileType === "pdf") {
     // Extract text from PDF
     const pdfBuffer =
       fileContent instanceof ArrayBuffer
@@ -89,12 +83,12 @@ export async function processDocument(
     errors.push(...extractResult.errors);
 
     if (extractResult.lines.length === 0) {
-      errors.push('No text could be extracted from PDF');
+      errors.push("No text could be extracted from PDF");
       return {
         id,
         fileName,
-        fileType: 'pdf',
-        detectedFormat: 'unknown',
+        fileType: "pdf",
+        detectedFormat: "unknown",
         confidence: 0,
         errors,
         warnings,
@@ -104,7 +98,7 @@ export async function processDocument(
     // Detect format
     const formatResult = detectPdfFormat(extractResult.lines);
 
-    if (formatResult.format === 'tpp') {
+    if (formatResult.format === "tpp") {
       // Parse as TPP event
       const parseResult = parseTppEvent(extractResult.lines, {
         sourceName: options.sourceName || fileName,
@@ -115,8 +109,8 @@ export async function processDocument(
       return {
         id,
         fileName,
-        fileType: 'pdf',
-        detectedFormat: 'tpp',
+        fileType: "pdf",
+        detectedFormat: "tpp",
         confidence: formatResult.confidence,
         parsedEvent: parseResult,
         errors,
@@ -126,14 +120,14 @@ export async function processDocument(
 
     // Generic PDF - return raw lines for manual processing
     warnings.push(
-      'PDF format not recognized as TPP. Manual data entry may be required.'
+      "PDF format not recognized as TPP. Manual data entry may be required."
     );
 
     return {
       id,
       fileName,
-      fileType: 'pdf',
-      detectedFormat: 'generic',
+      fileType: "pdf",
+      detectedFormat: "generic",
       confidence: formatResult.confidence,
       errors,
       warnings,
@@ -144,8 +138,8 @@ export async function processDocument(
   return {
     id,
     fileName,
-    fileType: 'pdf',
-    detectedFormat: 'unknown',
+    fileType: "pdf",
+    detectedFormat: "unknown",
     confidence: 0,
     errors,
     warnings,
@@ -166,7 +160,7 @@ export async function processMultipleDocuments(
   const documents: ProcessedDocument[] = [];
   const errors: string[] = [];
   let mergedEvent: ParsedEvent | undefined;
-  let mergedStaff: StaffShift[] = [];
+  const mergedStaff: StaffShift[] = [];
 
   // Process all documents
   for (const file of files) {
@@ -179,7 +173,7 @@ export async function processMultipleDocuments(
 
   // Find the primary event (from TPP PDF)
   const eventDoc = documents.find(
-    (doc) => doc.detectedFormat === 'tpp' && doc.parsedEvent
+    (doc) => doc.detectedFormat === "tpp" && doc.parsedEvent
   );
   if (eventDoc?.parsedEvent) {
     mergedEvent = eventDoc.parsedEvent.event;
@@ -234,11 +228,11 @@ export async function processMultipleDocuments(
 
 // --- Helper Functions ---
 
-function detectFileType(fileName: string): 'pdf' | 'csv' | 'unknown' {
-  const ext = fileName.toLowerCase().split('.').pop();
-  if (ext === 'pdf') return 'pdf';
-  if (ext === 'csv') return 'csv';
-  return 'unknown';
+function detectFileType(fileName: string): "pdf" | "csv" | "unknown" {
+  const ext = fileName.toLowerCase().split(".").pop();
+  if (ext === "pdf") return "pdf";
+  if (ext === "csv") return "csv";
+  return "unknown";
 }
 
 function generateDocumentId(): string {

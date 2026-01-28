@@ -25,7 +25,7 @@ import {
 // Mock the tenant module
 vi.mock(
   "../../app/(authenticated)/kitchen/recipes/menus/../../../../lib/tenant",
-  async () => {
+  () => {
     return {
       requireTenantId: vi.fn().mockResolvedValue("test-tenant-id"),
     };
@@ -426,7 +426,7 @@ describe("menu actions", () => {
       ];
 
       // Mock no existing menu-dish relationship
-      const mockNoExisting = [];
+      const mockNoExisting: unknown[] = [];
 
       // Mock max sort order
       const mockMaxSortOrder = [{ max_sort_order: 2 }];
@@ -563,7 +563,7 @@ describe("menu actions", () => {
         },
       ];
 
-      const mockNoExisting = [];
+      const mockNoExisting: unknown[] = [];
       const mockMaxSortOrder = [{ max_sort_order: null }]; // No existing dishes
 
       const queryRawSpy = vi.spyOn(database, "$queryRaw");

@@ -4,17 +4,16 @@
  * Auto-fills answers based on extracted information
  */
 
-import type { ParsedEvent } from '../types/event';
 import type {
-  EventChecklist,
-  ChecklistSectionState,
-  ChecklistQuestionState,
   AutoAnswer,
-  EventTypeOption,
-} from '../types/checklist';
-import { EVENT_TYPE_OPTIONS } from '../types/checklist';
+  ChecklistQuestionState,
+  ChecklistSectionState,
+  EventChecklist,
+} from "../types/checklist";
+import { EVENT_TYPE_OPTIONS } from "../types/checklist";
+import type { Flag, MenuItem, ParsedEvent, StaffShift } from "../types/event";
 
-const CHECKLIST_VERSION = '2025-01-27';
+const CHECKLIST_VERSION = "2025-01-27";
 
 /**
  * Build initial checklist with auto-filled answers from parsed event
@@ -51,15 +50,19 @@ export function updateChecklistQuestion(
 ): EventChecklist {
   let changed = false;
 
-  const sections = checklist.sections.map((section) => ({
+  const sections = checklist.sections.map((section: ChecklistSectionState) => ({
     ...section,
-    questions: section.questions.map((question) => {
+    questions: section.questions.map((question: ChecklistQuestionState) => {
       if (question.id !== questionId) return question;
 
-      const nextValue = updates.value !== undefined ? updates.value : question.value;
-      const nextNotes = updates.notes !== undefined ? (updates.notes ?? undefined) : question.notes;
+      const nextValue =
+        updates.value !== undefined ? updates.value : question.value;
+      const nextNotes =
+        updates.notes !== undefined
+          ? (updates.notes ?? undefined)
+          : question.notes;
       const sameValue = nextValue === question.value;
-      const sameNotes = (nextNotes ?? '') === (question.notes ?? '');
+      const sameNotes = (nextNotes ?? "") === (question.notes ?? "");
 
       if (sameValue && sameNotes) return question;
 
@@ -90,7 +93,9 @@ export function updateChecklistQuestion(
 /**
  * Mark checklist as completed
  */
-export function markChecklistCompleted(checklist: EventChecklist): EventChecklist {
+export function markChecklistCompleted(
+  checklist: EventChecklist
+): EventChecklist {
   if (checklist.completedAt) return checklist;
   const timestamp = new Date().toISOString();
   return {
@@ -116,13 +121,17 @@ export function reopenChecklist(checklist: EventChecklist): EventChecklist {
  * Check if a question has been answered
  */
 export function isQuestionAnswered(question: ChecklistQuestionState): boolean {
-  if (question.type === 'single-select') {
+  if (question.type === "single-select") {
     return Boolean(question.value);
   }
-  if (question.type === 'yes-no' || question.type === 'yes-no-na') {
-    return question.value === 'yes' || question.value === 'no' || question.value === 'na';
+  if (question.type === "yes-no" || question.type === "yes-no-na") {
+    return (
+      question.value === "yes" ||
+      question.value === "no" ||
+      question.value === "na"
+    );
   }
-  if (question.type === 'text' || question.type === 'textarea') {
+  if (question.type === "text" || question.type === "textarea") {
     return Boolean(question.value && question.value.trim().length > 0);
   }
   return false;
@@ -131,12 +140,16 @@ export function isQuestionAnswered(question: ChecklistQuestionState): boolean {
 /**
  * Compute completion percentage
  */
-export function computeChecklistCompletion(sections: ChecklistSectionState[]): number {
-  const requiredQuestions = sections.flatMap((section) =>
-    section.questions.filter((q) => q.required)
+export function computeChecklistCompletion(
+  sections: ChecklistSectionState[]
+): number {
+  const requiredQuestions = sections.flatMap((section: ChecklistSectionState) =>
+    section.questions.filter((q: ChecklistQuestionState) => q.required)
   );
   if (requiredQuestions.length === 0) return 0;
-  const answered = requiredQuestions.filter((q) => isQuestionAnswered(q)).length;
+  const answered = requiredQuestions.filter((q: ChecklistQuestionState) =>
+    isQuestionAnswered(q)
+  ).length;
   return Math.round((answered / requiredQuestions.length) * 100);
 }
 
@@ -146,10 +159,10 @@ function buildBasicInfoSection(event: ParsedEvent): ChecklistSectionState {
   const eventType = inferEventType(event);
   const questions: ChecklistQuestionState[] = [
     createQuestion({
-      id: 'event-type',
-      type: 'single-select',
-      prompt: 'What type of event is this?',
-      description: 'Circle the service style that best matches this event.',
+      id: "event-type",
+      type: "single-select",
+      prompt: "What type of event is this?",
+      description: "Circle the service style that best matches this event.",
       required: true,
       options: [...EVENT_TYPE_OPTIONS],
       value: eventType.value,
@@ -158,8 +171,8 @@ function buildBasicInfoSection(event: ParsedEvent): ChecklistSectionState {
   ];
 
   return {
-    id: 'basic-info',
-    title: 'Basic Event Info',
+    id: "basic-info",
+    title: "Basic Event Info",
     questions,
   };
 }
@@ -174,9 +187,10 @@ function buildMenuSection(event: ParsedEvent): ChecklistSectionState {
 
   const questions: ChecklistQuestionState[] = [
     createQuestion({
-      id: 'menu-prep-instructions',
-      type: 'yes-no',
-      prompt: 'Any special instructions for service that need to pass to culinary team for prep?',
+      id: "menu-prep-instructions",
+      type: "yes-no",
+      prompt:
+        "Any special instructions for service that need to pass to culinary team for prep?",
       required: true,
       allowNotes: true,
       value: prepInstructions.value,
@@ -184,9 +198,10 @@ function buildMenuSection(event: ParsedEvent): ChecklistSectionState {
       autoReason: prepInstructions.autoReason,
     }),
     createQuestion({
-      id: 'menu-event-lead-instructions',
-      type: 'yes-no',
-      prompt: 'Any special instructions for service that need to pass to culinary event lead?',
+      id: "menu-event-lead-instructions",
+      type: "yes-no",
+      prompt:
+        "Any special instructions for service that need to pass to culinary event lead?",
       required: true,
       allowNotes: true,
       value: leadInstructions.value,
@@ -194,9 +209,10 @@ function buildMenuSection(event: ParsedEvent): ChecklistSectionState {
       autoReason: leadInstructions.autoReason,
     }),
     createQuestion({
-      id: 'menu-unfamiliar-items',
-      type: 'yes-no',
-      prompt: 'Are there any unfamiliar or new menu items that need clarification?',
+      id: "menu-unfamiliar-items",
+      type: "yes-no",
+      prompt:
+        "Are there any unfamiliar or new menu items that need clarification?",
       required: true,
       allowNotes: true,
       value: unfamiliarItems.value,
@@ -204,9 +220,10 @@ function buildMenuSection(event: ParsedEvent): ChecklistSectionState {
       autoReason: unfamiliarItems.autoReason,
     }),
     createQuestion({
-      id: 'menu-custom-items-present',
-      type: 'yes-no',
-      prompt: 'Are there any "custom menu item" entries listed on menu production?',
+      id: "menu-custom-items-present",
+      type: "yes-no",
+      prompt:
+        'Are there any "custom menu item" entries listed on menu production?',
       required: true,
       allowNotes: true,
       value: customMenu.present.value,
@@ -214,9 +231,9 @@ function buildMenuSection(event: ParsedEvent): ChecklistSectionState {
       autoReason: customMenu.present.autoReason,
     }),
     createQuestion({
-      id: 'menu-custom-items-reviewed',
-      type: 'yes-no',
-      prompt: 'Have you reviewed the recipe for the custom menu items?',
+      id: "menu-custom-items-reviewed",
+      type: "yes-no",
+      prompt: "Have you reviewed the recipe for the custom menu items?",
       required: true,
       allowNotes: true,
       value: customMenu.reviewed.value,
@@ -224,9 +241,9 @@ function buildMenuSection(event: ParsedEvent): ChecklistSectionState {
       autoReason: customMenu.reviewed.autoReason,
     }),
     createQuestion({
-      id: 'menu-custom-item-questions',
-      type: 'yes-no',
-      prompt: 'Are there any questions regarding the custom menu items?',
+      id: "menu-custom-item-questions",
+      type: "yes-no",
+      prompt: "Are there any questions regarding the custom menu items?",
       required: true,
       allowNotes: true,
       value: customMenu.questions.value,
@@ -234,9 +251,10 @@ function buildMenuSection(event: ParsedEvent): ChecklistSectionState {
       autoReason: customMenu.questions.autoReason,
     }),
     createQuestion({
-      id: 'menu-quantity-adjustments',
-      type: 'yes-no',
-      prompt: 'Are there any recommendations to the quantity of menu / prep that should be altered?',
+      id: "menu-quantity-adjustments",
+      type: "yes-no",
+      prompt:
+        "Are there any recommendations to the quantity of menu / prep that should be altered?",
       required: true,
       allowNotes: true,
       value: quantityRecommendations.value,
@@ -244,9 +262,10 @@ function buildMenuSection(event: ParsedEvent): ChecklistSectionState {
       autoReason: quantityRecommendations.autoReason,
     }),
     createQuestion({
-      id: 'menu-cooked-differently',
-      type: 'yes-no',
-      prompt: 'Is there anything on the menu that will be cooked differently (e.g., frying, grill marking)?',
+      id: "menu-cooked-differently",
+      type: "yes-no",
+      prompt:
+        "Is there anything on the menu that will be cooked differently (e.g., frying, grill marking)?",
       required: false,
       allowNotes: true,
       value: cookedDifferently.value,
@@ -256,8 +275,8 @@ function buildMenuSection(event: ParsedEvent): ChecklistSectionState {
   ];
 
   return {
-    id: 'menu',
-    title: 'Menu',
+    id: "menu",
+    title: "Menu",
     questions,
   };
 }
@@ -268,25 +287,26 @@ function buildStaffingSection(event: ParsedEvent): ChecklistSectionState {
 
   const questions: ChecklistQuestionState[] = [
     createQuestion({
-      id: 'staff-culinary-lead',
-      type: 'text',
-      prompt: 'Culinary lead for this event',
+      id: "staff-culinary-lead",
+      type: "text",
+      prompt: "Culinary lead for this event",
       required: false,
       value: staffing.lead,
       autoReason: staffing.leadReason,
     }),
     createQuestion({
-      id: 'staff-support-team',
-      type: 'textarea',
-      prompt: 'Support staff assigned',
+      id: "staff-support-team",
+      type: "textarea",
+      prompt: "Support staff assigned",
       required: false,
       value: staffing.support,
       autoReason: staffing.supportReason,
     }),
     createQuestion({
-      id: 'staff-prep-early',
-      type: 'yes-no',
-      prompt: 'Will this event need to be prepped earlier due to schedule/volume?',
+      id: "staff-prep-early",
+      type: "yes-no",
+      prompt:
+        "Will this event need to be prepped earlier due to schedule/volume?",
       required: true,
       allowNotes: true,
       value: prepTiming.value,
@@ -296,8 +316,8 @@ function buildStaffingSection(event: ParsedEvent): ChecklistSectionState {
   ];
 
   return {
-    id: 'staffing',
-    title: 'Schedule & Staff',
+    id: "staffing",
+    title: "Schedule & Staff",
     questions,
   };
 }
@@ -307,12 +327,13 @@ function buildTimelineSection(event: ParsedEvent): ChecklistSectionState {
 
   const questions: ChecklistQuestionState[] = [
     createQuestion({
-      id: 'timeline-arrival-window',
-      type: 'single-select',
-      prompt: 'Is a different time frame needed onsite?',
-      description: 'Select whether arrival-to-service timing should change from policy.',
+      id: "timeline-arrival-window",
+      type: "single-select",
+      prompt: "Is a different time frame needed onsite?",
+      description:
+        "Select whether arrival-to-service timing should change from policy.",
       required: true,
-      options: ['No Change', 'More', 'Less'],
+      options: ["No Change", "More", "Less"],
       value: timeline.value,
       notes: timeline.notes,
       autoReason: timeline.autoReason,
@@ -320,8 +341,8 @@ function buildTimelineSection(event: ParsedEvent): ChecklistSectionState {
   ];
 
   return {
-    id: 'timeline',
-    title: 'Timeline',
+    id: "timeline",
+    title: "Timeline",
     questions,
   };
 }
@@ -331,9 +352,9 @@ function buildEquipmentSection(event: ParsedEvent): ChecklistSectionState {
 
   const questions: ChecklistQuestionState[] = [
     createQuestion({
-      id: 'equipment-assigned',
-      type: 'yes-no',
-      prompt: 'All selected menu items have required items assigned to them.',
+      id: "equipment-assigned",
+      type: "yes-no",
+      prompt: "All selected menu items have required items assigned to them.",
       required: true,
       allowNotes: true,
       value: equipment.value,
@@ -341,9 +362,9 @@ function buildEquipmentSection(event: ParsedEvent): ChecklistSectionState {
       autoReason: equipment.autoReason,
     }),
     createQuestion({
-      id: 'equipment-changes',
-      type: 'textarea',
-      prompt: 'Requested equipment changes needed',
+      id: "equipment-changes",
+      type: "textarea",
+      prompt: "Requested equipment changes needed",
       required: false,
       value: equipment.changes,
       autoReason: equipment.changesReason,
@@ -351,8 +372,8 @@ function buildEquipmentSection(event: ParsedEvent): ChecklistSectionState {
   ];
 
   return {
-    id: 'equipment',
-    title: 'Equipment',
+    id: "equipment",
+    title: "Equipment",
     questions,
   };
 }
@@ -362,9 +383,9 @@ function buildAdditionalSection(event: ParsedEvent): ChecklistSectionState {
 
   const questions: ChecklistQuestionState[] = [
     createQuestion({
-      id: 'additional-questions',
-      type: 'yes-no',
-      prompt: 'Any additional event questions?',
+      id: "additional-questions",
+      type: "yes-no",
+      prompt: "Any additional event questions?",
       required: true,
       allowNotes: true,
       value: additional.value,
@@ -374,8 +395,8 @@ function buildAdditionalSection(event: ParsedEvent): ChecklistSectionState {
   ];
 
   return {
-    id: 'additional',
-    title: 'Additional Questions',
+    id: "additional",
+    title: "Additional Questions",
     questions,
   };
 }
@@ -384,7 +405,7 @@ function buildAdditionalSection(event: ParsedEvent): ChecklistSectionState {
 
 function createQuestion(params: {
   id: string;
-  type: ChecklistQuestionState['type'];
+  type: ChecklistQuestionState["type"];
   prompt: string;
   required: boolean;
   description?: string;
@@ -412,88 +433,135 @@ function createQuestion(params: {
 // --- Auto-Answer Detection Functions ---
 
 function inferEventType(event: ParsedEvent): AutoAnswer {
-  const style = (event.serviceStyle || '').toLowerCase();
+  const style = (event.serviceStyle || "").toLowerCase();
   if (!event.menuSections || event.menuSections.length === 0) {
-    return { value: null, autoReason: 'No menu data available; requires manual selection.' };
+    return {
+      value: null,
+      autoReason: "No menu data available; requires manual selection.",
+    };
   }
 
-  if (style.includes('drop')) {
-    return { value: 'Delivery / Drop Off', autoReason: `Service style is "${event.serviceStyle}".` };
+  if (style.includes("drop")) {
+    return {
+      value: "Delivery / Drop Off",
+      autoReason: `Service style is "${event.serviceStyle}".`,
+    };
   }
-  if (style.includes('action')) {
-    return { value: 'Action Station', autoReason: `Service style is "${event.serviceStyle}".` };
+  if (style.includes("action")) {
+    return {
+      value: "Action Station",
+      autoReason: `Service style is "${event.serviceStyle}".`,
+    };
   }
-  if (style.includes('vending')) {
-    return { value: 'Vending', autoReason: `Service style is "${event.serviceStyle}".` };
+  if (style.includes("vending")) {
+    return {
+      value: "Vending",
+      autoReason: `Service style is "${event.serviceStyle}".`,
+    };
   }
-  if (style.includes('custom')) {
-    return { value: 'Custom', autoReason: `Service style is "${event.serviceStyle}".` };
+  if (style.includes("custom")) {
+    return {
+      value: "Custom",
+      autoReason: `Service style is "${event.serviceStyle}".`,
+    };
   }
 
   // Analyze service locations in menu
   const serviceCounts = event.menuSections.reduce(
-    (acc, item) => {
-      const key = item.serviceLocation ?? 'other';
+    (acc: Record<string, number>, item: MenuItem) => {
+      const key = item.serviceLocation ?? "other";
       acc[key] = (acc[key] || 0) + 1;
       return acc;
     },
     {} as Record<string, number>
   );
 
-  const dominantLocation = Object.entries(serviceCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const dominantLocation = (
+    Object.entries(serviceCounts) as [string, number][]
+  ).sort((a, b) => b[1] - a[1])[0]?.[0];
 
-  if (dominantLocation === 'drop_off') {
-    return { value: 'Delivery / Drop Off', autoReason: 'Most menu items are marked for drop-off service.' };
+  if (dominantLocation === "drop_off") {
+    return {
+      value: "Delivery / Drop Off",
+      autoReason: "Most menu items are marked for drop-off service.",
+    };
   }
-  if (dominantLocation === 'action_station') {
-    return { value: 'Action Station', autoReason: 'Menu includes action station items.' };
+  if (dominantLocation === "action_station") {
+    return {
+      value: "Action Station",
+      autoReason: "Menu includes action station items.",
+    };
   }
-  if (dominantLocation === 'finish_at_event') {
-    return { value: 'Full Service', autoReason: 'Items require finishing on site.' };
+  if (dominantLocation === "finish_at_event") {
+    return {
+      value: "Full Service",
+      autoReason: "Items require finishing on site.",
+    };
   }
-  if (dominantLocation === 'finish_at_kitchen') {
-    return { value: 'Bring Hot', autoReason: 'Items are finished in kitchen and brought hot.' };
+  if (dominantLocation === "finish_at_kitchen") {
+    return {
+      value: "Bring Hot",
+      autoReason: "Items are finished in kitchen and brought hot.",
+    };
   }
 
-  return { value: 'Full Service', autoReason: 'Defaulted to full service based on mixed service types.' };
+  return {
+    value: "Full Service",
+    autoReason: "Defaulted to full service based on mixed service types.",
+  };
 }
 
 function detectPrepInstructions(event: ParsedEvent): AutoAnswer {
   const items = event.menuSections || [];
   const withNotes = items
     .filter(
-      (item) =>
+      (item: MenuItem) =>
         (item.preparationNotes && item.preparationNotes.length > 0) ||
         (item.specials && item.specials.length > 0)
     )
-    .map((item) => {
-      const details = [item.preparationNotes, ...(item.specials || [])].filter(Boolean).join(' | ');
-      return `${item.name}${details ? `: ${details}` : ''}`;
+    .map((item: MenuItem) => {
+      const details = [item.preparationNotes, ...(item.specials || [])]
+        .filter(Boolean)
+        .join(" | ");
+      return `${item.name}${details ? `: ${details}` : ""}`;
     });
 
   if (withNotes.length === 0) {
-    return { value: 'no', notes: '', autoReason: 'No prep-specific notes detected in menu items.' };
+    return {
+      value: "no",
+      notes: "",
+      autoReason: "No prep-specific notes detected in menu items.",
+    };
   }
 
   return {
-    value: 'yes',
-    notes: withNotes.slice(0, 4).join('\n'),
+    value: "yes",
+    notes: withNotes.slice(0, 4).join("\n"),
     autoReason: `Detected ${withNotes.length} menu item(s) with prep instructions to review.`,
   };
 }
 
 function detectEventLeadInstructions(event: ParsedEvent): AutoAnswer {
   const unresolvedFlags = (event.flags || []).filter(
-    (flag) => !flag.resolved && (flag.severity === 'high' || flag.severity === 'critical')
+    (flag: Flag) =>
+      !flag.resolved &&
+      (flag.severity === "high" || flag.severity === "critical")
   );
 
   if (unresolvedFlags.length === 0) {
-    return { value: 'no', notes: '', autoReason: 'No outstanding high-severity flags detected.' };
+    return {
+      value: "no",
+      notes: "",
+      autoReason: "No outstanding high-severity flags detected.",
+    };
   }
 
   return {
-    value: 'yes',
-    notes: unresolvedFlags.slice(0, 3).map((flag) => flag.message).join('\n'),
+    value: "yes",
+    notes: unresolvedFlags
+      .slice(0, 3)
+      .map((flag: Flag) => flag.message)
+      .join("\n"),
     autoReason: `Found ${unresolvedFlags.length} high severity issue(s) requiring lead awareness.`,
   };
 }
@@ -501,16 +569,24 @@ function detectEventLeadInstructions(event: ParsedEvent): AutoAnswer {
 function detectUnfamiliarItems(event: ParsedEvent): AutoAnswer {
   const items = event.menuSections || [];
   const flagged = items.filter(
-    (item) => (item.warnings && item.warnings.length > 0) || /custom/i.test(item.name)
+    (item: MenuItem) =>
+      (item.warnings && item.warnings.length > 0) || /custom/i.test(item.name)
   );
 
   if (flagged.length === 0) {
-    return { value: 'no', notes: '', autoReason: 'No menu items flagged as unfamiliar or custom.' };
+    return {
+      value: "no",
+      notes: "",
+      autoReason: "No menu items flagged as unfamiliar or custom.",
+    };
   }
 
   return {
-    value: 'yes',
-    notes: flagged.slice(0, 5).map((item) => item.name).join('\n'),
+    value: "yes",
+    notes: flagged
+      .slice(0, 5)
+      .map((item: MenuItem) => item.name)
+      .join("\n"),
     autoReason: `Identified ${flagged.length} item(s) flagged for review or marked as custom.`,
   };
 }
@@ -521,59 +597,107 @@ function detectCustomMenuItems(event: ParsedEvent): {
   questions: AutoAnswer;
 } {
   const customItems = (event.menuSections || []).filter(
-    (item) => /custom/i.test(item.name) || /custom/i.test(item.category)
+    (item: MenuItem) =>
+      /custom/i.test(item.name) || /custom/i.test(item.category)
   );
 
   if (customItems.length === 0) {
     return {
-      present: { value: 'no', autoReason: 'No custom menu items detected in menu sections.' },
-      reviewed: { value: null, autoReason: 'Requires confirmation from reviewer.' },
-      questions: { value: 'no', autoReason: 'No custom items detected, defaulting to no questions.' },
+      present: {
+        value: "no",
+        autoReason: "No custom menu items detected in menu sections.",
+      },
+      reviewed: {
+        value: null,
+        autoReason: "Requires confirmation from reviewer.",
+      },
+      questions: {
+        value: "no",
+        autoReason: "No custom items detected, defaulting to no questions.",
+      },
     };
   }
 
-  const summary = customItems.map((item) => item.name).join('\n');
+  const summary = customItems.map((item: MenuItem) => item.name).join("\n");
 
   return {
-    present: { value: 'yes', notes: summary, autoReason: `Detected ${customItems.length} custom menu item(s).` },
-    reviewed: { value: null, notes: summary, autoReason: 'Requires human confirmation that recipes were reviewed.' },
-    questions: { value: 'no', notes: '', autoReason: 'No unanswered questions inferred automatically.' },
+    present: {
+      value: "yes",
+      notes: summary,
+      autoReason: `Detected ${customItems.length} custom menu item(s).`,
+    },
+    reviewed: {
+      value: null,
+      notes: summary,
+      autoReason: "Requires human confirmation that recipes were reviewed.",
+    },
+    questions: {
+      value: "no",
+      notes: "",
+      autoReason: "No unanswered questions inferred automatically.",
+    },
   };
 }
 
 function detectQuantityRecommendations(event: ParsedEvent): AutoAnswer {
-  const quantityFlags = (event.flags || []).filter((flag) => flag.code.startsWith('MENU_QTY'));
+  const quantityFlags = (event.flags || []).filter((flag: Flag) =>
+    flag.code.startsWith("MENU_QTY")
+  );
   const quantityWarnings = (event.menuSections || [])
-    .flatMap((item) => item.warnings || [])
-    .filter((warning) => /quantity|portion|serving/i.test(warning));
+    .flatMap((item: MenuItem) => item.warnings || [])
+    .filter((warning: string) => /quantity|portion|serving/i.test(warning));
 
   if (quantityFlags.length === 0 && quantityWarnings.length === 0) {
-    return { value: 'no', notes: '', autoReason: 'No quantity-related warnings detected.' };
+    return {
+      value: "no",
+      notes: "",
+      autoReason: "No quantity-related warnings detected.",
+    };
   }
 
-  const notes = [...quantityFlags.map((flag) => flag.message), ...quantityWarnings].slice(0, 5);
+  const notes = [
+    ...quantityFlags.map((flag: Flag) => flag.message),
+    ...quantityWarnings,
+  ].slice(0, 5);
 
   return {
-    value: 'yes',
-    notes: notes.join('\n'),
-    autoReason: 'Detected quantity discrepancies in parsed data.',
+    value: "yes",
+    notes: notes.join("\n"),
+    autoReason: "Detected quantity discrepancies in parsed data.",
   };
 }
 
 function detectCookedDifferently(event: ParsedEvent): AutoAnswer {
-  const keywords = ['fry', 'grill', 'mark', 'sear', 'finish', 'bake on site', 'heat'];
-  const hits = (event.menuSections || []).filter((item) => {
-    const text = [item.preparationNotes || '', ...(item.specials || [])].join(' ').toLowerCase();
-    return keywords.some((keyword) => text.includes(keyword));
+  const keywords = [
+    "fry",
+    "grill",
+    "mark",
+    "sear",
+    "finish",
+    "bake on site",
+    "heat",
+  ];
+  const hits = (event.menuSections || []).filter((item: MenuItem) => {
+    const text = [item.preparationNotes || "", ...(item.specials || [])]
+      .join(" ")
+      .toLowerCase();
+    return keywords.some((keyword: string) => text.includes(keyword));
   });
 
   if (hits.length === 0) {
-    return { value: 'no', notes: '', autoReason: 'No on-site cooking instructions detected in menu notes.' };
+    return {
+      value: "no",
+      notes: "",
+      autoReason: "No on-site cooking instructions detected in menu notes.",
+    };
   }
 
   return {
-    value: 'yes',
-    notes: hits.slice(0, 5).map((item) => item.name).join('\n'),
+    value: "yes",
+    notes: hits
+      .slice(0, 5)
+      .map((item: MenuItem) => item.name)
+      .join("\n"),
     autoReason: `Detected ${hits.length} item(s) mentioning on-site cooking changes.`,
   };
 }
@@ -587,54 +711,75 @@ function summarizeStaffing(event: ParsedEvent): {
   const staffing = event.staffing || [];
   if (staffing.length === 0) {
     return {
-      lead: '',
-      leadReason: 'No staffing assignments detected for this event.',
-      support: '',
-      supportReason: '',
+      lead: "",
+      leadReason: "No staffing assignments detected for this event.",
+      support: "",
+      supportReason: "",
     };
   }
 
-  const leadShift = staffing.find((shift) => /lead|chef/i.test(shift.position));
-  const supportShifts = staffing.filter((shift) => shift !== leadShift);
+  const leadShift = staffing.find((shift: StaffShift) =>
+    /lead|chef/i.test(shift.position)
+  );
+  const supportShifts = staffing.filter(
+    (shift: StaffShift) => shift !== leadShift
+  );
 
   return {
-    lead: leadShift ? leadShift.name : '',
-    leadReason: leadShift ? `Auto-filled from staffing position: ${leadShift.position}.` : '',
-    support: supportShifts.map((shift) => `${shift.name} (${shift.position})`).join('\n'),
-    supportReason: supportShifts.length > 0 ? 'Auto-listed support staff from schedule.' : '',
+    lead: leadShift ? leadShift.name : "",
+    leadReason: leadShift
+      ? `Auto-filled from staffing position: ${leadShift.position}.`
+      : "",
+    support: supportShifts
+      .map((shift: StaffShift) => `${shift.name} (${shift.position})`)
+      .join("\n"),
+    supportReason:
+      supportShifts.length > 0
+        ? "Auto-listed support staff from schedule."
+        : "",
   };
 }
 
 function detectPrepTiming(event: ParsedEvent): AutoAnswer {
   const earlyPrepFlags = (event.flags || []).filter(
-    (flag) => /prep|schedule/i.test(flag.code) || /prep|schedule/i.test(flag.message)
+    (flag: Flag) =>
+      /prep|schedule/i.test(flag.code) || /prep|schedule/i.test(flag.message)
   );
 
   if (earlyPrepFlags.length === 0) {
-    return { value: 'no', notes: '', autoReason: 'No prep scheduling flags detected.' };
+    return {
+      value: "no",
+      notes: "",
+      autoReason: "No prep scheduling flags detected.",
+    };
   }
 
   return {
-    value: 'yes',
-    notes: earlyPrepFlags.map((flag) => flag.message).join('\n'),
-    autoReason: 'Detected prep or schedule related issues in flags.',
+    value: "yes",
+    notes: earlyPrepFlags.map((flag: Flag) => flag.message).join("\n"),
+    autoReason: "Detected prep or schedule related issues in flags.",
   };
 }
 
 function detectTimelineAdjustments(event: ParsedEvent): AutoAnswer {
   const timelineFlags = (event.flags || []).filter(
-    (flag) =>
-      /timeline|arrival|service/i.test(flag.code) || /timeline|arrival|service/i.test(flag.message)
+    (flag: Flag) =>
+      /timeline|arrival|service/i.test(flag.code) ||
+      /timeline|arrival|service/i.test(flag.message)
   );
 
   if (timelineFlags.length === 0) {
-    return { value: 'No Change', notes: '', autoReason: 'No timeline adjustments suggested by parsed data.' };
+    return {
+      value: "No Change",
+      notes: "",
+      autoReason: "No timeline adjustments suggested by parsed data.",
+    };
   }
 
   return {
-    value: 'More',
-    notes: timelineFlags.map((flag) => flag.message).join('\n'),
-    autoReason: 'Timeline-related issues detected; consider additional time.',
+    value: "More",
+    notes: timelineFlags.map((flag: Flag) => flag.message).join("\n"),
+    autoReason: "Timeline-related issues detected; consider additional time.",
   };
 }
 
@@ -647,45 +792,53 @@ function detectEquipmentNeeds(event: ParsedEvent): {
 } {
   const kits = event.kits || [];
   const equipmentFlags = (event.flags || []).filter(
-    (flag) => /equipment|kit/i.test(flag.code) || /equipment|kit/i.test(flag.message)
+    (flag: Flag) =>
+      /equipment|kit/i.test(flag.code) || /equipment|kit/i.test(flag.message)
   );
 
   if (kits.length === 0 && equipmentFlags.length === 0) {
     return {
       value: null,
-      autoReason: 'Unable to determine equipment coverage automatically.',
-      changes: '',
+      autoReason: "Unable to determine equipment coverage automatically.",
+      changes: "",
     };
   }
 
   if (equipmentFlags.length === 0) {
     return {
-      value: 'yes',
-      notes: kits.join(', '),
-      autoReason: 'Equipment kits inferred from menu requirements.',
-      changes: '',
+      value: "yes",
+      notes: kits.join(", "),
+      autoReason: "Equipment kits inferred from menu requirements.",
+      changes: "",
     };
   }
 
   return {
-    value: 'no',
-    notes: equipmentFlags.map((flag) => flag.message).join('\n'),
-    autoReason: 'Equipment-related warnings detected in parsed data.',
-    changes: equipmentFlags.map((flag) => flag.message).join('\n'),
-    changesReason: 'Populate changes based on detected equipment issues.',
+    value: "no",
+    notes: equipmentFlags.map((flag: Flag) => flag.message).join("\n"),
+    autoReason: "Equipment-related warnings detected in parsed data.",
+    changes: equipmentFlags.map((flag: Flag) => flag.message).join("\n"),
+    changesReason: "Populate changes based on detected equipment issues.",
   };
 }
 
 function detectAdditionalQuestions(event: ParsedEvent): AutoAnswer {
-  const unresolved = (event.flags || []).filter((flag) => !flag.resolved);
+  const unresolved = (event.flags || []).filter((flag: Flag) => !flag.resolved);
 
   if (unresolved.length === 0) {
-    return { value: 'no', notes: '', autoReason: 'No unresolved flags found in event data.' };
+    return {
+      value: "no",
+      notes: "",
+      autoReason: "No unresolved flags found in event data.",
+    };
   }
 
   return {
-    value: 'yes',
-    notes: unresolved.slice(0, 5).map((flag) => flag.message).join('\n'),
+    value: "yes",
+    notes: unresolved
+      .slice(0, 5)
+      .map((flag: Flag) => flag.message)
+      .join("\n"),
     autoReason: `There are ${unresolved.length} unresolved flag(s) that may require discussion.`,
   };
 }

@@ -11,7 +11,10 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { validateUpdateBudgetLineItem } from "../../../validation";
+import {
+  type UpdateBudgetLineItemInput,
+  validateUpdateBudgetLineItem,
+} from "../../../validation";
 
 type RouteContext = {
   params: Promise<{ id: string; lineItemId: string }>;
@@ -121,45 +124,43 @@ export async function PUT(request: Request, context: RouteContext) {
  * Prepare update data for budget line item
  */
 function prepareUpdateData(
-  validatedData: Parameters<typeof validateUpdateBudgetLineItem>[0],
+  validatedData: UpdateBudgetLineItemInput,
   existingLineItem: Awaited<
     ReturnType<typeof database.budgetLineItem.findUnique>
   >
 ) {
   const updateData: Record<string, unknown> = {};
 
-  if ((validatedData as any).category !== undefined) {
-    updateData.category = (validatedData as any).category;
+  if (validatedData.category !== undefined) {
+    updateData.category = validatedData.category;
   }
-  if ((validatedData as any).name !== undefined) {
-    updateData.name = (validatedData as any).name;
+  if (validatedData.name !== undefined) {
+    updateData.name = validatedData.name;
   }
-  if ((validatedData as any).description !== undefined) {
-    updateData.description = (validatedData as any).description;
+  if (validatedData.description !== undefined) {
+    updateData.description = validatedData.description;
   }
-  if ((validatedData as any).budgetedAmount !== undefined) {
-    updateData.budgetedAmount = (validatedData as any).budgetedAmount;
+  if (validatedData.budgetedAmount !== undefined) {
+    updateData.budgetedAmount = validatedData.budgetedAmount;
     // Recalculate variance if actual amount exists
     const actualAmount = Number(existingLineItem?.actualAmount ?? 0);
-    const newVarianceAmount =
-      (validatedData as any).budgetedAmount - actualAmount;
+    const newVarianceAmount = validatedData.budgetedAmount - actualAmount;
     updateData.varianceAmount = newVarianceAmount;
   }
-  if ((validatedData as any).actualAmount !== undefined) {
-    updateData.actualAmount = (validatedData as any).actualAmount;
+  if (validatedData.actualAmount !== undefined) {
+    updateData.actualAmount = validatedData.actualAmount;
     // Recalculate variance
     const budgetedAmount =
-      (validatedData as any).budgetedAmount ??
+      validatedData.budgetedAmount ??
       Number(existingLineItem?.budgetedAmount ?? 0);
-    const newVarianceAmount =
-      budgetedAmount - (validatedData as any).actualAmount;
+    const newVarianceAmount = budgetedAmount - validatedData.actualAmount;
     updateData.varianceAmount = newVarianceAmount;
   }
-  if ((validatedData as any).sortOrder !== undefined) {
-    updateData.sortOrder = (validatedData as any).sortOrder;
+  if (validatedData.sortOrder !== undefined) {
+    updateData.sortOrder = validatedData.sortOrder;
   }
-  if ((validatedData as any).notes !== undefined) {
-    updateData.notes = (validatedData as any).notes;
+  if (validatedData.notes !== undefined) {
+    updateData.notes = validatedData.notes;
   }
 
   return updateData;

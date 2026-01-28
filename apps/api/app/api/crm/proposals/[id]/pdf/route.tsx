@@ -121,10 +121,68 @@ function fetchUser(
   });
 }
 
-type ProposalClient = any;
-type ProposalLead = any;
-type ProposalEvent = any;
-type ProposalUser = any;
+type ProposalClient = {
+  id: string;
+  company_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  phone: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  stateProvince: string | null;
+  postalCode: string | null;
+  countryCode: string | null;
+};
+
+type ProposalLead = {
+  id: string;
+  companyName: string | null;
+  contactName: string | null;
+  contactEmail: string | null;
+  contactPhone: string | null;
+  eventType: string | null;
+  eventDate: Date | null;
+  estimatedGuests: number | null;
+  estimatedValue: unknown;
+};
+
+type ProposalEvent = {
+  id: string;
+  title: string;
+  eventNumber: string | number | null;
+  eventDate: Date | null;
+  eventType: string | null;
+  guestCount: number | null;
+  venue: {
+    name: string | null;
+    addressLine1: string | null;
+    addressLine2: string | null;
+    city: string | null;
+    stateProvince: string | null;
+    postalCode: string | null;
+    countryCode: string | null;
+  } | null;
+  location: {
+    name: string | null;
+    addressLine1: string | null;
+    addressLine2: string | null;
+    city: string | null;
+    stateProvince: string | null;
+    postalCode: string | null;
+    countryCode: string | null;
+  } | null;
+  venueName: string | null;
+  venueAddress: string | null;
+  status: string;
+};
+
+type ProposalUser = {
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+};
 
 /**
  * Transform client data for PDF

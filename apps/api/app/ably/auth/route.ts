@@ -12,8 +12,8 @@ const getClientId = (tenantId: string, userId: string) =>
 
 // Get allowed origins from environment or default to common dev ports
 const getAllowedOrigins = (): string[] => {
-  const allowedOrigins = env.ABLY_AUTH_CORS_ORIGINS?.split(",").map((o) =>
-    o.trim()
+  const allowedOrigins = env.ABLY_AUTH_CORS_ORIGINS?.split(",").map(
+    (o: string) => o.trim()
   );
   return (
     allowedOrigins || [

@@ -3,7 +3,26 @@
  * Extracts text from PDF files using pdfjs-dist
  */
 
-import * as pdfjsLib from 'pdfjs-dist';
+import * as pdfjsLib from "pdfjs-dist";
+
+/**
+ * Represents a text item from PDF.js TextContent
+ */
+interface TextItem {
+  str: string;
+  transform: number[];
+  [key: string]: unknown;
+}
+
+/**
+ * PDF metadata info structure
+ */
+interface PdfMetadataInfo {
+  Title?: string;
+  Author?: string;
+  Subject?: string;
+  Creator?: string;
+}
 
 // Configure the worker
 // In Node.js environments, pdfjs-dist uses worker-loader or fake worker
@@ -14,9 +33,9 @@ function initializeWorker() {
   if (workerInitialized) return;
 
   // For server-side rendering in Next.js
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     // Node.js environment - use fake worker
-    pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "";
   } else {
     // Browser environment - use CDN worker
     pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
@@ -60,11 +79,12 @@ export async function extractPdfText(
     let metadata;
     try {
       const metadataResult = await pdf.getMetadata();
+      const info = metadataResult?.info as PdfMetadataInfo | undefined;
       metadata = {
-        title: (metadataResult?.info as any)?.Title,
-        author: (metadataResult?.info as any)?.Author,
-        subject: (metadataResult?.info as any)?.Subject,
-        creator: (metadataResult?.info as any)?.Creator,
+        title: info?.Title,
+        author: info?.Author,
+        subject: info?.Subject,
+        creator: info?.Creator,
       };
     } catch {
       // Metadata extraction is optional
@@ -79,7 +99,7 @@ export async function extractPdfText(
         allLines.push(...pageLines);
       } catch (e) {
         errors.push(
-          `Error extracting page ${pageNum}: ${e instanceof Error ? e.message : 'Unknown error'}`
+          `Error extracting page ${pageNum}: ${e instanceof Error ? e.message : "Unknown error"}`
         );
       }
     }
@@ -92,7 +112,7 @@ export async function extractPdfText(
     };
   } catch (e) {
     errors.push(
-      `Failed to load PDF: ${e instanceof Error ? e.message : 'Unknown error'}`
+      `Failed to load PDF: ${e instanceof Error ? e.message : "Unknown error"}`
     );
     return {
       lines: [],
@@ -105,7 +125,7 @@ export async function extractPdfText(
 /**
  * Collapse text items by Y position to preserve line structure
  */
-function collapseTextItems(items: any[]): string[] {
+function collapseTextItems(items: TextItem[]): string[] {
   if (!items || items.length === 0) {
     return [];
   }
@@ -115,7 +135,7 @@ function collapseTextItems(items: any[]): string[] {
   const lineGroups: Map<number, { x: number; text: string }[]> = new Map();
 
   for (const item of items) {
-    if (!item.str || item.str.trim() === '') continue;
+    if (!item.str || item.str.trim() === "") continue;
 
     const y = Math.round(item.transform[5] / yTolerance) * yTolerance;
     const x = item.transform[4];
@@ -138,14 +158,14 @@ function collapseTextItems(items: any[]): string[] {
     group.sort((a, b) => a.x - b.x);
 
     // Join text items with appropriate spacing
-    let lineText = '';
-    let lastX = -Infinity;
+    let lineText = "";
+    let lastX = Number.NEGATIVE_INFINITY;
 
     for (const item of group) {
       const gap = item.x - lastX;
       // Add space if there's a significant gap
       if (gap > 10 && lineText.length > 0) {
-        lineText += ' ';
+        lineText += " ";
       }
       lineText += item.text;
       lastX = item.x + item.text.length * 5; // Rough estimate of text width
@@ -165,8 +185,8 @@ function collapseTextItems(items: any[]): string[] {
  */
 function cleanLine(text: string): string {
   return text
-    .replace(/\uFFFD/g, '') // Remove replacement characters
-    .replace(/\s+/g, ' ') // Normalize whitespace
+    .replace(/\uFFFD/g, "") // Remove replacement characters
+    .replace(/\s+/g, " ") // Normalize whitespace
     .trim();
 }
 
@@ -174,7 +194,7 @@ function cleanLine(text: string): string {
  * Detect PDF format (TPP, generic, etc.)
  */
 export interface FormatDetectionResult {
-  format: 'tpp' | 'generic';
+  format: "tpp" | "generic";
   confidence: number;
   markers: string[];
 }
@@ -184,16 +204,28 @@ export function detectPdfFormat(lines: string[]): FormatDetectionResult {
   let score = 0;
 
   const tppMarkers = [
-    { pattern: /invoice\s*#/i, weight: 20, name: 'Invoice #' },
-    { pattern: /timeline\s*\/\s*key\s*moments/i, weight: 20, name: 'Timeline / Key Moments' },
-    { pattern: /quantity\s*\/\s*unit/i, weight: 20, name: 'Quantity / Unit' },
-    { pattern: /category.*item.*special.*production/i, weight: 15, name: 'Menu Headers' },
-    { pattern: /^client:/im, weight: 15, name: 'Client:' },
-    { pattern: /mangia\s*catering/i, weight: 10, name: 'Mangia Catering' },
-    { pattern: /finish\s*at\s*(event|kitchen)/i, weight: 10, name: 'Service Location' },
+    { pattern: /invoice\s*#/i, weight: 20, name: "Invoice #" },
+    {
+      pattern: /timeline\s*\/\s*key\s*moments/i,
+      weight: 20,
+      name: "Timeline / Key Moments",
+    },
+    { pattern: /quantity\s*\/\s*unit/i, weight: 20, name: "Quantity / Unit" },
+    {
+      pattern: /category.*item.*special.*production/i,
+      weight: 15,
+      name: "Menu Headers",
+    },
+    { pattern: /^client:/im, weight: 15, name: "Client:" },
+    { pattern: /mangia\s*catering/i, weight: 10, name: "Mangia Catering" },
+    {
+      pattern: /finish\s*at\s*(event|kitchen)/i,
+      weight: 10,
+      name: "Service Location",
+    },
   ];
 
-  const fullText = lines.join('\n');
+  const fullText = lines.join("\n");
 
   for (const marker of tppMarkers) {
     if (marker.pattern.test(fullText)) {
@@ -203,7 +235,7 @@ export function detectPdfFormat(lines: string[]): FormatDetectionResult {
   }
 
   const confidence = Math.min(score, 100);
-  const format = confidence >= 50 ? 'tpp' : 'generic';
+  const format = confidence >= 50 ? "tpp" : "generic";
 
   return { format, confidence, markers };
 }

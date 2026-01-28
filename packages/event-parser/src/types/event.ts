@@ -1,6 +1,6 @@
 // Core event data types for parsing and auto-fill
 
-export type TimelinePhase = 'setup' | 'service' | 'teardown' | 'other';
+export type TimelinePhase = "setup" | "service" | "teardown" | "other";
 
 export interface EventTimelineEntry {
   label: string;
@@ -40,11 +40,11 @@ export interface MenuQuantityDetail {
 }
 
 export type ServiceLocation =
-  | 'finish_at_event'
-  | 'finish_at_kitchen'
-  | 'drop_off'
-  | 'action_station'
-  | 'other';
+  | "finish_at_event"
+  | "finish_at_kitchen"
+  | "drop_off"
+  | "action_station"
+  | "other";
 
 export interface MenuItem {
   category: string;
@@ -77,7 +77,7 @@ export interface StaffShift {
   tasks?: string[];
 }
 
-export type FlagSeverity = 'low' | 'medium' | 'high' | 'critical';
+export type FlagSeverity = "low" | "medium" | "high" | "critical";
 
 export interface Flag {
   code: string;
@@ -88,7 +88,7 @@ export interface Flag {
   resolved: boolean;
 }
 
-export type EvidenceType = 'extraction' | 'validation' | 'inference';
+export type EvidenceType = "extraction" | "validation" | "inference";
 
 export interface Evidence {
   id: string;
@@ -99,7 +99,7 @@ export interface Evidence {
   timestamp: string;
 }
 
-export type EventStatus = 'draft' | 'validated' | 'approved' | 'completed';
+export type EventStatus = "draft" | "validated" | "approved" | "completed";
 
 export interface ParsedEvent {
   id: string;
@@ -134,7 +134,7 @@ export interface ParsedEventResult {
 export interface ParsedFile {
   id: string;
   name: string;
-  type: 'pdf' | 'csv';
+  type: "pdf" | "csv";
   size: number;
   parsedAt: string;
   extractedData: unknown;
@@ -145,7 +145,7 @@ export interface ParsedFile {
 export interface ReviewQueueItem {
   id: string;
   eventId: string;
-  type: 'validation' | 'ambiguity' | 'conflict';
+  type: "validation" | "ambiguity" | "conflict";
   issue: string;
   suggestedResolution?: string;
   requiresHuman: boolean;

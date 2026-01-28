@@ -14,6 +14,7 @@ import type {
   FSAStatus,
   InventoryItemListFilters,
   InventoryItemWithStatus,
+  ItemCategory,
   StockStatus,
 } from "./types";
 import { FSA_STATUSES, ITEM_CATEGORIES } from "./types";
@@ -53,7 +54,7 @@ function parseInventoryItemFilters(
   }
 
   const category = searchParams.get("category");
-  if (category && ITEM_CATEGORIES.includes(category as any)) {
+  if (category && ITEM_CATEGORIES.includes(category as ItemCategory)) {
     filters.category = category;
   }
 
@@ -158,6 +159,9 @@ export async function GET(request: Request) {
           break;
         case "in_stock":
           where.quantityOnHand = { gt: 0 };
+          break;
+        default:
+          // Exhaustive check - all StockStatus cases handled above
           break;
       }
     }

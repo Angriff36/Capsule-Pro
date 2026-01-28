@@ -42,7 +42,12 @@ export async function GET(
     }
 
     // Build query conditions
-    const where: any = {
+    const where: {
+      eventId: string;
+      tenantId: string;
+      deletedAt: null;
+      isAcknowledged?: boolean;
+    } = {
       eventId,
       tenantId,
       deletedAt: null,

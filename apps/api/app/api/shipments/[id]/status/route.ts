@@ -35,7 +35,19 @@ function validateStatusTransition(currentStatus: string, newStatus: string) {
   }
 }
 
-function validateDeliveryConfirmation(status: string, body: any) {
+interface ShipmentStatusRequestBody {
+  status: string;
+  shipped_date?: string | null;
+  actual_delivery_date?: string | null;
+  delivered_by?: string | null;
+  received_by?: string | null;
+  signature?: string | null;
+}
+
+function validateDeliveryConfirmation(
+  status: string,
+  body: ShipmentStatusRequestBody
+) {
   if (status === "delivered") {
     if (!body.actual_delivery_date) {
       throw new InvariantError(
@@ -94,7 +106,14 @@ export async function POST(
     validateDeliveryConfirmation(body.status, body);
 
     // Build update data
-    const updateData: any = { status: body.status };
+    const updateData: {
+      status: string;
+      shippedDate?: Date | null;
+      actualDeliveryDate?: Date | null;
+      deliveredBy?: string | null;
+      receivedBy?: string | null;
+      signature?: string | null;
+    } = { status: body.status };
 
     if (body.shipped_date !== undefined) {
       updateData.shippedDate = body.shipped_date

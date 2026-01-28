@@ -8,6 +8,8 @@ import type { BattleBoardPDFData } from "../types";
 //   src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2'
 // });
 
+type BattleBoardTask = BattleBoardPDFData["tasks"][number];
+
 const styles = StyleSheet.create({
   page: {
     padding: 30,
@@ -119,11 +121,11 @@ export const BattleBoardPDF: React.FC<BattleBoardPDFProps> = ({ data }) => {
     }
   };
 
-  const getRowStyle = (task: any) => {
+  const getRowStyle = (task: BattleBoardTask) => {
     if (task.status === "completed") {
       return styles.tableRowCompleted;
     }
-    if (task.isCritical) {
+    if (task.isOnCriticalPath) {
       return styles.tableRowCritical;
     }
     return styles.tableRow;

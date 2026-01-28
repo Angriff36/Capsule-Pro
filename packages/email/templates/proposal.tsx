@@ -10,6 +10,7 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
+import type React from "react";
 
 export type ProposalTemplateProps = {
   readonly recipientName: string;
@@ -78,7 +79,11 @@ export const ProposalTemplate = ({
   </Tailwind>
 );
 
-ProposalTemplate.PreviewProps = {
+(
+  ProposalTemplate as React.FC<typeof ProposalTemplate> & {
+    PreviewProps: ProposalTemplateProps;
+  }
+).PreviewProps = {
   recipientName: "Jane Smith",
   proposalTitle: "Wedding Catering Proposal",
   proposalUrl: "https://example.com/proposals/abc123",

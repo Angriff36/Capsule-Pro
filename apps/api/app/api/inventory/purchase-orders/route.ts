@@ -9,8 +9,11 @@ import { database, type Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
+  DiscrepancyType,
+  POStatus,
   PurchaseOrderListFilters,
   PurchaseOrderWithDetails,
+  QualityStatus,
 } from "./types";
 import { PO_STATUSES } from "./types";
 
@@ -53,8 +56,8 @@ function parsePurchaseOrderFilters(
   }
 
   const status = searchParams.get("status");
-  if (status && PO_STATUSES.includes(status as any)) {
-    filters.status = status as any;
+  if (status && PO_STATUSES.includes(status as POStatus)) {
+    filters.status = status as POStatus;
   }
 
   const vendorId = searchParams.get("vendor_id");
@@ -195,8 +198,8 @@ export async function GET(request: Request) {
           unit_id: item.unitId,
           unit_cost: Number(item.unitCost),
           total_cost: Number(item.totalCost),
-          quality_status: (item.qualityStatus ?? "pending") as any,
-          discrepancy_type: item.discrepancyType as any | null,
+          quality_status: (item.qualityStatus ?? "pending") as QualityStatus,
+          discrepancy_type: item.discrepancyType as DiscrepancyType | null,
           discrepancy_amount: item.discrepancyAmount
             ? Number(item.discrepancyAmount)
             : null,
@@ -220,7 +223,7 @@ export async function GET(request: Request) {
         order_date: order.orderDate,
         expected_delivery_date: order.expectedDeliveryDate,
         actual_delivery_date: order.actualDeliveryDate,
-        status: order.status as any,
+        status: order.status as POStatus,
         subtotal: Number(order.subtotal),
         tax_amount: Number(order.taxAmount),
         shipping_amount: Number(order.shippingAmount),

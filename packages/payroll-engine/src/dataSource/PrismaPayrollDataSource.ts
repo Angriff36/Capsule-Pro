@@ -1,6 +1,7 @@
 // Prisma Payroll Data Source
 // Implements PayrollDataSource interface using Prisma database client
 
+import type { PrismaClient } from "@repo/database";
 import type {
   Deduction,
   Employee,
@@ -18,12 +19,22 @@ import type { PayrollDataSource } from "../services";
  * Connects the payroll engine to the actual database
  */
 export class PrismaPayrollDataSource implements PayrollDataSource {
+  #prisma: Omit<
+    PrismaClient,
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+  >;
+
   constructor(
-    private readonly prisma: any // PrismaClient type_getTenantId: () => string
-  ) {}
+    prisma: Omit<
+      PrismaClient,
+      "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+    >
+  ) {
+    this.#prisma = prisma;
+  }
 
   async getEmployees(tenantId: string): Promise<Employee[]> {
-    const users = await this.prisma.user.findMany({
+    const users = await this.#prisma.user.findMany({
       where: {
         tenantId,
         deletedAt: null,
@@ -34,11 +45,11 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       },
     });
 
-    return users.map((user: any) => ({
+    return users.map((user) => ({
       id: user.id,
       tenantId: user.tenantId,
       name: `${user.firstName} ${user.lastName}`,
-      department: user.department || undefined,
+      department: undefined,
       roleId: user.roleId || undefined,
       currency: "USD",
       hourlyRate: user.hourlyRate ? Number(user.hourlyRate) : 0,
@@ -48,7 +59,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
   }
 
   async getRoles(tenantId: string): Promise<Role[]> {
-    const roles = await this.prisma.role.findMany({
+    const roles = await this.#prisma.role.findMany({
       where: {
         tenant_id: tenantId,
         deleted_at: null,
@@ -56,7 +67,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       },
     });
 
-    return roles.map((role: any) => ({
+    return roles.map((role) => ({
       id: role.id,
       tenantId: role.tenant_id,
       name: role.name,
@@ -71,28 +82,41 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
     periodStart: Date,
     periodEnd: Date
   ): Promise<TimeEntryInput[]> {
-    const timeEntries = await this.prisma.timeEntry.findMany({
+    const timeEntries = await this.#prisma.timeEntry.findMany({
       where: {
         tenantId,
-        deletedAt: null,
-        date: {
-          gte: periodStart,
-          lte: periodEnd,
-        },
-        approved: true, // Only use approved time entries for payroll
+        deleted_at: null,
+        approved_at: { not: null }, // Only use approved time entries for payroll
       },
     });
 
-    return timeEntries.map((entry: any) => ({
-      id: entry.id,
-      tenantId: entry.tenantId,
-      employeeId: entry.employeeId,
-      date: entry.date,
-      hoursWorked: Number(entry.hoursWorked),
-      hoursRegular: Number(entry.hoursRegular || 0),
-      hoursOvertime: Number(entry.hoursOvertime || 0),
-      approved: entry.approved,
-    }));
+    // Filter by date range since we need to check shift dates
+    // and calculate hours from clockIn/clockOut
+    return timeEntries
+      .filter((entry) => {
+        const entryDate = entry.clockIn;
+        return entryDate >= periodStart && entryDate <= periodEnd;
+      })
+      .map((entry) => {
+        // Calculate hours worked from clockIn/clockOut
+        let hoursWorked = 0;
+        if (entry.clockOut) {
+          const diffMs = entry.clockOut.getTime() - entry.clockIn.getTime();
+          const breakMs = (entry.breakMinutes || 0) * 60 * 1000;
+          hoursWorked = Math.max(0, (diffMs - breakMs) / (1000 * 60 * 60));
+        }
+
+        return {
+          id: entry.id,
+          tenantId: entry.tenantId,
+          employeeId: entry.employeeId,
+          date: entry.clockIn,
+          hoursWorked,
+          hoursRegular: Math.min(hoursWorked, 40), // Assume 40h threshold
+          hoursOvertime: Math.max(0, hoursWorked - 40),
+          approved: entry.approved_at !== null,
+        };
+      });
   }
 
   async getTipPools(_tenantId: string, _periodId: string): Promise<TipPool[]> {
@@ -101,7 +125,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
   }
 
   async getDeductions(tenantId: string): Promise<Deduction[]> {
-    const deductions = await this.prisma.employeeDeduction.findMany({
+    const deductions = await this.#prisma.employeeDeduction.findMany({
       where: {
         tenant_id: tenantId,
         deleted_at: null,
@@ -113,7 +137,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       },
     });
 
-    return deductions.map((deduction: any) => ({
+    return deductions.map((deduction) => ({
       id: deduction.id,
       tenantId: deduction.tenant_id,
       employeeId: deduction.employee_id,
@@ -133,7 +157,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
   }
 
   async savePayrollPeriod(period: PayrollPeriod): Promise<void> {
-    await this.prisma.payrollPeriod.upsert({
+    await this.#prisma.payroll_periods.upsert({
       where: {
         tenant_id_id: {
           tenant_id: period.tenantId,
@@ -174,11 +198,12 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       { totalGross: 0, totalDeductions: 0, totalNet: 0 }
     );
 
-    const payrollRun = await this.prisma.payrollRun.upsert({
+    const payrollRun = await this.#prisma.payroll_runs.upsert({
       where: {
-        // Assuming there's a unique constraint on payroll_period_id
-        // Adjust this based on actual schema
-        id: periodId, // This is a simplified approach
+        tenant_id_id: {
+          tenant_id: tenantId,
+          id: periodId,
+        },
       },
       create: {
         tenant_id: tenantId,
@@ -203,10 +228,12 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
 
     // Save payroll line items
     for (const record of records) {
-      await this.prisma.payrollLineItem.upsert({
+      await this.#prisma.payroll_line_items.upsert({
         where: {
-          // Assuming composite unique constraint
-          id: `${payrollRun.id}_${record.employeeId}`,
+          tenant_id_id: {
+            tenant_id: record.tenantId,
+            id: `${payrollRun.id}_${record.employeeId}`,
+          },
         },
         create: {
           tenant_id: record.tenantId,
@@ -260,7 +287,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
     tenantId: string,
     periodId: string
   ): Promise<PayrollPeriod | null> {
-    const period = await this.prisma.payrollPeriod.findUnique({
+    const period = await this.#prisma.payroll_periods.findUnique({
       where: {
         tenant_id_id: {
           tenant_id: tenantId,
@@ -289,7 +316,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
     tenantId: string,
     periodId: string
   ): Promise<PayrollRecord[]> {
-    const payrollRun = await this.prisma.payrollRun.findFirst({
+    const payrollRun = await this.#prisma.payroll_runs.findFirst({
       where: {
         tenant_id: tenantId,
         payroll_period_id: periodId,
@@ -300,7 +327,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       return [];
     }
 
-    const lineItems = await this.prisma.payrollLineItem.findMany({
+    const lineItems = await this.#prisma.payroll_line_items.findMany({
       where: {
         tenant_id: tenantId,
         payroll_run_id: payrollRun.id,
@@ -308,8 +335,10 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
     });
 
     // Get employee names
-    const employeeIds = lineItems.map((item: any) => item.employee_id);
-    const employees = await this.prisma.user.findMany({
+    const employeeIds = lineItems.map(
+      (item: { employee_id: string }) => item.employee_id
+    );
+    const employees = await this.#prisma.user.findMany({
       where: {
         id: { in: employeeIds },
       },
@@ -321,35 +350,49 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
     });
 
     const employeeMap = new Map(
-      employees.map((e: any) => [e.id, `${e.firstName} ${e.lastName}`])
+      employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`])
     );
 
-    return lineItems.map((item: any) => {
-      const deductions = JSON.parse(item.deductions || "{}");
-      return {
-        id: item.id,
-        tenantId: item.tenant_id,
-        periodId,
-        employeeId: item.employee_id,
-        employeeName: employeeMap.get(item.employee_id) || "Unknown",
-        department: undefined, // TODO: Add department when available
-        roleName: "Default", // TODO: Get from role
-        hoursRegular: Number(item.hours_regular),
-        hoursOvertime: Number(item.hours_overtime),
-        regularPay: Number(item.rate_regular) * Number(item.hours_regular),
-        overtimePay: Number(item.rate_overtime) * Number(item.hours_overtime),
-        tips: 0, // TODO: Add tips when available
-        grossPay: Number(item.gross_pay),
-        preTaxDeductions: deductions.preTax || [],
-        taxableIncome: Number(item.gross_pay),
-        taxesWithheld: [], // TODO: Add taxes when available
-        totalTaxes: 0, // TODO: Calculate from taxes
-        postTaxDeductions: deductions.postTax || [],
-        totalDeductions: Number(item.gross_pay) - Number(item.net_pay),
-        netPay: Number(item.net_pay),
-        currency: "USD",
-        createdAt: item.created_at,
-      };
-    });
+    return lineItems.map(
+      (item: {
+        id: string;
+        tenant_id: string;
+        employee_id: string;
+        deductions: string | null;
+        hours_regular: bigint | number;
+        hours_overtime: bigint | number;
+        rate_regular: bigint | number;
+        rate_overtime: bigint | number;
+        gross_pay: bigint | number;
+        net_pay: bigint | number;
+        created_at: Date;
+      }) => {
+        const deductions = JSON.parse(item.deductions || "{}");
+        return {
+          id: item.id,
+          tenantId: item.tenant_id,
+          periodId,
+          employeeId: item.employee_id,
+          employeeName: employeeMap.get(item.employee_id) || "Unknown",
+          department: undefined, // TODO: Add department when available
+          roleName: "Default", // TODO: Get from role
+          hoursRegular: Number(item.hours_regular),
+          hoursOvertime: Number(item.hours_overtime),
+          regularPay: Number(item.rate_regular) * Number(item.hours_regular),
+          overtimePay: Number(item.rate_overtime) * Number(item.hours_overtime),
+          tips: 0, // TODO: Add tips when available
+          grossPay: Number(item.gross_pay),
+          preTaxDeductions: deductions.preTax || [],
+          taxableIncome: Number(item.gross_pay),
+          taxesWithheld: [], // TODO: Add taxes when available
+          totalTaxes: 0, // TODO: Calculate from taxes
+          postTaxDeductions: deductions.postTax || [],
+          totalDeductions: Number(item.gross_pay) - Number(item.net_pay),
+          netPay: Number(item.net_pay),
+          currency: "USD",
+          createdAt: item.created_at,
+        };
+      }
+    );
   }
 }

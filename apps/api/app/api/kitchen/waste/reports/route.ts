@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   const groupBy = searchParams.get("groupBy") || "reason"; // reason | item | location | date
 
   // Build date filter
-  const dateFilter: any = {};
+  const dateFilter: { gte?: Date; lte?: Date } = {};
   if (startDate) {
     dateFilter.gte = new Date(startDate);
   }
@@ -67,7 +67,14 @@ export async function GET(request: Request) {
   const entryCount = entries.length;
 
   // Group data based on groupBy parameter
-  const groupedData: Record<string, any> = {};
+  type WasteGroup = {
+    key: string;
+    totalCost: number;
+    totalQuantity: number;
+    count: number;
+    entries: typeof entries;
+  };
+  const groupedData: Record<string, WasteGroup> = {};
   for (const entry of entries) {
     let key = "";
     switch (groupBy) {
@@ -131,7 +138,13 @@ export async function GET(request: Request) {
   });
 
   // Calculate trends by month
-  const monthlyTrends: Record<string, any> = {};
+  type MonthlyTrend = {
+    month: string;
+    totalCost: number;
+    totalQuantity: number;
+    count: number;
+  };
+  const monthlyTrends: Record<string, MonthlyTrend> = {};
   for (const entry of entries) {
     const date = new Date(entry.loggedAt);
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;

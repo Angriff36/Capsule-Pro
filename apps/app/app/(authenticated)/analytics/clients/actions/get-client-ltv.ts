@@ -58,9 +58,9 @@ export type ClientLTVMetrics = {
 
 type OrderMonthData = {
   month: string;
-  total_revenue: unknown;
-  order_count: unknown;
-  client_count: unknown;
+  total_revenue: string | number;
+  order_count: string | number;
+  client_count: string | number;
 };
 
 type ClientLTVData = {

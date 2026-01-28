@@ -109,7 +109,10 @@ export async function GET(_request: Request, context: RouteContext) {
 
     return NextResponse.json(boardWithCards);
   } catch (error) {
-    console.error("Failed to get command board:", error);
+    console.error(
+      "Failed to get command board:",
+      error instanceof Error ? error : new Error(String(error))
+    );
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -260,9 +263,13 @@ export async function PUT(request: Request, context: RouteContext) {
     return NextResponse.json(boardWithCards);
   } catch (error) {
     if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
+      return NextResponse.json(
+        { message: (error as InvariantError).message },
+        { status: 400 }
+      );
     }
-    console.error("Failed to update command board:", error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    console.error("Failed to update command board:", err);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -322,7 +329,10 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error("Failed to delete command board:", error);
+    console.error(
+      "Failed to delete command board:",
+      error instanceof Error ? error : new Error(String(error))
+    );
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

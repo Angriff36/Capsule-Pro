@@ -1,7 +1,9 @@
+import type { DocumentProps } from "@react-pdf/renderer";
 import { auth } from "@repo/auth/server";
 import { database, type PrismaClient } from "@repo/database";
 import { BattleBoardPDF } from "@repo/pdf";
 import { type NextRequest, NextResponse } from "next/server";
+import type React from "react";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export const runtime = "nodejs";
@@ -38,11 +40,7 @@ type StaffMember = {
 /**
  * Fetch event details
  */
-function fetchEvent(
-  database: PrismaClient,
-  tenantId: string,
-  eventId: string
-): any {
+function fetchEvent(database: PrismaClient, tenantId: string, eventId: string) {
   return database.event.findUnique({
     where: {
       tenantId_id: {
@@ -64,7 +62,7 @@ function fetchTimelineTasks(
   database: PrismaClient,
   tenantId: string,
   eventId: string
-): any {
+): Promise<TimelineTask[]> {
   return database.$queryRawUnsafe<
     Array<{
       id: string;
@@ -114,7 +112,10 @@ function fetchTimelineTasks(
 /**
  * Fetch staff with assignment counts
  */
-function fetchStaff(database: PrismaClient, tenantId: string): any {
+function fetchStaff(
+  database: PrismaClient,
+  tenantId: string
+): Promise<StaffMember[]> {
   return database.$queryRawUnsafe<
     Array<{
       id: string;
@@ -146,7 +147,11 @@ function fetchUser(
   database: PrismaClient,
   tenantId: string,
   authUserId: string
-): any {
+): Promise<{
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+} | null> {
   return database.user.findFirst({
     where: {
       tenantId,
@@ -360,9 +365,12 @@ export async function GET(
 /**
  * Generate downloadable PDF response
  */
-async function generateDownloadResponse(pdfComponent: any, eventTitle: string) {
+async function generateDownloadResponse(
+  pdfComponent: React.ReactElement<DocumentProps>,
+  eventTitle: string
+) {
   const { pdf } = await import("@react-pdf/renderer");
-  const doc = await pdf(pdfComponent as any);
+  const doc = await pdf(pdfComponent);
   const blob = await doc.toBlob();
 
   return new NextResponse(blob, {
@@ -377,11 +385,11 @@ async function generateDownloadResponse(pdfComponent: any, eventTitle: string) {
  * Generate base64 PDF response
  */
 async function generateBase64Response(
-  pdfComponent: React.ReactElement,
+  pdfComponent: React.ReactElement<DocumentProps>,
   eventTitle: string
 ) {
   const { pdf } = await import("@react-pdf/renderer");
-  const doc = await pdf(pdfComponent as any);
+  const doc = await pdf(pdfComponent);
   const blob = await doc.toBlob();
   const arrayBuffer = await blob.arrayBuffer();
   const uint8Array = new Uint8Array(arrayBuffer);

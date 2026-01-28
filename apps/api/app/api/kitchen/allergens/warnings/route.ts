@@ -8,7 +8,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     const offset = searchParams.get("offset");
 
     // Build query conditions
-    const where: any = {
+    const where: Prisma.AllergenWarningWhereInput = {
       tenantId,
       deletedAt: null,
     };

@@ -1,5 +1,5 @@
 "use client"
 
-import { toast as sonnerToast, type Toast, type ToastOptions } from "sonner"
+import { toast as sonnerToast } from "sonner"
 
-export { sonnerToast as toast, type Toast, type ToastOptions }
+export { sonnerToast as toast }

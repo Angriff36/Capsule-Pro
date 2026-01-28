@@ -132,9 +132,10 @@ export async function GET(request: Request, context: RouteContext) {
     });
 
     return NextResponse.json({ data: cards });
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
+      const message = (error as InvariantError).message;
+      return NextResponse.json({ message }, { status: 400 });
     }
     console.error("Error listing cards:", error);
     return NextResponse.json(
@@ -216,9 +217,10 @@ export async function POST(request: Request, context: RouteContext) {
     });
 
     return NextResponse.json({ data: card }, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
+      const message = (error as InvariantError).message;
+      return NextResponse.json({ message }, { status: 400 });
     }
     console.error("Error creating card:", error);
     return NextResponse.json(

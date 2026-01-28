@@ -1,11 +1,11 @@
 // Pre-Event Review checklist types
 
 export type ChecklistQuestionType =
-  | 'single-select'
-  | 'yes-no'
-  | 'yes-no-na'
-  | 'text'
-  | 'textarea';
+  | "single-select"
+  | "yes-no"
+  | "yes-no-na"
+  | "text"
+  | "textarea";
 
 export interface ChecklistQuestionState {
   id: string;
@@ -45,17 +45,17 @@ export interface AutoAnswer {
 
 // Event type options for checklist
 export const EVENT_TYPE_OPTIONS = [
-  'Bring Hot',
-  'Full Service',
-  'Delivery / Drop Off',
-  'Action Station',
-  'Vending',
-  'Custom',
+  "Bring Hot",
+  "Full Service",
+  "Delivery / Drop Off",
+  "Action Station",
+  "Vending",
+  "Custom",
 ] as const;
 
 export type EventTypeOption = (typeof EVENT_TYPE_OPTIONS)[number];
 
 // Timeline arrival options
-export const TIMELINE_ARRIVAL_OPTIONS = ['No Change', 'More', 'Less'] as const;
+export const TIMELINE_ARRIVAL_OPTIONS = ["No Change", "More", "Less"] as const;
 
 export type TimelineArrivalOption = (typeof TIMELINE_ARRIVAL_OPTIONS)[number];

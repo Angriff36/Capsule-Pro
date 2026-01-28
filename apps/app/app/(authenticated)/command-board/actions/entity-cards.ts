@@ -1,6 +1,6 @@
 "use server";
 
-import { database } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { requireTenantId } from "../../../lib/tenant";
 import type { CardMetadata, CardType, CreateCardInput } from "../types";
 import type { CardResult } from "./cards";
@@ -221,8 +221,8 @@ export async function createEntityCard(
         height: input.position?.height ?? 180,
         zIndex: input.position?.zIndex ?? 1,
         color: input.color ?? null,
-        // @ts-expect-error - Metadata type incompatibility
-        metadata: metadata as unknown,
+        // @ts-expect-error - Metadata type incompatibility with Prisma JsonValue
+        metadata: metadata as Prisma.JsonValue,
       },
     });
 

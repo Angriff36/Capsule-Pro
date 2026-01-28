@@ -14,6 +14,7 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { XIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import type {
+  BudgetLineItem,
   BudgetLineItemCategory,
   CreateEventBudgetInput,
   EventBudget,
@@ -62,7 +63,7 @@ export function CreateBudgetModal({
       notes: string;
     }>
   >(
-    budget?.lineItems?.map((item) => ({
+    budget?.lineItems?.map((item: BudgetLineItem) => ({
       id: item.id,
       category: item.category,
       name: item.name,
@@ -85,7 +86,7 @@ export function CreateBudgetModal({
         setTotalBudgetAmount(budget.totalBudgetAmount.toString());
         setNotes(budget.notes || "");
         setLineItems(
-          budget.lineItems?.map((item) => ({
+          budget.lineItems?.map((item: BudgetLineItem) => ({
             id: item.id,
             category: item.category,
             name: item.name,

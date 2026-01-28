@@ -232,9 +232,12 @@ export async function POST(request: Request) {
     };
 
     return NextResponse.json(responseBoard, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
+      return NextResponse.json(
+        { message: (error as InvariantError).message },
+        { status: 400 }
+      );
     }
     console.error("Failed to create command board:", error);
     return NextResponse.json(

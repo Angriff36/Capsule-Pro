@@ -2,7 +2,7 @@ import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { UpdateTimeOffStatusInput } from "../../types";
+import type { TimeOffStatus, UpdateTimeOffStatusInput } from "../../types";
 import {
   validateStatusTransition,
   verifyTimeOffRequest,
@@ -135,7 +135,7 @@ export async function PATCH(
 
   // Validate status transition
   const transitionError = validateStatusTransition(
-    timeOffRequest.status as any,
+    timeOffRequest.status as TimeOffStatus,
     body.status,
     body.rejectionReason
   );

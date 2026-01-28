@@ -60,7 +60,10 @@ export default function ReceivingPage() {
       }
       setSelectedPO({
         ...po,
-        items: po.items.map((item) => ({ ...item, isDirty: false })),
+        items: po.items.map((item: POItemLocal) => ({
+          ...item,
+          isDirty: false,
+        })),
       });
       toast.success(`PO ${searchPO} loaded successfully`);
     } catch (error) {
@@ -206,7 +209,7 @@ export default function ReceivingPage() {
   };
 
   const getQualityBadge = (status: QualityStatus) => {
-    const styles = {
+    const styles: Record<QualityStatus, string> = {
       pending: "bg-yellow-100 text-yellow-800",
       approved: "bg-green-100 text-green-800",
       rejected: "bg-red-100 text-red-800",

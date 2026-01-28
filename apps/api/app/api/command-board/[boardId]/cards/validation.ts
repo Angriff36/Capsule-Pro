@@ -29,7 +29,7 @@ function validateStringField(
     return null;
   }
   invariant(typeof value === "string", `${field} must be a string`);
-  return value;
+  return value as string;
 }
 
 /**
@@ -48,7 +48,7 @@ function validateEnumField(
     typeof value === "string" && validValues.includes(value),
     `${field} must be one of: ${validValues.join(", ")}`
   );
-  return value;
+  return value as string;
 }
 
 /**
@@ -67,10 +67,11 @@ function validateIntegerField(
     typeof value === "number" && Number.isInteger(value),
     `${field} must be an integer`
   );
+  const numValue = value as number;
   if (positive) {
-    invariant(value > 0, `${field} must be a positive integer`);
+    invariant(numValue > 0, `${field} must be a positive integer`);
   }
-  return value;
+  return numValue;
 }
 
 /**

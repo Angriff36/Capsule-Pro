@@ -298,7 +298,10 @@ export const StockLevelsPageClient = () => {
       </div>
 
       {/* Tabs */}
-      <Tabs onValueChange={(v) => setActiveTab(v as any)} value={activeTab}>
+      <Tabs
+        onValueChange={(v) => setActiveTab(v as "stock" | "transactions")}
+        value={activeTab}
+      >
         <TabsList>
           <TabsTrigger value="stock">Stock Levels</TabsTrigger>
           <TabsTrigger value="transactions">Transaction History</TabsTrigger>
@@ -320,7 +323,7 @@ export const StockLevelsPageClient = () => {
 
             <Select
               onValueChange={(v) => {
-                setCategoryFilter(v as any);
+                setCategoryFilter(v as ItemCategory | "all");
                 setPage(1);
               }}
               value={categoryFilter}
@@ -362,7 +365,7 @@ export const StockLevelsPageClient = () => {
 
             <Select
               onValueChange={(v) => {
-                setReorderStatusFilter(v as any);
+                setReorderStatusFilter(v as StockReorderStatus | "all");
                 setPage(1);
               }}
               value={reorderStatusFilter}

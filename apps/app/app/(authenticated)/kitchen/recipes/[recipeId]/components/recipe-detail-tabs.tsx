@@ -30,6 +30,7 @@ import {
 import { useEffect, useState } from "react";
 import {
   getRecipeCost,
+  type IngredientCostBreakdown,
   type RecipeCostBreakdown,
 } from "@/app/lib/use-recipe-costing";
 
@@ -192,36 +193,38 @@ function CostingTabContent({
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            {costData?.ingredients.map((ingredient) => (
-              <div
-                className="flex items-center justify-between rounded-lg border p-3"
-                key={ingredient.id}
-              >
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{ingredient.name}</span>
-                    {!ingredient.hasInventoryItem && (
-                      <Badge className="text-xs" variant="outline">
-                        No cost data
-                      </Badge>
-                    )}
+            {costData?.ingredients.map(
+              (ingredient: IngredientCostBreakdown) => (
+                <div
+                  className="flex items-center justify-between rounded-lg border p-3"
+                  key={ingredient.id}
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{ingredient.name}</span>
+                      {!ingredient.hasInventoryItem && (
+                        <Badge className="text-xs" variant="outline">
+                          No cost data
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {ingredient.quantity} {ingredient.unit} ×{" "}
+                      {formatCurrency(ingredient.unitCost)}
+                      {ingredient.wasteFactor !== 1 &&
+                        ` (with ${(ingredient.wasteFactor * 100).toFixed(
+                          0
+                        )}% waste factor)`}
+                    </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {ingredient.quantity} {ingredient.unit} ×{" "}
-                    {formatCurrency(ingredient.unitCost)}
-                    {ingredient.wasteFactor !== 1 &&
-                      ` (with ${(ingredient.wasteFactor * 100).toFixed(
-                        0
-                      )}% waste factor)`}
+                  <div className="text-right">
+                    <div className="font-semibold">
+                      {formatCurrency(ingredient.cost)}
+                    </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="font-semibold">
-                    {formatCurrency(ingredient.cost)}
-                  </div>
-                </div>
-              </div>
-            ))}
+              )
+            )}
           </div>
         </CardContent>
       </Card>

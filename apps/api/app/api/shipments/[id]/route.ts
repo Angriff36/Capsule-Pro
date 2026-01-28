@@ -178,7 +178,30 @@ export async function PUT(
     }
 
     // Build update data
-    const updateData: any = {};
+    type ShipmentUpdateData = {
+      shipmentNumber?: string;
+      status?: string;
+      eventId?: string | null;
+      supplierId?: string | null;
+      locationId?: string | null;
+      scheduledDate?: Date | null;
+      shippedDate?: Date | null;
+      estimatedDeliveryDate?: Date | null;
+      actualDeliveryDate?: Date | null;
+      shippingCost?: string | null;
+      totalValue?: string | null;
+      trackingNumber?: string | null;
+      carrier?: string | null;
+      shippingMethod?: string | null;
+      deliveredBy?: string | null;
+      receivedBy?: string | null;
+      signature?: string | null;
+      notes?: string | null;
+      internalNotes?: string | null;
+      reference?: string | null;
+    };
+
+    const updateData: ShipmentUpdateData = {};
     if (body.shipment_number !== undefined) {
       updateData.shipmentNumber = body.shipment_number;
     }

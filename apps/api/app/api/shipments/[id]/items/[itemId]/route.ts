@@ -11,7 +11,32 @@ import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-function validateShipmentItemUpdate(item: any) {
+interface ShipmentItemUpdateInput {
+  quantity_shipped?: number;
+  quantity_received?: number;
+  quantity_damaged?: number;
+  unit_id?: number;
+  unit_cost?: number | null;
+  condition?: string | null;
+  condition_notes?: string | null;
+  lot_number?: string | null;
+  expiration_date?: string | null;
+}
+
+interface ShipmentItemUpdateData {
+  quantityShipped?: string;
+  quantityReceived?: string;
+  quantityDamaged?: string;
+  unitId?: number;
+  unitCost?: string | null;
+  totalCost: string;
+  condition?: string | null;
+  conditionNotes?: string | null;
+  lotNumber?: string | null;
+  expirationDate?: Date | null;
+}
+
+function validateShipmentItemUpdate(item: ShipmentItemUpdateInput) {
   if (item.quantity_shipped !== undefined && item.quantity_shipped <= 0) {
     throw new InvariantError("quantity_shipped must be greater than 0");
   }
@@ -63,7 +88,9 @@ export async function PUT(
     }
 
     // Build update data
-    const updateData: any = {};
+    const updateData: ShipmentItemUpdateData = {
+      totalCost: "", // Will be set below
+    };
     if (body.quantity_shipped !== undefined) {
       updateData.quantityShipped = body.quantity_shipped.toString();
     }

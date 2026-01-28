@@ -14,6 +14,7 @@ import type {
   TransactionListResponse,
   TransactionType,
 } from "../types";
+import { TRANSACTION_TYPES } from "../types";
 
 type PaginationParams = {
   page: number;
@@ -50,7 +51,10 @@ function parseTransactionFilters(
 
   const transactionType = searchParams.get("transactionType");
   if (transactionType) {
-    filters.transactionType = transactionType as any;
+    // Validate that the transaction type is valid
+    if (TRANSACTION_TYPES.includes(transactionType as TransactionType)) {
+      filters.transactionType = transactionType as TransactionType;
+    }
   }
 
   const locationId = searchParams.get("locationId");

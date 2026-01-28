@@ -60,8 +60,8 @@ function generateVarianceReport(
     sessionId: session.id,
     reportType: "item_variance" as const,
     itemId: record.itemId,
-    itemNumber: record.itemNumber,
-    itemName: record.itemName,
+    itemNumber: record.itemNumber ?? "",
+    itemName: record.itemName ?? "",
     expectedQuantity,
     countedQuantity,
     variance,
@@ -244,7 +244,25 @@ export async function POST(request: Request, context: RouteContext) {
     );
 
     await database.varianceReport.createMany({
-      data: varianceReports as any,
+      data: varianceReports.map((report) => ({
+        tenantId: report.tenantId,
+        sessionId: report.sessionId,
+        reportType: report.reportType,
+        itemId: report.itemId,
+        itemNumber: report.itemNumber,
+        itemName: report.itemName,
+        expectedQuantity: report.expectedQuantity,
+        countedQuantity: report.countedQuantity,
+        variance: report.variance,
+        variancePct: report.variancePct,
+        accuracyScore: report.accuracyScore,
+        status: report.status,
+        adjustmentType: report.adjustmentType,
+        adjustmentAmount: report.adjustmentAmount,
+        adjustmentDate: report.adjustmentDate,
+        notes: report.notes,
+        generatedAt: report.generatedAt,
+      })),
     });
 
     // Process inventory adjustments for records with variance

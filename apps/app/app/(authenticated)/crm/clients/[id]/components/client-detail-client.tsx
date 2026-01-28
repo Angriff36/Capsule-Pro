@@ -37,6 +37,19 @@ import { EventsTab } from "./tabs/events-tab";
 import { FinancialTab } from "./tabs/financial-tab";
 import { PreferencesTab } from "./tabs/preferences-tab";
 
+/**
+ * Valid preference value types based on common use cases.
+ * Preferences can store various data types like strings, numbers, booleans,
+ * null, JSON objects, or arrays.
+ */
+type PreferenceValue =
+  | string
+  | number
+  | boolean
+  | null
+  | Record<string, unknown>
+  | unknown[];
+
 type ClientDetailProps = {
   client: {
     id: string;
@@ -65,6 +78,10 @@ type ClientDetailProps = {
     updatedAt: Date;
     contacts: Array<{
       id: string;
+      tenantId: string;
+      createdAt: Date;
+      updatedAt: Date;
+      deletedAt: Date | null;
       first_name: string;
       last_name: string;
       title: string | null;
@@ -77,7 +94,7 @@ type ClientDetailProps = {
       id: string;
       preferenceType: string;
       preferenceKey: string;
-      preferenceValue: unknown;
+      preferenceValue: PreferenceValue;
       notes: string | null;
     }>;
     interactionCount: number;

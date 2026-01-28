@@ -6,7 +6,7 @@ import {
 } from "lucide-react"
 
 import { cn } from "@repo/design-system/lib/utils"
-import { Button, buttonVariants } from "@repo/design-system/components/ui/button"
+import { Button, buttonVariants, type ButtonProps } from "@repo/design-system/components/ui/button"
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
@@ -39,8 +39,8 @@ function PaginationItem({ ...props }: React.ComponentProps<"li">) {
 
 type PaginationLinkProps = {
   isActive?: boolean
-} & Pick<React.ComponentProps<typeof Button>, "size"> &
-  React.ComponentProps<"a">
+  size?: ButtonProps["size"]
+} & React.ComponentProps<"a">
 
 function PaginationLink({
   className,
@@ -65,10 +65,15 @@ function PaginationLink({
   )
 }
 
+type PaginationPreviousProps = Omit<
+  React.ComponentProps<typeof PaginationLink>,
+  "size"
+>
+
 function PaginationPrevious({
   className,
   ...props
-}: React.ComponentProps<typeof PaginationLink>) {
+}: PaginationPreviousProps) {
   return (
     <PaginationLink
       aria-label="Go to previous page"
@@ -82,10 +87,12 @@ function PaginationPrevious({
   )
 }
 
+type PaginationNextProps = Omit<React.ComponentProps<typeof PaginationLink>, "size">
+
 function PaginationNext({
   className,
   ...props
-}: React.ComponentProps<typeof PaginationLink>) {
+}: PaginationNextProps) {
   return (
     <PaginationLink
       aria-label="Go to next page"

@@ -335,7 +335,7 @@ export function TimeOffForm({
                 <SelectItem key={type} value={type}>
                   {type
                     .replace(/_/g, " ")
-                    .replace(/\b\w/g, (l) => l.toUpperCase())}
+                    .replace(/\b\w/g, (l: string) => l.toUpperCase())}
                 </SelectItem>
               ))}
             </SelectContent>

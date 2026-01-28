@@ -3,6 +3,13 @@ import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
+interface PrepListIngredient {
+  ingredientName: string;
+  scaledQuantity: number;
+  scaledUnit: string;
+  preparationNotes?: string;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -47,7 +54,7 @@ export async function POST(request: NextRequest) {
           }
 
           const ingredientsJson = JSON.stringify(
-            station.ingredients.map((ing: any) => ({
+            station.ingredients.map((ing: PrepListIngredient) => ({
               name: ing.ingredientName,
               quantity: ing.scaledQuantity,
               unit: ing.scaledUnit,
@@ -77,7 +84,7 @@ export async function POST(request: NextRequest) {
               ${eventId},
               'prep',
               ${task.name},
-              ${station.ingredients.reduce((sum: number, ing: any) => sum + ing.scaledQuantity, 0)},
+              ${station.ingredients.reduce((sum: number, ing: PrepListIngredient) => sum + ing.scaledQuantity, 0)},
               1,
               0,
               ${prepList.guestCount},

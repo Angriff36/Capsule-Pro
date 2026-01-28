@@ -88,8 +88,10 @@ export default function AllergenWarningTestPage() {
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">Critical Warning</h2>
         <AllergenWarningBanner
-          onAcknowledge={(id, reason) => console.log("Acknowledge", id, reason)}
-          onViewDetails={(id) => console.log("View details", id)}
+          onAcknowledge={(id: string, reason?: string) =>
+            console.log("Acknowledge", id, reason)
+          }
+          onViewDetails={(id: string) => console.log("View details", id)}
           warning={warnings[0]}
         />
       </section>
@@ -98,8 +100,10 @@ export default function AllergenWarningTestPage() {
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">Warning Severity</h2>
         <AllergenWarningBanner
-          onAcknowledge={(id, reason) => console.log("Acknowledge", id, reason)}
-          onViewDetails={(id) => console.log("View details", id)}
+          onAcknowledge={(id: string, reason?: string) =>
+            console.log("Acknowledge", id, reason)
+          }
+          onViewDetails={(id: string) => console.log("View details", id)}
           warning={warnings[1]}
         />
       </section>
@@ -110,14 +114,14 @@ export default function AllergenWarningTestPage() {
         <div className="space-y-3">
           <AllergenWarningBanner
             compact
-            onAcknowledge={(id, reason) =>
+            onAcknowledge={(id: string, reason?: string) =>
               console.log("Acknowledge", id, reason)
             }
             warning={warnings[0]}
           />
           <AllergenWarningBanner
             compact
-            onAcknowledge={(id, reason) =>
+            onAcknowledge={(id: string, reason?: string) =>
               console.log("Acknowledge", id, reason)
             }
             warning={warnings[1]}
@@ -132,7 +136,7 @@ export default function AllergenWarningTestPage() {
           {warnings.map((warning) => (
             <AllergenWarningInline
               key={warning.id}
-              onViewDetails={(id) => console.log("View details", id)}
+              onViewDetails={(id: string) => console.log("View details", id)}
               warning={warning}
             />
           ))}

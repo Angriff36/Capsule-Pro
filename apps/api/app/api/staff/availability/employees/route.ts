@@ -177,7 +177,16 @@ export async function GET(request: Request) {
       );
 
       // Group time-off requests by employee
-      const timeOffByEmployee = new Map<string, any[]>();
+      const timeOffByEmployee = new Map<
+        string,
+        Array<{
+          id: string;
+          start_date: Date;
+          end_date: Date;
+          status: string;
+          request_type: string;
+        }>
+      >();
       for (const tor of timeOffData) {
         if (!timeOffByEmployee.has(tor.employee_id)) {
           timeOffByEmployee.set(tor.employee_id, []);

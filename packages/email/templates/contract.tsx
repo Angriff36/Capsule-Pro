@@ -10,6 +10,7 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
+import type React from "react";
 
 export type ContractTemplateProps = {
   readonly clientName: string;
@@ -71,7 +72,11 @@ export const ContractTemplate = ({
   </Tailwind>
 );
 
-ContractTemplate.PreviewProps = {
+(
+  ContractTemplate as React.FC<typeof ContractTemplate> & {
+    PreviewProps: ContractTemplateProps;
+  }
+).PreviewProps = {
   clientName: "Jane Smith",
   contractTitle: "Event Catering Contract - Wedding Reception",
   signingUrl: "https://example.com/contracts/abc123/sign",

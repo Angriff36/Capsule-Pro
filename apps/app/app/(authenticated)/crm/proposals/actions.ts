@@ -334,7 +334,7 @@ export async function updateProposal(
         discountAmount: input.discountAmount ?? 0,
       }),
       ...(input.total !== undefined && { total: calculatedTotal }),
-      ...(input.status !== undefined && { status: input.status as any }),
+      ...(input.status !== undefined && { status: input.status }),
       ...(input.validUntil !== undefined && {
         validUntil: input.validUntil ? new Date(input.validUntil) : null,
       }),

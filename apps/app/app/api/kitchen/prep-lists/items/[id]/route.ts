@@ -24,7 +24,7 @@ export async function PATCH(
     const { scaledQuantity, isCompleted, preparationNotes, isOptional } = body;
 
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (number | boolean | Date | string)[] = [];
 
     if (scaledQuantity !== undefined) {
       updates.push(`scaled_quantity = $${values.length + 1}`);

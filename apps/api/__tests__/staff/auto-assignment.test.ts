@@ -8,7 +8,9 @@
 
 import { database } from "@repo/database";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import {
+  type AssignmentSuggestion,
   autoAssignShift,
   getAssignmentSuggestionsForMultipleShifts,
   getEligibleEmployeesForShift,
@@ -230,7 +232,9 @@ describe("Auto-Assignment Service", () => {
       );
 
       // Bob (emp-3) has conflicting shifts and should be filtered out
-      const suggestionIds = result.suggestions.map((s) => s.employee.id);
+      const suggestionIds = result.suggestions.map(
+        (s: AssignmentSuggestion) => s.employee.id
+      );
       expect(suggestionIds).not.toContain("emp-3");
     });
 

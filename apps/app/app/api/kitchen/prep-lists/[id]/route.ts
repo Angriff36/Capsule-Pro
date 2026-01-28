@@ -132,7 +132,14 @@ export async function GET(
     `;
 
     // Group items by station
-    const stationsMap = new Map<string, any>();
+    const stationsMap = new Map<
+      string,
+      {
+        stationId: string;
+        stationName: string;
+        items: (typeof itemsResult)[number][];
+      }
+    >();
     for (const item of itemsResult) {
       const stationId = item.stationId as string;
       if (!stationsMap.has(stationId)) {
@@ -142,7 +149,7 @@ export async function GET(
           items: [],
         });
       }
-      stationsMap.get(stationId).items.push(item);
+      stationsMap.get(stationId)!.items.push(item);
     }
 
     const stations = Array.from(stationsMap.values());
@@ -181,7 +188,7 @@ export async function PATCH(
     const { name, status, notes, batchMultiplier, dietaryRestrictions } = body;
 
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | number | string[])[] = [];
 
     if (name !== undefined) {
       updates.push(`name = $${values.length + 1}`);

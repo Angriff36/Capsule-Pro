@@ -177,7 +177,7 @@ function validateStatus(data: Record<string, unknown>) {
 function validateLineItems(data: Record<string, unknown>) {
   if (data.lineItems !== undefined && data.lineItems !== null) {
     invariant(Array.isArray(data.lineItems), "lineItems must be an array");
-    for (const item of data.lineItems) {
+    for (const item of data.lineItems as unknown[]) {
       validateLineItem(item);
     }
   }

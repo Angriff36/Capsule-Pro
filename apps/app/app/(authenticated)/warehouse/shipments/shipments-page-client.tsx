@@ -680,7 +680,7 @@ export const ShipmentsPageClient = () => {
                           <TableCell>
                             {item.condition ? (
                               <Badge variant="outline">
-                                {getItemConditionLabel(item.condition as any)}
+                                {getItemConditionLabel(item.condition)}
                               </Badge>
                             ) : (
                               "-"
