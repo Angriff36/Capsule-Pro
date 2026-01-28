@@ -143,7 +143,18 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       id: deduction.id,
       tenantId: deduction.tenant_id,
       employeeId: deduction.employee_id,
-      type: deduction.type,
+      type: deduction.type as
+        | "benefits"
+        | "health_insurance"
+        | "dental_insurance"
+        | "vision_insurance"
+        | "retirement_401k"
+        | "retirement_ira"
+        | "garnishment"
+        | "child_support"
+        | "union_dues"
+        | "loan_repayment"
+        | "other",
       name: deduction.name,
       amount: deduction.amount ? Number(deduction.amount) : undefined,
       percentage: deduction.percentage
