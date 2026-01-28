@@ -3,10 +3,14 @@
  * Routes uploaded files to appropriate parsers based on file type and detected format
  */
 
-import type { ParsedEvent, ParsedEventResult, StaffShift } from "../types";
-import { detectPdfFormat, extractPdfText } from "./pdf-extractor";
-import { getEventNamesFromShifts, parseStaffCsv } from "./staff-csv-parser";
-import { parseTppEvent } from "./tpp-event-parser";
+import type {
+  ParsedEvent,
+  ParsedEventResult,
+  StaffShift,
+} from "../types/index.js";
+import { detectPdfFormat, extractPdfText } from "./pdf-extractor.js";
+import { getEventNamesFromShifts, parseStaffCsv } from "./staff-csv-parser.js";
+import { parseTppEvent } from "./tpp-event-parser.js";
 
 export interface ProcessedDocument {
   id: string;
@@ -74,10 +78,10 @@ export async function processDocument(
     // Extract text from PDF
     const pdfBuffer =
       fileContent instanceof ArrayBuffer
-        ? fileContent
+        ? new Uint8Array(fileContent)
         : fileContent instanceof Uint8Array
-          ? fileContent.buffer
-          : new TextEncoder().encode(fileContent).buffer;
+          ? fileContent
+          : new TextEncoder().encode(fileContent);
 
     const extractResult = await extractPdfText(pdfBuffer);
     errors.push(...extractResult.errors);

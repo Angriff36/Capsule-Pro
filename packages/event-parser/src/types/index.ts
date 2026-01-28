@@ -1,3 +1,3 @@
-export * from "./battleBoard";
-export * from "./checklist";
-export * from "./event";
+export * from "./battleBoard.js";
+export * from "./checklist.js";
+export * from "./event.js";

@@ -9,17 +9,33 @@ import type {
   ChecklistQuestionState,
   ChecklistSectionState,
   EventChecklist,
-} from "../types/checklist";
-import { EVENT_TYPE_OPTIONS } from "../types/checklist";
-import type { Flag, MenuItem, ParsedEvent, StaffShift } from "../types/event";
+} from "../types/checklist.js";
+import { EVENT_TYPE_OPTIONS } from "../types/checklist.js";
+import type {
+  Flag,
+  MenuItem,
+  ParsedEvent,
+  StaffShift,
+} from "../types/event.js";
 
 const CHECKLIST_VERSION = "2025-01-27";
+
+export interface ChecklistBuildResult {
+  checklist: EventChecklist;
+  autoFilledCount: number;
+  totalQuestions: number;
+  warnings: string[];
+  missingFields: string[];
+}
 
 /**
  * Build initial checklist with auto-filled answers from parsed event
  */
-export function buildInitialChecklist(event: ParsedEvent): EventChecklist {
+export function buildInitialChecklist(event: ParsedEvent): ChecklistBuildResult {
   const generatedAt = new Date().toISOString();
+  const warnings: string[] = [];
+  const missingFields: string[] = [];
+
   const sections: ChecklistSectionState[] = [
     buildBasicInfoSection(event),
     buildMenuSection(event),
@@ -31,12 +47,47 @@ export function buildInitialChecklist(event: ParsedEvent): EventChecklist {
 
   const completion = computeChecklistCompletion(sections);
 
-  return {
+  // Count auto-filled questions and total questions
+  let autoFilledCount = 0;
+  let totalQuestions = 0;
+
+  for (const section of sections) {
+    for (const question of section.questions) {
+      totalQuestions++;
+      if (question.autoFilled && question.value !== null) {
+        autoFilledCount++;
+      }
+      if (question.required && question.value === null) {
+        missingFields.push(`${section.title}: ${question.prompt}`);
+      }
+    }
+  }
+
+  // Add warnings for missing critical data
+  if (!event.menuSections || event.menuSections.length === 0) {
+    warnings.push("No menu data found in parsed event");
+  }
+  if (!event.staffing || event.staffing.length === 0) {
+    warnings.push("No staffing data found in parsed event");
+  }
+  if (!event.timeline || event.timeline.length === 0) {
+    warnings.push("No timeline data found in parsed event");
+  }
+
+  const checklist: EventChecklist = {
     version: CHECKLIST_VERSION,
     generatedAt,
     updatedAt: generatedAt,
     sections,
     completion,
+  };
+
+  return {
+    checklist,
+    autoFilledCount,
+    totalQuestions,
+    warnings,
+    missingFields,
   };
 }
 

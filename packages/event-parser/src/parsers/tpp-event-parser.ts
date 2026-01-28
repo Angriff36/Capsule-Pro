@@ -14,7 +14,7 @@ import type {
   ReviewQueueItem,
   ServiceLocation,
   TimelinePhase,
-} from "../types";
+} from "../types/index.js";
 
 export interface ParseOptions {
   sourceName: string;
@@ -106,7 +106,7 @@ export function parseTppEvent(
     event,
     warnings,
     flags: diagnostics.flags,
-    reviewItems: diagnostics.reviewItems,
+    reviewItems: diagnostics.reviewItems.map((item) => item.issue),
     confidence,
   };
 }

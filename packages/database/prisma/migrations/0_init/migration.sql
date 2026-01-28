@@ -1,3 +1,6 @@
+-- Enable uuid-ossp extension for uuid_generate_v4()
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "core";
 
@@ -27,6 +30,36 @@ CREATE SCHEMA IF NOT EXISTS "tenant_kitchen";
 
 -- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "tenant_staff";
+
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "auth";
+
+-- Create stub auth.jwt() function for RLS policies
+CREATE OR REPLACE FUNCTION auth.jwt() RETURNS json AS $$
+  SELECT '{"tenant_id": "00000000-0000-0000-0000-000000000000"}'::json
+$$ LANGUAGE sql;
+
+-- Enable pgcrypto extension for gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- Core functions
+CREATE OR REPLACE FUNCTION core.fn_update_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION core.fn_prevent_tenant_mutation()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF OLD.tenant_id != NEW.tenant_id THEN
+    RAISE EXCEPTION 'tenant_id cannot be changed';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
 -- CreateEnum
 CREATE TYPE "core"."action_type" AS ENUM ('insert', 'update', 'delete');
@@ -862,7 +895,7 @@ CREATE TABLE "tenant_inventory"."inventory_transactions" (
     "transaction_type" TEXT NOT NULL,
     "quantity" DECIMAL(12,3) NOT NULL,
     "unit_cost" DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    "total_cost" DECIMAL(12,2) DEFAULT (quantity * unit_cost),
+    "total_cost" DECIMAL(12,2) DEFAULT 0.00,
     "reference" TEXT,
     "notes" TEXT,
     "transaction_date" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -1415,7 +1448,7 @@ CREATE TABLE "Tenant" (
 
 -- CreateTable
 CREATE TABLE "tenant"."documents" (
-    "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
+    "id" UUID NOT NULL DEFAULT public.uuid_generate_v4(),
     "tenant_id" UUID NOT NULL,
     "file_name" TEXT NOT NULL,
     "file_type" TEXT NOT NULL,

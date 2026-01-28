@@ -1,6 +1,6 @@
 // Parser exports
 
-export * from "./document-router";
-export * from "./pdf-extractor";
-export * from "./staff-csv-parser";
-export * from "./tpp-event-parser";
+export * from "./document-router.js";
+export * from "./pdf-extractor.js";
+export * from "./staff-csv-parser.js";
+export * from "./tpp-event-parser.js";

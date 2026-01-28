@@ -373,32 +373,31 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
     );
 
     return lineItems.map((item) => {
-        const deductions = JSON.parse((item.deductions as string) || "{}");
-        return {
-          id: item.id,
-          tenantId: item.tenant_id,
-          periodId,
-          employeeId: item.employee_id,
-          employeeName: employeeMap.get(item.employee_id) || "Unknown",
-          department: undefined, // TODO: Add department when available
-          roleName: "Default", // TODO: Get from role
-          hoursRegular: Number(item.hours_regular),
-          hoursOvertime: Number(item.hours_overtime),
-          regularPay: Number(item.rate_regular) * Number(item.hours_regular),
-          overtimePay: Number(item.rate_overtime) * Number(item.hours_overtime),
-          tips: 0, // TODO: Add tips when available
-          grossPay: Number(item.gross_pay),
-          preTaxDeductions: deductions.preTax || [],
-          taxableIncome: Number(item.gross_pay),
-          taxesWithheld: [], // TODO: Add taxes when available
-          totalTaxes: 0, // TODO: Calculate from taxes
-          postTaxDeductions: deductions.postTax || [],
-          totalDeductions: Number(item.gross_pay) - Number(item.net_pay),
-          netPay: Number(item.net_pay),
-          currency: "USD",
-          createdAt: item.created_at,
-        };
-      }
-    );
+      const deductions = JSON.parse((item.deductions as string) || "{}");
+      return {
+        id: item.id,
+        tenantId: item.tenant_id,
+        periodId,
+        employeeId: item.employee_id,
+        employeeName: employeeMap.get(item.employee_id) || "Unknown",
+        department: undefined, // TODO: Add department when available
+        roleName: "Default", // TODO: Get from role
+        hoursRegular: Number(item.hours_regular),
+        hoursOvertime: Number(item.hours_overtime),
+        regularPay: Number(item.rate_regular) * Number(item.hours_regular),
+        overtimePay: Number(item.rate_overtime) * Number(item.hours_overtime),
+        tips: 0, // TODO: Add tips when available
+        grossPay: Number(item.gross_pay),
+        preTaxDeductions: deductions.preTax || [],
+        taxableIncome: Number(item.gross_pay),
+        taxesWithheld: [], // TODO: Add taxes when available
+        totalTaxes: 0, // TODO: Calculate from taxes
+        postTaxDeductions: deductions.postTax || [],
+        totalDeductions: Number(item.gross_pay) - Number(item.net_pay),
+        netPay: Number(item.net_pay),
+        currency: "USD",
+        createdAt: item.created_at,
+      };
+    });
   }
 }

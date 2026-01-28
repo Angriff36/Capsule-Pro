@@ -1,8 +1,11 @@
 #!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
 set -e
 
-# Run DB migrations checklist guard before anything else
+# DB guardrails first
 node scripts/enforce-db-pre-migration-checklist.mjs
+node scripts/guard-no-public-schema.mjs
+node scripts/guard-prisma-migrationss.mjs staged
 
-# Validate pnpm versions in GitHub Actions workflows match package.json
+# Version check
 node scripts/validate-versions.mjs

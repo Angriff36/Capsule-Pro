@@ -6,7 +6,7 @@ generator client {
 datasource db {
   provider     = "postgresql"
   relationMode = "prisma"
-  schemas      = ["core", "platform", "public", "tenant", "tenant_admin", "tenant_crm", "tenant_events", "tenant_inventory", "tenant_kitchen", "tenant_staff"]
+  schemas      = ["core", "platform", "tenant", "tenant_admin", "tenant_crm", "tenant_events", "tenant_inventory", "tenant_kitchen", "tenant_staff"]
 }
 
 model Account {
@@ -2012,7 +2012,7 @@ model Tenant {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @db.Timestamptz(6)
 
-  @@schema("public")
+  @@schema("platform")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -2667,7 +2667,7 @@ model OutboxEvent {
   @@index([status, createdAt])
   @@index([tenantId])
   @@index([aggregateType, aggregateId])
-  @@schema("public")
+  @@schema("tenant")
 }
 
 model EventGuest {
@@ -2798,7 +2798,7 @@ enum KitchenTaskPriority {
   high
   urgent
 
-  @@schema("public")
+  @@schema("core")
 }
 
 enum KitchenTaskStatus {
@@ -2807,7 +2807,7 @@ enum KitchenTaskStatus {
   done
   canceled
 
-  @@schema("public")
+  @@schema("core")
 }
 
 enum OutboxStatus {
@@ -2815,7 +2815,7 @@ enum OutboxStatus {
   published
   failed
 
-  @@schema("public")
+  @@schema("core")
 }
 
 enum UserRole {
@@ -2824,7 +2824,7 @@ enum UserRole {
   manager
   staff
 
-  @@schema("public")
+  @@schema("core")
 }
 
 enum admin_action {
@@ -2877,5 +2877,5 @@ enum ShipmentStatus {
   returned
   cancelled
 
-  @@schema("public")
+  @@schema("core")
 }

@@ -1,18 +1,24 @@
 /**
  * PDF Text Extractor
- * Extracts text from PDF files using pdfjs-dist
+ * Extracts text from PDF files using pdfjs-dist (matching Battle-Boards implementation)
  */
 
-import * as pdfjsLib from "pdfjs-dist";
+import type { TextItem } from "pdfjs-dist/legacy/build/pdf.mjs";
 
-/**
- * Represents a text item from PDF.js TextContent
- */
-interface TextItem {
-  str: string;
-  transform: number[];
-  [key: string]: unknown;
-}
+// Import pdfjs-dist with legacy build for Node.js compatibility
+// @ts-ignore - pdfjs-dist types are complex in ESM/Node environments
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+
+// @ts-ignore - accessing GlobalWorkerOptions from the module
+const { getDocument, GlobalWorkerOptions } = pdfjsLib;
+
+// Configure the worker - use CDN for both browser and Node.js environments
+// Node.js can fetch from CDN, and this avoids bundling issues
+const PDFJS_WORKER_URL =
+  "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.449/legacy/build/pdf.worker.min.mjs";
+
+// Configure the worker
+GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
 
 /**
  * PDF metadata info structure
@@ -22,25 +28,6 @@ interface PdfMetadataInfo {
   Author?: string;
   Subject?: string;
   Creator?: string;
-}
-
-// Configure the worker
-// In Node.js environments, pdfjs-dist uses worker-loader or fake worker
-// For Next.js, we'll use the standard worker path
-let workerInitialized = false;
-
-function initializeWorker() {
-  if (workerInitialized) return;
-
-  // For server-side rendering in Next.js
-  if (typeof window === "undefined") {
-    // Node.js environment - use fake worker
-    pdfjsLib.GlobalWorkerOptions.workerSrc = "";
-  } else {
-    // Browser environment - use CDN worker
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-  }
-  workerInitialized = true;
 }
 
 export interface PdfExtractionResult {
@@ -61,15 +48,15 @@ export interface PdfExtractionResult {
 export async function extractPdfText(
   pdfBuffer: ArrayBuffer | Uint8Array
 ): Promise<PdfExtractionResult> {
-  initializeWorker();
-
   const errors: string[] = [];
   const allLines: string[] = [];
 
   try {
-    const loadingTask = pdfjsLib.getDocument({
+    const loadingTask = getDocument({
       data: pdfBuffer,
-      useSystemFonts: true,
+      disableFontFace: true,
+      disableRange: true,
+      disableStream: true,
     });
 
     const pdf = await loadingTask.promise;
@@ -94,8 +81,18 @@ export async function extractPdfText(
     for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
       try {
         const page = await pdf.getPage(pageNum);
-        const textContent = await page.getTextContent();
-        const pageLines = collapseTextItems(textContent.items);
+        const textContent = await page.getTextContent({
+          includeMarkedContent: false,
+        });
+        // Filter to only items with str and transform (TextItem, not TextMarkedContent)
+        const items = textContent.items;
+        const textItems: TextItem[] = [];
+        for (const item of items) {
+          if ("str" in item && "transform" in item) {
+            textItems.push(item as unknown as TextItem);
+          }
+        }
+        const pageLines = collapseTextItems(textItems);
         allLines.push(...pageLines);
       } catch (e) {
         errors.push(
@@ -104,8 +101,18 @@ export async function extractPdfText(
       }
     }
 
+    // Clean and filter lines
+    const cleanedLines = allLines
+      .map((line) =>
+        line
+          .replace(/\u2010/g, "-")
+          .replace(/\s+/g, " ")
+          .trim()
+      )
+      .filter((line) => line.length > 0);
+
     return {
-      lines: allLines,
+      lines: cleanedLines,
       pageCount,
       metadata,
       errors,
@@ -126,68 +133,101 @@ export async function extractPdfText(
  * Collapse text items by Y position to preserve line structure
  */
 function collapseTextItems(items: TextItem[]): string[] {
-  if (!items || items.length === 0) {
-    return [];
-  }
-
-  // Group items by their Y position (with tolerance)
-  const yTolerance = 3;
-  const lineGroups: Map<number, { x: number; text: string }[]> = new Map();
+  const rows: string[] = [];
+  let currentLine = "";
+  let lastY: number | null = null;
 
   for (const item of items) {
-    if (!item.str || item.str.trim() === "") continue;
-
-    const y = Math.round(item.transform[5] / yTolerance) * yTolerance;
-    const x = item.transform[4];
-
-    if (!lineGroups.has(y)) {
-      lineGroups.set(y, []);
+    if (!item.str) {
+      continue;
     }
-    lineGroups.get(y)!.push({ x, text: item.str });
+
+    const text = item.str.replace(/\s+/g, " ").trim();
+    if (!text) {
+      continue;
+    }
+
+    const yPosition = item.transform[5];
+    const y = Math.round(yPosition);
+
+    if (lastY !== null && Math.abs(y - lastY) > 3) {
+      pushSegments(rows, currentLine);
+      currentLine = text;
+    } else {
+      currentLine += (currentLine ? " " : "") + text;
+    }
+
+    lastY = y;
   }
 
-  // Sort groups by Y position (descending - PDF coordinates are bottom-up)
-  const sortedYs = Array.from(lineGroups.keys()).sort((a, b) => b - a);
-
-  // Build lines from groups
-  const lines: string[] = [];
-
-  for (const y of sortedYs) {
-    const group = lineGroups.get(y)!;
-    // Sort items within line by X position
-    group.sort((a, b) => a.x - b.x);
-
-    // Join text items with appropriate spacing
-    let lineText = "";
-    let lastX = Number.NEGATIVE_INFINITY;
-
-    for (const item of group) {
-      const gap = item.x - lastX;
-      // Add space if there's a significant gap
-      if (gap > 10 && lineText.length > 0) {
-        lineText += " ";
-      }
-      lineText += item.text;
-      lastX = item.x + item.text.length * 5; // Rough estimate of text width
-    }
-
-    const cleaned = cleanLine(lineText);
-    if (cleaned) {
-      lines.push(cleaned);
-    }
-  }
-
-  return lines;
+  pushSegments(rows, currentLine);
+  return rows;
 }
 
 /**
- * Clean up a text line
+ * Push line segments with label detection
  */
-function cleanLine(text: string): string {
-  return text
-    .replace(/\uFFFD/g, "") // Remove replacement characters
-    .replace(/\s+/g, " ") // Normalize whitespace
-    .trim();
+function pushSegments(rows: string[], line: string) {
+  const trimmed = line.trim();
+  if (!trimmed) {
+    return;
+  }
+
+  // Split on common labels
+  const initialSegments = trimmed
+    .split(/\s+(?=[A-Za-z][A-Za-z0-9&/\-(),\s]{0,24}:\s)/)
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+
+  for (const segment of initialSegments) {
+    emitSegment(segment, rows);
+  }
+}
+
+/**
+ * Emit a segment with special header handling
+ */
+function emitSegment(segment: string, rows: string[]) {
+  const trimmed = segment.trim();
+  if (!trimmed) {
+    return;
+  }
+
+  const headerCandidate = trimmed.replace(/\s+/g, " ").toLowerCase();
+  if (
+    /^category item special, production notes, container quantity\/?unit$/.test(
+      headerCandidate
+    )
+  ) {
+    rows.push("Category");
+    rows.push("Item");
+    rows.push("Special, Production Notes, Container");
+    rows.push("Quantity/Unit");
+    return;
+  }
+
+  const labelMatch = trimmed.match(
+    /^([A-Za-z][A-Za-z0-9&\/\-(),\s]{0,24}):\s*(.*)$/
+  );
+  if (labelMatch) {
+    const labelName = labelMatch[1].trim();
+    const remainder = labelMatch[2].trim();
+
+    if (/^p$/i.test(labelName)) {
+      const combined = remainder ? `P: ${remainder}` : "P:";
+      rows.push(combined.trim());
+      return;
+    }
+
+    const normalizedLabel = `${labelName}:`.trim();
+    rows.push(normalizedLabel);
+    if (remainder) {
+      emitSegment(remainder, rows);
+    }
+    return;
+  }
+
+  rows.push(trimmed);
 }
 
 /**

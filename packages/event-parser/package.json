@@ -17,10 +17,11 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "pdfjs-dist": "^4.10.38"
+    "pdfjs-dist": "^5.4.449"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
+    "@types/node": "^24.10.1",
     "typescript": "^5.9.3"
   }
 }

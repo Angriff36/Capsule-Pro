@@ -1,5 +1,4 @@
 import { defineConfig } from "prisma/config";
-import { keys } from "./keys";
 import "dotenv/config";
 
 export default defineConfig({
@@ -8,6 +7,7 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: keys().DATABASE_URL,
+    url: process.env.DATABASE_URL!,
+    // shadowDatabaseUrl: process.env.SHADOW_DATABASE_URL!,
   },
 });

@@ -26,6 +26,14 @@ platform.accounts
   deleted_at timestamptz NULL
   -- NO tenant_id (this IS the tenant)
 
+platform.Tenant
+  id uuid PK
+  name text NOT NULL
+  slug text NOT NULL UNIQUE
+  createdAt timestamptz NOT NULL DEFAULT now()
+  updatedAt timestamptz NOT NULL DEFAULT now()
+  -- Purpose: Minimal tenant lookup record (legacy)
+
 platform.audit_log (partitioned by month)
   id uuid DEFAULT gen_random_uuid()
   tenant_id uuid NULL  -- NULL for platform-level events
@@ -64,7 +72,11 @@ ENUMS (immutable only):
   core.employment_type: 'full_time', 'part_time', 'contractor', 'temp'
   core.unit_system: 'metric', 'imperial', 'custom'
   core.unit_type: 'volume', 'weight', 'count', 'length', 'temperature', 'time'
-  public.shipment_status: 'draft', 'scheduled', 'preparing', 'in_transit', 'delivered', 'returned', 'cancelled'
+  core.KitchenTaskPriority: 'low', 'medium', 'high', 'urgent'
+  core.KitchenTaskStatus: 'open', 'in_progress', 'done', 'canceled'
+  core.OutboxStatus: 'pending', 'published', 'failed'
+  core.ShipmentStatus: 'draft', 'scheduled', 'preparing', 'in_transit', 'delivered', 'returned', 'cancelled'
+  core.UserRole: 'owner', 'admin', 'manager', 'staff'
   tenant_staff.time_off_status: 'PENDING', 'APPROVED', 'REJECTED', 'CANCELLED'
   tenant_staff.time_off_type: 'VACATION', 'SICK_LEAVE', 'PERSONAL_DAY', 'BEREAVEMENT', 'MATERNITY_LEAVE', 'PATERNITY_LEAVE', 'OTHER'
 
@@ -197,6 +209,19 @@ tenant.documents
   created_at, updated_at, deleted_at
   -- Purpose: PDF document storage and parsing tracking for Docling feature
   -- Stores uploaded PDFs, tracks parsing status, links to events/battle boards
+
+tenant.OutboxEvent
+  id text PK
+  tenantId text NOT NULL
+  eventType text NOT NULL
+  payload jsonb NOT NULL
+  status core.OutboxStatus NOT NULL DEFAULT 'pending'
+  error text
+  createdAt timestamptz NOT NULL DEFAULT now()
+  publishedAt timestamptz
+  aggregateId text NOT NULL
+  aggregateType text NOT NULL
+  -- Purpose: Durable outbox for realtime/event publishing
 
 ================================================================================
 TENANT.STAFF SCHEMA

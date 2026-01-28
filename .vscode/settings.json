@@ -1,6 +1,9 @@
 {
   "[javascript]": {
-    "editor.defaultFormatter": "fronterior.biome-monorepo"
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
   },
   "[json]": {
     "editor.defaultFormatter": "fronterior.biome-monorepo"
@@ -9,18 +12,20 @@
     "editor.defaultFormatter": "fronterior.biome-monorepo"
   },
   "[typescript]": {
-    "editor.defaultFormatter": "fronterior.biome-monorepo"
+    "editor.defaultFormatter": "biomejs.biome"
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "fronterior.biome-monorepo"
+    "editor.defaultFormatter": "biomejs.biome"
   },
+  "biome.configurationPath": "biome.jsonc",
   "editor.codeActionsOnSave": {
     "source.fixAll.biome": "explicit",
     "source.organizeImports.biome": "explicit"
   },
   "editor.defaultFormatter": "fronterior.biome-monorepo",
-  "editor.formatOnPaste": true,
+  "editor.formatOnPaste": false,
   "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
   "emmet.showExpandedAbbreviation": "never",
   "prettier.enable": false,
   "typescript.tsdk": "node_modules/typescript/lib",

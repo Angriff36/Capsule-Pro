@@ -3,7 +3,7 @@
  * Parses Time & Attendance CSV exports to extract staff shift data
  */
 
-import type { StaffShift } from "../types";
+import type { StaffShift } from "../types/index.js";
 
 export interface StaffCsvParseResult {
   shifts: Map<string, StaffShift[]>; // eventName -> shifts
@@ -63,6 +63,7 @@ export function parseStaffCsv(csvContent: string): StaffCsvParseResult {
     "hours",
     "total hours",
   ]);
+  const rateIdx = findColumnIndex(headers, ["rate", "hourly rate", "pay rate"]);
 
   // Validate required columns
   if (eventNameIdx === -1) {
@@ -84,8 +85,19 @@ export function parseStaffCsv(csvContent: string): StaffCsvParseResult {
     const row = parseCSVRow(lines[i]);
     if (row.length === 0) continue;
 
+    // Skip empty rows and totals rows
+    const firstCell = row[0]?.trim().toLowerCase() || "";
+    if (!firstCell || firstCell === "totals" || firstCell.startsWith("total")) {
+      continue;
+    }
+
     try {
       const eventName = row[eventNameIdx]?.trim() || "Unknown Event";
+
+      // Skip if event name is empty or looks like a summary row
+      if (!eventName || eventName.toLowerCase() === "totals") {
+        continue;
+      }
       const firstName = row[firstNameIdx]?.trim() || "";
       const lastName = row[lastNameIdx]?.trim() || "";
       const name = [firstName, lastName].filter(Boolean).join(" ") || "Unknown";
@@ -104,13 +116,17 @@ export function parseStaffCsv(csvContent: string): StaffCsvParseResult {
         scheduledHours = calculateHoursBetween(startTime24, endTime24);
       }
 
+      // Parse rate (remove $ and commas)
+      const rateStr = row[rateIdx]?.trim().replace(/[$,]/g, "") || "0";
+      const rate = Number.parseFloat(rateStr) || 0;
+
       const shift: StaffShift = {
         name,
         position,
         scheduledIn: startTime24 || scheduledIn,
         scheduledOut: endTime24 || scheduledOut,
         scheduledHours,
-        rate: 0, // Rate not typically in time & attendance exports
+        rate,
       };
 
       if (!shifts.has(eventName)) {

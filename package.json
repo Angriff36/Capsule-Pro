@@ -28,8 +28,9 @@
     "bump-ui": "cd packages/design-system && pnpm dlx shadcn@latest add --all --overwrite",
     "prisma:format": "cd packages/database && npx prisma format",
     "prisma:generate": "cd packages/database && npx prisma generate",
-    "db:push": "cd packages/database && npx prisma db push",
-    "migrate": "cd packages/database && npx prisma migrate dev",
+    "db:deploy": "cd packages/database && prisma migrate deploy",
+    "db:dev": "cd packages/database && prisma migrate dev",
+    "db:push": "echo \"❌ Disabled. Use db:dev (migrate dev) or db:deploy (migrate deploy).\" && exit 1",
     "migrate:deploy": "cd packages/database && npx prisma migrate deploy",
     "migrate:status": "cd packages/database && npx prisma migrate status",
     "clean:preview": "git clean -ndx",
@@ -38,6 +39,7 @@
     "secrets:scan": "secretlint \"**/*\"",
     "prepare": "husky"
   },
+
   "devDependencies": {
     "@auto-it/first-time-contributor": "^11.3.6",
     "@biomejs/biome": "2.3.12",

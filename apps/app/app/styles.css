@@ -584,3 +584,156 @@ body.dev-console > header {
     grid-template-columns: 1fr;
   }
 }
+
+/* Battle Board Print Styles */
+@media print {
+  /* Hide non-essential UI elements */
+  header,
+  nav,
+  .sidebar,
+  [data-sidebar],
+  button:not(.print-include),
+  .no-print {
+    display: none !important;
+  }
+
+  /* Reset page layout */
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt;
+    line-height: 1.4;
+  }
+
+  /* Full width content */
+  main,
+  .print-content {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Battle board specific styles */
+  .battle-board-print {
+    page-break-after: always;
+  }
+
+  .battle-board-header {
+    text-align: center;
+    border-bottom: 2px solid #000;
+    padding-bottom: 12pt;
+    margin-bottom: 16pt;
+  }
+
+  .battle-board-header h1 {
+    font-size: 18pt;
+    font-weight: bold;
+    margin-bottom: 4pt;
+  }
+
+  .battle-board-header .event-info {
+    font-size: 11pt;
+    color: #333;
+  }
+
+  /* Staff table print styling */
+  .staff-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16pt;
+  }
+
+  .staff-table th,
+  .staff-table td {
+    border: 1px solid #333;
+    padding: 6pt 8pt;
+    text-align: left;
+  }
+
+  .staff-table th {
+    background: #f0f0f0 !important;
+    font-weight: bold;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Timeline print styling */
+  .timeline-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16pt;
+  }
+
+  .timeline-table th,
+  .timeline-table td {
+    border: 1px solid #333;
+    padding: 6pt 8pt;
+    text-align: left;
+  }
+
+  .timeline-table th {
+    background: #f0f0f0 !important;
+    font-weight: bold;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .timeline-highlight {
+    background: #fffde7 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Timeline style colors for print */
+  .timeline-setup {
+    border-left: 4pt solid #2196f3 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .timeline-service {
+    border-left: 4pt solid #4caf50 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .timeline-breakdown {
+    border-left: 4pt solid #ff9800 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Section headers */
+  .section-header {
+    font-size: 14pt;
+    font-weight: bold;
+    margin-top: 16pt;
+    margin-bottom: 8pt;
+    border-bottom: 1px solid #666;
+    padding-bottom: 4pt;
+  }
+
+  /* Layout instructions */
+  .layout-section {
+    margin-bottom: 16pt;
+    page-break-inside: avoid;
+  }
+
+  .layout-section h3 {
+    font-size: 12pt;
+    font-weight: bold;
+    margin-bottom: 4pt;
+  }
+
+  .layout-section p {
+    font-size: 10pt;
+    color: #333;
+  }
+
+  /* Page setup */
+  @page {
+    size: letter;
+    margin: 0.5in;
+  }
+}
