@@ -69,7 +69,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   if (body.priority !== undefined) {
     updateData.priority = body.priority;
   }
-  if (body.summary !== undefined) {
+  if (body.summary !== undefined && body.summary !== null) {
     updateData.summary = body.summary;
   }
   if (body.complexity !== undefined) {
