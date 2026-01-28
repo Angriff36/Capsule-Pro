@@ -372,21 +372,8 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`])
     );
 
-    return lineItems.map(
-      (item: {
-        id: string;
-        tenant_id: string;
-        employee_id: string;
-        deductions: string | null;
-        hours_regular: bigint | number;
-        hours_overtime: bigint | number;
-        rate_regular: bigint | number;
-        rate_overtime: bigint | number;
-        gross_pay: bigint | number;
-        net_pay: bigint | number;
-        created_at: Date;
-      }) => {
-        const deductions = JSON.parse(item.deductions || "{}");
+    return lineItems.map((item) => {
+        const deductions = JSON.parse((item.deductions as string) || "{}");
         return {
           id: item.id,
           tenantId: item.tenant_id,
