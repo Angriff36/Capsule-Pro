@@ -73,7 +73,7 @@ export const ContractTemplate = ({
 );
 
 (
-  ContractTemplate as React.FC<typeof ContractTemplate> & {
+  ContractTemplate as React.FC<ContractTemplateProps> & {
     PreviewProps: ContractTemplateProps;
   }
 ).PreviewProps = {

@@ -80,7 +80,7 @@ export const ProposalTemplate = ({
 );
 
 (
-  ProposalTemplate as React.FC<typeof ProposalTemplate> & {
+  ProposalTemplate as React.FC<ProposalTemplateProps> & {
     PreviewProps: ProposalTemplateProps;
   }
 ).PreviewProps = {
