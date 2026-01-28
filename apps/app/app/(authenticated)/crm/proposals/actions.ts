@@ -309,9 +309,9 @@ export async function updateProposal(
     where: { tenantId_id: { tenantId, id } },
     data: {
       ...(input.title !== undefined && { title: input.title?.trim() }),
-      ...(input.clientId !== undefined && input.clientId !== null && { clientId: input.clientId }),
-      ...(input.leadId !== undefined && input.leadId !== null && { leadId: input.leadId }),
-      ...(input.eventId !== undefined && input.eventId !== null && { eventId: input.eventId }),
+      ...(input.clientId !== undefined && input.clientId !== null && { clientId: input.clientId as string }),
+      ...(input.leadId !== undefined && input.leadId !== null && { leadId: input.leadId as string }),
+      ...(input.eventId !== undefined && input.eventId !== null && { eventId: input.eventId as string }),
       ...(input.eventDate !== undefined && {
         eventDate: input.eventDate ? new Date(input.eventDate) : null,
       }),
