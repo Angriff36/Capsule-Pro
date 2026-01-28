@@ -56,7 +56,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   type TaskUpdateData = {
     status?: string;
     priority?: number;
-    summary?: string | null;
+    summary?: string;
     complexity?: number | null;
     tags?: string[];
     dueDate?: Date | null;
@@ -69,7 +69,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   if (body.priority !== undefined) {
     updateData.priority = body.priority;
   }
-  if (body.summary !== undefined) {
+  if (body.summary !== undefined && body.summary !== null) {
     updateData.summary = body.summary;
   }
   if (body.complexity !== undefined) {
