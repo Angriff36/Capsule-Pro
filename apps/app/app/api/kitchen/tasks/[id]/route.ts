@@ -57,7 +57,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     status?: string;
     priority?: number;
     summary?: string;
-    complexity?: number | null;
+    complexity?: number;
     tags?: string[];
     dueDate?: Date | null;
     completedAt?: Date;
@@ -72,7 +72,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   if (body.summary !== undefined && body.summary !== null) {
     updateData.summary = body.summary;
   }
-  if (body.complexity !== undefined) {
+  if (body.complexity !== undefined && body.complexity !== null) {
     updateData.complexity = body.complexity;
   }
   if (body.tags !== undefined) {
