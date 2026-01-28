@@ -318,7 +318,13 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       tenantId: period.tenant_id,
       startDate: period.period_start,
       endDate: period.period_end,
-      status: period.status,
+      status: period.status as
+        | "draft"
+        | "processing"
+        | "pending_approval"
+        | "approved"
+        | "finalized"
+        | "failed",
       currency: "USD",
       createdAt: period.created_at,
       updatedAt: period.updated_at,
