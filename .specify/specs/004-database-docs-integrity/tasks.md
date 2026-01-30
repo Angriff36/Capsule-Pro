@@ -147,7 +147,7 @@ Constitution: 1.0.0
 
 ## Phase 4: Table Documentation - Platform Tables (5 tasks, can parallelize)
 
-- [ ] T013 [P] Document Account table + fix types
+- [x] T013 [P] Document Account table + fix types
   - **Do**:
     1. Create `docs/database/tables/platform/Account.md`
     2. Document all columns: id, name, slug, tier, metadata, limits, createdAt, updatedAt, deletedAt
@@ -170,7 +170,7 @@ Constitution: 1.0.0
   - **Done when:** Tenant table documented + types fixed
   - **Commit:** `docs(database): document Tenant table + fix {n} types`
 
-- [ ] T015 [P] Document audit_log table + fix types
+- [x] T015 [P] Document audit_log table + fix types
   - **Do**:
     1. Create `docs/database/tables/platform/audit_log.md`
     2. Document partitioned structure (monthly partitions)
