@@ -68,6 +68,28 @@ export type SendProposalInput = {
   message?: string;
 };
 
+// Type for proposal update data - matches Prisma.ProposalUpdateInput
+type ProposalUpdateData = {
+  title?: string | null;
+  clientId?: string | null;
+  leadId?: string | null;
+  eventId?: string | null;
+  eventDate?: Date | null;
+  eventType?: string | null;
+  guestCount?: number | null;
+  venueName?: string | null;
+  venueAddress?: string | null;
+  subtotal?: number;
+  taxRate?: number;
+  taxAmount?: number;
+  discountAmount?: number;
+  total?: number;
+  status?: string | null;
+  validUntil?: Date | null;
+  notes?: string | null;
+  termsAndConditions?: string | null;
+};
+
 /**
  * Get list of proposals with filters and pagination
  */
@@ -305,7 +327,7 @@ export async function updateProposal(
     calculatedTotal = calculatedSubtotal + calculatedTax - discount;
   }
 
-  const data: any = {};
+  const data: ProposalUpdateData = {};
 
   if (input.title !== undefined) {
     data.title = input.title?.trim();
