@@ -257,7 +257,7 @@ Constitution: 1.0.0
 
 *Note: This pattern continues for all 118 tables. Showing sample for high-value tenant_events tables.*
 
-- [ ] T022 [P] Document Event table + fix types
+- [x] T022 [P] Document Event table + fix types
   - **Do**:
     1. Create `docs/database/tables/tenant_events/Event.md`
     2. Document all columns including venue_id vs location_id confusion
