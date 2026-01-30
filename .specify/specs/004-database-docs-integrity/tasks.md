@@ -72,7 +72,7 @@ Constitution: 1.0.0
 
 ## Phase 3: Schema Documentation - Tenant Schemas (7 tasks, can parallelize 2-3)
 
-- [ ] T006 [P] Document tenant schema
+- [x] T006 [P] Document tenant schema
   - **Do**:
     1. Create `docs/database/schemas/02-tenant.md`
     2. Document all 4 tenant tables: Location, settings, documents, OutboxEvent
