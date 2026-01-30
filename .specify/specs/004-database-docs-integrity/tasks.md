@@ -338,7 +338,7 @@ Constitution: 1.0.0
   - **Verify:** `test -f "C:/projects/capsule-pro/docs/database/migrations/README.md" && echo "OK"`
   - **Commit:** `docs(database): document early migrations`
 
-- [ ] T028 [P] Document event_budget_tracking migration
+- [x] T028 [P] Document event_budget_tracking migration
   - **Do**:
     1. Read `packages/database/prisma/migrations/20260124120000_event_budget_tracking/migration.sql`
     2. Create `docs/database/migrations/20260124120000-event-budget-tracking.md`
@@ -350,7 +350,7 @@ Constitution: 1.0.0
   - **Verify:** `test -f "C:/projects/capsule-pro/docs/database/migrations/20260124120000-event-budget-tracking.md" && echo "OK"`
   - **Commit:** `docs(database): document event_budget_tracking migration`
 
-- [ ] T029 [P] Document add_foreign_keys migration
+- [x] T029 [P] Document add_foreign_keys migration
   - **Do**:
     1. Read `packages/database/prisma/migrations/20260129120000_add_foreign_keys/migration.sql`
     2. Create `docs/database/migrations/20260129120000-add-foreign-keys.md`
