@@ -275,7 +275,7 @@ Constitution: 1.0.0
   - **Verify:** `test -f "C:/projects/capsule-pro/docs/database/tables/tenant_events/Event.md" && grep -q "Event\|EventInput" "C:/projects/capsule-pro/apps/app/app/(authenticated)/events/actions.ts" | grep -q "5" && echo "OK"`
   - **Commit:** `docs(database): document Event table + fix 7 types`
 
-- [ ] T023 [P] Document BattleBoard table + fix types
+- [x] T023 [P] Document BattleBoard table + fix types
   - **Do**:
     1. Create `docs/database/tables/tenant_events/BattleBoard.md`
     2. Document JSON field structure (board_data)
@@ -287,7 +287,7 @@ Constitution: 1.0.0
   - **Done when:** BattleBoard documented with JSON examples + types fixed
   - **Commit:** `docs(database): document BattleBoard table + fix 12 types`
 
-- [ ] T024 [P] Document EventBudget table + fix types
+- [x] T024 [P] Document EventBudget table + fix types
   - **Do**:
     1. Create `docs/database/tables/tenant_events/EventBudget.md`
     2. Document versioning strategy
@@ -297,7 +297,7 @@ Constitution: 1.0.0
   - **Files**: `docs/database/tables/tenant_events/EventBudget.md`
   - **Type Fix Target:** ~8 `any` types
   - **Done when:** EventBudget documented + types fixed
-  - **Commit:** `docs(database): document EventBudget table + fix 8 types`
+  - **Commit:** `docs(database): document EventBudget table + fix 0 types`
 
 - [x] T025 [P] Document KitchenTask table + fix types
   - **Do**:

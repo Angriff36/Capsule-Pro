@@ -65,6 +65,14 @@ type TimelineItem = {
   hl: boolean;
 };
 
+type Attachment = {
+  id: string;
+  name: string;
+  url: string;
+  type: string;
+  uploadedAt: string;
+};
+
 type Layout = {
   type: string;
   instructions: string;
@@ -87,7 +95,7 @@ type BoardData = {
   staff: StaffMember[];
   timeline: TimelineItem[];
   layouts: Layout[];
-  attachments?: unknown[];
+  attachments?: Attachment[];
 };
 
 type BattleBoardEditorProps = {
