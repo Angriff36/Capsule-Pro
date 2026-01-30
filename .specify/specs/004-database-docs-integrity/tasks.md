@@ -299,7 +299,7 @@ Constitution: 1.0.0
   - **Done when:** EventBudget documented + types fixed
   - **Commit:** `docs(database): document EventBudget table + fix 8 types`
 
-- [ ] T025 [P] Document KitchenTask table + fix types
+- [x] T025 [P] Document KitchenTask table + fix types
   - **Do**:
     1. Create `docs/database/tables/tenant_kitchen/KitchenTask.md`
     2. Document task claim pattern (one active claim per task)
