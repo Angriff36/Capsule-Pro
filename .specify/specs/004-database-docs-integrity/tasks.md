@@ -389,7 +389,7 @@ Constitution: 1.0.0
   - **Done when:** Core enums documented
   - **Commit:** `docs(database): document core enums`
 
-- [ ] T032 [P] Document domain enums
+- [x] T032 [P] Document domain enums
   - **Do**:
     1. Document `KitchenTaskPriority.md` and `KitchenTaskStatus.md`
     2. Document `OutboxStatus.md` (pending, published, failed)
