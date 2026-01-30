@@ -160,7 +160,7 @@ Constitution: 1.0.0
   - **Verify:** `test -f "C:/projects/capsule-pro/docs/database/tables/platform/Account.md" && echo "OK"`
   - **Commit:** `docs(database): document Account table + fix {n} types`
 
-- [ ] T014 [P] Document Tenant table + fix types
+- [x] T014 [P] Document Tenant table + fix types
   - **Do**:
     1. Create `docs/database/tables/platform/Tenant.md`
     2. Document as tenant registry (lightweight vs Account)
@@ -188,7 +188,7 @@ Constitution: 1.0.0
   - **Done when:** audit_archive documented
   - **Commit:** `docs(database): document audit_archive table`
 
-- [ ] T017 [P] Document sent_emails table + fix types
+- [x] T017 [P] Document sent_emails table + fix types
   - **Do**:
     1. Create `docs/database/tables/platform/sent_emails.md`
     2. Document email tracking for Resend integration
