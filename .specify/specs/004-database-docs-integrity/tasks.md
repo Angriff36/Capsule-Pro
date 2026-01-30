@@ -198,7 +198,7 @@ Constitution: 1.0.0
 
 ## Phase 5: Table Documentation - Tenant Tables (4 tasks, can parallelize)
 
-- [ ] T018 [P] Document Location table + fix types
+- [x] T018 [P] Document Location table + fix types
   - **Do**:
     1. Create `docs/database/tables/tenant/Location.md`
     2. **IMPORTANT**: Document as the ONE table with proper FK to Account (reference pattern)
@@ -211,7 +211,7 @@ Constitution: 1.0.0
   - **Verify:** `test -f "C:/projects/capsule-pro/docs/database/tables/tenant/Location.md" && grep -q "Foreign Key.*platform.accounts" "C:/projects/capsule-pro/docs/database/tables/tenant/Location.md" && echo "OK"`
   - **Commit**: `docs(database): document Location table (reference FK pattern) + fix {n} types`
 
-- [ ] T019 [P] Document OutboxEvent table + fix types
+- [x] T019 [P] Document OutboxEvent table + fix types
   - **Do**:
     1. Create `docs/database/tables/tenant/OutboxEvent.md`
     2. **CRITICAL**: Document missing FK to Account
