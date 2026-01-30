@@ -10,18 +10,23 @@ const tenantScopedModels = new Set([
   "KitchenTaskProgress",
   "Lead",
   "OutboxEvent",
+  // Snake case models
+  "kitchen_tasks",
+  "task_claims",
+  "task_progress",
+  "event_reports",
 ]);
 
 type PrismaArgs = Record<string, unknown>;
 
 const ensureTenantWhere = (args: PrismaArgs, tenantId: string) => {
   const where = (args.where as Record<string, unknown> | undefined) ?? {};
-  return { ...args, where: { ...where, tenantId } };
+  return { ...args, where: { ...where, tenantId: tenantId } };
 };
 
 const ensureTenantData = (args: PrismaArgs, tenantId: string) => {
   const data = (args.data as Record<string, unknown> | undefined) ?? {};
-  return { ...args, data: { ...data, tenantId } };
+  return { ...args, data: { ...data, tenantId: tenantId } };
 };
 
 const ensureTenantDataMany = (args: PrismaArgs, tenantId: string) => {
@@ -30,7 +35,7 @@ const ensureTenantDataMany = (args: PrismaArgs, tenantId: string) => {
     ...args,
     data: data.map((entry) => ({
       ...entry,
-      tenantId,
+      tenantId: tenantId,
     })),
   };
 };

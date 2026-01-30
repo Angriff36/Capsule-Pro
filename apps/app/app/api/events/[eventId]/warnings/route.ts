@@ -26,13 +26,13 @@ export async function GET(
     invariant(tenantId, `tenantId not found for orgId=${orgId}`);
 
     const { searchParams } = new URL(request.url);
-    const isAcknowledged = searchParams.get("is_acknowledged");
+    const isAcknowledged = searchParams.get("isAcknowledged");
 
     // Validate the event exists and belongs to the tenant
-    const event = await database.event.findFirst({
+    const event = await database.events.findFirst({
       where: {
         id: eventId,
-        tenantId,
+        tenantId: tenantId,
         deletedAt: null,
       },
     });
@@ -44,12 +44,12 @@ export async function GET(
     // Build query conditions
     const where: {
       eventId: string;
-      tenantId: string;
+      tenant_id: string;
       deletedAt: null;
       isAcknowledged?: boolean;
     } = {
-      eventId,
-      tenantId,
+      eventId: eventId,
+      tenantId: tenantId,
       deletedAt: null,
     };
 
@@ -59,7 +59,7 @@ export async function GET(
     }
 
     // Fetch warnings
-    const warnings = await database.allergenWarning.findMany({
+    const warnings = await database.allergen_warnings.findMany({
       where,
       orderBy: [{ createdAt: "desc" }],
     });

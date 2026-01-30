@@ -72,22 +72,26 @@ export function WasteEntriesClient() {
         ]);
 
         if (!itemsRes.ok) {
-          throw new Error("Failed to fetch inventory items");
+          console.warn("Failed to fetch inventory items, server may be unavailable");
+          setInventoryItems([]);
+        } else {
+          const itemsData = await itemsRes.json();
+          setInventoryItems(itemsData.data || []);
         }
         if (!reasonsRes.ok) {
-          throw new Error("Failed to fetch waste reasons");
+          console.warn("Failed to fetch waste reasons, server may be unavailable");
+          setWasteReasons([]);
+        } else {
+          const reasonsData = await reasonsRes.json();
+          setWasteReasons(reasonsData.data || []);
         }
         if (!unitsRes.ok) {
-          throw new Error("Failed to fetch units");
+          console.warn("Failed to fetch units, server may be unavailable");
+          setUnits([]);
+        } else {
+          const unitsData = await unitsRes.json();
+          setUnits(unitsData.data || []);
         }
-
-        const itemsData = await itemsRes.json();
-        const reasonsData = await reasonsRes.json();
-        const unitsData = await unitsRes.json();
-
-        setInventoryItems(itemsData.data || []);
-        setWasteReasons(reasonsData.data || []);
-        setUnits(unitsData.data || []);
       } catch (error) {
         console.error("Failed to fetch dropdown data:", error);
         toast.error("Failed to load form data");

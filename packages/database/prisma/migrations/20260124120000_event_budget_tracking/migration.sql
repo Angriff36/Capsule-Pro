@@ -103,7 +103,7 @@ BEGIN
         WHERE conname = 'event_budgets_event_id_foreign'
     ) THEN
         ALTER TABLE "tenant_events"."event_budgets"
-        ADD CONSTRAINT "event_budgets_event_id_foreign" FOREIGN KEY ("event_id") REFERENCES "tenant_events"."events"("id") ON DELETE CASCADE;
+        ADD CONSTRAINT "event_budgets_event_tenant_id_event_id_foreign" FOREIGN KEY ("tenant_id","event_id") REFERENCES "tenant_events"."events"("tenant_id","id") ON DELETE CASCADE;
     END IF;
 END $$;
 
@@ -123,7 +123,7 @@ BEGIN
         WHERE conname = 'budget_line_items_budget_id_foreign'
     ) THEN
         ALTER TABLE "tenant_events"."budget_line_items"
-        ADD CONSTRAINT "budget_line_items_budget_id_foreign" FOREIGN KEY ("budget_id") REFERENCES "tenant_events"."event_budgets"("id") ON DELETE CASCADE;
+        ADD CONSTRAINT "budget_line_items_tenant_id_budget_id_foreign" FOREIGN KEY ("tenant_id","budget_id") REFERENCES "tenant_events"."event_budgets"("tenant_id","id") ON DELETE CASCADE;
     END IF;
 END $$;
 
@@ -143,7 +143,7 @@ BEGIN
         WHERE conname = 'budget_alerts_budget_id_foreign'
     ) THEN
         ALTER TABLE "tenant_staff"."budget_alerts"
-        ADD CONSTRAINT "budget_alerts_budget_id_foreign" FOREIGN KEY ("budget_id") REFERENCES "tenant_events"."event_budgets"("id") ON DELETE CASCADE;
+        ADD CONSTRAINT "budget_alerts_tenant_id_budget_id_foreign" FOREIGN KEY ("tenant_id","budget_id") REFERENCES "tenant_events"."event_budgets"("tenant_id","id") ON DELETE CASCADE;
     END IF;
 END $$;
 

@@ -19,11 +19,11 @@ const BattleBoardDetailPage = async ({ params }: PageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const board = await database.battleBoard.findFirst({
+  const board = await database.battle_boards.findFirst({
     where: {
       id: boardId,
-      tenantId,
-      deletedAt: null,
+      tenant_id: tenantId,
+      deleted_at: null,
     },
   });
 
@@ -33,21 +33,21 @@ const BattleBoardDetailPage = async ({ params }: PageProps) => {
 
   // Fetch event data if linked
   let event = null;
-  if (board.eventId) {
-    event = await database.event.findFirst({
+  if (board.event_id) {
+    event = await database.events.findFirst({
       where: {
-        id: board.eventId,
-        tenantId,
-        deletedAt: null,
+        id: board.event_id,
+        tenant_id: tenantId,
+        deleted_at: null,
       },
       select: {
         id: true,
-        eventNumber: true,
+        event_number: true,
         title: true,
-        eventDate: true,
-        venueName: true,
-        venueAddress: true,
-        guestCount: true,
+        event_date: true,
+        venue_name: true,
+        venue_address: true,
+        guest_count: true,
       },
     });
   }
@@ -72,12 +72,12 @@ const BattleBoardDetailPage = async ({ params }: PageProps) => {
             event
               ? {
                   id: event.id,
-                  eventNumber: event.eventNumber,
+                  eventNumber: event.event_number,
                   title: event.title,
-                  eventDate: event.eventDate.toISOString(),
-                  venueName: event.venueName,
-                  venueAddress: event.venueAddress,
-                  guestCount: event.guestCount,
+                  eventDate: event.event_date.toISOString(),
+                  venueName: event.venue_name,
+                  venueAddress: event.venue_address,
+                  guestCount: event.guest_count,
                 }
               : null
           }

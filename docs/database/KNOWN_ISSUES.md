@@ -6,9 +6,9 @@ Last updated: 2025-01-30
 
 ## Summary
 
-- **Total issues tracked**: 10 (4 critical, 3 minor, 3 future improvements)
+- **Total issues tracked**: 7 (4 critical, 3 minor, 3 future improvements)
 - **Total TODOs**: 23 actionable items
-- **Issues resolved**: 1 (Migration rollback)
+- **Issues resolved**: 4 (Migration rollback, Role model, Computed DEFAULT, UUID function)
 - **Type fixes completed**: 1 (ProposalUpdateData type)
 
 ## Critical Issues
@@ -410,3 +410,77 @@ tenantId  String   @map("tenant_id") @db.Uuid
 - **Migration History**: `docs/database/migrations/`
 - **Prisma Schema**: `packages/database/prisma/schema.prisma`
 - **Schema Contract**: `docs/legacy-contracts/schema-contract-v2.txt`
+
+---
+
+## Legacy Issues (Resolved)
+
+### ✅ Role Model Field Naming Convention (2025-01-30)
+
+**Status**: RESOLVED
+
+**Issue**: Role model used snake_case field names directly instead of camelCase with `@map` annotations.
+
+**Problem**:
+- Used `tenant_id`, `is_active`, `created_at` as field names
+- Broke the established pattern of camelCase TypeScript with `@map` to snake_case
+- Caused TypeScript API inconsistencies
+- Led to Prisma validation errors
+
+**Resolution**:
+- Converted all fields to camelCase with proper `@map` annotations
+- Added missing `updatedAt`, `deletedAt`, `roleId` fields
+- Fixed relation references to use Prisma field names
+- See `docs/database/SCHEMA_FIXES.md` for details
+
+**Lessons Learned**:
+- ALL models must use camelCase field names
+- Use `@map("snake_case")` for database column mapping
+- Never use snake_case directly in Prisma schema
+
+---
+
+### ✅ Computed DEFAULT Column Constraint (2025-01-30)
+
+**Status**: RESOLVED
+
+**Issue**: `InventoryTransaction.total_cost` used `@default(dbgenerated("(quantity * unit_cost)"))`
+
+**Problem**:
+- PostgreSQL does not allow column references in DEFAULT expressions
+- Caused `db push` to fail with "cannot use column reference in DEFAULT expression"
+
+**Resolution**:
+- Removed computed DEFAULT expression
+- Field is now nullable without default
+- Application must compute total_cost on write
+- See `docs/database/SCHEMA_FIXES.md` for details
+
+**Lessons Learned**:
+- PostgreSQL does not support computed DEFAULT columns
+- Use application-level computation or triggers for derived values
+- Consider generated columns (PostgreSQL 12+) for read-only computed fields
+
+---
+
+### ✅ UUID Generation Function (2025-01-30)
+
+**Status**: RESOLVED
+
+**Issue**: `documents` model used `uuid_generate_v4()` which requires `uuid-ossp` extension
+
+**Problem**:
+- `uuid-ossp` extension may not be available on all PostgreSQL platforms
+- Neon/managed PostgreSQL may not have this extension enabled
+- Caused migration failures
+
+**Resolution**:
+- Replaced all `uuid_generate_v4()` with `gen_random_uuid()`
+- `gen_random_uuid()` is native to PostgreSQL 13+
+- Works reliably on Neon and other managed platforms
+- See `docs/database/SCHEMA_FIXES.md` for details
+
+**Lessons Learned**:
+- Always use `gen_random_uuid()` for new code
+- Avoid extension-dependent functions when possible
+- Test schema changes on target platform early

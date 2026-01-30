@@ -102,7 +102,7 @@ export async function getCommandBoard(
 export async function listCommandBoards(): Promise<CommandBoard[]> {
   const tenantId = await requireTenantId();
 
-  const boards = await database.commandBoard.findMany({
+  const boards = await database.command_boards.findMany({
     where: {
       tenantId,
       deletedAt: null,
@@ -188,7 +188,7 @@ export async function deleteCommandBoard(
   try {
     const tenantId = await requireTenantId();
 
-    await database.commandBoard.update({
+    await database.command_boards.update({
       where: {
         tenantId_id: {
           tenantId,

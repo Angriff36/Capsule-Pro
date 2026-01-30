@@ -4,6 +4,9 @@ import {
   LiveCursors,
   useBroadcastEvent,
   useCommandBoardPresence,
+  useEventListener,
+  useMutation,
+  useStorage,
 } from "@repo/collaboration";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -241,6 +244,45 @@ export function BoardCanvas({
   useEffect(() => {
     onViewportChange?.(state.viewport);
   }, [state.viewport, onViewportChange]);
+
+  useEventListener((event) => {
+    const eventData = event.event;
+    if (!eventData) return;
+
+    switch (eventData.type) {
+      case "CARD_DELETED": {
+        setState((prev) => ({
+          ...prev,
+          cards: prev.cards.filter((c) => c.id !== eventData.cardId),
+        }));
+        break;
+      }
+      case "CARD_MOVED": {
+        setState((prev) => ({
+          ...prev,
+          cards: prev.cards.map((card) =>
+            card.id === eventData.cardId
+              ? {
+                  ...card,
+                  position: {
+                    ...card.position,
+                    x: eventData.x,
+                    y: eventData.y,
+                  },
+                }
+              : card
+          ),
+        }));
+        break;
+      }
+      case "CARD_UPDATED": {
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+  });
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {

@@ -46,12 +46,10 @@ export async function POST(
     const { clientId, message } = body;
 
     // Check if contract exists and belongs to tenant
-    const contract = await database.eventContract.findUnique({
+    const contract = await database.event_contracts.findFirst({
       where: {
-        tenantId_id: {
-          tenantId,
-          id: contractId,
-        },
+        tenantId: tenantId,
+        id: contractId,
       },
     });
 
@@ -66,21 +64,21 @@ export async function POST(
     const clientResult = await database.$queryRaw<
       Array<{
         id: string;
-        company_name: string | null;
-        first_name: string | null;
-        last_name: string | null;
+        companyName: string | null;
+        firstName: string | null;
+        lastName: string | null;
         email: string | null;
       }>
     >`
       SELECT c.id,
-             c.company_name,
-             c.first_name,
-             c.last_name,
+             c.companyName,
+             c.firstName,
+             c.lastName,
              c.email
       FROM tenant_crm.clients AS c
-      WHERE c.tenant_id = ${tenantId}
+      WHERE c.tenantId = ${tenantId}
         AND c.id = ${clientId}
-        AND c.deleted_at IS NULL
+        AND c.deletedAt IS NULL
     `;
 
     const client = clientResult[0];
@@ -103,12 +101,12 @@ export async function POST(
     // For now, we'll update the contract status and return success
 
     // Update contract status to pending
-    await database.eventContract.update({
+    await database.event_contracts.updateMany({
       where: {
-        tenantId_id: {
-          tenantId,
-          id: contractId,
-        },
+        AND: [
+          { tenantId: tenantId },
+          { id: contractId },
+        ],
       },
       data: {
         status: "pending",

@@ -135,12 +135,10 @@ export async function generatePrepList(
   const tenantId = await getTenantIdForOrg(orgId);
   const batchMultiplier = input.batchMultiplier ?? 1;
 
-  const event = await database.event.findUnique({
+  const event = await database.events.findFirst({
     where: {
-      tenantId_id: {
-        tenantId,
-        id: input.eventId,
-      },
+      tenantId: tenantId,
+      id: input.eventId,
     },
   });
 
@@ -150,11 +148,11 @@ export async function generatePrepList(
 
   const eventDishes = await database.$queryRaw<
     Array<{
-      dish_id: string;
-      dish_name: string;
-      recipe_id: string | null;
+      dishId: string;
+      dishName: string;
+      recipeId: string | null;
       recipe_name: string | null;
-      recipe_version_id: string | null;
+      recipeVersionId: string | null;
       yield_quantity: number | null;
       yield_unit: string | null;
       prep_time_minutes: number | null;
@@ -170,11 +168,11 @@ export async function generatePrepList(
   >(
     Prisma.sql`
       SELECT 
-        ed.dish_id,
-        d.name AS dish_name,
-        d.recipe_id,
+        ed.dishId,
+        d.name AS dishName,
+        d.recipeId,
         r.name AS recipe_name,
-        rv.id AS recipe_version_id,
+        rv.id AS recipeVersionId,
         rv.yield_quantity,
         u.code AS yield_unit,
         rv.prep_time_minutes,
@@ -189,17 +187,17 @@ export async function generatePrepList(
       FROM tenant_events.event_dishes ed
       JOIN tenant_kitchen.dishes d 
         ON d.tenant_id = ed.tenant_id 
-        AND d.id = ed.dish_id 
+        AND d.id = ed.dishId 
         AND d.deleted_at IS NULL
       LEFT JOIN tenant_kitchen.recipes r 
         ON r.tenant_id = d.tenant_id 
-        AND r.id = d.recipe_id 
+        AND r.id = d.recipeId 
         AND r.deleted_at IS NULL
       LEFT JOIN LATERAL (
         SELECT rv.*
         FROM tenant_kitchen.recipe_versions rv
         WHERE rv.tenant_id = r.tenant_id
-          AND rv.recipe_id = r.id
+          AND rv.recipeId = r.id
           AND rv.deleted_at IS NULL
         ORDER BY rv.version_number DESC
         LIMIT 1
@@ -234,11 +232,11 @@ export async function generatePrepList(
   }
 
   const dishes: DishInfo[] = eventDishes.map((dish): DishInfo => {
-    const recipeInfo = dish.recipe_version_id
+    const recipeInfo = dish.recipeVersionId
       ? {
-          id: dish.recipe_id ?? "",
+          id: dish.recipeId ?? "",
           name: dish.recipe_name ?? "",
-          versionId: dish.recipe_version_id,
+          versionId: dish.recipeVersionId,
           yieldQuantity: dish.yield_quantity ?? 1,
           yieldUnit: dish.yield_unit ?? "portion",
           prepTimeMinutes: dish.prep_time_minutes,
@@ -249,9 +247,9 @@ export async function generatePrepList(
       : null;
 
     return {
-      id: dish.dish_id,
-      name: dish.dish_name,
-      recipeId: dish.recipe_id,
+      id: dish.dishId,
+      name: dish.dishName,
+      recipeId: dish.recipeId,
       recipeInfo,
       minPrepLeadDays: dish.min_prep_lead_days,
       dietaryTags: dish.dietary_tags ?? [],
@@ -329,9 +327,9 @@ async function getAllRecipeIngredients(
 
   const results = await database.$queryRaw<
     Array<{
-      dish_id: string;
-      dish_name: string;
-      recipe_version_id: string;
+      dishId: string;
+      dishName: string;
+      recipeVersionId: string;
       ingredient_id: string;
       ingredient_name: string;
       quantity: number;
@@ -344,9 +342,9 @@ async function getAllRecipeIngredients(
   >(
     Prisma.sql`
       SELECT 
-        d.id AS dish_id,
-        d.name AS dish_name,
-        ri.recipe_version_id,
+        d.id AS dishId,
+        d.name AS dishName,
+        ri.recipeVersionId,
         ri.ingredient_id,
         i.name AS ingredient_name,
         ri.quantity,
@@ -357,7 +355,7 @@ async function getAllRecipeIngredients(
         i.allergens
       FROM unnest(${recipeVersionIds}::uuid[]) AS rv_id
       JOIN tenant_kitchen.recipe_ingredients ri 
-        ON ri.recipe_version_id = rv_id 
+        ON ri.recipeVersionId = rv_id 
         AND ri.deleted_at IS NULL
       JOIN tenant_kitchen.ingredients i 
         ON i.tenant_id = ri.tenant_id 
@@ -365,20 +363,20 @@ async function getAllRecipeIngredients(
         AND i.deleted_at IS NULL
       LEFT JOIN core.units u ON u.id = ri.unit_id
       CROSS JOIN LATERAL (
-        SELECT d.id, d.name, d.recipe_id
+        SELECT d.id, d.name, d.recipeId
         FROM unnest(${recipeVersionIds}::uuid[]) AS rv_id_inner
         JOIN tenant_kitchen.recipe_versions rv 
           ON rv.id = rv_id_inner 
           AND rv.deleted_at IS NULL
         JOIN tenant_kitchen.dishes d 
           ON d.tenant_id = rv.tenant_id 
-          AND d.recipe_id = rv.recipe_id 
+          AND d.recipeId = rv.recipeId 
           AND d.deleted_at IS NULL
-        WHERE d.recipe_id IN (
+        WHERE d.recipeId IN (
           SELECT r.id 
           FROM tenant_kitchen.recipes r 
           WHERE r.id IN (
-            SELECT rv.recipe_id 
+            SELECT rv.recipeId 
             FROM tenant_kitchen.recipe_versions rv 
             WHERE rv.id = rv_id
           )
@@ -389,9 +387,9 @@ async function getAllRecipeIngredients(
   );
 
   return results.map((row) => ({
-    dishId: row.dish_id,
-    dishName: row.dish_name,
-    recipeVersionId: row.recipe_version_id,
+    dishId: row.dishId,
+    dishName: row.dishName,
+    recipeVersionId: row.recipeVersionId,
     ingredientId: row.ingredient_id,
     ingredientName: row.ingredient_name,
     quantity: row.quantity,
@@ -847,9 +845,9 @@ export async function savePrepListToDatabase(
             preparation_notes,
             allergens,
             dietary_substitutions,
-            dish_id,
-            dish_name,
-            recipe_version_id,
+            dishId,
+            dishName,
+            recipeVersionId,
             sort_order
           ) VALUES (
             ${tenantId},

@@ -59,9 +59,9 @@ const enqueueOutboxEvent = async (
   payload: Prisma.InputJsonValue
 ): Promise<void> => {
   const client = tenantDatabase(tenantId);
-  await client.outboxEvent.create({
+  await client.outbox_events.create({
     data: {
-      tenantId,
+      tenantId: tenantId,
       aggregateType,
       aggregateId,
       eventType,
@@ -84,7 +84,7 @@ export const getKitchenTasks = async (filters?: {
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
 
-  return client.kitchenTask.findMany({
+  return client.kitchen_tasks.findMany({
     where: {
       ...(filters?.status && { status: filters.status }),
       ...(filters?.priority && { priority: filters.priority }),
@@ -102,7 +102,7 @@ export const getKitchenTaskById = async (
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
 
-  return client.kitchenTask.findFirst({
+  return client.kitchen_tasks.findFirst({
     where: { id: taskId },
   });
 };
@@ -121,7 +121,7 @@ export const getUrgentTasks = async (): Promise<KitchenTask[]> => {
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
 
-  return client.kitchenTask.findMany({
+  return client.kitchen_tasks.findMany({
     where: {
       priority: {
         lte: 2, // Urgent and Critical (1-2)
@@ -130,7 +130,7 @@ export const getUrgentTasks = async (): Promise<KitchenTask[]> => {
         in: ["open", "in_progress"],
       },
     },
-    orderBy: [{ dueDate: "asc" }, { createdAt: "asc" }],
+    orderBy: [{ dueDate: "asc" }, { created_at: "asc" }],
   });
 };
 
@@ -157,13 +157,13 @@ export const createKitchenTask = async (
   const priority = priorityStr ? Number.parseInt(priorityStr, 10) : undefined;
   const dueDate = getDateTime(formData, "dueDate");
 
-  const task = await client.kitchenTask.create({
+  const task = await client.kitchen_tasks.create({
     data: {
-      tenantId,
+      tenantId: tenantId,
       title,
       summary,
       priority: priority || 5, // default to medium (5)
-      dueDate,
+      dueDate: dueDate,
     },
   });
 
@@ -206,13 +206,13 @@ export const updateKitchenTask = async (
   const priority = priorityStr ? Number.parseInt(priorityStr, 10) : undefined;
   const dueDate = getDateTime(formData, "dueDate");
 
-  const task = await client.kitchenTask.update({
-    where: { tenantId_id: { tenantId, id: taskId } },
+  const task = await client.kitchen_tasks.update({
+    where: { tenant_id_id: { tenantId: tenantId, id: taskId } },
     data: {
       ...(title && { title }),
       ...(summary !== undefined && { summary: summary || "" }),
       ...(priority && { priority }),
-      ...(dueDate && { dueDate }),
+      ...(dueDate && { dueDate: dueDate }),
     },
   });
 
@@ -250,7 +250,7 @@ export const updateKitchenTaskStatus = async (
   }
 
   // Fetch the current task to capture the previous status
-  const currentTask = await client.kitchenTask.findFirst({
+  const currentTask = await client.kitchen_tasks.findFirst({
     where: { id: taskId },
   });
 
@@ -260,8 +260,8 @@ export const updateKitchenTaskStatus = async (
 
   const previousStatus = currentTask.status;
 
-  const task = await client.kitchenTask.update({
-    where: { tenantId_id: { tenantId, id: taskId } },
+  const task = await client.kitchen_tasks.update({
+    where: { tenant_id_id: { tenantId: tenantId, id: taskId } },
     data: { status },
   });
 
@@ -294,8 +294,8 @@ export const deleteKitchenTask = async (taskId: string): Promise<void> => {
     throw new Error("Task id is required.");
   }
 
-  await client.kitchenTask.delete({
-    where: { tenantId_id: { tenantId, id: taskId } },
+  await client.kitchen_tasks.delete({
+    where: { tenant_id_id: { tenantId: tenantId, id: taskId } },
   });
 
   revalidatePath("/kitchen/tasks");
@@ -331,17 +331,17 @@ export const claimTask = async (
   }
 
   // Update task status to in_progress
-  await client.kitchenTask.update({
-    where: { tenantId_id: { tenantId, id: taskId } },
+  await client.kitchen_tasks.update({
+    where: { tenant_id_id: { tenantId: tenantId, id: taskId } },
     data: { status: "in_progress" },
   });
 
   // Create claim record
-  const claim = await client.kitchenTaskClaim.create({
+  const claim = await client.task_claims.create({
     data: {
-      tenantId,
-      taskId,
-      employeeId,
+      tenantId: tenantId,
+      taskId: taskId,
+      employeeId: employeeId,
     },
   });
 
@@ -378,9 +378,9 @@ export const releaseTask = async (
   }
 
   // Find the active claim
-  const activeClaim = await client.kitchenTaskClaim.findFirst({
+  const activeClaim = await client.task_claims.findFirst({
     where: {
-      taskId,
+      taskId: taskId,
       releasedAt: null,
     },
   });
@@ -390,8 +390,8 @@ export const releaseTask = async (
   }
 
   // Release the claim
-  const updatedClaim = await client.kitchenTaskClaim.update({
-    where: { tenantId_id: { tenantId, id: activeClaim.id } },
+  const updatedClaim = await client.task_claims.update({
+    where: { tenant_id_id: { tenantId: tenantId, id: activeClaim.id } },
     data: {
       releasedAt: new Date(),
       releaseReason: reason ?? undefined,
@@ -399,8 +399,8 @@ export const releaseTask = async (
   });
 
   // Update task status back to open
-  await client.kitchenTask.update({
-    where: { tenantId_id: { tenantId, id: taskId } },
+  await client.kitchen_tasks.update({
+    where: { tenant_id_id: { tenantId: tenantId, id: taskId } },
     data: { status: "open" },
   });
 
@@ -435,8 +435,8 @@ export const getTaskClaims = async (
     throw new Error("Task id is required.");
   }
 
-  return client.kitchenTaskClaim.findMany({
-    where: { taskId },
+  return client.task_claims.findMany({
+    where: { taskId: taskId },
     orderBy: { claimedAt: "desc" },
   });
 };
@@ -454,9 +454,9 @@ export const getMyActiveClaims = async (
     throw new Error("Employee id is required.");
   }
 
-  return client.kitchenTaskClaim.findMany({
+  return client.task_claims.findMany({
     where: {
-      employeeId,
+      employeeId: employeeId,
       releasedAt: null,
     },
     orderBy: { claimedAt: "desc" },
@@ -488,12 +488,12 @@ export const addTaskProgress = async (
     throw new Error("Task id and employee id are required.");
   }
 
-  const progress = await client.kitchenTaskProgress.create({
+  const progress = await client.task_progress.create({
     data: {
-      tenantId,
-      taskId,
-      employeeId,
-      progressType,
+      tenantId: tenantId,
+      taskId: taskId,
+      employeeId: employeeId,
+      progressType: progressType,
       ...(options?.oldStatus && { oldStatus: options.oldStatus }),
       ...(options?.newStatus && { newStatus: options.newStatus }),
       ...(options?.quantityCompleted && {
@@ -536,8 +536,8 @@ export const getTaskProgressLog = async (
     throw new Error("Task id is required.");
   }
 
-  return client.kitchenTaskProgress.findMany({
-    where: { taskId },
+  return client.task_progress.findMany({
+    where: { taskId: taskId },
     orderBy: { createdAt: "desc" },
   });
 };

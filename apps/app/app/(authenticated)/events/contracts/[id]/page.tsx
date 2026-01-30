@@ -31,33 +31,29 @@ const ContractDetailPage = async ({ params }: ContractDetailPageProps) => {
   const tenantId = await getTenantIdForOrg(orgId);
 
   // Fetch contract with related event and client data
-  const contract = await database.eventContract.findUnique({
+  const contract = await database.event_contracts.findFirst({
     where: {
-      tenantId_id: {
-        tenantId,
-        id,
-      },
+      tenant_id: tenantId,
+      id,
     },
   });
 
-  if (!contract || contract.deletedAt) {
+  if (!contract || contract.deleted_at) {
     notFound();
   }
 
   // Fetch related event
-  const event = await database.event.findUnique({
+  const event = await database.events.findFirst({
     where: {
-      tenantId_id: {
-        tenantId,
-        id: contract.eventId,
-      },
+      tenant_id: tenantId,
+      id: contract.event_id,
     },
     select: {
       id: true,
       title: true,
-      eventDate: true,
-      eventNumber: true,
-      venueName: true,
+      event_date: true,
+      event_number: true,
+      venue_name: true,
     },
   });
 
@@ -85,14 +81,14 @@ const ContractDetailPage = async ({ params }: ContractDetailPageProps) => {
   `;
 
   // Fetch signatures for this contract
-  const signatures = await database.contractSignature.findMany({
+  const signatures = await database.contract_signatures.findMany({
     where: {
-      tenantId,
-      contractId: id,
-      deletedAt: null,
+      tenant_id: tenantId,
+      contract_id: id,
+      deleted_at: null,
     },
     orderBy: {
-      signedAt: "desc",
+      signed_at: "desc",
     },
   });
 

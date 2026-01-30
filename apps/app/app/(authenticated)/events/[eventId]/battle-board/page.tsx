@@ -22,16 +22,15 @@ const BattleBoardPage = async ({ params }: BattleBoardPageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const event = await database.event.findUnique({
+  const event = await database.events.findFirst({
     where: {
-      tenantId_id: {
-        tenantId,
-        id: eventId,
-      },
+      tenant_id: tenantId,
+      id: eventId,
+      deleted_at: null,
     },
   });
 
-  if (!event || event.deletedAt) {
+  if (!event) {
     notFound();
   }
 
@@ -54,7 +53,7 @@ const BattleBoardPage = async ({ params }: BattleBoardPageProps) => {
         </a>
       </Header>
       <Timeline
-        eventDate={event.eventDate}
+        eventDate={event.event_date}
         eventId={eventId}
         initialStaff={staff}
         initialTasks={tasks}

@@ -39,10 +39,10 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const events = await database.event.findMany({
+  const events = await database.events.findMany({
     where: {
-      tenantId,
-      deletedAt: null,
+      tenant_id: tenantId,
+      deleted_at: null,
       OR: [
         {
           title: {
@@ -51,20 +51,20 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
           },
         },
         {
-          eventNumber: {
+          event_number: {
             contains: q,
             mode: "insensitive",
           },
         },
         {
-          venueName: {
+          venue_name: {
             contains: q,
             mode: "insensitive",
           },
         },
       ],
     },
-    orderBy: [{ eventDate: "desc" }, { createdAt: "desc" }],
+    orderBy: [{ event_date: "desc" }, { created_at: "desc" }],
     take: 12,
   });
 
@@ -81,11 +81,11 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
             events.map((event) => (
               <div
                 className="flex flex-col justify-between gap-2 rounded-xl bg-muted/50 p-4"
-                key={`${event.tenantId}-${event.id}`}
+                key={`${event.tenant_id}-${event.id}`}
               >
                 <div className="font-medium text-sm">{event.title}</div>
                 <div className="text-muted-foreground text-xs">
-                  {dateFormatter.format(event.eventDate)}
+                  {dateFormatter.format(event.event_date)}
                 </div>
               </div>
             ))

@@ -1,4 +1,9 @@
-export * from "@liveblocks/react/suspense";
+export {
+  useBroadcastEvent,
+  useEventListener,
+  useMutation,
+  useStorage,
+} from "@liveblocks/react/suspense";
 export { LiveCursors } from "./live-cursors";
 export { LivePresenceIndicator } from "./live-presence-indicator";
 export {

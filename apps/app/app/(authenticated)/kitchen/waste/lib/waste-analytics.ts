@@ -1,5 +1,3 @@
-import { invariant } from "@/app/lib/invariant";
-
 type WasteTrendsSummary = {
   totalCost: number;
   totalQuantity: number;
@@ -230,10 +228,20 @@ export async function fetchWasteTrends(): Promise<WasteTrendsData> {
   );
 
   if (!response.ok) {
-    const error = await response
-      .json()
-      .catch(() => ({ message: "Failed to fetch waste trends" }));
-    throw new Error(error.message || "Failed to fetch waste trends");
+    console.warn("Failed to fetch waste trends, server may be unavailable");
+    return {
+      summary: {
+        totalCost: 0,
+        totalQuantity: 0,
+        totalEntries: 0,
+        avgCostPerEntry: 0,
+        period: "30d",
+        startDate: "",
+        endDate: "",
+      },
+      topReasons: [],
+      reductionOpportunities: [],
+    };
   }
 
   const payload = await response.json();
@@ -244,10 +252,16 @@ export async function fetchWasteReports(): Promise<WasteReportData> {
   const response = await fetch("/api/kitchen/waste/reports?groupBy=reason");
 
   if (!response.ok) {
-    const error = await response
-      .json()
-      .catch(() => ({ message: "Failed to fetch waste reports" }));
-    throw new Error(error.message || "Failed to fetch waste reports");
+    console.warn("Failed to fetch waste reports, server may be unavailable");
+    return {
+      summary: {
+        totalCost: 0,
+        totalQuantity: 0,
+        entryCount: 0,
+        avgCostPerEntry: 0,
+      },
+      reports: [],
+    };
   }
 
   const payload = await response.json();

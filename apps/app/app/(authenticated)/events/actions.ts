@@ -115,24 +115,24 @@ export const createEvent = async (formData: FormData): Promise<void> => {
   const created = await database.$transaction(async (tx) => {
     const event = await tx.events.create({
       data: {
-        tenant_id: tenantId,
+        tenantId: tenantId,
         title: data.title,
-        event_type: data.eventType,
-        event_date: new Date(`${data.eventDate}T00:00:00`),
-        guest_count: data.guestCount,
+        eventType: data.eventType,
+        eventDate: new Date(`${data.eventDate}T00:00:00`),
+        guestCount: data.guestCount,
         status: data.status,
         budget: data.budget ?? null,
-        venue_name: data.venueName,
-        venue_address: data.venueAddress,
+        venueName: data.venueName,
+        venueAddress: data.venueAddress,
         notes: data.notes,
         tags: data.tags,
       },
     });
 
-    await tx.battle_boards.create({
+    await tx.battleBoards.create({
       data: {
-        tenant_id: tenantId,
-        event_id: event.id,
+        tenantId: tenantId,
+        eventId: event.id,
         board_name: `${event.title} - Battle Board`,
         board_type: "event-specific",
         board_data: {},
@@ -168,19 +168,19 @@ export const updateEvent = async (formData: FormData): Promise<void> => {
   await database.events.updateMany({
     where: {
       AND: [
-        { tenant_id: tenantId },
+        { tenantId: tenantId },
         { id: eventId },
       ],
     },
     data: {
       title: getString(formData, "title") ?? "Untitled Event",
-      event_type: getString(formData, "eventType") ?? "catering",
-      event_date: eventDate,
-      guest_count: getNumber(formData, "guestCount") ?? 1,
+      eventType: getString(formData, "eventType") ?? "catering",
+      eventDate: eventDate,
+      guestCount: getNumber(formData, "guestCount") ?? 1,
       status,
       budget: getNumberOrNull(formData, "budget"),
-      venue_name: getOptionalString(formData, "venueName"),
-      venue_address: getOptionalString(formData, "venueAddress"),
+      venueName: getOptionalString(formData, "venueName"),
+      venueAddress: getOptionalString(formData, "venueAddress"),
       notes: getOptionalString(formData, "notes"),
       tags: getTags(formData),
     },
@@ -201,12 +201,12 @@ export const deleteEvent = async (formData: FormData): Promise<void> => {
   await database.events.updateMany({
     where: {
       AND: [
-        { tenant_id: tenantId },
+        { tenantId: tenantId },
         { id: eventId },
       ],
     },
     data: {
-      deleted_at: new Date(),
+      deletedAt: new Date(),
     },
   });
 
@@ -260,7 +260,7 @@ export const attachEventImport = async (formData: FormData): Promise<void> => {
       INSERT INTO tenant_events.event_imports (
         tenant_id,
         id,
-        event_id,
+        eventId,
         file_name,
         mime_type,
         file_size,

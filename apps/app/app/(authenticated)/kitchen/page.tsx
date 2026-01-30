@@ -1,6 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { KitchenNavigation } from "./components/kitchen-navigation";
 import { ProductionBoardClient } from "./production-board-client";
 import { ProductionBoardRealtime } from "./production-board-realtime";
 
@@ -30,7 +31,7 @@ const KitchenPage = async () => {
   // Fetch all kitchen tasks for the tenant
   const tasks = await database.kitchenTask.findMany({
     where: {
-      tenantId,
+      tenantId: tenantId,
       deletedAt: null,
     },
     orderBy: [
@@ -42,7 +43,7 @@ const KitchenPage = async () => {
   // Fetch claims separately
   const claims = await database.kitchenTaskClaim.findMany({
     where: {
-      AND: [{ tenantId }, { releasedAt: null }],
+      AND: [{ tenantId: tenantId }, { releasedAt: null }],
     },
   });
 
@@ -83,6 +84,7 @@ const KitchenPage = async () => {
 
   return (
     <>
+      <KitchenNavigation />
       <ProductionBoardClient
         currentUserId={dbUser?.id}
         initialTasks={tasksWithUsers}

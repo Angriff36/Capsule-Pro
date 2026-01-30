@@ -97,13 +97,17 @@ export default function AllergenManagementPage() {
     try {
       const response = await fetch("/api/kitchen/allergens/warnings");
       if (!response.ok) {
-        throw new Error("Failed to fetch warnings");
+        // Don't throw - handle gracefully and return empty array
+        console.warn("Failed to fetch warnings, server may be unavailable");
+        setWarnings([]);
+        return;
       }
       const data = await response.json();
       setWarnings(data.warnings || []);
     } catch (error) {
-      console.error("Error fetching warnings:", error);
-      throw error;
+      // Network errors or other issues - handle gracefully
+      console.warn("Error fetching warnings:", error);
+      setWarnings([]);
     }
   };
 
@@ -111,13 +115,15 @@ export default function AllergenManagementPage() {
     try {
       const response = await fetch("/api/events?limit=50");
       if (!response.ok) {
-        throw new Error("Failed to fetch events");
+        console.warn("Failed to fetch events, server may be unavailable");
+        setEvents([]);
+        return;
       }
       const data = await response.json();
       setEvents(data.data || []);
     } catch (error) {
-      console.error("Error fetching events:", error);
-      throw error;
+      console.warn("Error fetching events:", error);
+      setEvents([]);
     }
   };
 
@@ -125,13 +131,15 @@ export default function AllergenManagementPage() {
     try {
       const response = await fetch("/api/kitchen/dishes?limit=100");
       if (!response.ok) {
-        throw new Error("Failed to fetch dishes");
+        console.warn("Failed to fetch dishes, server may be unavailable");
+        setDishes([]);
+        return;
       }
       const data = await response.json();
       setDishes(data.data || []);
     } catch (error) {
-      console.error("Error fetching dishes:", error);
-      throw error;
+      console.warn("Error fetching dishes:", error);
+      setDishes([]);
     }
   };
 
@@ -139,25 +147,36 @@ export default function AllergenManagementPage() {
     try {
       const response = await fetch("/api/kitchen/recipes?limit=100");
       if (!response.ok) {
-        throw new Error("Failed to fetch recipes");
+        console.warn("Failed to fetch recipes, server may be unavailable");
+        setRecipes([]);
+        return;
       }
       const data = await response.json();
       setRecipes(data.data || []);
     } catch (error) {
-      console.error("Error fetching recipes:", error);
-      throw error;
+      console.warn("Error fetching recipes:", error);
+      setRecipes([]);
     }
   };
 
   // Fetch all data on mount
   useEffect(() => {
-    Promise.all([fetchWarnings(), fetchEvents(), fetchDishes(), fetchRecipes()])
-      .then(() => setLoading(false))
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-        toast.error("Failed to load allergen data");
+    let isMounted = true;
+    const loadData = async () => {
+      await Promise.all([
+        fetchWarnings(),
+        fetchEvents(),
+        fetchDishes(),
+        fetchRecipes(),
+      ]);
+      if (isMounted) {
         setLoading(false);
-      });
+      }
+    };
+    loadData();
+    return () => {
+      isMounted = false;
+    };
   }, [fetchDishes, fetchEvents, fetchRecipes, fetchWarnings]);
 
   // Listen for allergen updates and refresh data
@@ -212,7 +231,8 @@ export default function AllergenManagementPage() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to acknowledge warning");
+        toast.error("Failed to acknowledge warning");
+        return;
       }
 
       toast.success("Warning acknowledged");
@@ -247,7 +267,8 @@ export default function AllergenManagementPage() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to resolve warning");
+        toast.error("Failed to resolve warning");
+        return;
       }
 
       toast.success("Warning resolved");

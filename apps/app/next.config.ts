@@ -40,6 +40,16 @@ let nextConfig: NextConfig = withToolbar(
   withLogging({
     ...config,
     rewrites,
+    // Externalize pdfjs-dist to avoid bundling issues
+    serverComponentsExternalPackages: ['pdfjs-dist'],
+    webpack: (webpackConfig, { isServer }) => {
+      if (isServer) {
+        // Externalize pdfjs-dist for server-side code (API routes)
+        webpackConfig.externals = webpackConfig.externals || [];
+        webpackConfig.externals.push('pdfjs-dist');
+      }
+      return webpackConfig;
+    },
   })
 );
 

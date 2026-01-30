@@ -19,24 +19,11 @@ const EventReportDetailPage = async ({ params }: PageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const report = await database.eventReport.findFirst({
+  const report = await database.event_reports.findFirst({
     where: {
       id: reportId,
-      tenantId,
-      deletedAt: null,
-    },
-    include: {
-      event: {
-        select: {
-          id: true,
-          eventNumber: true,
-          title: true,
-          eventDate: true,
-          venueName: true,
-          venueAddress: true,
-          guestCount: true,
-        },
-      },
+      tenant_id: tenantId,
+      deleted_at: null,
     },
   });
 
@@ -44,33 +31,54 @@ const EventReportDetailPage = async ({ params }: PageProps) => {
     notFound();
   }
 
+  const event = await database.events.findFirst({
+    where: {
+      tenant_id: tenantId,
+      id: report.event_id,
+      deleted_at: null,
+    },
+    select: {
+      id: true,
+      event_number: true,
+      title: true,
+      event_date: true,
+      venue_name: true,
+      venue_address: true,
+      guest_count: true,
+    },
+  });
+
+  if (!event) {
+    notFound();
+  }
+
   return (
     <>
       <Header
-        page={report.event.title || "Event Report"}
+        page={event.title || "Event Report"}
         pages={["Events", "Reports"]}
       />
       <div className="flex flex-1 flex-col p-4 pt-0">
         <ReportEditorClient
           event={{
-            id: report.event.id,
-            eventNumber: report.event.eventNumber,
-            title: report.event.title,
-            eventDate: report.event.eventDate.toISOString(),
-            venueName: report.event.venueName,
-            venueAddress: report.event.venueAddress,
-            guestCount: report.event.guestCount,
+            id: event.id,
+            eventNumber: event.event_number,
+            title: event.title,
+            eventDate: event.event_date.toISOString(),
+            venueName: event.venue_name,
+            venueAddress: event.venue_address,
+            guestCount: event.guest_count,
           }}
           report={{
             id: report.id,
-            eventId: report.eventId,
+            eventId: report.event_id,
             status: report.status,
             completion: report.completion,
-            checklistData: report.checklistData as Record<string, unknown>,
-            autoFillScore: report.autoFillScore,
-            reviewNotes: report.reviewNotes,
-            createdAt: report.createdAt.toISOString(),
-            updatedAt: report.updatedAt.toISOString(),
+            checklistData: report.report_config as Record<string, unknown>,
+            autoFillScore: report.auto_fill_score,
+            reviewNotes: null,
+            createdAt: report.created_at.toISOString(),
+            updatedAt: report.updated_at.toISOString(),
           }}
         />
       </div>

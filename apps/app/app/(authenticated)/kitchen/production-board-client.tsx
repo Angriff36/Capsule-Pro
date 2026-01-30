@@ -75,17 +75,28 @@ function formatDateLabel(date: Date): string {
 }
 
 function KitchenClock() {
-  const [time, setTime] = useState(new Date());
+  const [time, setTime] = useState<Date | null>(null);
 
   useEffect(() => {
+    setTime(new Date());
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  // During SSR and initial client render, show placeholder to avoid hydration mismatch
+  if (!time) {
+    return (
+      <div className="flex items-center gap-2 font-medium text-slate-600 text-sm">
+        <Clock className="h-4 w-4" />
+        <span suppressHydrationWarning>--:--:--</span>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center gap-2 font-medium text-slate-600 text-sm">
       <Clock className="h-4 w-4" />
-      <span>{format(time, "h:mm:ss a")}</span>
+      <span suppressHydrationWarning>{format(time, "h:mm:ss a")}</span>
     </div>
   );
 }

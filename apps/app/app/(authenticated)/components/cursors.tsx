@@ -1,6 +1,6 @@
 "use client";
 
-import { useMyPresence, useOthers } from "@repo/collaboration/hooks";
+import { useCommandBoardPresence, useOtherCursors } from "@repo/collaboration/hooks";
 import { useEffect } from "react";
 
 const Cursor = ({
@@ -47,34 +47,30 @@ const Cursor = ({
 
 export const Cursors = () => {
   /**
-   * useMyPresence returns the presence of the current user and a function to update it.
+   * useCommandBoardPresence returns the presence of the current user and a function to update it.
    * updateMyPresence is different than the setState function returned by the useState hook from React.
    * You don't need to pass the full presence object to update it.
    * See https://liveblocks.io/docs/api-reference/liveblocks-react#useMyPresence for more information
    */
-  const [_cursor, updateMyPresence] = useMyPresence();
+  const { updateCursor } = useCommandBoardPresence();
 
   /**
    * Return all the other users in the room and their presence (a cursor position in this case)
    */
-  const others = useOthers();
+  const others = useOtherCursors();
 
   useEffect(() => {
     const onPointerMove = (event: PointerEvent) => {
       // Update the user cursor position on every pointer move
-      updateMyPresence({
-        cursor: {
-          x: Math.round(event.clientX),
-          y: Math.round(event.clientY),
-        },
+      updateCursor({
+        x: Math.round(event.clientX),
+        y: Math.round(event.clientY),
       });
     };
 
     const onPointerLeave = () => {
       // When the pointer goes out, set cursor to null
-      updateMyPresence({
-        cursor: null,
-      });
+      updateCursor(null);
     };
 
     document.body.addEventListener("pointermove", onPointerMove);
@@ -84,10 +80,10 @@ export const Cursors = () => {
       document.body.removeEventListener("pointermove", onPointerMove);
       document.body.removeEventListener("pointerleave", onPointerLeave);
     };
-  }, [updateMyPresence]);
+  }, [updateCursor]);
 
-  return others.map(({ connectionId, presence, info }) => {
-    if (!presence.cursor) {
+  return others.map(({ connectionId, cursor, info }) => {
+    if (!cursor) {
       return null;
     }
 
@@ -98,8 +94,8 @@ export const Cursors = () => {
         // Assigning a color with a modulo makes sure that a specific user has the same colors on every clients
         key={`cursor-${connectionId}`}
         name={info?.name}
-        x={presence.cursor.x}
-        y={presence.cursor.y}
+        x={cursor.x}
+        y={cursor.y}
       />
     );
   });

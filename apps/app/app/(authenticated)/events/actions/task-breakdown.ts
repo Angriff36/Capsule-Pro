@@ -52,12 +52,10 @@ export async function generateTaskBreakdown({
 }: GenerateTaskBreakdownParams): Promise<TaskBreakdown> {
   const tenantId = await requireTenantId();
 
-  const event = await database.event.findUnique({
+  const event = await database.events.findFirst({
     where: {
-      tenantId_id: {
-        tenantId,
-        id: eventId,
-      },
+      tenant_id: tenantId,
+      id: eventId,
     },
   });
 
@@ -74,8 +72,8 @@ export async function generateTaskBreakdown({
       WHERE tenant_id = ${tenantId}
         AND id != ${eventId}
         AND deleted_at IS NULL
-        AND event_type = ${event.eventType}
-        AND ABS(guest_count - ${event.guestCount}) <= 10
+        AND event_type = ${event.event_type}
+        AND ABS(guest_count - ${event.guest_count}) <= 10
       ORDER BY event_date DESC
       LIMIT 5
     `
@@ -152,8 +150,8 @@ export async function generateTaskBreakdown({
     totalPrepTime,
     totalSetupTime,
     totalCleanupTime,
-    guestCount: event.guestCount,
-    eventDate: event.eventDate,
+    guestCount: event.guest_count,
+    eventDate: event.event_date,
     generatedAt: new Date(),
     historicalEventCount: similarEvents.length || undefined,
     disclaimer:
@@ -167,11 +165,11 @@ async function generateTasksFromAI(
   event: {
     id: string;
     title: string;
-    eventType: string;
-    eventDate: Date;
-    guestCount: number;
-    venueName?: string | null;
-    venueAddress?: string | null;
+    event_type: string;
+    event_date: Date;
+    guest_count: number;
+    venue_name?: string | null;
+    venue_address?: string | null;
     notes?: string | null;
     tags?: string[];
   },
@@ -235,11 +233,11 @@ GUIDELINES:
   const eventData = {
     id: event.id,
     title: event.title,
-    eventType: event.eventType,
-    eventDate: event.eventDate.toISOString(),
-    guestCount: event.guestCount,
-    venueName: event.venueName,
-    venueAddress: event.venueAddress,
+    eventType: event.event_type,
+    eventDate: event.event_date.toISOString(),
+    guestCount: event.guest_count,
+    venueName: event.venue_name,
+    venueAddress: event.venue_address,
     notes: event.notes,
     tags: event.tags,
   };
@@ -391,10 +389,10 @@ Please generate a complete task breakdown following the system prompt guidelines
 function getFallbackTasks(
   event: {
     title: string;
-    eventType: string;
-    eventDate: Date;
-    guestCount: number;
-    venueName?: string | null;
+    event_type: string;
+    event_date: Date;
+    guest_count: number;
+    venue_name?: string | null;
   },
   _dishesData?: Array<{
     name: string;
@@ -405,7 +403,7 @@ function getFallbackTasks(
   setup: TaskBreakdownItem[];
   cleanup: TaskBreakdownItem[];
 } {
-  const guestCount = event.guestCount;
+  const guestCount = event.guest_count;
   const scaleFactor = guestCount / 25;
   const now = Date.now();
 
@@ -463,10 +461,10 @@ function getFallbackTasks(
   const setupTasks: TaskBreakdownItem[] = [
     {
       id: `setup-1-${now}`,
-      name: event.venueName
+      name: event.venue_name
         ? "Transport equipment to venue"
         : "Set up cooking stations",
-      description: event.venueName
+      description: event.venue_name
         ? "Load and transport all cooking equipment and supplies"
         : "Configure cooking equipment and work areas",
       section: "setup",
@@ -520,10 +518,10 @@ function getFallbackTasks(
     },
     {
       id: `cleanup-3-${now}`,
-      name: event.venueName
+      name: event.venue_name
         ? "Transport equipment back"
         : "Final kitchen clean",
-      description: event.venueName
+      description: event.venue_name
         ? "Load and transport all equipment to home base"
         : "Complete final cleaning and organize storage",
       section: "cleanup",
@@ -592,24 +590,23 @@ export async function saveTaskBreakdown(
       }
     }
 
-    await database.prepTask.create({
+    await database.prep_tasks.create({
       data: {
-        tenantId,
-        id: task.id,
-        eventId,
-        locationId,
-        taskType:
+        tenant_id: tenantId,
+        event_id: eventId,
+        location_id: locationId,
+        task_type:
           task.section === "prep"
             ? "prep"
             : task.section === "setup"
               ? "setup"
               : "cleanup",
         name: task.name,
-        quantityTotal: breakdown.guestCount,
-        servingsTotal: breakdown.guestCount,
-        startByDate,
-        dueByDate,
-        estimatedMinutes: task.durationMinutes,
+        quantity_total: breakdown.guestCount,
+        servings_total: breakdown.guestCount,
+        start_by_date: startByDate,
+        due_by_date: dueByDate,
+        estimated_minutes: task.durationMinutes,
         status: "pending",
         priority: task.isCritical ? 8 : 5,
         notes: task.description,

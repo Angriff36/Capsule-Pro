@@ -158,13 +158,18 @@ This documentation was created as part of feature **004-database-docs-integrity*
 7. **Identified 10 issues** - Critical and minor database issues documented
 8. **Created 23 TODOs** - Actionable items for future improvements
 
+## Critical Schema Fixes
+
+**⚠️ IMPORTANT**: Read `SCHEMA_FIXES.md` before making any schema changes. Contains critical patterns that MUST be followed.
+
 ## Getting Started
 
-1. **Read SCHEMAS.md** - Overview of all schemas and relationships
-2. **Check KNOWN_ISSUES.md** - Known problems before making changes
-3. **Browse schemas/** - Domain-specific schema documentation
-4. **Reference tables/** - Detailed table documentation with constraints
-5. **Follow CONTRIBUTING.md** - When making schema changes
+1. **Read SCHEMA_FIXES.md** - ⚠️ CRITICAL patterns that MUST be followed
+2. **Read SCHEMAS.md** - Overview of all schemas and relationships
+3. **Check KNOWN_ISSUES.md** - Known problems before making changes
+4. **Browse schemas/** - Domain-specific schema documentation
+5. **Reference tables/** - Detailed table documentation with constraints
+6. **Follow CONTRIBUTING.md** - When making schema changes
 
 ## See Also
 

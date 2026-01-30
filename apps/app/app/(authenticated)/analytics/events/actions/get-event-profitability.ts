@@ -62,12 +62,10 @@ export async function calculateEventProfitability(
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const event = await database.event.findUnique({
+  const event = await database.events.findFirst({
     where: {
-      tenantId_id: {
-        tenantId,
-        id: eventId,
-      },
+      tenant_id: tenantId,
+      id: eventId,
     },
   });
 

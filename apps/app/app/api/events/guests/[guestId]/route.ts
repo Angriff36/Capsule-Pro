@@ -32,9 +32,9 @@ export async function GET(_request: Request, { params }: { params: Params }) {
   const tenantId = await getTenantIdForOrg(orgId);
   const { guestId } = await params;
 
-  const guest = await database.eventGuest.findFirst({
+  const guest = await database.event_guests.findFirst({
     where: {
-      AND: [{ tenantId }, { id: guestId }, { deletedAt: null }],
+      AND: [{ tenantId: tenantId }, { id: guestId }, { deletedAt: null }],
     },
   });
 
@@ -60,9 +60,9 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   const body = await request.json();
 
   // Validate guest exists and belongs to tenant
-  const existingGuest = await database.eventGuest.findFirst({
+  const existingGuest = await database.event_guests.findFirst({
     where: {
-      AND: [{ tenantId }, { id: guestId }, { deletedAt: null }],
+      AND: [{ tenantId: tenantId }, { id: guestId }, { deletedAt: null }],
     },
   });
 
@@ -71,7 +71,19 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   }
 
   // Build update data with validation
-  const updateData: GuestUpdateData = {};
+  const updateData: {
+    guest_name?: string;
+    guest_email?: string | null;
+    guest_phone?: string | null;
+    is_primary_contact?: boolean;
+    dietary_restrictions?: string[];
+    allergen_restrictions?: string[];
+    notes?: string | null;
+    special_meal_required?: boolean;
+    special_meal_notes?: string | null;
+    table_assignment?: string | null;
+    meal_preference?: string | null;
+  } = {};
 
   if (body.guestName !== undefined) {
     if (
@@ -84,7 +96,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
         { status: 400 }
       );
     }
-    updateData.guestName = body.guestName.trim();
+    updateData.guest_name = body.guestName.trim();
   }
 
   if (body.guestEmail !== undefined) {
@@ -106,9 +118,9 @@ export async function PUT(request: Request, { params }: { params: Params }) {
           { status: 400 }
         );
       }
-      updateData.guestEmail = body.guestEmail.trim();
+      updateData.guest_email = body.guestEmail.trim();
     } else {
-      updateData.guestEmail = null;
+      updateData.guest_email = null;
     }
   }
 
@@ -123,14 +135,14 @@ export async function PUT(request: Request, { params }: { params: Params }) {
           { status: 400 }
         );
       }
-      updateData.guestPhone = body.guestPhone.trim();
+      updateData.guest_phone = body.guestPhone.trim();
     } else {
-      updateData.guestPhone = null;
+      updateData.guest_phone = null;
     }
   }
 
   if (body.isPrimaryContact !== undefined) {
-    updateData.isPrimaryContact = Boolean(body.isPrimaryContact);
+    updateData.is_primary_contact = Boolean(body.isPrimaryContact);
   }
 
   if (body.dietaryRestrictions !== undefined) {
@@ -140,7 +152,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
         { status: 400 }
       );
     }
-    updateData.dietaryRestrictions = body.dietaryRestrictions
+    updateData.dietary_restrictions = body.dietaryRestrictions
       .filter(
         (restriction: unknown): restriction is string =>
           typeof restriction === "string" && restriction.trim() !== ""
@@ -155,7 +167,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
         { status: 400 }
       );
     }
-    updateData.allergenRestrictions = body.allergenRestrictions
+    updateData.allergen_restrictions = body.allergenRestrictions
       .filter(
         (restriction: unknown): restriction is string =>
           typeof restriction === "string" && restriction.trim() !== ""
@@ -169,37 +181,37 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   }
 
   if (body.specialMealRequired !== undefined) {
-    updateData.specialMealRequired = Boolean(body.specialMealRequired);
+    updateData.special_meal_required = Boolean(body.specialMealRequired);
   }
 
   if (body.specialMealNotes !== undefined) {
-    updateData.specialMealNotes =
+    updateData.special_meal_notes =
       body.specialMealNotes === null
         ? null
         : body.specialMealNotes.toString().trim();
   }
 
   if (body.tableAssignment !== undefined) {
-    updateData.tableAssignment =
+    updateData.table_assignment =
       body.tableAssignment === null
         ? null
         : body.tableAssignment.toString().trim();
   }
 
   if (body.mealPreference !== undefined) {
-    updateData.mealPreference =
+    updateData.meal_preference =
       body.mealPreference === null
         ? null
         : body.mealPreference.toString().trim();
   }
 
   // Update guest
-  const updatedGuest = await database.eventGuest.update({
+  const updatedGuest = await database.event_guests.updateMany({
     where: {
-      tenantId_id: {
-        tenantId,
-        id: guestId,
-      },
+      AND: [
+        { tenantId: tenantId },
+        { id: guestId },
+      ],
     },
     data: updateData,
   });
@@ -224,9 +236,9 @@ export async function DELETE(
   const { guestId } = await params;
 
   // Validate guest exists and belongs to tenant
-  const existingGuest = await database.eventGuest.findFirst({
+  const existingGuest = await database.event_guests.findFirst({
     where: {
-      AND: [{ tenantId }, { id: guestId }, { deletedAt: null }],
+      AND: [{ tenantId: tenantId }, { id: guestId }, { deletedAt: null }],
     },
   });
 
@@ -235,15 +247,15 @@ export async function DELETE(
   }
 
   // Soft delete
-  await database.eventGuest.update({
+  await database.event_guests.updateMany({
     where: {
-      tenantId_id: {
-        tenantId,
-        id: guestId,
-      },
+      AND: [
+        { tenantId: tenantId },
+        { id: guestId },
+      ],
     },
     data: {
-      deletedAt: new Date(),
+      deleted_at: new Date(),
     },
   });
 

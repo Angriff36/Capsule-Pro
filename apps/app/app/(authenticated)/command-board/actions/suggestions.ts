@@ -20,28 +20,28 @@ async function getContextData(tenantId: string) {
   nextMonth.setMonth(nextMonth.getMonth() + 1);
 
   const [upcomingEvents, prepTasks, inventoryAlerts] = await Promise.all([
-    database.event.findMany({
+    database.events.findMany({
       where: {
-        tenantId,
-        deletedAt: null,
-        eventDate: { gte: today, lte: nextWeek },
+        tenant_id: tenantId,
+        deleted_at: null,
+        event_date: { gte: today, lte: nextWeek },
       },
-      orderBy: { eventDate: "asc" },
+      orderBy: { event_date: "asc" },
       take: 20,
     }),
-    database.prepTask.findMany({
+    database.prep_tasks.findMany({
       where: {
-        tenantId,
-        deletedAt: null,
+        tenant_id: tenantId,
+        deleted_at: null,
         status: { not: "completed" },
-        dueByDate: { lte: nextWeek },
+        due_by_date: { lte: nextWeek },
       },
-      orderBy: { dueByDate: "asc" },
+      orderBy: { due_by_date: "asc" },
       take: 20,
     }),
-    database.inventoryAlert.findMany({
+    database.inventory_alerts.findMany({
       where: {
-        tenantId,
+        tenant_id: tenantId,
       },
       take: 10,
     }),
@@ -52,14 +52,14 @@ async function getContextData(tenantId: string) {
       .map((e) => ({
         id: e.id,
         title: e.title,
-        dueDate: e.eventDate,
+        dueDate: e.event_date,
         type: "event",
       }))
       .concat(
         prepTasks.map((t) => ({
           id: t.id,
           title: t.name,
-          dueDate: t.dueByDate,
+          dueDate: t.due_by_date,
           type: "prep_task",
         }))
       ),
@@ -179,13 +179,13 @@ function addCapacitySuggestions(
 }
 
 function addResourceSuggestions(
-  upcomingEvents: Array<{ eventDate: Date }>,
+  upcomingEvents: Array<{ event_date: Date }>,
   tenantId: string
 ): SuggestedAction[] {
   const suggestions: SuggestedAction[] = [];
 
   if (upcomingEvents.length >= 2) {
-    const eventDates = upcomingEvents.map((e) => e.eventDate.toDateString());
+    const eventDates = upcomingEvents.map((e) => e.event_date.toDateString());
     const hasSameDayEvents = new Set(eventDates).size < eventDates.length;
 
     if (hasSameDayEvents) {

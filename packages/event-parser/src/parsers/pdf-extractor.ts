@@ -6,11 +6,11 @@
 import type { TextItem } from "pdfjs-dist/legacy/build/pdf.mjs";
 
 // Import pdfjs-dist with legacy build for Node.js compatibility
-// @ts-ignore - pdfjs-dist types are complex in ESM/Node environments
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
-
-// @ts-ignore - accessing GlobalWorkerOptions from the module
-const { getDocument, GlobalWorkerOptions } = pdfjsLib;
+// @ts-expect-error - pdfjs-dist types are complex in ESM/Node environments
+import {
+  GlobalWorkerOptions,
+  getDocument,
+} from "pdfjs-dist/legacy/build/pdf.mjs";
 
 // Configure the worker - use CDN for both browser and Node.js environments
 // Node.js can fetch from CDN, and this avoids bundling issues
@@ -20,17 +20,46 @@ const PDFJS_WORKER_URL =
 // Configure the worker
 GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
 
+const SHOULD_DISABLE_WORKER = typeof window === "undefined";
+
+const HEADER_PATTERN =
+  /^category item special, production notes, container quantity\/?unit$/;
+const LABEL_SPLIT_PATTERN = /\s+(?=[A-Za-z][A-Za-z0-9&/\-(),\s]{0,24}:\s)/;
+const LABEL_PATTERN = /^([A-Za-z][A-Za-z0-9&/\-(),\s]{0,24}):\s*(.*)$/;
+const P_LABEL_PATTERN = /^p$/i;
+const TPP_MARKERS = [
+  { pattern: /invoice\s*#/i, weight: 20, name: "Invoice #" },
+  {
+    pattern: /timeline\s*\/\s*key\s*moments/i,
+    weight: 20,
+    name: "Timeline / Key Moments",
+  },
+  { pattern: /quantity\s*\/\s*unit/i, weight: 20, name: "Quantity / Unit" },
+  {
+    pattern: /category.*item.*special.*production/i,
+    weight: 15,
+    name: "Menu Headers",
+  },
+  { pattern: /^client:/im, weight: 15, name: "Client:" },
+  { pattern: /mangia\s*catering/i, weight: 10, name: "Mangia Catering" },
+  {
+    pattern: /finish\s*at\s*(event|kitchen)/i,
+    weight: 10,
+    name: "Service Location",
+  },
+];
+
 /**
  * PDF metadata info structure
  */
-interface PdfMetadataInfo {
+type PdfMetadataInfo = {
   Title?: string;
   Author?: string;
   Subject?: string;
   Creator?: string;
-}
+};
 
-export interface PdfExtractionResult {
+export type PdfExtractionResult = {
   lines: string[];
   pageCount: number;
   metadata?: {
@@ -40,6 +69,21 @@ export interface PdfExtractionResult {
     creator?: string;
   };
   errors: string[];
+};
+
+function extractMetadata(pdf: { getMetadata: () => Promise<unknown> }) {
+  return pdf
+    .getMetadata()
+    .then((metadataResult) => {
+      const info = (metadataResult as { info?: PdfMetadataInfo }).info;
+      return {
+        title: info?.Title,
+        author: info?.Author,
+        subject: info?.Subject,
+        creator: info?.Creator,
+      };
+    })
+    .catch(() => undefined);
 }
 
 /**
@@ -57,25 +101,14 @@ export async function extractPdfText(
       disableFontFace: true,
       disableRange: true,
       disableStream: true,
+      disableWorker: SHOULD_DISABLE_WORKER,
     });
 
     const pdf = await loadingTask.promise;
     const pageCount = pdf.numPages;
 
     // Extract metadata
-    let metadata;
-    try {
-      const metadataResult = await pdf.getMetadata();
-      const info = metadataResult?.info as PdfMetadataInfo | undefined;
-      metadata = {
-        title: info?.Title,
-        author: info?.Author,
-        subject: info?.Subject,
-        creator: info?.Creator,
-      };
-    } catch {
-      // Metadata extraction is optional
-    }
+    const metadata = await extractMetadata(pdf);
 
     // Extract text from each page
     for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
@@ -175,7 +208,7 @@ function pushSegments(rows: string[], line: string) {
 
   // Split on common labels
   const initialSegments = trimmed
-    .split(/\s+(?=[A-Za-z][A-Za-z0-9&/\-(),\s]{0,24}:\s)/)
+    .split(LABEL_SPLIT_PATTERN)
     .map((segment) => segment.trim())
     .filter(Boolean);
 
@@ -194,11 +227,7 @@ function emitSegment(segment: string, rows: string[]) {
   }
 
   const headerCandidate = trimmed.replace(/\s+/g, " ").toLowerCase();
-  if (
-    /^category item special, production notes, container quantity\/?unit$/.test(
-      headerCandidate
-    )
-  ) {
+  if (HEADER_PATTERN.test(headerCandidate)) {
     rows.push("Category");
     rows.push("Item");
     rows.push("Special, Production Notes, Container");
@@ -206,14 +235,12 @@ function emitSegment(segment: string, rows: string[]) {
     return;
   }
 
-  const labelMatch = trimmed.match(
-    /^([A-Za-z][A-Za-z0-9&\/\-(),\s]{0,24}):\s*(.*)$/
-  );
+  const labelMatch = trimmed.match(LABEL_PATTERN);
   if (labelMatch) {
     const labelName = labelMatch[1].trim();
     const remainder = labelMatch[2].trim();
 
-    if (/^p$/i.test(labelName)) {
+    if (P_LABEL_PATTERN.test(labelName)) {
       const combined = remainder ? `P: ${remainder}` : "P:";
       rows.push(combined.trim());
       return;
@@ -233,41 +260,19 @@ function emitSegment(segment: string, rows: string[]) {
 /**
  * Detect PDF format (TPP, generic, etc.)
  */
-export interface FormatDetectionResult {
+export type FormatDetectionResult = {
   format: "tpp" | "generic";
   confidence: number;
   markers: string[];
-}
+};
 
 export function detectPdfFormat(lines: string[]): FormatDetectionResult {
   const markers: string[] = [];
   let score = 0;
 
-  const tppMarkers = [
-    { pattern: /invoice\s*#/i, weight: 20, name: "Invoice #" },
-    {
-      pattern: /timeline\s*\/\s*key\s*moments/i,
-      weight: 20,
-      name: "Timeline / Key Moments",
-    },
-    { pattern: /quantity\s*\/\s*unit/i, weight: 20, name: "Quantity / Unit" },
-    {
-      pattern: /category.*item.*special.*production/i,
-      weight: 15,
-      name: "Menu Headers",
-    },
-    { pattern: /^client:/im, weight: 15, name: "Client:" },
-    { pattern: /mangia\s*catering/i, weight: 10, name: "Mangia Catering" },
-    {
-      pattern: /finish\s*at\s*(event|kitchen)/i,
-      weight: 10,
-      name: "Service Location",
-    },
-  ];
-
   const fullText = lines.join("\n");
 
-  for (const marker of tppMarkers) {
+  for (const marker of TPP_MARKERS) {
     if (marker.pattern.test(fullText)) {
       score += marker.weight;
       markers.push(marker.name);

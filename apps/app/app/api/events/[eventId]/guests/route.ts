@@ -25,9 +25,9 @@ export async function GET(
     const { searchParams } = new URL(request.url);
 
     // Validate event exists
-    const event = await database.event.findFirst({
+    const event = await database.events.findFirst({
       where: {
-        AND: [{ tenantId }, { id: eventId }, { deletedAt: null }],
+        AND: [{ tenantId: tenantId }, { id: eventId }, { deletedAt: null }],
       },
     });
 
@@ -42,11 +42,11 @@ export async function GET(
     // Filter by guest name if provided
     const guestName = searchParams.get("guestName");
 
-    const guests = await database.eventGuest.findMany({
+    const guests = await database.event_guests.findMany({
       where: {
         AND: [
-          { tenantId },
-          { eventId },
+          { tenantId: tenantId },
+          { eventId: eventId },
           { deletedAt: null },
           ...(guestName ? [{ guestName: { contains: guestName } }] : []),
         ],
@@ -57,11 +57,11 @@ export async function GET(
     });
 
     // Get total count for pagination
-    const totalCount = await database.eventGuest.count({
+    const totalCount = await database.event_guests.count({
       where: {
         AND: [
-          { tenantId },
-          { eventId },
+          { tenantId: tenantId },
+          { eventId: eventId },
           { deletedAt: null },
           ...(guestName ? [{ guestName: { contains: guestName } }] : []),
         ],
@@ -119,9 +119,9 @@ export async function POST(
     );
 
     // Validate that the event exists
-    const event = await database.event.findFirst({
+    const event = await database.events.findFirst({
       where: {
-        AND: [{ tenantId }, { id: eventId }, { deletedAt: null }],
+        AND: [{ tenantId: tenantId }, { id: eventId }, { deletedAt: null }],
       },
     });
 
@@ -130,11 +130,11 @@ export async function POST(
     }
 
     // Check if guest already exists for this event
-    const existingGuest = await database.eventGuest.findFirst({
+    const existingGuest = await database.event_guests.findFirst({
       where: {
         AND: [
-          { tenantId },
-          { eventId },
+          { tenantId: tenantId },
+          { eventId: eventId },
           { guestName: { equals: trimmedGuestName } },
           { deletedAt: null },
         ],
@@ -149,10 +149,10 @@ export async function POST(
     }
 
     // Create guest record
-    const guest = await database.eventGuest.create({
+    const guest = await database.event_guests.create({
       data: {
-        tenantId,
-        eventId,
+        tenantId: tenantId,
+        eventId: eventId,
         guestName: trimmedGuestName,
         guestEmail: body.guestEmail?.trim() || null,
         guestPhone: body.guestPhone?.trim() || null,

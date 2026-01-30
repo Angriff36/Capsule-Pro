@@ -54,12 +54,10 @@ export async function POST(
     }
 
     // Check if contract exists and belongs to tenant
-    const contract = await database.eventContract.findUnique({
+    const contract = await database.event_contracts.findFirst({
       where: {
-        tenantId_id: {
-          tenantId,
-          id: contractId,
-        },
+        tenantId: tenantId,
+        id: contractId,
       },
     });
 

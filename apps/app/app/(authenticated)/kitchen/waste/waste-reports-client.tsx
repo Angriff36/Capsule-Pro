@@ -84,7 +84,7 @@ export function WasteReportsClient() {
       <div className="space-y-4">
         <h3 className="font-semibold">Waste by Reason</h3>
         <div className="space-y-2">
-          {data.data.map((item) => (
+          {data.reports.map((item) => (
             <div
               className="flex items-center justify-between rounded-lg border p-4"
               key={item.key}

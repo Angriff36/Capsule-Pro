@@ -1,7 +1,8 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
+import { createEventSchema } from "./validation";
 
 type CsvRow = Record<string, string>;
 
@@ -127,12 +128,12 @@ const formatDate = (date: Date) => date.toISOString().slice(0, 10);
 
 const ensureLocationId = async (tenantId: string): Promise<string> => {
   const [location] = await database.$queryRaw<{ id: string }[]>(
-    Prisma.sql`
+    `
       SELECT id
       FROM tenant.locations
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-      ORDER BY is_primary DESC, created_at ASC
+      WHERE tenantId = ${tenantId}
+        AND deletedAt IS NULL
+      ORDER BY is_primary DESC, createdAt ASC
       LIMIT 1
     `
   );
@@ -143,8 +144,8 @@ const ensureLocationId = async (tenantId: string): Promise<string> => {
 
   const createdId = randomUUID();
   await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant.locations (tenant_id, id, name, is_primary, is_active)
+    `
+      INSERT INTO tenant.locations (tenantId, id, name, is_primary, is_active)
       VALUES (${tenantId}, ${createdId}, ${"Main Kitchen"}, true, true)
     `
   );
@@ -154,7 +155,7 @@ const ensureLocationId = async (tenantId: string): Promise<string> => {
 
 const getFallbackUnitId = async () => {
   const [row] = await database.$queryRaw<{ id: number }[]>(
-    Prisma.sql`
+    `
       SELECT id
       FROM core.units
       ORDER BY id ASC
@@ -166,7 +167,7 @@ const getFallbackUnitId = async () => {
 
 const getUnitIds = async () => {
   const rows = await database.$queryRaw<{ id: number; code: string }[]>(
-    Prisma.sql`
+    `
       SELECT id, code
       FROM core.units
       WHERE code IN ('lb', 'ea', 'oz', 'g', 'kg')
@@ -197,12 +198,12 @@ const getUnitIds = async () => {
 
 const findRecipeId = async (tenantId: string, name: string) => {
   const [row] = await database.$queryRaw<{ id: string }[]>(
-    Prisma.sql`
+    `
       SELECT id
       FROM tenant_kitchen.recipes
-      WHERE tenant_id = ${tenantId}
+      WHERE tenantId = ${tenantId}
         AND name = ${name}
-        AND deleted_at IS NULL
+        AND deletedAt IS NULL
       LIMIT 1
     `
   );
@@ -221,8 +222,8 @@ const insertRecipe = async (
 
   const id = randomUUID();
   await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant_kitchen.recipes (tenant_id, id, name, category, tags, is_active)
+    `
+      INSERT INTO tenant_kitchen.recipes (tenantId, id, name, category, tags, is_active)
       VALUES (${tenantId}, ${id}, ${name}, ${category ?? null}, ${
         tags && tags.length > 0 ? tags : null
       }, true)
@@ -233,12 +234,12 @@ const insertRecipe = async (
 
 const findDishId = async (tenantId: string, name: string) => {
   const [row] = await database.$queryRaw<{ id: string }[]>(
-    Prisma.sql`
+    `
       SELECT id
       FROM tenant_kitchen.dishes
-      WHERE tenant_id = ${tenantId}
+      WHERE tenantId = ${tenantId}
         AND name = ${name}
-        AND deleted_at IS NULL
+        AND deletedAt IS NULL
       LIMIT 1
     `
   );
@@ -258,8 +259,8 @@ const insertDish = async (
 
   const id = randomUUID();
   await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant_kitchen.dishes (tenant_id, id, recipe_id, name, category, is_active)
+    `
+      INSERT INTO tenant_kitchen.dishes (tenantId, id, recipeId, name, category, is_active)
       VALUES (${tenantId}, ${id}, ${recipeId}, ${name}, ${category ?? null}, true)
     `
   );
@@ -268,12 +269,12 @@ const insertDish = async (
 
 const findIngredientId = async (tenantId: string, name: string) => {
   const [row] = await database.$queryRaw<{ id: string }[]>(
-    Prisma.sql`
+    `
       SELECT id
       FROM tenant_kitchen.ingredients
-      WHERE tenant_id = ${tenantId}
+      WHERE tenantId = ${tenantId}
         AND name = ${name}
-        AND deleted_at IS NULL
+        AND deletedAt IS NULL
       LIMIT 1
     `
   );
@@ -293,9 +294,9 @@ const insertIngredient = async (
 
   const id = randomUUID();
   await database.$executeRaw(
-    Prisma.sql`
+    `
       INSERT INTO tenant_kitchen.ingredients (
-        tenant_id,
+        tenantId,
         id,
         name,
         category,
@@ -310,12 +311,12 @@ const insertIngredient = async (
 
 const findInventoryItemId = async (tenantId: string, name: string) => {
   const [row] = await database.$queryRaw<{ id: string }[]>(
-    Prisma.sql`
+    `
       SELECT id
       FROM tenant_inventory.inventory_items
-      WHERE tenant_id = ${tenantId}
+      WHERE tenantId = ${tenantId}
         AND name = ${name}
-        AND deleted_at IS NULL
+        AND deletedAt IS NULL
       LIMIT 1
     `
   );
@@ -336,9 +337,9 @@ const insertInventoryItem = async (
   const id = randomUUID();
   const itemNumber = `INV-${id.slice(0, 8).toUpperCase()}`;
   await database.$executeRaw(
-    Prisma.sql`
+    `
       INSERT INTO tenant_inventory.inventory_items (
-        tenant_id,
+        tenantId,
         id,
         item_number,
         name,
@@ -492,16 +493,32 @@ const insertEvent = async (
     notes?: string;
   }
 ) => {
+  // Validate event data against schema
+  const eventData = {
+    title,
+    eventType,
+    eventDate: formatDate(eventDate),
+    guestCount,
+    notes,
+  };
+
+  const validationResult = createEventSchema.safeParse(eventData);
+  if (!validationResult.success) {
+    throw new Error(
+      `Invalid event data: ${validationResult.error.message}`
+    );
+  }
+
   const eventId = randomUUID();
   await database.$executeRaw(
-    Prisma.sql`
+    `
       INSERT INTO tenant_events.events (
-        tenant_id,
+        tenantId,
         id,
         title,
-        event_type,
-        event_date,
-        guest_count,
+        eventType,
+        eventDate,
+        guestCount,
         status,
         notes
       )
@@ -535,12 +552,12 @@ const insertEventDish = async (
   }
 ) => {
   await database.$executeRaw(
-    Prisma.sql`
+    `
       INSERT INTO tenant_events.event_dishes (
-        tenant_id,
+        tenantId,
         id,
         event_id,
-        dish_id,
+        dishId,
         quantity_servings,
         special_instructions
       )
@@ -585,13 +602,13 @@ const insertPrepTask = async (
   const unitId = unit.includes("pound") ? context.unitIds.pound : undefined;
 
   await database.$executeRaw(
-    Prisma.sql`
+    `
       INSERT INTO tenant_kitchen.prep_tasks (
-        tenant_id,
+        tenantId,
         id,
         event_id,
-        dish_id,
-        location_id,
+        dishId,
+        locationId,
         task_type,
         name,
         quantity_total,
@@ -873,9 +890,9 @@ export const importEventFromCsvText = async ({
     });
 
     await database.$executeRaw(
-      Prisma.sql`
+      `
         INSERT INTO tenant_events.event_imports (
-          tenant_id,
+          tenantId,
           id,
           event_id,
           file_name,
@@ -935,9 +952,9 @@ export const importEventFromCsvText = async ({
   });
 
   await database.$executeRaw(
-    Prisma.sql`
+    `
       INSERT INTO tenant_events.event_imports (
-        tenant_id,
+        tenantId,
         id,
         event_id,
         file_name,
@@ -980,9 +997,9 @@ export const importEventFromPdf = async ({
   });
 
   await database.$executeRaw(
-    Prisma.sql`
+    `
       INSERT INTO tenant_events.event_imports (
-        tenant_id,
+        tenantId,
         id,
         event_id,
         file_name,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useOthers, useSelf } from "@repo/collaboration/hooks";
+import { useOtherCursors } from "@repo/collaboration/hooks";
 import {
   Avatar,
   AvatarFallback,
@@ -33,8 +33,7 @@ const PresenceAvatar = ({ info }: PresenceAvatarProps) => (
 );
 
 export const AvatarStack = () => {
-  const others = useOthers();
-  const self = useSelf();
+  const others = useOtherCursors();
   const hasMoreUsers = others.length > 3;
 
   return (
@@ -51,8 +50,6 @@ export const AvatarStack = () => {
           }}
         />
       )}
-
-      {self && <PresenceAvatar info={self.info} />}
     </div>
   );
 };

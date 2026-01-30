@@ -52,37 +52,57 @@ const EventReportsPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  // Fetch reports with event data
-  const reports = await database.eventReport.findMany({
+  // Fetch reports
+  const reports = await database.event_reports.findMany({
     where: {
-      tenantId,
-      deletedAt: null,
+      tenant_id: tenantId,
+      deleted_at: null,
     },
-    include: {
-      event: {
-        select: {
-          id: true,
-          eventNumber: true,
-          title: true,
-          eventDate: true,
-        },
-      },
-    },
-    orderBy: [{ createdAt: "desc" }],
+    orderBy: [{ created_at: "desc" }],
   });
 
+  // Fetch events for reports
+  const eventIds = reports.map((r) => r.event_id);
+  const events = await database.events.findMany({
+    where: {
+      tenant_id: tenantId,
+      id: { in: eventIds },
+      deleted_at: null,
+    },
+    select: {
+      id: true,
+      event_number: true,
+      title: true,
+      event_date: true,
+    },
+  });
+
+  // Create a map for quick lookup
+  const eventMap = new Map(events.map((e) => [e.id, e]));
+
+  // Combine reports with their events
+  const reportsWithEvents = reports.map((report) => ({
+    ...report,
+    event: eventMap.get(report.event_id) || {
+      id: report.event_id,
+      event_number: null,
+      title: "Unknown Event",
+      event_date: null,
+    },
+  }));
+
   // Calculate stats
-  const draftCount = reports.filter((r) => r.status === "draft").length;
-  const inProgressCount = reports.filter(
+  const draftCount = reportsWithEvents.filter((r) => r.status === "draft").length;
+  const inProgressCount = reportsWithEvents.filter(
     (r) => r.status === "in_progress"
   ).length;
-  const completedCount = reports.filter(
+  const completedCount = reportsWithEvents.filter(
     (r) => r.status === "completed" || r.status === "approved"
   ).length;
   const avgCompletion =
-    reports.length > 0
+    reportsWithEvents.length > 0
       ? Math.round(
-          reports.reduce((sum, r) => sum + r.completion, 0) / reports.length
+          reportsWithEvents.reduce((sum, r) => sum + r.completion, 0) / reportsWithEvents.length
         )
       : 0;
 
@@ -110,7 +130,7 @@ const EventReportsPage = async () => {
           <Card>
             <CardHeader>
               <CardDescription>Total Reports</CardDescription>
-              <CardTitle className="text-2xl">{reports.length}</CardTitle>
+              <CardTitle className="text-2xl">{reportsWithEvents.length}</CardTitle>
             </CardHeader>
             <CardContent className="text-muted-foreground text-sm">
               Pre-Event Review checklists
@@ -148,7 +168,7 @@ const EventReportsPage = async () => {
         </section>
 
         {/* Reports List */}
-        {reports.length === 0 ? (
+        {reportsWithEvents.length === 0 ? (
           <Empty>
             <EmptyHeader>
               <EmptyMedia variant="icon">
@@ -171,7 +191,7 @@ const EventReportsPage = async () => {
           </Empty>
         ) : (
           <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-            {reports.map((report) => (
+            {reportsWithEvents.map((report) => (
               <Link
                 className="group"
                 href={`/events/reports/${report.id}`}
@@ -181,7 +201,7 @@ const EventReportsPage = async () => {
                   <CardHeader className="gap-1">
                     <CardDescription className="flex items-center justify-between gap-2">
                       <span className="truncate">
-                        {report.event.eventNumber ?? "No event number"}
+                        {report.event.event_number ?? "No event number"}
                       </span>
                       <Badge
                         className="capitalize"
@@ -200,8 +220,8 @@ const EventReportsPage = async () => {
                       {report.event.title}
                     </CardTitle>
                     <CardDescription>
-                      {report.event.eventDate
-                        ? new Date(report.event.eventDate).toLocaleDateString(
+                      {report.event.event_date
+                        ? new Date(report.event.event_date).toLocaleDateString(
                             "en-US",
                             { dateStyle: "medium" }
                           )
@@ -219,9 +239,9 @@ const EventReportsPage = async () => {
                         style={{ width: `${report.completion}%` }}
                       />
                     </div>
-                    {report.autoFillScore !== null && (
+                    {report.auto_fill_score !== null && (
                       <div className="text-sm text-muted-foreground">
-                        Auto-filled: {report.autoFillScore} questions
+                        Auto-filled: {report.auto_fill_score} questions
                       </div>
                     )}
                   </CardContent>

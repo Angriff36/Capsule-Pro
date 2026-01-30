@@ -50,9 +50,9 @@ export async function POST(request: Request) {
     const tenantId = await getTenantIdForOrg(orgId);
 
     // Get event details to verify it exists and belongs to the tenant
-    const event = await database.event.findFirst({
+    const event = await database.events.findFirst({
       where: {
-        tenantId,
+        tenantId: tenantId,
         id: body.eventId,
         deletedAt: null,
       },
@@ -67,17 +67,17 @@ export async function POST(request: Request) {
     }
 
     // Get all guests for the event with their dietary and allergen restrictions
-    const guests = await database.eventGuest.findMany({
+    const guests = await database.event_guests.findMany({
       where: {
-        tenantId,
+        tenantId: tenantId,
         eventId: body.eventId,
         deletedAt: null,
       },
       select: {
         id: true,
-        guestName: true,
-        dietaryRestrictions: true,
-        allergenRestrictions: true,
+        guest_name: true,
+        dietary_restrictions: true,
+        allergen_restrictions: true,
       },
     });
 
@@ -174,8 +174,8 @@ export async function POST(request: Request) {
         const conflictingDietaryTags: string[] = [];
 
         // Check allergen conflicts (critical)
-        if (guest.allergenRestrictions && dish.allergens) {
-          for (const allergen of guest.allergenRestrictions) {
+        if (guest.allergen_restrictions && dish.allergens) {
+          for (const allergen of guest.allergen_restrictions) {
             if (
               dish.allergens.some(
                 (dishAllergen) =>
@@ -189,8 +189,8 @@ export async function POST(request: Request) {
         }
 
         // Check dietary restriction conflicts (warning)
-        if (guest.dietaryRestrictions && dish.dietaryTags) {
-          for (const restriction of guest.dietaryRestrictions) {
+        if (guest.dietary_restrictions && dish.dietaryTags) {
+          for (const restriction of guest.dietary_restrictions) {
             if (
               dish.dietaryTags.some(
                 (dietaryTag) =>
@@ -209,7 +209,7 @@ export async function POST(request: Request) {
         if (conflictingAllergens.length > 0) {
           conflicts.push({
             guestId: guest.id,
-            guestName: guest.guestName,
+            guestName: guest.guest_name,
             dishId: dish.id,
             dishName: dish.name,
             allergens: conflictingAllergens,
@@ -221,7 +221,7 @@ export async function POST(request: Request) {
         if (conflictingDietaryTags.length > 0) {
           conflicts.push({
             guestId: guest.id,
-            guestName: guest.guestName,
+            guestName: guest.guest_name,
             dishId: dish.id,
             dishName: dish.name,
             allergens: conflictingDietaryTags,

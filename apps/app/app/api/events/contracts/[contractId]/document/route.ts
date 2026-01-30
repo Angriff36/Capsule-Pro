@@ -69,12 +69,10 @@ export async function POST(
     }
 
     // Check if contract exists and belongs to tenant
-    const contract = await database.eventContract.findUnique({
+    const contract = await database.event_contracts.findFirst({
       where: {
-        tenantId_id: {
-          tenantId,
-          id: contractId,
-        },
+        tenantId: tenantId,
+        id: contractId,
       },
     });
 
@@ -101,12 +99,12 @@ export async function POST(
     // and store the URL. For now, we're storing a data URL.
     const dataUrl = `data:${file.type};base64,${base64}`;
 
-    await database.eventContract.update({
+    await database.event_contracts.updateMany({
       where: {
-        tenantId_id: {
-          tenantId,
-          id: contractId,
-        },
+        AND: [
+          { tenantId: tenantId },
+          { id: contractId },
+        ],
       },
       data: {
         documentUrl: dataUrl,

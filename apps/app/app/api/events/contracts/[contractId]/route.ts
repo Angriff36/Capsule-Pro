@@ -37,12 +37,10 @@ export async function DELETE(
 
   try {
     // Check if contract exists and belongs to tenant
-    const contract = await database.eventContract.findUnique({
+    const contract = await database.event_contracts.findFirst({
       where: {
-        tenantId_id: {
-          tenantId,
-          id: contractId,
-        },
+        tenantId: tenantId,
+        id: contractId,
       },
     });
 
@@ -54,12 +52,12 @@ export async function DELETE(
     }
 
     // Soft delete the contract
-    await database.eventContract.update({
+    await database.event_contracts.updateMany({
       where: {
-        tenantId_id: {
-          tenantId,
-          id: contractId,
-        },
+        AND: [
+          { tenantId: tenantId },
+          { id: contractId },
+        ],
       },
       data: {
         deletedAt: new Date(),

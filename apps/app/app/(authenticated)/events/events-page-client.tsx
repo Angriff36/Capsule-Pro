@@ -2,6 +2,8 @@
 
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { createEvent } from "./actions";
 import { EventEditorModal } from "./event-editor-modal";
 
 export const EventsPageClient = () => {
@@ -9,12 +11,11 @@ export const EventsPageClient = () => {
 
   const handleSaveEvent = async (formData: FormData) => {
     try {
-      await fetch("/events/api/create", {
-        method: "POST",
-        body: formData,
-      });
+      await createEvent(formData);
+      toast.success("Event created successfully");
     } catch (error) {
       console.error("Failed to save event:", error);
+      toast.error("Failed to save event. Please try again.");
       throw error;
     }
   };
