@@ -39,8 +39,10 @@ export function EventsTab({ clientId }: EventsTabProps) {
       );
       setEvents(data.data);
       setPagination((prev) => ({ ...prev, total: data.pagination.total }));
-    } catch (_error) {
-      toast.error("Failed to load events");
+    } catch (error) {
+      toast.error("Failed to load events", {
+        description: error instanceof Error ? error.message : "Unknown error",
+      });
     } finally {
       setLoading(false);
     }
