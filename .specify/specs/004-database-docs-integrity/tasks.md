@@ -378,7 +378,7 @@ Constitution: 1.0.0
 
 ## Phase 8: Enum Documentation (2 tasks, can parallelize)
 
-- [ ] T031 [P] Document core enums (ActionType, EmploymentType, etc.)
+- [x] T031 [P] Document core enums (ActionType, EmploymentType, etc.)
   - **Do**:
     1. Create `docs/database/enums/README.md` with all enums overview
     2. Document `ActionType.md` (insert, update, delete)
