@@ -239,7 +239,7 @@ Constitution: 1.0.0
   - **Verify:** `test -f "C:/projects/capsule-pro/docs/database/tables/tenant/settings.md" && echo "OK"`
   - **Commit:** `docs(database): document settings table (note missing FK) + fix {n} types`
 
-- [ ] T021 [P] Document documents table + fix types
+- [x] T021 [P] Document documents table + fix types
   - **Do**:
     1. Create `docs/database/tables/tenant/documents.md`
     2. Document for PDF/CSV parsing pipeline
