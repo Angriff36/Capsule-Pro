@@ -84,7 +84,7 @@ Constitution: 1.0.0
   - **Verify**: `test -f "C:/projects/capsule-pro/docs/database/schemas/02-tenant.md" && grep -q "Missing Foreign Key" "C:/projects/capsule-pro/docs/database/schemas/02-tenant.md" && echo "OK"`
   - **Commit**: `docs(database): document tenant schema (note FK issues)`
 
-- [ ] T007 [P] Document tenant_admin schema
+- [x] T007 [P] Document tenant_admin schema
   - **Do**:
     1. Create `docs/database/schemas/03-tenant_admin.md`
     2. Document all 11 admin tables: Report, report_history, report_schedules, Workflow, workflow_executions, workflow_steps, Notification, notification_preferences, admin_audit_trail, admin_permissions, admin_roles, admin_users
