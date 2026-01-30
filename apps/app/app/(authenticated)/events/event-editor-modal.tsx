@@ -22,7 +22,6 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { MapPinIcon, UploadIcon, UsersIcon, XIcon } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
-import { toast } from "sonner";
 
 type EventImage = {
   id: string;
@@ -40,20 +39,11 @@ type EventEditorModalProps = {
     date?: string;
     time?: string;
     location?: string;
-    capacity?: number;
+    guestCount?: number;
     eventType?: string;
   };
   onSave: (data: FormData) => Promise<void>;
 };
-
-const eventTypes = [
-  "Workshop",
-  "Meetup",
-  "Corporate Event",
-  "Wedding",
-  "Birthday Party",
-  "Other",
-] as const;
 
 export const EventEditorModal = ({
   open,
@@ -102,21 +92,20 @@ export const EventEditorModal = ({
           action={async (formData) => {
             await onSave(formData);
             onOpenChange(false);
-            toast.success("Event created successfully");
           }}
           className="flex flex-col gap-6"
         >
           {event?.id && <input name="eventId" type="hidden" value={event.id} />}
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="name">
-                Event Name <span className="text-destructive">*</span>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="title">
+                Event Title <span className="text-destructive">*</span>
               </Label>
               <Input
                 defaultValue={event?.name ?? ""}
-                id="name"
-                name="name"
+                id="title"
+                name="title"
                 placeholder="e.g., Summer Cooking Workshop"
                 required
               />
@@ -125,16 +114,16 @@ export const EventEditorModal = ({
             <div className="space-y-2">
               <Label htmlFor="eventType">Event Type</Label>
               <Select
-                defaultValue={event?.eventType ?? "Workshop"}
+                defaultValue={event?.eventType ?? "catering"}
                 name="eventType"
               >
                 <SelectTrigger id="eventType">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {eventTypes.map((type) => (
+                  {["catering", "workshop", "meetup", "corporate", "wedding", "birthday"].map((type) => (
                     <SelectItem key={type} value={type}>
-                      {type}
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -142,68 +131,103 @@ export const EventEditorModal = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
+              <Label htmlFor="eventDate">
+                Event Date <span className="text-destructive">*</span>
+              </Label>
               <Input
                 defaultValue={event?.date ?? ""}
-                id="date"
-                name="date"
+                id="eventDate"
+                name="eventDate"
                 required
                 type="date"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="time">Time</Label>
-              <Input
-                defaultValue={event?.time ?? ""}
-                id="time"
-                name="time"
-                required
-                type="time"
-              />
-            </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="location">Location</Label>
-              <div className="relative">
-                <MapPinIcon className="absolute left-3 top-3 size-4 text-muted-foreground" />
-                <Input
-                  className="pl-10"
-                  defaultValue={event?.location ?? ""}
-                  id="location"
-                  name="location"
-                  placeholder="e.g., 123 Main St, City, State"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="capacity">Capacity</Label>
+              <Label htmlFor="guestCount">
+                Guest Count <span className="text-destructive">*</span>
+              </Label>
               <div className="relative">
                 <UsersIcon className="absolute left-3 top-3 size-4 text-muted-foreground" />
                 <Input
                   className="pl-10"
                   defaultValue={event?.capacity ?? ""}
-                  id="capacity"
+                  id="guestCount"
                   min="1"
-                  name="capacity"
+                  name="guestCount"
                   placeholder="e.g., 50"
                   required
                   type="number"
                 />
               </div>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select
+                defaultValue="confirmed"
+                name="status"
+              >
+                <SelectTrigger id="status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {["confirmed", "tentative", "postponed", "completed", "cancelled"].map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="venueName">Venue Name</Label>
+              <div className="relative">
+                <MapPinIcon className="absolute left-3 top-3 size-4 text-muted-foreground" />
+                <Input
+                  className="pl-10"
+                  defaultValue={event?.location ?? ""}
+                  id="venueName"
+                  name="venueName"
+                  placeholder="e.g., Grand Ballroom"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="venueAddress">Venue Address</Label>
+              <div className="relative">
+                <MapPinIcon className="absolute left-3 top-3 size-4 text-muted-foreground" />
+                <Input
+                  className="pl-10"
+                  defaultValue={event?.location ?? ""}
+                  id="venueAddress"
+                  name="venueAddress"
+                  placeholder="e.g., 123 Main St, City, State"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="notes">Notes</Label>
             <Textarea
               defaultValue={event?.description ?? ""}
-              id="description"
-              name="description"
-              placeholder="Describe your event..."
+              id="notes"
+              name="notes"
+              placeholder="Additional notes for this event..."
               rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="tags">Tags (comma separated)</Label>
+            <Input
+              id="tags"
+              name="tags"
+              placeholder="e.g., outdoor, formal, lunch"
+              type="text"
             />
           </div>
 

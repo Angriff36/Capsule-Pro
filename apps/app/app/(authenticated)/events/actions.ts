@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireTenantId } from "../../lib/tenant";
 import { type EventStatus, eventStatuses } from "./constants";
+import { createEventSchema } from "./validation";
 import { importEventFromCsvText, importEventFromPdf } from "./importer";
 
 const getString = (formData: FormData, key: string): string | undefined => {
@@ -86,32 +87,59 @@ const getTags = (formData: FormData): string[] =>
 
 export const createEvent = async (formData: FormData): Promise<void> => {
   const tenantId = await requireTenantId();
-  const eventDate = getDate(formData, "eventDate");
 
-  if (!eventDate) {
-    throw new Error("Event date is required.");
+  const rawData = {
+    title: getString(formData, "title"),
+    eventType: getString(formData, "eventType"),
+    eventDate: getString(formData, "eventDate"),
+    guestCount: getString(formData, "guestCount"),
+    status: getString(formData, "status"),
+    venueName: getOptionalString(formData, "venueName"),
+    venueAddress: getOptionalString(formData, "venueAddress"),
+    notes: getOptionalString(formData, "notes"),
+    budget: getString(formData, "budget"),
+    tags: getString(formData, "tags"),
+  };
+
+  const parsed = createEventSchema.safeParse(rawData);
+
+  if (!parsed.success) {
+    const error = parsed.error as { issues?: Array<{ message: string }>; errors?: Array<{ message: string }> };
+    const issues = error.issues ?? error.errors ?? [];
+    const errors = issues.map((e) => e.message).join(", ");
+    throw new Error(`Validation failed: ${errors}`);
   }
 
-  const status = getStatus(formData);
+  const data = parsed.data;
 
-  if (!eventStatuses.includes(status)) {
-    throw new Error("Invalid status.");
-  }
+  const created = await database.$transaction(async (tx) => {
+    const event = await tx.events.create({
+      data: {
+        tenant_id: tenantId,
+        title: data.title,
+        event_type: data.eventType,
+        event_date: new Date(`${data.eventDate}T00:00:00`),
+        guest_count: data.guestCount,
+        status: data.status,
+        budget: data.budget ?? null,
+        venue_name: data.venueName,
+        venue_address: data.venueAddress,
+        notes: data.notes,
+        tags: data.tags,
+      },
+    });
 
-  const created = await database.event.create({
-    data: {
-      tenantId,
-      title: getString(formData, "title") ?? "Untitled Event",
-      eventType: getString(formData, "eventType") ?? "catering",
-      eventDate,
-      guestCount: getNumber(formData, "guestCount") ?? 1,
-      status,
-      budget: getNumberOrNull(formData, "budget"),
-      venueName: getOptionalString(formData, "venueName"),
-      venueAddress: getOptionalString(formData, "venueAddress"),
-      notes: getOptionalString(formData, "notes"),
-      tags: getTags(formData),
-    },
+    await tx.battle_boards.create({
+      data: {
+        tenant_id: tenantId,
+        event_id: event.id,
+        board_name: `${event.title} - Battle Board`,
+        board_type: "event-specific",
+        board_data: {},
+      },
+    });
+
+    return event;
   });
 
   revalidatePath("/events");
@@ -137,22 +165,22 @@ export const updateEvent = async (formData: FormData): Promise<void> => {
     throw new Error("Invalid status.");
   }
 
-  await database.event.update({
+  await database.events.updateMany({
     where: {
-      tenantId_id: {
-        tenantId,
-        id: eventId,
-      },
+      AND: [
+        { tenant_id: tenantId },
+        { id: eventId },
+      ],
     },
     data: {
       title: getString(formData, "title") ?? "Untitled Event",
-      eventType: getString(formData, "eventType") ?? "catering",
-      eventDate,
-      guestCount: getNumber(formData, "guestCount") ?? 1,
+      event_type: getString(formData, "eventType") ?? "catering",
+      event_date: eventDate,
+      guest_count: getNumber(formData, "guestCount") ?? 1,
       status,
       budget: getNumberOrNull(formData, "budget"),
-      venueName: getOptionalString(formData, "venueName"),
-      venueAddress: getOptionalString(formData, "venueAddress"),
+      venue_name: getOptionalString(formData, "venueName"),
+      venue_address: getOptionalString(formData, "venueAddress"),
       notes: getOptionalString(formData, "notes"),
       tags: getTags(formData),
     },
@@ -170,15 +198,15 @@ export const deleteEvent = async (formData: FormData): Promise<void> => {
     throw new Error("Event id is required.");
   }
 
-  await database.event.update({
+  await database.events.updateMany({
     where: {
-      tenantId_id: {
-        tenantId,
-        id: eventId,
-      },
+      AND: [
+        { tenant_id: tenantId },
+        { id: eventId },
+      ],
     },
     data: {
-      deletedAt: new Date(),
+      deleted_at: new Date(),
     },
   });
 
