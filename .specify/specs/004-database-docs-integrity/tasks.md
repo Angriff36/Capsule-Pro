@@ -58,7 +58,7 @@ Constitution: 1.0.0
   - **Verify**: `test -f "C:/projects/capsule-pro/docs/database/schemas/00-platform.md" && grep -q "Account" "C:/projects/capsule-pro/docs/database/schemas/00-platform.md" && echo "OK"`
   - **Commit**: `docs(database): document platform schema`
 
-- [ ] T005 [P] Document core schema
+- [x] T005 [P] Document core schema
   - **Do**:
     1. Create `docs/database/schemas/01-core.md`
     2. Document all core types: 12 enums (ActionType, EmploymentType, UnitSystem, UnitType, KitchenTaskPriority, KitchenTaskStatus, OutboxStatus, UserRole, ShipmentStatus, admin_action, admin_entity_type, admin_role)
