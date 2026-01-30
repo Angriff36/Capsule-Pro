@@ -135,7 +135,7 @@ Constitution: 1.0.0
   - **Verify**: `test -f "C:/projects/capsule-pro/docs/database/schemas/07-tenant_kitchen.md" && echo "OK"`
   - **Commit**: `docs(database): document tenant_kitchen schema`
 
-- [ ] T012 [P] Document tenant_staff schema
+- [x] T012 [P] Document tenant_staff schema
   - **Do**:
     1. Create `docs/database/schemas/08-tenant_staff.md`
     2. Document all 14 staff tables: User, Role, Schedule, ScheduleShift, open_shifts, EmployeeLocation, TimeEntry, TimecardEditRequest, LaborBudget, payroll_periods, payroll_runs, payroll_line_items, EmployeeDeduction, employee_skills, employee_certifications, employee_seniority, employee_availability
