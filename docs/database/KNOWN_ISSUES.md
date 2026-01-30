@@ -2,8 +2,16 @@
 
 **Database schema problems, TODOs, and future improvements**
 
-Last updated: 2025-01-29
+Last updated: 2025-01-30
 
+## Summary
+
+- **Total issues tracked**: 10 (4 critical, 3 minor, 3 future improvements)
+- **Total TODOs**: 23 actionable items
+- **Issues resolved**: 1 (Migration rollback)
+- **Type fixes completed**: 1 (ProposalUpdateData type)
+
+## Critical Issues
 ## Critical Issues
 
 ### 1. Composite Foreign Key Constraints Missing in Prisma Schema
