@@ -34,13 +34,15 @@ type EventEditorModalProps = {
   onOpenChange: (open: boolean) => void;
   event?: {
     id?: string;
-    name?: string;
+    title?: string;
     description?: string;
     date?: string;
-    time?: string;
-    location?: string;
+    venueName?: string;
+    venueAddress?: string;
     guestCount?: number;
     eventType?: string;
+    status?: string;
+    tags?: string[];
   };
   onSave: (data: FormData) => Promise<void>;
 };
@@ -103,7 +105,7 @@ export const EventEditorModal = ({
                 Event Title <span className="text-destructive">*</span>
               </Label>
               <Input
-                defaultValue={event?.name ?? ""}
+                defaultValue={event?.title ?? ""}
                 id="title"
                 name="title"
                 placeholder="e.g., Summer Cooking Workshop"
@@ -121,7 +123,14 @@ export const EventEditorModal = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {["catering", "workshop", "meetup", "corporate", "wedding", "birthday"].map((type) => (
+                  {[
+                    "catering",
+                    "workshop",
+                    "meetup",
+                    "corporate",
+                    "wedding",
+                    "birthday",
+                  ].map((type) => (
                     <SelectItem key={type} value={type}>
                       {type.charAt(0).toUpperCase() + type.slice(1)}
                     </SelectItem>
@@ -151,7 +160,7 @@ export const EventEditorModal = ({
                 <UsersIcon className="absolute left-3 top-3 size-4 text-muted-foreground" />
                 <Input
                   className="pl-10"
-                  defaultValue={event?.capacity ?? ""}
+                  defaultValue={event?.guestCount ?? ""}
                   id="guestCount"
                   min="1"
                   name="guestCount"
@@ -164,15 +173,19 @@ export const EventEditorModal = ({
 
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
-              <Select
-                defaultValue="confirmed"
-                name="status"
-              >
+              <Select defaultValue={event?.status ?? "confirmed"} name="status">
                 <SelectTrigger id="status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {["confirmed", "tentative", "postponed", "completed", "cancelled"].map((status) => (
+                  {[
+                    "draft",
+                    "confirmed",
+                    "tentative",
+                    "postponed",
+                    "completed",
+                    "cancelled",
+                  ].map((status) => (
                     <SelectItem key={status} value={status}>
                       {status.charAt(0).toUpperCase() + status.slice(1)}
                     </SelectItem>
@@ -187,7 +200,7 @@ export const EventEditorModal = ({
                 <MapPinIcon className="absolute left-3 top-3 size-4 text-muted-foreground" />
                 <Input
                   className="pl-10"
-                  defaultValue={event?.location ?? ""}
+                  defaultValue={event?.venueName ?? ""}
                   id="venueName"
                   name="venueName"
                   placeholder="e.g., Grand Ballroom"
@@ -201,7 +214,7 @@ export const EventEditorModal = ({
                 <MapPinIcon className="absolute left-3 top-3 size-4 text-muted-foreground" />
                 <Input
                   className="pl-10"
-                  defaultValue={event?.location ?? ""}
+                  defaultValue={event?.venueAddress ?? ""}
                   id="venueAddress"
                   name="venueAddress"
                   placeholder="e.g., 123 Main St, City, State"
@@ -224,6 +237,11 @@ export const EventEditorModal = ({
           <div className="space-y-2">
             <Label htmlFor="tags">Tags (comma separated)</Label>
             <Input
+              defaultValue={
+                event?.tags
+                  ?.filter((tag) => !tag.startsWith("needs:"))
+                  .join(", ") ?? ""
+              }
               id="tags"
               name="tags"
               placeholder="e.g., outdoor, formal, lunch"
@@ -290,7 +308,9 @@ export const EventEditorModal = ({
             >
               Cancel
             </Button>
-            <Button type="submit">Create Event</Button>
+            <Button type="submit">
+              {event?.id ? "Save changes" : "Create Event"}
+            </Button>
           </div>
         </form>
       </DialogContent>

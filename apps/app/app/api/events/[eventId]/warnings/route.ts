@@ -32,7 +32,7 @@ export async function GET(
     const event = await database.events.findFirst({
       where: {
         id: eventId,
-        tenantId: tenantId,
+        tenantId,
         deletedAt: null,
       },
     });
@@ -48,8 +48,8 @@ export async function GET(
       deletedAt: null;
       isAcknowledged?: boolean;
     } = {
-      eventId: eventId,
-      tenantId: tenantId,
+      eventId,
+      tenantId,
       deletedAt: null,
     };
 

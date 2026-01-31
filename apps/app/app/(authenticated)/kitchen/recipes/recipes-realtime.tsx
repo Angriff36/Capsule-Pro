@@ -9,14 +9,7 @@ type RecipesRealtimeProps = {
   userId?: string | null;
 };
 
-const getApiBaseUrl = () => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (apiUrl) {
-    return apiUrl.replace(/\/$/, "");
-  }
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-  return appUrl ? appUrl.replace(/\/$/, "") : "";
-};
+const authUrl = "/ably/auth";
 
 const isRecipeEvent = (eventName?: string) =>
   eventName?.startsWith("recipe.") ?? false;
@@ -29,15 +22,10 @@ const RecipesRealtime = ({ tenantId, userId }: RecipesRealtimeProps) => {
       return;
     }
 
-    const apiBaseUrl = getApiBaseUrl();
-    if (!apiBaseUrl) {
-      return;
-    }
-
     const client = new Ably.Realtime({
       authCallback: async (_, callback) => {
         try {
-          const response = await fetch(`${apiBaseUrl}/ably/auth`, {
+          const response = await fetch(authUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",

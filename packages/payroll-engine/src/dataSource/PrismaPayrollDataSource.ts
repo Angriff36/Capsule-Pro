@@ -19,7 +19,7 @@ import type { PayrollDataSource } from "../services";
  * Connects the payroll engine to the actual database
  */
 export class PrismaPayrollDataSource implements PayrollDataSource {
-  #prisma: Omit<
+  readonly #prisma: Omit<
     PrismaClient,
     "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
   >;

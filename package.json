@@ -96,6 +96,7 @@
   "type": "module",
   "dependencies": {
     "@prisma/adapter-neon": "7.1.0",
-    "@prisma/client": "7.1.0"
+    "@prisma/client": "7.1.0",
+    "pdf-parse": "^2.4.5"
   }
 }

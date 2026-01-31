@@ -23,6 +23,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -32,6 +33,7 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import {
+  AlertTriangleIcon,
   ChevronDownIcon,
   DollarSignIcon,
   Lightbulb,
@@ -52,10 +54,13 @@ import { SuggestionsPanel } from "../../kitchen/components/suggestions-panel";
 import { useSuggestions } from "../../kitchen/lib/use-suggestions";
 import {
   addDishToEvent,
+  createDishVariantForEvent,
   getAvailableDishes,
   getEventDishes,
   removeDishFromEvent,
 } from "../actions/event-dishes";
+import { updateEvent } from "../actions";
+import { EventEditorModal } from "../event-editor-modal";
 import {
   deleteEventSummary,
   type GeneratedEventSummary,
@@ -151,6 +156,13 @@ export function EventDetailsClient({
   const [showAddDishDialog, setShowAddDishDialog] = useState(false);
   const [selectedDishId, setSelectedDishId] = useState<string>("");
   const [selectedCourse, setSelectedCourse] = useState<string>("");
+  const [showEditEvent, setShowEditEvent] = useState(false);
+  const [hasPromptedMissingFields, setHasPromptedMissingFields] =
+    useState(false);
+  const [showVariantDialog, setShowVariantDialog] = useState(false);
+  const [variantLinkId, setVariantLinkId] = useState<string | null>(null);
+  const [variantSourceName, setVariantSourceName] = useState("");
+  const [variantName, setVariantName] = useState("");
 
   // Suggestions state
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -161,6 +173,29 @@ export function EventDetailsClient({
     dismissSuggestion,
     handleAction,
   } = useSuggestions(tenantId);
+
+  const missingFieldLabels: Record<string, string> = {
+    client: "Event title",
+    eventDate: "Event date",
+    venueName: "Venue",
+    eventType: "Event type",
+    headcount: "Guest count",
+    menuItems: "Menu items",
+  };
+
+  const missingFields = (event.tags ?? [])
+    .filter((tag) => tag.startsWith("needs:"))
+    .map((tag) => tag.replace("needs:", ""))
+    .filter(Boolean);
+
+  useEffect(() => {
+    if (missingFields.length === 0 || hasPromptedMissingFields) {
+      return;
+    }
+
+    setShowEditEvent(true);
+    setHasPromptedMissingFields(true);
+  }, [hasPromptedMissingFields, missingFields.length]);
 
   // Load summary
   useEffect(() => {
@@ -248,6 +283,36 @@ export function EventDetailsClient({
     [event.id, loadDishes]
   );
 
+  const openVariantDialog = useCallback((linkId: string, name: string) => {
+    setVariantLinkId(linkId);
+    setVariantSourceName(name);
+    setVariantName("");
+    setShowVariantDialog(true);
+  }, []);
+
+  const handleCreateVariant = useCallback(async () => {
+    if (!variantLinkId) {
+      return;
+    }
+
+    const result = await createDishVariantForEvent(
+      event.id,
+      variantLinkId,
+      variantName
+    );
+
+    if (result.success) {
+      toast.success("Variant created");
+      setShowVariantDialog(false);
+      setVariantLinkId(null);
+      setVariantSourceName("");
+      setVariantName("");
+      loadDishes();
+    } else {
+      toast.error(result.error || "Failed to create variant");
+    }
+  }, [event.id, variantLinkId, variantName, loadDishes]);
+
   const handleGenerate = useCallback(
     async (customInstructions?: string) => {
       setIsGenerating(true);
@@ -323,6 +388,23 @@ export function EventDetailsClient({
     setSummary(null);
   }, [summary]);
 
+  const handleUpdateEvent = useCallback(
+    async (formData: FormData) => {
+      try {
+        await updateEvent(formData);
+        toast.success("Event updated");
+        router.refresh();
+      } catch (error) {
+        console.error("Failed to update event:", error);
+        toast.error(
+          error instanceof Error ? error.message : "Failed to update event"
+        );
+        throw error;
+      }
+    },
+    [router]
+  );
+
   const handleExport = useCallback(() => {
     if (!breakdown) {
       return;
@@ -346,6 +428,70 @@ export function EventDetailsClient({
   return (
     <>
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+        {missingFields.length > 0 ? (
+          <div className="flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 shadow-sm">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex items-start gap-2">
+                <AlertTriangleIcon className="mt-0.5 size-4 text-amber-600" />
+                <div>
+                  <div className="font-semibold text-sm">
+                    Event needs more details
+                  </div>
+                  <div className="text-xs text-amber-800">
+                    Missing:{" "}
+                    {missingFields
+                      .map((field) => missingFieldLabels[field] ?? field)
+                      .join(", ")}
+                  </div>
+                </div>
+              </div>
+              <Button
+                onClick={() => setShowEditEvent(true)}
+                size="sm"
+                variant="outline"
+              >
+                Update details
+              </Button>
+            </div>
+          </div>
+        ) : null}
+
+        <Dialog onOpenChange={setShowVariantDialog} open={showVariantDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create dish variant</DialogTitle>
+              <DialogDescription>
+                Create a new dish based on "{variantSourceName}" and replace it
+                for this event.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 py-4">
+              <label className="flex flex-col gap-2 text-sm font-medium">
+                Variant name
+                <Input
+                  onChange={(e) => setVariantName(e.target.value)}
+                  placeholder="Enter a new dish name"
+                  value={variantName}
+                />
+              </label>
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={() => setShowVariantDialog(false)}
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={variantName.trim().length === 0}
+                onClick={handleCreateVariant}
+              >
+                Create variant
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Menu/Dishes Section */}
         <Collapsible
           className="rounded-xl border bg-card text-card-foreground shadow-sm"
@@ -513,6 +659,15 @@ export function EventDetailsClient({
                       <span className="text-muted-foreground text-xs">
                         {dish.quantity_servings} servings
                       </span>
+                      <Button
+                        onClick={() =>
+                          openVariantDialog(dish.link_id, dish.name)
+                        }
+                        size="sm"
+                        variant="outline"
+                      >
+                        Create variant
+                      </Button>
                       <Button
                         className="size-8 text-muted-foreground hover:text-destructive"
                         onClick={() => handleRemoveDish(dish.link_id)}
@@ -869,6 +1024,24 @@ export function EventDetailsClient({
           </CollapsibleContent>
         </Collapsible>
       </div>
+
+      <EventEditorModal
+        event={{
+          id: event.id,
+          title: event.title,
+          description: event.notes ?? "",
+          date: event.eventDate ? event.eventDate.toISOString().slice(0, 10) : "",
+          guestCount: event.guestCount ?? 0,
+          eventType: event.eventType ?? "",
+          status: event.status ?? "confirmed",
+          venueName: event.venueName ?? "",
+          venueAddress: event.venueAddress ?? "",
+          tags: event.tags ?? [],
+        }}
+        onOpenChange={setShowEditEvent}
+        onSave={handleUpdateEvent}
+        open={showEditEvent}
+      />
 
       <GenerateTaskBreakdownModal
         eventDate={event.eventDate.toISOString()}

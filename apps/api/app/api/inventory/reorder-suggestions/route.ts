@@ -11,11 +11,13 @@ import { requireTenantId } from "@/app/lib/tenant";
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const sku = searchParams.get("sku");
-  const leadTimeDays = searchParams.get("leadTimeDays")
-    ? Number.parseInt(searchParams.get("leadTimeDays")!, 10)
+  const leadTimeDaysParam = searchParams.get("leadTimeDays");
+  const leadTimeDays = leadTimeDaysParam
+    ? Number.parseInt(leadTimeDaysParam, 10)
     : undefined;
-  const safetyStockDays = searchParams.get("safetyStockDays")
-    ? Number.parseInt(searchParams.get("safetyStockDays")!, 10)
+  const safetyStockDaysParam = searchParams.get("safetyStockDays");
+  const safetyStockDays = safetyStockDaysParam
+    ? Number.parseInt(safetyStockDaysParam, 10)
     : undefined;
 
   try {

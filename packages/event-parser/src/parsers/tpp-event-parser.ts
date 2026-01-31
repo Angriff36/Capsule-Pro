@@ -16,9 +16,9 @@ import type {
   TimelinePhase,
 } from "../types/index.js";
 
-export interface ParseOptions {
+export type ParseOptions = {
   sourceName: string;
-}
+};
 
 // Main parser function
 export function parseTppEvent(
@@ -64,10 +64,10 @@ export function parseTppEvent(
   const event: ParsedEvent = {
     id: eventId,
     number: eventNumber,
-    client: client || "Unknown Client",
+    client: client || "",
     date: normalizeDate(dateLine),
     venue: {
-      name: venueName || "Unspecified Venue",
+      name: venueName || "",
       address: venueAddress,
     },
     times: {
@@ -112,18 +112,18 @@ export function parseTppEvent(
 }
 
 // --- Helper Types ---
-interface Section {
+type Section = {
   label: string;
   lines: string[];
-}
+};
 
-interface QuantityParseResult {
+type QuantityParseResult = {
   primaryQuantity: { value: number; unit: string };
   details: MenuQuantityDetail[];
   specials: string[];
   prepInstructions: string[];
   warnings: string[];
-}
+};
 
 // --- Preprocessing ---
 function preprocessLines(lines: string[]): string[] {
@@ -306,7 +306,9 @@ function extractMenuItems(lines: string[]): MenuItem[] {
     }
 
     const rawCategory = normalizeWhitespace(categoryParts.join(" "));
-    if (!rawCategory) continue;
+    if (!rawCategory) {
+      continue;
+    }
 
     const categoryMeta = deriveCategoryMetadata(rawCategory);
 
@@ -376,7 +378,9 @@ function extractMenuItems(lines: string[]): MenuItem[] {
     const prepNotes = buildPreparationNotes(quantityInfo.prepInstructions);
 
     const allergenSource = [...specials];
-    if (prepNotes) allergenSource.push(prepNotes);
+    if (prepNotes) {
+      allergenSource.push(prepNotes);
+    }
 
     items.push({
       category: categoryMeta.label,
@@ -415,7 +419,9 @@ function isColumnHeading(line: string): boolean {
 
 function isFooterLine(line: string): boolean {
   const normalized = normalizeWhitespace(line).toLowerCase();
-  if (!normalized) return false;
+  if (!normalized) {
+    return false;
+  }
   return (
     normalized.startsWith("printed date") ||
     normalized === "page" ||
@@ -436,9 +442,13 @@ function isCategoryContinuation(
   candidate: string | undefined,
   parts: string[]
 ): boolean {
-  if (!candidate) return false;
+  if (!candidate) {
+    return false;
+  }
   const trimmed = normalizeWhitespace(candidate);
-  if (!trimmed) return false;
+  if (!trimmed) {
+    return false;
+  }
   if (
     isColumnHeading(trimmed) ||
     /^P:\s*/i.test(trimmed) ||
@@ -446,12 +456,16 @@ function isCategoryContinuation(
   ) {
     return false;
   }
-  if (looksLikeInstruction(trimmed)) return false;
+  if (looksLikeInstruction(trimmed)) {
+    return false;
+  }
 
   const lower = trimmed.toLowerCase();
   if (parts.length === 1) {
     const first = normalizeWhitespace(parts[0]).toLowerCase();
-    if (first.endsWith("-")) return true;
+    if (first.endsWith("-")) {
+      return true;
+    }
     if (first.split(/\s+/).length === 1 && trimmed.split(/\s+/).length === 1) {
       return true;
     }
@@ -465,13 +479,20 @@ function isCategoryContinuation(
 
 function isLikelyCategoryStart(line: string, currentCategory: string): boolean {
   const trimmed = normalizeWhitespace(line);
-  if (!trimmed) return false;
-  if (isColumnHeading(trimmed) || isFooterLine(trimmed)) return true;
+  if (!trimmed) {
+    return false;
+  }
+  if (isColumnHeading(trimmed) || isFooterLine(trimmed)) {
+    return true;
+  }
 
   const lower = trimmed.toLowerCase();
-  if (/^(site|client|notes|invoice|driver|phone|fax)[:]?$/i.test(trimmed))
+  if (/^(site|client|notes|invoice|driver|phone|fax)[:]?$/i.test(trimmed)) {
     return true;
-  if (lower === currentCategory.toLowerCase()) return true;
+  }
+  if (lower === currentCategory.toLowerCase()) {
+    return true;
+  }
   if (
     lower.includes("finish at event") ||
     lower.includes("finish at kitchen") ||
@@ -488,12 +509,24 @@ function isLikelyCategoryStart(line: string, currentCategory: string): boolean {
 
 function shouldContinueName(line: string, nameLineCount: number): boolean {
   const trimmed = normalizeWhitespace(line);
-  if (!trimmed) return false;
-  if (looksLikeInstruction(trimmed)) return false;
-  if (/^P:\s*/i.test(trimmed)) return false;
-  if (nameLineCount === 0) return true;
-  if (/^[A-Z0-9&'()/-]+$/.test(trimmed) && trimmed.length <= 34) return true;
-  if (!/[a-z]/.test(trimmed) && trimmed.length <= 34) return true;
+  if (!trimmed) {
+    return false;
+  }
+  if (looksLikeInstruction(trimmed)) {
+    return false;
+  }
+  if (/^P:\s*/i.test(trimmed)) {
+    return false;
+  }
+  if (nameLineCount === 0) {
+    return true;
+  }
+  if (/^[A-Z0-9&'()/-]+$/.test(trimmed) && trimmed.length <= 34) {
+    return true;
+  }
+  if (!/[a-z]/.test(trimmed) && trimmed.length <= 34) {
+    return true;
+  }
   if (
     nameLineCount < 2 &&
     trimmed.length <= 40 &&
@@ -506,16 +539,26 @@ function shouldContinueName(line: string, nameLineCount: number): boolean {
 
 function looksLikeInstruction(line: string): boolean {
   const upper = normalizeWhitespace(line).toUpperCase();
-  if (!upper) return false;
-  if (/^[0-9]/.test(upper)) return true;
-  if (upper.startsWith("***")) return true;
-  if (upper.includes(" RECIPE")) return true;
+  if (!upper) {
+    return false;
+  }
+  if (/^[0-9]/.test(upper)) {
+    return true;
+  }
+  if (upper.startsWith("***")) {
+    return true;
+  }
+  if (upper.includes(" RECIPE")) {
+    return true;
+  }
   return INSTRUCTION_PREFIXES.some((prefix) => upper.startsWith(`${prefix} `));
 }
 
 function normalizeDishName(name: string): string {
   const cleaned = normalizeWhitespace(name);
-  if (!cleaned) return "";
+  if (!cleaned) {
+    return "";
+  }
   if (/^[A-Z0-9 &'()/-]+$/.test(cleaned) && /[A-Z]/.test(cleaned)) {
     return toTitleCasePreservingAcronyms(cleaned);
   }
@@ -527,9 +570,12 @@ function toTitleCasePreservingAcronyms(value: string): string {
     .toLowerCase()
     .split(/(\s+|[-/])/)
     .map((segment) => {
-      if (!segment) return segment;
-      if (/^\s+$/.test(segment) || segment === "-" || segment === "/")
+      if (!segment) {
         return segment;
+      }
+      if (/^\s+$/.test(segment) || segment === "-" || segment === "/") {
+        return segment;
+      }
       const upper = segment.toUpperCase();
       if (ACRONYM_KEEP.has(upper) || upper.length <= 2) {
         return upper;
@@ -554,7 +600,9 @@ function parseQuantitySegments(
 
   for (const line of quantityLines) {
     const detail = parsePortionLine(line, warnings);
-    if (detail) details.push(detail);
+    if (detail) {
+      details.push(detail);
+    }
   }
 
   for (let idx = 0; idx < trailingLines.length; ) {
@@ -641,22 +689,34 @@ function selectPrimaryQuantity(details: MenuQuantityDetail[]): {
 }
 
 function isLikelyUnit(value: string): boolean {
-  if (!value) return false;
-  if (value.length > 20) return false;
-  if (/[0-9]/.test(value)) return false;
+  if (!value) {
+    return false;
+  }
+  if (value.length > 20) {
+    return false;
+  }
+  if (/[0-9]/.test(value)) {
+    return false;
+  }
   return /^[a-z#\s/]+$/i.test(value);
 }
 
 function buildPreparationNotes(lines: string[]): string | undefined {
-  if (lines.length === 0) return undefined;
+  if (lines.length === 0) {
+    return undefined;
+  }
   const formatted = lines.map((line) => toSentenceCase(line)).filter(Boolean);
-  if (formatted.length === 0) return undefined;
+  if (formatted.length === 0) {
+    return undefined;
+  }
   return formatted.join(" ");
 }
 
 function toSentenceCase(value: string): string {
   const trimmed = normalizeWhitespace(value);
-  if (!trimmed) return "";
+  if (!trimmed) {
+    return "";
+  }
   const lower = trimmed.toLowerCase();
   return trimmed.charAt(0).toUpperCase() + lower.slice(1);
 }
@@ -681,11 +741,15 @@ function deriveCategoryMetadata(category: string): {
   const lower = normalized.toLowerCase();
 
   let serviceLocation: ServiceLocation = "other";
-  if (lower.includes("finish at event")) serviceLocation = "finish_at_event";
-  else if (lower.includes("finish at kitchen"))
+  if (lower.includes("finish at event")) {
+    serviceLocation = "finish_at_event";
+  } else if (lower.includes("finish at kitchen")) {
     serviceLocation = "finish_at_kitchen";
-  else if (lower.includes("action station")) serviceLocation = "action_station";
-  else if (lower.includes("drop off")) serviceLocation = "drop_off";
+  } else if (lower.includes("action station")) {
+    serviceLocation = "action_station";
+  } else if (lower.includes("drop off")) {
+    serviceLocation = "drop_off";
+  }
 
   const group = segments[0]
     ? toTitleCasePreservingAcronyms(segments[0])
@@ -707,9 +771,12 @@ function deriveCategoryMetadata(category: string): {
       break;
   }
 
-  if (lower.includes("passed")) badges.add("Passed");
-  if (lower.includes("chef") || lower.includes("station"))
+  if (lower.includes("passed")) {
+    badges.add("Passed");
+  }
+  if (lower.includes("chef") || lower.includes("station")) {
     badges.add("Chef Station");
+  }
 
   const label =
     segments.length > 0
@@ -732,26 +799,43 @@ function computeCategorySortOrder(
   lowerCategory: string,
   label: string
 ): number {
-  if (lowerCategory.includes("passed")) return 10;
-  if (lowerCategory.includes("apps") || lowerCategory.includes("appetizer"))
+  if (lowerCategory.includes("passed")) {
+    return 10;
+  }
+  if (lowerCategory.includes("apps") || lowerCategory.includes("appetizer")) {
     return 20;
-  if (serviceLocation === "action_station") return 30;
-  if (lowerCategory.includes("station")) return 35;
-  if (serviceLocation === "finish_at_event") return 40;
-  if (serviceLocation === "finish_at_kitchen") return 50;
-  if (lowerCategory.includes("entree") || lowerCategory.includes("main"))
+  }
+  if (serviceLocation === "action_station") {
+    return 30;
+  }
+  if (lowerCategory.includes("station")) {
+    return 35;
+  }
+  if (serviceLocation === "finish_at_event") {
+    return 40;
+  }
+  if (serviceLocation === "finish_at_kitchen") {
+    return 50;
+  }
+  if (lowerCategory.includes("entree") || lowerCategory.includes("main")) {
     return 60;
-  if (lowerCategory.includes("side") || lowerCategory.includes("salad"))
+  }
+  if (lowerCategory.includes("side") || lowerCategory.includes("salad")) {
     return 70;
-  if (lowerCategory.includes("dessert") || lowerCategory.includes("sweet"))
+  }
+  if (lowerCategory.includes("dessert") || lowerCategory.includes("sweet")) {
     return 80;
+  }
   if (
     lowerCategory.includes("beverage") ||
     lowerCategory.includes("drink") ||
     lowerCategory.includes("bar")
-  )
+  ) {
     return 90;
-  if (serviceLocation === "drop_off") return 100;
+  }
+  if (serviceLocation === "drop_off") {
+    return 100;
+  }
   return 200 + (label ? label.toLowerCase().charCodeAt(0) : 0);
 }
 
@@ -776,7 +860,9 @@ function deriveHeadcount(menuItems: MenuItem[], allLines: string[]): number {
     const match = line.match(/^P:\s*([\d.,]+)/i);
     if (match) {
       const value = Number.parseFloat(match[1].replace(/,/g, ""));
-      if (value > 0) candidates.push(value);
+      if (value > 0) {
+        candidates.push(value);
+      }
     }
   }
 
@@ -785,19 +871,25 @@ function deriveHeadcount(menuItems: MenuItem[], allLines: string[]): number {
 }
 
 function deriveServiceStyle(experience: string, menuItems: MenuItem[]): string {
-  if (experience) return experience;
+  if (experience) {
+    return experience;
+  }
 
   const categories = new Set(
     menuItems.map((item) => item.category.toLowerCase())
   );
-  if ([...categories].some((c) => c.includes("drop off"))) return "Drop Off";
+  if ([...categories].some((c) => c.includes("drop off"))) {
+    return "Drop Off";
+  }
   if (
     [...categories].some((c) => c.includes("finish at event")) &&
     [...categories].some((c) => c.includes("finish at kitchen"))
   ) {
     return "Action Station + Custom";
   }
-  if ([...categories].some((c) => c.includes("apps"))) return "Plated Service";
+  if ([...categories].some((c) => c.includes("apps"))) {
+    return "Plated Service";
+  }
   return "Catering Service";
 }
 
@@ -831,16 +923,33 @@ function deriveKits(menuItems: MenuItem[], lines: string[]): string[] {
 
   for (const text of candidates) {
     const lower = text.toLowerCase();
-    if (/(chafer|sternos?)/i.test(lower)) kitSet.add("Chafers + Sterno");
-    if (/(plasticware|utensil|fork|spoon|knife)/i.test(lower))
+    if (/(chafer|sternos?)/i.test(lower)) {
+      kitSet.add("Chafers + Sterno");
+    }
+    if (/(plasticware|utensil|fork|spoon|knife)/i.test(lower)) {
       kitSet.add("Disposable Utensils");
-    if (/pizza/i.test(lower)) kitSet.add("Pizza Equipment");
-    if (/taco/i.test(lower)) kitSet.add("Taco Station Kit");
-    if (/action station/i.test(lower)) kitSet.add("Action Station Kit");
-    if (/bread|roll/i.test(lower)) kitSet.add("Bread Baskets");
-    if (/carv/i.test(lower)) kitSet.add("Carving Knives");
-    if (/induction|burner/i.test(lower)) kitSet.add("Induction Burners");
-    if (/water service/i.test(lower)) kitSet.add("Table Service Kit");
+    }
+    if (/pizza/i.test(lower)) {
+      kitSet.add("Pizza Equipment");
+    }
+    if (/taco/i.test(lower)) {
+      kitSet.add("Taco Station Kit");
+    }
+    if (/action station/i.test(lower)) {
+      kitSet.add("Action Station Kit");
+    }
+    if (/bread|roll/i.test(lower)) {
+      kitSet.add("Bread Baskets");
+    }
+    if (/carv/i.test(lower)) {
+      kitSet.add("Carving Knives");
+    }
+    if (/induction|burner/i.test(lower)) {
+      kitSet.add("Induction Burners");
+    }
+    if (/water service/i.test(lower)) {
+      kitSet.add("Table Service Kit");
+    }
   }
 
   return [...kitSet].sort();
@@ -851,14 +960,18 @@ function buildTimelineEntries(lines: string[]): EventTimelineEntry[] {
   const entries: EventTimelineEntry[] = [];
   for (const line of lines) {
     const entry = parseTimelineLine(line);
-    if (entry) entries.push(entry);
+    if (entry) {
+      entries.push(entry);
+    }
   }
   return entries;
 }
 
 function parseTimelineLine(line: string): EventTimelineEntry | null {
   const raw = normalizeWhitespace(line);
-  if (!raw) return null;
+  if (!raw) {
+    return null;
+  }
 
   // Try range pattern first (e.g., "5:00 PM - 10:00 PM")
   const rangeRegex =
@@ -926,7 +1039,9 @@ function cleanupTimelineLabel(value: string): string {
 function formatMinutesLabel(
   value: number | null | undefined
 ): string | undefined {
-  if (value === null || value === undefined) return undefined;
+  if (value === null || value === undefined) {
+    return undefined;
+  }
   const minutesInDay = ((value % (24 * 60)) + 24 * 60) % (24 * 60);
   const hours24 = Math.floor(minutesInDay / 60);
   const minutes = minutesInDay % 60;
@@ -937,7 +1052,9 @@ function formatMinutesLabel(
 
 function categorizeTimelinePhase(text: string): TimelinePhase {
   const value = text.toLowerCase();
-  if (!value) return "other";
+  if (!value) {
+    return "other";
+  }
 
   if (
     /(setup|set[-\s]?up|arrival|arrive|load\s?in|prep|staging|deliver|drop[-\s]?off|crew call|call time)/.test(
@@ -992,8 +1109,12 @@ function deriveTimes(
         const [, start, startMeridiem, end, endMeridiem] = rangeMatch;
         const startMinutes = toMinutes(start, startMeridiem);
         const endMinutes = toMinutes(end, endMeridiem || startMeridiem);
-        if (startMinutes !== null) minutes.push(startMinutes);
-        if (endMinutes !== null) minutes.push(endMinutes);
+        if (startMinutes !== null) {
+          minutes.push(startMinutes);
+        }
+        if (endMinutes !== null) {
+          minutes.push(endMinutes);
+        }
         continue;
       }
 
@@ -1003,7 +1124,9 @@ function deriveTimes(
       if (singleMatch) {
         const [, time, meridiem] = singleMatch;
         const value = toMinutes(time, meridiem);
-        if (value !== null) minutes.push(value);
+        if (value !== null) {
+          minutes.push(value);
+        }
       }
     }
   }
@@ -1020,14 +1143,16 @@ function deriveTimes(
   };
 
   const startTime = format(sorted[0]);
-  const endTime = sorted.length > 1 ? format(sorted[sorted.length - 1]) : "";
+  const endTime = sorted.length > 1 ? format(sorted.at(-1) ?? 0) : "";
 
   return { startTime, endTime };
 }
 
 function toMinutes(time: string, meridiem?: string | null): number | null {
   const normalized = normalizeWhitespace(time);
-  if (!normalized) return null;
+  if (!normalized) {
+    return null;
+  }
 
   let hours: number;
   let mins: number;
@@ -1044,7 +1169,9 @@ function toMinutes(time: string, meridiem?: string | null): number | null {
     mins = 0;
   }
 
-  if (Number.isNaN(hours) || Number.isNaN(mins)) return null;
+  if (Number.isNaN(hours) || Number.isNaN(mins)) {
+    return null;
+  }
   mins = Math.max(0, Math.min(mins, 59));
 
   let adjustedHours: number;
@@ -1052,19 +1179,30 @@ function toMinutes(time: string, meridiem?: string | null): number | null {
   if (meridiem) {
     adjustedHours = hours % 12;
     const lower = meridiem.toLowerCase();
-    if (lower.includes("p") && adjustedHours < 12) adjustedHours += 12;
-    if (lower.includes("a") && adjustedHours === 12) adjustedHours = 0;
-  } else if (hours === 0) adjustedHours = 0;
-  else if (hours >= 1 && hours <= 3) adjustedHours = hours + 12;
-  else if (hours >= 4 && hours < 24) adjustedHours = hours;
-  else adjustedHours = hours % 24;
+    if (lower.includes("p") && adjustedHours < 12) {
+      adjustedHours += 12;
+    }
+    if (lower.includes("a") && adjustedHours === 12) {
+      adjustedHours = 0;
+    }
+  } else if (hours === 0) {
+    adjustedHours = 0;
+  } else if (hours >= 1 && hours <= 3) {
+    adjustedHours = hours + 12;
+  } else if (hours >= 4 && hours < 24) {
+    adjustedHours = hours;
+  } else {
+    adjustedHours = hours % 24;
+  }
 
   return adjustedHours * 60 + mins;
 }
 
 // --- Utilities ---
 function normalizeDate(input: string): string {
-  if (!input) return "";
+  if (!input) {
+    return "";
+  }
   const parsed = new Date(input);
   if (!Number.isNaN(parsed.getTime())) {
     return parsed.toISOString().slice(0, 10);
@@ -1097,7 +1235,9 @@ function slugify(value: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-  if (slug) return slug;
+  if (slug) {
+    return slug;
+  }
   return Math.random().toString(36).slice(2, 10);
 }
 
@@ -1180,16 +1320,27 @@ function collectWarnings(
   extraWarnings: string[] = []
 ): string[] {
   const warnings: string[] = [];
-  if (!context.invoiceNumber) warnings.push("Missing invoice number");
-  if (!event.client) warnings.push("Missing client name");
-  if (!event.date) warnings.push("Missing event date");
-  if (!event.venue.name) warnings.push("Missing venue name");
-  if (!context.venueAddress)
+  if (!context.invoiceNumber) {
+    warnings.push("Missing invoice number");
+  }
+  if (!event.client) {
+    warnings.push("Missing client name");
+  }
+  if (!event.date) {
+    warnings.push("Missing event date");
+  }
+  if (!event.venue.name) {
+    warnings.push("Missing venue name");
+  }
+  if (!context.venueAddress) {
     warnings.push("Venue address could not be extracted");
-  if (!(context.startTime && context.endTime))
+  }
+  if (!(context.startTime && context.endTime)) {
     warnings.push("Event time window is incomplete");
-  if (event.menuSections.length === 0)
+  }
+  if (event.menuSections.length === 0) {
     warnings.push("No menu items were detected");
+  }
   return [...warnings, ...extraWarnings];
 }
 
@@ -1197,15 +1348,30 @@ function calculateConfidence(event: ParsedEvent, warnings: string[]): number {
   let score = 100;
 
   // Deduct for missing key data
-  if (!event.client || event.client === "Unknown Client") score -= 15;
-  if (!event.date) score -= 15;
-  if (!event.venue.name || event.venue.name === "Unspecified Venue")
+  if (!event.client) {
+    score -= 15;
+  }
+  if (!event.date) {
+    score -= 15;
+  }
+  if (!event.venue.name) {
     score -= 10;
-  if (!event.venue.address) score -= 5;
-  if (!event.times.start) score -= 5;
-  if (!event.times.end) score -= 5;
-  if (event.headcount === 0) score -= 10;
-  if (event.menuSections.length === 0) score -= 20;
+  }
+  if (!event.venue.address) {
+    score -= 5;
+  }
+  if (!event.times.start) {
+    score -= 5;
+  }
+  if (!event.times.end) {
+    score -= 5;
+  }
+  if (event.headcount === 0) {
+    score -= 10;
+  }
+  if (event.menuSections.length === 0) {
+    score -= 20;
+  }
 
   // Deduct for warnings
   score -= Math.min(warnings.length * 3, 15);

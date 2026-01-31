@@ -1,0 +1,15 @@
+{
+  "extends": "@repo/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
+    "declarationMap": true,
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "noImplicitAny": false,
+    "skipLibCheck": true
+  },
+  "include": ["src/index.ts", "src/manifest/runtime-engine.ts", "src/manifest/ir-compiler.ts", "src/manifest/ir.ts", "src/manifest/lexer.ts", "src/manifest/parser.ts", "src/manifest/types.ts"],
+  "exclude": ["node_modules", "dist", "src/manifest/conformance", "src/manifest/**/*.test.ts", "src/manifest/examples.ts", "src/manifest/generator.ts", "src/manifest/standalone-generator.ts", "src/manifest/compiler.ts"]
+}

@@ -61,8 +61,8 @@ export async function getEventSummary(
       eventId: string;
       highlights: unknown;
       issues: unknown;
-      financial_performance: unknown;
-      client_feedback: unknown;
+      financialPerformance: unknown;
+      clientFeedback: unknown;
       insights: unknown;
       overall_summary: string;
       generated_at: Date;
@@ -72,19 +72,19 @@ export async function getEventSummary(
     Prisma.sql`
       SELECT
         id,
-        eventId,
+        event_id as "eventId",
         highlights,
         issues,
-        "financialPerformance" as financial_performance,
-        "clientFeedback" as client_feedback,
+        "financialPerformance",
+        "clientFeedback",
         insights,
         overall_summary,
         generated_at,
         generation_duration_ms
       FROM tenant_events.event_summaries
       WHERE tenant_id = ${tenantId}
-        AND eventId = ${eventId}
-        AND deletedAt IS NULL
+        AND event_id = ${eventId}
+        AND deleted_at IS NULL
       ORDER BY generated_at DESC
       LIMIT 1
     `
@@ -103,8 +103,8 @@ export async function getEventSummary(
       highlights: (summary.highlights as SummaryItem[]) || [],
       issues: (summary.issues as SummaryItem[]) || [],
       financialPerformance:
-        (summary.financial_performance as SummaryItem[]) || [],
-      clientFeedback: (summary.client_feedback as SummaryItem[]) || [],
+        (summary.financialPerformance as SummaryItem[]) || [],
+      clientFeedback: (summary.clientFeedback as SummaryItem[]) || [],
       insights: (summary.insights as SummaryItem[]) || [],
       overallSummary: summary.overall_summary || "",
       generatedAt: summary.generated_at,
@@ -121,7 +121,7 @@ export async function generateEventSummary(
 
   const event = await database.events.findFirst({
     where: {
-      tenantId: tenantId,
+      tenantId,
       id: eventId,
     },
   });
@@ -153,8 +153,8 @@ export async function generateEventSummary(
       FROM tenant_events.event_dishes ed
       JOIN tenant_dishes.dishes d ON ed.dish_id = d.id
       WHERE ed.tenant_id = ${tenantId}
-        AND ed.eventId = ${eventId}
-        AND ed.deletedAt IS NULL
+        AND ed.event_id = ${eventId}
+        AND ed.deleted_at IS NULL
       ORDER BY ed.created_at
     `
   );
@@ -177,8 +177,8 @@ export async function generateEventSummary(
         estimated_minutes
       FROM tenant_kitchen.prep_tasks
       WHERE tenant_id = ${tenantId}
-        AND eventId = ${eventId}
-        AND deletedAt IS NULL
+        AND event_id = ${eventId}
+        AND deleted_at IS NULL
       ORDER BY due_by_date
     `
   );
@@ -207,8 +207,8 @@ export async function generateEventSummary(
       FROM tenant_events.event_staff_assignments esa
       LEFT JOIN tenant_staff.employees e ON esa.employee_id = e.id
       WHERE esa.tenant_id = ${tenantId}
-        AND esa.eventId = ${eventId}
-        AND esa.deletedAt IS NULL
+        AND esa.event_id = ${eventId}
+        AND esa.deleted_at IS NULL
     `
   );
 
@@ -343,7 +343,7 @@ Please provide a comprehensive executive summary following the system prompt gui
       INSERT INTO tenant_events.event_summaries (
         tenant_id,
         id,
-        eventId,
+        event_id,
         highlights,
         issues,
         "financialPerformance",

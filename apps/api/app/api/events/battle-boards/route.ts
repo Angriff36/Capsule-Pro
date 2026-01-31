@@ -81,6 +81,75 @@ export async function GET(request: Request) {
   }
 }
 
+async function verifyEventExists(
+  eventId: string,
+  tenantId: string
+): Promise<{
+  id: string;
+  title: string | null;
+  eventNumber: string | null;
+  eventDate: Date | null;
+} | null> {
+  const event = await database.event.findFirst({
+    where: {
+      id: eventId,
+      tenantId,
+      deletedAt: null,
+    },
+  });
+  return event;
+}
+
+async function checkExistingBoard(
+  tenantId: string,
+  eventId: string
+): Promise<{ id: string } | null> {
+  const existingBoard = await database.battleBoard.findFirst({
+    where: {
+      tenantId,
+      eventId,
+      deletedAt: null,
+    },
+  });
+  return existingBoard;
+}
+
+function generateBoardName(
+  boardName: string | undefined,
+  event: { title: string | null; eventNumber: string | null } | null
+): string {
+  return (
+    boardName ||
+    (event
+      ? `${event.title || event.eventNumber} Battle Board`
+      : "New Battle Board")
+  );
+}
+
+function generateDefaultBoardData(
+  event: {
+    title: string | null;
+    eventNumber: string | null;
+    eventDate: Date | null;
+  } | null
+): Record<string, unknown> {
+  return {
+    schema: "mangia-battle-board@1",
+    version: "1.0.0",
+    meta: {
+      eventName: event?.title || event?.eventNumber || "",
+      eventNumber: event?.eventNumber || "",
+      eventDate: event?.eventDate?.toISOString().split("T")[0] || "",
+      staffRestrooms: "TBD",
+      staffParking: "TBD",
+    },
+    staff: [],
+    layouts: [{ type: "Main Hall", instructions: "" }],
+    timeline: [],
+    attachments: [],
+  };
+}
+
 /**
  * POST /api/events/battle-boards
  * Create a new battle board
@@ -95,18 +164,16 @@ export async function POST(request: Request) {
     const tenantId = await getTenantIdForOrg(orgId);
     const body = await request.json();
 
-    const { eventId, boardData, boardName, autoFillScore } = body;
+    const { eventId, boardData, boardName } = body;
 
-    // Verify event exists if provided
-    let event = null;
+    let event: {
+      id: string;
+      title: string | null;
+      eventNumber: string | null;
+      eventDate: Date | null;
+    } | null = null;
     if (eventId) {
-      event = await database.event.findFirst({
-        where: {
-          id: eventId,
-          tenantId,
-          deletedAt: null,
-        },
-      });
+      event = await verifyEventExists(eventId, tenantId);
 
       if (!event) {
         return NextResponse.json(
@@ -115,14 +182,7 @@ export async function POST(request: Request) {
         );
       }
 
-      // Check for existing board
-      const existingBoard = await database.battleBoard.findFirst({
-        where: {
-          tenantId,
-          eventId,
-          deletedAt: null,
-        },
-      });
+      const existingBoard = await checkExistingBoard(tenantId, eventId);
 
       if (existingBoard) {
         return NextResponse.json(
@@ -135,14 +195,8 @@ export async function POST(request: Request) {
       }
     }
 
-    // Build board name
-    const name =
-      boardName ||
-      (event
-        ? `${event.title || event.eventNumber} Battle Board`
-        : "New Battle Board");
+    const name = generateBoardName(boardName, event);
 
-    // Create battle board
     const board = await database.battleBoard.create({
       data: {
         tenantId,
@@ -150,21 +204,7 @@ export async function POST(request: Request) {
         board_name: name,
         board_type: "event-specific",
         schema_version: "mangia-battle-board@1",
-        boardData: boardData || {
-          schema: "mangia-battle-board@1",
-          version: "1.0.0",
-          meta: {
-            eventName: event?.title || event?.eventNumber || "",
-            eventNumber: event?.eventNumber || "",
-            eventDate: event?.eventDate?.toISOString().split("T")[0] || "",
-            staffRestrooms: "TBD",
-            staffParking: "TBD",
-          },
-          staff: [],
-          layouts: [{ type: "Main Hall", instructions: "" }],
-          timeline: [],
-          attachments: [],
-        },
+        boardData: boardData || generateDefaultBoardData(event),
         status: "draft",
       },
     });

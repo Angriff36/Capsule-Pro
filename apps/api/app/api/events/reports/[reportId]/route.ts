@@ -20,7 +20,7 @@ type RouteContext = {
  * GET /api/events/reports/[reportId]
  * Get a single event report
  */
-export async function GET(request: Request, context: RouteContext) {
+export async function GET(_request: Request, context: RouteContext) {
   try {
     const { orgId } = await auth();
     if (!orgId) {
@@ -176,7 +176,7 @@ export async function PUT(request: Request, context: RouteContext) {
  * DELETE /api/events/reports/[reportId]
  * Soft delete an event report
  */
-export async function DELETE(request: Request, context: RouteContext) {
+export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const { orgId } = await auth();
     if (!orgId) {

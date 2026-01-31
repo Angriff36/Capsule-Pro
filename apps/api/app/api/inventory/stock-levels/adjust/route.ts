@@ -12,6 +12,207 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { CreateAdjustmentResponse } from "../types";
 import { validateCreateAdjustmentRequest } from "../validation";
 
+async function verifyInventoryItemExists(
+  tenantId: string,
+  inventoryItemId: string
+) {
+  const item = await database.inventoryItem.findUnique({
+    where: {
+      tenantId_id: {
+        tenantId,
+        id: inventoryItemId,
+      },
+      deletedAt: null,
+    },
+  });
+  return item;
+}
+
+async function verifyStorageLocationExists(
+  tenantId: string,
+  storageLocationId: string
+): Promise<boolean> {
+  const location = await database.$queryRaw<Array<{ id: string }>>`
+    SELECT id
+    FROM tenant_inventory.storage_locations
+    WHERE tenant_id = ${tenantId}
+      AND id = ${storageLocationId}
+      AND deleted_at IS NULL
+      AND is_active = true
+  `;
+  return !!(location && location.length > 0);
+}
+
+function calculateNewQuantity(
+  previousQuantity: number,
+  quantity: number,
+  adjustmentType: string
+): { newQuantity: number; adjustmentAmount: number } {
+  const adjustmentAmount = adjustmentType === "increase" ? quantity : -quantity;
+  return {
+    newQuantity: previousQuantity + adjustmentAmount,
+    adjustmentAmount,
+  };
+}
+
+async function executeStockAdjustmentTransaction(
+  tenantId: string,
+  inventoryItemId: string,
+  newQuantity: number,
+  adjustmentAmount: number,
+  storageLocationId: string | undefined,
+  reason: string,
+  notes: string | undefined,
+  referenceId: string | undefined,
+  userId: string,
+  itemUnitCost: number,
+  previousQuantity: number
+) {
+  return await database.$transaction(async (tx) => {
+    await tx.$executeRaw`
+      UPDATE tenant_inventory.inventory_items
+      SET quantity_on_hand = ${newQuantity},
+          updated_at = NOW()
+      WHERE tenant_id = ${tenantId}
+        AND id = ${inventoryItemId}
+        AND deleted_at IS NULL
+    `;
+
+    const transactionResult = await tx.$queryRaw<Array<{ id: string }>>`
+      INSERT INTO tenant_inventory.inventory_transactions (
+        tenant_id,
+        id,
+        item_id,
+        transaction_type,
+        quantity,
+        unit_cost,
+        storage_location_id,
+        reason,
+        notes,
+        reference,
+        employee_id,
+        created_at
+      )
+      VALUES (
+        ${tenantId},
+        gen_random_uuid(),
+        ${inventoryItemId},
+        'adjustment',
+        ${adjustmentAmount},
+        ${itemUnitCost},
+        ${storageLocationId ?? "00000000-0000-0000-0000-000000000000"},
+        ${reason},
+        ${notes ?? null},
+        ${referenceId ?? null},
+        ${userId},
+        NOW()
+      )
+      RETURNING id
+    `;
+
+    return {
+      transactionId: transactionResult[0]?.id,
+      previousQuantity,
+      newQuantity,
+      adjustmentAmount: Math.abs(adjustmentAmount),
+    };
+  });
+}
+
+function calculateReorderStatus(
+  newQuantity: number,
+  reorderLevel: number
+): "below_par" | "at_par" | "above_par" {
+  if (newQuantity <= 0 || newQuantity <= reorderLevel) {
+    return "below_par";
+  }
+  const parLevel = reorderLevel;
+  const tolerance = Math.max(parLevel * 0.05, 1);
+  const diff = Math.abs(newQuantity - parLevel);
+  return diff <= tolerance ? "at_par" : "above_par";
+}
+
+function calculateParStatus(
+  newQuantity: number,
+  reorderLevel: number
+): "below_par" | "at_par" | "above_par" | "no_par_set" {
+  if (reorderLevel <= 0) {
+    return "no_par_set";
+  }
+  if (newQuantity < reorderLevel) {
+    return "below_par";
+  }
+  const tolerance = Math.max(reorderLevel * 0.05, 1);
+  return Math.abs(newQuantity - reorderLevel) <= tolerance
+    ? "at_par"
+    : "above_par";
+}
+
+function buildAdjustmentResponse(
+  item: {
+    tenantId: string;
+    id: string;
+    item_number: string;
+    name: string | null;
+    category: string | null;
+    unitCost: number;
+    reorder_level: number | null;
+    createdAt: Date;
+  },
+  result: {
+    transactionId: string;
+    previousQuantity: number;
+    newQuantity: number;
+    adjustmentAmount: number;
+  },
+  storageLocationId: string | undefined,
+  quantity: number,
+  adjustmentType: string,
+  reorderLevel: number,
+  reorderStatus: "below_par" | "at_par" | "above_par",
+  parStatus: "below_par" | "at_par" | "above_par" | "no_par_set"
+): CreateAdjustmentResponse {
+  return {
+    success: true,
+    message: `Stock ${adjustmentType === "increase" ? "increased" : "decreased"} by ${quantity} ${item.item_number}`,
+    adjustment: {
+      id: result.transactionId,
+      previousQuantity: result.previousQuantity,
+      newQuantity: result.newQuantity,
+      adjustmentAmount: result.adjustmentAmount,
+      transactionId: result.transactionId,
+    },
+    stockLevel: {
+      tenantId: item.tenantId,
+      id: item.id,
+      inventoryItemId: item.id,
+      storageLocationId,
+      quantityOnHand: result.newQuantity,
+      reorderLevel,
+      parLevel: item.reorder_level ? Number(item.reorder_level) : null,
+      lastCountedAt: null,
+      createdAt: item.createdAt,
+      updatedAt: new Date(),
+      item: {
+        id: item.id,
+        itemNumber: item.item_number,
+        name: item.name,
+        category: item.category,
+        unitCost: Number(item.unitCost),
+        unit: null,
+      },
+      storageLocation: storageLocationId
+        ? { id: storageLocationId, name: "" }
+        : null,
+      reorderStatus,
+      totalValue: result.newQuantity * Number(item.unitCost),
+      parStatus,
+      stockOutRisk:
+        result.newQuantity <= reorderLevel && result.newQuantity > 0,
+    },
+  };
+}
+
 /**
  * POST /api/inventory/stock-levels/adjust - Create a manual stock adjustment
  */
@@ -43,16 +244,7 @@ export async function POST(request: Request) {
       referenceId,
     } = body;
 
-    // Verify the inventory item exists
-    const item = await database.inventoryItem.findUnique({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: inventoryItemId,
-        },
-        deletedAt: null,
-      },
-    });
+    const item = await verifyInventoryItemExists(tenantId, inventoryItemId);
 
     if (!item) {
       return NextResponse.json(
@@ -61,18 +253,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // If location is provided, verify it exists
     if (storageLocationId) {
-      const location = await database.$queryRaw<Array<{ id: string }>>`
-        SELECT id
-        FROM tenant_inventory.storage_locations
-        WHERE tenant_id = ${tenantId}
-          AND id = ${storageLocationId}
-          AND deleted_at IS NULL
-          AND is_active = true
-      `;
-
-      if (!location || location.length === 0) {
+      const locationExists = await verifyStorageLocationExists(
+        tenantId,
+        storageLocationId
+      );
+      if (!locationExists) {
         return NextResponse.json(
           { message: "Storage location not found" },
           { status: 404 }
@@ -81,11 +267,12 @@ export async function POST(request: Request) {
     }
 
     const previousQuantity = Number(item.quantityOnHand);
-    const adjustmentAmount =
-      adjustmentType === "increase" ? quantity : -quantity;
-    const newQuantity = previousQuantity + adjustmentAmount;
+    const { newQuantity, adjustmentAmount } = calculateNewQuantity(
+      previousQuantity,
+      quantity,
+      adjustmentType
+    );
 
-    // Validate new quantity is not negative
     if (newQuantity < 0) {
       return NextResponse.json(
         {
@@ -96,122 +283,34 @@ export async function POST(request: Request) {
       );
     }
 
-    // Use a transaction to update item and create transaction record
-    const result = await database.$transaction(async (tx) => {
-      // Update inventory item quantity
-      await tx.$executeRaw`
-        UPDATE tenant_inventory.inventory_items
-        SET quantity_on_hand = ${newQuantity},
-            updated_at = NOW()
-        WHERE tenant_id = ${tenantId}
-          AND id = ${inventoryItemId}
-          AND deleted_at IS NULL
-      `;
+    const result = await executeStockAdjustmentTransaction(
+      tenantId,
+      inventoryItemId,
+      newQuantity,
+      adjustmentAmount,
+      storageLocationId,
+      reason,
+      notes,
+      referenceId,
+      userId,
+      item.unitCost,
+      previousQuantity
+    );
 
-      // Create inventory transaction record
-      const transactionResult = await tx.$queryRaw<Array<{ id: string }>>`
-        INSERT INTO tenant_inventory.inventory_transactions (
-          tenant_id,
-          id,
-          item_id,
-          transaction_type,
-          quantity,
-          unit_cost,
-          storage_location_id,
-          reason,
-          notes,
-          reference,
-          employee_id,
-          created_at
-        )
-        VALUES (
-          ${tenantId},
-          gen_random_uuid(),
-          ${inventoryItemId},
-          'adjustment',
-          ${adjustmentAmount},
-          ${item.unitCost},
-          ${storageLocationId ?? "00000000-0000-0000-0000-000000000000"},
-          ${reason},
-          ${notes ?? null},
-          ${referenceId ?? null},
-          ${userId},
-          NOW()
-        )
-        RETURNING id
-      `;
-
-      return {
-        transactionId: transactionResult[0]?.id,
-        previousQuantity,
-        newQuantity,
-        adjustmentAmount: Math.abs(adjustmentAmount),
-      };
-    });
-
-    // Calculate new stock status
     const reorderLevel = Number(item.reorder_level);
-    let reorderStatus: "below_par" | "at_par" | "above_par";
-    if (newQuantity <= 0) {
-      reorderStatus = "below_par";
-    } else if (newQuantity <= reorderLevel) {
-      reorderStatus = "below_par";
-    } else {
-      const parLevel = reorderLevel;
-      const tolerance = Math.max(parLevel * 0.05, 1);
-      const diff = Math.abs(newQuantity - parLevel);
-      reorderStatus = diff <= tolerance ? "at_par" : "above_par";
-    }
+    const reorderStatus = calculateReorderStatus(newQuantity, reorderLevel);
+    const parStatus = calculateParStatus(newQuantity, reorderLevel);
 
-    const parStatus =
-      reorderLevel > 0
-        ? newQuantity < reorderLevel
-          ? "below_par"
-          : Math.abs(newQuantity - reorderLevel) <=
-              Math.max(reorderLevel * 0.05, 1)
-            ? "at_par"
-            : "above_par"
-        : "no_par_set";
-
-    const response: CreateAdjustmentResponse = {
-      success: true,
-      message: `Stock ${adjustmentType === "increase" ? "increased" : "decreased"} by ${quantity} ${item.item_number}`,
-      adjustment: {
-        id: result.transactionId,
-        previousQuantity: result.previousQuantity,
-        newQuantity: result.newQuantity,
-        adjustmentAmount: result.adjustmentAmount,
-        transactionId: result.transactionId,
-      },
-      stockLevel: {
-        tenantId: item.tenantId,
-        id: item.id,
-        inventoryItemId: item.id,
-        storageLocationId,
-        quantityOnHand: result.newQuantity,
-        reorderLevel,
-        parLevel: item.reorder_level ? Number(item.reorder_level) : null,
-        lastCountedAt: null,
-        createdAt: item.createdAt,
-        updatedAt: new Date(),
-        item: {
-          id: item.id,
-          itemNumber: item.item_number,
-          name: item.name,
-          category: item.category,
-          unitCost: Number(item.unitCost),
-          unit: null,
-        },
-        storageLocation: storageLocationId
-          ? { id: storageLocationId, name: "" }
-          : null,
-        reorderStatus,
-        totalValue: result.newQuantity * Number(item.unitCost),
-        parStatus,
-        stockOutRisk:
-          result.newQuantity <= reorderLevel && result.newQuantity > 0,
-      },
-    };
+    const response = buildAdjustmentResponse(
+      item,
+      result,
+      storageLocationId,
+      quantity,
+      adjustmentType,
+      reorderLevel,
+      reorderStatus,
+      parStatus
+    );
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {

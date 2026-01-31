@@ -76,7 +76,9 @@ describe("createEventSchema", () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues.some((i) => i.message.includes("title"))).toBe(true);
+        expect(
+          result.error.issues.some((i) => i.message.includes("title"))
+        ).toBe(true);
       }
     });
 
@@ -92,7 +94,9 @@ describe("createEventSchema", () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues.some((i) => i.message.includes("date"))).toBe(true);
+        expect(
+          result.error.issues.some((i) => i.message.includes("date"))
+        ).toBe(true);
       }
     });
 
@@ -108,7 +112,9 @@ describe("createEventSchema", () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues.some((i) => i.message.includes("Guest count"))).toBe(true);
+        expect(
+          result.error.issues.some((i) => i.message.includes("Guest count"))
+        ).toBe(true);
       }
     });
 
@@ -138,7 +144,9 @@ describe("createEventSchema", () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues.some((i) => i.message.includes("Budget"))).toBe(true);
+        expect(
+          result.error.issues.some((i) => i.message.includes("Budget"))
+        ).toBe(true);
       }
     });
 
@@ -187,7 +195,7 @@ describe("createEventSchema", () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data.budget).toBe(2500.50);
+        expect(result.data.budget).toBe(2500.5);
       }
     });
   });

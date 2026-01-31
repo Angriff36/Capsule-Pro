@@ -36,11 +36,11 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const event = await database.events.findFirst({
+  const event = await database.event.findFirst({
     where: {
-      tenant_id: tenantId,
+      tenantId,
       id: eventId,
-      deleted_at: null,
+      deletedAt: null,
     },
   });
 

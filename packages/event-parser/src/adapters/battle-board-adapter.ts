@@ -18,19 +18,19 @@ import type {
   TimelinePhase,
 } from "../types/event.js";
 
-export interface BattleBoardAdapterOptions {
+export type BattleBoardAdapterOptions = {
   includeTaskLibrary?: boolean;
   defaultLayouts?: BattleBoardLayout[];
   staffParkingDefault?: string;
   staffRestroomsDefault?: string;
-}
+};
 
-export interface BattleBoardBuildResult {
+export type BattleBoardBuildResult = {
   battleBoard: BattleBoardData;
   autoFillScore: number;
   warnings: string[];
   missingFields: string[];
-}
+};
 
 /**
  * Build a battle board from parsed event data
@@ -55,14 +55,23 @@ export function buildBattleBoardFromEvent(
     lastUpdatedISO: new Date().toISOString(),
   };
 
-  if (meta.eventName) filledFields++;
-  else missingFields.push("eventName");
+  if (meta.eventName) {
+    filledFields++;
+  } else {
+    missingFields.push("eventName");
+  }
 
-  if (meta.eventNumber) filledFields++;
-  else missingFields.push("eventNumber");
+  if (meta.eventNumber) {
+    filledFields++;
+  } else {
+    missingFields.push("eventNumber");
+  }
 
-  if (meta.eventDate) filledFields++;
-  else missingFields.push("eventDate");
+  if (meta.eventDate) {
+    filledFields++;
+  } else {
+    missingFields.push("eventDate");
+  }
 
   // Staff restrooms/parking are defaulted, so we count them as filled
   filledFields++;
@@ -360,7 +369,9 @@ function isHighlightEntry(entry: EventTimelineEntry): boolean {
 }
 
 function formatTo12Hour(time24: string): string {
-  if (!time24) return "";
+  if (!time24) {
+    return "";
+  }
 
   // Handle already formatted times
   if (
@@ -371,7 +382,9 @@ function formatTo12Hour(time24: string): string {
   }
 
   const match = time24.match(/^(\d{1,2}):(\d{2})$/);
-  if (!match) return time24;
+  if (!match) {
+    return time24;
+  }
 
   let hours = Number.parseInt(match[1], 10);
   const minutes = match[2];
@@ -387,7 +400,9 @@ function formatTo12Hour(time24: string): string {
 }
 
 function parseTimeToMinutes(timeStr: string): number {
-  if (!timeStr) return 0;
+  if (!timeStr) {
+    return 0;
+  }
 
   // Handle 12-hour format
   const match12 = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);

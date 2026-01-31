@@ -38,6 +38,109 @@ type RouteContext = {
 };
 
 /**
+ * Map cycle count record to response format
+ */
+function mapRecord(record: {
+  id: string;
+  tenantId: string;
+  sessionId: string;
+  itemId: string;
+  itemNumber: string;
+  itemName: string;
+  storageLocationId: string | null;
+  expectedQuantity: { toNumber: () => number };
+  countedQuantity: { toNumber: () => number };
+  variance: { toNumber: () => number };
+  variancePct: { toNumber: () => number };
+  countDate: Date;
+  countedById: string;
+  barcode: string | null;
+  notes: string | null;
+  isVerified: boolean;
+  verifiedById: string | null;
+  verifiedAt: Date | null;
+  syncStatus: string;
+  offlineId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}) {
+  return {
+    id: record.id,
+    tenant_id: record.tenantId,
+    session_id: record.sessionId,
+    item_id: record.itemId,
+    item_number: record.itemNumber,
+    item_name: record.itemName,
+    storage_location_id: record.storageLocationId,
+    expected_quantity: toNumber(record.expectedQuantity),
+    counted_quantity: toNumber(record.countedQuantity),
+    variance: toNumber(record.variance),
+    variance_pct: toNumber(record.variancePct),
+    count_date: record.countDate,
+    counted_by_id: record.countedById,
+    barcode: record.barcode,
+    notes: record.notes,
+    is_verified: record.isVerified,
+    verified_by_id: record.verifiedById,
+    verified_at: record.verifiedAt,
+    sync_status: record.syncStatus as SyncStatus,
+    offline_id: record.offlineId,
+    created_at: record.createdAt,
+    updated_at: record.updatedAt,
+    deleted_at: record.deletedAt,
+  };
+}
+
+/**
+ * Validate record creation request body
+ */
+function validateRecordCreationBody(body: Record<string, unknown>): void {
+  if (!body.item_id || typeof body.item_id !== "string") {
+    throw new InvariantError("item_id is required and must be a string");
+  }
+
+  if (!body.item_number || typeof body.item_number !== "string") {
+    throw new InvariantError("item_number is required and must be a string");
+  }
+
+  if (!body.item_name || typeof body.item_name !== "string") {
+    throw new InvariantError("item_name is required and must be a string");
+  }
+
+  if (
+    body.expected_quantity === undefined ||
+    typeof body.expected_quantity !== "number"
+  ) {
+    throw new InvariantError(
+      "expected_quantity is required and must be a number"
+    );
+  }
+
+  if (
+    body.counted_quantity === undefined ||
+    typeof body.counted_quantity !== "number"
+  ) {
+    throw new InvariantError(
+      "counted_quantity is required and must be a number"
+    );
+  }
+}
+
+/**
+ * Calculate variance values
+ */
+function calculateVariance(
+  countedQuantity: number,
+  expectedQuantity: number
+): { variance: number; variancePct: number } {
+  const variance = countedQuantity - expectedQuantity;
+  const variancePct =
+    expectedQuantity > 0 ? (variance / expectedQuantity) * 100 : 0;
+  return { variance, variancePct };
+}
+
+/**
  * GET /api/inventory/cycle-count/sessions/[sessionId]/records - List records for a session
  */
 export async function GET(request: Request, context: RouteContext) {
@@ -104,31 +207,7 @@ export async function GET(request: Request, context: RouteContext) {
       orderBy: { createdAt: "desc" },
     });
 
-    const mappedRecords = records.map((record) => ({
-      id: record.id,
-      tenant_id: record.tenantId,
-      session_id: record.sessionId,
-      item_id: record.itemId,
-      item_number: record.itemNumber,
-      item_name: record.itemName,
-      storage_location_id: record.storageLocationId,
-      expected_quantity: toNumber(record.expectedQuantity),
-      counted_quantity: toNumber(record.countedQuantity),
-      variance: toNumber(record.variance),
-      variance_pct: toNumber(record.variancePct),
-      count_date: record.countDate,
-      counted_by_id: record.countedById,
-      barcode: record.barcode,
-      notes: record.notes,
-      is_verified: record.isVerified,
-      verified_by_id: record.verifiedById,
-      verified_at: record.verifiedAt,
-      sync_status: record.syncStatus as SyncStatus,
-      offline_id: record.offlineId,
-      created_at: record.createdAt,
-      updated_at: record.updatedAt,
-      deleted_at: record.deletedAt,
-    }));
+    const mappedRecords = records.map(mapRecord);
 
     return NextResponse.json({
       data: mappedRecords,
@@ -169,7 +248,6 @@ export async function POST(request: Request, context: RouteContext) {
     const { sessionId } = await context.params;
     const body = await request.json();
 
-    // Verify session exists
     const session = await database.cycleCountSession.findFirst({
       where: {
         tenantId,
@@ -185,38 +263,8 @@ export async function POST(request: Request, context: RouteContext) {
       );
     }
 
-    // Validate required fields
-    if (!body.item_id || typeof body.item_id !== "string") {
-      throw new InvariantError("item_id is required and must be a string");
-    }
+    validateRecordCreationBody(body);
 
-    if (!body.item_number || typeof body.item_number !== "string") {
-      throw new InvariantError("item_number is required and must be a string");
-    }
-
-    if (!body.item_name || typeof body.item_name !== "string") {
-      throw new InvariantError("item_name is required and must be a string");
-    }
-
-    if (
-      body.expected_quantity === undefined ||
-      typeof body.expected_quantity !== "number"
-    ) {
-      throw new InvariantError(
-        "expected_quantity is required and must be a number"
-      );
-    }
-
-    if (
-      body.counted_quantity === undefined ||
-      typeof body.counted_quantity !== "number"
-    ) {
-      throw new InvariantError(
-        "counted_quantity is required and must be a number"
-      );
-    }
-
-    // Get the user's database ID
     const user = await database.user.findFirst({
       where: {
         tenantId,
@@ -228,35 +276,31 @@ export async function POST(request: Request, context: RouteContext) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    // Calculate variance
-    const variance = body.counted_quantity - body.expected_quantity;
-    const variancePct =
-      body.expected_quantity > 0
-        ? (variance / body.expected_quantity) * 100
-        : 0;
+    const { variance, variancePct } = calculateVariance(
+      body.counted_quantity as number,
+      body.expected_quantity as number
+    );
 
-    // Create record
     const record = await database.cycleCountRecord.create({
       data: {
         tenantId,
         sessionId: session.id,
-        itemId: body.item_id,
-        itemNumber: body.item_number,
-        itemName: body.item_name,
-        storageLocationId: body.storage_location_id || null,
-        expectedQuantity: body.expected_quantity,
-        countedQuantity: body.counted_quantity,
+        itemId: body.item_id as string,
+        itemNumber: body.item_number as string,
+        itemName: body.item_name as string,
+        storageLocationId: (body.storage_location_id as string | null) || null,
+        expectedQuantity: body.expected_quantity as number,
+        countedQuantity: body.counted_quantity as number,
         variance,
         variancePct,
         countedById: user.id,
-        barcode: body.barcode || null,
-        notes: body.notes || null,
+        barcode: (body.barcode as string | null) || null,
+        notes: (body.notes as string | null) || null,
         syncStatus: (body.sync_status as SyncStatus) || "synced",
-        offlineId: body.offline_id || null,
+        offlineId: (body.offline_id as string | null) || null,
       },
     });
 
-    // Update session totals
     const allRecords = await database.cycleCountRecord.findMany({
       where: {
         tenantId,
@@ -290,33 +334,7 @@ export async function POST(request: Request, context: RouteContext) {
       },
     });
 
-    const mappedRecord = {
-      id: record.id,
-      tenant_id: record.tenantId,
-      session_id: record.sessionId,
-      item_id: record.itemId,
-      item_number: record.itemNumber,
-      item_name: record.itemName,
-      storage_location_id: record.storageLocationId,
-      expected_quantity: toNumber(record.expectedQuantity),
-      counted_quantity: toNumber(record.countedQuantity),
-      variance: toNumber(record.variance),
-      variance_pct: toNumber(record.variancePct),
-      count_date: record.countDate,
-      counted_by_id: record.countedById,
-      barcode: record.barcode,
-      notes: record.notes,
-      is_verified: record.isVerified,
-      verified_by_id: record.verifiedById,
-      verified_at: record.verifiedAt,
-      sync_status: record.syncStatus as SyncStatus,
-      offline_id: record.offlineId,
-      created_at: record.createdAt,
-      updated_at: record.updatedAt,
-      deleted_at: record.deletedAt,
-    };
-
-    return NextResponse.json(mappedRecord, { status: 201 });
+    return NextResponse.json(mapRecord(record), { status: 201 });
   } catch (error) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });

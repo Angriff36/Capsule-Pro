@@ -1,32 +1,32 @@
 // Battle Board data structure types
 // Based on Event-Battle-Board JSON schema "mangia-battle-board@1"
 
-export interface BattleBoardMeta {
+export type BattleBoardMeta = {
   eventName: string;
   eventNumber: string;
   eventDate: string;
   staffRestrooms: string;
   staffParking: string;
   lastUpdatedISO?: string;
-}
+};
 
-export interface BattleBoardStaff {
+export type BattleBoardStaff = {
   name: string;
   role: string;
   shiftStart: string; // 12-hour format: "3:30 PM"
   shiftEnd: string; // 12-hour format: "11:59 PM"
   station: string;
-}
+};
 
-export interface BattleBoardLayout {
+export type BattleBoardLayout = {
   type: string;
   instructions: string;
   linkedMapImage?: string;
-}
+};
 
 export type TimelineStyle = "setup" | "service" | "breakdown" | "other";
 
-export interface BattleBoardTimeline {
+export type BattleBoardTimeline = {
   time: string;
   item: string;
   team: string;
@@ -34,17 +34,17 @@ export interface BattleBoardTimeline {
   style: TimelineStyle | string;
   notes: string;
   hl: boolean; // highlight
-}
+};
 
-export interface BattleBoardAttachment {
+export type BattleBoardAttachment = {
   label: string;
   name: string;
   type: string;
   size: number;
   src: string;
-}
+};
 
-export interface BattleBoardTask {
+export type BattleBoardTask = {
   id: string;
   name: string;
   description: string;
@@ -52,9 +52,9 @@ export interface BattleBoardTask {
   defaultTeam: string;
   defaultLocation: string;
   defaultStyle: TimelineStyle;
-}
+};
 
-export interface BattleBoardData {
+export type BattleBoardData = {
   schema?: string;
   version?: string;
   meta: BattleBoardMeta;
@@ -63,7 +63,7 @@ export interface BattleBoardData {
   timeline: BattleBoardTimeline[];
   attachments: BattleBoardAttachment[];
   taskLibrary?: BattleBoardTask[];
-}
+};
 
 // Partial update interface for format-specific adapters
 export type PartialBattleBoardData = Partial<BattleBoardData> & {

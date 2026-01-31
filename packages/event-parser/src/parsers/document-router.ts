@@ -12,7 +12,7 @@ import { detectPdfFormat, extractPdfText } from "./pdf-extractor.js";
 import { getEventNamesFromShifts, parseStaffCsv } from "./staff-csv-parser.js";
 import { parseTppEvent } from "./tpp-event-parser.js";
 
-export interface ProcessedDocument {
+export type ProcessedDocument = {
   id: string;
   fileName: string;
   fileType: "pdf" | "csv";
@@ -23,12 +23,12 @@ export interface ProcessedDocument {
   availableEventNames?: string[];
   errors: string[];
   warnings: string[];
-}
+};
 
-export interface ProcessDocumentOptions {
+export type ProcessDocumentOptions = {
   fileName: string;
   sourceName?: string;
-}
+};
 
 /**
  * Process a document and route to appropriate parser
@@ -75,13 +75,35 @@ export async function processDocument(
   }
 
   if (fileType === "pdf") {
+    // Debug logging
+    console.log('[processDocument] PDF file type:', fileContent.constructor.name);
+    console.log('[processDocument] Original fileContent type:', Object.getPrototypeOf(fileContent).constructor.name);
+
     // Extract text from PDF
-    const pdfBuffer =
-      fileContent instanceof ArrayBuffer
-        ? new Uint8Array(fileContent)
-        : fileContent instanceof Uint8Array
-          ? fileContent
-          : new TextEncoder().encode(fileContent);
+    // Handle various input types that Next.js might pass us
+    let pdfBuffer: Uint8Array;
+    if (fileContent instanceof Uint8Array) {
+      // API route already created a copy, so we can use it directly
+      pdfBuffer = fileContent;
+    } else if (fileContent instanceof ArrayBuffer) {
+      pdfBuffer = new Uint8Array(fileContent);
+    } else if (typeof fileContent === 'string') {
+      pdfBuffer = new TextEncoder().encode(fileContent);
+    } else {
+      // Fallback: try to handle any other type (Buffer, Next.js File, etc.)
+      const unknownContent = fileContent as Record<string, unknown>;
+      // Check for Buffer-like objects with buffer, byteOffset, byteLength properties
+      if ('buffer' in unknownContent && 'byteOffset' in unknownContent && 'byteLength' in unknownContent) {
+        const bufferLike = unknownContent as { buffer: ArrayBufferLike; byteOffset: number; byteLength: number };
+        pdfBuffer = new Uint8Array(bufferLike.buffer, bufferLike.byteOffset, bufferLike.byteLength);
+      } else {
+        throw new Error(`Unsupported PDF input type: ${(unknownContent as { constructor: { name: string } }).constructor.name}`);
+      }
+    }
+
+    console.log('[processDocument] Converted pdfBuffer type:', pdfBuffer.constructor.name);
+    console.log('[processDocument] pdfBuffer length:', pdfBuffer.length);
+    // Skip slice() debug logging to avoid detached ArrayBuffer issues
 
     const extractResult = await extractPdfText(pdfBuffer);
     errors.push(...extractResult.errors);
@@ -234,8 +256,12 @@ export async function processMultipleDocuments(
 
 function detectFileType(fileName: string): "pdf" | "csv" | "unknown" {
   const ext = fileName.toLowerCase().split(".").pop();
-  if (ext === "pdf") return "pdf";
-  if (ext === "csv") return "csv";
+  if (ext === "pdf") {
+    return "pdf";
+  }
+  if (ext === "csv") {
+    return "csv";
+  }
   return "unknown";
 }
 

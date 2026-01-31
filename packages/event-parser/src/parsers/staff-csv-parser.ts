@@ -5,11 +5,11 @@
 
 import type { StaffShift } from "../types/index.js";
 
-export interface StaffCsvParseResult {
+export type StaffCsvParseResult = {
   shifts: Map<string, StaffShift[]>; // eventName -> shifts
   errors: string[];
   totalShifts: number;
-}
+};
 
 /**
  * Parse a staff roster CSV file
@@ -83,7 +83,9 @@ export function parseStaffCsv(csvContent: string): StaffCsvParseResult {
   // Parse data rows
   for (let i = 1; i < lines.length; i++) {
     const row = parseCSVRow(lines[i]);
-    if (row.length === 0) continue;
+    if (row.length === 0) {
+      continue;
+    }
 
     // Skip empty rows and totals rows
     const firstCell = row[0]?.trim().toLowerCase() || "";
@@ -132,7 +134,7 @@ export function parseStaffCsv(csvContent: string): StaffCsvParseResult {
       if (!shifts.has(eventName)) {
         shifts.set(eventName, []);
       }
-      shifts.get(eventName)!.push(shift);
+      shifts.get(eventName)?.push(shift);
       totalShifts++;
     } catch (e) {
       errors.push(
@@ -204,13 +206,17 @@ function findColumnIndex(headers: string[], candidates: string[]): number {
     const idx = headers.findIndex(
       (h) => h === candidate || h.includes(candidate)
     );
-    if (idx !== -1) return idx;
+    if (idx !== -1) {
+      return idx;
+    }
   }
   return -1;
 }
 
 function parseTimeString(timeStr: string): { time: string; meridiem: string } {
-  if (!timeStr) return { time: "", meridiem: "" };
+  if (!timeStr) {
+    return { time: "", meridiem: "" };
+  }
 
   // Handle various time formats
   // HH:MM AM/PM, H:MM AM/PM, HH:MM, etc.

@@ -109,34 +109,16 @@ export async function GET(_request: Request, { params }: { params: Params }) {
  * PUT /api/events/guests/[guestId]
  * Update a guest
  */
-export async function PUT(request: Request, { params }: { params: Params }) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
 
-  const tenantId = await getTenantIdForOrg(orgId);
-  const { guestId } = await params;
-  const body = await request.json();
-
-  // Validate guest exists and belongs to tenant
-  const existingGuest = await database.eventGuest.findFirst({
-    where: {
-      AND: [{ tenantId }, { id: guestId }, { deletedAt: null }],
-    },
-  });
-
-  if (!existingGuest) {
-    return NextResponse.json({ message: "Guest not found" }, { status: 404 });
-  }
-
-  // Build update data with validation
+function buildUpdateData(
+  body: UpdateGuestData
+): NextResponse | UpdateGuestData {
   const updateData: UpdateGuestData = {};
 
   if (body.guestName !== undefined) {
     const error = validateGuestName(body.guestName);
     if (error) {
-      return NextResponse.json({ message: error }, { status: 400 });
+      return NextResponse.json({ message: error }, { status: 400 }) as any;
     }
     updateData.guestName = body.guestName.trim();
   }
@@ -144,7 +126,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   if (body.guestEmail !== undefined) {
     const error = validateGuestEmail(body.guestEmail);
     if (error) {
-      return NextResponse.json({ message: error }, { status: 400 });
+      return NextResponse.json({ message: error }, { status: 400 }) as any;
     }
     updateData.guestEmail =
       body.guestEmail === null ? null : body.guestEmail.trim();
@@ -153,7 +135,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   if (body.guestPhone !== undefined) {
     const error = validateGuestPhone(body.guestPhone);
     if (error) {
-      return NextResponse.json({ message: error }, { status: 400 });
+      return NextResponse.json({ message: error }, { status: 400 }) as any;
     }
     updateData.guestPhone =
       body.guestPhone === null ? null : body.guestPhone.trim();
@@ -166,7 +148,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   if (body.dietaryRestrictions !== undefined) {
     const error = validateDietaryRestrictions(body.dietaryRestrictions);
     if (error) {
-      return NextResponse.json({ message: error }, { status: 400 });
+      return NextResponse.json({ message: error }, { status: 400 }) as any;
     }
     updateData.dietaryRestrictions = sanitizeStringArray(
       body.dietaryRestrictions
@@ -176,7 +158,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   if (body.allergenRestrictions !== undefined) {
     const error = validateAllergenRestrictions(body.allergenRestrictions);
     if (error) {
-      return NextResponse.json({ message: error }, { status: 400 });
+      return NextResponse.json({ message: error }, { status: 400 }) as any;
     }
     updateData.allergenRestrictions = sanitizeStringArray(
       body.allergenRestrictions
@@ -213,7 +195,34 @@ export async function PUT(request: Request, { params }: { params: Params }) {
         : body.mealPreference.toString().trim();
   }
 
-  // Update guest
+  return updateData;
+}
+
+export async function PUT(request: Request, { params }: { params: Params }) {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  const tenantId = await getTenantIdForOrg(orgId);
+  const { guestId } = await params;
+  const body = await request.json();
+
+  const existingGuest = await database.eventGuest.findFirst({
+    where: {
+      AND: [{ tenantId }, { id: guestId }, { deletedAt: null }],
+    },
+  });
+
+  if (!existingGuest) {
+    return NextResponse.json({ message: "Guest not found" }, { status: 404 });
+  }
+
+  const updateDataOrError = buildUpdateData(body);
+  if (updateDataOrError instanceof NextResponse) {
+    return updateDataOrError;
+  }
+
   const updatedGuest = await database.eventGuest.update({
     where: {
       tenantId_id: {
@@ -221,7 +230,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
         id: guestId,
       },
     },
-    data: updateData,
+    data: updateDataOrError,
   });
 
   return NextResponse.json({ guest: updatedGuest });

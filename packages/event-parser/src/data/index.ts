@@ -325,9 +325,15 @@ export function countChecklistQuestions(sections: ChecklistSectionState[]): {
   for (const section of sections) {
     for (const question of section.questions) {
       total++;
-      if (question.required) required++;
-      if (question.value !== null && question.value !== "") answered++;
-      if (question.autoFilled) autoFilled++;
+      if (question.required) {
+        required++;
+      }
+      if (question.value !== null && question.value !== "") {
+        answered++;
+      }
+      if (question.autoFilled) {
+        autoFilled++;
+      }
     }
   }
 

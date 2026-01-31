@@ -5,8 +5,6 @@ import {
   useBroadcastEvent,
   useCommandBoardPresence,
   useEventListener,
-  useMutation,
-  useStorage,
 } from "@repo/collaboration";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -247,7 +245,9 @@ export function BoardCanvas({
 
   useEventListener((event) => {
     const eventData = event.event;
-    if (!eventData) return;
+    if (!eventData) {
+      return;
+    }
 
     switch (eventData.type) {
       case "CARD_DELETED": {

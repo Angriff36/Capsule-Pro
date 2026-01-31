@@ -7,7 +7,7 @@ export type ChecklistQuestionType =
   | "text"
   | "textarea";
 
-export interface ChecklistQuestionState {
+export type ChecklistQuestionState = {
   id: string;
   type: ChecklistQuestionType;
   prompt: string;
@@ -19,29 +19,29 @@ export interface ChecklistQuestionState {
   notes?: string;
   autoFilled?: boolean;
   autoReason?: string;
-}
+};
 
-export interface ChecklistSectionState {
+export type ChecklistSectionState = {
   id: string;
   title: string;
   summary?: string;
   questions: ChecklistQuestionState[];
-}
+};
 
-export interface EventChecklist {
+export type EventChecklist = {
   version: string;
   generatedAt: string;
   updatedAt: string;
   completedAt?: string;
   completion: number;
   sections: ChecklistSectionState[];
-}
+};
 
-export interface AutoAnswer {
+export type AutoAnswer = {
   value: string | null;
   notes?: string;
   autoReason?: string;
-}
+};
 
 // Event type options for checklist
 export const EVENT_TYPE_OPTIONS = [

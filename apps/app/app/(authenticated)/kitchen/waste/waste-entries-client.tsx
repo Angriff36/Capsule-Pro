@@ -71,26 +71,30 @@ export function WasteEntriesClient() {
           }),
         ]);
 
-        if (!itemsRes.ok) {
-          console.warn("Failed to fetch inventory items, server may be unavailable");
-          setInventoryItems([]);
-        } else {
+        if (itemsRes.ok) {
           const itemsData = await itemsRes.json();
           setInventoryItems(itemsData.data || []);
-        }
-        if (!reasonsRes.ok) {
-          console.warn("Failed to fetch waste reasons, server may be unavailable");
-          setWasteReasons([]);
         } else {
+          console.warn(
+            "Failed to fetch inventory items, server may be unavailable"
+          );
+          setInventoryItems([]);
+        }
+        if (reasonsRes.ok) {
           const reasonsData = await reasonsRes.json();
           setWasteReasons(reasonsData.data || []);
-        }
-        if (!unitsRes.ok) {
-          console.warn("Failed to fetch units, server may be unavailable");
-          setUnits([]);
         } else {
+          console.warn(
+            "Failed to fetch waste reasons, server may be unavailable"
+          );
+          setWasteReasons([]);
+        }
+        if (unitsRes.ok) {
           const unitsData = await unitsRes.json();
           setUnits(unitsData.data || []);
+        } else {
+          console.warn("Failed to fetch units, server may be unavailable");
+          setUnits([]);
         }
       } catch (error) {
         console.error("Failed to fetch dropdown data:", error);

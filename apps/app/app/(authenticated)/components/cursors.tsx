@@ -1,6 +1,9 @@
 "use client";
 
-import { useCommandBoardPresence, useOtherCursors } from "@repo/collaboration/hooks";
+import {
+  useCommandBoardPresence,
+  useOtherCursors,
+} from "@repo/collaboration/hooks";
 import { useEffect } from "react";
 
 const Cursor = ({

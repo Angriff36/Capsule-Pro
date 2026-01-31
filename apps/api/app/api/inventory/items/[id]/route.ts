@@ -35,6 +35,97 @@ function calculateStockStatus(
 }
 
 /**
+ * Build inventory item response with status
+ */
+function buildItemResponse(
+  item: {
+    id: string;
+    tenantId: string;
+    item_number: string;
+    name: string;
+    category: string;
+    unitCost: { toString: () => string };
+    quantityOnHand: { toNumber: () => number };
+    reorder_level: { toNumber: () => number };
+    tags: string[];
+    fsa_status: string | null;
+    fsa_temp_logged: boolean | null;
+    fsa_allergen_info: boolean | null;
+    fsa_traceable: boolean | null;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date | null;
+  },
+  stockStatus: "in_stock" | "low_stock" | "out_of_stock"
+): InventoryItemWithStatus {
+  const quantityOnHand = Number(item.quantityOnHand);
+  const unitCost = Number(item.unitCost);
+
+  return {
+    id: item.id,
+    tenant_id: item.tenantId,
+    item_number: item.item_number,
+    name: item.name,
+    category: item.category,
+    unit_cost: unitCost,
+    quantity_on_hand: quantityOnHand,
+    reorder_level: Number(item.reorder_level),
+    tags: item.tags,
+    fsa_status: (item.fsa_status ?? "unknown") as FSAStatus,
+    fsa_temp_logged: item.fsa_temp_logged ?? false,
+    fsa_allergen_info: item.fsa_allergen_info ?? false,
+    fsa_traceable: item.fsa_traceable ?? false,
+    created_at: item.createdAt,
+    updated_at: item.updatedAt,
+    deleted_at: item.deletedAt,
+    stock_status: stockStatus,
+    total_value: quantityOnHand * unitCost,
+  };
+}
+
+/**
+ * Build update data object from request body
+ */
+function _buildUpdateData(
+  body: Record<string, unknown>
+): Record<string, unknown> {
+  const updateData: Record<string, unknown> = {};
+
+  if (body.name !== undefined) {
+    updateData.name = body.name;
+  }
+  if (body.category !== undefined) {
+    updateData.category = body.category;
+  }
+  if (body.unit_cost !== undefined) {
+    updateData.unitCost = body.unit_cost;
+  }
+  if (body.quantity_on_hand !== undefined) {
+    updateData.quantityOnHand = body.quantity_on_hand;
+  }
+  if (body.reorder_level !== undefined) {
+    updateData.reorder_level = body.reorder_level;
+  }
+  if (body.tags !== undefined) {
+    updateData.tags = body.tags;
+  }
+  if (body.fsa_status !== undefined) {
+    updateData.fsa_status = body.fsa_status;
+  }
+  if (body.fsa_temp_logged !== undefined) {
+    updateData.fsa_temp_logged = body.fsa_temp_logged;
+  }
+  if (body.fsa_allergen_info !== undefined) {
+    updateData.fsa_allergen_info = body.fsa_allergen_info;
+  }
+  if (body.fsa_traceable !== undefined) {
+    updateData.fsa_traceable = body.fsa_traceable;
+  }
+
+  return updateData;
+}
+
+/**
  * GET /api/inventory/items/[id] - Get a single inventory item
  */
 export async function GET(_request: Request, context: RouteContext) {
@@ -79,28 +170,7 @@ export async function GET(_request: Request, context: RouteContext) {
     const reorderLevel = Number(item.reorder_level);
     const stockStatus = calculateStockStatus(quantityOnHand, reorderLevel);
 
-    const itemWithStatus: InventoryItemWithStatus = {
-      id: item.id,
-      tenant_id: item.tenantId,
-      item_number: item.item_number,
-      name: item.name,
-      category: item.category,
-      unit_cost: Number(item.unitCost),
-      quantity_on_hand: quantityOnHand,
-      reorder_level: reorderLevel,
-      tags: item.tags,
-      fsa_status: (item.fsa_status ?? "unknown") as FSAStatus,
-      fsa_temp_logged: item.fsa_temp_logged ?? false,
-      fsa_allergen_info: item.fsa_allergen_info ?? false,
-      fsa_traceable: item.fsa_traceable ?? false,
-      created_at: item.createdAt,
-      updated_at: item.updatedAt,
-      deleted_at: item.deletedAt,
-      stock_status: stockStatus,
-      total_value: quantityOnHand * Number(item.unitCost),
-    };
-
-    return NextResponse.json(itemWithStatus);
+    return NextResponse.json(buildItemResponse(item, stockStatus));
   } catch (error) {
     console.error("Failed to get inventory item:", error);
     return NextResponse.json(
@@ -136,7 +206,6 @@ export async function PUT(request: Request, context: RouteContext) {
       );
     }
 
-    // Verify item exists and belongs to tenant
     const existing = await database.inventoryItem.findFirst({
       where: {
         id,
@@ -155,7 +224,6 @@ export async function PUT(request: Request, context: RouteContext) {
     const body = await request.json();
     validateUpdateInventoryItemRequest(body);
 
-    // Check if updating to a duplicate item_number
     if (body.item_number && body.item_number !== existing.item_number) {
       const duplicate = await database.inventoryItem.findFirst({
         where: {
@@ -173,41 +241,6 @@ export async function PUT(request: Request, context: RouteContext) {
       }
     }
 
-    // Build update data with only provided fields
-    const updateData: Record<string, unknown> = {};
-
-    if (body.name !== undefined) {
-      updateData.name = body.name;
-    }
-    if (body.category !== undefined) {
-      updateData.category = body.category;
-    }
-    if (body.unit_cost !== undefined) {
-      updateData.unitCost = body.unit_cost;
-    }
-    if (body.quantity_on_hand !== undefined) {
-      updateData.quantityOnHand = body.quantity_on_hand;
-    }
-    if (body.reorder_level !== undefined) {
-      updateData.reorder_level = body.reorder_level;
-    }
-    if (body.tags !== undefined) {
-      updateData.tags = body.tags;
-    }
-    if (body.fsa_status !== undefined) {
-      updateData.fsa_status = body.fsa_status;
-    }
-    if (body.fsa_temp_logged !== undefined) {
-      updateData.fsa_temp_logged = body.fsa_temp_logged;
-    }
-    if (body.fsa_allergen_info !== undefined) {
-      updateData.fsa_allergen_info = body.fsa_allergen_info;
-    }
-    if (body.fsa_traceable !== undefined) {
-      updateData.fsa_traceable = body.fsa_traceable;
-    }
-
-    // Update inventory item using raw SQL for composite key
     await database.$executeRaw`
       UPDATE "tenant_inventory".inventory_items
       SET
@@ -225,7 +258,6 @@ export async function PUT(request: Request, context: RouteContext) {
       WHERE id = ${id} AND tenant_id = ${tenantId} AND deleted_at IS NULL
     `;
 
-    // Fetch the updated item
     const updatedItem = await database.inventoryItem.findFirst({
       where: {
         id,
@@ -245,28 +277,7 @@ export async function PUT(request: Request, context: RouteContext) {
     const reorderLevel = Number(updatedItem.reorder_level);
     const stockStatus = calculateStockStatus(quantityOnHand, reorderLevel);
 
-    const itemWithStatus: InventoryItemWithStatus = {
-      id: updatedItem.id,
-      tenant_id: updatedItem.tenantId,
-      item_number: updatedItem.item_number,
-      name: updatedItem.name,
-      category: updatedItem.category,
-      unit_cost: Number(updatedItem.unitCost),
-      quantity_on_hand: quantityOnHand,
-      reorder_level: reorderLevel,
-      tags: updatedItem.tags,
-      fsa_status: (updatedItem.fsa_status ?? "unknown") as FSAStatus,
-      fsa_temp_logged: updatedItem.fsa_temp_logged ?? false,
-      fsa_allergen_info: updatedItem.fsa_allergen_info ?? false,
-      fsa_traceable: updatedItem.fsa_traceable ?? false,
-      created_at: updatedItem.createdAt,
-      updated_at: updatedItem.updatedAt,
-      deleted_at: updatedItem.deletedAt,
-      stock_status: stockStatus,
-      total_value: quantityOnHand * Number(updatedItem.unitCost),
-    };
-
-    return NextResponse.json(itemWithStatus);
+    return NextResponse.json(buildItemResponse(updatedItem, stockStatus));
   } catch (error) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });

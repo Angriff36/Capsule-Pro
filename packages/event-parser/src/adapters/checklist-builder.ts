@@ -20,18 +20,20 @@ import type {
 
 const CHECKLIST_VERSION = "2025-01-27";
 
-export interface ChecklistBuildResult {
+export type ChecklistBuildResult = {
   checklist: EventChecklist;
   autoFilledCount: number;
   totalQuestions: number;
   warnings: string[];
   missingFields: string[];
-}
+};
 
 /**
  * Build initial checklist with auto-filled answers from parsed event
  */
-export function buildInitialChecklist(event: ParsedEvent): ChecklistBuildResult {
+export function buildInitialChecklist(
+  event: ParsedEvent
+): ChecklistBuildResult {
   const generatedAt = new Date().toISOString();
   const warnings: string[] = [];
   const missingFields: string[] = [];
@@ -104,7 +106,9 @@ export function updateChecklistQuestion(
   const sections = checklist.sections.map((section: ChecklistSectionState) => ({
     ...section,
     questions: section.questions.map((question: ChecklistQuestionState) => {
-      if (question.id !== questionId) return question;
+      if (question.id !== questionId) {
+        return question;
+      }
 
       const nextValue =
         updates.value !== undefined ? updates.value : question.value;
@@ -115,7 +119,9 @@ export function updateChecklistQuestion(
       const sameValue = nextValue === question.value;
       const sameNotes = (nextNotes ?? "") === (question.notes ?? "");
 
-      if (sameValue && sameNotes) return question;
+      if (sameValue && sameNotes) {
+        return question;
+      }
 
       changed = true;
       return {
@@ -127,7 +133,9 @@ export function updateChecklistQuestion(
     }),
   }));
 
-  if (!changed) return checklist;
+  if (!changed) {
+    return checklist;
+  }
 
   const updatedAt = new Date().toISOString();
   const completion = computeChecklistCompletion(sections);
@@ -147,7 +155,9 @@ export function updateChecklistQuestion(
 export function markChecklistCompleted(
   checklist: EventChecklist
 ): EventChecklist {
-  if (checklist.completedAt) return checklist;
+  if (checklist.completedAt) {
+    return checklist;
+  }
   const timestamp = new Date().toISOString();
   return {
     ...checklist,
@@ -160,7 +170,9 @@ export function markChecklistCompleted(
  * Reopen a completed checklist
  */
 export function reopenChecklist(checklist: EventChecklist): EventChecklist {
-  if (!checklist.completedAt) return checklist;
+  if (!checklist.completedAt) {
+    return checklist;
+  }
   return {
     ...checklist,
     completedAt: undefined,
@@ -197,7 +209,9 @@ export function computeChecklistCompletion(
   const requiredQuestions = sections.flatMap((section: ChecklistSectionState) =>
     section.questions.filter((q: ChecklistQuestionState) => q.required)
   );
-  if (requiredQuestions.length === 0) return 0;
+  if (requiredQuestions.length === 0) {
+    return 0;
+  }
   const answered = requiredQuestions.filter((q: ChecklistQuestionState) =>
     isQuestionAnswered(q)
   ).length;

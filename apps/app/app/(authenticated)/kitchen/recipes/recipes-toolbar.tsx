@@ -65,6 +65,7 @@ export const RecipesToolbar = ({
   const router = useRouter();
   const searchParams = useSearchParams() ?? new URLSearchParams();
   const [query, setQuery] = useState(initialQuery ?? "");
+  const tabsId = "recipes-tabs";
 
   const currentParams = useMemo(
     () => buildSearchParams(searchParams, {}),
@@ -88,6 +89,8 @@ export const RecipesToolbar = ({
             {tabs.map((tab) => (
               <TabsTrigger
                 className="h-10 rounded-none border-transparent border-b-2 px-4 text-sm data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground"
+                id={`${tabsId}-trigger-${tab.value}`}
+                aria-controls={`${tabsId}-content-${tab.value}`}
                 key={tab.value}
                 value={tab.value}
               >
@@ -138,7 +141,11 @@ export const RecipesToolbar = ({
           }
           value={initialCategory ?? "all"}
         >
-          <SelectTrigger className="min-w-[140px] gap-2" size="default">
+          <SelectTrigger
+            className="min-w-[140px] gap-2"
+            id="recipes-filter-category"
+            size="default"
+          >
             <FilterIcon size={14} />
             <SelectValue placeholder="Category" />
           </SelectTrigger>
@@ -156,7 +163,11 @@ export const RecipesToolbar = ({
           }
           value={initialDietary ?? "all"}
         >
-          <SelectTrigger className="min-w-[120px]" size="default">
+          <SelectTrigger
+            className="min-w-[120px]"
+            id="recipes-filter-dietary"
+            size="default"
+          >
             <SelectValue placeholder="Dietary" />
           </SelectTrigger>
           <SelectContent>
@@ -172,7 +183,11 @@ export const RecipesToolbar = ({
           }
           value={initialStatus ?? "all"}
         >
-          <SelectTrigger className="min-w-[120px]" size="default">
+          <SelectTrigger
+            className="min-w-[120px]"
+            id="recipes-filter-status"
+            size="default"
+          >
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>

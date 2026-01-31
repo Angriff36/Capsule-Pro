@@ -21,12 +21,12 @@ type PrismaArgs = Record<string, unknown>;
 
 const ensureTenantWhere = (args: PrismaArgs, tenantId: string) => {
   const where = (args.where as Record<string, unknown> | undefined) ?? {};
-  return { ...args, where: { ...where, tenantId: tenantId } };
+  return { ...args, where: { ...where, tenantId } };
 };
 
 const ensureTenantData = (args: PrismaArgs, tenantId: string) => {
   const data = (args.data as Record<string, unknown> | undefined) ?? {};
-  return { ...args, data: { ...data, tenantId: tenantId } };
+  return { ...args, data: { ...data, tenantId } };
 };
 
 const ensureTenantDataMany = (args: PrismaArgs, tenantId: string) => {
@@ -35,7 +35,7 @@ const ensureTenantDataMany = (args: PrismaArgs, tenantId: string) => {
     ...args,
     data: data.map((entry) => ({
       ...entry,
-      tenantId: tenantId,
+      tenantId,
     })),
   };
 };

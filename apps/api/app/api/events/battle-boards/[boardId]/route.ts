@@ -20,7 +20,7 @@ type RouteContext = {
  * GET /api/events/battle-boards/[boardId]
  * Get a single battle board
  */
-export async function GET(request: Request, context: RouteContext) {
+export async function GET(_request: Request, context: RouteContext) {
   try {
     const { orgId } = await auth();
     if (!orgId) {
@@ -165,7 +165,7 @@ export async function PUT(request: Request, context: RouteContext) {
  * DELETE /api/events/battle-boards/[boardId]
  * Soft delete a battle board
  */
-export async function DELETE(request: Request, context: RouteContext) {
+export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const { orgId } = await auth();
     if (!orgId) {

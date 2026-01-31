@@ -420,7 +420,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
       <Header page="Recipes & Menus" pages={["Kitchen Ops"]}>
         <div className="flex items-center gap-2 px-4">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild id="recipes-settings-trigger">
               <Button size="icon" variant="ghost">
                 <SettingsIcon className="size-4" />
               </Button>

@@ -216,7 +216,7 @@ export function ProposalsClient({
   // Fetch proposals
   useEffect(() => {
     fetchProposals();
-  }, []);
+  }, [fetchProposals]);
 
   const updateFilters = () => {
     const params = new URLSearchParams();

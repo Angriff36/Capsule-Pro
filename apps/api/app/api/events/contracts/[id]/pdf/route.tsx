@@ -285,6 +285,61 @@ async function generateBase64Pdf(
   return convertToBase64(uint8Array);
 }
 
+function generateContractFilename(contractTitle: string): string {
+  return `contract-${contractTitle.replace(/\s+/g, "-").toLowerCase()}.pdf`;
+}
+
+async function handlePdfDownload(
+  pdfComponent: React.ReactElement<DocumentProps>,
+  contractTitle: string
+): Promise<NextResponse> {
+  const blob = await generatePdfBlob(pdfComponent);
+  return new NextResponse(blob, {
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="${generateContractFilename(contractTitle)}"`,
+    },
+  });
+}
+
+async function handlePdfBase64(
+  pdfComponent: React.ReactElement<DocumentProps>,
+  contractTitle: string
+): Promise<NextResponse> {
+  const base64 = await generateBase64Pdf(pdfComponent);
+  return NextResponse.json({
+    dataUrl: `data:application/pdf;base64,${base64}`,
+    filename: generateContractFilename(contractTitle),
+  });
+}
+
+function handlePdfError(error: unknown): NextResponse {
+  console.error("Failed to generate Contract PDF:", error);
+
+  if (error instanceof Error) {
+    if (error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (error.message === "Contract not found") {
+      return NextResponse.json(
+        { error: "Contract not found" },
+        { status: 404 }
+      );
+    }
+    if (error.message === "User not found") {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+  }
+
+  return NextResponse.json(
+    {
+      error: "Failed to generate PDF",
+      message: error instanceof Error ? error.message : "Unknown error",
+    },
+    { status: 500 }
+  );
+}
+
 /**
  * GET /api/events/contracts/[id]/pdf
  *
@@ -304,7 +359,7 @@ export async function GET(
     const authContext = await getAuthContext(
       orgId ?? null,
       userId ?? null,
-      orgId!
+      orgId ?? ""
     );
 
     const contract = await fetchContract(contractId, authContext.tenantId);
@@ -316,49 +371,15 @@ export async function GET(
     // @ts-expect-error - React-PDF renderer needs proper types
     const pdfComponent = <ContractPDF data={pdfData} />;
 
-    // Check if should return as download or base64
     const url = new URL(request.url);
     const shouldDownload = url.searchParams.get("download") === "true";
 
     if (shouldDownload) {
-      const blob = await generatePdfBlob(pdfComponent);
-      return new NextResponse(blob, {
-        headers: {
-          "Content-Type": "application/pdf",
-          "Content-Disposition": `attachment; filename="contract-${contract.title.replace(/\s+/g, "-").toLowerCase()}.pdf"`,
-        },
-      });
+      return await handlePdfDownload(pdfComponent, contract.title);
     }
 
-    const base64 = await generateBase64Pdf(pdfComponent);
-    return NextResponse.json({
-      dataUrl: `data:application/pdf;base64,${base64}`,
-      filename: `contract-${contract.title.replace(/\s+/g, "-").toLowerCase()}.pdf`,
-    });
+    return await handlePdfBase64(pdfComponent, contract.title);
   } catch (error) {
-    console.error("Failed to generate Contract PDF:", error);
-
-    if (error instanceof Error) {
-      if (error.message === "Unauthorized") {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-      if (error.message === "Contract not found") {
-        return NextResponse.json(
-          { error: "Contract not found" },
-          { status: 404 }
-        );
-      }
-      if (error.message === "User not found") {
-        return NextResponse.json({ error: "User not found" }, { status: 404 });
-      }
-    }
-
-    return NextResponse.json(
-      {
-        error: "Failed to generate PDF",
-        message: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    return handlePdfError(error);
   }
 }

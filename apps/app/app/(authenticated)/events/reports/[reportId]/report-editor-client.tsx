@@ -99,7 +99,9 @@ export function ReportEditorClient({ report, event }: ReportEditorProps) {
 
   // Calculate completion
   const calculateCompletion = useCallback((data: ChecklistData) => {
-    if (!data.sections) return 0;
+    if (!data.sections) {
+      return 0;
+    }
     const questions = data.sections.flatMap((s) => s.questions);
     const answered = questions.filter(
       (q) => q.value !== null && q.value !== ""
@@ -118,15 +120,21 @@ export function ReportEditorClient({ report, event }: ReportEditorProps) {
       notes?: string
     ) => {
       setChecklistData((prev) => {
-        if (!prev.sections) return prev;
+        if (!prev.sections) {
+          return prev;
+        }
         return {
           ...prev,
           sections: prev.sections.map((section) => {
-            if (section.id !== sectionId) return section;
+            if (section.id !== sectionId) {
+              return section;
+            }
             return {
               ...section,
               questions: section.questions.map((question) => {
-                if (question.id !== questionId) return question;
+                if (question.id !== questionId) {
+                  return question;
+                }
                 return {
                   ...question,
                   value,

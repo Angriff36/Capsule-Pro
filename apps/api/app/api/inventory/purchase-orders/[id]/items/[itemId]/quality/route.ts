@@ -15,6 +15,107 @@ type RouteContext = {
   params: Promise<{ id: string; itemId: string }>;
 };
 
+async function verifyPurchaseOrderExists(
+  id: string,
+  tenantId: string
+): Promise<boolean> {
+  const purchaseOrder = await database.purchaseOrder.findFirst({
+    where: {
+      id,
+      tenantId,
+      deletedAt: null,
+    },
+  });
+  return !!purchaseOrder;
+}
+
+async function verifyPurchaseOrderItemExists(
+  itemId: string,
+  purchaseOrderId: string,
+  tenantId: string
+): Promise<boolean> {
+  const poItem = await database.purchaseOrderItem.findFirst({
+    where: {
+      id: itemId,
+      purchaseOrderId,
+      tenantId,
+      deletedAt: null,
+    },
+  });
+  return !!poItem;
+}
+
+function buildQualityUpdateData(body: {
+  quality_status: string;
+  discrepancy_type?: string;
+  discrepancy_amount?: number;
+  notes?: string;
+}): {
+  qualityStatus: string;
+  discrepancyType?: string | null;
+  discrepancyAmount?: number | null;
+  notes?: string | null;
+} {
+  const updateData = {
+    qualityStatus: body.quality_status,
+  };
+
+  if (body.discrepancy_type !== undefined) {
+    updateData.discrepancyType =
+      body.discrepancy_type === "none" ? null : body.discrepancy_type;
+  }
+
+  if (body.discrepancy_amount !== undefined) {
+    updateData.discrepancyAmount = body.discrepancy_amount;
+  }
+
+  if (body.notes !== undefined) {
+    updateData.notes = body.notes;
+  }
+
+  return updateData;
+}
+
+function formatQualityUpdateResponse(updatedItem: {
+  id: string;
+  tenantId: string;
+  purchaseOrderId: string;
+  itemId: string;
+  quantityOrdered: bigint | number;
+  quantityReceived: bigint | number;
+  unitId: string;
+  unitCost: number;
+  totalCost: number;
+  qualityStatus: string | null;
+  discrepancyType: string | null;
+  discrepancyAmount: number | null;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}) {
+  return {
+    id: updatedItem.id,
+    tenant_id: updatedItem.tenantId,
+    purchase_order_id: updatedItem.purchaseOrderId,
+    item_id: updatedItem.itemId,
+    quantity_ordered: Number(updatedItem.quantityOrdered),
+    quantity_received: Number(updatedItem.quantityReceived),
+    unit_id: updatedItem.unitId,
+    unit_cost: Number(updatedItem.unitCost),
+    total_cost: Number(updatedItem.totalCost),
+    quality_status: updatedItem.qualityStatus ?? "pending",
+    discrepancy_type: updatedItem.discrepancyType,
+    discrepancy_amount: updatedItem.discrepancyAmount
+      ? Number(updatedItem.discrepancyAmount)
+      : null,
+    notes: updatedItem.notes,
+    created_at: updatedItem.createdAt,
+    updated_at: updatedItem.updatedAt,
+    deleted_at: updatedItem.deletedAt,
+  };
+}
+
 /**
  * PUT /api/inventory/purchase-orders/[id]/items/[itemId]/quality - Update quality status
  */
@@ -45,88 +146,34 @@ export async function PUT(request: Request, context: RouteContext) {
     const body = await request.json();
     validateUpdateQualityStatusRequest(body);
 
-    // Verify the purchase order exists and belongs to the tenant
-    const purchaseOrder = await database.purchaseOrder.findFirst({
-      where: {
-        id,
-        tenantId,
-        deletedAt: null,
-      },
-    });
-
-    if (!purchaseOrder) {
+    const purchaseOrderExists = await verifyPurchaseOrderExists(id, tenantId);
+    if (!purchaseOrderExists) {
       return NextResponse.json(
         { message: "Purchase order not found" },
         { status: 404 }
       );
     }
 
-    // Verify the item exists and belongs to the purchase order
-    const poItem = await database.purchaseOrderItem.findFirst({
-      where: {
-        id: itemId,
-        purchaseOrderId: id,
-        tenantId,
-        deletedAt: null,
-      },
-    });
-
-    if (!poItem) {
+    const poItemExists = await verifyPurchaseOrderItemExists(
+      itemId,
+      id,
+      tenantId
+    );
+    if (!poItemExists) {
       return NextResponse.json(
         { message: "Purchase order item not found" },
         { status: 404 }
       );
     }
 
-    // Build update data
-    const updateData: {
-      qualityStatus: string;
-      discrepancyType?: string | null;
-      discrepancyAmount?: number | null;
-      notes?: string | null;
-    } = {
-      qualityStatus: body.quality_status,
-    };
+    const updateData = buildQualityUpdateData(body);
 
-    if (body.discrepancy_type !== undefined) {
-      updateData.discrepancyType =
-        body.discrepancy_type === "none" ? null : body.discrepancy_type;
-    }
-
-    if (body.discrepancy_amount !== undefined) {
-      updateData.discrepancyAmount = body.discrepancy_amount;
-    }
-
-    if (body.notes !== undefined) {
-      updateData.notes = body.notes;
-    }
-
-    // Update the purchase order item
     const updatedItem = await database.purchaseOrderItem.update({
       where: { tenantId_id: { tenantId, id: itemId } },
       data: updateData,
     });
 
-    return NextResponse.json({
-      id: updatedItem.id,
-      tenant_id: updatedItem.tenantId,
-      purchase_order_id: updatedItem.purchaseOrderId,
-      item_id: updatedItem.itemId,
-      quantity_ordered: Number(updatedItem.quantityOrdered),
-      quantity_received: Number(updatedItem.quantityReceived),
-      unit_id: updatedItem.unitId,
-      unit_cost: Number(updatedItem.unitCost),
-      total_cost: Number(updatedItem.totalCost),
-      quality_status: updatedItem.qualityStatus ?? "pending",
-      discrepancy_type: updatedItem.discrepancyType,
-      discrepancy_amount: updatedItem.discrepancyAmount
-        ? Number(updatedItem.discrepancyAmount)
-        : null,
-      notes: updatedItem.notes,
-      created_at: updatedItem.createdAt,
-      updated_at: updatedItem.updatedAt,
-      deleted_at: updatedItem.deletedAt,
-    });
+    return NextResponse.json(formatQualityUpdateResponse(updatedItem));
   } catch (error) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });

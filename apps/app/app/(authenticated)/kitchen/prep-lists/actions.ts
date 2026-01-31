@@ -137,7 +137,7 @@ export async function generatePrepList(
 
   const event = await database.events.findFirst({
     where: {
-      tenantId: tenantId,
+      tenantId,
       id: input.eventId,
     },
   });

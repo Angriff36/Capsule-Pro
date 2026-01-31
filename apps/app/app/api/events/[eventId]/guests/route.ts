@@ -27,7 +27,7 @@ export async function GET(
     // Validate event exists
     const event = await database.events.findFirst({
       where: {
-        AND: [{ tenantId: tenantId }, { id: eventId }, { deletedAt: null }],
+        AND: [{ tenantId }, { id: eventId }, { deletedAt: null }],
       },
     });
 
@@ -45,8 +45,8 @@ export async function GET(
     const guests = await database.event_guests.findMany({
       where: {
         AND: [
-          { tenantId: tenantId },
-          { eventId: eventId },
+          { tenantId },
+          { eventId },
           { deletedAt: null },
           ...(guestName ? [{ guestName: { contains: guestName } }] : []),
         ],
@@ -60,8 +60,8 @@ export async function GET(
     const totalCount = await database.event_guests.count({
       where: {
         AND: [
-          { tenantId: tenantId },
-          { eventId: eventId },
+          { tenantId },
+          { eventId },
           { deletedAt: null },
           ...(guestName ? [{ guestName: { contains: guestName } }] : []),
         ],
@@ -121,7 +121,7 @@ export async function POST(
     // Validate that the event exists
     const event = await database.events.findFirst({
       where: {
-        AND: [{ tenantId: tenantId }, { id: eventId }, { deletedAt: null }],
+        AND: [{ tenantId }, { id: eventId }, { deletedAt: null }],
       },
     });
 
@@ -133,8 +133,8 @@ export async function POST(
     const existingGuest = await database.event_guests.findFirst({
       where: {
         AND: [
-          { tenantId: tenantId },
-          { eventId: eventId },
+          { tenantId },
+          { eventId },
           { guestName: { equals: trimmedGuestName } },
           { deletedAt: null },
         ],
@@ -151,8 +151,8 @@ export async function POST(
     // Create guest record
     const guest = await database.event_guests.create({
       data: {
-        tenantId: tenantId,
-        eventId: eventId,
+        tenantId,
+        eventId,
         guestName: trimmedGuestName,
         guestEmail: body.guestEmail?.trim() || null,
         guestPhone: body.guestPhone?.trim() || null,

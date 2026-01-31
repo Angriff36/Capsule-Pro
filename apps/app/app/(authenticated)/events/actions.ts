@@ -6,8 +6,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireTenantId } from "../../lib/tenant";
 import { type EventStatus, eventStatuses } from "./constants";
-import { createEventSchema } from "./validation";
 import { importEventFromCsvText, importEventFromPdf } from "./importer";
+import { createEventSchema } from "./validation";
 
 const getString = (formData: FormData, key: string): string | undefined => {
   const value = formData.get(key);
@@ -85,6 +85,75 @@ const getTags = (formData: FormData): string[] =>
     .map((tag) => tag.trim())
     .filter(Boolean);
 
+const MISSING_FIELD_TAG_PREFIX = "needs:";
+
+const buildMissingFieldTags = (fields: string[]) =>
+  fields.map((field) => `${MISSING_FIELD_TAG_PREFIX}${field}`);
+
+const computeMissingEventFields = async ({
+  tenantId,
+  eventId,
+  title,
+  eventType,
+  eventDate,
+  guestCount,
+  venueName,
+}: {
+  tenantId: string;
+  eventId: string;
+  title: string;
+  eventType: string;
+  eventDate: Date;
+  guestCount: number;
+  venueName?: string | null;
+}): Promise<string[]> => {
+  const missing: string[] = [];
+
+  if (!title.trim()) {
+    missing.push("client");
+  }
+  if (!eventType.trim()) {
+    missing.push("eventType");
+  }
+  if (!eventDate) {
+    missing.push("eventDate");
+  }
+  if (!guestCount || guestCount <= 0) {
+    missing.push("headcount");
+  }
+  if (!venueName?.trim()) {
+    missing.push("venueName");
+  }
+
+  const [menuRow] = await database.$queryRaw<
+    Array<{ count: number }>
+  >(
+    Prisma.sql`
+      SELECT COUNT(*)::int AS count
+      FROM tenant_events.event_dishes
+      WHERE tenant_id = ${tenantId}
+        AND event_id = ${eventId}
+        AND deleted_at IS NULL
+    `
+  );
+
+  if (!menuRow?.count) {
+    missing.push("menuItems");
+  }
+
+  return missing;
+};
+
+const mergeTags = (tags: string[], missingFields: string[]) => {
+  const tagSet = new Set(
+    tags.filter((tag) => !tag.startsWith(MISSING_FIELD_TAG_PREFIX))
+  );
+  for (const tag of buildMissingFieldTags(missingFields)) {
+    tagSet.add(tag);
+  }
+  return Array.from(tagSet);
+};
+
 export const createEvent = async (formData: FormData): Promise<void> => {
   const tenantId = await requireTenantId();
 
@@ -104,7 +173,10 @@ export const createEvent = async (formData: FormData): Promise<void> => {
   const parsed = createEventSchema.safeParse(rawData);
 
   if (!parsed.success) {
-    const error = parsed.error as { issues?: Array<{ message: string }>; errors?: Array<{ message: string }> };
+    const error = parsed.error as {
+      issues?: Array<{ message: string }>;
+      errors?: Array<{ message: string }>;
+    };
     const issues = error.issues ?? error.errors ?? [];
     const errors = issues.map((e) => e.message).join(", ");
     throw new Error(`Validation failed: ${errors}`);
@@ -115,7 +187,7 @@ export const createEvent = async (formData: FormData): Promise<void> => {
   const created = await database.$transaction(async (tx) => {
     const event = await tx.events.create({
       data: {
-        tenantId: tenantId,
+        tenantId,
         title: data.title,
         eventType: data.eventType,
         eventDate: new Date(`${data.eventDate}T00:00:00`),
@@ -131,7 +203,7 @@ export const createEvent = async (formData: FormData): Promise<void> => {
 
     await tx.battleBoards.create({
       data: {
-        tenantId: tenantId,
+        tenantId,
         eventId: event.id,
         board_name: `${event.title} - Battle Board`,
         board_type: "event-specific",
@@ -150,6 +222,9 @@ export const updateEvent = async (formData: FormData): Promise<void> => {
   const tenantId = await requireTenantId();
   const eventId = getString(formData, "eventId");
   const eventDate = getDate(formData, "eventDate");
+  const title = getString(formData, "title");
+  const eventType = getString(formData, "eventType");
+  const guestCount = getNumber(formData, "guestCount");
 
   if (!eventId) {
     throw new Error("Event id is required.");
@@ -159,30 +234,50 @@ export const updateEvent = async (formData: FormData): Promise<void> => {
     throw new Error("Event date is required.");
   }
 
+  if (!title) {
+    throw new Error("Event title is required.");
+  }
+
+  if (!eventType) {
+    throw new Error("Event type is required.");
+  }
+
+  if (!guestCount || guestCount < 1) {
+    throw new Error("Guest count must be at least 1.");
+  }
+
   const status = getStatus(formData);
 
   if (!eventStatuses.includes(status)) {
     throw new Error("Invalid status.");
   }
 
+  const missingFields = await computeMissingEventFields({
+    tenantId,
+    eventId,
+    title,
+    eventType,
+    eventDate,
+    guestCount,
+    venueName: getOptionalString(formData, "venueName"),
+  });
+  const tags = mergeTags(getTags(formData), missingFields);
+
   await database.events.updateMany({
     where: {
-      AND: [
-        { tenantId: tenantId },
-        { id: eventId },
-      ],
+      AND: [{ tenantId }, { id: eventId }],
     },
     data: {
-      title: getString(formData, "title") ?? "Untitled Event",
-      eventType: getString(formData, "eventType") ?? "catering",
-      eventDate: eventDate,
-      guestCount: getNumber(formData, "guestCount") ?? 1,
+      title,
+      eventType,
+      eventDate,
+      guestCount,
       status,
       budget: getNumberOrNull(formData, "budget"),
       venueName: getOptionalString(formData, "venueName"),
       venueAddress: getOptionalString(formData, "venueAddress"),
       notes: getOptionalString(formData, "notes"),
-      tags: getTags(formData),
+      tags,
     },
   });
 
@@ -200,10 +295,7 @@ export const deleteEvent = async (formData: FormData): Promise<void> => {
 
   await database.events.updateMany({
     where: {
-      AND: [
-        { tenantId: tenantId },
-        { id: eventId },
-      ],
+      AND: [{ tenantId }, { id: eventId }],
     },
     data: {
       deletedAt: new Date(),

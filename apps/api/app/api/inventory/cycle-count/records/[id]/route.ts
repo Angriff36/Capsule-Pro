@@ -23,6 +23,156 @@ type RouteContext = {
 };
 
 /**
+ * Map cycle count record to response format
+ */
+function mapRecord(record: {
+  id: string;
+  tenantId: string;
+  sessionId: string;
+  itemId: string;
+  itemNumber: string;
+  itemName: string;
+  storageLocationId: string | null;
+  expectedQuantity: { toNumber: () => number };
+  countedQuantity: { toNumber: () => number };
+  variance: { toNumber: () => number };
+  variancePct: { toNumber: () => number };
+  countDate: Date;
+  countedById: string;
+  barcode: string | null;
+  notes: string | null;
+  isVerified: boolean;
+  verifiedById: string | null;
+  verifiedAt: Date | null;
+  syncStatus: string;
+  offlineId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}) {
+  return {
+    id: record.id,
+    tenant_id: record.tenantId,
+    session_id: record.sessionId,
+    item_id: record.itemId,
+    item_number: record.itemNumber,
+    item_name: record.itemName,
+    storage_location_id: record.storageLocationId,
+    expected_quantity: toNumber(record.expectedQuantity),
+    counted_quantity: toNumber(record.countedQuantity),
+    variance: toNumber(record.variance),
+    variance_pct: toNumber(record.variancePct),
+    count_date: record.countDate,
+    counted_by_id: record.countedById,
+    barcode: record.barcode,
+    notes: record.notes,
+    is_verified: record.isVerified,
+    verified_by_id: record.verifiedById,
+    verified_at: record.verifiedAt,
+    sync_status: record.syncStatus as SyncStatus,
+    offline_id: record.offlineId,
+    created_at: record.createdAt,
+    updated_at: record.updatedAt,
+    deleted_at: record.deletedAt,
+  };
+}
+
+/**
+ * Build update data for cycle count record
+ */
+function buildRecordUpdateData(
+  body: Record<string, unknown>,
+  existing: { expectedQuantity: { toNumber: () => number } },
+  _tenantId: string
+): Record<string, unknown> {
+  const updateData: Record<string, unknown> = {};
+
+  if (body.counted_quantity !== undefined) {
+    if (typeof body.counted_quantity !== "number") {
+      throw new InvariantError("counted_quantity must be a number");
+    }
+
+    const expectedQuantity = toNumber(existing.expectedQuantity);
+    const variance = body.counted_quantity - expectedQuantity;
+    const variancePct =
+      expectedQuantity > 0 ? (variance / expectedQuantity) * 100 : 0;
+
+    updateData.countedQuantity = body.counted_quantity;
+    updateData.variance = variance;
+    updateData.variancePct = variancePct;
+  }
+
+  if (body.notes !== undefined) {
+    if (typeof body.notes !== "string") {
+      throw new InvariantError("notes must be a string");
+    }
+    updateData.notes = body.notes;
+  }
+
+  if (body.is_verified !== undefined) {
+    if (typeof body.is_verified !== "boolean") {
+      throw new InvariantError("is_verified must be a boolean");
+    }
+    updateData.isVerified = body.is_verified;
+  }
+
+  if (body.sync_status !== undefined) {
+    const validStatuses: SyncStatus[] = [
+      "synced",
+      "pending",
+      "failed",
+      "conflict",
+    ];
+    if (!validStatuses.includes(body.sync_status as SyncStatus)) {
+      throw new InvariantError(
+        `sync_status must be one of: ${validStatuses.join(", ")}`
+      );
+    }
+    updateData.syncStatus = body.sync_status;
+  }
+
+  return updateData;
+}
+
+/**
+ * Update session totals after record update
+ */
+async function updateSessionTotals(sessionId: string, tenantId: string) {
+  const allRecords = await database.cycleCountRecord.findMany({
+    where: {
+      tenantId,
+      sessionId,
+      deletedAt: null,
+    },
+  });
+
+  let totalVariance = 0;
+  let totalExpected = 0;
+
+  for (const r of allRecords) {
+    totalVariance += toNumber(r.variance);
+    totalExpected += toNumber(r.expectedQuantity);
+  }
+
+  const variancePercentage =
+    totalExpected > 0 ? Math.abs((totalVariance / totalExpected) * 100) : 0;
+
+  await database.cycleCountSession.update({
+    where: {
+      tenantId_id: {
+        tenantId,
+        id: sessionId,
+      },
+    },
+    data: {
+      countedItems: allRecords.length,
+      totalVariance,
+      variancePercentage,
+    },
+  });
+}
+
+/**
  * GET /api/inventory/cycle-count/records/[id] - Get a single record
  */
 export async function GET(_request: Request, context: RouteContext) {
@@ -57,33 +207,7 @@ export async function GET(_request: Request, context: RouteContext) {
       );
     }
 
-    const mappedRecord = {
-      id: record.id,
-      tenant_id: record.tenantId,
-      session_id: record.sessionId,
-      item_id: record.itemId,
-      item_number: record.itemNumber,
-      item_name: record.itemName,
-      storage_location_id: record.storageLocationId,
-      expected_quantity: toNumber(record.expectedQuantity),
-      counted_quantity: toNumber(record.countedQuantity),
-      variance: toNumber(record.variance),
-      variance_pct: toNumber(record.variancePct),
-      count_date: record.countDate,
-      counted_by_id: record.countedById,
-      barcode: record.barcode,
-      notes: record.notes,
-      is_verified: record.isVerified,
-      verified_by_id: record.verifiedById,
-      verified_at: record.verifiedAt,
-      sync_status: record.syncStatus as SyncStatus,
-      offline_id: record.offlineId,
-      created_at: record.createdAt,
-      updated_at: record.updatedAt,
-      deleted_at: record.deletedAt,
-    };
-
-    return NextResponse.json(mappedRecord);
+    return NextResponse.json(mapRecord(record));
   } catch (error) {
     console.error("Failed to get cycle count record:", error);
     return NextResponse.json(
@@ -114,7 +238,6 @@ export async function PUT(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const body = await request.json();
 
-    // Check if record exists
     const existing = await database.cycleCountRecord.findFirst({
       where: {
         tenantId,
@@ -130,69 +253,22 @@ export async function PUT(request: Request, context: RouteContext) {
       );
     }
 
-    // Build update data
-    const updateData: Record<string, unknown> = {};
+    const updateData = buildRecordUpdateData(body, existing, tenantId);
 
-    if (body.counted_quantity !== undefined) {
-      if (typeof body.counted_quantity !== "number") {
-        throw new InvariantError("counted_quantity must be a number");
+    if (body.is_verified && body.is_verified !== undefined) {
+      const user = await database.user.findFirst({
+        where: {
+          tenantId,
+          authUserId: userId,
+        },
+      });
+
+      if (user) {
+        updateData.verifiedById = user.id;
       }
-
-      const expectedQuantity = toNumber(existing.expectedQuantity);
-      const variance = body.counted_quantity - expectedQuantity;
-      const variancePct =
-        expectedQuantity > 0 ? (variance / expectedQuantity) * 100 : 0;
-
-      updateData.countedQuantity = body.counted_quantity;
-      updateData.variance = variance;
-      updateData.variancePct = variancePct;
+      updateData.verifiedAt = new Date();
     }
 
-    if (body.notes !== undefined) {
-      if (typeof body.notes !== "string") {
-        throw new InvariantError("notes must be a string");
-      }
-      updateData.notes = body.notes;
-    }
-
-    if (body.is_verified !== undefined) {
-      if (typeof body.is_verified !== "boolean") {
-        throw new InvariantError("is_verified must be a boolean");
-      }
-      updateData.isVerified = body.is_verified;
-
-      if (body.is_verified) {
-        // Get the user's database ID for verification
-        const user = await database.user.findFirst({
-          where: {
-            tenantId,
-            authUserId: userId,
-          },
-        });
-
-        if (user) {
-          updateData.verifiedById = user.id;
-        }
-        updateData.verifiedAt = new Date();
-      }
-    }
-
-    if (body.sync_status !== undefined) {
-      const validStatuses: SyncStatus[] = [
-        "synced",
-        "pending",
-        "failed",
-        "conflict",
-      ];
-      if (!validStatuses.includes(body.sync_status as SyncStatus)) {
-        throw new InvariantError(
-          `sync_status must be one of: ${validStatuses.join(", ")}`
-        );
-      }
-      updateData.syncStatus = body.sync_status;
-    }
-
-    // Update record
     const record = await database.cycleCountRecord.update({
       where: {
         tenantId_id: {
@@ -203,67 +279,9 @@ export async function PUT(request: Request, context: RouteContext) {
       data: updateData,
     });
 
-    // Update session totals
-    const allRecords = await database.cycleCountRecord.findMany({
-      where: {
-        tenantId,
-        sessionId: existing.sessionId,
-        deletedAt: null,
-      },
-    });
+    await updateSessionTotals(existing.sessionId, tenantId);
 
-    let totalVariance = 0;
-    let totalExpected = 0;
-
-    for (const r of allRecords) {
-      totalVariance += toNumber(r.variance);
-      totalExpected += toNumber(r.expectedQuantity);
-    }
-
-    const variancePercentage =
-      totalExpected > 0 ? Math.abs((totalVariance / totalExpected) * 100) : 0;
-
-    await database.cycleCountSession.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: existing.sessionId,
-        },
-      },
-      data: {
-        countedItems: allRecords.length,
-        totalVariance,
-        variancePercentage,
-      },
-    });
-
-    const mappedRecord = {
-      id: record.id,
-      tenant_id: record.tenantId,
-      session_id: record.sessionId,
-      item_id: record.itemId,
-      item_number: record.itemNumber,
-      item_name: record.itemName,
-      storage_location_id: record.storageLocationId,
-      expected_quantity: toNumber(record.expectedQuantity),
-      counted_quantity: toNumber(record.countedQuantity),
-      variance: toNumber(record.variance),
-      variance_pct: toNumber(record.variancePct),
-      count_date: record.countDate,
-      counted_by_id: record.countedById,
-      barcode: record.barcode,
-      notes: record.notes,
-      is_verified: record.isVerified,
-      verified_by_id: record.verifiedById,
-      verified_at: record.verifiedAt,
-      sync_status: record.syncStatus as SyncStatus,
-      offline_id: record.offlineId,
-      created_at: record.createdAt,
-      updated_at: record.updatedAt,
-      deleted_at: record.deletedAt,
-    };
-
-    return NextResponse.json(mappedRecord);
+    return NextResponse.json(mapRecord(record));
   } catch (error) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });

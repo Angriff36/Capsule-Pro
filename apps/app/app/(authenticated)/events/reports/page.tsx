@@ -53,27 +53,27 @@ const EventReportsPage = async () => {
   const tenantId = await getTenantIdForOrg(orgId);
 
   // Fetch reports
-  const reports = await database.event_reports.findMany({
+  const reports = await database.eventReport.findMany({
     where: {
-      tenant_id: tenantId,
-      deleted_at: null,
+      tenantId,
+      deletedAt: null,
     },
-    orderBy: [{ created_at: "desc" }],
+    orderBy: [{ createdAt: "desc" }],
   });
 
   // Fetch events for reports
-  const eventIds = reports.map((r) => r.event_id);
-  const events = await database.events.findMany({
+  const eventIds = reports.map((report) => report.eventId);
+  const events = await database.event.findMany({
     where: {
-      tenant_id: tenantId,
+      tenantId,
       id: { in: eventIds },
-      deleted_at: null,
+      deletedAt: null,
     },
     select: {
       id: true,
-      event_number: true,
+      eventNumber: true,
       title: true,
-      event_date: true,
+      eventDate: true,
     },
   });
 
@@ -83,16 +83,13 @@ const EventReportsPage = async () => {
   // Combine reports with their events
   const reportsWithEvents = reports.map((report) => ({
     ...report,
-    event: eventMap.get(report.event_id) || {
-      id: report.event_id,
-      event_number: null,
-      title: "Unknown Event",
-      event_date: null,
-    },
+    event: eventMap.get(report.eventId) ?? null,
   }));
 
   // Calculate stats
-  const draftCount = reportsWithEvents.filter((r) => r.status === "draft").length;
+  const _draftCount = reportsWithEvents.filter(
+    (r) => r.status === "draft"
+  ).length;
   const inProgressCount = reportsWithEvents.filter(
     (r) => r.status === "in_progress"
   ).length;
@@ -102,7 +99,8 @@ const EventReportsPage = async () => {
   const avgCompletion =
     reportsWithEvents.length > 0
       ? Math.round(
-          reportsWithEvents.reduce((sum, r) => sum + r.completion, 0) / reportsWithEvents.length
+          reportsWithEvents.reduce((sum, r) => sum + r.completion, 0) /
+            reportsWithEvents.length
         )
       : 0;
 
@@ -130,7 +128,9 @@ const EventReportsPage = async () => {
           <Card>
             <CardHeader>
               <CardDescription>Total Reports</CardDescription>
-              <CardTitle className="text-2xl">{reportsWithEvents.length}</CardTitle>
+              <CardTitle className="text-2xl">
+                {reportsWithEvents.length}
+              </CardTitle>
             </CardHeader>
             <CardContent className="text-muted-foreground text-sm">
               Pre-Event Review checklists
@@ -201,7 +201,7 @@ const EventReportsPage = async () => {
                   <CardHeader className="gap-1">
                     <CardDescription className="flex items-center justify-between gap-2">
                       <span className="truncate">
-                        {report.event.event_number ?? "No event number"}
+                        {report.event?.eventNumber ?? report.eventId}
                       </span>
                       <Badge
                         className="capitalize"
@@ -217,15 +217,15 @@ const EventReportsPage = async () => {
                       </Badge>
                     </CardDescription>
                     <CardTitle className="text-lg">
-                      {report.event.title}
+                      {report.event?.title ?? report.eventId}
                     </CardTitle>
                     <CardDescription>
-                      {report.event.event_date
-                        ? new Date(report.event.event_date).toLocaleDateString(
+                      {report.event?.eventDate
+                        ? new Date(report.event.eventDate).toLocaleDateString(
                             "en-US",
                             { dateStyle: "medium" }
                           )
-                        : "No date"}
+                        : ""}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-3">
@@ -239,9 +239,9 @@ const EventReportsPage = async () => {
                         style={{ width: `${report.completion}%` }}
                       />
                     </div>
-                    {report.auto_fill_score !== null && (
+                    {report.autoFillScore !== null && (
                       <div className="text-sm text-muted-foreground">
-                        Auto-filled: {report.auto_fill_score} questions
+                        Auto-filled: {report.autoFillScore} questions
                       </div>
                     )}
                   </CardContent>

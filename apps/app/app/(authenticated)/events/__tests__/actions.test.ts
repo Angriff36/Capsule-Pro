@@ -1,6 +1,5 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as tenantModule from "../../../lib/tenant";
-import * as databaseModule from "@repo/database";
 
 describe("createEvent validation", () => {
   const mockTenantId = "test-tenant-id";
@@ -36,7 +35,9 @@ describe("createEvent validation", () => {
     mockFormData.set("title", "");
 
     const { createEvent } = await import("../actions");
-    await expect(createEvent(mockFormData)).rejects.toThrow(/Validation failed/);
+    await expect(createEvent(mockFormData)).rejects.toThrow(
+      /Validation failed/
+    );
   });
 
   it("throws error when title is only whitespace", async () => {
@@ -45,7 +46,9 @@ describe("createEvent validation", () => {
     mockFormData.set("title", "   ");
 
     const { createEvent } = await import("../actions");
-    await expect(createEvent(mockFormData)).rejects.toThrow(/Validation failed/);
+    await expect(createEvent(mockFormData)).rejects.toThrow(
+      /Validation failed/
+    );
   });
 
   it("throws error when eventDate is missing", async () => {
@@ -55,7 +58,9 @@ describe("createEvent validation", () => {
     mockFormData.set("eventDate", "");
 
     const { createEvent } = await import("../actions");
-    await expect(createEvent(mockFormData)).rejects.toThrow(/Validation failed/);
+    await expect(createEvent(mockFormData)).rejects.toThrow(
+      /Validation failed/
+    );
   });
 
   it("throws error when guestCount is less than 1", async () => {
@@ -64,7 +69,9 @@ describe("createEvent validation", () => {
     mockFormData.set("guestCount", "0");
 
     const { createEvent } = await import("../actions");
-    await expect(createEvent(mockFormData)).rejects.toThrow(/Validation failed/);
+    await expect(createEvent(mockFormData)).rejects.toThrow(
+      /Validation failed/
+    );
   });
 
   it("throws error when guestCount is negative", async () => {
@@ -73,7 +80,9 @@ describe("createEvent validation", () => {
     mockFormData.set("guestCount", "-5");
 
     const { createEvent } = await import("../actions");
-    await expect(createEvent(mockFormData)).rejects.toThrow(/Validation failed/);
+    await expect(createEvent(mockFormData)).rejects.toThrow(
+      /Validation failed/
+    );
   });
 
   it("throws error when budget is negative", async () => {
@@ -82,7 +91,9 @@ describe("createEvent validation", () => {
     mockFormData.set("budget", "-1000");
 
     const { createEvent } = await import("../actions");
-    await expect(createEvent(mockFormData)).rejects.toThrow(/Validation failed/);
+    await expect(createEvent(mockFormData)).rejects.toThrow(
+      /Validation failed/
+    );
   });
 
   it("throws error with invalid status value", async () => {

@@ -1,4 +1,5 @@
 export const eventStatuses = [
+  "draft",
   "confirmed",
   "tentative",
   "cancelled",

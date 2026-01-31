@@ -9,14 +9,7 @@ type ProductionBoardRealtimeProps = {
   userId?: string | null;
 };
 
-const getApiBaseUrl = () => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (apiUrl) {
-    return apiUrl.replace(/\/$/, "");
-  }
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-  return appUrl ? appUrl.replace(/\/$/, "") : "";
-};
+const authUrl = "/ably/auth";
 
 const isKitchenTaskEvent = (eventName?: string) =>
   eventName?.startsWith("kitchen.task.") ?? false;
@@ -34,26 +27,20 @@ export function ProductionBoardRealtime({
       return;
     }
 
-    const apiBaseUrl = getApiBaseUrl();
-    if (!apiBaseUrl) {
-      // Silently fail if API URL is not configured
-      return;
-    }
-
     let isMounted = true;
 
     // Verify the auth endpoint exists before initializing Ably
     const initializeConnection = async () => {
       try {
         // Test if the auth endpoint is available
-        const testResponse = await fetch(`${apiBaseUrl}/ably/auth`, {
+        const testResponse = await fetch(authUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           body: JSON.stringify({ tenantId }),
         }).catch(() => null);
 
-        if (!testResponse || !testResponse.ok) {
+        if (!testResponse?.ok) {
           // Auth endpoint not available, skip real-time connection
           if (process.env.NODE_ENV === "development") {
             console.warn(
@@ -63,12 +50,14 @@ export function ProductionBoardRealtime({
           return;
         }
 
-        if (!isMounted) return;
+        if (!isMounted) {
+          return;
+        }
 
         const client = new Ably.Realtime({
           authCallback: async (_, callback) => {
             try {
-              const response = await fetch(`${apiBaseUrl}/ably/auth`, {
+              const response = await fetch(authUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
@@ -97,7 +86,9 @@ export function ProductionBoardRealtime({
 
         // Handle connection errors gracefully - suppress error propagation
         client.connection.on((stateChange) => {
-          if (!isMounted) return;
+          if (!isMounted) {
+            return;
+          }
 
           const { current, reason, retryIn } = stateChange;
 
@@ -133,7 +124,9 @@ export function ProductionBoardRealtime({
         channelRef.current = channel;
 
         const handleMessage = (message: { name?: string }) => {
-          if (!isMounted) return;
+          if (!isMounted) {
+            return;
+          }
           if (!isKitchenTaskEvent(message.name)) {
             return;
           }
@@ -185,10 +178,7 @@ export function ProductionBoardRealtime({
       } catch (error) {
         // Ignore cleanup errors
         if (process.env.NODE_ENV === "development") {
-          console.warn(
-            "[ProductionBoardRealtime] Cleanup error:",
-            error
-          );
+          console.warn("[ProductionBoardRealtime] Cleanup error:", error);
         }
       }
     };

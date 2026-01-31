@@ -22,7 +22,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
-interface ParsedDocument {
+type ParsedDocument = {
   id: string;
   fileName: string;
   fileType: "pdf" | "csv";
@@ -30,9 +30,9 @@ interface ParsedDocument {
   confidence: number;
   errors: string[];
   warnings: string[];
-}
+};
 
-interface ImportResult {
+type ImportResult = {
   documents: ParsedDocument[];
   mergedEvent?: {
     client?: string;
@@ -63,7 +63,7 @@ interface ImportResult {
   };
   battleBoardId?: string;
   errors: string[];
-}
+};
 
 export function ImportForm() {
   const router = useRouter();
@@ -76,7 +76,9 @@ export function ImportForm() {
   const [dragActive, setDragActive] = useState(false);
 
   const handleFiles = useCallback((fileList: FileList | null) => {
-    if (!fileList) return;
+    if (!fileList) {
+      return;
+    }
 
     const newFiles: File[] = [];
     const allowedTypes = [
@@ -143,8 +145,12 @@ export function ImportForm() {
       }
 
       const params = new URLSearchParams();
-      if (generateChecklist) params.append("generateChecklist", "true");
-      if (generateBattleBoard) params.append("generateBattleBoard", "true");
+      if (generateChecklist) {
+        params.append("generateChecklist", "true");
+      }
+      if (generateBattleBoard) {
+        params.append("generateBattleBoard", "true");
+      }
 
       const response = await fetch(
         `/api/events/documents/parse?${params.toString()}`,
@@ -171,7 +177,9 @@ export function ImportForm() {
   };
 
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) {
+      return "0 Bytes";
+    }
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -190,7 +198,7 @@ export function ImportForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
             {/* Drop Zone */}
             <div
               className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors ${
@@ -198,9 +206,9 @@ export function ImportForm() {
                   ? "border-primary bg-primary/5"
                   : "border-muted-foreground/25 hover:border-muted-foreground/50"
               }`}
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
             >
               <UploadIcon className="mb-4 h-10 w-10 text-muted-foreground" />
               <p className="mb-2 text-sm text-muted-foreground">
@@ -225,8 +233,8 @@ export function ImportForm() {
                 <div className="rounded-lg border">
                   {files.map((file, index) => (
                     <div
-                      key={`${file.name}-${index}`}
                       className="flex items-center justify-between border-b p-3 last:border-b-0"
+                      key={`${file.name}-${index}`}
                     >
                       <div className="flex items-center gap-3">
                         <FileIcon className="h-5 w-5 text-muted-foreground" />
@@ -307,7 +315,8 @@ export function ImportForm() {
               ) : (
                 <>
                   <UploadIcon className="mr-2 h-4 w-4" />
-                  Import {files.length > 0 ? `${files.length} File(s)` : "Files"}
+                  Import{" "}
+                  {files.length > 0 ? `${files.length} File(s)` : "Files"}
                 </>
               )}
             </Button>
@@ -334,8 +343,8 @@ export function ImportForm() {
               <div className="rounded-lg border">
                 {result.documents.map((doc) => (
                   <div
-                    key={doc.id}
                     className="flex flex-col gap-2 border-b p-4 last:border-b-0"
+                    key={doc.id}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -386,7 +395,9 @@ export function ImportForm() {
                     {result.mergedEvent.date && (
                       <>
                         <dt className="text-muted-foreground">Date</dt>
-                        <dd className="font-medium">{result.mergedEvent.date}</dd>
+                        <dd className="font-medium">
+                          {result.mergedEvent.date}
+                        </dd>
                       </>
                     )}
                     {result.mergedEvent.headCount && (
@@ -417,7 +428,7 @@ export function ImportForm() {
                     </thead>
                     <tbody>
                       {result.mergedStaff.map((staff, idx) => (
-                        <tr key={idx} className="border-t">
+                        <tr className="border-t" key={idx}>
                           <td className="p-2">{staff.name}</td>
                           <td className="p-2">{staff.position || "—"}</td>
                           <td className="p-2">

@@ -3,7 +3,7 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-export interface StationGroup {
+export type StationGroup = {
   stationId: string;
   stationName: string;
   items: Array<{
@@ -29,7 +29,7 @@ export interface StationGroup {
     completedAt: Date | null;
     completedBy: string | null;
   }>;
-}
+};
 
 /**
  * GET /api/kitchen/prep-lists/[id]
@@ -170,7 +170,7 @@ export async function GET(
           items: [],
         });
       }
-      stationsMap.get(stationId)!.items.push(item);
+      stationsMap.get(stationId)?.items.push(item);
     }
 
     const stations = Array.from(stationsMap.values());

@@ -208,3 +208,100 @@ export async function removeDishFromEvent(eventId: string, linkId: string) {
     return { success: false, error: "Failed to remove dish" };
   }
 }
+
+export async function createDishVariantForEvent(
+  eventId: string,
+  linkId: string,
+  newDishName: string
+): Promise<{ success: boolean; dishId?: string; error?: string }> {
+  const { orgId, userId } = await auth();
+  if (!(orgId && userId)) {
+    throw new Error("Unauthorized");
+  }
+
+  const tenantId = await getTenantIdForOrg(orgId);
+  const trimmedName = newDishName.trim();
+
+  if (!trimmedName) {
+    return { success: false, error: "Dish name is required." };
+  }
+
+  const [link] = await database.$queryRaw<Array<{ dish_id: string }>>(
+    Prisma.sql`
+      SELECT dish_id
+      FROM tenant_events.event_dishes
+      WHERE tenant_id = ${tenantId}
+        AND id = ${linkId}
+        AND event_id = ${eventId}
+        AND deleted_at IS NULL
+      LIMIT 1
+    `
+  );
+
+  if (!link?.dish_id) {
+    return { success: false, error: "Dish link not found." };
+  }
+
+  const sourceDish = await database.dish.findFirst({
+    where: {
+      tenantId,
+      id: link.dish_id,
+      deletedAt: null,
+    },
+    select: {
+      recipeId: true,
+      description: true,
+      category: true,
+      serviceStyle: true,
+      defaultContainerId: true,
+      presentationImageUrl: true,
+      minPrepLeadDays: true,
+      maxPrepLeadDays: true,
+      portionSizeDescription: true,
+      dietaryTags: true,
+      allergens: true,
+      pricePerPerson: true,
+      costPerPerson: true,
+      isActive: true,
+    },
+  });
+
+  if (!sourceDish) {
+    return { success: false, error: "Source dish not found." };
+  }
+
+  const createdDish = await database.dish.create({
+    data: {
+      tenantId,
+      recipeId: sourceDish.recipeId,
+      name: trimmedName,
+      description: sourceDish.description ?? undefined,
+      category: sourceDish.category ?? undefined,
+      serviceStyle: sourceDish.serviceStyle ?? undefined,
+      defaultContainerId: sourceDish.defaultContainerId ?? undefined,
+      presentationImageUrl: sourceDish.presentationImageUrl ?? undefined,
+      minPrepLeadDays: sourceDish.minPrepLeadDays ?? 0,
+      maxPrepLeadDays: sourceDish.maxPrepLeadDays ?? undefined,
+      portionSizeDescription: sourceDish.portionSizeDescription ?? undefined,
+      dietaryTags: sourceDish.dietaryTags ?? [],
+      allergens: sourceDish.allergens ?? [],
+      pricePerPerson: sourceDish.pricePerPerson ?? undefined,
+      costPerPerson: sourceDish.costPerPerson ?? undefined,
+      isActive: sourceDish.isActive ?? true,
+    },
+  });
+
+  await database.$executeRaw(
+    Prisma.sql`
+      UPDATE tenant_events.event_dishes
+      SET dish_id = ${createdDish.id},
+          updated_at = ${new Date()}
+      WHERE tenant_id = ${tenantId}
+        AND id = ${linkId}
+        AND event_id = ${eventId}
+    `
+  );
+
+  revalidatePath(`/events/${eventId}`);
+  return { success: true, dishId: createdDish.id };
+}

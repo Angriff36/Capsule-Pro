@@ -61,7 +61,7 @@ const enqueueOutboxEvent = async (
   const client = tenantDatabase(tenantId);
   await client.outbox_events.create({
     data: {
-      tenantId: tenantId,
+      tenantId,
       aggregateType,
       aggregateId,
       eventType,
@@ -159,11 +159,11 @@ export const createKitchenTask = async (
 
   const task = await client.kitchen_tasks.create({
     data: {
-      tenantId: tenantId,
+      tenantId,
       title,
       summary,
       priority: priority || 5, // default to medium (5)
-      dueDate: dueDate,
+      dueDate,
     },
   });
 
@@ -207,12 +207,12 @@ export const updateKitchenTask = async (
   const dueDate = getDateTime(formData, "dueDate");
 
   const task = await client.kitchen_tasks.update({
-    where: { tenant_id_id: { tenantId: tenantId, id: taskId } },
+    where: { tenant_id_id: { tenantId, id: taskId } },
     data: {
       ...(title && { title }),
       ...(summary !== undefined && { summary: summary || "" }),
       ...(priority && { priority }),
-      ...(dueDate && { dueDate: dueDate }),
+      ...(dueDate && { dueDate }),
     },
   });
 
@@ -261,7 +261,7 @@ export const updateKitchenTaskStatus = async (
   const previousStatus = currentTask.status;
 
   const task = await client.kitchen_tasks.update({
-    where: { tenant_id_id: { tenantId: tenantId, id: taskId } },
+    where: { tenant_id_id: { tenantId, id: taskId } },
     data: { status },
   });
 
@@ -295,7 +295,7 @@ export const deleteKitchenTask = async (taskId: string): Promise<void> => {
   }
 
   await client.kitchen_tasks.delete({
-    where: { tenant_id_id: { tenantId: tenantId, id: taskId } },
+    where: { tenant_id_id: { tenantId, id: taskId } },
   });
 
   revalidatePath("/kitchen/tasks");
@@ -332,16 +332,16 @@ export const claimTask = async (
 
   // Update task status to in_progress
   await client.kitchen_tasks.update({
-    where: { tenant_id_id: { tenantId: tenantId, id: taskId } },
+    where: { tenant_id_id: { tenantId, id: taskId } },
     data: { status: "in_progress" },
   });
 
   // Create claim record
   const claim = await client.task_claims.create({
     data: {
-      tenantId: tenantId,
-      taskId: taskId,
-      employeeId: employeeId,
+      tenantId,
+      taskId,
+      employeeId,
     },
   });
 
@@ -380,7 +380,7 @@ export const releaseTask = async (
   // Find the active claim
   const activeClaim = await client.task_claims.findFirst({
     where: {
-      taskId: taskId,
+      taskId,
       releasedAt: null,
     },
   });
@@ -391,7 +391,7 @@ export const releaseTask = async (
 
   // Release the claim
   const updatedClaim = await client.task_claims.update({
-    where: { tenant_id_id: { tenantId: tenantId, id: activeClaim.id } },
+    where: { tenant_id_id: { tenantId, id: activeClaim.id } },
     data: {
       releasedAt: new Date(),
       releaseReason: reason ?? undefined,
@@ -400,7 +400,7 @@ export const releaseTask = async (
 
   // Update task status back to open
   await client.kitchen_tasks.update({
-    where: { tenant_id_id: { tenantId: tenantId, id: taskId } },
+    where: { tenant_id_id: { tenantId, id: taskId } },
     data: { status: "open" },
   });
 
@@ -436,7 +436,7 @@ export const getTaskClaims = async (
   }
 
   return client.task_claims.findMany({
-    where: { taskId: taskId },
+    where: { taskId },
     orderBy: { claimedAt: "desc" },
   });
 };
@@ -456,7 +456,7 @@ export const getMyActiveClaims = async (
 
   return client.task_claims.findMany({
     where: {
-      employeeId: employeeId,
+      employeeId,
       releasedAt: null,
     },
     orderBy: { claimedAt: "desc" },
@@ -490,10 +490,10 @@ export const addTaskProgress = async (
 
   const progress = await client.task_progress.create({
     data: {
-      tenantId: tenantId,
-      taskId: taskId,
-      employeeId: employeeId,
-      progressType: progressType,
+      tenantId,
+      taskId,
+      employeeId,
+      progressType,
       ...(options?.oldStatus && { oldStatus: options.oldStatus }),
       ...(options?.newStatus && { newStatus: options.newStatus }),
       ...(options?.quantityCompleted && {
@@ -537,7 +537,7 @@ export const getTaskProgressLog = async (
   }
 
   return client.task_progress.findMany({
-    where: { taskId: taskId },
+    where: { taskId },
     orderBy: { createdAt: "desc" },
   });
 };

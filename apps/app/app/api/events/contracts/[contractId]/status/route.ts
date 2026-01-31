@@ -61,7 +61,7 @@ export async function PATCH(
     // Check if contract exists and belongs to tenant
     const contract = await database.event_contracts.findFirst({
       where: {
-        tenantId: tenantId,
+        tenantId,
         id: contractId,
       },
     });
@@ -76,10 +76,7 @@ export async function PATCH(
     // Update contract status
     await database.event_contracts.updateMany({
       where: {
-        AND: [
-          { tenantId: tenantId },
-          { id: contractId },
-        ],
+        AND: [{ tenantId }, { id: contractId }],
       },
       data: {
         status,

@@ -149,7 +149,7 @@ export async function GET(
           items: [],
         });
       }
-      stationsMap.get(stationId)!.items.push(item);
+      stationsMap.get(stationId)?.items.push(item);
     }
 
     const stations = Array.from(stationsMap.values());

@@ -11,7 +11,7 @@ import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-interface ShipmentItemInput {
+type ShipmentItemInput = {
   item_id: string;
   quantity_shipped: number;
   quantity_received?: number;
@@ -22,7 +22,7 @@ interface ShipmentItemInput {
   condition_notes?: string | null;
   lot_number?: string | null;
   expiration_date?: string | null;
-}
+};
 
 function validateShipmentItemData(item: ShipmentItemInput) {
   if (!item.item_id) {

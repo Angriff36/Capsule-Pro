@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     // Get event details to verify it exists and belongs to the tenant
     const event = await database.events.findFirst({
       where: {
-        tenantId: tenantId,
+        tenantId,
         id: body.eventId,
         deletedAt: null,
       },
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     // Get all guests for the event with their dietary and allergen restrictions
     const guests = await database.event_guests.findMany({
       where: {
-        tenantId: tenantId,
+        tenantId,
         eventId: body.eventId,
         deletedAt: null,
       },

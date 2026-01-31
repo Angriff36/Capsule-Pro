@@ -3,7 +3,18 @@ import { withLogging, withSentry } from "@repo/observability/next-config";
 import type { NextConfig } from "next";
 import { env } from "@/env";
 
-let nextConfig: NextConfig = withLogging(config);
+let nextConfig: NextConfig = withLogging({
+  ...config,
+  // Externalize pdfjs-dist to avoid bundling issues in API routes
+  serverExternalPackages: ["pdfjs-dist"],
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Exclude pdfjs-dist worker from server-side bundling
+      config.externals = [...(config.externals || []), "pdfjs-dist/legacy/build/pdf.worker.mjs"];
+    }
+    return config;
+  },
+});
 
 if (env.VERCEL) {
   nextConfig = withSentry(nextConfig);

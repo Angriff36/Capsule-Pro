@@ -30,6 +30,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 const statusVariantMap = {
+  draft: "outline",
   confirmed: "default",
   tentative: "secondary",
   postponed: "outline",
@@ -48,7 +49,7 @@ const EventsPage = async () => {
 
   const events = await database.event.findMany({
     where: {
-      tenantId: tenantId,
+      tenantId,
       deletedAt: null,
     },
     orderBy: [{ eventDate: "desc" }, { createdAt: "desc" }],
@@ -190,8 +191,11 @@ const EventsPage = async () => {
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <TagIcon className="size-4" />
                       <span className="line-clamp-1">
-                        {event.tags.length > 0
-                          ? event.tags.join(", ")
+                        {event.tags.filter((tag) => !tag.startsWith("needs:"))
+                          .length > 0
+                          ? event.tags
+                              .filter((tag) => !tag.startsWith("needs:"))
+                              .join(", ")
                           : "No tags"}
                       </span>
                     </div>

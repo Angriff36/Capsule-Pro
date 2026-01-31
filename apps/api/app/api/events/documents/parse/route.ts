@@ -8,11 +8,14 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import type {
   BattleBoardBuildResult,
   ChecklistBuildResult,
+  MenuItem,
+  ParsedEvent,
   ProcessedDocument,
+  StaffShift,
 } from "@repo/event-parser";
 import {
   buildBattleBoardFromEvent,
@@ -21,6 +24,684 @@ import {
 } from "@repo/event-parser";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+
+type ParseParams = {
+  eventId: string | null;
+  generateChecklist: boolean;
+  generateBattleBoard: boolean;
+};
+
+type ImportRecord = {
+  importId: string;
+  document: ProcessedDocument;
+};
+
+type MissingField =
+  | "client"
+  | "eventDate"
+  | "venueName"
+  | "eventType"
+  | "headcount"
+  | "menuItems";
+
+type DishMatch = {
+  name: string;
+  dishId: string;
+  eventDishId: string;
+};
+
+type MenuImportSummary = {
+  dishMatches: DishMatch[];
+  missingQuantities: string[];
+  linkedDishes: number;
+  createdDishes: number;
+  createdRecipes: number;
+  updatedLinks: number;
+};
+
+type AggregatedMenuItem = {
+  name: string;
+  category: string | null;
+  serviceLocation: string | null;
+  quantity: number;
+  quantitySource: "parsed" | "details" | "headcount" | "fallback";
+  allergens: Set<string>;
+  dietaryTags: Set<string>;
+  instructions: Set<string>;
+};
+
+const MISSING_FIELD_TAG_PREFIX = "needs:";
+
+const normalizeName = (value: string) => value.trim().replace(/\s+/g, " ");
+
+const getFileLabel = (fileName: string) =>
+  fileName.replace(/\.[^/.]+$/, "").replace(/[_-]+/g, " ").trim();
+
+const getMissingFieldsFromParsedEvent = (event: ParsedEvent): MissingField[] => {
+  const missing: MissingField[] = [];
+  if (!event.client?.trim()) {
+    missing.push("client");
+  }
+  if (!event.date?.trim()) {
+    missing.push("eventDate");
+  }
+  if (!event.venue?.name?.trim()) {
+    missing.push("venueName");
+  }
+  if (!event.serviceStyle?.trim()) {
+    missing.push("eventType");
+  }
+  if (!event.headcount || event.headcount <= 0) {
+    missing.push("headcount");
+  }
+  if (!event.menuSections || event.menuSections.length === 0) {
+    missing.push("menuItems");
+  }
+  return missing;
+};
+
+const buildMissingFieldTags = (missing: MissingField[]) =>
+  missing.map((field) => `${MISSING_FIELD_TAG_PREFIX}${field}`);
+
+const buildEventTags = (baseTags: string[], missing: MissingField[]) => {
+  const tagSet = new Set<string>(
+    baseTags.filter((tag) => tag.trim().length > 0)
+  );
+  for (const tag of buildMissingFieldTags(missing)) {
+    tagSet.add(tag);
+  }
+  return Array.from(tagSet);
+};
+
+const deriveEventTitle = (event: ParsedEvent, files: File[]) => {
+  const client = event.client?.trim();
+  if (client) {
+    return client;
+  }
+  const number = event.number?.trim();
+  if (number) {
+    return number;
+  }
+  const fallbackFile = files[0]?.name;
+  return fallbackFile ? getFileLabel(fallbackFile) : "";
+};
+
+const parseEventDate = (dateValue: string | undefined) => {
+  if (!dateValue) {
+    return null;
+  }
+  const parsed = new Date(dateValue);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const normalizeList = (values: string[] | undefined) =>
+  (values ?? [])
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+
+const mergeInstructions = (item: MenuItem) => {
+  const instructions = new Set<string>();
+  if (item.preparationNotes?.trim()) {
+    instructions.add(item.preparationNotes.trim());
+  }
+  for (const note of normalizeList(item.specials)) {
+    instructions.add(note);
+  }
+  return instructions;
+};
+
+const deriveMenuQuantity = (item: MenuItem, fallbackHeadcount: number) => {
+  if (item.qty?.value && item.qty.value > 0) {
+    return { quantity: Math.round(item.qty.value), source: "parsed" as const };
+  }
+
+  const servingDetails =
+    item.quantityDetails?.filter(
+      (detail) => detail.value > 0 && /serv|pax|guest|portion/i.test(detail.unit)
+    ) ?? [];
+  if (servingDetails.length > 0) {
+    const maxDetail = servingDetails.reduce(
+      (max, detail) => (detail.value > max ? detail.value : max),
+      0
+    );
+    return {
+      quantity: Math.round(maxDetail),
+      source: "details" as const,
+    };
+  }
+
+  if (fallbackHeadcount > 0) {
+    return {
+      quantity: Math.round(fallbackHeadcount),
+      source: "headcount" as const,
+    };
+  }
+
+  return { quantity: 1, source: "fallback" as const };
+};
+
+function parseParams(searchParams: URLSearchParams): ParseParams {
+  return {
+    eventId: searchParams.get("eventId"),
+    generateChecklist: searchParams.get("generateChecklist") === "true",
+    generateBattleBoard: searchParams.get("generateBattleBoard") === "true",
+  };
+}
+
+function validateFileTypes(files: File[]): NextResponse | undefined {
+  if (files.length === 0) {
+    return NextResponse.json({ message: "No files uploaded" }, { status: 400 });
+  }
+
+  const allowedExtensions = [".pdf", ".csv"];
+
+  for (const file of files) {
+    const ext = `.${file.name.split(".").pop()?.toLowerCase()}`;
+    if (!allowedExtensions.includes(ext)) {
+      return NextResponse.json(
+        {
+          message: `Invalid file type: ${file.name}. Only PDF and CSV files are allowed.`,
+        },
+        { status: 400 },
+      );
+    }
+  }
+
+  return undefined;
+}
+
+function processFiles(
+  files: File[],
+): Promise<Array<{ content: ArrayBuffer; fileName: string }>> {
+  return Promise.all(
+    files.map((file) =>
+      file.arrayBuffer().then((content) => ({ content, fileName: file.name })),
+    ),
+  );
+}
+
+function createImportRecords(
+  files: File[],
+  result: { documents: ProcessedDocument[] },
+  tenantId: string,
+  eventId: string | null,
+): Promise<ImportRecord[]> {
+  return Promise.all(
+    files.map((file, index) => {
+      const doc = result.documents[index];
+
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      let mimeType: string;
+      if (ext === "pdf") {
+        mimeType = "application/pdf";
+      } else if (ext === "csv") {
+        mimeType = "text/csv";
+      } else {
+        mimeType = "";
+      }
+
+      return database.eventImport
+        .create({
+          data: {
+            tenantId,
+            fileName: file.name,
+            mimeType,
+            fileSize: file.size,
+            fileType: doc.fileType,
+            detectedFormat: doc.detectedFormat,
+            parseStatus: doc.errors.length > 0 ? "failed" : "parsed",
+            parseErrors: doc.errors,
+            confidence: doc.confidence,
+            extractedData: JSON.parse(
+              JSON.stringify({
+                event: doc.parsedEvent?.event || null,
+                staff: doc.staffShifts
+                  ? Object.fromEntries(doc.staffShifts)
+                  : null,
+                warnings: doc.warnings,
+              }),
+            ),
+            eventId: eventId || undefined,
+            parsedAt: new Date(),
+          },
+        })
+        .then((importRecord) => ({
+          importId: importRecord.id,
+          document: doc,
+        }));
+    }),
+  );
+}
+
+async function _generateBattleBoard(
+  mergedEvent: ParsedEvent,
+  tenantId: string,
+  eventId: string | null,
+  importRecords: ImportRecord[],
+): Promise<{ battleBoard: BattleBoardBuildResult; battleBoardId: string }> {
+  const battleBoardResult = buildBattleBoardFromEvent(mergedEvent);
+
+  const boardName =
+    mergedEvent.client ||
+    mergedEvent.number ||
+    eventId ||
+    "";
+
+  const savedBattleBoard = await database.battleBoard.create({
+    data: {
+      tenantId,
+      board_name: boardName,
+      board_type: "event-specific",
+      schema_version: "mangia-battle-board@1",
+      boardData: battleBoardResult.battleBoard as object,
+      status: "draft",
+      is_template: false,
+      tags: ["imported"],
+      eventId: eventId || undefined,
+    },
+  });
+
+  for (const record of importRecords) {
+    await database.eventImport.update({
+      where: { id: record.importId },
+      data: { battleBoardId: savedBattleBoard.id },
+    });
+  }
+
+  return {
+    battleBoard: battleBoardResult,
+    battleBoardId: savedBattleBoard.id,
+  };
+}
+
+async function createEventFromParsedData(
+  mergedEvent: ParsedEvent,
+  tenantId: string,
+  files: File[],
+  missingFields: MissingField[],
+): Promise<string> {
+  const derivedTitle = deriveEventTitle(mergedEvent, files);
+  const parsedDate = parseEventDate(mergedEvent.date);
+  const eventDate = parsedDate ?? new Date();
+  const notes = [
+    ...normalizeList(mergedEvent.notes),
+    `Imported from ${files.map((f) => f.name).join(", ")}`,
+  ]
+    .filter((value) => value.length > 0)
+    .join("\n");
+
+  const newEvent = await database.event.create({
+    data: {
+      tenantId,
+      title: derivedTitle,
+      eventType: mergedEvent.serviceStyle?.trim() || "catering",
+      eventDate,
+      guestCount: mergedEvent.headcount > 0 ? mergedEvent.headcount : 0,
+      status: missingFields.length > 0 ? "draft" : "confirmed",
+      eventNumber: mergedEvent.number || undefined,
+      venueName: mergedEvent.venue?.name || undefined,
+      venueAddress: mergedEvent.venue?.address || undefined,
+      notes: notes.length > 0 ? notes : undefined,
+      tags: buildEventTags(["imported"], missingFields),
+    },
+  });
+
+  return newEvent.id;
+}
+
+async function updateImportRecordsWithEvent(
+  importRecords: ImportRecord[],
+  eventId: string,
+): Promise<void> {
+  for (const record of importRecords) {
+    await database.eventImport.update({
+      where: { id: record.importId },
+      data: { eventId },
+    });
+  }
+}
+
+async function importMenuToEvent(
+  tenantId: string,
+  eventId: string,
+  event: ParsedEvent,
+): Promise<MenuImportSummary> {
+  const summary: MenuImportSummary = {
+    dishMatches: [],
+    missingQuantities: [],
+    linkedDishes: 0,
+    createdDishes: 0,
+    createdRecipes: 0,
+    updatedLinks: 0,
+  };
+
+  const menuItems = event.menuSections ?? [];
+  if (menuItems.length === 0) {
+    return summary;
+  }
+
+  const aggregated = new Map<string, AggregatedMenuItem>();
+
+  for (const item of menuItems) {
+    const name = normalizeName(item.name);
+    if (!name) {
+      continue;
+    }
+
+    const key = name.toLowerCase();
+    const { quantity, source } = deriveMenuQuantity(item, event.headcount);
+
+    if (source === "fallback") {
+      summary.missingQuantities.push(name);
+    }
+
+    let entry = aggregated.get(key);
+    if (!entry) {
+      entry = {
+        name,
+        category: item.category?.trim() || null,
+        serviceLocation: item.serviceLocation ?? null,
+        quantity: 0,
+        quantitySource: source,
+        allergens: new Set<string>(),
+        dietaryTags: new Set<string>(),
+        instructions: new Set<string>(),
+      };
+      aggregated.set(key, entry);
+    }
+
+    entry.quantity += quantity;
+    if (entry.quantitySource === "fallback" && source !== "fallback") {
+      entry.quantitySource = source;
+    }
+
+    for (const allergen of normalizeList(item.allergens)) {
+      entry.allergens.add(allergen);
+    }
+    for (const tag of normalizeList(item.badges)) {
+      entry.dietaryTags.add(tag);
+    }
+    for (const instruction of mergeInstructions(item)) {
+      entry.instructions.add(instruction);
+    }
+  }
+
+  for (const entry of aggregated.values()) {
+    const existingDish = await database.dish.findFirst({
+      where: {
+        tenantId,
+        deletedAt: null,
+        name: {
+          equals: entry.name,
+          mode: "insensitive",
+        },
+      },
+      select: {
+        id: true,
+        recipeId: true,
+      },
+    });
+
+    let dishId = existingDish?.id;
+
+    if (!dishId) {
+      let recipeId: string | undefined;
+      const existingRecipe = await database.recipe.findFirst({
+        where: {
+          tenantId,
+          deletedAt: null,
+          name: {
+            equals: entry.name,
+            mode: "insensitive",
+          },
+        },
+        select: { id: true },
+      });
+
+      if (existingRecipe) {
+        recipeId = existingRecipe.id;
+      } else {
+        const createdRecipe = await database.recipe.create({
+          data: {
+            tenantId,
+            name: entry.name,
+            category: entry.category ?? undefined,
+            tags: ["imported"],
+            isActive: true,
+          },
+        });
+        recipeId = createdRecipe.id;
+        summary.createdRecipes += 1;
+      }
+
+      const createdDish = await database.dish.create({
+        data: {
+          tenantId,
+          recipeId,
+          name: entry.name,
+          category: entry.category ?? undefined,
+          serviceStyle: event.serviceStyle?.trim() || undefined,
+          dietaryTags: Array.from(entry.dietaryTags),
+          allergens: Array.from(entry.allergens),
+          isActive: true,
+        },
+      });
+      dishId = createdDish.id;
+      summary.createdDishes += 1;
+    }
+
+    const specialInstructions = Array.from(entry.instructions).join("; ");
+    const [existingLink] = await database.$queryRaw<
+      Array<{ id: string }>
+    >(
+      Prisma.sql`
+        SELECT id
+        FROM tenant_events.event_dishes
+        WHERE tenant_id = ${tenantId}
+          AND event_id = ${eventId}
+          AND dish_id = ${dishId}
+          AND deleted_at IS NULL
+        LIMIT 1
+      `,
+    );
+
+    let eventDishId: string;
+
+    if (existingLink?.id) {
+      await database.$executeRaw(
+        Prisma.sql`
+          UPDATE tenant_events.event_dishes
+          SET quantity_servings = ${Math.max(1, Math.round(entry.quantity))},
+              service_style = ${entry.serviceLocation ?? event.serviceStyle ?? null},
+              course = ${entry.category ?? null},
+              special_instructions = ${
+                specialInstructions.length > 0 ? specialInstructions : null
+              },
+              updated_at = ${new Date()}
+          WHERE tenant_id = ${tenantId}
+            AND id = ${existingLink.id}
+            AND event_id = ${eventId}
+        `,
+      );
+      eventDishId = existingLink.id;
+      summary.updatedLinks += 1;
+    } else {
+      const [inserted] = await database.$queryRaw<
+        Array<{ id: string }>
+      >(
+        Prisma.sql`
+          INSERT INTO tenant_events.event_dishes (
+            tenant_id,
+            id,
+            event_id,
+            dish_id,
+            course,
+            quantity_servings,
+            service_style,
+            special_instructions,
+            created_at,
+            updated_at
+          )
+          VALUES (
+            ${tenantId},
+            gen_random_uuid(),
+            ${eventId},
+            ${dishId},
+            ${entry.category ?? null},
+            ${Math.max(1, Math.round(entry.quantity))},
+            ${entry.serviceLocation ?? event.serviceStyle ?? null},
+            ${specialInstructions.length > 0 ? specialInstructions : null},
+            ${new Date()},
+            ${new Date()}
+          )
+          RETURNING id
+        `,
+      );
+      eventDishId = inserted?.id ?? "";
+      summary.linkedDishes += 1;
+    }
+
+    if (existingDish?.id && eventDishId) {
+      summary.dishMatches.push({
+        name: entry.name,
+        dishId,
+        eventDishId,
+      });
+    }
+  }
+
+  return summary;
+}
+
+async function _generateChecklist(
+  mergedEvent: ParsedEvent,
+  tenantId: string,
+  eventId: string | null,
+  importRecords: ImportRecord[],
+  battleBoardId?: string,
+): Promise<{ checklist: ChecklistBuildResult; checklistId: string }> {
+  const checklistResult = buildInitialChecklist(mergedEvent);
+  if (!eventId) {
+    throw new Error("Event must exist before generating checklist.");
+  }
+
+  const savedReport = await database.eventReport.create({
+    data: {
+      tenantId,
+      eventId,
+      version: new Date().toISOString().slice(0, 10),
+      status: "draft",
+      completion: Math.round(
+        (checklistResult.autoFilledCount / checklistResult.totalQuestions) *
+          100,
+      ),
+      checklistData: checklistResult.checklist as object,
+      parsedEventData: mergedEvent as object,
+      autoFillScore: checklistResult.autoFilledCount,
+      reviewNotes:
+        checklistResult.warnings.length > 0
+          ? `Auto-fill warnings: ${checklistResult.warnings.join("; ")}`
+          : undefined,
+    },
+  });
+
+  for (const record of importRecords) {
+    await database.eventImport.update({
+      where: { id: record.importId },
+      data: { reportId: savedReport.id },
+    });
+  }
+
+  if (battleBoardId) {
+    await database.battleBoard.update({
+      where: { tenantId_id: { tenantId, id: battleBoardId } },
+      data: { eventId },
+    });
+  }
+
+  return {
+    checklist: checklistResult,
+    checklistId: savedReport.id,
+  };
+}
+
+/**
+ * Build final response with optional battle board and checklist
+ */
+async function buildResponse(
+  result: {
+    documents: ProcessedDocument[];
+    mergedEvent?: ParsedEvent;
+    mergedStaff?: StaffShift[];
+    errors: string[];
+  },
+  importRecords: ImportRecord[],
+  tenantId: string,
+  eventId: string | null,
+  generateBattleBoard: boolean,
+  generateChecklist: boolean,
+  missingFields: MissingField[],
+  menuImport: MenuImportSummary | null,
+): Promise<{
+  documents: ProcessedDocument[];
+  mergedEvent: typeof result.mergedEvent;
+  mergedStaff: typeof result.mergedStaff;
+  imports: typeof importRecords;
+  missingFields: MissingField[];
+  menuImport?: MenuImportSummary | null;
+  checklist?: ChecklistBuildResult;
+  checklistId?: string;
+  battleBoard?: BattleBoardBuildResult;
+  battleBoardId?: string;
+  errors: string[];
+}> {
+  const response: {
+    documents: ProcessedDocument[];
+    mergedEvent: typeof result.mergedEvent;
+    mergedStaff: typeof result.mergedStaff;
+    imports: typeof importRecords;
+    missingFields: MissingField[];
+    menuImport?: MenuImportSummary | null;
+    checklist?: ChecklistBuildResult;
+    checklistId?: string;
+    battleBoard?: BattleBoardBuildResult;
+    battleBoardId?: string;
+    errors: string[];
+  } = {
+    documents: result.documents,
+    mergedEvent: result.mergedEvent ?? undefined,
+    mergedStaff: result.mergedStaff ?? undefined,
+    imports: importRecords,
+    missingFields,
+    menuImport,
+    errors: result.errors,
+  };
+
+  if (generateBattleBoard && result.mergedEvent) {
+    const battleBoardData = await _generateBattleBoard(
+      result.mergedEvent,
+      tenantId,
+      eventId,
+      importRecords,
+    );
+    response.battleBoard = battleBoardData.battleBoard;
+    response.battleBoardId = battleBoardData.battleBoardId;
+  }
+
+  if (generateChecklist && result.mergedEvent) {
+    const checklistData = await _generateChecklist(
+      result.mergedEvent,
+      tenantId,
+      eventId,
+      importRecords,
+      response.battleBoardId,
+    );
+    response.checklist = checklistData.checklist;
+    response.checklistId = checklistData.checklistId;
+  }
+
+  return response;
+}
 
 /**
  * POST /api/events/documents/parse
@@ -41,242 +722,78 @@ export async function POST(request: Request) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     const { searchParams } = new URL(request.url);
+    const params = parseParams(searchParams);
 
-    const eventId = searchParams.get("eventId");
-    const generateChecklist = searchParams.get("generateChecklist") === "true";
-    const generateBattleBoard =
-      searchParams.get("generateBattleBoard") === "true";
-
-    // Parse form data
     const formData = await request.formData();
     const files = formData.getAll("files") as File[];
 
-    if (files.length === 0) {
-      return NextResponse.json(
-        { message: "No files uploaded" },
-        { status: 400 }
+    const validationError = validateFileTypes(files);
+    if (validationError) {
+      return validationError;
+    }
+
+    const fileContents = await processFiles(files);
+    const result = await processMultipleDocuments(fileContents);
+    const importRecords = await createImportRecords(
+      files,
+      result,
+      tenantId,
+      params.eventId,
+    );
+
+    const missingFields = result.mergedEvent
+      ? getMissingFieldsFromParsedEvent(result.mergedEvent)
+      : [];
+
+    let resolvedEventId = params.eventId;
+    if (!resolvedEventId && result.mergedEvent) {
+      resolvedEventId = await createEventFromParsedData(
+        result.mergedEvent,
+        tenantId,
+        files,
+        missingFields,
+      );
+      await updateImportRecordsWithEvent(importRecords, resolvedEventId);
+    }
+
+    let menuImport: MenuImportSummary | null = null;
+    if (resolvedEventId && result.mergedEvent) {
+      menuImport = await importMenuToEvent(
+        tenantId,
+        resolvedEventId,
+        result.mergedEvent,
       );
     }
 
-    // Validate file types
-    const allowedExtensions = [".pdf", ".csv"];
-
-    for (const file of files) {
-      const ext = `.${file.name.split(".").pop()?.toLowerCase()}`;
-      if (!allowedExtensions.includes(ext)) {
-        return NextResponse.json(
-          {
-            message: `Invalid file type: ${file.name}. Only PDF and CSV files are allowed.`,
-          },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Process files
-    const fileContents = await Promise.all(
-      files.map(async (file) => ({
-        content: await file.arrayBuffer(),
-        fileName: file.name,
-      }))
+    const response = await buildResponse(
+      result,
+      importRecords,
+      tenantId,
+      resolvedEventId,
+      params.generateBattleBoard,
+      params.generateChecklist,
+      missingFields,
+      menuImport,
     );
-
-    // Parse documents
-    const result = await processMultipleDocuments(fileContents);
-
-    // Store processed documents and create import records
-    const importRecords = await Promise.all(
-      files.map(async (file, index) => {
-        const doc = result.documents[index];
-
-        // Determine MIME type
-        const ext = file.name.split(".").pop()?.toLowerCase();
-        const mimeType =
-          ext === "pdf" ? "application/pdf" : ext === "csv" ? "text/csv" : "";
-
-        // Create import record matching EventImport schema
-        const importRecord = await database.eventImport.create({
-          data: {
-            tenantId,
-            fileName: file.name,
-            mimeType,
-            fileSize: file.size,
-            fileType: doc.fileType,
-            detectedFormat: doc.detectedFormat,
-            parseStatus: doc.errors.length > 0 ? "failed" : "parsed",
-            parseErrors: doc.errors,
-            confidence: doc.confidence,
-            extractedData: JSON.parse(
-              JSON.stringify({
-                event: doc.parsedEvent?.event || null,
-                staff: doc.staffShifts
-                  ? Object.fromEntries(doc.staffShifts)
-                  : null,
-                warnings: doc.warnings,
-              })
-            ),
-            eventId: eventId || undefined,
-            parsedAt: new Date(),
-          },
-        });
-
-        return {
-          importId: importRecord.id,
-          document: doc,
-        };
-      })
-    );
-
-    // Build response
-    const response: {
-      documents: ProcessedDocument[];
-      mergedEvent: typeof result.mergedEvent;
-      mergedStaff: typeof result.mergedStaff;
-      imports: typeof importRecords;
-      checklist?: ChecklistBuildResult;
-      checklistId?: string;
-      battleBoard?: BattleBoardBuildResult;
-      battleBoardId?: string;
-      errors: string[];
-    } = {
-      documents: result.documents,
-      mergedEvent: result.mergedEvent,
-      mergedStaff: result.mergedStaff,
-      imports: importRecords,
-      errors: result.errors,
-    };
-
-    // Generate and save battle board if requested and we have event data
-    if (generateBattleBoard && result.mergedEvent) {
-      const battleBoardResult = buildBattleBoardFromEvent(result.mergedEvent);
-      response.battleBoard = battleBoardResult;
-
-      // Save battle board to database
-      const boardName =
-        result.mergedEvent.client ||
-        result.mergedEvent.number ||
-        `Import ${new Date().toISOString().slice(0, 10)}`;
-
-      const savedBattleBoard = await database.battleBoard.create({
-        data: {
-          tenantId,
-          board_name: boardName,
-          board_type: "event-specific",
-          schema_version: "mangia-battle-board@1",
-          boardData: battleBoardResult.battleBoard as object,
-          status: "draft",
-          is_template: false,
-          tags: ["imported"],
-          eventId: eventId || undefined,
-        },
-      });
-
-      response.battleBoardId = savedBattleBoard.id;
-
-      // Update import records with battle board reference
-      for (const record of importRecords) {
-        await database.eventImport.update({
-          where: { id: record.importId },
-          data: { battleBoardId: savedBattleBoard.id },
-        });
-      }
-    }
-
-    // Generate and save checklist if requested and we have event data
-    if (generateChecklist && result.mergedEvent) {
-      const checklistResult = buildInitialChecklist(result.mergedEvent);
-      response.checklist = checklistResult;
-
-      // For checklist, we need an eventId - create an event if needed
-      let targetEventId = eventId;
-
-      if (!targetEventId) {
-        // Create a new event from the parsed data
-        const newEvent = await database.event.create({
-          data: {
-            tenantId,
-            title:
-              result.mergedEvent.client ||
-              `Imported Event ${new Date().toISOString().slice(0, 10)}`,
-            eventType: result.mergedEvent.serviceStyle || "catering",
-            eventDate: result.mergedEvent.date
-              ? new Date(result.mergedEvent.date)
-              : new Date(),
-            guestCount: result.mergedEvent.headCount || 0,
-            status: "confirmed",
-            eventNumber: result.mergedEvent.number || undefined,
-            venueName: result.mergedEvent.venue?.name || undefined,
-            venueAddress: result.mergedEvent.venue?.address || undefined,
-            notes: `Imported from ${files.map((f) => f.name).join(", ")}`,
-            tags: ["imported"],
-          },
-        });
-        targetEventId = newEvent.id;
-
-        // Update import records with event reference
-        for (const record of importRecords) {
-          await database.eventImport.update({
-            where: { id: record.importId },
-            data: { eventId: targetEventId },
-          });
-        }
-
-        // Also update battle board if created
-        if (response.battleBoardId) {
-          await database.battleBoard.update({
-            where: { id: response.battleBoardId },
-            data: { eventId: targetEventId },
-          });
-        }
-      }
-
-      // Now save the checklist/report
-      const savedReport = await database.eventReport.create({
-        data: {
-          tenantId,
-          eventId: targetEventId,
-          version: new Date().toISOString().slice(0, 10),
-          status: "draft",
-          completion: Math.round(
-            (checklistResult.autoFilledCount / checklistResult.totalQuestions) *
-              100
-          ),
-          checklistData: checklistResult.checklist as object,
-          parsedEventData: result.mergedEvent as object,
-          autoFillScore: checklistResult.autoFilledCount,
-          reviewNotes: checklistResult.warnings.length > 0
-            ? `Auto-fill warnings: ${checklistResult.warnings.join("; ")}`
-            : undefined,
-        },
-      });
-
-      response.checklistId = savedReport.id;
-
-      // Update import records with report reference
-      for (const record of importRecords) {
-        await database.eventImport.update({
-          where: { id: record.importId },
-          data: { reportId: savedReport.id },
-        });
-      }
-    }
 
     return NextResponse.json({ data: response });
   } catch (error) {
     console.error("Error parsing documents:", error);
 
-    // Provide more detailed error information for debugging
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     const errorStack = error instanceof Error ? error.stack : undefined;
 
-    // In development, return more details; in production, return generic message
     return NextResponse.json(
       {
         message: "Failed to parse documents",
-        details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
-        ...(process.env.NODE_ENV === "development" && errorStack ? { stack: errorStack } : {}),
+        details:
+          process.env.NODE_ENV === "development" ? errorMessage : undefined,
+        ...(process.env.NODE_ENV === "development" && errorStack
+          ? { stack: errorStack }
+          : {}),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -298,7 +815,7 @@ export async function GET(request: Request) {
     const page = Number.parseInt(searchParams.get("page") || "1", 10);
     const limit = Math.min(
       Math.max(Number.parseInt(searchParams.get("limit") || "20", 10), 1),
-      100
+      100,
     );
     const offset = (page - 1) * limit;
 
@@ -332,7 +849,7 @@ export async function GET(request: Request) {
     console.error("Error listing imports:", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

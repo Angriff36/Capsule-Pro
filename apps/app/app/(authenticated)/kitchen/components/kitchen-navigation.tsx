@@ -2,6 +2,7 @@
 
 import { Button } from "@repo/design-system/components/ui/button";
 import {
+  AlertTriangle,
   Calendar,
   ChefHat,
   ClipboardList,
@@ -11,7 +12,6 @@ import {
   Users,
   UtensilsCrossed,
   Warehouse,
-  AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -82,13 +82,14 @@ export function KitchenNavigation() {
       <div className="flex flex-wrap items-center gap-2 px-6 py-3">
         {navigationItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const isActive =
+            pathname === item.href || pathname.startsWith(`${item.href}/`);
 
           return (
             <Button
-              key={item.href}
               asChild
               className="h-9 gap-2"
+              key={item.href}
               size="sm"
               variant={isActive ? "default" : "ghost"}
             >

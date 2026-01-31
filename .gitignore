@@ -342,4 +342,6 @@ ralph-stream.ndjson
 test-api-route.ts
 test_table.txt
 start-dev-apps.ps1
-apps\app\prisma\seed-dev.ts
+apps\app\prisma\seed-dev.ts.specify/.current-feature
+**/.progress.md
+**/.speckit-state.json

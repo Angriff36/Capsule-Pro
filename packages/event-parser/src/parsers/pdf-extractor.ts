@@ -1,26 +1,8 @@
 /**
  * PDF Text Extractor
- * Extracts text from PDF files using pdfjs-dist (matching Battle-Boards implementation)
+ * Extracts text from PDF files using pdfjs-dist
+ * Uses dynamic import to avoid Next.js bundling issues
  */
-
-import type { TextItem } from "pdfjs-dist/legacy/build/pdf.mjs";
-
-// Import pdfjs-dist with legacy build for Node.js compatibility
-// @ts-expect-error - pdfjs-dist types are complex in ESM/Node environments
-import {
-  GlobalWorkerOptions,
-  getDocument,
-} from "pdfjs-dist/legacy/build/pdf.mjs";
-
-// Configure the worker - use CDN for both browser and Node.js environments
-// Node.js can fetch from CDN, and this avoids bundling issues
-const PDFJS_WORKER_URL =
-  "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.449/legacy/build/pdf.worker.min.mjs";
-
-// Configure the worker
-GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
-
-const SHOULD_DISABLE_WORKER = typeof window === "undefined";
 
 const HEADER_PATTERN =
   /^category item special, production notes, container quantity\/?unit$/;
@@ -87,85 +69,9 @@ function extractMetadata(pdf: { getMetadata: () => Promise<unknown> }) {
 }
 
 /**
- * Extract text from a PDF buffer
- */
-export async function extractPdfText(
-  pdfBuffer: ArrayBuffer | Uint8Array
-): Promise<PdfExtractionResult> {
-  const errors: string[] = [];
-  const allLines: string[] = [];
-
-  try {
-    const loadingTask = getDocument({
-      data: pdfBuffer,
-      disableFontFace: true,
-      disableRange: true,
-      disableStream: true,
-      disableWorker: SHOULD_DISABLE_WORKER,
-    });
-
-    const pdf = await loadingTask.promise;
-    const pageCount = pdf.numPages;
-
-    // Extract metadata
-    const metadata = await extractMetadata(pdf);
-
-    // Extract text from each page
-    for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
-      try {
-        const page = await pdf.getPage(pageNum);
-        const textContent = await page.getTextContent({
-          includeMarkedContent: false,
-        });
-        // Filter to only items with str and transform (TextItem, not TextMarkedContent)
-        const items = textContent.items;
-        const textItems: TextItem[] = [];
-        for (const item of items) {
-          if ("str" in item && "transform" in item) {
-            textItems.push(item as unknown as TextItem);
-          }
-        }
-        const pageLines = collapseTextItems(textItems);
-        allLines.push(...pageLines);
-      } catch (e) {
-        errors.push(
-          `Error extracting page ${pageNum}: ${e instanceof Error ? e.message : "Unknown error"}`
-        );
-      }
-    }
-
-    // Clean and filter lines
-    const cleanedLines = allLines
-      .map((line) =>
-        line
-          .replace(/\u2010/g, "-")
-          .replace(/\s+/g, " ")
-          .trim()
-      )
-      .filter((line) => line.length > 0);
-
-    return {
-      lines: cleanedLines,
-      pageCount,
-      metadata,
-      errors,
-    };
-  } catch (e) {
-    errors.push(
-      `Failed to load PDF: ${e instanceof Error ? e.message : "Unknown error"}`
-    );
-    return {
-      lines: [],
-      pageCount: 0,
-      errors,
-    };
-  }
-}
-
-/**
  * Collapse text items by Y position to preserve line structure
  */
-function collapseTextItems(items: TextItem[]): string[] {
+function collapseTextItems(items: any[]): string[] {
   const rows: string[] = [];
   let currentLine = "";
   let lastY: number | null = null;
@@ -218,7 +124,153 @@ function pushSegments(rows: string[], line: string) {
 }
 
 /**
- * Emit a segment with special header handling
+ * Extract text from a PDF buffer
+ * Uses dynamic import to avoid Next.js bundling issues with pdfjs-dist workers
+ */
+export async function extractPdfText(
+  pdfBuffer: ArrayBuffer | Uint8Array
+): Promise<PdfExtractionResult> {
+  const errors: string[] = [];
+  const allLines: string[] = [];
+
+  // Debug logging to trace data type
+  console.log('[extractPdfText] Input type:', pdfBuffer.constructor.name);
+  console.log('[extractPdfText] Input length:', 'length' in pdfBuffer ? pdfBuffer.length : pdfBuffer.byteLength);
+
+  // Ensure we have a Uint8Array (pdfjs-dist requires this, not Buffer)
+  // Note: The document-router should have already created a copy to avoid detached ArrayBuffer issues
+  let data: Uint8Array;
+  const inputType = pdfBuffer.constructor.name;
+
+  if (inputType === 'Buffer') {
+    console.log('[extractPdfText] Converting Buffer to Uint8Array');
+    const buffer = pdfBuffer as unknown as Buffer & { buffer: ArrayBufferLike; byteOffset: number; byteLength: number };
+    // Create a proper copy, not a view, to avoid detached ArrayBuffer issues
+    const tempView = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+    data = new Uint8Array(tempView.length);
+    data.set(tempView);
+  } else if (pdfBuffer instanceof Uint8Array) {
+    data = pdfBuffer;
+  } else {
+    throw new Error(`Unsupported input type: ${inputType}`);
+  }
+
+  console.log('[extractPdfText] Final data type:', data.constructor.name, 'length:', data.length);
+
+  try {
+    // Use pdf2json - pure JavaScript PDF parser, no worker issues
+    // Handle both named and default exports for different module formats
+    const pdf2jsonModule = await import("pdf2json");
+    const PDFParserClass = pdf2jsonModule.PDFParser || pdf2jsonModule.default;
+
+    if (!PDFParserClass) {
+      throw new Error("Failed to load PDFParser: export not found in pdf2json module");
+    }
+
+    // pdf2json handles Buffer directly
+    const buffer = Buffer.from(data);
+
+    // Parse PDF using event-based API
+    return new Promise((resolve) => {
+      const pdfParser = new PDFParserClass();
+
+      // Collect all data
+      let pdfData: any = null;
+
+      pdfParser.on("pdfParser_dataError", (errData: { parserError: Error } | Error) => {
+        const errMsg = errData instanceof Error ? errData.message : JSON.stringify(errData);
+        const errStack = errData instanceof Error ? errData.stack : undefined;
+        console.error('[extractPdfText] PDFParser error:', errData);
+        console.error('[extractPdfText] Error message:', errMsg);
+        console.error('[extractPdfText] Error stack:', errStack);
+        errors.push(`Failed to load PDF: ${errMsg}`);
+        if (errStack) {
+          errors.push(`Stack: ${errStack}`);
+        }
+        resolve({
+          lines: [],
+          pageCount: 0,
+          errors,
+        });
+      });
+
+      pdfParser.on("pdfParser_dataReady", (data: any) => {
+        pdfData = data;
+
+        try {
+          // Extract text from all pages
+          const allPageLines: string[] = [];
+
+          if (pdfData.Pages) {
+            for (const page of pdfData.Pages) {
+              if (page.Texts) {
+                for (const textItem of page.Texts) {
+                  if (textItem.R) {
+                    // Array of text runs
+                    for (const run of textItem.R) {
+                      if (run.T) {
+                        allPageLines.push(run.T);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          // Clean and filter lines
+          const cleanedLines = allPageLines
+            .map((line) =>
+              line
+                .replace(/\u2010/g, "-")
+                .replace(/\s+/g, " ")
+                .trim()
+            )
+            .filter((line) => line.length > 0);
+
+          const pageCount = pdfData.Pages ? pdfData.Pages.length : 0;
+
+          resolve({
+            lines: cleanedLines,
+            pageCount,
+            metadata: {
+              title: pdfData.Meta?.Title,
+              author: pdfData.Meta?.Author,
+              subject: pdfData.Meta?.Subject,
+              creator: pdfData.Meta?.Creator,
+            },
+            errors: [],
+          });
+
+          // Clean up
+          pdfParser.destroy();
+        } catch (e) {
+          errors.push(`Failed to process PDF data: ${e instanceof Error ? e.message : "Unknown error"}`);
+          resolve({
+            lines: [],
+            pageCount: 0,
+            errors,
+          });
+        }
+      });
+
+      // Start parsing - maxPagePages=0 means all pages
+      pdfParser.parseBuffer(buffer);
+    });
+  } catch (e) {
+    errors.push(
+      `Failed to load PDF: ${e instanceof Error ? e.message : "Unknown error"}`
+    );
+    return {
+      lines: [],
+      pageCount: 0,
+      errors,
+    };
+  }
+}
+
+/**
+ * Emit a segment with label detection
  */
 function emitSegment(segment: string, rows: string[]) {
   const trimmed = segment.trim();
