@@ -47,7 +47,7 @@ function mapRecord(record: {
   itemId: string;
   itemNumber: string;
   itemName: string;
-  storageLocationId: string | null;
+  storageLocationId: string;
   expectedQuantity: { toNumber: () => number };
   countedQuantity: { toNumber: () => number };
   variance: { toNumber: () => number };
@@ -288,7 +288,7 @@ export async function POST(request: Request, context: RouteContext) {
         itemId: body.item_id as string,
         itemNumber: body.item_number as string,
         itemName: body.item_name as string,
-        storageLocationId: (body.storage_location_id as string | null) || null,
+        storageLocationId: body.storage_location_id as string,
         expectedQuantity: body.expected_quantity as number,
         countedQuantity: body.counted_quantity as number,
         variance,

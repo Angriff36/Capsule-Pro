@@ -63,19 +63,19 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
   async getRoles(tenantId: string): Promise<Role[]> {
     const roles = await this.#prisma.role.findMany({
       where: {
-        tenant_id: tenantId,
-        deleted_at: null,
-        is_active: true,
+        tenantId,
+        deletedAt: null,
+        isActive: true,
       },
     });
 
     return roles.map((role) => ({
       id: role.id,
-      tenantId: role.tenant_id,
+      tenantId: role.tenantId,
       name: role.name,
-      baseRate: Number(role.base_rate),
-      overtimeMultiplier: Number(role.overtime_multiplier),
-      overtimeThresholdHours: role.overtime_threshold_hours,
+      baseRate: Number(role.baseRate),
+      overtimeMultiplier: Number(role.overtimeMultiplier),
+      overtimeThresholdHours: role.overtimeThresholdHours,
     }));
   }
 

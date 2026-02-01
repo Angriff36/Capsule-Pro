@@ -48,6 +48,7 @@ export class AgentWorkflow {
   private readonly context: WorkflowContext;
   private readonly stepExecutionOrder: string[] = [];
 
+
   constructor(config: WorkflowConfig) {
     this.id = uuidv4();
     this.name = config.name;
@@ -126,7 +127,6 @@ export class AgentWorkflow {
       this.context.sharedState = { ...this.context.sharedState, ...context };
     }
 
-    this.executionStartTime = new Date();
     const startTime = Date.now();
 
     try {

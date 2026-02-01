@@ -3,6 +3,8 @@ import Ably from "ably";
 import { NextResponse } from "next/server";
 import { env } from "@/env";
 
+export const runtime = "nodejs";
+
 type AuthRequest = {
   tenantId: string;
 };

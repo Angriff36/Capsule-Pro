@@ -345,3 +345,4 @@ start-dev-apps.ps1
 apps\app\prisma\seed-dev.ts.specify/.current-feature
 **/.progress.md
 **/.speckit-state.json
+*.txt

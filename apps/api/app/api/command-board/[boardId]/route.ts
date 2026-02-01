@@ -69,7 +69,7 @@ function formatCommandBoardWithCards(board: {
     height: number;
     zIndex: number;
     color: string | null;
-    metadata: Record<string, unknown> | null;
+    metadata: unknown;
     createdAt: Date;
     updatedAt: Date;
     deletedAt: Date | null;
@@ -83,7 +83,7 @@ function formatCommandBoardWithCards(board: {
     description: board.description,
     status: board.status as BoardStatus,
     is_template: board.isTemplate,
-    tags: board.tags,
+    tags: board.tags ?? [],
     created_at: board.createdAt,
     updated_at: board.updatedAt,
     deleted_at: board.deletedAt,
@@ -101,7 +101,7 @@ function formatCommandBoardWithCards(board: {
       height: card.height,
       z_index: card.zIndex,
       color: card.color,
-      metadata: card.metadata as Record<string, unknown>,
+      metadata: (card.metadata as Record<string, unknown>) ?? null,
       created_at: card.createdAt,
       updated_at: card.updatedAt,
       deleted_at: card.deletedAt,

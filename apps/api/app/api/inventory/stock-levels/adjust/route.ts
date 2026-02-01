@@ -153,10 +153,10 @@ function buildAdjustmentResponse(
     tenantId: string;
     id: string;
     item_number: string;
-    name: string | null;
-    category: string | null;
-    unitCost: number;
-    reorder_level: number | null;
+    name: string;
+    category: string;
+    unitCost: { toNumber: () => number } | number;
+    reorder_level: { toNumber: () => number } | number | null;
     createdAt: Date;
   },
   result: {
@@ -165,13 +165,29 @@ function buildAdjustmentResponse(
     newQuantity: number;
     adjustmentAmount: number;
   },
-  storageLocationId: string | undefined,
+  storageLocationId: string | undefined | null,
   quantity: number,
   adjustmentType: string,
   reorderLevel: number,
   reorderStatus: "below_par" | "at_par" | "above_par",
   parStatus: "below_par" | "at_par" | "above_par" | "no_par_set"
 ): CreateAdjustmentResponse {
+  const toNum = (val: { toNumber?: () => number } | number | null): number => {
+    if (val === null) {
+      return 0;
+    }
+    if (typeof val === 'number') {
+      return val;
+    }
+    if (val && typeof val === 'object' && 'toNumber' in val && val.toNumber) {
+      return val.toNumber();
+    }
+    return Number(val);
+  };
+
+  const unitCost = toNum(item.unitCost);
+  const parLevel = toNum(item.reorder_level);
+
   return {
     success: true,
     message: `Stock ${adjustmentType === "increase" ? "increased" : "decreased"} by ${quantity} ${item.item_number}`,
@@ -186,10 +202,10 @@ function buildAdjustmentResponse(
       tenantId: item.tenantId,
       id: item.id,
       inventoryItemId: item.id,
-      storageLocationId,
+      storageLocationId: storageLocationId ?? null,
       quantityOnHand: result.newQuantity,
       reorderLevel,
-      parLevel: item.reorder_level ? Number(item.reorder_level) : null,
+      parLevel: parLevel > 0 ? parLevel : null,
       lastCountedAt: null,
       createdAt: item.createdAt,
       updatedAt: new Date(),
@@ -198,14 +214,14 @@ function buildAdjustmentResponse(
         itemNumber: item.item_number,
         name: item.name,
         category: item.category,
-        unitCost: Number(item.unitCost),
+        unitCost,
         unit: null,
       },
       storageLocation: storageLocationId
         ? { id: storageLocationId, name: "" }
         : null,
       reorderStatus,
-      totalValue: result.newQuantity * Number(item.unitCost),
+      totalValue: result.newQuantity * unitCost,
       parStatus,
       stockOutRisk:
         result.newQuantity <= reorderLevel && result.newQuantity > 0,
@@ -288,12 +304,12 @@ export async function POST(request: Request) {
       inventoryItemId,
       newQuantity,
       adjustmentAmount,
-      storageLocationId,
+      storageLocationId ?? undefined,
       reason,
       notes,
       referenceId,
       userId,
-      item.unitCost,
+      Number(item.unitCost),
       previousQuantity
     );
 

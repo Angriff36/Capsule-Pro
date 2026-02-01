@@ -56,7 +56,12 @@ function buildQualityUpdateData(body: {
   discrepancyAmount?: number | null;
   notes?: string | null;
 } {
-  const updateData = {
+  const updateData: {
+    qualityStatus: string;
+    discrepancyType?: string | null;
+    discrepancyAmount?: number | null;
+    notes?: string | null;
+  } = {
     qualityStatus: body.quality_status,
   };
 
@@ -81,34 +86,48 @@ function formatQualityUpdateResponse(updatedItem: {
   tenantId: string;
   purchaseOrderId: string;
   itemId: string;
-  quantityOrdered: bigint | number;
-  quantityReceived: bigint | number;
-  unitId: string;
-  unitCost: number;
-  totalCost: number;
+  quantityOrdered: { toNumber: () => number } | bigint | number;
+  quantityReceived: { toNumber: () => number } | bigint | number;
+  unitId: string | number;
+  unitCost: { toNumber: () => number } | number;
+  totalCost: { toNumber: () => number } | number;
   qualityStatus: string | null;
   discrepancyType: string | null;
-  discrepancyAmount: number | null;
+  discrepancyAmount: { toNumber: () => number } | number | null;
   notes: string | null;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
 }) {
+  const toNum = (val: { toNumber?: () => number } | bigint | number | null): number | null => {
+    if (val === null) {
+      return null;
+    }
+    if (typeof val === 'bigint') {
+      return Number(val);
+    }
+    if (typeof val === 'number') {
+      return val;
+    }
+    if (val && typeof val === 'object' && 'toNumber' in val && val.toNumber) {
+      return val.toNumber();
+    }
+    return Number(val);
+  };
+
   return {
     id: updatedItem.id,
     tenant_id: updatedItem.tenantId,
     purchase_order_id: updatedItem.purchaseOrderId,
     item_id: updatedItem.itemId,
-    quantity_ordered: Number(updatedItem.quantityOrdered),
-    quantity_received: Number(updatedItem.quantityReceived),
+    quantity_ordered: toNum(updatedItem.quantityOrdered),
+    quantity_received: toNum(updatedItem.quantityReceived),
     unit_id: updatedItem.unitId,
-    unit_cost: Number(updatedItem.unitCost),
-    total_cost: Number(updatedItem.totalCost),
+    unit_cost: toNum(updatedItem.unitCost),
+    total_cost: toNum(updatedItem.totalCost),
     quality_status: updatedItem.qualityStatus ?? "pending",
     discrepancy_type: updatedItem.discrepancyType,
-    discrepancy_amount: updatedItem.discrepancyAmount
-      ? Number(updatedItem.discrepancyAmount)
-      : null,
+    discrepancy_amount: toNum(updatedItem.discrepancyAmount),
     notes: updatedItem.notes,
     created_at: updatedItem.createdAt,
     updated_at: updatedItem.updatedAt,
