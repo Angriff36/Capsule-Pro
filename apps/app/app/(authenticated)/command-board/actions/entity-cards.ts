@@ -45,7 +45,7 @@ async function getEventMetadata(
   entityId: string
 ): Promise<{ title: string; metadata: CardMetadata } | null> {
   const event = await database.event.findFirst({
-    where: { tenant_id: tenantId, id: entityId },
+    where: { tenantId, id: entityId },
   });
 
   if (!event) {
@@ -55,12 +55,12 @@ async function getEventMetadata(
   const title = event.title;
   const metadata: CardMetadata = {
     status: event.status,
-    eventType: event.event_type,
-    eventDate: event.event_date,
-    guestCount: event.guest_count,
+    eventType: event.eventType,
+    eventDate: event.eventDate,
+    guestCount: event.guestCount,
     budget: event.budget ? Number(event.budget) : undefined,
-    venueName: event.venue_name,
-    venueAddress: event.venue_address,
+    venueName: event.venueName,
+    venueAddress: event.venueAddress,
   };
 
   return { title, metadata };
@@ -70,8 +70,8 @@ async function getTaskMetadata(
   tenantId: string,
   entityId: string
 ): Promise<{ title: string; metadata: CardMetadata } | null> {
-  const task = await database.kitchen_tasks.findFirst({
-    where: { tenant_id: tenantId, id: entityId },
+  const task = await database.kitchenTask.findFirst({
+    where: { tenantId, id: entityId },
   });
 
   if (!task) {
@@ -82,7 +82,7 @@ async function getTaskMetadata(
   const metadata: CardMetadata = {
     status: task.status,
     priority: task.priority,
-    dueDate: task.due_date,
+    dueDate: task.dueDate,
     summary: task.summary,
   };
 
