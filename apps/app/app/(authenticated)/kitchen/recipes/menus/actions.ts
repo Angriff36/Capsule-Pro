@@ -107,7 +107,7 @@ export const updateMenu = async (menuId: string, formData: FormData) => {
     `
   );
 
-  if (!existingMenu) {
+  if (!existingMenu?.tenant_id || existingMenu.tenant_id !== tenantId) {
     throw new Error("Menu not found or access denied.");
   }
 
@@ -172,7 +172,7 @@ export const deleteMenu = async (menuId: string) => {
     `
   );
 
-  if (!existingMenu) {
+  if (!existingMenu?.tenant_id || existingMenu.tenant_id !== tenantId) {
     throw new Error("Menu not found or access denied.");
   }
 
