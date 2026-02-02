@@ -40,7 +40,6 @@
     "secrets:scan": "secretlint \"**/*\"",
     "prepare": "husky",
     "migrate": "pnpm prisma:format && pnpm prisma:generate && pnpm db:dev"
-
   },
   "devDependencies": {
     "@auto-it/first-time-contributor": "^11.3.6",
@@ -56,6 +55,7 @@
     "commander": "^14.0.2",
     "husky": "^9.1.7",
     "node-mocks-http": "^1.17.2",
+    "pg": "^8.18.0",
     "prisma": "7.1.0",
     "secretlint": "^11.3.0",
     "tsup": "^8.5.1",
