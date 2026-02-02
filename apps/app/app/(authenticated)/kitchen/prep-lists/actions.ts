@@ -135,7 +135,7 @@ export async function generatePrepList(
   const tenantId = await getTenantIdForOrg(orgId);
   const batchMultiplier = input.batchMultiplier ?? 1;
 
-  const event = await database.events.findFirst({
+  const event = await database.event.findFirst({
     where: {
       tenantId,
       id: input.eventId,

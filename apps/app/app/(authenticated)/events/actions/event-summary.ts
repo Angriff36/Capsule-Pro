@@ -119,7 +119,7 @@ export async function generateEventSummary(
   const tenantId = await requireTenantId();
   const startTime = Date.now();
 
-  const event = await database.events.findFirst({
+  const event = await database.event.findFirst({
     where: {
       tenantId,
       id: eventId,
@@ -143,15 +143,15 @@ export async function generateEventSummary(
   >(
     Prisma.sql`
       SELECT
-        ed.link_id,
+        ed.id AS link_id,
         ed.dish_id,
         d.name,
         d.category,
         ed.course,
         ed.quantity_servings,
-        COALESCE(d.dietary_tags, ARRAY[]::text[]) as dietary_tags
+        COALESCE(d.dietary_tags, ARRAY[]::text[]) AS dietary_tags
       FROM tenant_events.event_dishes ed
-      JOIN tenant_dishes.dishes d ON ed.dish_id = d.id
+      JOIN tenant_kitchen.dishes d ON ed.dish_id = d.id AND ed.tenant_id = d.tenant_id
       WHERE ed.tenant_id = ${tenantId}
         AND ed.event_id = ${eventId}
         AND ed.deleted_at IS NULL
@@ -396,7 +396,7 @@ export async function deleteEventSummary(summaryId: string): Promise<void> {
       SET deleted_at = NOW(), updated_at = NOW()
       WHERE tenant_id = ${tenantId}
         AND id = ${summaryId}
-        AND deletedAt IS NULL
+        AND deleted_at IS NULL
     `
   );
 }

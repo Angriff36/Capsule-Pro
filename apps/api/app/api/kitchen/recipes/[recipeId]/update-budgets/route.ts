@@ -52,10 +52,11 @@ const updateEventBudgetsForRecipe = async (
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ recipeVersionId: string }> }
+  { params }: { params: Promise<{ recipeId: string }> }
 ) {
   try {
-    const { recipeVersionId } = await params;
+    const { recipeId } = await params;
+    const recipeVersionId = recipeId;
     const _body = await request.json();
     const { orgId } = await auth();
 

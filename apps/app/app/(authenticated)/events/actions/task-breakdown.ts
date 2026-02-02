@@ -52,9 +52,9 @@ export async function generateTaskBreakdown({
 }: GenerateTaskBreakdownParams): Promise<TaskBreakdown> {
   const tenantId = await requireTenantId();
 
-  const event = await database.events.findFirst({
+  const event = await database.event.findFirst({
     where: {
-      tenant_id: tenantId,
+      tenantId,
       id: eventId,
     },
   });
@@ -72,8 +72,8 @@ export async function generateTaskBreakdown({
       WHERE tenant_id = ${tenantId}
         AND id != ${eventId}
         AND deleted_at IS NULL
-        AND event_type = ${event.event_type}
-        AND ABS(guest_count - ${event.guest_count}) <= 10
+        AND event_type = ${event.eventType}
+        AND ABS(guest_count - ${event.guestCount}) <= 10
       ORDER BY event_date DESC
       LIMIT 5
     `
@@ -82,7 +82,7 @@ export async function generateTaskBreakdown({
   // Fetch event dishes/menu items for AI analysis
   const eventDishesResult = await database.$queryRaw<
     Array<{
-      link_id: string;
+      id: string;
       dish_id: string;
       name: string;
       category: string | null;
@@ -94,7 +94,7 @@ export async function generateTaskBreakdown({
   >(
     Prisma.sql`
       SELECT
-        ed.link_id,
+        ed.id,
         ed.dish_id,
         d.name,
         d.category,
@@ -103,7 +103,7 @@ export async function generateTaskBreakdown({
         COALESCE(d.dietary_tags, ARRAY[]::text[]) as dietary_tags,
         COALESCE(d.allergens, ARRAY[]::text[]) as allergens
       FROM tenant_events.event_dishes ed
-      JOIN tenant_dishes.dishes d ON ed.dish_id = d.id
+      JOIN tenant_kitchen.dishes d ON ed.dish_id = d.id AND ed.tenant_id = d.tenant_id
       WHERE ed.tenant_id = ${tenantId}
         AND ed.event_id = ${eventId}
         AND ed.deleted_at IS NULL
@@ -150,8 +150,8 @@ export async function generateTaskBreakdown({
     totalPrepTime,
     totalSetupTime,
     totalCleanupTime,
-    guestCount: event.guest_count,
-    eventDate: event.event_date,
+    guestCount: event.guestCount,
+    eventDate: event.eventDate,
     generatedAt: new Date(),
     historicalEventCount: similarEvents.length || undefined,
     disclaimer:
@@ -165,11 +165,11 @@ async function generateTasksFromAI(
   event: {
     id: string;
     title: string;
-    event_type: string;
-    event_date: Date;
-    guest_count: number;
-    venue_name?: string | null;
-    venue_address?: string | null;
+    eventType: string;
+    eventDate: Date;
+    guestCount: number;
+    venueName?: string | null;
+    venueAddress?: string | null;
     notes?: string | null;
     tags?: string[];
   },
@@ -233,11 +233,11 @@ GUIDELINES:
   const eventData = {
     id: event.id,
     title: event.title,
-    eventType: event.event_type,
-    eventDate: event.event_date.toISOString(),
-    guestCount: event.guest_count,
-    venueName: event.venue_name,
-    venueAddress: event.venue_address,
+    eventType: event.eventType,
+    eventDate: event.eventDate.toISOString(),
+    guestCount: event.guestCount,
+    venueName: event.venueName,
+    venueAddress: event.venueAddress,
     notes: event.notes,
     tags: event.tags,
   };
@@ -389,10 +389,10 @@ Please generate a complete task breakdown following the system prompt guidelines
 function getFallbackTasks(
   event: {
     title: string;
-    event_type: string;
-    event_date: Date;
-    guest_count: number;
-    venue_name?: string | null;
+    eventType: string;
+    eventDate: Date;
+    guestCount: number;
+    venueName?: string | null;
   },
   _dishesData?: Array<{
     name: string;
@@ -403,7 +403,7 @@ function getFallbackTasks(
   setup: TaskBreakdownItem[];
   cleanup: TaskBreakdownItem[];
 } {
-  const guestCount = event.guest_count;
+  const guestCount = event.guestCount;
   const scaleFactor = guestCount / 25;
   const now = Date.now();
 
@@ -461,10 +461,10 @@ function getFallbackTasks(
   const setupTasks: TaskBreakdownItem[] = [
     {
       id: `setup-1-${now}`,
-      name: event.venue_name
+      name: event.venueName
         ? "Transport equipment to venue"
         : "Set up cooking stations",
-      description: event.venue_name
+      description: event.venueName
         ? "Load and transport all cooking equipment and supplies"
         : "Configure cooking equipment and work areas",
       section: "setup",
@@ -518,10 +518,10 @@ function getFallbackTasks(
     },
     {
       id: `cleanup-3-${now}`,
-      name: event.venue_name
+      name: event.venueName
         ? "Transport equipment back"
         : "Final kitchen clean",
-      description: event.venue_name
+      description: event.venueName
         ? "Load and transport all equipment to home base"
         : "Complete final cleaning and organize storage",
       section: "cleanup",
@@ -590,23 +590,23 @@ export async function saveTaskBreakdown(
       }
     }
 
-    await database.prep_tasks.create({
+    await database.prepTask.create({
       data: {
-        tenant_id: tenantId,
-        event_id: eventId,
-        location_id: locationId,
-        task_type:
+        tenantId,
+        eventId,
+        locationId,
+        taskType:
           task.section === "prep"
             ? "prep"
             : task.section === "setup"
               ? "setup"
               : "cleanup",
         name: task.name,
-        quantity_total: breakdown.guestCount,
-        servings_total: breakdown.guestCount,
-        start_by_date: startByDate,
-        due_by_date: dueByDate,
-        estimated_minutes: task.durationMinutes,
+        quantityTotal: breakdown.guestCount,
+        servingsTotal: breakdown.guestCount,
+        startByDate: startByDate,
+        dueByDate: dueByDate,
+        estimatedMinutes: task.durationMinutes,
         status: "pending",
         priority: task.isCritical ? 8 : 5,
         notes: task.description,

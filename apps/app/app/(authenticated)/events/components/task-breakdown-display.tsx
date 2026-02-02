@@ -647,6 +647,7 @@ type GenerateTaskBreakdownModalProps = {
   onGenerate: (customInstructions?: string) => Promise<void>;
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
+  showTrigger?: boolean;
 };
 
 export function GenerateTaskBreakdownModal({
@@ -658,6 +659,7 @@ export function GenerateTaskBreakdownModal({
   onGenerate,
   isOpen = false,
   onOpenChange,
+  showTrigger = true,
 }: GenerateTaskBreakdownModalProps) {
   const [customInstructions, setCustomInstructions] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -683,12 +685,14 @@ export function GenerateTaskBreakdownModal({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={isOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <SparklesIcon className="mr-2 size-4" />
-          Generate Task Breakdown
-        </Button>
-      </DialogTrigger>
+      {showTrigger ? (
+        <DialogTrigger asChild>
+          <Button>
+            <SparklesIcon className="mr-2 size-4" />
+            Generate Task Breakdown
+          </Button>
+        </DialogTrigger>
+      ) : null}
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

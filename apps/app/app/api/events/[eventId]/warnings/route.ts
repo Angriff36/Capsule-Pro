@@ -29,7 +29,7 @@ export async function GET(
     const isAcknowledged = searchParams.get("isAcknowledged");
 
     // Validate the event exists and belongs to the tenant
-    const event = await database.events.findFirst({
+    const event = await database.event.findFirst({
       where: {
         id: eventId,
         tenantId,

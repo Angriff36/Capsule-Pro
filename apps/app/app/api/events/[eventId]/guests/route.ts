@@ -25,7 +25,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
 
     // Validate event exists
-    const event = await database.events.findFirst({
+    const event = await database.event.findFirst({
       where: {
         AND: [{ tenantId }, { id: eventId }, { deletedAt: null }],
       },
@@ -42,7 +42,7 @@ export async function GET(
     // Filter by guest name if provided
     const guestName = searchParams.get("guestName");
 
-    const guests = await database.event_guests.findMany({
+    const guests = await database.eventGuest.findMany({
       where: {
         AND: [
           { tenantId },
@@ -57,7 +57,7 @@ export async function GET(
     });
 
     // Get total count for pagination
-    const totalCount = await database.event_guests.count({
+    const totalCount = await database.eventGuest.count({
       where: {
         AND: [
           { tenantId },
@@ -119,7 +119,7 @@ export async function POST(
     );
 
     // Validate that the event exists
-    const event = await database.events.findFirst({
+    const event = await database.event.findFirst({
       where: {
         AND: [{ tenantId }, { id: eventId }, { deletedAt: null }],
       },
@@ -130,7 +130,7 @@ export async function POST(
     }
 
     // Check if guest already exists for this event
-    const existingGuest = await database.event_guests.findFirst({
+    const existingGuest = await database.eventGuest.findFirst({
       where: {
         AND: [
           { tenantId },
@@ -149,7 +149,7 @@ export async function POST(
     }
 
     // Create guest record
-    const guest = await database.event_guests.create({
+    const guest = await database.eventGuest.create({
       data: {
         tenantId,
         eventId,

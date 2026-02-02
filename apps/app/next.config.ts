@@ -26,8 +26,16 @@ const rewrites: NextConfig["rewrites"] = async () => {
       destination: `${apiBaseUrl}/api/kitchen/waste/:path*`,
     },
     {
-      source: "/api/inventory/items/:path*",
-      destination: `${apiBaseUrl}/api/inventory/items/:path*`,
+      source: "/api/inventory/:path*",
+      destination: `${apiBaseUrl}/api/inventory/:path*`,
+    },
+    {
+      source: "/api/analytics/:path*",
+      destination: `${apiBaseUrl}/api/analytics/:path*`,
+    },
+    {
+      source: "/api/shipments/:path*",
+      destination: `${apiBaseUrl}/api/shipments/:path*`,
     },
     {
       source: "/api/events/:path*",

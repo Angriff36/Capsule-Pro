@@ -1,9 +1,9 @@
 /**
  * Cycle Count Session Detail API Endpoints
  *
- * GET    /api/inventory/cycle-count/sessions/[id]      - Get a single session
- * PUT    /api/inventory/cycle-count/sessions/[id]      - Update a session
- * DELETE /api/inventory/cycle-count/sessions/[id]      - Delete a session (soft delete)
+ * GET    /api/inventory/cycle-count/sessions/[sessionId]      - Get a single session
+ * PUT    /api/inventory/cycle-count/sessions/[sessionId]      - Update a session
+ * DELETE /api/inventory/cycle-count/sessions/[sessionId]      - Delete a session (soft delete)
  */
 
 import { auth } from "@repo/auth/server";
@@ -24,7 +24,7 @@ function toNumber(value: { toNumber: () => number }): number {
 }
 
 type RouteContext = {
-  params: Promise<{ id: string }>;
+  params: Promise<{ sessionId: string }>;
 };
 
 /**
@@ -144,7 +144,7 @@ function buildSessionUpdateData(
 }
 
 /**
- * GET /api/inventory/cycle-count/sessions/[id] - Get a single session
+ * GET /api/inventory/cycle-count/sessions/[sessionId] - Get a single session
  */
 export async function GET(_request: Request, context: RouteContext) {
   try {
@@ -161,12 +161,12 @@ export async function GET(_request: Request, context: RouteContext) {
       );
     }
 
-    const { id } = await context.params;
+    const { sessionId } = await context.params;
 
     const session = await database.cycleCountSession.findFirst({
       where: {
         tenantId,
-        id,
+        id: sessionId,
         deletedAt: null,
       },
     });
@@ -189,7 +189,7 @@ export async function GET(_request: Request, context: RouteContext) {
 }
 
 /**
- * PUT /api/inventory/cycle-count/sessions/[id] - Update a session
+ * PUT /api/inventory/cycle-count/sessions/[sessionId] - Update a session
  */
 export async function PUT(request: Request, context: RouteContext) {
   try {
@@ -206,13 +206,13 @@ export async function PUT(request: Request, context: RouteContext) {
       );
     }
 
-    const { id } = await context.params;
+    const { sessionId } = await context.params;
     const body = await request.json();
 
     const existing = await database.cycleCountSession.findFirst({
       where: {
         tenantId,
-        id,
+        id: sessionId,
         deletedAt: null,
       },
     });
@@ -230,7 +230,7 @@ export async function PUT(request: Request, context: RouteContext) {
       where: {
         tenantId_id: {
           tenantId,
-          id,
+          id: sessionId,
         },
       },
       data: updateData,
@@ -250,7 +250,7 @@ export async function PUT(request: Request, context: RouteContext) {
 }
 
 /**
- * DELETE /api/inventory/cycle-count/sessions/[id] - Soft delete a session
+ * DELETE /api/inventory/cycle-count/sessions/[sessionId] - Soft delete a session
  */
 export async function DELETE(_request: Request, context: RouteContext) {
   try {
@@ -267,13 +267,13 @@ export async function DELETE(_request: Request, context: RouteContext) {
       );
     }
 
-    const { id } = await context.params;
+    const { sessionId } = await context.params;
 
     // Check if session exists
     const existing = await database.cycleCountSession.findFirst({
       where: {
         tenantId,
-        id,
+        id: sessionId,
         deletedAt: null,
       },
     });
@@ -290,7 +290,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
       where: {
         tenantId_id: {
           tenantId,
-          id,
+          id: sessionId,
         },
       },
       data: {

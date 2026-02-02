@@ -333,6 +333,11 @@ model Event {
   guestCount   Int             @default(1) @map("guest_count")
   status       String          @default("confirmed")
   budget       Decimal?        @db.Decimal(12, 2)
+  ticketPrice  Decimal?        @map("ticket_price") @db.Decimal(10, 2)
+  ticketTier   String?         @map("ticket_tier")
+  eventFormat  String?         @map("event_format")
+  accessibilityOptions String[] @map("accessibility_options")
+  featuredMediaUrl String?     @map("featured_media_url")
   assignedTo   String?         @map("assigned_to") @db.Uuid
   venueName    String?         @map("venue_name")
   venueAddress String?         @map("venue_address")
@@ -731,6 +736,7 @@ model RecipeVersion {
   cookTimeMinutes  Int?      @map("cook_time_minutes")
   restTimeMinutes  Int?      @map("rest_time_minutes")
   difficultyLevel  Int?      @map("difficulty_level") @db.SmallInt
+  instructions     String?   @db.Text
   notes            String?
   isLocked         Boolean   @default(false) @map("is_locked")
   lockedAt         DateTime? @map("locked_at") @db.Timestamptz(6)

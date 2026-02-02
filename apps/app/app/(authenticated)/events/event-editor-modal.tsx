@@ -1,6 +1,5 @@
 "use client";
 
-import { AspectRatio } from "@repo/design-system/components/ui/aspect-ratio";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
@@ -19,15 +18,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { MapPinIcon, UploadIcon, UsersIcon, XIcon } from "lucide-react";
-import Image from "next/image";
-import { useRef, useState } from "react";
-
-type EventImage = {
-  id: string;
-  file: File;
-  url: string;
-};
+import { MapPinIcon, UsersIcon } from "lucide-react";
 
 type EventEditorModalProps = {
   open: boolean;
@@ -43,6 +34,11 @@ type EventEditorModalProps = {
     eventType?: string;
     status?: string;
     tags?: string[];
+    ticketTier?: string | null;
+    ticketPrice?: number | null;
+    eventFormat?: string | null;
+    accessibilityOptions?: string[];
+    featuredMediaUrl?: string | null;
   };
   onSave: (data: FormData) => Promise<void>;
 };
@@ -53,32 +49,6 @@ export const EventEditorModal = ({
   event,
   onSave,
 }: EventEditorModalProps) => {
-  const [images, setImages] = useState<EventImage[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) {
-      return;
-    }
-
-    const newImages: EventImage[] = files.map((file) => ({
-      id: Math.random().toString(),
-      file,
-      url: URL.createObjectURL(file),
-    }));
-
-    setImages([...images, ...newImages]);
-  };
-
-  const handleRemoveImage = (id: string) => {
-    const removed = images.find((img) => img.id === id);
-    if (removed) {
-      URL.revokeObjectURL(removed.url);
-    }
-    setImages(images.filter((img) => img.id !== id));
-  };
-
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[800px]">
@@ -194,6 +164,45 @@ export const EventEditorModal = ({
               </Select>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="ticketTier">Ticket Tier</Label>
+              <Input
+                defaultValue={event?.ticketTier ?? ""}
+                id="ticketTier"
+                name="ticketTier"
+                placeholder="General Admission"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="ticketPrice">Ticket Price</Label>
+              <Input
+                defaultValue={event?.ticketPrice ?? ""}
+                id="ticketPrice"
+                min="0"
+                name="ticketPrice"
+                placeholder="0"
+                type="number"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="eventFormat">Format</Label>
+              <Select
+                defaultValue={event?.eventFormat ?? "in_person"}
+                name="eventFormat"
+              >
+                <SelectTrigger id="eventFormat">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="in_person">In-person</SelectItem>
+                  <SelectItem value="virtual">Virtual</SelectItem>
+                  <SelectItem value="hybrid">Hybrid</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="venueName">Venue Name</Label>
               <div className="relative">
@@ -224,6 +233,29 @@ export const EventEditorModal = ({
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="accessibilityOptions">
+              Accessibility options (comma separated)
+            </Label>
+            <Input
+              defaultValue={event?.accessibilityOptions?.join(", ") ?? ""}
+              id="accessibilityOptions"
+              name="accessibilityOptions"
+              placeholder="Wheelchair access, ASL interpreter"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="featuredMediaUrl">Featured media URL</Label>
+            <Input
+              defaultValue={event?.featuredMediaUrl ?? ""}
+              id="featuredMediaUrl"
+              name="featuredMediaUrl"
+              placeholder="https://"
+              type="url"
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
             <Textarea
               defaultValue={event?.description ?? ""}
@@ -247,57 +279,6 @@ export const EventEditorModal = ({
               placeholder="e.g., outdoor, formal, lunch"
               type="text"
             />
-          </div>
-
-          <div className="space-y-3">
-            <Label>Event Banner</Label>
-            <div className="rounded-lg border-2 border-dashed p-4 text-center">
-              <input
-                accept="image/*"
-                className="hidden"
-                multiple
-                onChange={handleImageUpload}
-                ref={fileInputRef}
-                type="file"
-              />
-              <Button
-                onClick={() => fileInputRef.current?.click()}
-                type="button"
-                variant="outline"
-              >
-                <UploadIcon className="mr-2 size-4" />
-                Upload Banner
-              </Button>
-              <p className="text-muted-foreground mt-2 text-sm">
-                Drag and drop or click to upload
-              </p>
-            </div>
-            {images.length > 0 && (
-              <div className="grid gap-3 md:grid-cols-2">
-                {images.map((image) => (
-                  <div className="relative group" key={image.id}>
-                    <AspectRatio ratio={16 / 9}>
-                      <Image
-                        alt="Event banner"
-                        className="h-full w-full rounded-lg object-cover"
-                        fill
-                        src={image.url}
-                      />
-                    </AspectRatio>
-                    <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
-                      <Button
-                        onClick={() => handleRemoveImage(image.id)}
-                        size="icon"
-                        type="button"
-                        variant="destructive"
-                      >
-                        <XIcon className="size-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
           <div className="flex justify-end gap-3">

@@ -182,10 +182,11 @@ const calculateAllRecipeCosts = async (
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ recipeVersionId: string }> }
+  { params }: { params: Promise<{ recipeId: string }> }
 ) {
   try {
-    const { recipeVersionId } = await params;
+    const { recipeId } = await params;
+    const recipeVersionId = recipeId;
     const { orgId } = await auth();
 
     if (!orgId) {

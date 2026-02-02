@@ -20,7 +20,7 @@ async function getContextData(tenantId: string) {
   nextMonth.setMonth(nextMonth.getMonth() + 1);
 
   const [upcomingEvents, prepTasks, inventoryAlerts] = await Promise.all([
-    database.events.findMany({
+    database.event.findMany({
       where: {
         tenant_id: tenantId,
         deleted_at: null,

@@ -85,6 +85,12 @@ const getTags = (formData: FormData): string[] =>
     .map((tag) => tag.trim())
     .filter(Boolean);
 
+const getList = (formData: FormData, key: string): string[] =>
+  (getString(formData, key) ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
 const MISSING_FIELD_TAG_PREFIX = "needs:";
 
 const buildMissingFieldTags = (fields: string[]) =>
@@ -167,7 +173,12 @@ export const createEvent = async (formData: FormData): Promise<void> => {
     venueAddress: getOptionalString(formData, "venueAddress"),
     notes: getOptionalString(formData, "notes"),
     budget: getString(formData, "budget"),
-    tags: getString(formData, "tags"),
+    ticketPrice: getString(formData, "ticketPrice"),
+    ticketTier: getOptionalString(formData, "ticketTier"),
+    eventFormat: getOptionalString(formData, "eventFormat"),
+    accessibilityOptions: getList(formData, "accessibilityOptions"),
+    featuredMediaUrl: getOptionalString(formData, "featuredMediaUrl"),
+    tags: getTags(formData),
   };
 
   const parsed = createEventSchema.safeParse(rawData);
@@ -194,6 +205,11 @@ export const createEvent = async (formData: FormData): Promise<void> => {
         guestCount: data.guestCount,
         status: data.status,
         budget: data.budget ?? null,
+        ticketPrice: data.ticketPrice ?? null,
+        ticketTier: data.ticketTier,
+        eventFormat: data.eventFormat,
+        accessibilityOptions: data.accessibilityOptions,
+        featuredMediaUrl: data.featuredMediaUrl ?? null,
         venueName: data.venueName,
         venueAddress: data.venueAddress,
         notes: data.notes,
@@ -263,7 +279,7 @@ export const updateEvent = async (formData: FormData): Promise<void> => {
   });
   const tags = mergeTags(getTags(formData), missingFields);
 
-  await database.events.updateMany({
+  await database.event.updateMany({
     where: {
       AND: [{ tenantId }, { id: eventId }],
     },
@@ -274,6 +290,11 @@ export const updateEvent = async (formData: FormData): Promise<void> => {
       guestCount,
       status,
       budget: getNumberOrNull(formData, "budget"),
+      ticketPrice: getNumberOrNull(formData, "ticketPrice"),
+      ticketTier: getOptionalString(formData, "ticketTier"),
+      eventFormat: getOptionalString(formData, "eventFormat"),
+      accessibilityOptions: getList(formData, "accessibilityOptions"),
+      featuredMediaUrl: getOptionalString(formData, "featuredMediaUrl"),
       venueName: getOptionalString(formData, "venueName"),
       venueAddress: getOptionalString(formData, "venueAddress"),
       notes: getOptionalString(formData, "notes"),
@@ -293,7 +314,7 @@ export const deleteEvent = async (formData: FormData): Promise<void> => {
     throw new Error("Event id is required.");
   }
 
-  await database.events.updateMany({
+  await database.event.updateMany({
     where: {
       AND: [{ tenantId }, { id: eventId }],
     },
@@ -305,6 +326,20 @@ export const deleteEvent = async (formData: FormData): Promise<void> => {
   revalidatePath("/events");
   redirect("/events");
 };
+
+/** Soft-delete an event by id. Call from client with confirmation. */
+export async function deleteEventById(eventId: string): Promise<void> {
+  const tenantId = await requireTenantId();
+  if (!eventId?.trim()) {
+    throw new Error("Event id is required.");
+  }
+  await database.event.updateMany({
+    where: { tenantId, id: eventId },
+    data: { deletedAt: new Date() },
+  });
+  revalidatePath("/events");
+  redirect("/events");
+}
 
 export const importEvent = async (formData: FormData): Promise<void> => {
   const tenantId = await requireTenantId();

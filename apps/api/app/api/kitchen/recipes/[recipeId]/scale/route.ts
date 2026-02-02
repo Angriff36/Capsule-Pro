@@ -74,10 +74,11 @@ const scaleRecipeCost = async (
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ recipeVersionId: string }> }
+  { params }: { params: Promise<{ recipeId: string }> }
 ) {
   try {
-    const { recipeVersionId } = await params;
+    const { recipeId } = await params;
+    const recipeVersionId = recipeId;
     const body = await request.json();
     const { targetPortions, currentYield } = body;
     const { orgId } = await auth();
@@ -113,10 +114,11 @@ export async function POST(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ recipeVersionId: string }> }
+  { params }: { params: Promise<{ recipeId: string }> }
 ) {
   try {
-    const { recipeVersionId } = await params;
+    const { recipeId } = await params;
+    const recipeVersionId = recipeId;
     const body = await request.json();
     const { recipeIngredientId, wasteFactor } = body;
     const { orgId } = await auth();

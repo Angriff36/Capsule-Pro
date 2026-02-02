@@ -34,7 +34,7 @@ const BattleBoardDetailPage = async ({ params }: PageProps) => {
   // Fetch event data if linked
   let event = null;
   if (board.event_id) {
-    event = await database.events.findFirst({
+    event = await database.event.findFirst({
       where: {
         id: board.event_id,
         tenant_id: tenantId,

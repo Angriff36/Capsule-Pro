@@ -44,7 +44,7 @@ async function getEventMetadata(
   tenantId: string,
   entityId: string
 ): Promise<{ title: string; metadata: CardMetadata } | null> {
-  const event = await database.events.findFirst({
+  const event = await database.event.findFirst({
     where: { tenant_id: tenantId, id: entityId },
   });
 

@@ -38,7 +38,9 @@
     "clean:hard": "git clean -xdf",
     "clean:node_modules": "git clean -xdf node_modules",
     "secrets:scan": "secretlint \"**/*\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "migrate": "pnpm prisma:format && pnpm prisma:generate && pnpm db:dev"
+
   },
   "devDependencies": {
     "@auto-it/first-time-contributor": "^11.3.6",

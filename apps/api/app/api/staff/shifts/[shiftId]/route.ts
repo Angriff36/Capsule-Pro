@@ -11,11 +11,11 @@ import {
 } from "../validation";
 
 type RouteContext = {
-  params: Promise<{ id: string }>;
+  params: Promise<{ shiftId: string }>;
 };
 
 /**
- * GET /api/staff/shifts/[id]
+ * GET /api/staff/shifts/[shiftId]
  * Get a single shift by ID
  */
 export async function GET(_request: Request, context: RouteContext) {
@@ -25,7 +25,7 @@ export async function GET(_request: Request, context: RouteContext) {
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  const { id } = await context.params;
+  const { shiftId } = await context.params;
 
   const shifts = await database.$queryRaw<
     Array<{
@@ -71,7 +71,7 @@ export async function GET(_request: Request, context: RouteContext) {
         ON l.tenant_id = ss.tenant_id
        AND l.id = ss.location_id
       WHERE ss.tenant_id = ${tenantId}
-        AND ss.id = ${id}
+        AND ss.id = ${shiftId}
         AND ss.deleted_at IS NULL
     `
   );
@@ -84,7 +84,7 @@ export async function GET(_request: Request, context: RouteContext) {
 }
 
 /**
- * PUT /api/staff/shifts/[id]
+ * PUT /api/staff/shifts/[shiftId]
  * Update an existing shift
  *
  * Allowed fields:
@@ -104,7 +104,7 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  const { id } = await context.params;
+  const { shiftId } = await context.params;
   const body = await request.json();
 
   // Verify shift exists
@@ -120,7 +120,7 @@ export async function PUT(request: Request, context: RouteContext) {
       SELECT id, employee_id, shift_start, shift_end
       FROM tenant_staff.schedule_shifts
       WHERE tenant_id = ${tenantId}
-        AND id = ${id}
+        AND id = ${shiftId}
         AND deleted_at IS NULL
     `
   );
@@ -178,7 +178,7 @@ export async function PUT(request: Request, context: RouteContext) {
     employeeId,
     shiftStart,
     shiftEnd,
-    id
+    shiftId
   );
 
   if (overlaps.length > 0 && !body.allowOverlap) {
@@ -208,7 +208,7 @@ export async function PUT(request: Request, context: RouteContext) {
       where: {
         tenantId_id: {
           tenantId,
-          id,
+          id: shiftId,
         },
       },
       data: {
@@ -235,7 +235,7 @@ export async function PUT(request: Request, context: RouteContext) {
 }
 
 /**
- * DELETE /api/staff/shifts/[id]
+ * DELETE /api/staff/shifts/[shiftId]
  * Soft delete a shift
  */
 export async function DELETE(_request: Request, context: RouteContext) {
@@ -245,7 +245,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  const { id } = await context.params;
+  const { shiftId } = await context.params;
 
   // Verify shift exists
   const existingShift = await database.$queryRaw<
@@ -255,7 +255,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
       SELECT id, shift_start
       FROM tenant_staff.schedule_shifts
       WHERE tenant_id = ${tenantId}
-        AND id = ${id}
+        AND id = ${shiftId}
         AND deleted_at IS NULL
     `
   );
@@ -270,7 +270,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
       where: {
         tenantId_id: {
           tenantId,
-          id,
+          id: shiftId,
         },
       },
       data: {

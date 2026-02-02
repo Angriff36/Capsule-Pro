@@ -27,6 +27,11 @@ export const createEventSchema = z.object({
     .positive("Budget must be a positive number")
     .optional()
     .nullable(),
+  ticketPrice: z.coerce.number().min(0, "Ticket price must be 0 or higher").optional(),
+  ticketTier: z.string().optional(),
+  eventFormat: z.string().optional(),
+  accessibilityOptions: z.array(z.string()).default([]),
+  featuredMediaUrl: z.string().optional().nullable(),
   tags: z.array(z.string()).default([]),
 });
 

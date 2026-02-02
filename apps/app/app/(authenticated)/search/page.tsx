@@ -39,7 +39,7 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const events = await database.events.findMany({
+  const events = await database.event.findMany({
     where: {
       tenant_id: tenantId,
       deleted_at: null,

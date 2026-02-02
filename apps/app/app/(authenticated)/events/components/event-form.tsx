@@ -19,7 +19,7 @@ const formatDateValue = (value?: Date | null): string => {
 };
 
 const formatDecimalValue = (
-  value: Event["budget"] | null | undefined
+  value: Event["budget"] | Event["ticketPrice"] | null | undefined
 ): string => {
   if (!value) {
     return "";
@@ -90,6 +90,36 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => (
           type="number"
         />
       </label>
+      <label className="flex flex-col gap-2 font-medium text-sm">
+        Ticket tier
+        <Input
+          defaultValue={event?.ticketTier ?? ""}
+          name="ticketTier"
+          placeholder="General Admission"
+        />
+      </label>
+      <label className="flex flex-col gap-2 font-medium text-sm">
+        Ticket price
+        <Input
+          defaultValue={formatDecimalValue(event?.ticketPrice)}
+          min={0}
+          name="ticketPrice"
+          placeholder="0"
+          type="number"
+        />
+      </label>
+      <label className="flex flex-col gap-2 font-medium text-sm">
+        Format
+        <select
+          className="rounded-md border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none ring-ring/50 focus-visible:border-ring focus-visible:ring-[3px]"
+          defaultValue={event?.eventFormat ?? "in_person"}
+          name="eventFormat"
+        >
+          <option value="in_person">In-person</option>
+          <option value="virtual">Virtual</option>
+          <option value="hybrid">Hybrid</option>
+        </select>
+      </label>
       <label className="flex flex-col gap-2 font-medium text-sm md:col-span-2">
         Venue name
         <Input
@@ -112,6 +142,23 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => (
           defaultValue={event?.tags?.join(", ") ?? ""}
           name="tags"
           placeholder="vip, offsite"
+        />
+      </label>
+      <label className="flex flex-col gap-2 font-medium text-sm md:col-span-2">
+        Accessibility options (comma separated)
+        <Input
+          defaultValue={event?.accessibilityOptions?.join(", ") ?? ""}
+          name="accessibilityOptions"
+          placeholder="wheelchair access, ASL interpreter"
+        />
+      </label>
+      <label className="flex flex-col gap-2 font-medium text-sm md:col-span-2">
+        Featured media URL
+        <Input
+          defaultValue={event?.featuredMediaUrl ?? ""}
+          name="featuredMediaUrl"
+          placeholder="https://"
+          type="url"
         />
       </label>
       <label className="flex flex-col gap-2 font-medium text-sm md:col-span-2">

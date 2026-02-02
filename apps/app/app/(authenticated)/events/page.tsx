@@ -1,6 +1,5 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -17,26 +16,14 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
-import { CalendarDaysIcon, MapPinIcon, TagIcon, UsersIcon } from "lucide-react";
+import { CalendarDaysIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
 import { Header } from "../components/header";
+import { EventCard } from "./components/event-card";
 import { EventsPageWithSuggestions } from "./components/events-suggestions";
 import { EventsPageClient } from "./events-page-client";
-
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  dateStyle: "medium",
-});
-
-const statusVariantMap = {
-  draft: "outline",
-  confirmed: "default",
-  tentative: "secondary",
-  postponed: "outline",
-  completed: "secondary",
-  cancelled: "destructive",
-} as const;
 
 const EventsPage = async () => {
   const { orgId } = await auth();
@@ -51,6 +38,19 @@ const EventsPage = async () => {
     where: {
       tenantId,
       deletedAt: null,
+    },
+    select: {
+      tenantId: true,
+      id: true,
+      title: true,
+      eventNumber: true,
+      status: true,
+      eventType: true,
+      eventDate: true,
+      guestCount: true,
+      venueName: true,
+      tags: true,
+      createdAt: true,
     },
     orderBy: [{ eventDate: "desc" }, { createdAt: "desc" }],
   });
@@ -146,62 +146,20 @@ const EventsPage = async () => {
         ) : (
           <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
             {events.map((event) => (
-              <Link
-                className="group"
-                href={`/events/${event.id}`}
+              <EventCard
                 key={`${event.tenantId}-${event.id}`}
-              >
-                <Card className="h-full transition hover:border-primary/40 hover:shadow-md">
-                  <CardHeader className="gap-1">
-                    <CardDescription className="flex items-center justify-between gap-2">
-                      <span className="truncate">
-                        {event.eventNumber ?? "Unassigned event number"}
-                      </span>
-                      <Badge
-                        className="capitalize"
-                        variant={
-                          statusVariantMap[
-                            event.status as keyof typeof statusVariantMap
-                          ] ?? "outline"
-                        }
-                      >
-                        {event.status}
-                      </Badge>
-                    </CardDescription>
-                    <CardTitle className="text-lg">{event.title}</CardTitle>
-                    <CardDescription className="capitalize">
-                      {event.eventType}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid gap-3 text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <CalendarDaysIcon className="size-4" />
-                      <span>{dateFormatter.format(event.eventDate)}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <UsersIcon className="size-4" />
-                      <span>{event.guestCount} guests</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPinIcon className="size-4" />
-                      <span className="line-clamp-1">
-                        {event.venueName ?? "Venue TBD"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <TagIcon className="size-4" />
-                      <span className="line-clamp-1">
-                        {event.tags.filter((tag) => !tag.startsWith("needs:"))
-                          .length > 0
-                          ? event.tags
-                              .filter((tag) => !tag.startsWith("needs:"))
-                              .join(", ")
-                          : "No tags"}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+                event={{
+                  id: event.id,
+                  title: event.title,
+                  eventNumber: event.eventNumber,
+                  status: event.status,
+                  eventType: event.eventType,
+                  eventDate: event.eventDate.toISOString(),
+                  guestCount: event.guestCount,
+                  venueName: event.venueName,
+                  tags: event.tags,
+                }}
+              />
             ))}
           </div>
         )}

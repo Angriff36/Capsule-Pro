@@ -1019,6 +1019,11 @@ tenant_events.events
   do_not_complete_until timestamptz
   total_revenue numeric(12,2) NOT NULL DEFAULT 0
   total_cost numeric(12,2) NOT NULL DEFAULT 0
+  ticket_price numeric(10,2)
+  ticket_tier text
+  event_format text
+  accessibility_options text[]
+  featured_media_url text
   notes text
   internal_notes text  -- Staff-only notes
   created_at, updated_at, deleted_at

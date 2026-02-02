@@ -1,7 +1,7 @@
 -- CreateTable: menus
 CREATE TABLE IF NOT EXISTS "tenant_kitchen"."menus" (
     "tenant_id" UUID NOT NULL,
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "name" TEXT NOT NULL,
     "description" TEXT,
     "category" TEXT,
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS "tenant_kitchen"."menus" (
 -- CreateTable: menu_dishes
 CREATE TABLE IF NOT EXISTS "tenant_kitchen"."menu_dishes" (
     "tenant_id" UUID NOT NULL,
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "menu_id" UUID NOT NULL,
     "dish_id" UUID NOT NULL,
     "course" TEXT,

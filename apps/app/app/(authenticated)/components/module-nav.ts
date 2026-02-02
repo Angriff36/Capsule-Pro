@@ -35,6 +35,7 @@ export const modules: ModuleDefinition[] = [
         label: "Events",
         items: [
           { title: "All Events", href: "/events" },
+          { title: "Kitchen Dashboard", href: "/events/kitchen-dashboard" },
           { title: "Imports", href: "/events/import" },
         ],
       },

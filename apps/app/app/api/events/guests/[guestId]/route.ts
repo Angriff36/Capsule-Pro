@@ -12,7 +12,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * Helper function to validate guest exists
  */
 async function validateGuestExists(guestId: string, tenantId: string) {
-  const guest = await database.event_guests.findFirst({
+  const guest = await database.eventGuest.findFirst({
     where: {
       AND: [{ tenantId }, { id: guestId }, { deletedAt: null }],
     },
@@ -112,43 +112,43 @@ function buildUpdateData(body: {
   mealPreference?: unknown;
 }) {
   const updateData: {
-    guest_name?: string;
-    guest_email?: string | null;
-    guest_phone?: string | null;
-    is_primary_contact?: boolean;
-    dietary_restrictions?: string[];
-    allergen_restrictions?: string[];
+    guestName?: string;
+    guestEmail?: string | null;
+    guestPhone?: string | null;
+    isPrimaryContact?: boolean;
+    dietaryRestrictions?: string[];
+    allergenRestrictions?: string[];
     notes?: string | null;
-    special_meal_required?: boolean;
-    special_meal_notes?: string | null;
-    table_assignment?: string | null;
-    meal_preference?: string | null;
+    specialMealRequired?: boolean;
+    specialMealNotes?: string | null;
+    tableAssignment?: string | null;
+    mealPreference?: string | null;
   } = {};
 
   if (body.guestName !== undefined) {
-    updateData.guest_name = validateAndProcessName(body.guestName);
+    updateData.guestName = validateAndProcessName(body.guestName);
   }
 
   if (body.guestEmail !== undefined) {
-    updateData.guest_email = validateAndProcessEmail(body.guestEmail);
+    updateData.guestEmail = validateAndProcessEmail(body.guestEmail);
   }
 
   if (body.guestPhone !== undefined) {
-    updateData.guest_phone = validateAndProcessPhone(body.guestPhone);
+    updateData.guestPhone = validateAndProcessPhone(body.guestPhone);
   }
 
   if (body.isPrimaryContact !== undefined) {
-    updateData.is_primary_contact = Boolean(body.isPrimaryContact);
+    updateData.isPrimaryContact = Boolean(body.isPrimaryContact);
   }
 
   if (body.dietaryRestrictions !== undefined) {
-    updateData.dietary_restrictions = validateAndProcessRestrictions(
+    updateData.dietaryRestrictions = validateAndProcessRestrictions(
       body.dietaryRestrictions
     );
   }
 
   if (body.allergenRestrictions !== undefined) {
-    updateData.allergen_restrictions = validateAndProcessRestrictions(
+    updateData.allergenRestrictions = validateAndProcessRestrictions(
       body.allergenRestrictions
     );
   }
@@ -158,19 +158,19 @@ function buildUpdateData(body: {
   }
 
   if (body.specialMealRequired !== undefined) {
-    updateData.special_meal_required = Boolean(body.specialMealRequired);
+    updateData.specialMealRequired = Boolean(body.specialMealRequired);
   }
 
   if (body.specialMealNotes !== undefined) {
-    updateData.special_meal_notes = processTextField(body.specialMealNotes);
+    updateData.specialMealNotes = processTextField(body.specialMealNotes);
   }
 
   if (body.tableAssignment !== undefined) {
-    updateData.table_assignment = processTextField(body.tableAssignment);
+    updateData.tableAssignment = processTextField(body.tableAssignment);
   }
 
   if (body.mealPreference !== undefined) {
-    updateData.meal_preference = processTextField(body.mealPreference);
+    updateData.mealPreference = processTextField(body.mealPreference);
   }
 
   return updateData;
@@ -189,7 +189,7 @@ export async function GET(_request: Request, { params }: { params: Params }) {
   const tenantId = await getTenantIdForOrg(orgId);
   const { guestId } = await params;
 
-  const guest = await database.event_guests.findFirst({
+  const guest = await database.eventGuest.findFirst({
     where: {
       AND: [{ tenantId }, { id: guestId }, { deletedAt: null }],
     },
@@ -221,17 +221,17 @@ export async function PUT(request: Request, { params }: { params: Params }) {
 
   // Build update data with validation
   let updateData: {
-    guest_name?: string;
-    guest_email?: string | null;
-    guest_phone?: string | null;
-    is_primary_contact?: boolean;
-    dietary_restrictions?: string[];
-    allergen_restrictions?: string[];
+    guestName?: string;
+    guestEmail?: string | null;
+    guestPhone?: string | null;
+    isPrimaryContact?: boolean;
+    dietaryRestrictions?: string[];
+    allergenRestrictions?: string[];
     notes?: string | null;
-    special_meal_required?: boolean;
-    special_meal_notes?: string | null;
-    table_assignment?: string | null;
-    meal_preference?: string | null;
+    specialMealRequired?: boolean;
+    specialMealNotes?: string | null;
+    tableAssignment?: string | null;
+    mealPreference?: string | null;
   };
   try {
     updateData = buildUpdateData(body);
@@ -243,7 +243,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   }
 
   // Update guest
-  const updatedGuest = await database.event_guests.updateMany({
+  const updatedGuest = await database.eventGuest.updateMany({
     where: {
       AND: [{ tenantId }, { id: guestId }],
     },
@@ -273,12 +273,12 @@ export async function DELETE(
   await validateGuestExists(guestId, tenantId);
 
   // Soft delete
-  await database.event_guests.updateMany({
+  await database.eventGuest.updateMany({
     where: {
       AND: [{ tenantId }, { id: guestId }],
     },
     data: {
-      deleted_at: new Date(),
+      deletedAt: new Date(),
     },
   });
 

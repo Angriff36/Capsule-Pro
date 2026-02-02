@@ -742,6 +742,7 @@ type GenerateEventSummaryModalProps = {
   onGenerate: () => Promise<GeneratedEventSummary>;
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
+  showTrigger?: boolean;
 };
 
 export function GenerateEventSummaryModal({
@@ -750,6 +751,7 @@ export function GenerateEventSummaryModal({
   onGenerate,
   isOpen = false,
   onOpenChange,
+  showTrigger = true,
 }: GenerateEventSummaryModalProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState("");
@@ -769,12 +771,14 @@ export function GenerateEventSummaryModal({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={isOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <SparklesIcon className="mr-2 size-4" />
-          Generate Executive Summary
-        </Button>
-      </DialogTrigger>
+      {showTrigger ? (
+        <DialogTrigger asChild>
+          <Button>
+            <SparklesIcon className="mr-2 size-4" />
+            Generate Executive Summary
+          </Button>
+        </DialogTrigger>
+      ) : null}
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

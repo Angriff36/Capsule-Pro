@@ -22,7 +22,7 @@ const BattleBoardPage = async ({ params }: BattleBoardPageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const event = await database.events.findFirst({
+  const event = await database.event.findFirst({
     where: {
       tenant_id: tenantId,
       id: eventId,
