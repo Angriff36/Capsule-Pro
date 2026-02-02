@@ -8,6 +8,9 @@ const apiBaseUrl = (
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223"
 ).replace(/\/$/, "");
 
+type WebpackConfig = Parameters<NonNullable<NextConfig["webpack"]>>[0];
+type WebpackContext = Parameters<NonNullable<NextConfig["webpack"]>>[1];
+
 const rewrites: NextConfig["rewrites"] = async () => {
   const baseRewritesResult =
     typeof config.rewrites === "function" ? await config.rewrites() : [];
@@ -48,14 +51,11 @@ let nextConfig: NextConfig = withToolbar(
   withLogging({
     ...config,
     rewrites,
-    // Externalize pdfjs-dist and event-parser to avoid bundling issues
-    // Using both serverComponentsExternalPackages and experimental.serverExternalPackages
-    serverComponentsExternalPackages: ["pdfjs-dist", "@repo/event-parser"],
-    experimental: {
-      serverExternalPackages: ["pdfjs-dist", "@repo/event-parser"],
-    },
-    webpack: (webpackConfig, { isServer }) => {
-      if (isServer) {
+    // Externalize pdfjs-dist, event-parser, and ably to avoid bundling issues
+    // ably: Turbopack + Ably causes keyv dynamic require failures in SSR
+    serverExternalPackages: ["pdfjs-dist", "@repo/event-parser", "ably"],
+    webpack: (webpackConfig: WebpackConfig, context: WebpackContext) => {
+      if (context.isServer) {
         // Externalize pdfjs-dist - use function to catch all nested imports
         const existingExternals = webpackConfig.externals || [];
         const pdfjsExternals = [
@@ -67,7 +67,7 @@ let nextConfig: NextConfig = withToolbar(
               return callback(null, `commonjs ${moduleName}`);
             }
             // Continue to other externals
-            return callback();
+            return callback(null);
           },
         ];
 

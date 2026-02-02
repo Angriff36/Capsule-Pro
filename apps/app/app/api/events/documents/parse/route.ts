@@ -383,12 +383,12 @@ async function createBattleBoard(
     data: {
       tenantId,
       eventId,
-      boardName,
-      boardType: "event-specific",
-      schemaVersion: "mangia-battle-board@1",
+      board_name: boardName,
+      board_type: "event-specific",
+      schema_version: "mangia-battle-board@1",
       boardData: battleBoardResult.battleBoard as object,
       status: "draft",
-      isTemplate: false,
+      is_template: false,
       tags: ["imported"],
     },
   });
@@ -472,8 +472,7 @@ async function createImportRecords(
           fileName: file.name,
           mimeType,
           fileSize: file.size,
-          // Store content as base64 to avoid Bytes type issues
-          content: Buffer.from(await file.arrayBuffer()).toString("base64"),
+          content: new Uint8Array(await file.arrayBuffer()),
         },
       });
 
@@ -494,8 +493,8 @@ async function processDocumentsAndGenerateResponse(
   tenantId: string,
   userId: string,
   eventId: string | undefined,
-  generateChecklist: boolean,
-  generateBattleBoard: boolean
+  shouldGenerateChecklist: boolean,
+  shouldGenerateBattleBoard: boolean
 ) {
   console.log('[processDocumentsAndGenerateResponse] Starting with', files.length, 'files');
 
@@ -703,7 +702,7 @@ async function processDocumentsAndGenerateResponse(
   }
 
   // Generate battle board via Manifest if requested
-  if (generateBattleBoard) {
+  if (shouldGenerateBattleBoard) {
     if (!result.mergedEvent) {
       console.warn('[processDocumentsAndGenerateResponse] Cannot generate battle board: no merged event data');
       response.battleBoardError = 'No event data extracted from documents';
@@ -760,12 +759,12 @@ async function processDocumentsAndGenerateResponse(
             tenantId,
             id: battleBoardId,
             eventId: actualEventId,
-            boardName: result.mergedEvent.client || result.mergedEvent.number || actualEventId || "",
-            boardType: "event-specific",
-            schemaVersion: "mangia-battle-board@1",
+            board_name: result.mergedEvent.client || result.mergedEvent.number || actualEventId || "",
+            board_type: "event-specific",
+            schema_version: "mangia-battle-board@1",
             boardData: battleBoardResult.battleBoard as object,
             status: "draft",
-            isTemplate: false,
+            is_template: false,
             tags: ["imported"],
           },
         });
@@ -781,7 +780,7 @@ async function processDocumentsAndGenerateResponse(
   }
 
   // Generate checklist via Manifest if requested
-  if (generateChecklist) {
+  if (shouldGenerateChecklist) {
     if (!result.mergedEvent) {
       console.warn('[processDocumentsAndGenerateResponse] Cannot generate checklist: no merged event data');
       response.checklistError = 'No event data extracted from documents';
@@ -844,15 +843,14 @@ async function processDocumentsAndGenerateResponse(
             tenantId,
             id: reportId,
             eventId: actualEventId,
-            name: `Pre-Event Review - ${result.mergedEvent.client || result.mergedEvent.number || new Date().toISOString().slice(0, 10)}`,
             status: "draft",
             completion: completionPercent,
             autoFillScore: checklistResult.autoFilledCount,
-            reportConfig: {
+            checklistData: {
               checklist: checklistResult.checklist,
-              parsedEvent: result.mergedEvent,
               warnings: checklistResult.warnings,
-            } as object,
+            } as Prisma.InputJsonObject,
+            parsedEventData: result.mergedEvent as Prisma.InputJsonObject,
           },
         });
 
@@ -873,6 +871,20 @@ async function processDocumentsAndGenerateResponse(
 /**
  * Helper function to build and return the response
  */
+type ParseDocumentsResponse = {
+  documents: ProcessedDocument[];
+  mergedEvent?: ParsedEvent;
+  mergedStaff?: StaffShift[];
+  imports: Array<{ importId: string; document: ProcessedDocument }>;
+  errors: string[];
+  battleBoard?: unknown;
+  battleBoardId?: string;
+  battleBoardError?: string;
+  checklist?: unknown;
+  checklistId?: string;
+  checklistError?: string;
+};
+
 function buildResponse(
   result: {
     documents: ProcessedDocument[];
@@ -881,7 +893,7 @@ function buildResponse(
     errors: string[];
   },
   importRecords: Array<{ importId: string; document: ProcessedDocument }>
-) {
+): ParseDocumentsResponse {
   return {
     documents: result.documents,
     mergedEvent: result.mergedEvent,
@@ -907,17 +919,16 @@ async function createChecklist(
     data: {
       tenantId,
       eventId,
-      name: `Pre-Event Review - ${mergedEvent.client || mergedEvent.number || new Date().toISOString().slice(0, 10)}`,
       status: "draft",
       completion: Math.round(
         (checklistResult.autoFilledCount / checklistResult.totalQuestions) * 100
       ),
       autoFillScore: checklistResult.autoFilledCount,
-      reportConfig: {
+      checklistData: {
         checklist: checklistResult.checklist,
-        parsedEvent: mergedEvent,
         warnings: checklistResult.warnings,
-      } as object,
+      } as Prisma.InputJsonObject,
+      parsedEventData: mergedEvent as Prisma.InputJsonObject,
     },
   });
 
@@ -975,13 +986,13 @@ export async function POST(request: Request) {
 
     // Process documents and generate response (now powered by Manifest)
     console.log('[POST] About to call processDocumentsAndGenerateResponse');
-    let response;
+    let response: ParseDocumentsResponse;
     try {
       response = await processDocumentsAndGenerateResponse(
         files,
         tenantId,
         userId,
-        eventId,
+        eventId ?? undefined,
         generateChecklist,
         generateBattleBoard
       );

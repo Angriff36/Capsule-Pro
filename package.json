@@ -52,12 +52,12 @@
     "@secretlint/secretlint-rule-preset-recommend": "^11.3.0",
     "@turbo/gen": "2.6.3",
     "@types/node": "22.12.0",
-    "baseline-browser-mapping": "^2.9.19",
+    "baseline-browser-mapping": "latest",
     "commander": "^14.0.2",
     "husky": "^9.1.7",
     "node-mocks-http": "^1.17.2",
     "pg": "^8.18.0",
-    "prettier": "^3.8.1",
+    "prettier": "3.8.1",
     "prisma": "7.1.0",
     "secretlint": "^11.3.0",
     "tsup": "^8.5.1",
@@ -78,7 +78,8 @@
       "prisma": "7.1.0",
       "@prisma/client": "7.1.0",
       "@prisma/adapter-neon": "7.1.0",
-      "baseline-browser-mapping": "latest"
+      "baseline-browser-mapping": "latest",
+      "prettier": "3.8.1"
     },
     "ignoredBuiltDependencies": [
       "@clerk/shared",
@@ -102,6 +103,7 @@
   "dependencies": {
     "@prisma/adapter-neon": "7.1.0",
     "@prisma/client": "7.1.0",
+    "ai": "^6.0.67",
     "pdf-parse": "^2.4.5"
   }
 }

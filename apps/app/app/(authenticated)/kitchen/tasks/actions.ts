@@ -59,7 +59,7 @@ const enqueueOutboxEvent = async (
   payload: Prisma.InputJsonValue
 ): Promise<void> => {
   const client = tenantDatabase(tenantId);
-  await client.outbox_events.create({
+  await client.outboxEvent.create({
     data: {
       tenantId,
       aggregateType,
@@ -130,7 +130,7 @@ export const getUrgentTasks = async (): Promise<KitchenTask[]> => {
         in: ["open", "in_progress"],
       },
     },
-    orderBy: [{ dueDate: "asc" }, { created_at: "asc" }],
+    orderBy: [{ dueDate: "asc" }, { createdAt: "asc" }],
   });
 };
 
@@ -488,7 +488,7 @@ export const addTaskProgress = async (
     throw new Error("Task id and employee id are required.");
   }
 
-  const progress = await client.task_progress.create({
+  const progress = await client.kitchenTaskProgress.create({
     data: {
       tenantId,
       taskId,
@@ -536,7 +536,7 @@ export const getTaskProgressLog = async (
     throw new Error("Task id is required.");
   }
 
-  return client.task_progress.findMany({
+  return client.kitchenTaskProgress.findMany({
     where: { taskId },
     orderBy: { createdAt: "desc" },
   });

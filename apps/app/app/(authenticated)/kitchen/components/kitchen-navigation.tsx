@@ -75,7 +75,7 @@ const navigationItems = [
 ];
 
 export function KitchenNavigation() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
 
   return (
     <nav className="border-slate-200 border-b bg-white/50 backdrop-blur-sm">

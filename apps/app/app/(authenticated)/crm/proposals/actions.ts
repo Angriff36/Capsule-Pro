@@ -7,7 +7,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import type { Proposal } from "@repo/database";
+import type { Proposal, Prisma } from "@repo/database";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
@@ -69,26 +69,7 @@ export type SendProposalInput = {
 };
 
 // Type for proposal update data - matches Prisma.ProposalUpdateInput
-type ProposalUpdateData = {
-  title?: string | null;
-  clientId?: string | null;
-  leadId?: string | null;
-  eventId?: string | null;
-  eventDate?: Date | null;
-  eventType?: string | null;
-  guestCount?: number | null;
-  venueName?: string | null;
-  venueAddress?: string | null;
-  subtotal?: number;
-  taxRate?: number;
-  taxAmount?: number;
-  discountAmount?: number;
-  total?: number;
-  status?: string | null;
-  validUntil?: Date | null;
-  notes?: string | null;
-  termsAndConditions?: string | null;
-};
+type ProposalUpdateData = Prisma.ProposalUncheckedUpdateInput;
 
 /**
  * Get list of proposals with filters and pagination
@@ -357,21 +338,21 @@ export async function updateProposal(
     data.venueAddress = input.venueAddress?.trim() || null;
   }
   if (input.subtotal !== undefined) {
-    data.subtotal = calculatedSubtotal;
+    data.subtotal = typeof calculatedSubtotal === "number" ? calculatedSubtotal : calculatedSubtotal.toNumber();
   }
   if (input.taxRate !== undefined) {
     data.taxRate = input.taxRate ?? 0;
   }
   if (input.taxAmount !== undefined) {
-    data.taxAmount = calculatedTax;
+    data.taxAmount = typeof calculatedTax === "number" ? calculatedTax : calculatedTax.toNumber();
   }
   if (input.discountAmount !== undefined) {
     data.discountAmount = input.discountAmount ?? 0;
   }
   if (input.total !== undefined) {
-    data.total = calculatedTotal;
+    data.total = typeof calculatedTotal === "number" ? calculatedTotal : calculatedTotal.toNumber();
   }
-  if (input.status !== undefined) {
+  if (input.status !== undefined && input.status !== null) {
     data.status = input.status;
   }
   if (input.validUntil !== undefined) {

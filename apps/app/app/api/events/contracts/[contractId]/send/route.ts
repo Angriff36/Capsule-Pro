@@ -46,7 +46,7 @@ export async function POST(
     const { clientId, message } = body;
 
     // Check if contract exists and belongs to tenant
-    const contract = await database.event_contracts.findFirst({
+    const contract = await database.eventContract.findFirst({
       where: {
         tenantId,
         id: contractId,
@@ -101,7 +101,7 @@ export async function POST(
     // For now, we'll update the contract status and return success
 
     // Update contract status to pending
-    await database.event_contracts.updateMany({
+    await database.eventContract.updateMany({
       where: {
         AND: [{ tenantId }, { id: contractId }],
       },

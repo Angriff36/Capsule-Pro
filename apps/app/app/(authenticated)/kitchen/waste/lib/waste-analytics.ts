@@ -1,3 +1,5 @@
+import { invariant } from "@/app/lib/invariant";
+
 type WasteTrendsSummary = {
   totalCost: number;
   totalQuantity: number;
@@ -260,7 +262,7 @@ export async function fetchWasteReports(): Promise<WasteReportData> {
         entryCount: 0,
         avgCostPerEntry: 0,
       },
-      reports: [],
+      data: [],
     };
   }
 

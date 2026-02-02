@@ -78,10 +78,6 @@ export function ProductionBoardRealtime({
               callback(message, null);
             }
           },
-          // Suppress default error logging
-          log: {
-            level: 0, // No logging
-          },
         });
 
         // Handle connection errors gracefully - suppress error propagation
@@ -111,11 +107,6 @@ export function ProductionBoardRealtime({
               { reason, retryIn }
             );
           }
-        });
-
-        // Suppress error events from Ably
-        client.connection.on("error", () => {
-          // Silently ignore connection errors
         });
 
         clientRef.current = client;

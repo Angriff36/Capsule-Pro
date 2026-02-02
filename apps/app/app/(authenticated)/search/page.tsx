@@ -64,7 +64,7 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
         },
       ],
     },
-    orderBy: [{ event_date: "desc" }, { created_at: "desc" }],
+    orderBy: [{ eventDate: "desc" }, { createdAt: "desc" }],
     take: 12,
   });
 
@@ -81,11 +81,11 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
             events.map((event) => (
               <div
                 className="flex flex-col justify-between gap-2 rounded-xl bg-muted/50 p-4"
-                key={`${event.tenant_id}-${event.id}`}
+                key={`${event.tenantId}-${event.id}`}
               >
                 <div className="font-medium text-sm">{event.title}</div>
                 <div className="text-muted-foreground text-xs">
-                  {dateFormatter.format(event.event_date)}
+                  {dateFormatter.format(event.eventDate)}
                 </div>
               </div>
             ))

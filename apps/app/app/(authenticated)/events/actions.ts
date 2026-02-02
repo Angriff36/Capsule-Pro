@@ -196,7 +196,7 @@ export const createEvent = async (formData: FormData): Promise<void> => {
   const data = parsed.data;
 
   const created = await database.$transaction(async (tx) => {
-    const event = await tx.events.create({
+    const event = await tx.event.create({
       data: {
         tenantId,
         title: data.title,
@@ -217,13 +217,13 @@ export const createEvent = async (formData: FormData): Promise<void> => {
       },
     });
 
-    await tx.battleBoards.create({
+    await tx.battleBoard.create({
       data: {
         tenantId,
         eventId: event.id,
         board_name: `${event.title} - Battle Board`,
         board_type: "event-specific",
-        board_data: {},
+        boardData: {},
       },
     });
 

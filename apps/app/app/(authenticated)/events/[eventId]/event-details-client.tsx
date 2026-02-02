@@ -1893,15 +1893,16 @@ export function EventDetailsClient({
                         ingredient.unitCode === inventory.onHandUnitCode;
                       const requiredLabel = `${ingredient.quantity} ${ingredient.unitCode ?? ""}`;
                       const onHandLabel =
-                        inventory?.onHand !== null
+                        inventory && inventory.onHand !== null
                           ? `${inventory.onHand} ${inventory.onHandUnitCode ?? ""}`
                           : "Not tracked";
                       const coverageRatio =
-                        unitMatch && inventory?.onHand !== null && ingredient.quantity > 0
+                        unitMatch && inventory && inventory.onHand !== null && ingredient.quantity > 0
                           ? Math.min((inventory.onHand / ingredient.quantity) * 100, 100)
                           : null;
                       const isLow =
-                        inventory?.onHand !== null &&
+                        inventory &&
+                        inventory.onHand !== null &&
                         inventory.parLevel !== null &&
                         inventory.onHand < inventory.parLevel;
                       const isShort =
