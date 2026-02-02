@@ -347,3 +347,9 @@ apps\app\prisma\seed-dev.ts.specify/.current-feature
 **/.progress.md
 **/.speckit-state.json
 *.txt
+diagnose-db-alignment.report.json
+e2e/3MH0rWud9c.png
+DATABASE_PRE_MIGRATION_CHECKLIST.md
+tenant-field-audit.json
+DATABASE_PRE_MIGRATION_CHECKLIST.md
+DATABASE_PRE_MIGRATION_CHECKLIST.md
