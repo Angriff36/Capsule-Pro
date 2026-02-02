@@ -56,6 +56,7 @@
     "husky": "^9.1.7",
     "node-mocks-http": "^1.17.2",
     "pg": "^8.18.0",
+    "prettier": "^3.8.1",
     "prisma": "7.1.0",
     "secretlint": "^11.3.0",
     "tsup": "^8.5.1",
@@ -75,7 +76,8 @@
       "@types/react-dom": "19.2.3",
       "prisma": "7.1.0",
       "@prisma/client": "7.1.0",
-      "@prisma/adapter-neon": "7.1.0"
+      "@prisma/adapter-neon": "7.1.0",
+      "baseline-browser-mapping": "latest"
     },
     "ignoredBuiltDependencies": [
       "@clerk/shared",
