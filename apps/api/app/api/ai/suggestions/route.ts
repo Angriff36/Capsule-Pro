@@ -174,7 +174,7 @@ async function getContextData(
   const itemMap = new Map(inventoryItems.map((item) => [item.id, item.name]));
 
   // Fetch staff assignments (need to filter by event date separately)
-  const staffAssignments = await database.eventtaffAssignment.findMany({
+  const staffAssignments = await database.eventStaffAssignment.findMany({
     where: {
       tenantId,
       deletedAt: null,
