@@ -60,12 +60,12 @@ const BattleBoardsPage = async () => {
   const tenantId = await getTenantIdForOrg(orgId);
 
   // Fetch battle boards
-  const boards = await database.battle_boards.findMany({
+  const boards = await database.battleBoard.findMany({
     where: {
-      tenant_id: tenantId,
-      deleted_at: null,
+      tenantId,
+      deletedAt: null,
     },
-    orderBy: [{ created_at: "desc" }],
+    orderBy: [{ createdAt: "desc" }],
   });
 
   // Calculate stats

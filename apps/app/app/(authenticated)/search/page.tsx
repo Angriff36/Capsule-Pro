@@ -41,8 +41,8 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
 
   const events = await database.event.findMany({
     where: {
-      tenant_id: tenantId,
-      deleted_at: null,
+      tenantId,
+      deletedAt: null,
       OR: [
         {
           title: {
@@ -51,13 +51,13 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
           },
         },
         {
-          event_number: {
+          eventNumber: {
             contains: q,
             mode: "insensitive",
           },
         },
         {
-          venue_name: {
+          venueName: {
             contains: q,
             mode: "insensitive",
           },

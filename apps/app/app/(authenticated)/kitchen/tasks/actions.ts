@@ -84,7 +84,7 @@ export const getKitchenTasks = async (filters?: {
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
 
-  return client.kitchen_tasks.findMany({
+  return client.kitchenTask.findMany({
     where: {
       ...(filters?.status && { status: filters.status }),
       ...(filters?.priority && { priority: filters.priority }),
@@ -102,7 +102,7 @@ export const getKitchenTaskById = async (
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
 
-  return client.kitchen_tasks.findFirst({
+  return client.kitchenTask.findFirst({
     where: { id: taskId },
   });
 };
@@ -121,7 +121,7 @@ export const getUrgentTasks = async (): Promise<KitchenTask[]> => {
   const tenantId = await requireTenantId();
   const client = tenantDatabase(tenantId);
 
-  return client.kitchen_tasks.findMany({
+  return client.kitchenTask.findMany({
     where: {
       priority: {
         lte: 2, // Urgent and Critical (1-2)
@@ -157,7 +157,7 @@ export const createKitchenTask = async (
   const priority = priorityStr ? Number.parseInt(priorityStr, 10) : undefined;
   const dueDate = getDateTime(formData, "dueDate");
 
-  const task = await client.kitchen_tasks.create({
+  const task = await client.kitchenTask.create({
     data: {
       tenantId,
       title,
@@ -206,8 +206,8 @@ export const updateKitchenTask = async (
   const priority = priorityStr ? Number.parseInt(priorityStr, 10) : undefined;
   const dueDate = getDateTime(formData, "dueDate");
 
-  const task = await client.kitchen_tasks.update({
-    where: { tenant_id_id: { tenantId, id: taskId } },
+  const task = await client.kitchenTask.update({
+    where: { tenantId_id: { tenantId, id: taskId } },
     data: {
       ...(title && { title }),
       ...(summary !== undefined && { summary: summary || "" }),
@@ -250,7 +250,7 @@ export const updateKitchenTaskStatus = async (
   }
 
   // Fetch the current task to capture the previous status
-  const currentTask = await client.kitchen_tasks.findFirst({
+  const currentTask = await client.kitchenTask.findFirst({
     where: { id: taskId },
   });
 
@@ -260,8 +260,8 @@ export const updateKitchenTaskStatus = async (
 
   const previousStatus = currentTask.status;
 
-  const task = await client.kitchen_tasks.update({
-    where: { tenant_id_id: { tenantId, id: taskId } },
+  const task = await client.kitchenTask.update({
+    where: { tenantId_id: { tenantId, id: taskId } },
     data: { status },
   });
 
@@ -294,8 +294,8 @@ export const deleteKitchenTask = async (taskId: string): Promise<void> => {
     throw new Error("Task id is required.");
   }
 
-  await client.kitchen_tasks.delete({
-    where: { tenant_id_id: { tenantId, id: taskId } },
+  await client.kitchenTask.delete({
+    where: { tenantId_id: { tenantId, id: taskId } },
   });
 
   revalidatePath("/kitchen/tasks");
@@ -331,13 +331,13 @@ export const claimTask = async (
   }
 
   // Update task status to in_progress
-  await client.kitchen_tasks.update({
-    where: { tenant_id_id: { tenantId, id: taskId } },
+  await client.kitchenTask.update({
+    where: { tenantId_id: { tenantId, id: taskId } },
     data: { status: "in_progress" },
   });
 
   // Create claim record
-  const claim = await client.task_claims.create({
+  const claim = await client.kitchenTaskClaim.create({
     data: {
       tenantId,
       taskId,
@@ -378,7 +378,7 @@ export const releaseTask = async (
   }
 
   // Find the active claim
-  const activeClaim = await client.task_claims.findFirst({
+  const activeClaim = await client.kitchenTaskClaim.findFirst({
     where: {
       taskId,
       releasedAt: null,
@@ -390,8 +390,8 @@ export const releaseTask = async (
   }
 
   // Release the claim
-  const updatedClaim = await client.task_claims.update({
-    where: { tenant_id_id: { tenantId, id: activeClaim.id } },
+  const updatedClaim = await client.kitchenTaskClaim.update({
+    where: { tenantId_id: { tenantId, id: activeClaim.id } },
     data: {
       releasedAt: new Date(),
       releaseReason: reason ?? undefined,
@@ -399,8 +399,8 @@ export const releaseTask = async (
   });
 
   // Update task status back to open
-  await client.kitchen_tasks.update({
-    where: { tenant_id_id: { tenantId, id: taskId } },
+  await client.kitchenTask.update({
+    where: { tenantId_id: { tenantId, id: taskId } },
     data: { status: "open" },
   });
 
@@ -435,7 +435,7 @@ export const getTaskClaims = async (
     throw new Error("Task id is required.");
   }
 
-  return client.task_claims.findMany({
+  return client.kitchenTaskClaim.findMany({
     where: { taskId },
     orderBy: { claimedAt: "desc" },
   });
@@ -454,7 +454,7 @@ export const getMyActiveClaims = async (
     throw new Error("Employee id is required.");
   }
 
-  return client.task_claims.findMany({
+  return client.kitchenTaskClaim.findMany({
     where: {
       employeeId,
       releasedAt: null,

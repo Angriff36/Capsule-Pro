@@ -24,9 +24,9 @@ const BattleBoardPage = async ({ params }: BattleBoardPageProps) => {
 
   const event = await database.event.findFirst({
     where: {
-      tenant_id: tenantId,
+      tenantId,
       id: eventId,
-      deleted_at: null,
+      deletedAt: null,
     },
   });
 
@@ -53,7 +53,7 @@ const BattleBoardPage = async ({ params }: BattleBoardPageProps) => {
         </a>
       </Header>
       <Timeline
-        eventDate={event.event_date}
+        eventDate={event.eventDate}
         eventId={eventId}
         initialStaff={staff}
         initialTasks={tasks}

@@ -44,7 +44,7 @@ export async function GET(
     // Build query conditions
     const where: {
       eventId: string;
-      tenant_id: string;
+      tenantId: string;
       deletedAt: null;
       isAcknowledged?: boolean;
     } = {
@@ -59,7 +59,7 @@ export async function GET(
     }
 
     // Fetch warnings
-    const warnings = await database.allergen_warnings.findMany({
+    const warnings = await database.allergenWarning.findMany({
       where,
       orderBy: [{ createdAt: "desc" }],
     });

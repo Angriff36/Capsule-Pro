@@ -16,47 +16,47 @@ function toNumber(value: { toNumber: () => number }): number {
 export async function listCycleCountSessions(): Promise<CycleCountSession[]> {
   const tenantId = await requireTenantId();
 
-  const sessions = await database.cycle_count_sessions.findMany({
+  const sessions = await database.cycleCountSession.findMany({
     where: {
-      tenant_id: tenantId,
-      deleted_at: null,
+      tenantId,
+      deletedAt: null,
     },
     orderBy: {
-      created_at: "desc",
+      createdAt: "desc",
     },
   });
 
   return sessions.map((session) => ({
     id: session.id,
-    tenantId: session.tenant_id,
-    locationId: session.location_id,
-    sessionId: session.session_id,
-    sessionName: session.session_name,
-    countType: session.count_type as
+    tenantId: session.tenantId,
+    locationId: session.locationId,
+    sessionId: session.sessionId,
+    sessionName: session.sessionName,
+    countType: session.countType as
       | "ad_hoc"
       | "scheduled_daily"
       | "scheduled_weekly"
       | "scheduled_monthly",
-    scheduledDate: session.scheduled_date,
-    startedAt: session.started_at,
-    completedAt: session.completed_at,
-    finalizedAt: session.finalized_at,
+    scheduledDate: session.scheduledDate,
+    startedAt: session.startedAt,
+    completedAt: session.completedAt,
+    finalizedAt: session.finalizedAt,
     status: session.status as
       | "draft"
       | "in_progress"
       | "completed"
       | "finalized"
       | "cancelled",
-    totalItems: session.total_items,
-    countedItems: session.counted_items,
-    totalVariance: toNumber(session.total_variance),
-    variancePercentage: toNumber(session.variance_percentage),
+    totalItems: session.totalItems,
+    countedItems: session.countedItems,
+    totalVariance: toNumber(session.totalVariance),
+    variancePercentage: toNumber(session.variancePercentage),
     notes: session.notes,
-    createdById: session.created_by_id,
-    approvedById: session.approved_by_id,
-    createdAt: session.created_at,
-    updatedAt: session.updated_at,
-    deletedAt: session.deleted_at,
+    createdById: session.createdById,
+    approvedById: session.approvedById,
+    createdAt: session.createdAt,
+    updatedAt: session.updatedAt,
+    deletedAt: session.deletedAt,
   }));
 }
 
@@ -65,11 +65,11 @@ export async function getCycleCountSession(
 ): Promise<CycleCountSession | null> {
   const tenantId = await requireTenantId();
 
-  const session = await database.cycle_count_sessions.findFirst({
+  const session = await database.cycleCountSession.findFirst({
     where: {
-      tenant_id: tenantId,
-      session_id: sessionId,
-      deleted_at: null,
+      tenantId,
+      sessionId,
+      deletedAt: null,
     },
   });
 
@@ -79,35 +79,35 @@ export async function getCycleCountSession(
 
   return {
     id: session.id,
-    tenantId: session.tenant_id,
-    locationId: session.location_id,
-    sessionId: session.session_id,
-    sessionName: session.session_name,
-    countType: session.count_type as
+    tenantId: session.tenantId,
+    locationId: session.locationId,
+    sessionId: session.sessionId,
+    sessionName: session.sessionName,
+    countType: session.countType as
       | "ad_hoc"
       | "scheduled_daily"
       | "scheduled_weekly"
       | "scheduled_monthly",
-    scheduledDate: session.scheduled_date,
-    startedAt: session.started_at,
-    completedAt: session.completed_at,
-    finalizedAt: session.finalized_at,
+    scheduledDate: session.scheduledDate,
+    startedAt: session.startedAt,
+    completedAt: session.completedAt,
+    finalizedAt: session.finalizedAt,
     status: session.status as
       | "draft"
       | "in_progress"
       | "completed"
       | "finalized"
       | "cancelled",
-    totalItems: session.total_items,
-    countedItems: session.counted_items,
-    totalVariance: toNumber(session.total_variance),
-    variancePercentage: toNumber(session.variance_percentage),
+    totalItems: session.totalItems,
+    countedItems: session.countedItems,
+    totalVariance: toNumber(session.totalVariance),
+    variancePercentage: toNumber(session.variancePercentage),
     notes: session.notes,
-    createdById: session.created_by_id,
-    approvedById: session.approved_by_id,
-    createdAt: session.created_at,
-    updatedAt: session.updated_at,
-    deletedAt: session.deleted_at,
+    createdById: session.createdById,
+    approvedById: session.approvedById,
+    createdAt: session.createdAt,
+    updatedAt: session.updatedAt,
+    deletedAt: session.deletedAt,
   };
 }
 
@@ -130,20 +130,20 @@ export async function createCycleCountSession(
       };
     }
 
-    const session = await database.cycle_count_sessions.create({
+    const session = await database.cycleCountSession.create({
       data: {
-        tenant_id: tenantId,
-        location_id: input.locationId,
-        session_id: crypto.randomUUID(),
-        session_name: input.sessionName,
-        count_type: input.countType,
-        scheduled_date: input.scheduledDate || null,
+        tenantId,
+        locationId: input.locationId,
+        sessionId: crypto.randomUUID(),
+        sessionName: input.sessionName,
+        countType: input.countType,
+        scheduledDate: input.scheduledDate || null,
         notes: input.notes || null,
-        created_by_id: user.id,
-        total_items: 0,
-        counted_items: 0,
-        total_variance: 0,
-        variance_percentage: 0,
+        createdById: user.id,
+        totalItems: 0,
+        countedItems: 0,
+        totalVariance: 0,
+        variancePercentage: 0,
       },
     });
 
@@ -151,35 +151,35 @@ export async function createCycleCountSession(
       success: true,
       session: {
         id: session.id,
-        tenantId: session.tenant_id,
-        locationId: session.location_id,
-        sessionId: session.session_id,
-        sessionName: session.session_name,
-        countType: session.count_type as
+        tenantId: session.tenantId,
+        locationId: session.locationId,
+        sessionId: session.sessionId,
+        sessionName: session.sessionName,
+        countType: session.countType as
           | "ad_hoc"
           | "scheduled_daily"
           | "scheduled_weekly"
           | "scheduled_monthly",
-        scheduledDate: session.scheduled_date,
-        startedAt: session.started_at,
-        completedAt: session.completed_at,
-        finalizedAt: session.finalized_at,
+        scheduledDate: session.scheduledDate,
+        startedAt: session.startedAt,
+        completedAt: session.completedAt,
+        finalizedAt: session.finalizedAt,
         status: session.status as
           | "draft"
           | "in_progress"
           | "completed"
           | "finalized"
           | "cancelled",
-        totalItems: session.total_items,
-        countedItems: session.counted_items,
-        totalVariance: session.total_variance.toNumber(),
-        variancePercentage: session.variance_percentage.toNumber(),
+        totalItems: session.totalItems,
+        countedItems: session.countedItems,
+        totalVariance: session.totalVariance.toNumber(),
+        variancePercentage: session.variancePercentage.toNumber(),
         notes: session.notes,
-        createdById: session.created_by_id,
-        approvedById: session.approved_by_id,
-        createdAt: session.created_at,
-        updatedAt: session.updated_at,
-        deletedAt: session.deleted_at,
+        createdById: session.createdById,
+        approvedById: session.approvedById,
+        createdAt: session.createdAt,
+        updatedAt: session.updatedAt,
+        deletedAt: session.deletedAt,
       },
     };
   } catch (error) {
@@ -197,25 +197,25 @@ export async function updateCycleCountSession(
   try {
     const tenantId = await requireTenantId();
 
-    const session = await database.cycle_count_sessions.update({
+    const session = await database.cycleCountSession.update({
       where: {
-        tenant_id_id: {
-          tenant_id: tenantId,
+        tenantId_id: {
+          tenantId,
           id: input.id,
         },
       },
       data: {
         ...(input.sessionName !== undefined && {
-          session_name: input.sessionName,
+          sessionName: input.sessionName,
         }),
         ...(input.status !== undefined && { status: input.status }),
         ...(input.notes !== undefined && { notes: input.notes }),
         ...(input.approvedById !== undefined && {
-          approved_by_id: input.approvedById,
+          approvedById: input.approvedById,
         }),
-        ...(input.status === "in_progress" && { started_at: new Date() }),
-        ...(input.status === "completed" && { completed_at: new Date() }),
-        ...(input.status === "finalized" && { finalized_at: new Date() }),
+        ...(input.status === "in_progress" && { startedAt: new Date() }),
+        ...(input.status === "completed" && { completedAt: new Date() }),
+        ...(input.status === "finalized" && { finalizedAt: new Date() }),
       },
     });
 
@@ -223,35 +223,35 @@ export async function updateCycleCountSession(
       success: true,
       session: {
         id: session.id,
-        tenantId: session.tenant_id,
-        locationId: session.location_id,
-        sessionId: session.session_id,
-        sessionName: session.session_name,
-        countType: session.count_type as
+        tenantId: session.tenantId,
+        locationId: session.locationId,
+        sessionId: session.sessionId,
+        sessionName: session.sessionName,
+        countType: session.countType as
           | "ad_hoc"
           | "scheduled_daily"
           | "scheduled_weekly"
           | "scheduled_monthly",
-        scheduledDate: session.scheduled_date,
-        startedAt: session.started_at,
-        completedAt: session.completed_at,
-        finalizedAt: session.finalized_at,
+        scheduledDate: session.scheduledDate,
+        startedAt: session.startedAt,
+        completedAt: session.completedAt,
+        finalizedAt: session.finalizedAt,
         status: session.status as
           | "draft"
           | "in_progress"
           | "completed"
           | "finalized"
           | "cancelled",
-        totalItems: session.total_items,
-        countedItems: session.counted_items,
-        totalVariance: session.total_variance.toNumber(),
-        variancePercentage: session.variance_percentage.toNumber(),
+        totalItems: session.totalItems,
+        countedItems: session.countedItems,
+        totalVariance: session.totalVariance.toNumber(),
+        variancePercentage: session.variancePercentage.toNumber(),
         notes: session.notes,
-        createdById: session.created_by_id,
-        approvedById: session.approved_by_id,
-        createdAt: session.created_at,
-        updatedAt: session.updated_at,
-        deletedAt: session.deleted_at,
+        createdById: session.createdById,
+        approvedById: session.approvedById,
+        createdAt: session.createdAt,
+        updatedAt: session.updatedAt,
+        deletedAt: session.deletedAt,
       },
     };
   } catch (error) {
@@ -269,15 +269,15 @@ export async function deleteCycleCountSession(
   try {
     const tenantId = await requireTenantId();
 
-    await database.cycle_count_sessions.update({
+    await database.cycleCountSession.update({
       where: {
-        tenant_id_id: {
-          tenant_id: tenantId,
+        tenantId_id: {
+          tenantId,
           id: sessionId,
         },
       },
       data: {
-        deleted_at: new Date(),
+        deletedAt: new Date(),
       },
     });
 
