@@ -14,6 +14,14 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import { format } from "date-fns";
 import {
@@ -170,8 +178,11 @@ function StationCard({
           )}
 
           {station.tasks.length > 0 && (
-            <div className="mt-6 border-t pt-4">
-              <h4 className="mb-3 font-semibold text-sm">Production Tasks</h4>
+            <div className="mt-6 space-y-4">
+              <Separator />
+              <h4 className="font-medium text-sm text-muted-foreground">
+                Production Tasks
+              </h4>
               <div className="space-y-2">
                 {station.tasks.map(
                   (task: {
@@ -503,19 +514,21 @@ export function PrepListClient({
                 >
                   Event:
                 </label>
-                <select
-                  className="rounded-md border-input bg-background px-3 py-2 text-sm shadow-xs outline-none ring-ring/50 focus-visible:border-ring focus-visible:ring-[3px]"
-                  id="event-select"
-                  onChange={(e) => setSelectedEventId(e.target.value)}
+                <Select
+                  onValueChange={(value) => setSelectedEventId(value)}
                   value={selectedEventId}
                 >
-                  {availableEvents.map((event) => (
-                    <option key={event.id} value={event.id}>
-                      {event.title} (
-                      {format(new Date(event.eventDate), "MMM d")})
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Select an event" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableEvents.map((event) => (
+                      <SelectItem key={event.id} value={event.id}>
+                        {event.title} ({format(new Date(event.eventDate), "MMM d")})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="flex items-center gap-2">
@@ -544,25 +557,26 @@ export function PrepListClient({
                 >
                   Dietary:
                 </label>
-                <select
-                  className="rounded-md border-input bg-background px-3 py-2 text-sm shadow-xs outline-none ring-ring/50 focus-visible:border-ring focus-visible:ring-[3px]"
-                  id="dietary-restrictions"
-                  onChange={(e) =>
+                <Select
+                  onValueChange={(value) =>
                     setDietaryRestrictions(
-                      e.target.value
-                        ? e.target.value.split(",").map((s) => s.trim())
-                        : []
+                      value ? value.split(",").map((s) => s.trim()) : []
                     )
                   }
                   value={dietaryRestrictions.join(",")}
                 >
-                  <option value="">None</option>
-                  <option value="gluten-free">Gluten Free</option>
-                  <option value="dairy-free">Dairy Free</option>
-                  <option value="vegan">Vegan</option>
-                  <option value="nut-free">Nut Free</option>
-                  <option value="vegetarian">Vegetarian</option>
-                </select>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="None" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="gluten-free">Gluten Free</SelectItem>
+                    <SelectItem value="dairy-free">Dairy Free</SelectItem>
+                    <SelectItem value="vegan">Vegan</SelectItem>
+                    <SelectItem value="nut-free">Nut Free</SelectItem>
+                    <SelectItem value="vegetarian">Vegetarian</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -587,6 +601,8 @@ export function PrepListClient({
         </div>
       </header>
 
+      <Separator />
+
       <main className="flex-1 p-6">
         {isGenerating ? (
           <div className="grid gap-6 md:grid-cols-2">
@@ -599,7 +615,7 @@ export function PrepListClient({
             onGoToEvents={() => router.push(`/events/${eventId}#dishes`)}
           />
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <Alert>
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Review before saving</AlertTitle>
@@ -610,16 +626,26 @@ export function PrepListClient({
               </AlertDescription>
             </Alert>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {prepList.stationLists.map((station: StationPrepList) => (
-                <StationCard
-                  isExpanded={expandedStations.has(station.stationId)}
-                  key={station.stationId}
-                  onToggle={() => toggleStation(station.stationId)}
-                  station={station}
-                />
-              ))}
-            </div>
+            <section className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-medium text-sm text-muted-foreground">
+                  Station Prep Lists
+                </h2>
+                <Badge variant="secondary">
+                  {prepList.stationLists.length} stations
+                </Badge>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {prepList.stationLists.map((station: StationPrepList) => (
+                  <StationCard
+                    isExpanded={expandedStations.has(station.stationId)}
+                    key={station.stationId}
+                    onToggle={() => toggleStation(station.stationId)}
+                    station={station}
+                  />
+                ))}
+              </div>
+            </section>
           </div>
         )}
       </main>
