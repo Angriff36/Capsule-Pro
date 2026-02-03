@@ -59,23 +59,24 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@repo/design-system/components/ui/alert";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import { GridBackground } from "@repo/design-system/components/ui/grid-background";
 import { cn } from "@repo/design-system/lib/utils";
 import { toast } from "sonner";
 import {
-  ActivityIcon,
-  CalendarDaysIcon,
-  CalendarPlusIcon,
-  ClipboardCopyIcon,
-  ClockIcon,
-  FilterIcon,
-  FlameIcon,
-  LayoutGridIcon,
-  ListIcon,
-  MapPinIcon,
-  TagIcon,
-  TimerIcon,
-  UsersIcon,
+  Activity,
+  CalendarDays,
+  CalendarPlus,
+  ClipboardCopy,
+  Clock,
+  Filter,
+  Flame,
+  LayoutGrid,
+  List,
+  MapPin,
+  Tag,
+  Timer,
+  Users,
 } from "lucide-react";
 import { eventStatuses } from "../constants";
 import type { KitchenEvent } from "./types";
@@ -285,7 +286,7 @@ function FiltersPanel({
               {selectedTags.length > 0
                 ? `${selectedTags.length} tag${selectedTags.length > 1 ? "s" : ""} selected`
                 : "Choose tags"}
-              <TagIcon className="size-4" />
+              <Tag className="size-4" />
             </Button>
           </PopoverTrigger>
           <PopoverContent align="start" className="w-64 p-3">
@@ -651,11 +652,11 @@ export const KitchenDashboardClient = ({
 
   if (events.length === 0) {
     return (
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <CalendarDaysIcon />
+              <CalendarDays />
             </EmptyMedia>
             <EmptyTitle>No events yet</EmptyTitle>
             <EmptyDescription>
@@ -676,7 +677,7 @@ export const KitchenDashboardClient = ({
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0 pb-28">
+    <div className="flex flex-1 flex-col gap-8 p-4 pt-0 pb-28">
       <section className="relative overflow-hidden rounded-2xl border bg-background/70 shadow-sm">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_60%)]" />
         <GridBackground
@@ -692,7 +693,7 @@ export const KitchenDashboardClient = ({
               <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
                 Kitchen operations control room
               </p>
-              <h2 className="mt-2 text-2xl font-semibold">
+              <h2 className="mt-2 text-3xl font-bold tracking-tight">
                 Today + next 24 hours
               </h2>
               <p className="text-sm text-muted-foreground">
@@ -710,11 +711,11 @@ export const KitchenDashboardClient = ({
                 size="sm"
               >
                 <ToggleGroupItem value="timeline">
-                  <LayoutGridIcon className="mr-1 size-3.5" />
+                  <LayoutGrid className="mr-1 size-3.5" />
                   Timeline
                 </ToggleGroupItem>
                 <ToggleGroupItem value="queue">
-                  <ListIcon className="mr-1 size-3.5" />
+                  <List className="mr-1 size-3.5" />
                   Queue
                 </ToggleGroupItem>
               </ToggleGroup>
@@ -738,25 +739,25 @@ export const KitchenDashboardClient = ({
               size="sm"
             >
               <ToggleGroupItem value="live-now">
-                <ActivityIcon className="mr-1 size-3.5" />
+                <Activity className="mr-1 size-3.5" />
                 Live now
               </ToggleGroupItem>
               <ToggleGroupItem value="starting-soon">
-                <ClockIcon className="mr-1 size-3.5" />
+                <Clock className="mr-1 size-3.5" />
                 Starting soon
               </ToggleGroupItem>
               <ToggleGroupItem value="high-capacity">
-                <UsersIcon className="mr-1 size-3.5" />
+                <Users className="mr-1 size-3.5" />
                 High capacity
               </ToggleGroupItem>
               <ToggleGroupItem value="sold-out">
-                <FlameIcon className="mr-1 size-3.5" />
+                <Flame className="mr-1 size-3.5" />
                 Sold out
               </ToggleGroupItem>
             </ToggleGroup>
           </div>
 
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
             <Card className="border-transparent bg-background/70">
               <CardHeader className="pb-2">
                 <CardDescription>Events today</CardDescription>
@@ -797,7 +798,9 @@ export const KitchenDashboardClient = ({
         </div>
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+      <Separator />
+
+      <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
         <aside className="hidden lg:block">
           <Card className="border-muted/60 bg-background/60">
             <CardHeader className="pb-3">
@@ -810,10 +813,10 @@ export const KitchenDashboardClient = ({
           </Card>
         </aside>
 
-        <main className="flex flex-col gap-6">
+        <main className="flex flex-col gap-8">
           {dateRangeInvalid && (
             <Alert variant="destructive">
-              <ClockIcon />
+              <Clock />
               <AlertTitle>Invalid date range</AlertTitle>
               <AlertDescription>
                 <p>End date must be on or after the start date.</p>
@@ -832,7 +835,7 @@ export const KitchenDashboardClient = ({
           {!dateRangeInvalid && filteredEvents.length === 0 && (
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <CalendarDaysIcon className="size-10 text-muted-foreground/70" />
+                <CalendarDays className="size-10 text-muted-foreground/70" />
                 <h3 className="text-lg font-semibold">
                   No events match these filters
                 </h3>
@@ -855,12 +858,7 @@ export const KitchenDashboardClient = ({
             <>
               <section className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold">Live operations</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Events happening today or within the next 24 hours.
-                    </p>
-                  </div>
+                  <h3 className="text-sm font-medium text-muted-foreground">Live operations</h3>
                   <Badge variant="outline" className="text-xs">
                     {opsEvents.length} in window
                   </Badge>
@@ -937,18 +935,18 @@ export const KitchenDashboardClient = ({
                               </div>
                               <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                                 <span className="flex items-center gap-1">
-                                  <MapPinIcon className="size-3.5" />
+                                  <MapPin className="size-3.5" />
                                   {event.venueName?.trim() || "Venue not set"}
                                 </span>
                                 <span className="flex items-center gap-1">
-                                  <UsersIcon className="size-3.5" />
+                                  <Users className="size-3.5" />
                                   {event.guestCount} guests
                                 </span>
                               </div>
                             </div>
                             <div className="flex flex-col items-end gap-2 text-xs">
                               <span className="inline-flex items-center gap-1 text-muted-foreground">
-                                <TimerIcon className="size-3.5" />
+                                <Timer className="size-3.5" />
                                 {countdownLabel}
                               </span>
                               <div className="flex items-center gap-2">
@@ -974,16 +972,9 @@ export const KitchenDashboardClient = ({
 
               <section className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold">
-                      {viewMode === "timeline" ? "Timeline view" : "Event queue"}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {viewMode === "timeline"
-                        ? "Schedule blocks grouped by service date."
-                        : "Sorted queue for rapid scanning."}
-                    </p>
-                  </div>
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    {viewMode === "timeline" ? "Timeline view" : "Event queue"}
+                  </h3>
                   <Badge className="text-xs" variant="outline">
                     {filteredEvents.length} total
                   </Badge>
@@ -1042,7 +1033,7 @@ export const KitchenDashboardClient = ({
                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                   <div className="flex items-center gap-3">
                                     <div className="flex h-10 w-10 items-center justify-center rounded-full border bg-muted/40">
-                                      <CalendarDaysIcon className="size-4 text-muted-foreground" />
+                                      <CalendarDays className="size-4 text-muted-foreground" />
                                     </div>
                                     <div>
                                       <div className="flex flex-wrap items-center gap-2">
@@ -1073,11 +1064,11 @@ export const KitchenDashboardClient = ({
                                   </div>
                                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
                                     <span className="flex items-center gap-1">
-                                      <UsersIcon className="size-3.5" />
+                                      <Users className="size-3.5" />
                                       {event.guestCount} guests
                                     </span>
                                     <span className="flex items-center gap-1">
-                                      <CalendarDaysIcon className="size-3.5" />
+                                      <CalendarDays className="size-3.5" />
                                       All-day
                                     </span>
                                     <Button
@@ -1161,22 +1152,22 @@ export const KitchenDashboardClient = ({
                               </div>
                               <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                                 <span className="flex items-center gap-1">
-                                  <CalendarDaysIcon className="size-3.5" />
+                                  <CalendarDays className="size-3.5" />
                                   {shortDateFormatter.format(event.eventDate)}
                                 </span>
                                 <span className="flex items-center gap-1">
-                                  <MapPinIcon className="size-3.5" />
+                                  <MapPin className="size-3.5" />
                                   {event.venueName?.trim() || "Venue not set"}
                                 </span>
                                 <span className="flex items-center gap-1">
-                                  <UsersIcon className="size-3.5" />
+                                  <Users className="size-3.5" />
                                   {event.guestCount} guests
                                 </span>
                               </div>
                             </div>
                             <div className="flex items-center gap-3 text-xs text-muted-foreground">
                               <span className="flex items-center gap-1">
-                                <TimerIcon className="size-3.5" />
+                                <Timer className="size-3.5" />
                                 {countdownLabel}
                               </span>
                               <Button
@@ -1314,7 +1305,7 @@ export const KitchenDashboardClient = ({
                     variant="secondary"
                     onClick={() => handleCopyLink(selectedEvent.id)}
                   >
-                    <ClipboardCopyIcon className="mr-2 size-4" />
+                    <ClipboardCopy className="mr-2 size-4" />
                     Copy link
                   </Button>
                   <Button asChild variant="outline">
@@ -1323,7 +1314,7 @@ export const KitchenDashboardClient = ({
                       target="_blank"
                       rel="noreferrer"
                     >
-                      <CalendarPlusIcon className="mr-2 size-4" />
+                      <CalendarPlus className="mr-2 size-4" />
                       Add to calendar
                     </a>
                   </Button>
@@ -1349,7 +1340,7 @@ export const KitchenDashboardClient = ({
           <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
             <SheetTrigger asChild>
               <Button size="sm" variant="outline">
-                <FilterIcon className="mr-2 size-4" />
+                <Filter className="mr-2 size-4" />
                 Filters
               </Button>
             </SheetTrigger>
@@ -1364,7 +1355,7 @@ export const KitchenDashboardClient = ({
           </Sheet>
         ) : (
           <Button size="sm" variant="outline" disabled>
-            <FilterIcon className="mr-2 size-4" />
+            <Filter className="mr-2 size-4" />
             Filters
           </Button>
         )}
@@ -1378,11 +1369,11 @@ export const KitchenDashboardClient = ({
           size="sm"
         >
           <ToggleGroupItem value="timeline">
-            <LayoutGridIcon className="mr-1 size-3.5" />
+            <LayoutGrid className="mr-1 size-3.5" />
             Timeline
           </ToggleGroupItem>
           <ToggleGroupItem value="queue">
-            <ListIcon className="mr-1 size-3.5" />
+            <List className="mr-1 size-3.5" />
             Queue
           </ToggleGroupItem>
         </ToggleGroup>
