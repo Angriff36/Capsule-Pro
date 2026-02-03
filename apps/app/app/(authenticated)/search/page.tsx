@@ -83,7 +83,7 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
       <Header page="Search" pages={["Building Your Application"]} />
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
-        <div className="flex flex-col gap-1">
+        <div className="space-y-0.5">
           <h1 className="text-3xl font-bold tracking-tight">Search Results</h1>
           <p className="text-muted-foreground">
             Showing results for "{q}"
@@ -93,7 +93,7 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
         <Separator />
 
         {/* Search Results Section */}
-        <section className="flex flex-col gap-4">
+        <section className="space-y-4">
           <h2 className="text-sm font-medium text-muted-foreground">
             Events ({events.length})
           </h2>
