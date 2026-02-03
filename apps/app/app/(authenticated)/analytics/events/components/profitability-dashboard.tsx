@@ -85,11 +85,11 @@ export function ProfitabilityDashboard({
     return (
       <div className="space-y-8">
         {/* Performance Overview Section */}
-        <section>
-          <h3 className="text-sm font-medium text-muted-foreground mb-4">
+        <section className="space-y-4">
+          <h3 className="text-sm font-medium text-muted-foreground">
             Performance Overview
           </h3>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader>
                 <CardDescription>Budgeted Revenue</CardDescription>
@@ -107,13 +107,7 @@ export function ProfitabilityDashboard({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div
-                  className={`text-xs font-medium ${
-                    metrics.revenueVariance >= 0
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
+                <div className="text-xs font-medium text-muted-foreground">
                   {metrics.revenueVariance >= 0 ? "+" : ""}
                   {metrics.revenueVariance.toFixed(2)} (
                   {metrics.revenueVariance >= 0 ? "over" : "under"} budget)
@@ -140,24 +134,12 @@ export function ProfitabilityDashboard({
             <Card>
               <CardHeader>
                 <CardDescription>Gross Margin</CardDescription>
-                <CardTitle
-                  className={`text-2xl ${
-                    metrics.actualGrossMargin >= 0
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
+                <CardTitle className="text-2xl">
                   ${metrics.actualGrossMargin.toFixed(2)}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div
-                  className={`text-xs font-medium ${
-                    metrics.marginVariancePct >= 0
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
+                <div className="text-xs font-medium text-muted-foreground">
                   {metrics.actualGrossMarginPct.toFixed(1)}% (
                   {metrics.marginVariancePct >= 0 ? "+" : ""}
                   {metrics.marginVariancePct.toFixed(1)}% vs budget)
@@ -170,11 +152,11 @@ export function ProfitabilityDashboard({
         <Separator />
 
         {/* Cost Analysis & Trends Section */}
-        <section>
-          <h3 className="text-sm font-medium text-muted-foreground mb-4">
+        <section className="space-y-4">
+          <h3 className="text-sm font-medium text-muted-foreground">
             Cost Analysis & Trends
           </h3>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Cost Breakdown</CardTitle>
@@ -191,7 +173,7 @@ export function ProfitabilityDashboard({
                     </div>
                     <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-blue-500 transition-all"
+                        className="h-full bg-primary/60 transition-all"
                         style={{
                           width: `${
                             (metrics.actualFoodCost /
@@ -203,13 +185,7 @@ export function ProfitabilityDashboard({
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>Budget: ${metrics.budgetedFoodCost.toFixed(2)}</span>
-                      <span
-                        className={
-                          metrics.foodCostVariance <= 0
-                            ? "text-green-600"
-                            : "text-red-600"
-                        }
-                      >
+                      <span>
                         {metrics.foodCostVariance.toFixed(2)}
                       </span>
                     </div>
@@ -224,7 +200,7 @@ export function ProfitabilityDashboard({
                     </div>
                     <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-purple-500 transition-all"
+                        className="h-full bg-primary/70 transition-all"
                         style={{
                           width: `${
                             (metrics.actualLaborCost /
@@ -236,13 +212,7 @@ export function ProfitabilityDashboard({
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>Budget: ${metrics.budgetedLaborCost.toFixed(2)}</span>
-                      <span
-                        className={
-                          metrics.laborCostVariance <= 0
-                            ? "text-green-600"
-                            : "text-red-600"
-                        }
-                      >
+                      <span>
                         {metrics.laborCostVariance.toFixed(2)}
                       </span>
                     </div>
@@ -257,7 +227,7 @@ export function ProfitabilityDashboard({
                     </div>
                     <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-orange-500 transition-all"
+                        className="h-full bg-primary/80 transition-all"
                         style={{
                           width: `${
                             (metrics.actualOverhead /
@@ -308,23 +278,13 @@ export function ProfitabilityDashboard({
                           </div>
                           <div className="flex-1 h-6 bg-muted rounded-full overflow-hidden">
                             <div
-                              className={`h-full transition-all ${
-                                item.marginPct >= 0
-                                  ? "bg-green-500"
-                                  : "bg-red-500"
-                              }`}
+                              className="h-full transition-all bg-primary/60"
                               style={{
                                 width: `${Math.min(Math.abs(item.marginPct), 50)}%`,
                               }}
                             />
                           </div>
-                          <div
-                            className={`w-12 text-right font-medium ${
-                              item.marginPct >= 0
-                                ? "text-green-600"
-                                : "text-red-600"
-                            }`}
-                          >
+                          <div className="w-12 text-right font-medium">
                             {item.marginPct.toFixed(1)}%
                           </div>
                         </div>
@@ -340,8 +300,8 @@ export function ProfitabilityDashboard({
         <Separator />
 
         {/* Variance Analysis Section */}
-        <section>
-          <h3 className="text-sm font-medium text-muted-foreground mb-4">
+        <section className="space-y-4">
+          <h3 className="text-sm font-medium text-muted-foreground">
             Variance Analysis
           </h3>
           <Card>
@@ -375,24 +335,14 @@ export function ProfitabilityDashboard({
                 <div className="border-t pt-4">
                   <div className="flex justify-between">
                     <span className="font-medium">Total Cost Variance</span>
-                    <span
-                      className={`font-bold text-lg ${
-                        metrics.totalCostVariance <= 0
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
+                    <span className="font-bold text-lg">
                       {metrics.totalCostVariance >= 0 ? "+" : ""}
                       {metrics.totalCostVariance.toFixed(2)}
                     </span>
                   </div>
                   <div className="mt-2 h-2 w-full bg-muted rounded-full overflow-hidden">
                     <div
-                      className={`h-full transition-all ${
-                        metrics.totalCostVariance <= 0
-                          ? "bg-green-500"
-                          : "bg-red-500"
-                      }`}
+                      className="h-full transition-all bg-primary/60"
                       style={{
                         width: `${Math.min(
                           (Math.abs(metrics.totalCostVariance) /
@@ -432,9 +382,19 @@ export function ProfitabilityDashboard({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Event Profitability Dashboard</h2>
+    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+      {/* Page Header */}
+      <div className="space-y-0.5">
+        <h1 className="text-3xl font-bold tracking-tight">Event Profitability</h1>
+        <p className="text-muted-foreground">
+          Analyze event profitability, margins, cost variance, and revenue trends over time.
+        </p>
+      </div>
+
+      <Separator />
+
+      {/* Period Selector */}
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium" htmlFor="period-select">
             Period:
@@ -455,8 +415,6 @@ export function ProfitabilityDashboard({
         </div>
       </div>
 
-      <Separator />
-
       {historical.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
@@ -473,11 +431,11 @@ export function ProfitabilityDashboard({
       ) : (
         <div className="space-y-8">
           {/* Summary Metrics Section */}
-          <section>
-            <h3 className="text-sm font-medium text-muted-foreground mb-4">
+          <section className="space-y-4">
+            <h3 className="text-sm font-medium text-muted-foreground">
               Summary Metrics
             </h3>
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid gap-6 md:grid-cols-4">
               <Card>
                 <CardHeader>
                   <CardDescription>Total Events</CardDescription>
@@ -531,8 +489,8 @@ export function ProfitabilityDashboard({
           <Separator />
 
           {/* Historical Trends Section */}
-          <section>
-            <h3 className="text-sm font-medium text-muted-foreground mb-4">
+          <section className="space-y-4">
+            <h3 className="text-sm font-medium text-muted-foreground">
               Historical Trends
             </h3>
             <Card>
@@ -572,13 +530,7 @@ export function ProfitabilityDashboard({
                           <td className="py-2 text-right">
                             ${item.totalRevenue.toFixed(2)}
                           </td>
-                          <td
-                            className={`py-2 text-right font-medium ${
-                              item.averageGrossMarginPct >= 0
-                                ? "text-green-600"
-                                : "text-red-600"
-                            }`}
-                          >
+                          <td className="py-2 text-right font-medium">
                             {item.averageGrossMarginPct.toFixed(1)}%
                           </td>
                           <td className="py-2 text-right">

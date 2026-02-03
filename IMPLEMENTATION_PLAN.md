@@ -4638,3 +4638,71 @@ Analytics Finance page component (`apps/app/app/(authenticated)/analytics/financ
 **Files Modified:**
 - `apps/app/app/(authenticated)/analytics/finance/page.tsx` - Updated container structure, page header, removed breadcrumb
 - `apps/app/app/(authenticated)/analytics/finance/FinanceAnalyticsPageClient.tsx` - Updated section organization (space-y-4), grid spacing (gap-6), removed custom colors
+
+---
+
+### 2.61 Completed UI Improvements (Analytics Events Page)
+
+**Iteration: Analytics Events Page Visual Hierarchy Enhancement**
+
+Analytics Events Page (`apps/app/app/(authenticated)/analytics/events/page.tsx`) and ProfitabilityDashboard component (`apps/app/app/(authenticated)/analytics/events/components/profitability-dashboard.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Improvements Implemented:**
+
+1. **Wrapper Page Container Structure**
+   - Changed from `<div className="container mx-auto py-8">` to `<div className="flex flex-1 flex-col gap-8 p-4 pt-0">`
+   - Matches the container pattern used across all other improved pages
+   - Provides consistent padding and flex layout behavior
+
+2. **Historical View Page Header Addition**
+   - Added proper page header with title "Event Profitability" using `text-3xl font-bold tracking-tight` styling
+   - Added descriptive paragraph explaining the page purpose
+   - Wrapped page header content in `<div className="space-y-0.5">` for consistent spacing
+   - Consistent with other page improvements across the platform
+
+3. **Separator Addition**
+   - Added `<Separator />` component between page header and period selector for clear visual break
+   - Period selector moved to its own section with proper alignment (flex-end)
+   - Consistent with all other dashboard improvements
+
+4. **Section-Based Organization**
+   - Changed from `<section>` with `mb-4` on headers to `<section className="space-y-4">` (all sections)
+   - Applies to both metrics view and historical view sections
+   - Clear visual separation: Performance Overview → Cost Analysis & Trends → Variance Analysis (metrics view)
+   - Clear visual separation: Summary Metrics → Historical Trends (historical view)
+
+5. **Grid Spacing Enhancement**
+   - Changed grid gap from `gap-4` to `gap-6` for better visual rhythm between cards
+   - Applied to all grids: Performance Overview (4 columns), Cost Analysis (2 columns), Summary Metrics (4 columns)
+
+6. **Custom Color Removal**
+   - Removed all custom `text-green-600` and `text-red-600` classes from trend indicators and values
+   - Removed custom `bg-blue-500`, `bg-purple-500`, `bg-orange-500`, `bg-green-500`, `bg-red-500` classes from progress bars
+   - Progress bars now use `bg-primary/60`, `bg-primary/70`, `bg-primary/80` for theme consistency
+   - Trend text now uses `text-muted-foreground` for all states
+   - Provides consistent visual language that adapts to theme changes
+
+**Key Learnings:**
+
+1. **Historical View Page Header Matters**: Even when a component can show either detailed metrics (eventId) or historical trends, adding a proper page header to the historical view creates consistent user experience.
+
+2. **Period Selector Placement**: Moving the period selector to a separate section after the Separator creates cleaner visual hierarchy than placing it inline with the page title.
+
+3. **Multi-View Components Need Consistent Structure**: When a component renders different views (metrics vs historical), both views should follow the same spacing and organizational patterns for consistency.
+
+4. **Custom Progress Bar Colors**: Using theme-consistent colors (`bg-primary/60`, `bg-primary/70`, `bg-primary/80`) instead of custom semantic colors (blue, purple, orange) provides better theme adaptation while maintaining visual distinction between different progress bars.
+
+5. **space-y-4 for Section Containers**: Using `space-y-4` on section containers instead of `mb-4` on headers is more maintainable and follows React/Tailwind best practices.
+
+**Remaining Work in Analytics Module:**
+- None identified — the Analytics Events page now has complete visual hierarchy consistency with the platform
+
+**Applicability to Other Modules:**
+
+- **Any Multi-View Component**: Components that render different views based on props should ensure both views follow consistent spacing and organizational patterns.
+- **Any Page with Period/Filter Selectors**: The pattern of separating period/filter selectors into their own section after the Separator improves visual hierarchy.
+- **Any Dashboard with Progress Bars**: Using theme-consistent colors with varying opacity (`bg-primary/60`, `bg-primary/70`) instead of custom colors provides better theme adaptation.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/analytics/events/page.tsx` - Changed container from `container mx-auto py-8` to `flex flex-1 flex-col gap-8 p-4 pt-0`
+- `apps/app/app/(authenticated)/analytics/events/components/profitability-dashboard.tsx` - Added page header, Separator, period selector section, section organization (space-y-4), grid spacing (gap-6), removed all custom colors
