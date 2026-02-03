@@ -2100,6 +2100,70 @@ Warehouse Audits Page component (`apps/app/app/(authenticated)/warehouse/audits/
 
 ---
 
+### 2.42 Completed UI Improvements (Scheduling Requests Page)
+
+**Iteration: Scheduling Requests Page Visual Hierarchy Enhancement**
+
+Scheduling Requests Page component (`apps/app/app/(authenticated)/scheduling/requests/page.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Improvements Implemented:**
+
+1. **Page Header Separator**
+   - Added `<Separator />` component between page header and main content for clear visual break
+   - Consistent with other scheduling pages (Scheduling Dashboard, Shifts, Budgets, Availability, Time-Off) and all dashboard improvements
+
+2. **Section-Based Organization**
+   - Added semantic `<section>` elements with descriptive headers for each major content area
+   - Each section gets its own header with consistent styling: `text-sm font-medium text-muted-foreground`
+   - Clear visual separation: Filters → Requests
+
+3. **Page Title Styling**
+   - Changed from `text-2xl font-semibold` to `text-3xl font-bold tracking-tight`
+   - Consistent with other page improvements across the platform
+   - Removed redundant uppercase tracking-wide subtitle for cleaner hierarchy
+
+4. **Component Structure**
+   - Changed main content spacing from `space-y-6` to `space-y-8` for better breathing room and visual rhythm
+   - Section headers provide mental model of page structure
+   - Filters section now has proper section header ("Filters")
+   - Requests section now has section header with dynamic count ("Requests (3)")
+
+5. **Semantic HTML Structure**
+   - Wrapped major content areas in semantic `<section>` elements with descriptive headers
+   - Improved accessibility and document structure
+   - Clear visual separation between different content areas
+
+6. **Card Structure Refinement**
+   - Removed CardHeader from filters card since section header provides context
+   - Cleaner visual hierarchy with section header outside the card
+   - Filters card content directly in CardContent for better visual balance
+
+**Key Learnings:**
+
+1. **Section Headers Work for Request Management Pages**: Even on focused request management pages with filterable lists, adding section headers immediately gives users a mental model of the page structure.
+
+2. **Separator After Page Header**: Adding Separator after the page header creates visual breathing room similar to other scheduling page improvements.
+
+3. **space-y-8 vs space-y-6**: Increasing spacing from 6 to 8 creates better visual rhythm for requests pages with dense information.
+
+4. **Cleaner Page Structure**: Removing redundant subtitles (like "Scheduling" in uppercase) reduces visual noise and focuses users on the main content.
+
+5. **Semantic Sections Provide Better Structure**: Using semantic `<section>` elements improves accessibility and provides clear content grouping.
+
+**Remaining Work in Scheduling Module:**
+- None identified — all major scheduling pages (Dashboard, Shifts, Budgets, Availability, Time-Off, Requests) now have consistent visual hierarchy
+
+**Applicability to Other Modules:**
+
+- **Any Request/Approval Management Page**: The section header pattern works well for pages displaying lists of items requiring action or approval.
+- **Any Page with Filters + List**: The pattern of separating filters and lists under their own section headers improves scanability.
+- **Any Page with Multiple Sections**: Apply section headers, separators, and semantic structure.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/scheduling/requests/page.tsx` - Added Separator, section headers, semantic sections, improved spacing, page title styling
+
+---
+
 ### 2.38 Phase 2 Completion Criteria
 
 Phase 2 is complete when:
