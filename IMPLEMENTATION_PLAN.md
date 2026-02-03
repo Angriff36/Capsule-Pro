@@ -1915,7 +1915,82 @@ Event Budgets Page component (`apps/app/app/(authenticated)/events/budgets/budge
 
 ---
 
-### 2.37 Phase 2 Completion Criteria
+### 2.37 Completed UI Improvements (Warehouse Shipments Page)
+
+**Iteration: Warehouse Shipments Page Visual Hierarchy Enhancement**
+
+Warehouse Shipments Page component (`apps/app/app/(authenticated)/warehouse/shipments/shipments-page-client.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Improvements Implemented:**
+
+1. **Page Header Addition**
+   - Added `<h1>` title "Warehouse Shipments" with `text-3xl font-bold tracking-tight` styling
+   - Added descriptive paragraph explaining the page purpose
+   - Consistent with other dashboard page headers
+
+2. **Separator Addition**
+   - Added `<Separator />` component between page header and content for clear visual break
+   - Consistent with other dashboard improvements (Warehouse Dashboard, Scheduling, Kitchen, Administrative, Payroll)
+
+3. **Section-Based Organization**
+   - Added semantic `<section>` elements with descriptive headers for each major content area
+   - Each section gets its own header with consistent styling: `text-sm font-medium text-muted-foreground`
+   - Clear visual separation: Performance Overview → Shipments
+
+4. **Card Hierarchy Standardization**
+   - Summary cards now use proper CardDescription → CardTitle order (description first, then value)
+   - Fixed inverted hierarchy where CardTitle was used for labels instead of values
+   - Icon sizes updated from `h-4 w-4` to `size-4` for consistency with other page improvements
+
+5. **Action Button Placement**
+   - Moved "New Shipment" button to section header row for better action placement
+   - Aligned with section title for visual balance
+   - Cleaner visual hierarchy with action button in header
+
+6. **Dynamic Count in Section Header**
+   - Shipments table section header now includes dynamic count: "Shipments ({totalCount})"
+   - Provides useful context without cluttering the main view
+
+7. **Component Structure**
+   - Changed main content spacing from `space-y-6` to `space-y-8` for better breathing room and visual rhythm
+   - Section headers provide mental model of page structure
+   - Filters now within CardContent instead of separate section
+
+8. **Semantic HTML Structure**
+   - Wrapped major content areas in semantic `<section>` elements with descriptive headers
+   - Improved accessibility and document structure
+   - Clear visual separation between different content areas
+
+**Key Learnings:**
+
+1. **Section Headers Work for Warehouse Operations Pages**: Even on operations-critical pages with dense information (shipments, filters, tables), adding section headers immediately gives users a mental model of the page structure.
+
+2. **Action Button Placement in Section Headers**: Moving the "New Shipment" button to the section header row (aligned with the section title) creates better visual balance and makes the action more discoverable.
+
+3. **Separator After Page Header**: Adding Separator after the page header creates visual breathing room similar to other dashboard improvements.
+
+4. **space-y-8 vs space-y-6**: Increasing spacing from 6 to 8 creates better visual rhythm for warehouse pages with dense information.
+
+5. **CardDescription + CardTitle Hierarchy for Metrics**: For summary cards, the pattern is CardDescription (label like "Total Shipments") → CardTitle (value like "42"), not the reverse. This matches the pattern established in other dashboards.
+
+**Remaining Work in Warehouse Module:**
+- Warehouse Receiving page could benefit from similar section-based organization
+- Warehouse Audits page could benefit from similar section-based organization
+- Warehouse Shipments page is now well-structured with clear visual hierarchy
+
+**Applicability to Other Modules:**
+
+- **Any Warehouse/Operations Page**: The section header pattern works well for pages with summary stats, filters, and data tables.
+- **Any Page with Create Action Button**: The pattern of moving the create action to the section header row works well for list pages.
+- **Any Page with Summary Cards + Filters + Table**: The pattern of grouping summary stats under a "Performance Overview" section and data tables under their own section improves scanability.
+- **Any Page with Multiple Sections**: Apply section headers, separators, and semantic structure.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/warehouse/shipments/shipments-page-client.tsx` - Added page header, Separator, section headers, semantic sections, CardDescription, improved spacing, icon sizing
+
+---
+
+### 2.38 Phase 2 Completion Criteria
 
 Phase 2 is complete when:
 
@@ -1927,7 +2002,7 @@ Phase 2 is complete when:
 
 ---
 
-### 2.38 Relationship to Phase 1
+### 2.39 Relationship to Phase 1
 
 Phase 1 guarantees correctness, integrity, and realtime propagation. Phase 2
 guarantees **usability, power, and trust**.
