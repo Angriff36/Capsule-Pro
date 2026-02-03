@@ -9,7 +9,11 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { AlertTriangleIcon } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@repo/design-system/components/ui/alert";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import { AlertTriangle, Link2 } from "lucide-react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
@@ -123,45 +127,51 @@ const ContractsPage = async () => {
         {/* Add action buttons here if needed */}
       </Header>
 
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+        {/* Page Header */}
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl font-bold tracking-tight">Contracts</h1>
+          <p className="text-muted-foreground">
+            Manage event contracts, track signatures, and monitor expiration dates
+          </p>
+        </div>
+
+        <Separator />
+
         {/* Expiring Contracts Alert */}
         {expiringContracts.length > 0 && (
-          <div className="border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <AlertTriangleIcon className="text-amber-600 dark:text-amber-500 mt-0.5 size-5 shrink-0" />
-              <div className="flex-1">
-                <h3 className="font-semibold text-amber-900 dark:text-amber-100">
-                  {expiringContracts.length} Contract
-                  {expiringContracts.length > 1 ? "s" : ""} Expiring Soon
-                </h3>
-                <p className="text-amber-700 dark:text-amber-300 mt-1 text-sm">
-                  The following contracts expire within the next 30 days and
-                  need attention.
-                </p>
-                <ul className="mt-3 space-y-2">
-                  {expiringContracts.slice(0, 5).map((contract) => (
-                    <li
-                      className="text-amber-800 dark:text-amber-200 text-sm flex items-center justify-between"
-                      key={contract.id}
-                    >
-                      <span className="font-medium">{contract.title}</span>
-                      <span className="text-amber-600 dark:text-amber-400 text-xs">
-                        Expires:{" "}
-                        {contract.expiresAt
-                          ? new Date(contract.expiresAt).toLocaleDateString()
-                          : "N/A"}
-                      </span>
-                    </li>
-                  ))}
-                  {expiringContracts.length > 5 && (
-                    <li className="text-amber-700 dark:text-amber-300 text-xs">
-                      And {expiringContracts.length - 5} more...
-                    </li>
-                  )}
-                </ul>
-              </div>
-            </div>
-          </div>
+          <Alert variant="destructive">
+            <AlertTriangle className="size-4" />
+            <AlertTitle>
+              {expiringContracts.length} Contract
+              {expiringContracts.length > 1 ? "s" : ""} Expiring Soon
+            </AlertTitle>
+            <AlertDescription>
+              The following contracts expire within the next 30 days and need
+              attention.
+              <ul className="mt-3 space-y-2">
+                {expiringContracts.slice(0, 5).map((contract) => (
+                  <li
+                    className="text-sm flex items-center justify-between gap-4"
+                    key={contract.id}
+                  >
+                    <span className="font-medium">{contract.title}</span>
+                    <span className="text-xs">
+                      Expires:{" "}
+                      {contract.expiresAt
+                        ? new Date(contract.expiresAt).toLocaleDateString()
+                        : "N/A"}
+                    </span>
+                  </li>
+                ))}
+                {expiringContracts.length > 5 && (
+                  <li className="text-xs">
+                    And {expiringContracts.length - 5} more...
+                  </li>
+                )}
+              </ul>
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* Client Component for Interactivity */}

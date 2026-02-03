@@ -207,7 +207,7 @@ export const ContractsPageClient = ({
     documentTypeFilter !== "all";
 
   return (
-    <div className="flex flex-1 flex-col gap-6">
+    <div className="flex flex-1 flex-col gap-8">
       {/* Filters Section */}
       <div className="border-border rounded-lg border bg-card p-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
