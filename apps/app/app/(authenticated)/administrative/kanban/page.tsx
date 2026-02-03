@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
 
 const kanbanColumns = [
   {
@@ -99,20 +100,17 @@ const kanbanColumns = [
   },
 ];
 
-const priorityVariant: Record<string, string> = {
-  High: "bg-red-100 text-red-700",
-  Medium: "bg-amber-100 text-amber-700",
-  Low: "bg-emerald-100 text-emerald-700",
+const priorityVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  High: "destructive",
+  Medium: "secondary",
+  Low: "outline",
 };
 
 const AdministrativeKanbanPage = () => (
-  <div className="space-y-6">
+  <div className="space-y-8">
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div>
-        <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-          Administrative
-        </p>
-        <h1 className="text-2xl font-semibold">Operational Kanban</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Operational Kanban</h1>
         <p className="text-sm text-muted-foreground">
           Keep critical cross-functional requests visible and moving.
         </p>
@@ -121,6 +119,8 @@ const AdministrativeKanbanPage = () => (
         Add board item
       </Button>
     </div>
+
+    <Separator />
 
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       {kanbanColumns.map((column) => (
@@ -145,11 +145,9 @@ const AdministrativeKanbanPage = () => (
                   <span>{task.owner}</span>
                   <span>Due {task.due}</span>
                 </div>
-                <div
-                  className={`w-fit rounded-full px-2 py-1 text-[11px] font-semibold ${priorityVariant[task.priority]}`}
-                >
+                <Badge variant={priorityVariant[task.priority]} className="w-fit text-[11px] font-semibold">
                   {task.priority} priority
-                </div>
+                </Badge>
               </div>
             ))}
           </CardContent>
