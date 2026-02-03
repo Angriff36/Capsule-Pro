@@ -240,9 +240,10 @@ export default function ReceivingPage() {
   };
 
   return (
-    <div className="container mx-auto p-4 space-y-8">
+    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+      {/* Page Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
+        <div className="space-y-0.5">
           <h1 className="text-3xl font-bold tracking-tight">Warehouse Receiving</h1>
           <p className="text-muted-foreground">
             Scan items, log receipts, and update stock levels
@@ -262,8 +263,9 @@ export default function ReceivingPage() {
 
       <Separator />
 
-      <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+      {/* Purchase Order Lookup Section */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">
           Purchase Order Lookup
         </h2>
         <Card>
@@ -309,8 +311,8 @@ export default function ReceivingPage() {
       </section>
 
       {selectedPO && (
-        <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">
+        <section className="space-y-4">
+          <h2 className="text-sm font-medium text-muted-foreground">
             Purchase Order Details
           </h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
