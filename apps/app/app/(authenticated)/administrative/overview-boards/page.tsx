@@ -83,8 +83,8 @@ const AdministrativeOverviewBoardsPage = () => (
         {boardSnapshots.map((snapshot) => (
           <Card className="h-full" key={snapshot.title}>
             <CardHeader>
+              <CardTitle className="text-lg">{snapshot.title}</CardTitle>
               <CardDescription>{snapshot.description}</CardDescription>
-              <CardTitle>{snapshot.title}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-2xl font-bold">{snapshot.value}</p>
@@ -102,7 +102,8 @@ const AdministrativeOverviewBoardsPage = () => (
       </h2>
       <Card>
         <CardHeader>
-          <CardDescription>Top decisions awaiting a sign-off.</CardDescription>
+          <CardTitle>Top Decisions</CardTitle>
+          <CardDescription>Awaiting sign-off from leadership</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6 md:grid-cols-3">
           {executiveActions.map((action) => (
@@ -128,8 +129,8 @@ const AdministrativeOverviewBoardsPage = () => (
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardDescription>Issues that need cross-team attention.</CardDescription>
             <CardTitle>Critical Alerts</CardTitle>
+            <CardDescription>Issues that need cross-team attention</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -148,8 +149,8 @@ const AdministrativeOverviewBoardsPage = () => (
         </Card>
         <Card>
           <CardHeader>
-            <CardDescription>Freshness of updates across channels.</CardDescription>
             <CardTitle>Board Health</CardTitle>
+            <CardDescription>Freshness of updates across channels</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
