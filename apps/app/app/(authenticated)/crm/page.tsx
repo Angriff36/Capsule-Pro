@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -76,32 +77,43 @@ const recentCommunications = [
 ];
 
 const CrmPage = () => (
-  <div className="space-y-6">
-    <div>
-      <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-        CRM
-      </p>
-      <h1 className="text-2xl font-semibold">Client & Venue Overview</h1>
-      <p className="text-sm text-muted-foreground">
+  <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+    {/* Page Header */}
+    <div className="space-y-0.5">
+      <h1 className="text-3xl font-bold tracking-tight">CRM Overview</h1>
+      <p className="text-muted-foreground">
         Centralize account health, pipeline, and communications in one place.
       </p>
     </div>
 
-    <div className="grid gap-4 md:grid-cols-3">
+    <Separator />
+
+    {/* Performance Overview Section */}
+    <section className="space-y-4">
+      <h2 className="text-sm font-medium text-muted-foreground">
+        Performance Overview
+      </h2>
+      <div className="grid gap-6 md:grid-cols-3">
       {clientMetrics.map((metric) => (
         <Card key={metric.label}>
           <CardHeader>
-            <CardTitle>{metric.value}</CardTitle>
             <CardDescription>{metric.label}</CardDescription>
+            <CardTitle>{metric.value}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">{metric.detail}</p>
           </CardContent>
         </Card>
       ))}
-    </div>
+      </div>
+    </section>
 
-    <div className="grid gap-4 lg:grid-cols-2">
+    {/* Clients & Communications Section */}
+    <section className="space-y-4">
+      <h2 className="text-sm font-medium text-muted-foreground">
+        Clients & Communications
+      </h2>
+      <div className="grid gap-6 lg:grid-cols-2">
       <Card>
         <CardHeader>
           <CardTitle>Top Clients (by LTV)</CardTitle>
@@ -163,6 +175,7 @@ const CrmPage = () => (
         </CardContent>
       </Card>
     </div>
+    </section>
   </div>
 );
 
