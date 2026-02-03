@@ -18,11 +18,11 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "zod": "^4.1.13"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "vitest": "^4.0.15"
+    "vitest": "^4.0.18"
   },
   "peerDependencies": {
     "@repo/database": "workspace:*"

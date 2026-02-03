@@ -13,8 +13,8 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^2.0.89",
-    "@react-pdf/renderer": "^4.2.1",
+    "@ai-sdk/openai": "^3.0.25",
+    "@react-pdf/renderer": "^4.3.2",
     "@repo/analytics": "workspace:*",
     "@repo/auth": "workspace:*",
     "@repo/database": "workspace:*",
@@ -26,27 +26,27 @@
     "@repo/payroll-engine": "workspace:*",
     "@repo/pdf": "workspace:*",
     "@repo/realtime": "workspace:*",
-    "@sentry/nextjs": "^10.29.0",
-    "@t3-oss/env-nextjs": "^0.13.8",
-    "ably": "^2.10.0",
-    "ai": "^5.0.121",
-    "import-in-the-middle": "^2.0.0",
-    "next": "16.0.10",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "@sentry/nextjs": "^10.38.0",
+    "@t3-oss/env-nextjs": "^0.13.10",
+    "ably": "^2.17.1",
+    "ai": "^6.0.68",
+    "import-in-the-middle": "^3.0.0",
+    "next": "16.1.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
     "require-in-the-middle": "8.0.1",
-    "svix": "^1.82.0",
-    "zod": "^4.1.13"
+    "svix": "^1.84.1",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "24.10.1",
-    "@types/react": "19.2.7",
+    "@types/node": "25.2.0",
+    "@types/react": "19.2.10",
     "@types/react-dom": "19.2.3",
-    "@vitejs/plugin-react": "^5.1.1",
+    "@vitejs/plugin-react": "^5.1.3",
     "concurrently": "^9.2.1",
-    "cross-env": "^7.0.3",
+    "cross-env": "^10.1.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.15"
+    "vitest": "^4.0.18"
   }
 }
