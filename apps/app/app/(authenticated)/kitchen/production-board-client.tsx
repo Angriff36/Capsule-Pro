@@ -15,6 +15,7 @@ import {
 } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Progress } from "@repo/design-system/components/ui/progress";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import { addDays, format, isToday, isYesterday, subDays } from "date-fns";
 import {
   Calendar,
@@ -478,16 +479,18 @@ export function ProductionBoardClient({
         </div>
       </header>
 
+      <Separator />
+
       {/* Main Content */}
       <main className="flex-1 p-6">
-        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+        <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
           {/* Task Board */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* My Tasks Section */}
             {myTasks.length > 0 && (
               <section className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-semibold text-lg text-slate-800">
+                  <h2 className="font-medium text-sm text-muted-foreground">
                     My Tasks
                   </h2>
                   <Badge variant="secondary">{myTasks.length} assigned</Badge>
@@ -505,7 +508,11 @@ export function ProductionBoardClient({
             )}
 
             {/* Kanban Board */}
-            <div className="grid gap-4 lg:grid-cols-3">
+            <section className="space-y-4">
+              <h2 className="font-medium text-sm text-muted-foreground">
+                Task Board
+              </h2>
+              <div className="grid gap-4 lg:grid-cols-3">
               <TaskColumn
                 count={pendingTasks.length}
                 currentUserId={currentUserId}
@@ -531,6 +538,7 @@ export function ProductionBoardClient({
                 title="Completed"
               />
             </div>
+            </section>
           </div>
 
           {/* Stats Sidebar / Suggestions Panel */}
