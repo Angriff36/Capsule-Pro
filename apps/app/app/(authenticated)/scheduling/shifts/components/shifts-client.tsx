@@ -3,6 +3,7 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -270,7 +271,7 @@ export function ShiftsClient() {
   });
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -294,77 +295,88 @@ export function ShiftsClient() {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
-        <FilterIcon className="h-4 w-4 text-muted-foreground" />
-        <Input
-          className="max-w-[150px]"
-          onChange={(e) => handleFilterChange("startDate", e.target.value)}
-          type="date"
-          value={filters.startDate}
-        />
-        <Input
-          className="max-w-[150px]"
-          onChange={(e) => handleFilterChange("endDate", e.target.value)}
-          type="date"
-          value={filters.endDate}
-        />
-        <Select
-          onValueChange={(value) => handleFilterChange("employeeId", value)}
-          value={filters.employeeId}
-        >
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by employee" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">All employees</SelectItem>
-            {employees.map((emp) => (
-              <SelectItem key={emp.id} value={emp.id}>
-                {emp.first_name} {emp.last_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          onValueChange={(value) => handleFilterChange("locationId", value)}
-          value={filters.locationId}
-        >
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by location" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">All locations</SelectItem>
-            {locations.map((loc) => (
-              <SelectItem key={loc.id} value={loc.id}>
-                {loc.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {(filters.startDate ||
-          filters.endDate ||
-          filters.employeeId ||
-          filters.locationId) && (
-          <Button
-            onClick={() =>
-              setFilters({
-                startDate: "",
-                endDate: "",
-                employeeId: "",
-                locationId: "",
-              })
-            }
-            size="sm"
-            variant="ghost"
-          >
-            Clear filters
-          </Button>
-        )}
-      </div>
+      <Separator />
 
-      {/* Table */}
-      <div className="border rounded-lg">
-        <Table>
+      {/* Filters Section */}
+      <section>
+        <h2 className="text-sm font-medium text-muted-foreground mb-3">
+          Filters
+        </h2>
+        <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
+          <FilterIcon className="h-4 w-4 text-muted-foreground" />
+          <Input
+            className="max-w-[150px]"
+            onChange={(e) => handleFilterChange("startDate", e.target.value)}
+            type="date"
+            value={filters.startDate}
+          />
+          <Input
+            className="max-w-[150px]"
+            onChange={(e) => handleFilterChange("endDate", e.target.value)}
+            type="date"
+            value={filters.endDate}
+          />
+          <Select
+            onValueChange={(value) => handleFilterChange("employeeId", value)}
+            value={filters.employeeId}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filter by employee" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All employees</SelectItem>
+              {employees.map((emp) => (
+                <SelectItem key={emp.id} value={emp.id}>
+                  {emp.first_name} {emp.last_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            onValueChange={(value) => handleFilterChange("locationId", value)}
+            value={filters.locationId}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filter by location" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All locations</SelectItem>
+              {locations.map((loc) => (
+                <SelectItem key={loc.id} value={loc.id}>
+                  {loc.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {(filters.startDate ||
+            filters.endDate ||
+            filters.employeeId ||
+            filters.locationId) && (
+            <Button
+              onClick={() =>
+                setFilters({
+                  startDate: "",
+                  endDate: "",
+                  employeeId: "",
+                  locationId: "",
+                })
+              }
+              size="sm"
+              variant="ghost"
+            >
+              Clear filters
+            </Button>
+          )}
+        </div>
+      </section>
+
+      {/* Shifts Table Section */}
+      <section>
+        <h2 className="text-sm font-medium text-muted-foreground mb-3">
+          Shifts ({pagination.total})
+        </h2>
+        <div className="border rounded-lg">
+          <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -421,6 +433,7 @@ export function ShiftsClient() {
           </TableBody>
         </Table>
       </div>
+      </section>
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
