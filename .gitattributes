@@ -1,21 +1,33 @@
-# Set repository default handling for text files
-* text=auto
+# Repository default handling for text files
+* text=auto eol=lf
 
 # Normalize line endings for common source files
-*.sh     text eol=lf
-*.ts     text eol=lf
-*.js     text eol=lf
-*.mjs    text eol=lf
+*.sh   text eol=lf
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.js   text eol=lf
+*.jsx  text eol=lf
+*.mjs  text eol=lf
+*.cjs  text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.md   text eol=lf
+
+# Windows scripts should stay CRLF
+*.ps1  text eol=crlf
+*.cmd  text eol=crlf
+*.bat  text eol=crlf
 
 # Do not include these developer artifacts in archives
 docs/llm/random-ai-slopdocs/** export-ignore
 scripts/dev.mjs export-ignore
 
 # Never mess with binary files
-*.png binary
-*.jpg binary
+*.png  binary
+*.jpg  binary
 *.jpeg binary
-*.gif binary
+*.gif  binary
 *.webp binary
-*.ico binary
-*.pdf binary
+*.ico  binary
+*.pdf  binary

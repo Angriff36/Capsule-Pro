@@ -19,6 +19,9 @@ const meta = {
   parameters: {
     layout: "centered",
   },
+  argTypes: {
+    tabs: { control: false },
+  },
 } satisfies Meta<typeof TabbedMegaMenuBlock>
 
 export default meta

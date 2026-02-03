@@ -142,14 +142,19 @@ export function TabbedMegaMenuBlock({
                       >
                         <div className="grid grid-cols-3 gap-4">
                           {tab.items.map((item) => {
-                            const Icon = item.icon
+                            const Icon =
+                              typeof item.icon === "function"
+                                ? item.icon
+                                : null
                             return (
                               <NavigationMenuLink
                                 className="flex flex-row items-start gap-3 rounded-md border border-transparent p-3 hover:border-border"
                                 href={item.href ?? "#"}
                                 key={item.title}
                               >
-                                <Icon className="mt-0.5 size-5" />
+                                {Icon ? (
+                                  <Icon className="mt-0.5 size-5" />
+                                ) : null}
                                 <div>
                                   <span className="block font-medium">
                                     {item.title}
