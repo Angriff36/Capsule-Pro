@@ -11,6 +11,7 @@ const { NEXT_PUBLIC_GA_MEASUREMENT_ID } = keys();
 
 export const AnalyticsProvider = ({ children }: AnalyticsProviderProps) => (
   <>
+    {/* TODO: Add a client-side PostHog tracker (page views + key events) once we define the event schema/consent rules. */}
     {children}
     <VercelAnalytics />
     {NEXT_PUBLIC_GA_MEASUREMENT_ID && (
