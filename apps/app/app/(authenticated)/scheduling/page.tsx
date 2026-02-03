@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Tabs,
   TabsList,
@@ -429,7 +430,7 @@ const SchedulingPage = async () => {
   ];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <SchedulingRealtime tenantId={tenantId} userId={userId} />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -452,7 +453,11 @@ const SchedulingPage = async () => {
         </div>
       </div>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <Separator />
+
+      <section>
+        <h2 className="text-sm font-medium text-muted-foreground mb-4">Performance Overview</h2>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {stats.map((item) => (
           <Card className="shadow-sm" key={item.label}>
             <CardHeader className="flex flex-row items-start justify-between space-y-0">
@@ -474,10 +479,13 @@ const SchedulingPage = async () => {
             </CardContent>
           </Card>
         ))}
+        </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <div className="grid gap-6">
+      <section>
+        <h2 className="text-sm font-medium text-muted-foreground mb-4">Schedule Overview</h2>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+          <div className="grid gap-6">
           <Card className="shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <div>
@@ -576,75 +584,79 @@ const SchedulingPage = async () => {
             </CardContent>
           </Card>
         </div>
+        </div>
 
-        <Card className="shadow-sm">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <SparklesIcon className="size-5 text-primary" />
-                  Shift Battle Arena
-                </CardTitle>
-                <CardDescription>
-                  Real-time, first-come shift claiming with power-ups.
-                </CardDescription>
+        <section>
+          <h2 className="text-sm font-medium text-muted-foreground mb-4">Live Leaderboard</h2>
+          <Card className="shadow-sm">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <SparklesIcon className="size-5 text-primary" />
+                    Shift Battle Arena
+                  </CardTitle>
+                  <CardDescription>
+                    Real-time, first-come shift claiming with power-ups.
+                  </CardDescription>
+                </div>
+                <Badge className="bg-primary/10 text-primary">Game Mode</Badge>
               </div>
-              <Badge className="bg-primary/10 text-primary">Game Mode</Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="rounded-xl border bg-muted/40 p-4">
-              <div className="flex items-center justify-between font-medium text-sm">
-                <span className="text-muted-foreground">
-                  Live Battle Royale
-                </span>
-                <span className="text-primary">This Week</span>
-              </div>
-              <div className="mt-4 grid gap-4">
-                {leaderboard.length === 0 ? (
-                  <div className="rounded-xl border bg-background p-4 text-muted-foreground text-sm">
-                    No shift activity yet this week.
-                  </div>
-                ) : (
-                  leaderboard.map((person, index) => (
-                    <div className="flex gap-3" key={person.employee_id}>
-                      <div className="font-semibold text-muted-foreground text-sm">
-                        #{index + 1}
-                      </div>
-                      <Avatar>
-                        <AvatarImage
-                          alt={formatName(person.first_name, person.last_name)}
-                          src=""
-                        />
-                        <AvatarFallback>
-                          {formatName(
-                            person.first_name,
-                            person.last_name
-                          ).slice(0, 2)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="font-medium text-foreground">
-                          {formatName(person.first_name, person.last_name)}
-                        </div>
-                        <div className="text-muted-foreground text-xs">
-                          {person.shift_count} shifts this week
-                        </div>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {person.role ? (
-                            <Badge variant="secondary">{person.role}</Badge>
-                          ) : null}
-                          <Badge variant="outline">Top performer</Badge>
-                        </div>
-                      </div>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <div className="rounded-xl border bg-muted/40 p-4">
+                <div className="flex items-center justify-between font-medium text-sm">
+                  <span className="text-muted-foreground">
+                    Live Battle Royale
+                  </span>
+                  <span className="text-primary">This Week</span>
+                </div>
+                <div className="mt-4 grid gap-4">
+                  {leaderboard.length === 0 ? (
+                    <div className="rounded-xl border bg-background p-4 text-muted-foreground text-sm">
+                      No shift activity yet this week.
                     </div>
-                  ))
-                )}
+                  ) : (
+                    leaderboard.map((person, index) => (
+                      <div className="flex gap-3" key={person.employee_id}>
+                        <div className="font-semibold text-muted-foreground text-sm">
+                          #{index + 1}
+                        </div>
+                        <Avatar>
+                          <AvatarImage
+                            alt={formatName(person.first_name, person.last_name)}
+                            src=""
+                          />
+                          <AvatarFallback>
+                            {formatName(
+                              person.first_name,
+                              person.last_name
+                            ).slice(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="font-medium text-foreground">
+                            {formatName(person.first_name, person.last_name)}
+                          </div>
+                          <div className="text-muted-foreground text-xs">
+                            {person.shift_count} shifts this week
+                          </div>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {person.role ? (
+                              <Badge variant="secondary">{person.role}</Badge>
+                            ) : null}
+                            <Badge variant="outline">Top performer</Badge>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
-            <Button variant="outline">View full leaderboard</Button>
-          </CardContent>
-        </Card>
+              <Button variant="outline">View full leaderboard</Button>
+            </CardContent>
+          </Card>
+        </section>
       </section>
     </div>
   );
