@@ -158,6 +158,7 @@ const BattleBoardsPage = async () => {
               Assigned across boards
             </CardContent>
           </Card>
+        </div>
         </section>
 
         {/* Battle Boards List Section */}

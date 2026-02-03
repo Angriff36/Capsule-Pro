@@ -108,8 +108,8 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
           ) : (
             <div className="grid auto-rows-min gap-6 md:grid-cols-3">
               {events.map((event) => (
-                <Card key={`${event.tenantId}-${event.id}`} asChild>
-                  <Link href={`/events/${event.id}`}>
+                <Link key={`${event.tenantId}-${event.id}`} href={`/events/${event.id}`} className="group">
+                  <Card className="h-full transition hover:border-primary/40 hover:shadow-md">
                     <CardHeader>
                       <CardTitle className="text-base line-clamp-2">
                         {event.title}
@@ -124,8 +124,8 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
                         {event.venueName}
                       </div>
                     </CardContent>
-                  </Link>
-                </Card>
+                  </Card>
+                </Link>
               ))}
             </div>
           )}

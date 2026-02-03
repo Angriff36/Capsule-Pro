@@ -180,6 +180,7 @@ const EventReportsPage = async () => {
               Across all reports
             </CardContent>
           </Card>
+        </div>
         </section>
 
         {/* Reports List Section */}

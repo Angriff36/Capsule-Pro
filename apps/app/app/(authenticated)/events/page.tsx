@@ -141,6 +141,7 @@ const EventsPage = async () => {
               Needs final approval
             </CardContent>
           </Card>
+        </div>
         </section>
 
         {/* Events List Section */}
