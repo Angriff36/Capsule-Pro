@@ -4267,3 +4267,74 @@ Administrative Overview Boards Page (`apps/app/app/(authenticated)/administrativ
 
 **Files Modified:**
 - `apps/app/app/(authenticated)/administrative/overview-boards/page.tsx` - Fixed card hierarchy (CardTitle → CardDescription), added text-lg to Board Snapshots titles, added missing CardTitle to Executive Actions, removed periods from descriptions
+
+---
+
+### 2.66 Completed UI Improvements (Warehouse Receiving Reports Page)
+
+**Iteration: Warehouse Receiving Reports Page Visual Hierarchy Enhancement**
+
+Warehouse Receiving Reports Page component (`apps/app/app/(authenticated)/warehouse/receiving/reports/page.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Improvements Implemented:**
+
+1. **Page Container Structure**
+   - Changed from `<div className="container mx-auto p-4 space-y-6">` to `<div className="flex flex-1 flex-col gap-8 p-4 pt-0">`
+   - Matches the container pattern used across all other improved pages (Scheduling Dashboard, Kitchen pages, Administrative, Payroll, Warehouse)
+   - Provides consistent padding and flex layout behavior
+
+2. **Page Header Enhancement**
+   - Wrapped page header content in `<div className="space-y-0.5">`
+   - Changed title from `text-2xl font-bold` to `text-3xl font-bold tracking-tight`
+   - Consistent with other page improvements across the platform
+
+3. **Separator Addition**
+   - Added `<Separator />` component between page header and main content for clear visual break
+   - Consistent with other warehouse page improvements (Warehouse Dashboard, Shipments, Receiving, Audits, Inventory)
+
+4. **Section-Based Organization**
+   - Added semantic `<section>` elements with descriptive headers for each major content area
+   - Each section gets its own header with consistent styling: `text-sm font-medium text-muted-foreground`
+   - Clear visual separation: Performance Overview → Supplier Performance → Discrepancy Breakdown by Type
+
+5. **Card Hierarchy Standardization**
+   - Performance overview cards now use proper CardDescription → CardTitle order (label first, then value)
+   - Fixed inverted hierarchy where CardTitle was used for labels instead of values
+   - Removed CardHeader from Supplier Performance and Discrepancy Breakdown cards since section headers provide context
+
+6. **Badge Variant Standardization**
+   - Replaced custom color classes (`bg-green-100 text-green-800`, `bg-yellow-100 text-yellow-800`, `bg-red-100 text-red-800`) with design system variants
+   - Status badges now use proper Badge component with consistent variants: `default` (4.5+ score), `secondary` (3.5-4.5 score), `destructive` (<3.5 score)
+   - Removed custom `getScoreBadge` and `getScoreColor` functions in favor of `getScoreBadgeVariant` using design system
+
+7. **Icon Sizing Consistency**
+   - Changed icon sizes from `h-4 w-4` and `h-5 w-5` to `size-4` for consistency with other page improvements
+   - Maintains visual consistency across the platform
+
+8. **Import Cleanup**
+   - Added `CardDescription` and `Separator` to imports
+   - Cleaner import list with necessary components
+
+**Key Learnings:**
+
+1. **Section Headers Replace Card Titles for Single-Card Sections**: When a section contains only one card, using a section header instead of a card title creates cleaner hierarchy. The section header provides context and the card can focus on content.
+
+2. **CardDescription + CardTitle Hierarchy for Metrics**: For performance overview cards, the pattern is CardDescription (label like "Total POs Received") → CardTitle (value with trend indicator), not the reverse. This matches the pattern established in all dashboards.
+
+3. **Badge Variant Standardization**: Using design system variants (`default`, `secondary`, `destructive`, `outline`) instead of custom color classes provides consistent visual language that adapts to theme changes.
+
+4. **space-y-8 vs space-y-6**: The `gap-8` spacing in the flex container creates better visual rhythm than `space-y-6`, especially when combined with `space-y-4` for internal section spacing.
+
+5. **Container Consistency Matters**: Even reports pages with dense data benefit from consistent container structure. Using the same `flex flex-1 flex-col gap-8 p-4 pt-0` pattern across all pages creates predictable layout behavior.
+
+**Remaining Work in Warehouse Module:**
+- None identified — all major warehouse pages (Dashboard, Shipments, Receiving, Audits, Inventory, Receiving Reports) now have consistent visual hierarchy
+
+**Applicability to Other Modules:**
+
+- **Any Reports/Analytics Page**: The section header pattern works well for pages with performance metrics, supplier data, and breakdown charts.
+- **Any Page with Custom Badge Colors**: Replace custom color classes with design system variants for consistency.
+- **Any Page with Multiple Sections**: Apply section headers, separators, and semantic structure.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/warehouse/receiving/reports/page.tsx` - Added page container structure (flex flex-1 flex-col gap-8 p-4 pt-0), wrapped page header (space-y-0.5), updated title styling (text-3xl font-bold tracking-tight), added Separator, section headers, semantic sections, CardDescription, badge variants, icon sizing
