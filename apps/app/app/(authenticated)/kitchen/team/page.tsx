@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { Settings, UserPlus, Users } from "lucide-react";
+import { Calendar, Settings, UserPlus, Users } from "lucide-react";
 import Link from "next/link";
 import { Header } from "../../components/header";
 
@@ -16,7 +16,7 @@ const KitchenTeamPage = () => {
       <Header page="Kitchen Team" pages={["Kitchen Ops"]} />
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
-        <div className="flex flex-col gap-1">
+        <div className="space-y-0.5">
           <h1 className="text-3xl font-bold tracking-tight">Kitchen Team</h1>
           <p className="text-muted-foreground">
             Access team management features from the Staff module
@@ -26,43 +26,43 @@ const KitchenTeamPage = () => {
         <Separator />
 
         {/* Team Management Section */}
-        <section className="flex flex-col gap-4">
+        <section className="space-y-4">
           <h2 className="text-sm font-medium text-muted-foreground">
             Team Management
           </h2>
-            <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="size-5" />
-              Team Management
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">
-              Kitchen team management is handled in the Staff module. View team
-              members, their roles, skills, and station assignments there.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild>
-                <Link href="/staff/team">View Full Team</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/staff/schedule">View Schedule</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="size-5" />
+                Team Management
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                Kitchen team management is handled in the Staff module. View team
+                members, their roles, skills, and station assignments there.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Button asChild>
+                  <Link href="/staff/team">View Full Team</Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href="/staff/schedule">View Schedule</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </section>
 
         {/* Features Overview Section */}
-        <section className="flex flex-col gap-4">
+        <section className="space-y-4">
           <h2 className="text-sm font-medium text-muted-foreground">
             Features Overview
           </h2>
           <div className="grid gap-6 md:grid-cols-3">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2">
                   <UserPlus className="size-4" />
                   Onboarding
                 </CardTitle>
@@ -79,7 +79,7 @@ const KitchenTeamPage = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2">
                   <Settings className="size-4" />
                   Role Management
                 </CardTitle>
@@ -96,7 +96,10 @@ const KitchenTeamPage = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Station Assignments</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="size-4" />
+                  Station Assignments
+                </CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground">
                 <ul className="list-disc pl-4 space-y-1">
@@ -111,13 +114,13 @@ const KitchenTeamPage = () => {
         </section>
 
         {/* Common Tasks Section */}
-        <section className="flex flex-col gap-4">
+        <section className="space-y-4">
           <h2 className="text-sm font-medium text-muted-foreground">
             Common Tasks
           </h2>
           <Card>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <CardContent>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               <Button
                 asChild
                 className="h-auto flex-col gap-2 py-4"
@@ -154,14 +157,14 @@ const KitchenTeamPage = () => {
                 variant="outline"
               >
                 <Link href="/staff/time-off">
-                  <span className="text-xl">📅</span>
+                  <Calendar className="size-5" />
                   <span>Time Off</span>
                 </Link>
               </Button>
             </div>
           </CardContent>
         </Card>
-        </section>
+      </section>
       </div>
     </>
   );
