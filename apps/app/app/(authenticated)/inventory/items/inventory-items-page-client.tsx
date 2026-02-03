@@ -3,6 +3,12 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -11,6 +17,7 @@ import {
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -26,7 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { PlusIcon } from "lucide-react";
+import { PackageIcon, PlusIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -159,9 +166,62 @@ export const InventoryItemsPageClient = () => {
 
   return (
     <>
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        {/* Header with filters */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+        {/* Page Header */}
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Inventory Items</h1>
+          <p className="text-muted-foreground">
+            Manage ingredient inventory, track stock levels, and monitor reorder points.
+          </p>
+        </div>
+
+        <Separator />
+
+        {/* Performance Overview */}
+        <section>
+          <h2 className="text-sm font-medium text-muted-foreground mb-4">
+            Performance Overview
+          </h2>
+          <div className="grid gap-4 md:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Total Items</CardDescription>
+                <CardTitle className="text-2xl">{totalCount}</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Total Value</CardDescription>
+                <CardTitle className="text-2xl">
+                  {formatCurrency(totalValue)}
+                </CardTitle>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Low Stock</CardDescription>
+                <CardTitle className="text-2xl text-yellow-600">
+                  {lowStockCount}
+                </CardTitle>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Out of Stock</CardDescription>
+                <CardTitle className="text-2xl text-red-600">
+                  {outOfStockCount}
+                </CardTitle>
+              </CardHeader>
+            </Card>
+          </div>
+        </section>
+
+        {/* Filters Section */}
+        <section>
+          <h2 className="text-sm font-medium text-muted-foreground mb-4">
+            Filters
+          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-card p-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="relative">
               <Input
@@ -236,42 +296,21 @@ export const InventoryItemsPageClient = () => {
             New Item
           </Button>
         </div>
+        </section>
 
-        {/* Summary stats */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <div className="rounded-xl border bg-card p-4">
-            <div className="text-muted-foreground text-sm">Total Items</div>
-            <div className="text-2xl font-bold">{totalCount}</div>
-          </div>
-          <div className="rounded-xl border bg-card p-4">
-            <div className="text-muted-foreground text-sm">Total Value</div>
-            <div className="text-2xl font-bold">
-              {formatCurrency(totalValue)}
-            </div>
-          </div>
-          <div className="rounded-xl border bg-card p-4">
-            <div className="text-muted-foreground text-sm">Low Stock</div>
-            <div className="text-2xl font-bold text-yellow-600">
-              {lowStockCount}
-            </div>
-          </div>
-          <div className="rounded-xl border bg-card p-4">
-            <div className="text-muted-foreground text-sm">Out of Stock</div>
-            <div className="text-2xl font-bold text-red-600">
-              {outOfStockCount}
-            </div>
-          </div>
-        </div>
-
-        {/* Items table */}
-        {isLoading ? (
+        {/* Inventory Items Table Section */}
+        <section>
+          <h2 className="text-sm font-medium text-muted-foreground mb-4">
+            Inventory Items ({filteredItems.length})
+          </h2>
+          {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-xl border border-dashed p-12 text-center">
             <div className="mb-4 rounded-full bg-muted p-4">
-              <PlusIcon className="size-8 text-muted-foreground" />
+              <PackageIcon className="size-8 text-muted-foreground" />
             </div>
             <h3 className="mb-2 text-lg font-semibold">
               {searchQuery ||
@@ -435,6 +474,7 @@ export const InventoryItemsPageClient = () => {
             )}
           </div>
         )}
+        </section>
       </div>
 
       {/* Create/Edit Modal */}
