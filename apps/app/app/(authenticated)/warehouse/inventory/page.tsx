@@ -2,9 +2,8 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -45,22 +44,24 @@ const statusVariant: Record<string, "secondary" | "destructive" | "outline"> = {
 };
 
 const WarehouseInventoryPage = () => (
-  <div className="space-y-6">
-    <div>
-      <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-        Warehouse
-      </p>
-      <h1 className="text-2xl font-semibold">Inventory</h1>
-      <p className="text-sm text-muted-foreground">
+  <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+    {/* Page Header */}
+    <div className="space-y-0.5">
+      <h1 className="text-3xl font-bold tracking-tight">Warehouse Inventory</h1>
+      <p className="text-muted-foreground">
         Monitor on-hand and consumption trends for fast-moving goods.
       </p>
     </div>
 
-    <Card>
-      <CardHeader>
-        <CardTitle>Stock by location</CardTitle>
-      </CardHeader>
-      <CardContent className="overflow-x-auto">
+    <Separator />
+
+    {/* Stock by Location Section */}
+    <section className="space-y-4">
+      <h2 className="text-sm font-medium text-muted-foreground">
+        Stock by Location
+      </h2>
+      <Card>
+        <CardContent className="overflow-x-auto">
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -93,6 +94,7 @@ const WarehouseInventoryPage = () => (
         </div>
       </CardContent>
     </Card>
+    </section>
   </div>
 );
 

@@ -2170,6 +2170,71 @@ Additional improvements made to Warehouse Audits Page to bring container structu
 
 ---
 
+### 2.43 Completed UI Improvements (Warehouse Inventory Page)
+
+**Iteration: Warehouse Inventory Page Visual Hierarchy Enhancement**
+
+Warehouse Inventory Page component (`apps/app/app/(authenticated)/warehouse/inventory/page.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Improvements Implemented:**
+
+1. **Page Container Structure**
+   - Changed from `<div className="space-y-6">` to `<div className="flex flex-1 flex-col gap-8 p-4 pt-0">`
+   - Matches the container pattern used across all other improved pages (Scheduling Dashboard, Kitchen pages, Administrative, Payroll, Warehouse Dashboard, etc.)
+   - Provides consistent padding and flex layout behavior
+
+2. **Page Header Enhancement**
+   - Wrapped page header content in `<div className="space-y-0.5">`
+   - Changed title from `text-2xl font-semibold` to `text-3xl font-bold tracking-tight`
+   - Removed redundant uppercase tracking-wide subtitle ("Warehouse")
+   - Changed title from "Inventory" to "Warehouse Inventory" for clarity
+   - Added descriptive paragraph explaining the page purpose
+
+3. **Separator Addition**
+   - Added `<Separator />` component between page header and main content for clear visual break
+   - Consistent with other warehouse pages and all dashboard improvements
+
+4. **Section-Based Organization**
+   - Added semantic `<section>` element with descriptive header for the main content area
+   - Section header uses consistent styling: `text-sm font-medium text-muted-foreground`
+   - Section uses `space-y-4` for proper spacing management
+   - Clear visual separation: Stock by Location section
+
+5. **Card Structure Simplification**
+   - Removed CardHeader and CardTitle from the table card
+   - Section header ("Stock by Location") now provides the context
+   - Cleaner visual hierarchy with section header outside the card
+   - Table card content directly in CardContent for better visual balance
+
+6. **Import Cleanup**
+   - Added `Separator` to imports
+   - Removed unused `CardHeader` and `CardTitle` imports
+   - Cleaner import list with only necessary components
+
+**Key Learnings:**
+
+1. **Section Header Replaces Card Title for Single-Card Sections**: When a section contains only one card, using a section header instead of a card title creates cleaner hierarchy. The section header provides context and the card can focus on content.
+
+2. **Removing Uppercase Tracking Subtitles**: The uppercase tracking-wide subtitle pattern ("Warehouse") creates visual noise. Removing it and incorporating the context into the main title ("Warehouse Inventory" instead of just "Inventory") creates clearer hierarchy.
+
+3. **Consistent Title Styling**: Using `text-3xl font-bold tracking-tight` for page titles creates consistent visual weight across all pages, helping users orient themselves quickly.
+
+4. **Space-y-8 vs Space-y-6**: The `gap-8` spacing in the flex container creates better visual rhythm than `space-y-6`, especially when combined with `space-y-4` for internal section spacing.
+
+**Remaining Work in Warehouse Module:**
+- None identified — all major warehouse pages (Dashboard, Shipments, Receiving, Audits, Inventory) now have consistent visual hierarchy and container structure
+
+**Applicability to Other Modules:**
+
+- **Any Page with Single Card + Subtitle**: Pages with a subtitle above the main title should consider removing the subtitle and incorporating the context into the main title.
+- **Any Page with Card Title as Only Heading**: When a section has only one card with a title, consider replacing the card title with a section header for cleaner hierarchy.
+- **Any Page with space-y-6**: Update to use the standard `flex flex-1 flex-col gap-8 p-4 pt-0` container pattern.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/warehouse/inventory/page.tsx` - Added page container structure (flex flex-1 flex-col gap-8 p-4 pt-0), wrapped page header (space-y-0.5), updated title styling (text-3xl font-bold tracking-tight), removed uppercase subtitle, added Separator, added section-based organization with proper header, removed CardHeader/CardTitle, updated imports
+
+---
+
 ### 2.42 Completed UI Improvements (Scheduling Requests Page)
 
 **Iteration: Scheduling Requests Page Visual Hierarchy Enhancement**
