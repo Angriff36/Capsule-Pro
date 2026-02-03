@@ -46,6 +46,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@repo/design-system/components/ui/sheet";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -1365,13 +1366,20 @@ export function EventDetailsClient({
   return (
     <div className="relative min-h-screen bg-[#0b0f1a] text-slate-50">
       <GridBackground className="pointer-events-none absolute inset-0 opacity-15" />
-      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 pb-28 pt-10 sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pb-28 pt-10 sm:px-6 lg:px-8">
         <MissingFieldsBanner
           missingFields={missingFields}
           onUpdateDetails={() => setShowEditEvent(true)}
         />
+        <Separator />
 
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+        <section>
+          <div className="mb-4 flex items-center gap-2">
+            <p className="text-xs uppercase tracking-[0.25em] text-slate-400">
+              Event Overview
+            </p>
+          </div>
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
           <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.6)]">
             <CardHeader className="space-y-4">
               <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.18em] text-slate-300">
@@ -1657,12 +1665,16 @@ export function EventDetailsClient({
               </CardContent>
             </Card>
           </div>
+          </div>
         </section>
 
-        <section
-          className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
-          id="recipes"
-        >
+        <section id="recipes">
+          <div className="mb-4 flex items-center gap-2">
+            <p className="text-xs uppercase tracking-[0.25em] text-slate-400">
+              Menu Intelligence
+            </p>
+          </div>
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50">
             <CardHeader className="space-y-1">
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -1971,9 +1983,16 @@ export function EventDetailsClient({
               </CardContent>
             </Card>
           </div>
+          </div>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
+        <section>
+          <div className="mb-4 flex items-center gap-2">
+            <p className="text-xs uppercase tracking-[0.25em] text-slate-400">
+              AI Insights
+            </p>
+          </div>
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
           <div className="space-y-6">
             <ExecutiveSummarySection
               eventId={event.id}
@@ -2013,6 +2032,7 @@ export function EventDetailsClient({
               onCreateBudget={() => router.push("/events/budgets")}
               onViewBudget={(budgetId) => router.push(`/events/budgets/${budgetId}`)}
             />
+          </div>
           </div>
         </section>
 
