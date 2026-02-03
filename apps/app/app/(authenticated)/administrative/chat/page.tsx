@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { useMemo, useState } from "react";
 
@@ -128,84 +129,102 @@ const AdministrativeChatPage = () => {
   );
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px,1fr]">
-      <Card>
-        <CardHeader>
-          <CardTitle>Operational Chat</CardTitle>
-          <p className="text-xs text-muted-foreground">
+    <>
+      <div className="space-y-8">
+        {/* Page Header */}
+        <div className="space-y-0.5">
+          <h1 className="text-3xl font-bold tracking-tight">
+            Operational Chat
+          </h1>
+          <p className="text-muted-foreground">
             Keep teams aligned with context-aware threads.
           </p>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {threads.map((thread) => (
-            <button
-              className={`w-full rounded-md border px-3 py-3 text-left transition outline-none focus:border-primary ${
-                selectedThreadId === thread.id
-                  ? "border-primary/60 bg-primary/5"
-                  : "border-border/50 bg-card"
-              }`}
-              key={thread.id}
-              onClick={() => setSelectedThreadId(thread.id)}
-            >
-              <div className="flex items-center justify-between">
-                <p className="font-semibold">{thread.title}</p>
-                {thread.unread > 0 && <Badge>{thread.unread}</Badge>}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {thread.participants}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {thread.updatedAt}
-              </p>
-            </button>
-          ))}
-        </CardContent>
-      </Card>
+        </div>
 
-      <Card className="flex flex-col">
-        <CardHeader>
-          <CardTitle>{currentThread?.title ?? "Select a thread"}</CardTitle>
-          <p className="text-xs text-muted-foreground">
-            {currentThread?.participants ?? "Waiting for selection"}
-          </p>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          <div className="space-y-3">
-            {currentMessages.map((message) => (
-              <div
-                className={`rounded-lg border p-3 ${
-                  message.fromMe
-                    ? "border-transparent bg-primary/10"
-                    : "border-border"
-                }`}
-                key={message.id}
-              >
-                <div className="flex items-baseline justify-between gap-2">
-                  <p className="text-sm font-semibold">{message.author}</p>
-                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                    {message.time}
-                  </p>
+        <Separator />
+
+        {/* Main Chat Section */}
+        <section className="space-y-8">
+          <div className="grid gap-8 lg:grid-cols-[320px,1fr]">
+            {/* Threads Sidebar */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Conversations</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {threads.map((thread) => (
+                  <button
+                    className={`w-full rounded-md border px-3 py-3 text-left transition outline-none focus:border-primary ${
+                      selectedThreadId === thread.id
+                        ? "border-primary/60 bg-primary/5"
+                        : "border-border/50 bg-card"
+                    }`}
+                    key={thread.id}
+                    onClick={() => setSelectedThreadId(thread.id)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold">{thread.title}</p>
+                      {thread.unread > 0 && <Badge>{thread.unread}</Badge>}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {thread.participants}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {thread.updatedAt}
+                    </p>
+                  </button>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Active Conversation */}
+            <Card className="flex flex-col">
+              <CardHeader>
+                <CardTitle>{currentThread?.title ?? "Select a thread"}</CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  {currentThread?.participants ?? "Waiting for selection"}
+                </p>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3">
+                <div className="space-y-3">
+                  {currentMessages.map((message) => (
+                    <div
+                      className={`rounded-lg border p-3 ${
+                        message.fromMe
+                          ? "border-transparent bg-primary/10"
+                          : "border-border"
+                      }`}
+                      key={message.id}
+                    >
+                      <div className="flex items-baseline justify-between gap-2">
+                        <p className="text-sm font-semibold">{message.author}</p>
+                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                          {message.time}
+                        </p>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{message.text}</p>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-sm text-muted-foreground">{message.text}</p>
-              </div>
-            ))}
+                <div className="space-y-2">
+                  <Textarea
+                    className="min-h-[120px]"
+                    onChange={(event) => setDraft(event.target.value)}
+                    placeholder="Send a quick update..."
+                    value={draft}
+                  />
+                  <div className="flex justify-end">
+                    <Button disabled={!draft.trim()} onClick={handleSend}>
+                      Send update
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-          <div className="space-y-2">
-            <Textarea
-              className="min-h-[120px]"
-              onChange={(event) => setDraft(event.target.value)}
-              placeholder="Send a quick update..."
-              value={draft}
-            />
-            <div className="flex justify-end">
-              <Button disabled={!draft.trim()} onClick={handleSend}>
-                Send update
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+        </section>
+      </div>
+    </>
   );
 };
 
