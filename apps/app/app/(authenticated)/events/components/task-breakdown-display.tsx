@@ -136,7 +136,6 @@ function TaskCard({ task, section, onComplete, onAssign }: TaskCardProps) {
   const hasDetails =
     task.ingredients ||
     task.steps ||
-    task.description ||
     task.historicalContext;
 
   return (
@@ -156,7 +155,8 @@ function TaskCard({ task, section, onComplete, onAssign }: TaskCardProps) {
             />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-2">
+            {/* Primary content: title, description, time badges */}
+            <div className="flex items-start justify-between gap-3">
               <div className="flex-1">
                 <label
                   className="cursor-pointer font-medium text-base"
@@ -178,26 +178,20 @@ function TaskCard({ task, section, onComplete, onAssign }: TaskCardProps) {
               </div>
             </div>
 
-            <div className="mt-2 flex items-center gap-4 text-muted-foreground text-xs">
-              {task.confidence && (
-                <span className="flex items-center gap-1">
-                  <InfoIcon className="size-3" />
-                  {Math.round(task.confidence * 100)}% confidence
-                </span>
-              )}
-              {task.historicalContext && (
-                <span className="flex items-center gap-1">
-                  <SparklesIcon className="size-3" />
-                  {task.historicalContext}
-                </span>
-              )}
-            </div>
+            {/* Secondary metadata: confidence - subtle */}
+            {task.confidence && (
+              <div className="mt-2 flex items-center gap-1 text-muted-foreground text-xs">
+                <InfoIcon className="size-3" />
+                <span>{Math.round(task.confidence * 100)}% confidence</span>
+              </div>
+            )}
 
+            {/* Expandable details section */}
             {hasDetails && (
               <Collapsible onOpenChange={setIsExpanded} open={isExpanded}>
                 <CollapsibleTrigger asChild>
                   <Button
-                    className="mt-2 h-8 text-xs"
+                    className="mt-3 h-8 text-xs"
                     size="sm"
                     variant="ghost"
                   >
@@ -214,41 +208,49 @@ function TaskCard({ task, section, onComplete, onAssign }: TaskCardProps) {
                     )}
                   </Button>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="mt-2 space-y-2">
+                <CollapsibleContent className="mt-3 space-y-3">
                   {task.ingredients && task.ingredients.length > 0 && (
-                    <div className="text-sm">
-                      <p className="mb-1 font-medium text-muted-foreground text-xs">
-                        Ingredients:
+                    <div>
+                      <p className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+                        Ingredients
                       </p>
-                      <ul className="list-inside list-disc space-y-0.5 text-xs">
+                      <ul className="list-inside list-disc space-y-1 text-sm">
                         {task.ingredients.map((ing, i) => (
-                          <li key={i}>{ing}</li>
+                          <li key={i} className="text-muted-foreground">{ing}</li>
                         ))}
                       </ul>
                     </div>
                   )}
                   {task.steps && task.steps.length > 0 && (
-                    <div className="text-sm">
-                      <p className="mb-1 font-medium text-muted-foreground text-xs">
-                        Steps:
+                    <div>
+                      <p className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+                        Steps
                       </p>
-                      <ol className="list-inside list-decimal space-y-0.5 text-xs">
+                      <ol className="list-inside list-decimal space-y-1 text-sm">
                         {task.steps.map((step, i) => (
-                          <li key={i}>{step}</li>
+                          <li key={i} className="text-muted-foreground">{step}</li>
                         ))}
                       </ol>
                     </div>
                   )}
                   {task.historicalContext && (
-                    <p className="text-muted-foreground text-xs italic">
-                      {task.historicalContext}
-                    </p>
+                    <div className="rounded-lg bg-muted/50 p-3">
+                      <div className="flex items-start gap-2">
+                        <SparklesIcon className="mt-0.5 size-4 text-purple-500 flex-shrink-0" />
+                        <div>
+                          <p className="mb-1 font-medium text-xs">Historical Context</p>
+                          <p className="text-muted-foreground text-sm">{task.historicalContext}</p>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </CollapsibleContent>
               </Collapsible>
             )}
 
-            <div className="mt-3 flex items-center justify-between border-t pt-3">
+            {/* Action footer with separator */}
+            <Separator className="my-3" />
+            <div className="flex items-center justify-between">
               <Button
                 className="h-8 text-xs"
                 onClick={() => onAssign?.(task.id)}

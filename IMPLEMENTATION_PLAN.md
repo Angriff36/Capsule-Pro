@@ -189,7 +189,7 @@ Major visual and structural issues discovered during UI exploration that require
 2. ~~Create standardized information density patterns with proper spacing~~ **COMPLETED**: Analytics page and Profitability Dashboard demonstrate section-based organization
 3. ~~Develop missing design system block components before continuing new features~~ **IN PROGRESS**: CollapsibleSectionBlock created with stories; consider additional blocks as needed
 4. ~~Apply consistent visual language across all modules~~ **COMPLETED**: Events, Analytics, Profitability Dashboard, and Clients Modules now use consistent patterns (Separators, section headers, card hierarchy)
-5. Implement progressive disclosure for dense information areas
+5. ~~Implement progressive disclosure for dense information areas~~ **COMPLETED**: TaskCard component now uses proper expandable details with enhanced spacing and visual hierarchy
 
 ---
 
@@ -626,7 +626,50 @@ Created a new reusable `CollapsibleSectionBlock` component in the design system 
 
 ---
 
-### 2.14 Phase 2 Completion Criteria
+### 2.14 Completed UI Improvements (Task Breakdown Display)
+
+**Iteration: TaskCard Visual Hierarchy Enhancement**
+
+TaskCard component (`apps/app/app/(authenticated)/events/components/task-breakdown-display.tsx`) successfully refactored to establish clear visual hierarchy and reduce information density issues.
+
+**Improvements Implemented:**
+
+1. **Primary Content Section**
+   - Clear hierarchy: task name → description (with proper spacing)
+   - Time badges positioned on the right side for balance
+   - Increased gap from gap-2 to gap-3 for better breathing room
+
+2. **Secondary Metadata Simplification**
+   - Confidence indicator moved to its own section with proper spacing
+   - Removed duplicate historical context from secondary metadata (now only in details)
+   - Made metadata more subtle with proper muted-foreground styling
+
+3. **Expandable Details Enhancement**
+   - Changed "More details" button spacing from mt-2 to mt-3 for better vertical rhythm
+   - Improved CollapsibleContent spacing from space-y-2 to space-y-3
+   - Added uppercase tracking-wide headers for "Ingredients" and "Steps"
+   - List items now use text-muted-foreground for better hierarchy
+   - Historical context enhanced with rounded container and icon
+
+4. **Action Footer**
+   - Replaced border-t with Separator component for consistent visual language
+   - Changed from mt-3 to my-3 for proper margin on both sides
+
+**Key Learnings:**
+
+1. **Separator Creates Consistency**: Using the Separator component instead of border-t creates consistent visual language across the platform
+2. **Uppercase Headers for Details**: Using uppercase tracking-wide headers for "Ingredients" and "Steps" creates clear visual separation
+3. **Container Enhancement for Special Content**: Historical context benefits from a rounded container with icon to distinguish it from other content
+4. **Single Source of Truth for Metadata**: Removing duplicate historical context from secondary metadata reduces cognitive load
+5. **Vertical Rhythm Matters**: Consistent spacing (mt-3, space-y-3, my-3) creates better visual rhythm
+
+**Applicability to Other Modules:**
+- **Any Card with Expandable Details**: The pattern of uppercase headers, enhanced containers, and proper separators should be applied to other card components
+- **Progressive Disclosure Components**: The spacing improvements (mt-3, space-y-3) provide better visual rhythm for expandable content
+
+---
+
+### 2.15 Phase 2 Completion Criteria
 
 Phase 2 is complete when:
 
