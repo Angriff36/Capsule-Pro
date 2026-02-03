@@ -15,6 +15,13 @@ import {
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
+import {
   Tabs,
   TabsContent,
   TabsList,
@@ -27,12 +34,15 @@ import {
   History as HistoryIcon,
   Users,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
+import { toast } from "sonner";
 import {
   getRecipeCost,
   type IngredientCostBreakdown,
   type RecipeCostBreakdown,
 } from "@/app/lib/use-recipe-costing";
+import { restoreRecipeVersion } from "../../actions";
 
 type RecipeDetailRow = {
   id: string;
@@ -66,6 +76,132 @@ type RecipeVersionRow = {
   created_at: string;
   ingredient_count: number;
   step_count: number;
+};
+
+type RecipeVersionDetail = {
+  id: string;
+  recipeId: string;
+  versionNumber: number;
+  createdAt: string;
+  name: string;
+  category: string | null;
+  cuisineType: string | null;
+  description: string | null;
+  tags: string[];
+  yield: {
+    quantity: number;
+    unitId: number;
+    unit: string | null;
+    description: string | null;
+  };
+  times: {
+    prepMinutes: number | null;
+    cookMinutes: number | null;
+    restMinutes: number | null;
+  };
+  difficultyLevel: number | null;
+  instructions: string | null;
+  notes: string | null;
+  ingredients: {
+    id: string;
+    ingredientId: string;
+    name: string;
+    quantity: number;
+    unit: string | null;
+    preparationNotes: string | null;
+    isOptional: boolean;
+    sortOrder: number;
+  }[];
+  steps: {
+    id: string;
+    stepNumber: number;
+    instruction: string;
+    durationMinutes: number | null;
+    temperatureValue: number | null;
+    temperatureUnit: string | null;
+    equipmentNeeded: string[] | null;
+    tips: string | null;
+    videoUrl: string | null;
+    imageUrl: string | null;
+  }[];
+};
+
+type RecipeVersionCompare = {
+  from: {
+    id: string;
+    versionNumber: number;
+    createdAt: string;
+  };
+  to: {
+    id: string;
+    versionNumber: number;
+    createdAt: string;
+  };
+  changes: {
+    base: Record<
+      string,
+      { from: string | number | string[] | null; to: string | number | string[] | null }
+    >;
+    ingredients: {
+      added: {
+        ingredientId: string;
+        name: string;
+        quantity: number;
+        unit: string | null;
+        preparationNotes: string | null;
+        isOptional: boolean;
+      }[];
+      removed: {
+        ingredientId: string;
+        name: string;
+        quantity: number;
+        unit: string | null;
+        preparationNotes: string | null;
+        isOptional: boolean;
+      }[];
+      changed: {
+        ingredientId: string;
+        name: string;
+        from: {
+          ingredientId: string;
+          name: string;
+          quantity: number;
+          unit: string | null;
+          preparationNotes: string | null;
+          isOptional: boolean;
+        };
+        to: {
+          ingredientId: string;
+          name: string;
+          quantity: number;
+          unit: string | null;
+          preparationNotes: string | null;
+          isOptional: boolean;
+        };
+      }[];
+    };
+    steps: {
+      added: {
+        stepNumber: number;
+        instruction: string;
+      }[];
+      removed: {
+        stepNumber: number;
+        instruction: string;
+      }[];
+      changed: {
+        stepNumber: number;
+        from: {
+          stepNumber: number;
+          instruction: string;
+        };
+        to: {
+          stepNumber: number;
+          instruction: string;
+        };
+      }[];
+    };
+  };
 };
 
 type RecipeDetailTabsProps = {
@@ -239,11 +375,23 @@ function HistoryTabContent({
   recipeId: string;
   currentVersionId: string | null;
 }) {
+  const router = useRouter();
   const [versions, setVersions] = useState<RecipeVersionRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewingVersion, setViewingVersion] = useState<RecipeVersionRow | null>(
     null
   );
+  const [viewingDetail, setViewingDetail] =
+    useState<RecipeVersionDetail | null>(null);
+  const [viewLoading, setViewLoading] = useState(false);
+  const [compareOpen, setCompareOpen] = useState(false);
+  const [compareFrom, setCompareFrom] = useState<string | null>(null);
+  const [compareTo, setCompareTo] = useState<string | null>(null);
+  const [compareLoading, setCompareLoading] = useState(false);
+  const [compareData, setCompareData] =
+    useState<RecipeVersionCompare | null>(null);
+  const [compareError, setCompareError] = useState<string | null>(null);
+  const [isRestoring, startRestore] = useTransition();
 
   useEffect(() => {
     const fetchVersions = async () => {
@@ -263,6 +411,96 @@ function HistoryTabContent({
 
     fetchVersions();
   }, [recipeId]);
+
+  useEffect(() => {
+    if (versions.length === 0) {
+      return;
+    }
+    if (!compareFrom) {
+      setCompareFrom(versions[0].id);
+    }
+    if (!compareTo) {
+      setCompareTo(versions[1]?.id ?? versions[0].id);
+    }
+  }, [versions, compareFrom, compareTo]);
+
+  const handleViewVersion = async (version: RecipeVersionRow) => {
+    setViewingVersion(version);
+    setViewLoading(true);
+    setViewingDetail(null);
+    try {
+      const response = await fetch(
+        `/api/recipes/${recipeId}/versions/${version.id}`
+      );
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to load version details");
+      }
+      const data = (await response.json()) as RecipeVersionDetail;
+      setViewingDetail(data);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to load version.";
+      toast.error(message);
+    } finally {
+      setViewLoading(false);
+    }
+  };
+
+  const handleCompare = async () => {
+    if (!compareFrom || !compareTo || compareFrom === compareTo) {
+      return;
+    }
+    setCompareLoading(true);
+    setCompareError(null);
+    setCompareData(null);
+    try {
+      const response = await fetch(
+        `/api/recipes/${recipeId}/versions/compare?from=${compareFrom}&to=${compareTo}`
+      );
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to compare versions");
+      }
+      const data = (await response.json()) as RecipeVersionCompare;
+      setCompareData(data);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to compare versions.";
+      setCompareError(message);
+    } finally {
+      setCompareLoading(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    if (!viewingDetail) {
+      return;
+    }
+    if (viewingDetail.id === currentVersionId) {
+      return;
+    }
+    const confirmed = window.confirm(
+      `Restore version ${viewingDetail.versionNumber}? A new version will be created.`
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    startRestore(async () => {
+      try {
+        await restoreRecipeVersion(recipeId, viewingDetail.id);
+        toast.success("Recipe version restored.");
+        setViewingVersion(null);
+        setViewingDetail(null);
+        router.refresh();
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to restore version.";
+        toast.error(message);
+      }
+    });
+  };
 
   if (loading) {
     return (
@@ -299,8 +537,16 @@ function HistoryTabContent({
   return (
     <>
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Version History</CardTitle>
+          <Button
+            disabled={versions.length < 2}
+            onClick={() => setCompareOpen(true)}
+            size="sm"
+            variant="outline"
+          >
+            Compare Versions
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -335,7 +581,7 @@ function HistoryTabContent({
                   </div>
                 </div>
                 <Button
-                  onClick={() => setViewingVersion(version)}
+                  onClick={() => handleViewVersion(version)}
                   size="sm"
                   variant="outline"
                 >
@@ -348,10 +594,15 @@ function HistoryTabContent({
       </Card>
 
       <Dialog
-        onOpenChange={() => setViewingVersion(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setViewingVersion(null);
+            setViewingDetail(null);
+          }
+        }}
         open={!!viewingVersion}
       >
-        <DialogContent>
+        <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>
               Version {viewingVersion?.version_number} -{" "}
@@ -359,33 +610,353 @@ function HistoryTabContent({
                 new Date(viewingVersion.created_at).toLocaleString()}
             </DialogTitle>
           </DialogHeader>
-          <div className="max-h-[60vh] overflow-y-auto">
-            <div className="space-y-4">
+          {viewLoading && (
+            <p className="text-muted-foreground">Loading version details...</p>
+          )}
+          {!viewLoading && viewingDetail && (
+            <div className="space-y-6">
+              <div className="rounded-lg border p-4 text-sm">
+                <div className="grid gap-2 md:grid-cols-2">
+                  <div>
+                    <strong>Name:</strong> {viewingDetail.name}
+                  </div>
+                  <div>
+                    <strong>Category:</strong>{" "}
+                    {viewingDetail.category ?? "—"}
+                  </div>
+                  <div>
+                    <strong>Cuisine:</strong>{" "}
+                    {viewingDetail.cuisineType ?? "—"}
+                  </div>
+                  <div>
+                    <strong>Yield:</strong> {viewingDetail.yield.quantity}{" "}
+                    {viewingDetail.yield.unit ?? ""}
+                  </div>
+                  <div>
+                    <strong>Prep:</strong>{" "}
+                    {formatMinutes(viewingDetail.times.prepMinutes)}
+                  </div>
+                  <div>
+                    <strong>Cook:</strong>{" "}
+                    {formatMinutes(viewingDetail.times.cookMinutes)}
+                  </div>
+                  <div>
+                    <strong>Rest:</strong>{" "}
+                    {formatMinutes(viewingDetail.times.restMinutes)}
+                  </div>
+                  <div>
+                    <strong>Difficulty:</strong>{" "}
+                    {viewingDetail.difficultyLevel ?? "—"}
+                  </div>
+                </div>
+                {viewingDetail.description && (
+                  <div className="mt-3">
+                    <strong>Description:</strong>{" "}
+                    <span className="text-muted-foreground">
+                      {viewingDetail.description}
+                    </span>
+                  </div>
+                )}
+                {viewingDetail.tags.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {viewingDetail.tags.map((tag) => (
+                      <Badge key={tag} variant="secondary">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                {viewingDetail.notes && (
+                  <div className="mt-3">
+                    <strong>Notes:</strong>{" "}
+                    <span className="text-muted-foreground">
+                      {viewingDetail.notes}
+                    </span>
+                  </div>
+                )}
+              </div>
+
               <div>
-                <h3 className="mb-2 font-semibold">Summary</h3>
-                <div className="rounded-lg border p-3 text-sm">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <strong>Ingredients:</strong>{" "}
-                      {viewingVersion?.ingredient_count}
+                <h3 className="mb-2 font-semibold">Ingredients</h3>
+                <div className="space-y-2">
+                  {viewingDetail.ingredients.map((ingredient) => (
+                    <div
+                      className="flex items-center justify-between rounded-lg border p-3 text-sm"
+                      key={ingredient.id}
+                    >
+                      <div>
+                        <div className="font-medium">{ingredient.name}</div>
+                        {ingredient.preparationNotes && (
+                          <div className="text-muted-foreground">
+                            {ingredient.preparationNotes}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-muted-foreground">
+                        {ingredient.quantity} {ingredient.unit ?? ""}
+                      </div>
                     </div>
-                    <div>
-                      <strong>Steps:</strong> {viewingVersion?.step_count}
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="mb-2 font-semibold">Steps</h3>
+                <div className="space-y-2">
+                  {viewingDetail.steps.map((step) => (
+                    <div className="rounded-lg border p-3 text-sm" key={step.id}>
+                      <div className="font-semibold">
+                        Step {step.stepNumber}
+                      </div>
+                      <div className="text-muted-foreground">
+                        {step.instruction}
+                      </div>
                     </div>
-                    <div>
-                      <strong>Created:</strong>{" "}
-                      {viewingVersion &&
-                        new Date(viewingVersion.created_at).toLocaleString()}
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          {!viewLoading && !viewingDetail && (
+            <p className="text-muted-foreground">
+              No detail data available for this version.
+            </p>
+          )}
+
+          {viewingDetail && (
+            <div className="mt-4 flex justify-end gap-2">
+              <Button
+                disabled={isRestoring || viewingDetail.id === currentVersionId}
+                onClick={handleRestore}
+                variant="outline"
+              >
+                {viewingDetail.id === currentVersionId
+                  ? "Current Version"
+                  : isRestoring
+                    ? "Restoring..."
+                    : "Restore This Version"}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        onOpenChange={(open) => {
+          setCompareOpen(open);
+          if (!open) {
+            setCompareData(null);
+            setCompareError(null);
+          }
+        }}
+        open={compareOpen}
+      >
+        <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Compare Recipe Versions</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">From</p>
+                <Select
+                  onValueChange={setCompareFrom}
+                  value={compareFrom ?? undefined}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a version" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {versions.map((version) => (
+                      <SelectItem key={version.id} value={version.id}>
+                        Version {version.version_number}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">To</p>
+                <Select
+                  onValueChange={setCompareTo}
+                  value={compareTo ?? undefined}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a version" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {versions.map((version) => (
+                      <SelectItem key={version.id} value={version.id}>
+                        Version {version.version_number}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <Button
+                disabled={
+                  compareLoading ||
+                  !compareFrom ||
+                  !compareTo ||
+                  compareFrom === compareTo
+                }
+                onClick={handleCompare}
+                variant="outline"
+              >
+                {compareLoading ? "Comparing..." : "Compare"}
+              </Button>
+            </div>
+
+            {compareError && (
+              <p className="text-sm text-destructive">{compareError}</p>
+            )}
+
+            {compareData && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="mb-2 font-semibold">Field Changes</h3>
+                  {Object.keys(compareData.changes.base).length === 0 ? (
+                    <p className="text-muted-foreground text-sm">
+                      No base field differences.
+                    </p>
+                  ) : (
+                    <div className="space-y-2 text-sm">
+                      {Object.entries(compareData.changes.base).map(
+                        ([field, change]) => (
+                          <div
+                            className="rounded-lg border p-3"
+                            key={field}
+                          >
+                            <div className="font-medium capitalize">
+                              {field.replace(/([A-Z])/g, " $1")}
+                            </div>
+                            <div className="text-muted-foreground">
+                              {Array.isArray(change.from)
+                                ? change.from.join(", ") || "—"
+                                : change.from ?? "—"}{" "}
+                              →{" "}
+                              {Array.isArray(change.to)
+                                ? change.to.join(", ") || "—"
+                                : change.to ?? "—"}
+                            </div>
+                          </div>
+                        )
+                      )}
                     </div>
+                  )}
+                </div>
+
+                <div>
+                  <h3 className="mb-2 font-semibold">Ingredient Changes</h3>
+                  <div className="space-y-2 text-sm">
+                    {compareData.changes.ingredients.added.length > 0 && (
+                      <div className="rounded-lg border p-3">
+                        <div className="font-medium">Added</div>
+                        {compareData.changes.ingredients.added.map((item) => (
+                          <div
+                            className="text-muted-foreground"
+                            key={item.ingredientId}
+                          >
+                            {item.name} · {item.quantity} {item.unit ?? ""}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {compareData.changes.ingredients.removed.length > 0 && (
+                      <div className="rounded-lg border p-3">
+                        <div className="font-medium">Removed</div>
+                        {compareData.changes.ingredients.removed.map((item) => (
+                          <div
+                            className="text-muted-foreground"
+                            key={item.ingredientId}
+                          >
+                            {item.name} · {item.quantity} {item.unit ?? ""}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {compareData.changes.ingredients.changed.length > 0 && (
+                      <div className="rounded-lg border p-3">
+                        <div className="font-medium">Changed</div>
+                        {compareData.changes.ingredients.changed.map((item) => (
+                          <div
+                            className="text-muted-foreground"
+                            key={item.ingredientId}
+                          >
+                            {item.name}: {item.from.quantity}{" "}
+                            {item.from.unit ?? ""} → {item.to.quantity}{" "}
+                            {item.to.unit ?? ""}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {compareData.changes.ingredients.added.length === 0 &&
+                      compareData.changes.ingredients.removed.length === 0 &&
+                      compareData.changes.ingredients.changed.length === 0 && (
+                        <p className="text-muted-foreground">
+                          No ingredient changes.
+                        </p>
+                      )}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="mb-2 font-semibold">Step Changes</h3>
+                  <div className="space-y-2 text-sm">
+                    {compareData.changes.steps.added.length > 0 && (
+                      <div className="rounded-lg border p-3">
+                        <div className="font-medium">Added</div>
+                        {compareData.changes.steps.added.map((item) => (
+                          <div
+                            className="text-muted-foreground"
+                            key={item.stepNumber}
+                          >
+                            Step {item.stepNumber}: {item.instruction}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {compareData.changes.steps.removed.length > 0 && (
+                      <div className="rounded-lg border p-3">
+                        <div className="font-medium">Removed</div>
+                        {compareData.changes.steps.removed.map((item) => (
+                          <div
+                            className="text-muted-foreground"
+                            key={item.stepNumber}
+                          >
+                            Step {item.stepNumber}: {item.instruction}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {compareData.changes.steps.changed.length > 0 && (
+                      <div className="rounded-lg border p-3">
+                        <div className="font-medium">Changed</div>
+                        {compareData.changes.steps.changed.map((item) => (
+                          <div
+                            className="text-muted-foreground"
+                            key={item.stepNumber}
+                          >
+                            Step {item.stepNumber}: {item.from.instruction} →{" "}
+                            {item.to.instruction}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {compareData.changes.steps.added.length === 0 &&
+                      compareData.changes.steps.removed.length === 0 &&
+                      compareData.changes.steps.changed.length === 0 && (
+                        <p className="text-muted-foreground">
+                          No step changes.
+                        </p>
+                      )}
                   </div>
                 </div>
               </div>
-              <div className="text-sm text-muted-foreground">
-                This is a snapshot of version {viewingVersion?.version_number}.
-                Full version comparison and diff features will be available in a
-                future update.
-              </div>
-            </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

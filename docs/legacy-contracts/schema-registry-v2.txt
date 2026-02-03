@@ -732,6 +732,11 @@ tenant_kitchen.recipe_versions
   PK: (tenant_id, id)
   UNIQUE: (tenant_id, id)  -- For composite FK (tasks reference this)
   recipe_id uuid NOT NULL
+  name text NOT NULL
+  category text
+  cuisine_type text
+  description text
+  tags text[]
   version_number int NOT NULL  -- Auto-increment per recipe
   yield_quantity numeric(10,2) NOT NULL
   yield_unit_id smallint NOT NULL REFERENCES core.units
@@ -740,11 +745,15 @@ tenant_kitchen.recipe_versions
   cook_time_minutes int
   rest_time_minutes int
   difficulty_level smallint  -- 1-5
+  instructions text
   notes text
   is_locked boolean NOT NULL DEFAULT false
   locked_at timestamptz
   locked_by uuid
   created_at, updated_at, deleted_at
+  cost_calculated_at timestamptz
+  cost_per_yield numeric(12,2) NOT NULL DEFAULT 0
+  total_cost numeric(12,2) NOT NULL DEFAULT 0
   UNIQUE (tenant_id, recipe_id, version_number)
   -- Trigger: Cannot UPDATE if is_locked = true (except to lock it)
 

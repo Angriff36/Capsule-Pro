@@ -321,41 +321,41 @@ model PrepListItem {
 }
 
 model Event {
-  tenantId     String          @map("tenant_id") @db.Uuid
-  id           String          @unique @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
-  eventNumber  String?         @map("event_number")
-  title        String          @default("Untitled Event")
-  clientId     String?         @map("client_id") @db.Uuid
-  locationId   String?         @map("location_id") @db.Uuid
-  venueId      String?         @map("venue_id") @db.Uuid
-  eventType    String          @map("event_type")
-  eventDate    DateTime        @map("event_date") @db.Date
-  guestCount   Int             @default(1) @map("guest_count")
-  status       String          @default("confirmed")
-  budget       Decimal?        @db.Decimal(12, 2)
-  ticketPrice  Decimal?        @map("ticket_price") @db.Decimal(10, 2)
-  ticketTier   String?         @map("ticket_tier")
-  eventFormat  String?         @map("event_format")
-  accessibilityOptions String[] @map("accessibility_options")
-  featuredMediaUrl String?     @map("featured_media_url")
-  assignedTo   String?         @map("assigned_to") @db.Uuid
-  venueName    String?         @map("venue_name")
-  venueAddress String?         @map("venue_address")
-  notes        String?
-  tags         String[]
-  createdAt    DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt    DateTime?       @map("deleted_at") @db.Timestamptz(6)
-  tenant       Account         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  client       Client?         @relation("EventClient", fields: [clientId], references: [id], onDelete: SetNull)
-  location     Location?       @relation("EventLocation", fields: [locationId], references: [id], onDelete: SetNull)
-  venue        Location?       @relation("LocationVenue", fields: [venueId], references: [id], onDelete: SetNull)
-  budgets      EventBudget[]
-  reports      EventReport[]
-  wasteEntries WasteEntry[]
-  shipments    Shipment[]
-  proposals    Proposal[]
-  contracts    EventContract[]
+  tenantId             String          @map("tenant_id") @db.Uuid
+  id                   String          @unique @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  eventNumber          String?         @map("event_number")
+  title                String          @default("Untitled Event")
+  clientId             String?         @map("client_id") @db.Uuid
+  locationId           String?         @map("location_id") @db.Uuid
+  venueId              String?         @map("venue_id") @db.Uuid
+  eventType            String          @map("event_type")
+  eventDate            DateTime        @map("event_date") @db.Date
+  guestCount           Int             @default(1) @map("guest_count")
+  status               String          @default("confirmed")
+  budget               Decimal?        @db.Decimal(12, 2)
+  ticketPrice          Decimal?        @map("ticket_price") @db.Decimal(10, 2)
+  ticketTier           String?         @map("ticket_tier")
+  eventFormat          String?         @map("event_format")
+  accessibilityOptions String[]        @map("accessibility_options")
+  featuredMediaUrl     String?         @map("featured_media_url")
+  assignedTo           String?         @map("assigned_to") @db.Uuid
+  venueName            String?         @map("venue_name")
+  venueAddress         String?         @map("venue_address")
+  notes                String?
+  tags                 String[]
+  createdAt            DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt            DateTime?       @map("deleted_at") @db.Timestamptz(6)
+  tenant               Account         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  client               Client?         @relation("EventClient", fields: [clientId], references: [id], onDelete: SetNull)
+  location             Location?       @relation("EventLocation", fields: [locationId], references: [id], onDelete: SetNull)
+  venue                Location?       @relation("LocationVenue", fields: [venueId], references: [id], onDelete: SetNull)
+  budgets              EventBudget[]
+  reports              EventReport[]
+  wasteEntries         WasteEntry[]
+  shipments            Shipment[]
+  proposals            Proposal[]
+  contracts            EventContract[]
 
   @@id([tenantId, id])
   @@unique([tenantId, id])
@@ -728,6 +728,11 @@ model RecipeVersion {
   tenantId         String    @map("tenant_id") @db.Uuid
   id               String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   recipeId         String    @map("recipe_id") @db.Uuid
+  name             String
+  category         String?
+  cuisineType      String?   @map("cuisine_type")
+  description      String?
+  tags             String[]
   versionNumber    Int       @map("version_number")
   yieldQuantity    Decimal   @map("yield_quantity") @db.Decimal(10, 2)
   yieldUnitId      Int       @map("yield_unit_id") @db.SmallInt
@@ -2562,18 +2567,18 @@ model skills {
 
 /// This table contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Role {
-  tenantId                String    @map("tenant_id") @db.Uuid
-  id                       String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                     String
-  baseRate                Decimal   @map("base_rate") @db.Decimal(10, 2)
-  overtimeMultiplier      Decimal   @default(1.5) @map("overtime_multiplier") @db.Decimal(4, 2)
+  tenantId               String    @map("tenant_id") @db.Uuid
+  id                     String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                   String
+  baseRate               Decimal   @map("base_rate") @db.Decimal(10, 2)
+  overtimeMultiplier     Decimal   @default(1.5) @map("overtime_multiplier") @db.Decimal(4, 2)
   overtimeThresholdHours Int       @default(40) @map("overtime_threshold_hours") @db.SmallInt
-  description              String?
-  isActive                Boolean   @default(true) @map("is_active")
-  createdAt               DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt               DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt               DateTime? @map("deleted_at") @db.Timestamptz(6)
-  users                    User[]    @relation("EmployeeRole")
+  description            String?
+  isActive               Boolean   @default(true) @map("is_active")
+  createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt              DateTime? @map("deleted_at") @db.Timestamptz(6)
+  users                  User[]    @relation("EmployeeRole")
 
   @@id([tenantId, id])
   @@unique([tenantId, name], map: "roles_name_unique")

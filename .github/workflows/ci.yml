@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Check if Dependabot PR
         id: dependabot-check
@@ -34,6 +36,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+
+      - name: Enforce DB migration guardrails
+        run: |
+          node scripts/guard-prisma-migrationss.mjs ci
+          node scripts/enforce-db-pre-migration-checklist.mjs ci
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
