@@ -128,7 +128,7 @@ const KitchenStationsPage = async () => {
         <Separator />
 
         {/* Station Overview Section */}
-        <section className="flex flex-col gap-3">
+        <section className="flex flex-col gap-8">
           <h2 className="text-sm font-medium text-muted-foreground">
             Station Overview
           </h2>
@@ -225,7 +225,7 @@ const KitchenStationsPage = async () => {
         </section>
 
         {/* Station Legend Section */}
-        <section className="flex flex-col gap-3">
+        <section className="flex flex-col gap-8">
           <h2 className="text-sm font-medium text-muted-foreground">
             Station Tags Reference
           </h2>
