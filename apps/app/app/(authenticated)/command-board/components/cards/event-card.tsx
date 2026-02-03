@@ -3,12 +3,20 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
-import { format } from "date-fns";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Calendar,
   DollarSign,
@@ -23,23 +31,12 @@ type EventCardProps = {
   card: CommandBoardCard;
 };
 
-const statusConfig = {
-  confirmed: {
-    label: "Confirmed",
-    color: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  },
-  tentative: {
-    label: "Tentative",
-    color: "bg-amber-100 text-amber-700 border-amber-200",
-  },
-  cancelled: {
-    label: "Cancelled",
-    color: "bg-red-100 text-red-700 border-red-200",
-  },
-  completed: {
-    label: "Completed",
-    color: "bg-slate-100 text-slate-700 border-slate-200",
-  },
+const statusVariantMap = {
+  confirmed: "default" as const,
+  tentative: "secondary" as const,
+  cancelled: "destructive" as const,
+  completed: "secondary" as const,
+  draft: "outline" as const,
 };
 
 export const EventCard = memo(function EventCard({ card }: EventCardProps) {
@@ -52,8 +49,8 @@ export const EventCard = memo(function EventCard({ card }: EventCardProps) {
     eventType?: string;
   };
   const status = metadata.status || "confirmed";
-  const config =
-    statusConfig[status as keyof typeof statusConfig] || statusConfig.confirmed;
+  const variant =
+    statusVariantMap[status as keyof typeof statusVariantMap] ?? "outline";
   const eventDate = metadata.eventDate ? new Date(metadata.eventDate) : null;
   const guestCount = metadata.guestCount || 0;
   const budget = metadata.budget;
@@ -61,52 +58,69 @@ export const EventCard = memo(function EventCard({ card }: EventCardProps) {
   const eventType = metadata.eventType || "Event";
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="mb-2 flex items-start justify-between gap-2">
-        <Badge className={config.color} variant="outline">
-          {config.label}
-        </Badge>
-        <Badge className="text-xs" variant="secondary">
-          {eventType}
-        </Badge>
-      </div>
-
-      <h3 className="mb-3 line-clamp-2 font-semibold text-sm">{card.title}</h3>
-
-      <div className="mb-3 space-y-1.5">
-        {eventDate && (
-          <div className="flex items-center gap-2 text-muted-foreground text-xs">
-            <Calendar className="h-3.5 w-3.5 shrink-0" />
-            <span>{format(eventDate, "MMM d, yyyy")}</span>
+    <Card className="h-full">
+      <CardHeader>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 space-y-1.5">
+            <div className="flex items-center gap-2 text-xs">
+              <CardDescription className="capitalize text-muted-foreground">
+                {eventType}
+              </CardDescription>
+            </div>
+            <CardTitle className="line-clamp-2 leading-tight">{card.title}</CardTitle>
           </div>
-        )}
-        {guestCount > 0 && (
-          <div className="flex items-center gap-2 text-muted-foreground text-xs">
-            <Users className="h-3.5 w-3.5 shrink-0" />
-            <span>{guestCount} guests</span>
-          </div>
-        )}
-        {budget && (
-          <div className="flex items-center gap-2 text-muted-foreground text-xs">
-            <DollarSign className="h-3.5 w-3.5 shrink-0" />
-            <span>{budget.toLocaleString()}</span>
-          </div>
-        )}
-        {venueName && (
-          <div className="flex items-center gap-2 text-muted-foreground text-xs">
-            <MapPin className="h-3.5 w-3.5 shrink-0" />
-            <span className="line-clamp-1">{venueName}</span>
-          </div>
-        )}
-      </div>
+          <CardAction>
+            <Badge className="capitalize" variant={variant}>
+              {status}
+            </Badge>
+          </CardAction>
+        </div>
+      </CardHeader>
 
-      {card.content && (
-        <p className="mb-3 line-clamp-2 text-muted-foreground text-xs">
-          {card.content}
-        </p>
-      )}
+      <Separator />
 
-      <div className="mt-auto">
+      <CardContent className="space-y-3 py-4">
+        <div className="space-y-1.5 text-sm">
+          {eventDate && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Calendar className="size-3.5 shrink-0" />
+              <span className="truncate">
+                {eventDate.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </span>
+            </div>
+          )}
+          {guestCount > 0 && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Users className="size-3.5 shrink-0" />
+              <span className="truncate">{guestCount} guests</span>
+            </div>
+          )}
+          {budget && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <DollarSign className="size-3.5 shrink-0" />
+              <span className="truncate">{budget.toLocaleString()}</span>
+            </div>
+          )}
+          {venueName && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <MapPin className="size-3.5 shrink-0" />
+              <span className="line-clamp-1">{venueName}</span>
+            </div>
+          )}
+        </div>
+
+        {card.content && (
+          <p className="line-clamp-2 text-muted-foreground text-xs">
+            {card.content}
+          </p>
+        )}
+      </CardContent>
+
+      <CardAction>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -125,7 +139,7 @@ export const EventCard = memo(function EventCard({ card }: EventCardProps) {
             <DropdownMenuItem>View Proposal</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
-    </div>
+      </CardAction>
+    </Card>
   );
 });

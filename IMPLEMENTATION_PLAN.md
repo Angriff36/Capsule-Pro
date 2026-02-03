@@ -160,11 +160,11 @@ Major visual and structural issues discovered during UI exploration that require
 
 **Specific Problems:**
 
-**Events Module** ([PARTIALLY COMPLETED]):
+**Events Module** ([COMPLETED]):
 - ~~Event cards overloaded with status badges, tags, and metadata~~ **IMPROVED**: Event card now uses proper hierarchy with CardAction for badge placement and subtle tag styling
-- Competing visual hierarchy between primary event info and secondary indicators
-- No consistent card pattern for different event types
-- Missing proper block components for event details view
+- ~~Competing visual hierarchy between primary event info and secondary indicators~~ **IMPROVED**: Command Board EventCard now uses Card components with consistent visual hierarchy
+- ~~No consistent card pattern for different event types~~ **COMPLETED**: Command Board EventCard refactored to use same design system pattern as events list card
+- ~~Missing proper block components for event details view~~ **COMPLETED**: CollapsibleSectionBlock and SectionHeaderBlock used throughout event details
 
 **Clients Module** ([COMPLETED]):
 - ~~Client profiles crammed with information in inconsistent layouts~~ **IMPROVED**: Client detail view now uses proper section headers and Separator elements
@@ -771,7 +771,69 @@ Created a new reusable `ClientQuickStatsBlock` component in the design system th
 
 ---
 
-### 2.16 Phase 2 Completion Criteria
+### 2.16 Completed UI Improvements (Command Board EventCard Standardization)
+
+**Iteration: Command Board EventCard Visual Consistency Enhancement**
+
+Command Board EventCard component (`apps/app/app/(authenticated)/command-board/components/cards/event-card.tsx`) successfully refactored to use the same design system Card pattern as the events list card, eliminating UI inconsistency across the platform.
+
+**Improvements Implemented:**
+
+1. **Card Component Adoption**
+   - Replaced plain div structure with proper Card, CardHeader, CardContent components
+   - Added CardAction for semantic action button placement
+   - Uses Separator for clear visual separation between header and content
+
+2. **Consistent Status Badge Pattern**
+   - Replaced custom color classes (`bg-emerald-100 text-emerald-700 border-emerald-200`) with design system variants (`default`, `secondary`, `destructive`, `outline`)
+   - Status badge now uses CardAction placement matching events list card pattern
+   - Consistent `statusVariantMap` pattern for uniform status display
+
+3. **Visual Hierarchy Standardization**
+   - CardDescription → CardTitle order matches events list card pattern
+   - Event type displayed as CardDescription in header
+   - Status badge positioned on right side via CardAction
+   - Consistent icon sizing (`size-3.5`) for metadata icons
+
+4. **Information Layout**
+   - Metadata (date, guests, budget, venue) organized in CardContent with `space-y-1.5`
+   - Consistent icon + label + value pattern
+   - Proper truncation and line-clamp for overflow text
+
+**Before vs After:**
+
+| Aspect | Before | After |
+|--------|--------|-------|
+| Structure | Plain divs with custom classes | Card components (Card, CardHeader, CardContent) |
+| Status Badges | Custom color classes | Design system variants (default/secondary/destructive/outline) |
+| Visual Separator | None | Separator component |
+| Header Layout | Badge row above title | CardDescription + CardTitle with CardAction badge |
+| Actions | Ghost button in footer | CardAction with DropdownMenu |
+
+**Key Learnings:**
+
+1. **Cross-Module Consistency Matters**: Users switching between the Command Board and Events list will now see the same visual language for event cards, reducing cognitive load.
+
+2. **Design System Variants Replace Custom Colors**: The status variant map (`statusVariantMap`) using design system variants is more maintainable than custom color classes and automatically adapts to theme changes.
+
+3. **CardAction Pattern is Versatile**: Using CardAction for both the status badge (header) and quick actions menu (footer) provides consistent semantic structure.
+
+4. **Separators Improve Scanability**: Adding Separator between CardHeader and CardContent creates clear visual separation, making cards easier to scan.
+
+5. **Icon Consistency**: Using `size-3.5` consistently for metadata icons across all event cards creates visual rhythm.
+
+**Remaining Work in Events Module:**
+- All major UI hierarchy issues in the Events Module are now complete
+- Event cards across the platform (events list, command board) now use consistent design system patterns
+
+**Applicability to Other Modules:**
+- **Any Module with Multiple Card Variants**: When the same entity is displayed as a card in multiple contexts, use the same Card component pattern to maintain consistency
+- **Dashboard Cards**: The pattern established here (CardHeader → Separator → CardContent → CardAction) should be applied to all dashboard metric cards
+- **List/Board Views**: Entities appearing in both list and kanban board views should use the same card structure with appropriate density adjustments
+
+---
+
+### 2.17 Phase 2 Completion Criteria
 
 Phase 2 is complete when:
 
@@ -783,7 +845,7 @@ Phase 2 is complete when:
 
 ---
 
-### 2.17 Relationship to Phase 1
+### 2.18 Relationship to Phase 1
 
 Phase 1 guarantees correctness, integrity, and realtime propagation. Phase 2
 guarantees **usability, power, and trust**.
