@@ -44,12 +44,13 @@ const statusVariant: Record<string, "destructive" | "secondary" | "outline"> = {
 };
 
 const CrmCommunicationsPage = () => (
-  <div className="space-y-8">
-    <div>
+  <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+    {/* Page Header */}
+    <div className="space-y-0.5">
       <h1 className="text-3xl font-bold tracking-tight">
         Communications Timeline
       </h1>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground">
         Maintain a single source of truth for client, venue, and command
         updates.
       </p>
@@ -57,11 +58,12 @@ const CrmCommunicationsPage = () => (
 
     <Separator />
 
-    <section>
+    {/* Recent Touchpoints Section */}
+    <section className="space-y-4">
       <h2 className="text-sm font-medium text-muted-foreground">
         Recent Touchpoints
       </h2>
-      <Card className="mt-2">
+      <Card>
         <CardContent className="space-y-4 pt-6">
           {communications.map((record) => (
             <div
