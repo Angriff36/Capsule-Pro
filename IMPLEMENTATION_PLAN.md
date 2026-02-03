@@ -3517,3 +3517,60 @@ Battle Boards Page component (`apps/app/app/(authenticated)/battles/boards/page.
 
 **Files Modified:**
 - `apps/app/app/(authenticated)/battles/boards/page.tsx` - Added page header with title and description, Separator, optimized main container spacing (gap-6 → gap-8), stats cards spacing (gap-4 → gap-6), boards grid spacing (gap-4 → gap-6), semantic section headers with dynamic count, icon import standardization (deprecated to non-deprecated names), consistent icon sizing (size-4/size-3.5), enhanced content organization
+
+### 2.56 Completed UI Improvements (Events Contracts Page)
+
+**Iteration: Events Contracts Page Visual Hierarchy Enhancement**
+
+Events Contracts Page client component (`apps/app/app/(authenticated)/events/contracts/components/contracts-page-client.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Improvements Implemented:**
+
+1. **Section-Based Organization**
+   - Added semantic `<section>` elements with descriptive headers for Filters and Contracts content areas
+   - Each section gets its own header with consistent styling: `text-sm font-medium text-muted-foreground`
+   - Clear visual separation: Filters → Contracts (with dynamic count)
+
+2. **Filters Section Refactoring**
+   - Converted custom border implementation (`border-border rounded-lg border bg-card p-4`) to standard Card and CardContent components
+   - Added proper section header ("Filters") for clear content identification
+   - Consistent spacing with `mt-3` for the card within the section
+
+3. **Contracts Grid Section Enhancement**
+   - Added semantic section header with dynamic count: "Contracts ({filteredContracts.length})"
+   - Moved results count inline with section header for better scanability
+   - Clear visual separation between filters and contracts content
+
+4. **Separator Addition for Pagination**
+   - Replaced `border-t` with `<Separator />` component for consistent visual language
+   - Consistent with other page improvements across the platform
+   - Creates clear visual break between contracts grid and pagination controls
+
+5. **Component Structure**
+   - Maintained `gap-8` spacing for consistent vertical rhythm across all sections
+   - Semantic sections improve accessibility and document structure
+   - Consistent section header styling matches other improved pages
+
+**Key Learnings:**
+
+1. **Section Headers Work for Filter + Grid Pages**: Even on complex pages with filters and grid layouts, adding section headers immediately gives users a mental model of the page structure.
+
+2. **Card Component Over Custom Borders**: Converting the custom `border-border rounded-lg border bg-card p-4` implementation to standard Card and CardContent components creates consistent visual language across the platform.
+
+3. **Dynamic Count in Section Header**: Including the filtered count in the section header ("Contracts (42)") provides useful context without cluttering the main view, matching the pattern established in other pages.
+
+4. **Separator Creates Consistency**: Using the Separator component instead of border-t for pagination creates consistent visual language with the rest of the platform.
+
+5. **Results Count Placement**: Moving the results count inline with the section header (instead of a separate section) reduces visual noise while maintaining context.
+
+**Remaining Work in Events Contracts Page:**
+- None identified — the page is now well-structured with clear visual hierarchy
+
+**Applicability to Other Modules:**
+
+- **Any Page with Filters + Grid Layout**: The section header pattern works well for pages with filters and data grids (proposals, invoices, etc.).
+- **Any Page with Custom Border Implementations**: The pattern of replacing custom border implementations with standard Card components should be applied consistently.
+- **Any Page with Pagination**: The Separator + pagination pattern should be applied to all paginated list pages.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/events/contracts/components/contracts-page-client.tsx` - Added semantic sections, section headers, Card components, Separator, improved spacing

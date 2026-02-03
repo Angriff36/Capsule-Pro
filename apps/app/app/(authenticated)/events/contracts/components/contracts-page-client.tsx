@@ -18,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Empty,
   EmptyContent,
@@ -209,8 +210,10 @@ export const ContractsPageClient = ({
   return (
     <div className="flex flex-1 flex-col gap-8">
       {/* Filters Section */}
-      <div className="border-border rounded-lg border bg-card p-4">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
+      <section>
+        <h2 className="text-sm font-medium text-muted-foreground">Filters</h2>
+        <Card className="mt-3">
+          <CardContent className="flex flex-col gap-4 p-4 lg:flex-row lg:items-end">
           {/* Search */}
           <div className="flex-1">
             <label className="text-muted-foreground mb-1.5 block text-sm font-medium">
@@ -307,21 +310,23 @@ export const ContractsPageClient = ({
               Clear filters
             </Button>
           )}
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Contracts Grid Section */}
+      <section>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Contracts ({filteredContracts.length})
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            Showing {paginatedContracts.length} of {filteredContracts.length}
+            {filteredContracts.length !== contracts.length && (
+              <span> (filtered from {contracts.length} total)</span>
+            )}
+          </p>
         </div>
-      </div>
-
-      {/* Results Count */}
-      <div className="flex items-center justify-between">
-        <p className="text-muted-foreground text-sm">
-          Showing {paginatedContracts.length} of {filteredContracts.length}{" "}
-          contracts
-          {filteredContracts.length !== contracts.length && (
-            <span> (filtered from {contracts.length} total)</span>
-          )}
-        </p>
-      </div>
-
-      {/* Contracts Grid */}
       {paginatedContracts.length === 0 ? (
         <Empty>
           <EmptyHeader>
@@ -420,8 +425,9 @@ export const ContractsPageClient = ({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="border-border border-t pt-4">
-          <div className="flex items-center justify-between">
+        <>
+          <Separator />
+          <div className="flex items-center justify-between pt-4">
             <p className="text-muted-foreground text-sm">
               Page {currentPage} of {totalPages}
             </p>
@@ -446,8 +452,9 @@ export const ContractsPageClient = ({
               </Button>
             </div>
           </div>
-        </div>
+        </>
       )}
+      </section>
     </div>
   );
 };
