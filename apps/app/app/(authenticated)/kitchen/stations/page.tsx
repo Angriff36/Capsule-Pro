@@ -118,7 +118,7 @@ const KitchenStationsPage = async () => {
       <Header page="Kitchen Stations" pages={["Kitchen Ops"]} />
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
-        <div className="flex flex-col gap-1">
+        <div className="space-y-0.5">
           <h1 className="text-3xl font-bold tracking-tight">Kitchen Stations</h1>
           <p className="text-muted-foreground">
             Monitor task progress and team activity across all kitchen stations
@@ -128,11 +128,11 @@ const KitchenStationsPage = async () => {
         <Separator />
 
         {/* Station Overview Section */}
-        <section className="flex flex-col gap-8">
+        <section className="space-y-4">
           <h2 className="text-sm font-medium text-muted-foreground">
             Station Overview
           </h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {stationStats.length === 0 ? (
               <Card className="col-span-full">
                 <CardContent className="flex flex-col items-center justify-center py-12">
@@ -181,24 +181,24 @@ const KitchenStationsPage = async () => {
 
                       {/* Task breakdown */}
                       <div className="grid grid-cols-3 gap-2 text-center">
-                        <div className="rounded-lg bg-slate-50 p-2">
-                          <div className="text-lg font-bold text-slate-700">
+                        <div className="rounded-lg bg-muted/50 p-2">
+                          <div className="text-lg font-bold">
                             {station.open_tasks}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             Open
                           </div>
                         </div>
-                        <div className="rounded-lg bg-blue-50 p-2">
-                          <div className="text-lg font-bold text-blue-700">
+                        <div className="rounded-lg bg-muted/50 p-2">
+                          <div className="text-lg font-bold">
                             {station.in_progress_tasks}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             In Progress
                           </div>
                         </div>
-                        <div className="rounded-lg bg-emerald-50 p-2">
-                          <div className="text-lg font-bold text-emerald-700">
+                        <div className="rounded-lg bg-muted/50 p-2">
+                          <div className="text-lg font-bold">
                             {station.completed_tasks}
                           </div>
                           <div className="text-xs text-muted-foreground">
@@ -225,13 +225,13 @@ const KitchenStationsPage = async () => {
         </section>
 
         {/* Station Legend Section */}
-        <section className="flex flex-col gap-8">
+        <section className="space-y-4">
           <h2 className="text-sm font-medium text-muted-foreground">
             Station Tags Reference
           </h2>
           <Card>
             <CardContent className="pt-6">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
                 {Object.entries(STATION_CONFIG).map(([key, config]) => (
                   <div
                     className="flex items-center gap-2 rounded-lg border p-3"
