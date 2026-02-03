@@ -1,7 +1,6 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -84,24 +83,23 @@ const statusVariantMap = {
 };
 
 const AnalyticsPage = () => (
-  <div className="space-y-6">
-    <div>
-      <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-        Analytics
-      </p>
-      <h1 className="text-2xl font-semibold">Operational Insights</h1>
-      <p className="text-sm text-muted-foreground">
+  <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+    {/* Page Header */}
+    <div className="space-y-0.5">
+      <h1 className="text-3xl font-bold tracking-tight">Operational Insights</h1>
+      <p className="text-muted-foreground">
         A single dashboard for events, kitchen, and finance performance.
       </p>
     </div>
 
     <Separator />
 
-    <section>
-      <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+    {/* Performance Overview Section */}
+    <section className="space-y-4">
+      <h2 className="text-sm font-medium text-muted-foreground">
         Performance Overview
       </h2>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-3">
         {performanceCards.map((card) => (
           <Card key={card.title}>
             <CardHeader>
@@ -110,13 +108,7 @@ const AnalyticsPage = () => (
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-1.5">
-                <span
-                  className={`text-xs ${
-                    card.trend === "up"
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
+                <span className="text-xs">
                   {card.trend === "up" ? "↑" : "↓"}
                 </span>
                 <span className="text-muted-foreground text-xs">
@@ -129,11 +121,12 @@ const AnalyticsPage = () => (
       </div>
     </section>
 
-    <section>
-      <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+    {/* Focus Metrics Section */}
+    <section className="space-y-4">
+      <h2 className="text-sm font-medium text-muted-foreground">
         Focus Metrics
       </h2>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-3">
         {focusMetrics.map((metric) => (
           <Card key={metric.title}>
             <CardHeader>
@@ -152,8 +145,9 @@ const AnalyticsPage = () => (
       </div>
     </section>
 
-    <section>
-      <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+    {/* Top Events Section */}
+    <section className="space-y-4">
+      <h2 className="text-sm font-medium text-muted-foreground">
         Top Events This Week
       </h2>
       <Card>
