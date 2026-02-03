@@ -1800,7 +1800,7 @@ Phase 2 is complete when:
 
 ---
 
-### 2.33 Relationship to Phase 1
+### 2.36 Relationship to Phase 1
 
 Phase 1 guarantees correctness, integrity, and realtime propagation. Phase 2
 guarantees **usability, power, and trust**.
