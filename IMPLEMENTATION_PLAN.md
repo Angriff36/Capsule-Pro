@@ -179,7 +179,7 @@ Major visual and structural issues discovered during UI exploration that require
 - ~~Information architecture unclear without clear section breaks~~ **IMPROVED**: Added section headers and Separator for clear visual grouping across both analytics and profitability dashboards
 
 **Design System Components - [IN PROGRESS]:**
-- ~~Event detail blocks (should replace current ad-hoc layouts)~~ **PARTIALLY COMPLETED**: CollapsibleSectionBlock created and 3 sections refactored
+- ~~Event detail blocks (should replace current ad-hoc layouts)~~ **COMPLETED**: CollapsibleSectionBlock created and 3 sections refactored; SectionHeaderBlock used for AI sections (TaskBreakdownSection, ExecutiveSummarySection, SuggestionsSection)
 - Client profile cards (structured component missing)
 - Dashboard widget containers (standardized needed)
 - Information density controllers (collapsible sections, progressive disclosure)
@@ -669,7 +669,58 @@ TaskCard component (`apps/app/app/(authenticated)/events/components/task-breakdo
 
 ---
 
-### 2.15 Phase 2 Completion Criteria
+### 2.15 Completed UI Improvements (AI Sections Header Standardization)
+
+**Iteration: AI Sections Visual Consistency Enhancement**
+
+AI-related section components (`apps/app/app/(authenticated)/events/[eventId]/event-details-sections.tsx`) successfully refactored to use the standardized `SectionHeaderBlock` component for visual consistency.
+
+**Improvements Implemented:**
+
+1. **TaskBreakdownSection Refactoring**
+   - Replaced custom flex header with `SectionHeaderBlock`
+   - Icon: SparklesIcon with purple color
+   - Title: "AI Task Assistant"
+   - Actions: "Generate Task Breakdown" button
+
+2. **ExecutiveSummarySection Refactoring**
+   - Replaced custom flex header with `SectionHeaderBlock`
+   - Icon: SparklesIcon with primary color
+   - Title: "Executive Summary"
+   - Actions: "Generate Summary" button
+
+3. **SuggestionsSection Refactoring**
+   - Replaced custom flex header with `SectionHeaderBlock`
+   - Icon: Lightbulb with amber color
+   - Title: "AI Suggestions"
+   - Actions: Dynamic toggle button ("Show/Hide Suggestions") with badge count
+
+4. **Import Consolidation**
+   - Added `SectionHeaderBlock` to imports from design system blocks
+   - Maintained all existing component behavior and functionality
+
+**Key Learnings:**
+
+1. **SectionHeaderBlock Works for Non-Collapsible Sections**: The `SectionHeaderBlock` component is well-suited for sections that need consistent header styling without collapsible functionality.
+
+2. **Actions Pattern is Flexible**: The `actions` prop accepts any React.ReactNode, making it easy to pass complex buttons including those with dynamic variants, badges, and conditional rendering.
+
+3. **Code Reduction**: Refactoring these three sections reduced header boilerplate code significantly while maintaining full functionality.
+
+4. **Design System Leveraging**: Using existing design system blocks (`SectionHeaderBlock`) instead of creating custom implementations ensures consistency across the platform.
+
+**Remaining Work in Event Details:**
+- BudgetSection remains with custom collapsible implementation (legitimate special case due to dynamic trigger text)
+- Consider refactoring BudgetSection if CollapsibleSectionBlock is enhanced to support dynamic trigger text via function prop
+
+**Applicability to Other Modules:**
+- **Any section with icon + title + actions header pattern**: The SectionHeaderBlock can be used wherever a non-collapsible section header is needed
+- **Other AI-related sections**: Consider applying the same pattern to any other AI feature sections in the platform
+- **Design System Adoption**: The pattern established here encourages using existing blocks before creating custom implementations
+
+---
+
+### 2.16 Phase 2 Completion Criteria
 
 Phase 2 is complete when:
 
@@ -681,7 +732,7 @@ Phase 2 is complete when:
 
 ---
 
-### 2.15 Relationship to Phase 1
+### 2.17 Relationship to Phase 1
 
 Phase 1 guarantees correctness, integrity, and realtime propagation. Phase 2
 guarantees **usability, power, and trust**.

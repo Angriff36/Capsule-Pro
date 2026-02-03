@@ -20,7 +20,7 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { CollapsibleSectionBlock } from "@repo/design-system/components/blocks/collapsible-section-block";
+import { CollapsibleSectionBlock, SectionHeaderBlock } from "@repo/design-system/components/blocks/collapsible-section-block";
 import {
   AlertTriangleIcon,
   ChevronDownIcon,
@@ -448,18 +448,21 @@ export function TaskBreakdownSection({
   onSave,
 }: TaskBreakdownSectionProps) {
   const showEmptyState = breakdown === null && !isGenerating;
+  const generateButton = (
+    <Button onClick={onOpenGenerateModal}>
+      <SparklesIcon className="mr-2 size-4" />
+      Generate Task Breakdown
+    </Button>
+  );
+
   return (
     <>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <SparklesIcon className="size-5 text-purple-500" />
-          <h2 className="font-semibold text-lg">AI Task Assistant</h2>
-        </div>
-        <Button onClick={onOpenGenerateModal}>
-          <SparklesIcon className="mr-2 size-4" />
-          Generate Task Breakdown
-        </Button>
-      </div>
+      <SectionHeaderBlock
+        icon={SparklesIcon}
+        title="AI Task Assistant"
+        iconColor="text-purple-500"
+        actions={generateButton}
+      />
 
       {breakdown && (
         <TaskBreakdownDisplay
@@ -511,18 +514,21 @@ export function ExecutiveSummarySection({
   onDelete,
   onOpenGenerateModal,
 }: ExecutiveSummarySectionProps) {
+  const generateButton = (
+    <Button onClick={onOpenGenerateModal}>
+      <SparklesIcon className="mr-2 size-4" />
+      Generate Summary
+    </Button>
+  );
+
   return (
     <>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <SparklesIcon className="size-5 text-primary" />
-          <h2 className="font-semibold text-lg">Executive Summary</h2>
-        </div>
-        <Button onClick={onOpenGenerateModal}>
-          <SparklesIcon className="mr-2 size-4" />
-          Generate Summary
-        </Button>
-      </div>
+      <SectionHeaderBlock
+        icon={SparklesIcon}
+        title="Executive Summary"
+        iconColor="text-primary"
+        actions={generateButton}
+      />
 
       {isLoading ? (
         <EventSummarySkeleton />
@@ -560,26 +566,29 @@ export function SuggestionsSection({
   onDismiss,
   onAction,
 }: SuggestionsSectionProps) {
+  const toggleButton = (
+    <Button
+      variant={showSuggestions ? "default" : "outline"}
+      onClick={() => onShowSuggestionsChange(!showSuggestions)}
+    >
+      <SparklesIcon className="mr-2 size-4" />
+      {showSuggestions ? "Hide Suggestions" : "Show Suggestions"}
+      {suggestions.length > 0 && (
+        <Badge className="ml-2" variant="secondary">
+          {suggestions.length}
+        </Badge>
+      )}
+    </Button>
+  );
+
   return (
     <>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Lightbulb className="size-5 text-amber-500" />
-          <h2 className="font-semibold text-lg">AI Suggestions</h2>
-        </div>
-        <Button
-          variant={showSuggestions ? "default" : "outline"}
-          onClick={() => onShowSuggestionsChange(!showSuggestions)}
-        >
-          <SparklesIcon className="mr-2 size-4" />
-          {showSuggestions ? "Hide Suggestions" : "Show Suggestions"}
-          {suggestions.length > 0 && (
-            <Badge className="ml-2" variant="secondary">
-              {suggestions.length}
-            </Badge>
-          )}
-        </Button>
-      </div>
+      <SectionHeaderBlock
+        icon={Lightbulb}
+        title="AI Suggestions"
+        iconColor="text-amber-500"
+        actions={toggleButton}
+      />
 
       {showSuggestions && (
         <Card className="border-slate-200 shadow-sm">
