@@ -11,6 +11,7 @@ import {
 } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Progress } from "@repo/design-system/components/ui/progress";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   AlertTriangleIcon,
   CalendarDaysIcon,
@@ -248,9 +249,11 @@ const AdminDashboardPage = async ({
         </div>
       </Header>
 
-      <div className="flex flex-1 gap-6 p-4 pt-0">
+      <Separator />
+
+      <div className="flex flex-1 gap-8 p-4 pt-0">
         {/* Left Sidebar */}
-        <aside className="flex w-72 shrink-0 flex-col gap-6">
+        <aside className="flex w-72 shrink-0 flex-col gap-8">
           {/* Data Import Section */}
           <DataImportSection documents={recentDocuments} />
 
@@ -314,9 +317,13 @@ const AdminDashboardPage = async ({
         </aside>
 
         {/* Main Content */}
-        <div className="flex flex-1 flex-col gap-6">
-          {/* Stats Cards Row */}
-          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="flex flex-1 flex-col gap-8">
+          {/* Performance Overview */}
+          <section>
+            <h3 className="mb-4 text-sm font-medium text-muted-foreground">
+              Performance Overview
+            </h3>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="pb-2">
                 <CardDescription className="flex items-center gap-2">
@@ -387,12 +394,15 @@ const AdminDashboardPage = async ({
                 {validationIssues > 0 ? "Action required" : "All events ready"}
               </CardContent>
             </Card>
+            </div>
           </section>
 
           {/* Events Overview */}
           <section className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Events Overview</h2>
+              <h3 className="text-sm font-medium text-muted-foreground">
+                Events Overview
+              </h3>
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <SearchIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
