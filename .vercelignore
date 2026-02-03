@@ -8,5 +8,4 @@ test-scripts
 docs
 .env.local
 .env*.local
-pnpm-lock.yaml
 *.md
