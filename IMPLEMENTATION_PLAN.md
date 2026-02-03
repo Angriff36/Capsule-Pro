@@ -1974,7 +1974,7 @@ Warehouse Shipments Page component (`apps/app/app/(authenticated)/warehouse/ship
 5. **CardDescription + CardTitle Hierarchy for Metrics**: For summary cards, the pattern is CardDescription (label like "Total Shipments") → CardTitle (value like "42"), not the reverse. This matches the pattern established in other dashboards.
 
 **Remaining Work in Warehouse Module:**
-- Warehouse Receiving page could benefit from similar section-based organization
+- ~~Warehouse Receiving page could benefit from similar section-based organization~~ **COMPLETED** (see 2.40 below)
 - Warehouse Audits page could benefit from similar section-based organization
 - Warehouse Shipments page is now well-structured with clear visual hierarchy
 
@@ -1987,6 +1987,67 @@ Warehouse Shipments Page component (`apps/app/app/(authenticated)/warehouse/ship
 
 **Files Modified:**
 - `apps/app/app/(authenticated)/warehouse/shipments/shipments-page-client.tsx` - Added page header, Separator, section headers, semantic sections, CardDescription, improved spacing, icon sizing
+
+---
+
+### 2.40 Completed UI Improvements (Warehouse Receiving Page)
+
+**Iteration: Warehouse Receiving Page Visual Hierarchy Enhancement**
+
+Warehouse Receiving Page component (`apps/app/app/(authenticated)/warehouse/receiving/page.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Improvements Implemented:**
+
+1. **Page Header Separator**
+   - Added `<Separator />` component between page header and main content for clear visual break
+   - Consistent with other warehouse pages (Warehouse Dashboard, Shipments) and all dashboard improvements
+
+2. **Section-Based Organization**
+   - Added semantic `<section>` elements with descriptive headers for each major content area
+   - Each section gets its own header with consistent styling: `text-sm font-medium text-muted-foreground`
+   - Clear visual separation: Purchase Order Lookup → Purchase Order Details
+
+3. **Page Title Styling**
+   - Changed from `text-2xl font-bold` to `text-3xl font-bold tracking-tight`
+   - Consistent with other page improvements across the platform
+
+4. **Component Structure**
+   - Changed main content spacing from `space-y-6` to `space-y-8` for better breathing room and visual rhythm
+   - Section headers provide mental model of page structure
+
+5. **Select Component Consistency**
+   - Replaced native `<select>` elements with proper Select component from design system
+   - Ensures visual alignment with other form controls across the platform
+   - Quality Status select now uses SelectTrigger + SelectContent pattern
+   - Discrepancy Type select now uses SelectTrigger + SelectContent pattern
+
+6. **Icon Sizing Consistency**
+   - Changed icon sizes from `h-4 w-4` and `h-5 w-5` to `size-4` and `size-5`
+   - Maintains visual consistency across the platform
+
+**Key Learnings:**
+
+1. **Section Headers Work for Operations Pages**: Even on operations-critical pages with dense information (receiving, quality checks), adding section headers immediately gives users a mental model of the page structure.
+
+2. **Select Component Provides Consistent UX**: The proper Select component from design system ensures consistent visual language across the platform, matching the improvements made to other modules (Clients, Profitability Dashboard, Employee Performance Dashboard, Kitchen Prep Lists).
+
+3. **Separator After Page Header**: Adding Separator after the page header creates visual breathing room similar to other warehouse page improvements.
+
+4. **space-y-8 vs space-y-6**: Increasing spacing from 6 to 8 creates better visual rhythm for receiving pages with dense information.
+
+5. **Icon Sizing Consistency**: Using `size-4` and `size-5` instead of `h-4 w-4` and `h-5 w-5` provides consistent sizing across all components and follows the established design system patterns.
+
+**Remaining Work in Warehouse Module:**
+- Warehouse Audits page could benefit from similar section-based organization
+
+**Applicability to Other Modules:**
+
+- **Any Warehouse/Operations Page**: The section header pattern works well for pages with dense information and multiple sections.
+- **Any Page with Native Elements**: The pattern established here should be applied to replace all remaining native `<select>` elements across the platform.
+- **Any Page with Multiple Sections**: Apply section headers, separators, and semantic structure.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/warehouse/receiving/page.tsx` - Added Separator, section headers, semantic sections, Select component, improved spacing, icon sizing, page title styling
 
 ---
 
