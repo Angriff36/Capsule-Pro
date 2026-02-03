@@ -336,22 +336,23 @@ export const ShipmentsPageClient = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       {/* Page Header */}
-      <div>
+      <div className="space-y-0.5">
         <h1 className="text-3xl font-bold tracking-tight">Warehouse Shipments</h1>
-        <p className="text-muted-foreground mt-2">
+        <p className="text-muted-foreground">
           Manage warehouse shipments, tracking, and delivery status
         </p>
       </div>
+
       <Separator />
 
       {/* Performance Overview Section */}
-      <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">
           Performance Overview
         </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardDescription>Total Shipments</CardDescription>
@@ -373,31 +374,27 @@ export const ShipmentsPageClient = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardDescription>In Transit</CardDescription>
-              <TruckIcon className="size-4 text-purple-600" />
+              <TruckIcon className="size-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <CardTitle className="text-purple-600">
-                {summary.inTransitCount}
-              </CardTitle>
+              <CardTitle>{summary.inTransitCount}</CardTitle>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardDescription>Preparing</CardDescription>
-              <RefreshCwIcon className="size-4 text-yellow-600" />
+              <RefreshCwIcon className="size-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <CardTitle className="text-yellow-600">
-                {summary.preparingCount}
-              </CardTitle>
+              <CardTitle>{summary.preparingCount}</CardTitle>
             </CardContent>
           </Card>
         </div>
       </section>
 
       {/* Shipments Section */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
           <h2 className="text-sm font-medium text-muted-foreground">
             Shipments ({totalCount})
           </h2>

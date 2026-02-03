@@ -4814,5 +4814,34 @@ Kitchen Recipes New Page component (`apps/app/app/(authenticated)/kitchen/recipe
 - **Any Long Form**: Forms with many fields benefit from section-based organization with clear headers and proper spacing.
 - **Any Form Using Inline Labels**: Using the Label component instead of inline `<label>` elements provides better accessibility and styling consistency.
 
+---
+
+### 2.64 Completed UI Improvements (Warehouse Shipments Page)
+
+**Iteration: Warehouse Shipments Page Visual Hierarchy Enhancement**
+
+Warehouse Shipments Page component (`apps/app/app/(authenticated)/warehouse/shipments/shipments-page-client.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Changes Made:**
+- Container structure updated from `space-y-8` to `flex flex-1 flex-col gap-8 p-4 pt-0` for consistency with other pages
+- Page header updated to use `space-y-0.5` instead of `mt-2` on description
+- Added Separator after page header for visual breathing room
+- Added `space-y-4` to Performance Overview and Shipments sections for consistent spacing
+- Grid spacing increased from `gap-4` to `gap-6` for better visual rhythm
+- Removed custom color classes (`text-purple-600`, `text-yellow-600`) from icons and values for theme consistency
+- Removed `mb-4` from section header flex container
+
+**Key Improvements:**
+1. **Standard Container Pattern**: The `flex flex-1 flex-col gap-8 p-4 pt-0` pattern provides consistent spacing and prevents content from touching the top edge.
+2. **Proper Section Spacing**: Using `space-y-4` on section containers creates consistent vertical rhythm for child elements.
+3. **Grid Spacing Pattern**: Using `gap-6` instead of `gap-4` creates better visual separation between metric cards.
+4. **Theme Consistency**: Removing custom color classes allows theme to control colors properly, supporting dark mode and future theme changes.
+5. **Page Header Pattern**: The `space-y-0.5` pattern on page headers provides tight, consistent spacing.
+
+**Remaining Work:**
+- Any page with non-standard container structure should be updated to use `flex flex-1 flex-col gap-8 p-4 pt-0`
+- Any page with grid spacing `gap-4` should be updated to `gap-6` for consistency
+- Any page with custom color classes should remove them in favor of theme-consistent alternatives
+
 **Files Modified:**
-- `apps/app/app/(authenticated)/kitchen/recipes/new/page.tsx` - Replaced native select with Select component, added Label imports, reorganized form into sections, updated container spacing
+- `apps/app/app/(authenticated)/warehouse/shipments/shipments-page-client.tsx` - Updated container structure, page header spacing, section organization, grid spacing, and removed custom color classes
