@@ -4884,3 +4884,62 @@ Events Reports Page component (`apps/app/app/(authenticated)/events/reports/page
 
 **Files Modified:**
 - `apps/app/app/(authenticated)/events/reports/page.tsx` - Updated page header (flex-col gap-1 → space-y-0.5), updated section containers (flex-col gap-4 → space-y-4)
+
+---
+
+### 2.66 Completed UI Improvements (Kitchen Dishes New Page)
+
+**Iteration: Kitchen Dishes New Page Visual Hierarchy Enhancement**
+
+Kitchen Dishes New Page component (`apps/app/app/(authenticated)/kitchen/recipes/dishes/new/page.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture, matching the improvements made to the Kitchen Recipes New Page.
+
+**Improvements Implemented:**
+
+1. **Design System Component Usage**
+   - Replaced native `<select>` with proper Select component from design system
+   - Added Label component for consistent form field labeling
+   - Added Separator component for visual separation between content areas
+
+2. **Section-Based Organization**
+   - Reorganized form into four clear sections with headers:
+     - Basic Information (dish name, linked recipe, category, service style, dietary tags, allergens)
+     - Pricing & Costs (menu price, food cost)
+     - Timing & Portions (prep lead times, portion size)
+     - Media & Actions (image, service notes, submit/cancel buttons)
+   - Each section uses semantic `<section>` with space-y-4 spacing
+   - Section headers use consistent `text-sm font-medium text-muted-foreground` styling
+
+3. **Container Spacing Enhancement**
+   - Changed main container spacing from gap-6 to gap-8
+   - Form now uses space-y-8 for consistent section spacing
+   - Aligns with spacing standards established in other improved pages
+
+4. **Label Consistency**
+   - Replaced inline `<label>` elements with Label component
+   - Ensures consistent styling and accessibility across all form fields
+   - Proper htmlFor association maintained
+
+**Key Learnings:**
+
+1. **Section-Based Organization for Forms**: Complex forms benefit significantly from clear section headers that group related fields. The dish form groups fields logically: basic info, pricing, timing, and media/actions.
+
+2. **Select Component Consistency**: Replacing native `<select>` elements with the design system Select component ensures consistent UX across all form inputs and better theme adaptation.
+
+3. **Label Component Benefits**: Using the Label component instead of inline `<label>` elements provides better styling consistency, improved accessibility, and easier maintenance.
+
+4. **space-y-8 for Section Spacing**: Using space-y-8 on forms with multiple sections creates better visual rhythm and makes the form feel less cramped.
+
+5. **Logical Field Grouping**: Grouping related fields (like pricing together, timing together) under clear section headers reduces cognitive load by helping users understand the form structure.
+
+**Remaining Work in Kitchen Module:**
+- Kitchen Recipes menus new page may need similar improvements if it has form issues
+- Kitchen Tasks new page may need similar container/spacing improvements
+
+**Applicability to Other Modules:**
+
+- **Any Form with Native Select Elements**: The pattern of replacing native `<select>` with the design system Select component should be applied across all forms for consistency.
+- **Any Long Form**: Forms with many fields benefit from section-based organization with clear headers and proper spacing.
+- **Any Form Using Inline Labels**: Using the Label component instead of inline `<label>` elements provides better accessibility and styling consistency.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/kitchen/recipes/dishes/new/page.tsx` - Added Select, Label, Separator imports, updated container (gap-6 → gap-8), added section-based organization with 4 sections, replaced native select with Select component, replaced inline labels with Label component
