@@ -7,6 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
 import { useEffect, useState } from "react";
 import type {
   EmployeePerformanceMetrics,
@@ -77,7 +85,7 @@ export function EmployeePerformanceDashboard({
 
   if (employeeId && metrics) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold">
@@ -89,7 +97,13 @@ export function EmployeePerformanceDashboard({
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Separator />
+
+        <section>
+          <h3 className="mb-4 text-sm font-medium text-muted-foreground">
+            Performance Overview
+          </h3>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader>
               <CardTitle className="text-sm font-medium">
@@ -178,8 +192,13 @@ export function EmployeePerformanceDashboard({
             </CardContent>
           </Card>
         </div>
+        </section>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <section>
+          <h3 className="mb-4 text-sm font-medium text-muted-foreground">
+            Performance Details
+          </h3>
+          <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>Task Performance</CardTitle>
@@ -351,8 +370,13 @@ export function EmployeePerformanceDashboard({
             </CardContent>
           </Card>
         </div>
+        </section>
 
-        <Card>
+        <section>
+          <h3 className="mb-4 text-sm font-medium text-muted-foreground">
+            Activity Summary
+          </h3>
+          <Card>
           <CardHeader>
             <CardTitle>Activity Summary</CardTitle>
             <CardDescription>
@@ -410,34 +434,36 @@ export function EmployeePerformanceDashboard({
             </div>
           </CardContent>
         </Card>
+        </section>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Employee Performance Dashboard</h2>
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium" htmlFor="period-select">
-            Period:
-          </label>
-          <select
-            className="rounded border border-input bg-background px-3 py-2 text-sm"
-            id="period-select"
-            onChange={(e) => setSelectedPeriod(e.target.value)}
-            value={selectedPeriod}
-          >
-            <option value="3m">Last 3 months</option>
-            <option value="6m">Last 6 months</option>
-            <option value="12m">Last 12 months</option>
-          </select>
-        </div>
+        <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select period" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="3m">Last 3 months</SelectItem>
+            <SelectItem value="6m">Last 6 months</SelectItem>
+            <SelectItem value="12m">Last 12 months</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
+
+      <Separator />
 
       {summary && (
         <>
-          <div className="grid gap-4 md:grid-cols-4">
+          <section>
+            <h3 className="mb-4 text-sm font-medium text-muted-foreground">
+              Performance Overview
+            </h3>
+            <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-medium">
@@ -490,8 +516,13 @@ export function EmployeePerformanceDashboard({
               </CardContent>
             </Card>
           </div>
+          </section>
 
-          <Card>
+          <section>
+            <h3 className="mb-4 text-sm font-medium text-muted-foreground">
+              Top Performers
+            </h3>
+            <Card>
             <CardHeader>
               <CardTitle>Top Performers</CardTitle>
               <CardDescription>
@@ -527,8 +558,13 @@ export function EmployeePerformanceDashboard({
               </div>
             </CardContent>
           </Card>
+          </section>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <section>
+            <h3 className="mb-4 text-sm font-medium text-muted-foreground">
+              Metrics Analysis
+            </h3>
+            <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Metrics by Role</CardTitle>
@@ -656,6 +692,7 @@ export function EmployeePerformanceDashboard({
               </CardContent>
             </Card>
           </div>
+          </section>
         </>
       )}
     </div>
