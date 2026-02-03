@@ -17,12 +17,13 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
-  CheckCircle2Icon,
-  ClipboardListIcon,
-  Clock3Icon,
-  FileTextIcon,
-  PlusIcon,
+  CheckCircle2,
+  ClipboardList,
+  Clock3,
+  FileText,
+  Plus,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -110,7 +111,7 @@ const EventReportsPage = async () => {
         <div className="flex items-center gap-2">
           <Button asChild variant="secondary">
             <Link href="/events">
-              <ClipboardListIcon className="mr-2 h-4 w-4" />
+              <ClipboardList className="mr-2 size-4" />
               Events
             </Link>
           </Button>
@@ -122,9 +123,23 @@ const EventReportsPage = async () => {
           </Button>
         </div>
       </Header>
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        {/* Stats Cards */}
-        <section className="grid gap-4 lg:grid-cols-4">
+      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+        {/* Page Header */}
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl font-bold tracking-tight">Event Reports</h1>
+          <p className="text-muted-foreground">
+            Pre-Event Review checklists for upcoming events
+          </p>
+        </div>
+
+        <Separator />
+
+        {/* Performance Overview Section */}
+        <section className="flex flex-col gap-4">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Performance Overview
+          </h2>
+          <div className="grid gap-6 lg:grid-cols-4">
           <Card>
             <CardHeader>
               <CardDescription>Total Reports</CardDescription>
@@ -142,7 +157,7 @@ const EventReportsPage = async () => {
               <CardTitle className="text-2xl">{inProgressCount}</CardTitle>
             </CardHeader>
             <CardContent className="text-muted-foreground text-sm flex items-center gap-1">
-              <Clock3Icon className="h-3.5 w-3.5" />
+              <Clock3 className="size-3.5" />
               Needs attention
             </CardContent>
           </Card>
@@ -152,7 +167,7 @@ const EventReportsPage = async () => {
               <CardTitle className="text-2xl">{completedCount}</CardTitle>
             </CardHeader>
             <CardContent className="text-muted-foreground text-sm flex items-center gap-1">
-              <CheckCircle2Icon className="h-3.5 w-3.5" />
+              <CheckCircle2 className="size-3.5" />
               Ready for event
             </CardContent>
           </Card>
@@ -167,30 +182,39 @@ const EventReportsPage = async () => {
           </Card>
         </section>
 
-        {/* Reports List */}
+        {/* Reports List Section */}
         {reportsWithEvents.length === 0 ? (
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <FileTextIcon />
-              </EmptyMedia>
-              <EmptyTitle>No event reports yet</EmptyTitle>
-              <EmptyDescription>
-                Import an event PDF to auto-generate a Pre-Event Review
-                checklist, or create one manually from an existing event.
-              </EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent>
-              <Button asChild>
-                <Link href="/events/import">
-                  <PlusIcon className="mr-2 h-4 w-4" />
-                  Import Event
-                </Link>
-              </Button>
-            </EmptyContent>
-          </Empty>
+          <section className="flex flex-col gap-4">
+            <h2 className="text-sm font-medium text-muted-foreground">
+              Reports
+            </h2>
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <FileText />
+                </EmptyMedia>
+                <EmptyTitle>No event reports yet</EmptyTitle>
+                <EmptyDescription>
+                  Import an event PDF to auto-generate a Pre-Event Review
+                  checklist, or create one manually from an existing event.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button asChild>
+                  <Link href="/events/import">
+                    <Plus className="mr-2 size-4" />
+                    Import Event
+                  </Link>
+                </Button>
+              </EmptyContent>
+            </Empty>
+          </section>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+          <section className="flex flex-col gap-4">
+            <h2 className="text-sm font-medium text-muted-foreground">
+              Reports ({reportsWithEvents.length})
+            </h2>
+            <div className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-3">
             {reportsWithEvents.map((report) => (
               <Link
                 className="group"
@@ -248,7 +272,8 @@ const EventReportsPage = async () => {
                 </Card>
               </Link>
             ))}
-          </div>
+            </div>
+          </section>
         )}
       </div>
     </>
