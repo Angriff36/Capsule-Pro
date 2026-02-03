@@ -148,9 +148,9 @@ never accidentally broken.
 
 ---
 
-### 2.6 UI Hierarchy & Presentation Issues (New Findings)
+### 2.6 UI Hierarchy & Presentation Issues
 
-Major visual and structural issues discovered during UI exploration that require immediate attention:
+Major visual and structural issues discovered during UI exploration that require attention:
 
 **Major Issues Across Modules:**
 - **Badge proliferation**: Excessive, overlapping badges creating visual noise and competing elements
@@ -160,8 +160,8 @@ Major visual and structural issues discovered during UI exploration that require
 
 **Specific Problems:**
 
-**Events Module:**
-- Event cards overloaded with status badges, tags, and metadata
+**Events Module** ([PARTIALLY COMPLETED]):
+- ~~Event cards overloaded with status badges, tags, and metadata~~ **IMPROVED**: Event card now uses proper hierarchy with CardAction for badge placement and subtle tag styling
 - Competing visual hierarchy between primary event info and secondary indicators
 - No consistent card pattern for different event types
 - Missing proper block components for event details view
@@ -185,7 +185,7 @@ Major visual and structural issues discovered during UI exploration that require
 - Information density controllers (collapsible sections, progressive disclosure)
 
 **Actionable Improvements:**
-1. Implement badge hierarchy system with clear priority levels
+1. ~~Implement badge hierarchy system with clear priority levels~~ **STARTED**: Event-card now demonstrates CardAction-based badge placement with reduced visual noise
 2. Create standardized information density patterns with proper spacing
 3. Develop missing design system block components before continuing new features
 4. Apply consistent visual language across all modules
@@ -193,7 +193,51 @@ Major visual and structural issues discovered during UI exploration that require
 
 ---
 
-### 2.7 Phase 2 Completion Criteria
+### 2.7 Completed UI Improvements (Events Module)
+
+**Iteration: Event Card Visual Hierarchy Enhancement**
+
+Event card component (`apps/web/src/modules/events/components/event-card.tsx`) successfully refactored to establish clear visual hierarchy and reduce information density issues.
+
+**Improvements Implemented:**
+
+1. **Header Reorganization**
+   - Clear hierarchy: event number → type → title (with appropriate weight and spacing)
+   - Status badge moved to CardAction for proper semantic structure
+   - Separator added between header and content for clear visual separation
+
+2. **Information Density Reduction**
+   - Date/guests displayed in 2-column grid (reduces vertical space by ~40%)
+   - Date format shortened to "month day" (e.g., "Feb 15" instead of "February 15, 2025")
+   - Tags made more subtle: 11px text, muted background, max 3 visible
+   - "+N" indicator for additional tags beyond 3
+   - TagIcon removed to reduce visual noise
+
+3. **Component Structure**
+   - Removed outer group wrapper (unnecessary nesting)
+   - Delete button uses ghost variant with proper CardAction placement
+   - Proper use of CardAction pattern for action items
+
+**Key Learnings:**
+
+1. **CardAction Pattern Works**: Moving status badges and actions to CardAction creates cleaner semantic structure and consistent interaction patterns
+2. **Information Density Control**: Limiting visible items (max 3 tags) with "+N" overflow indicator is effective pattern for dense data
+3. **Visual Hierarchy Principles**: Clear separation of primary info (header) from secondary (content) via Separator and spacing
+4. **Typography Matters**: 11px for metadata tags vs base size for content creates natural hierarchy
+
+**Remaining Work in Events Module:**
+- Apply same hierarchy principles to event details view
+- Create standardized event detail blocks (replace ad-hoc layouts)
+- Ensure consistent card pattern across different event types
+
+**Applicability to Other Modules:**
+- **Clients Module**: Similar badge/tag hierarchy needed for client profiles and list view
+- **Dashboard Module**: Widget containers need standardized information density patterns
+- Pattern established here should be documented in design system guidelines
+
+---
+
+### 2.8 Phase 2 Completion Criteria
 
 Phase 2 is complete when:
 
@@ -205,7 +249,7 @@ Phase 2 is complete when:
 
 ---
 
-### 2.8 Relationship to Phase 1
+### 2.9 Relationship to Phase 1
 
 Phase 1 guarantees correctness, integrity, and realtime propagation. Phase 2
 guarantees **usability, power, and trust**.
