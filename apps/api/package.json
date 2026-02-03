@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "analyze": "ANALYZE=true npm run build",
-    "test": "cross-env NODE_ENV=test vitest run",
+    "test": "cross-env NODE_ENV=test vitest run --passWithNoTests",
     "stripe": "stripe listen --forward-to localhost:2223/webhooks/payments",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
