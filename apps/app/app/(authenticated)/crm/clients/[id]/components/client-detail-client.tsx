@@ -3,11 +3,8 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
+  ClientQuickStatsBlock,
+} from "@repo/design-system/components/blocks/client-quick-stats-block";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Tabs,
@@ -230,52 +227,32 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
         <h2 className="text-sm font-medium text-muted-foreground mb-3">
           Overview
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Events
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{client.eventCount}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Interactions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{client.interactionCount}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Revenue
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {client.totalRevenue
+        <ClientQuickStatsBlock
+          stats={[
+            {
+              label: "Total Events",
+              value: client.eventCount,
+              icon: CalendarIcon,
+            },
+            {
+              label: "Interactions",
+              value: client.interactionCount,
+              icon: MessageSquareIcon,
+            },
+            {
+              label: "Total Revenue",
+              value: client.totalRevenue
                 ? `$${Number(client.totalRevenue.total).toLocaleString()}`
-                : "$0"}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Contacts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{client.contacts.length}</div>
-          </CardContent>
-        </Card>
-      </div>
+                : "$0",
+              icon: DollarSignIcon,
+            },
+            {
+              label: "Contacts",
+              value: client.contacts.length,
+              icon: UsersIcon,
+            },
+          ]}
+        />
       </section>
 
       <Separator />
