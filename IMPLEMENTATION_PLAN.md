@@ -178,8 +178,8 @@ Major visual and structural issues discovered during UI exploration that require
 - ~~Missing standardized dashboard block components~~ **IMPROVED**: Profitability dashboard uses proper section-based organization with standardized card hierarchy
 - ~~Information architecture unclear without clear section breaks~~ **IMPROVED**: Added section headers and Separator for clear visual grouping across both analytics and profitability dashboards
 
-**Missing Design System Components:**
-- Event detail blocks (should replace current ad-hoc layouts)
+**Design System Components - [IN PROGRESS]:**
+- ~~Event detail blocks (should replace current ad-hoc layouts)~~ **PARTIALLY COMPLETED**: CollapsibleSectionBlock created and 3 sections refactored
 - Client profile cards (structured component missing)
 - Dashboard widget containers (standardized needed)
 - Information density controllers (collapsible sections, progressive disclosure)
@@ -187,7 +187,7 @@ Major visual and structural issues discovered during UI exploration that require
 **Actionable Improvements:**
 1. ~~Implement badge hierarchy system with clear priority levels~~ **COMPLETED**: Event-card, Analytics page, Profitability Dashboard, and Clients Module now use proper badge placement
 2. ~~Create standardized information density patterns with proper spacing~~ **COMPLETED**: Analytics page and Profitability Dashboard demonstrate section-based organization
-3. Develop missing design system block components before continuing new features
+3. ~~Develop missing design system block components before continuing new features~~ **IN PROGRESS**: CollapsibleSectionBlock created with stories; consider additional blocks as needed
 4. ~~Apply consistent visual language across all modules~~ **COMPLETED**: Events, Analytics, Profitability Dashboard, and Clients Modules now use consistent patterns (Separators, section headers, card hierarchy)
 5. Implement progressive disclosure for dense information areas
 
@@ -554,7 +554,7 @@ Event Details View component (`apps/app/app/(authenticated)/events/[eventId]/eve
 4. **Uppercase Tracking for Headers**: Using `text-xs uppercase tracking-[0.25em]` creates a subtle, elegant header style that doesn't compete with content
 
 **Remaining Work in Events Module:**
-- Create standardized event detail blocks (replace remaining ad-hoc layouts with design system components)
+- ~~Create standardized event detail blocks (replace remaining ad-hoc layouts with design system components)~~ **IN PROGRESS**: CollapsibleSectionBlock created with 3 sections refactored
 - Ensure consistent card pattern across different event types
 - Consider creating event-detail-section block component for consistency
 
@@ -565,7 +565,68 @@ Event Details View component (`apps/app/app/(authenticated)/events/[eventId]/eve
 
 ---
 
-### 2.13 Phase 2 Completion Criteria
+### 2.13 Completed UI Improvements (Design System - CollapsibleSectionBlock)
+
+**Iteration: Standardized Collapsible Section Block Component**
+
+Created a new reusable `CollapsibleSectionBlock` component in the design system that captures the common pattern used across multiple event detail sections.
+
+**Component Created:**
+- `packages/design-system/components/blocks/collapsible-section-block.tsx`
+- `packages/design-system/components/blocks/collapsible-section-block.stories.tsx`
+
+**Features:**
+- Icon + title + subtitle header with customizable icon colors
+- Collapsible content with separator
+- Integrated empty state configuration with icon, title, description, and action
+- Header actions support for buttons/controls in the header
+- Optional ID prop for accessibility
+- Consistent styling: rounded-xl border, shadow-sm, proper spacing
+- Also includes `SectionHeaderBlock` for non-collapsible section headers
+
+**Sections Refactored:**
+
+1. **PrepTasksSection** (`apps/app/app/(authenticated)/events/[eventId]/event-details-sections.tsx`)
+   - Refactored to use CollapsibleSectionBlock
+   - Empty state: "No prep tasks yet" with "Generate with AI" action
+   - Icon: PlusIcon with purple color
+
+2. **SourceDocumentsSection** (`apps/app/app/(authenticated)/events/[eventId]/event-details-sections.tsx`)
+   - Refactored to use CollapsibleSectionBlock
+   - Icon: FileTextIcon for document association
+   - File upload form in content area
+
+3. **MenuDishesSection** (`apps/app/app/(authenticated)/events/[eventId]/event-details-sections.tsx`)
+   - Refactored to use CollapsibleSectionBlock
+   - Header actions: Add Dish Dialog
+   - Empty state: "No dishes linked to this event" with "Add First Dish" action
+   - Loading state handled inline
+   - Icon: UtensilsIcon with emerald color
+
+**Key Learnings:**
+
+1. **Block Pattern Reduces Duplication**: The collapsible section pattern was duplicated across 4+ sections. Creating a standardized block reduces code duplication and ensures consistent behavior.
+
+2. **Empty State Configuration**: The `emptyState` prop provides a consistent pattern for empty states across all sections, with optional icon, title, description, and action button.
+
+3. **Header Actions Support**: The `headerActions` prop allows sections to have custom buttons/controls in the header area (e.g., "Add Dish" dialog trigger).
+
+4. **Loading State Flexibility**: Loading state is handled inline in the children content rather than through a prop, giving components more flexibility for custom loading indicators.
+
+5. **Special Cases Still Need Custom Code**: BudgetSection was not refactored because it has dynamic trigger text ("View budget" vs "Create budget") that depends on state. This is a legitimate use case for keeping the original collapsible pattern.
+
+**Remaining Work:**
+- BudgetSection could be refactored if CollapsibleSectionBlock is enhanced to support dynamic trigger text via a function prop
+- Consider refactoring other modules (Clients, Employees) to use CollapsibleSectionBlock where similar patterns exist
+
+**Applicability to Other Modules:**
+- **Clients Module**: Profile sections could use CollapsibleSectionBlock for expandable information areas
+- **Employee Module**: Similar detail view sections could benefit from standardized pattern
+- **Dashboard Module**: Some expandable widget containers could use this pattern
+
+---
+
+### 2.14 Phase 2 Completion Criteria
 
 Phase 2 is complete when:
 
@@ -577,7 +638,7 @@ Phase 2 is complete when:
 
 ---
 
-### 2.14 Relationship to Phase 1
+### 2.15 Relationship to Phase 1
 
 Phase 1 guarantees correctness, integrity, and realtime propagation. Phase 2
 guarantees **usability, power, and trust**.

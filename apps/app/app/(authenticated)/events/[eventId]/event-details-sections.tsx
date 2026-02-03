@@ -20,10 +20,12 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { CollapsibleSectionBlock } from "@repo/design-system/components/blocks/collapsible-section-block";
 import {
   AlertTriangleIcon,
   ChevronDownIcon,
   DollarSignIcon,
+  FileTextIcon,
   Lightbulb,
   PlusIcon,
   SparklesIcon,
@@ -199,161 +201,146 @@ export function MenuDishesSection({
     "other",
   ] as const;
 
+  const addDishDialog = (
+    <Dialog open={showAddDialog} onOpenChange={onShowAddDialogChange}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline">
+          <PlusIcon className="mr-2 size-3" />
+          Add Dish
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add Dish to Event</DialogTitle>
+          <DialogDescription>Select a dish from your menu to add to this event.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="add-dish-select">
+              Dish
+            </label>
+            <Select value={selectedDishId} onValueChange={onSelectedDishIdChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a dish" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableDishes.length === 0 ? (
+                  <div className="p-2 text-sm text-muted-foreground">
+                    No dishes available. Create dishes in Kitchen Recipes first.
+                  </div>
+                ) : (
+                  availableDishes.map((d) => (
+                    <SelectItem key={d.id} value={d.id}>
+                      {d.name}
+                      {d.category ? ` (${d.category})` : ""}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="add-course-select">
+              Course (optional)
+            </label>
+            <Select value={selectedCourse} onValueChange={onSelectedCourseChange}>
+              <SelectTrigger id="add-course-select" aria-label="Select course">
+                <SelectValue placeholder="Select course" />
+              </SelectTrigger>
+              <SelectContent>
+                {COURSES.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c.charAt(0).toUpperCase() + c.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onShowAddDialogChange(false)}>
+            Cancel
+          </Button>
+          <Button disabled={!selectedDishId} onClick={onAddDish}>
+            Add Dish
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
-    <Collapsible className="rounded-xl border bg-card text-card-foreground shadow-sm" defaultOpen id="dishes">
-      <div className="flex items-center justify-between gap-4 px-6 py-4">
-        <div className="flex items-center gap-2">
-          <UtensilsIcon className="size-5 text-emerald-500" />
-          <div>
-            <div className="font-semibold text-sm">Menu / Dishes</div>
-            <div className="text-muted-foreground text-sm">{eventDishes.length} dishes linked to this event</div>
-          </div>
+    <CollapsibleSectionBlock
+      icon={UtensilsIcon}
+      title="Menu / Dishes"
+      subtitle={`${eventDishes.length} dishes linked to this event`}
+      iconColor="text-emerald-500"
+      defaultOpen
+      id="dishes"
+      triggerText="View dishes"
+      headerActions={addDishDialog}
+      showEmptyState={!isLoading && eventDishes.length === 0}
+      emptyState={{
+        icon: UtensilsIcon,
+        title: "No dishes linked to this event",
+        description: "Add dishes so they can be used for prep lists and task generation",
+        actionLabel: "Add First Dish",
+        onAction: () => onShowAddDialogChange(true),
+      }}
+    >
+      {isLoading && (
+        <div className="flex items-center justify-center py-8">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
-        <div className="flex items-center gap-2">
-          <Dialog open={showAddDialog} onOpenChange={onShowAddDialogChange}>
-            <DialogTrigger asChild>
-              <Button size="sm" variant="outline">
-                <PlusIcon className="mr-2 size-3" />
-                Add Dish
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Dish to Event</DialogTitle>
-                <DialogDescription>Select a dish from your menu to add to this event.</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="add-dish-select">
-                    Dish
-                  </label>
-                  <Select value={selectedDishId} onValueChange={onSelectedDishIdChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a dish" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableDishes.length === 0 ? (
-                        <div className="p-2 text-sm text-muted-foreground">
-                          No dishes available. Create dishes in Kitchen Recipes first.
-                        </div>
-                      ) : (
-                        availableDishes.map((d) => (
-                          <SelectItem key={d.id} value={d.id}>
-                            {d.name}
-                            {d.category ? ` (${d.category})` : ""}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="add-course-select">
-                    Course (optional)
-                  </label>
-                  <Select value={selectedCourse} onValueChange={onSelectedCourseChange}>
-                    <SelectTrigger id="add-course-select" aria-label="Select course">
-                      <SelectValue placeholder="Select course" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COURSES.map((c) => (
-                        <SelectItem key={c} value={c}>
-                          {c.charAt(0).toUpperCase() + c.slice(1)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => onShowAddDialogChange(false)}>
-                  Cancel
-                </Button>
-                <Button disabled={!selectedDishId} onClick={onAddDish}>
-                  Add Dish
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost">
-              View dishes
-              <ChevronDownIcon />
-            </Button>
-          </CollapsibleTrigger>
-        </div>
-      </div>
-      <Separator />
-      <CollapsibleContent className="px-6 py-4">
-        {isLoading && (
-          <div className="flex items-center justify-center py-8">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-        )}
-        {!isLoading && eventDishes.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="mb-4 rounded-full bg-muted p-3">
-              <UtensilsIcon className="size-6 text-muted-foreground" />
-            </div>
-            <p className="mb-2 text-muted-foreground text-sm">No dishes linked to this event</p>
-            <p className="mb-4 text-muted-foreground text-xs">
-              Add dishes so they can be used for prep lists and task generation.
-            </p>
-            <Button size="sm" variant="outline" onClick={() => onShowAddDialogChange(true)}>
-              <PlusIcon className="mr-2 size-3" />
-              Add First Dish
-            </Button>
-          </div>
-        )}
-        {!isLoading && eventDishes.length > 0 && (
-          <div className="grid gap-3">
-            {eventDishes.map((dish) => (
-              <div
-                key={dish.link_id}
-                className="flex flex-wrap items-center justify-between gap-4 rounded-lg border px-4 py-3"
-              >
-                <div className="flex flex-1 flex-col">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{dish.name}</span>
-                    {dish.course && (
-                      <Badge className="text-xs" variant="secondary">
-                        {dish.course}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground text-xs">
-                    {dish.recipe_name ? (
-                      <span>Recipe: {dish.recipe_name}</span>
-                    ) : (
-                      <span className="text-amber-600">No recipe linked</span>
-                    )}
-                    {(dish.dietary_tags ?? []).length > 0 && (
-                      <Badge className="text-xs" variant="outline">
-                        {(dish.dietary_tags ?? []).join(", ")}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
+      )}
+      {!isLoading && eventDishes.length > 0 && (
+        <div className="grid gap-3">
+          {eventDishes.map((dish) => (
+            <div
+              key={dish.link_id}
+              className="flex flex-wrap items-center justify-between gap-4 rounded-lg border px-4 py-3"
+            >
+              <div className="flex flex-1 flex-col">
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-xs">{dish.quantity_servings} servings</span>
-                  <Button size="sm" variant="outline" onClick={() => onOpenVariantDialog(dish.link_id, dish.name)}>
-                    Create variant
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="size-8 text-muted-foreground hover:text-destructive"
-                    onClick={() => onRemoveDish(dish.link_id)}
-                  >
-                    <TrashIcon className="size-4" />
-                  </Button>
+                  <span className="font-medium">{dish.name}</span>
+                  {dish.course && (
+                    <Badge className="text-xs" variant="secondary">
+                      {dish.course}
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground text-xs">
+                  {dish.recipe_name ? (
+                    <span>Recipe: {dish.recipe_name}</span>
+                  ) : (
+                    <span className="text-amber-600">No recipe linked</span>
+                  )}
+                  {(dish.dietary_tags ?? []).length > 0 && (
+                    <Badge className="text-xs" variant="outline">
+                      {(dish.dietary_tags ?? []).join(", ")}
+                    </Badge>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </CollapsibleContent>
-    </Collapsible>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground text-xs">{dish.quantity_servings} servings</span>
+                <Button size="sm" variant="outline" onClick={() => onOpenVariantDialog(dish.link_id, dish.name)}>
+                  Create variant
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="size-8 text-muted-foreground hover:text-destructive"
+                  onClick={() => onRemoveDish(dish.link_id)}
+                >
+                  <TrashIcon className="size-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </CollapsibleSectionBlock>
   );
 }
 
@@ -643,37 +630,27 @@ type SourceDocumentsSectionProps = {
 
 export function SourceDocumentsSection({ eventId, fileCount = 0 }: SourceDocumentsSectionProps) {
   return (
-    <Collapsible className="rounded-xl border bg-card text-card-foreground shadow-sm">
-      <div className="flex items-center justify-between gap-4 px-6 py-4">
-        <div>
-          <div className="font-semibold text-sm">Source documents</div>
-          <div className="text-muted-foreground text-sm">{fileCount} files attached</div>
-        </div>
-        <CollapsibleTrigger asChild>
-          <Button variant="ghost">
-            View files
-            <ChevronDownIcon />
+    <CollapsibleSectionBlock
+      icon={FileTextIcon}
+      title="Source documents"
+      subtitle={`${fileCount} files attached`}
+      triggerText="View files"
+    >
+      <form
+        action={(formData: FormData) => {
+          formData.append("eventId", eventId);
+          // attachEventImport action
+        }}
+        className="flex flex-col gap-3"
+      >
+        <div className="flex flex-wrap items-center gap-3">
+          <input accept=".csv,.pdf,image/*" className="text-sm" name="file" type="file" />
+          <Button type="submit" variant="secondary">
+            Attach file
           </Button>
-        </CollapsibleTrigger>
-      </div>
-      <Separator />
-      <CollapsibleContent className="px-6 py-4">
-        <form
-          action={(formData: FormData) => {
-            formData.append("eventId", eventId);
-            // attachEventImport action
-          }}
-          className="flex flex-col gap-3"
-        >
-          <div className="flex flex-wrap items-center gap-3">
-            <input accept=".csv,.pdf,image/*" className="text-sm" name="file" type="file" />
-            <Button type="submit" variant="secondary">
-              Attach file
-            </Button>
-          </div>
-        </form>
-      </CollapsibleContent>
-    </Collapsible>
+        </div>
+      </form>
+    </CollapsibleSectionBlock>
   );
 }
 
@@ -684,66 +661,47 @@ type PrepTasksSectionProps = {
 
 export function PrepTasksSection({ prepTasks, onOpenGenerateModal }: PrepTasksSectionProps) {
   return (
-    <Collapsible className="rounded-xl border bg-card text-card-foreground shadow-sm" defaultOpen>
-      <div className="flex items-center justify-between gap-4 px-6 py-4">
-        <div>
-          <div className="font-semibold text-sm">Prep tasks</div>
-          <div className="text-muted-foreground text-sm">
-            {prepTasks.length} tasks linked to this event
-          </div>
-        </div>
-        <CollapsibleTrigger asChild>
-          <Button variant="ghost">
-            View tasks
-            <ChevronDownIcon />
-          </Button>
-        </CollapsibleTrigger>
-      </div>
-      <Separator />
-      <CollapsibleContent className="px-6 py-4">
-        {prepTasks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="mb-4 rounded-full bg-muted p-3">
-              <PlusIcon className="size-6 text-muted-foreground" />
+    <CollapsibleSectionBlock
+      icon={PlusIcon}
+      title="Prep tasks"
+      subtitle={`${prepTasks.length} tasks linked to this event`}
+      iconColor="text-purple-500"
+      defaultOpen
+      triggerText="View tasks"
+      showEmptyState={prepTasks.length === 0}
+      emptyState={{
+        title: "No prep tasks yet",
+        description: "Generate a task breakdown or add tasks manually",
+        actionLabel: "Generate with AI",
+        onAction: onOpenGenerateModal,
+      }}
+    >
+      <div className="grid gap-3">
+        {prepTasks.map((task) => (
+          <div
+            key={task.id}
+            className="flex flex-wrap items-center justify-between gap-4 rounded-lg border px-4 py-3"
+          >
+            <div className="flex flex-col">
+              <span className="font-medium">{task.name}</span>
+              <span className="text-muted-foreground text-xs">
+                Due{" "}
+                {new Date(task.dueByDate).toLocaleDateString("en-US", { dateStyle: "medium" })}
+              </span>
             </div>
-            <p className="mb-2 text-muted-foreground text-sm">No prep tasks yet</p>
-            <p className="mb-4 text-muted-foreground text-xs">
-              Generate a task breakdown or add tasks manually
-            </p>
-            <Button size="sm" variant="outline" onClick={onOpenGenerateModal}>
-              <SparklesIcon className="mr-2 size-3" />
-              Generate with AI
-            </Button>
+            <div className="flex items-center gap-2">
+              {task.isEventFinish ? (
+                <span className="rounded bg-muted px-2 py-1 text-xs">Finish</span>
+              ) : null}
+              <span className="rounded bg-muted px-2 py-1 text-xs capitalize">{task.status}</span>
+              <span className="text-muted-foreground text-xs">
+                {task.servingsTotal ?? Math.round(Number(task.quantityTotal))}
+                {task.servingsTotal ? " servings" : ""}
+              </span>
+            </div>
           </div>
-        ) : (
-          <div className="grid gap-3">
-            {prepTasks.map((task) => (
-              <div
-                key={task.id}
-                className="flex flex-wrap items-center justify-between gap-4 rounded-lg border px-4 py-3"
-              >
-                <div className="flex flex-col">
-                  <span className="font-medium">{task.name}</span>
-                  <span className="text-muted-foreground text-xs">
-                    Due{" "}
-                    {new Date(task.dueByDate).toLocaleDateString("en-US", { dateStyle: "medium" })}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {task.isEventFinish ? (
-                    <span className="rounded bg-muted px-2 py-1 text-xs">Finish</span>
-                  ) : null}
-                  <span className="rounded bg-muted px-2 py-1 text-xs capitalize">{task.status}</span>
-                  <span className="text-muted-foreground text-xs">
-                    {task.servingsTotal ?? Math.round(Number(task.quantityTotal))}
-                    {task.servingsTotal ? " servings" : ""}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CollapsibleContent>
-    </Collapsible>
+        ))}
+      </div>
+    </CollapsibleSectionBlock>
   );
 }
