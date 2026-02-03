@@ -5,9 +5,11 @@ import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -334,67 +336,78 @@ export const ShipmentsPageClient = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Shipments
-            </CardTitle>
-            <BoxIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summary.totalShipments}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Value</CardTitle>
-            <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(summary.totalValue)}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Transit</CardTitle>
-            <TruckIcon className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600">
-              {summary.inTransitCount}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Preparing</CardTitle>
-            <RefreshCwIcon className="h-4 w-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
-              {summary.preparingCount}
-            </div>
-          </CardContent>
-        </Card>
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Warehouse Shipments</h1>
+        <p className="text-muted-foreground mt-2">
+          Manage warehouse shipments, tracking, and delivery status
+        </p>
       </div>
+      <Separator />
 
-      {/* Main Content Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Warehouse Shipments</CardTitle>
-            <Button onClick={() => setIsCreateModalOpen(true)}>
-              <PlusIcon className="mr-2 h-4 w-4" />
-              New Shipment
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      {/* Performance Overview Section */}
+      <section>
+        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+          Performance Overview
+        </h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardDescription>Total Shipments</CardDescription>
+              <BoxIcon className="size-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <CardTitle>{summary.totalShipments}</CardTitle>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardDescription>Total Value</CardDescription>
+              <DollarSignIcon className="size-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <CardTitle>{formatCurrency(summary.totalValue)}</CardTitle>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardDescription>In Transit</CardDescription>
+              <TruckIcon className="size-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <CardTitle className="text-purple-600">
+                {summary.inTransitCount}
+              </CardTitle>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardDescription>Preparing</CardDescription>
+              <RefreshCwIcon className="size-4 text-yellow-600" />
+            </CardHeader>
+            <CardContent>
+              <CardTitle className="text-yellow-600">
+                {summary.preparingCount}
+              </CardTitle>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Shipments Section */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Shipments ({totalCount})
+          </h2>
+          <Button onClick={() => setIsCreateModalOpen(true)}>
+            <PlusIcon className="mr-2 size-4" />
+            New Shipment
+          </Button>
+        </div>
+        <Card>
+          <CardContent className="space-y-4 pt-6">
           {/* Filters */}
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-[200px]">
@@ -560,6 +573,7 @@ export const ShipmentsPageClient = () => {
           )}
         </CardContent>
       </Card>
+      </section>
 
       {/* Selected Shipment Detail View */}
       {selectedShipment && (
