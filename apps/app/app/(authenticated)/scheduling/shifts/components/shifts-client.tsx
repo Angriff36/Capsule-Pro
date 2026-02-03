@@ -271,35 +271,37 @@ export function ShiftsClient() {
   });
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Shifts</h1>
-          <p className="text-muted-foreground">
-            Manage employee shifts by role, station, and event.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => setBulkAssignmentModalOpen(true)}
-            variant="outline"
-          >
-            <UsersIcon className="h-4 w-4 mr-2" />
-            Bulk Assign
-          </Button>
-          <Button onClick={() => setCreateModalOpen(true)}>
-            <PlusIcon className="h-4 w-4 mr-2" />
-            New Shift
-          </Button>
+      <div className="space-y-0.5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Shifts</h1>
+            <p className="text-muted-foreground">
+              Manage employee shifts by role, station, and event.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => setBulkAssignmentModalOpen(true)}
+              variant="outline"
+            >
+              <UsersIcon className="h-4 w-4 mr-2" />
+              Bulk Assign
+            </Button>
+            <Button onClick={() => setCreateModalOpen(true)}>
+              <PlusIcon className="h-4 w-4 mr-2" />
+              New Shift
+            </Button>
+          </div>
         </div>
       </div>
 
       <Separator />
 
       {/* Filters Section */}
-      <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-3">
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">
           Filters
         </h2>
         <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
@@ -371,8 +373,8 @@ export function ShiftsClient() {
       </section>
 
       {/* Shifts Table Section */}
-      <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-3">
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">
           Shifts ({pagination.total})
         </h2>
         <div className="border rounded-lg">
