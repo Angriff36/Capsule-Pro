@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -33,13 +34,13 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import {
-  ActivityIcon,
-  AlertTriangleIcon,
-  CheckCircle2Icon,
-  RefreshCwIcon,
-  SearchIcon,
-  TrendingDownIcon,
-  XCircleIcon,
+  Activity,
+  AlertTriangle,
+  CheckCircle2,
+  RefreshCw,
+  Search,
+  TrendingDown,
+  XCircle,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -194,89 +195,71 @@ export const ForecastsPageClient = () => {
       : 0;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Depletion Forecasting
-          </h1>
-          <p className="text-muted-foreground">
-            Predict inventory depletion and generate reorder alerts
-          </p>
-        </div>
-        <Button
-          disabled={isLoading}
-          onClick={fetchAllSuggestions}
-          size="sm"
-          variant="outline"
-        >
-          <RefreshCwIcon
-            className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-          />
-          Refresh
-        </Button>
+    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+      {/* Page Header */}
+      <div className="space-y-0.5">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Depletion Forecasting
+        </h1>
+        <p className="text-muted-foreground">
+          Predict inventory depletion and generate reorder alerts
+        </p>
       </div>
+      <Separator />
 
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Alerts</CardTitle>
-            <AlertTriangleIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{allSuggestions.length}</div>
-            <p className="text-xs text-muted-foreground">
+      {/* Performance Overview Section */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">
+          Performance Overview
+        </h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader>
+              <CardDescription>Total Alerts</CardDescription>
+              <CardTitle>{allSuggestions.length}</CardTitle>
+            </CardHeader>
+            <CardContent className="text-muted-foreground text-sm">
               Items requiring attention
-            </p>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Critical</CardTitle>
-            <XCircleIcon className="h-4 w-4 text-destructive" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-destructive">
-              {criticalCount}
-            </div>
-            <p className="text-xs text-muted-foreground">
+          <Card>
+            <CardHeader>
+              <CardDescription>Critical</CardDescription>
+              <CardTitle className="text-destructive">
+                {criticalCount}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-muted-foreground text-sm">
               Immediate action required
-            </p>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Warning</CardTitle>
-            <AlertTriangleIcon className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
-              {warningCount}
-            </div>
-            <p className="text-xs text-muted-foreground">May deplete soon</p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardDescription>Warning</CardDescription>
+              <CardTitle>{warningCount}</CardTitle>
+            </CardHeader>
+            <CardContent className="text-muted-foreground text-sm">
+              May deplete soon
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Depleting Soon
-            </CardTitle>
-            <TrendingDownIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{depletingSoonCount}</div>
-            <p className="text-xs text-muted-foreground">Within 7 days</p>
-          </CardContent>
-        </Card>
-      </div>
+          <Card>
+            <CardHeader>
+              <CardDescription>Depleting Soon</CardDescription>
+              <CardTitle>{depletingSoonCount}</CardTitle>
+            </CardHeader>
+            <CardContent className="text-muted-foreground text-sm">
+              Within 7 days
+            </CardContent>
+          </Card>
+        </div>
+      </section>
 
-      {/* Main Tabs */}
-      <Tabs className="space-y-4" defaultValue="forecast">
+      {/* Forecast Analysis Section */}
+      <section className="space-y-4">
+        <Tabs className="space-y-4" defaultValue="forecast">
         <TabsList>
           <TabsTrigger value="forecast">Forecast Analysis</TabsTrigger>
           <TabsTrigger value="alerts">
@@ -329,7 +312,7 @@ export const ForecastsPageClient = () => {
                       size="icon"
                       variant="outline"
                     >
-                      <SearchIcon className="h-4 w-4" />
+                      <Search className="size-4" />
                     </Button>
                   </div>
                   <Input
@@ -394,7 +377,7 @@ export const ForecastsPageClient = () => {
                   disabled={!selectedSku || isLoading}
                   onClick={fetchForecast}
                 >
-                  <ActivityIcon className="mr-2 h-4 w-4" />
+                  <Activity className="mr-2 size-4" />
                   Generate Forecast
                 </Button>
                 <Button
@@ -402,8 +385,8 @@ export const ForecastsPageClient = () => {
                   onClick={fetchAllSuggestions}
                   variant="outline"
                 >
-                  <RefreshCwIcon
-                    className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+                  <RefreshCw
+                    className={`mr-2 size-4 ${isLoading ? "animate-spin" : ""}`}
                   />
                   Refresh Suggestions
                 </Button>
@@ -520,7 +503,7 @@ export const ForecastsPageClient = () => {
                 {forecast.depletionDate && (
                   <div className="mt-4 rounded-lg border border-destructive/50 bg-destructive/10 p-4">
                     <div className="flex items-center gap-2">
-                      <AlertTriangleIcon className="h-5 w-5 text-destructive" />
+                      <AlertTriangle className="size-5 text-destructive" />
                       <div className="font-semibold text-destructive">
                         Stock Depletion Predicted
                       </div>
@@ -590,8 +573,8 @@ export const ForecastsPageClient = () => {
                   onClick={() => handleGenerateSuggestions(false)}
                   size="sm"
                 >
-                  <RefreshCwIcon
-                    className={`mr-2 h-4 w-4 ${isGenerating ? "animate-spin" : ""}`}
+                  <RefreshCw
+                    className={`mr-2 size-4 ${isGenerating ? "animate-spin" : ""}`}
                   />
                   Regenerate
                 </Button>
@@ -603,7 +586,7 @@ export const ForecastsPageClient = () => {
             <CardContent>
               {allSuggestions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <CheckCircle2Icon className="mb-4 h-12 w-12 text-green-500" />
+                  <CheckCircle2 className="mb-4 size-12 text-green-500" />
                   <h3 className="text-lg font-semibold">All Clear!</h3>
                   <p className="text-sm text-muted-foreground">
                     No reorder alerts at this time. All inventory is above
@@ -655,6 +638,7 @@ export const ForecastsPageClient = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      </section>
     </div>
   );
 };
