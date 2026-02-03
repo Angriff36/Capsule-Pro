@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -436,9 +437,10 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
           </DropdownMenu>
         </div>
       </Header>
+      <Separator />
       <RecipesRealtime tenantId={tenantId} userId={userId} />
       {activeTab === "recipes" && <RecipesPageClient />}
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         <div className="rounded-3xl border bg-card/80 p-4 shadow-sm">
           <RecipesToolbar
             activeTab={activeTab}
@@ -451,9 +453,17 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
           />
         </div>
 
-        <div className="rounded-3xl border bg-muted/40 p-4">
-          {activeTab === "recipes" && (
-            <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        <section>
+          <h2 className="font-medium text-sm text-muted-foreground">
+            {activeTab === "recipes" && "Recipe Collection"}
+            {activeTab === "dishes" && "Dish Library"}
+            {activeTab === "ingredients" && "Ingredient Library"}
+            {activeTab === "menus" && "Menu Collection"}
+            {activeTab === "costing" && "Costing Analysis"}
+          </h2>
+          <div className="mt-4 rounded-3xl border bg-muted/40 p-4">
+            {activeTab === "recipes" && (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
               {recipes.length === 0 ? (
                 <Empty className="bg-card/50">
                   <EmptyHeader>
@@ -533,11 +543,11 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                   </Card>
                 ))
               )}
-            </section>
+            </div>
           )}
 
           {activeTab === "dishes" && (
-            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {dishes.length === 0 ? (
                 <Empty className="bg-card/50">
                   <EmptyHeader>
@@ -647,11 +657,11 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                   );
                 })
               )}
-            </section>
+            </div>
           )}
 
           {activeTab === "ingredients" && (
-            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {ingredients.length === 0 ? (
                 <Empty className="bg-card/50">
                   <EmptyHeader>
@@ -714,11 +724,11 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                   </Card>
                 ))
               )}
-            </section>
+            </div>
           )}
 
           {activeTab === "menus" && (
-            <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
               {menus.length === 0 ? (
                 <Empty className="bg-card/50">
                   <EmptyHeader>
@@ -757,11 +767,11 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                   />
                 ))
               )}
-            </section>
+            </div>
           )}
 
           {activeTab === "costing" && (
-            <section className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-2">
               {dishes.length === 0 ? (
                 <Empty className="bg-card/50">
                   <EmptyHeader>
@@ -824,9 +834,10 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                   );
                 })
               )}
-            </section>
+            </div>
           )}
-        </div>
+          </div>
+        </section>
       </div>
     </>
   );
