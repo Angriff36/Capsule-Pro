@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
@@ -184,59 +185,76 @@ const CleanupImportsPage = async () => {
           <Link href="/kitchen/recipes">Back to recipes</Link>
         </Button>
       </Header>
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        <Card>
-          <CardHeader>
-            <CardTitle>Imported item cleanup</CardTitle>
-            <p className="text-muted-foreground text-sm">
-              These items have no ingredients or steps. Cleanup will move
-              supplies to warehouse inventory and convert ingredient-like
-              entries to kitchen ingredients.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {rows.length === 0 ? (
+      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+        {/* Page Header */}
+        <div className="space-y-0.5">
+          <h1 className="text-3xl font-bold tracking-tight">Cleanup Imports</h1>
+          <p className="text-muted-foreground">
+            Review and process imported recipe items that have no ingredients or
+            steps
+          </p>
+        </div>
+
+        <Separator />
+
+        {/* Cleanup Candidates Section */}
+        <section className="space-y-4">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Cleanup Candidates {rows.length > 0 && `(${rows.length})`}
+          </h2>
+          <Card>
+            <CardHeader>
+              <CardTitle>Imported item cleanup</CardTitle>
               <p className="text-muted-foreground text-sm">
-                No cleanup candidates found.
+                These items have no ingredients or steps. Cleanup will move
+                supplies to warehouse inventory and convert ingredient-like
+                entries to kitchen ingredients.
               </p>
-            ) : (
-              <form action={cleanupImportedItems} className="space-y-4">
-                <div className="grid gap-3">
-                  {rows.map((row) => (
-                    <label
-                      className="flex flex-col gap-1 rounded-md border px-4 py-3 text-sm"
-                      key={row.id}
-                    >
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="font-medium">{row.name}</div>
-                        <span className="text-muted-foreground text-xs">
-                          {row.classification.action === "inventory"
-                            ? "Move to inventory"
-                            : "Convert to ingredient"}
-                        </span>
-                      </div>
-                      <div className="text-muted-foreground text-xs">
-                        Linked dishes: {row.dish_count}
-                      </div>
-                      <input
-                        defaultChecked
-                        name="recipeIds"
-                        type="checkbox"
-                        value={row.id}
-                      />
-                    </label>
-                  ))}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button type="submit">Run cleanup</Button>
-                  <Button asChild type="button" variant="outline">
-                    <Link href="/kitchen/recipes">Cancel</Link>
-                  </Button>
-                </div>
-              </form>
-            )}
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {rows.length === 0 ? (
+                <p className="text-muted-foreground text-sm">
+                  No cleanup candidates found.
+                </p>
+              ) : (
+                <form action={cleanupImportedItems} className="space-y-4">
+                  <div className="grid gap-3">
+                    {rows.map((row) => (
+                      <label
+                        className="flex flex-col gap-1 rounded-md border px-4 py-3 text-sm"
+                        key={row.id}
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="font-medium">{row.name}</div>
+                          <span className="text-muted-foreground text-xs">
+                            {row.classification.action === "inventory"
+                              ? "Move to inventory"
+                              : "Convert to ingredient"}
+                          </span>
+                        </div>
+                        <div className="text-muted-foreground text-xs">
+                          Linked dishes: {row.dish_count}
+                        </div>
+                        <input
+                          defaultChecked
+                          name="recipeIds"
+                          type="checkbox"
+                          value={row.id}
+                        />
+                      </label>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button type="submit">Run cleanup</Button>
+                    <Button asChild type="button" variant="outline">
+                      <Link href="/kitchen/recipes">Cancel</Link>
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </CardContent>
+          </Card>
+        </section>
       </div>
     </>
   );
