@@ -38,24 +38,23 @@ const payouts = [
 ];
 
 const PayrollPayoutsPage = () => (
-  <div className="space-y-8">
-    <div>
-      <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-        Payroll
-      </p>
-      <h1 className="text-2xl font-semibold">Payouts</h1>
-      <p className="text-sm text-muted-foreground">
+  <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+    {/* Page Header */}
+    <div className="space-y-0.5">
+      <h1 className="text-3xl font-bold tracking-tight">Payouts</h1>
+      <p className="text-muted-foreground">
         Manage payout channels and statuses for the upcoming run.
       </p>
     </div>
 
     <Separator />
 
-    <section>
+    {/* Scheduled Payouts Section */}
+    <section className="space-y-4">
       <h2 className="text-sm font-medium text-muted-foreground">
         Scheduled Payouts
       </h2>
-      <Card className="mt-4">
+      <Card>
         <CardHeader>
           <CardTitle>All Payout Channels</CardTitle>
           <CardDescription>

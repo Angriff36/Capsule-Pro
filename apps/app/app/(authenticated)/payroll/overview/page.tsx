@@ -35,24 +35,23 @@ const payrollIssues = [
 ];
 
 const PayrollOverviewPage = () => (
-  <div className="space-y-8">
-    <div>
-      <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-        Payroll
-      </p>
-      <h1 className="text-2xl font-semibold">Payroll Overview</h1>
-      <p className="text-sm text-muted-foreground">
+  <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+    {/* Page Header */}
+    <div className="space-y-0.5">
+      <h1 className="text-3xl font-bold tracking-tight">Payroll Overview</h1>
+      <p className="text-muted-foreground">
         Confirm totals, approvals, and risks before the next payout.
       </p>
     </div>
 
     <Separator />
 
-    <section>
-      <h2 className="text-sm font-medium text-muted-foreground mb-4">
+    {/* Performance Overview Section */}
+    <section className="space-y-4">
+      <h2 className="text-sm font-medium text-muted-foreground">
         Performance Overview
       </h2>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-3">
         {payrollSummaries.map((summary) => (
           <Card key={summary.label}>
             <CardHeader>
@@ -64,11 +63,12 @@ const PayrollOverviewPage = () => (
       </div>
     </section>
 
-    <section>
-      <h2 className="text-sm font-medium text-muted-foreground mb-4">
+    {/* Approvals & Risks Section */}
+    <section className="space-y-4">
+      <h2 className="text-sm font-medium text-muted-foreground">
         Approvals & Risks
       </h2>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Pending Approvals</CardTitle>
