@@ -3637,3 +3637,73 @@ During this iteration, several pre-existing build errors were discovered and fix
 - `apps/app/app/(authenticated)/events/page.tsx` - Fixed missing closing </div> tag
 - `apps/app/app/(authenticated)/events/reports/page.tsx` - Fixed missing closing </div> tag
 - `apps/app/app/(authenticated)/search/page.tsx` - Fixed Card asChild prop usage, restructured to Link wrapping pattern
+
+---
+
+### 2.58 Completed UI Improvements (ModuleLanding Component)
+
+**Iteration: Shared ModuleLanding Component Visual Hierarchy Enhancement**
+
+ModuleLanding component (`apps/app/app/(authenticated)/components/module-landing.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture. This component is used across Settings, Payroll, and Inventory module landing pages.
+
+**Improvements Implemented:**
+
+1. **Page Header Structure**
+   - Changed from `<header className="space-y-2">` with uppercase tracking-wide subtitle to proper page header
+   - Added `text-3xl font-bold tracking-tight` styling for main title
+   - Removed redundant uppercase tracking-wide "Overview" subtitle
+   - Summary now serves as descriptive paragraph in `space-y-0.5` wrapper
+   - Consistent with all other improved pages across the platform
+
+2. **Separator Addition**
+   - Added `<Separator />` component between page header and main content for clear visual break
+   - Consistent with all other page improvements across the platform
+
+3. **Container Structure Standardization**
+   - Changed from `<div className="space-y-6">` to `<div className="flex flex-1 flex-col gap-8 p-4 pt-0">`
+   - Matches the container pattern used across all other improved pages
+   - Provides consistent padding and flex layout behavior
+
+4. **Section-Based Organization**
+   - Added semantic `<section>` element for Features Overview content
+   - Section header uses consistent styling: `text-sm font-medium text-muted-foreground`
+   - Section uses `space-y-4` for proper spacing management
+   - Clear visual separation between page header and content
+
+5. **Card Component Enhancement**
+   - Changed from `<Card className="bg-card/60 p-4">` with inline styling to proper Card + CardContent structure
+   - CardContent now uses `p-6` for consistent internal padding
+   - Cleaner visual hierarchy with proper component structure
+
+6. **Grid Spacing Improvement**
+   - Changed grid gaps from `gap-4` to `gap-6` for better breathing room and visual rhythm
+   - Consistent with spacing patterns used in other improved pages
+
+**Key Learnings:**
+
+1. **Shared Component Consistency Matters**: When improving shared components like ModuleLanding, the benefits cascade to all pages using it (Settings, Payroll, Inventory). This creates widespread consistency with minimal changes.
+
+2. **Uppercase Tracking Subtitles Create Visual Noise**: Removing the uppercase tracking-wide "Overview" subtitle and relying on clear main title + descriptive paragraph creates cleaner hierarchy.
+
+3. **CardContent Over Inline Classes**: Using proper CardContent component instead of inline `p-4` className creates consistent component structure and makes future styling changes easier.
+
+4. **gap-6 vs gap-4 for Grids**: Increasing grid gap from 4 to 6 creates better visual rhythm for feature cards, preventing the layout from feeling cramped.
+
+5. **Standard Container Pattern**: Using the `flex flex-1 flex-col gap-8 p-4 pt-0` pattern consistently across all pages creates predictable layout behavior.
+
+**Remaining Work in Module Landing Pages:**
+- None identified — all pages using ModuleLanding (Settings, Payroll, Inventory) now have consistent visual hierarchy
+
+**Applicability to Other Modules:**
+
+- **Any Shared Component**: When improving shared components used across multiple pages, the benefits cascade widely. Look for similar opportunities with other shared components.
+- **Any Landing/Overview Page**: The pattern of clear page header + Separator + section organization works well for module landing and overview pages.
+- **Any Page with Uppercase Subtitles**: Pages with uppercase tracking-wide subtitles should consider removing them for cleaner hierarchy.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/components/module-landing.tsx` - Added page header structure, Separator, semantic section, CardContent, improved spacing, removed uppercase subtitle
+
+**Pages Affected (via shared component):**
+- `apps/app/app/(authenticated)/settings/page.tsx` - Now uses improved ModuleLanding
+- `apps/app/app/(authenticated)/payroll/page.tsx` - Now uses improved ModuleLanding
+- `apps/app/app/(authenticated)/inventory/page.tsx` - Now uses improved ModuleLanding
