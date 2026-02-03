@@ -1267,6 +1267,61 @@ Kitchen Waste Page component (`apps/app/app/(authenticated)/kitchen/waste/page.t
 
 ---
 
+### 2.25 Completed UI Improvements (Kitchen Allergens Page)
+
+**Iteration: Kitchen Allergens Page Visual Hierarchy Enhancement**
+
+Kitchen Allergens Page component (`apps/app/app/(authenticated)/kitchen/allergens/page.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Improvements Implemented:**
+
+1. **Page Header Separator**
+   - Added `<Separator />` component between header and main content for clear visual break
+   - Consistent with other kitchen pages (Production Board, Prep Lists, Recipes, Waste) and other dashboard improvements
+
+2. **Section-Based Organization**
+   - Added semantic `<section>` elements with descriptive headers for Search and Allergen Information areas
+   - Each section gets its own header with consistent styling: `text-sm font-medium text-muted-foreground`
+   - Clear visual separation: Search Controls → Allergen Information
+
+3. **Component Structure**
+   - Changed main content spacing from `space-y-6` to `space-y-8` for better visual rhythm
+   - Section headers provide mental model of page structure
+   - Search section now properly separated with semantic section header
+   - Allergen Information section given its own semantic structure with clear visual grouping
+
+4. **Icon Sizing Consistency**
+   - Changed icon sizes from `h-4 w-4` to `size-4` for consistency with other page improvements
+   - Maintains visual consistency across the platform
+
+5. **Semantic HTML Structure**
+   - Wrapped major content areas in semantic `<section>` elements with descriptive headers
+   - Improved accessibility and document structure
+   - Clear visual separation between Search and Information content areas
+
+**Key Learnings:**
+
+1. **Section Headers Work for Information Pages**: Even on pages focused on information display (allergens, search), adding section headers immediately gives users a mental model of the page structure and content organization.
+
+2. **Grouping Related Functions**: The Search Controls and Allergen Information sections are clearly separated, making it easy for users to understand different types of content and interactions.
+
+3. **Separator After Page Header**: Adding Separator after the page header creates visual breathing room similar to other kitchen page improvements.
+
+4. **space-y-8 vs space-y-6**: Increasing spacing from 6 to 8 creates better visual rhythm for information pages with multiple sections.
+
+5. **Icon Sizing Consistency**: Using `size-4` instead of `h-4 w-4` provides consistent sizing across all components and follows the established design system patterns.
+
+**Applicability to Other Modules:**
+
+- **Any Information Page with Multiple Sections**: The section header pattern works well for pages focused on information display with clear functional separation (search vs information, filters vs results).
+- **Kitchen Module**: Any remaining kitchen pages could benefit from similar section-based organization.
+- **Any Page with Search/Information Split**: The pattern of separating search controls from information content under clear section headers improves user comprehension.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/kitchen/allergens/page.tsx` - Added Separator, section headers, semantic sections, improved spacing
+
+---
+
 ### 2.17 Phase 2 Completion Criteria
 
 Phase 2 is complete when:

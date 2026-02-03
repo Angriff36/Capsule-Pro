@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Tabs,
   TabsContent,
@@ -311,7 +312,7 @@ export default function AllergenManagementPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Allergen Management</h1>
@@ -322,35 +323,46 @@ export default function AllergenManagementPage() {
         </div>
       </div>
 
-      <div className="flex items-center space-x-2">
-        <SearchIcon className="h-4 w-4 text-muted-foreground" />
-        <Input
-          className="w-64"
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search warnings, events, dishes..."
-          value={searchTerm}
-        />
-      </div>
+      <Separator />
+
+      <section>
+        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+          Search
+        </h2>
+        <div className="flex items-center space-x-2">
+          <SearchIcon className="size-4 text-muted-foreground" />
+          <Input
+            className="w-64"
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search warnings, events, dishes..."
+            value={searchTerm}
+          />
+        </div>
+      </section>
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <Tabs className="space-y-4" defaultValue="warnings">
-          <TabsList>
-            <TabsTrigger value="warnings">Allergen Warnings</TabsTrigger>
-            <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="dishes">Dishes</TabsTrigger>
-            <TabsTrigger value="recipes">Recipes</TabsTrigger>
-          </TabsList>
+        <section>
+          <h2 className="text-sm font-medium text-muted-foreground mb-4">
+            Allergen Information
+          </h2>
+          <Tabs className="space-y-4" defaultValue="warnings">
+            <TabsList>
+              <TabsTrigger value="warnings">Allergen Warnings</TabsTrigger>
+              <TabsTrigger value="events">Events</TabsTrigger>
+              <TabsTrigger value="dishes">Dishes</TabsTrigger>
+              <TabsTrigger value="recipes">Recipes</TabsTrigger>
+            </TabsList>
 
-          {/* Allergen Warnings Tab */}
-          <TabsContent className="space-y-4" value="warnings">
+            {/* Allergen Warnings Tab */}
+            <TabsContent className="space-y-4" value="warnings">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <AlertTriangle className="h-5 w-5" />
+                  <AlertTriangle className="size-5" />
                   <span>All Allergen Warnings</span>
                   <Badge variant="destructive">{filteredWarnings.length}</Badge>
                 </CardTitle>
@@ -382,7 +394,7 @@ export default function AllergenManagementPage() {
                                   {formatDateTime(warning.createdAt)}
                                 </span>
                                 {warning.isAcknowledged && (
-                                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                  <CheckCircle2 className="size-4 text-green-500" />
                                 )}
                               </div>
                               <div>
@@ -432,7 +444,7 @@ export default function AllergenManagementPage() {
                                   variant="outline"
                                 >
                                   {actionLoading ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <Loader2 className="size-4 animate-spin" />
                                   ) : (
                                     "Acknowledge"
                                   )}
@@ -452,7 +464,7 @@ export default function AllergenManagementPage() {
                                   size="sm"
                                 >
                                   {actionLoading ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <Loader2 className="size-4 animate-spin" />
                                   ) : (
                                     "Resolve"
                                   )}
@@ -621,6 +633,7 @@ export default function AllergenManagementPage() {
             </Card>
           </TabsContent>
         </Tabs>
+        </section>
       )}
     </div>
   );
