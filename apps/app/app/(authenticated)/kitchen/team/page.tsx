@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import { Settings, UserPlus, Users } from "lucide-react";
 import Link from "next/link";
 import { Header } from "../../components/header";
@@ -13,11 +14,26 @@ const KitchenTeamPage = () => {
   return (
     <>
       <Header page="Kitchen Team" pages={["Kitchen Ops"]} />
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        <Card>
+      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+        {/* Page Header */}
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl font-bold tracking-tight">Kitchen Team</h1>
+          <p className="text-muted-foreground">
+            Access team management features from the Staff module
+          </p>
+        </div>
+
+        <Separator />
+
+        {/* Team Management Section */}
+        <section className="flex flex-col gap-4">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Team Management
+          </h2>
+            <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
+              <Users className="size-5" />
               Team Management
             </CardTitle>
           </CardHeader>
@@ -36,61 +52,70 @@ const KitchenTeamPage = () => {
             </div>
           </CardContent>
         </Card>
+        </section>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        {/* Features Overview Section */}
+        <section className="flex flex-col gap-4">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Features Overview
+          </h2>
+          <div className="grid gap-6 md:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <UserPlus className="size-4" />
+                  Onboarding
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                <ul className="list-disc pl-4 space-y-1">
+                  <li>Add new team members</li>
+                  <li>Set up roles and permissions</li>
+                  <li>Assign station skills</li>
+                  <li>Configure availability</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Settings className="size-4" />
+                  Role Management
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                <ul className="list-disc pl-4 space-y-1">
+                  <li>Define kitchen roles</li>
+                  <li>Set skill requirements</li>
+                  <li>Configure certifications</li>
+                  <li>Manage training records</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Station Assignments</CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                <ul className="list-disc pl-4 space-y-1">
+                  <li>Assign staff to stations</li>
+                  <li>Track station coverage</li>
+                  <li>Manage lead positions</li>
+                  <li>View team composition</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* Common Tasks Section */}
+        <section className="flex flex-col gap-4">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Common Tasks
+          </h2>
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <UserPlus className="h-4 w-4" />
-                Onboarding
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              <ul className="list-disc pl-4 space-y-1">
-                <li>Add new team members</li>
-                <li>Set up roles and permissions</li>
-                <li>Assign station skills</li>
-                <li>Configure availability</li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Settings className="h-4 w-4" />
-                Role Management
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              <ul className="list-disc pl-4 space-y-1">
-                <li>Define kitchen roles</li>
-                <li>Set skill requirements</li>
-                <li>Configure certifications</li>
-                <li>Manage training records</li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Station Assignments</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              <ul className="list-disc pl-4 space-y-1">
-                <li>Assign staff to stations</li>
-                <li>Track station coverage</li>
-                <li>Manage lead positions</li>
-                <li>View team composition</li>
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Common Tasks</CardTitle>
-          </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Button
@@ -99,7 +124,7 @@ const KitchenTeamPage = () => {
                 variant="outline"
               >
                 <Link href="/staff/team?view=online">
-                  <Users className="h-5 w-5" />
+                  <Users className="size-5" />
                   <span>Who's Working</span>
                 </Link>
               </Button>
@@ -109,7 +134,7 @@ const KitchenTeamPage = () => {
                 variant="outline"
               >
                 <Link href="/staff/team?action=assign">
-                  <UserPlus className="h-5 w-5" />
+                  <UserPlus className="size-5" />
                   <span>Quick Assign</span>
                 </Link>
               </Button>
@@ -119,7 +144,7 @@ const KitchenTeamPage = () => {
                 variant="outline"
               >
                 <Link href="/staff/availability">
-                  <Settings className="h-5 w-5" />
+                  <Settings className="size-5" />
                   <span>Availability</span>
                 </Link>
               </Button>
@@ -136,6 +161,7 @@ const KitchenTeamPage = () => {
             </div>
           </CardContent>
         </Card>
+        </section>
       </div>
     </>
   );
