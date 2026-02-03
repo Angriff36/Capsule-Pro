@@ -81,7 +81,7 @@ const KitchenTasksPage = async () => {
       <Header page="Kitchen Tasks" pages={["Kitchen Ops"]} />
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
-        <div>
+        <div className="space-y-0.5">
           <h1 className="text-3xl font-bold tracking-tight">Kitchen Tasks</h1>
           <p className="text-muted-foreground">
             Manage and track all kitchen operations tasks, priorities, and assignments.
@@ -91,11 +91,11 @@ const KitchenTasksPage = async () => {
         <Separator />
 
         {/* Performance Overview Section */}
-        <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">
+        <section className="space-y-4">
+          <h2 className="text-sm font-medium text-muted-foreground">
             Performance Overview
           </h2>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-4">
             <Card>
               <CardHeader className="pb-2">
                 <CardDescription>Total Tasks</CardDescription>
@@ -130,8 +130,8 @@ const KitchenTasksPage = async () => {
         </section>
 
         {/* Tasks Section */}
-        <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">
+        <section className="space-y-4">
+          <h2 className="text-sm font-medium text-muted-foreground">
             All Kitchen Tasks
           </h2>
           <Card>

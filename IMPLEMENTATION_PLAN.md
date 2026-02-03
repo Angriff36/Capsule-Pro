@@ -2956,9 +2956,10 @@ Kitchen Tasks Page component (`apps/app/app/(authenticated)/kitchen/tasks/page.t
 
 **Improvements Implemented:**
 
-1. **Page Header Addition**
-   - Added `<h1>` title "Kitchen Tasks" with `text-3xl font-bold tracking-tight` styling
-   - Added descriptive paragraph explaining the page purpose
+1. **Page Header Structure**
+   - Wrapped page header in `<div className="space-y-0.5">` for consistent spacing
+   - `<h1>` title "Kitchen Tasks" with `text-3xl font-bold tracking-tight` styling
+   - Descriptive paragraph explaining the page purpose
    - Consistent with other page improvements across the platform
 
 2. **Separator Addition**
@@ -2966,7 +2967,9 @@ Kitchen Tasks Page component (`apps/app/app/(authenticated)/kitchen/tasks/page.t
    - Consistent with other kitchen pages (Production Board, Prep Lists, Recipes, Waste, Allergens) and all dashboard improvements
 
 3. **Section-Based Organization**
-   - Added semantic `<section>` elements with descriptive headers for each major content area
+   - Added `className="space-y-4"` to section containers for proper spacing management
+   - Removed inline `mb-4` from headings in favor of container-based spacing
+   - Semantic `<section>` elements with descriptive headers for each major content area
    - Each section gets its own header with consistent styling: `text-sm font-medium text-muted-foreground`
    - Clear visual separation: Performance Overview → All Kitchen Tasks
 
@@ -2977,6 +2980,7 @@ Kitchen Tasks Page component (`apps/app/app/(authenticated)/kitchen/tasks/page.t
 
 5. **Component Structure**
    - Changed main content spacing from `gap-6` to `gap-8` for better breathing room and visual rhythm
+   - Changed grid gap from `gap-4` to `gap-6` for better visual rhythm between metric cards
    - Removed CardHeader from table card since section header provides context
    - Cleaner visual hierarchy with section header outside the card
 
@@ -2996,11 +3000,17 @@ Kitchen Tasks Page component (`apps/app/app/(authenticated)/kitchen/tasks/page.t
 
 3. **Separator After Page Header**: Adding Separator after the page header creates visual breathing room similar to other kitchen page improvements.
 
-4. **gap-8 vs gap-6**: Increasing spacing from 6 to 8 creates better visual rhythm for task management pages with dense information.
+4. **space-y-0.5 for Page Headers**: Using the `space-y-0.5` wrapper on page header content creates consistent spacing between title and description, matching the platform pattern established in other improvements.
 
-5. **Icon Sizing Consistency**: Using `size-4` and `size-3` instead of `h-4 w-4` and `h-3 w-3` provides consistent sizing across all components and follows the established design system patterns.
+5. **space-y-4 for Section Containers**: Using `space-y-4` on section containers instead of inline `mb-4` on headings is more maintainable and follows React/Tailwind best practices.
 
-6. **Remove Custom Colors for Values**: Removing custom color classes (like `text-blue-600` for "In Progress" and `text-emerald-600` for "My Claims") provides consistent visual language that adapts to theme changes.
+6. **gap-8 vs gap-6 for Main Container**: Increasing main container spacing from 6 to 8 creates better visual rhythm for task management pages with dense information.
+
+7. **gap-6 vs gap-4 for Grids**: Increasing grid gap from 4 to 6 creates better visual rhythm between metric cards, preventing the layout from feeling cramped.
+
+8. **Icon Sizing Consistency**: Using `size-4` and `size-3` instead of `h-4 w-4` and `h-3 w-3` provides consistent sizing across all components and follows the established design system patterns.
+
+9. **Remove Custom Colors for Values**: Removing custom color classes (like `text-blue-600` for "In Progress" and `text-emerald-600` for "My Claims") provides consistent visual language that adapts to theme changes.
 
 **Remaining Work in Kitchen Module:**
 - Kitchen Stations page could benefit from similar section-based organization
