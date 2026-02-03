@@ -4,6 +4,14 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import {
   Table,
   TableBody,
   TableCell,
@@ -276,16 +284,18 @@ export function ClientsClient() {
         </Button>
       </div>
 
+      <Separator />
+
       {/* Filters */}
-      <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
-        <FilterIcon className="h-4 w-4 text-muted-foreground" />
+      <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/30 p-4">
+        <FilterIcon className="h-4 w-4 text-muted-foreground shrink-0" />
 
         <form
-          className="flex items-center gap-2 flex-1"
+          className="flex flex-wrap items-center gap-3 flex-1"
           onSubmit={handleSearchSubmit}
         >
           <Input
-            className="max-w-xs"
+            className="max-w-[200px]"
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search by name, email..."
             type="text"
@@ -296,18 +306,26 @@ export function ClientsClient() {
           </Button>
         </form>
 
-        <select
-          className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors"
-          onChange={(e) => handleFilterChange("clientType", e.target.value)}
-          value={filters.clientType || ""}
+        <Separator orientation="vertical" className="h-6 shrink-0" />
+
+        <Select
+          onValueChange={(value) =>
+            handleFilterChange("clientType", value === "all" ? "" : value)
+          }
+          value={filters.clientType || "all"}
         >
-          <option value="">All Types</option>
-          <option value="company">Companies</option>
-          <option value="individual">Individuals</option>
-        </select>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="All Types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="company">Companies</SelectItem>
+            <SelectItem value="individual">Individuals</SelectItem>
+          </SelectContent>
+        </Select>
 
         <Input
-          className="max-w-xs"
+          className="w-[140px]"
           onChange={(e) => handleFilterChange("source", e.target.value)}
           placeholder="Source..."
           type="text"
@@ -315,10 +333,13 @@ export function ClientsClient() {
         />
 
         {hasFilters && (
-          <Button onClick={clearFilters} size="sm" variant="ghost">
-            <XIcon className="h-4 w-4 mr-2" />
-            Clear
-          </Button>
+          <>
+            <Separator orientation="vertical" className="h-6 shrink-0" />
+            <Button onClick={clearFilters} size="sm" variant="ghost">
+              <XIcon className="h-4 w-4 mr-2" />
+              Clear
+            </Button>
+          </>
         )}
       </div>
 
@@ -346,7 +367,7 @@ export function ClientsClient() {
       ) : (
         <>
           {/* Results count */}
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm font-medium text-muted-foreground">
             Showing {clients.length} of {pagination.total} clients
           </div>
 

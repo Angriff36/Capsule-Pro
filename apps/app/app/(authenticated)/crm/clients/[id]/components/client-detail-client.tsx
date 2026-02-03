@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Tabs,
   TabsContent,
@@ -175,54 +176,61 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button onClick={() => router.back()} size="sm" variant="ghost">
+      <div className="flex items-start justify-between">
+        <div className="flex items-start gap-4">
+          <Button
+            className="mt-1"
+            onClick={() => router.back()}
+            size="sm"
+            variant="ghost"
+          >
             <ArrowLeftIcon className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <div>
+          <div className="flex-1">
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold tracking-tight">
                 {getClientDisplayName()}
               </h1>
               <Badge variant="outline">{client.clientType}</Badge>
             </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mt-2">
               {client.email && (
-                <div className="flex items-center gap-1">
-                  <MailIcon className="h-3 w-3" />
+                <div className="flex items-center gap-1.5">
+                  <MailIcon className="h-3.5 w-3.5" />
                   {client.email}
                 </div>
               )}
               {client.phone && (
-                <div className="flex items-center gap-1">
-                  <PhoneIcon className="h-3 w-3" />
+                <div className="flex items-center gap-1.5">
+                  <PhoneIcon className="h-3.5 w-3.5" />
                   {client.phone}
                 </div>
               )}
               {client.source && (
-                <Badge className="text-xs" variant="secondary">
-                  Source: {client.source}
-                </Badge>
+                <span className="text-xs">via {client.source}</span>
               )}
             </div>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button
-            disabled={isDeleting}
-            onClick={handleDelete}
-            variant="outline"
-          >
-            <TrashIcon className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
-        </div>
+        <Button
+          disabled={isDeleting}
+          onClick={handleDelete}
+          variant="outline"
+        >
+          <TrashIcon className="h-4 w-4 mr-2" />
+          Delete
+        </Button>
       </div>
 
+      <Separator />
+
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <section>
+        <h2 className="text-sm font-medium text-muted-foreground mb-3">
+          Overview
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -268,6 +276,9 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
           </CardContent>
         </Card>
       </div>
+      </section>
+
+      <Separator />
 
       {/* Tabs */}
       <Tabs onValueChange={setActiveTab} value={activeTab}>
