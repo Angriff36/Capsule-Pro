@@ -2118,7 +2118,55 @@ Warehouse Audits Page component (`apps/app/app/(authenticated)/warehouse/audits/
 - **Any Card with Multiple Data Points**: When cards have multiple fields to display, proper spacing and typography hierarchy are critical for scannability.
 
 **Files Modified:**
-- `apps/app/app/(authenticated)/warehouse/audits/page.tsx` - Improved grid spacing (gap-4 → gap-6), added CardDescription for status badge, improved CardContent spacing (space-y-2 → space-y-3), enhanced typography consistency (strong → font-medium, text-muted-foreground labels)
+- `apps/app/app/(authenticated)/warehouse/audits/page.tsx` - Improved page container structure (added `flex flex-1 flex-col gap-8 p-4 pt-0`), wrapped page header in `space-y-0.5`, added `space-y-4` to section container, improved grid spacing (gap-4 → gap-6), added CardDescription for status badge, improved CardContent spacing (space-y-2 → space-y-3), enhanced typography consistency (strong → font-medium, text-muted-foreground labels)
+
+---
+
+### 2.42.1 Additional Warehouse Audits Page Improvements
+
+**Iteration: Page Container Structure Standardization**
+
+Additional improvements made to Warehouse Audits Page to bring container structure in line with established patterns across the platform.
+
+**Improvements Implemented:**
+
+1. **Page Container Structure**
+   - Changed from `<div className="space-y-8">` to `<div className="flex flex-1 flex-col gap-8 p-4 pt-0">`
+   - Matches the container pattern used across all other improved pages (Scheduling Dashboard, Kitchen pages, Administrative, Payroll, etc.)
+   - Provides consistent padding and flex layout behavior
+
+2. **Page Header Wrapper**
+   - Wrapped page header content in `<div className="space-y-0.5">`
+   - Provides consistent spacing between title and description
+   - Matches pattern used on all other improved pages
+
+3. **Section Container Spacing**
+   - Added `className="space-y-4"` to the section element
+   - Removed inline `mb-4` from h2 heading
+   - Space is now managed by the container class for consistency
+
+4. **Comments for Clarity**
+   - Added `{/* Page Header */}` and `{/* Scheduled Audit Rounds Section */}` comments
+   - Improves code readability and maintainability
+
+**Key Learnings:**
+
+1. **Container Consistency Matters**: Even pages with good visual hierarchy benefit from consistent container structure. Using the same `flex flex-1 flex-col gap-8 p-4 pt-0` pattern across all pages creates predictable layout behavior.
+
+2. **Space-y-0.5 for Page Headers**: The `space-y-0.5` wrapper creates just the right amount of spacing between page title and description - tighter than `space-y-1` but more intentional than no spacing at all.
+
+3. **Space-y-4 for Sections**: Using `space-y-4` on section containers instead of inline `mb-4` on headings is more maintainable and follows React/Tailwind best practices.
+
+**Remaining Work in Warehouse Module:**
+- None identified — all major warehouse pages (Dashboard, Shipments, Receiving, Audits) now have consistent visual hierarchy and container structure
+
+**Applicability to Other Modules:**
+
+- **Any Page with Custom Container**: If a page is using `space-y-8` directly instead of the standard `flex flex-1 flex-col gap-8 p-4 pt-0` pattern, it should be updated for consistency.
+- **Any Page Without space-y-0.5 on Header**: Pages whose header content lacks the proper wrapper should be updated.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/warehouse/audits/page.tsx` - Added page container structure (flex flex-1 flex-col gap-8 p-4 pt-0), wrapped page header (space-y-0.5), added section container spacing (space-y-4), added clarity comments
 
 ---
 

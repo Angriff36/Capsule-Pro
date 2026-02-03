@@ -2,46 +2,69 @@ import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Calendar, Clock, Users } from "lucide-react";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import { Calendar, Clock, ExternalLink, Users } from "lucide-react";
 import Link from "next/link";
-import { Header } from "../../components/header";
 
 const KitchenSchedulePage = () => {
   return (
-    <>
-      <Header page="Kitchen Schedule" pages={["Kitchen Ops"]} />
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+      {/* Page Header */}
+      <div className="space-y-0.5">
+        <h1 className="text-3xl font-bold tracking-tight">Kitchen Schedule</h1>
+        <p className="text-muted-foreground">
+          Access staff scheduling features from the Staff module
+        </p>
+      </div>
+      <Separator />
+
+      {/* Scheduling Navigation Section */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">
+          Staff Scheduling
+        </h2>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Staff Scheduling
+              <Clock className="size-5" />
+              Manage Schedule
             </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">
+            <CardDescription>
               Kitchen staff scheduling is managed in the Staff module. View and
               manage shifts, time-off requests, and team availability there.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild>
-                <Link href="/staff/schedule">View Staff Schedule</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/staff/team">Manage Team</Link>
-              </Button>
-            </div>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-3">
+            <Button asChild>
+              <Link href="/staff/schedule">
+                View Staff Schedule
+                <ExternalLink className="ml-2 size-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/staff/team">
+                Manage Team
+                <ExternalLink className="ml-2 size-4" />
+              </Link>
+            </Button>
           </CardContent>
         </Card>
+      </section>
 
-        <div className="grid gap-4 md:grid-cols-2">
+      {/* Features Overview Section */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">
+          Features Overview
+        </h2>
+        <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="size-4" />
                 Shift Management
               </CardTitle>
             </CardHeader>
@@ -57,8 +80,8 @@ const KitchenSchedulePage = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Users className="h-4 w-4" />
+              <CardTitle className="flex items-center gap-2">
+                <Users className="size-4" />
                 Team Availability
               </CardTitle>
             </CardHeader>
@@ -72,17 +95,18 @@ const KitchenSchedulePage = () => {
             </CardContent>
           </Card>
         </div>
+      </section>
 
+      {/* Quick Stats Section */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">Quick Stats</h2>
         <Card>
-          <CardHeader>
-            <CardTitle>Quick Stats</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-4">
+          <CardContent className="pt-6">
+            <div className="grid gap-6 md:grid-cols-4">
               <div className="text-center">
                 <div className="text-2xl font-bold">-</div>
                 <div className="text-sm text-muted-foreground">
-                  Today's Shifts
+                  Today&apos;s Shifts
                 </div>
               </div>
               <div className="text-center">
@@ -109,8 +133,8 @@ const KitchenSchedulePage = () => {
             </p>
           </CardContent>
         </Card>
-      </div>
-    </>
+      </section>
+    </div>
   );
 };
 
