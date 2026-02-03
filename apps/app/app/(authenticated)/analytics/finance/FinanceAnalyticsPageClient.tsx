@@ -4,6 +4,7 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
@@ -23,7 +24,10 @@ export function FinanceAnalyticsPageClient() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <section>
+        <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+          Performance Overview
+        </h2>
         <div className="grid gap-4 md:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <Card className="animate-pulse" key={i}>
@@ -39,7 +43,7 @@ export function FinanceAnalyticsPageClient() {
             </Card>
           ))}
         </div>
-      </div>
+      </section>
     );
   }
 
@@ -67,72 +71,88 @@ export function FinanceAnalyticsPageClient() {
   const { financeHighlights, ledgerSummary, financeAlerts } = data;
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-3">
-        {financeHighlights.map((item: FinanceHighlight) => (
-          <Card key={item.label}>
+    <div className="space-y-8">
+      <section>
+        <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+          Performance Overview
+        </h2>
+        <div className="grid gap-4 md:grid-cols-3">
+          {financeHighlights.map((item: FinanceHighlight) => (
+            <Card key={item.label}>
+              <CardHeader>
+                <CardDescription>{item.label}</CardDescription>
+                <CardTitle
+                  className={
+                    item.isPositive !== undefined
+                      ? item.isPositive
+                        ? "text-green-600"
+                        : "text-orange-600"
+                      : ""
+                  }
+                >
+                  {item.value}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p
+                  className={`text-xs ${item.isPositive !== undefined ? (item.isPositive ? "text-green-600" : "text-orange-600") : "text-muted-foreground"}`}
+                >
+                  {item.trend}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+          Financial Analysis
+        </h2>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
             <CardHeader>
-              <CardTitle
-                className={
-                  item.isPositive !== undefined
-                    ? item.isPositive
-                      ? "text-green-600"
-                      : "text-orange-600"
-                    : ""
-                }
-              >
-                {item.value}
-              </CardTitle>
+              <CardTitle>Ledger Summary</CardTitle>
+              <CardDescription>
+                Income, expenses, and net position
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">{item.label}</p>
-              <p
-                className={`text-xs ${item.isPositive !== undefined ? (item.isPositive ? "text-green-600" : "text-orange-600") : "text-muted-foreground"}`}
-              >
-                {item.trend}
-              </p>
+            <CardContent className="space-y-3 text-sm">
+              {ledgerSummary.map((row: LedgerEntry) => (
+                <div
+                  className="flex items-center justify-between"
+                  key={row.label}
+                >
+                  <p className="text-muted-foreground">{row.label}</p>
+                  <p className="font-semibold">{row.amount}</p>
+                </div>
+              ))}
             </CardContent>
           </Card>
-        ))}
-      </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Ledger Summary</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            {ledgerSummary.map((row: LedgerEntry) => (
-              <div
-                className="flex items-center justify-between"
-                key={row.label}
-              >
-                <p className="text-muted-foreground">{row.label}</p>
-                <p className="font-semibold">{row.amount}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Finance Alerts</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            {financeAlerts.map((alert: FinanceAlert, index: number) => (
-              <div
-                className="flex items-center justify-between rounded-md border border-border/70 px-4 py-3"
-                key={index}
-              >
-                <p>{alert.message}</p>
-                <Badge variant={getSeverityVariant(alert.severity)}>
-                  {alert.severity}
-                </Badge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Finance Alerts</CardTitle>
+              <CardDescription>
+                Items requiring attention or review
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              {financeAlerts.map((alert: FinanceAlert, index: number) => (
+                <div
+                  className="flex items-center justify-between rounded-md border border-border/70 px-4 py-3"
+                  key={index}
+                >
+                  <p>{alert.message}</p>
+                  <Badge variant={getSeverityVariant(alert.severity)}>
+                    {alert.severity}
+                  </Badge>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </section>
     </div>
   );
 }
