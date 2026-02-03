@@ -11,6 +11,14 @@ import {
 } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import {
   AlertTriangle,
   CheckCircle,
   FileText,
@@ -221,79 +229,90 @@ export default function ReceivingPage() {
   const getQualityIcon = (status: QualityStatus) => {
     switch (status) {
       case "approved":
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
+        return <CheckCircle className="size-4 text-green-600" />;
       case "rejected":
-        return <XCircle className="h-4 w-4 text-red-600" />;
+        return <XCircle className="size-4 text-red-600" />;
       case "needs_inspection":
-        return <AlertTriangle className="h-4 w-4 text-orange-600" />;
+        return <AlertTriangle className="size-4 text-orange-600" />;
       default:
-        return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
+        return <AlertTriangle className="size-4 text-yellow-600" />;
     }
   };
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
+    <div className="container mx-auto p-4 space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Warehouse Receiving</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Warehouse Receiving</h1>
           <p className="text-muted-foreground">
             Scan items, log receipts, and update stock levels
           </p>
         </div>
         <div className="flex gap-2">
           <Button className="gap-2" variant="outline">
-            <FileText className="h-4 w-4" />
+            <FileText className="size-4" />
             Reports
           </Button>
           <Button className="gap-2" variant="outline">
-            <TrendingUp className="h-4 w-4" />
+            <TrendingUp className="size-4" />
             Supplier Performance
           </Button>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            Purchase Order Lookup
-          </CardTitle>
-          <CardDescription>
-            Enter PO number or scan barcode to begin receiving process
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2">
-            <Input
-              className="flex-1"
-              disabled={scanning}
-              onChange={(e) => setSearchPO(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handlePOSearch()}
-              placeholder="Enter PO number or scan barcode..."
-              value={searchPO}
-            />
-            <Button
-              className="gap-2"
-              disabled={scanning}
-              onClick={handlePOSearch}
-            >
-              <Search className="h-4 w-4" />
-              {scanning ? "Searching..." : "Search"}
-            </Button>
-            <Button
-              className="gap-2"
-              disabled={scanning}
-              onClick={handleScan}
-              variant="secondary"
-            >
-              <Package className="h-4 w-4" />
-              {scanning ? "Scanning..." : "Scan Item"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <Separator />
+
+      <section>
+        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+          Purchase Order Lookup
+        </h2>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="size-5" />
+              Find Purchase Order
+            </CardTitle>
+            <CardDescription>
+              Enter PO number or scan barcode to begin receiving process
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              <Input
+                className="flex-1"
+                disabled={scanning}
+                onChange={(e) => setSearchPO(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handlePOSearch()}
+                placeholder="Enter PO number or scan barcode..."
+                value={searchPO}
+              />
+              <Button
+                className="gap-2"
+                disabled={scanning}
+                onClick={handlePOSearch}
+              >
+                <Search className="size-4" />
+                {scanning ? "Searching..." : "Search"}
+              </Button>
+              <Button
+                className="gap-2"
+                disabled={scanning}
+                onClick={handleScan}
+                variant="secondary"
+              >
+                <Package className="size-4" />
+                {scanning ? "Scanning..." : "Scan Item"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
 
       {selectedPO && (
+        <section>
+          <h2 className="text-sm font-medium text-muted-foreground mb-4">
+            Purchase Order Details
+          </h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Card className="md:col-span-2 lg:col-span-2">
             <CardHeader>
@@ -374,24 +393,25 @@ export default function ReceivingPage() {
                         >
                           Quality Status
                         </label>
-                        <select
-                          className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                          id={`quality-${item.id}`}
-                          onChange={(e) =>
-                            updateItemQuality(
-                              item.id,
-                              e.target.value as QualityStatus
-                            )
+                        <Select
+                          defaultValue={item.quality_status}
+                          onValueChange={(value) =>
+                            updateItemQuality(item.id, value as QualityStatus)
                           }
                           value={item.quality_status}
                         >
-                          <option value="pending">Pending Review</option>
-                          <option value="approved">Approved</option>
-                          <option value="needs_inspection">
-                            Needs Inspection
-                          </option>
-                          <option value="rejected">Rejected</option>
-                        </select>
+                          <SelectTrigger className="mt-1" id={`quality-${item.id}`}>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pending Review</SelectItem>
+                            <SelectItem value="approved">Approved</SelectItem>
+                            <SelectItem value="needs_inspection">
+                              Needs Inspection
+                            </SelectItem>
+                            <SelectItem value="rejected">Rejected</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
 
@@ -404,27 +424,32 @@ export default function ReceivingPage() {
                         >
                           Discrepancy Type
                         </label>
-                        <select
-                          className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                          id={`discrepancy-${item.id}`}
-                          onChange={(e) => {
-                            const value = e.target.value as DiscrepancyType;
+                        <Select
+                          defaultValue={item.discrepancy_type || "none"}
+                          onValueChange={(value) => {
+                            const discrepancyValue =
+                              value === "none" ? undefined : (value as DiscrepancyType);
                             updateItemQuality(
                               item.id,
                               item.quality_status,
-                              value === "none" ? undefined : value,
+                              discrepancyValue,
                               undefined,
                               undefined
                             );
                           }}
                           value={item.discrepancy_type || "none"}
                         >
-                          <option value="none">None</option>
-                          <option value="shortage">Shortage</option>
-                          <option value="overage">Overage</option>
-                          <option value="damaged">Damaged</option>
-                          <option value="wrong_item">Wrong Item</option>
-                        </select>
+                          <SelectTrigger className="mt-1" id={`discrepancy-${item.id}`}>
+                            <SelectValue placeholder="Select discrepancy type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">None</SelectItem>
+                            <SelectItem value="shortage">Shortage</SelectItem>
+                            <SelectItem value="overage">Overage</SelectItem>
+                            <SelectItem value="damaged">Damaged</SelectItem>
+                            <SelectItem value="wrong_item">Wrong Item</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     ) : null}
                   </div>
@@ -436,7 +461,7 @@ export default function ReceivingPage() {
                   Cancel
                 </Button>
                 <Button className="gap-2" onClick={completeReceiving}>
-                  <CheckCircle className="h-4 w-4" />
+                  <CheckCircle className="size-4" />
                   Complete Receiving
                 </Button>
               </div>
@@ -561,6 +586,7 @@ export default function ReceivingPage() {
             </CardContent>
           </Card>
         </div>
+        </section>
       )}
     </div>
   );
