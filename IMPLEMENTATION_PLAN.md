@@ -2164,6 +2164,72 @@ Scheduling Requests Page component (`apps/app/app/(authenticated)/scheduling/req
 
 ---
 
+### 2.43 Completed UI Improvements (CRM Venues Page)
+
+**Iteration: CRM Venues Page Visual Hierarchy Enhancement**
+
+CRM Venues Page component (`apps/app/app/(authenticated)/crm/venues/page.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Improvements Implemented:**
+
+1. **Page Header Separator**
+   - Added `<Separator />` component between page header and main content for clear visual break
+   - Consistent with other page improvements (Scheduling, Kitchen, Warehouse, Payroll)
+
+2. **Section-Based Organization**
+   - Added semantic `<section>` elements with descriptive headers for each major content area
+   - Each section gets its own header with consistent styling: `text-sm font-medium text-muted-foreground`
+   - Clear visual separation: Venues Overview → Upcoming Events by Venue
+
+3. **Page Title Styling**
+   - Changed from `text-2xl font-semibold` to `text-3xl font-bold tracking-tight`
+   - Consistent with other page improvements across the platform
+   - Removed redundant uppercase tracking-wide subtitle for cleaner hierarchy
+
+4. **Component Structure**
+   - Changed main content spacing from `space-y-6` to `space-y-8` for better breathing room and visual rhythm
+   - Section headers provide mental model of page structure
+   - Venues grid now has proper section header ("Venues Overview")
+   - Upcoming Events section now has proper section header
+
+5. **Badge Variant Standardization**
+   - Replaced custom color classes (`bg-emerald-100 text-emerald-800`) with design system variants (`default`, `secondary`, `outline`)
+   - Status badges now use proper Badge component with consistent variants
+   - Removed custom `stepStatus` map in favor of `statusVariant` map using design system
+
+6. **Semantic HTML Structure**
+   - Wrapped major content areas in semantic `<section>` elements with descriptive headers
+   - Improved accessibility and document structure
+   - Clear visual separation between different content areas
+
+**Key Learnings:**
+
+1. **Section Headers Work for CRM Management Pages**: Even on pages displaying venue cards and related event tables, adding section headers immediately gives users a mental model of the page structure.
+
+2. **Separator After Page Header**: Adding Separator after the page header creates visual breathing room similar to other page improvements.
+
+3. **space-y-8 vs space-y-6**: Increasing spacing from 6 to 8 creates better visual rhythm for CRM pages with multiple content areas.
+
+4. **Cleaner Page Structure**: Removing redundant subtitles (like "CRM" in uppercase) reduces visual noise and focuses users on the main content.
+
+5. **Badge Variant Standardization**: Using design system variants (`default`, `secondary`, `outline`) instead of custom color classes provides consistent visual language that adapts to theme changes.
+
+**Remaining Work in CRM Module:**
+- CRM Communications page could benefit from similar section-based organization
+- CRM Proposals page already has good structure but may need Separator
+- Other CRM pages (venues new/edit) may need similar improvements
+
+**Applicability to Other Modules:**
+
+- **Any CRM/Management Page**: The section header pattern works well for pages with card grids and related data tables.
+- **Any Page with Custom Badge Colors**: Replace custom color classes with design system variants for consistency.
+- **Any Page with Multiple Sections**: Apply section headers, separators, and semantic structure.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/crm/venues/page.tsx` - Added Separator, section headers, semantic sections, improved spacing, page title styling, badge variants
+
+---
+
 ### 2.38 Phase 2 Completion Criteria
 
 Phase 2 is complete when:
