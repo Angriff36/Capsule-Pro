@@ -1,20 +1,50 @@
 import * as React from "react";
+import { FileText, UploadCloud } from "lucide-react";
+
+import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "../ui/empty";
 
 /**
  * EmptyStateBlock - An empty state component block
- * TODO: paste shadcn Blocks composition here
  */
 export function EmptyStateBlock() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Empty State</CardTitle>
+        <CardTitle>Invoices</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="text-muted-foreground text-sm">
-          TODO: paste shadcn Blocks composition here
-        </div>
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <FileText />
+            </EmptyMedia>
+            <EmptyTitle>No invoices yet</EmptyTitle>
+            <EmptyDescription>
+              Create your first invoice to start tracking revenue and payments.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-center">
+              <Button size="sm">Create invoice</Button>
+              <Button variant="outline" size="sm">
+                <UploadCloud />
+                Import CSV
+              </Button>
+            </div>
+            <p className="text-muted-foreground text-xs">
+              Tip: Importing historical invoices helps build better forecasts.
+            </p>
+          </EmptyContent>
+        </Empty>
       </CardContent>
     </Card>
   );
