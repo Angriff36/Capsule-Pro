@@ -1,7 +1,9 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
+  CardAction,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
@@ -13,22 +15,26 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import { Separator } from "@repo/design-system/components/ui/separator";
 
 const performanceCards = [
   {
     title: "Weekly revenue",
     value: "$142,000",
     detail: "+8% vs. last week",
+    trend: "up" as const,
   },
   {
     title: "Labor efficiency",
     value: "92%",
     detail: "2% rebound after labor reforecast",
+    trend: "up" as const,
   },
   {
     title: "Waste reduction",
     value: "-12%",
     detail: "Down vs. historical baseline",
+    trend: "down" as const,
   },
 ];
 
@@ -71,6 +77,12 @@ const topEvents = [
   },
 ];
 
+const statusVariantMap = {
+  "On track": "secondary" as const,
+  "Need review": "outline" as const,
+  "Completed": "outline" as const,
+};
+
 const AnalyticsPage = () => (
   <div className="space-y-6">
     <div>
@@ -83,80 +95,98 @@ const AnalyticsPage = () => (
       </p>
     </div>
 
-    <div className="grid gap-4 md:grid-cols-3">
-      {performanceCards.map((card) => (
-        <Card key={card.title}>
-          <CardHeader>
-            <CardTitle>{card.value}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm font-semibold">{card.title}</p>
-            <p className="text-xs text-muted-foreground">{card.detail}</p>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+    <Separator />
 
-    <div className="grid gap-4 lg:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle>Focus Metrics</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-3">
-          {focusMetrics.map((metric) => (
-            <div className="space-y-1" key={metric.title}>
-              <p className="text-xl font-semibold">{metric.value}</p>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                {metric.title}
-              </p>
-              <p className="text-xs text-muted-foreground">
+    <section>
+      <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+        Performance Overview
+      </h2>
+      <div className="grid gap-4 md:grid-cols-3">
+        {performanceCards.map((card) => (
+          <Card key={card.title}>
+            <CardHeader>
+              <CardDescription>{card.title}</CardDescription>
+              <CardTitle className="text-2xl">{card.value}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-1.5">
+                <span
+                  className={`text-xs ${
+                    card.trend === "up"
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {card.trend === "up" ? "↑" : "↓"}
+                </span>
+                <span className="text-muted-foreground text-xs">
+                  {card.detail}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
+
+    <section>
+      <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+        Focus Metrics
+      </h2>
+      <div className="grid gap-4 md:grid-cols-3">
+        {focusMetrics.map((metric) => (
+          <Card key={metric.title}>
+            <CardHeader>
+              <CardDescription className="capitalize">
+                {metric.title.toLowerCase()}
+              </CardDescription>
+              <CardTitle className="text-2xl">{metric.value}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-xs">
                 {metric.description}
               </p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
 
+    <section>
+      <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+        Top Events This Week
+      </h2>
       <Card>
-        <CardHeader>
-          <CardTitle>Top Events This Week</CardTitle>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Event</TableHead>
-                  <TableHead className="text-right">Revenue</TableHead>
-                  <TableHead className="text-right">Margin</TableHead>
-                  <TableHead>Status</TableHead>
+        <CardContent className="overflow-x-auto p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Event</TableHead>
+                <TableHead className="text-right">Revenue</TableHead>
+                <TableHead className="text-right">Margin</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {topEvents.map((event) => (
+                <TableRow key={event.name}>
+                  <TableCell className="font-medium">{event.name}</TableCell>
+                  <TableCell className="text-right">
+                    {event.revenue}
+                  </TableCell>
+                  <TableCell className="text-right">{event.margin}</TableCell>
+                  <TableCell>
+                    <Badge variant={statusVariantMap[event.status as keyof typeof statusVariantMap] ?? "outline"}>
+                      {event.status}
+                    </Badge>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {topEvents.map((event) => (
-                  <TableRow key={event.name}>
-                    <TableCell>{event.name}</TableCell>
-                    <TableCell className="text-right">
-                      {event.revenue}
-                    </TableCell>
-                    <TableCell className="text-right">{event.margin}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          event.status === "On track" ? "secondary" : "outline"
-                        }
-                      >
-                        {event.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
-    </div>
+    </section>
   </div>
 );
 
