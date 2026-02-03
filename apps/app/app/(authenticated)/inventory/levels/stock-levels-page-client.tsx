@@ -5,6 +5,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
@@ -25,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -250,13 +252,27 @@ export const StockLevelsPageClient = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Stock Levels</h1>
+        <p className="text-muted-foreground mt-2">
+          Monitor inventory quantities, par levels, and stock values across all locations.
+        </p>
+      </div>
+
+      <Separator />
+
+      {/* Performance Overview */}
+      <section>
+        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+          Performance Overview
+        </h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-            <BoxIcon className="h-4 w-4 text-muted-foreground" />
+            <CardDescription>Total Items</CardDescription>
+            <BoxIcon className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summary.totalItems}</div>
@@ -264,8 +280,8 @@ export const StockLevelsPageClient = () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Value</CardTitle>
-            <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
+            <CardDescription>Total Value</CardDescription>
+            <DollarSignIcon className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -275,8 +291,8 @@ export const StockLevelsPageClient = () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Below Par</CardTitle>
-            <AlertTriangleIcon className="h-4 w-4 text-yellow-600" />
+            <CardDescription>Below Par</CardDescription>
+            <AlertTriangleIcon className="size-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">
@@ -286,8 +302,8 @@ export const StockLevelsPageClient = () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Out of Stock</CardTitle>
-            <ActivityIcon className="h-4 w-4 text-red-600" />
+            <CardDescription>Out of Stock</CardDescription>
+            <ActivityIcon className="size-4 text-red-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
@@ -296,6 +312,7 @@ export const StockLevelsPageClient = () => {
           </CardContent>
         </Card>
       </div>
+      </section>
 
       {/* Tabs */}
       <Tabs
@@ -308,9 +325,13 @@ export const StockLevelsPageClient = () => {
         </TabsList>
 
         {/* Stock Levels Tab */}
-        <TabsContent className="space-y-4" value="stock">
+        <TabsContent className="space-y-6" value="stock">
           {/* Filters */}
-          <div className="flex flex-wrap gap-4">
+          <section>
+            <h2 className="text-sm font-medium text-muted-foreground mb-4">
+              Filters
+            </h2>
+            <div className="flex flex-wrap gap-4">
             <Input
               className="max-w-sm"
               onChange={(e) => {
@@ -381,7 +402,8 @@ export const StockLevelsPageClient = () => {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+            </div>
+          </section>
 
           {/* Stock Levels Table */}
           <Card>
