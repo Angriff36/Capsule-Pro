@@ -1,6 +1,14 @@
 const { execSync } = require("node:child_process");
 
-const commitMessage = execSync("git log -1 --pretty=%B").toString().trim();
+let commitMessage = "";
+
+try {
+  commitMessage = execSync("git log -1 --pretty=%B").toString().trim();
+} catch (error) {
+  // Vercel builds often do not include .git, so just continue the build.
+  console.warn("Skipping commit message check because git is unavailable.");
+  process.exit(1);
+}
 
 if (commitMessage.includes("[skip ci]")) {
   console.log("Skipping build due to [skip ci] in commit message.");

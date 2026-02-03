@@ -10,7 +10,7 @@
     "postinstall": "node -e \"process.exit(process.env.VERCEL_ENV && !process.env.DATABASE_URL ? 0 : 1)\" || prisma generate --no-hints --schema=./prisma/schema.prisma",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "test": "vitest run"
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
