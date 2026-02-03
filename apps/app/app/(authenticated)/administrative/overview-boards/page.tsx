@@ -63,9 +63,9 @@ const executiveActions = [
 ];
 
 const AdministrativeOverviewBoardsPage = () => (
-  <div className="space-y-8">
+  <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
     {/* Page Header */}
-    <div>
+    <div className="space-y-0.5">
       <h1 className="text-3xl font-bold tracking-tight">Overview Boards</h1>
       <p className="text-muted-foreground">
         Strategic snapshots that keep leadership aware of cross-module momentum.
@@ -75,19 +75,19 @@ const AdministrativeOverviewBoardsPage = () => (
     <Separator />
 
     {/* Board Snapshots Section */}
-    <section>
+    <section className="space-y-4">
       <h2 className="text-sm font-medium text-muted-foreground">
         Board Snapshots
       </h2>
-      <div className="mt-2 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         {boardSnapshots.map((snapshot) => (
           <Card className="h-full" key={snapshot.title}>
             <CardHeader>
-              <CardTitle>{snapshot.title}</CardTitle>
               <CardDescription>{snapshot.description}</CardDescription>
+              <CardTitle>{snapshot.title}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <p className="text-2xl font-semibold">{snapshot.value}</p>
+            <CardContent className="space-y-3">
+              <p className="text-2xl font-bold">{snapshot.value}</p>
               <p className="text-sm text-muted-foreground">{snapshot.trend}</p>
             </CardContent>
           </Card>
@@ -96,21 +96,21 @@ const AdministrativeOverviewBoardsPage = () => (
     </section>
 
     {/* Executive Actions Section */}
-    <section>
+    <section className="space-y-4">
       <h2 className="text-sm font-medium text-muted-foreground">
         Executive Actions
       </h2>
-      <Card className="mt-2">
+      <Card>
         <CardHeader>
           <CardDescription>Top decisions awaiting a sign-off.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-3">
+        <CardContent className="grid gap-6 md:grid-cols-3">
           {executiveActions.map((action) => (
             <div
-              className="space-y-1 rounded border border-border/60 p-4"
+              className="space-y-3 rounded border border-border/60 p-4"
               key={action.title}
             >
-              <p className="text-sm font-semibold">{action.title}</p>
+              <p className="text-sm font-medium">{action.title}</p>
               <p className="text-xs text-muted-foreground">{action.owner}</p>
               <p className="text-xs text-muted-foreground">{action.eta}</p>
               <Badge variant="secondary">{action.status}</Badge>
@@ -121,27 +121,26 @@ const AdministrativeOverviewBoardsPage = () => (
     </section>
 
     {/* Alerts & Board Health Section */}
-    <section>
+    <section className="space-y-4">
       <h2 className="text-sm font-medium text-muted-foreground">
         Alerts & Board Health
       </h2>
-      <div className="mt-2 grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
+            <CardDescription>Issues that need cross-team attention.</CardDescription>
             <CardTitle>Critical Alerts</CardTitle>
-            <CardDescription>
-              Issues that need cross-team attention.
-            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="divide-y divide-border">
-              {criticalAlerts.map((alert) => (
-                <div className="space-y-1 py-3" key={alert.label}>
+            <div className="space-y-3">
+              {criticalAlerts.map((alert, index) => (
+                <div key={alert.label}>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold">{alert.label}</p>
+                    <p className="text-sm font-medium">{alert.label}</p>
                     <Badge variant="destructive">Action</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">{alert.detail}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{alert.detail}</p>
+                  {index < criticalAlerts.length - 1 && <Separator className="mt-3" />}
                 </div>
               ))}
             </div>
@@ -149,29 +148,27 @@ const AdministrativeOverviewBoardsPage = () => (
         </Card>
         <Card>
           <CardHeader>
+            <CardDescription>Freshness of updates across channels.</CardDescription>
             <CardTitle>Board Health</CardTitle>
-            <CardDescription>
-              Freshness of updates across channels.
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
-                <span>Tab updates today</span>
-                <span className="font-semibold">18</span>
+                <span className="text-muted-foreground">Tab updates today</span>
+                <span className="font-medium">18</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span>New tasks created</span>
-                <span className="font-semibold">11</span>
+                <span className="text-muted-foreground">New tasks created</span>
+                <span className="font-medium">11</span>
               </div>
               <Separator />
               <div className="flex items-center justify-between text-sm">
-                <span>Average response time</span>
-                <span className="font-semibold">12m</span>
+                <span className="text-muted-foreground">Average response time</span>
+                <span className="font-medium">12m</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span>Teams active</span>
-                <span className="font-semibold">6</span>
+                <span className="text-muted-foreground">Teams active</span>
+                <span className="font-medium">6</span>
               </div>
             </div>
           </CardContent>
