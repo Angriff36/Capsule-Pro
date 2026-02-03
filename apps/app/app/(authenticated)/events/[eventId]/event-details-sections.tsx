@@ -5,8 +5,6 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import {
   Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
 } from "@repo/design-system/components/ui/collapsible";
 import {
   Dialog,
@@ -23,7 +21,6 @@ import { Separator } from "@repo/design-system/components/ui/separator";
 import { CollapsibleSectionBlock, SectionHeaderBlock } from "@repo/design-system/components/blocks/collapsible-section-block";
 import {
   AlertTriangleIcon,
-  ChevronDownIcon,
   DollarSignIcon,
   FileTextIcon,
   Lightbulb,
@@ -352,79 +349,62 @@ type BudgetSectionProps = {
 
 export function BudgetSection({ budget, onViewBudget, onCreateBudget }: BudgetSectionProps) {
   return (
-    <Collapsible className="rounded-xl border bg-card text-card-foreground shadow-sm" defaultOpen>
-      <div className="flex items-center justify-between gap-4 px-6 py-4">
-        <div className="flex items-center gap-2">
-          <DollarSignIcon className="size-5 text-green-500" />
-          <div>
-            <div className="font-semibold text-sm">Event Budget</div>
-            <div className="text-muted-foreground text-sm">
-              {budget?.status
-                ? `${getBudgetStatusLabel(budget.status)} - v${budget.version ?? 1}`
-                : "No budget created yet"}
+    <CollapsibleSectionBlock
+      icon={DollarSignIcon}
+      title="Event Budget"
+      subtitle={
+        budget?.status
+          ? `${getBudgetStatusLabel(budget.status)} - v${budget.version ?? 1}`
+          : "No budget created yet"
+      }
+      iconColor="text-green-500"
+      defaultOpen
+      triggerText={() => (budget ? "View budget" : "Create budget")}
+      showEmptyState={!budget}
+      emptyState={{
+        icon: DollarSignIcon,
+        title: "No budget created for this event",
+        description: "Create a budget to track costs and manage event finances",
+        actionLabel: "Create Budget",
+        onAction: onCreateBudget,
+      }}
+    >
+      {budget && (
+        <div className="grid gap-4 md:grid-cols-4">
+          <div className="rounded-lg border p-4">
+            <div className="text-muted-foreground text-xs">Total Budgeted</div>
+            <div className="text-lg font-semibold">
+              {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+                budget.total_budget_amount ?? 0
+              )}
             </div>
           </div>
-        </div>
-        <CollapsibleTrigger asChild>
-          <Button variant="ghost">
-            {budget ? "View budget" : "Create budget"}
-            <ChevronDownIcon />
-          </Button>
-        </CollapsibleTrigger>
-      </div>
-      <Separator />
-      <CollapsibleContent className="px-6 py-4">
-        {budget ? (
-          <div className="grid gap-4 md:grid-cols-4">
-            <div className="rounded-lg border p-4">
-              <div className="text-muted-foreground text-xs">Total Budgeted</div>
-              <div className="text-lg font-semibold">
-                {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-                  budget.total_budget_amount ?? 0
-                )}
-              </div>
-            </div>
-            <div className="rounded-lg border p-4">
-              <div className="text-muted-foreground text-xs">Total Actual</div>
-              <div className="text-lg font-semibold">
-                {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-                  budget.total_actual_amount ?? 0
-                )}
-              </div>
-            </div>
-            <div className="rounded-lg border p-4">
-              <div className="text-muted-foreground text-xs">Variance</div>
-              <div
-                className={`text-lg font-semibold ${getVarianceColor(budget.variance_amount ?? 0)}`}
-              >
-                {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-                  budget.variance_amount ?? 0
-                )}
-              </div>
-            </div>
-            <div className="flex items-center">
-              <Button className="w-full" onClick={() => onViewBudget(budget.id)}>
-                View Full Budget
-              </Button>
+          <div className="rounded-lg border p-4">
+            <div className="text-muted-foreground text-xs">Total Actual</div>
+            <div className="text-lg font-semibold">
+              {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+                budget.total_actual_amount ?? 0
+              )}
             </div>
           </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="mb-4 rounded-full bg-muted p-3">
-              <DollarSignIcon className="size-6 text-muted-foreground" />
+          <div className="rounded-lg border p-4">
+            <div className="text-muted-foreground text-xs">Variance</div>
+            <div
+              className={`text-lg font-semibold ${getVarianceColor(budget.variance_amount ?? 0)}`}
+            >
+              {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+                budget.variance_amount ?? 0
+              )}
             </div>
-            <p className="mb-2 text-muted-foreground text-sm">No budget created for this event</p>
-            <p className="mb-4 text-muted-foreground text-xs">
-              Create a budget to track costs and manage event finances
-            </p>
-            <Button size="sm" variant="outline" onClick={onCreateBudget}>
-              <PlusIcon className="mr-2 size-3" />
-              Create Budget
+          </div>
+          <div className="flex items-center">
+            <Button className="w-full" onClick={() => onViewBudget(budget.id)}>
+              View Full Budget
             </Button>
           </div>
-        )}
-      </CollapsibleContent>
-    </Collapsible>
+        </div>
+      )}
+    </CollapsibleSectionBlock>
   );
 }
 

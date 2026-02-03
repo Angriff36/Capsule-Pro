@@ -381,3 +381,57 @@ export const IconColorVariations: Story = {
     </div>
   ),
 };
+
+/**
+ * Dynamic trigger text based on state
+ *
+ * This example demonstrates using a function for triggerText to support
+ * dynamic text that changes based on component state (e.g., "View budget" vs "Create budget").
+ */
+export const DynamicTriggerText: Story = {
+  render: () => {
+    // Simulating a state variable that would change over time
+    const hasBudget = true;
+
+    return (
+      <CollapsibleSectionBlock
+        icon={DollarSignIcon}
+        title="Event Budget"
+        subtitle={hasBudget ? "Approved - v2" : "No budget created yet"}
+        iconColor="text-green-500"
+        defaultOpen
+        triggerText={() => (hasBudget ? "View budget" : "Create budget")}
+        showEmptyState={!hasBudget}
+        emptyState={{
+          icon: DollarSignIcon,
+          title: "No budget created for this event",
+          description: "Create a budget to track costs and manage event finances",
+          actionLabel: "Create Budget",
+          onAction: () => console.log("Create budget clicked"),
+        }}
+      >
+        {hasBudget ? (
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="rounded-lg border p-4">
+              <div className="text-muted-foreground text-xs">Total Budgeted</div>
+              <div className="text-lg font-semibold">$5,000</div>
+            </div>
+            <div className="rounded-lg border p-4">
+              <div className="text-muted-foreground text-xs">Total Actual</div>
+              <div className="text-lg font-semibold">$4,500</div>
+            </div>
+            <div className="rounded-lg border p-4">
+              <div className="text-muted-foreground text-xs">Variance</div>
+              <div className="text-lg font-semibold text-green-600">+$500</div>
+            </div>
+            <div className="flex items-center">
+              <button className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+                View Full Budget
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </CollapsibleSectionBlock>
+    );
+  },
+};

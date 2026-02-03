@@ -554,7 +554,7 @@ Event Details View component (`apps/app/app/(authenticated)/events/[eventId]/eve
 4. **Uppercase Tracking for Headers**: Using `text-xs uppercase tracking-[0.25em]` creates a subtle, elegant header style that doesn't compete with content
 
 **Remaining Work in Events Module:**
-- ~~Create standardized event detail blocks (replace remaining ad-hoc layouts with design system components)~~ **IN PROGRESS**: CollapsibleSectionBlock created with 3 sections refactored
+- ~~Create standardized event detail blocks (replace remaining ad-hoc layouts with design system components)~~ **COMPLETED**: CollapsibleSectionBlock created with all 4 sections refactored (including BudgetSection)
 - Ensure consistent card pattern across different event types
 - Consider creating event-detail-section block component for consistency
 
@@ -613,10 +613,10 @@ Created a new reusable `CollapsibleSectionBlock` component in the design system 
 
 4. **Loading State Flexibility**: Loading state is handled inline in the children content rather than through a prop, giving components more flexibility for custom loading indicators.
 
-5. **Special Cases Still Need Custom Code**: BudgetSection was not refactored because it has dynamic trigger text ("View budget" vs "Create budget") that depends on state. This is a legitimate use case for keeping the original collapsible pattern.
+5. **Special Cases Still Need Custom Code**: ~~BudgetSection was not refactored because it has dynamic trigger text ("View budget" vs "Create budget") that depends on state.~~ **RESOLVED**: Enhanced CollapsibleSectionBlock to support function-based triggerText, allowing BudgetSection to be refactored.
 
 **Remaining Work:**
-- BudgetSection could be refactored if CollapsibleSectionBlock is enhanced to support dynamic trigger text via a function prop
+- ~~BudgetSection could be refactored if CollapsibleSectionBlock is enhanced to support dynamic trigger text via a function prop~~ **COMPLETED**
 - Consider refactoring other modules (Clients, Employees) to use CollapsibleSectionBlock where similar patterns exist
 
 **Applicability to Other Modules:**
@@ -946,6 +946,58 @@ Finance Analytics Dashboard components (`apps/app/app/(authenticated)/analytics/
 **Files Modified:**
 - `apps/app/app/(authenticated)/analytics/finance/page.tsx` - Added Separator, changed spacing to space-y-8
 - `apps/app/app/(authenticated)/analytics/finance/FinanceAnalyticsPageClient.tsx` - Added section headers, semantic sections, CardDescription, improved hierarchy
+
+---
+
+### 2.19 Completed UI Improvements (Design System - CollapsibleSectionBlock Dynamic TriggerText)
+
+**Iteration: Enhanced CollapsibleSectionBlock with Dynamic TriggerText Support**
+
+Enhanced the `CollapsibleSectionBlock` component to support dynamic trigger text via a function prop, enabling the final refactoring of `BudgetSection` to use the standardized block pattern.
+
+**Enhancement Made:**
+
+1. **CollapsibleSectionBlock Enhancement** (`packages/design-system/components/blocks/collapsible-section-block.tsx`)
+   - Modified `triggerText` prop to accept `string | (() => string)`
+   - Component now checks if triggerText is a function and calls it to get the current text
+   - Enables state-dependent trigger text (e.g., "View budget" vs "Create budget")
+
+2. **BudgetSection Refactoring** (`apps/app/app/(authenticated)/events/[eventId]/event-details-sections.tsx`)
+   - Replaced custom collapsible implementation with CollapsibleSectionBlock
+   - Uses function-based triggerText: `triggerText={() => (budget ? "View budget" : "Create budget")}`
+   - Uses showEmptyState conditional: `showEmptyState={!budget}`
+   - Empty state properly configured with onCreateBudget action
+   - Removed unused imports (CollapsibleTrigger, CollapsibleContent, ChevronDownIcon)
+
+3. **Stories Documentation** (`packages/design-system/components/blocks/collapsible-section-block.stories.tsx`)
+   - Added `DynamicTriggerText` story demonstrating the function-based triggerText pattern
+   - Shows how to use conditional trigger text based on component state
+
+**Key Learnings:**
+
+1. **Function Props Enable Dynamic Content**: Accepting a function for props that need to change based on state allows the component to remain declarative while supporting dynamic behavior.
+
+2. **Type Safety with Union Types**: Using `string | (() => string)` maintains type safety while providing flexibility for static and dynamic trigger text.
+
+3. **Consistent Pattern Eliminates Duplication**: The BudgetSection was the last remaining section using a custom collapsible pattern. Now all collapsible sections in the Events module use CollapsibleSectionBlock.
+
+4. **Stories Guide Usage**: Adding a comprehensive story example for dynamic trigger text helps other developers understand when and how to use this feature.
+
+5. **Import Cleanup Matters**: Removing unused imports (CollapsibleTrigger, CollapsibleContent, ChevronDownIcon) keeps the codebase clean and reduces bundle size.
+
+**Applicability to Other Modules:**
+
+- **Any Section with State-Dependent Labels**: The function prop pattern can be applied to other blocks where text or behavior depends on component state (e.g., "Edit" vs "Save", "Show" vs "Hide").
+- **Clients Module**: Profile sections could use dynamic trigger text for actions that depend on data availability.
+- **Employee Module**: Similar patterns could be applied for state-dependent section headers.
+- **Dashboard Module**: Expandable widgets could use dynamic trigger text based on collapsed/expanded state.
+
+**All Event Detail Sections Now Standardized:**
+
+1. ~~PrepTasksSection~~ - COMPLETED
+2. ~~SourceDocumentsSection~~ - COMPLETED
+3. ~~MenuDishesSection~~ - COMPLETED
+4. ~~BudgetSection~~ - COMPLETED (this iteration)
 
 ---
 

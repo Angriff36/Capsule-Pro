@@ -54,8 +54,8 @@ type CollapsibleSectionBlockProps = {
   iconColor?: string;
   /** Whether the section is open by default */
   defaultOpen?: boolean;
-  /** Text for the collapsible trigger button */
-  triggerText?: string;
+  /** Text for the collapsible trigger button (string or function returning string) */
+  triggerText?: string | (() => string);
   /** Optional custom ID for the collapsible */
   id?: string;
   /** Actions to display in the header (right side) */
@@ -110,7 +110,7 @@ export function CollapsibleSectionBlock({
           {headerActions}
           <CollapsibleTrigger asChild>
             <Button variant="ghost">
-              {triggerText}
+              {typeof triggerText === "function" ? triggerText() : triggerText}
               <ChevronDownIcon className="size-4" />
             </Button>
           </CollapsibleTrigger>
