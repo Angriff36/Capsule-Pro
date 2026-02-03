@@ -24,11 +24,11 @@ export function FinanceAnalyticsPageClient() {
 
   if (isLoading) {
     return (
-      <section>
-        <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">
           Performance Overview
         </h2>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <Card className="animate-pulse" key={i}>
               <CardHeader>
@@ -72,31 +72,19 @@ export function FinanceAnalyticsPageClient() {
 
   return (
     <div className="space-y-8">
-      <section>
-        <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">
           Performance Overview
         </h2>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-3">
           {financeHighlights.map((item: FinanceHighlight) => (
             <Card key={item.label}>
               <CardHeader>
                 <CardDescription>{item.label}</CardDescription>
-                <CardTitle
-                  className={
-                    item.isPositive !== undefined
-                      ? item.isPositive
-                        ? "text-green-600"
-                        : "text-orange-600"
-                      : ""
-                  }
-                >
-                  {item.value}
-                </CardTitle>
+                <CardTitle>{item.value}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p
-                  className={`text-xs ${item.isPositive !== undefined ? (item.isPositive ? "text-green-600" : "text-orange-600") : "text-muted-foreground"}`}
-                >
+                <p className="text-xs text-muted-foreground">
                   {item.trend}
                 </p>
               </CardContent>
@@ -105,11 +93,11 @@ export function FinanceAnalyticsPageClient() {
         </div>
       </section>
 
-      <section>
-        <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">
           Financial Analysis
         </h2>
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>Ledger Summary</CardTitle>
