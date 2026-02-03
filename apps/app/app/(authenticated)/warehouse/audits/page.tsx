@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
 
 const auditRounds = [
   {
@@ -40,18 +41,21 @@ const statusVariant: Record<string, "secondary" | "outline"> = {
 };
 
 const WarehouseAuditsPage = () => (
-  <div className="space-y-6">
+  <div className="space-y-8">
     <div>
-      <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-        Warehouse
-      </p>
-      <h1 className="text-2xl font-semibold">Audits</h1>
-      <p className="text-sm text-muted-foreground">
+      <h1 className="text-3xl font-bold tracking-tight">Warehouse Audits</h1>
+      <p className="text-muted-foreground">
         Track cycle counts, discrepancies, and inspector notes.
       </p>
     </div>
 
-    <div className="grid gap-4 md:grid-cols-2">
+    <Separator />
+
+    <section>
+      <h2 className="text-sm font-medium text-muted-foreground mb-4">
+        Scheduled Audit Rounds
+      </h2>
+      <div className="grid gap-4 md:grid-cols-2">
       {auditRounds.map((audit) => (
         <Card key={audit.title}>
           <CardHeader>
@@ -80,7 +84,8 @@ const WarehouseAuditsPage = () => (
           </CardContent>
         </Card>
       ))}
-    </div>
+      </div>
+    </section>
   </div>
 );
 
