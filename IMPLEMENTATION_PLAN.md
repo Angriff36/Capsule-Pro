@@ -3574,3 +3574,66 @@ Events Contracts Page client component (`apps/app/app/(authenticated)/events/con
 
 **Files Modified:**
 - `apps/app/app/(authenticated)/events/contracts/components/contracts-page-client.tsx` - Added semantic sections, section headers, Card components, Separator, improved spacing
+
+---
+
+### 2.57 Bug Fixes: Build Errors and UI Consistency
+
+**Iteration: Pre-existing Build Error Fixes and Spacing Consistency**
+
+During this iteration, several pre-existing build errors were discovered and fixed while working on UI consistency improvements.
+
+**Issues Fixed:**
+
+1. **Proposals Page Spacing Inconsistency** (`apps/app/app/(authenticated)/crm/proposals/page.tsx`)
+   - Changed main container spacing from `gap-6` to `gap-8` for consistency with established platform patterns
+   - Ensures uniform vertical rhythm across all major pages
+
+2. **Events Battle Boards Page - JSX Parsing Error** (`apps/app/app/(authenticated)/events/battle-boards/page.tsx`)
+   - Fixed missing closing `</div>` tag for the Performance Overview grid section
+   - The grid container was opened but never closed, causing JSX parsing failure
+
+3. **Events List Page - JSX Parsing Error** (`apps/app/app/(authenticated)/events/page.tsx`)
+   - Fixed missing closing `</div>` tag for the Performance Overview grid section
+   - Same issue as Battle Boards page - unclosed grid container
+
+4. **Events Reports Page - JSX Parsing Error** (`apps/app/app/(authenticated)/events/reports/page.tsx`)
+   - Fixed missing closing `</div>` tag for the Performance Overview grid section
+   - Same issue as other Events pages - unclosed grid container
+
+5. **Search Page - TypeScript Error** (`apps/app/app/(authenticated)/search/page.tsx`)
+   - Fixed invalid `asChild` prop usage on Card component (Card doesn't support asChild)
+   - Restructured to wrap Link around Card with proper hover effect classes
+   - Maintains the same visual behavior (clickable card with hover effect)
+
+**Key Learnings:**
+
+1. **Missing Closing Tags Cause Build Failures**: Unclosed JSX elements can be difficult to spot but cause immediate build failures. The errors were detected at the point where the parser expected the next sibling element.
+
+2. **Component Props Must Match API**: The `asChild` prop pattern (from Radix UI) isn't universally available on all components. Card components don't support it, but Button does.
+
+3. **Consistent Spacing Matters**: Using `gap-6` instead of `gap-8` seems minor but creates visual inconsistency. Platform-wide spacing standards (gap-8 for main layout) should be consistently applied.
+
+4. **Link Wrapping Pattern**: For clickable cards, the correct pattern is:
+   ```tsx
+   <Link className="group" href="...">
+     <Card className="h-full transition hover:border-primary/40 hover:shadow-md">
+       {/* Card content */}
+     </Card>
+   </Link>
+   ```
+
+5. **Build Validation is Critical**: Running `pnpm build` before committing catches issues that unit tests might miss (like JSX parsing errors).
+
+**Applicability to Other Modules:**
+
+- **All Events Sub-pages**: If similar grid-based Performance Overview sections exist elsewhere, they should be checked for proper closing tags.
+- **All CRM Pages**: Check for consistent `gap-8` spacing usage across all CRM module pages.
+- **Clickable Card Patterns**: The Link wrapping pattern should be used consistently for all clickable card components.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/crm/proposals/page.tsx` - Changed spacing from gap-6 to gap-8
+- `apps/app/app/(authenticated)/events/battle-boards/page.tsx` - Fixed missing closing </div> tag
+- `apps/app/app/(authenticated)/events/page.tsx` - Fixed missing closing </div> tag
+- `apps/app/app/(authenticated)/events/reports/page.tsx` - Fixed missing closing </div> tag
+- `apps/app/app/(authenticated)/search/page.tsx` - Fixed Card asChild prop usage, restructured to Link wrapping pattern
