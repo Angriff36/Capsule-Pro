@@ -4218,3 +4218,52 @@ Analytics Staff Page (`apps/app/app/(authenticated)/analytics/staff/page.tsx`) a
 **Files Modified:**
 - `apps/app/app/(authenticated)/analytics/staff/page.tsx` - Changed container from `container mx-auto py-8` to `flex flex-1 flex-col gap-8 p-4 pt-0`
 - `apps/app/app/(authenticated)/analytics/staff/components/employee-performance-dashboard.tsx` - Changed page titles to `text-3xl font-bold tracking-tight`, updated all grid spacing from `gap-4` to `gap-6`
+
+---
+
+### 2.65 Completed UI Improvements (Administrative Overview Boards Card Hierarchy)
+
+**Iteration: Administrative Overview Boards Card Hierarchy Standardization**
+
+Administrative Overview Boards Page (`apps/app/app/(authenticated)/administrative/overview-boards/page.tsx`) card hierarchy successfully standardized to follow the proper CardTitle → CardDescription pattern.
+
+**Improvements Implemented:**
+
+1. **Board Snapshots Card Hierarchy**
+   - Fixed inverted hierarchy: CardTitle now before CardDescription
+   - Added `text-lg` class to CardTitle for proper visual weight
+   - CardTitle (board name) → CardDescription (context)
+
+2. **Executive Actions Card Hierarchy**
+   - Added proper CardTitle "Top Decisions" (was missing, only CardDescription existed)
+   - Updated CardDescription to be more concise: "Awaiting sign-off from leadership"
+   - Proper title → subtitle hierarchy
+
+3. **Critical Alerts Card Hierarchy**
+   - Fixed inverted hierarchy: CardTitle now before CardDescription
+   - Removed period from description: "Issues that need cross-team attention"
+
+4. **Board Health Card Hierarchy**
+   - Fixed inverted hierarchy: CardTitle now before CardDescription
+   - Removed period from description: "Freshness of updates across channels"
+
+**Key Learnings:**
+
+1. **CardTitle → CardDescription is the Standard Pattern**: For information cards (not metric cards), the proper hierarchy is CardTitle (name/title) → CardDescription (context/subtitle), not the reverse. This matches the pattern established in all other dashboards.
+
+2. **Inverted Hierarchy Creates Confusion**: When CardDescription appears before CardTitle, users scanning the page see context before the primary identifier, which creates cognitive friction.
+
+3. **Remove Periods from Short Descriptions**: Short CardDescription text (single phrases) should not end with periods for cleaner visual presentation.
+
+4. **Card Title Size Matters**: Adding `text-lg` to CardTitle in card grids creates better visual hierarchy and distinguishes the title from the description.
+
+5. **Missing CardTitle Should Be Added**: Cards that only have CardDescription (like Executive Actions was) should have a proper CardTitle added for consistency.
+
+**Applicability to Other Modules:**
+
+- **Any Page with Inverted Card Hierarchy**: Cards where CardDescription is before CardTitle should be reordered to follow CardTitle → CardDescription pattern.
+- **Any Card-Heavy Dashboard**: Overview boards and dashboards displaying multiple card types should follow consistent hierarchy patterns.
+- **Any Card with Period in Description**: Short descriptions in CardDescription should have trailing periods removed.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/administrative/overview-boards/page.tsx` - Fixed card hierarchy (CardTitle → CardDescription), added text-lg to Board Snapshots titles, added missing CardTitle to Executive Actions, removed periods from descriptions
