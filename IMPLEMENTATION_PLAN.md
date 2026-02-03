@@ -1975,8 +1975,9 @@ Warehouse Shipments Page component (`apps/app/app/(authenticated)/warehouse/ship
 
 **Remaining Work in Warehouse Module:**
 - ~~Warehouse Receiving page could benefit from similar section-based organization~~ **COMPLETED** (see 2.40 below)
-- Warehouse Audits page could benefit from similar section-based organization
+- ~~Warehouse Audits page could benefit from similar section-based organization~~ **COMPLETED** (see 2.41 below)
 - Warehouse Shipments page is now well-structured with clear visual hierarchy
+- **All major warehouse pages now have consistent visual hierarchy**
 
 **Applicability to Other Modules:**
 
@@ -2048,6 +2049,54 @@ Warehouse Receiving Page component (`apps/app/app/(authenticated)/warehouse/rece
 
 **Files Modified:**
 - `apps/app/app/(authenticated)/warehouse/receiving/page.tsx` - Added Separator, section headers, semantic sections, Select component, improved spacing, icon sizing, page title styling
+
+---
+
+### 2.41 Completed UI Improvements (Warehouse Audits Page)
+
+**Iteration: Warehouse Audits Page Visual Hierarchy Enhancement**
+
+Warehouse Audits Page component (`apps/app/app/(authenticated)/warehouse/audits/page.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Improvements Implemented:**
+
+1. **Page Header Separator**
+   - Added `<Separator />` component between page header and main content for clear visual break
+   - Consistent with other warehouse pages (Warehouse Dashboard, Shipments, Receiving) and all dashboard improvements
+
+2. **Section-Based Organization**
+   - Added semantic `<section>` element with descriptive header for the audit rounds content
+   - Section header uses consistent styling: `text-sm font-medium text-muted-foreground`
+
+3. **Page Title Styling**
+   - Changed from `text-2xl font-semibold` to `text-3xl font-bold tracking-tight`
+   - Consistent with other page improvements across the platform
+   - Removed redundant uppercase tracking-wide subtitle for cleaner hierarchy
+
+4. **Component Structure**
+   - Changed main content spacing from `space-y-6` to `space-y-8` for better breathing room and visual rhythm
+   - Section header provides mental model of page structure
+
+**Key Learnings:**
+
+1. **Section Headers Work for Simple Pages**: Even on simpler listing pages, adding a section header gives users clear context about the content they're viewing.
+
+2. **Separator After Page Header**: Adding Separator after the page header creates visual breathing room similar to other page improvements.
+
+3. **Cleaner Page Structure**: Removing redundant subtitles (like "Warehouse" in uppercase) reduces visual noise and focuses users on the main content.
+
+4. **space-y-8 vs space-y-6**: Increasing spacing from 6 to 8 creates better visual rhythm for pages with multiple sections.
+
+**Remaining Work in Warehouse Module:**
+- None identified — all major warehouse pages (Dashboard, Shipments, Receiving, Audits) now have consistent visual hierarchy
+
+**Applicability to Other Modules:**
+
+- **Any Simple Listing Page**: The section header pattern works well for pages displaying lists of items (tasks, audits, reviews).
+- **Any Page with Multiple Sections**: Apply section headers, separators, and semantic structure.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/warehouse/audits/page.tsx` - Added Separator, section header, semantic section, improved spacing, page title styling
 
 ---
 
