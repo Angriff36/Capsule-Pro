@@ -2,9 +2,11 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
 
 const payrollSummaries = [
   { label: "Next payroll run", value: "Jan 31 — Pending approval" },
@@ -33,7 +35,7 @@ const payrollIssues = [
 ];
 
 const PayrollOverviewPage = () => (
-  <div className="space-y-6">
+  <div className="space-y-8">
     <div>
       <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
         Payroll
@@ -44,65 +46,73 @@ const PayrollOverviewPage = () => (
       </p>
     </div>
 
-    <div className="grid gap-4 md:grid-cols-3">
-      {payrollSummaries.map((summary) => (
-        <Card key={summary.label}>
+    <Separator />
+
+    <section>
+      <h2 className="text-sm font-medium text-muted-foreground mb-4">
+        Performance Overview
+      </h2>
+      <div className="grid gap-4 md:grid-cols-3">
+        {payrollSummaries.map((summary) => (
+          <Card key={summary.label}>
+            <CardHeader>
+              <CardDescription>{summary.label}</CardDescription>
+              <CardTitle>{summary.value}</CardTitle>
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
+    </section>
+
+    <section>
+      <h2 className="text-sm font-medium text-muted-foreground mb-4">
+        Approvals & Risks
+      </h2>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
           <CardHeader>
-            <CardTitle>{summary.value}</CardTitle>
+            <CardTitle>Pending Approvals</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              {summary.label}
-            </p>
+          <CardContent className="space-y-3">
+            {approvals.map((approval) => (
+              <div
+                className="rounded-md border border-border/60 px-4 py-3"
+                key={approval.title}
+              >
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold">{approval.title}</p>
+                  <Badge variant="secondary">{approval.status}</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {approval.owner} · {approval.due}
+                </p>
+              </div>
+            ))}
           </CardContent>
         </Card>
-      ))}
-    </div>
 
-    <div className="grid gap-4 lg:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle>Pending Approvals</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {approvals.map((approval) => (
-            <div
-              className="rounded-md border border-border/60 px-4 py-3"
-              key={approval.title}
-            >
-              <div className="flex items-center justify-between">
-                <p className="font-semibold">{approval.title}</p>
-                <Badge variant="secondary">{approval.status}</Badge>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {approval.owner} · {approval.due}
-              </p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Payroll Risks</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          {payrollIssues.map((issue) => (
-            <div
-              className="flex items-center justify-between"
-              key={issue.label}
-            >
-              <p className="text-muted-foreground">{issue.label}</p>
-              <Badge
-                variant={issue.severity === "High" ? "destructive" : "outline"}
+        <Card>
+          <CardHeader>
+            <CardTitle>Payroll Risks</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            {payrollIssues.map((issue) => (
+              <div
+                className="flex items-center justify-between"
+                key={issue.label}
               >
-                {issue.severity}
-              </Badge>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    </div>
+                <p className="text-muted-foreground">{issue.label}</p>
+                <Badge
+                  variant={issue.severity === "High" ? "destructive" : "outline"}
+                >
+                  {issue.severity}
+                </Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    </section>
   </div>
 );
 
