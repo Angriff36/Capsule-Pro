@@ -7,6 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
 import { useEffect, useState } from "react";
 import type {
   EventProfitabilityMetrics,
@@ -75,336 +83,350 @@ export function ProfitabilityDashboard({
 
   if (eventId && metrics) {
     return (
-      <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">
-                Budgeted Revenue
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ${metrics.budgetedRevenue.toFixed(2)}
-              </div>
-            </CardContent>
-          </Card>
+      <div className="space-y-8">
+        {/* Performance Overview Section */}
+        <section>
+          <h3 className="text-sm font-medium text-muted-foreground mb-4">
+            Performance Overview
+          </h3>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader>
+                <CardDescription>Budgeted Revenue</CardDescription>
+                <CardTitle className="text-2xl">
+                  ${metrics.budgetedRevenue.toFixed(2)}
+                </CardTitle>
+              </CardHeader>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">
-                Actual Revenue
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ${metrics.actualRevenue.toFixed(2)}
-              </div>
-              <div
-                className={`text-xs mt-1 ${
-                  metrics.revenueVariance >= 0
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}
-              >
-                {metrics.revenueVariance >= 0 ? "+" : ""}
-                {metrics.revenueVariance.toFixed(2)} (
-                {metrics.revenueVariance >= 0 ? "over" : "under"} budget)
-              </div>
-            </CardContent>
-          </Card>
+            <Card>
+              <CardHeader>
+                <CardDescription>Actual Revenue</CardDescription>
+                <CardTitle className="text-2xl">
+                  ${metrics.actualRevenue.toFixed(2)}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div
+                  className={`text-xs font-medium ${
+                    metrics.revenueVariance >= 0
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {metrics.revenueVariance >= 0 ? "+" : ""}
+                  {metrics.revenueVariance.toFixed(2)} (
+                  {metrics.revenueVariance >= 0 ? "over" : "under"} budget)
+                </div>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Total Costs</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ${metrics.actualTotalCost.toFixed(2)}
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                Food: ${metrics.actualFoodCost.toFixed(2)} | Labor: $
-                {metrics.actualLaborCost.toFixed(2)} | Overhead: $
-                {metrics.actualOverhead.toFixed(2)}
-              </div>
-            </CardContent>
-          </Card>
+            <Card>
+              <CardHeader>
+                <CardDescription>Total Costs</CardDescription>
+                <CardTitle className="text-2xl">
+                  ${metrics.actualTotalCost.toFixed(2)}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1 text-xs text-muted-foreground">
+                  <div>Food: ${metrics.actualFoodCost.toFixed(2)}</div>
+                  <div>Labor: ${metrics.actualLaborCost.toFixed(2)}</div>
+                  <div>Overhead: ${metrics.actualOverhead.toFixed(2)}</div>
+                </div>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">
-                Gross Margin
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div
-                className={`text-2xl font-bold ${
-                  metrics.actualGrossMargin >= 0
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}
-              >
-                {metrics.actualGrossMargin.toFixed(2)}
-              </div>
-              <div
-                className={`text-xs mt-1 ${
-                  metrics.marginVariancePct >= 0
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}
-              >
-                {metrics.actualGrossMarginPct.toFixed(1)}% (
-                {metrics.marginVariancePct >= 0 ? "+" : ""}
-                {metrics.marginVariancePct.toFixed(1)}% vs budget)
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            <Card>
+              <CardHeader>
+                <CardDescription>Gross Margin</CardDescription>
+                <CardTitle
+                  className={`text-2xl ${
+                    metrics.actualGrossMargin >= 0
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  ${metrics.actualGrossMargin.toFixed(2)}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div
+                  className={`text-xs font-medium ${
+                    metrics.marginVariancePct >= 0
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {metrics.actualGrossMarginPct.toFixed(1)}% (
+                  {metrics.marginVariancePct >= 0 ? "+" : ""}
+                  {metrics.marginVariancePct.toFixed(1)}% vs budget)
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Cost Breakdown</CardTitle>
-              <CardDescription>Actual costs vs budgeted costs</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between text-sm">
-                    <span>Food Costs</span>
-                    <span className="font-medium">
-                      ${metrics.actualFoodCost.toFixed(2)}
-                    </span>
+        <Separator />
+
+        {/* Cost Analysis & Trends Section */}
+        <section>
+          <h3 className="text-sm font-medium text-muted-foreground mb-4">
+            Cost Analysis & Trends
+          </h3>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Cost Breakdown</CardTitle>
+                <CardDescription>Actual vs budgeted costs</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-sm">
+                      <span>Food Costs</span>
+                      <span className="font-medium">
+                        ${metrics.actualFoodCost.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 transition-all"
+                        style={{
+                          width: `${
+                            (metrics.actualFoodCost /
+                              Math.max(metrics.budgetedFoodCost, 1)) *
+                            100
+                          }%`,
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Budget: ${metrics.budgetedFoodCost.toFixed(2)}</span>
+                      <span
+                        className={
+                          metrics.foodCostVariance <= 0
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }
+                      >
+                        {metrics.foodCostVariance.toFixed(2)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-blue-500 transition-all"
-                      style={{
-                        width: `${
-                          (metrics.actualFoodCost /
-                            Math.max(metrics.budgetedFoodCost, 1)) *
-                          100
-                        }%`,
-                      }}
-                    />
+
+                  <div>
+                    <div className="flex justify-between text-sm">
+                      <span>Labor Costs</span>
+                      <span className="font-medium">
+                        ${metrics.actualLaborCost.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-purple-500 transition-all"
+                        style={{
+                          width: `${
+                            (metrics.actualLaborCost /
+                              Math.max(metrics.budgetedLaborCost, 1)) *
+                            100
+                          }%`,
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Budget: ${metrics.budgetedLaborCost.toFixed(2)}</span>
+                      <span
+                        className={
+                          metrics.laborCostVariance <= 0
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }
+                      >
+                        {metrics.laborCostVariance.toFixed(2)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Budget: ${metrics.budgetedFoodCost.toFixed(2)}</span>
-                    <span
-                      className={
-                        metrics.foodCostVariance <= 0
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }
-                    >
-                      {metrics.foodCostVariance.toFixed(2)}
-                    </span>
+
+                  <div>
+                    <div className="flex justify-between text-sm">
+                      <span>Overhead</span>
+                      <span className="font-medium">
+                        ${metrics.actualOverhead.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-orange-500 transition-all"
+                        style={{
+                          width: `${
+                            (metrics.actualOverhead /
+                              Math.max(metrics.budgetedOverhead, 1)) *
+                            100
+                          }%`,
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Budget: ${metrics.budgetedOverhead.toFixed(2)}</span>
+                    </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
 
-                <div>
-                  <div className="flex justify-between text-sm">
-                    <span>Labor Costs</span>
-                    <span className="font-medium">
-                      ${metrics.actualLaborCost.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-purple-500 transition-all"
-                      style={{
-                        width: `${
-                          (metrics.actualLaborCost /
-                            Math.max(metrics.budgetedLaborCost, 1)) *
-                          100
-                        }%`,
-                      }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Budget: ${metrics.budgetedLaborCost.toFixed(2)}</span>
-                    <span
-                      className={
-                        metrics.laborCostVariance <= 0
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }
-                    >
-                      {metrics.laborCostVariance.toFixed(2)}
-                    </span>
-                  </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Margin Trends</CardTitle>
+                <CardDescription>
+                  12-month margin percentage trend
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {metrics.marginTrend.length === 0 ? (
+                    <div className="flex h-48 items-center justify-center text-center text-muted-foreground">
+                      <div>
+                        <p className="font-medium">No trend data available</p>
+                        <p className="text-sm">
+                          Margin trends will appear as more events are completed
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-48 space-y-1">
+                      {metrics.marginTrend.map((item, index) => (
+                        <div
+                          className="flex items-center gap-2 text-sm"
+                          key={index}
+                        >
+                          <div className="w-16 text-xs text-muted-foreground">
+                            {item.date.toLocaleDateString("en-US", {
+                              month: "short",
+                              year: "2-digit",
+                            })}
+                          </div>
+                          <div className="flex-1 h-6 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className={`h-full transition-all ${
+                                item.marginPct >= 0
+                                  ? "bg-green-500"
+                                  : "bg-red-500"
+                              }`}
+                              style={{
+                                width: `${Math.min(Math.abs(item.marginPct), 50)}%`,
+                              }}
+                            />
+                          </div>
+                          <div
+                            className={`w-12 text-right font-medium ${
+                              item.marginPct >= 0
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }`}
+                          >
+                            {item.marginPct.toFixed(1)}%
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
 
-                <div>
-                  <div className="flex justify-between text-sm">
-                    <span>Overhead</span>
-                    <span className="font-medium">
-                      ${metrics.actualOverhead.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-orange-500 transition-all"
-                      style={{
-                        width: `${
-                          (metrics.actualOverhead /
-                            Math.max(metrics.budgetedOverhead, 1)) *
-                          100
-                        }%`,
-                      }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Budget: ${metrics.budgetedOverhead.toFixed(2)}</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <Separator />
 
+        {/* Variance Analysis Section */}
+        <section>
+          <h3 className="text-sm font-medium text-muted-foreground mb-4">
+            Variance Analysis
+          </h3>
           <Card>
             <CardHeader>
-              <CardTitle>Margin Trends</CardTitle>
+              <CardTitle>Budget vs Actual Performance</CardTitle>
               <CardDescription>
-                12-month margin percentage trend
+                Detailed variance breakdown with visual indicators
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                {metrics.marginTrend.length === 0 ? (
-                  <div className="flex h-48 items-center justify-center text-center text-muted-foreground">
-                    <div>
-                      <p className="font-medium">No trend data available</p>
-                      <p className="text-sm">
-                        Margin trends will appear as more events are completed
-                      </p>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm text-muted-foreground">
+                      Budgeted Total Cost
+                    </div>
+                    <div className="text-lg font-bold">
+                      ${metrics.budgetedTotalCost.toFixed(2)}
                     </div>
                   </div>
-                ) : (
-                  <div className="h-48 space-y-1">
-                    {metrics.marginTrend.map((item, index) => (
-                      <div
-                        className="flex items-center gap-2 text-sm"
-                        key={index}
-                      >
-                        <div className="w-16 text-xs text-muted-foreground">
-                          {item.date.toLocaleDateString("en-US", {
-                            month: "short",
-                            year: "2-digit",
-                          })}
-                        </div>
-                        <div className="flex-1 h-6 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className={`h-full transition-all ${
-                              item.marginPct >= 0
-                                ? "bg-green-500"
-                                : "bg-red-500"
-                            }`}
-                            style={{
-                              width: `${Math.min(Math.abs(item.marginPct), 50)}%`,
-                            }}
-                          />
-                        </div>
-                        <div
-                          className={`w-12 text-right font-medium ${
-                            item.marginPct >= 0
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          {item.marginPct.toFixed(1)}%
-                        </div>
-                      </div>
-                    ))}
+                  <div>
+                    <div className="text-sm text-muted-foreground">
+                      Actual Total Cost
+                    </div>
+                    <div className="text-lg font-bold">
+                      ${metrics.actualTotalCost.toFixed(2)}
+                    </div>
                   </div>
-                )}
+                </div>
+
+                <div className="border-t pt-4">
+                  <div className="flex justify-between">
+                    <span className="font-medium">Total Cost Variance</span>
+                    <span
+                      className={`font-bold text-lg ${
+                        metrics.totalCostVariance <= 0
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {metrics.totalCostVariance >= 0 ? "+" : ""}
+                      {metrics.totalCostVariance.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="mt-2 h-2 w-full bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all ${
+                        metrics.totalCostVariance <= 0
+                          ? "bg-green-500"
+                          : "bg-red-500"
+                      }`}
+                      style={{
+                        width: `${Math.min(
+                          (Math.abs(metrics.totalCostVariance) /
+                            Math.max(metrics.budgetedTotalCost, 1)) *
+                            100,
+                          100
+                        )}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                  <div>
+                    <div className="text-sm text-muted-foreground">
+                      Budgeted Margin %
+                    </div>
+                    <div className="text-lg font-bold">
+                      {metrics.budgetedGrossMarginPct.toFixed(1)}%
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">
+                      Actual Margin %
+                    </div>
+                    <div className="text-lg font-bold">
+                      {metrics.actualGrossMarginPct.toFixed(1)}%
+                    </div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Variance Analysis</CardTitle>
-            <CardDescription>
-              Budget vs actual performance breakdown
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm text-muted-foreground">
-                    Budgeted Total Cost
-                  </div>
-                  <div className="text-lg font-bold">
-                    ${metrics.budgetedTotalCost.toFixed(2)}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">
-                    Actual Total Cost
-                  </div>
-                  <div className="text-lg font-bold">
-                    ${metrics.actualTotalCost.toFixed(2)}
-                  </div>
-                </div>
-              </div>
-
-              <div className="border-t pt-4">
-                <div className="flex justify-between">
-                  <span className="font-medium">Total Cost Variance</span>
-                  <span
-                    className={`font-bold text-lg ${
-                      metrics.totalCostVariance <= 0
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {metrics.totalCostVariance >= 0 ? "+" : ""}
-                    {metrics.totalCostVariance.toFixed(2)}
-                  </span>
-                </div>
-                <div className="mt-2 h-2 w-full bg-muted rounded-full overflow-hidden">
-                  <div
-                    className={`h-full transition-all ${
-                      metrics.totalCostVariance <= 0
-                        ? "bg-green-500"
-                        : "bg-red-500"
-                    }`}
-                    style={{
-                      width: `${Math.min(
-                        (Math.abs(metrics.totalCostVariance) /
-                          Math.max(metrics.budgetedTotalCost, 1)) *
-                          100,
-                        100
-                      )}%`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                <div>
-                  <div className="text-sm text-muted-foreground">
-                    Budgeted Margin %
-                  </div>
-                  <div className="text-lg font-bold">
-                    {metrics.budgetedGrossMarginPct.toFixed(1)}%
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">
-                    Actual Margin %
-                  </div>
-                  <div className="text-lg font-bold">
-                    {metrics.actualGrossMarginPct.toFixed(1)}%
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        </section>
       </div>
     );
   }
@@ -417,18 +439,23 @@ export function ProfitabilityDashboard({
           <label className="text-sm font-medium" htmlFor="period-select">
             Period:
           </label>
-          <select
-            className="rounded border border-input bg-background px-3 py-2 text-sm"
-            id="period-select"
-            onChange={(e) => setSelectedPeriod(e.target.value)}
+          <Select
             value={selectedPeriod}
+            onValueChange={setSelectedPeriod}
           >
-            <option value="3m">Last 3 months</option>
-            <option value="6m">Last 6 months</option>
-            <option value="12m">Last 12 months</option>
-          </select>
+            <SelectTrigger className="w-[180px]" id="period-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="3m">Last 3 months</SelectItem>
+              <SelectItem value="6m">Last 6 months</SelectItem>
+              <SelectItem value="12m">Last 12 months</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
+
+      <Separator />
 
       {historical.length === 0 ? (
         <Card>
@@ -444,135 +471,133 @@ export function ProfitabilityDashboard({
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-4">
+        <div className="space-y-8">
+          {/* Summary Metrics Section */}
+          <section>
+            <h3 className="text-sm font-medium text-muted-foreground mb-4">
+              Summary Metrics
+            </h3>
+            <div className="grid gap-4 md:grid-cols-4">
+              <Card>
+                <CardHeader>
+                  <CardDescription>Total Events</CardDescription>
+                  <CardTitle className="text-2xl">
+                    {historical.reduce((sum, h) => sum + h.totalEvents, 0)}
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardDescription>Average Margin %</CardDescription>
+                  <CardTitle className="text-2xl">
+                    {(
+                      historical.reduce(
+                        (sum, h) => sum + h.averageGrossMarginPct,
+                        0
+                      ) / historical.length
+                    ).toFixed(1)}
+                    %
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardDescription>Total Revenue</CardDescription>
+                  <CardTitle className="text-2xl">
+                    $
+                    {historical
+                      .reduce((sum, h) => sum + h.totalRevenue, 0)
+                      .toFixed(2)}
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardDescription>Total Costs</CardDescription>
+                  <CardTitle className="text-2xl">
+                    $
+                    {historical
+                      .reduce((sum, h) => sum + h.totalCost, 0)
+                      .toFixed(2)}
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+            </div>
+          </section>
+
+          <Separator />
+
+          {/* Historical Trends Section */}
+          <section>
+            <h3 className="text-sm font-medium text-muted-foreground mb-4">
+              Historical Trends
+            </h3>
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium">
-                  Total Events
-                </CardTitle>
+                <CardTitle>Monthly Profitability Metrics</CardTitle>
+                <CardDescription>
+                  Detailed breakdown over the selected period
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {historical.reduce((sum, h) => sum + h.totalEvents, 0)}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">
-                  Average Margin %
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {(
-                    historical.reduce(
-                      (sum, h) => sum + h.averageGrossMarginPct,
-                      0
-                    ) / historical.length
-                  ).toFixed(1)}
-                  %
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">
-                  Total Revenue
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  $
-                  {historical
-                    .reduce((sum, h) => sum + h.totalRevenue, 0)
-                    .toFixed(2)}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">
-                  Total Costs
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  $
-                  {historical
-                    .reduce((sum, h) => sum + h.totalCost, 0)
-                    .toFixed(2)}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Historical Trends</CardTitle>
-              <CardDescription>
-                Monthly profitability metrics over selected period
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="py-2 text-left font-medium">Period</th>
-                      <th className="py-2 text-right font-medium">Events</th>
-                      <th className="py-2 text-right font-medium">Revenue</th>
-                      <th className="py-2 text-right font-medium">
-                        Avg Margin %
-                      </th>
-                      <th className="py-2 text-right font-medium">
-                        Food Cost %
-                      </th>
-                      <th className="py-2 text-right font-medium">
-                        Labor Cost %
-                      </th>
-                      <th className="py-2 text-right font-medium">
-                        Overhead %
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {historical.map((item, index) => (
-                      <tr className="border-b hover:bg-muted/50" key={index}>
-                        <td className="py-2">{item.period}</td>
-                        <td className="py-2 text-right">{item.totalEvents}</td>
-                        <td className="py-2 text-right">
-                          ${item.totalRevenue.toFixed(2)}
-                        </td>
-                        <td
-                          className={`py-2 text-right font-medium ${
-                            item.averageGrossMarginPct >= 0
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          {item.averageGrossMarginPct.toFixed(1)}%
-                        </td>
-                        <td className="py-2 text-right">
-                          {item.averageFoodCostPct.toFixed(1)}%
-                        </td>
-                        <td className="py-2 text-right">
-                          {item.averageLaborCostPct.toFixed(1)}%
-                        </td>
-                        <td className="py-2 text-right">
-                          {item.averageOverheadPct.toFixed(1)}%
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="py-2 text-left font-medium">Period</th>
+                        <th className="py-2 text-right font-medium">Events</th>
+                        <th className="py-2 text-right font-medium">Revenue</th>
+                        <th className="py-2 text-right font-medium">
+                          Avg Margin %
+                        </th>
+                        <th className="py-2 text-right font-medium">
+                          Food Cost %
+                        </th>
+                        <th className="py-2 text-right font-medium">
+                          Labor Cost %
+                        </th>
+                        <th className="py-2 text-right font-medium">
+                          Overhead %
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+                    </thead>
+                    <tbody>
+                      {historical.map((item, index) => (
+                        <tr className="border-b hover:bg-muted/50" key={index}>
+                          <td className="py-2">{item.period}</td>
+                          <td className="py-2 text-right">{item.totalEvents}</td>
+                          <td className="py-2 text-right">
+                            ${item.totalRevenue.toFixed(2)}
+                          </td>
+                          <td
+                            className={`py-2 text-right font-medium ${
+                              item.averageGrossMarginPct >= 0
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }`}
+                          >
+                            {item.averageGrossMarginPct.toFixed(1)}%
+                          </td>
+                          <td className="py-2 text-right">
+                            {item.averageFoodCostPct.toFixed(1)}%
+                          </td>
+                          <td className="py-2 text-right">
+                            {item.averageLaborCostPct.toFixed(1)}%
+                          </td>
+                          <td className="py-2 text-right">
+                            {item.averageOverheadPct.toFixed(1)}%
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
         </div>
       )}
     </div>

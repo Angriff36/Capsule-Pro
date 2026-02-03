@@ -172,11 +172,11 @@ Major visual and structural issues discovered during UI exploration that require
 - ~~Missing standardized contact information blocks~~ **IMPROVED**: Quick Stats organized in semantic section with proper hierarchy
 - ~~No clear visual separation between primary client data and secondary metrics~~ **IMPROVED**: Separators and section headers establish clear information hierarchy
 
-**Dashboard Module** ([PARTIALLY COMPLETED]):
+**Dashboard Module** ([COMPLETED]):
 - ~~Widget density overwhelming the information hierarchy~~ **IMPROVED**: Analytics page now uses clear section headers and proper card spacing
 - ~~Competing data visualization elements without proper context~~ **IMPROVED**: Top Events table given its own section with proper hierarchy
-- Missing standardized dashboard block components
-- ~~Information architecture unclear without clear section breaks~~ **IMPROVED**: Added section headers and Separator for clear visual grouping
+- ~~Missing standardized dashboard block components~~ **IMPROVED**: Profitability dashboard uses proper section-based organization with standardized card hierarchy
+- ~~Information architecture unclear without clear section breaks~~ **IMPROVED**: Added section headers and Separator for clear visual grouping across both analytics and profitability dashboards
 
 **Missing Design System Components:**
 - Event detail blocks (should replace current ad-hoc layouts)
@@ -185,10 +185,10 @@ Major visual and structural issues discovered during UI exploration that require
 - Information density controllers (collapsible sections, progressive disclosure)
 
 **Actionable Improvements:**
-1. ~~Implement badge hierarchy system with clear priority levels~~ **COMPLETED**: Event-card, Analytics page, and Clients Module now use proper badge placement
-2. ~~Create standardized information density patterns with proper spacing~~ **STARTED**: Analytics page demonstrates section-based organization
+1. ~~Implement badge hierarchy system with clear priority levels~~ **COMPLETED**: Event-card, Analytics page, Profitability Dashboard, and Clients Module now use proper badge placement
+2. ~~Create standardized information density patterns with proper spacing~~ **COMPLETED**: Analytics page and Profitability Dashboard demonstrate section-based organization
 3. Develop missing design system block components before continuing new features
-4. ~~Apply consistent visual language across all modules~~ **COMPLETED**: Events, Analytics, and Clients Modules now use consistent patterns (Separators, section headers, card hierarchy)
+4. ~~Apply consistent visual language across all modules~~ **COMPLETED**: Events, Analytics, Profitability Dashboard, and Clients Modules now use consistent patterns (Separators, section headers, card hierarchy)
 5. Implement progressive disclosure for dense information areas
 
 ---
@@ -340,7 +340,56 @@ Client List View (`apps/app/app/(authenticated)/crm/clients/components/clients-c
 
 ---
 
-### 2.9 Phase 2 Completion Criteria
+### 2.9 Completed UI Improvements (Profitability Dashboard)
+
+**Iteration: Profitability Dashboard Visual Hierarchy Enhancement**
+
+Profitability Dashboard component (`apps/app/app/(authenticated)/analytics/events/components/profitability-dashboard.tsx`) successfully refactored to establish clear visual hierarchy and reduce information density issues.
+
+**Improvements Implemented:**
+
+1. **Section-Based Organization**
+   - Added semantic `<section>` elements with descriptive headers for each content area
+   - Each section gets its own header with consistent styling: `text-sm font-medium text-muted-foreground`
+   - Clear visual separation: Performance Overview → Cost Analysis & Trends → Variance Analysis (event view) / Summary Metrics → Historical Trends (historical view)
+
+2. **Card Hierarchy Standardization**
+   - Performance cards now use proper CardDescription → CardTitle order (description first, then value)
+   - Fixed inverted hierarchy where title was in description position (confusing to scan)
+   - Total Costs card improved: cost breakdown moved from cramped single-line to vertical stack with space-y-1
+
+3. **Select Component Consistency**
+   - Replaced native `<select>` element with proper Select component from design system
+   - Ensures visual alignment with other form controls across the platform
+   - Consistent width (w-[180px]) and styling
+
+4. **Component Structure**
+   - Added Separator between page header and first section for clear visual break
+   - Added Separator between major content sections
+   - Increased spacing between sections from space-y-6 to space-y-8 for better breathing room
+   - Section headers provide mental model of page structure
+
+5. **Information Density Reduction**
+   - Total Costs breakdown: Food, Labor, Overhead now on separate lines (space-y-1) instead of cramped single line
+   - Variance Analysis given its own section with proper header instead of being inline
+   - Historical Trends table given its own section with clear header
+
+**Key Learnings:**
+
+1. **Section Headers Work for Complex Dashboards**: Even with two different views (eventId metrics vs historical trends), adding section headers immediately gives users a mental model of the page structure
+2. **Vertical Stack Beats Single Line**: The Total Costs breakdown went from "Food: $X | Labor: $Y | Overhead: $Z" (cramped) to three separate lines — much easier to scan
+3. **Separator Between Page Header and Content**: Adding Separator after the page header creates visual breathing room similar to Analytics page improvements
+4. **space-y-8 vs space-y-6**: Increasing spacing between sections from 6 to 8 creates better visual rhythm for dense dashboards
+5. **Select Component Over Native**: The native `<select>` doesn't match the design system aesthetic; proper Select component provides consistent UX
+
+**Applicability to Other Modules:**
+- **CLV Dashboard**: Likely similar density issues; needs section-based reorganization
+- **Employee Performance Dashboard**: Likely similar density issues; needs section-based reorganization
+- **Any Dashboard with Dense Tables**: Apply section headers, separators, and proper card hierarchy
+
+---
+
+### 2.10 Phase 2 Completion Criteria
 
 Phase 2 is complete when:
 
@@ -352,7 +401,7 @@ Phase 2 is complete when:
 
 ---
 
-### 2.10 Relationship to Phase 1
+### 2.11 Relationship to Phase 1
 
 Phase 1 guarantees correctness, integrity, and realtime propagation. Phase 2
 guarantees **usability, power, and trust**.
