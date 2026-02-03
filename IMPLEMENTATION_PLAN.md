@@ -3835,3 +3835,82 @@ Kitchen Inventory Page component (`apps/app/app/(authenticated)/kitchen/inventor
 
 **Files Modified:**
 - `apps/app/app/(authenticated)/kitchen/inventory/page.tsx` - Added page header, Separator, section headers, semantic sections, CardDescription, improved spacing, removed custom value colors
+
+---
+
+### 2.61 Completed UI Improvements (Kitchen Analytics Page)
+
+**Iteration: Kitchen Analytics Page Visual Hierarchy Enhancement**
+
+Kitchen Analytics Page component (`apps/app/app/(authenticated)/analytics/kitchen/page.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Improvements Implemented:**
+
+1. **Page Header Structure**
+   - Changed from `text-2xl font-semibold` with uppercase tracking-wide subtitle to proper page header
+   - Added `text-3xl font-bold tracking-tight` styling for main title
+   - Removed redundant uppercase tracking-wide "Analytics" subtitle
+   - Summary now serves as descriptive paragraph in `space-y-0.5` wrapper
+   - Consistent with all other improved pages across the platform
+
+2. **Separator Addition**
+   - Added `<Separator />` component between page header and main content for clear visual break
+   - Consistent with all other page improvements across the platform
+
+3. **Container Structure Standardization**
+   - Changed from `<div className="space-y-6">` to `<div className="flex flex-1 flex-col gap-8 p-4 pt-0">`
+   - Matches the container pattern used across all other improved pages
+   - Provides consistent padding and flex layout behavior
+
+4. **Section-Based Organization**
+   - Added semantic `<section>` element with descriptive header for Performance Overview content
+   - Section header uses consistent styling: `text-sm font-medium text-muted-foreground`
+   - Section uses `space-y-4` for proper spacing management
+   - Clear visual separation between page header and content
+
+5. **Icon Sizing Consistency**
+   - Changed icon sizes from `h-3 w-3`, `h-4 w-4`, `h-5 w-5` to `size-3`, `size-4`, `size-5`
+   - Maintains visual consistency across the platform
+
+6. **Loading and Error State Consistency**
+   - Loading state now uses same page header structure and Separator as main content
+   - Error state now uses same page header structure and Separator as main content
+   - Error card now uses design system colors (`border-destructive/50 bg-destructive/10`) instead of custom colors
+   - Error icon uses `text-destructive` instead of custom color
+
+7. **Grid Spacing Improvement**
+   - Changed grid gap from `gap-4` to `gap-6` for better breathing room and visual rhythm
+   - Consistent with spacing patterns used in other improved pages
+
+8. **Custom Color Standardization**
+   - Changed `bg-slate-100` to `bg-muted` for progress bar backgrounds
+   - Changed `bg-red-500` to `bg-destructive` for high load indicators
+   - Maintained semantic colors (orange, yellow, emerald) for specific load ranges
+   - Changed `text-red-500` to `text-destructive` for waste alert icons
+
+**Key Learnings:**
+
+1. **Loading and Error States Should Follow Same Patterns**: Even loading and error states benefit from proper page header structure, Separator, and consistent container patterns. Users expect consistent visual language regardless of state.
+
+2. **Uppercase Tracking Subtitles Create Visual Noise**: Removing the uppercase tracking-wide "Analytics" subtitle and relying on clear main title + descriptive paragraph creates cleaner hierarchy.
+
+3. **Design System Colors Over Custom Colors**: Using design system colors (`bg-destructive`, `bg-muted`, `text-destructive`) instead of custom Tailwind colors (`bg-red-500`, `bg-slate-100`) provides consistent visual language that adapts to theme changes.
+
+4. **Standard Container Pattern**: Using the `flex flex-1 flex-col gap-8 p-4 pt-0` pattern consistently across all pages creates predictable layout behavior.
+
+5. **gap-6 vs gap-4 for Grids**: Increasing grid gap from 4 to 6 creates better visual rhythm for card grids, preventing the layout from feeling cramped.
+
+6. **Icon Sizing Consistency**: Using `size-3`, `size-4`, `size-5` instead of `h-3 w-3`, `h-4 w-4`, `h-5 w-5` provides consistent sizing across all components and follows the established design system patterns.
+
+**Remaining Work in Kitchen Analytics Module:**
+- None identified — the page is now well-structured with clear visual hierarchy
+
+**Applicability to Other Modules:**
+
+- **Any Analytics/Reporting Page**: The section header pattern works well for pages with performance metrics and charts.
+- **Any Page with Loading/Error States**: Loading and error states should follow the same page header structure and Separator pattern as main content.
+- **Any Page with Uppercase Subtitles**: Pages with uppercase tracking-wide subtitles should consider removing them for cleaner hierarchy.
+- **Any Page with Custom Progress Bar Colors**: Replace custom background colors (`bg-slate-100`) with design system colors (`bg-muted`) for consistency.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/analytics/kitchen/page.tsx` - Added page header structure, Separator, semantic section, improved spacing, icon sizing, design system colors, standardized loading/error states
