@@ -24,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   AlertTriangleIcon,
   CalendarIcon,
@@ -355,7 +356,7 @@ export default function TimecardsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-semibold text-2xl text-foreground">Timecards</h1>
@@ -365,45 +366,52 @@ export default function TimecardsPage() {
         </div>
       </div>
 
-      <Card className="bg-card/60">
-        <CardContent className="p-4">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex-1 min-w-[200px]">
+      <Separator />
+
+      <section>
+        <h2 className="font-medium text-sm text-muted-foreground mb-4">
+          Filters
+        </h2>
+        <Card className="bg-card/60">
+          <CardContent className="p-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex-1 min-w-[200px]">
+                <Input
+                  onChange={(e) => handleSearch(e.target.value)}
+                  placeholder="Search employees..."
+                  value={searchQuery}
+                />
+              </div>
+
+              <Select onValueChange={handleStatusChange} value={statusFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Pending Approval</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="open">Open Entries</SelectItem>
+                  <SelectItem value="all">All Entries</SelectItem>
+                </SelectContent>
+              </Select>
+
               <Input
-                onChange={(e) => handleSearch(e.target.value)}
-                placeholder="Search employees..."
-                value={searchQuery}
+                className="w-[160px]"
+                onChange={(e) => setStartDate(e.target.value)}
+                type="date"
+                value={startDate}
+              />
+
+              <Input
+                className="w-[160px]"
+                onChange={(e) => setEndDate(e.target.value)}
+                type="date"
+                value={endDate}
               />
             </div>
-
-            <Select onValueChange={handleStatusChange} value={statusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pending">Pending Approval</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="open">Open Entries</SelectItem>
-                <SelectItem value="all">All Entries</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Input
-              className="w-[160px]"
-              onChange={(e) => setStartDate(e.target.value)}
-              type="date"
-              value={startDate}
-            />
-
-            <Input
-              className="w-[160px]"
-              onChange={(e) => setEndDate(e.target.value)}
-              type="date"
-              value={endDate}
-            />
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </section>
 
       {loading ? (
         <Card className="p-8 text-center">
@@ -417,10 +425,14 @@ export default function TimecardsPage() {
         </Card>
       ) : (
         <>
-          <Card>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <Table>
+          <section>
+            <h2 className="font-medium text-sm text-muted-foreground mb-4">
+              Timecards ({pagination.total})
+            </h2>
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[40px]">
@@ -499,7 +511,7 @@ export default function TimecardsPage() {
                         <TableCell>
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                              <CalendarIcon className="size-4 text-muted-foreground" />
                               <span className="font-medium">
                                 {formatDate(entry.clock_in)}
                               </span>
@@ -591,7 +603,7 @@ export default function TimecardsPage() {
                                 size="icon"
                                 variant="ghost"
                               >
-                                <CheckIcon className="h-4 w-4" />
+                                <CheckIcon className="size-4" />
                               </Button>
                             )}
                             <Button
@@ -599,14 +611,14 @@ export default function TimecardsPage() {
                               size="icon"
                               variant="ghost"
                             >
-                              <EditIcon className="h-4 w-4" />
+                              <EditIcon className="size-4" />
                             </Button>
                             <Button
                               className="h-8 w-8 text-orange-600 hover:text-orange-700"
                               size="icon"
                               variant="ghost"
                             >
-                              <FlagIcon className="h-4 w-4" />
+                              <FlagIcon className="size-4" />
                             </Button>
                           </div>
                         </TableCell>
@@ -644,7 +656,8 @@ export default function TimecardsPage() {
               </Button>
             </div>
           </div>
-        </>
+        </section>
+      </>
       )}
 
       {selectedTimeEntry && (
