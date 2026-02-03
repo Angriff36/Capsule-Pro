@@ -1,6 +1,9 @@
 {
   "name": "api",
   "private": true,
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "concurrently \"npm:next\" \"npm:stripe\"",
     "next": "next dev -p 2223",

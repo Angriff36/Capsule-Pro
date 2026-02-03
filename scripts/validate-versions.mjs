@@ -44,7 +44,7 @@ for (const workflowFile of workflowFiles) {
     }
     // If no pnpm version specified, that's fine - it will use packageManager from package.json
 
-    // Check node version (handle version ranges like >=20.0.0)
+    // Check node version (handle version ranges like >=20.0.0 and 20.x)
     const nodeMatch = content.match(/node-version:\s*'([^']+)'/);
     if (nodeMatch) {
       const workflowNodeVersion = nodeMatch[1];
@@ -54,6 +54,14 @@ for (const workflowFile of workflowFiles) {
         const workflowMajor = parseInt(workflowNodeVersion.split('.')[0], 10);
         const minMajor = parseInt(minVersion.split('.')[0], 10);
         if (workflowMajor < minMajor) {
+          console.error(`Node.js version mismatch in ${workflowFile}: expected ${expectedNodeVersion}, found ${workflowNodeVersion}`);
+          hasErrors = true;
+        }
+      } else if (expectedNodeVersion.endsWith('.x')) {
+        // Handle 20.x format - check if workflow version matches the major version
+        const expectedMajor = parseInt(expectedNodeVersion.replace('.x', ''), 10);
+        const workflowMajor = parseInt(workflowNodeVersion.split('.')[0], 10);
+        if (workflowMajor !== expectedMajor) {
           console.error(`Node.js version mismatch in ${workflowFile}: expected ${expectedNodeVersion}, found ${workflowNodeVersion}`);
           hasErrors = true;
         }
