@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Progress } from "@repo/design-system/components/ui/progress";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   AlertTriangleIcon,
   ArrowRightIcon,
@@ -254,9 +255,11 @@ const WarehouseDashboardPage = async () => {
         </div>
       </Header>
 
-      <div className="flex flex-1 gap-6 p-4 pt-0">
+      <Separator />
+
+      <div className="flex flex-1 gap-8 p-4 pt-0">
         {/* Left Sidebar */}
-        <aside className="hidden w-72 shrink-0 flex-col gap-6 lg:flex">
+        <aside className="hidden w-72 shrink-0 flex-col gap-8 lg:flex">
           {/* Quick Navigation */}
           <Card>
             <CardHeader className="pb-3">
@@ -339,9 +342,13 @@ const WarehouseDashboardPage = async () => {
         </aside>
 
         {/* Main Content */}
-        <div className="flex flex-1 flex-col gap-6">
+        <div className="flex flex-1 flex-col gap-8">
           {/* Stats Cards Row */}
-          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <section>
+            <h2 className="text-sm font-medium text-muted-foreground mb-4">
+              Performance Overview
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="pb-2">
                 <CardDescription className="flex items-center gap-2">
@@ -434,10 +441,15 @@ const WarehouseDashboardPage = async () => {
                   : "No items"}
               </CardContent>
             </Card>
+            </div>
           </section>
 
           {/* Main Grid */}
-          <div className="grid gap-6 lg:grid-cols-2">
+          <section>
+            <h2 className="text-sm font-medium text-muted-foreground mb-4">
+              Inventory Activity
+            </h2>
+            <div className="grid gap-6 lg:grid-cols-2">
             {/* Recent Activity */}
             <RecentActivityCard maxItems={6} transactions={transactions} />
 
@@ -494,27 +506,24 @@ const WarehouseDashboardPage = async () => {
                 )}
               </CardContent>
             </Card>
-          </div>
+            </div>
+          </section>
 
           {/* Low Stock Items Table */}
           {alertItems.length > 0 && (
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Items Requiring Attention</CardTitle>
-                    <CardDescription>
-                      Items below or near reorder levels
-                    </CardDescription>
-                  </div>
-                  <Button asChild size="sm" variant="outline">
-                    <Link href="/inventory/items?filter=low_stock">
-                      View All
-                      <ArrowRightIcon className="size-4 ml-1" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-medium text-muted-foreground">
+                  Items Requiring Attention
+                </h2>
+                <Button asChild size="sm" variant="outline">
+                  <Link href="/inventory/items?filter=low_stock">
+                    View All
+                    <ArrowRightIcon className="size-4 ml-1" />
+                  </Link>
+                </Button>
+              </div>
+              <Card>
               <CardContent>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {alertItems.slice(0, 6).map((item) => (
@@ -571,6 +580,7 @@ const WarehouseDashboardPage = async () => {
                 </div>
               </CardContent>
             </Card>
+            </section>
           )}
         </div>
       </div>

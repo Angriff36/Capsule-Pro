@@ -1667,7 +1667,65 @@ Payroll Payouts Page component (`apps/app/app/(authenticated)/payroll/payouts/pa
 
 ---
 
-### 2.32 Phase 2 Completion Criteria
+### 2.32 Completed UI Improvements (Warehouse Dashboard)
+
+**Iteration: Warehouse Dashboard Visual Hierarchy Enhancement**
+
+Warehouse Dashboard page component (`apps/app/app/(authenticated)/warehouse/page.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Improvements Implemented:**
+
+1. **Page Header Separator**
+   - Added `<Separator />` component between Header and main content for clear visual break
+   - Consistent with other dashboard improvements (Scheduling Dashboard, Kitchen pages, Administrative, Payroll)
+
+2. **Section-Based Organization**
+   - Added semantic `<section>` elements with descriptive headers for each major content area
+   - Each section gets its own header with consistent styling: `text-sm font-medium text-muted-foreground`
+   - Clear visual separation: Performance Overview → Inventory Activity → Items Requiring Attention
+
+3. **Component Structure**
+   - Changed main container spacing from `gap-6` to `gap-8` for better breathing room and visual rhythm
+   - Changed sidebar spacing from `gap-6` to `gap-8` for consistent vertical rhythm
+   - Section headers provide mental model of page structure
+
+4. **Semantic HTML Structure**
+   - Wrapped major content areas in semantic `<section>` elements with descriptive headers
+   - Improved accessibility and document structure
+   - Clear visual separation between different content areas
+
+5. **Items Requiring Attention Section Refinement**
+   - Moved "View All" button to section header row for better action placement
+   - Removed redundant Card title since section header provides context
+   - Cleaner visual hierarchy with section header outside the card
+
+**Key Learnings:**
+
+1. **Section Headers Work for Complex Warehouse Dashboards**: Even on operations-critical pages with multiple content areas (sidebar, stats cards, activity grids), adding section headers immediately gives users a mental model of the page structure.
+
+2. **Action Button Placement in Section Headers**: Moving the "View All" button to the section header row (aligned with the section title) creates better visual balance and makes the action more discoverable.
+
+3. **Separator After Page Header**: Adding Separator after the page header creates visual breathing room similar to other dashboard improvements.
+
+4. **space-y-8 vs space-y-6 for Multi-Section Layouts**: Increasing spacing from 6 to 8 creates better visual rhythm for complex dashboards with sidebars and multiple content areas.
+
+5. **Semantic Sections Provide Better Structure**: Using semantic `<section>` elements improves accessibility and provides clear content grouping for complex warehouse operations pages.
+
+**Remaining Work in Warehouse Module:**
+- None identified — the dashboard is now well-structured with clear visual hierarchy
+
+**Applicability to Other Modules:**
+
+- **Any Dashboard with Sidebar + Main Content**: The section header pattern works well for pages with sidebar navigation and multiple main content areas.
+- **Operations/Inventory Modules**: Similar improvements could be applied to other warehouse-related pages (receiving, shipments, audits).
+- **Any Page with Multiple Sections**: Apply section headers, separators, and semantic structure.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/warehouse/page.tsx` - Added Separator, section headers, semantic sections, improved spacing
+
+---
+
+### 2.33 Phase 2 Completion Criteria
 
 Phase 2 is complete when:
 
