@@ -312,24 +312,23 @@ export default function AllergenManagementPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Allergen Management</h1>
-          <p className="text-muted-foreground">
-            Manage allergen warnings and dietary restrictions for events and
-            dishes
-          </p>
-        </div>
+    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+      {/* Page Header */}
+      <div className="space-y-0.5">
+        <h1 className="text-3xl font-bold tracking-tight">Allergen Management</h1>
+        <p className="text-muted-foreground">
+          Manage allergen warnings and dietary restrictions for events and dishes
+        </p>
       </div>
 
       <Separator />
 
-      <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+      {/* Search Section */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">
           Search
         </h2>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <SearchIcon className="size-4 text-muted-foreground" />
           <Input
             className="w-64"
@@ -345,8 +344,9 @@ export default function AllergenManagementPage() {
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">
+        /* Allergen Information Section */
+        <section className="space-y-4">
+          <h2 className="text-sm font-medium text-muted-foreground">
             Allergen Information
           </h2>
           <Tabs className="space-y-4" defaultValue="warnings">
