@@ -2,9 +2,8 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
 
 const communications = [
   {
@@ -45,49 +44,52 @@ const statusVariant: Record<string, "destructive" | "secondary" | "outline"> = {
 };
 
 const CrmCommunicationsPage = () => (
-  <div className="space-y-6">
+  <div className="space-y-8">
     <div>
-      <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-        CRM
-      </p>
-      <h1 className="text-2xl font-semibold">Communications Timeline</h1>
+      <h1 className="text-3xl font-bold tracking-tight">
+        Communications Timeline
+      </h1>
       <p className="text-sm text-muted-foreground">
         Maintain a single source of truth for client, venue, and command
         updates.
       </p>
     </div>
 
-    <Card>
-      <CardHeader>
-        <CardTitle>Recent Touchpoints</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {communications.map((record) => (
-          <div
-            className="rounded-lg border border-border/60 px-4 py-3"
-            key={`${record.client}-${record.time}`}
-          >
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <p className="text-sm font-semibold">{record.client}</p>
-                <p className="text-xs text-muted-foreground">
-                  {record.channel}
-                </p>
+    <Separator />
+
+    <section>
+      <h2 className="text-sm font-medium text-muted-foreground">
+        Recent Touchpoints
+      </h2>
+      <Card className="mt-2">
+        <CardContent className="space-y-4 pt-6">
+          {communications.map((record) => (
+            <div
+              className="rounded-lg border border-border/60 px-4 py-3"
+              key={`${record.client}-${record.time}`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold">{record.client}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {record.channel}
+                  </p>
+                </div>
+                <Badge variant={statusVariant[record.status] ?? "outline"}>
+                  {record.status}
+                </Badge>
               </div>
-              <Badge variant={statusVariant[record.status] ?? "outline"}>
-                {record.status}
-              </Badge>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {record.summary}
+              </p>
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                {record.time}
+              </p>
             </div>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {record.summary}
-            </p>
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-              {record.time}
-            </p>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
+          ))}
+        </CardContent>
+      </Card>
+    </section>
   </div>
 );
 
