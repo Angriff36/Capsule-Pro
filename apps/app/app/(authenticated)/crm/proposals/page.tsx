@@ -5,6 +5,7 @@
  */
 
 import { Button } from "@repo/design-system/components/ui/button";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import { Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -42,6 +43,8 @@ export default async function ProposalsPage({
           </Link>
         </Button>
       </div>
+
+      <Separator />
 
       <ProposalsClient
         initialClientId={clientId}

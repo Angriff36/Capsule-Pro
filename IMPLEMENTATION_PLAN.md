@@ -2275,8 +2275,8 @@ CRM Communications Page component (`apps/app/app/(authenticated)/crm/communicati
 5. **Semantic Sections Provide Better Structure**: Using semantic `<section>` elements improves accessibility and provides clear content grouping.
 
 **Remaining Work in CRM Module:**
-- CRM Proposals page may need similar improvements (may only need Separator)
-- Other CRM pages (venues new/edit, contacts new/edit) may need similar improvements
+- ~~CRM Proposals page may need similar improvements (may only need Separator)~~ **COMPLETED** (see 2.45 below)
+- Other CRM pages (venues new/edit, contacts new/edit) may need similar improvements but are lower priority
 
 **Applicability to Other Modules:**
 
@@ -2286,6 +2286,67 @@ CRM Communications Page component (`apps/app/app/(authenticated)/crm/communicati
 
 **Files Modified:**
 - `apps/app/app/(authenticated)/crm/communications/page.tsx` - Added Separator, section header, semantic section, improved spacing, page title styling, import cleanup
+
+---
+
+### 2.45 Completed UI Improvements (CRM Proposals Page)
+
+**Iteration: CRM Proposals Page Visual Hierarchy Enhancement**
+
+CRM Proposals Page components (`apps/app/app/(authenticated)/crm/proposals/page.tsx` and `apps/app/app/(authenticated)/crm/proposals/components/proposals-client.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Improvements Implemented:**
+
+1. **Page Header Separator**
+   - Added `<Separator />` component between page header and main content for clear visual break
+   - Consistent with other CRM pages (CRM Venues, CRM Communications) and all dashboard improvements
+
+2. **Section-Based Organization**
+   - Added semantic `<section>` elements with descriptive headers for each major content area
+   - Each section gets its own header with consistent styling: `text-sm font-medium text-muted-foreground`
+   - Clear visual separation: Filters → Proposals
+
+3. **Component Structure**
+   - Changed main content spacing to `space-y-8` for better breathing room and visual rhythm
+   - Section headers provide mental model of page structure
+   - Filters section now has proper section header ("Filters")
+   - Proposals section now has section header with dynamic count ("Proposals ({total})")
+
+4. **Icon Sizing Consistency**
+   - Changed icon sizes from `h-4 w-4` to `size-4` for consistency with other page improvements
+   - Changed icon size from `h-12 w-12` to `size-12` for empty state icon
+   - Maintains visual consistency across the platform
+
+5. **Semantic HTML Structure**
+   - Wrapped major content areas in semantic `<section>` elements with descriptive headers
+   - Improved accessibility and document structure
+   - Clear visual separation between different content areas
+
+**Key Learnings:**
+
+1. **Section Headers Work for List Pages with Filters**: Even on data-heavy list pages with filters and tables, adding section headers immediately gives users a mental model of the page structure.
+
+2. **Dynamic Count in Section Header**: Including the total count in the section header ("Proposals (42)") provides useful context without cluttering the main view, matching the pattern established in Scheduling Shifts and Scheduling Budgets pages.
+
+3. **Separator After Page Header**: Adding Separator after the page header creates visual breathing room similar to other CRM page improvements.
+
+4. **space-y-8 vs space-y-6**: Using `space-y-8` creates better visual rhythm for list pages with dense information.
+
+5. **Icon Sizing Consistency**: Using `size-4` instead of `h-4 w-4` provides consistent sizing across all components and follows the established design system patterns.
+
+**Remaining Work in CRM Module:**
+- None identified — all major CRM pages (Clients, Venues, Communications, Proposals) now have consistent visual hierarchy
+- Other CRM pages (new/edit forms, detail views) may need similar improvements but are lower priority
+
+**Applicability to Other Modules:**
+
+- **Any List/Filter/Table Page**: The section header pattern works well for pages with filters and tables across all modules.
+- **Any Page with Multiple Sections**: Apply section headers, separators, and semantic structure.
+- **All CRM Pages**: Now follow consistent patterns established in this iteration.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/crm/proposals/page.tsx` - Added Separator, improved import
+- `apps/app/app/(authenticated)/crm/proposals/components/proposals-client.tsx` - Added Separator, section headers, semantic sections, improved spacing, icon sizing
 
 ---
 

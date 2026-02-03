@@ -18,6 +18,7 @@ import {
 } from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -403,7 +404,7 @@ export function ProposalsClient({
         const date = row.original.eventDate;
         return date ? (
           <div className="flex items-center gap-2 text-sm">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Calendar className="size-4 text-muted-foreground" />
             {format(new Date(date), "MMM d, yyyy")}
           </div>
         ) : (
@@ -430,7 +431,7 @@ export function ProposalsClient({
         const total = row.original.total;
         return total ? (
           <div className="flex items-center gap-2 text-sm">
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <DollarSign className="size-4 text-muted-foreground" />
             {total.toLocaleString("en-US", {
               minimumFractionDigits: 0,
               maximumFractionDigits: 0,
@@ -461,7 +462,7 @@ export function ProposalsClient({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="icon" variant="ghost">
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal className="size-4" />
                 <span className="sr-only">Open menu</span>
               </Button>
             </DropdownMenuTrigger>
@@ -469,13 +470,13 @@ export function ProposalsClient({
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem asChild>
                 <Link href={`/crm/proposals/${proposal.id}`}>
-                  <View className="mr-2 h-4 w-4" />
+                  <View className="mr-2 size-4" />
                   View Details
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href={`/crm/proposals/${proposal.id}/edit`}>
-                  <Edit className="mr-2 h-4 w-4" />
+                  <Edit className="mr-2 size-4" />
                   Edit Proposal
                 </Link>
               </DropdownMenuItem>
@@ -484,14 +485,14 @@ export function ProposalsClient({
                   disabled={isSending}
                   onClick={() => handleSendProposal(proposal)}
                 >
-                  <Send className="mr-2 h-4 w-4" />
+                  <Send className="mr-2 size-4" />
                   Send to Client
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem
                 onClick={() => handleDuplicateProposal(proposal)}
               >
-                <Copy className="mr-2 h-4 w-4" />
+                <Copy className="mr-2 size-4" />
                 Duplicate
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -499,7 +500,7 @@ export function ProposalsClient({
                 className="text-destructive"
                 onClick={() => handleDeleteClick(proposal)}
               >
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 className="mr-2 size-4" />
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -516,37 +517,50 @@ export function ProposalsClient({
   });
 
   return (
-    <>
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2 flex-1">
-          <Input
-            className="max-w-sm"
-            onChange={(e) => handleSearchChange(e.target.value)}
-            onKeyDown={handleSearchKeyPress}
-            placeholder="Search proposals..."
-            value={searchInput}
-          />
-          <Select onValueChange={handleStatusChange} value={statusFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All Statuses</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="sent">Sent</SelectItem>
-              <SelectItem value="viewed">Viewed</SelectItem>
-              <SelectItem value="accepted">Accepted</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="expired">Expired</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button onClick={updateFilters} variant="outline">
-            Apply Filters
-          </Button>
+    <div className="space-y-8">
+      {/* Filters Section */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-medium text-muted-foreground">Filters</h2>
         </div>
-      </div>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2 flex-1">
+            <Input
+              className="max-w-sm"
+              onChange={(e) => handleSearchChange(e.target.value)}
+              onKeyDown={handleSearchKeyPress}
+              placeholder="Search proposals..."
+              value={searchInput}
+            />
+            <Select onValueChange={handleStatusChange} value={statusFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="sent">Sent</SelectItem>
+                <SelectItem value="viewed">Viewed</SelectItem>
+                <SelectItem value="accepted">Accepted</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="expired">Expired</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button onClick={updateFilters} variant="outline">
+              Apply Filters
+            </Button>
+          </div>
+        </div>
+      </section>
 
-      <div className="rounded-md border">
+      {/* Proposals Table Section */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Proposals ({pagination.total})
+          </h2>
+        </div>
+        <div className="rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -575,7 +589,7 @@ export function ProposalsClient({
               <TableRow>
                 <TableCell className="text-center" colSpan={columns.length}>
                   <div className="flex flex-col items-center gap-2 py-8">
-                    <FileText className="h-12 w-12 text-muted-foreground" />
+                    <FileText className="size-12 text-muted-foreground" />
                     <p className="text-muted-foreground">No proposals found</p>
                     <Button asChild variant="outline">
                       <Link href="/crm/proposals/new">
@@ -633,28 +647,30 @@ export function ProposalsClient({
           </div>
         </div>
       )}
+      </section>
+    </div>
 
-      <AlertDialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Proposal?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete &quot;{proposalToDelete?.title}
-              &quot;? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground"
-              disabled={isDeleting}
-              onClick={handleDeleteConfirm}
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    <AlertDialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Proposal?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete &quot;{proposalToDelete?.title}
+            &quot;? This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-destructive text-destructive-foreground"
+            disabled={isDeleting}
+            onClick={handleDeleteConfirm}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </>
   );
 }
