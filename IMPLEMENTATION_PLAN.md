@@ -1367,8 +1367,8 @@ Scheduling Shifts Page component (`apps/app/app/(authenticated)/scheduling/shift
 
 **Applicability to Other Modules:**
 
-- **Any List/Filter/Table Page**: The section header pattern works well for pages with filters and tables (schedule availability, time-off, budgets).
-- **Scheduling Module**: Other scheduling pages (availability, time-off, budgets) could benefit from similar section-based organization.
+- **Any List/Filter/Table Page**: The section header pattern works well for pages with filters and tables.
+- **Scheduling Module**: **COMPLETED** - All major scheduling pages (Dashboard, Shifts, Budgets, Availability, Time-Off) now use consistent section-based organization.
 - **Any Page with Native Elements**: The pattern established here should be applied consistently across all list/filter pages.
 
 **Files Modified:**
@@ -1788,7 +1788,68 @@ Inventory Stock Levels Page component (`apps/app/app/(authenticated)/inventory/l
 
 ---
 
-### 2.35 Phase 2 Completion Criteria
+### 2.35 Completed UI Improvements (Scheduling Availability & Time-Off Pages)
+
+**Iteration: Scheduling Availability & Time-Off Pages Visual Hierarchy Enhancement**
+
+Scheduling Availability Page (`apps/app/app/(authenticated)/scheduling/availability/components/availability-client.tsx`) and Time-Off Page (`apps/app/app/(authenticated)/scheduling/time-off/components/time-off-client.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Improvements Implemented:**
+
+1. **Page Header Separator**
+   - Added `<Separator />` component between page header and main content for clear visual break
+   - Consistent with other scheduling pages (Scheduling Dashboard, Shifts, Budgets) and dashboard improvements
+
+2. **Section-Based Organization**
+   - Added semantic `<section>` elements with descriptive headers for each major content area
+   - Each section gets its own header with consistent styling: `text-sm font-medium text-muted-foreground`
+   - Availability page: Clear visual separation between Filters → Availability sections
+   - Time-Off page: Clear visual separation between Filters → Time Off Requests sections
+
+3. **Component Structure**
+   - Changed main content spacing from `gap-6` to `gap-8` for better breathing room and visual rhythm
+   - Section headers provide mental model of page structure
+   - Filters section now has proper section header ("Filters")
+   - Table sections now have section headers with dynamic count ("Availability ({total})", "Time Off Requests ({total})")
+
+4. **Icon Sizing Consistency**
+   - Changed icon sizes from `h-4 w-4` to `size-4` for consistency with other page improvements
+   - Changed loader icon size from `h-8 w-8` to `size-8` for consistency
+   - Maintains visual consistency across the platform
+
+5. **Semantic HTML Structure**
+   - Wrapped major content areas in semantic `<section>` elements with descriptive headers
+   - Improved accessibility and document structure
+   - Clear visual separation between different content areas
+
+**Key Learnings:**
+
+1. **Section Headers Work for List Pages with Filters**: Even on data-heavy list pages with multiple filters and tables, adding section headers immediately gives users a mental model of the page structure.
+
+2. **Dynamic Count in Section Header**: Including the total count in the section header ("Availability (42)", "Time Off Requests (24)") provides useful context without cluttering the main view, matching the pattern established in Scheduling Shifts page.
+
+3. **Separator After Page Header**: Adding Separator after the page header creates visual breathing room similar to other scheduling page improvements.
+
+4. **space-y-8 vs space-y-6**: Increasing spacing from 6 to 8 creates better visual rhythm for list pages with dense information.
+
+5. **Icon Sizing Consistency**: Using `size-4` and `size-8` instead of `h-4 w-4` and `h-8 w-8` provides consistent sizing across all components and follows the established design system patterns.
+
+**Remaining Work in Scheduling Module:**
+- None identified — all major scheduling pages (Dashboard, Shifts, Budgets, Availability, Time-Off) now have consistent visual hierarchy
+
+**Applicability to Other Modules:**
+
+- **Any List/Filter/Table Page**: The section header pattern works well for pages with filters and tables across all modules.
+- **Any Page with Multiple Sections**: Apply section headers, separators, and semantic structure.
+- **All Scheduling Pages**: Now follow consistent patterns established in this iteration.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/scheduling/availability/components/availability-client.tsx` - Added Separator, section headers, semantic sections, improved spacing, icon sizing
+- `apps/app/app/(authenticated)/scheduling/time-off/components/time-off-client.tsx` - Added Separator, section headers, semantic sections, improved spacing, icon sizing
+
+---
+
+### 2.36 Phase 2 Completion Criteria
 
 Phase 2 is complete when:
 

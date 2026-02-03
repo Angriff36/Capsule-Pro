@@ -26,6 +26,7 @@ import {
 } from "@tanstack/react-table";
 import { FilterIcon, Loader2Icon, PlusIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getLocations } from "../../shifts/actions";
@@ -252,7 +253,7 @@ export function AvailabilityClient() {
   });
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -262,14 +263,20 @@ export function AvailabilityClient() {
           </p>
         </div>
         <Button onClick={() => setCreateModalOpen(true)}>
-          <PlusIcon className="h-4 w-4 mr-2" />
+          <PlusIcon className="size-4 mr-2" />
           New Availability
         </Button>
       </div>
 
+      <Separator />
+
       {/* Filters */}
-      <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
-        <FilterIcon className="h-4 w-4 text-muted-foreground" />
+      <section>
+        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+          Filters
+        </h2>
+        <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
+        <FilterIcon className="size-4 text-muted-foreground" />
         <Select
           onValueChange={(value) => handleFilterChange("employeeId", value)}
           value={filters.employeeId}
@@ -348,10 +355,17 @@ export function AvailabilityClient() {
             Clear filters
           </Button>
         )}
-      </div>
+        </div>
+      </section>
 
       {/* Table */}
-      <div className="border rounded-lg">
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Availability ({pagination.total})
+          </h2>
+        </div>
+        <div className="border rounded-lg">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -376,7 +390,7 @@ export function AvailabilityClient() {
                   className="h-24 text-center"
                   colSpan={columns.length}
                 >
-                  <Loader2Icon className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+                  <Loader2Icon className="size-8 animate-spin mx-auto text-muted-foreground" />
                 </TableCell>
               </TableRow>
             ) : availability.length === 0 ? (
@@ -409,7 +423,8 @@ export function AvailabilityClient() {
             )}
           </TableBody>
         </Table>
-      </div>
+        </div>
+      </section>
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
