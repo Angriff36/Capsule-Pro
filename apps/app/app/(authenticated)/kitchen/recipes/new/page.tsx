@@ -3,6 +3,15 @@ import { database, Prisma } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -36,221 +45,202 @@ const NewRecipePage = async () => {
           <Link href="/kitchen/recipes">Back to recipes</Link>
         </Button>
       </Header>
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         <form
           action={createRecipe}
-          className="grid gap-6 lg:grid-cols-3"
+          className="space-y-8"
           encType="multipart/form-data"
         >
-          <Card className="lg:col-span-2">
-            <CardContent className="space-y-6 p-6">
-              <div className="grid gap-4 md:grid-cols-2">
+          {/* Recipe Information Section */}
+          <section className="space-y-4">
+            <h2 className="text-sm font-medium text-muted-foreground">
+              Recipe Information
+            </h2>
+            <Card>
+              <CardContent className="space-y-6 p-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Recipe name</Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      placeholder="Herb Crusted Rack of Lamb"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Input
+                      id="category"
+                      name="category"
+                      placeholder="Main course"
+                    />
+                  </div>
+                </div>
                 <div className="space-y-2">
-                  <label className="font-medium text-sm" htmlFor="name">
-                    Recipe name
-                  </label>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    placeholder="Short summary for the kitchen team."
+                    rows={4}
+                  />
+                </div>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="yieldQuantity">Yield quantity</Label>
+                    <Input
+                      id="yieldQuantity"
+                      min="1"
+                      name="yieldQuantity"
+                      placeholder="4"
+                      type="number"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="yieldUnit">Yield unit</Label>
+                    <Select
+                      defaultValue={units[0]?.code ?? "ea"}
+                      name="yieldUnit"
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select unit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {units.map((unit) => (
+                          <SelectItem key={unit.id} value={unit.code}>
+                            {unit.code} - {unit.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="yieldDescription">Yield notes</Label>
+                    <Input
+                      id="yieldDescription"
+                      name="yieldDescription"
+                      placeholder="Serves 4"
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="prepTimeMinutes">Prep time (min)</Label>
+                    <Input
+                      id="prepTimeMinutes"
+                      min="0"
+                      name="prepTimeMinutes"
+                      type="number"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cookTimeMinutes">Cook time (min)</Label>
+                    <Input
+                      id="cookTimeMinutes"
+                      min="0"
+                      name="cookTimeMinutes"
+                      type="number"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="restTimeMinutes">Rest time (min)</Label>
+                    <Input
+                      id="restTimeMinutes"
+                      min="0"
+                      name="restTimeMinutes"
+                      type="number"
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="difficultyLevel">Difficulty (1-5)</Label>
+                    <Input
+                      id="difficultyLevel"
+                      max="5"
+                      min="1"
+                      name="difficultyLevel"
+                      type="number"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tags">Tags (comma separated)</Label>
+                    <Input id="tags" name="tags" placeholder="GF, seasonal" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+
+          {/* Ingredients & Steps Section */}
+          <section className="space-y-4">
+            <h2 className="text-sm font-medium text-muted-foreground">
+              Ingredients & Steps
+            </h2>
+            <Card>
+              <CardContent className="space-y-6 p-6">
+                <div className="space-y-2">
+                  <Label htmlFor="ingredients">Ingredients (one per line)</Label>
+                  <Textarea
+                    id="ingredients"
+                    name="ingredients"
+                    placeholder="2 lb rack of lamb"
+                    rows={6}
+                  />
+                  <p className="text-muted-foreground text-xs">
+                    Tip: start with quantity and unit, then ingredient name.
+                  </p>
+                </div>
+                <Separator />
+                <div className="space-y-2">
+                  <Label htmlFor="steps">Steps (one per line)</Label>
+                  <Textarea
+                    id="steps"
+                    name="steps"
+                    placeholder="Trim the racks and season generously."
+                    rows={6}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+
+          {/* Media & Notes Section */}
+          <section className="space-y-4">
+            <h2 className="text-sm font-medium text-muted-foreground">
+              Media & Notes
+            </h2>
+            <Card>
+              <CardContent className="space-y-6 p-6">
+                <div className="space-y-2">
+                  <Label htmlFor="imageFile">Hero image</Label>
                   <Input
-                    id="name"
-                    name="name"
-                    placeholder="Herb Crusted Rack of Lamb"
-                    required
+                    accept="image/*"
+                    id="imageFile"
+                    name="imageFile"
+                    type="file"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="font-medium text-sm" htmlFor="category">
-                    Category
-                  </label>
-                  <Input
-                    id="category"
-                    name="category"
-                    placeholder="Main course"
+                  <Label htmlFor="notes">Kitchen notes</Label>
+                  <Textarea
+                    id="notes"
+                    name="notes"
+                    placeholder="Share plating or storage notes for staff."
+                    rows={5}
                   />
                 </div>
-              </div>
-              <div className="space-y-2">
-                <label className="font-medium text-sm" htmlFor="description">
-                  Description
-                </label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  placeholder="Short summary for the kitchen team."
-                  rows={4}
-                />
-              </div>
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="space-y-2">
-                  <label
-                    className="font-medium text-sm"
-                    htmlFor="yieldQuantity"
-                  >
-                    Yield quantity
-                  </label>
-                  <Input
-                    id="yieldQuantity"
-                    min="1"
-                    name="yieldQuantity"
-                    placeholder="4"
-                    type="number"
-                  />
+                <Separator />
+                <div className="flex flex-col gap-2">
+                  <Button type="submit">Create recipe</Button>
+                  <Button asChild type="button" variant="outline">
+                    <Link href="/kitchen/recipes">Cancel</Link>
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <label className="font-medium text-sm" htmlFor="yieldUnit">
-                    Yield unit
-                  </label>
-                  <select
-                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-foreground text-sm"
-                    defaultValue={units[0]?.code ?? "ea"}
-                    id="yieldUnit"
-                    name="yieldUnit"
-                  >
-                    {units.map((unit) => (
-                      <option key={unit.id} value={unit.code}>
-                        {unit.code} - {unit.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label
-                    className="font-medium text-sm"
-                    htmlFor="yieldDescription"
-                  >
-                    Yield notes
-                  </label>
-                  <Input
-                    id="yieldDescription"
-                    name="yieldDescription"
-                    placeholder="Serves 4"
-                  />
-                </div>
-              </div>
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="space-y-2">
-                  <label
-                    className="font-medium text-sm"
-                    htmlFor="prepTimeMinutes"
-                  >
-                    Prep time (min)
-                  </label>
-                  <Input
-                    id="prepTimeMinutes"
-                    min="0"
-                    name="prepTimeMinutes"
-                    type="number"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    className="font-medium text-sm"
-                    htmlFor="cookTimeMinutes"
-                  >
-                    Cook time (min)
-                  </label>
-                  <Input
-                    id="cookTimeMinutes"
-                    min="0"
-                    name="cookTimeMinutes"
-                    type="number"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    className="font-medium text-sm"
-                    htmlFor="restTimeMinutes"
-                  >
-                    Rest time (min)
-                  </label>
-                  <Input
-                    id="restTimeMinutes"
-                    min="0"
-                    name="restTimeMinutes"
-                    type="number"
-                  />
-                </div>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label
-                    className="font-medium text-sm"
-                    htmlFor="difficultyLevel"
-                  >
-                    Difficulty (1-5)
-                  </label>
-                  <Input
-                    id="difficultyLevel"
-                    max="5"
-                    min="1"
-                    name="difficultyLevel"
-                    type="number"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="font-medium text-sm" htmlFor="tags">
-                    Tags (comma separated)
-                  </label>
-                  <Input id="tags" name="tags" placeholder="GF, seasonal" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="font-medium text-sm" htmlFor="ingredients">
-                  Ingredients (one per line)
-                </label>
-                <Textarea
-                  id="ingredients"
-                  name="ingredients"
-                  placeholder="2 lb rack of lamb"
-                  rows={6}
-                />
-                <p className="text-muted-foreground text-xs">
-                  Tip: start with quantity and unit, then ingredient name.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <label className="font-medium text-sm" htmlFor="steps">
-                  Steps (one per line)
-                </label>
-                <Textarea
-                  id="steps"
-                  name="steps"
-                  placeholder="Trim the racks and season generously."
-                  rows={6}
-                />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="space-y-6 p-6">
-              <div className="space-y-2">
-                <label className="font-medium text-sm" htmlFor="imageFile">
-                  Hero image
-                </label>
-                <Input
-                  accept="image/*"
-                  id="imageFile"
-                  name="imageFile"
-                  type="file"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="font-medium text-sm" htmlFor="notes">
-                  Kitchen notes
-                </label>
-                <Textarea
-                  id="notes"
-                  name="notes"
-                  placeholder="Share plating or storage notes for staff."
-                  rows={5}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Button type="submit">Create recipe</Button>
-                <Button asChild type="button" variant="outline">
-                  <Link href="/kitchen/recipes">Cancel</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </section>
         </form>
       </div>
     </>
