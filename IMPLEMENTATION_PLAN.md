@@ -2056,47 +2056,69 @@ Warehouse Receiving Page component (`apps/app/app/(authenticated)/warehouse/rece
 
 **Iteration: Warehouse Audits Page Visual Hierarchy Enhancement**
 
-Warehouse Audits Page component (`apps/app/app/(authenticated)/warehouse/audits/page.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+Warehouse Audits Page component (`apps/app/app/(authenticated)/warehouse/audits/page.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture with focus on card-level details and spacing consistency.
 
 **Improvements Implemented:**
 
-1. **Page Header Separator**
-   - Added `<Separator />` component between page header and main content for clear visual break
-   - Consistent with other warehouse pages (Warehouse Dashboard, Shipments, Receiving) and all dashboard improvements
+1. **Page Structure Foundation**
+   - Page already has good structure with proper page header, Separator component, and semantic `<section>` element
+   - Page header uses `text-3xl font-bold tracking-tight` for consistent title styling
+   - Descriptive paragraph provides clear context for page purpose
 
-2. **Section-Based Organization**
-   - Added semantic `<section>` element with descriptive header for the audit rounds content
+2. **Grid Spacing Enhancement**
+   - Improved grid spacing from `gap-4` to `gap-6` for better visual rhythm
+   - Creates more breathing room between audit cards in the grid layout
+   - Consistent with spacing patterns used in other improved warehouse pages
+
+3. **CardDescription for Status Badge Placement**
+   - Added CardDescription component to CardHeader for status badge placement
+   - Status badge moved from CardContent to CardHeader for better visual hierarchy
+   - Badge uses appropriate variants (secondary for "In progress", outline for "Scheduled"/"Planned")
+   - Status immediately visible without needing to scan card content
+
+4. **CardContent Spacing Improvement**
+   - Changed CardContent spacing from `space-y-2` to `space-y-3` for better breathing room
+   - Improved visual separation between audit detail fields
+   - Creates better rhythm when scanning multiple audit cards
+
+5. **Typography Consistency Improvements**
+   - Replaced `<strong>` HTML tags with Tailwind `font-medium` utility class for consistency
+   - Labels now use `text-muted-foreground` for proper visual hierarchy
+   - Values use `font-medium` for emphasis without being too heavy
+   - Consistent `text-sm` sizing throughout all card content fields
+   - Maintains visual balance while improving scannability
+
+6. **Semantic Structure**
    - Section header uses consistent styling: `text-sm font-medium text-muted-foreground`
-
-3. **Page Title Styling**
-   - Changed from `text-2xl font-semibold` to `text-3xl font-bold tracking-tight`
-   - Consistent with other page improvements across the platform
-   - Removed redundant uppercase tracking-wide subtitle for cleaner hierarchy
-
-4. **Component Structure**
-   - Changed main content spacing from `space-y-6` to `space-y-8` for better breathing room and visual rhythm
-   - Section header provides mental model of page structure
+   - Grid layout properly uses semantic `grid gap-6 md:grid-cols-2` pattern
+   - Each audit card properly structured with CardHeader, CardDescription, CardContent
 
 **Key Learnings:**
 
-1. **Section Headers Work for Simple Pages**: Even on simpler listing pages, adding a section header gives users clear context about the content they're viewing.
+1. **CardDescription for Status/Key Info**: Placing status badges or key information in CardDescription (within CardHeader) improves scannability. Users can see critical status indicators without reading the full card content.
 
-2. **Separator After Page Header**: Adding Separator after the page header creates visual breathing room similar to other page improvements.
+2. **Gap-6 for Grid Spacing**: Increasing grid gap from 4 to 6 creates better visual rhythm and prevents cards from feeling cramped. This is especially important for cards with multiple data points.
 
-3. **Cleaner Page Structure**: Removing redundant subtitles (like "Warehouse" in uppercase) reduces visual noise and focuses users on the main content.
+3. **Space-y-3 for CardContent**: Increasing internal card spacing from space-y-2 to space-y-3 creates better breathing room for dense information displays. The difference is subtle but improves readability.
 
-4. **space-y-8 vs space-y-6**: Increasing spacing from 6 to 8 creates better visual rhythm for pages with multiple sections.
+4. **Font-Medium Over Strong Tags**: Using Tailwind's `font-medium` class instead of `<strong>` HTML tags provides more consistent styling and better aligns with design system patterns. The weight is lighter than bold but still provides emphasis.
+
+5. **Text-Muted-Foreground for Labels**: Using `text-muted-foreground` for labels creates proper visual hierarchy - labels recede slightly while values (with `font-medium`) stand out. This pattern should be applied consistently across all detail cards.
+
+6. **Text-Sm Consistency**: Maintaining consistent `text-sm` sizing for all card content fields creates visual harmony and prevents inconsistent scaling across different pages.
 
 **Remaining Work in Warehouse Module:**
 - None identified — all major warehouse pages (Dashboard, Shipments, Receiving, Audits) now have consistent visual hierarchy
 
 **Applicability to Other Modules:**
 
-- **Any Simple Listing Page**: The section header pattern works well for pages displaying lists of items (tasks, audits, reviews).
-- **Any Page with Multiple Sections**: Apply section headers, separators, and semantic structure.
+- **Any Card-Based List Page**: The CardDescription pattern for status badges works well for any card displaying status, priority, or other key metadata.
+- **Any Grid Layout**: The gap-6 spacing pattern should be applied to all grid layouts to prevent cramped cards.
+- **Any Detail Card**: The space-y-3 spacing, font-medium values, and text-muted-foreground labels pattern should be applied consistently to all cards displaying detail information.
+- **Any Card with Multiple Data Points**: When cards have multiple fields to display, proper spacing and typography hierarchy are critical for scannability.
 
 **Files Modified:**
-- `apps/app/app/(authenticated)/warehouse/audits/page.tsx` - Added Separator, section header, semantic section, improved spacing, page title styling
+- `apps/app/app/(authenticated)/warehouse/audits/page.tsx` - Improved grid spacing (gap-4 → gap-6), added CardDescription for status badge, improved CardContent spacing (space-y-2 → space-y-3), enhanced typography consistency (strong → font-medium, text-muted-foreground labels)
 
 ---
 

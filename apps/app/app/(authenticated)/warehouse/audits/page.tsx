@@ -2,6 +2,7 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
@@ -55,32 +56,34 @@ const WarehouseAuditsPage = () => (
       <h2 className="text-sm font-medium text-muted-foreground mb-4">
         Scheduled Audit Rounds
       </h2>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
       {auditRounds.map((audit) => (
         <Card key={audit.title}>
           <CardHeader>
             <CardTitle>{audit.title}</CardTitle>
+            <CardDescription>
+              <Badge variant={statusVariant[audit.status] ?? "outline"}>
+                {audit.status}
+              </Badge>
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm text-muted-foreground">
-            <div className="flex items-center justify-between">
-              <span>Location</span>
-              <strong>{audit.location}</strong>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Location</span>
+              <span className="font-medium">{audit.location}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span>Scheduled</span>
-              <strong>{audit.scheduled}</strong>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Scheduled</span>
+              <span className="font-medium">{audit.scheduled}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span>Variance</span>
-              <strong>{audit.variance}</strong>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Variance</span>
+              <span className="font-medium">{audit.variance}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span>Inspector</span>
-              <strong>{audit.inspector}</strong>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Inspector</span>
+              <span className="font-medium">{audit.inspector}</span>
             </div>
-            <Badge variant={statusVariant[audit.status] ?? "outline"}>
-              {audit.status}
-            </Badge>
           </CardContent>
         </Card>
       ))}
