@@ -80,44 +80,46 @@ export const WithContent: Story = {
  * Collapsible section with empty state
  */
 export const EmptyState: Story = {
-  args: {
-    icon: DollarSignIcon,
-    title: "Event Budget",
-    subtitle: "No budget created yet",
-    iconColor: "text-green-500",
-    defaultOpen: true,
-    triggerText: "View budget",
-    showEmptyState: true,
-    emptyState: {
-      icon: DollarSignIcon,
-      title: "No budget created for this event",
-      description: "Create a budget to track costs and manage event finances",
-      actionLabel: "Create Budget",
-      onAction: () => console.log("Create budget clicked"),
-    },
-    children: null,
-  },
+  render: () => (
+    <CollapsibleSectionBlock
+      icon={DollarSignIcon}
+      title="Event Budget"
+      subtitle="No budget created yet"
+      iconColor="text-green-500"
+      defaultOpen
+      triggerText="View budget"
+      showEmptyState
+      emptyState={{
+        icon: DollarSignIcon,
+        title: "No budget created for this event",
+        description: "Create a budget to track costs and manage event finances",
+        actionLabel: "Create Budget",
+        onAction: () => console.log("Create budget clicked"),
+      }}
+    />
+  ),
 };
 
 /**
  * Collapsible section with no subtitle
  */
 export const NoSubtitle: Story = {
-  args: {
-    icon: UsersIcon,
-    title: "Guest List",
-    iconColor: "text-blue-500",
-    defaultOpen: false,
-    triggerText: "View guests",
-    showEmptyState: true,
-    emptyState: {
-      title: "No guests added yet",
-      description: "Add guests to manage RSVPs and dietary restrictions",
-      actionLabel: "Add Guest",
-      onAction: () => console.log("Add guest clicked"),
-    },
-    children: null,
-  },
+  render: () => (
+    <CollapsibleSectionBlock
+      icon={UsersIcon}
+      title="Guest List"
+      iconColor="text-blue-500"
+      defaultOpen={false}
+      triggerText="View guests"
+      showEmptyState
+      emptyState={{
+        title: "No guests added yet",
+        description: "Add guests to manage RSVPs and dietary restrictions",
+        actionLabel: "Add Guest",
+        onAction: () => console.log("Add guest clicked"),
+      }}
+    />
+  ),
 };
 
 /**
@@ -266,7 +268,7 @@ export const WithLoadingState: Story = {
 export const CustomTriggerText: Story = {
   args: {
     icon: DollarSignIcon,
-    title="Event Budget",
+    title: "Event Budget",
     subtitle: "Approved - v2",
     iconColor: "text-green-500",
     defaultOpen: false,
@@ -292,22 +294,23 @@ export const CustomTriggerText: Story = {
  * Empty state without icon
  */
 export const EmptyStateNoIcon: Story = {
-  args: {
-    icon: UsersIcon,
-    title="Prep Tasks",
-    subtitle: "No tasks yet",
-    iconColor: "text-purple-500",
-    defaultOpen: true,
-    triggerText: "View tasks",
-    showEmptyState: true,
-    emptyState: {
-      title: "No prep tasks yet",
-      description: "Generate a task breakdown or add tasks manually",
-      actionLabel: "Generate with AI",
-      onAction: () => console.log("Generate clicked"),
-    },
-    children: null,
-  },
+  render: () => (
+    <CollapsibleSectionBlock
+      icon={UsersIcon}
+      title="Prep Tasks"
+      subtitle="No tasks yet"
+      iconColor="text-purple-500"
+      defaultOpen
+      triggerText="View tasks"
+      showEmptyState
+      emptyState={{
+        title: "No prep tasks yet",
+        description: "Generate a task breakdown or add tasks manually",
+        actionLabel: "Generate with AI",
+        onAction: () => console.log("Generate clicked"),
+      }}
+    />
+  ),
 };
 
 /**

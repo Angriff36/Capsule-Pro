@@ -178,16 +178,16 @@ Major visual and structural issues discovered during UI exploration that require
 - ~~Missing standardized dashboard block components~~ **IMPROVED**: Profitability dashboard uses proper section-based organization with standardized card hierarchy
 - ~~Information architecture unclear without clear section breaks~~ **IMPROVED**: Added section headers and Separator for clear visual grouping across both analytics and profitability dashboards
 
-**Design System Components - [IN PROGRESS]:**
+**Design System Components - [COMPLETED]:**
 - ~~Event detail blocks (should replace current ad-hoc layouts)~~ **COMPLETED**: CollapsibleSectionBlock created and 3 sections refactored; SectionHeaderBlock used for AI sections (TaskBreakdownSection, ExecutiveSummarySection, SuggestionsSection)
 - ~~Client profile cards (structured component missing)~~ **COMPLETED**: ClientQuickStatsBlock created and client detail view refactored to use this new block
-- Dashboard widget containers (standardized needed)
-- Information density controllers (collapsible sections, progressive disclosure)
+- ~~Dashboard widget containers (standardized needed)~~ **COMPLETED**: MetricCardBlock created with comprehensive stories
+- ~~Information density controllers (collapsible sections, progressive disclosure)~~ **COMPLETED**: CollapsibleSectionBlock handles progressive disclosure
 
 **Actionable Improvements:**
 1. ~~Implement badge hierarchy system with clear priority levels~~ **COMPLETED**: Event-card, Analytics page, Profitability Dashboard, and Clients Module now use proper badge placement
 2. ~~Create standardized information density patterns with proper spacing~~ **COMPLETED**: Analytics page and Profitability Dashboard demonstrate section-based organization
-3. ~~Develop missing design system block components before continuing new features~~ **IN PROGRESS**: CollapsibleSectionBlock created with stories; consider additional blocks as needed
+3. ~~Develop missing design system block components before continuing new features~~ **COMPLETED**: CollapsibleSectionBlock, SectionHeaderBlock, ClientQuickStatsBlock, and MetricCardBlock created with stories
 4. ~~Apply consistent visual language across all modules~~ **COMPLETED**: Events, Analytics, Profitability Dashboard, and Clients Modules now use consistent patterns (Separators, section headers, card hierarchy)
 5. ~~Implement progressive disclosure for dense information areas~~ **COMPLETED**: TaskCard component now uses proper expandable details with enhanced spacing and visual hierarchy
 
@@ -771,7 +771,72 @@ Created a new reusable `ClientQuickStatsBlock` component in the design system th
 
 ---
 
-### 2.16 Completed UI Improvements (Command Board EventCard Standardization)
+### 2.16 Completed UI Improvements (Design System - MetricCardBlock)
+
+**Iteration: Standardized Dashboard Metric Card Component**
+
+Created a new reusable `MetricCardBlock` component in the design system that captures the common pattern used across all dashboard metric cards, eliminating duplication and ensuring consistent visual hierarchy.
+
+**Component Created:**
+- `packages/design-system/components/blocks/metric-card-block.tsx`
+- `packages/design-system/components/blocks/metric-card-block.stories.tsx`
+
+**Features:**
+- Consistent CardDescription → CardTitle → CardContent hierarchy
+- Support for trend indicators (up/down/neutral with arrow icons)
+- Optional custom value coloring for positive/negative values
+- Flexible detail content (simple text or complex React nodes)
+- Optional size variants for value display (text-xl, text-2xl, text-3xl)
+- Comprehensive Storybook coverage with 12 story variants
+
+**Pattern Standardization:**
+
+The `MetricCardBlock` captures the most common dashboard metric patterns:
+
+1. **Basic Metric**: Description → Value → Detail text
+2. **Trend Metric**: Description → Value → Trend indicator with arrow and detail
+3. **Colored Value Metric**: Description → Colored Value → Variance info
+4. **Multi-line Detail**: Description → Value → Complex content breakdown
+
+**Key Learnings:**
+
+1. **Single Pattern Reduces Duplication**: All dashboards (Analytics, Profitability, CLV, Employee Performance) were implementing the same metric card pattern with slight variations. A single standardized component eliminates this duplication.
+
+2. **Trend Indicators Need Consistent Treatment**: Using `↑` and `↓` symbols with color coding (green/red) provides unambiguous trend communication. The component handles this automatically via the `trend` prop.
+
+3. **Value Coloring is Domain-Specific**: Some metrics need colored values (e.g., green for positive margin, red for negative variance). The `valueColor` prop provides this flexibility without requiring custom card implementations.
+
+4. **Detail Content Flexibility**: Some metrics need multi-line breakdowns (e.g., cost breakdown by category). Supporting both simple string and complex React node for the `detail` prop enables this use case.
+
+5. **Storybook Variants Guide Usage**: With 12 different story variants (DashboardGrid, FocusMetricsGrid, CostAnalysisGrid, etc.), developers can quickly find and adapt the right pattern for their use case.
+
+**Bug Fixes (Pre-existing Issues):**
+
+While implementing this component, discovered and fixed three pre-existing bugs in `collapsible-section-block.stories.tsx`:
+
+1. **Function in args causing serialization error**: Storybook build was failing because `onAction` functions in `args` objects don't serialize properly. Fixed by converting affected stories (`EmptyState`, `NoSubtitle`, `EmptyStateNoIcon`) to use `render` functions instead.
+
+2. **Syntax error in CustomTriggerText story**: Line 271 had `title="Event Budget"` (using `=`) instead of `title: "Event Budget"` (using `:`). This was causing "Invalid shorthand property initializer" error during Storybook build.
+
+**Applicability to Other Modules:**
+
+- **Any Dashboard with Metric Cards**: The pattern is now available for all dashboards (Finance, Kitchen, Employee, etc.) to use consistent metric card displays.
+- **Performance Overview Sections**: Any section displaying KPIs, metrics, or summary statistics can use this component.
+- **Metric Grids**: The `DashboardGrid`, `FocusMetricsGrid`, and `CostAnalysisGrid` story variants demonstrate common grid patterns.
+
+**Remaining Work:**
+- Consider migrating existing dashboard implementations to use `MetricCardBlock` where appropriate
+- The component is ready to use; no additional work needed for the block itself
+
+**Applicability to Other Modules:**
+- **All Dashboard Modules**: Analytics, Profitability, CLV, Employee Performance, and any future dashboards can use this standardized component
+- **Finance Module**: Cost analysis, budget variance, and revenue tracking displays
+- **Kitchen Module**: Performance metrics and efficiency tracking cards
+- **Employee Module**: Performance metrics and productivity tracking displays
+
+---
+
+### 2.17 Completed UI Improvements (Command Board EventCard Standardization)
 
 **Iteration: Command Board EventCard Visual Consistency Enhancement**
 
