@@ -15,6 +15,11 @@ const config: StorybookConfig = {
   stories: [
     "../stories/**/*.mdx",
     "../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+    {
+      directory: "../../packages/design-system/components/blocks",
+      files: "**/*.stories.@(js|jsx|mjs|ts|tsx)",
+      titlePrefix: "Blocks",
+    },
   ],
   addons: [
     getAbsolutePath("@chromatic-com/storybook"),

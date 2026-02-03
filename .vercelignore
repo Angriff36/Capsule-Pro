@@ -1,7 +1,6 @@
 node_modules
 .turbo
 .next
-.git
 __tests__
 test
 test-scripts
