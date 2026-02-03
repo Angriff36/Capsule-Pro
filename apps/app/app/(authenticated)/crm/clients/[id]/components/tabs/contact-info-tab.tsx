@@ -10,6 +10,7 @@ import {
 } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   Building2Icon,
@@ -163,190 +164,251 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
 
   if (isEditing) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Edit Contact Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="company_name">Company Name</Label>
-              <Input
-                id="company_name"
-                onChange={(e) =>
-                  setFormData({ ...formData, company_name: e.target.value })
-                }
-                placeholder="Acme Catering Co."
-                value={formData.company_name}
-              />
-            </div>
-            <div className="space-y-2" />
-            <div className="space-y-2">
-              <Label htmlFor="first_name">First Name</Label>
-              <Input
-                id="first_name"
-                onChange={(e) =>
-                  setFormData({ ...formData, first_name: e.target.value })
-                }
-                placeholder="John"
-                value={formData.first_name}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="last_name">Last Name</Label>
-              <Input
-                id="last_name"
-                onChange={(e) =>
-                  setFormData({ ...formData, last_name: e.target.value })
-                }
-                placeholder="Doe"
-                value={formData.last_name}
-              />
-            </div>
+      <div className="space-y-8">
+        {/* Basic Info Section */}
+        <section>
+          <div className="mb-4 flex items-center gap-2">
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+              Basic Information
+            </p>
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                placeholder="john@example.com"
-                type="email"
-                value={formData.email}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Input
-                id="phone"
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-                placeholder="(555) 123-4567"
-                type="tel"
-                value={formData.phone}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="website">Website</Label>
-            <Input
-              id="website"
-              onChange={(e) =>
-                setFormData({ ...formData, website: e.target.value })
-              }
-              placeholder="https://example.com"
-              type="url"
-              value={formData.website}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Address</Label>
+          <div className="rounded-2xl border bg-card p-6">
             <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="company_name">Company Name</Label>
+                <Input
+                  id="company_name"
+                  onChange={(e) =>
+                    setFormData({ ...formData, company_name: e.target.value })
+                  }
+                  placeholder="Acme Catering Co."
+                  value={formData.company_name}
+                />
+              </div>
+              <div className="space-y-2" />
+              <div className="space-y-2">
+                <Label htmlFor="first_name">First Name</Label>
+                <Input
+                  id="first_name"
+                  onChange={(e) =>
+                    setFormData({ ...formData, first_name: e.target.value })
+                  }
+                  placeholder="John"
+                  value={formData.first_name}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="last_name">Last Name</Label>
+                <Input
+                  id="last_name"
+                  onChange={(e) =>
+                    setFormData({ ...formData, last_name: e.target.value })
+                  }
+                  placeholder="Doe"
+                  value={formData.last_name}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <Separator />
+
+        {/* Contact Details Section */}
+        <section>
+          <div className="mb-4 flex items-center gap-2">
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+              Contact Details
+            </p>
+          </div>
+          <div className="rounded-2xl border bg-card p-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  placeholder="john@example.com"
+                  type="email"
+                  value={formData.email}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
+                  placeholder="(555) 123-4567"
+                  type="tel"
+                  value={formData.phone}
+                />
+              </div>
+            </div>
+            <div className="mt-4 space-y-2">
+              <Label htmlFor="website">Website</Label>
               <Input
+                id="website"
                 onChange={(e) =>
-                  setFormData({ ...formData, addressLine1: e.target.value })
+                  setFormData({ ...formData, website: e.target.value })
                 }
-                placeholder="Address Line 1"
-                value={formData.addressLine1}
-              />
-              <Input
-                onChange={(e) =>
-                  setFormData({ ...formData, addressLine2: e.target.value })
-                }
-                placeholder="Address Line 2"
-                value={formData.addressLine2}
-              />
-              <Input
-                onChange={(e) =>
-                  setFormData({ ...formData, city: e.target.value })
-                }
-                placeholder="City"
-                value={formData.city}
-              />
-              <Input
-                onChange={(e) =>
-                  setFormData({ ...formData, stateProvince: e.target.value })
-                }
-                placeholder="State/Province"
-                value={formData.stateProvince}
-              />
-              <Input
-                onChange={(e) =>
-                  setFormData({ ...formData, postalCode: e.target.value })
-                }
-                placeholder="Postal Code"
-                value={formData.postalCode}
-              />
-              <Input
-                onChange={(e) =>
-                  setFormData({ ...formData, countryCode: e.target.value })
-                }
-                placeholder="Country Code"
-                value={formData.countryCode}
+                placeholder="https://example.com"
+                type="url"
+                value={formData.website}
               />
             </div>
           </div>
+        </section>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="taxId">Tax ID</Label>
-              <Input
-                id="taxId"
+        <Separator />
+
+        {/* Address Section */}
+        <section>
+          <div className="mb-4 flex items-center gap-2">
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+              Address
+            </p>
+          </div>
+          <div className="rounded-2xl border bg-card p-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2 space-y-2">
+                <Label htmlFor="addressLine1">Address Line 1</Label>
+                <Input
+                  id="addressLine1"
+                  onChange={(e) =>
+                    setFormData({ ...formData, addressLine1: e.target.value })
+                  }
+                  placeholder="Street address"
+                  value={formData.addressLine1}
+                />
+              </div>
+              <div className="col-span-2 space-y-2">
+                <Label htmlFor="addressLine2">Address Line 2</Label>
+                <Input
+                  id="addressLine2"
+                  onChange={(e) =>
+                    setFormData({ ...formData, addressLine2: e.target.value })
+                  }
+                  placeholder="Apartment, suite, etc."
+                  value={formData.addressLine2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="city">City</Label>
+                <Input
+                  id="city"
+                  onChange={(e) =>
+                    setFormData({ ...formData, city: e.target.value })
+                  }
+                  placeholder="City"
+                  value={formData.city}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="stateProvince">State/Province</Label>
+                <Input
+                  id="stateProvince"
+                  onChange={(e) =>
+                    setFormData({ ...formData, stateProvince: e.target.value })
+                  }
+                  placeholder="State/Province"
+                  value={formData.stateProvince}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="postalCode">Postal Code</Label>
+                <Input
+                  id="postalCode"
+                  onChange={(e) =>
+                    setFormData({ ...formData, postalCode: e.target.value })
+                  }
+                  placeholder="Postal Code"
+                  value={formData.postalCode}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="countryCode">Country Code</Label>
+                <Input
+                  id="countryCode"
+                  onChange={(e) =>
+                    setFormData({ ...formData, countryCode: e.target.value })
+                  }
+                  placeholder="Country Code"
+                  value={formData.countryCode}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <Separator />
+
+        {/* Additional Info Section */}
+        <section>
+          <div className="mb-4 flex items-center gap-2">
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+              Additional Information
+            </p>
+          </div>
+          <div className="rounded-2xl border bg-card p-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="taxId">Tax ID</Label>
+                <Input
+                  id="taxId"
+                  onChange={(e) =>
+                    setFormData({ ...formData, taxId: e.target.value })
+                  }
+                  placeholder="12-3456789"
+                  value={formData.taxId}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tags">Tags (comma-separated)</Label>
+                <Input
+                  id="tags"
+                  onChange={(e) =>
+                    setFormData({ ...formData, tags: e.target.value })
+                  }
+                  placeholder="vip, repeat, corporate"
+                  value={formData.tags}
+                />
+              </div>
+            </div>
+            <div className="mt-4 space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea
+                id="notes"
                 onChange={(e) =>
-                  setFormData({ ...formData, taxId: e.target.value })
+                  setFormData({ ...formData, notes: e.target.value })
                 }
-                placeholder="12-3456789"
-                value={formData.taxId}
+                placeholder="Additional notes about this client..."
+                rows={3}
+                value={formData.notes}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="tags">Tags (comma-separated)</Label>
-              <Input
-                id="tags"
-                onChange={(e) =>
-                  setFormData({ ...formData, tags: e.target.value })
-                }
-                placeholder="vip, repeat, corporate"
-                value={formData.tags}
-              />
-            </div>
           </div>
+        </section>
 
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              onChange={(e) =>
-                setFormData({ ...formData, notes: e.target.value })
-              }
-              placeholder="Additional notes about this client..."
-              rows={3}
-              value={formData.notes}
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <Button disabled={isLoading} onClick={handleSave}>
-              <CheckIcon className="h-4 w-4 mr-2" />
-              Save
-            </Button>
-            <Button
-              disabled={isLoading}
-              onClick={handleCancel}
-              variant="outline"
-            >
-              <XIcon className="h-4 w-4 mr-2" />
-              Cancel
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Actions */}
+        <div className="flex gap-2">
+          <Button disabled={isLoading} onClick={handleSave}>
+            <CheckIcon className="h-4 w-4 mr-2" />
+            Save
+          </Button>
+          <Button
+            disabled={isLoading}
+            onClick={handleCancel}
+            variant="outline"
+          >
+            <XIcon className="h-4 w-4 mr-2" />
+            Cancel
+          </Button>
+        </div>
+      </div>
     );
   }
 

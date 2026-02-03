@@ -329,7 +329,7 @@ Client List View (`apps/app/app/(authenticated)/crm/clients/components/clients-c
 5. **Responsive Filter Layout**: Using flex-wrap with fixed-width classes prevents layout shifts
 
 **Remaining Work in Clients Module:**
-- Apply same hierarchy principles to client edit form
+- ~~Apply same hierarchy principles to client edit form~~ **COMPLETED**: Contact info edit form now uses section-based organization
 - Create standardized client profile component with consistent blocks
 - Ensure consistent contact information display across all client views
 
@@ -337,6 +337,55 @@ Client List View (`apps/app/app/(authenticated)/crm/clients/components/clients-c
 - **Employee Module**: Likely similar badge hierarchy needed for employee profiles
 - **Employee Performance Dashboard**: May need similar filter organization patterns
 - **All List Views**: Filter component pattern should be standardized across modules
+- **All Edit Forms**: Section-based organization pattern established here should be applied to other edit forms
+
+---
+
+### 2.8.1 Completed UI Improvements (Client Contact Info Edit Form)
+
+**Iteration: Client Contact Info Edit Form Visual Hierarchy Enhancement**
+
+Client Contact Info Edit Form (`apps/app/app/(authenticated)/crm/clients/[id]/components/tabs/contact-info-tab.tsx`) successfully refactored to establish clear visual hierarchy and improve information organization.
+
+**Improvements Implemented:**
+
+1. **Section-Based Organization**
+   - Replaced single Card with nested space-y-4 structure with section-based layout
+   - Each section gets its own header with consistent styling: `text-xs uppercase tracking-[0.25em] text-muted-foreground`
+   - Clear visual separation: Basic Information → Contact Details → Address → Additional Information
+
+2. **Component Structure**
+   - Added Separator between each section for clear visual break
+   - Wrapped each section in semantic `<section>` element with consistent `space-y-8` spacing
+   - Each section content wrapped in rounded-2xl border container with padding
+   - Removed outer Card wrapper; sections now stand independently with better visual rhythm
+
+3. **Form Grouping**
+   - Basic Information: Company name, first name, last name (identity data)
+   - Contact Details: Email, phone, website (communication channels)
+   - Address: Full address fields with proper col-span for full-width fields
+   - Additional Information: Tax ID, tags, notes (metadata)
+
+4. **Improved Label Association**
+   - Added explicit `htmlFor` attributes to all Labels for proper form accessibility
+   - Address lines now have unique IDs (addressLine1, addressLine2, etc.) instead of relying on placeholder-only identification
+
+**Key Learnings:**
+
+1. **Section Headers Work for Edit Forms**: Even in edit mode, section headers give users clear mental model of what information they're editing
+2. **Separator Creates Visual Breathing Room**: Adding Separator between sections in edit forms creates better visual rhythm and reduces cognitive load
+3. **Rounded Containers Beat Card Nesting**: Using rounded-2xl border containers instead of nested Cards creates cleaner visual hierarchy
+4. **space-y-8 for Edit Forms**: Increasing spacing between sections to 8 creates better visual rhythm for complex forms
+5. **Semantic Sections Improve Accessibility**: Using semantic `<section>` elements with descriptive headers improves form structure and navigation
+
+**Remaining Work in Clients Module:**
+- Create standardized client profile component with consistent blocks
+- Ensure consistent contact information display across all client views
+
+**Applicability to Other Modules:**
+- **All Edit Forms**: The section-based organization pattern established here should be applied to other edit forms across the platform
+- **Employee Edit Forms**: Similar improvements needed for employee contact info editing
+- **Event Edit Forms**: Apply similar section-based organization to event editing
 
 ---
 
