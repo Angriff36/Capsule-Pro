@@ -64,103 +64,120 @@ const executiveActions = [
 
 const AdministrativeOverviewBoardsPage = () => (
   <div className="space-y-8">
+    {/* Page Header */}
     <div>
-      <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-        Administrative
-      </p>
-      <h1 className="text-2xl font-semibold">Overview Boards</h1>
-      <p className="text-sm text-muted-foreground">
+      <h1 className="text-3xl font-bold tracking-tight">Overview Boards</h1>
+      <p className="text-muted-foreground">
         Strategic snapshots that keep leadership aware of cross-module momentum.
       </p>
     </div>
 
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      {boardSnapshots.map((snapshot) => (
-        <Card className="h-full" key={snapshot.title}>
+    <Separator />
+
+    {/* Board Snapshots Section */}
+    <section>
+      <h2 className="text-sm font-medium text-muted-foreground">
+        Board Snapshots
+      </h2>
+      <div className="mt-2 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {boardSnapshots.map((snapshot) => (
+          <Card className="h-full" key={snapshot.title}>
+            <CardHeader>
+              <CardTitle>{snapshot.title}</CardTitle>
+              <CardDescription>{snapshot.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <p className="text-2xl font-semibold">{snapshot.value}</p>
+              <p className="text-sm text-muted-foreground">{snapshot.trend}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
+
+    {/* Executive Actions Section */}
+    <section>
+      <h2 className="text-sm font-medium text-muted-foreground">
+        Executive Actions
+      </h2>
+      <Card className="mt-2">
+        <CardHeader>
+          <CardDescription>Top decisions awaiting a sign-off.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-3">
+          {executiveActions.map((action) => (
+            <div
+              className="space-y-1 rounded border border-border/60 p-4"
+              key={action.title}
+            >
+              <p className="text-sm font-semibold">{action.title}</p>
+              <p className="text-xs text-muted-foreground">{action.owner}</p>
+              <p className="text-xs text-muted-foreground">{action.eta}</p>
+              <Badge variant="secondary">{action.status}</Badge>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </section>
+
+    {/* Alerts & Board Health Section */}
+    <section>
+      <h2 className="text-sm font-medium text-muted-foreground">
+        Alerts & Board Health
+      </h2>
+      <div className="mt-2 grid gap-4 lg:grid-cols-2">
+        <Card>
           <CardHeader>
-            <CardTitle>{snapshot.title}</CardTitle>
-            <CardDescription>{snapshot.description}</CardDescription>
+            <CardTitle>Critical Alerts</CardTitle>
+            <CardDescription>
+              Issues that need cross-team attention.
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="text-2xl font-semibold">{snapshot.value}</p>
-            <p className="text-sm text-muted-foreground">{snapshot.trend}</p>
+          <CardContent>
+            <div className="divide-y divide-border">
+              {criticalAlerts.map((alert) => (
+                <div className="space-y-1 py-3" key={alert.label}>
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold">{alert.label}</p>
+                    <Badge variant="destructive">Action</Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{alert.detail}</p>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
-      ))}
-    </div>
-
-    <Card>
-      <CardHeader>
-        <CardTitle>Executive Actions</CardTitle>
-        <CardDescription>Top decisions awaiting a sign-off.</CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-4 md:grid-cols-3">
-        {executiveActions.map((action) => (
-          <div
-            className="space-y-1 rounded border border-border/60 p-4"
-            key={action.title}
-          >
-            <p className="text-sm font-semibold">{action.title}</p>
-            <p className="text-xs text-muted-foreground">{action.owner}</p>
-            <p className="text-xs text-muted-foreground">{action.eta}</p>
-            <Badge variant="secondary">{action.status}</Badge>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-
-    <div className="grid gap-4 lg:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle>Critical Alerts</CardTitle>
-          <CardDescription>
-            Issues that need cross-team attention.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="divide-y divide-border">
-            {criticalAlerts.map((alert) => (
-              <div className="space-y-1 py-3" key={alert.label}>
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold">{alert.label}</p>
-                  <Badge variant="destructive">Action</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">{alert.detail}</p>
+        <Card>
+          <CardHeader>
+            <CardTitle>Board Health</CardTitle>
+            <CardDescription>
+              Freshness of updates across channels.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span>Tab updates today</span>
+                <span className="font-semibold">18</span>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Board Health</CardTitle>
-          <CardDescription>
-            Freshness of updates across channels.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-sm">
-              <span>Tab updates today</span>
-              <span className="font-semibold">18</span>
+              <div className="flex items-center justify-between text-sm">
+                <span>New tasks created</span>
+                <span className="font-semibold">11</span>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between text-sm">
+                <span>Average response time</span>
+                <span className="font-semibold">12m</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span>Teams active</span>
+                <span className="font-semibold">6</span>
+              </div>
             </div>
-            <div className="flex items-center justify-between text-sm">
-              <span>New tasks created</span>
-              <span className="font-semibold">11</span>
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between text-sm">
-              <span>Average response time</span>
-              <span className="font-semibold">12m</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span>Teams active</span>
-              <span className="font-semibold">6</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
   </div>
 );
 
