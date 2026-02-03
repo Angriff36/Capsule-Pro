@@ -5207,3 +5207,117 @@ Scheduling Budgets Page component (`apps/app/app/(authenticated)/scheduling/budg
 
 **Files Modified:**
 - `apps/app/app/(authenticated)/scheduling/budgets/components/budgets-client.tsx` - Updated container (space-y-8 → flex flex-1 flex-col gap-8 p-4 pt-0), updated page header (space-y-0.5 pattern), updated all sections (mb-4 → space-y-4)
+
+---
+
+### 2.59 Completed UI Improvements (Warehouse Receiving Page Visual Hierarchy Enhancement)
+
+**Iteration: Warehouse Receiving Page Visual Hierarchy Enhancement**
+
+Warehouse Receiving Page component (`apps/app/app/(authenticated)/warehouse/receiving/page.tsx`) successfully refactored to establish complete visual hierarchy consistency with established platform patterns.
+
+**Improvements Implemented:**
+
+1. **Container Structure Standardization**
+   - Changed from `container mx-auto p-4 space-y-8` to `flex flex-1 flex-col gap-8 p-4 pt-0`
+   - Aligns with the platform pattern used across all improved pages
+   - Consistent spacing and layout structure
+
+2. **Page Header Pattern**
+   - Updated header to use `space-y-0.5` container pattern for the page title and description
+   - Matches the platform pattern for page headers
+   - Maintains flexible layout with action buttons on the right (responsive: stacks on mobile, side-by-side on desktop)
+
+3. **Section Spacing Pattern**
+   - Updated Purchase Order Lookup section to use `space-y-4` instead of inline `mb-4`
+   - Updated Purchase Order Details section to use `space-y-4` instead of inline `mb-4`
+   - Added semantic section tags with consistent spacing patterns
+   - Added `className="space-y-4"` to section elements
+
+4. **Semantic Section Organization**
+   - Added semantic `<section>` elements with descriptive headers for content areas:
+     - **Purchase Order Lookup**: Contains the PO search card
+     - **Purchase Order Details**: Contains the PO items and summary cards
+   - Each section uses consistent styling: `text-sm font-medium text-muted-foreground`
+   - Improved accessibility and content organization
+
+**Key Learnings:**
+
+1. **Container Pattern Consistency**: Pages using `container mx-auto p-4 space-y-8` should be updated to `flex flex-1 flex-col gap-8 p-4 pt-0` for consistent platform layout behavior.
+
+2. **Page Header Pattern**: Using `space-y-0.5` on the page header content provides consistent, tight spacing between page title and description across all pages.
+
+3. **Section Spacing Pattern**: Using `space-y-4` on section containers is more maintainable than inline `mb-4` classes and aligns with platform patterns.
+
+4. **Semantic Sections**: Wrapping content areas in semantic `<section>` elements with `space-y-4` improves accessibility and provides clear content grouping.
+
+**Remaining Work in Warehouse Module:**
+- Inventory Tracking page visual hierarchy consistency (if it exists)
+- Warehouse Reports page container and spacing optimization
+- Storage Locations page visual hierarchy standardization
+- Inventory Reconciliations page component structure enhancement
+
+**Applicability to Other Modules:**
+
+- **Any Page with `container mx-auto p-4 space-y-8`**: Pages using this container pattern should be updated to `flex flex-1 flex-col gap-8 p-4 pt-0` for consistency.
+- **Any Page with Inline `mb-4` on Section Headers**: Section containers should use `space-y-4` instead of inline margin classes.
+- **Any Page Missing `space-y-0.5` on Header**: Pages whose header content lacks the proper wrapper should be updated.
+- **Any Page Without Semantic Sections**: Pages can benefit from semantic `<section>` elements with descriptive headers for better accessibility and content organization.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/warehouse/receiving/page.tsx` - Updated container structure, page header pattern, section spacing
+
+---
+
+### 2.70 Completed UI Improvements (Warehouse Receiving Reports Page)
+
+**Iteration: Warehouse Receiving Reports Page Visual Hierarchy Enhancement**
+
+Warehouse Receiving Reports Page component (`apps/app/app/(authenticated)/warehouse/receiving/reports/page.tsx`) successfully refactored to establish complete visual hierarchy consistency with established platform patterns.
+
+**Improvements Implemented:**
+
+1. **Design System Color Standardization**
+   - Replaced custom color classes (`text-green-600`, `text-red-600`) with design system colors (`text-emerald-600`, `text-rose-600`, `text-destructive`)
+   - Ensures consistent visual language that adapts to theme changes
+   - Trend indicators now use `text-emerald-600` (positive) and `text-rose-600` (negative)
+
+2. **Progress Bar Color Standardization**
+   - Replaced custom progress bar background colors (`bg-gray-100`) with design system colors (`bg-muted`)
+   - Replaced custom bar colors (`bg-blue-500`, `bg-orange-500`, `bg-red-500`, `bg-green-500`) with design system colors (`bg-blue-600`, `bg-orange-600`, `bg-destructive`, `bg-emerald-600`)
+   - Maintains visual consistency with theme system
+
+3. **Typography Consistency**
+   - Replaced `font-semibold` with `font-medium` for consistency across the platform
+   - Supplier names and metric labels now use `font-medium` instead of `font-semibold`
+   - Discrepancy breakdown percentages now use `font-medium` for consistency
+
+4. **Icon Color Standardization**
+   - Trend icons now use design system colors (`text-emerald-600` for positive, `text-rose-600` for negative)
+   - Alert and trend indicators use `text-destructive` and `text-emerald-600` respectively
+   - Consistent color language throughout the page
+
+**Key Learnings:**
+
+1. **Design System Colors Provide Theme Adaptability**: Using design system colors (`text-emerald-600`, `text-rose-600`, `text-destructive`) instead of custom Tailwind colors (`text-green-600`, `text-red-600`) provides consistent visual language that adapts to theme changes.
+
+2. **Progress Bars Should Use Muted Backgrounds**: Using `bg-muted` instead of `bg-gray-100` for progress bar backgrounds ensures they adapt properly to theme changes (light/dark mode).
+
+3. **Font-Medium Over Font-Semibold**: Using `font-medium` instead of `font-semibold` provides consistent visual weight across the platform while maintaining proper hierarchy for emphasized text.
+
+4. **Color Consistency for Status Indicators**: Establishing consistent colors for status indicators (emerald for positive/success, rose for negative/warning, destructive for errors) creates predictable visual language.
+
+5. **Reports Pages Need Same Design System Consistency**: Even data-heavy reports pages benefit from the same design system consistency as other pages. Custom colors create visual fragmentation.
+
+**Remaining Work in Warehouse Module:**
+- None identified — all warehouse pages now have consistent visual hierarchy with design system color standardization
+
+**Applicability to Other Modules:**
+
+- **Any Page with Custom Green/Red Colors**: Replace `text-green-600`/`text-red-600` patterns with design system colors (`text-emerald-600`/`text-rose-600` or `text-destructive`) for consistency.
+- **Any Page with Progress Bars**: Progress bars should use `bg-muted` for backgrounds and design system colors for bar fills.
+- **Any Reports/Analytics Page**: Reports pages need the same design system consistency as other pages - custom colors should be systematically replaced.
+- **Any Page with Font-Semibold**: Consider replacing `font-semibold` with `font-medium` for more consistent visual weight.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/warehouse/receiving/reports/page.tsx` - Replaced custom color classes with design system colors, updated progress bar colors, replaced font-semibold with font-medium, standardized icon colors

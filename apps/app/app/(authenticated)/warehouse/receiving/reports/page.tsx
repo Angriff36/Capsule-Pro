@@ -85,9 +85,9 @@ export default function ReceivingReportsPage() {
 
   const getTrendIcon = (isPositive: boolean) => {
     if (isPositive) {
-      return <ArrowUpRight className="size-4 text-green-600" />;
+      return <ArrowUpRight className="size-4 text-emerald-600" />;
     }
-    return <ArrowDownRight className="size-4 text-red-600" />;
+    return <ArrowDownRight className="size-4 text-rose-600" />;
   };
 
   return (
@@ -116,7 +116,7 @@ export default function ReceivingReportsPage() {
               <CardTitle>
                 <div className="flex items-center gap-2">
                   <span>{receivingSummary.total_pos_received}</span>
-                  <div className="flex items-center gap-1 text-green-600 text-sm font-normal">
+                  <div className="flex items-center gap-1 text-emerald-600 text-sm font-normal">
                     {getTrendIcon(true)}
                     <span>+12%</span>
                   </div>
@@ -131,7 +131,7 @@ export default function ReceivingReportsPage() {
               <CardTitle>
                 <div className="flex items-center gap-2">
                   <span>{receivingSummary.total_items_received}</span>
-                  <div className="flex items-center gap-1 text-green-600 text-sm font-normal">
+                  <div className="flex items-center gap-1 text-emerald-600 text-sm font-normal">
                     {getTrendIcon(true)}
                     <span>+8%</span>
                   </div>
@@ -146,7 +146,7 @@ export default function ReceivingReportsPage() {
               <CardTitle>
                 <div className="flex items-center gap-2">
                   <span>{receivingSummary.average_quality_score.toFixed(1)}</span>
-                  <div className="flex items-center gap-1 text-green-600 text-sm font-normal">
+                  <div className="flex items-center gap-1 text-emerald-600 text-sm font-normal">
                     {getTrendIcon(true)}
                     <span>+0.2</span>
                   </div>
@@ -158,10 +158,10 @@ export default function ReceivingReportsPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Discrepancies</CardDescription>
-              <CardTitle className="text-red-600">
+              <CardTitle className="text-destructive">
                 <div className="flex items-center gap-2">
                   <span>{receivingSummary.total_discrepancies}</span>
-                  <div className="flex items-center gap-1 text-green-600 text-sm font-normal">
+                  <div className="flex items-center gap-1 text-emerald-600 text-sm font-normal">
                     {getTrendIcon(false)}
                     <span>-5%</span>
                   </div>
@@ -189,7 +189,7 @@ export default function ReceivingReportsPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold">
+                        <h3 className="font-medium">
                           {supplier.supplier_name}
                         </h3>
                         <Badge variant={getScoreBadgeVariant(supplier.quality_score)}>
@@ -203,14 +203,14 @@ export default function ReceivingReportsPage() {
                     </div>
                     <div className="text-right">
                       {supplier.discrepancy_rate > 5 ? (
-                        <div className="flex items-center gap-1 text-red-600 text-sm">
+                        <div className="flex items-center gap-1 text-destructive text-sm">
                           <AlertCircle className="size-4" />
                           <span>
                             {supplier.discrepancy_rate}% discrepancy rate
                           </span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-1 text-green-600 text-sm">
+                        <div className="flex items-center gap-1 text-emerald-600 text-sm">
                           <TrendingUp className="size-4" />
                           <span>Excellent performance</span>
                         </div>
@@ -223,7 +223,7 @@ export default function ReceivingReportsPage() {
                       <p className="text-xs text-muted-foreground mb-1">
                         On-Time Deliveries
                       </p>
-                      <p className="text-sm font-semibold">
+                      <p className="text-sm font-medium">
                         {supplier.on_time_deliveries} / {supplier.total_orders}
                         <span className="text-xs text-muted-foreground">
                           (
@@ -240,7 +240,7 @@ export default function ReceivingReportsPage() {
                       <p className="text-xs text-muted-foreground mb-1">
                         Average Lead Time
                       </p>
-                      <p className="text-sm font-semibold">
+                      <p className="text-sm font-medium">
                         {supplier.average_lead_time.toFixed(1)} days
                       </p>
                     </div>
@@ -248,7 +248,7 @@ export default function ReceivingReportsPage() {
                       <p className="text-xs text-muted-foreground mb-1">
                         Quality Score
                       </p>
-                      <p className="text-sm font-semibold">
+                      <p className="text-sm font-medium">
                         {supplier.quality_score.toFixed(1)} / 5.0
                       </p>
                     </div>
@@ -257,7 +257,7 @@ export default function ReceivingReportsPage() {
                         Discrepancy Rate
                       </p>
                       <p
-                        className={`text-sm font-semibold ${supplier.discrepancy_rate > 5 ? "text-red-600" : "text-green-600"}`}
+                        className={`text-sm font-medium ${supplier.discrepancy_rate > 5 ? "text-destructive" : "text-emerald-600"}`}
                       >
                         {supplier.discrepancy_rate}%
                       </p>
@@ -282,20 +282,20 @@ export default function ReceivingReportsPage() {
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span>Shortages</span>
-                  <span className="font-semibold">8 (44%)</span>
+                  <span className="font-medium">8 (44%)</span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-500" style={{ width: "44%" }} />
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-600" style={{ width: "44%" }} />
                 </div>
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span>Damaged Items</span>
-                  <span className="font-semibold">6 (33%)</span>
+                  <span className="font-medium">6 (33%)</span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-orange-500"
+                    className="h-full bg-orange-600"
                     style={{ width: "33%" }}
                   />
                 </div>
@@ -303,19 +303,19 @@ export default function ReceivingReportsPage() {
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span>Wrong Items</span>
-                  <span className="font-semibold">3 (17%)</span>
+                  <span className="font-medium">3 (17%)</span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-red-500" style={{ width: "17%" }} />
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-destructive" style={{ width: "17%" }} />
                 </div>
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span>Overage</span>
-                  <span className="font-semibold">1 (6%)</span>
+                  <span className="font-medium">1 (6%)</span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-500" style={{ width: "6%" }} />
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-600" style={{ width: "6%" }} />
                 </div>
               </div>
             </div>
