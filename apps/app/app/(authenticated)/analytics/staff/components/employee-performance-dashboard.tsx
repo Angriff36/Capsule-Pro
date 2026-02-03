@@ -67,7 +67,7 @@ export function EmployeePerformanceDashboard({
 
   if (loading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {[...new Array(4)].map((_, i) => (
           <Card key={i}>
             <CardHeader>
@@ -88,7 +88,7 @@ export function EmployeePerformanceDashboard({
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold">
+            <h2 className="text-3xl font-bold tracking-tight">
               {metrics.firstName} {metrics.lastName}
             </h2>
             <p className="text-sm text-muted-foreground">
@@ -103,7 +103,7 @@ export function EmployeePerformanceDashboard({
           <h3 className="mb-4 text-sm font-medium text-muted-foreground">
             Performance Overview
           </h3>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader>
               <CardTitle className="text-sm font-medium">
@@ -198,7 +198,7 @@ export function EmployeePerformanceDashboard({
           <h3 className="mb-4 text-sm font-medium text-muted-foreground">
             Performance Details
           </h3>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>Task Performance</CardTitle>
@@ -347,7 +347,7 @@ export function EmployeePerformanceDashboard({
                 </div>
 
                 <div className="pt-2 border-t">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-6">
                     <div>
                       <div className="text-xs text-muted-foreground">
                         Total Shifts
@@ -384,7 +384,7 @@ export function EmployeePerformanceDashboard({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid gap-6 md:grid-cols-4">
               <div>
                 <div className="text-xs text-muted-foreground">Total Tasks</div>
                 <div className="text-2xl font-bold">{metrics.totalTasks}</div>
@@ -414,7 +414,7 @@ export function EmployeePerformanceDashboard({
                 </div>
               </div>
             </div>
-            <div className="grid gap-4 md:grid-cols-2 mt-4 pt-4 border-t">
+            <div className="grid gap-6 md:grid-cols-2 mt-4 pt-4 border-t">
               <div>
                 <div className="text-xs text-muted-foreground">
                   Client Interactions
@@ -442,7 +442,7 @@ export function EmployeePerformanceDashboard({
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Employee Performance Dashboard</h2>
+        <h2 className="text-3xl font-bold tracking-tight">Employee Performance Dashboard</h2>
         <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select period" />
@@ -463,7 +463,7 @@ export function EmployeePerformanceDashboard({
             <h3 className="mb-4 text-sm font-medium text-muted-foreground">
               Performance Overview
             </h3>
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid gap-6 md:grid-cols-4">
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-medium">
@@ -564,7 +564,7 @@ export function EmployeePerformanceDashboard({
             <h3 className="mb-4 text-sm font-medium text-muted-foreground">
               Metrics Analysis
             </h3>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Metrics by Role</CardTitle>
