@@ -17,12 +17,13 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
-  FileTextIcon,
-  LayoutGridIcon,
-  PlusIcon,
-  ShieldIcon,
-  UsersIcon,
+  FileText,
+  LayoutGrid,
+  Plus,
+  Shield,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -86,7 +87,7 @@ const BattleBoardsPage = async () => {
           </Button>
           <Button asChild variant="secondary">
             <Link href="/events/reports">
-              <FileTextIcon className="mr-2 h-4 w-4" />
+              <FileText className="mr-2 size-4" />
               Reports
             </Link>
           </Button>
@@ -95,15 +96,29 @@ const BattleBoardsPage = async () => {
           </Button>
           <Button asChild>
             <Link href="/events/battle-boards/new">
-              <PlusIcon className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 size-4" />
               New Board
             </Link>
           </Button>
         </div>
       </Header>
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        {/* Stats Cards */}
-        <section className="grid gap-4 lg:grid-cols-4">
+      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+        {/* Page Header */}
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl font-bold tracking-tight">Battle Boards</h1>
+          <p className="text-muted-foreground">
+            Print-ready event staff assignments and operational timelines
+          </p>
+        </div>
+
+        <Separator />
+
+        {/* Performance Overview Section */}
+        <section className="flex flex-col gap-4">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Performance Overview
+          </h2>
+          <div className="grid gap-6 lg:grid-cols-4">
           <Card>
             <CardHeader>
               <CardDescription>Total Boards</CardDescription>
@@ -139,36 +154,45 @@ const BattleBoardsPage = async () => {
               <CardTitle className="text-2xl">{totalStaff}</CardTitle>
             </CardHeader>
             <CardContent className="text-muted-foreground text-sm flex items-center gap-1">
-              <UsersIcon className="h-3.5 w-3.5" />
+              <Users className="size-3.5" />
               Assigned across boards
             </CardContent>
           </Card>
         </section>
 
-        {/* Battle Boards List */}
+        {/* Battle Boards List Section */}
         {boards.length === 0 ? (
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <LayoutGridIcon />
-              </EmptyMedia>
-              <EmptyTitle>No battle boards yet</EmptyTitle>
-              <EmptyDescription>
-                Import an event PDF to auto-generate a battle board with staff
-                assignments and timeline, or create one manually.
-              </EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent>
-              <Button asChild>
-                <Link href="/events/import">
-                  <PlusIcon className="mr-2 h-4 w-4" />
-                  Import Event
-                </Link>
-              </Button>
-            </EmptyContent>
-          </Empty>
+          <section className="flex flex-col gap-4">
+            <h2 className="text-sm font-medium text-muted-foreground">
+              Battle Boards
+            </h2>
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <LayoutGrid />
+                </EmptyMedia>
+                <EmptyTitle>No battle boards yet</EmptyTitle>
+                <EmptyDescription>
+                  Import an event PDF to auto-generate a battle board with staff
+                  assignments and timeline, or create one manually.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button asChild>
+                  <Link href="/events/import">
+                    <Plus className="mr-2 size-4" />
+                    Import Event
+                  </Link>
+                </Button>
+              </EmptyContent>
+            </Empty>
+          </section>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+          <section className="flex flex-col gap-4">
+            <h2 className="text-sm font-medium text-muted-foreground">
+              Battle Boards ({boards.length})
+            </h2>
+            <div className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-3">
             {boards.map((board) => {
               const data = board.boardData as BattleBoardData;
               const staffCount = data?.staff?.length ?? 0;
@@ -213,11 +237,11 @@ const BattleBoardsPage = async () => {
                     </CardHeader>
                     <CardContent className="grid gap-3 text-sm">
                       <div className="flex items-center gap-2 text-muted-foreground">
-                        <UsersIcon className="h-4 w-4" />
+                        <Users className="size-4" />
                         <span>{staffCount} staff assigned</span>
                       </div>
                       <div className="flex items-center gap-2 text-muted-foreground">
-                        <ShieldIcon className="h-4 w-4" />
+                        <Shield className="size-4" />
                         <span>{timelineCount} timeline items</span>
                       </div>
                       {board.is_template && (
@@ -230,7 +254,8 @@ const BattleBoardsPage = async () => {
                 </Link>
               );
             })}
-          </div>
+            </div>
+          </section>
         )}
       </div>
     </>
