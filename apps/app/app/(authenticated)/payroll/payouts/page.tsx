@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -37,7 +38,7 @@ const payouts = [
 ];
 
 const PayrollPayoutsPage = () => (
-  <div className="space-y-6">
+  <div className="space-y-8">
     <div>
       <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
         Payroll
@@ -48,46 +49,53 @@ const PayrollPayoutsPage = () => (
       </p>
     </div>
 
-    <Card>
-      <CardHeader>
-        <CardTitle>Scheduled Payouts</CardTitle>
-        <CardDescription>
-          All channels sync through the payout engine before runs.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="overflow-x-auto">
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Channel</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {payouts.map((payout) => (
-                <TableRow key={payout.target}>
-                  <TableCell>{payout.target}</TableCell>
-                  <TableCell className="text-right">{payout.amount}</TableCell>
-                  <TableCell>{payout.runDate}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        payout.status === "Scheduled" ? "secondary" : "outline"
-                      }
-                    >
-                      {payout.status}
-                    </Badge>
-                  </TableCell>
+    <Separator />
+
+    <section>
+      <h2 className="text-sm font-medium text-muted-foreground">
+        Scheduled Payouts
+      </h2>
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle>All Payout Channels</CardTitle>
+          <CardDescription>
+            All channels sync through the payout engine before runs.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Channel</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+              </TableHeader>
+              <TableBody>
+                {payouts.map((payout) => (
+                  <TableRow key={payout.target}>
+                    <TableCell>{payout.target}</TableCell>
+                    <TableCell className="text-right">{payout.amount}</TableCell>
+                    <TableCell>{payout.runDate}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          payout.status === "Scheduled" ? "secondary" : "outline"
+                        }
+                      >
+                        {payout.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </section>
   </div>
 );
 
