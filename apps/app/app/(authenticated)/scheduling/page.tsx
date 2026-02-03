@@ -430,11 +430,11 @@ const SchedulingPage = async () => {
   ];
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       <SchedulingRealtime tenantId={tenantId} userId={userId} />
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="font-semibold text-2xl text-foreground">Dashboard</h1>
+        <div className="space-y-0.5">
+          <h1 className="font-bold text-3xl tracking-tight text-foreground">Dashboard</h1>
           <p className="text-muted-foreground">
             Welcome back. You have scheduling activity for this week.
           </p>
@@ -455,9 +455,9 @@ const SchedulingPage = async () => {
 
       <Separator />
 
-      <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-4">Performance Overview</h2>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="space-y-4">
+        <h2 className="font-medium text-sm text-muted-foreground">Performance Overview</h2>
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         {stats.map((item) => (
           <Card className="shadow-sm" key={item.label}>
             <CardHeader className="flex flex-row items-start justify-between space-y-0">
@@ -473,7 +473,7 @@ const SchedulingPage = async () => {
               </div>
             </CardHeader>
             <CardContent>
-              <span className="font-medium text-emerald-600 text-xs dark:text-emerald-300">
+              <span className="text-xs font-medium">
                 {item.delta}
               </span>
             </CardContent>
@@ -482,8 +482,8 @@ const SchedulingPage = async () => {
         </div>
       </section>
 
-      <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-4">Schedule Overview</h2>
+      <section className="space-y-4">
+        <h2 className="font-medium text-sm text-muted-foreground">Schedule Overview</h2>
         <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <div className="grid gap-6">
           <Card className="shadow-sm">
@@ -585,10 +585,11 @@ const SchedulingPage = async () => {
           </Card>
         </div>
         </div>
+      </section>
 
-        <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">Live Leaderboard</h2>
-          <Card className="shadow-sm">
+      <section className="space-y-4">
+        <h2 className="font-medium text-sm text-muted-foreground">Live Leaderboard</h2>
+        <Card className="shadow-sm">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -657,7 +658,6 @@ const SchedulingPage = async () => {
             </CardContent>
           </Card>
         </section>
-      </section>
     </div>
   );
 };
