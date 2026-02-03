@@ -1376,6 +1376,72 @@ Scheduling Shifts Page component (`apps/app/app/(authenticated)/scheduling/shift
 
 ---
 
+### 2.27 Completed UI Improvements (Scheduling Budgets Page)
+
+**Iteration: Scheduling Budgets Page Visual Hierarchy Enhancement**
+
+Scheduling Budgets Page component (`apps/app/app/(authenticated)/scheduling/budgets/components/budgets-client.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Improvements Implemented:**
+
+1. **Page Header Separator**
+   - Added `<Separator />` component between header and main content for clear visual break
+   - Consistent with other scheduling pages (Scheduling Dashboard, Shifts Page) and other dashboard improvements
+
+2. **Section-Based Organization**
+   - Added semantic `<section>` elements with descriptive headers for each major content area
+   - Each section gets its own header with consistent styling: `text-sm font-medium text-muted-foreground`
+   - Clear visual separation: Performance Overview → Filters → Budgets Table
+
+3. **Card Hierarchy Standardization**
+   - Summary cards now use proper CardDescription → CardTitle order (description first, then value)
+   - Fixed inverted hierarchy where value was first without description context
+   - Icon colors maintained (green for active budgets, blue for budget target, purple for actual spend)
+
+4. **Icon Sizing Consistency**
+   - Changed icon sizes from `h-4 w-4` to `size-4` for consistency with other page improvements
+   - Maintains visual consistency across the platform
+
+5. **Dynamic Count in Section Header**
+   - Budgets table section header now includes dynamic count: "Budgets ({filteredBudgets.length})"
+   - Provides useful context without cluttering the main view
+
+6. **Component Structure**
+   - Changed main content spacing from `space-y-6` to `space-y-8` for better breathing room and visual rhythm
+   - Section headers provide mental model of page structure
+   - Filters section now has proper section header ("Filters")
+
+7. **Semantic HTML Structure**
+   - Wrapped major content areas in semantic `<section>` elements with descriptive headers
+   - Improved accessibility and document structure
+   - Clear visual separation between different content areas
+
+**Key Learnings:**
+
+1. **Section Headers Work for Budgets Management Pages**: Even on data-heavy financial pages with summary stats and tables, adding section headers immediately gives users a mental model of the page structure.
+
+2. **CardDescription + CardTitle Hierarchy for Metrics**: For budget summary cards, the pattern is CardDescription (subtitle like "5 total budgets") → CardTitle (value like "3"), not the reverse. This matches the pattern established in other dashboards.
+
+3. **Dynamic Count in Section Header**: Including the filtered count in the section header ("Budgets (12)") provides useful context without cluttering the main view.
+
+4. **space-y-8 vs space-y-6**: Increasing spacing between sections from 6 to 8 creates better visual rhythm for budgets pages with dense information.
+
+5. **Icon Sizing Consistency**: Using `size-4` instead of `h-4 w-4` provides consistent sizing across all components and follows the established design system patterns.
+
+**Remaining Work in Scheduling Budgets Page:**
+- None identified — the page is now well-structured with clear visual hierarchy
+
+**Applicability to Other Modules:**
+
+- **Any Financial/Budgets Page**: The section header pattern works well for pages with financial data, summary metrics, and data tables.
+- **Scheduling Module**: Other scheduling pages (availability, time-off, requests) could benefit from similar section-based organization.
+- **Any Page with Summary Cards + Table**: The pattern of grouping summary stats under a "Performance Overview" section and data tables under their own section improves scanability.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/scheduling/budgets/components/budgets-client.tsx` - Added Separator, section headers, semantic sections, CardDescription, improved spacing, icon sizing
+
+---
+
 ### 2.17 Phase 2 Completion Criteria
 
 Phase 2 is complete when:

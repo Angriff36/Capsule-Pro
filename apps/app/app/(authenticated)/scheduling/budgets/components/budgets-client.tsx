@@ -5,9 +5,11 @@ import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Progress } from "@repo/design-system/components/ui/progress";
 import {
@@ -191,7 +193,7 @@ export function BudgetsClient() {
     .reduce((sum, b) => sum + (b.actual_spend || 0), 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -208,32 +210,36 @@ export function BudgetsClient() {
             variant="outline"
           >
             {loading ? (
-              <Loader2Icon className="h-4 w-4 animate-spin" />
+              <Loader2Icon className="size-4 animate-spin" />
             ) : (
-              <RefreshCwIcon className="h-4 w-4" />
+              <RefreshCwIcon className="size-4" />
             )}
           </Button>
           <Button onClick={handleCreate} size="sm">
-            <PlusIcon className="mr-2 h-4 w-4" />
+            <PlusIcon className="mr-2 size-4" />
             New Budget
           </Button>
         </div>
       </div>
 
-      {/* Summary Cards */}
+      <Separator />
+
+      {/* Summary Cards Section */}
+      <section>
+        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+          Performance Overview
+        </h2>
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Active Budgets
             </CardTitle>
-            <CheckCircle2Icon className="h-4 w-4 text-green-600" />
+            <CheckCircle2Icon className="size-4 text-green-600" />
           </CardHeader>
           <CardContent>
+            <CardDescription>{budgets.length} total budgets</CardDescription>
             <div className="text-2xl font-bold">{activeBudgets}</div>
-            <p className="text-xs text-muted-foreground">
-              {budgets.length} total budgets
-            </p>
           </CardContent>
         </Card>
 
@@ -242,40 +248,43 @@ export function BudgetsClient() {
             <CardTitle className="text-sm font-medium">
               Total Budget Target
             </CardTitle>
-            <DollarSignIcon className="h-4 w-4 text-blue-600" />
+            <DollarSignIcon className="size-4 text-blue-600" />
           </CardHeader>
           <CardContent>
+            <CardDescription>Cost-based budgets only</CardDescription>
             <div className="text-2xl font-bold">
               ${totalBudgetTarget.toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Cost-based budgets only
-            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Actual Spend</CardTitle>
-            <DollarSignIcon className="h-4 w-4 text-purple-600" />
+            <DollarSignIcon className="size-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              ${totalActualSpend.toFixed(2)}
-            </div>
-            <p className="text-xs text-muted-foreground">
+            <CardDescription>
               {totalBudgetTarget > 0
                 ? `${((totalActualSpend / totalBudgetTarget) * 100).toFixed(1)}% utilized`
                 : "N/A"}
-            </p>
+            </CardDescription>
+            <div className="text-2xl font-bold">
+              ${totalActualSpend.toFixed(2)}
+            </div>
           </CardContent>
         </Card>
       </div>
+      </section>
 
-      {/* Filters */}
+      {/* Filters Section */}
+      <section>
+        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+          Filters
+        </h2>
       <div className="flex items-center gap-4">
         <div className="relative flex-1">
-          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-10"
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -288,13 +297,13 @@ export function BudgetsClient() {
           size="sm"
           variant="outline"
         >
-          <FilterIcon className="mr-2 h-4 w-4" />
+          <FilterIcon className="mr-2 size-4" />
           Filters
         </Button>
       </div>
 
       {showFilters && (
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="mt-4 grid gap-4 md:grid-cols-4">
           <Select
             onValueChange={(value) =>
               setFilters({
@@ -344,8 +353,13 @@ export function BudgetsClient() {
           </Button>
         </div>
       )}
+      </section>
 
-      {/* Budgets Table */}
+      {/* Budgets Table Section */}
+      <section>
+        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+          Budgets ({filteredBudgets.length})
+        </h2>
       <Card>
         <CardContent className="p-0">
           <Table>
@@ -405,7 +419,7 @@ export function BudgetsClient() {
                       <TableCell>
                         {budget.period_start && budget.period_end ? (
                           <div className="flex items-center gap-2 text-sm">
-                            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                            <CalendarIcon className="size-4 text-muted-foreground" />
                             {new Date(budget.period_start).toLocaleDateString()}{" "}
                             - {new Date(budget.period_end).toLocaleDateString()}
                           </div>
@@ -474,14 +488,14 @@ export function BudgetsClient() {
                             size="sm"
                             variant="ghost"
                           >
-                            <EditIcon className="h-4 w-4" />
+                            <EditIcon className="size-4" />
                           </Button>
                           <Button
                             onClick={() => handleDeleteClick(budget)}
                             size="sm"
                             variant="ghost"
                           >
-                            <Trash2Icon className="h-4 w-4" />
+                            <Trash2Icon className="size-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -493,6 +507,7 @@ export function BudgetsClient() {
           </Table>
         </CardContent>
       </Card>
+      </section>
 
       {/* Create/Edit Modal */}
       <BudgetFormModal
