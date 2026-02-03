@@ -4,5 +4,5 @@
   "crons": [
     { "path": "/cron/keep-alive", "schedule": "0 1 * * *" }
   ],
-  "installCommand": "cd ../.. && corepack enable && corepack prepare pnpm@10.28.2 --activate && pnpm install"
+  "installCommand": "cd ../.. && corepack enable && corepack prepare pnpm@10.22.0 --activate && pnpm install"
 }
