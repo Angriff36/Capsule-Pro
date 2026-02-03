@@ -1,10 +1,9 @@
 {
   "name": "next-forge",
   "version": "5.3.2",
-  "packageManager": "pnpm@10.24.0",
+  "packageManager": "pnpm@10.23.1",
   "engines": {
-    "node": "22.12.0",
-    "pnpm": ">=10.24.0"
+    "node": ">=20.0.0"
   },
   "bin": {
     "next-forge": "dist/index.js"
@@ -39,7 +38,8 @@
     "clean:node_modules": "git clean -xdf node_modules",
     "secrets:scan": "secretlint \"**/*\"",
     "prepare": "husky",
-    "migrate": "pnpm prisma:format && pnpm prisma:generate && pnpm db:dev"
+    "migrate": "pnpm prisma:format && pnpm prisma:generate && pnpm db:dev",
+    "vercel:bisect": "node scripts/vercel-bisect.mjs"
   },
   "devDependencies": {
     "@auto-it/first-time-contributor": "^11.3.6",

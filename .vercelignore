@@ -1,0 +1,12 @@
+node_modules
+.turbo
+.next
+.git
+__tests__
+test
+test-scripts
+docs
+.env.local
+.env*.local
+pnpm-lock.yaml
+*.md

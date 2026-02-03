@@ -1,0 +1,7 @@
+{
+  "buildCommand": "turbo build",
+  "ignoreCommand": "git diff --quiet HEAD~1 HEAD -- apps/ packages/ || exit 0",
+  "github": {
+    "silent": true
+  }
+}
