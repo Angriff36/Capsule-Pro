@@ -5,11 +5,13 @@ import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Progress } from "@repo/design-system/components/ui/progress";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -194,7 +196,7 @@ export function BudgetsPageClient() {
     .reduce((sum, b) => sum + b.totalActualAmount, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -211,261 +213,278 @@ export function BudgetsPageClient() {
             variant="outline"
           >
             {loading ? (
-              <Loader2Icon className="h-4 w-4 animate-spin" />
+              <Loader2Icon className="size-4 animate-spin" />
             ) : (
-              <RefreshCwIcon className="h-4 w-4" />
+              <RefreshCwIcon className="size-4" />
             )}
           </Button>
           <Button onClick={handleCreate} size="sm">
-            <PlusIcon className="mr-2 h-4 w-4" />
+            <PlusIcon className="mr-2 size-4" />
             New Budget
           </Button>
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Active Budgets
-            </CardTitle>
-            <CheckCircle2Icon className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeBudgets}</div>
-            <p className="text-xs text-muted-foreground">
-              {budgets.length} total budgets
-            </p>
-          </CardContent>
-        </Card>
+      <Separator />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
-            <DollarSignIcon className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(totalBudget)}
-            </div>
-            <p className="text-xs text-muted-foreground">Active budgets only</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Actual Spend</CardTitle>
-            <DollarSignIcon className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(totalActual)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {totalBudget > 0
-                ? `${((totalActual / totalBudget) * 100).toFixed(1)}% utilized`
-                : "N/A"}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1">
-          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            className="pl-10"
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search budgets..."
-            value={searchQuery}
-          />
-        </div>
-        <Button
-          onClick={() => setShowFilters(!showFilters)}
-          size="sm"
-          variant="outline"
-        >
-          <FilterIcon className="mr-2 h-4 w-4" />
-          Filters
-        </Button>
-      </div>
-
-      {showFilters && (
+      {/* Performance Overview Section */}
+      <section>
+        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+          Performance Overview
+        </h2>
         <div className="grid gap-4 md:grid-cols-3">
-          <Select
-            onValueChange={(value) =>
-              setFilters({
-                ...filters,
-                status:
-                  value === "all" ? undefined : (value as EventBudgetStatus),
-              })
-            }
-            value={filters.status || "all"}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="exceeded">Exceeded</SelectItem>
-            </SelectContent>
-          </Select>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardDescription className="text-sm font-medium">
+                Active Budgets
+              </CardDescription>
+              <CheckCircle2Icon className="size-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <CardTitle className="text-2xl font-bold">{activeBudgets}</CardTitle>
+              <p className="text-xs text-muted-foreground">
+                {budgets.length} total budgets
+              </p>
+            </CardContent>
+          </Card>
 
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardDescription className="text-sm font-medium">Total Budget</CardDescription>
+              <DollarSignIcon className="size-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <CardTitle className="text-2xl font-bold">
+                {formatCurrency(totalBudget)}
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">Active budgets only</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardDescription className="text-sm font-medium">Actual Spend</CardDescription>
+              <DollarSignIcon className="size-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <CardTitle className="text-2xl font-bold">
+                {formatCurrency(totalActual)}
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                {totalBudget > 0
+                  ? `${((totalActual / totalBudget) * 100).toFixed(1)}% utilized`
+                  : "N/A"}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Filters Section */}
+      <section>
+        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+          Filters
+        </h2>
+        <div className="flex items-center gap-4">
+          <div className="relative flex-1">
+            <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              className="pl-10"
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search budgets..."
+              value={searchQuery}
+            />
+          </div>
           <Button
-            disabled={Object.keys(filters).length === 0}
-            onClick={() => setFilters({})}
+            onClick={() => setShowFilters(!showFilters)}
+            size="sm"
             variant="outline"
           >
-            Clear Filters
+            <FilterIcon className="mr-2 size-4" />
+            Filters
           </Button>
         </div>
-      )}
 
-      {/* Budgets Table */}
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Event ID</TableHead>
-                <TableHead>Budget</TableHead>
-                <TableHead>Variance</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell className="h-24 text-center" colSpan={5}>
-                    <Loader2Icon className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
-                  </TableCell>
-                </TableRow>
-              ) : filteredBudgets.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    className="h-24 text-center text-muted-foreground"
-                    colSpan={5}
-                  >
-                    {searchQuery || Object.keys(filters).length > 0
-                      ? "No budgets match your search criteria"
-                      : "No budgets found. Create your first budget to get started."}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredBudgets.map((budget) => {
-                  const utilizationPct =
-                    budget.totalBudgetAmount > 0
-                      ? (budget.totalActualAmount / budget.totalBudgetAmount) *
-                        100
-                      : 0;
+        {showFilters && (
+          <div className="grid gap-4 md:grid-cols-3">
+            <Select
+              onValueChange={(value) =>
+                setFilters({
+                  ...filters,
+                  status:
+                    value === "all" ? undefined : (value as EventBudgetStatus),
+                })
+              }
+              value={filters.status || "all"}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="exceeded">Exceeded</SelectItem>
+              </SelectContent>
+            </Select>
 
-                  return (
-                    <TableRow key={budget.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2 text-sm">
-                          <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                          {budget.eventId.slice(0, 8)}...
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">
-                              Budget: {formatCurrency(budget.totalBudgetAmount)}
-                            </span>
-                            <span className="text-muted-foreground">
-                              Actual: {formatCurrency(budget.totalActualAmount)}
-                            </span>
+            <Button
+              disabled={Object.keys(filters).length === 0}
+              onClick={() => setFilters({})}
+              variant="outline"
+            >
+              Clear Filters
+            </Button>
+          </div>
+        )}
+      </section>
+
+      {/* Budgets Table Section */}
+      <section>
+        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+          Budgets ({filteredBudgets.length})
+        </h2>
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Event ID</TableHead>
+                  <TableHead>Budget</TableHead>
+                  <TableHead>Variance</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell className="h-24 text-center" colSpan={5}>
+                      <Loader2Icon className="mx-auto size-6 animate-spin text-muted-foreground" />
+                    </TableCell>
+                  </TableRow>
+                ) : filteredBudgets.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      className="h-24 text-center text-muted-foreground"
+                      colSpan={5}
+                    >
+                      {searchQuery || Object.keys(filters).length > 0
+                        ? "No budgets match your search criteria"
+                        : "No budgets found. Create your first budget to get started."}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredBudgets.map((budget) => {
+                    const utilizationPct =
+                      budget.totalBudgetAmount > 0
+                        ? (budget.totalActualAmount / budget.totalBudgetAmount) *
+                          100
+                        : 0;
+
+                    return (
+                      <TableRow key={budget.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2 text-sm">
+                            <CalendarIcon className="size-4 text-muted-foreground" />
+                            {budget.eventId.slice(0, 8)}...
                           </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span
-                              className={getUtilizationColor(utilizationPct)}
-                            >
-                              {utilizationPct.toFixed(1)}% utilized
-                            </span>
-                            {budget.varianceAmount < 0 && (
-                              <span className="flex items-center gap-1 text-red-600">
-                                <AlertTriangleIcon className="h-3 w-3" />
-                                Over budget
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">
+                                Budget: {formatCurrency(budget.totalBudgetAmount)}
                               </span>
+                              <span className="text-muted-foreground">
+                                Actual: {formatCurrency(budget.totalActualAmount)}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span
+                                className={getUtilizationColor(utilizationPct)}
+                              >
+                                {utilizationPct.toFixed(1)}% utilized
+                              </span>
+                              {budget.varianceAmount < 0 && (
+                                <span className="flex items-center gap-1 text-red-600">
+                                  <AlertTriangleIcon className="size-3" />
+                                  Over budget
+                                </span>
+                              )}
+                            </div>
+                            {budget.totalBudgetAmount > 0 && (
+                              <Progress
+                                className="h-2"
+                                value={Math.min(utilizationPct, 100)}
+                              />
                             )}
                           </div>
-                          {budget.totalBudgetAmount > 0 && (
-                            <Progress
-                              className="h-2"
-                              value={Math.min(utilizationPct, 100)}
-                            />
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          <div
-                            className={
-                              budget.varianceAmount < 0
-                                ? "text-red-600"
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            <div
+                              className={
+                                budget.varianceAmount < 0
+                                  ? "text-red-600"
+                                  : budget.varianceAmount > 0
+                                    ? "text-green-600"
+                                    : "text-muted-foreground"
+                              }
+                            >
+                              {formatCurrency(Math.abs(budget.varianceAmount))}
+                              {budget.varianceAmount < 0
+                                ? " over"
                                 : budget.varianceAmount > 0
-                                  ? "text-green-600"
-                                  : "text-muted-foreground"
-                            }
-                          >
-                            {formatCurrency(Math.abs(budget.varianceAmount))}
-                            {budget.varianceAmount < 0
-                              ? " over"
-                              : budget.varianceAmount > 0
-                                ? " under"
-                                : ""}
+                                  ? " under"
+                                  : ""}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {budget.variancePercentage.toFixed(1)}%
+                            </div>
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {budget.variancePercentage.toFixed(1)}%
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(budget.status)}>
+                            {budget.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              onClick={() => handleView(budget)}
+                              size="sm"
+                              variant="ghost"
+                            >
+                              <CalendarIcon className="size-4" />
+                            </Button>
+                            <Button
+                              onClick={() => handleEdit(budget)}
+                              size="sm"
+                              variant="ghost"
+                            >
+                              <EditIcon className="size-4" />
+                            </Button>
+                            <Button
+                              onClick={() => handleDeleteClick(budget)}
+                              size="sm"
+                              variant="ghost"
+                            >
+                              <Trash2Icon className="size-4" />
+                            </Button>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(budget.status)}>
-                          {budget.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            onClick={() => handleView(budget)}
-                            size="sm"
-                            variant="ghost"
-                          >
-                            <CalendarIcon className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            onClick={() => handleEdit(budget)}
-                            size="sm"
-                            variant="ghost"
-                          >
-                            <EditIcon className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            onClick={() => handleDeleteClick(budget)}
-                            size="sm"
-                            variant="ghost"
-                          >
-                            <Trash2Icon className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </section>
 
       {/* Create/Edit Modal */}
       <CreateBudgetModal
@@ -517,7 +536,7 @@ function BudgetDeleteModal({
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
       <div className="relative z-50 w-full max-w-md rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
         <div className="mb-4">
-          <XCircleIcon className="h-12 w-12 text-red-600" />
+          <XCircleIcon className="size-12 text-red-600" />
         </div>
         <h3 className="text-lg font-semibold">Delete Budget</h3>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -529,7 +548,7 @@ function BudgetDeleteModal({
             Cancel
           </Button>
           <Button disabled={loading} onClick={onConfirm} variant="destructive">
-            {loading && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
+            {loading && <Loader2Icon className="mr-2 size-4 animate-spin" />}
             Delete Budget
           </Button>
         </div>

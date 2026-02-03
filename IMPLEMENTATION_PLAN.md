@@ -1849,7 +1849,73 @@ Scheduling Availability Page (`apps/app/app/(authenticated)/scheduling/availabil
 
 ---
 
-### 2.36 Phase 2 Completion Criteria
+### 2.36 Completed UI Improvements (Event Budgets Page)
+
+**Iteration: Event Budgets Page Visual Hierarchy Enhancement**
+
+Event Budgets Page component (`apps/app/app/(authenticated)/events/budgets/budgets-page-client.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Improvements Implemented:**
+
+1. **Page Header Separator**
+   - Added `<Separator />` component between page header and content for clear visual break
+   - Consistent with other pages (Scheduling pages, Kitchen pages, Payroll, Warehouse, Inventory) and all dashboard improvements
+
+2. **Section-Based Organization**
+   - Added semantic `<section>` elements with descriptive headers for each major content area
+   - Each section gets its own header with consistent styling: `text-sm font-medium text-muted-foreground`
+   - Clear visual separation: Performance Overview → Filters → Budgets Table
+
+3. **Card Hierarchy Standardization**
+   - Summary cards now use proper CardDescription → CardTitle order (description first, then value)
+   - Fixed inverted hierarchy where CardTitle was used for labels instead of values
+   - Proper visual hierarchy for metric cards with clear label → value structure
+
+4. **Icon Sizing Consistency**
+   - Changed icon sizes from `h-4 w-4` to `size-4` for consistency with other page improvements
+   - Maintains visual consistency across the platform
+
+5. **Dynamic Count in Section Header**
+   - Budgets table section header now includes dynamic count: "Budgets ({filteredBudgets.length})"
+   - Provides useful context without cluttering the main view
+
+6. **Component Structure**
+   - Changed main content spacing from `space-y-6` to `space-y-8` for better breathing room and visual rhythm
+   - Section headers provide mental model of page structure
+   - Filters section now has proper section header ("Filters")
+
+7. **Semantic HTML Structure**
+   - Wrapped major content areas in semantic `<section>` elements with descriptive headers
+   - Improved accessibility and document structure
+   - Clear visual separation between different content areas
+
+**Key Learnings:**
+
+1. **Section Headers Work for Budgets Management Pages**: Even on data-heavy financial pages with summary stats and tables, adding section headers immediately gives users a mental model of the page structure.
+
+2. **CardDescription + CardTitle Hierarchy for Metrics**: For budget summary cards, the pattern is CardDescription (label like "Total Budget") → CardTitle (value like "$45,000"), not the reverse. This matches the pattern established in other dashboards.
+
+3. **Dynamic Count in Section Header**: Including the filtered count in the section header ("Budgets (12)") provides useful context without cluttering the main view, matching the pattern established in Scheduling Budgets and Scheduling Shifts pages.
+
+4. **space-y-8 vs space-y-6**: Increasing spacing from 6 to 8 creates better visual rhythm for budgets pages with dense information.
+
+5. **Icon Sizing Consistency**: Using `size-4` instead of `h-4 w-4` provides consistent sizing across all components and follows the established design system patterns.
+
+**Remaining Work in Events Module:**
+- None identified — the page is now well-structured with clear visual hierarchy
+
+**Applicability to Other Modules:**
+
+- **Any Financial/Budgets Page**: The section header pattern works well for pages with financial data, summary metrics, and data tables.
+- **Any Page with Summary Cards + Filters + Table**: The pattern of grouping summary stats under a "Performance Overview" section, filters under their own section, and data tables under their own section improves scanability.
+- **Any Page with Multiple Sections**: Apply section headers, separators, and semantic structure.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/events/budgets/budgets-page-client.tsx` - Added Separator, section headers, semantic sections, CardDescription, improved spacing, icon sizing
+
+---
+
+### 2.37 Phase 2 Completion Criteria
 
 Phase 2 is complete when:
 
@@ -1861,7 +1927,7 @@ Phase 2 is complete when:
 
 ---
 
-### 2.36 Relationship to Phase 1
+### 2.38 Relationship to Phase 1
 
 Phase 1 guarantees correctness, integrity, and realtime propagation. Phase 2
 guarantees **usability, power, and trust**.
