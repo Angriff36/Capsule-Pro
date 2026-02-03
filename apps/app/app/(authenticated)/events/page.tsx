@@ -16,7 +16,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
-import { CalendarDaysIcon } from "lucide-react";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import { CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
@@ -83,8 +84,23 @@ const EventsPage = async () => {
       </Header>
       <EventsPageWithSuggestions tenantId={tenantId} />
       <EventsPageClient />
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        <section className="grid gap-4 lg:grid-cols-4">
+      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+        {/* Page Header */}
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl font-bold tracking-tight">Events</h1>
+          <p className="text-muted-foreground">
+            Manage all events, track status, and coordinate operations
+          </p>
+        </div>
+
+        <Separator />
+
+        {/* Performance Overview Section */}
+        <section className="flex flex-col gap-4">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Performance Overview
+          </h2>
+          <div className="grid gap-6 lg:grid-cols-4">
           <Card>
             <CardHeader>
               <CardDescription>Total events</CardDescription>
@@ -126,25 +142,36 @@ const EventsPage = async () => {
             </CardContent>
           </Card>
         </section>
+
+        {/* Events List Section */}
         {events.length === 0 ? (
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <CalendarDaysIcon />
-              </EmptyMedia>
-              <EmptyTitle>No events yet</EmptyTitle>
-              <EmptyDescription>
-                Create your first event to start syncing the events module.
-              </EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent>
-              <Button asChild>
-                <Link href="/events/new">Create event</Link>
-              </Button>
-            </EmptyContent>
-          </Empty>
+          <section className="flex flex-col gap-4">
+            <h2 className="text-sm font-medium text-muted-foreground">
+              Events
+            </h2>
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <CalendarDays />
+                </EmptyMedia>
+                <EmptyTitle>No events yet</EmptyTitle>
+                <EmptyDescription>
+                  Create your first event to start syncing the events module.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button asChild>
+                  <Link href="/events/new">Create event</Link>
+                </Button>
+              </EmptyContent>
+            </Empty>
+          </section>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+          <section className="flex flex-col gap-4">
+            <h2 className="text-sm font-medium text-muted-foreground">
+              Events ({events.length})
+            </h2>
+            <div className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-3">
             {events.map((event) => (
               <EventCard
                 key={`${event.tenantId}-${event.id}`}
@@ -161,7 +188,8 @@ const EventsPage = async () => {
                 }}
               />
             ))}
-          </div>
+            </div>
+          </section>
         )}
       </div>
     </>
