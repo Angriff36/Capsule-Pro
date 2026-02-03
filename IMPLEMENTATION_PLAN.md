@@ -2350,6 +2350,80 @@ CRM Proposals Page components (`apps/app/app/(authenticated)/crm/proposals/page.
 
 ---
 
+### 2.46 Completed UI Improvements (Cycle Counting Page)
+
+**Iteration: Cycle Counting Page Visual Hierarchy Enhancement**
+
+Cycle Counting Page component (`apps/app/app/(authenticated)/cycle-counting/page.tsx`) successfully refactored to establish clear visual hierarchy and improve information architecture.
+
+**Improvements Implemented:**
+
+1. **Page Header Separator**
+   - Added `<Separator />` component between page header and main content for clear visual break
+   - Consistent with other page improvements (Scheduling, Kitchen, Warehouse, Payroll, CRM)
+
+2. **Section-Based Organization**
+   - Added semantic `<section>` elements with descriptive headers for each major content area
+   - Each section gets its own header with consistent styling: `text-sm font-medium text-muted-foreground`
+   - Clear visual separation: Create New Session → Recent Sessions
+
+3. **Design System Component Adoption**
+   - Replaced raw HTML `<input>`, `<textarea>`, `<button>` with design system Input, Textarea, Button components
+   - Replaced raw HTML `<label>` with design system Label component
+   - Replaced custom table with design system Table component (Table, TableHeader, TableBody, TableRow, TableCell, TableHead)
+   - Replaced custom status badges with design system Badge component using variants (default, secondary, outline)
+
+4. **Card Structure Enhancement**
+   - Wrapped form content in Card with CardContent for proper visual grouping
+   - Wrapped table in Card for consistent visual presentation
+   - Empty state now uses design system Empty component with icon, title, and description
+
+5. **Component Structure**
+   - Changed main content spacing to `gap-8` for better breathing room and visual rhythm
+   - Form inputs now use `space-y-6` for consistent vertical rhythm
+   - Individual form groups use `space-y-2` for proper label-input spacing
+   - Section headers provide mental model of page structure
+
+6. **Typography and Spacing Improvements**
+   - Page title changed from `text-3xl font-bold` to `text-3xl font-bold tracking-tight`
+   - Page description now uses `text-muted-foreground` instead of `text-gray-600`
+   - Session name link in table uses `text-primary hover:underline` instead of custom blue colors
+   - Type column uses `capitalize` and `text-muted-foreground` for consistent styling
+
+7. **Status Badge Standardization**
+   - Created `statusVariantMap` using design system variants (default, secondary, outline)
+   - Created `statusLabelMap` for consistent status labels (Finalized, In Progress, Draft)
+   - Removed custom color classes (`bg-green-100`, `bg-yellow-100`, `bg-gray-100`)
+
+**Key Learnings:**
+
+1. **Design System Components Reduce Duplication**: Replacing raw HTML elements with design system components (Input, Textarea, Button, Label, Table, Badge) eliminates custom styling and ensures consistent visual language across the platform.
+
+2. **Section Headers Work for Operations Pages**: Even on operations-critical pages with forms and tables, adding section headers immediately gives users a mental model of the page structure.
+
+3. **Separator After Page Header**: Adding Separator after the page header creates visual breathing room similar to other page improvements.
+
+4. **space-y-8 vs space-y-6**: Using `gap-8` for main content and `space-y-6` for form inputs creates better visual rhythm for operations pages with multiple sections.
+
+5. **Badge Variant Standardization**: Using design system variants (`default`, `secondary`, `outline`) instead of custom color classes provides consistent visual language that adapts to theme changes.
+
+6. **Table Component Consistency**: The design system Table component provides consistent styling without custom classes and maintains proper accessibility attributes.
+
+**Remaining Work in Cycle Counting Module:**
+- None identified — the page is now well-structured with clear visual hierarchy
+
+**Applicability to Other Modules:**
+
+- **Any Page with Raw HTML Elements**: The pattern established here should be applied to replace all remaining raw HTML form elements and tables with design system components.
+- **Any Operations Page with Forms**: The section header pattern works well for pages with data entry forms and result tables.
+- **Any Page with Custom Tables**: Replace custom table styling with design system Table component for consistency.
+- **Any Page with Multiple Sections**: Apply section headers, separators, and semantic structure.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/cycle-counting/page.tsx` - Added Separator, section headers, design system components (Input, Textarea, Button, Label, Table, Badge, Card, Empty), improved spacing, typography
+
+---
+
 ### 2.38 Phase 2 Completion Criteria
 
 Phase 2 is complete when:
