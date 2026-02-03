@@ -5154,3 +5154,56 @@ Scheduling Shifts Page component (`apps/app/app/(authenticated)/scheduling/shift
 
 **Files Modified:**
 - `apps/app/app/(authenticated)/scheduling/shifts/components/shifts-client.tsx` - Updated container (flex flex-col gap-8 → flex flex-1 flex-col gap-8 p-4 pt-0), updated page header (space-y-0.5 pattern), updated sections (mb-3 → space-y-4), added Separator between header and filters
+
+---
+
+### 2.58 Completed UI Improvements (Scheduling Budgets Page Container/Spacing Standardization)
+
+**Iteration: Scheduling Budgets Page Container and Spacing Pattern Standardization**
+
+Scheduling Budgets Page component (`apps/app/app/(authenticated)/scheduling/budgets/components/budgets-client.tsx`) successfully refactored to establish consistent visual hierarchy with the established platform patterns.
+
+**Improvements Implemented:**
+
+1. **Container Structure Standardization**
+   - Changed from `space-y-8` to `flex flex-1 flex-col gap-8 p-4 pt-0`
+   - Aligns with the platform pattern used across all improved pages
+   - Consistent spacing and layout structure
+
+2. **Page Header Pattern**
+   - Updated header to use `space-y-0.5` container pattern
+   - Matches the platform pattern for page headers
+   - Consistent spacing between title and description
+
+3. **Section Spacing Pattern**
+   - Updated Performance Overview section to use `space-y-4` instead of inline `mb-4`
+   - Updated Filters section to use `space-y-4` instead of inline `mb-4`
+   - Updated Budgets Table section to use `space-y-4` instead of inline `mb-4`
+   - Added `className="space-y-4"` to all section elements
+
+4. **Semantic Section Consistency**
+   - All sections now use `space-y-4` pattern
+   - Section headers have consistent styling across all sections
+   - Better maintainability with container-based spacing
+
+**Key Learnings:**
+
+1. **Container Pattern Consistency**: Pages using `space-y-8` should be updated to `flex flex-1 flex-col gap-8 p-4 pt-0` for consistent platform layout behavior with proper padding.
+
+2. **Page Header Pattern**: Using `space-y-0.5` on the page header provides consistent, tight spacing between page title and description across all pages.
+
+3. **Section Spacing Pattern**: Using `space-y-4` on section containers is more maintainable than inline `mb-4` classes and aligns with platform patterns.
+
+4. **Semantic Sections**: Wrapping content areas in semantic `<section>` elements with `space-y-4` improves accessibility and provides clear content grouping.
+
+**Remaining Work in Scheduling Module:**
+- None identified — all major scheduling pages (Dashboard, Shifts, Budgets, Availability, Time-Off, Requests) now have consistent visual hierarchy with proper container structure and spacing patterns
+
+**Applicability to Other Modules:**
+
+- **Any Page with `space-y-8`**: Pages using `space-y-8` should be updated to `flex flex-1 flex-col gap-8 p-4 pt-0` for consistency.
+- **Any Page with Inline `mb-4` on Section Headers**: Section containers should use `space-y-4` instead of inline margin classes.
+- **Any Page Missing `space-y-0.5` on Header**: Pages whose header content lacks the proper wrapper should be updated.
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/scheduling/budgets/components/budgets-client.tsx` - Updated container (space-y-8 → flex flex-1 flex-col gap-8 p-4 pt-0), updated page header (space-y-0.5 pattern), updated all sections (mb-4 → space-y-4)

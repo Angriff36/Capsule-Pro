@@ -193,43 +193,45 @@ export function BudgetsClient() {
     .reduce((sum, b) => sum + (b.actual_spend || 0), 0);
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Labor Budgets</h1>
-          <p className="text-muted-foreground">
-            Manage and track labor budgets for your organization
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            disabled={loading}
-            onClick={fetchBudgets}
-            size="sm"
-            variant="outline"
-          >
-            {loading ? (
-              <Loader2Icon className="size-4 animate-spin" />
-            ) : (
-              <RefreshCwIcon className="size-4" />
-            )}
-          </Button>
-          <Button onClick={handleCreate} size="sm">
-            <PlusIcon className="mr-2 size-4" />
-            New Budget
-          </Button>
+    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+      {/* Page Header */}
+      <div className="space-y-0.5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Labor Budgets</h1>
+            <p className="text-muted-foreground">
+              Manage and track labor budgets for your organization
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              disabled={loading}
+              onClick={fetchBudgets}
+              size="sm"
+              variant="outline"
+            >
+              {loading ? (
+                <Loader2Icon className="size-4 animate-spin" />
+              ) : (
+                <RefreshCwIcon className="size-4" />
+              )}
+            </Button>
+            <Button onClick={handleCreate} size="sm">
+              <PlusIcon className="mr-2 size-4" />
+              New Budget
+            </Button>
+          </div>
         </div>
       </div>
 
       <Separator />
 
-      {/* Summary Cards Section */}
-      <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+      {/* Performance Overview Section */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">
           Performance Overview
         </h2>
-      <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -278,11 +280,11 @@ export function BudgetsClient() {
       </section>
 
       {/* Filters Section */}
-      <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">
           Filters
         </h2>
-      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4">
         <div className="relative flex-1">
           <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -356,11 +358,11 @@ export function BudgetsClient() {
       </section>
 
       {/* Budgets Table Section */}
-      <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">
           Budgets ({filteredBudgets.length})
         </h2>
-      <Card>
+        <Card>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
