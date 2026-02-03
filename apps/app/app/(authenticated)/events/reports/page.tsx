@@ -125,7 +125,7 @@ const EventReportsPage = async () => {
       </Header>
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
-        <div className="flex flex-col gap-1">
+        <div className="space-y-0.5">
           <h1 className="text-3xl font-bold tracking-tight">Event Reports</h1>
           <p className="text-muted-foreground">
             Pre-Event Review checklists for upcoming events
@@ -135,7 +135,7 @@ const EventReportsPage = async () => {
         <Separator />
 
         {/* Performance Overview Section */}
-        <section className="flex flex-col gap-4">
+        <section className="space-y-4">
           <h2 className="text-sm font-medium text-muted-foreground">
             Performance Overview
           </h2>
@@ -185,7 +185,7 @@ const EventReportsPage = async () => {
 
         {/* Reports List Section */}
         {reportsWithEvents.length === 0 ? (
-          <section className="flex flex-col gap-4">
+          <section className="space-y-4">
             <h2 className="text-sm font-medium text-muted-foreground">
               Reports
             </h2>
@@ -211,7 +211,7 @@ const EventReportsPage = async () => {
             </Empty>
           </section>
         ) : (
-          <section className="flex flex-col gap-4">
+          <section className="space-y-4">
             <h2 className="text-sm font-medium text-muted-foreground">
               Reports ({reportsWithEvents.length})
             </h2>
