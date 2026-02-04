@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { format } from "date-fns"
-import { PlusIcon } from "lucide-react"
+import { format } from "date-fns";
+import { PlusIcon } from "lucide-react";
+import * as React from "react";
 
-import { Button } from "../ui/button"
-import { Calendar } from "../ui/calendar"
-import { Card, CardContent, CardFooter } from "../ui/card"
+import { Button } from "../ui/button";
+import { Calendar } from "../ui/calendar";
+import { Card, CardContent, CardFooter } from "../ui/card";
 
 const events = [
   {
@@ -24,28 +24,28 @@ const events = [
     from: "2025-06-12T14:00:00",
     to: "2025-06-12T15:00:00",
   },
-]
+];
 
 function formatDateRange(from: Date, to: Date): string {
-  const fromTime = format(from, "h:mm a")
-  const toTime = format(to, "h:mm a")
-  return `${fromTime} - ${toTime}`
+  const fromTime = format(from, "h:mm a");
+  const toTime = format(to, "h:mm a");
+  return `${fromTime} - ${toTime}`;
 }
 
 export function CalendarBlock() {
   const [date, setDate] = React.useState<Date | undefined>(
     new Date(2025, 5, 12)
-  )
+  );
 
   return (
     <Card className="w-fit py-4">
       <CardContent className="px-4">
         <Calendar
-          mode="single"
-          selected={date}
-          onSelect={setDate}
           className="bg-transparent p-0"
+          mode="single"
+          onSelect={setDate}
           required
+          selected={date}
         />
       </CardContent>
       <CardFooter className="flex flex-col items-start gap-3 border-t px-4 !pt-4">
@@ -58,10 +58,10 @@ export function CalendarBlock() {
             })}
           </div>
           <Button
-            variant="ghost"
-            size="icon"
             className="size-6"
+            size="icon"
             title="Add Event"
+            variant="ghost"
           >
             <PlusIcon />
             <span className="sr-only">Add Event</span>
@@ -70,8 +70,8 @@ export function CalendarBlock() {
         <div className="flex w-full flex-col gap-2">
           {events.map((event) => (
             <div
-              key={event.title}
               className="bg-muted after:bg-primary/70 relative rounded-md p-2 pl-6 text-sm after:absolute after:inset-y-2 after:left-2 after:w-1 after:rounded-full"
+              key={event.title}
             >
               <div className="font-medium">{event.title}</div>
               <div className="text-muted-foreground text-xs">
@@ -82,5 +82,5 @@ export function CalendarBlock() {
         </div>
       </CardFooter>
     </Card>
-  )
+  );
 }

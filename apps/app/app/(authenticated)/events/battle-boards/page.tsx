@@ -18,13 +18,7 @@ import {
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import {
-  FileText,
-  LayoutGrid,
-  Plus,
-  Shield,
-  Users,
-} from "lucide-react";
+import { FileText, LayoutGrid, Plus, Shield, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
@@ -119,46 +113,46 @@ const BattleBoardsPage = async () => {
             Performance Overview
           </h2>
           <div className="grid gap-6 lg:grid-cols-4">
-          <Card>
-            <CardHeader>
-              <CardDescription>Total Boards</CardDescription>
-              <CardTitle className="text-2xl">{boards.length}</CardTitle>
-            </CardHeader>
-            <CardContent className="text-muted-foreground text-sm">
-              Event battle boards
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardDescription>Draft</CardDescription>
-              <CardTitle className="text-2xl">{draftCount}</CardTitle>
-            </CardHeader>
-            <CardContent className="text-muted-foreground text-sm">
-              In progress
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardDescription>Ready / Published</CardDescription>
-              <CardTitle className="text-2xl">
-                {readyCount + publishedCount}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-muted-foreground text-sm">
-              Ready for printing
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardDescription>Total Staff</CardDescription>
-              <CardTitle className="text-2xl">{totalStaff}</CardTitle>
-            </CardHeader>
-            <CardContent className="text-muted-foreground text-sm flex items-center gap-1">
-              <Users className="size-3.5" />
-              Assigned across boards
-            </CardContent>
-          </Card>
-        </div>
+            <Card>
+              <CardHeader>
+                <CardDescription>Total Boards</CardDescription>
+                <CardTitle className="text-2xl">{boards.length}</CardTitle>
+              </CardHeader>
+              <CardContent className="text-muted-foreground text-sm">
+                Event battle boards
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardDescription>Draft</CardDescription>
+                <CardTitle className="text-2xl">{draftCount}</CardTitle>
+              </CardHeader>
+              <CardContent className="text-muted-foreground text-sm">
+                In progress
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardDescription>Ready / Published</CardDescription>
+                <CardTitle className="text-2xl">
+                  {readyCount + publishedCount}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-muted-foreground text-sm">
+                Ready for printing
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardDescription>Total Staff</CardDescription>
+                <CardTitle className="text-2xl">{totalStaff}</CardTitle>
+              </CardHeader>
+              <CardContent className="text-muted-foreground text-sm flex items-center gap-1">
+                <Users className="size-3.5" />
+                Assigned across boards
+              </CardContent>
+            </Card>
+          </div>
         </section>
 
         {/* Battle Boards List Section */}
@@ -194,67 +188,68 @@ const BattleBoardsPage = async () => {
               Battle Boards ({boards.length})
             </h2>
             <div className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-3">
-            {boards.map((board) => {
-              const data = board.boardData as BattleBoardData;
-              const staffCount = data?.staff?.length ?? 0;
-              const timelineCount = data?.timeline?.length ?? 0;
+              {boards.map((board) => {
+                const data = board.boardData as BattleBoardData;
+                const staffCount = data?.staff?.length ?? 0;
+                const timelineCount = data?.timeline?.length ?? 0;
 
-              return (
-                <Link
-                  className="group"
-                  href={`/events/battle-boards/${board.id}`}
-                  key={board.id}
-                >
-                  <Card className="h-full transition hover:border-primary/40 hover:shadow-md">
-                    <CardHeader className="gap-1">
-                      <CardDescription className="flex items-center justify-between gap-2">
-                        <span className="truncate">
-                          {data?.meta?.eventDate
-                            ? new Date(data.meta.eventDate).toLocaleDateString(
-                                "en-US",
-                                { dateStyle: "medium" }
-                              )
-                            : "No date"}
-                        </span>
-                        <Badge
-                          className="capitalize"
-                          variant={
-                            statusVariantMap[
-                              board.status as keyof typeof statusVariantMap
-                            ] ?? "outline"
-                          }
-                        >
-                          {statusLabelMap[
-                            board.status as keyof typeof statusLabelMap
-                          ] ?? board.status}
-                        </Badge>
-                      </CardDescription>
-                      <CardTitle className="text-lg">
-                        {board.board_name}
-                      </CardTitle>
-                      <CardDescription>
-                        {data?.meta?.eventName || "Untitled Event"}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid gap-3 text-sm">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Users className="size-4" />
-                        <span>{staffCount} staff assigned</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Shield className="size-4" />
-                        <span>{timelineCount} timeline items</span>
-                      </div>
-                      {board.is_template && (
-                        <Badge className="w-fit" variant="outline">
-                          Template
-                        </Badge>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
+                return (
+                  <Link
+                    className="group"
+                    href={`/events/battle-boards/${board.id}`}
+                    key={board.id}
+                  >
+                    <Card className="h-full transition hover:border-primary/40 hover:shadow-md">
+                      <CardHeader className="gap-1">
+                        <CardDescription className="flex items-center justify-between gap-2">
+                          <span className="truncate">
+                            {data?.meta?.eventDate
+                              ? new Date(
+                                  data.meta.eventDate
+                                ).toLocaleDateString("en-US", {
+                                  dateStyle: "medium",
+                                })
+                              : "No date"}
+                          </span>
+                          <Badge
+                            className="capitalize"
+                            variant={
+                              statusVariantMap[
+                                board.status as keyof typeof statusVariantMap
+                              ] ?? "outline"
+                            }
+                          >
+                            {statusLabelMap[
+                              board.status as keyof typeof statusLabelMap
+                            ] ?? board.status}
+                          </Badge>
+                        </CardDescription>
+                        <CardTitle className="text-lg">
+                          {board.board_name}
+                        </CardTitle>
+                        <CardDescription>
+                          {data?.meta?.eventName || "Untitled Event"}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="grid gap-3 text-sm">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Users className="size-4" />
+                          <span>{staffCount} staff assigned</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Shield className="size-4" />
+                          <span>{timelineCount} timeline items</span>
+                        </div>
+                        {board.is_template && (
+                          <Badge className="w-fit" variant="outline">
+                            Template
+                          </Badge>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
             </div>
           </section>
         )}

@@ -10,6 +10,24 @@
 4. **Generate docs**: `pnpm docs:generate-db` (TODO: implement)
 5. **Commit all**: Include schema, migration, and docs
 
+## Schema Change Workflow (Enforced)
+
+1. Ensure `DATABASE_URL` points at the correct Neon branch for this work.
+2. Run `pnpm db:check` to detect drift before you touch migrations.
+3. Update `packages/database/prisma/schema.prisma`.
+4. Run `pnpm migrate` (now includes `db:check` and `prisma generate`).
+5. If `db:check` fails with drift, run `pnpm db:repair` to create a repair migration.
+6. Append an entry to `DATABASE_PRE_MIGRATION_CHECKLIST.md`.
+7. Apply migrations with `pnpm db:deploy`.
+8. Do not edit existing migrations. Always add a new migration directory.
+
+Notes:
+1. `pnpm db:check` blocks **additive drift** (missing columns/tables/indexes). It ignores drop-only differences like existing DB FKs because Prisma uses `relationMode = "prisma"`.
+2. `pnpm db:repair` generates a **safe, additive-only** migration, but it will **drop and recreate indexes** when needed to fix index drift (no data loss).
+3. Review the migration SQL before applying.
+4. Avoid `prisma db push` (disabled in this repo).
+5. If you intentionally want a destructive reset, use `pnpm --filter @repo/database exec prisma migrate reset --force`.
+
 ## Documentation Structure
 
 ```

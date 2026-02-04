@@ -99,7 +99,9 @@ const KitchenSchedulePage = () => {
 
       {/* Quick Stats Section */}
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">Quick Stats</h2>
+        <h2 className="text-sm font-medium text-muted-foreground">
+          Quick Stats
+        </h2>
         <Card>
           <CardContent className="pt-6">
             <div className="grid gap-6 md:grid-cols-4">

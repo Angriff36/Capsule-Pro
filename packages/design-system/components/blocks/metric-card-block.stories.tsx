@@ -138,21 +138,21 @@ export const DashboardGrid: Story = {
       <div className="grid gap-4 md:grid-cols-3">
         <MetricCardBlock
           description="Weekly revenue"
-          value="$142,000"
           detail="+8% vs. last week"
           trend="up"
+          value="$142,000"
         />
         <MetricCardBlock
           description="Labor efficiency"
-          value="92%"
           detail="2% rebound after labor reforecast"
           trend="up"
+          value="92%"
         />
         <MetricCardBlock
           description="Waste reduction"
-          value="-12%"
           detail="Down vs. historical baseline"
           trend="down"
+          value="-12%"
         />
       </div>
     </div>
@@ -171,18 +171,18 @@ export const FocusMetricsGrid: Story = {
       <div className="grid gap-4 md:grid-cols-3">
         <MetricCardBlock
           description="Profit margin"
-          value="21.4%"
           detail="Events with real-time budgets aligned"
+          value="21.4%"
         />
         <MetricCardBlock
           description="Service completion"
-          value="98%"
           detail="Events on track this week"
+          value="98%"
         />
         <MetricCardBlock
           description="Client satisfaction"
-          value="4.8/5"
           detail="Surveyed after delivery"
+          value="4.8/5"
         />
       </div>
     </div>
@@ -199,19 +199,15 @@ export const CostAnalysisGrid: Story = {
         Cost Analysis
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <MetricCardBlock
-          description="Budgeted Revenue"
-          value="$45,000"
-        />
+        <MetricCardBlock description="Budgeted Revenue" value="$45,000" />
         <MetricCardBlock
           description="Actual Revenue"
+          detail="+6.3% over budget"
           value="$47,850"
           valueColor="text-green-600"
-          detail="+6.3% over budget"
         />
         <MetricCardBlock
           description="Total Costs"
-          value="$35,420"
           detail={
             <div className="space-y-1 text-xs text-muted-foreground">
               <div>Food: $14,200</div>
@@ -219,12 +215,13 @@ export const CostAnalysisGrid: Story = {
               <div>Overhead: $2,820</div>
             </div>
           }
+          value="$35,420"
         />
         <MetricCardBlock
           description="Gross Margin"
+          detail="26.0% (+3.2% vs budget)"
           value="$12,430"
           valueColor="text-green-600"
-          detail="26.0% (+3.2% vs budget)"
         />
       </div>
     </div>

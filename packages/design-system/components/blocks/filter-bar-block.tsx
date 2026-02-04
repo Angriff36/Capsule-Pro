@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { Search, X } from "lucide-react";
 
 import { Badge } from "../ui/badge";
@@ -67,7 +66,7 @@ export function FilterBarBlock() {
             </Select>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
+            <Button size="sm" variant="outline">
               Reset
             </Button>
             <Button size="sm">Apply filters</Button>
@@ -75,7 +74,7 @@ export function FilterBarBlock() {
         </div>
         <div className="flex flex-wrap gap-2">
           {activeFilters.map((filter) => (
-            <Badge key={filter} variant="secondary" className="gap-1">
+            <Badge className="gap-1" key={filter} variant="secondary">
               {filter}
               <X className="size-3 opacity-60" />
             </Badge>

@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Progress } from "@repo/design-system/components/ui/progress";
 import {
@@ -19,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -232,129 +232,130 @@ export function BudgetsClient() {
           Performance Overview
         </h2>
         <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Active Budgets
-            </CardTitle>
-            <CheckCircle2Icon className="size-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <CardDescription>{budgets.length} total budgets</CardDescription>
-            <div className="text-2xl font-bold">{activeBudgets}</div>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Active Budgets
+              </CardTitle>
+              <CheckCircle2Icon className="size-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <CardDescription>{budgets.length} total budgets</CardDescription>
+              <div className="text-2xl font-bold">{activeBudgets}</div>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Budget Target
-            </CardTitle>
-            <DollarSignIcon className="size-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <CardDescription>Cost-based budgets only</CardDescription>
-            <div className="text-2xl font-bold">
-              ${totalBudgetTarget.toFixed(2)}
-            </div>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Budget Target
+              </CardTitle>
+              <DollarSignIcon className="size-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <CardDescription>Cost-based budgets only</CardDescription>
+              <div className="text-2xl font-bold">
+                ${totalBudgetTarget.toFixed(2)}
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Actual Spend</CardTitle>
-            <DollarSignIcon className="size-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <CardDescription>
-              {totalBudgetTarget > 0
-                ? `${((totalActualSpend / totalBudgetTarget) * 100).toFixed(1)}% utilized`
-                : "N/A"}
-            </CardDescription>
-            <div className="text-2xl font-bold">
-              ${totalActualSpend.toFixed(2)}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Actual Spend
+              </CardTitle>
+              <DollarSignIcon className="size-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                {totalBudgetTarget > 0
+                  ? `${((totalActualSpend / totalBudgetTarget) * 100).toFixed(1)}% utilized`
+                  : "N/A"}
+              </CardDescription>
+              <div className="text-2xl font-bold">
+                ${totalActualSpend.toFixed(2)}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </section>
 
       {/* Filters Section */}
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Filters
-        </h2>
+        <h2 className="text-sm font-medium text-muted-foreground">Filters</h2>
         <div className="flex items-center gap-4">
-        <div className="relative flex-1">
-          <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            className="pl-10"
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search budgets..."
-            value={searchQuery}
-          />
-        </div>
-        <Button
-          onClick={() => setShowFilters(!showFilters)}
-          size="sm"
-          variant="outline"
-        >
-          <FilterIcon className="mr-2 size-4" />
-          Filters
-        </Button>
-      </div>
-
-      {showFilters && (
-        <div className="mt-4 grid gap-4 md:grid-cols-4">
-          <Select
-            onValueChange={(value) =>
-              setFilters({
-                ...filters,
-                budgetType: value === "all" ? undefined : (value as BudgetType),
-              })
-            }
-            value={filters.budgetType || "all"}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Budget Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="event">Event</SelectItem>
-              <SelectItem value="week">Weekly</SelectItem>
-              <SelectItem value="month">Monthly</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select
-            onValueChange={(value) =>
-              setFilters({
-                ...filters,
-                status: value === "all" ? undefined : (value as BudgetStatus),
-              })
-            }
-            value={filters.status || "all"}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="paused">Paused</SelectItem>
-              <SelectItem value="archived">Archived</SelectItem>
-            </SelectContent>
-          </Select>
-
+          <div className="relative flex-1">
+            <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              className="pl-10"
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search budgets..."
+              value={searchQuery}
+            />
+          </div>
           <Button
-            disabled={Object.keys(filters).length === 0}
-            onClick={() => setFilters({})}
+            onClick={() => setShowFilters(!showFilters)}
+            size="sm"
             variant="outline"
           >
-            Clear Filters
+            <FilterIcon className="mr-2 size-4" />
+            Filters
           </Button>
         </div>
-      )}
+
+        {showFilters && (
+          <div className="mt-4 grid gap-4 md:grid-cols-4">
+            <Select
+              onValueChange={(value) =>
+                setFilters({
+                  ...filters,
+                  budgetType:
+                    value === "all" ? undefined : (value as BudgetType),
+                })
+              }
+              value={filters.budgetType || "all"}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Budget Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="event">Event</SelectItem>
+                <SelectItem value="week">Weekly</SelectItem>
+                <SelectItem value="month">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              onValueChange={(value) =>
+                setFilters({
+                  ...filters,
+                  status: value === "all" ? undefined : (value as BudgetStatus),
+                })
+              }
+              value={filters.status || "all"}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="paused">Paused</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button
+              disabled={Object.keys(filters).length === 0}
+              onClick={() => setFilters({})}
+              variant="outline"
+            >
+              Clear Filters
+            </Button>
+          </div>
+        )}
       </section>
 
       {/* Budgets Table Section */}
@@ -363,152 +364,157 @@ export function BudgetsClient() {
           Budgets ({filteredBudgets.length})
         </h2>
         <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Budget Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Period</TableHead>
-                <TableHead>Target</TableHead>
-                <TableHead>Utilization</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell className="h-24 text-center" colSpan={7}>
-                    <Loader2Icon className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
-                  </TableCell>
+                  <TableHead>Budget Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Period</TableHead>
+                  <TableHead>Target</TableHead>
+                  <TableHead>Utilization</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ) : filteredBudgets.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    className="h-24 text-center text-muted-foreground"
-                    colSpan={7}
-                  >
-                    {searchQuery || Object.keys(filters).length > 0
-                      ? "No budgets match your search criteria"
-                      : "No budgets found. Create your first budget to get started."}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredBudgets.map((budget) => {
-                  const utilizationPct =
-                    budget.actual_spend && budget.budget_target > 0
-                      ? (budget.actual_spend / budget.budget_target) * 100
-                      : 0;
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell className="h-24 text-center" colSpan={7}>
+                      <Loader2Icon className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+                    </TableCell>
+                  </TableRow>
+                ) : filteredBudgets.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      className="h-24 text-center text-muted-foreground"
+                      colSpan={7}
+                    >
+                      {searchQuery || Object.keys(filters).length > 0
+                        ? "No budgets match your search criteria"
+                        : "No budgets found. Create your first budget to get started."}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredBudgets.map((budget) => {
+                    const utilizationPct =
+                      budget.actual_spend && budget.budget_target > 0
+                        ? (budget.actual_spend / budget.budget_target) * 100
+                        : 0;
 
-                  return (
-                    <TableRow key={budget.id}>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{budget.name}</div>
-                          {budget.description && (
-                            <div className="text-sm text-muted-foreground">
-                              {budget.description}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {getBudgetTypeName(budget.budget_type)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {budget.period_start && budget.period_end ? (
-                          <div className="flex items-center gap-2 text-sm">
-                            <CalendarIcon className="size-4 text-muted-foreground" />
-                            {new Date(budget.period_start).toLocaleDateString()}{" "}
-                            - {new Date(budget.period_end).toLocaleDateString()}
-                          </div>
-                        ) : budget.event_id ? (
-                          <span className="text-sm">
-                            Event: {budget.event_id.slice(0, 8)}...
-                          </span>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">
-                            Ongoing
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">
-                            {getBudgetUnitSymbol(budget.budget_unit)}
-                            {budget.budget_target.toFixed(2)}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {budget.budget_unit === "hours" ? "hours" : "cost"}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span
-                              className={getUtilizationColor(utilizationPct)}
-                            >
-                              {budget.actual_spend !== null
-                                ? formatUtilization(
-                                    budget.actual_spend,
-                                    budget.budget_target,
-                                    budget.budget_unit
-                                  )
-                                : "No data"}
-                            </span>
-                            {budget.actual_spend !== null && (
-                              <span
-                                className={`font-medium ${getUtilizationColor(
-                                  utilizationPct
-                                )}`}
-                              >
-                                {utilizationPct.toFixed(1)}%
-                              </span>
+                    return (
+                      <TableRow key={budget.id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{budget.name}</div>
+                            {budget.description && (
+                              <div className="text-sm text-muted-foreground">
+                                {budget.description}
+                              </div>
                             )}
                           </div>
-                          {budget.actual_spend !== null && (
-                            <Progress
-                              className="h-2"
-                              value={Math.min(utilizationPct, 100)}
-                            />
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {getBudgetTypeName(budget.budget_type)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {budget.period_start && budget.period_end ? (
+                            <div className="flex items-center gap-2 text-sm">
+                              <CalendarIcon className="size-4 text-muted-foreground" />
+                              {new Date(
+                                budget.period_start
+                              ).toLocaleDateString()}{" "}
+                              -{" "}
+                              {new Date(budget.period_end).toLocaleDateString()}
+                            </div>
+                          ) : budget.event_id ? (
+                            <span className="text-sm">
+                              Event: {budget.event_id.slice(0, 8)}...
+                            </span>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">
+                              Ongoing
+                            </span>
                           )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(budget.status)}>
-                          {budget.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            onClick={() => handleEdit(budget)}
-                            size="sm"
-                            variant="ghost"
-                          >
-                            <EditIcon className="size-4" />
-                          </Button>
-                          <Button
-                            onClick={() => handleDeleteClick(budget)}
-                            size="sm"
-                            variant="ghost"
-                          >
-                            <Trash2Icon className="size-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">
+                              {getBudgetUnitSymbol(budget.budget_unit)}
+                              {budget.budget_target.toFixed(2)}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {budget.budget_unit === "hours"
+                                ? "hours"
+                                : "cost"}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <span
+                                className={getUtilizationColor(utilizationPct)}
+                              >
+                                {budget.actual_spend !== null
+                                  ? formatUtilization(
+                                      budget.actual_spend,
+                                      budget.budget_target,
+                                      budget.budget_unit
+                                    )
+                                  : "No data"}
+                              </span>
+                              {budget.actual_spend !== null && (
+                                <span
+                                  className={`font-medium ${getUtilizationColor(
+                                    utilizationPct
+                                  )}`}
+                                >
+                                  {utilizationPct.toFixed(1)}%
+                                </span>
+                              )}
+                            </div>
+                            {budget.actual_spend !== null && (
+                              <Progress
+                                className="h-2"
+                                value={Math.min(utilizationPct, 100)}
+                              />
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(budget.status)}>
+                            {budget.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              onClick={() => handleEdit(budget)}
+                              size="sm"
+                              variant="ghost"
+                            >
+                              <EditIcon className="size-4" />
+                            </Button>
+                            <Button
+                              onClick={() => handleDeleteClick(budget)}
+                              size="sm"
+                              variant="ghost"
+                            >
+                              <Trash2Icon className="size-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </section>
 
       {/* Create/Edit Modal */}

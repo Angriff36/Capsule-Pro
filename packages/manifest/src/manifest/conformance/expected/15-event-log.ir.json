@@ -11,9 +11,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "total",
@@ -30,10 +28,7 @@
       ],
       "computedProperties": [],
       "relationships": [],
-      "commands": [
-        "addItem",
-        "complete"
-      ],
+      "commands": ["addItem", "complete"],
       "constraints": [],
       "policies": []
     }
@@ -128,9 +123,7 @@
           }
         }
       ],
-      "emits": [
-        "OrderUpdated"
-      ]
+      "emits": ["OrderUpdated"]
     },
     {
       "name": "complete",
@@ -151,9 +144,7 @@
           }
         }
       ],
-      "emits": [
-        "OrderCompleted"
-      ]
+      "emits": ["OrderCompleted"]
     }
   ],
   "policies": []

@@ -130,7 +130,9 @@ const AdministrativeOverviewBoardsPage = () => (
         <Card>
           <CardHeader>
             <CardTitle>Critical Alerts</CardTitle>
-            <CardDescription>Issues that need cross-team attention</CardDescription>
+            <CardDescription>
+              Issues that need cross-team attention
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -140,8 +142,12 @@ const AdministrativeOverviewBoardsPage = () => (
                     <p className="text-sm font-medium">{alert.label}</p>
                     <Badge variant="destructive">Action</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">{alert.detail}</p>
-                  {index < criticalAlerts.length - 1 && <Separator className="mt-3" />}
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {alert.detail}
+                  </p>
+                  {index < criticalAlerts.length - 1 && (
+                    <Separator className="mt-3" />
+                  )}
                 </div>
               ))}
             </div>
@@ -150,7 +156,9 @@ const AdministrativeOverviewBoardsPage = () => (
         <Card>
           <CardHeader>
             <CardTitle>Board Health</CardTitle>
-            <CardDescription>Freshness of updates across channels</CardDescription>
+            <CardDescription>
+              Freshness of updates across channels
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -164,7 +172,9 @@ const AdministrativeOverviewBoardsPage = () => (
               </div>
               <Separator />
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Average response time</span>
+                <span className="text-muted-foreground">
+                  Average response time
+                </span>
                 <span className="font-medium">12m</span>
               </div>
               <div className="flex items-center justify-between text-sm">

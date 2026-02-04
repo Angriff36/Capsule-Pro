@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -14,7 +15,6 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { Separator } from "@repo/design-system/components/ui/separator";
 
 const performanceCards = [
   {
@@ -79,14 +79,16 @@ const topEvents = [
 const statusVariantMap = {
   "On track": "secondary" as const,
   "Need review": "outline" as const,
-  "Completed": "outline" as const,
+  Completed: "outline" as const,
 };
 
 const AnalyticsPage = () => (
   <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
     {/* Page Header */}
     <div className="space-y-0.5">
-      <h1 className="text-3xl font-bold tracking-tight">Operational Insights</h1>
+      <h1 className="text-3xl font-bold tracking-tight">
+        Operational Insights
+      </h1>
       <p className="text-muted-foreground">
         A single dashboard for events, kitchen, and finance performance.
       </p>
@@ -165,12 +167,16 @@ const AnalyticsPage = () => (
               {topEvents.map((event) => (
                 <TableRow key={event.name}>
                   <TableCell className="font-medium">{event.name}</TableCell>
-                  <TableCell className="text-right">
-                    {event.revenue}
-                  </TableCell>
+                  <TableCell className="text-right">{event.revenue}</TableCell>
                   <TableCell className="text-right">{event.margin}</TableCell>
                   <TableCell>
-                    <Badge variant={statusVariantMap[event.status as keyof typeof statusVariantMap] ?? "outline"}>
+                    <Badge
+                      variant={
+                        statusVariantMap[
+                          event.status as keyof typeof statusVariantMap
+                        ] ?? "outline"
+                      }
+                    >
                       {event.status}
                     </Badge>
                   </TableCell>

@@ -56,7 +56,6 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
     notFound();
   }
 
-
   const rsvpCount = await database.eventGuest.count({
     where: {
       tenantId,
@@ -313,17 +312,23 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
         Prisma.sql`
           SELECT
             ii.id AS "inventoryItemId",
-            ii.ingredient_id AS "ingredientId",
+            i.id AS "ingredientId",
             ii.name AS "itemName",
-            ii.par_level AS "parLevel"
+            ii.reorder_level AS "parLevel"
           FROM tenant_inventory.inventory_items ii
+          JOIN tenant_kitchen.ingredients i
+            ON i.tenant_id = ii.tenant_id
+            AND i.name = ii.name
+            AND i.deleted_at IS NULL
           WHERE ii.tenant_id = ${tenantId}
-            AND ii.ingredient_id IN (${Prisma.join(ingredientIds)})
+            AND i.id IN (${Prisma.join(ingredientIds)})
             AND ii.deleted_at IS NULL
         `
       );
 
-      const inventoryItemIds = inventoryItems.map((item) => item.inventoryItemId);
+      const inventoryItemIds = inventoryItems.map(
+        (item) => item.inventoryItemId
+      );
 
       type InventoryStockRow = {
         itemId: string;
@@ -348,7 +353,10 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
             )
           : [];
 
-      const stockByItem = new Map<string, { onHand: number; unitCode: string | null }>();
+      const stockByItem = new Map<
+        string,
+        { onHand: number; unitCode: string | null }
+      >();
 
       for (const stock of inventoryStock) {
         const existing = stockByItem.get(stock.itemId);
@@ -418,9 +426,8 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
   }));
 
   const prepTasks = validatePrepTasks(normalizedPrepTasks);
-  const prepTasksForClient: Awaited<
-    ReturnType<typeof serializePrepTasks>
-  > = serializePrepTasks(prepTasks);
+  const prepTasksForClient: Awaited<ReturnType<typeof serializePrepTasks>> =
+    serializePrepTasks(prepTasks);
 
   const relatedEvents = await database.event.findMany({
     where: {
@@ -460,7 +467,8 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
       status: related.status,
       venueName: related.venueName,
       venueAddress: related.venueAddress,
-      ticketPrice: related.ticketPrice === null ? null : Number(related.ticketPrice),
+      ticketPrice:
+        related.ticketPrice === null ? null : Number(related.ticketPrice),
       ticketTier: related.ticketTier,
       eventFormat: related.eventFormat,
       accessibilityOptions: related.accessibilityOptions ?? [],
@@ -504,18 +512,19 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
       </Header>
       <EventDetailsClient
         budget={budget}
-        eventDishes={eventDishes}
-        recipeDetails={recipeDetails}
-        inventoryCoverage={inventoryCoverage}
-        relatedEvents={relatedEventsForClient}
-        relatedGuestCounts={Object.fromEntries(relatedGuestCountMap)}
-        rsvpCount={rsvpCount}
         event={{
           ...event,
           budget: event.budget === null ? null : Number(event.budget),
-          ticketPrice: event.ticketPrice === null ? null : Number(event.ticketPrice),
+          ticketPrice:
+            event.ticketPrice === null ? null : Number(event.ticketPrice),
         }}
+        eventDishes={eventDishes}
+        inventoryCoverage={inventoryCoverage}
         prepTasks={prepTasksForClient}
+        recipeDetails={recipeDetails}
+        relatedEvents={relatedEventsForClient}
+        relatedGuestCounts={Object.fromEntries(relatedGuestCountMap)}
+        rsvpCount={rsvpCount}
         tenantId={tenantId}
       />
     </>

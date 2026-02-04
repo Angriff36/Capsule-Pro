@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -26,7 +27,6 @@ import {
 } from "@tanstack/react-table";
 import { FilterIcon, Loader2Icon, PlusIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getLocations } from "../../shifts/actions";
@@ -276,85 +276,87 @@ export function AvailabilityClient() {
           Filters
         </h2>
         <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
-        <FilterIcon className="size-4 text-muted-foreground" />
-        <Select
-          onValueChange={(value) => handleFilterChange("employeeId", value)}
-          value={filters.employeeId}
-        >
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by employee" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">All employees</SelectItem>
-            {employees.map((emp) => (
-              <SelectItem key={emp.id} value={emp.id}>
-                {emp.first_name} {emp.last_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          onValueChange={(value) =>
-            handleFilterChange(
-              "dayOfWeek",
-              value ? Number.parseInt(value, 10) : undefined
-            )
-          }
-          value={filters.dayOfWeek?.toString() || ""}
-        >
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by day" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">All days</SelectItem>
-            <SelectItem value="0">Sunday</SelectItem>
-            <SelectItem value="1">Monday</SelectItem>
-            <SelectItem value="2">Tuesday</SelectItem>
-            <SelectItem value="3">Wednesday</SelectItem>
-            <SelectItem value="4">Thursday</SelectItem>
-            <SelectItem value="5">Friday</SelectItem>
-            <SelectItem value="6">Saturday</SelectItem>
-          </SelectContent>
-        </Select>
-        <Input
-          className="max-w-[150px]"
-          onChange={(e) => handleFilterChange("effectiveDate", e.target.value)}
-          type="date"
-          value={filters.effectiveDate}
-        />
-        <Select
-          onValueChange={(value) =>
-            handleFilterChange("isActive", value === "true")
-          }
-        >
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">All</SelectItem>
-            <SelectItem value="true">Available</SelectItem>
-            <SelectItem value="false">Unavailable</SelectItem>
-          </SelectContent>
-        </Select>
-        {(filters.employeeId ||
-          filters.dayOfWeek !== undefined ||
-          filters.effectiveDate ||
-          filters.isActive !== undefined) && (
-          <Button
-            onClick={() =>
-              setFilters({
-                employeeId: "",
-                dayOfWeek: undefined,
-                effectiveDate: "",
-                isActive: undefined,
-              })
-            }
-            size="sm"
-            variant="ghost"
+          <FilterIcon className="size-4 text-muted-foreground" />
+          <Select
+            onValueChange={(value) => handleFilterChange("employeeId", value)}
+            value={filters.employeeId}
           >
-            Clear filters
-          </Button>
-        )}
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filter by employee" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All employees</SelectItem>
+              {employees.map((emp) => (
+                <SelectItem key={emp.id} value={emp.id}>
+                  {emp.first_name} {emp.last_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            onValueChange={(value) =>
+              handleFilterChange(
+                "dayOfWeek",
+                value ? Number.parseInt(value, 10) : undefined
+              )
+            }
+            value={filters.dayOfWeek?.toString() || ""}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filter by day" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All days</SelectItem>
+              <SelectItem value="0">Sunday</SelectItem>
+              <SelectItem value="1">Monday</SelectItem>
+              <SelectItem value="2">Tuesday</SelectItem>
+              <SelectItem value="3">Wednesday</SelectItem>
+              <SelectItem value="4">Thursday</SelectItem>
+              <SelectItem value="5">Friday</SelectItem>
+              <SelectItem value="6">Saturday</SelectItem>
+            </SelectContent>
+          </Select>
+          <Input
+            className="max-w-[150px]"
+            onChange={(e) =>
+              handleFilterChange("effectiveDate", e.target.value)
+            }
+            type="date"
+            value={filters.effectiveDate}
+          />
+          <Select
+            onValueChange={(value) =>
+              handleFilterChange("isActive", value === "true")
+            }
+          >
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All</SelectItem>
+              <SelectItem value="true">Available</SelectItem>
+              <SelectItem value="false">Unavailable</SelectItem>
+            </SelectContent>
+          </Select>
+          {(filters.employeeId ||
+            filters.dayOfWeek !== undefined ||
+            filters.effectiveDate ||
+            filters.isActive !== undefined) && (
+            <Button
+              onClick={() =>
+                setFilters({
+                  employeeId: "",
+                  dayOfWeek: undefined,
+                  effectiveDate: "",
+                  isActive: undefined,
+                })
+              }
+              size="sm"
+              variant="ghost"
+            >
+              Clear filters
+            </Button>
+          )}
         </div>
       </section>
 
@@ -366,63 +368,63 @@ export function AvailabilityClient() {
           </h2>
         </div>
         <div className="border rounded-lg">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell
-                  className="h-24 text-center"
-                  colSpan={columns.length}
-                >
-                  <Loader2Icon className="size-8 animate-spin mx-auto text-muted-foreground" />
-                </TableCell>
-              </TableRow>
-            ) : availability.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  className="h-24 text-center text-muted-foreground"
-                  colSpan={columns.length}
-                >
-                  No availability entries found. Create a new availability entry
-                  to get started.
-                </TableCell>
-              </TableRow>
-            ) : (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  className="cursor-pointer hover:bg-muted/50"
-                  key={row.id}
-                  onClick={() => handleRowClick(row.original)}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell
+                    className="h-24 text-center"
+                    colSpan={columns.length}
+                  >
+                    <Loader2Icon className="size-8 animate-spin mx-auto text-muted-foreground" />
+                  </TableCell>
+                </TableRow>
+              ) : availability.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    className="h-24 text-center text-muted-foreground"
+                    colSpan={columns.length}
+                  >
+                    No availability entries found. Create a new availability
+                    entry to get started.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    className="cursor-pointer hover:bg-muted/50"
+                    key={row.id}
+                    onClick={() => handleRowClick(row.original)}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
       </section>
 

@@ -11,9 +11,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "value",
@@ -187,9 +185,7 @@
         }
       ],
       "relationships": [],
-      "commands": [
-        "testCoercion"
-      ],
+      "commands": ["testCoercion"],
       "constraints": [],
       "policies": []
     }

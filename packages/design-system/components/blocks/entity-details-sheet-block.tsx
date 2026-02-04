@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { Calendar, ExternalLink, Mail, Phone } from "lucide-react";
+import type * as React from "react";
 
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -28,7 +28,7 @@ export function EntityDetailsSheetBlock() {
     {
       label: "Status",
       value: (
-        <Badge variant="secondary" className="font-medium">
+        <Badge className="font-medium" variant="secondary">
           Active
         </Badge>
       ),
@@ -61,8 +61,8 @@ export function EntityDetailsSheetBlock() {
                 <div className="grid gap-3 text-sm">
                   {detailRows.map((row) => (
                     <div
-                      key={row.label}
                       className="flex items-center justify-between"
+                      key={row.label}
                     >
                       <span className="text-muted-foreground">{row.label}</span>
                       <span className="font-medium">{row.value}</span>

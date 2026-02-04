@@ -19,7 +19,13 @@ import { deleteEventById } from "../actions";
 type DeleteEventButtonProps = {
   eventId: string;
   eventTitle: string;
-  variant?: "default" | "ghost" | "destructive" | "link" | "outline" | "secondary";
+  variant?:
+    | "default"
+    | "ghost"
+    | "destructive"
+    | "link"
+    | "outline"
+    | "secondary";
   size?: "default" | "sm" | "lg" | "icon";
   className?: string;
   /** When true, show icon-only button (for list cards). */

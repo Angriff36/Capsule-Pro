@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -339,7 +339,9 @@ export const ShipmentsPageClient = () => {
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       {/* Page Header */}
       <div className="space-y-0.5">
-        <h1 className="text-3xl font-bold tracking-tight">Warehouse Shipments</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Warehouse Shipments
+        </h1>
         <p className="text-muted-foreground">
           Manage warehouse shipments, tracking, and delivery status
         </p>
@@ -405,171 +407,171 @@ export const ShipmentsPageClient = () => {
         </div>
         <Card>
           <CardContent className="space-y-4 pt-6">
-          {/* Filters */}
-          <div className="flex flex-wrap gap-4">
-            <div className="flex-1 min-w-[200px]">
-              <Label htmlFor="search">Search</Label>
-              <Input
-                id="search"
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setPage(1);
-                }}
-                placeholder="Search shipments..."
-                value={searchQuery}
-              />
+            {/* Filters */}
+            <div className="flex flex-wrap gap-4">
+              <div className="flex-1 min-w-[200px]">
+                <Label htmlFor="search">Search</Label>
+                <Input
+                  id="search"
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setPage(1);
+                  }}
+                  placeholder="Search shipments..."
+                  value={searchQuery}
+                />
+              </div>
+              <div className="min-w-[180px]">
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  onValueChange={(v) => {
+                    setStatusFilter(v as ShipmentStatus | "all");
+                    setPage(1);
+                  }}
+                  value={statusFilter}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STATUS_FILTERS.map((filter) => (
+                      <SelectItem key={filter.value} value={filter.value}>
+                        {filter.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="min-w-[180px]">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                onValueChange={(v) => {
-                  setStatusFilter(v as ShipmentStatus | "all");
-                  setPage(1);
-                }}
-                value={statusFilter}
-              >
-                <SelectTrigger id="status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STATUS_FILTERS.map((filter) => (
-                    <SelectItem key={filter.value} value={filter.value}>
-                      {filter.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
 
-          {/* Shipments Table */}
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Shipment #</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Scheduled Date</TableHead>
-                  <TableHead>Route</TableHead>
-                  <TableHead>Items</TableHead>
-                  <TableHead>Value</TableHead>
-                  <TableHead>Carrier</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
+            {/* Shipments Table */}
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell
-                      className="text-center text-muted-foreground"
-                      colSpan={8}
-                    >
-                      Loading...
-                    </TableCell>
+                    <TableHead>Shipment #</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Scheduled Date</TableHead>
+                    <TableHead>Route</TableHead>
+                    <TableHead>Items</TableHead>
+                    <TableHead>Value</TableHead>
+                    <TableHead>Carrier</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ) : shipments.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      className="text-center text-muted-foreground"
-                      colSpan={8}
-                    >
-                      No shipments found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  shipments.map((shipment) => (
-                    <TableRow key={shipment.id}>
-                      <TableCell className="font-medium">
-                        {shipment.shipment_number ||
-                          `SHP-${shipment.id.slice(0, 8)}`}
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell
+                        className="text-center text-muted-foreground"
+                        colSpan={8}
+                      >
+                        Loading...
                       </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={getShipmentStatusColor(shipment.status)}
-                        >
-                          {getShipmentStatusLabel(shipment.status)}
-                        </Badge>
+                    </TableRow>
+                  ) : shipments.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        className="text-center text-muted-foreground"
+                        colSpan={8}
+                      >
+                        No shipments found
                       </TableCell>
-                      <TableCell>
-                        {shipment.scheduled_date
-                          ? formatDate(shipment.scheduled_date)
-                          : "-"}
-                      </TableCell>
-                      <TableCell>
-                        {shipment.location_id || shipment.event_id
-                          ? `${shipment.location_id ? "Warehouse" : "Event"} → ${shipment.event_id || shipment.location_id || ""}`
-                          : "-"}
-                      </TableCell>
-                      <TableCell>{shipment.total_items || 0}</TableCell>
-                      <TableCell>
-                        {shipment.total_value
-                          ? formatCurrency(shipment.total_value)
-                          : "-"}
-                      </TableCell>
-                      <TableCell>
-                        {shipment.carrier || shipment.tracking_number
-                          ? `${shipment.carrier || ""} ${shipment.tracking_number ? `(${shipment.tracking_number})` : ""}`
-                          : "-"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={() => {
-                              setSelectedShipment(shipment);
-                              loadShipmentItems(shipment.id);
-                            }}
-                            size="sm"
-                            variant="outline"
+                    </TableRow>
+                  ) : (
+                    shipments.map((shipment) => (
+                      <TableRow key={shipment.id}>
+                        <TableCell className="font-medium">
+                          {shipment.shipment_number ||
+                            `SHP-${shipment.id.slice(0, 8)}`}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={getShipmentStatusColor(shipment.status)}
                           >
-                            View
-                          </Button>
-                          {getAllowedTransitions(shipment).length > 0 && (
+                            {getShipmentStatusLabel(shipment.status)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {shipment.scheduled_date
+                            ? formatDate(shipment.scheduled_date)
+                            : "-"}
+                        </TableCell>
+                        <TableCell>
+                          {shipment.location_id || shipment.event_id
+                            ? `${shipment.location_id ? "Warehouse" : "Event"} → ${shipment.event_id || shipment.location_id || ""}`
+                            : "-"}
+                        </TableCell>
+                        <TableCell>{shipment.total_items || 0}</TableCell>
+                        <TableCell>
+                          {shipment.total_value
+                            ? formatCurrency(shipment.total_value)
+                            : "-"}
+                        </TableCell>
+                        <TableCell>
+                          {shipment.carrier || shipment.tracking_number
+                            ? `${shipment.carrier || ""} ${shipment.tracking_number ? `(${shipment.tracking_number})` : ""}`
+                            : "-"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
                             <Button
-                              onClick={() => openStatusModal(shipment)}
+                              onClick={() => {
+                                setSelectedShipment(shipment);
+                                loadShipmentItems(shipment.id);
+                              }}
                               size="sm"
                               variant="outline"
                             >
-                              Update Status
+                              View
                             </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
-                Showing {(page - 1) * limit + 1} to{" "}
-                {Math.min(page * limit, totalCount)} of {totalCount} shipments
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  disabled={page === 1}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  size="sm"
-                  variant="outline"
-                >
-                  Previous
-                </Button>
-                <Button
-                  disabled={page === totalPages}
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  size="sm"
-                  variant="outline"
-                >
-                  Next
-                </Button>
-              </div>
+                            {getAllowedTransitions(shipment).length > 0 && (
+                              <Button
+                                onClick={() => openStatusModal(shipment)}
+                                size="sm"
+                                variant="outline"
+                              >
+                                Update Status
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
             </div>
-          )}
-        </CardContent>
-      </Card>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  Showing {(page - 1) * limit + 1} to{" "}
+                  {Math.min(page * limit, totalCount)} of {totalCount} shipments
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    disabled={page === 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    disabled={page === totalPages}
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </section>
 
       {/* Selected Shipment Detail View */}

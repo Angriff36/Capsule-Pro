@@ -349,98 +349,100 @@ const WarehouseDashboardPage = async () => {
               Performance Overview
             </h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription className="flex items-center gap-2">
-                  <BoxesIcon className="size-4" />
-                  Total SKUs
-                </CardDescription>
-                <CardTitle className="text-3xl">{metrics.totalItems}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  <Progress
-                    className="h-1.5 flex-1"
-                    value={metrics.healthPercentage}
-                  />
-                  <span className="text-xs text-muted-foreground">
-                    {metrics.healthPercentage}% healthy
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardDescription className="flex items-center gap-2">
+                    <BoxesIcon className="size-4" />
+                    Total SKUs
+                  </CardDescription>
+                  <CardTitle className="text-3xl">
+                    {metrics.totalItems}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-2">
+                    <Progress
+                      className="h-1.5 flex-1"
+                      value={metrics.healthPercentage}
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      {metrics.healthPercentage}% healthy
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription className="flex items-center gap-2">
-                  <AlertTriangleIcon className="size-4" />
-                  Stock Alerts
-                </CardDescription>
-                <CardTitle
-                  className={`text-3xl ${alertItems.length > 0 ? "text-destructive" : ""}`}
-                >
-                  {alertItems.length}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-wrap gap-1">
-                {metrics.outOfStockCount > 0 && (
-                  <Badge className="text-xs" variant="destructive">
-                    {metrics.outOfStockCount} out
-                  </Badge>
-                )}
-                {metrics.criticalCount > 0 && (
-                  <Badge className="text-xs" variant="destructive">
-                    {metrics.criticalCount} critical
-                  </Badge>
-                )}
-                {metrics.lowCount > 0 && (
-                  <Badge className="text-xs" variant="secondary">
-                    {metrics.lowCount} low
-                  </Badge>
-                )}
-                {alertItems.length === 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    All items healthy
-                  </span>
-                )}
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardDescription className="flex items-center gap-2">
+                    <AlertTriangleIcon className="size-4" />
+                    Stock Alerts
+                  </CardDescription>
+                  <CardTitle
+                    className={`text-3xl ${alertItems.length > 0 ? "text-destructive" : ""}`}
+                  >
+                    {alertItems.length}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-1">
+                  {metrics.outOfStockCount > 0 && (
+                    <Badge className="text-xs" variant="destructive">
+                      {metrics.outOfStockCount} out
+                    </Badge>
+                  )}
+                  {metrics.criticalCount > 0 && (
+                    <Badge className="text-xs" variant="destructive">
+                      {metrics.criticalCount} critical
+                    </Badge>
+                  )}
+                  {metrics.lowCount > 0 && (
+                    <Badge className="text-xs" variant="secondary">
+                      {metrics.lowCount} low
+                    </Badge>
+                  )}
+                  {alertItems.length === 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      All items healthy
+                    </span>
+                  )}
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription className="flex items-center gap-2">
-                  <TruckIcon className="size-4" />
-                  Pending Shipments
-                </CardDescription>
-                <CardTitle className="text-3xl">
-                  {inboundCount + outboundCount}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex gap-3 text-sm text-muted-foreground">
-                <span>{inboundCount} inbound</span>
-                <span>{outboundCount} outbound</span>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardDescription className="flex items-center gap-2">
+                    <TruckIcon className="size-4" />
+                    Pending Shipments
+                  </CardDescription>
+                  <CardTitle className="text-3xl">
+                    {inboundCount + outboundCount}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex gap-3 text-sm text-muted-foreground">
+                  <span>{inboundCount} inbound</span>
+                  <span>{outboundCount} outbound</span>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription className="flex items-center gap-2">
-                  <PackageIcon className="size-4" />
-                  Inventory Value
-                </CardDescription>
-                <CardTitle className="text-3xl">
-                  $
-                  {totalValue.toLocaleString(undefined, {
-                    maximumFractionDigits: 0,
-                  })}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                {inventoryItems.length > 0
-                  ? `$${(totalValue / inventoryItems.length).toFixed(2)} avg per SKU`
-                  : "No items"}
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardDescription className="flex items-center gap-2">
+                    <PackageIcon className="size-4" />
+                    Inventory Value
+                  </CardDescription>
+                  <CardTitle className="text-3xl">
+                    $
+                    {totalValue.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">
+                  {inventoryItems.length > 0
+                    ? `$${(totalValue / inventoryItems.length).toFixed(2)} avg per SKU`
+                    : "No items"}
+                </CardContent>
+              </Card>
             </div>
           </section>
 
@@ -450,62 +452,62 @@ const WarehouseDashboardPage = async () => {
               Inventory Activity
             </h2>
             <div className="grid gap-6 lg:grid-cols-2">
-            {/* Recent Activity */}
-            <RecentActivityCard maxItems={6} transactions={transactions} />
+              {/* Recent Activity */}
+              <RecentActivityCard maxItems={6} transactions={transactions} />
 
-            {/* Pending Purchase Orders */}
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">
-                    Pending Purchase Orders
-                  </CardTitle>
-                  <Badge className="text-xs" variant="outline">
-                    {pendingOrders.length} orders
-                  </Badge>
-                </div>
-                <CardDescription className="text-xs">
-                  Orders awaiting delivery
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {pendingOrders.length > 0 ? (
-                  pendingOrders.map((po) => (
-                    <Link
-                      className="group block"
-                      href={`/warehouse/receiving?po=${po.po_number}`}
-                      key={po.id}
-                    >
-                      <div className="flex items-center justify-between gap-2 rounded-md border p-2 transition hover:bg-muted/50">
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium group-hover:text-primary">
-                            {po.po_number}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {Number(po.item_count)} items
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="text-right">
-                            <p className="text-sm font-medium">
-                              ${Number(po.total).toLocaleString()}
+              {/* Pending Purchase Orders */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base">
+                      Pending Purchase Orders
+                    </CardTitle>
+                    <Badge className="text-xs" variant="outline">
+                      {pendingOrders.length} orders
+                    </Badge>
+                  </div>
+                  <CardDescription className="text-xs">
+                    Orders awaiting delivery
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {pendingOrders.length > 0 ? (
+                    pendingOrders.map((po) => (
+                      <Link
+                        className="group block"
+                        href={`/warehouse/receiving?po=${po.po_number}`}
+                        key={po.id}
+                      >
+                        <div className="flex items-center justify-between gap-2 rounded-md border p-2 transition hover:bg-muted/50">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium group-hover:text-primary">
+                              {po.po_number}
                             </p>
-                            <p className="text-xs text-muted-foreground capitalize">
-                              {po.status}
+                            <p className="text-xs text-muted-foreground">
+                              {Number(po.item_count)} items
                             </p>
                           </div>
-                          <ArrowRightIcon className="size-4 text-muted-foreground group-hover:text-primary" />
+                          <div className="flex items-center gap-2">
+                            <div className="text-right">
+                              <p className="text-sm font-medium">
+                                ${Number(po.total).toLocaleString()}
+                              </p>
+                              <p className="text-xs text-muted-foreground capitalize">
+                                {po.status}
+                              </p>
+                            </div>
+                            <ArrowRightIcon className="size-4 text-muted-foreground group-hover:text-primary" />
+                          </div>
                         </div>
-                      </div>
-                    </Link>
-                  ))
-                ) : (
-                  <div className="py-4 text-center text-sm text-muted-foreground">
-                    No pending orders
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="py-4 text-center text-sm text-muted-foreground">
+                      No pending orders
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </section>
 
@@ -524,62 +526,65 @@ const WarehouseDashboardPage = async () => {
                 </Button>
               </div>
               <Card>
-              <CardContent>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {alertItems.slice(0, 6).map((item) => (
-                    <Link
-                      className="group"
-                      href={`/inventory/items?highlight=${item.id}`}
-                      key={item.id}
-                    >
-                      <Card className="transition hover:border-primary/40 hover:shadow-md">
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0 flex-1">
-                              <p className="font-medium truncate group-hover:text-primary">
-                                {item.name}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {item.itemNumber}
-                              </p>
+                <CardContent>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {alertItems.slice(0, 6).map((item) => (
+                      <Link
+                        className="group"
+                        href={`/inventory/items?highlight=${item.id}`}
+                        key={item.id}
+                      >
+                        <Card className="transition hover:border-primary/40 hover:shadow-md">
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <p className="font-medium truncate group-hover:text-primary">
+                                  {item.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {item.itemNumber}
+                                </p>
+                              </div>
+                              <Badge
+                                className="text-xs shrink-0"
+                                variant={stockHealthBadgeVariants[item.status]}
+                              >
+                                {stockHealthLabels[item.status]}
+                              </Badge>
                             </div>
-                            <Badge
-                              className="text-xs shrink-0"
-                              variant={stockHealthBadgeVariants[item.status]}
-                            >
-                              {stockHealthLabels[item.status]}
-                            </Badge>
-                          </div>
-                          <div className="mt-3 space-y-1">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-muted-foreground">
-                                On Hand
-                              </span>
-                              <span className="font-medium">
-                                {item.quantityOnHand.toLocaleString()}
-                              </span>
+                            <div className="mt-3 space-y-1">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">
+                                  On Hand
+                                </span>
+                                <span className="font-medium">
+                                  {item.quantityOnHand.toLocaleString()}
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">
+                                  Reorder At
+                                </span>
+                                <span>
+                                  {item.reorderLevel.toLocaleString()}
+                                </span>
+                              </div>
+                              <Progress
+                                className="h-1.5 mt-2"
+                                value={Math.min(
+                                  (item.quantityOnHand / item.reorderLevel) *
+                                    100,
+                                  100
+                                )}
+                              />
                             </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-muted-foreground">
-                                Reorder At
-                              </span>
-                              <span>{item.reorderLevel.toLocaleString()}</span>
-                            </div>
-                            <Progress
-                              className="h-1.5 mt-2"
-                              value={Math.min(
-                                (item.quantityOnHand / item.reorderLevel) * 100,
-                                100
-                              )}
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </section>
           )}
         </div>

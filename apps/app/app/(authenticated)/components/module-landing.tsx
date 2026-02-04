@@ -1,7 +1,4 @@
-import {
-  Card,
-  CardContent,
-} from "@repo/design-system/components/ui/card";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { Separator } from "@repo/design-system/components/ui/separator";
 
 type ModuleLandingProperties = {

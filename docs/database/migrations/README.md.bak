@@ -1,4 +1,6 @@
-# Database Migrations
+# Database Migrations (Deprecated)
+
+**DEPRECATED**: This file is a backup snapshot. See `docs/database/migrations/README.md` for the current workflow (`db:check`/`db:repair`/`db:deploy`).
 
 This directory contains documentation for all database migrations in the Convoy catering management system.
 

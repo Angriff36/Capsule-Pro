@@ -176,10 +176,10 @@ function buildAdjustmentResponse(
     if (val === null) {
       return 0;
     }
-    if (typeof val === 'number') {
+    if (typeof val === "number") {
       return val;
     }
-    if (val && typeof val === 'object' && 'toNumber' in val && val.toNumber) {
+    if (val && typeof val === "object" && "toNumber" in val && val.toNumber) {
       return val.toNumber();
     }
     return Number(val);

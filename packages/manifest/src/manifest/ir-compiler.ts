@@ -1,41 +1,41 @@
-import { Parser } from './parser';
-import {
-  ManifestProgram,
-  EntityNode,
-  PropertyNode,
-  ComputedPropertyNode,
-  RelationshipNode,
-  CommandNode,
-  ParameterNode,
-  PolicyNode,
-  StoreNode,
-  OutboxEventNode,
-  ConstraintNode,
-  ActionNode,
-  ExpressionNode,
-  TypeNode,
-} from './types';
-import {
+import type {
+  CompileToIRResult,
   IR,
-  IRModule,
-  IREntity,
-  IRProperty,
-  IRComputedProperty,
-  IRRelationship,
-  IRConstraint,
-  IRStore,
-  IREvent,
-  IRCommand,
-  IRParameter,
   IRAction,
+  IRCommand,
+  IRComputedProperty,
+  IRConstraint,
+  IRDiagnostic,
+  IREntity,
+  IREvent,
+  IRExpression,
+  IRModule,
+  IRParameter,
   IRPolicy,
+  IRProperty,
+  IRRelationship,
+  IRStore,
   IRType,
   IRValue,
-  IRExpression,
-  IRDiagnostic,
-  CompileToIRResult,
   PropertyModifier,
-} from './ir';
+} from "./ir";
+import { Parser } from "./parser";
+import type {
+  ActionNode,
+  CommandNode,
+  ComputedPropertyNode,
+  ConstraintNode,
+  EntityNode,
+  ExpressionNode,
+  ManifestProgram,
+  OutboxEventNode,
+  ParameterNode,
+  PolicyNode,
+  PropertyNode,
+  RelationshipNode,
+  StoreNode,
+  TypeNode,
+} from "./types";
 
 export class IRCompiler {
   private diagnostics: IRDiagnostic[] = [];
@@ -55,7 +55,7 @@ export class IRCompiler {
       });
     }
 
-    if (errors.some(e => e.severity === 'error')) {
+    if (errors.some((e) => e.severity === "error")) {
       return { ir: null, diagnostics: this.diagnostics };
     }
 
@@ -64,32 +64,50 @@ export class IRCompiler {
   }
 
   private transformProgram(program: ManifestProgram): IR {
-    const modules: IRModule[] = program.modules.map(m => this.transformModule(m));
+    const modules: IRModule[] = program.modules.map((m) =>
+      this.transformModule(m)
+    );
     const entities: IREntity[] = [
-      ...program.entities.map(e => this.transformEntity(e)),
-      ...program.modules.flatMap(m => m.entities.map(e => this.transformEntity(e, m.name))),
+      ...program.entities.map((e) => this.transformEntity(e)),
+      ...program.modules.flatMap((m) =>
+        m.entities.map((e) => this.transformEntity(e, m.name))
+      ),
     ];
     const stores: IRStore[] = [
-      ...program.stores.map(s => this.transformStore(s)),
-      ...program.modules.flatMap(m => m.stores.map(s => this.transformStore(s))),
+      ...program.stores.map((s) => this.transformStore(s)),
+      ...program.modules.flatMap((m) =>
+        m.stores.map((s) => this.transformStore(s))
+      ),
     ];
     const events: IREvent[] = [
-      ...program.events.map(e => this.transformEvent(e)),
-      ...program.modules.flatMap(m => m.events.map(e => this.transformEvent(e))),
+      ...program.events.map((e) => this.transformEvent(e)),
+      ...program.modules.flatMap((m) =>
+        m.events.map((e) => this.transformEvent(e))
+      ),
     ];
     const commands: IRCommand[] = [
-      ...program.commands.map(c => this.transformCommand(c)),
-      ...program.modules.flatMap(m => m.commands.map(c => this.transformCommand(c, m.name))),
-      ...program.entities.flatMap(e => e.commands.map(c => this.transformCommand(c, undefined, e.name))),
-      ...program.modules.flatMap(m => m.entities.flatMap(e => e.commands.map(c => this.transformCommand(c, m.name, e.name)))),
+      ...program.commands.map((c) => this.transformCommand(c)),
+      ...program.modules.flatMap((m) =>
+        m.commands.map((c) => this.transformCommand(c, m.name))
+      ),
+      ...program.entities.flatMap((e) =>
+        e.commands.map((c) => this.transformCommand(c, undefined, e.name))
+      ),
+      ...program.modules.flatMap((m) =>
+        m.entities.flatMap((e) =>
+          e.commands.map((c) => this.transformCommand(c, m.name, e.name))
+        )
+      ),
     ];
     const policies: IRPolicy[] = [
-      ...program.policies.map(p => this.transformPolicy(p)),
-      ...program.modules.flatMap(m => m.policies.map(p => this.transformPolicy(p, m.name))),
+      ...program.policies.map((p) => this.transformPolicy(p)),
+      ...program.modules.flatMap((m) =>
+        m.policies.map((p) => this.transformPolicy(p, m.name))
+      ),
     ];
 
     return {
-      version: '1.0',
+      version: "1.0",
       modules,
       entities,
       stores,
@@ -99,14 +117,21 @@ export class IRCompiler {
     };
   }
 
-  private transformModule(m: { name: string; entities: EntityNode[]; commands: CommandNode[]; stores: StoreNode[]; events: OutboxEventNode[]; policies: PolicyNode[] }): IRModule {
+  private transformModule(m: {
+    name: string;
+    entities: EntityNode[];
+    commands: CommandNode[];
+    stores: StoreNode[];
+    events: OutboxEventNode[];
+    policies: PolicyNode[];
+  }): IRModule {
     return {
       name: m.name,
-      entities: m.entities.map(e => e.name),
-      commands: m.commands.map(c => c.name),
-      stores: m.stores.map(s => s.entity),
-      events: m.events.map(e => e.name),
-      policies: m.policies.map(p => p.name),
+      entities: m.entities.map((e) => e.name),
+      commands: m.commands.map((c) => c.name),
+      stores: m.stores.map((s) => s.entity),
+      events: m.events.map((e) => e.name),
+      policies: m.policies.map((p) => p.name),
     };
   }
 
@@ -114,12 +139,14 @@ export class IRCompiler {
     return {
       name: e.name,
       module: moduleName,
-      properties: e.properties.map(p => this.transformProperty(p)),
-      computedProperties: e.computedProperties.map(cp => this.transformComputedProperty(cp)),
-      relationships: e.relationships.map(r => this.transformRelationship(r)),
-      commands: e.commands.map(c => c.name),
-      constraints: e.constraints.map(c => this.transformConstraint(c)),
-      policies: e.policies.map(p => p.name),
+      properties: e.properties.map((p) => this.transformProperty(p)),
+      computedProperties: e.computedProperties.map((cp) =>
+        this.transformComputedProperty(cp)
+      ),
+      relationships: e.relationships.map((r) => this.transformRelationship(r)),
+      commands: e.commands.map((c) => c.name),
+      constraints: e.constraints.map((c) => this.transformConstraint(c)),
+      policies: e.policies.map((p) => p.name),
     };
   }
 
@@ -127,12 +154,16 @@ export class IRCompiler {
     return {
       name: p.name,
       type: this.transformType(p.dataType),
-      defaultValue: p.defaultValue ? this.transformExprToValue(p.defaultValue) : undefined,
+      defaultValue: p.defaultValue
+        ? this.transformExprToValue(p.defaultValue)
+        : undefined,
       modifiers: p.modifiers as PropertyModifier[],
     };
   }
 
-  private transformComputedProperty(cp: ComputedPropertyNode): IRComputedProperty {
+  private transformComputedProperty(
+    cp: ComputedPropertyNode
+  ): IRComputedProperty {
     return {
       name: cp.name,
       type: this.transformType(cp.dataType),
@@ -175,11 +206,11 @@ export class IRCompiler {
   }
 
   private transformEvent(e: OutboxEventNode): IREvent {
-    if ('fields' in e.payload) {
+    if ("fields" in e.payload) {
       return {
         name: e.name,
         channel: e.channel,
-        payload: (e.payload.fields as ParameterNode[]).map(f => ({
+        payload: (e.payload.fields as ParameterNode[]).map((f) => ({
           name: f.name,
           type: this.transformType(f.dataType),
           required: f.required,
@@ -193,14 +224,18 @@ export class IRCompiler {
     };
   }
 
-  private transformCommand(c: CommandNode, moduleName?: string, entityName?: string): IRCommand {
+  private transformCommand(
+    c: CommandNode,
+    moduleName?: string,
+    entityName?: string
+  ): IRCommand {
     return {
       name: c.name,
       module: moduleName,
       entity: entityName,
-      parameters: c.parameters.map(p => this.transformParameter(p)),
-      guards: (c.guards || []).map(g => this.transformExpression(g)),
-      actions: c.actions.map(a => this.transformAction(a)),
+      parameters: c.parameters.map((p) => this.transformParameter(p)),
+      guards: (c.guards || []).map((g) => this.transformExpression(g)),
+      actions: c.actions.map((a) => this.transformAction(a)),
       emits: c.emits || [],
       returns: c.returns ? this.transformType(c.returns) : undefined,
     };
@@ -211,7 +246,9 @@ export class IRCompiler {
       name: p.name,
       type: this.transformType(p.dataType),
       required: p.required,
-      defaultValue: p.defaultValue ? this.transformExprToValue(p.defaultValue) : undefined,
+      defaultValue: p.defaultValue
+        ? this.transformExprToValue(p.defaultValue)
+        : undefined,
     };
   }
 
@@ -223,7 +260,11 @@ export class IRCompiler {
     };
   }
 
-  private transformPolicy(p: PolicyNode, moduleName?: string, entityName?: string): IRPolicy {
+  private transformPolicy(
+    p: PolicyNode,
+    moduleName?: string,
+    entityName?: string
+  ): IRPolicy {
     return {
       name: p.name,
       module: moduleName,
@@ -244,115 +285,144 @@ export class IRCompiler {
 
   private transformExpression(expr: ExpressionNode): IRExpression {
     switch (expr.type) {
-      case 'Literal': {
-        const lit = expr as { value: string | number | boolean | null; dataType: string };
+      case "Literal": {
+        const lit = expr as {
+          value: string | number | boolean | null;
+          dataType: string;
+        };
         return {
-          kind: 'literal',
+          kind: "literal",
           value: this.literalToValue(lit.value, lit.dataType),
         };
       }
-      case 'Identifier': {
-        return { kind: 'identifier', name: (expr as { name: string }).name };
+      case "Identifier": {
+        return { kind: "identifier", name: (expr as { name: string }).name };
       }
-      case 'MemberAccess': {
+      case "MemberAccess": {
         const ma = expr as { object: ExpressionNode; property: string };
         return {
-          kind: 'member',
+          kind: "member",
           object: this.transformExpression(ma.object),
           property: ma.property,
         };
       }
-      case 'BinaryOp': {
-        const bo = expr as { operator: string; left: ExpressionNode; right: ExpressionNode };
+      case "BinaryOp": {
+        const bo = expr as {
+          operator: string;
+          left: ExpressionNode;
+          right: ExpressionNode;
+        };
         return {
-          kind: 'binary',
+          kind: "binary",
           operator: bo.operator,
           left: this.transformExpression(bo.left),
           right: this.transformExpression(bo.right),
         };
       }
-      case 'UnaryOp': {
+      case "UnaryOp": {
         const uo = expr as { operator: string; operand: ExpressionNode };
         return {
-          kind: 'unary',
+          kind: "unary",
           operator: uo.operator,
           operand: this.transformExpression(uo.operand),
         };
       }
-      case 'Call': {
-        const call = expr as { callee: ExpressionNode; arguments: ExpressionNode[] };
+      case "Call": {
+        const call = expr as {
+          callee: ExpressionNode;
+          arguments: ExpressionNode[];
+        };
         return {
-          kind: 'call',
+          kind: "call",
           callee: this.transformExpression(call.callee),
-          args: call.arguments.map(a => this.transformExpression(a)),
+          args: call.arguments.map((a) => this.transformExpression(a)),
         };
       }
-      case 'Conditional': {
-        const cond = expr as { condition: ExpressionNode; consequent: ExpressionNode; alternate: ExpressionNode };
+      case "Conditional": {
+        const cond = expr as {
+          condition: ExpressionNode;
+          consequent: ExpressionNode;
+          alternate: ExpressionNode;
+        };
         return {
-          kind: 'conditional',
+          kind: "conditional",
           condition: this.transformExpression(cond.condition),
           consequent: this.transformExpression(cond.consequent),
           alternate: this.transformExpression(cond.alternate),
         };
       }
-      case 'Array': {
+      case "Array": {
         const arr = expr as { elements: ExpressionNode[] };
         return {
-          kind: 'array',
-          elements: arr.elements.map(e => this.transformExpression(e)),
+          kind: "array",
+          elements: arr.elements.map((e) => this.transformExpression(e)),
         };
       }
-      case 'Object': {
-        const obj = expr as { properties: { key: string; value: ExpressionNode }[] };
+      case "Object": {
+        const obj = expr as {
+          properties: { key: string; value: ExpressionNode }[];
+        };
         return {
-          kind: 'object',
-          properties: obj.properties.map(p => ({
+          kind: "object",
+          properties: obj.properties.map((p) => ({
             key: p.key,
             value: this.transformExpression(p.value),
           })),
         };
       }
-      case 'Lambda': {
+      case "Lambda": {
         const lam = expr as { parameters: string[]; body: ExpressionNode };
         return {
-          kind: 'lambda',
+          kind: "lambda",
           params: lam.parameters,
           body: this.transformExpression(lam.body),
         };
       }
       default:
-        return { kind: 'literal', value: { kind: 'null' } };
+        return { kind: "literal", value: { kind: "null" } };
     }
   }
 
   private transformExprToValue(expr: ExpressionNode): IRValue | undefined {
-    if (expr.type === 'Literal') {
-      const lit = expr as { value: string | number | boolean | null; dataType: string };
+    if (expr.type === "Literal") {
+      const lit = expr as {
+        value: string | number | boolean | null;
+        dataType: string;
+      };
       return this.literalToValue(lit.value, lit.dataType);
     }
-    if (expr.type === 'Array') {
+    if (expr.type === "Array") {
       const arr = expr as { elements: ExpressionNode[] };
-      const elements = arr.elements.map(e => this.transformExprToValue(e)).filter((v): v is IRValue => v !== undefined);
-      return { kind: 'array', elements };
+      const elements = arr.elements
+        .map((e) => this.transformExprToValue(e))
+        .filter((v): v is IRValue => v !== undefined);
+      return { kind: "array", elements };
     }
-    if (expr.type === 'Object') {
-      const obj = expr as { properties: { key: string; value: ExpressionNode }[] };
+    if (expr.type === "Object") {
+      const obj = expr as {
+        properties: { key: string; value: ExpressionNode }[];
+      };
       const properties: Record<string, IRValue> = {};
       for (const p of obj.properties) {
         const v = this.transformExprToValue(p.value);
         if (v) properties[p.key] = v;
       }
-      return { kind: 'object', properties };
+      return { kind: "object", properties };
     }
     return undefined;
   }
 
-  private literalToValue(value: string | number | boolean | null, dataType: string): IRValue {
-    if (dataType === 'string') return { kind: 'string', value: value as string };
-    if (dataType === 'number') return { kind: 'number', value: value as number };
-    if (dataType === 'boolean') return { kind: 'boolean', value: value as boolean };
-    return { kind: 'null' };
+  private literalToValue(
+    value: string | number | boolean | null,
+    dataType: string
+  ): IRValue {
+    if (dataType === "string")
+      return { kind: "string", value: value as string };
+    if (dataType === "number")
+      return { kind: "number", value: value as number };
+    if (dataType === "boolean")
+      return { kind: "boolean", value: value as boolean };
+    return { kind: "null" };
   }
 }
 

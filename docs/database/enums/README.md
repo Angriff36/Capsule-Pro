@@ -273,7 +273,13 @@ When adding a new enum:
 
 2. **Create migration**:
    ```bash
+   pnpm db:check
    pnpm migrate
+   ```
+   If `db:check` fails, run:
+   ```bash
+   pnpm db:repair
+   pnpm db:deploy
    ```
 
 3. **Update documentation**:

@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     const code = (error as { code?: number } | null)?.code;
-    if (code !== 40160) {
+    if (code !== 40_160) {
       throw error;
     }
     // Fallback to key capability when channel-specific capability isn't allowed.

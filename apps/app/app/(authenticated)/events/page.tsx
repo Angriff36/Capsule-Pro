@@ -101,47 +101,53 @@ const EventsPage = async () => {
             Performance Overview
           </h2>
           <div className="grid gap-6 lg:grid-cols-4">
-          <Card>
-            <CardHeader>
-              <CardDescription>Total events</CardDescription>
-              <CardTitle className="text-2xl">{events.length}</CardTitle>
-            </CardHeader>
-            <CardContent className="text-muted-foreground text-sm">
-              {upcomingEvents.length} upcoming
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardDescription>Total guests</CardDescription>
-              <CardTitle className="text-2xl">{totalGuests}</CardTitle>
-            </CardHeader>
-            <CardContent className="text-muted-foreground text-sm">
-              Across all scheduled events
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardDescription>Confirmed</CardDescription>
-              <CardTitle className="text-2xl">
-                {events.filter((event) => event.status === "confirmed").length}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-muted-foreground text-sm">
-              Ready to produce
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardDescription>Tentative</CardDescription>
-              <CardTitle className="text-2xl">
-                {events.filter((event) => event.status === "tentative").length}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-muted-foreground text-sm">
-              Needs final approval
-            </CardContent>
-          </Card>
-        </div>
+            <Card>
+              <CardHeader>
+                <CardDescription>Total events</CardDescription>
+                <CardTitle className="text-2xl">{events.length}</CardTitle>
+              </CardHeader>
+              <CardContent className="text-muted-foreground text-sm">
+                {upcomingEvents.length} upcoming
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardDescription>Total guests</CardDescription>
+                <CardTitle className="text-2xl">{totalGuests}</CardTitle>
+              </CardHeader>
+              <CardContent className="text-muted-foreground text-sm">
+                Across all scheduled events
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardDescription>Confirmed</CardDescription>
+                <CardTitle className="text-2xl">
+                  {
+                    events.filter((event) => event.status === "confirmed")
+                      .length
+                  }
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-muted-foreground text-sm">
+                Ready to produce
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardDescription>Tentative</CardDescription>
+                <CardTitle className="text-2xl">
+                  {
+                    events.filter((event) => event.status === "tentative")
+                      .length
+                  }
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-muted-foreground text-sm">
+                Needs final approval
+              </CardContent>
+            </Card>
+          </div>
         </section>
 
         {/* Events List Section */}
@@ -173,22 +179,22 @@ const EventsPage = async () => {
               Events ({events.length})
             </h2>
             <div className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-3">
-            {events.map((event) => (
-              <EventCard
-                key={`${event.tenantId}-${event.id}`}
-                event={{
-                  id: event.id,
-                  title: event.title,
-                  eventNumber: event.eventNumber,
-                  status: event.status,
-                  eventType: event.eventType,
-                  eventDate: event.eventDate.toISOString(),
-                  guestCount: event.guestCount,
-                  venueName: event.venueName,
-                  tags: event.tags,
-                }}
-              />
-            ))}
+              {events.map((event) => (
+                <EventCard
+                  event={{
+                    id: event.id,
+                    title: event.title,
+                    eventNumber: event.eventNumber,
+                    status: event.status,
+                    eventType: event.eventType,
+                    eventDate: event.eventDate.toISOString(),
+                    guestCount: event.guestCount,
+                    venueName: event.venueName,
+                    tags: event.tags,
+                  }}
+                  key={`${event.tenantId}-${event.id}`}
+                />
+              ))}
             </div>
           </section>
         )}

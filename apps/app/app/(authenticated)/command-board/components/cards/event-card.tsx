@@ -67,7 +67,9 @@ export const EventCard = memo(function EventCard({ card }: EventCardProps) {
                 {eventType}
               </CardDescription>
             </div>
-            <CardTitle className="line-clamp-2 leading-tight">{card.title}</CardTitle>
+            <CardTitle className="line-clamp-2 leading-tight">
+              {card.title}
+            </CardTitle>
           </div>
           <CardAction>
             <Badge className="capitalize" variant={variant}>

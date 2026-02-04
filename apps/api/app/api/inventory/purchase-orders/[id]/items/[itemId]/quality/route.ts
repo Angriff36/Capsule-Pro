@@ -99,17 +99,19 @@ function formatQualityUpdateResponse(updatedItem: {
   updatedAt: Date;
   deletedAt: Date | null;
 }) {
-  const toNum = (val: { toNumber?: () => number } | bigint | number | null): number | null => {
+  const toNum = (
+    val: { toNumber?: () => number } | bigint | number | null
+  ): number | null => {
     if (val === null) {
       return null;
     }
-    if (typeof val === 'bigint') {
+    if (typeof val === "bigint") {
       return Number(val);
     }
-    if (typeof val === 'number') {
+    if (typeof val === "number") {
       return val;
     }
-    if (val && typeof val === 'object' && 'toNumber' in val && val.toNumber) {
+    if (val && typeof val === "object" && "toNumber" in val && val.toNumber) {
       return val.toNumber();
     }
     return Number(val);

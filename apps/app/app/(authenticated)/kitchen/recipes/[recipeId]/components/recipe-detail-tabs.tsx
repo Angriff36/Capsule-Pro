@@ -140,7 +140,10 @@ type RecipeVersionCompare = {
   changes: {
     base: Record<
       string,
-      { from: string | number | string[] | null; to: string | number | string[] | null }
+      {
+        from: string | number | string[] | null;
+        to: string | number | string[] | null;
+      }
     >;
     ingredients: {
       added: {
@@ -388,8 +391,9 @@ function HistoryTabContent({
   const [compareFrom, setCompareFrom] = useState<string | null>(null);
   const [compareTo, setCompareTo] = useState<string | null>(null);
   const [compareLoading, setCompareLoading] = useState(false);
-  const [compareData, setCompareData] =
-    useState<RecipeVersionCompare | null>(null);
+  const [compareData, setCompareData] = useState<RecipeVersionCompare | null>(
+    null
+  );
   const [compareError, setCompareError] = useState<string | null>(null);
   const [isRestoring, startRestore] = useTransition();
 
@@ -448,7 +452,7 @@ function HistoryTabContent({
   };
 
   const handleCompare = async () => {
-    if (!compareFrom || !compareTo || compareFrom === compareTo) {
+    if (!(compareFrom && compareTo) || compareFrom === compareTo) {
       return;
     }
     setCompareLoading(true);
@@ -621,12 +625,10 @@ function HistoryTabContent({
                     <strong>Name:</strong> {viewingDetail.name}
                   </div>
                   <div>
-                    <strong>Category:</strong>{" "}
-                    {viewingDetail.category ?? "—"}
+                    <strong>Category:</strong> {viewingDetail.category ?? "—"}
                   </div>
                   <div>
-                    <strong>Cuisine:</strong>{" "}
-                    {viewingDetail.cuisineType ?? "—"}
+                    <strong>Cuisine:</strong> {viewingDetail.cuisineType ?? "—"}
                   </div>
                   <div>
                     <strong>Yield:</strong> {viewingDetail.yield.quantity}{" "}
@@ -704,7 +706,10 @@ function HistoryTabContent({
                 <h3 className="mb-2 font-semibold">Steps</h3>
                 <div className="space-y-2">
                   {viewingDetail.steps.map((step) => (
-                    <div className="rounded-lg border p-3 text-sm" key={step.id}>
+                    <div
+                      className="rounded-lg border p-3 text-sm"
+                      key={step.id}
+                    >
                       <div className="font-semibold">
                         Step {step.stepNumber}
                       </div>
@@ -717,7 +722,7 @@ function HistoryTabContent({
               </div>
             </div>
           )}
-          {!viewLoading && !viewingDetail && (
+          {!(viewLoading || viewingDetail) && (
             <p className="text-muted-foreground">
               No detail data available for this version.
             </p>
@@ -758,7 +763,9 @@ function HistoryTabContent({
           <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">From</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  From
+                </p>
                 <Select
                   onValueChange={setCompareFrom}
                   value={compareFrom ?? undefined}
@@ -826,21 +833,18 @@ function HistoryTabContent({
                     <div className="space-y-2 text-sm">
                       {Object.entries(compareData.changes.base).map(
                         ([field, change]) => (
-                          <div
-                            className="rounded-lg border p-3"
-                            key={field}
-                          >
+                          <div className="rounded-lg border p-3" key={field}>
                             <div className="font-medium capitalize">
                               {field.replace(/([A-Z])/g, " $1")}
                             </div>
                             <div className="text-muted-foreground">
                               {Array.isArray(change.from)
                                 ? change.from.join(", ") || "—"
-                                : change.from ?? "—"}{" "}
+                                : (change.from ?? "—")}{" "}
                               →{" "}
                               {Array.isArray(change.to)
                                 ? change.to.join(", ") || "—"
-                                : change.to ?? "—"}
+                                : (change.to ?? "—")}
                             </div>
                           </div>
                         )

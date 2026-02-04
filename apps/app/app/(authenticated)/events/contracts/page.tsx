@@ -9,11 +9,13 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { Alert, AlertDescription, AlertTitle } from "@repo/design-system/components/ui/alert";
-import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@repo/design-system/components/ui/alert";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { AlertTriangle, Link2 } from "lucide-react";
-import Link from "next/link";
+import { AlertTriangle } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
@@ -132,7 +134,8 @@ const ContractsPage = async () => {
         <div className="flex flex-col gap-1">
           <h1 className="text-3xl font-bold tracking-tight">Contracts</h1>
           <p className="text-muted-foreground">
-            Manage event contracts, track signatures, and monitor expiration dates
+            Manage event contracts, track signatures, and monitor expiration
+            dates
           </p>
         </div>
 

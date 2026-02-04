@@ -174,9 +174,10 @@ Before committing any schema changes, verify:
 - [ ] No `@default(dbgenerated("..."))` references other columns
 - [ ] All UUID defaults use `gen_random_uuid()`
 - [ ] All relation `references` use Prisma field names (not DB column names)
-- [ ] Run `npx prisma format` - should produce no warnings
-- [ ] Run `npx prisma generate` - should succeed
-- [ ] Run `npx prisma db push` - should succeed in dev environment
+- [ ] Run `pnpm prisma:format` - should produce no warnings
+- [ ] Run `pnpm prisma:generate` - should succeed
+- [ ] Run `pnpm db:check` - should pass (no drift)
+- [ ] Run `pnpm migrate` - should create/apply migration in dev
 
 ---
 

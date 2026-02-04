@@ -20,16 +20,15 @@ import {
   buildInitialChecklist,
   processMultipleDocuments,
 } from "@repo/event-parser";
-import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   createEventImportRuntime,
-  processDocumentImport,
   createOrUpdateEvent,
   generateBattleBoard,
   generateChecklist,
-  setupEventListeners,
+  processDocumentImport,
 } from "@repo/manifest";
+import { NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 type MissingField =
   | "client"
@@ -68,9 +67,14 @@ const normalizeList = (values: string[] | undefined) =>
     .filter((value) => value.length > 0);
 
 const getFileLabel = (fileName: string) =>
-  fileName.replace(/\.[^/.]+$/, "").replace(/[_-]+/g, " ").trim();
+  fileName
+    .replace(/\.[^/.]+$/, "")
+    .replace(/[_-]+/g, " ")
+    .trim();
 
-const getMissingFieldsFromParsedEvent = (event: ParsedEvent): MissingField[] => {
+const getMissingFieldsFromParsedEvent = (
+  event: ParsedEvent
+): MissingField[] => {
   const missing: MissingField[] = [];
   if (!event.client?.trim()) {
     missing.push("client");
@@ -142,7 +146,8 @@ const deriveMenuQuantity = (item: MenuItem, fallbackHeadcount: number) => {
 
   const servingDetails =
     item.quantityDetails?.filter(
-      (detail) => detail.value > 0 && /serv|pax|guest|portion/i.test(detail.unit)
+      (detail) =>
+        detail.value > 0 && /serv|pax|guest|portion/i.test(detail.unit)
     ) ?? [];
   if (servingDetails.length > 0) {
     const maxDetail = servingDetails.reduce(
@@ -294,9 +299,7 @@ const importMenuToEvent = async (
     }
 
     const specialInstructions = Array.from(entry.instructions).join("; ");
-    const [existingLink] = await database.$queryRaw<
-      Array<{ id: string }>
-    >(
+    const [existingLink] = await database.$queryRaw<Array<{ id: string }>>(
       Prisma.sql`
         SELECT id
         FROM tenant_events.event_dishes
@@ -373,11 +376,7 @@ async function createBattleBoard(
   const battleBoardResult = buildBattleBoardFromEvent(mergedEvent);
 
   // Save battle board to database
-  const boardName =
-    mergedEvent.client ||
-    mergedEvent.number ||
-    eventId ||
-    "";
+  const boardName = mergedEvent.client || mergedEvent.number || eventId || "";
 
   const savedBattleBoard = await database.battleBoard.create({
     data: {
@@ -432,7 +431,10 @@ async function processFormData(request: Request) {
  * Helper function to parse documents
  */
 async function parseDocuments(
-  fileContents: Array<{ content: ArrayBuffer | Uint8Array | Buffer; fileName: string }>
+  fileContents: Array<{
+    content: ArrayBuffer | Uint8Array | Buffer;
+    fileName: string;
+  }>
 ) {
   return await processMultipleDocuments(fileContents);
 }
@@ -496,15 +498,24 @@ async function processDocumentsAndGenerateResponse(
   shouldGenerateChecklist: boolean,
   shouldGenerateBattleBoard: boolean
 ) {
-  console.log('[processDocumentsAndGenerateResponse] Starting with', files.length, 'files');
+  console.log(
+    "[processDocumentsAndGenerateResponse] Starting with",
+    files.length,
+    "files"
+  );
 
   // Initialize Manifest runtime (optional - can fail gracefully)
   let engine;
   try {
     engine = createEventImportRuntime(tenantId, userId);
-    console.log('[processDocumentsAndGenerateResponse] Manifest runtime initialized');
+    console.log(
+      "[processDocumentsAndGenerateResponse] Manifest runtime initialized"
+    );
   } catch (manifestError) {
-    console.error('[processDocumentsAndGenerateResponse] Manifest runtime failed, continuing without it:', manifestError);
+    console.error(
+      "[processDocumentsAndGenerateResponse] Manifest runtime failed, continuing without it:",
+      manifestError
+    );
     // Continue without Manifest - fallback to original behavior
   }
 
@@ -512,8 +523,8 @@ async function processDocumentsAndGenerateResponse(
   const fileContents = await Promise.all(
     files.map(async (file) => {
       const arrayBuffer = await file.arrayBuffer();
-      const base64 = Buffer.from(arrayBuffer).toString('base64');
-      const buffer = Buffer.from(base64, 'base64');
+      const base64 = Buffer.from(arrayBuffer).toString("base64");
+      const buffer = Buffer.from(base64, "base64");
       return {
         content: buffer,
         fileName: file.name,
@@ -523,11 +534,11 @@ async function processDocumentsAndGenerateResponse(
 
   // Parse documents (existing parser logic)
   const result = await parseDocuments(fileContents);
-  console.log('[processDocumentsAndGenerateResponse] parseDocuments result:', {
+  console.log("[processDocumentsAndGenerateResponse] parseDocuments result:", {
     documentCount: result.documents.length,
     hasEvent: !!result.mergedEvent,
     staffCount: result.mergedStaff?.length || 0,
-    errors: result.errors
+    errors: result.errors,
   });
 
   // Create import records in database
@@ -547,14 +558,14 @@ async function processDocumentsAndGenerateResponse(
         const doc = importRecord.document;
 
         // Create Manifest instance for DocumentImport
-        const manifestImport = engine.createInstance('DocumentImport', {
+        const manifestImport = engine.createInstance("DocumentImport", {
           id: importId,
           tenantId,
           fileName: doc.fileName,
-          mimeType: doc.fileType === 'pdf' ? 'application/pdf' : 'text/csv',
+          mimeType: doc.fileType === "pdf" ? "application/pdf" : "text/csv",
           fileType: doc.fileType,
           detectedFormat: doc.detectedFormat,
-          parseStatus: 'pending',
+          parseStatus: "pending",
         });
 
         manifestImportIds.push(manifestImport?.id || importId);
@@ -579,16 +590,23 @@ async function processDocumentsAndGenerateResponse(
           );
         }
       }
-      console.log('[processDocumentsAndGenerateResponse] Processed', manifestImportIds.length, 'imports through Manifest');
+      console.log(
+        "[processDocumentsAndGenerateResponse] Processed",
+        manifestImportIds.length,
+        "imports through Manifest"
+      );
     } catch (manifestError) {
-      console.error('[processDocumentsAndGenerateResponse] Manifest processing failed, continuing:', manifestError);
+      console.error(
+        "[processDocumentsAndGenerateResponse] Manifest processing failed, continuing:",
+        manifestError
+      );
       // Continue without Manifest
     }
   }
 
   // Build response
   const response = buildResponse(result, importRecords);
-  console.log('[processDocumentsAndGenerateResponse] response built');
+  console.log("[processDocumentsAndGenerateResponse] response built");
 
   // Handle event creation/update - MUST happen before generating artifacts
   let actualEventId = eventId;
@@ -598,34 +616,45 @@ async function processDocumentsAndGenerateResponse(
     const parsedDate = parseEventDate(result.mergedEvent.date);
     const resolvedEventDate = parsedDate ?? new Date();
 
-    console.log('[processDocumentsAndGenerateResponse] Parsed event data:', JSON.stringify({
-      client: result.mergedEvent.client,
-      number: result.mergedEvent.number,
-      date: result.mergedEvent.date,
-      serviceStyle: result.mergedEvent.serviceStyle,
-      headcount: result.mergedEvent.headcount,
-      venue: result.mergedEvent.venue,
-      status: result.mergedEvent.status,
-      kits: result.mergedEvent.kits,
-      menuSectionsCount: result.mergedEvent.menuSections?.length || 0,
-      timelineCount: result.mergedEvent.timeline?.length || 0,
-      staffingCount: result.mergedEvent.staffing?.length || 0,
-    }, null, 2));
-    
+    console.log(
+      "[processDocumentsAndGenerateResponse] Parsed event data:",
+      JSON.stringify(
+        {
+          client: result.mergedEvent.client,
+          number: result.mergedEvent.number,
+          date: result.mergedEvent.date,
+          serviceStyle: result.mergedEvent.serviceStyle,
+          headcount: result.mergedEvent.headcount,
+          venue: result.mergedEvent.venue,
+          status: result.mergedEvent.status,
+          kits: result.mergedEvent.kits,
+          menuSectionsCount: result.mergedEvent.menuSections?.length || 0,
+          timelineCount: result.mergedEvent.timeline?.length || 0,
+          staffingCount: result.mergedEvent.staffing?.length || 0,
+        },
+        null,
+        2
+      )
+    );
+
     if (!actualEventId) {
-      console.log('[processDocumentsAndGenerateResponse] Creating new event from parsed data');
+      console.log(
+        "[processDocumentsAndGenerateResponse] Creating new event from parsed data"
+      );
       try {
         // Build comprehensive notes from parsed data
         const notesParts: string[] = [
-          `Imported from ${files.map((file) => file.name).join(", ")}`
+          `Imported from ${files.map((file) => file.name).join(", ")}`,
         ];
         if (result.mergedEvent.notes && result.mergedEvent.notes.length > 0) {
           notesParts.push(...result.mergedEvent.notes);
         }
         if (result.mergedEvent.flags && result.mergedEvent.flags.length > 0) {
-          const flagMessages = result.mergedEvent.flags.map(f => f.message).filter(Boolean);
+          const flagMessages = result.mergedEvent.flags
+            .map((f) => f.message)
+            .filter(Boolean);
           if (flagMessages.length > 0) {
-            notesParts.push(`Flags: ${flagMessages.join('; ')}`);
+            notesParts.push(`Flags: ${flagMessages.join("; ")}`);
           }
         }
 
@@ -635,12 +664,15 @@ async function processDocumentsAndGenerateResponse(
             title: derivedTitle,
             eventType: result.mergedEvent.serviceStyle || "catering",
             eventDate: resolvedEventDate,
-            guestCount: result.mergedEvent.headcount > 0 ? result.mergedEvent.headcount : 0,
+            guestCount:
+              result.mergedEvent.headcount > 0
+                ? result.mergedEvent.headcount
+                : 0,
             status: missingFields.length > 0 ? "draft" : "confirmed",
             eventNumber: result.mergedEvent.number || undefined,
             venueName: result.mergedEvent.venue?.name || undefined,
             venueAddress: result.mergedEvent.venue?.address || undefined,
-            notes: notesParts.join('\n\n'),
+            notes: notesParts.join("\n\n"),
             tags: buildEventTags(
               ["imported", ...(result.mergedEvent.kits || [])],
               missingFields
@@ -648,7 +680,10 @@ async function processDocumentsAndGenerateResponse(
           },
         });
         actualEventId = newEvent.id;
-        console.log('[processDocumentsAndGenerateResponse] Event created:', actualEventId);
+        console.log(
+          "[processDocumentsAndGenerateResponse] Event created:",
+          actualEventId
+        );
 
         for (const record of importRecords) {
           await database.eventImport.update({
@@ -660,34 +695,53 @@ async function processDocumentsAndGenerateResponse(
         // Also create in Manifest if available
         if (engine) {
           try {
-            const eventInstance = engine.createInstance('Event', {
+            const eventInstance = engine.createInstance("Event", {
               id: actualEventId,
               tenantId,
-              eventType: result.mergedEvent.serviceStyle || 'catering',
+              eventType: result.mergedEvent.serviceStyle || "catering",
               eventDate: result.mergedEvent.date || new Date().toISOString(),
             });
-            await createOrUpdateEvent(engine, undefined, tenantId, result.mergedEvent);
+            await createOrUpdateEvent(
+              engine,
+              undefined,
+              tenantId,
+              result.mergedEvent
+            );
           } catch (manifestError) {
-            console.error('[processDocumentsAndGenerateResponse] Manifest event creation failed (non-blocking):', manifestError);
+            console.error(
+              "[processDocumentsAndGenerateResponse] Manifest event creation failed (non-blocking):",
+              manifestError
+            );
           }
         }
       } catch (dbError) {
-        console.error('[processDocumentsAndGenerateResponse] Failed to create event in database:', dbError);
+        console.error(
+          "[processDocumentsAndGenerateResponse] Failed to create event in database:",
+          dbError
+        );
         throw dbError; // Re-throw - we can't generate artifacts without an event
       }
     } else if (actualEventId) {
       // Update existing event
       if (engine) {
         try {
-          const eventInstance = engine.createInstance('Event', {
+          const eventInstance = engine.createInstance("Event", {
             id: actualEventId,
             tenantId,
-            eventType: result.mergedEvent.serviceStyle || 'catering',
+            eventType: result.mergedEvent.serviceStyle || "catering",
             eventDate: result.mergedEvent.date || new Date().toISOString(),
           });
-          await createOrUpdateEvent(engine, actualEventId, tenantId, result.mergedEvent);
+          await createOrUpdateEvent(
+            engine,
+            actualEventId,
+            tenantId,
+            result.mergedEvent
+          );
         } catch (manifestError) {
-          console.error('[processDocumentsAndGenerateResponse] Manifest event update failed (non-blocking):', manifestError);
+          console.error(
+            "[processDocumentsAndGenerateResponse] Manifest event update failed (non-blocking):",
+            manifestError
+          );
         }
       }
     }
@@ -696,7 +750,10 @@ async function processDocumentsAndGenerateResponse(
       try {
         await importMenuToEvent(tenantId, actualEventId, result.mergedEvent);
       } catch (menuError) {
-        console.error('[processDocumentsAndGenerateResponse] Menu import failed:', menuError);
+        console.error(
+          "[processDocumentsAndGenerateResponse] Menu import failed:",
+          menuError
+        );
       }
     }
   }
@@ -704,34 +761,48 @@ async function processDocumentsAndGenerateResponse(
   // Generate battle board via Manifest if requested
   if (shouldGenerateBattleBoard) {
     if (!result.mergedEvent) {
-      console.warn('[processDocumentsAndGenerateResponse] Cannot generate battle board: no merged event data');
-      response.battleBoardError = 'No event data extracted from documents';
-    } else if (!actualEventId) {
-      console.warn('[processDocumentsAndGenerateResponse] Cannot generate battle board: no event ID');
-      response.battleBoardError = 'Event must be created before generating battle board';
-    } else {
+      console.warn(
+        "[processDocumentsAndGenerateResponse] Cannot generate battle board: no merged event data"
+      );
+      response.battleBoardError = "No event data extracted from documents";
+    } else if (actualEventId) {
       try {
-        console.log('[processDocumentsAndGenerateResponse] Creating battle board');
-        console.log('[processDocumentsAndGenerateResponse] Event data:', JSON.stringify({
-          client: result.mergedEvent.client,
-          number: result.mergedEvent.number,
-          date: result.mergedEvent.date,
-          times: result.mergedEvent.times,
-          headcount: result.mergedEvent.headcount,
-          menuSections: result.mergedEvent.menuSections?.length || 0,
-        }, null, 2));
-        
+        console.log(
+          "[processDocumentsAndGenerateResponse] Creating battle board"
+        );
+        console.log(
+          "[processDocumentsAndGenerateResponse] Event data:",
+          JSON.stringify(
+            {
+              client: result.mergedEvent.client,
+              number: result.mergedEvent.number,
+              date: result.mergedEvent.date,
+              times: result.mergedEvent.times,
+              headcount: result.mergedEvent.headcount,
+              menuSections: result.mergedEvent.menuSections?.length || 0,
+            },
+            null,
+            2
+          )
+        );
+
         const battleBoardResult = buildBattleBoardFromEvent(result.mergedEvent);
-        console.log('[processDocumentsAndGenerateResponse] Battle board built successfully');
+        console.log(
+          "[processDocumentsAndGenerateResponse] Battle board built successfully"
+        );
         const battleBoardId = crypto.randomUUID();
 
         if (engine) {
           try {
-            const battleBoardInstance = engine.createInstance('BattleBoard', {
+            const battleBoardInstance = engine.createInstance("BattleBoard", {
               id: battleBoardId,
               tenantId,
               eventId: actualEventId,
-              boardName: result.mergedEvent.client || result.mergedEvent.number || actualEventId || "",
+              boardName:
+                result.mergedEvent.client ||
+                result.mergedEvent.number ||
+                actualEventId ||
+                "",
             });
 
             await generateBattleBoard(
@@ -739,27 +810,44 @@ async function processDocumentsAndGenerateResponse(
               battleBoardId,
               tenantId,
               actualEventId,
-              { ...result.mergedEvent, battleBoard: battleBoardResult.battleBoard }
+              {
+                ...result.mergedEvent,
+                battleBoard: battleBoardResult.battleBoard,
+              }
             );
           } catch (manifestError) {
-            console.error('[processDocumentsAndGenerateResponse] Manifest battle board generation failed, using fallback:', manifestError);
+            console.error(
+              "[processDocumentsAndGenerateResponse] Manifest battle board generation failed, using fallback:",
+              manifestError
+            );
             // Fall through to database save
           }
         }
 
         // Save to database
-        console.log('[processDocumentsAndGenerateResponse] Saving battle board to database:', {
-          battleBoardId,
-          eventId: actualEventId,
-          boardName: result.mergedEvent.client || result.mergedEvent.number || actualEventId || "",
-        });
+        console.log(
+          "[processDocumentsAndGenerateResponse] Saving battle board to database:",
+          {
+            battleBoardId,
+            eventId: actualEventId,
+            boardName:
+              result.mergedEvent.client ||
+              result.mergedEvent.number ||
+              actualEventId ||
+              "",
+          }
+        );
 
         const savedBattleBoard = await database.battleBoard.create({
           data: {
             tenantId,
             id: battleBoardId,
             eventId: actualEventId,
-            board_name: result.mergedEvent.client || result.mergedEvent.number || actualEventId || "",
+            board_name:
+              result.mergedEvent.client ||
+              result.mergedEvent.number ||
+              actualEventId ||
+              "",
             board_type: "event-specific",
             schema_version: "mangia-battle-board@1",
             boardData: battleBoardResult.battleBoard as object,
@@ -769,43 +857,67 @@ async function processDocumentsAndGenerateResponse(
           },
         });
 
-        console.log('[processDocumentsAndGenerateResponse] Battle board saved:', savedBattleBoard.id);
+        console.log(
+          "[processDocumentsAndGenerateResponse] Battle board saved:",
+          savedBattleBoard.id
+        );
         response.battleBoard = battleBoardResult.battleBoard;
         response.battleBoardId = savedBattleBoard.id;
       } catch (error) {
-        console.error('[processDocumentsAndGenerateResponse] Battle board generation failed:', error);
-        response.battleBoardError = error instanceof Error ? error.message : 'Unknown error';
+        console.error(
+          "[processDocumentsAndGenerateResponse] Battle board generation failed:",
+          error
+        );
+        response.battleBoardError =
+          error instanceof Error ? error.message : "Unknown error";
       }
+    } else {
+      console.warn(
+        "[processDocumentsAndGenerateResponse] Cannot generate battle board: no event ID"
+      );
+      response.battleBoardError =
+        "Event must be created before generating battle board";
     }
   }
 
   // Generate checklist via Manifest if requested
   if (shouldGenerateChecklist) {
     if (!result.mergedEvent) {
-      console.warn('[processDocumentsAndGenerateResponse] Cannot generate checklist: no merged event data');
-      response.checklistError = 'No event data extracted from documents';
-    } else if (!actualEventId) {
-      console.warn('[processDocumentsAndGenerateResponse] Cannot generate checklist: no event ID');
-      response.checklistError = 'Event must be created before generating checklist';
-    } else {
+      console.warn(
+        "[processDocumentsAndGenerateResponse] Cannot generate checklist: no merged event data"
+      );
+      response.checklistError = "No event data extracted from documents";
+    } else if (actualEventId) {
       try {
-        console.log('[processDocumentsAndGenerateResponse] Creating checklist');
-        console.log('[processDocumentsAndGenerateResponse] Event data for checklist:', JSON.stringify({
-          client: result.mergedEvent.client,
-          number: result.mergedEvent.number,
-          date: result.mergedEvent.date,
-          times: result.mergedEvent.times,
-          headcount: result.mergedEvent.headcount,
-          menuSections: result.mergedEvent.menuSections?.length || 0,
-        }, null, 2));
-        
+        console.log("[processDocumentsAndGenerateResponse] Creating checklist");
+        console.log(
+          "[processDocumentsAndGenerateResponse] Event data for checklist:",
+          JSON.stringify(
+            {
+              client: result.mergedEvent.client,
+              number: result.mergedEvent.number,
+              date: result.mergedEvent.date,
+              times: result.mergedEvent.times,
+              headcount: result.mergedEvent.headcount,
+              menuSections: result.mergedEvent.menuSections?.length || 0,
+            },
+            null,
+            2
+          )
+        );
+
         const checklistResult = buildInitialChecklist(result.mergedEvent);
-        console.log('[processDocumentsAndGenerateResponse] Checklist built successfully, autoFillScore:', checklistResult.autoFilledCount, 'totalQuestions:', checklistResult.totalQuestions);
+        console.log(
+          "[processDocumentsAndGenerateResponse] Checklist built successfully, autoFillScore:",
+          checklistResult.autoFilledCount,
+          "totalQuestions:",
+          checklistResult.totalQuestions
+        );
         const reportId = crypto.randomUUID();
 
         if (engine) {
           try {
-            const reportInstance = engine.createInstance('EventReport', {
+            const reportInstance = engine.createInstance("EventReport", {
               id: reportId,
               tenantId,
               eventId: actualEventId,
@@ -820,29 +932,42 @@ async function processDocumentsAndGenerateResponse(
               checklistResult
             );
           } catch (manifestError) {
-            console.error('[processDocumentsAndGenerateResponse] Manifest checklist generation failed, using fallback:', manifestError);
+            console.error(
+              "[processDocumentsAndGenerateResponse] Manifest checklist generation failed, using fallback:",
+              manifestError
+            );
             // Fall through to database save
           }
         }
 
         // Save to database
-        const completionPercent = checklistResult.totalQuestions > 0
-          ? Math.round((checklistResult.autoFilledCount / checklistResult.totalQuestions) * 100)
-          : 0;
-        
-        console.log('[processDocumentsAndGenerateResponse] Saving checklist to database:', {
-          reportId,
-          eventId: actualEventId,
-          completion: completionPercent,
-          autoFillScore: checklistResult.autoFilledCount,
-          totalQuestions: checklistResult.totalQuestions,
-        });
+        const completionPercent =
+          checklistResult.totalQuestions > 0
+            ? Math.round(
+                (checklistResult.autoFilledCount /
+                  checklistResult.totalQuestions) *
+                  100
+              )
+            : 0;
+        const reportName = derivedTitle || actualEventId;
+
+        console.log(
+          "[processDocumentsAndGenerateResponse] Saving checklist to database:",
+          {
+            reportId,
+            eventId: actualEventId,
+            completion: completionPercent,
+            autoFillScore: checklistResult.autoFilledCount,
+            totalQuestions: checklistResult.totalQuestions,
+          }
+        );
 
         const savedReport = await database.eventReport.create({
           data: {
             tenantId,
             id: reportId,
             eventId: actualEventId,
+            name: reportName,
             status: "draft",
             completion: completionPercent,
             autoFillScore: checklistResult.autoFilledCount,
@@ -854,14 +979,27 @@ async function processDocumentsAndGenerateResponse(
           },
         });
 
-        console.log('[processDocumentsAndGenerateResponse] Checklist saved:', savedReport.id);
+        console.log(
+          "[processDocumentsAndGenerateResponse] Checklist saved:",
+          savedReport.id
+        );
 
         response.checklist = checklistResult;
         response.checklistId = savedReport.id;
       } catch (error) {
-        console.error('[processDocumentsAndGenerateResponse] Checklist generation failed:', error);
-        response.checklistError = error instanceof Error ? error.message : 'Unknown error';
+        console.error(
+          "[processDocumentsAndGenerateResponse] Checklist generation failed:",
+          error
+        );
+        response.checklistError =
+          error instanceof Error ? error.message : "Unknown error";
       }
+    } else {
+      console.warn(
+        "[processDocumentsAndGenerateResponse] Cannot generate checklist: no event ID"
+      );
+      response.checklistError =
+        "Event must be created before generating checklist";
     }
   }
 
@@ -913,12 +1051,14 @@ async function createChecklist(
   eventId: string
 ) {
   const checklistResult = buildInitialChecklist(mergedEvent);
+  const reportName = deriveEventTitle(mergedEvent, []) || eventId;
 
   // Save the checklist/report
   const savedReport = await database.eventReport.create({
     data: {
       tenantId,
       eventId,
+      name: reportName,
       status: "draft",
       completion: Math.round(
         (checklistResult.autoFilledCount / checklistResult.totalQuestions) * 100
@@ -950,25 +1090,36 @@ async function createChecklist(
  */
 export async function POST(request: Request) {
   try {
-    console.log('[POST /api/events/documents/parse] Starting');
+    console.log("[POST /api/events/documents/parse] Starting");
     const { orgId, userId } = await auth();
     if (!(orgId && userId)) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    console.log('[POST] tenantId:', tenantId);
+    console.log("[POST] tenantId:", tenantId);
     const { searchParams } = new URL(request.url);
 
     const eventId = searchParams.get("eventId");
     const generateChecklist = searchParams.get("generateChecklist") === "true";
     const generateBattleBoard =
       searchParams.get("generateBattleBoard") === "true";
-    console.log('[POST] eventId:', eventId, 'generateChecklist:', generateChecklist, 'generateBattleBoard:', generateBattleBoard);
+    console.log(
+      "[POST] eventId:",
+      eventId,
+      "generateChecklist:",
+      generateChecklist,
+      "generateBattleBoard:",
+      generateBattleBoard
+    );
 
     // Parse form data
     const { files } = await processFormData(request);
-    console.log('[POST] Files received:', files.length, files.map(f => f.name));
+    console.log(
+      "[POST] Files received:",
+      files.length,
+      files.map((f) => f.name)
+    );
 
     if (files.length === 0) {
       return NextResponse.json(
@@ -985,7 +1136,7 @@ export async function POST(request: Request) {
     }
 
     // Process documents and generate response (now powered by Manifest)
-    console.log('[POST] About to call processDocumentsAndGenerateResponse');
+    console.log("[POST] About to call processDocumentsAndGenerateResponse");
     let response: ParseDocumentsResponse;
     try {
       response = await processDocumentsAndGenerateResponse(
@@ -996,13 +1147,16 @@ export async function POST(request: Request) {
         generateChecklist,
         generateBattleBoard
       );
-      console.log('[POST] processDocumentsAndGenerateResponse completed');
+      console.log("[POST] processDocumentsAndGenerateResponse completed");
     } catch (innerError) {
-      console.error('[POST] Error in processDocumentsAndGenerateResponse:', innerError);
+      console.error(
+        "[POST] Error in processDocumentsAndGenerateResponse:",
+        innerError
+      );
       throw innerError;
     }
 
-    console.log('[POST] Response generated successfully');
+    console.log("[POST] Response generated successfully");
     return NextResponse.json({ data: response });
   } catch (error) {
     console.error("[POST] Error parsing documents:", error);
@@ -1012,7 +1166,7 @@ export async function POST(request: Request) {
       error instanceof Error ? error.message : "Unknown error";
     const errorStack = error instanceof Error ? error.stack : undefined;
 
-    console.error('[POST] Error details:', { errorMessage, errorStack });
+    console.error("[POST] Error details:", { errorMessage, errorStack });
 
     // In development, return more details; in production, return generic message
     return NextResponse.json(

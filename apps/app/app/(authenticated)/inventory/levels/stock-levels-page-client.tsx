@@ -7,7 +7,6 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@repo/design-system/components/ui/card";
 import {
   Dialog,
@@ -257,7 +256,8 @@ export const StockLevelsPageClient = () => {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Stock Levels</h1>
         <p className="text-muted-foreground mt-2">
-          Monitor inventory quantities, par levels, and stock values across all locations.
+          Monitor inventory quantities, par levels, and stock values across all
+          locations.
         </p>
       </div>
 
@@ -269,49 +269,49 @@ export const StockLevelsPageClient = () => {
           Performance Overview
         </h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardDescription>Total Items</CardDescription>
-            <BoxIcon className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summary.totalItems}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardDescription>Total Value</CardDescription>
-            <DollarSignIcon className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(summary.totalValue)}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardDescription>Below Par</CardDescription>
-            <AlertTriangleIcon className="size-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
-              {summary.belowParCount}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardDescription>Out of Stock</CardDescription>
-            <ActivityIcon className="size-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {summary.outOfStockCount}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardDescription>Total Items</CardDescription>
+              <BoxIcon className="size-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{summary.totalItems}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardDescription>Total Value</CardDescription>
+              <DollarSignIcon className="size-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {formatCurrency(summary.totalValue)}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardDescription>Below Par</CardDescription>
+              <AlertTriangleIcon className="size-4 text-yellow-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-yellow-600">
+                {summary.belowParCount}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardDescription>Out of Stock</CardDescription>
+              <ActivityIcon className="size-4 text-red-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">
+                {summary.outOfStockCount}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </section>
 
       {/* Tabs */}
@@ -332,76 +332,76 @@ export const StockLevelsPageClient = () => {
               Filters
             </h2>
             <div className="flex flex-wrap gap-4">
-            <Input
-              className="max-w-sm"
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Search items..."
-              value={searchQuery}
-            />
+              <Input
+                className="max-w-sm"
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Search items..."
+                value={searchQuery}
+              />
 
-            <Select
-              onValueChange={(v) => {
-                setCategoryFilter(v as ItemCategory | "all");
-                setPage(1);
-              }}
-              value={categoryFilter}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {ITEM_CATEGORIES.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat
-                      .replace(/_/g, " ")
-                      .replace(/\b\w/g, (l) => l.toUpperCase())}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <Select
+                onValueChange={(v) => {
+                  setCategoryFilter(v as ItemCategory | "all");
+                  setPage(1);
+                }}
+                value={categoryFilter}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {ITEM_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat
+                        .replace(/_/g, " ")
+                        .replace(/\b\w/g, (l) => l.toUpperCase())}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            <Select
-              onValueChange={(v) => {
-                setLocationFilter(v);
-                setPage(1);
-              }}
-              value={locationFilter}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Location" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Locations</SelectItem>
-                {locations.map((loc) => (
-                  <SelectItem key={loc.id} value={loc.id}>
-                    {loc.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <Select
+                onValueChange={(v) => {
+                  setLocationFilter(v);
+                  setPage(1);
+                }}
+                value={locationFilter}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Location" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Locations</SelectItem>
+                  {locations.map((loc) => (
+                    <SelectItem key={loc.id} value={loc.id}>
+                      {loc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            <Select
-              onValueChange={(v) => {
-                setReorderStatusFilter(v as StockReorderStatus | "all");
-                setPage(1);
-              }}
-              value={reorderStatusFilter}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                {REORDER_STATUSES.map((status) => (
-                  <SelectItem key={status.value} value={status.value}>
-                    {status.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <Select
+                onValueChange={(v) => {
+                  setReorderStatusFilter(v as StockReorderStatus | "all");
+                  setPage(1);
+                }}
+                value={reorderStatusFilter}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REORDER_STATUSES.map((status) => (
+                    <SelectItem key={status.value} value={status.value}>
+                      {status.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </section>
 

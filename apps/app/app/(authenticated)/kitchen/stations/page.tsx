@@ -23,18 +23,18 @@ type StationStats = {
 };
 
 // Badge variants map for stations
-const stationBadgeVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+const stationBadgeVariant: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
   "hot-line": "destructive",
   "cold-prep": "default",
-  "bakery": "secondary",
+  bakery: "secondary",
   "prep-station": "outline",
-  "garnish": "secondary",
+  garnish: "secondary",
 };
 
-const STATION_CONFIG: Record<
-  string,
-  { label: string; tasksLabel: string }
-> = {
+const STATION_CONFIG: Record<string, { label: string; tasksLabel: string }> = {
   "hot-line": {
     label: "Hot Line",
     tasksLabel: "Hot preparations",
@@ -119,7 +119,9 @@ const KitchenStationsPage = async () => {
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
         <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">Kitchen Stations</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Kitchen Stations
+          </h1>
           <p className="text-muted-foreground">
             Monitor task progress and team activity across all kitchen stations
           </p>
@@ -155,13 +157,16 @@ const KitchenStationsPage = async () => {
                       )
                     : 0;
                 const activeClaims = claimMap.get(station.station_id) || 0;
-                const badgeVariant = stationBadgeVariant[station.station_id] || "secondary";
+                const badgeVariant =
+                  stationBadgeVariant[station.station_id] || "secondary";
 
                 return (
                   <Card key={station.station_id}>
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">{config.label}</CardTitle>
+                        <CardTitle className="text-lg">
+                          {config.label}
+                        </CardTitle>
                         <Badge variant={badgeVariant}>
                           {station.total_tasks} tasks
                         </Badge>

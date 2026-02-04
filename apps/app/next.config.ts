@@ -59,11 +59,19 @@ let nextConfig: NextConfig = withToolbar(
         // Externalize pdfjs-dist - use function to catch all nested imports
         const existingExternals = webpackConfig.externals || [];
         const pdfjsExternals = [
-          ({ request }: { request: string }, callback: (err: null | Error, result?: string) => void) => {
+          (
+            { request }: { request: string },
+            callback: (err: null | Error, result?: string) => void
+          ) => {
             // Externalize all pdfjs-dist imports
-            if (request.startsWith('pdfjs-dist') || request === 'pdf.worker.mjs') {
+            if (
+              request.startsWith("pdfjs-dist") ||
+              request === "pdf.worker.mjs"
+            ) {
               // Convert to commonjs reference
-              const moduleName = request.startsWith('pdfjs-dist') ? request : 'pdfjs-dist/build/pdf.worker.mjs';
+              const moduleName = request.startsWith("pdfjs-dist")
+                ? request
+                : "pdfjs-dist/build/pdf.worker.mjs";
               return callback(null, `commonjs ${moduleName}`);
             }
             // Continue to other externals
@@ -73,7 +81,9 @@ let nextConfig: NextConfig = withToolbar(
 
         // Combine with existing externals
         webpackConfig.externals = [
-          ...Array.isArray(existingExternals) ? existingExternals : [existingExternals],
+          ...(Array.isArray(existingExternals)
+            ? existingExternals
+            : [existingExternals]),
           ...pdfjsExternals,
           { "@repo/event-parser": "@repo/event-parser" },
         ];

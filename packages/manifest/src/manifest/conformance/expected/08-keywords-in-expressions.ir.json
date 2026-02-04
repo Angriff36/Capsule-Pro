@@ -11,9 +11,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "name",
@@ -57,13 +55,9 @@
         }
       ],
       "relationships": [],
-      "commands": [
-        "process"
-      ],
+      "commands": ["process"],
       "constraints": [],
-      "policies": [
-        "canRead"
-      ]
+      "policies": ["canRead"]
     }
   ],
   "stores": [

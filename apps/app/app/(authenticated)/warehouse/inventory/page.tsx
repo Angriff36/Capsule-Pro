@@ -1,8 +1,5 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
-import {
-  Card,
-  CardContent,
-} from "@repo/design-system/components/ui/card";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
@@ -62,38 +59,38 @@ const WarehouseInventoryPage = () => (
       </h2>
       <Card>
         <CardContent className="overflow-x-auto">
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Item</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead className="text-right">Stock</TableHead>
-                <TableHead className="text-right">Daily usage</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {inventoryItems.map((item) => (
-                <TableRow key={item.name}>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>{item.location}</TableCell>
-                  <TableCell className="text-right">{item.stock}</TableCell>
-                  <TableCell className="text-right">
-                    {item.dailyUsage}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={statusVariant[item.status] ?? "outline"}>
-                      {item.status}
-                    </Badge>
-                  </TableCell>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Item</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead className="text-right">Stock</TableHead>
+                  <TableHead className="text-right">Daily usage</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+              </TableHeader>
+              <TableBody>
+                {inventoryItems.map((item) => (
+                  <TableRow key={item.name}>
+                    <TableCell>{item.name}</TableCell>
+                    <TableCell>{item.location}</TableCell>
+                    <TableCell className="text-right">{item.stock}</TableCell>
+                    <TableCell className="text-right">
+                      {item.dailyUsage}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={statusVariant[item.status] ?? "outline"}>
+                        {item.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </section>
   </div>
 );

@@ -1,11 +1,17 @@
 "use client";
 
+import {
+  CollapsibleSectionBlock,
+  SectionHeaderBlock,
+} from "@repo/design-system/components/blocks/collapsible-section-block";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import {
-  Collapsible,
-} from "@repo/design-system/components/ui/collapsible";
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -16,9 +22,13 @@ import {
   DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
-import { CollapsibleSectionBlock, SectionHeaderBlock } from "@repo/design-system/components/blocks/collapsible-section-block";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
 import {
   AlertTriangleIcon,
   DollarSignIcon,
@@ -29,12 +39,21 @@ import {
   TrashIcon,
   UtensilsIcon,
 } from "lucide-react";
-import { getBudgetStatusLabel, getVarianceColor } from "../../../lib/use-budgets";
+import {
+  getBudgetStatusLabel,
+  getVarianceColor,
+} from "../../../lib/use-budgets";
 import { SuggestionsPanel } from "../../kitchen/components/suggestions-panel";
-import { EventSummaryDisplay, EventSummarySkeleton } from "../components/event-summary-display";
-import { TaskBreakdownDisplay, TaskBreakdownSkeleton } from "../components/task-breakdown-display";
-import type { TaskBreakdown } from "../actions/task-breakdown";
 import type { GeneratedEventSummary } from "../actions/event-summary";
+import type { TaskBreakdown } from "../actions/task-breakdown";
+import {
+  EventSummaryDisplay,
+  EventSummarySkeleton,
+} from "../components/event-summary-display";
+import {
+  TaskBreakdownDisplay,
+  TaskBreakdownSkeleton,
+} from "../components/task-breakdown-display";
 import type { PrepTaskSummaryClient } from "./prep-task-contract";
 
 export type EventBudgetForDisplay = {
@@ -85,7 +104,10 @@ type MissingFieldsBannerProps = {
   onUpdateDetails: () => void;
 };
 
-export function MissingFieldsBanner({ missingFields, onUpdateDetails }: MissingFieldsBannerProps) {
+export function MissingFieldsBanner({
+  missingFields,
+  onUpdateDetails,
+}: MissingFieldsBannerProps) {
   if (missingFields.length === 0) {
     return null;
   }
@@ -95,9 +117,14 @@ export function MissingFieldsBanner({ missingFields, onUpdateDetails }: MissingF
         <div className="flex items-start gap-2">
           <AlertTriangleIcon className="mt-0.5 size-4 text-amber-600" />
           <div>
-            <div className="font-semibold text-sm">Event needs more details</div>
+            <div className="font-semibold text-sm">
+              Event needs more details
+            </div>
             <div className="text-xs text-amber-800">
-              Missing: {missingFields.map((f) => MISSING_FIELD_LABELS[f] ?? f).join(", ")}
+              Missing:{" "}
+              {missingFields
+                .map((f) => MISSING_FIELD_LABELS[f] ?? f)
+                .join(", ")}
             </div>
           </div>
         </div>
@@ -127,27 +154,31 @@ export function DishVariantDialog({
   onCreate,
 }: DishVariantDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create dish variant</DialogTitle>
           <DialogDescription>
-            Create a new dish based on &quot;{sourceName}&quot; and replace it for this event.
+            Create a new dish based on &quot;{sourceName}&quot; and replace it
+            for this event.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3 py-4">
-          <label className="flex flex-col gap-2 text-sm font-medium" htmlFor="variant-name">
+          <label
+            className="flex flex-col gap-2 text-sm font-medium"
+            htmlFor="variant-name"
+          >
             Variant name
             <Input
               id="variant-name"
-              value={variantName}
               onChange={(e) => onVariantNameChange(e.target.value)}
               placeholder="Enter a new dish name"
+              value={variantName}
             />
           </label>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button onClick={() => onOpenChange(false)} variant="outline">
             Cancel
           </Button>
           <Button disabled={variantName.trim().length === 0} onClick={onCreate}>
@@ -199,7 +230,7 @@ export function MenuDishesSection({
   ] as const;
 
   const addDishDialog = (
-    <Dialog open={showAddDialog} onOpenChange={onShowAddDialogChange}>
+    <Dialog onOpenChange={onShowAddDialogChange} open={showAddDialog}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
           <PlusIcon className="mr-2 size-3" />
@@ -209,14 +240,19 @@ export function MenuDishesSection({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Dish to Event</DialogTitle>
-          <DialogDescription>Select a dish from your menu to add to this event.</DialogDescription>
+          <DialogDescription>
+            Select a dish from your menu to add to this event.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <label className="text-sm font-medium" htmlFor="add-dish-select">
               Dish
             </label>
-            <Select value={selectedDishId} onValueChange={onSelectedDishIdChange}>
+            <Select
+              onValueChange={onSelectedDishIdChange}
+              value={selectedDishId}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select a dish" />
               </SelectTrigger>
@@ -240,8 +276,11 @@ export function MenuDishesSection({
             <label className="text-sm font-medium" htmlFor="add-course-select">
               Course (optional)
             </label>
-            <Select value={selectedCourse} onValueChange={onSelectedCourseChange}>
-              <SelectTrigger id="add-course-select" aria-label="Select course">
+            <Select
+              onValueChange={onSelectedCourseChange}
+              value={selectedCourse}
+            >
+              <SelectTrigger aria-label="Select course" id="add-course-select">
                 <SelectValue placeholder="Select course" />
               </SelectTrigger>
               <SelectContent>
@@ -255,7 +294,10 @@ export function MenuDishesSection({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onShowAddDialogChange(false)}>
+          <Button
+            onClick={() => onShowAddDialogChange(false)}
+            variant="outline"
+          >
             Cancel
           </Button>
           <Button disabled={!selectedDishId} onClick={onAddDish}>
@@ -268,22 +310,23 @@ export function MenuDishesSection({
 
   return (
     <CollapsibleSectionBlock
-      icon={UtensilsIcon}
-      title="Menu / Dishes"
-      subtitle={`${eventDishes.length} dishes linked to this event`}
-      iconColor="text-emerald-500"
       defaultOpen
-      id="dishes"
-      triggerText="View dishes"
-      headerActions={addDishDialog}
-      showEmptyState={!isLoading && eventDishes.length === 0}
       emptyState={{
         icon: UtensilsIcon,
         title: "No dishes linked to this event",
-        description: "Add dishes so they can be used for prep lists and task generation",
+        description:
+          "Add dishes so they can be used for prep lists and task generation",
         actionLabel: "Add First Dish",
         onAction: () => onShowAddDialogChange(true),
       }}
+      headerActions={addDishDialog}
+      icon={UtensilsIcon}
+      iconColor="text-emerald-500"
+      id="dishes"
+      showEmptyState={!isLoading && eventDishes.length === 0}
+      subtitle={`${eventDishes.length} dishes linked to this event`}
+      title="Menu / Dishes"
+      triggerText="View dishes"
     >
       {isLoading && (
         <div className="flex items-center justify-center py-8">
@@ -294,8 +337,8 @@ export function MenuDishesSection({
         <div className="grid gap-3">
           {eventDishes.map((dish) => (
             <div
-              key={dish.link_id}
               className="flex flex-wrap items-center justify-between gap-4 rounded-lg border px-4 py-3"
+              key={dish.link_id}
             >
               <div className="flex flex-1 flex-col">
                 <div className="flex items-center gap-2">
@@ -320,15 +363,21 @@ export function MenuDishesSection({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground text-xs">{dish.quantity_servings} servings</span>
-                <Button size="sm" variant="outline" onClick={() => onOpenVariantDialog(dish.link_id, dish.name)}>
+                <span className="text-muted-foreground text-xs">
+                  {dish.quantity_servings} servings
+                </span>
+                <Button
+                  onClick={() => onOpenVariantDialog(dish.link_id, dish.name)}
+                  size="sm"
+                  variant="outline"
+                >
                   Create variant
                 </Button>
                 <Button
-                  size="icon"
-                  variant="ghost"
                   className="size-8 text-muted-foreground hover:text-destructive"
                   onClick={() => onRemoveDish(dish.link_id)}
+                  size="icon"
+                  variant="ghost"
                 >
                   <TrashIcon className="size-4" />
                 </Button>
@@ -347,20 +396,14 @@ type BudgetSectionProps = {
   onCreateBudget: () => void;
 };
 
-export function BudgetSection({ budget, onViewBudget, onCreateBudget }: BudgetSectionProps) {
+export function BudgetSection({
+  budget,
+  onViewBudget,
+  onCreateBudget,
+}: BudgetSectionProps) {
   return (
     <CollapsibleSectionBlock
-      icon={DollarSignIcon}
-      title="Event Budget"
-      subtitle={
-        budget?.status
-          ? `${getBudgetStatusLabel(budget.status)} - v${budget.version ?? 1}`
-          : "No budget created yet"
-      }
-      iconColor="text-green-500"
       defaultOpen
-      triggerText={() => (budget ? "View budget" : "Create budget")}
-      showEmptyState={!budget}
       emptyState={{
         icon: DollarSignIcon,
         title: "No budget created for this event",
@@ -368,23 +411,35 @@ export function BudgetSection({ budget, onViewBudget, onCreateBudget }: BudgetSe
         actionLabel: "Create Budget",
         onAction: onCreateBudget,
       }}
+      icon={DollarSignIcon}
+      iconColor="text-green-500"
+      showEmptyState={!budget}
+      subtitle={
+        budget?.status
+          ? `${getBudgetStatusLabel(budget.status)} - v${budget.version ?? 1}`
+          : "No budget created yet"
+      }
+      title="Event Budget"
+      triggerText={() => (budget ? "View budget" : "Create budget")}
     >
       {budget && (
         <div className="grid gap-4 md:grid-cols-4">
           <div className="rounded-lg border p-4">
             <div className="text-muted-foreground text-xs">Total Budgeted</div>
             <div className="text-lg font-semibold">
-              {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-                budget.total_budget_amount ?? 0
-              )}
+              {new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+              }).format(budget.total_budget_amount ?? 0)}
             </div>
           </div>
           <div className="rounded-lg border p-4">
             <div className="text-muted-foreground text-xs">Total Actual</div>
             <div className="text-lg font-semibold">
-              {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-                budget.total_actual_amount ?? 0
-              )}
+              {new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+              }).format(budget.total_actual_amount ?? 0)}
             </div>
           </div>
           <div className="rounded-lg border p-4">
@@ -392,9 +447,10 @@ export function BudgetSection({ budget, onViewBudget, onCreateBudget }: BudgetSe
             <div
               className={`text-lg font-semibold ${getVarianceColor(budget.variance_amount ?? 0)}`}
             >
-              {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-                budget.variance_amount ?? 0
-              )}
+              {new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+              }).format(budget.variance_amount ?? 0)}
             </div>
           </div>
           <div className="flex items-center">
@@ -438,10 +494,10 @@ export function TaskBreakdownSection({
   return (
     <>
       <SectionHeaderBlock
-        icon={SparklesIcon}
-        title="AI Task Assistant"
-        iconColor="text-purple-500"
         actions={generateButton}
+        icon={SparklesIcon}
+        iconColor="text-purple-500"
+        title="AI Task Assistant"
       />
 
       {breakdown && (
@@ -460,8 +516,8 @@ export function TaskBreakdownSection({
           <SparklesIcon className="mx-auto mb-4 size-12 text-muted-foreground/50" />
           <h3 className="mb-2 font-medium">No task breakdown generated yet</h3>
           <p className="mb-4 text-muted-foreground text-sm">
-            Generate an AI-powered task breakdown with prep, setup, and cleanup tasks based on your
-            event details and historical data.
+            Generate an AI-powered task breakdown with prep, setup, and cleanup
+            tasks based on your event details and historical data.
           </p>
           <Button onClick={onOpenGenerateModal}>
             <SparklesIcon className="mr-2 size-4" />
@@ -504,10 +560,10 @@ export function ExecutiveSummarySection({
   return (
     <>
       <SectionHeaderBlock
-        icon={SparklesIcon}
-        title="Executive Summary"
-        iconColor="text-primary"
         actions={generateButton}
+        icon={SparklesIcon}
+        iconColor="text-primary"
+        title="Executive Summary"
       />
 
       {isLoading ? (
@@ -548,8 +604,8 @@ export function SuggestionsSection({
 }: SuggestionsSectionProps) {
   const toggleButton = (
     <Button
-      variant={showSuggestions ? "default" : "outline"}
       onClick={() => onShowSuggestionsChange(!showSuggestions)}
+      variant={showSuggestions ? "default" : "outline"}
     >
       <SparklesIcon className="mr-2 size-4" />
       {showSuggestions ? "Hide Suggestions" : "Show Suggestions"}
@@ -564,50 +620,53 @@ export function SuggestionsSection({
   return (
     <>
       <SectionHeaderBlock
-        icon={Lightbulb}
-        title="AI Suggestions"
-        iconColor="text-amber-500"
         actions={toggleButton}
+        icon={Lightbulb}
+        iconColor="text-amber-500"
+        title="AI Suggestions"
       />
 
       {showSuggestions && (
         <Card className="border-slate-200 shadow-sm">
           <SuggestionsPanel
-            suggestions={suggestions}
             isLoading={isLoading}
-            onRefresh={onRefresh}
-            onDismiss={onDismiss}
             onAction={onAction}
             onClose={() => onShowSuggestionsChange(false)}
+            onDismiss={onDismiss}
+            onRefresh={onRefresh}
+            suggestions={suggestions}
           />
         </Card>
       )}
-      {!showSuggestions && suggestions.length > 0 && (() => {
-        const plural = suggestions.length === 1 ? "" : "s";
-        return (
-        <Card className="border-purple-200 bg-purple-50/50 shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 font-semibold text-sm text-purple-900">
-              <Lightbulb className="size-4 text-purple-600" />
-              AI Suggestions Available
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-purple-700 text-xs">
-              You have {suggestions.length} suggestion{plural} that could help optimize this event.
-            </p>
-            <Button
-              className="w-full bg-purple-600 text-white hover:bg-purple-700"
-              size="sm"
-              onClick={() => onShowSuggestionsChange(true)}
-            >
-              <SparklesIcon className="mr-2 size-3" />
-              View Suggestions
-            </Button>
-          </CardContent>
-        </Card>
-        );
-      })()}
+      {!showSuggestions &&
+        suggestions.length > 0 &&
+        (() => {
+          const plural = suggestions.length === 1 ? "" : "s";
+          return (
+            <Card className="border-purple-200 bg-purple-50/50 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 font-semibold text-sm text-purple-900">
+                  <Lightbulb className="size-4 text-purple-600" />
+                  AI Suggestions Available
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-purple-700 text-xs">
+                  You have {suggestions.length} suggestion{plural} that could
+                  help optimize this event.
+                </p>
+                <Button
+                  className="w-full bg-purple-600 text-white hover:bg-purple-700"
+                  onClick={() => onShowSuggestionsChange(true)}
+                  size="sm"
+                >
+                  <SparklesIcon className="mr-2 size-3" />
+                  View Suggestions
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })()}
     </>
   );
 }
@@ -617,12 +676,15 @@ type SourceDocumentsSectionProps = {
   fileCount?: number;
 };
 
-export function SourceDocumentsSection({ eventId, fileCount = 0 }: SourceDocumentsSectionProps) {
+export function SourceDocumentsSection({
+  eventId,
+  fileCount = 0,
+}: SourceDocumentsSectionProps) {
   return (
     <CollapsibleSectionBlock
       icon={FileTextIcon}
-      title="Source documents"
       subtitle={`${fileCount} files attached`}
+      title="Source documents"
       triggerText="View files"
     >
       <form
@@ -633,7 +695,12 @@ export function SourceDocumentsSection({ eventId, fileCount = 0 }: SourceDocumen
         className="flex flex-col gap-3"
       >
         <div className="flex flex-wrap items-center gap-3">
-          <input accept=".csv,.pdf,image/*" className="text-sm" name="file" type="file" />
+          <input
+            accept=".csv,.pdf,image/*"
+            className="text-sm"
+            name="file"
+            type="file"
+          />
           <Button type="submit" variant="secondary">
             Attach file
           </Button>
@@ -648,41 +715,50 @@ type PrepTasksSectionProps = {
   onOpenGenerateModal: () => void;
 };
 
-export function PrepTasksSection({ prepTasks, onOpenGenerateModal }: PrepTasksSectionProps) {
+export function PrepTasksSection({
+  prepTasks,
+  onOpenGenerateModal,
+}: PrepTasksSectionProps) {
   return (
     <CollapsibleSectionBlock
-      icon={PlusIcon}
-      title="Prep tasks"
-      subtitle={`${prepTasks.length} tasks linked to this event`}
-      iconColor="text-purple-500"
       defaultOpen
-      triggerText="View tasks"
-      showEmptyState={prepTasks.length === 0}
       emptyState={{
         title: "No prep tasks yet",
         description: "Generate a task breakdown or add tasks manually",
         actionLabel: "Generate with AI",
         onAction: onOpenGenerateModal,
       }}
+      icon={PlusIcon}
+      iconColor="text-purple-500"
+      showEmptyState={prepTasks.length === 0}
+      subtitle={`${prepTasks.length} tasks linked to this event`}
+      title="Prep tasks"
+      triggerText="View tasks"
     >
       <div className="grid gap-3">
         {prepTasks.map((task) => (
           <div
-            key={task.id}
             className="flex flex-wrap items-center justify-between gap-4 rounded-lg border px-4 py-3"
+            key={task.id}
           >
             <div className="flex flex-col">
               <span className="font-medium">{task.name}</span>
               <span className="text-muted-foreground text-xs">
                 Due{" "}
-                {new Date(task.dueByDate).toLocaleDateString("en-US", { dateStyle: "medium" })}
+                {new Date(task.dueByDate).toLocaleDateString("en-US", {
+                  dateStyle: "medium",
+                })}
               </span>
             </div>
             <div className="flex items-center gap-2">
               {task.isEventFinish ? (
-                <span className="rounded bg-muted px-2 py-1 text-xs">Finish</span>
+                <span className="rounded bg-muted px-2 py-1 text-xs">
+                  Finish
+                </span>
               ) : null}
-              <span className="rounded bg-muted px-2 py-1 text-xs capitalize">{task.status}</span>
+              <span className="rounded bg-muted px-2 py-1 text-xs capitalize">
+                {task.status}
+              </span>
               <span className="text-muted-foreground text-xs">
                 {task.servingsTotal ?? Math.round(Number(task.quantityTotal))}
                 {task.servingsTotal ? " servings" : ""}

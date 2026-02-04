@@ -11,7 +11,6 @@ import {
 } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Progress } from "@repo/design-system/components/ui/progress";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -19,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -241,7 +241,9 @@ export function BudgetsPageClient() {
               <CheckCircle2Icon className="size-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <CardTitle className="text-2xl font-bold">{activeBudgets}</CardTitle>
+              <CardTitle className="text-2xl font-bold">
+                {activeBudgets}
+              </CardTitle>
               <p className="text-xs text-muted-foreground">
                 {budgets.length} total budgets
               </p>
@@ -250,20 +252,26 @@ export function BudgetsPageClient() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardDescription className="text-sm font-medium">Total Budget</CardDescription>
+              <CardDescription className="text-sm font-medium">
+                Total Budget
+              </CardDescription>
               <DollarSignIcon className="size-4 text-blue-600" />
             </CardHeader>
             <CardContent>
               <CardTitle className="text-2xl font-bold">
                 {formatCurrency(totalBudget)}
               </CardTitle>
-              <p className="text-xs text-muted-foreground">Active budgets only</p>
+              <p className="text-xs text-muted-foreground">
+                Active budgets only
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardDescription className="text-sm font-medium">Actual Spend</CardDescription>
+              <CardDescription className="text-sm font-medium">
+                Actual Spend
+              </CardDescription>
               <DollarSignIcon className="size-4 text-purple-600" />
             </CardHeader>
             <CardContent>
@@ -380,7 +388,8 @@ export function BudgetsPageClient() {
                   filteredBudgets.map((budget) => {
                     const utilizationPct =
                       budget.totalBudgetAmount > 0
-                        ? (budget.totalActualAmount / budget.totalBudgetAmount) *
+                        ? (budget.totalActualAmount /
+                            budget.totalBudgetAmount) *
                           100
                         : 0;
 
@@ -396,10 +405,12 @@ export function BudgetsPageClient() {
                           <div className="space-y-1">
                             <div className="flex items-center justify-between text-sm">
                               <span className="text-muted-foreground">
-                                Budget: {formatCurrency(budget.totalBudgetAmount)}
+                                Budget:{" "}
+                                {formatCurrency(budget.totalBudgetAmount)}
                               </span>
                               <span className="text-muted-foreground">
-                                Actual: {formatCurrency(budget.totalActualAmount)}
+                                Actual:{" "}
+                                {formatCurrency(budget.totalActualAmount)}
                               </span>
                             </div>
                             <div className="flex items-center justify-between text-sm">

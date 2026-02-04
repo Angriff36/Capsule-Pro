@@ -74,7 +74,10 @@ const KitchenDashboardPage = async () => {
           </Button>
         </div>
       </Header>
-      <KitchenDashboardClient events={serializedEvents} initialNow={initialNow} />
+      <KitchenDashboardClient
+        events={serializedEvents}
+        initialNow={initialNow}
+      />
     </>
   );
 };

@@ -45,6 +45,7 @@ type RecipeEditModalProps = {
     description?: string;
     tags?: string[];
     ingredients?: Ingredient[];
+    steps?: Step[];
     yieldQuantity?: number;
     yieldUnit?: string;
     yieldDescription?: string;
@@ -276,7 +277,7 @@ export const RecipeEditModal = ({
   const [ingredients, setIngredients] = useState<Ingredient[]>(
     recipe?.ingredients ?? []
   );
-  const [steps, setSteps] = useState<Step[]>([]);
+  const [steps, setSteps] = useState<Step[]>(recipe?.steps ?? []);
 
   const handleAddTag = () => {
     const trimmed = tagInput.trim();

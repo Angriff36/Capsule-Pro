@@ -17,7 +17,6 @@ import {
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -25,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -171,7 +171,8 @@ export const InventoryItemsPageClient = () => {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Inventory Items</h1>
           <p className="text-muted-foreground">
-            Manage ingredient inventory, track stock levels, and monitor reorder points.
+            Manage ingredient inventory, track stock levels, and monitor reorder
+            points.
           </p>
         </div>
 
@@ -222,80 +223,80 @@ export const InventoryItemsPageClient = () => {
             Filters
           </h2>
           <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-card p-4">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="relative">
-              <Input
-                className="w-64"
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search items..."
-                type="text"
-                value={searchQuery}
-              />
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="relative">
+                <Input
+                  className="w-64"
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search items..."
+                  type="text"
+                  value={searchQuery}
+                />
+              </div>
+              <Select
+                onValueChange={(value) =>
+                  setCategoryFilter(
+                    value === "all" ? "all" : (value as ItemCategory)
+                  )
+                }
+                value={categoryFilter}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {ITEM_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {getCategoryLabel(cat)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                onValueChange={(value) =>
+                  setStockStatusFilter(
+                    value === "all" ? "all" : (value as StockStatus)
+                  )
+                }
+                value={stockStatusFilter}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Stock Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Stock Levels</SelectItem>
+                  <SelectItem value="in_stock">In Stock</SelectItem>
+                  <SelectItem value="low_stock">Low Stock</SelectItem>
+                  <SelectItem value="out_of_stock">Out of Stock</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                onValueChange={(value) =>
+                  setFsaStatusFilter(
+                    value === "all" ? "all" : (value as FSAStatus)
+                  )
+                }
+                value={fsaStatusFilter}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="FSA Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All FSA Statuses</SelectItem>
+                  {FSA_STATUSES.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {getFSAStatusLabel(status)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <Select
-              onValueChange={(value) =>
-                setCategoryFilter(
-                  value === "all" ? "all" : (value as ItemCategory)
-                )
-              }
-              value={categoryFilter}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {ITEM_CATEGORIES.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {getCategoryLabel(cat)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              onValueChange={(value) =>
-                setStockStatusFilter(
-                  value === "all" ? "all" : (value as StockStatus)
-                )
-              }
-              value={stockStatusFilter}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Stock Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Stock Levels</SelectItem>
-                <SelectItem value="in_stock">In Stock</SelectItem>
-                <SelectItem value="low_stock">Low Stock</SelectItem>
-                <SelectItem value="out_of_stock">Out of Stock</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              onValueChange={(value) =>
-                setFsaStatusFilter(
-                  value === "all" ? "all" : (value as FSAStatus)
-                )
-              }
-              value={fsaStatusFilter}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="FSA Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All FSA Statuses</SelectItem>
-                {FSA_STATUSES.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {getFSAStatusLabel(status)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Button onClick={() => setIsCreateModalOpen(true)}>
+              <PlusIcon className="mr-2 size-4" />
+              New Item
+            </Button>
           </div>
-          <Button onClick={() => setIsCreateModalOpen(true)}>
-            <PlusIcon className="mr-2 size-4" />
-            New Item
-          </Button>
-        </div>
         </section>
 
         {/* Inventory Items Table Section */}
@@ -304,176 +305,176 @@ export const InventoryItemsPageClient = () => {
             Inventory Items ({filteredItems.length})
           </h2>
           {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          </div>
-        ) : filteredItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed p-12 text-center">
-            <div className="mb-4 rounded-full bg-muted p-4">
-              <PackageIcon className="size-8 text-muted-foreground" />
+            <div className="flex items-center justify-center py-12">
+              <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
             </div>
-            <h3 className="mb-2 text-lg font-semibold">
-              {searchQuery ||
-              categoryFilter !== "all" ||
-              stockStatusFilter !== "all" ||
-              fsaStatusFilter !== "all"
-                ? "No items found"
-                : "No inventory items yet"}
-            </h3>
-            <p className="mb-4 text-muted-foreground text-sm">
-              {searchQuery ||
-              categoryFilter !== "all" ||
-              stockStatusFilter !== "all" ||
-              fsaStatusFilter !== "all"
-                ? "Try adjusting your filters or search query"
-                : "Create your first inventory item to get started"}
-            </p>
-            {!searchQuery &&
-              categoryFilter === "all" &&
-              stockStatusFilter === "all" &&
-              fsaStatusFilter === "all" && (
-                <Button onClick={() => setIsCreateModalOpen(true)}>
-                  <PlusIcon className="mr-2 size-4" />
-                  Create Item
-                </Button>
-              )}
-          </div>
-        ) : (
-          <div className="rounded-xl border bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Item Number</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead className="text-right">Quantity</TableHead>
-                  <TableHead className="text-right">Unit Cost</TableHead>
-                  <TableHead className="text-right">Total Value</TableHead>
-                  <TableHead>Stock Status</TableHead>
-                  <TableHead>FSA Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredItems.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-mono text-sm">
-                      {item.item_number}
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">{item.name}</div>
-                      {item.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {item.tags.slice(0, 2).map((tag) => (
-                            <Badge
-                              className="text-xs"
-                              key={tag}
-                              variant="outline"
-                            >
-                              {tag}
-                            </Badge>
-                          ))}
-                          {item.tags.length > 2 && (
-                            <Badge className="text-xs" variant="outline">
-                              +{item.tags.length - 2}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {getCategoryLabel(item.category as ItemCategory)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="font-medium">
-                        {item.quantity_on_hand.toFixed(3)}
-                      </div>
-                      <div className="text-muted-foreground text-xs">
-                        Reorder at: {item.reorder_level.toFixed(3)}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(item.unit_cost)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="font-medium">
-                        {formatCurrency(item.total_value)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        className={getStockStatusColor(item.stock_status)}
-                        variant="outline"
-                      >
-                        {getStockStatusLabel(item.stock_status)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        className={getFSAStatusColor(
-                          item.fsa_status ?? "unknown"
-                        )}
-                        variant="outline"
-                      >
-                        {getFSAStatusLabel(item.fsa_status ?? "unknown")}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          onClick={() => openEditModal(item)}
-                          size="sm"
-                          variant="ghost"
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => confirmDelete(item)}
-                          size="sm"
-                          variant="ghost"
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between border-t px-4 py-4">
-                <div className="text-muted-foreground text-sm">
-                  Showing {Math.min((page - 1) * 20 + 1, totalCount)} to{" "}
-                  {Math.min(page * 20, totalCount)} of {totalCount} items
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    disabled={page === 1}
-                    onClick={() => setPage(page - 1)}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Previous
-                  </Button>
-                  <div className="flex items-center px-3 text-sm">
-                    Page {page} of {totalPages}
-                  </div>
-                  <Button
-                    disabled={page === totalPages}
-                    onClick={() => setPage(page + 1)}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Next
-                  </Button>
-                </div>
+          ) : filteredItems.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed p-12 text-center">
+              <div className="mb-4 rounded-full bg-muted p-4">
+                <PackageIcon className="size-8 text-muted-foreground" />
               </div>
-            )}
-          </div>
-        )}
+              <h3 className="mb-2 text-lg font-semibold">
+                {searchQuery ||
+                categoryFilter !== "all" ||
+                stockStatusFilter !== "all" ||
+                fsaStatusFilter !== "all"
+                  ? "No items found"
+                  : "No inventory items yet"}
+              </h3>
+              <p className="mb-4 text-muted-foreground text-sm">
+                {searchQuery ||
+                categoryFilter !== "all" ||
+                stockStatusFilter !== "all" ||
+                fsaStatusFilter !== "all"
+                  ? "Try adjusting your filters or search query"
+                  : "Create your first inventory item to get started"}
+              </p>
+              {!searchQuery &&
+                categoryFilter === "all" &&
+                stockStatusFilter === "all" &&
+                fsaStatusFilter === "all" && (
+                  <Button onClick={() => setIsCreateModalOpen(true)}>
+                    <PlusIcon className="mr-2 size-4" />
+                    Create Item
+                  </Button>
+                )}
+            </div>
+          ) : (
+            <div className="rounded-xl border bg-card">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Item Number</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead className="text-right">Quantity</TableHead>
+                    <TableHead className="text-right">Unit Cost</TableHead>
+                    <TableHead className="text-right">Total Value</TableHead>
+                    <TableHead>Stock Status</TableHead>
+                    <TableHead>FSA Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredItems.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-mono text-sm">
+                        {item.item_number}
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">{item.name}</div>
+                        {item.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {item.tags.slice(0, 2).map((tag) => (
+                              <Badge
+                                className="text-xs"
+                                key={tag}
+                                variant="outline"
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
+                            {item.tags.length > 2 && (
+                              <Badge className="text-xs" variant="outline">
+                                +{item.tags.length - 2}
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {getCategoryLabel(item.category as ItemCategory)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="font-medium">
+                          {item.quantity_on_hand.toFixed(3)}
+                        </div>
+                        <div className="text-muted-foreground text-xs">
+                          Reorder at: {item.reorder_level.toFixed(3)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(item.unit_cost)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="font-medium">
+                          {formatCurrency(item.total_value)}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={getStockStatusColor(item.stock_status)}
+                          variant="outline"
+                        >
+                          {getStockStatusLabel(item.stock_status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={getFSAStatusColor(
+                            item.fsa_status ?? "unknown"
+                          )}
+                          variant="outline"
+                        >
+                          {getFSAStatusLabel(item.fsa_status ?? "unknown")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            onClick={() => openEditModal(item)}
+                            size="sm"
+                            variant="ghost"
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => confirmDelete(item)}
+                            size="sm"
+                            variant="ghost"
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t px-4 py-4">
+                  <div className="text-muted-foreground text-sm">
+                    Showing {Math.min((page - 1) * 20 + 1, totalCount)} to{" "}
+                    {Math.min(page * 20, totalCount)} of {totalCount} items
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      disabled={page === 1}
+                      onClick={() => setPage(page - 1)}
+                      size="sm"
+                      variant="outline"
+                    >
+                      Previous
+                    </Button>
+                    <div className="flex items-center px-3 text-sm">
+                      Page {page} of {totalPages}
+                    </div>
+                    <Button
+                      disabled={page === totalPages}
+                      onClick={() => setPage(page + 1)}
+                      size="sm"
+                      variant="outline"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </section>
       </div>
 

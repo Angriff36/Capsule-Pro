@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +23,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   CheckCircleIcon,
   ChefHatIcon,
@@ -464,378 +464,394 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
           <div className="mt-4 rounded-3xl border bg-muted/40 p-4">
             {activeTab === "recipes" && (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-              {recipes.length === 0 ? (
-                <Empty className="bg-card/50">
-                  <EmptyHeader>
-                    <EmptyMedia variant="icon">
-                      <ChefHatIcon />
-                    </EmptyMedia>
-                    <EmptyTitle>Create your first recipe</EmptyTitle>
-                    <EmptyDescription>
-                      Start building your recipe collection. Recipes can be
-                      reused across multiple dishes, prep lists, and events to
-                      streamline your kitchen operations.
-                    </EmptyDescription>
-                  </EmptyHeader>
-                  <EmptyContent>
-                    <Button asChild>
-                      <Link href="/kitchen/recipes/new">Create New Recipe</Link>
-                    </Button>
-                  </EmptyContent>
-                </Empty>
-              ) : (
-                recipes.map((recipe) => (
-                  <Card
-                    className="group overflow-hidden shadow-sm transition-all duration-200 hover:translate-y-[-4px] hover:shadow-md"
-                    data-testid="recipe-card"
-                    key={recipe.id}
-                  >
-                    <Link href={`/kitchen/recipes/${recipe.id}`}>
-                      <AspectRatio
-                        className="relative w-full bg-muted"
-                        ratio={16 / 9}
-                      >
-                        {recipe.image_url ? (
-                          <img
-                            alt={recipe.name}
-                            className="h-full w-full object-cover"
-                            height={240}
-                            src={recipe.image_url}
-                            width={426}
-                          />
-                        ) : (
-                          <RecipeImagePlaceholder
-                            recipeName={recipe.name}
-                            uploadAction={updateRecipeImage.bind(
-                              null,
-                              recipe.id
-                            )}
-                          />
-                        )}
-                        <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 via-transparent to-transparent p-3 opacity-0 transition-opacity group-hover:opacity-100">
-                          <RecipeEditButton
-                            recipeId={recipe.id}
-                            recipeName={recipe.name}
-                          />
-                        </div>
-                        <RecipeFavoriteButton recipeName={recipe.name} />
-                      </AspectRatio>
-                    </Link>
-                    <CardHeader className="space-y-2">
-                      <CardTitle className="font-semibold text-lg">
-                        {recipe.name}
-                      </CardTitle>
-                      <div className="flex flex-wrap items-center gap-2">
-                        {recipe.category ? (
-                          <Badge variant="secondary">{recipe.category}</Badge>
-                        ) : null}
-                        <Badge variant="outline">
-                          {formatMinutes(recipe.prep_time_minutes)}
-                        </Badge>
-                        <DifficultyRating rating={3} />
-                      </div>
-                      {recipe.description && (
-                        <p className="line-clamp-2 text-muted-foreground text-sm">
-                          {recipe.description}
-                        </p>
-                      )}
-                    </CardHeader>
-                  </Card>
-                ))
-              )}
-            </div>
-          )}
-
-          {activeTab === "dishes" && (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {dishes.length === 0 ? (
-                <Empty className="bg-card/50">
-                  <EmptyHeader>
-                    <EmptyMedia variant="icon">
-                      <UtensilsIcon />
-                    </EmptyMedia>
-                    <EmptyTitle>Build your first dish</EmptyTitle>
-                    <EmptyDescription>
-                      Transform recipes into marketable dishes with pricing,
-                      dietary information, and presentation details. Dishes are
-                      what clients see on menus and what gets scheduled for
-                      events.
-                    </EmptyDescription>
-                  </EmptyHeader>
-                  <EmptyContent>
-                    <Button asChild>
-                      <Link href="/kitchen/recipes/dishes/new">
-                        Create New Dish
-                      </Link>
-                    </Button>
-                  </EmptyContent>
-                </Empty>
-              ) : (
-                dishes.map((dish) => {
-                  const margin = getDishMargin(dish);
-                  return (
-                    <Card className="overflow-hidden shadow-sm" key={dish.id}>
-                      <div className="relative h-40 w-full bg-muted">
-                        {dish.presentation_image_url ? (
-                          <img
-                            alt={dish.name}
-                            className="h-full w-full object-cover"
-                            src={dish.presentation_image_url}
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-slate-200 via-slate-100 to-white text-muted-foreground">
-                            <UtensilsIcon size={32} />
+                {recipes.length === 0 ? (
+                  <Empty className="bg-card/50">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <ChefHatIcon />
+                      </EmptyMedia>
+                      <EmptyTitle>Create your first recipe</EmptyTitle>
+                      <EmptyDescription>
+                        Start building your recipe collection. Recipes can be
+                        reused across multiple dishes, prep lists, and events to
+                        streamline your kitchen operations.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                    <EmptyContent>
+                      <Button asChild>
+                        <Link href="/kitchen/recipes/new">
+                          Create New Recipe
+                        </Link>
+                      </Button>
+                    </EmptyContent>
+                  </Empty>
+                ) : (
+                  recipes.map((recipe) => (
+                    <Card
+                      className="group overflow-hidden shadow-sm transition-all duration-200 hover:translate-y-[-4px] hover:shadow-md"
+                      data-testid="recipe-card"
+                      key={recipe.id}
+                    >
+                      <Link href={`/kitchen/recipes/${recipe.id}`}>
+                        <AspectRatio
+                          className="relative w-full bg-muted"
+                          ratio={16 / 9}
+                        >
+                          {recipe.image_url ? (
+                            <img
+                              alt={recipe.name}
+                              className="h-full w-full object-cover"
+                              height={240}
+                              src={recipe.image_url}
+                              width={426}
+                            />
+                          ) : (
+                            <RecipeImagePlaceholder
+                              recipeName={recipe.name}
+                              uploadAction={updateRecipeImage.bind(
+                                null,
+                                recipe.id
+                              )}
+                            />
+                          )}
+                          <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 via-transparent to-transparent p-3 opacity-0 transition-opacity group-hover:opacity-100">
+                            <RecipeEditButton
+                              recipeId={recipe.id}
+                              recipeName={recipe.name}
+                            />
                           </div>
-                        )}
-                        <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
-                          {dish.category ? (
-                            <Badge variant="secondary">
-                              {dish.category.toUpperCase()}
-                            </Badge>
-                          ) : null}
-                          {(dish.dietary_tags ?? []).slice(0, 2).map((tag) => (
-                            <Badge key={tag}>{tag.toUpperCase()}</Badge>
-                          ))}
-                        </div>
-                      </div>
+                          <RecipeFavoriteButton recipeName={recipe.name} />
+                        </AspectRatio>
+                      </Link>
                       <CardHeader className="space-y-2">
                         <CardTitle className="font-semibold text-lg">
-                          {dish.name}
+                          {recipe.name}
                         </CardTitle>
-                        <div className="text-muted-foreground text-sm">
-                          Recipe: {dish.recipe_name ?? "Unlinked"}
+                        <div className="flex flex-wrap items-center gap-2">
+                          {recipe.category ? (
+                            <Badge variant="secondary">{recipe.category}</Badge>
+                          ) : null}
+                          <Badge variant="outline">
+                            {formatMinutes(recipe.prep_time_minutes)}
+                          </Badge>
+                          <DifficultyRating rating={3} />
+                        </div>
+                        {recipe.description && (
+                          <p className="line-clamp-2 text-muted-foreground text-sm">
+                            {recipe.description}
+                          </p>
+                        )}
+                      </CardHeader>
+                    </Card>
+                  ))
+                )}
+              </div>
+            )}
+
+            {activeTab === "dishes" && (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {dishes.length === 0 ? (
+                  <Empty className="bg-card/50">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <UtensilsIcon />
+                      </EmptyMedia>
+                      <EmptyTitle>Build your first dish</EmptyTitle>
+                      <EmptyDescription>
+                        Transform recipes into marketable dishes with pricing,
+                        dietary information, and presentation details. Dishes
+                        are what clients see on menus and what gets scheduled
+                        for events.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                    <EmptyContent>
+                      <Button asChild>
+                        <Link href="/kitchen/recipes/dishes/new">
+                          Create New Dish
+                        </Link>
+                      </Button>
+                    </EmptyContent>
+                  </Empty>
+                ) : (
+                  dishes.map((dish) => {
+                    const margin = getDishMargin(dish);
+                    return (
+                      <Card className="overflow-hidden shadow-sm" key={dish.id}>
+                        <div className="relative h-40 w-full bg-muted">
+                          {dish.presentation_image_url ? (
+                            <img
+                              alt={dish.name}
+                              className="h-full w-full object-cover"
+                              src={dish.presentation_image_url}
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-slate-200 via-slate-100 to-white text-muted-foreground">
+                              <UtensilsIcon size={32} />
+                            </div>
+                          )}
+                          <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
+                            {dish.category ? (
+                              <Badge variant="secondary">
+                                {dish.category.toUpperCase()}
+                              </Badge>
+                            ) : null}
+                            {(dish.dietary_tags ?? [])
+                              .slice(0, 2)
+                              .map((tag) => (
+                                <Badge key={tag}>{tag.toUpperCase()}</Badge>
+                              ))}
+                          </div>
+                        </div>
+                        <CardHeader className="space-y-2">
+                          <CardTitle className="font-semibold text-lg">
+                            {dish.name}
+                          </CardTitle>
+                          <div className="text-muted-foreground text-sm">
+                            Recipe: {dish.recipe_name ?? "Unlinked"}
+                          </div>
+                        </CardHeader>
+                        <CardContent className="grid grid-cols-3 gap-3 text-sm">
+                          <div>
+                            <div className="text-muted-foreground">
+                              Food cost
+                            </div>
+                            <div className="font-semibold">
+                              {dish.cost_per_person
+                                ? currencyFormatter.format(dish.cost_per_person)
+                                : "-"}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">
+                              Menu price
+                            </div>
+                            <div className="font-semibold">
+                              {dish.price_per_person
+                                ? currencyFormatter.format(
+                                    dish.price_per_person
+                                  )
+                                : "-"}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">Margin</div>
+                            <div className="font-semibold text-emerald-600">
+                              {formatPercent(margin)}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">Events</div>
+                            <div className="font-semibold">
+                              {dish.event_count}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">
+                              Prep tasks
+                            </div>
+                            <div className="font-semibold">
+                              {dish.prep_task_count}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">Status</div>
+                            <div className="flex items-center gap-1 font-semibold">
+                              <CheckCircleIcon className="size-4 text-emerald-500" />
+                              {dish.is_active ? "Active" : "Paused"}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })
+                )}
+              </div>
+            )}
+
+            {activeTab === "ingredients" && (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {ingredients.length === 0 ? (
+                  <Empty className="bg-card/50">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <PackageIcon />
+                      </EmptyMedia>
+                      <EmptyTitle>Add your ingredients</EmptyTitle>
+                      <EmptyDescription>
+                        Build your ingredient library with units, categories,
+                        and allergen information. This ensures accurate recipe
+                        scaling and helps with dietary restrictions and cost
+                        calculations.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                    <EmptyContent>
+                      <Button asChild>
+                        <Link href="/kitchen/recipes/ingredients/new">
+                          Add Ingredient
+                        </Link>
+                      </Button>
+                    </EmptyContent>
+                  </Empty>
+                ) : (
+                  ingredients.map((ingredient) => (
+                    <Card className="shadow-sm" key={ingredient.id}>
+                      <CardHeader className="space-y-2">
+                        <CardTitle className="font-semibold text-lg">
+                          {ingredient.name}
+                        </CardTitle>
+                        <div className="flex flex-wrap gap-2">
+                          {ingredient.category ? (
+                            <Badge variant="secondary">
+                              {ingredient.category.toUpperCase()}
+                            </Badge>
+                          ) : null}
+                          {(ingredient.allergens ?? [])
+                            .slice(0, 2)
+                            .map((allergen) => (
+                              <Badge key={allergen} variant="outline">
+                                {allergen.toUpperCase()}
+                              </Badge>
+                            ))}
                         </div>
                       </CardHeader>
-                      <CardContent className="grid grid-cols-3 gap-3 text-sm">
-                        <div>
-                          <div className="text-muted-foreground">Food cost</div>
-                          <div className="font-semibold">
-                            {dish.cost_per_person
-                              ? currencyFormatter.format(dish.cost_per_person)
-                              : "-"}
-                          </div>
-                        </div>
+                      <CardContent className="grid grid-cols-2 gap-3 text-sm">
                         <div>
                           <div className="text-muted-foreground">
-                            Menu price
+                            Default unit
                           </div>
                           <div className="font-semibold">
-                            {dish.price_per_person
-                              ? currencyFormatter.format(dish.price_per_person)
-                              : "-"}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-muted-foreground">Margin</div>
-                          <div className="font-semibold text-emerald-600">
-                            {formatPercent(margin)}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-muted-foreground">Events</div>
-                          <div className="font-semibold">
-                            {dish.event_count}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-muted-foreground">
-                            Prep tasks
-                          </div>
-                          <div className="font-semibold">
-                            {dish.prep_task_count}
+                            {ingredient.unit_code ?? "-"}
                           </div>
                         </div>
                         <div>
                           <div className="text-muted-foreground">Status</div>
-                          <div className="flex items-center gap-1 font-semibold">
-                            <CheckCircleIcon className="size-4 text-emerald-500" />
-                            {dish.is_active ? "Active" : "Paused"}
+                          <div className="font-semibold">
+                            {ingredient.is_active ? "Active" : "Paused"}
                           </div>
                         </div>
                       </CardContent>
                     </Card>
-                  );
-                })
-              )}
-            </div>
-          )}
+                  ))
+                )}
+              </div>
+            )}
 
-          {activeTab === "ingredients" && (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {ingredients.length === 0 ? (
-                <Empty className="bg-card/50">
-                  <EmptyHeader>
-                    <EmptyMedia variant="icon">
-                      <PackageIcon />
-                    </EmptyMedia>
-                    <EmptyTitle>Add your ingredients</EmptyTitle>
-                    <EmptyDescription>
-                      Build your ingredient library with units, categories, and
-                      allergen information. This ensures accurate recipe scaling
-                      and helps with dietary restrictions and cost calculations.
-                    </EmptyDescription>
-                  </EmptyHeader>
-                  <EmptyContent>
-                    <Button asChild>
-                      <Link href="/kitchen/recipes/ingredients/new">
-                        Add Ingredient
-                      </Link>
-                    </Button>
-                  </EmptyContent>
-                </Empty>
-              ) : (
-                ingredients.map((ingredient) => (
-                  <Card className="shadow-sm" key={ingredient.id}>
-                    <CardHeader className="space-y-2">
-                      <CardTitle className="font-semibold text-lg">
-                        {ingredient.name}
-                      </CardTitle>
-                      <div className="flex flex-wrap gap-2">
-                        {ingredient.category ? (
-                          <Badge variant="secondary">
-                            {ingredient.category.toUpperCase()}
-                          </Badge>
-                        ) : null}
-                        {(ingredient.allergens ?? [])
-                          .slice(0, 2)
-                          .map((allergen) => (
-                            <Badge key={allergen} variant="outline">
-                              {allergen.toUpperCase()}
-                            </Badge>
-                          ))}
-                      </div>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <div className="text-muted-foreground">
-                          Default unit
-                        </div>
-                        <div className="font-semibold">
-                          {ingredient.unit_code ?? "-"}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground">Status</div>
-                        <div className="font-semibold">
-                          {ingredient.is_active ? "Active" : "Paused"}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-          )}
+            {activeTab === "menus" && (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+                {menus.length === 0 ? (
+                  <Empty className="bg-card/50">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <UtensilsIcon />
+                      </EmptyMedia>
+                      <EmptyTitle>Create your first menu</EmptyTitle>
+                      <EmptyDescription>
+                        Build curated menu collections that group dishes
+                        together for events. Each menu can include pricing
+                        tiers, dietary breakdowns, and be customized for
+                        different client needs.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                    <EmptyContent>
+                      <Button asChild>
+                        <Link href="/kitchen/recipes/menus/new">
+                          Create New Menu
+                        </Link>
+                      </Button>
+                    </EmptyContent>
+                  </Empty>
+                ) : (
+                  menus.map((menu) => (
+                    <MenuCard
+                      basePrice={menu.basePrice}
+                      category={menu.category}
+                      description={menu.description}
+                      dishCount={menu.dishCount}
+                      id={menu.id}
+                      isActive={menu.isActive}
+                      key={menu.id}
+                      maxGuests={menu.maxGuests}
+                      minGuests={menu.minGuests}
+                      name={menu.name}
+                      pricePerPerson={menu.pricePerPerson}
+                    />
+                  ))
+                )}
+              </div>
+            )}
 
-          {activeTab === "menus" && (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-              {menus.length === 0 ? (
-                <Empty className="bg-card/50">
-                  <EmptyHeader>
-                    <EmptyMedia variant="icon">
-                      <UtensilsIcon />
-                    </EmptyMedia>
-                    <EmptyTitle>Create your first menu</EmptyTitle>
-                    <EmptyDescription>
-                      Build curated menu collections that group dishes together
-                      for events. Each menu can include pricing tiers, dietary
-                      breakdowns, and be customized for different client needs.
-                    </EmptyDescription>
-                  </EmptyHeader>
-                  <EmptyContent>
-                    <Button asChild>
-                      <Link href="/kitchen/recipes/menus/new">
-                        Create New Menu
-                      </Link>
-                    </Button>
-                  </EmptyContent>
-                </Empty>
-              ) : (
-                menus.map((menu) => (
-                  <MenuCard
-                    basePrice={menu.basePrice}
-                    category={menu.category}
-                    description={menu.description}
-                    dishCount={menu.dishCount}
-                    id={menu.id}
-                    isActive={menu.isActive}
-                    key={menu.id}
-                    maxGuests={menu.maxGuests}
-                    minGuests={menu.minGuests}
-                    name={menu.name}
-                    pricePerPerson={menu.pricePerPerson}
-                  />
-                ))
-              )}
-            </div>
-          )}
-
-          {activeTab === "costing" && (
-            <div className="grid gap-4 lg:grid-cols-2">
-              {dishes.length === 0 ? (
-                <Empty className="bg-card/50">
-                  <EmptyHeader>
-                    <EmptyMedia variant="icon">
-                      <UtensilsIcon />
-                    </EmptyMedia>
-                    <EmptyTitle>No costing data yet</EmptyTitle>
-                    <EmptyDescription>
-                      Add dishes with pricing and cost details to unlock
-                      powerful margin analysis. Track food costs, menu prices,
-                      and profitability across your entire operation.
-                    </EmptyDescription>
-                  </EmptyHeader>
-                  <EmptyContent>
-                    <Button asChild>
-                      <Link href="/kitchen/recipes/dishes/new">
-                        Add Your First Dish
-                      </Link>
-                    </Button>
-                  </EmptyContent>
-                </Empty>
-              ) : (
-                dishes.map((dish) => {
-                  const margin = getDishMargin(dish);
-                  return (
-                    <Card className="shadow-sm" key={dish.id}>
-                      <CardHeader className="space-y-1">
-                        <CardTitle className="text-base">{dish.name}</CardTitle>
-                        <div className="text-muted-foreground text-sm">
-                          Recipe: {dish.recipe_name ?? "Unlinked"}
-                        </div>
-                      </CardHeader>
-                      <CardContent className="grid grid-cols-3 gap-3 text-sm">
-                        <div>
-                          <div className="text-muted-foreground">Food cost</div>
-                          <div className="font-semibold">
-                            {dish.cost_per_person
-                              ? currencyFormatter.format(dish.cost_per_person)
-                              : "-"}
+            {activeTab === "costing" && (
+              <div className="grid gap-4 lg:grid-cols-2">
+                {dishes.length === 0 ? (
+                  <Empty className="bg-card/50">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <UtensilsIcon />
+                      </EmptyMedia>
+                      <EmptyTitle>No costing data yet</EmptyTitle>
+                      <EmptyDescription>
+                        Add dishes with pricing and cost details to unlock
+                        powerful margin analysis. Track food costs, menu prices,
+                        and profitability across your entire operation.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                    <EmptyContent>
+                      <Button asChild>
+                        <Link href="/kitchen/recipes/dishes/new">
+                          Add Your First Dish
+                        </Link>
+                      </Button>
+                    </EmptyContent>
+                  </Empty>
+                ) : (
+                  dishes.map((dish) => {
+                    const margin = getDishMargin(dish);
+                    return (
+                      <Card className="shadow-sm" key={dish.id}>
+                        <CardHeader className="space-y-1">
+                          <CardTitle className="text-base">
+                            {dish.name}
+                          </CardTitle>
+                          <div className="text-muted-foreground text-sm">
+                            Recipe: {dish.recipe_name ?? "Unlinked"}
                           </div>
-                        </div>
-                        <div>
-                          <div className="text-muted-foreground">
-                            Menu price
+                        </CardHeader>
+                        <CardContent className="grid grid-cols-3 gap-3 text-sm">
+                          <div>
+                            <div className="text-muted-foreground">
+                              Food cost
+                            </div>
+                            <div className="font-semibold">
+                              {dish.cost_per_person
+                                ? currencyFormatter.format(dish.cost_per_person)
+                                : "-"}
+                            </div>
                           </div>
-                          <div className="font-semibold">
-                            {dish.price_per_person
-                              ? currencyFormatter.format(dish.price_per_person)
-                              : "-"}
+                          <div>
+                            <div className="text-muted-foreground">
+                              Menu price
+                            </div>
+                            <div className="font-semibold">
+                              {dish.price_per_person
+                                ? currencyFormatter.format(
+                                    dish.price_per_person
+                                  )
+                                : "-"}
+                            </div>
                           </div>
-                        </div>
-                        <div>
-                          <div className="text-muted-foreground">Margin</div>
-                          <div className="font-semibold text-emerald-600">
-                            {formatPercent(margin)}
+                          <div>
+                            <div className="text-muted-foreground">Margin</div>
+                            <div className="font-semibold text-emerald-600">
+                              {formatPercent(margin)}
+                            </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })
-              )}
-            </div>
-          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })
+                )}
+              </div>
+            )}
           </div>
         </section>
       </div>

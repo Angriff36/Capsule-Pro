@@ -102,6 +102,7 @@ export const RecipesPageClient = () => {
 
       {/* Edit recipe modal */}
       <RecipeEditModal
+        key={`${editRecipeData?.id ?? "new"}-${isEditModalOpen ? "open" : "closed"}`}
         onOpenChange={handleEditModalClose}
         onSave={handleUpdateRecipe}
         open={isEditModalOpen}
@@ -113,6 +114,17 @@ export const RecipesPageClient = () => {
                 category: editRecipeData.category ?? undefined,
                 description: editRecipeData.description ?? undefined,
                 tags: editRecipeData.tags,
+                ingredients: editRecipeData.ingredients.map((ingredient) => ({
+                  id: ingredient.id,
+                  name: ingredient.name,
+                  quantity: ingredient.quantity.toString(),
+                  unit: ingredient.unit,
+                })),
+                steps: editRecipeData.steps.map((step) => ({
+                  id: step.id,
+                  instruction: step.instruction,
+                  step_number: step.stepNumber,
+                })),
                 yieldQuantity: editRecipeData.version.yieldQuantity,
                 yieldUnit: editRecipeData.version.yieldUnit,
                 yieldDescription:

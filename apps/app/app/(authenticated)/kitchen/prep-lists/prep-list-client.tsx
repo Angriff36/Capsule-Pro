@@ -524,7 +524,8 @@ export function PrepListClient({
                   <SelectContent>
                     {availableEvents.map((event) => (
                       <SelectItem key={event.id} value={event.id}>
-                        {event.title} ({format(new Date(event.eventDate), "MMM d")})
+                        {event.title} (
+                        {format(new Date(event.eventDate), "MMM d")})
                       </SelectItem>
                     ))}
                   </SelectContent>

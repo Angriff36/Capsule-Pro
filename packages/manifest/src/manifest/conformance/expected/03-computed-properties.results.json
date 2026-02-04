@@ -20,7 +20,12 @@
       "setup": {
         "createInstance": {
           "entity": "Item",
-          "data": { "id": "item-2", "price": 100, "quantity": 1, "discountPercent": 20 }
+          "data": {
+            "id": "item-2",
+            "price": 100,
+            "quantity": 1,
+            "discountPercent": 20
+          }
         }
       },
       "computedProperty": {

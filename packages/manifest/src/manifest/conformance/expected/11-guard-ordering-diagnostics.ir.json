@@ -11,9 +11,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "status",
@@ -53,9 +51,7 @@
       ],
       "computedProperties": [],
       "relationships": [],
-      "commands": [
-        "assign"
-      ],
+      "commands": ["assign"],
       "constraints": [],
       "policies": []
     }
@@ -184,9 +180,7 @@
           }
         }
       ],
-      "emits": [
-        "TaskAssigned"
-      ]
+      "emits": ["TaskAssigned"]
     }
   ],
   "policies": []

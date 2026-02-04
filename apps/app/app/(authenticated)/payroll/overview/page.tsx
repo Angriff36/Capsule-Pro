@@ -103,7 +103,9 @@ const PayrollOverviewPage = () => (
               >
                 <p className="text-muted-foreground">{issue.label}</p>
                 <Badge
-                  variant={issue.severity === "High" ? "destructive" : "outline"}
+                  variant={
+                    issue.severity === "High" ? "destructive" : "outline"
+                  }
                 >
                   {issue.severity}
                 </Badge>

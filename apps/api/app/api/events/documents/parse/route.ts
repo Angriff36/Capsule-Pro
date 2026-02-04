@@ -75,9 +75,14 @@ const MISSING_FIELD_TAG_PREFIX = "needs:";
 const normalizeName = (value: string) => value.trim().replace(/\s+/g, " ");
 
 const getFileLabel = (fileName: string) =>
-  fileName.replace(/\.[^/.]+$/, "").replace(/[_-]+/g, " ").trim();
+  fileName
+    .replace(/\.[^/.]+$/, "")
+    .replace(/[_-]+/g, " ")
+    .trim();
 
-const getMissingFieldsFromParsedEvent = (event: ParsedEvent): MissingField[] => {
+const getMissingFieldsFromParsedEvent = (
+  event: ParsedEvent
+): MissingField[] => {
   const missing: MissingField[] = [];
   if (!event.client?.trim()) {
     missing.push("client");
@@ -157,7 +162,8 @@ const deriveMenuQuantity = (item: MenuItem, fallbackHeadcount: number) => {
 
   const servingDetails =
     item.quantityDetails?.filter(
-      (detail) => detail.value > 0 && /serv|pax|guest|portion/i.test(detail.unit)
+      (detail) =>
+        detail.value > 0 && /serv|pax|guest|portion/i.test(detail.unit)
     ) ?? [];
   if (servingDetails.length > 0) {
     const maxDetail = servingDetails.reduce(
@@ -202,7 +208,7 @@ function validateFileTypes(files: File[]): NextResponse | undefined {
         {
           message: `Invalid file type: ${file.name}. Only PDF and CSV files are allowed.`,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
   }
@@ -211,12 +217,12 @@ function validateFileTypes(files: File[]): NextResponse | undefined {
 }
 
 function processFiles(
-  files: File[],
+  files: File[]
 ): Promise<Array<{ content: ArrayBuffer; fileName: string }>> {
   return Promise.all(
     files.map((file) =>
-      file.arrayBuffer().then((content) => ({ content, fileName: file.name })),
-    ),
+      file.arrayBuffer().then((content) => ({ content, fileName: file.name }))
+    )
   );
 }
 
@@ -224,7 +230,7 @@ function createImportRecords(
   files: File[],
   result: { documents: ProcessedDocument[] },
   tenantId: string,
-  eventId: string | null,
+  eventId: string | null
 ): Promise<ImportRecord[]> {
   return Promise.all(
     files.map((file, index) => {
@@ -259,7 +265,7 @@ function createImportRecords(
                   ? Object.fromEntries(doc.staffShifts)
                   : null,
                 warnings: doc.warnings,
-              }),
+              })
             ),
             eventId: eventId || undefined,
             parsedAt: new Date(),
@@ -269,7 +275,7 @@ function createImportRecords(
           importId: importRecord.id,
           document: doc,
         }));
-    }),
+    })
   );
 }
 
@@ -277,15 +283,11 @@ async function _generateBattleBoard(
   mergedEvent: ParsedEvent,
   tenantId: string,
   eventId: string | null,
-  importRecords: ImportRecord[],
+  importRecords: ImportRecord[]
 ): Promise<{ battleBoard: BattleBoardBuildResult; battleBoardId: string }> {
   const battleBoardResult = buildBattleBoardFromEvent(mergedEvent);
 
-  const boardName =
-    mergedEvent.client ||
-    mergedEvent.number ||
-    eventId ||
-    "";
+  const boardName = mergedEvent.client || mergedEvent.number || eventId || "";
 
   const savedBattleBoard = await database.battleBoard.create({
     data: {
@@ -318,7 +320,7 @@ async function createEventFromParsedData(
   mergedEvent: ParsedEvent,
   tenantId: string,
   files: File[],
-  missingFields: MissingField[],
+  missingFields: MissingField[]
 ): Promise<string> {
   const derivedTitle = deriveEventTitle(mergedEvent, files);
   const parsedDate = parseEventDate(mergedEvent.date);
@@ -351,7 +353,7 @@ async function createEventFromParsedData(
 
 async function updateImportRecordsWithEvent(
   importRecords: ImportRecord[],
-  eventId: string,
+  eventId: string
 ): Promise<void> {
   for (const record of importRecords) {
     await database.eventImport.update({
@@ -364,7 +366,7 @@ async function updateImportRecordsWithEvent(
 async function importMenuToEvent(
   tenantId: string,
   eventId: string,
-  event: ParsedEvent,
+  event: ParsedEvent
 ): Promise<MenuImportSummary> {
   const summary: MenuImportSummary = {
     dishMatches: [],
@@ -491,9 +493,7 @@ async function importMenuToEvent(
     }
 
     const specialInstructions = Array.from(entry.instructions).join("; ");
-    const [existingLink] = await database.$queryRaw<
-      Array<{ id: string }>
-    >(
+    const [existingLink] = await database.$queryRaw<Array<{ id: string }>>(
       Prisma.sql`
         SELECT id
         FROM tenant_events.event_dishes
@@ -502,7 +502,7 @@ async function importMenuToEvent(
           AND dish_id = ${dishId}
           AND deleted_at IS NULL
         LIMIT 1
-      `,
+      `
     );
 
     let eventDishId: string;
@@ -521,14 +521,12 @@ async function importMenuToEvent(
           WHERE tenant_id = ${tenantId}
             AND id = ${existingLink.id}
             AND event_id = ${eventId}
-        `,
+        `
       );
       eventDishId = existingLink.id;
       summary.updatedLinks += 1;
     } else {
-      const [inserted] = await database.$queryRaw<
-        Array<{ id: string }>
-      >(
+      const [inserted] = await database.$queryRaw<Array<{ id: string }>>(
         Prisma.sql`
           INSERT INTO tenant_events.event_dishes (
             tenant_id,
@@ -555,7 +553,7 @@ async function importMenuToEvent(
             ${new Date()}
           )
           RETURNING id
-        `,
+        `
       );
       eventDishId = inserted?.id ?? "";
       summary.linkedDishes += 1;
@@ -578,22 +576,24 @@ async function _generateChecklist(
   tenantId: string,
   eventId: string | null,
   importRecords: ImportRecord[],
-  battleBoardId?: string,
+  battleBoardId?: string
 ): Promise<{ checklist: ChecklistBuildResult; checklistId: string }> {
   const checklistResult = buildInitialChecklist(mergedEvent);
   if (!eventId) {
     throw new Error("Event must exist before generating checklist.");
   }
 
+  const reportName = deriveEventTitle(mergedEvent, []) || eventId;
+
   const savedReport = await database.eventReport.create({
     data: {
       tenantId,
       eventId,
+      name: reportName,
       version: new Date().toISOString().slice(0, 10),
       status: "draft",
       completion: Math.round(
-        (checklistResult.autoFilledCount / checklistResult.totalQuestions) *
-          100,
+        (checklistResult.autoFilledCount / checklistResult.totalQuestions) * 100
       ),
       checklistData: checklistResult.checklist as object,
       parsedEventData: mergedEvent as object,
@@ -641,7 +641,7 @@ async function buildResponse(
   generateBattleBoard: boolean,
   generateChecklist: boolean,
   missingFields: MissingField[],
-  menuImport: MenuImportSummary | null,
+  menuImport: MenuImportSummary | null
 ): Promise<{
   documents: ProcessedDocument[];
   mergedEvent: typeof result.mergedEvent;
@@ -682,7 +682,7 @@ async function buildResponse(
       result.mergedEvent,
       tenantId,
       eventId,
-      importRecords,
+      importRecords
     );
     response.battleBoard = battleBoardData.battleBoard;
     response.battleBoardId = battleBoardData.battleBoardId;
@@ -694,7 +694,7 @@ async function buildResponse(
       tenantId,
       eventId,
       importRecords,
-      response.battleBoardId,
+      response.battleBoardId
     );
     response.checklist = checklistData.checklist;
     response.checklistId = checklistData.checklistId;
@@ -738,7 +738,7 @@ export async function POST(request: Request) {
       files,
       result,
       tenantId,
-      params.eventId,
+      params.eventId
     );
 
     const missingFields = result.mergedEvent
@@ -751,7 +751,7 @@ export async function POST(request: Request) {
         result.mergedEvent,
         tenantId,
         files,
-        missingFields,
+        missingFields
       );
       await updateImportRecordsWithEvent(importRecords, resolvedEventId);
     }
@@ -761,7 +761,7 @@ export async function POST(request: Request) {
       menuImport = await importMenuToEvent(
         tenantId,
         resolvedEventId,
-        result.mergedEvent,
+        result.mergedEvent
       );
     }
 
@@ -773,7 +773,7 @@ export async function POST(request: Request) {
       params.generateBattleBoard,
       params.generateChecklist,
       missingFields,
-      menuImport,
+      menuImport
     );
 
     return NextResponse.json({ data: response });
@@ -793,7 +793,7 @@ export async function POST(request: Request) {
           ? { stack: errorStack }
           : {}),
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -815,7 +815,7 @@ export async function GET(request: Request) {
     const page = Number.parseInt(searchParams.get("page") || "1", 10);
     const limit = Math.min(
       Math.max(Number.parseInt(searchParams.get("limit") || "20", 10), 1),
-      100,
+      100
     );
     const offset = (page - 1) * limit;
 
@@ -849,7 +849,7 @@ export async function GET(request: Request) {
     console.error("Error listing imports:", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

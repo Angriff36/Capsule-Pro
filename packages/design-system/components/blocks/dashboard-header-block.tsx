@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { Download, Plus, Users } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -80,7 +79,7 @@ export function DashboardHeaderBlock() {
             </CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm">
+            <Button size="sm" variant="outline">
               <Download />
               Download
             </Button>
@@ -102,8 +101,11 @@ export function DashboardHeaderBlock() {
           <div className="flex items-center gap-3">
             <div className="flex -space-x-2">
               {teamMembers.map((member) => (
-                <Avatar key={member.name} className="border-2 border-background">
-                  <AvatarImage src={member.avatar} alt={member.name} />
+                <Avatar
+                  className="border-2 border-background"
+                  key={member.name}
+                >
+                  <AvatarImage alt={member.name} src={member.avatar} />
                   <AvatarFallback>
                     {member.name
                       .split(" ")
@@ -113,7 +115,7 @@ export function DashboardHeaderBlock() {
                 </Avatar>
               ))}
             </div>
-            <Button variant="ghost" size="sm">
+            <Button size="sm" variant="ghost">
               <Users />
               Manage access
             </Button>
@@ -122,7 +124,7 @@ export function DashboardHeaderBlock() {
         <Separator />
         <div className="grid gap-4 sm:grid-cols-3">
           {quickStats.map((stat) => (
-            <div key={stat.label} className="space-y-1">
+            <div className="space-y-1" key={stat.label}>
               <div className="text-sm text-muted-foreground">{stat.label}</div>
               <div className="text-xl font-semibold">{stat.value}</div>
             </div>

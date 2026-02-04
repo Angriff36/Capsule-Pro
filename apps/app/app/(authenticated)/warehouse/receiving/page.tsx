@@ -244,7 +244,9 @@ export default function ReceivingPage() {
       {/* Page Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">Warehouse Receiving</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Warehouse Receiving
+          </h1>
           <p className="text-muted-foreground">
             Scan items, log receipts, and update stock levels
           </p>
@@ -315,279 +317,296 @@ export default function ReceivingPage() {
           <h2 className="text-sm font-medium text-muted-foreground">
             Purchase Order Details
           </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="md:col-span-2 lg:col-span-2">
-            <CardHeader>
-              <CardTitle>PO Items</CardTitle>
-              <CardDescription>
-                Review items and log receipts with quality checks
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {selectedPO.items.map((item) => (
-                  <div
-                    className="rounded-lg border p-4 space-y-3"
-                    key={item.id}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold">
-                            {item.item_name || "Unknown Item"}
-                          </h3>
-                          <Badge variant="secondary">{item.item_number}</Badge>
-                          <Badge
-                            className={getQualityBadge(item.quality_status)}
-                          >
-                            <div className="flex items-center gap-1">
-                              {getQualityIcon(item.quality_status)}
-                              <span className="capitalize">
-                                {item.quality_status}
-                              </span>
-                            </div>
-                          </Badge>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card className="md:col-span-2 lg:col-span-2">
+              <CardHeader>
+                <CardTitle>PO Items</CardTitle>
+                <CardDescription>
+                  Review items and log receipts with quality checks
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {selectedPO.items.map((item) => (
+                    <div
+                      className="rounded-lg border p-4 space-y-3"
+                      key={item.id}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold">
+                              {item.item_name || "Unknown Item"}
+                            </h3>
+                            <Badge variant="secondary">
+                              {item.item_number}
+                            </Badge>
+                            <Badge
+                              className={getQualityBadge(item.quality_status)}
+                            >
+                              <div className="flex items-center gap-1">
+                                {getQualityIcon(item.quality_status)}
+                                <span className="capitalize">
+                                  {item.quality_status}
+                                </span>
+                              </div>
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Ordered: {item.quantity_ordered} @ $
+                            {item.unit_cost.toFixed(2)}/unit
+                          </p>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          Ordered: {item.quantity_ordered} @ $
-                          {item.unit_cost.toFixed(2)}/unit
-                        </p>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold">
+                            ${item.total_cost.toFixed(2)}
+                          </p>
+                          {item.discrepancy_type && (
+                            <Badge className="mt-1" variant="destructive">
+                              {item.discrepancy_type}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold">
-                          ${item.total_cost.toFixed(2)}
-                        </p>
-                        {item.discrepancy_type && (
-                          <Badge className="mt-1" variant="destructive">
-                            {item.discrepancy_type}
-                          </Badge>
-                        )}
+
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div>
+                          <label
+                            className="text-sm font-medium"
+                            htmlFor={`qty-${item.id}`}
+                          >
+                            Quantity Received
+                          </label>
+                          <Input
+                            className="mt-1"
+                            id={`qty-${item.id}`}
+                            max={item.quantity_ordered}
+                            min="0"
+                            onChange={(e) =>
+                              updateReceivedQuantity(
+                                item.id,
+                                Number.parseFloat(e.target.value) || 0
+                              )
+                            }
+                            type="number"
+                            value={item.quantity_received}
+                          />
+                        </div>
+                        <div>
+                          <label
+                            className="text-sm font-medium"
+                            htmlFor={`quality-${item.id}`}
+                          >
+                            Quality Status
+                          </label>
+                          <Select
+                            defaultValue={item.quality_status}
+                            onValueChange={(value) =>
+                              updateItemQuality(item.id, value as QualityStatus)
+                            }
+                            value={item.quality_status}
+                          >
+                            <SelectTrigger
+                              className="mt-1"
+                              id={`quality-${item.id}`}
+                            >
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">
+                                Pending Review
+                              </SelectItem>
+                              <SelectItem value="approved">Approved</SelectItem>
+                              <SelectItem value="needs_inspection">
+                                Needs Inspection
+                              </SelectItem>
+                              <SelectItem value="rejected">Rejected</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
+
+                      {item.quality_status === "rejected" ||
+                      item.quality_status === "needs_inspection" ? (
+                        <div>
+                          <label
+                            className="text-sm font-medium"
+                            htmlFor={`discrepancy-${item.id}`}
+                          >
+                            Discrepancy Type
+                          </label>
+                          <Select
+                            defaultValue={item.discrepancy_type || "none"}
+                            onValueChange={(value) => {
+                              const discrepancyValue =
+                                value === "none"
+                                  ? undefined
+                                  : (value as DiscrepancyType);
+                              updateItemQuality(
+                                item.id,
+                                item.quality_status,
+                                discrepancyValue,
+                                undefined,
+                                undefined
+                              );
+                            }}
+                            value={item.discrepancy_type || "none"}
+                          >
+                            <SelectTrigger
+                              className="mt-1"
+                              id={`discrepancy-${item.id}`}
+                            >
+                              <SelectValue placeholder="Select discrepancy type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">None</SelectItem>
+                              <SelectItem value="shortage">Shortage</SelectItem>
+                              <SelectItem value="overage">Overage</SelectItem>
+                              <SelectItem value="damaged">Damaged</SelectItem>
+                              <SelectItem value="wrong_item">
+                                Wrong Item
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      ) : null}
                     </div>
+                  ))}
+                </div>
 
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div>
-                        <label
-                          className="text-sm font-medium"
-                          htmlFor={`qty-${item.id}`}
-                        >
-                          Quantity Received
-                        </label>
-                        <Input
-                          className="mt-1"
-                          id={`qty-${item.id}`}
-                          max={item.quantity_ordered}
-                          min="0"
-                          onChange={(e) =>
-                            updateReceivedQuantity(
-                              item.id,
-                              Number.parseFloat(e.target.value) || 0
-                            )
-                          }
-                          type="number"
-                          value={item.quantity_received}
-                        />
-                      </div>
-                      <div>
-                        <label
-                          className="text-sm font-medium"
-                          htmlFor={`quality-${item.id}`}
-                        >
-                          Quality Status
-                        </label>
-                        <Select
-                          defaultValue={item.quality_status}
-                          onValueChange={(value) =>
-                            updateItemQuality(item.id, value as QualityStatus)
-                          }
-                          value={item.quality_status}
-                        >
-                          <SelectTrigger className="mt-1" id={`quality-${item.id}`}>
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pending Review</SelectItem>
-                            <SelectItem value="approved">Approved</SelectItem>
-                            <SelectItem value="needs_inspection">
-                              Needs Inspection
-                            </SelectItem>
-                            <SelectItem value="rejected">Rejected</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
+                <div className="mt-6 flex justify-end gap-2">
+                  <Button onClick={() => setSelectedPO(null)} variant="outline">
+                    Cancel
+                  </Button>
+                  <Button className="gap-2" onClick={completeReceiving}>
+                    <CheckCircle className="size-4" />
+                    Complete Receiving
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
-                    {item.quality_status === "rejected" ||
-                    item.quality_status === "needs_inspection" ? (
-                      <div>
-                        <label
-                          className="text-sm font-medium"
-                          htmlFor={`discrepancy-${item.id}`}
-                        >
-                          Discrepancy Type
-                        </label>
-                        <Select
-                          defaultValue={item.discrepancy_type || "none"}
-                          onValueChange={(value) => {
-                            const discrepancyValue =
-                              value === "none" ? undefined : (value as DiscrepancyType);
-                            updateItemQuality(
-                              item.id,
-                              item.quality_status,
-                              discrepancyValue,
-                              undefined,
-                              undefined
-                            );
-                          }}
-                          value={item.discrepancy_type || "none"}
-                        >
-                          <SelectTrigger className="mt-1" id={`discrepancy-${item.id}`}>
-                            <SelectValue placeholder="Select discrepancy type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            <SelectItem value="shortage">Shortage</SelectItem>
-                            <SelectItem value="overage">Overage</SelectItem>
-                            <SelectItem value="damaged">Damaged</SelectItem>
-                            <SelectItem value="wrong_item">Wrong Item</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6 flex justify-end gap-2">
-                <Button onClick={() => setSelectedPO(null)} variant="outline">
-                  Cancel
-                </Button>
-                <Button className="gap-2" onClick={completeReceiving}>
-                  <CheckCircle className="size-4" />
-                  Complete Receiving
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>PO Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">PO Number</span>
-                  <span className="font-semibold">{selectedPO.po_number}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Vendor</span>
-                  <span className="font-semibold">
-                    {selectedPO.vendor_name}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Order Date</span>
-                  <span className="font-semibold">
-                    {new Date(selectedPO.order_date).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    Expected Delivery
-                  </span>
-                  <span className="font-semibold">
-                    {selectedPO.expected_delivery_date
-                      ? new Date(
-                          selectedPO.expected_delivery_date
-                        ).toLocaleDateString()
-                      : "N/A"}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Status</span>
-                  <Badge className="capitalize" variant="secondary">
-                    {selectedPO.status}
-                  </Badge>
-                </div>
-              </div>
-
-              <div className="border-t pt-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span>${selectedPO.subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Tax</span>
-                  <span>${selectedPO.tax_amount.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Shipping</span>
-                  <span>
-                    $
-                    {(
-                      selectedPO.total -
-                      selectedPO.subtotal -
-                      selectedPO.tax_amount
-                    ).toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex justify-between font-semibold">
-                  <span>Total</span>
-                  <span>${selectedPO.total.toFixed(2)}</span>
-                </div>
-              </div>
-
-              <div className="border-t pt-4 space-y-2">
-                <h4 className="font-semibold text-sm">Receiving Progress</h4>
+            <Card>
+              <CardHeader>
+                <CardTitle>PO Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      Items Received
+                    <span className="text-muted-foreground">PO Number</span>
+                    <span className="font-semibold">
+                      {selectedPO.po_number}
                     </span>
-                    <span>
-                      {
-                        selectedPO.items.filter((i) => i.quantity_received > 0)
-                          .length
-                      }{" "}
-                      / {selectedPO.items.length}
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Vendor</span>
+                    <span className="font-semibold">
+                      {selectedPO.vendor_name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Order Date</span>
+                    <span className="font-semibold">
+                      {new Date(selectedPO.order_date).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">
-                      Total Quantity
+                      Expected Delivery
                     </span>
-                    <span>
-                      {selectedPO.items.reduce(
-                        (sum, i) => sum + i.quantity_received,
-                        0
-                      )}{" "}
-                      /{" "}
-                      {selectedPO.items.reduce(
-                        (sum, i) => sum + i.quantity_ordered,
-                        0
-                      )}
+                    <span className="font-semibold">
+                      {selectedPO.expected_delivery_date
+                        ? new Date(
+                            selectedPO.expected_delivery_date
+                          ).toLocaleDateString()
+                        : "N/A"}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      Quality Issues
-                    </span>
-                    <span className="text-red-600">
-                      {
-                        selectedPO.items.filter(
-                          (i) =>
-                            i.quality_status === "rejected" ||
-                            i.quality_status === "needs_inspection"
-                        ).length
-                      }
-                    </span>
+                    <span className="text-muted-foreground">Status</span>
+                    <Badge className="capitalize" variant="secondary">
+                      {selectedPO.status}
+                    </Badge>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+
+                <div className="border-t pt-4 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span>${selectedPO.subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Tax</span>
+                    <span>${selectedPO.tax_amount.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Shipping</span>
+                    <span>
+                      $
+                      {(
+                        selectedPO.total -
+                        selectedPO.subtotal -
+                        selectedPO.tax_amount
+                      ).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between font-semibold">
+                    <span>Total</span>
+                    <span>${selectedPO.total.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <div className="border-t pt-4 space-y-2">
+                  <h4 className="font-semibold text-sm">Receiving Progress</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        Items Received
+                      </span>
+                      <span>
+                        {
+                          selectedPO.items.filter(
+                            (i) => i.quantity_received > 0
+                          ).length
+                        }{" "}
+                        / {selectedPO.items.length}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        Total Quantity
+                      </span>
+                      <span>
+                        {selectedPO.items.reduce(
+                          (sum, i) => sum + i.quantity_received,
+                          0
+                        )}{" "}
+                        /{" "}
+                        {selectedPO.items.reduce(
+                          (sum, i) => sum + i.quantity_ordered,
+                          0
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        Quality Issues
+                      </span>
+                      <span className="text-red-600">
+                        {
+                          selectedPO.items.filter(
+                            (i) =>
+                              i.quality_status === "rejected" ||
+                              i.quality_status === "needs_inspection"
+                          ).length
+                        }
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </section>
       )}
     </div>

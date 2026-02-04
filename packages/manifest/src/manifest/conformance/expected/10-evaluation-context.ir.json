@@ -11,9 +11,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "value",
@@ -141,11 +139,7 @@
         }
       ],
       "relationships": [],
-      "commands": [
-        "setValue",
-        "claim",
-        "publicClaim"
-      ],
+      "commands": ["setValue", "claim", "publicClaim"],
       "constraints": [],
       "policies": []
     }

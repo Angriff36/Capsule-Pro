@@ -1,5 +1,6 @@
-import * as React from "react";
-import { type LucideIcon, ChevronDownIcon, PlusIcon } from "lucide-react";
+import { ChevronDownIcon, type LucideIcon, PlusIcon } from "lucide-react";
+import type * as React from "react";
+import { cn } from "../../lib/utils";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import {
@@ -8,7 +9,6 @@ import {
   CollapsibleTrigger,
 } from "../ui/collapsible";
 import { Separator } from "../ui/separator";
-import { cn } from "../../lib/utils";
 
 /**
  * CollapsibleSectionBlock - A standardized collapsible section component
@@ -157,7 +157,7 @@ function EmptyState({
       <p className="mb-2 text-muted-foreground text-sm">{title}</p>
       <p className="mb-4 text-muted-foreground text-xs">{description}</p>
       {actionLabel && onAction && (
-        <Button size="sm" variant="outline" onClick={onAction}>
+        <Button onClick={onAction} size="sm" variant="outline">
           <PlusIcon className="mr-2 size-3" />
           {actionLabel}
         </Button>
@@ -195,12 +195,7 @@ export function SectionHeaderBlock({
   className,
 }: SectionHeaderBlockProps) {
   return (
-    <div
-      className={cn(
-        "flex items-center justify-between gap-4",
-        className
-      )}
-    >
+    <div className={cn("flex items-center justify-between gap-4", className)}>
       <div className="flex items-center gap-2">
         <Icon className={cn("size-5", iconColor)} />
         <h2 className="font-semibold text-lg">{title}</h2>

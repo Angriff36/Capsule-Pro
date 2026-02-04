@@ -399,11 +399,7 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
             <CheckIcon className="h-4 w-4 mr-2" />
             Save
           </Button>
-          <Button
-            disabled={isLoading}
-            onClick={handleCancel}
-            variant="outline"
-          >
+          <Button disabled={isLoading} onClick={handleCancel} variant="outline">
             <XIcon className="h-4 w-4 mr-2" />
             Cancel
           </Button>

@@ -20,7 +20,13 @@
       "setup": {},
       "createInstance": {
         "entity": "Product",
-        "data": { "id": "prod-2", "name": "Custom Product", "price": 99, "inStock": false, "description": "A custom product" }
+        "data": {
+          "id": "prod-2",
+          "name": "Custom Product",
+          "price": 99,
+          "inStock": false,
+          "description": "A custom product"
+        }
       },
       "expectedInstance": {
         "id": "prod-2",
@@ -34,7 +40,11 @@
       "name": "persistence: create → serialize → restore → entity exists",
       "persistenceTest": {
         "entity": "Product",
-        "createData": { "id": "persist-1", "name": "Persisted Product", "price": 50 },
+        "createData": {
+          "id": "persist-1",
+          "name": "Persisted Product",
+          "price": 50
+        },
         "expectedAfterRestore": {
           "id": "persist-1",
           "name": "Persisted Product",

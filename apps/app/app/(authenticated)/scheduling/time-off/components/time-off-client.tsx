@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -27,7 +28,6 @@ import {
 } from "@tanstack/react-table";
 import { FilterIcon, Loader2Icon, PlusIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getLocations } from "../../shifts/actions";
@@ -260,109 +260,109 @@ export function TimeOffClient() {
           Filters
         </h2>
         <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
-        <FilterIcon className="size-4 text-muted-foreground" />
-        <Input
-          className="max-w-[150px]"
-          onChange={(e) => handleFilterChange("startDate", e.target.value)}
-          placeholder="Start date"
-          type="date"
-          value={filters.startDate}
-        />
-        <Input
-          className="max-w-[150px]"
-          onChange={(e) => handleFilterChange("endDate", e.target.value)}
-          placeholder="End date"
-          type="date"
-          value={filters.endDate}
-        />
-        <Select
-          onValueChange={(value) => handleFilterChange("employeeId", value)}
-          value={filters.employeeId}
-        >
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by employee" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">All employees</SelectItem>
-            {employees.map((emp) => (
-              <SelectItem key={emp.id} value={emp.id}>
-                {emp.first_name} {emp.last_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          onValueChange={(value) => handleFilterChange("locationId", value)}
-          value={filters.locationId}
-        >
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by location" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">All locations</SelectItem>
-            {locations.map((loc) => (
-              <SelectItem key={loc.id} value={loc.id}>
-                {loc.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          onValueChange={(value) => handleFilterChange("status", value)}
-          value={filters.status}
-        >
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">All statuses</SelectItem>
-            <SelectItem value="PENDING">Pending</SelectItem>
-            <SelectItem value="APPROVED">Approved</SelectItem>
-            <SelectItem value="REJECTED">Rejected</SelectItem>
-            <SelectItem value="CANCELLED">Cancelled</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select
-          onValueChange={(value) => handleFilterChange("type", value)}
-          value={filters.type}
-        >
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">All types</SelectItem>
-            <SelectItem value="VACATION">Vacation</SelectItem>
-            <SelectItem value="SICK_LEAVE">Sick Leave</SelectItem>
-            <SelectItem value="PERSONAL_DAY">Personal Day</SelectItem>
-            <SelectItem value="BEREAVEMENT">Bereavement</SelectItem>
-            <SelectItem value="MATERNITY_LEAVE">Maternity Leave</SelectItem>
-            <SelectItem value="PATERNITY_LEAVE">Paternity Leave</SelectItem>
-            <SelectItem value="OTHER">Other</SelectItem>
-          </SelectContent>
-        </Select>
-        {(filters.startDate ||
-          filters.endDate ||
-          filters.employeeId ||
-          filters.locationId ||
-          filters.status ||
-          filters.type) && (
-          <Button
-            onClick={() =>
-              setFilters({
-                startDate: "",
-                endDate: "",
-                employeeId: "",
-                locationId: "",
-                status: "",
-                type: "",
-              })
-            }
-            size="sm"
-            variant="ghost"
+          <FilterIcon className="size-4 text-muted-foreground" />
+          <Input
+            className="max-w-[150px]"
+            onChange={(e) => handleFilterChange("startDate", e.target.value)}
+            placeholder="Start date"
+            type="date"
+            value={filters.startDate}
+          />
+          <Input
+            className="max-w-[150px]"
+            onChange={(e) => handleFilterChange("endDate", e.target.value)}
+            placeholder="End date"
+            type="date"
+            value={filters.endDate}
+          />
+          <Select
+            onValueChange={(value) => handleFilterChange("employeeId", value)}
+            value={filters.employeeId}
           >
-            Clear filters
-          </Button>
-        )}
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filter by employee" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All employees</SelectItem>
+              {employees.map((emp) => (
+                <SelectItem key={emp.id} value={emp.id}>
+                  {emp.first_name} {emp.last_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            onValueChange={(value) => handleFilterChange("locationId", value)}
+            value={filters.locationId}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filter by location" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All locations</SelectItem>
+              {locations.map((loc) => (
+                <SelectItem key={loc.id} value={loc.id}>
+                  {loc.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            onValueChange={(value) => handleFilterChange("status", value)}
+            value={filters.status}
+          >
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All statuses</SelectItem>
+              <SelectItem value="PENDING">Pending</SelectItem>
+              <SelectItem value="APPROVED">Approved</SelectItem>
+              <SelectItem value="REJECTED">Rejected</SelectItem>
+              <SelectItem value="CANCELLED">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            onValueChange={(value) => handleFilterChange("type", value)}
+            value={filters.type}
+          >
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All types</SelectItem>
+              <SelectItem value="VACATION">Vacation</SelectItem>
+              <SelectItem value="SICK_LEAVE">Sick Leave</SelectItem>
+              <SelectItem value="PERSONAL_DAY">Personal Day</SelectItem>
+              <SelectItem value="BEREAVEMENT">Bereavement</SelectItem>
+              <SelectItem value="MATERNITY_LEAVE">Maternity Leave</SelectItem>
+              <SelectItem value="PATERNITY_LEAVE">Paternity Leave</SelectItem>
+              <SelectItem value="OTHER">Other</SelectItem>
+            </SelectContent>
+          </Select>
+          {(filters.startDate ||
+            filters.endDate ||
+            filters.employeeId ||
+            filters.locationId ||
+            filters.status ||
+            filters.type) && (
+            <Button
+              onClick={() =>
+                setFilters({
+                  startDate: "",
+                  endDate: "",
+                  employeeId: "",
+                  locationId: "",
+                  status: "",
+                  type: "",
+                })
+              }
+              size="sm"
+              variant="ghost"
+            >
+              Clear filters
+            </Button>
+          )}
         </div>
       </section>
 
@@ -374,63 +374,63 @@ export function TimeOffClient() {
           </h2>
         </div>
         <div className="border rounded-lg">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell
-                  className="h-24 text-center"
-                  colSpan={columns.length}
-                >
-                  <Loader2Icon className="size-8 animate-spin mx-auto text-muted-foreground" />
-                </TableCell>
-              </TableRow>
-            ) : timeOffRequests.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  className="h-24 text-center text-muted-foreground"
-                  colSpan={columns.length}
-                >
-                  No time off requests found. Create a new request to get
-                  started.
-                </TableCell>
-              </TableRow>
-            ) : (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  className="cursor-pointer hover:bg-muted/50"
-                  key={row.id}
-                  onClick={() => handleRowClick(row.original)}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell
+                    className="h-24 text-center"
+                    colSpan={columns.length}
+                  >
+                    <Loader2Icon className="size-8 animate-spin mx-auto text-muted-foreground" />
+                  </TableCell>
+                </TableRow>
+              ) : timeOffRequests.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    className="h-24 text-center text-muted-foreground"
+                    colSpan={columns.length}
+                  >
+                    No time off requests found. Create a new request to get
+                    started.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    className="cursor-pointer hover:bg-muted/50"
+                    key={row.id}
+                    onClick={() => handleRowClick(row.original)}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
       </section>
 

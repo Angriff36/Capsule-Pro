@@ -324,76 +324,78 @@ const AdminDashboardPage = async ({
               Performance Overview
             </h3>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription className="flex items-center gap-2">
-                  <CalendarDaysIcon className="size-4" />
-                  Total Events
-                </CardDescription>
-                <CardTitle className="text-3xl">{totalEvents}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                {eventDiff >= 0 ? "+" : ""}
-                {eventDiff} from last week
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardDescription className="flex items-center gap-2">
+                    <CalendarDaysIcon className="size-4" />
+                    Total Events
+                  </CardDescription>
+                  <CardTitle className="text-3xl">{totalEvents}</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">
+                  {eventDiff >= 0 ? "+" : ""}
+                  {eventDiff} from last week
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription className="flex items-center gap-2">
-                  <UsersIcon className="size-4" />
-                  Headcount
-                </CardDescription>
-                <CardTitle className="text-3xl">
-                  {totalHeadcount.toLocaleString()}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                Avg {averageHeadcount} per event
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardDescription className="flex items-center gap-2">
+                    <UsersIcon className="size-4" />
+                    Headcount
+                  </CardDescription>
+                  <CardTitle className="text-3xl">
+                    {totalHeadcount.toLocaleString()}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">
+                  Avg {averageHeadcount} per event
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription className="flex items-center gap-2">
-                  <UtensilsIcon className="size-4" />
-                  Service Styles
-                </CardDescription>
-                <CardTitle className="text-3xl">
-                  {Object.keys(serviceStyleCounts).length}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-wrap gap-1">
-                {Object.entries(serviceStyleCounts)
-                  .slice(0, 3)
-                  .map(([style, count]) => (
-                    <Badge
-                      className="text-xs capitalize"
-                      key={style}
-                      variant="secondary"
-                    >
-                      {count} {style}
-                    </Badge>
-                  ))}
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardDescription className="flex items-center gap-2">
+                    <UtensilsIcon className="size-4" />
+                    Service Styles
+                  </CardDescription>
+                  <CardTitle className="text-3xl">
+                    {Object.keys(serviceStyleCounts).length}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-1">
+                  {Object.entries(serviceStyleCounts)
+                    .slice(0, 3)
+                    .map(([style, count]) => (
+                      <Badge
+                        className="text-xs capitalize"
+                        key={style}
+                        variant="secondary"
+                      >
+                        {count} {style}
+                      </Badge>
+                    ))}
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription className="flex items-center gap-2">
-                  <AlertTriangleIcon className="size-4" />
-                  Validation Issues
-                </CardDescription>
-                <CardTitle
-                  className={`text-3xl ${validationIssues > 0 ? "text-destructive" : ""}`}
-                >
-                  {validationIssues}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                {validationIssues > 0 ? "Action required" : "All events ready"}
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardDescription className="flex items-center gap-2">
+                    <AlertTriangleIcon className="size-4" />
+                    Validation Issues
+                  </CardDescription>
+                  <CardTitle
+                    className={`text-3xl ${validationIssues > 0 ? "text-destructive" : ""}`}
+                  >
+                    {validationIssues}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">
+                  {validationIssues > 0
+                    ? "Action required"
+                    : "All events ready"}
+                </CardContent>
+              </Card>
             </div>
           </section>
 

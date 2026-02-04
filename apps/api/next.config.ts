@@ -13,10 +13,16 @@ let nextConfig: NextConfig = withLogging({
     "keyv",
     "cacheable-request",
   ],
-  webpack: (config: { externals?: string[] }, { isServer }: { isServer: boolean }) => {
+  webpack: (
+    config: { externals?: string[] },
+    { isServer }: { isServer: boolean }
+  ) => {
     if (isServer) {
       // Exclude pdfjs-dist worker from server-side bundling
-      config.externals = [...(config.externals || []), "pdfjs-dist/legacy/build/pdf.worker.mjs"];
+      config.externals = [
+        ...(config.externals || []),
+        "pdfjs-dist/legacy/build/pdf.worker.mjs",
+      ];
     }
     return config;
   },

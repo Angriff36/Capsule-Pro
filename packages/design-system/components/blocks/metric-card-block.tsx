@@ -1,4 +1,4 @@
-import * as React from "react";
+import type * as React from "react";
 
 import {
   Card,
@@ -128,8 +128,7 @@ export function MetricCardBlock({
   className,
   valueSize = "text-2xl",
 }: MetricCardBlockProps) {
-  const trendIndicator =
-    trend !== undefined ? getTrendIndicator(trend) : null;
+  const trendIndicator = trend !== undefined ? getTrendIndicator(trend) : null;
 
   return (
     <Card className={className}>

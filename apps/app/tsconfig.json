@@ -12,7 +12,8 @@
       "@/*": ["./*"],
       "@repo/*": ["../../packages/*"],
       "@api/staff/*": ["../api/app/api/staff/*"]
-    }
+    },
+    "strictNullChecks": true
   },
   "include": [
     "next-env.d.ts",

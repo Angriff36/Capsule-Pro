@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { MoreHorizontal } from "lucide-react";
 
 import { Badge } from "../ui/badge";
@@ -95,7 +94,7 @@ export function TableWithRowActionsBlock() {
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button size="icon" variant="ghost">
                         <MoreHorizontal />
                         <span className="sr-only">Open menu</span>
                       </Button>

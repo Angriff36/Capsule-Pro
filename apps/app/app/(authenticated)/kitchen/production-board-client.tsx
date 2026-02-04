@@ -513,31 +513,31 @@ export function ProductionBoardClient({
                 Task Board
               </h2>
               <div className="grid gap-4 lg:grid-cols-3">
-              <TaskColumn
-                count={pendingTasks.length}
-                currentUserId={currentUserId}
-                icon={Circle}
-                iconColor="bg-amber-100 text-amber-600"
-                tasks={pendingTasks}
-                title="Pending"
-              />
-              <TaskColumn
-                count={inProgressTasks.length}
-                currentUserId={currentUserId}
-                icon={Clock3}
-                iconColor="bg-blue-100 text-blue-600"
-                tasks={inProgressTasks}
-                title="In Progress"
-              />
-              <TaskColumn
-                count={completedTasks.length}
-                currentUserId={currentUserId}
-                icon={CheckCircle2}
-                iconColor="bg-emerald-100 text-emerald-600"
-                tasks={completedTasks}
-                title="Completed"
-              />
-            </div>
+                <TaskColumn
+                  count={pendingTasks.length}
+                  currentUserId={currentUserId}
+                  icon={Circle}
+                  iconColor="bg-amber-100 text-amber-600"
+                  tasks={pendingTasks}
+                  title="Pending"
+                />
+                <TaskColumn
+                  count={inProgressTasks.length}
+                  currentUserId={currentUserId}
+                  icon={Clock3}
+                  iconColor="bg-blue-100 text-blue-600"
+                  tasks={inProgressTasks}
+                  title="In Progress"
+                />
+                <TaskColumn
+                  count={completedTasks.length}
+                  currentUserId={currentUserId}
+                  icon={CheckCircle2}
+                  iconColor="bg-emerald-100 text-emerald-600"
+                  tasks={completedTasks}
+                  title="Completed"
+                />
+              </div>
             </section>
           </div>
 

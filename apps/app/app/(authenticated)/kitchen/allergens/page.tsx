@@ -315,9 +315,12 @@ export default function AllergenManagementPage() {
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       {/* Page Header */}
       <div className="space-y-0.5">
-        <h1 className="text-3xl font-bold tracking-tight">Allergen Management</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Allergen Management
+        </h1>
         <p className="text-muted-foreground">
-          Manage allergen warnings and dietary restrictions for events and dishes
+          Manage allergen warnings and dietary restrictions for events and
+          dishes
         </p>
       </div>
 
@@ -325,9 +328,7 @@ export default function AllergenManagementPage() {
 
       {/* Search Section */}
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Search
-        </h2>
+        <h2 className="text-sm font-medium text-muted-foreground">Search</h2>
         <div className="flex items-center gap-2">
           <SearchIcon className="size-4 text-muted-foreground" />
           <Input
@@ -359,280 +360,290 @@ export default function AllergenManagementPage() {
 
             {/* Allergen Warnings Tab */}
             <TabsContent className="space-y-4" value="warnings">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <AlertTriangle className="size-5" />
-                  <span>All Allergen Warnings</span>
-                  <Badge variant="destructive">{filteredWarnings.length}</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {filteredWarnings.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No allergen warnings found
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {filteredWarnings.map((warning) => (
-                      <Card
-                        className="border-l-4 border-l-yellow-500"
-                        key={warning.id}
-                      >
-                        <CardContent className="pt-4">
-                          <div className="flex items-start justify-between">
-                            <div className="space-y-2">
-                              <div className="flex items-center space-x-2">
-                                <Badge
-                                  variant={getSeverityBadgeColor(
-                                    warning.severity
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <AlertTriangle className="size-5" />
+                    <span>All Allergen Warnings</span>
+                    <Badge variant="destructive">
+                      {filteredWarnings.length}
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {filteredWarnings.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No allergen warnings found
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {filteredWarnings.map((warning) => (
+                        <Card
+                          className="border-l-4 border-l-yellow-500"
+                          key={warning.id}
+                        >
+                          <CardContent className="pt-4">
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-2">
+                                <div className="flex items-center space-x-2">
+                                  <Badge
+                                    variant={getSeverityBadgeColor(
+                                      warning.severity
+                                    )}
+                                  >
+                                    {warning.severity}
+                                  </Badge>
+                                  <span className="text-sm text-muted-foreground">
+                                    {formatDateTime(warning.createdAt)}
+                                  </span>
+                                  {warning.isAcknowledged && (
+                                    <CheckCircle2 className="size-4 text-green-500" />
                                   )}
-                                >
-                                  {warning.severity}
-                                </Badge>
-                                <span className="text-sm text-muted-foreground">
-                                  {formatDateTime(warning.createdAt)}
-                                </span>
-                                {warning.isAcknowledged && (
-                                  <CheckCircle2 className="size-4 text-green-500" />
-                                )}
-                              </div>
-                              <div>
-                                <p className="font-medium">
-                                  {warning.warningType}
-                                </p>
-                                {warning.event && (
-                                  <p className="text-sm text-muted-foreground">
-                                    Event: {warning.event.title} on{" "}
-                                    {new Date(
-                                      warning.event.startDate
-                                    ).toLocaleDateString()}
+                                </div>
+                                <div>
+                                  <p className="font-medium">
+                                    {warning.warningType}
                                   </p>
-                                )}
-                                {warning.dish && (
-                                  <p className="text-sm text-muted-foreground">
-                                    Dish: {warning.dish.name}
-                                  </p>
-                                )}
-                                <p className="text-sm text-muted-foreground">
-                                  Allergens:{" "}
-                                  {warning.allergens.join(", ") || "None"}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                  {formatGuests(warning.affectedGuests)}
-                                </p>
-                                {warning.notes && (
-                                  <p className="text-sm mt-2">
-                                    {warning.notes}
-                                  </p>
-                                )}
-                                {warning.overrideReason && (
-                                  <p className="text-sm mt-2 text-muted-foreground">
-                                    Override: {warning.overrideReason}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex space-x-2">
-                              {!warning.isAcknowledged && (
-                                <Button
-                                  disabled={actionLoading}
-                                  onClick={() =>
-                                    handleAcknowledgeWarning(warning.id)
-                                  }
-                                  size="sm"
-                                  variant="outline"
-                                >
-                                  {actionLoading ? (
-                                    <Loader2 className="size-4 animate-spin" />
-                                  ) : (
-                                    "Acknowledge"
+                                  {warning.event && (
+                                    <p className="text-sm text-muted-foreground">
+                                      Event: {warning.event.title} on{" "}
+                                      {new Date(
+                                        warning.event.startDate
+                                      ).toLocaleDateString()}
+                                    </p>
                                   )}
-                                </Button>
-                              )}
-                              {!warning.resolved && (
-                                <Button
-                                  disabled={actionLoading}
-                                  onClick={() => {
-                                    const reason = prompt(
-                                      "Please provide override reason:"
-                                    );
-                                    if (reason) {
-                                      handleResolveWarning(warning.id, reason);
+                                  {warning.dish && (
+                                    <p className="text-sm text-muted-foreground">
+                                      Dish: {warning.dish.name}
+                                    </p>
+                                  )}
+                                  <p className="text-sm text-muted-foreground">
+                                    Allergens:{" "}
+                                    {warning.allergens.join(", ") || "None"}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {formatGuests(warning.affectedGuests)}
+                                  </p>
+                                  {warning.notes && (
+                                    <p className="text-sm mt-2">
+                                      {warning.notes}
+                                    </p>
+                                  )}
+                                  {warning.overrideReason && (
+                                    <p className="text-sm mt-2 text-muted-foreground">
+                                      Override: {warning.overrideReason}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex space-x-2">
+                                {!warning.isAcknowledged && (
+                                  <Button
+                                    disabled={actionLoading}
+                                    onClick={() =>
+                                      handleAcknowledgeWarning(warning.id)
                                     }
-                                  }}
-                                  size="sm"
-                                >
-                                  {actionLoading ? (
-                                    <Loader2 className="size-4 animate-spin" />
+                                    size="sm"
+                                    variant="outline"
+                                  >
+                                    {actionLoading ? (
+                                      <Loader2 className="size-4 animate-spin" />
+                                    ) : (
+                                      "Acknowledge"
+                                    )}
+                                  </Button>
+                                )}
+                                {!warning.resolved && (
+                                  <Button
+                                    disabled={actionLoading}
+                                    onClick={() => {
+                                      const reason = prompt(
+                                        "Please provide override reason:"
+                                      );
+                                      if (reason) {
+                                        handleResolveWarning(
+                                          warning.id,
+                                          reason
+                                        );
+                                      }
+                                    }}
+                                    size="sm"
+                                  >
+                                    {actionLoading ? (
+                                      <Loader2 className="size-4 animate-spin" />
+                                    ) : (
+                                      "Resolve"
+                                    )}
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Events Tab */}
+            <TabsContent className="space-y-4" value="events">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Event Allergen Information</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {filteredEvents.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No events found
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {filteredEvents.map((event) => (
+                        <Card key={event.id}>
+                          <CardContent className="pt-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h3 className="font-medium">{event.title}</h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {new Date(
+                                    event.eventDate
+                                  ).toLocaleDateString()}
+                                  {event.venueName && ` at ${event.venueName}`}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  Status:{" "}
+                                  <Badge
+                                    variant={
+                                      event.status === "confirmed"
+                                        ? "default"
+                                        : "secondary"
+                                    }
+                                  >
+                                    {event.status}
+                                  </Badge>
+                                </p>
+                              </div>
+                              <Badge variant="outline">View Details</Badge>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Dishes Tab */}
+            <TabsContent className="space-y-4" value="dishes">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Dish Allergen Information</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {filteredDishes.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No dishes found
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {filteredDishes.map((dish) => (
+                        <Card key={dish.id}>
+                          <CardContent className="pt-4">
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-2">
+                                <h3 className="font-medium">{dish.name}</h3>
+                                <div className="flex flex-wrap gap-2">
+                                  {dish.allergens.length > 0 ? (
+                                    dish.allergens.map((allergen) => (
+                                      <Badge
+                                        key={allergen}
+                                        variant="destructive"
+                                      >
+                                        {allergen}
+                                      </Badge>
+                                    ))
                                   ) : (
-                                    "Resolve"
+                                    <Badge variant="secondary">
+                                      No allergens
+                                    </Badge>
                                   )}
-                                </Button>
-                              )}
+                                  {dish.dietaryTags.map((tag) => (
+                                    <Badge key={tag} variant="outline">
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                              <AllergenManagementModal
+                                currentAllergens={dish.allergens}
+                                currentDietaryTags={dish.dietaryTags}
+                                id={dish.id}
+                                name={dish.name}
+                                tenantId="" // Will be fetched from auth context in the modal
+                                type="dish"
+                              />
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          {/* Events Tab */}
-          <TabsContent className="space-y-4" value="events">
-            <Card>
-              <CardHeader>
-                <CardTitle>Event Allergen Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {filteredEvents.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No events found
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {filteredEvents.map((event) => (
-                      <Card key={event.id}>
-                        <CardContent className="pt-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="font-medium">{event.title}</h3>
-                              <p className="text-sm text-muted-foreground">
-                                {new Date(event.eventDate).toLocaleDateString()}
-                                {event.venueName && ` at ${event.venueName}`}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                Status:{" "}
-                                <Badge
-                                  variant={
-                                    event.status === "confirmed"
-                                      ? "default"
-                                      : "secondary"
-                                  }
-                                >
-                                  {event.status}
-                                </Badge>
-                              </p>
-                            </div>
-                            <Badge variant="outline">View Details</Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Dishes Tab */}
-          <TabsContent className="space-y-4" value="dishes">
-            <Card>
-              <CardHeader>
-                <CardTitle>Dish Allergen Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {filteredDishes.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No dishes found
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {filteredDishes.map((dish) => (
-                      <Card key={dish.id}>
-                        <CardContent className="pt-4">
-                          <div className="flex items-start justify-between">
+            {/* Recipes Tab */}
+            <TabsContent className="space-y-4" value="recipes">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recipe Information</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {filteredRecipes.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No recipes found
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {filteredRecipes.map((recipe) => (
+                        <Card key={recipe.id}>
+                          <CardContent className="pt-4">
                             <div className="space-y-2">
-                              <h3 className="font-medium">{dish.name}</h3>
+                              <h3 className="font-medium">{recipe.name}</h3>
                               <div className="flex flex-wrap gap-2">
-                                {dish.allergens.length > 0 ? (
-                                  dish.allergens.map((allergen) => (
-                                    <Badge key={allergen} variant="destructive">
-                                      {allergen}
+                                {recipe.tags.length > 0 ? (
+                                  recipe.tags.map((tag) => (
+                                    <Badge key={tag} variant="outline">
+                                      {tag}
                                     </Badge>
                                   ))
                                 ) : (
+                                  <Badge variant="secondary">No tags</Badge>
+                                )}
+                                {recipe.category && (
                                   <Badge variant="secondary">
-                                    No allergens
+                                    {recipe.category}
                                   </Badge>
                                 )}
-                                {dish.dietaryTags.map((tag) => (
-                                  <Badge key={tag} variant="outline">
-                                    {tag}
-                                  </Badge>
-                                ))}
+                              </div>
+                              <div className="text-sm text-muted-foreground mt-2 p-2 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded">
+                                <strong>Note:</strong> Recipe allergen
+                                management is not available. Allergens are
+                                managed at the dish level.
                               </div>
                             </div>
-                            <AllergenManagementModal
-                              currentAllergens={dish.allergens}
-                              currentDietaryTags={dish.dietaryTags}
-                              id={dish.id}
-                              name={dish.name}
-                              tenantId="" // Will be fetched from auth context in the modal
-                              type="dish"
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Recipes Tab */}
-          <TabsContent className="space-y-4" value="recipes">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recipe Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {filteredRecipes.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No recipes found
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {filteredRecipes.map((recipe) => (
-                      <Card key={recipe.id}>
-                        <CardContent className="pt-4">
-                          <div className="space-y-2">
-                            <h3 className="font-medium">{recipe.name}</h3>
-                            <div className="flex flex-wrap gap-2">
-                              {recipe.tags.length > 0 ? (
-                                recipe.tags.map((tag) => (
-                                  <Badge key={tag} variant="outline">
-                                    {tag}
-                                  </Badge>
-                                ))
-                              ) : (
-                                <Badge variant="secondary">No tags</Badge>
-                              )}
-                              {recipe.category && (
-                                <Badge variant="secondary">
-                                  {recipe.category}
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="text-sm text-muted-foreground mt-2 p-2 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded">
-                              <strong>Note:</strong> Recipe allergen management
-                              is not available. Allergens are managed at the
-                              dish level.
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </section>
       )}
     </div>

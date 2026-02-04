@@ -5,6 +5,7 @@ import { database, Prisma } from "@repo/database";
 import { put } from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { invariant } from "../../../lib/invariant";
 import { requireTenantId } from "../../../lib/tenant";
 
 const parseList = (value: FormDataEntryValue | null) =>
@@ -30,6 +31,40 @@ const parseLines = (value: FormDataEntryValue | null) =>
         .map((line) => line.trim())
         .filter(Boolean)
     : [];
+
+const toDecimalNumber = (value: unknown, field: string): number => {
+  if (typeof value === "number") {
+    return value;
+  }
+
+  if (Prisma.Decimal.isDecimal(value)) {
+    const parsed = Number(value.toJSON());
+    invariant(
+      Number.isFinite(parsed),
+      `${field} must be a finite decimal value`
+    );
+    return parsed;
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    invariant(Number.isFinite(parsed), `${field} must be a numeric string`);
+    return parsed;
+  }
+
+  invariant(false, `${field} must be a number or Decimal`);
+};
+
+const toDecimalNumberOrNull = (
+  value: unknown,
+  field: string
+): number | null => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  return toDecimalNumber(value, field);
+};
 
 type IngredientInput = {
   name: string;
@@ -72,8 +107,7 @@ const parseIngredientInput = (
           return null;
         }
         const record = item as Record<string, unknown>;
-        const name =
-          typeof record.name === "string" ? record.name.trim() : "";
+        const name = typeof record.name === "string" ? record.name.trim() : "";
         if (!name) {
           return null;
         }
@@ -152,6 +186,9 @@ const parseStepInput = (value: FormDataEntryValue | null): StepInput[] => {
 
   return parseLines(trimmed).map((line) => ({ instruction: line }));
 };
+
+const buildInstructionsText = (steps: StepInput[]): string | null =>
+  steps.length > 0 ? steps.map((step) => step.instruction).join("\n") : null;
 
 const readImageFile = (formData: FormData, key: string) => {
   const file = formData.get(key);
@@ -301,12 +338,10 @@ export const createRecipe = async (formData: FormData) => {
     rawStepInputs.length === 0 && hasImageFile
       ? [{ instruction: "Reference photo" }]
       : rawStepInputs;
+  const instructionsText = buildInstructionsText(stepInputs);
 
   const unitsMap = await loadUnitMap(
-    [
-      yieldUnit,
-      ...ingredientInputs.map((ingredient) => ingredient.unit),
-    ]
+    [yieldUnit, ...ingredientInputs.map((ingredient) => ingredient.unit)]
       .filter(Boolean)
       .map((value) => value as string)
   );
@@ -380,6 +415,7 @@ export const createRecipe = async (formData: FormData) => {
         cook_time_minutes,
         rest_time_minutes,
         difficulty_level,
+        instructions,
         notes
       )
       VALUES (
@@ -399,6 +435,7 @@ export const createRecipe = async (formData: FormData) => {
         ${cookTime},
         ${restTime},
         ${difficulty},
+        ${instructionsText},
         ${notes}
       )
     `
@@ -765,6 +802,7 @@ export const updateRecipe = async (recipeId: string, formData: FormData) => {
 
   const ingredientInputs = parseIngredientInput(formData.get("ingredients"));
   const stepInputs = parseStepInput(formData.get("steps"));
+  const instructionsText = buildInstructionsText(stepInputs);
 
   // Get current max version number for this recipe
   const [maxVersionRow] = await database.$queryRaw<{ max: number | null }[]>(
@@ -779,10 +817,7 @@ export const updateRecipe = async (recipeId: string, formData: FormData) => {
 
   // Load unit map for ingredient parsing
   const unitsMap = await loadUnitMap(
-    [
-      yieldUnit,
-      ...ingredientInputs.map((ingredient) => ingredient.unit),
-    ]
+    [yieldUnit, ...ingredientInputs.map((ingredient) => ingredient.unit)]
       .filter(Boolean)
       .map((value) => value as string)
   );
@@ -844,6 +879,7 @@ export const updateRecipe = async (recipeId: string, formData: FormData) => {
         cook_time_minutes,
         rest_time_minutes,
         difficulty_level,
+        instructions,
         notes
       )
       VALUES (
@@ -863,6 +899,7 @@ export const updateRecipe = async (recipeId: string, formData: FormData) => {
         ${cookTime},
         ${restTime},
         ${difficulty},
+        ${instructionsText},
         ${notes}
       )
     `
@@ -1195,12 +1232,18 @@ export const restoreRecipeVersion = async (
     );
   }
 
-  await enqueueOutboxEvent(tenantId, "recipe", recipeId, "recipe.version.restored", {
+  await enqueueOutboxEvent(
+    tenantId,
+    "recipe",
     recipeId,
-    versionId,
-    newVersionId,
-    versionNumber: nextVersionNumber,
-  });
+    "recipe.version.restored",
+    {
+      recipeId,
+      versionId,
+      newVersionId,
+      versionNumber: nextVersionNumber,
+    }
+  );
 
   revalidatePath("/kitchen/recipes");
   revalidatePath(`/kitchen/recipes/${recipeId}`);
@@ -1258,12 +1301,13 @@ export const getRecipeForEdit = async (
       id: string;
       name: string;
       category: string | null;
+      cuisine_type: string | null;
       description: string | null;
       tags: string[] | null;
     }[]
   >(
     Prisma.sql`
-      SELECT id, name, category, description, tags
+      SELECT id, name, category, cuisine_type, description, tags
       FROM tenant_kitchen.recipes
       WHERE id = ${recipeId}
         AND tenant_id = ${tenantId}
@@ -1277,7 +1321,7 @@ export const getRecipeForEdit = async (
   }
 
   // Fetch latest version
-  const [version] = await database.$queryRaw<
+  let [version] = await database.$queryRaw<
     {
       id: string;
       version_number: number;
@@ -1312,20 +1356,88 @@ export const getRecipeForEdit = async (
     `
   );
 
-  if (!version) {
-    return null;
-  }
+  let yieldUnit = "";
+  if (version) {
+    // Fetch unit code for yield
+    const [yieldUnitRow] = await database.$queryRaw<{ code: string }[]>(
+      Prisma.sql`
+        SELECT code
+        FROM core.units
+        WHERE id = ${version.yield_unit_id}
+        LIMIT 1
+      `
+    );
+    yieldUnit = yieldUnitRow?.code ?? "";
+  } else {
+    const [maxVersion] = await database.$queryRaw<{ max: number | null }[]>(
+      Prisma.sql`
+        SELECT MAX(version_number)::int AS max
+        FROM tenant_kitchen.recipe_versions
+        WHERE tenant_id = ${tenantId}
+          AND recipe_id = ${recipeId}
+      `
+    );
+    const [fallbackUnit] = await database.$queryRaw<
+      { id: number; code: string }[]
+    >(
+      Prisma.sql`
+        SELECT id, code
+        FROM core.units
+        ORDER BY id ASC
+        LIMIT 1
+      `
+    );
 
-  // Fetch unit code for yield
-  const [yieldUnitRow] = await database.$queryRaw<{ code: string }[]>(
-    Prisma.sql`
-      SELECT code
-      FROM core.units
-      WHERE id = ${version.yield_unit_id}
-      LIMIT 1
-    `
-  );
-  const yieldUnit = yieldUnitRow?.code ?? "";
+    if (!fallbackUnit?.id) {
+      throw new Error("No units configured in core.units.");
+    }
+
+    const newVersionId = randomUUID();
+    await database.$executeRaw(
+      Prisma.sql`
+        INSERT INTO tenant_kitchen.recipe_versions (
+          tenant_id,
+          id,
+          recipe_id,
+          name,
+          category,
+          cuisine_type,
+          description,
+          tags,
+          version_number,
+          yield_quantity,
+          yield_unit_id
+        )
+        VALUES (
+          ${tenantId},
+          ${newVersionId},
+          ${recipeId},
+          ${recipe.name},
+          ${recipe.category},
+          ${recipe.cuisine_type},
+          ${recipe.description},
+          ${recipe.tags ?? null},
+          ${(maxVersion?.max ?? 0) + 1},
+          1,
+          ${fallbackUnit.id}
+        )
+      `
+    );
+
+    version = {
+      id: newVersionId,
+      version_number: (maxVersion?.max ?? 0) + 1,
+      yield_quantity: 1,
+      yield_unit_id: fallbackUnit.id,
+      yield_description: null,
+      prep_time_minutes: null,
+      cook_time_minutes: null,
+      rest_time_minutes: null,
+      difficulty_level: null,
+      notes: null,
+    };
+    yieldUnit = fallbackUnit.code;
+  }
 
   // Fetch ingredients with their names and unit codes
   const ingredients = await database.$queryRaw<
@@ -1386,20 +1498,35 @@ export const getRecipeForEdit = async (
     version: {
       id: version.id,
       versionNumber: version.version_number,
-      yieldQuantity: version.yield_quantity,
+      yieldQuantity: toDecimalNumber(
+        version.yield_quantity,
+        "recipe_versions.yield_quantity"
+      ),
       yieldUnit,
       yieldDescription: version.yield_description,
-      prepTimeMinutes: version.prep_time_minutes,
-      cookTimeMinutes: version.cook_time_minutes,
-      restTimeMinutes: version.rest_time_minutes,
-      difficultyLevel: version.difficulty_level,
+      prepTimeMinutes: toDecimalNumberOrNull(
+        version.prep_time_minutes,
+        "recipe_versions.prep_time_minutes"
+      ),
+      cookTimeMinutes: toDecimalNumberOrNull(
+        version.cook_time_minutes,
+        "recipe_versions.cook_time_minutes"
+      ),
+      restTimeMinutes: toDecimalNumberOrNull(
+        version.rest_time_minutes,
+        "recipe_versions.rest_time_minutes"
+      ),
+      difficultyLevel: toDecimalNumberOrNull(
+        version.difficulty_level,
+        "recipe_versions.difficulty_level"
+      ),
       notes: version.notes,
     },
     ingredients: ingredients.map((ing) => ({
       id: ing.id,
       ingredientId: ing.ingredient_id,
       name: ing.ingredient_name,
-      quantity: ing.quantity,
+      quantity: toDecimalNumber(ing.quantity, "recipe_ingredients.quantity"),
       unit: ing.unit_code,
       isOptional: ing.is_optional,
       sortOrder: ing.sort_order,

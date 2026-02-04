@@ -11,9 +11,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "content",
@@ -42,10 +40,7 @@
       ],
       "computedProperties": [],
       "relationships": [],
-      "commands": [
-        "makePublic",
-        "remove"
-      ],
+      "commands": ["makePublic", "remove"],
       "constraints": [],
       "policies": []
     }
@@ -106,9 +101,7 @@
           }
         }
       ],
-      "emits": [
-        "DocumentPublished"
-      ]
+      "emits": ["DocumentPublished"]
     },
     {
       "name": "remove",
@@ -116,9 +109,7 @@
       "parameters": [],
       "guards": [],
       "actions": [],
-      "emits": [
-        "DocumentDeleted"
-      ]
+      "emits": ["DocumentDeleted"]
     }
   ],
   "policies": [

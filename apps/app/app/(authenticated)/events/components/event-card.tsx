@@ -39,7 +39,8 @@ export function EventCard({ event }: { event: EventCardEvent }) {
   const date = new Date(event.eventDate);
   const displayTags = event.tags.filter((tag) => !tag.startsWith("needs:"));
   const variant =
-    statusVariantMap[event.status as keyof typeof statusVariantMap] ?? "outline";
+    statusVariantMap[event.status as keyof typeof statusVariantMap] ??
+    "outline";
 
   return (
     <Link className="block" href={`/events/${event.id}`}>
@@ -56,7 +57,9 @@ export function EventCard({ event }: { event: EventCardEvent }) {
                   {event.eventType}
                 </CardDescription>
               </div>
-              <CardTitle className="line-clamp-2 leading-tight">{event.title}</CardTitle>
+              <CardTitle className="line-clamp-2 leading-tight">
+                {event.title}
+              </CardTitle>
             </div>
             <CardAction>
               <Badge className="capitalize" variant={variant}>
@@ -73,7 +76,10 @@ export function EventCard({ event }: { event: EventCardEvent }) {
             <div className="flex items-center gap-2 text-muted-foreground">
               <CalendarDaysIcon className="size-3.5 shrink-0" />
               <span className="truncate">
-                {date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                {date.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                })}
               </span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -83,14 +89,16 @@ export function EventCard({ event }: { event: EventCardEvent }) {
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <MapPinIcon className="size-3.5 shrink-0" />
-            <span className="line-clamp-1">{event.venueName ?? "Venue TBD"}</span>
+            <span className="line-clamp-1">
+              {event.venueName ?? "Venue TBD"}
+            </span>
           </div>
           {displayTags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 pt-1">
               {displayTags.slice(0, 3).map((tag) => (
                 <span
-                  key={tag}
                   className="inline-flex items-center rounded-md bg-muted/50 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground"
+                  key={tag}
                 >
                   {tag}
                 </span>

@@ -121,7 +121,16 @@ export async function extractPdfText(pdfBuffer) {
         // Use pdf2json - pure JavaScript PDF parser, no worker issues
         // Handle both named and default exports for different module formats
         const pdf2jsonModule = await import("pdf2json");
-        const PDFParserClass = pdf2jsonModule.PDFParser || pdf2jsonModule.default;
+        const defaultExport = pdf2jsonModule.default;
+        const isRecord = (value) => typeof value === "object" && value !== null;
+        const isConstructor = (value) => typeof value === "function";
+        const PDFParserClass = (isConstructor(pdf2jsonModule.PDFParser)
+            ? pdf2jsonModule.PDFParser
+            : undefined) ??
+            (isRecord(defaultExport) && isConstructor(defaultExport.PDFParser)
+                ? defaultExport.PDFParser
+                : undefined) ??
+            (isConstructor(defaultExport) ? defaultExport : undefined);
         if (!PDFParserClass) {
             throw new Error("Failed to load PDFParser: export not found in pdf2json module");
         }

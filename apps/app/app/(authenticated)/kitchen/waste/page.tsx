@@ -5,12 +5,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import {
-  BarChart3,
-  Trash2,
-  TrendingUp,
-} from "lucide-react";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { BarChart3, Trash2, TrendingUp } from "lucide-react";
 import { WasteEntriesClient } from "./waste-entries-client";
 import { WasteReportsClient } from "./waste-reports-client";
 import { WasteStatsCards } from "./waste-stats-cards";

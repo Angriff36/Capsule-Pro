@@ -1,10 +1,8 @@
-import { redirect } from "next/navigation";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -13,15 +11,26 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@repo/design-system/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/design-system/components/ui/table";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { ClipboardListIcon } from "lucide-react";
+import { redirect } from "next/navigation";
 import {
   createCycleCountSession,
   listCycleCountSessions,
 } from "./actions/sessions";
 
-const statusVariantMap: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+const statusVariantMap: Record<
+  string,
+  "default" | "secondary" | "outline" | "destructive"
+> = {
   finalized: "default",
   in_progress: "secondary",
   draft: "outline",
@@ -42,7 +51,8 @@ export default async function CycleCountingPage() {
       <div className="space-y-0.5">
         <h1 className="text-3xl font-bold tracking-tight">Cycle Counting</h1>
         <p className="text-muted-foreground">
-          Manage inventory cycle counts with automated variance tracking and adjustments.
+          Manage inventory cycle counts with automated variance tracking and
+          adjustments.
         </p>
       </div>
 
@@ -92,9 +102,7 @@ export default async function CycleCountingPage() {
                 />
               </div>
 
-              <Button type="submit">
-                Create New Session
-              </Button>
+              <Button type="submit">Create New Session</Button>
             </form>
           </CardContent>
         </Card>
@@ -114,7 +122,8 @@ export default async function CycleCountingPage() {
               </EmptyMedia>
               <EmptyTitle>No cycle count sessions found</EmptyTitle>
               <EmptyDescription>
-                Create a new session to get started with inventory cycle counting.
+                Create a new session to get started with inventory cycle
+                counting.
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
@@ -145,7 +154,9 @@ export default async function CycleCountingPage() {
                       {session.countType.replace("_", " ")}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={statusVariantMap[session.status] ?? "outline"}>
+                      <Badge
+                        variant={statusVariantMap[session.status] ?? "outline"}
+                      >
                         {statusLabelMap[session.status] ?? session.status}
                       </Badge>
                     </TableCell>

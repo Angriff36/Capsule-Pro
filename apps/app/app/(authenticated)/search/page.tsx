@@ -1,8 +1,5 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { notFound, redirect } from "next/navigation";
-import { getTenantIdForOrg } from "../../lib/tenant";
-import { Header } from "../components/header";
 import {
   Card,
   CardContent,
@@ -13,6 +10,9 @@ import {
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { CalendarDays } from "lucide-react";
 import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { getTenantIdForOrg } from "../../lib/tenant";
+import { Header } from "../components/header";
 
 type SearchPageProperties = {
   searchParams: Promise<{
@@ -85,9 +85,7 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
         {/* Page Header */}
         <div className="space-y-0.5">
           <h1 className="text-3xl font-bold tracking-tight">Search Results</h1>
-          <p className="text-muted-foreground">
-            Showing results for "{q}"
-          </p>
+          <p className="text-muted-foreground">Showing results for "{q}"</p>
         </div>
 
         <Separator />
@@ -108,7 +106,11 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
           ) : (
             <div className="grid auto-rows-min gap-6 md:grid-cols-3">
               {events.map((event) => (
-                <Link key={`${event.tenantId}-${event.id}`} href={`/events/${event.id}`} className="group">
+                <Link
+                  className="group"
+                  href={`/events/${event.id}`}
+                  key={`${event.tenantId}-${event.id}`}
+                >
                   <Card className="h-full transition hover:border-primary/40 hover:shadow-md">
                     <CardHeader>
                       <CardTitle className="text-base line-clamp-2">

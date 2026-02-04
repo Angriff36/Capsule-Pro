@@ -158,11 +158,15 @@ export async function POST(request: Request) {
       completion = Math.round((answered / questions.length) * 100);
     }
 
+    const reportName =
+      event.title?.trim() || event.eventNumber?.trim() || event.id;
+
     // Create report
     const report = await database.eventReport.create({
       data: {
         tenantId,
         eventId,
+        name: reportName,
         status: "draft",
         completion,
         checklistData: checklistData || {},

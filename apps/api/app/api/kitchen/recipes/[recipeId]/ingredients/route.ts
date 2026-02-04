@@ -58,7 +58,7 @@ export async function GET(
           i.name,
           ri.quantity,
           u.code AS unit_code,
-          ri.notes,
+          ri.preparation_notes AS notes,
           ri.is_optional,
           ri.sort_order AS order_index
         FROM tenant_kitchen.recipes r

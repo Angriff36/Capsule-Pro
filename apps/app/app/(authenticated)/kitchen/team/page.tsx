@@ -39,8 +39,9 @@ const KitchenTeamPage = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                Kitchen team management is handled in the Staff module. View team
-                members, their roles, skills, and station assignments there.
+                Kitchen team management is handled in the Staff module. View
+                team members, their roles, skills, and station assignments
+                there.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Button asChild>
@@ -121,50 +122,50 @@ const KitchenTeamPage = () => {
           <Card>
             <CardContent>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              <Button
-                asChild
-                className="h-auto flex-col gap-2 py-4"
-                variant="outline"
-              >
-                <Link href="/staff/team?view=online">
-                  <Users className="size-5" />
-                  <span>Who's Working</span>
-                </Link>
-              </Button>
-              <Button
-                asChild
-                className="h-auto flex-col gap-2 py-4"
-                variant="outline"
-              >
-                <Link href="/staff/team?action=assign">
-                  <UserPlus className="size-5" />
-                  <span>Quick Assign</span>
-                </Link>
-              </Button>
-              <Button
-                asChild
-                className="h-auto flex-col gap-2 py-4"
-                variant="outline"
-              >
-                <Link href="/staff/availability">
-                  <Settings className="size-5" />
-                  <span>Availability</span>
-                </Link>
-              </Button>
-              <Button
-                asChild
-                className="h-auto flex-col gap-2 py-4"
-                variant="outline"
-              >
-                <Link href="/staff/time-off">
-                  <Calendar className="size-5" />
-                  <span>Time Off</span>
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
+                <Button
+                  asChild
+                  className="h-auto flex-col gap-2 py-4"
+                  variant="outline"
+                >
+                  <Link href="/staff/team?view=online">
+                    <Users className="size-5" />
+                    <span>Who's Working</span>
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  className="h-auto flex-col gap-2 py-4"
+                  variant="outline"
+                >
+                  <Link href="/staff/team?action=assign">
+                    <UserPlus className="size-5" />
+                    <span>Quick Assign</span>
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  className="h-auto flex-col gap-2 py-4"
+                  variant="outline"
+                >
+                  <Link href="/staff/availability">
+                    <Settings className="size-5" />
+                    <span>Availability</span>
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  className="h-auto flex-col gap-2 py-4"
+                  variant="outline"
+                >
+                  <Link href="/staff/time-off">
+                    <Calendar className="size-5" />
+                    <span>Time Off</span>
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
       </div>
     </>
   );

@@ -7,7 +7,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import type { Proposal, Prisma } from "@repo/database";
+import type { Prisma, Proposal } from "@repo/database";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
@@ -338,19 +338,28 @@ export async function updateProposal(
     data.venueAddress = input.venueAddress?.trim() || null;
   }
   if (input.subtotal !== undefined) {
-    data.subtotal = typeof calculatedSubtotal === "number" ? calculatedSubtotal : calculatedSubtotal.toNumber();
+    data.subtotal =
+      typeof calculatedSubtotal === "number"
+        ? calculatedSubtotal
+        : calculatedSubtotal.toNumber();
   }
   if (input.taxRate !== undefined) {
     data.taxRate = input.taxRate ?? 0;
   }
   if (input.taxAmount !== undefined) {
-    data.taxAmount = typeof calculatedTax === "number" ? calculatedTax : calculatedTax.toNumber();
+    data.taxAmount =
+      typeof calculatedTax === "number"
+        ? calculatedTax
+        : calculatedTax.toNumber();
   }
   if (input.discountAmount !== undefined) {
     data.discountAmount = input.discountAmount ?? 0;
   }
   if (input.total !== undefined) {
-    data.total = typeof calculatedTotal === "number" ? calculatedTotal : calculatedTotal.toNumber();
+    data.total =
+      typeof calculatedTotal === "number"
+        ? calculatedTotal
+        : calculatedTotal.toNumber();
   }
   if (input.status !== undefined && input.status !== null) {
     data.status = input.status;

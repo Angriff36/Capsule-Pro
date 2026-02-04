@@ -1,16 +1,16 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react";
 import {
   BriefcaseIcon,
   CalendarIcon,
-  CloudIcon,
   ClipboardIcon,
+  CloudIcon,
   LayoutGridIcon,
   ListTodoIcon,
   NotebookPenIcon,
   ShieldCheckIcon,
   UsersIcon,
-} from "lucide-react"
-import { TabbedMegaMenuBlock } from "./tabbed-mega-menu-block"
+} from "lucide-react";
+import { TabbedMegaMenuBlock } from "./tabbed-mega-menu-block";
 
 const meta = {
   title: "Blocks/TabbedMegaMenuBlock",
@@ -22,13 +22,13 @@ const meta = {
   argTypes: {
     tabs: { control: false },
   },
-} satisfies Meta<typeof TabbedMegaMenuBlock>
+} satisfies Meta<typeof TabbedMegaMenuBlock>;
 
-export default meta
+export default meta;
 
-type Story = StoryObj<typeof meta>
+type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {}
+export const Default: Story = {};
 
 export const AppModules: Story = {
   args: {
@@ -100,4 +100,4 @@ export const AppModules: Story = {
     ctaText: "Need a shortcut?",
     ctaDescription: "Jump straight to your most-used modules from here.",
   },
-}
+};

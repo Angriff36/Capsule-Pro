@@ -306,7 +306,7 @@ export function ClientsClient() {
           </Button>
         </form>
 
-        <Separator orientation="vertical" className="h-6 shrink-0" />
+        <Separator className="h-6 shrink-0" orientation="vertical" />
 
         <Select
           onValueChange={(value) =>
@@ -334,7 +334,7 @@ export function ClientsClient() {
 
         {hasFilters && (
           <>
-            <Separator orientation="vertical" className="h-6 shrink-0" />
+            <Separator className="h-6 shrink-0" orientation="vertical" />
             <Button onClick={clearFilters} size="sm" variant="ghost">
               <XIcon className="h-4 w-4 mr-2" />
               Clear

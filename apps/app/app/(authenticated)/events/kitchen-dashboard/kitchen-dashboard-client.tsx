@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@repo/design-system/components/ui/alert";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -29,6 +32,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
+import { GridBackground } from "@repo/design-system/components/ui/grid-background";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -43,6 +47,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -54,15 +59,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@repo/design-system/components/ui/toggle-group";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@repo/design-system/components/ui/alert";
-import { Separator } from "@repo/design-system/components/ui/separator";
-import { GridBackground } from "@repo/design-system/components/ui/grid-background";
 import { cn } from "@repo/design-system/lib/utils";
-import { toast } from "sonner";
 import {
   Activity,
   CalendarDays,
@@ -78,6 +75,9 @@ import {
   Timer,
   Users,
 } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { eventStatuses } from "../constants";
 import type { KitchenEvent } from "./types";
 
@@ -140,11 +140,21 @@ const formatCalendarDate = (date: Date): string =>
   calendarDateFormatter.format(date).replace(/-/g, "");
 
 const startOfDay = (date: Date) =>
-  new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  );
 
 const endOfDay = (date: Date) =>
   new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 23, 59, 59, 999)
+    Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      23,
+      59,
+      59,
+      999
+    )
   );
 
 const addDays = (date: Date, days: number) =>
@@ -159,7 +169,7 @@ const parseDateInput = (value: string): Date | null => {
   }
 
   const [year, month, day] = value.split("-").map(Number);
-  if (!year || !month || !day) {
+  if (!(year && month && day)) {
     return null;
   }
 
@@ -169,8 +179,8 @@ const parseDateInput = (value: string): Date | null => {
 
 const formatDuration = (milliseconds: number): string => {
   const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const days = Math.floor(totalSeconds / 86_400);
+  const hours = Math.floor((totalSeconds % 86_400) / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
 
   if (days > 0) {
@@ -229,23 +239,23 @@ function FiltersPanel({
         <Label htmlFor="filter-start-date">Start date</Label>
         <Input
           id="filter-start-date"
+          onChange={(event) => setStartDate(event.target.value)}
           type="date"
           value={startDate}
-          onChange={(event) => setStartDate(event.target.value)}
         />
       </div>
       <div className="space-y-2">
         <Label htmlFor="filter-end-date">End date</Label>
         <Input
           id="filter-end-date"
+          onChange={(event) => setEndDate(event.target.value)}
           type="date"
           value={endDate}
-          onChange={(event) => setEndDate(event.target.value)}
         />
       </div>
       <div className="space-y-2">
         <Label>Venue / location</Label>
-        <Select value={selectedVenue} onValueChange={setSelectedVenue}>
+        <Select onValueChange={setSelectedVenue} value={selectedVenue}>
           <SelectTrigger>
             <SelectValue placeholder="All venues" />
           </SelectTrigger>
@@ -264,7 +274,7 @@ function FiltersPanel({
       </div>
       <div className="space-y-2">
         <Label>Status</Label>
-        <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+        <Select onValueChange={setSelectedStatus} value={selectedStatus}>
           <SelectTrigger>
             <SelectValue placeholder="All statuses" />
           </SelectTrigger>
@@ -297,7 +307,7 @@ function FiltersPanel({
             ) : (
               <div className="space-y-2">
                 {tagOptions.map((tag) => (
-                  <label key={tag} className="flex items-center gap-2 text-sm">
+                  <label className="flex items-center gap-2 text-sm" key={tag}>
                     <Checkbox
                       checked={selectedTags.includes(tag)}
                       onCheckedChange={() => onToggleTag(tag)}
@@ -337,7 +347,9 @@ export const KitchenDashboardClient = ({
   const [now, setNow] = useState(() => new Date(initialNow));
   const [mounted, setMounted] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("timeline");
-  const [activeQuickFilters, setActiveQuickFilters] = useState<QuickFilter[]>([]);
+  const [activeQuickFilters, setActiveQuickFilters] = useState<QuickFilter[]>(
+    []
+  );
   const [selectedVenue, setSelectedVenue] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -351,7 +363,7 @@ export const KitchenDashboardClient = ({
     setMounted(true);
     const interval = window.setInterval(() => {
       setNow(new Date());
-    }, 30000);
+    }, 30_000);
     return () => window.clearInterval(interval);
   }, []);
 
@@ -495,10 +507,16 @@ export const KitchenDashboardClient = ({
       if (activeQuickFilters.includes("live-now") && !event.isLive) {
         return false;
       }
-      if (activeQuickFilters.includes("starting-soon") && !event.isStartingSoon) {
+      if (
+        activeQuickFilters.includes("starting-soon") &&
+        !event.isStartingSoon
+      ) {
         return false;
       }
-      if (activeQuickFilters.includes("high-capacity") && !event.isHighCapacity) {
+      if (
+        activeQuickFilters.includes("high-capacity") &&
+        !event.isHighCapacity
+      ) {
         return false;
       }
       if (activeQuickFilters.includes("sold-out") && !event.soldOut) {
@@ -597,7 +615,9 @@ export const KitchenDashboardClient = ({
 
   const handleToggleTag = (tag: string) => {
     setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((value) => value !== tag) : [...prev, tag]
+      prev.includes(tag)
+        ? prev.filter((value) => value !== tag)
+        : [...prev, tag]
     );
   };
 
@@ -612,7 +632,7 @@ export const KitchenDashboardClient = ({
     }
   };
 
-  const buildCalendarUrl = (event: typeof enrichedEvents[number]) => {
+  const buildCalendarUrl = (event: (typeof enrichedEvents)[number]) => {
     const start = formatCalendarDate(event.start);
     const end = formatCalendarDate(addDays(event.start, 1));
     const title = encodeURIComponent(event.title);
@@ -660,7 +680,8 @@ export const KitchenDashboardClient = ({
             </EmptyMedia>
             <EmptyTitle>No events yet</EmptyTitle>
             <EmptyDescription>
-              Create your first event to start running kitchen operations with real data.
+              Create your first event to start running kitchen operations with
+              real data.
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent className="flex flex-wrap gap-2">
@@ -682,10 +703,10 @@ export const KitchenDashboardClient = ({
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_60%)]" />
         <GridBackground
           className="absolute inset-0"
+          fade
           gridOpacity={0.2}
           gridSize={36}
           variant="dots"
-          fade
         />
         <div className="relative z-10 space-y-6 p-6">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -697,18 +718,19 @@ export const KitchenDashboardClient = ({
                 Today + next 24 hours
               </h2>
               <p className="text-sm text-muted-foreground">
-                Live service visibility, timeline control, and rapid actions across events.
+                Live service visibility, timeline control, and rapid actions
+                across events.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <ToggleGroup
-                type="single"
-                value={viewMode}
                 onValueChange={(value) =>
                   setViewMode((value as ViewMode) || "timeline")
                 }
-                variant="outline"
                 size="sm"
+                type="single"
+                value={viewMode}
+                variant="outline"
               >
                 <ToggleGroupItem value="timeline">
                   <LayoutGrid className="mr-1 size-3.5" />
@@ -732,11 +754,13 @@ export const KitchenDashboardClient = ({
 
           <div className="flex flex-wrap gap-2">
             <ToggleGroup
+              onValueChange={(value) =>
+                setActiveQuickFilters(value as QuickFilter[])
+              }
+              size="sm"
               type="multiple"
               value={activeQuickFilters}
-              onValueChange={(value) => setActiveQuickFilters(value as QuickFilter[])}
               variant="outline"
-              size="sm"
             >
               <ToggleGroupItem value="live-now">
                 <Activity className="mr-1 size-3.5" />
@@ -779,7 +803,9 @@ export const KitchenDashboardClient = ({
             <Card className="border-transparent bg-background/70">
               <CardHeader className="pb-2">
                 <CardDescription>Upcoming in 24h</CardDescription>
-                <CardTitle className="text-3xl">{metrics.upcoming24h}</CardTitle>
+                <CardTitle className="text-3xl">
+                  {metrics.upcoming24h}
+                </CardTitle>
               </CardHeader>
               <CardContent className="text-xs text-muted-foreground">
                 Next service window
@@ -808,7 +834,11 @@ export const KitchenDashboardClient = ({
               <CardDescription>Refine the operational view.</CardDescription>
             </CardHeader>
             <CardContent>
-              {mounted ? <FiltersPanel {...filtersPanelProps} /> : <div className="space-y-5" />}
+              {mounted ? (
+                <FiltersPanel {...filtersPanelProps} />
+              ) : (
+                <div className="space-y-5" />
+              )}
             </CardContent>
           </Card>
         </aside>
@@ -858,8 +888,10 @@ export const KitchenDashboardClient = ({
             <>
               <section className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-muted-foreground">Live operations</h3>
-                  <Badge variant="outline" className="text-xs">
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    Live operations
+                  </h3>
+                  <Badge className="text-xs" variant="outline">
                     {opsEvents.length} in window
                   </Badge>
                 </div>
@@ -881,56 +913,81 @@ export const KitchenDashboardClient = ({
                         : event.isUpcoming
                           ? `Starts in ${formatDuration(event.start.getTime() - now.getTime())}`
                           : `Ended ${formatDuration(now.getTime() - event.end.getTime())} ago`;
-                      const operationalBadge = operationalStatusConfig[event.operationalStatus];
+                      const operationalBadge =
+                        operationalStatusConfig[event.operationalStatus];
                       const statusVariant =
-                        statusVariantMap[event.status as keyof typeof statusVariantMap] ?? "outline";
+                        statusVariantMap[
+                          event.status as keyof typeof statusVariantMap
+                        ] ?? "outline";
 
                       return (
                         <div
-                          key={event.id}
                           className={cn(
                             "group rounded-2xl border bg-background/80 p-4 transition-all hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                            mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+                            mounted
+                              ? "opacity-100 translate-y-0"
+                              : "opacity-0 translate-y-2"
                           )}
-                          style={{ transitionDelay: `${index * 40}ms` }}
-                          role="button"
-                          tabIndex={0}
+                          key={event.id}
                           onClick={() => {
                             setSelectedEventId(event.id);
                             setDrawerOpen(true);
                           }}
                           onKeyDown={(eventKey) => {
-                            if (eventKey.key === "Enter" || eventKey.key === " ") {
+                            if (
+                              eventKey.key === "Enter" ||
+                              eventKey.key === " "
+                            ) {
                               eventKey.preventDefault();
                               setSelectedEventId(event.id);
                               setDrawerOpen(true);
                             }
                           }}
+                          role="button"
+                          style={{ transitionDelay: `${index * 40}ms` }}
+                          tabIndex={0}
                         >
                           <div className="flex flex-wrap items-center justify-between gap-3">
                             <div className="flex min-w-[260px] flex-1 flex-col gap-2">
                               <div className="flex items-center gap-2">
-                                <Badge className={cn("text-xs", operationalBadge.className)}>
+                                <Badge
+                                  className={cn(
+                                    "text-xs",
+                                    operationalBadge.className
+                                  )}
+                                >
                                   {operationalBadge.label}
                                 </Badge>
                                 {event.soldOut && (
-                                  <Badge className="text-xs" variant="destructive">
+                                  <Badge
+                                    className="text-xs"
+                                    variant="destructive"
+                                  >
                                     Sold out
                                   </Badge>
                                 )}
                                 {event.limited && (
-                                  <Badge className="text-xs" variant="secondary">
+                                  <Badge
+                                    className="text-xs"
+                                    variant="secondary"
+                                  >
                                     Limited
                                   </Badge>
                                 )}
-                                <Badge className="text-xs capitalize" variant={statusVariant}>
+                                <Badge
+                                  className="text-xs capitalize"
+                                  variant={statusVariant}
+                                >
                                   {event.status}
                                 </Badge>
                               </div>
                               <div>
-                                <p className="text-sm font-semibold">{event.title}</p>
+                                <p className="text-sm font-semibold">
+                                  {event.title}
+                                </p>
                                 <p className="text-xs text-muted-foreground">
-                                  {event.eventType} · {shortDateFormatter.format(event.eventDate)}
+                                  {event.eventType} ·{" "}
+                                  {shortDateFormatter.format(event.eventDate)}
                                 </p>
                               </div>
                               <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
@@ -952,11 +1009,15 @@ export const KitchenDashboardClient = ({
                               <div className="flex items-center gap-2">
                                 <Button
                                   asChild
+                                  onClick={(eventClick) =>
+                                    eventClick.stopPropagation()
+                                  }
                                   size="sm"
                                   variant="secondary"
-                                  onClick={(eventClick) => eventClick.stopPropagation()}
                                 >
-                                  <Link href={`/events/${event.id}`}>Open event</Link>
+                                  <Link href={`/events/${event.id}`}>
+                                    Open event
+                                  </Link>
                                 </Button>
                                 {/* Event lifecycle actions (mark started/finished) are omitted because
                                    the current events API only supports full updates, not lifecycle transitions. */}
@@ -983,7 +1044,7 @@ export const KitchenDashboardClient = ({
                 {viewMode === "timeline" ? (
                   <div className="space-y-4">
                     {timelineGroups.map((group, groupIndex) => (
-                      <Card key={group.key} className="overflow-hidden">
+                      <Card className="overflow-hidden" key={group.key}>
                         <CardHeader className="border-b bg-muted/40 py-3">
                           <div className="flex items-center justify-between">
                             <div>
@@ -994,7 +1055,7 @@ export const KitchenDashboardClient = ({
                                 {group.items.length} scheduled
                               </CardDescription>
                             </div>
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge className="text-xs" variant="secondary">
                               All-day block
                             </Badge>
                           </div>
@@ -1004,31 +1065,38 @@ export const KitchenDashboardClient = ({
                             const operationalBadge =
                               operationalStatusConfig[event.operationalStatus];
                             const statusVariant =
-                              statusVariantMap[event.status as keyof typeof statusVariantMap] ?? "outline";
+                              statusVariantMap[
+                                event.status as keyof typeof statusVariantMap
+                              ] ?? "outline";
 
                             return (
                               <div
-                                key={event.id}
                                 className={cn(
                                   "group relative rounded-xl border border-border/60 bg-background/70 p-4 transition-all hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                                  mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+                                  mounted
+                                    ? "opacity-100 translate-y-0"
+                                    : "opacity-0 translate-y-2"
                                 )}
-                                style={{
-                                  transitionDelay: `${(groupIndex + index) * 40}ms`,
-                                }}
-                                role="button"
-                                tabIndex={0}
+                                key={event.id}
                                 onClick={() => {
                                   setSelectedEventId(event.id);
                                   setDrawerOpen(true);
                                 }}
                                 onKeyDown={(eventKey) => {
-                                  if (eventKey.key === "Enter" || eventKey.key === " ") {
+                                  if (
+                                    eventKey.key === "Enter" ||
+                                    eventKey.key === " "
+                                  ) {
                                     eventKey.preventDefault();
                                     setSelectedEventId(event.id);
                                     setDrawerOpen(true);
                                   }
                                 }}
+                                role="button"
+                                style={{
+                                  transitionDelay: `${(groupIndex + index) * 40}ms`,
+                                }}
+                                tabIndex={0}
                               >
                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                   <div className="flex items-center gap-3">
@@ -1040,25 +1108,41 @@ export const KitchenDashboardClient = ({
                                         <p className="text-sm font-semibold">
                                           {event.title}
                                         </p>
-                                        <Badge className={cn("text-xs", operationalBadge.className)}>
+                                        <Badge
+                                          className={cn(
+                                            "text-xs",
+                                            operationalBadge.className
+                                          )}
+                                        >
                                           {operationalBadge.label}
                                         </Badge>
-                                        <Badge className="text-xs capitalize" variant={statusVariant}>
+                                        <Badge
+                                          className="text-xs capitalize"
+                                          variant={statusVariant}
+                                        >
                                           {event.status}
                                         </Badge>
                                         {event.soldOut && (
-                                          <Badge className="text-xs" variant="destructive">
+                                          <Badge
+                                            className="text-xs"
+                                            variant="destructive"
+                                          >
                                             Sold out
                                           </Badge>
                                         )}
                                         {event.limited && (
-                                          <Badge className="text-xs" variant="secondary">
+                                          <Badge
+                                            className="text-xs"
+                                            variant="secondary"
+                                          >
                                             Limited
                                           </Badge>
                                         )}
                                       </div>
                                       <p className="text-xs text-muted-foreground">
-                                        {event.eventType} · {event.venueName?.trim() || "Venue not set"}
+                                        {event.eventType} ·{" "}
+                                        {event.venueName?.trim() ||
+                                          "Venue not set"}
                                       </p>
                                     </div>
                                   </div>
@@ -1073,11 +1157,15 @@ export const KitchenDashboardClient = ({
                                     </span>
                                     <Button
                                       asChild
+                                      onClick={(eventClick) =>
+                                        eventClick.stopPropagation()
+                                      }
                                       size="sm"
                                       variant="ghost"
-                                      onClick={(eventClick) => eventClick.stopPropagation()}
                                     >
-                                      <Link href={`/events/${event.id}`}>Open</Link>
+                                      <Link href={`/events/${event.id}`}>
+                                        Open
+                                      </Link>
                                     </Button>
                                   </div>
                                 </div>
@@ -1101,7 +1189,9 @@ export const KitchenDashboardClient = ({
                         const operationalBadge =
                           operationalStatusConfig[event.operationalStatus];
                         const statusVariant =
-                          statusVariantMap[event.status as keyof typeof statusVariantMap] ?? "outline";
+                          statusVariantMap[
+                            event.status as keyof typeof statusVariantMap
+                          ] ?? "outline";
                         const countdownLabel = event.isLive
                           ? `Live ${formatDuration(now.getTime() - event.start.getTime())}`
                           : event.isUpcoming
@@ -1110,42 +1200,63 @@ export const KitchenDashboardClient = ({
 
                         return (
                           <div
-                            key={event.id}
                             className={cn(
                               "flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-background/70 px-4 py-3 transition-all hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                              mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+                              mounted
+                                ? "opacity-100 translate-y-0"
+                                : "opacity-0 translate-y-2"
                             )}
-                            style={{ transitionDelay: `${index * 35}ms` }}
-                            role="button"
-                            tabIndex={0}
+                            key={event.id}
                             onClick={() => {
                               setSelectedEventId(event.id);
                               setDrawerOpen(true);
                             }}
                             onKeyDown={(eventKey) => {
-                              if (eventKey.key === "Enter" || eventKey.key === " ") {
+                              if (
+                                eventKey.key === "Enter" ||
+                                eventKey.key === " "
+                              ) {
                                 eventKey.preventDefault();
                                 setSelectedEventId(event.id);
                                 setDrawerOpen(true);
                               }
                             }}
+                            role="button"
+                            style={{ transitionDelay: `${index * 35}ms` }}
+                            tabIndex={0}
                           >
                             <div className="min-w-[240px] flex-1">
                               <div className="flex flex-wrap items-center gap-2">
-                                <p className="text-sm font-semibold">{event.title}</p>
-                                <Badge className={cn("text-xs", operationalBadge.className)}>
+                                <p className="text-sm font-semibold">
+                                  {event.title}
+                                </p>
+                                <Badge
+                                  className={cn(
+                                    "text-xs",
+                                    operationalBadge.className
+                                  )}
+                                >
                                   {operationalBadge.label}
                                 </Badge>
-                                <Badge className="text-xs capitalize" variant={statusVariant}>
+                                <Badge
+                                  className="text-xs capitalize"
+                                  variant={statusVariant}
+                                >
                                   {event.status}
                                 </Badge>
                                 {event.soldOut && (
-                                  <Badge className="text-xs" variant="destructive">
+                                  <Badge
+                                    className="text-xs"
+                                    variant="destructive"
+                                  >
                                     Sold out
                                   </Badge>
                                 )}
                                 {event.limited && (
-                                  <Badge className="text-xs" variant="secondary">
+                                  <Badge
+                                    className="text-xs"
+                                    variant="secondary"
+                                  >
                                     Limited
                                   </Badge>
                                 )}
@@ -1172,9 +1283,11 @@ export const KitchenDashboardClient = ({
                               </span>
                               <Button
                                 asChild
+                                onClick={(eventClick) =>
+                                  eventClick.stopPropagation()
+                                }
                                 size="sm"
                                 variant="ghost"
-                                onClick={(eventClick) => eventClick.stopPropagation()}
                               >
                                 <Link href={`/events/${event.id}`}>Open</Link>
                               </Button>
@@ -1192,159 +1305,176 @@ export const KitchenDashboardClient = ({
       </div>
 
       {mounted && (
-        <Drawer open={drawerOpen} onOpenChange={setDrawerOpen} direction="right">
+        <Drawer
+          direction="right"
+          onOpenChange={setDrawerOpen}
+          open={drawerOpen}
+        >
           <DrawerContent className="w-[420px] sm:max-w-md">
             {selectedEvent ? (
-            <>
-              <DrawerHeader>
-                <DrawerTitle>{selectedEvent.title}</DrawerTitle>
-                <DrawerDescription>
-                  {selectedEvent.eventNumber
-                    ? `Event #${selectedEvent.eventNumber}`
-                    : "Event number not set"}
-                </DrawerDescription>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <Badge
-                    className="text-xs capitalize"
-                    variant={
-                      statusVariantMap[selectedEvent.status as keyof typeof statusVariantMap] ??
-                      "outline"
-                    }
-                  >
-                    {selectedEvent.status}
-                  </Badge>
-                  <Badge
-                    className={cn(
-                      "text-xs",
-                      operationalStatusConfig[selectedEvent.operationalStatus].className
+              <>
+                <DrawerHeader>
+                  <DrawerTitle>{selectedEvent.title}</DrawerTitle>
+                  <DrawerDescription>
+                    {selectedEvent.eventNumber
+                      ? `Event #${selectedEvent.eventNumber}`
+                      : "Event number not set"}
+                  </DrawerDescription>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <Badge
+                      className="text-xs capitalize"
+                      variant={
+                        statusVariantMap[
+                          selectedEvent.status as keyof typeof statusVariantMap
+                        ] ?? "outline"
+                      }
+                    >
+                      {selectedEvent.status}
+                    </Badge>
+                    <Badge
+                      className={cn(
+                        "text-xs",
+                        operationalStatusConfig[selectedEvent.operationalStatus]
+                          .className
+                      )}
+                    >
+                      {
+                        operationalStatusConfig[selectedEvent.operationalStatus]
+                          .label
+                      }
+                    </Badge>
+                    {selectedEvent.soldOut && (
+                      <Badge className="text-xs" variant="destructive">
+                        Sold out
+                      </Badge>
                     )}
-                  >
-                    {operationalStatusConfig[selectedEvent.operationalStatus].label}
-                  </Badge>
-                  {selectedEvent.soldOut && (
-                    <Badge className="text-xs" variant="destructive">
-                      Sold out
-                    </Badge>
-                  )}
-                  {selectedEvent.limited && (
-                    <Badge className="text-xs" variant="secondary">
-                      Limited
-                    </Badge>
-                  )}
-                </div>
-              </DrawerHeader>
-              <div className="space-y-4 px-4 pb-2">
-                <div className="grid gap-3 rounded-xl border bg-muted/30 p-4 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Service date</span>
-                    <span className="font-medium">
-                      {dateFormatter.format(selectedEvent.eventDate)}
-                    </span>
+                    {selectedEvent.limited && (
+                      <Badge className="text-xs" variant="secondary">
+                        Limited
+                      </Badge>
+                    )}
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Time</span>
-                    <span className="font-medium">All-day</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Location</span>
-                    <span className="font-medium">
-                      {selectedEvent.venueName?.trim() || "Venue not set"}
-                    </span>
-                  </div>
-                  {selectedEvent.venueAddress && (
+                </DrawerHeader>
+                <div className="space-y-4 px-4 pb-2">
+                  <div className="grid gap-3 rounded-xl border bg-muted/30 p-4 text-sm">
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Address</span>
+                      <span className="text-muted-foreground">
+                        Service date
+                      </span>
                       <span className="font-medium">
-                        {selectedEvent.venueAddress}
+                        {dateFormatter.format(selectedEvent.eventDate)}
                       </span>
                     </div>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Guests</span>
-                    {/* Capacity/RSVP fields are not available; guestCount is the only headcount signal. */}
-                    <span className="font-medium">{selectedEvent.guestCount}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Event type</span>
-                    <span className="font-medium capitalize">
-                      {selectedEvent.eventType}
-                    </span>
-                  </div>
-                </div>
-
-                {selectedEvent.displayTags.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-semibold">Tags</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedEvent.displayTags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Time</span>
+                      <span className="font-medium">All-day</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Location</span>
+                      <span className="font-medium">
+                        {selectedEvent.venueName?.trim() || "Venue not set"}
+                      </span>
+                    </div>
+                    {selectedEvent.venueAddress && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Address</span>
+                        <span className="font-medium">
+                          {selectedEvent.venueAddress}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Guests</span>
+                      {/* Capacity/RSVP fields are not available; guestCount is the only headcount signal. */}
+                      <span className="font-medium">
+                        {selectedEvent.guestCount}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Event type</span>
+                      <span className="font-medium capitalize">
+                        {selectedEvent.eventType}
+                      </span>
                     </div>
                   </div>
-                )}
 
-                {selectedEvent.notes && (
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-semibold">Notes</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedEvent.notes}
-                    </p>
-                  </div>
-                )}
-              </div>
-              <DrawerFooter>
-                <div className="grid gap-2">
-                  <Button asChild>
-                    <Link href={`/events/${selectedEvent.id}`}>
-                      Open event
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => handleCopyLink(selectedEvent.id)}
-                  >
-                    <ClipboardCopy className="mr-2 size-4" />
-                    Copy link
-                  </Button>
-                  <Button asChild variant="outline">
-                    <a
-                      href={buildCalendarUrl(selectedEvent)}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <CalendarPlus className="mr-2 size-4" />
-                      Add to calendar
-                    </a>
-                  </Button>
+                  {selectedEvent.displayTags.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold">Tags</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedEvent.displayTags.map((tag) => (
+                          <Badge
+                            className="text-xs"
+                            key={tag}
+                            variant="outline"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedEvent.notes && (
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold">Notes</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedEvent.notes}
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <DrawerClose asChild>
-                  <Button variant="ghost">Close</Button>
-                </DrawerClose>
-                {/* Organizer, pricing, ticketing, and RSVP details are omitted because
+                <DrawerFooter>
+                  <div className="grid gap-2">
+                    <Button asChild>
+                      <Link href={`/events/${selectedEvent.id}`}>
+                        Open event
+                      </Link>
+                    </Button>
+                    <Button
+                      onClick={() => handleCopyLink(selectedEvent.id)}
+                      variant="secondary"
+                    >
+                      <ClipboardCopy className="mr-2 size-4" />
+                      Copy link
+                    </Button>
+                    <Button asChild variant="outline">
+                      <a
+                        href={buildCalendarUrl(selectedEvent)}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        <CalendarPlus className="mr-2 size-4" />
+                        Add to calendar
+                      </a>
+                    </Button>
+                  </div>
+                  <DrawerClose asChild>
+                    <Button variant="ghost">Close</Button>
+                  </DrawerClose>
+                  {/* Organizer, pricing, ticketing, and RSVP details are omitted because
                     the current event schema does not expose those fields. */}
-              </DrawerFooter>
-            </>
-          ) : (
-            <div className="flex h-full items-center justify-center p-6 text-sm text-muted-foreground">
-              Select an event to see details.
-            </div>
-          )}
+                </DrawerFooter>
+              </>
+            ) : (
+              <div className="flex h-full items-center justify-center p-6 text-sm text-muted-foreground">
+                Select an event to see details.
+              </div>
+            )}
           </DrawerContent>
         </Drawer>
       )}
 
       <div className="fixed bottom-4 left-4 right-4 z-40 flex items-center justify-between gap-3 rounded-2xl border bg-background/80 p-3 shadow-lg backdrop-blur md:hidden">
         {mounted ? (
-          <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
+          <Sheet onOpenChange={setFilterSheetOpen} open={filterSheetOpen}>
             <SheetTrigger asChild>
               <Button size="sm" variant="outline">
                 <Filter className="mr-2 size-4" />
                 Filters
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[340px]">
+            <SheetContent className="w-[340px]" side="right">
               <SheetHeader>
                 <SheetTitle>Filters</SheetTitle>
               </SheetHeader>
@@ -1354,19 +1484,19 @@ export const KitchenDashboardClient = ({
             </SheetContent>
           </Sheet>
         ) : (
-          <Button size="sm" variant="outline" disabled>
+          <Button disabled size="sm" variant="outline">
             <Filter className="mr-2 size-4" />
             Filters
           </Button>
         )}
         <ToggleGroup
-          type="single"
-          value={viewMode}
           onValueChange={(value) =>
             setViewMode((value as ViewMode) || "timeline")
           }
-          variant="outline"
           size="sm"
+          type="single"
+          value={viewMode}
+          variant="outline"
         >
           <ToggleGroupItem value="timeline">
             <LayoutGrid className="mr-1 size-3.5" />

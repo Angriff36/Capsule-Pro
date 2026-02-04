@@ -134,19 +134,30 @@ export async function extractPdfText(
   const allLines: string[] = [];
 
   // Debug logging to trace data type
-  console.log('[extractPdfText] Input type:', pdfBuffer.constructor.name);
-  console.log('[extractPdfText] Input length:', 'length' in pdfBuffer ? pdfBuffer.length : pdfBuffer.byteLength);
+  console.log("[extractPdfText] Input type:", pdfBuffer.constructor.name);
+  console.log(
+    "[extractPdfText] Input length:",
+    "length" in pdfBuffer ? pdfBuffer.length : pdfBuffer.byteLength
+  );
 
   // Ensure we have a Uint8Array (pdfjs-dist requires this, not Buffer)
   // Note: The document-router should have already created a copy to avoid detached ArrayBuffer issues
   let data: Uint8Array;
   const inputType = pdfBuffer.constructor.name;
 
-  if (inputType === 'Buffer') {
-    console.log('[extractPdfText] Converting Buffer to Uint8Array');
-    const buffer = pdfBuffer as unknown as Buffer & { buffer: ArrayBufferLike; byteOffset: number; byteLength: number };
+  if (inputType === "Buffer") {
+    console.log("[extractPdfText] Converting Buffer to Uint8Array");
+    const buffer = pdfBuffer as unknown as Buffer & {
+      buffer: ArrayBufferLike;
+      byteOffset: number;
+      byteLength: number;
+    };
     // Create a proper copy, not a view, to avoid detached ArrayBuffer issues
-    const tempView = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+    const tempView = new Uint8Array(
+      buffer.buffer,
+      buffer.byteOffset,
+      buffer.byteLength
+    );
     data = new Uint8Array(tempView.length);
     data.set(tempView);
   } else if (pdfBuffer instanceof Uint8Array) {
@@ -155,16 +166,43 @@ export async function extractPdfText(
     throw new Error(`Unsupported input type: ${inputType}`);
   }
 
-  console.log('[extractPdfText] Final data type:', data.constructor.name, 'length:', data.length);
+  console.log(
+    "[extractPdfText] Final data type:",
+    data.constructor.name,
+    "length:",
+    data.length
+  );
 
   try {
     // Use pdf2json - pure JavaScript PDF parser, no worker issues
     // Handle both named and default exports for different module formats
-    const pdf2jsonModule = await import("pdf2json");
-    const PDFParserClass = pdf2jsonModule.PDFParser || pdf2jsonModule.default;
+    const pdf2jsonModule = (await import("pdf2json")) as {
+      PDFParser?: unknown;
+      default?: unknown;
+    };
+    const defaultExport = pdf2jsonModule.default;
+
+    const isRecord = (value: unknown): value is Record<string, unknown> =>
+      typeof value === "object" && value !== null;
+    const isConstructor = (
+      value: unknown
+    ): value is new (
+      ...args: unknown[]
+    ) => unknown => typeof value === "function";
+
+    const PDFParserClass =
+      (isConstructor(pdf2jsonModule.PDFParser)
+        ? pdf2jsonModule.PDFParser
+        : undefined) ??
+      (isRecord(defaultExport) && isConstructor(defaultExport.PDFParser)
+        ? defaultExport.PDFParser
+        : undefined) ??
+      (isConstructor(defaultExport) ? defaultExport : undefined);
 
     if (!PDFParserClass) {
-      throw new Error("Failed to load PDFParser: export not found in pdf2json module");
+      throw new Error(
+        "Failed to load PDFParser: export not found in pdf2json module"
+      );
     }
 
     // pdf2json handles Buffer directly
@@ -177,22 +215,28 @@ export async function extractPdfText(
       // Collect all data
       let pdfData: any = null;
 
-      pdfParser.on("pdfParser_dataError", (errData: { parserError: Error } | Error) => {
-        const errMsg = errData instanceof Error ? errData.message : JSON.stringify(errData);
-        const errStack = errData instanceof Error ? errData.stack : undefined;
-        console.error('[extractPdfText] PDFParser error:', errData);
-        console.error('[extractPdfText] Error message:', errMsg);
-        console.error('[extractPdfText] Error stack:', errStack);
-        errors.push(`Failed to load PDF: ${errMsg}`);
-        if (errStack) {
-          errors.push(`Stack: ${errStack}`);
+      pdfParser.on(
+        "pdfParser_dataError",
+        (errData: { parserError: Error } | Error) => {
+          const errMsg =
+            errData instanceof Error
+              ? errData.message
+              : JSON.stringify(errData);
+          const errStack = errData instanceof Error ? errData.stack : undefined;
+          console.error("[extractPdfText] PDFParser error:", errData);
+          console.error("[extractPdfText] Error message:", errMsg);
+          console.error("[extractPdfText] Error stack:", errStack);
+          errors.push(`Failed to load PDF: ${errMsg}`);
+          if (errStack) {
+            errors.push(`Stack: ${errStack}`);
+          }
+          resolve({
+            lines: [],
+            pageCount: 0,
+            errors,
+          });
         }
-        resolve({
-          lines: [],
-          pageCount: 0,
-          errors,
-        });
-      });
+      );
 
       pdfParser.on("pdfParser_dataReady", (data: any) => {
         pdfData = data;
@@ -245,7 +289,9 @@ export async function extractPdfText(
           // Clean up
           pdfParser.destroy();
         } catch (e) {
-          errors.push(`Failed to process PDF data: ${e instanceof Error ? e.message : "Unknown error"}`);
+          errors.push(
+            `Failed to process PDF data: ${e instanceof Error ? e.message : "Unknown error"}`
+          );
           resolve({
             lines: [],
             pageCount: 0,

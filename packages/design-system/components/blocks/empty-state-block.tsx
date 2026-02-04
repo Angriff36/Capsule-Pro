@@ -1,4 +1,3 @@
-import * as React from "react";
 import { FileText, UploadCloud } from "lucide-react";
 
 import { Button } from "../ui/button";
@@ -35,7 +34,7 @@ export function EmptyStateBlock() {
           <EmptyContent>
             <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-center">
               <Button size="sm">Create invoice</Button>
-              <Button variant="outline" size="sm">
+              <Button size="sm" variant="outline">
                 <UploadCloud />
                 Import CSV
               </Button>

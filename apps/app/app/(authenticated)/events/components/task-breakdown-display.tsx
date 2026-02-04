@@ -133,10 +133,7 @@ function TaskCard({ task, section, onComplete, onAssign }: TaskCardProps) {
     return null;
   };
 
-  const hasDetails =
-    task.ingredients ||
-    task.steps ||
-    task.historicalContext;
+  const hasDetails = task.ingredients || task.steps || task.historicalContext;
 
   return (
     <Card
@@ -216,7 +213,9 @@ function TaskCard({ task, section, onComplete, onAssign }: TaskCardProps) {
                       </p>
                       <ul className="list-inside list-disc space-y-1 text-sm">
                         {task.ingredients.map((ing, i) => (
-                          <li key={i} className="text-muted-foreground">{ing}</li>
+                          <li className="text-muted-foreground" key={i}>
+                            {ing}
+                          </li>
                         ))}
                       </ul>
                     </div>
@@ -228,7 +227,9 @@ function TaskCard({ task, section, onComplete, onAssign }: TaskCardProps) {
                       </p>
                       <ol className="list-inside list-decimal space-y-1 text-sm">
                         {task.steps.map((step, i) => (
-                          <li key={i} className="text-muted-foreground">{step}</li>
+                          <li className="text-muted-foreground" key={i}>
+                            {step}
+                          </li>
                         ))}
                       </ol>
                     </div>
@@ -238,8 +239,12 @@ function TaskCard({ task, section, onComplete, onAssign }: TaskCardProps) {
                       <div className="flex items-start gap-2">
                         <SparklesIcon className="mt-0.5 size-4 text-purple-500 flex-shrink-0" />
                         <div>
-                          <p className="mb-1 font-medium text-xs">Historical Context</p>
-                          <p className="text-muted-foreground text-sm">{task.historicalContext}</p>
+                          <p className="mb-1 font-medium text-xs">
+                            Historical Context
+                          </p>
+                          <p className="text-muted-foreground text-sm">
+                            {task.historicalContext}
+                          </p>
                         </div>
                       </div>
                     </div>

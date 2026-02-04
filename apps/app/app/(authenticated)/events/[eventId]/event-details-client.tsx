@@ -1,10 +1,6 @@
 "use client";
 
 import type { Event } from "@repo/database";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -39,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -46,7 +43,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@repo/design-system/components/ui/sheet";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -77,6 +73,10 @@ import {
   UsersIcon,
   WalletIcon,
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { useSuggestions } from "../../kitchen/lib/use-suggestions";
 import { updateEvent } from "../actions";
 import {
@@ -96,29 +96,29 @@ import {
   saveTaskBreakdown,
   type TaskBreakdown,
 } from "../actions/task-breakdown";
-import { EventEditorModal } from "../event-editor-modal";
 import { GenerateEventSummaryModal } from "../components/event-summary-display";
-import { GenerateTaskBreakdownModal } from "../components/task-breakdown-display";
 import { GuestManagement } from "../components/guest-management";
-import type { PrepTaskSummaryClient } from "./prep-task-contract";
+import { GenerateTaskBreakdownModal } from "../components/task-breakdown-display";
+import { EventEditorModal } from "../event-editor-modal";
+import {
+  type AvailableDishOption,
+  BudgetSection,
+  DishVariantDialog,
+  type EventBudgetForDisplay,
+  ExecutiveSummarySection,
+  MenuDishesSection,
+  MissingFieldsBanner,
+  PrepTasksSection,
+  SuggestionsSection,
+  TaskBreakdownSection,
+} from "./event-details-sections";
 import type {
   EventDishSummary,
   InventoryCoverageItem,
   RecipeDetailSummary,
   RelatedEventSummary,
 } from "./event-details-types";
-import {
-  type AvailableDishOption,
-  type EventBudgetForDisplay,
-  DishVariantDialog,
-  BudgetSection,
-  ExecutiveSummarySection,
-  MissingFieldsBanner,
-  MenuDishesSection,
-  PrepTasksSection,
-  SuggestionsSection,
-  TaskBreakdownSection,
-} from "./event-details-sections";
+import type { PrepTaskSummaryClient } from "./prep-task-contract";
 
 const statusVariantMap = {
   draft: "outline",
@@ -187,7 +187,15 @@ const startOfDay = (date: Date) =>
   new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
 const endOfDay = (date: Date) =>
-  new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
+  new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    23,
+    59,
+    59,
+    999
+  );
 
 const addDays = (date: Date, days: number) =>
   new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
@@ -239,7 +247,8 @@ const scaleIngredients = (
   const servingsMultiplier = dishServings / Math.max(1, yieldQuantity);
   return ingredients.map((ingredient) => ({
     ...ingredient,
-    scaledQuantity: Math.round(ingredient.quantity * servingsMultiplier * 100) / 100,
+    scaledQuantity:
+      Math.round(ingredient.quantity * servingsMultiplier * 100) / 100,
   }));
 };
 
@@ -278,11 +287,15 @@ export function EventDetailsClient({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState("");
 
-  const [summary, setSummary] = useState<GeneratedEventSummary | null | undefined>(undefined);
+  const [summary, setSummary] = useState<
+    GeneratedEventSummary | null | undefined
+  >(undefined);
   const [isLoadingSummary, setIsLoadingSummary] = useState(true);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
 
-  const [availableDishes, setAvailableDishes] = useState<AvailableDishOption[]>([]);
+  const [availableDishes, setAvailableDishes] = useState<AvailableDishOption[]>(
+    []
+  );
   const [isLoadingDishes, setIsLoadingDishes] = useState(false);
   const [showAddDishDialog, setShowAddDishDialog] = useState(false);
   const [selectedDishIdForAdd, setSelectedDishIdForAdd] = useState("");
@@ -312,7 +325,9 @@ export function EventDetailsClient({
   const [selectedFormat, setSelectedFormat] = useState("all");
   const [selectedPrice, setSelectedPrice] = useState("all");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedAccessibility, setSelectedAccessibility] = useState<string[]>([]);
+  const [selectedAccessibility, setSelectedAccessibility] = useState<string[]>(
+    []
+  );
   const [sortBy, setSortBy] = useState<SortOption>("relevance");
 
   const missingFields = (event.tags ?? [])
@@ -323,7 +338,7 @@ export function EventDetailsClient({
   useEffect(() => {
     const interval = window.setInterval(() => {
       setNow(new Date());
-    }, 30000);
+    }, 30_000);
     return () => window.clearInterval(interval);
   }, []);
 
@@ -408,14 +423,11 @@ export function EventDetailsClient({
   const soldOut = capacity > 0 && rsvpCount >= capacity;
   const limited = capacity > 0 && !soldOut && rsvpCount / capacity >= 0.85;
 
-  const eventStatusLabel = isLive
-    ? "Live"
-    : isPast
-      ? "Past"
-      : "Upcoming";
+  const eventStatusLabel = isLive ? "Live" : isPast ? "Past" : "Upcoming";
 
   const eventStatusVariant =
-    statusVariantMap[event.status as keyof typeof statusVariantMap] ?? "outline";
+    statusVariantMap[event.status as keyof typeof statusVariantMap] ??
+    "outline";
 
   const timeUntilStart = eventStart.getTime() - now.getTime();
   const timeSinceStart = now.getTime() - eventStart.getTime();
@@ -440,12 +452,18 @@ export function EventDetailsClient({
       ?.presentationImageUrl ||
     null;
 
-  const displayedTags = (event.tags ?? []).filter((tag) => !tag.startsWith("needs:"));
+  const displayedTags = (event.tags ?? []).filter(
+    (tag) => !tag.startsWith("needs:")
+  );
 
   const dishRows = eventDishes.map((dish) => {
     const recipe = dish.recipeId ? recipeById.get(dish.recipeId) : null;
     const scaledIngredients = recipe
-      ? scaleIngredients(recipe.ingredients, dish.quantityServings, recipe.yieldQuantity)
+      ? scaleIngredients(
+          recipe.ingredients,
+          dish.quantityServings,
+          recipe.yieldQuantity
+        )
       : [];
     return { dish, recipe, scaledIngredients };
   });
@@ -554,16 +572,22 @@ export function EventDetailsClient({
     return counts;
   }, [initialPrepTasks]);
 
-  const openRecipeDrawer = (recipeId: string, dishId: string, mode: DrawerMode) => {
+  const openRecipeDrawer = (
+    recipeId: string,
+    dishId: string,
+    mode: DrawerMode
+  ) => {
     setSelectedRecipeId(recipeId);
     setSelectedDishId(dishId);
     setDrawerMode(mode);
     setDrawerOpen(true);
   };
 
-  const selectedRecipe = selectedRecipeId ? recipeById.get(selectedRecipeId) ?? null : null;
+  const selectedRecipe = selectedRecipeId
+    ? (recipeById.get(selectedRecipeId) ?? null)
+    : null;
   const selectedDish = selectedDishId
-    ? eventDishes.find((dish) => dish.dishId === selectedDishId) ?? null
+    ? (eventDishes.find((dish) => dish.dishId === selectedDishId) ?? null)
     : null;
   const selectedScaledIngredients =
     selectedRecipe && selectedDish
@@ -604,7 +628,9 @@ export function EventDetailsClient({
 
   const buildCalendarUrl = () => {
     const start = calendarDateFormatter.format(eventStart).replace(/-/g, "");
-    const end = calendarDateFormatter.format(addDays(eventStart, 1)).replace(/-/g, "");
+    const end = calendarDateFormatter
+      .format(addDays(eventStart, 1))
+      .replace(/-/g, "");
     const title = encodeURIComponent(event.title);
     const details = encodeURIComponent(
       [
@@ -694,14 +720,19 @@ export function EventDetailsClient({
         }
       }, 1500);
       try {
-        const result = await generateTaskBreakdown({ eventId: event.id, customInstructions });
+        const result = await generateTaskBreakdown({
+          eventId: event.id,
+          customInstructions,
+        });
         clearInterval(interval);
         setGenerationProgress("");
         setBreakdown(result);
         setShowBreakdown(true);
         router.refresh();
       } catch {
-        setGenerationProgress("Failed to generate breakdown. Please try again.");
+        setGenerationProgress(
+          "Failed to generate breakdown. Please try again."
+        );
       } finally {
         clearInterval(interval);
         setIsGenerating(false);
@@ -722,12 +753,13 @@ export function EventDetailsClient({
     }
   }, [breakdown, event.id, router]);
 
-  const handleGenerateSummary = useCallback(async (): Promise<GeneratedEventSummary> => {
-    const result = await generateEventSummary(event.id);
-    setSummary(result);
-    router.refresh();
-    return result;
-  }, [event.id, router]);
+  const handleGenerateSummary =
+    useCallback(async (): Promise<GeneratedEventSummary> => {
+      const result = await generateEventSummary(event.id);
+      setSummary(result);
+      router.refresh();
+      return result;
+    }, [event.id, router]);
 
   const handleDeleteSummary = useCallback(async () => {
     if (!summary?.id) {
@@ -744,7 +776,8 @@ export function EventDetailsClient({
         toast.success("Event updated");
         router.refresh();
       } catch (e) {
-        const message = e instanceof Error ? e.message : "Failed to update event";
+        const message =
+          e instanceof Error ? e.message : "Failed to update event";
         toast.error(message);
         throw e;
       }
@@ -797,7 +830,11 @@ export function EventDetailsClient({
     if (!variantLinkId) {
       return;
     }
-    const result = await createDishVariantForEvent(event.id, variantLinkId, variantName);
+    const result = await createDishVariantForEvent(
+      event.id,
+      variantLinkId,
+      variantName
+    );
     if (result.success) {
       toast.success("Variant created");
       setShowVariantDialog(false);
@@ -834,7 +871,8 @@ export function EventDetailsClient({
 
   const sortedPrepTasks = useMemo(() => {
     return [...initialPrepTasks].sort(
-      (a, b) => new Date(a.dueByDate).getTime() - new Date(b.dueByDate).getTime()
+      (a, b) =>
+        new Date(a.dueByDate).getTime() - new Date(b.dueByDate).getTime()
     );
   }, [initialPrepTasks]);
 
@@ -911,10 +949,15 @@ export function EventDetailsClient({
     return Array.from(options).sort();
   }, [relatedEventsWithCounts]);
 
-  const filterStart = selectedDateStart ? new Date(`${selectedDateStart}T00:00:00`) : null;
-  const filterEnd = selectedDateEnd ? new Date(`${selectedDateEnd}T00:00:00`) : null;
+  const filterStart = selectedDateStart
+    ? new Date(`${selectedDateStart}T00:00:00`)
+    : null;
+  const filterEnd = selectedDateEnd
+    ? new Date(`${selectedDateEnd}T00:00:00`)
+    : null;
 
-  const dateRangeInvalid = filterStart && filterEnd ? filterEnd < filterStart : false;
+  const dateRangeInvalid =
+    filterStart && filterEnd ? filterEnd < filterStart : false;
 
   const filteredRelatedEvents = useMemo(() => {
     if (dateRangeInvalid) {
@@ -950,15 +993,17 @@ export function EventDetailsClient({
       if (selectedFormat !== "all" && related.eventFormat !== selectedFormat) {
         return false;
       }
-      if (selectedPrice === "free") {
-        if (related.ticketPrice === null || related.ticketPrice > 0) {
-          return false;
-        }
+      if (
+        selectedPrice === "free" &&
+        (related.ticketPrice === null || related.ticketPrice > 0)
+      ) {
+        return false;
       }
-      if (selectedPrice === "paid") {
-        if (related.ticketPrice === null || related.ticketPrice <= 0) {
-          return false;
-        }
+      if (
+        selectedPrice === "paid" &&
+        (related.ticketPrice === null || related.ticketPrice <= 0)
+      ) {
+        return false;
       }
       if (selectedTags.length > 0) {
         const hasTag = selectedTags.some((tag) => related.tags.includes(tag));
@@ -978,11 +1023,13 @@ export function EventDetailsClient({
       const relatedStart = startOfDay(new Date(related.eventDate));
       const relatedEnd = endOfDay(new Date(related.eventDate));
       const isRelatedLive = now >= relatedStart && now <= relatedEnd;
-      const isRelatedStartingSoon = relatedStart > now && relatedStart <= addDays(now, 7);
+      const isRelatedStartingSoon =
+        relatedStart > now && relatedStart <= addDays(now, 7);
       const isRelatedSoldOut =
         related.guestCount > 0 && related.rsvpCount >= related.guestCount;
       const isRelatedHighCapacity =
-        highCapacityThreshold > 0 && related.guestCount >= highCapacityThreshold;
+        highCapacityThreshold > 0 &&
+        related.guestCount >= highCapacityThreshold;
 
       if (quickFilters.includes("live-now") && !isRelatedLive) {
         return false;
@@ -996,10 +1043,16 @@ export function EventDetailsClient({
       if (quickFilters.includes("high-capacity") && !isRelatedHighCapacity) {
         return false;
       }
-      if (quickFilters.includes("free") && !(related.ticketPrice !== null && related.ticketPrice <= 0)) {
+      if (
+        quickFilters.includes("free") &&
+        !(related.ticketPrice !== null && related.ticketPrice <= 0)
+      ) {
         return false;
       }
-      if (quickFilters.includes("paid") && !(related.ticketPrice !== null && related.ticketPrice > 0)) {
+      if (
+        quickFilters.includes("paid") &&
+        !(related.ticketPrice !== null && related.ticketPrice > 0)
+      ) {
         return false;
       }
 
@@ -1026,7 +1079,8 @@ export function EventDetailsClient({
 
     if (sortBy === "soonest") {
       return data.sort(
-        (a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
+        (a, b) =>
+          new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
       );
     }
 
@@ -1066,7 +1120,10 @@ export function EventDetailsClient({
 
   const thisWeekEvents = sortedRelatedEvents.filter((related) => {
     const relatedDate = new Date(related.eventDate);
-    return relatedDate >= startOfDay(now) && relatedDate <= addDays(startOfDay(now), 7);
+    return (
+      relatedDate >= startOfDay(now) &&
+      relatedDate <= addDays(startOfDay(now), 7)
+    );
   });
 
   const todayKey = calendarDateFormatter.format(now);
@@ -1092,7 +1149,8 @@ export function EventDetailsClient({
         key,
         date: new Date(items[0]?.eventDate ?? new Date()),
         items: items.sort(
-          (a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
+          (a, b) =>
+            new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
         ),
       }))
       .sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -1167,8 +1225,7 @@ export function EventDetailsClient({
     breakdown.setup.forEach((task) => pushTask("Setup", task));
     breakdown.cleanup.forEach((task) => pushTask("Cleanup", task));
 
-    const escapeValue = (value: string) =>
-      `"${value.replace(/"/g, '""')}"`;
+    const escapeValue = (value: string) => `"${value.replace(/"/g, '""')}"`;
     const csv = rows
       .map((row) => row.map((value) => escapeValue(value ?? "")).join(","))
       .join("\n");
@@ -1184,7 +1241,9 @@ export function EventDetailsClient({
 
   const toggleQuickFilter = (filter: QuickFilter) => {
     setQuickFilters((prev) =>
-      prev.includes(filter) ? prev.filter((value) => value !== filter) : [...prev, filter]
+      prev.includes(filter)
+        ? prev.filter((value) => value !== filter)
+        : [...prev, filter]
     );
   };
 
@@ -1194,23 +1253,25 @@ export function EventDetailsClient({
         <Label htmlFor="explorer-start">Start date</Label>
         <Input
           id="explorer-start"
+          onChange={(eventInput) =>
+            setSelectedDateStart(eventInput.target.value)
+          }
           type="date"
           value={selectedDateStart}
-          onChange={(eventInput) => setSelectedDateStart(eventInput.target.value)}
         />
       </div>
       <div className="space-y-2">
         <Label htmlFor="explorer-end">End date</Label>
         <Input
           id="explorer-end"
+          onChange={(eventInput) => setSelectedDateEnd(eventInput.target.value)}
           type="date"
           value={selectedDateEnd}
-          onChange={(eventInput) => setSelectedDateEnd(eventInput.target.value)}
         />
       </div>
       <div className="space-y-2">
         <Label>Location</Label>
-        <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+        <Select onValueChange={setSelectedLocation} value={selectedLocation}>
           <SelectTrigger>
             <SelectValue placeholder="All locations" />
           </SelectTrigger>
@@ -1229,7 +1290,7 @@ export function EventDetailsClient({
       </div>
       <div className="space-y-2">
         <Label>Organizer</Label>
-        <Select value={selectedOrganizer} onValueChange={setSelectedOrganizer}>
+        <Select onValueChange={setSelectedOrganizer} value={selectedOrganizer}>
           <SelectTrigger>
             <SelectValue placeholder="All organizers" />
           </SelectTrigger>
@@ -1248,7 +1309,7 @@ export function EventDetailsClient({
       </div>
       <div className="space-y-2">
         <Label>Format</Label>
-        <Select value={selectedFormat} onValueChange={setSelectedFormat}>
+        <Select onValueChange={setSelectedFormat} value={selectedFormat}>
           <SelectTrigger>
             <SelectValue placeholder="All formats" />
           </SelectTrigger>
@@ -1262,7 +1323,7 @@ export function EventDetailsClient({
       </div>
       <div className="space-y-2">
         <Label>Price</Label>
-        <Select value={selectedPrice} onValueChange={setSelectedPrice}>
+        <Select onValueChange={setSelectedPrice} value={selectedPrice}>
           <SelectTrigger>
             <SelectValue placeholder="All prices" />
           </SelectTrigger>
@@ -1286,11 +1347,13 @@ export function EventDetailsClient({
           </PopoverTrigger>
           <PopoverContent align="start" className="w-64 p-3">
             {tagOptions.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No tags available.</p>
+              <p className="text-sm text-muted-foreground">
+                No tags available.
+              </p>
             ) : (
               <div className="space-y-2">
                 {tagOptions.map((tag) => (
-                  <label key={tag} className="flex items-center gap-2 text-sm">
+                  <label className="flex items-center gap-2 text-sm" key={tag}>
                     <Checkbox
                       checked={selectedTags.includes(tag)}
                       onCheckedChange={() =>
@@ -1328,7 +1391,10 @@ export function EventDetailsClient({
             ) : (
               <div className="space-y-2">
                 {accessibilityOptions.map((option) => (
-                  <label key={option} className="flex items-center gap-2 text-sm">
+                  <label
+                    className="flex items-center gap-2 text-sm"
+                    key={option}
+                  >
                     <Checkbox
                       checked={selectedAccessibility.includes(option)}
                       onCheckedChange={() =>
@@ -1380,291 +1446,317 @@ export function EventDetailsClient({
             </p>
           </div>
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-          <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.6)]">
-            <CardHeader className="space-y-4">
-              <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.18em] text-slate-300">
-                <Badge
-                  className={cn(
-                    "border text-[11px]",
-                    isLive
-                      ? "border-emerald-400/40 bg-emerald-500/20 text-emerald-200"
-                      : isPast
-                        ? "border-slate-500/40 bg-slate-500/10 text-slate-200"
-                        : "border-sky-400/40 bg-sky-500/10 text-sky-200"
-                  )}
-                  variant="outline"
-                >
-                  {eventStatusLabel}
-                </Badge>
-                {soldOut && (
+            <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.6)]">
+              <CardHeader className="space-y-4">
+                <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.18em] text-slate-300">
                   <Badge
-                    className="border-rose-500/40 bg-rose-500/20 text-rose-100"
+                    className={cn(
+                      "border text-[11px]",
+                      isLive
+                        ? "border-emerald-400/40 bg-emerald-500/20 text-emerald-200"
+                        : isPast
+                          ? "border-slate-500/40 bg-slate-500/10 text-slate-200"
+                          : "border-sky-400/40 bg-sky-500/10 text-sky-200"
+                    )}
                     variant="outline"
                   >
-                    Sold out
+                    {eventStatusLabel}
                   </Badge>
-                )}
-                {!soldOut && limited && (
-                  <Badge
-                    className="border-amber-400/40 bg-amber-500/20 text-amber-100"
-                    variant="outline"
-                  >
-                    Limited
-                  </Badge>
-                )}
-                <Badge className="capitalize" variant={eventStatusVariant}>
-                  {event.status}
-                </Badge>
-                {event.eventFormat && (
-                  <Badge
-                    className="border-slate-600/60 bg-slate-950/30 text-slate-200"
-                    variant="outline"
-                  >
-                    {formatEventFormat(event.eventFormat)}
-                  </Badge>
-                )}
-                {event.ticketTier && (
-                  <Badge
-                    className="border-slate-600/60 bg-slate-950/30 text-slate-200"
-                    variant="outline"
-                  >
-                    {event.ticketTier}
-                  </Badge>
-                )}
-              </div>
-              <div className="space-y-2">
-                <CardTitle className="text-3xl font-semibold tracking-tight">
-                  {event.title}
-                </CardTitle>
-                <CardDescription className="text-slate-300">
-                  {event.eventType}{" "}
-                  <span className="text-slate-500">•</span>{" "}
-                  {event.venueName ?? "Venue TBD"}
-                </CardDescription>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                {displayedTags.length > 0 ? (
-                  displayedTags.map((tag) => (
+                  {soldOut && (
                     <Badge
-                      className="border-slate-700/70 bg-slate-950/40 text-slate-200"
-                      key={tag}
+                      className="border-rose-500/40 bg-rose-500/20 text-rose-100"
                       variant="outline"
                     >
-                      {tag}
+                      Sold out
                     </Badge>
-                  ))
-                ) : (
-                  <span className="text-xs text-slate-400">No tags yet</span>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
-                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
-                    <CalendarDaysIcon className="size-3" />
-                    Date & Time
-                  </div>
-                  <div className="mt-2 text-lg font-semibold">
-                    {dateFormatter.format(eventDate)}
-                  </div>
-                  {/* Event schema stores date without time-of-day. */}
-                  <div className="text-sm text-slate-300">
-                    Time not set • {timeZoneLabel}
-                  </div>
-                  <div className="mt-1 text-xs text-slate-400">{timeStatusLabel}</div>
+                  )}
+                  {!soldOut && limited && (
+                    <Badge
+                      className="border-amber-400/40 bg-amber-500/20 text-amber-100"
+                      variant="outline"
+                    >
+                      Limited
+                    </Badge>
+                  )}
+                  <Badge className="capitalize" variant={eventStatusVariant}>
+                    {event.status}
+                  </Badge>
+                  {event.eventFormat && (
+                    <Badge
+                      className="border-slate-600/60 bg-slate-950/30 text-slate-200"
+                      variant="outline"
+                    >
+                      {formatEventFormat(event.eventFormat)}
+                    </Badge>
+                  )}
+                  {event.ticketTier && (
+                    <Badge
+                      className="border-slate-600/60 bg-slate-950/30 text-slate-200"
+                      variant="outline"
+                    >
+                      {event.ticketTier}
+                    </Badge>
+                  )}
                 </div>
-                <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
-                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
-                    <MapPinIcon className="size-3" />
-                    Organizer / Venue
-                  </div>
-                  <div className="mt-2 text-sm font-semibold">
-                    {event.venueName ?? "Organizer not set"}
-                  </div>
-                  <div className="text-xs text-slate-300">
-                    {event.venueAddress ?? "Venue address not set"}
-                  </div>
-                  <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-1 text-[11px] text-emerald-200">
-                    <ShieldCheckIcon className="size-3" />
-                    Verified venue
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
-                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
-                    <WalletIcon className="size-3" />
-                    Pricing & Format
-                  </div>
-                  <div className="mt-2 text-lg font-semibold">{ticketPriceLabel}</div>
-                  <div className="text-xs text-slate-300">
-                    {event.ticketTier ?? "Ticket tier not set"}
-                  </div>
-                  <div className="text-xs text-slate-400">
-                    {formatEventFormat(event.eventFormat)}
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
-                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
-                    <UsersIcon className="size-3" />
-                    Capacity & RSVPs
-                  </div>
-                  <div className="mt-2 text-lg font-semibold">{rsvpCount} RSVPs</div>
-                  <div className="text-xs text-slate-300">
-                    {capacity > 0 ? `${capacity} total capacity` : "Capacity not set"}
-                  </div>
-                  <div className="text-xs text-slate-400">
-                    {soldOut
-                      ? "Sold out"
-                      : limited
-                        ? "Limited seats"
-                        : capacity > 0
-                          ? `${Math.max(availability, 0)} seats available`
-                          : "Availability not set"}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  className="bg-emerald-400 text-slate-950 hover:bg-emerald-300"
-                  disabled={soldOut}
-                  onClick={() => setQuickRsvpOpen(true)}
-                >
-                  <PartyPopperIcon className="mr-2 size-4" />
-                  {soldOut ? "Sold out" : "RSVP / Join"}
-                </Button>
-                <Button
-                  disabled={!saveReady}
-                  onClick={handleToggleSave}
-                  variant="outline"
-                >
-                  <HeartIcon className={cn("mr-2 size-4", isSaved && "fill-current")} />
-                  {isSaved ? "Saved" : "Save"}
-                </Button>
-                <Button onClick={handleShare} variant="outline">
-                  <LinkIcon className="mr-2 size-4" />
-                  Share
-                </Button>
-                <Button asChild variant="ghost">
-                  <a href={buildCalendarUrl()} rel="noreferrer" target="_blank">
-                    <CalendarPlusIcon className="mr-2 size-4" />
-                    Add to calendar
-                  </a>
-                </Button>
-                <Button onClick={handleInviteTeam} variant="ghost">
-                  <UsersIcon className="mr-2 size-4" />
-                  Invite team
-                </Button>
-                <Button asChild variant="ghost">
-                  <Link href="/crm/venues">
-                    <MapPinIcon className="mr-2 size-4" />
-                    View organizer
-                  </Link>
-                </Button>
-                <Button onClick={() => setShowEditEvent(true)} variant="ghost">
-                  <SparklesIcon className="mr-2 size-4" />
-                  Edit details
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="space-y-6">
-            <div className="relative overflow-hidden rounded-3xl border border-slate-800/60 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900">
-              {featuredMediaUrl ? (
-                <img
-                  alt={event.title}
-                  className="h-72 w-full object-cover"
-                  loading="lazy"
-                  src={featuredMediaUrl}
-                />
-              ) : (
-                <div className="flex h-72 flex-col items-center justify-center gap-2 text-slate-400">
-                  <SparklesIcon className="size-10 text-slate-500" />
-                  <p className="text-sm">Featured media not set</p>
-                </div>
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-5">
-                <p className="text-[11px] uppercase tracking-[0.25em] text-slate-300">
-                  Featured media
-                </p>
-                <p className="mt-1 text-lg font-semibold">{event.eventType}</p>
-                <p className="text-xs text-slate-300">
-                  {event.venueName ?? "Venue TBD"} • {shortDateFormatter.format(eventDate)}
-                </p>
-              </div>
-            </div>
-
-            <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50">
-              <CardHeader className="space-y-1">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <ActivityIcon className="size-5 text-emerald-400" />
-                  Operations snapshot
-                </CardTitle>
-                <CardDescription className="text-slate-300">
-                  Live readiness across guests, tasks, and inventory.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
-                  <div className="flex items-center justify-between text-xs text-slate-400">
-                    <span>RSVP progress</span>
-                    <span>
-                      {capacity > 0 ? `${rsvpCount}/${capacity}` : `${rsvpCount} RSVPs`}
-                    </span>
-                  </div>
-                  <Progress
-                    className="mt-2"
-                    value={capacity > 0 ? Math.min((rsvpCount / capacity) * 100, 100) : 0}
-                  />
-                  <div className="mt-2 text-xs text-slate-300">
-                    {soldOut
-                      ? "Guest list is full"
-                      : limited
-                        ? "Seats are nearly full"
-                        : "Guest list still open"}
-                  </div>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
-                    <div className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
-                      Prep tasks
-                    </div>
-                    <div className="mt-2 text-lg font-semibold">
-                      {initialPrepTasks.length}
-                    </div>
-                    <div className="text-xs text-slate-300">
-                      {taskSummary.pending} pending • {taskSummary.in_progress} in progress •{" "}
-                      {taskSummary.completed} done
-                    </div>
-                  </div>
-                  <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
-                    <div className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
-                      Inventory coverage
-                    </div>
-                    <div className="mt-2 text-lg font-semibold">
-                      {inventoryStats.tracked}/{aggregatedIngredients.length}
-                    </div>
-                    <div className="text-xs text-slate-300">
-                      {inventoryStats.low} low stock alerts
-                    </div>
-                  </div>
+                <div className="space-y-2">
+                  <CardTitle className="text-3xl font-semibold tracking-tight">
+                    {event.title}
+                  </CardTitle>
+                  <CardDescription className="text-slate-300">
+                    {event.eventType} <span className="text-slate-500">•</span>{" "}
+                    {event.venueName ?? "Venue TBD"}
+                  </CardDescription>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Button asChild size="sm" variant="outline">
-                    <a href="#guests">Guest list</a>
+                  {displayedTags.length > 0 ? (
+                    displayedTags.map((tag) => (
+                      <Badge
+                        className="border-slate-700/70 bg-slate-950/40 text-slate-200"
+                        key={tag}
+                        variant="outline"
+                      >
+                        {tag}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-xs text-slate-400">No tags yet</span>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
+                    <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                      <CalendarDaysIcon className="size-3" />
+                      Date & Time
+                    </div>
+                    <div className="mt-2 text-lg font-semibold">
+                      {dateFormatter.format(eventDate)}
+                    </div>
+                    {/* Event schema stores date without time-of-day. */}
+                    <div className="text-sm text-slate-300">
+                      Time not set • {timeZoneLabel}
+                    </div>
+                    <div className="mt-1 text-xs text-slate-400">
+                      {timeStatusLabel}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
+                    <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                      <MapPinIcon className="size-3" />
+                      Organizer / Venue
+                    </div>
+                    <div className="mt-2 text-sm font-semibold">
+                      {event.venueName ?? "Organizer not set"}
+                    </div>
+                    <div className="text-xs text-slate-300">
+                      {event.venueAddress ?? "Venue address not set"}
+                    </div>
+                    <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-1 text-[11px] text-emerald-200">
+                      <ShieldCheckIcon className="size-3" />
+                      Verified venue
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
+                    <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                      <WalletIcon className="size-3" />
+                      Pricing & Format
+                    </div>
+                    <div className="mt-2 text-lg font-semibold">
+                      {ticketPriceLabel}
+                    </div>
+                    <div className="text-xs text-slate-300">
+                      {event.ticketTier ?? "Ticket tier not set"}
+                    </div>
+                    <div className="text-xs text-slate-400">
+                      {formatEventFormat(event.eventFormat)}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
+                    <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                      <UsersIcon className="size-3" />
+                      Capacity & RSVPs
+                    </div>
+                    <div className="mt-2 text-lg font-semibold">
+                      {rsvpCount} RSVPs
+                    </div>
+                    <div className="text-xs text-slate-300">
+                      {capacity > 0
+                        ? `${capacity} total capacity`
+                        : "Capacity not set"}
+                    </div>
+                    <div className="text-xs text-slate-400">
+                      {soldOut
+                        ? "Sold out"
+                        : limited
+                          ? "Limited seats"
+                          : capacity > 0
+                            ? `${Math.max(availability, 0)} seats available`
+                            : "Availability not set"}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    className="bg-emerald-400 text-slate-950 hover:bg-emerald-300"
+                    disabled={soldOut}
+                    onClick={() => setQuickRsvpOpen(true)}
+                  >
+                    <PartyPopperIcon className="mr-2 size-4" />
+                    {soldOut ? "Sold out" : "RSVP / Join"}
                   </Button>
-                  <Button asChild size="sm" variant="outline">
-                    <a href="#recipes">Menu intelligence</a>
+                  <Button
+                    disabled={!saveReady}
+                    onClick={handleToggleSave}
+                    variant="outline"
+                  >
+                    <HeartIcon
+                      className={cn("mr-2 size-4", isSaved && "fill-current")}
+                    />
+                    {isSaved ? "Saved" : "Save"}
                   </Button>
-                  <Button asChild size="sm" variant="outline">
-                    <a href="#explore">Explore events</a>
+                  <Button onClick={handleShare} variant="outline">
+                    <LinkIcon className="mr-2 size-4" />
+                    Share
+                  </Button>
+                  <Button asChild variant="ghost">
+                    <a
+                      href={buildCalendarUrl()}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      <CalendarPlusIcon className="mr-2 size-4" />
+                      Add to calendar
+                    </a>
+                  </Button>
+                  <Button onClick={handleInviteTeam} variant="ghost">
+                    <UsersIcon className="mr-2 size-4" />
+                    Invite team
+                  </Button>
+                  <Button asChild variant="ghost">
+                    <Link href="/crm/venues">
+                      <MapPinIcon className="mr-2 size-4" />
+                      View organizer
+                    </Link>
+                  </Button>
+                  <Button
+                    onClick={() => setShowEditEvent(true)}
+                    variant="ghost"
+                  >
+                    <SparklesIcon className="mr-2 size-4" />
+                    Edit details
                   </Button>
                 </div>
               </CardContent>
             </Card>
-          </div>
+
+            <div className="space-y-6">
+              <div className="relative overflow-hidden rounded-3xl border border-slate-800/60 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900">
+                {featuredMediaUrl ? (
+                  <img
+                    alt={event.title}
+                    className="h-72 w-full object-cover"
+                    loading="lazy"
+                    src={featuredMediaUrl}
+                  />
+                ) : (
+                  <div className="flex h-72 flex-col items-center justify-center gap-2 text-slate-400">
+                    <SparklesIcon className="size-10 text-slate-500" />
+                    <p className="text-sm">Featured media not set</p>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-5">
+                  <p className="text-[11px] uppercase tracking-[0.25em] text-slate-300">
+                    Featured media
+                  </p>
+                  <p className="mt-1 text-lg font-semibold">
+                    {event.eventType}
+                  </p>
+                  <p className="text-xs text-slate-300">
+                    {event.venueName ?? "Venue TBD"} •{" "}
+                    {shortDateFormatter.format(eventDate)}
+                  </p>
+                </div>
+              </div>
+
+              <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50">
+                <CardHeader className="space-y-1">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <ActivityIcon className="size-5 text-emerald-400" />
+                    Operations snapshot
+                  </CardTitle>
+                  <CardDescription className="text-slate-300">
+                    Live readiness across guests, tasks, and inventory.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
+                    <div className="flex items-center justify-between text-xs text-slate-400">
+                      <span>RSVP progress</span>
+                      <span>
+                        {capacity > 0
+                          ? `${rsvpCount}/${capacity}`
+                          : `${rsvpCount} RSVPs`}
+                      </span>
+                    </div>
+                    <Progress
+                      className="mt-2"
+                      value={
+                        capacity > 0
+                          ? Math.min((rsvpCount / capacity) * 100, 100)
+                          : 0
+                      }
+                    />
+                    <div className="mt-2 text-xs text-slate-300">
+                      {soldOut
+                        ? "Guest list is full"
+                        : limited
+                          ? "Seats are nearly full"
+                          : "Guest list still open"}
+                    </div>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
+                      <div className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                        Prep tasks
+                      </div>
+                      <div className="mt-2 text-lg font-semibold">
+                        {initialPrepTasks.length}
+                      </div>
+                      <div className="text-xs text-slate-300">
+                        {taskSummary.pending} pending •{" "}
+                        {taskSummary.in_progress} in progress •{" "}
+                        {taskSummary.completed} done
+                      </div>
+                    </div>
+                    <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
+                      <div className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                        Inventory coverage
+                      </div>
+                      <div className="mt-2 text-lg font-semibold">
+                        {inventoryStats.tracked}/{aggregatedIngredients.length}
+                      </div>
+                      <div className="text-xs text-slate-300">
+                        {inventoryStats.low} low stock alerts
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button asChild size="sm" variant="outline">
+                      <a href="#guests">Guest list</a>
+                    </Button>
+                    <Button asChild size="sm" variant="outline">
+                      <a href="#recipes">Menu intelligence</a>
+                    </Button>
+                    <Button asChild size="sm" variant="outline">
+                      <a href="#explore">Explore events</a>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </section>
 
@@ -1675,314 +1767,347 @@ export function EventDetailsClient({
             </p>
           </div>
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-          <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50">
-            <CardHeader className="space-y-1">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <ChefHatIcon className="size-5 text-amber-300" />
-                Menu intelligence
-              </CardTitle>
-              <CardDescription className="text-slate-300">
-                Recipes, yields, and ingredient summaries for this event.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {dishRows.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-800/70 p-8 text-center">
-                  <p className="text-sm text-slate-300">No dishes linked yet.</p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Add dishes to start building recipe intelligence.
-                  </p>
-                  <Button
-                    className="mt-4"
-                    onClick={() => setShowAddDishDialog(true)}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Add dishes
-                  </Button>
-                </div>
-              ) : (
-                dishRows.map((row, index) => (
-                  <div
-                    className="group rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-emerald-500/40"
-                    key={`${row.dish.dishId}-${index}`}
-                    style={{ animationDelay: `${index * 40}ms` }}
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-4">
-                      <div className="space-y-1">
-                        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
-                          {row.dish.course ?? "Course not set"}
-                        </p>
-                        <p className="text-lg font-semibold">{row.dish.name}</p>
-                        <p className="text-xs text-slate-300">
-                          {row.dish.recipeName ?? "Recipe not linked"}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button size="sm" variant="outline">
-                              <ClipboardCopyIcon className="mr-2 size-3" />
-                              Ingredients
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent
-                            align="end"
-                            className="w-72 border-slate-800 bg-slate-950 text-slate-50"
-                          >
-                            {row.recipe ? (
-                              <div className="space-y-3 text-sm">
-                                <div className="flex items-center justify-between">
-                                  <span className="font-semibold">
-                                    {row.recipe.recipeName}
-                                  </span>
-                                  <Badge
-                                    className="border-slate-700/70 bg-slate-900/70 text-slate-200"
-                                    variant="outline"
-                                  >
-                                    {row.recipe.ingredients.length} ingredients
-                                  </Badge>
-                                </div>
-                                <div className="max-h-56 space-y-2 overflow-y-auto pr-1 text-xs">
-                                  {row.scaledIngredients.map((ingredient) => (
-                                    <div
-                                      className="flex items-start justify-between gap-3"
-                                      key={ingredient.ingredientId}
-                                    >
-                                      <span>{ingredient.ingredientName}</span>
-                                      <span className="text-slate-300">
-                                        {ingredient.scaledQuantity}{" "}
-                                        {ingredient.unitCode ?? ""}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                                <div className="flex items-center justify-between text-[11px] text-slate-400">
-                                  <span>
-                                    Yield: {row.recipe.yieldQuantity}{" "}
-                                    {row.recipe.yieldUnitCode ?? "servings"}
-                                  </span>
-                                  {row.recipe.versionId ? (
-                                    <Link
-                                      className="text-emerald-300 hover:text-emerald-200"
-                                      href={`/inventory/recipes/${row.recipe.versionId}`}
-                                    >
-                                      View recipe
-                                    </Link>
-                                  ) : null}
-                                </div>
-                              </div>
-                            ) : (
-                              <p className="text-sm text-slate-300">
-                                No recipe linked yet.
-                              </p>
-                            )}
-                          </PopoverContent>
-                        </Popover>
-                        <Button
-                          disabled={!row.recipe}
-                          onClick={() =>
-                            row.recipe &&
-                            openRecipeDrawer(
-                              row.recipe.recipeId,
-                              row.dish.dishId,
-                              "instructions"
-                            )
-                          }
-                          size="sm"
-                          variant="secondary"
-                        >
-                          <ChevronRightIcon className="mr-2 size-3" />
-                          Instructions
-                        </Button>
-                        <Button
-                          disabled={!row.recipe}
-                          onClick={() =>
-                            row.recipe &&
-                            openRecipeDrawer(row.recipe.recipeId, row.dish.dishId, "ingredients")
-                          }
-                          size="sm"
-                          variant="outline"
-                        >
-                          <ListIcon className="mr-2 size-3" />
-                          Full ingredients
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-300">
-                      <Badge
-                        className="border-slate-700/70 bg-slate-900/70"
-                        variant="outline"
-                      >
-                        {row.dish.quantityServings} servings
-                      </Badge>
-                      {row.dish.pricePerPerson !== null && (
-                        <Badge
-                          className="border-emerald-400/40 bg-emerald-500/10 text-emerald-200"
-                          variant="outline"
-                        >
-                          Price {formatCurrency(row.dish.pricePerPerson)} / person
-                        </Badge>
-                      )}
-                      {row.dish.costPerPerson !== null && (
-                        <Badge
-                          className="border-amber-400/40 bg-amber-500/10 text-amber-100"
-                          variant="outline"
-                        >
-                          Cost {formatCurrency(row.dish.costPerPerson)} / person
-                        </Badge>
-                      )}
-                      {row.dish.dietaryTags.map((tag) => (
-                        <Badge
-                          className="border-slate-700/70 bg-slate-900/70 text-slate-200"
-                          key={tag}
-                          variant="outline"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                    {row.recipe && (
-                      <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-400 opacity-0 transition group-hover:opacity-100">
-                        <span>
-                          Prep: {row.recipe.prepTimeMinutes ?? 0}m • Cook:{" "}
-                          {row.recipe.cookTimeMinutes ?? 0}m • Rest:{" "}
-                          {row.recipe.restTimeMinutes ?? 0}m
-                        </span>
-                        <span>
-                          Yield {row.recipe.yieldQuantity}{" "}
-                          {row.recipe.yieldUnitCode ?? "servings"}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-
-          <div className="space-y-6">
-            <MenuDishesSection
-              availableDishes={availableDishes}
-              eventDishes={menuDishRows}
-              isLoading={isLoadingDishes}
-              onAddDish={handleAddDish}
-              onOpenVariantDialog={openVariantDialog}
-              onRemoveDish={handleRemoveDish}
-              onSelectedCourseChange={setSelectedCourse}
-              onSelectedDishIdChange={setSelectedDishIdForAdd}
-              onShowAddDialogChange={setShowAddDishDialog}
-              selectedCourse={selectedCourse}
-              selectedDishId={selectedDishIdForAdd}
-              showAddDialog={showAddDishDialog}
-            />
-
             <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50">
               <CardHeader className="space-y-1">
                 <CardTitle className="flex items-center gap-2 text-lg">
-                  <ClipboardCopyIcon className="size-5 text-sky-300" />
-                  Ingredient coverage
+                  <ChefHatIcon className="size-5 text-amber-300" />
+                  Menu intelligence
                 </CardTitle>
                 <CardDescription className="text-slate-300">
-                  Consolidated ingredient list mapped against inventory levels.
+                  Recipes, yields, and ingredient summaries for this event.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {aggregatedIngredients.length === 0 ? (
+              <CardContent className="space-y-4">
+                {dishRows.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-slate-800/70 p-8 text-center">
-                    <p className="text-sm text-slate-300">No ingredients yet.</p>
-                    <p className="mt-1 text-xs text-slate-400">
-                      Link recipes to see ingredient coverage.
+                    <p className="text-sm text-slate-300">
+                      No dishes linked yet.
                     </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      Add dishes to start building recipe intelligence.
+                    </p>
+                    <Button
+                      className="mt-4"
+                      onClick={() => setShowAddDishDialog(true)}
+                      size="sm"
+                      variant="outline"
+                    >
+                      Add dishes
+                    </Button>
                   </div>
                 ) : (
-                  <div className="max-h-[420px] space-y-3 overflow-y-auto pr-1">
-                    {aggregatedIngredients.map((ingredient) => {
-                      const inventory = inventoryByIngredient.get(ingredient.ingredientId);
-                      const unitMatch =
-                        ingredient.unitCode &&
-                        inventory?.onHandUnitCode &&
-                        ingredient.unitCode === inventory.onHandUnitCode;
-                      const requiredLabel = `${ingredient.quantity} ${ingredient.unitCode ?? ""}`;
-                      const onHandLabel =
-                        inventory && inventory.onHand !== null
-                          ? `${inventory.onHand} ${inventory.onHandUnitCode ?? ""}`
-                          : "Not tracked";
-                      const coverageRatio =
-                        unitMatch && inventory && inventory.onHand !== null && ingredient.quantity > 0
-                          ? Math.min((inventory.onHand / ingredient.quantity) * 100, 100)
-                          : null;
-                      const isLow =
-                        inventory &&
-                        inventory.onHand !== null &&
-                        inventory.parLevel !== null &&
-                        inventory.onHand < inventory.parLevel;
-                      const isShort =
-                        unitMatch &&
-                        inventory?.onHand !== null &&
-                        ingredient.quantity > 0 &&
-                        inventory.onHand < ingredient.quantity;
-
-                      return (
-                        <div
-                          className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4"
-                          key={ingredient.ingredientId}
-                        >
-                          <div className="flex flex-wrap items-start justify-between gap-3">
-                            <div>
-                              <p className="font-semibold">{ingredient.ingredientName}</p>
-                              <p className="text-xs text-slate-400">
-                                Required: {requiredLabel}
-                              </p>
-                              <p className="text-xs text-slate-400">On hand: {onHandLabel}</p>
-                            </div>
-                            <div className="flex flex-col items-end gap-1 text-xs">
-                              {inventory ? (
-                                <Badge
-                                  className={cn(
-                                    "border",
-                                    isShort || isLow
-                                      ? "border-rose-400/40 bg-rose-500/20 text-rose-100"
-                                      : "border-emerald-400/40 bg-emerald-500/10 text-emerald-200"
-                                  )}
-                                  variant="outline"
-                                >
-                                  {isShort ? "Short" : isLow ? "Low stock" : "Covered"}
-                                </Badge>
-                              ) : (
-                                <Badge
-                                  className="border-slate-600/60 bg-slate-900/70 text-slate-200"
-                                  variant="outline"
-                                >
-                                  Not tracked
-                                </Badge>
-                              )}
-                              {ingredient.isOptional && (
-                                <Badge
-                                  className="border-slate-600/60 bg-slate-900/70 text-slate-200"
-                                  variant="outline"
-                                >
-                                  Optional
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                          {coverageRatio !== null && (
-                            <Progress className="mt-3" value={coverageRatio} />
-                          )}
-                          {ingredient.sources.length > 0 && (
-                            <p className="mt-2 text-[11px] text-slate-500">
-                              Used in {ingredient.sources.join(", ")}
-                            </p>
-                          )}
+                  dishRows.map((row, index) => (
+                    <div
+                      className="group rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-emerald-500/40"
+                      key={`${row.dish.dishId}-${index}`}
+                      style={{ animationDelay: `${index * 40}ms` }}
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-4">
+                        <div className="space-y-1">
+                          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                            {row.dish.course ?? "Course not set"}
+                          </p>
+                          <p className="text-lg font-semibold">
+                            {row.dish.name}
+                          </p>
+                          <p className="text-xs text-slate-300">
+                            {row.dish.recipeName ?? "Recipe not linked"}
+                          </p>
                         </div>
-                      );
-                    })}
-                  </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button size="sm" variant="outline">
+                                <ClipboardCopyIcon className="mr-2 size-3" />
+                                Ingredients
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              align="end"
+                              className="w-72 border-slate-800 bg-slate-950 text-slate-50"
+                            >
+                              {row.recipe ? (
+                                <div className="space-y-3 text-sm">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-semibold">
+                                      {row.recipe.recipeName}
+                                    </span>
+                                    <Badge
+                                      className="border-slate-700/70 bg-slate-900/70 text-slate-200"
+                                      variant="outline"
+                                    >
+                                      {row.recipe.ingredients.length}{" "}
+                                      ingredients
+                                    </Badge>
+                                  </div>
+                                  <div className="max-h-56 space-y-2 overflow-y-auto pr-1 text-xs">
+                                    {row.scaledIngredients.map((ingredient) => (
+                                      <div
+                                        className="flex items-start justify-between gap-3"
+                                        key={ingredient.ingredientId}
+                                      >
+                                        <span>{ingredient.ingredientName}</span>
+                                        <span className="text-slate-300">
+                                          {ingredient.scaledQuantity}{" "}
+                                          {ingredient.unitCode ?? ""}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                                    <span>
+                                      Yield: {row.recipe.yieldQuantity}{" "}
+                                      {row.recipe.yieldUnitCode ?? "servings"}
+                                    </span>
+                                    {row.recipe.versionId ? (
+                                      <Link
+                                        className="text-emerald-300 hover:text-emerald-200"
+                                        href={`/inventory/recipes/${row.recipe.versionId}`}
+                                      >
+                                        View recipe
+                                      </Link>
+                                    ) : null}
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="text-sm text-slate-300">
+                                  No recipe linked yet.
+                                </p>
+                              )}
+                            </PopoverContent>
+                          </Popover>
+                          <Button
+                            disabled={!row.recipe}
+                            onClick={() =>
+                              row.recipe &&
+                              openRecipeDrawer(
+                                row.recipe.recipeId,
+                                row.dish.dishId,
+                                "instructions"
+                              )
+                            }
+                            size="sm"
+                            variant="secondary"
+                          >
+                            <ChevronRightIcon className="mr-2 size-3" />
+                            Instructions
+                          </Button>
+                          <Button
+                            disabled={!row.recipe}
+                            onClick={() =>
+                              row.recipe &&
+                              openRecipeDrawer(
+                                row.recipe.recipeId,
+                                row.dish.dishId,
+                                "ingredients"
+                              )
+                            }
+                            size="sm"
+                            variant="outline"
+                          >
+                            <ListIcon className="mr-2 size-3" />
+                            Full ingredients
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-300">
+                        <Badge
+                          className="border-slate-700/70 bg-slate-900/70"
+                          variant="outline"
+                        >
+                          {row.dish.quantityServings} servings
+                        </Badge>
+                        {row.dish.pricePerPerson !== null && (
+                          <Badge
+                            className="border-emerald-400/40 bg-emerald-500/10 text-emerald-200"
+                            variant="outline"
+                          >
+                            Price {formatCurrency(row.dish.pricePerPerson)} /
+                            person
+                          </Badge>
+                        )}
+                        {row.dish.costPerPerson !== null && (
+                          <Badge
+                            className="border-amber-400/40 bg-amber-500/10 text-amber-100"
+                            variant="outline"
+                          >
+                            Cost {formatCurrency(row.dish.costPerPerson)} /
+                            person
+                          </Badge>
+                        )}
+                        {row.dish.dietaryTags.map((tag) => (
+                          <Badge
+                            className="border-slate-700/70 bg-slate-900/70 text-slate-200"
+                            key={tag}
+                            variant="outline"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                      {row.recipe && (
+                        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-400 opacity-0 transition group-hover:opacity-100">
+                          <span>
+                            Prep: {row.recipe.prepTimeMinutes ?? 0}m • Cook:{" "}
+                            {row.recipe.cookTimeMinutes ?? 0}m • Rest:{" "}
+                            {row.recipe.restTimeMinutes ?? 0}m
+                          </span>
+                          <span>
+                            Yield {row.recipe.yieldQuantity}{" "}
+                            {row.recipe.yieldUnitCode ?? "servings"}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ))
                 )}
               </CardContent>
             </Card>
-          </div>
+
+            <div className="space-y-6">
+              <MenuDishesSection
+                availableDishes={availableDishes}
+                eventDishes={menuDishRows}
+                isLoading={isLoadingDishes}
+                onAddDish={handleAddDish}
+                onOpenVariantDialog={openVariantDialog}
+                onRemoveDish={handleRemoveDish}
+                onSelectedCourseChange={setSelectedCourse}
+                onSelectedDishIdChange={setSelectedDishIdForAdd}
+                onShowAddDialogChange={setShowAddDishDialog}
+                selectedCourse={selectedCourse}
+                selectedDishId={selectedDishIdForAdd}
+                showAddDialog={showAddDishDialog}
+              />
+
+              <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50">
+                <CardHeader className="space-y-1">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <ClipboardCopyIcon className="size-5 text-sky-300" />
+                    Ingredient coverage
+                  </CardTitle>
+                  <CardDescription className="text-slate-300">
+                    Consolidated ingredient list mapped against inventory
+                    levels.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {aggregatedIngredients.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-slate-800/70 p-8 text-center">
+                      <p className="text-sm text-slate-300">
+                        No ingredients yet.
+                      </p>
+                      <p className="mt-1 text-xs text-slate-400">
+                        Link recipes to see ingredient coverage.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="max-h-[420px] space-y-3 overflow-y-auto pr-1">
+                      {aggregatedIngredients.map((ingredient) => {
+                        const inventory = inventoryByIngredient.get(
+                          ingredient.ingredientId
+                        );
+                        const unitMatch =
+                          ingredient.unitCode &&
+                          inventory?.onHandUnitCode &&
+                          ingredient.unitCode === inventory.onHandUnitCode;
+                        const requiredLabel = `${ingredient.quantity} ${ingredient.unitCode ?? ""}`;
+                        const onHandLabel =
+                          inventory && inventory.onHand !== null
+                            ? `${inventory.onHand} ${inventory.onHandUnitCode ?? ""}`
+                            : "Not tracked";
+                        const coverageRatio =
+                          unitMatch &&
+                          inventory &&
+                          inventory.onHand !== null &&
+                          ingredient.quantity > 0
+                            ? Math.min(
+                                (inventory.onHand / ingredient.quantity) * 100,
+                                100
+                              )
+                            : null;
+                        const isLow =
+                          inventory &&
+                          inventory.onHand !== null &&
+                          inventory.parLevel !== null &&
+                          inventory.onHand < inventory.parLevel;
+                        const isShort =
+                          unitMatch &&
+                          inventory?.onHand !== null &&
+                          ingredient.quantity > 0 &&
+                          inventory.onHand < ingredient.quantity;
+
+                        return (
+                          <div
+                            className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4"
+                            key={ingredient.ingredientId}
+                          >
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <div>
+                                <p className="font-semibold">
+                                  {ingredient.ingredientName}
+                                </p>
+                                <p className="text-xs text-slate-400">
+                                  Required: {requiredLabel}
+                                </p>
+                                <p className="text-xs text-slate-400">
+                                  On hand: {onHandLabel}
+                                </p>
+                              </div>
+                              <div className="flex flex-col items-end gap-1 text-xs">
+                                {inventory ? (
+                                  <Badge
+                                    className={cn(
+                                      "border",
+                                      isShort || isLow
+                                        ? "border-rose-400/40 bg-rose-500/20 text-rose-100"
+                                        : "border-emerald-400/40 bg-emerald-500/10 text-emerald-200"
+                                    )}
+                                    variant="outline"
+                                  >
+                                    {isShort
+                                      ? "Short"
+                                      : isLow
+                                        ? "Low stock"
+                                        : "Covered"}
+                                  </Badge>
+                                ) : (
+                                  <Badge
+                                    className="border-slate-600/60 bg-slate-900/70 text-slate-200"
+                                    variant="outline"
+                                  >
+                                    Not tracked
+                                  </Badge>
+                                )}
+                                {ingredient.isOptional && (
+                                  <Badge
+                                    className="border-slate-600/60 bg-slate-900/70 text-slate-200"
+                                    variant="outline"
+                                  >
+                                    Optional
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            {coverageRatio !== null && (
+                              <Progress
+                                className="mt-3"
+                                value={coverageRatio}
+                              />
+                            )}
+                            {ingredient.sources.length > 0 && (
+                              <p className="mt-2 text-[11px] text-slate-500">
+                                Used in {ingredient.sources.join(", ")}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </section>
 
@@ -1993,46 +2118,48 @@ export function EventDetailsClient({
             </p>
           </div>
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
-          <div className="space-y-6">
-            <ExecutiveSummarySection
-              eventId={event.id}
-              eventTitle={event.title}
-              isLoading={isLoadingSummary}
-              onDelete={handleDeleteSummary}
-              onGenerate={handleGenerateSummary}
-              onOpenGenerateModal={() => setShowSummaryModal(true)}
-              summary={summary}
-            />
-            <TaskBreakdownSection
-              breakdown={breakdown}
-              generationProgress={generationProgress}
-              isGenerating={isGenerating}
-              onExport={handleExportBreakdown}
-              onOpenGenerateModal={() => setShowBreakdownModal(true)}
-              onRegenerate={() => void handleGenerateBreakdown()}
-              onSave={handleSaveBreakdown}
-            />
-          </div>
-          <div className="space-y-6">
-            <SuggestionsSection
-              isLoading={suggestionsLoading}
-              onAction={handleAction}
-              onDismiss={dismissSuggestion}
-              onRefresh={fetchSuggestions}
-              onShowSuggestionsChange={setShowSuggestions}
-              showSuggestions={showSuggestions}
-              suggestions={suggestions}
-            />
-            <PrepTasksSection
-              onOpenGenerateModal={() => setShowBreakdownModal(true)}
-              prepTasks={sortedPrepTasks}
-            />
-            <BudgetSection
-              budget={budget}
-              onCreateBudget={() => router.push("/events/budgets")}
-              onViewBudget={(budgetId) => router.push(`/events/budgets/${budgetId}`)}
-            />
-          </div>
+            <div className="space-y-6">
+              <ExecutiveSummarySection
+                eventId={event.id}
+                eventTitle={event.title}
+                isLoading={isLoadingSummary}
+                onDelete={handleDeleteSummary}
+                onGenerate={handleGenerateSummary}
+                onOpenGenerateModal={() => setShowSummaryModal(true)}
+                summary={summary}
+              />
+              <TaskBreakdownSection
+                breakdown={breakdown}
+                generationProgress={generationProgress}
+                isGenerating={isGenerating}
+                onExport={handleExportBreakdown}
+                onOpenGenerateModal={() => setShowBreakdownModal(true)}
+                onRegenerate={() => void handleGenerateBreakdown()}
+                onSave={handleSaveBreakdown}
+              />
+            </div>
+            <div className="space-y-6">
+              <SuggestionsSection
+                isLoading={suggestionsLoading}
+                onAction={handleAction}
+                onDismiss={dismissSuggestion}
+                onRefresh={fetchSuggestions}
+                onShowSuggestionsChange={setShowSuggestions}
+                showSuggestions={showSuggestions}
+                suggestions={suggestions}
+              />
+              <PrepTasksSection
+                onOpenGenerateModal={() => setShowBreakdownModal(true)}
+                prepTasks={sortedPrepTasks}
+              />
+              <BudgetSection
+                budget={budget}
+                onCreateBudget={() => router.push("/events/budgets")}
+                onViewBudget={(budgetId) =>
+                  router.push(`/events/budgets/${budgetId}`)
+                }
+              />
+            </div>
           </div>
         </section>
 
@@ -2097,7 +2224,10 @@ export function EventDetailsClient({
                   Timeline
                 </ToggleGroupItem>
               </ToggleGroup>
-              <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+              <Select
+                onValueChange={(value) => setSortBy(value as SortOption)}
+                value={sortBy}
+              >
                 <SelectTrigger className="w-[160px] border-slate-800/70 bg-slate-950/40">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
@@ -2149,7 +2279,9 @@ export function EventDetailsClient({
                 <Button
                   onClick={() => toggleQuickFilter("live-now")}
                   size="sm"
-                  variant={quickFilters.includes("live-now") ? "default" : "outline"}
+                  variant={
+                    quickFilters.includes("live-now") ? "default" : "outline"
+                  }
                 >
                   <ActivityIcon className="mr-2 size-3" />
                   Live now
@@ -2157,7 +2289,11 @@ export function EventDetailsClient({
                 <Button
                   onClick={() => toggleQuickFilter("starting-soon")}
                   size="sm"
-                  variant={quickFilters.includes("starting-soon") ? "default" : "outline"}
+                  variant={
+                    quickFilters.includes("starting-soon")
+                      ? "default"
+                      : "outline"
+                  }
                 >
                   <AlarmClockIcon className="mr-2 size-3" />
                   Starting soon
@@ -2165,7 +2301,11 @@ export function EventDetailsClient({
                 <Button
                   onClick={() => toggleQuickFilter("high-capacity")}
                   size="sm"
-                  variant={quickFilters.includes("high-capacity") ? "default" : "outline"}
+                  variant={
+                    quickFilters.includes("high-capacity")
+                      ? "default"
+                      : "outline"
+                  }
                 >
                   <UsersIcon className="mr-2 size-3" />
                   {highCapacityLabel}
@@ -2173,7 +2313,9 @@ export function EventDetailsClient({
                 <Button
                   onClick={() => toggleQuickFilter("sold-out")}
                   size="sm"
-                  variant={quickFilters.includes("sold-out") ? "default" : "outline"}
+                  variant={
+                    quickFilters.includes("sold-out") ? "default" : "outline"
+                  }
                 >
                   <TicketIcon className="mr-2 size-3" />
                   Sold out
@@ -2181,14 +2323,18 @@ export function EventDetailsClient({
                 <Button
                   onClick={() => toggleQuickFilter("free")}
                   size="sm"
-                  variant={quickFilters.includes("free") ? "default" : "outline"}
+                  variant={
+                    quickFilters.includes("free") ? "default" : "outline"
+                  }
                 >
                   Free
                 </Button>
                 <Button
                   onClick={() => toggleQuickFilter("paid")}
                   size="sm"
-                  variant={quickFilters.includes("paid") ? "default" : "outline"}
+                  variant={
+                    quickFilters.includes("paid") ? "default" : "outline"
+                  }
                 >
                   Paid
                 </Button>
@@ -2205,7 +2351,9 @@ export function EventDetailsClient({
                     <p className="text-[11px] uppercase tracking-[0.25em] text-slate-400">
                       Featured
                     </p>
-                    <h3 className="text-xl font-semibold">13 featured events</h3>
+                    <h3 className="text-xl font-semibold">
+                      13 featured events
+                    </h3>
                   </div>
                   <Badge
                     className="border-slate-700/70 bg-slate-950/40 text-slate-200"
@@ -2244,10 +2392,16 @@ export function EventDetailsClient({
                         </div>
                         <div className="space-y-1 p-3">
                           <div className="flex items-center justify-between text-xs text-slate-400">
-                            <span>{shortDateFormatter.format(new Date(related.eventDate))}</span>
+                            <span>
+                              {shortDateFormatter.format(
+                                new Date(related.eventDate)
+                              )}
+                            </span>
                             <span>{related.eventType}</span>
                           </div>
-                          <p className="text-sm font-semibold">{related.title}</p>
+                          <p className="text-sm font-semibold">
+                            {related.title}
+                          </p>
                           <p className="text-xs text-slate-300">
                             {related.venueName ?? "Venue TBD"}
                           </p>
@@ -2269,7 +2423,8 @@ export function EventDetailsClient({
                       Today&apos;s spotlight
                     </CardTitle>
                     <CardDescription className="text-slate-300">
-                      {todayEvents.length} event{todayEvents.length === 1 ? "" : "s"} today.
+                      {todayEvents.length} event
+                      {todayEvents.length === 1 ? "" : "s"} today.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
@@ -2319,7 +2474,9 @@ export function EventDetailsClient({
                       This week
                     </CardTitle>
                     <CardDescription className="text-slate-300">
-                      {thisWeekEvents.length} event{thisWeekEvents.length === 1 ? "" : "s"} in the next 7 days.
+                      {thisWeekEvents.length} event
+                      {thisWeekEvents.length === 1 ? "" : "s"} in the next 7
+                      days.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -2335,8 +2492,10 @@ export function EventDetailsClient({
                             href={`/events/${related.id}`}
                             key={related.id}
                           >
-                            {shortDateFormatter.format(new Date(related.eventDate))} •{" "}
-                            {related.title}
+                            {shortDateFormatter.format(
+                              new Date(related.eventDate)
+                            )}{" "}
+                            • {related.title}
                           </Link>
                         ))}
                       </div>
@@ -2348,7 +2507,8 @@ export function EventDetailsClient({
               {dateRangeInvalid && (
                 <Card className="border-rose-500/40 bg-rose-500/10 text-rose-100">
                   <CardContent className="py-6 text-sm">
-                    End date must be after the start date. Adjust your range or reset filters.
+                    End date must be after the start date. Adjust your range or
+                    reset filters.
                   </CardContent>
                 </Card>
               )}
@@ -2387,17 +2547,21 @@ export function EventDetailsClient({
                     const relatedDate = new Date(related.eventDate);
                     const relatedStart = startOfDay(relatedDate);
                     const relatedEnd = endOfDay(relatedDate);
-                    const relatedLive = now >= relatedStart && now <= relatedEnd;
+                    const relatedLive =
+                      now >= relatedStart && now <= relatedEnd;
                     const relatedPast = now > relatedEnd;
                     const relatedUpcoming = now < relatedStart;
                     const relatedSoldOut =
-                      related.guestCount > 0 && related.rsvpCount >= related.guestCount;
+                      related.guestCount > 0 &&
+                      related.rsvpCount >= related.guestCount;
                     const relatedLimited =
                       related.guestCount > 0 &&
                       !relatedSoldOut &&
                       related.rsvpCount / related.guestCount >= 0.85;
-                    const relatedTimeUntil = relatedStart.getTime() - now.getTime();
-                    const relatedTimeSince = now.getTime() - relatedStart.getTime();
+                    const relatedTimeUntil =
+                      relatedStart.getTime() - now.getTime();
+                    const relatedTimeSince =
+                      now.getTime() - relatedStart.getTime();
 
                     return (
                       <Link
@@ -2418,7 +2582,11 @@ export function EventDetailsClient({
                             )}
                             variant="outline"
                           >
-                            {relatedLive ? "Live" : relatedPast ? "Past" : "Upcoming"}
+                            {relatedLive
+                              ? "Live"
+                              : relatedPast
+                                ? "Past"
+                                : "Upcoming"}
                           </Badge>
                           {relatedSoldOut && (
                             <Badge
@@ -2438,7 +2606,9 @@ export function EventDetailsClient({
                           )}
                         </div>
                         <div className="mt-3 space-y-1">
-                          <p className="text-lg font-semibold">{related.title}</p>
+                          <p className="text-lg font-semibold">
+                            {related.title}
+                          </p>
                           <p className="text-xs text-slate-300">
                             {shortDateFormatter.format(relatedDate)} •{" "}
                             {related.venueName ?? "Venue TBD"}
@@ -2499,7 +2669,9 @@ export function EventDetailsClient({
                           <p className="text-sm font-semibold">
                             {dateFormatter.format(group.date)}
                           </p>
-                          <p className="text-xs text-slate-400">{group.items.length} events</p>
+                          <p className="text-xs text-slate-400">
+                            {group.items.length} events
+                          </p>
                         </div>
                         <Badge
                           className="border-slate-700/70 bg-slate-900/70 text-slate-200"
@@ -2513,10 +2685,12 @@ export function EventDetailsClient({
                           const relatedDate = new Date(related.eventDate);
                           const relatedStart = startOfDay(relatedDate);
                           const relatedEnd = endOfDay(relatedDate);
-                          const relatedLive = now >= relatedStart && now <= relatedEnd;
+                          const relatedLive =
+                            now >= relatedStart && now <= relatedEnd;
                           const relatedPast = now > relatedEnd;
                           const relatedSoldOut =
-                            related.guestCount > 0 && related.rsvpCount >= related.guestCount;
+                            related.guestCount > 0 &&
+                            related.rsvpCount >= related.guestCount;
                           return (
                             <Link
                               className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800/70 bg-slate-900/60 px-4 py-3 text-sm transition hover:border-emerald-400/40"
@@ -2542,7 +2716,11 @@ export function EventDetailsClient({
                                   )}
                                   variant="outline"
                                 >
-                                  {relatedLive ? "Live" : relatedPast ? "Past" : "Upcoming"}
+                                  {relatedLive
+                                    ? "Live"
+                                    : relatedPast
+                                      ? "Past"
+                                      : "Upcoming"}
                                 </Badge>
                                 {relatedSoldOut && (
                                   <Badge
@@ -2553,7 +2731,8 @@ export function EventDetailsClient({
                                   </Badge>
                                 )}
                                 <span>
-                                  {related.rsvpCount}/{related.guestCount || 0} RSVPs
+                                  {related.rsvpCount}/{related.guestCount || 0}{" "}
+                                  RSVPs
                                 </span>
                               </div>
                             </Link>
@@ -2686,7 +2865,9 @@ export function EventDetailsClient({
               type="single"
               value={drawerMode}
             >
-              <ToggleGroupItem value="instructions">Instructions</ToggleGroupItem>
+              <ToggleGroupItem value="instructions">
+                Instructions
+              </ToggleGroupItem>
               <ToggleGroupItem value="ingredients">Ingredients</ToggleGroupItem>
             </ToggleGroup>
             <Button
@@ -2705,13 +2886,7 @@ export function EventDetailsClient({
             </Button>
           </div>
           <div className="max-h-[70vh] space-y-6 overflow-y-auto px-4 pb-6 pt-2">
-            {!selectedRecipe ? (
-              <div className="rounded-2xl border border-dashed border-slate-800/70 p-8 text-center">
-                <p className="text-sm text-slate-300">
-                  No recipe linked to this dish yet.
-                </p>
-              </div>
-            ) : (
+            {selectedRecipe ? (
               <>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <div className="rounded-xl border border-slate-800/70 bg-slate-900/60 p-3 text-sm">
@@ -2759,7 +2934,9 @@ export function EventDetailsClient({
                           key={ingredient.ingredientId}
                         >
                           <div>
-                            <p className="font-medium">{ingredient.ingredientName}</p>
+                            <p className="font-medium">
+                              {ingredient.ingredientName}
+                            </p>
                             {ingredient.preparationNotes && (
                               <p className="text-xs text-slate-400">
                                 {ingredient.preparationNotes}
@@ -2768,7 +2945,8 @@ export function EventDetailsClient({
                           </div>
                           <div className="flex items-center gap-2 text-xs text-slate-300">
                             <span>
-                              {ingredient.scaledQuantity} {ingredient.unitCode ?? ""}
+                              {ingredient.scaledQuantity}{" "}
+                              {ingredient.unitCode ?? ""}
                             </span>
                             {ingredient.isOptional && (
                               <Badge
@@ -2795,7 +2973,9 @@ export function EventDetailsClient({
                           >
                             <div className="flex items-center justify-between text-xs text-slate-400">
                               <span>Step {step.stepNumber}</span>
-                              {step.durationMinutes && <span>{step.durationMinutes}m</span>}
+                              {step.durationMinutes && (
+                                <span>{step.durationMinutes}m</span>
+                              )}
                             </div>
                             <p className="mt-2 text-sm text-slate-100">
                               {step.instruction}
@@ -2806,21 +2986,33 @@ export function EventDetailsClient({
                               </p>
                             )}
                             {step.tips && (
-                              <p className="mt-2 text-xs text-slate-300">Tip: {step.tips}</p>
+                              <p className="mt-2 text-xs text-slate-300">
+                                Tip: {step.tips}
+                              </p>
                             )}
                           </li>
                         ))}
                       </ol>
                     ) : selectedRecipe.instructions ? (
                       <div className="rounded-2xl border border-slate-800/70 bg-slate-900/60 p-4 text-sm text-slate-100">
-                        <p className="whitespace-pre-line">{selectedRecipe.instructions}</p>
+                        <p className="whitespace-pre-line">
+                          {selectedRecipe.instructions}
+                        </p>
                       </div>
                     ) : (
-                      <p className="text-sm text-slate-300">No instructions available.</p>
+                      <p className="text-sm text-slate-300">
+                        No instructions available.
+                      </p>
                     )}
                   </div>
                 )}
               </>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-slate-800/70 p-8 text-center">
+                <p className="text-sm text-slate-300">
+                  No recipe linked to this dish yet.
+                </p>
+              </div>
             )}
           </div>
         </SheetContent>
@@ -2845,7 +3037,12 @@ export function EventDetailsClient({
           >
             <HeartIcon className={cn("size-4", isSaved && "fill-current")} />
           </Button>
-          <Button className="px-3" onClick={handleShare} size="sm" variant="outline">
+          <Button
+            className="px-3"
+            onClick={handleShare}
+            size="sm"
+            variant="outline"
+          >
             <LinkIcon className="size-4" />
           </Button>
         </div>

@@ -1,11 +1,6 @@
-import * as React from "react";
+import type * as React from "react";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 /**
  * A single stat item configuration

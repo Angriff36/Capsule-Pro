@@ -94,17 +94,17 @@ const CrmPage = () => (
         Performance Overview
       </h2>
       <div className="grid gap-6 md:grid-cols-3">
-      {clientMetrics.map((metric) => (
-        <Card key={metric.label}>
-          <CardHeader>
-            <CardDescription>{metric.label}</CardDescription>
-            <CardTitle>{metric.value}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{metric.detail}</p>
-          </CardContent>
-        </Card>
-      ))}
+        {clientMetrics.map((metric) => (
+          <Card key={metric.label}>
+            <CardHeader>
+              <CardDescription>{metric.label}</CardDescription>
+              <CardTitle>{metric.value}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">{metric.detail}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </section>
 
@@ -114,67 +114,71 @@ const CrmPage = () => (
         Clients & Communications
       </h2>
       <div className="grid gap-6 lg:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle>Top Clients (by LTV)</CardTitle>
-          <CardDescription>Track who drives repeat business.</CardDescription>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Client</TableHead>
-                  <TableHead className="text-right">Proposals</TableHead>
-                  <TableHead className="text-right">LTV</TableHead>
-                  <TableHead>Last Activity</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {topClients.map((client) => (
-                  <TableRow key={client.name}>
-                    <TableCell>{client.name}</TableCell>
-                    <TableCell className="text-right">
-                      {client.proposals}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      ${client.ltv.toLocaleString()}
-                    </TableCell>
-                    <TableCell>{client.lastActivity}</TableCell>
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Clients (by LTV)</CardTitle>
+            <CardDescription>Track who drives repeat business.</CardDescription>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Client</TableHead>
+                    <TableHead className="text-right">Proposals</TableHead>
+                    <TableHead className="text-right">LTV</TableHead>
+                    <TableHead>Last Activity</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Communications</CardTitle>
-          <CardDescription>High-touch conversations this week.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {recentCommunications.map((note) => (
-            <div
-              className="rounded-lg border border-border/70 px-4 py-3"
-              key={note.client}
-            >
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold">{note.client}</p>
-                <Badge
-                  variant={note.status === "Resolved" ? "secondary" : "outline"}
-                >
-                  {note.status}
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground">{note.channel}</p>
-              <p className="text-sm text-muted-foreground">{note.summary}</p>
+                </TableHeader>
+                <TableBody>
+                  {topClients.map((client) => (
+                    <TableRow key={client.name}>
+                      <TableCell>{client.name}</TableCell>
+                      <TableCell className="text-right">
+                        {client.proposals}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        ${client.ltv.toLocaleString()}
+                      </TableCell>
+                      <TableCell>{client.lastActivity}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-          ))}
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Communications</CardTitle>
+            <CardDescription>
+              High-touch conversations this week.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {recentCommunications.map((note) => (
+              <div
+                className="rounded-lg border border-border/70 px-4 py-3"
+                key={note.client}
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold">{note.client}</p>
+                  <Badge
+                    variant={
+                      note.status === "Resolved" ? "secondary" : "outline"
+                    }
+                  >
+                    {note.status}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">{note.channel}</p>
+                <p className="text-sm text-muted-foreground">{note.summary}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
     </section>
   </div>
 );

@@ -73,7 +73,9 @@ export default function ReceivingReportsPage() {
     pending_items: 12,
   };
 
-  const getScoreBadgeVariant = (score: number): "default" | "secondary" | "destructive" | "outline" => {
+  const getScoreBadgeVariant = (
+    score: number
+  ): "default" | "secondary" | "destructive" | "outline" => {
     if (score >= 4.5) {
       return "default";
     }
@@ -145,7 +147,9 @@ export default function ReceivingReportsPage() {
               <CardDescription>Quality Score</CardDescription>
               <CardTitle>
                 <div className="flex items-center gap-2">
-                  <span>{receivingSummary.average_quality_score.toFixed(1)}</span>
+                  <span>
+                    {receivingSummary.average_quality_score.toFixed(1)}
+                  </span>
                   <div className="flex items-center gap-1 text-emerald-600 text-sm font-normal">
                     {getTrendIcon(true)}
                     <span>+0.2</span>
@@ -192,7 +196,9 @@ export default function ReceivingReportsPage() {
                         <h3 className="font-medium">
                           {supplier.supplier_name}
                         </h3>
-                        <Badge variant={getScoreBadgeVariant(supplier.quality_score)}>
+                        <Badge
+                          variant={getScoreBadgeVariant(supplier.quality_score)}
+                        >
                           {supplier.quality_score.toFixed(1)} / 5.0
                         </Badge>
                       </div>
@@ -285,7 +291,10 @@ export default function ReceivingReportsPage() {
                   <span className="font-medium">8 (44%)</span>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-600" style={{ width: "44%" }} />
+                  <div
+                    className="h-full bg-blue-600"
+                    style={{ width: "44%" }}
+                  />
                 </div>
               </div>
               <div>
@@ -306,7 +315,10 @@ export default function ReceivingReportsPage() {
                   <span className="font-medium">3 (17%)</span>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-destructive" style={{ width: "17%" }} />
+                  <div
+                    className="h-full bg-destructive"
+                    style={{ width: "17%" }}
+                  />
                 </div>
               </div>
               <div>
@@ -315,7 +327,10 @@ export default function ReceivingReportsPage() {
                   <span className="font-medium">1 (6%)</span>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-600" style={{ width: "6%" }} />
+                  <div
+                    className="h-full bg-emerald-600"
+                    style={{ width: "6%" }}
+                  />
                 </div>
               </div>
             </div>

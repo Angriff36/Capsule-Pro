@@ -48,7 +48,6 @@ export class AgentWorkflow {
   private readonly context: WorkflowContext;
   private readonly stepExecutionOrder: string[] = [];
 
-
   constructor(config: WorkflowConfig) {
     this.id = uuidv4();
     this.name = config.name;

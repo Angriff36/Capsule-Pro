@@ -59,36 +59,36 @@ const WarehouseAuditsPage = () => (
         Scheduled Audit Rounds
       </h2>
       <div className="grid gap-6 md:grid-cols-2">
-      {auditRounds.map((audit) => (
-        <Card key={audit.title}>
-          <CardHeader>
-            <CardTitle>{audit.title}</CardTitle>
-            <CardDescription>
-              <Badge variant={statusVariant[audit.status] ?? "outline"}>
-                {audit.status}
-              </Badge>
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Location</span>
-              <span className="font-medium">{audit.location}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Scheduled</span>
-              <span className="font-medium">{audit.scheduled}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Variance</span>
-              <span className="font-medium">{audit.variance}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Inspector</span>
-              <span className="font-medium">{audit.inspector}</span>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+        {auditRounds.map((audit) => (
+          <Card key={audit.title}>
+            <CardHeader>
+              <CardTitle>{audit.title}</CardTitle>
+              <CardDescription>
+                <Badge variant={statusVariant[audit.status] ?? "outline"}>
+                  {audit.status}
+                </Badge>
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Location</span>
+                <span className="font-medium">{audit.location}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Scheduled</span>
+                <span className="font-medium">{audit.scheduled}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Variance</span>
+                <span className="font-medium">{audit.variance}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Inspector</span>
+                <span className="font-medium">{audit.inspector}</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </section>
   </div>

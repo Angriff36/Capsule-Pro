@@ -32,11 +32,7 @@
       ],
       "computedProperties": [],
       "relationships": [],
-      "commands": [
-        "increment",
-        "reset",
-        "setValue"
-      ],
+      "commands": ["increment", "reset", "setValue"],
       "constraints": [],
       "policies": []
     }
@@ -127,9 +123,7 @@
           }
         }
       ],
-      "emits": [
-        "CounterIncremented"
-      ]
+      "emits": ["CounterIncremented"]
     },
     {
       "name": "reset",
@@ -149,9 +143,7 @@
           }
         }
       ],
-      "emits": [
-        "CounterReset"
-      ]
+      "emits": ["CounterReset"]
     },
     {
       "name": "setValue",
@@ -177,9 +169,7 @@
           }
         }
       ],
-      "emits": [
-        "CounterSet"
-      ]
+      "emits": ["CounterSet"]
     }
   ],
   "policies": []

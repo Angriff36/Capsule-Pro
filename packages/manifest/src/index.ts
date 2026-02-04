@@ -1,65 +1,57 @@
 /**
  * @repo/manifest
- * 
+ *
  * Manifest Language Runtime and Compiler
- * 
+ *
  * Usage:
  *   import { RuntimeEngine, compileToIR } from '@repo/manifest';
  *   import type { IR, CommandResult } from '@repo/manifest';
  */
 
-// Export runtime engine
-export {
-  RuntimeEngine,
-  type RuntimeContext,
-  type RuntimeOptions,
-  type EntityInstance,
-  type CommandResult,
-  type GuardFailure,
-  type GuardResolvedValue,
-  type EmittedEvent,
-  type Store,
-} from './manifest/runtime-engine';
-
-// Export compiler
-export {
-  compileToIR,
-} from './manifest/ir-compiler';
-
-// CompileToIRResult is defined in ir.ts
-export type {
-  CompileToIRResult,
-} from './manifest/ir';
-
-// Export types
-export type {
-  IR,
-  IRModule,
-  IREntity,
-  IRProperty,
-  IRComputedProperty,
-  IRRelationship,
-  IRConstraint,
-  IRStore,
-  IREvent,
-  IREventField,
-  IRCommand,
-  IRParameter,
-  IRAction,
-  IRPolicy,
-  IRType,
-  IRValue,
-  IRExpression,
-  IRDiagnostic,
-  PropertyModifier,
-} from './manifest/ir';
-
 // Export event import runtime helpers
 export {
   createEventImportRuntime,
-  processDocumentImport,
   createOrUpdateEvent,
   generateBattleBoard,
   generateChecklist,
+  processDocumentImport,
   setupEventListeners,
-} from './event-import-runtime';
+} from "./event-import-runtime";
+// CompileToIRResult is defined in ir.ts
+// Export types
+export type {
+  CompileToIRResult,
+  IR,
+  IRAction,
+  IRCommand,
+  IRComputedProperty,
+  IRConstraint,
+  IRDiagnostic,
+  IREntity,
+  IREvent,
+  IREventField,
+  IRExpression,
+  IRModule,
+  IRParameter,
+  IRPolicy,
+  IRProperty,
+  IRRelationship,
+  IRStore,
+  IRType,
+  IRValue,
+  PropertyModifier,
+} from "./manifest/ir";
+// Export compiler
+export { compileToIR } from "./manifest/ir-compiler";
+// Export runtime engine
+export {
+  type CommandResult,
+  type EmittedEvent,
+  type EntityInstance,
+  type GuardFailure,
+  type GuardResolvedValue,
+  type RuntimeContext,
+  RuntimeEngine,
+  type RuntimeOptions,
+  type Store,
+} from "./manifest/runtime-engine";

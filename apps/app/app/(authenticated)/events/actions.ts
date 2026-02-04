@@ -131,9 +131,7 @@ const computeMissingEventFields = async ({
     missing.push("venueName");
   }
 
-  const [menuRow] = await database.$queryRaw<
-    Array<{ count: number }>
-  >(
+  const [menuRow] = await database.$queryRaw<Array<{ count: number }>>(
     Prisma.sql`
       SELECT COUNT(*)::int AS count
       FROM tenant_events.event_dishes

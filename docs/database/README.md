@@ -54,7 +54,7 @@ The Convoy database is a multi-tenant PostgreSQL database managed by Prisma ORM.
 1. **Soft Deletes**: All tenant tables include `deletedAt` for soft deletion
 2. **Audit Trail**: All tables include `createdAt` and `updatedAt` timestamps
 3. **Tenant Isolation**: Tenant tables include `tenantId` with indexes
-4. **Foreign Keys**: Referential integrity enforced at database level
+4. **Foreign Keys**: Referential integrity enforced at database level (Prisma uses `relationMode = "prisma"`, so FKs are not managed by Prisma)
 5. **Outbox Pattern**: Real-time events via `OutboxEvent` model
 
 ## Documentation Structure
@@ -84,15 +84,76 @@ This documentation follows the "living docs" approach:
 3. **Always up-to-date** - Generated with migrations, not as an afterthought
 4. **Version controlled** - Documentation changes tracked with schema changes
 
-### Update Workflow
+### Update Workflow (Enforced)
 
 ```bash
-# After modifying Prisma schema
-pnpm migrate              # Create migration
-pnpm docs:generate-db     # Generate updated docs (TODO: implement this)
-# Add manual annotations for business logic
-git add docs/database/
-git commit -m "docs(db): update schema docs for X changes"
+# 1) Validate DB alignment before changing schema
+pnpm db:check
+
+# 2) Update Prisma schema
+# packages/database/prisma/schema.prisma
+
+# 3) Create/apply dev migration (includes db:check + generate)
+pnpm migrate
+
+# 4) If db:check fails, generate a safe repair migration
+pnpm db:repair
+
+# 5) Apply migrations to shared DB
+pnpm db:deploy
+
+# 6) Update docs (TODO: implement generator)
+pnpm docs:generate-db
+```
+
+### Drift Realignment (Dev Only)
+
+Use this when your local DB has drift or after pulling new migrations.
+
+```bash
+# 1) Detect drift (additive drift + full diff)
+pnpm db:check
+pnpm --filter @repo/database exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma
+
+# 2) If drift is additive, generate a safe repair migration
+pnpm db:repair
+
+# 3) Review the generated migration SQL (must be safe/additive)
+# packages/database/prisma/migrations/<timestamp>_repair_drift/migration.sql
+
+# 4) Apply repair migration to dev DB
+pnpm db:deploy
+
+# 5) Re-check drift
+pnpm db:check
+pnpm --filter @repo/database exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma
+```
+
+Notes:
+- Expect **drop-only** diffs for DB foreign keys because `relationMode = "prisma"` (Prisma does not manage FKs).
+- If the diff shows **unexpected column drops**, confirm whether the DB has extra columns not in schema.
+- Never edit existing migrations; add a new migration if cleanup is required.
+
+### Code Alignment After Drift
+
+After the DB is aligned to schema, fix code that still references old columns.
+
+```bash
+# 1) Find raw SQL usages
+rg -n "\\$queryRaw|\\$executeRaw|\\$queryRawUnsafe|\\$executeRawUnsafe|Prisma\\.sql" apps packages
+
+# 2) Compare selected columns against schema.prisma (or contract docs)
+# 3) Update SQL to use real DB column names (alias to UI-friendly names if needed)
+
+# 4) Add targeted tests that inspect SQL strings
+# 5) Re-run targeted tests for the affected package(s)
+```
+
+If `db push` was used (not recommended), baseline migration history before continuing:
+
+```bash
+pnpm --filter @repo/database exec prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script > packages/database/prisma/migrations/0_init/migration.sql
+pnpm --filter @repo/database exec prisma migrate resolve --applied 0_init
 ```
 
 ### What Gets Documented

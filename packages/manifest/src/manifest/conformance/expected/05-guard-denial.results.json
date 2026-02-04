@@ -84,7 +84,11 @@
       "setup": {
         "createInstance": {
           "entity": "Task",
-          "data": { "id": "task-4", "title": "Low Priority Task", "priority": 1 }
+          "data": {
+            "id": "task-4",
+            "title": "Low Priority Task",
+            "priority": 1
+          }
         }
       },
       "command": {
@@ -104,7 +108,11 @@
       "setup": {
         "createInstance": {
           "entity": "Task",
-          "data": { "id": "task-5", "title": "High Priority Task", "priority": 1 }
+          "data": {
+            "id": "task-5",
+            "title": "High Priority Task",
+            "priority": 1
+          }
         }
       },
       "command": {
@@ -124,7 +132,11 @@
       "setup": {
         "createInstance": {
           "entity": "Task",
-          "data": { "id": "task-6", "title": "Incomplete Task", "completed": false }
+          "data": {
+            "id": "task-6",
+            "title": "Incomplete Task",
+            "completed": false
+          }
         }
       },
       "command": {
@@ -144,7 +156,11 @@
       "setup": {
         "createInstance": {
           "entity": "Task",
-          "data": { "id": "task-7", "title": "Completed Task", "completed": true }
+          "data": {
+            "id": "task-7",
+            "title": "Completed Task",
+            "completed": true
+          }
         }
       },
       "command": {

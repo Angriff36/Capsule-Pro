@@ -1,10 +1,8 @@
 "use client";
 
+import { ClientQuickStatsBlock } from "@repo/design-system/components/blocks/client-quick-stats-block";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import {
-  ClientQuickStatsBlock,
-} from "@repo/design-system/components/blocks/client-quick-stats-block";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Tabs,
@@ -210,11 +208,7 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
             </div>
           </div>
         </div>
-        <Button
-          disabled={isDeleting}
-          onClick={handleDelete}
-          variant="outline"
-        >
+        <Button disabled={isDeleting} onClick={handleDelete} variant="outline">
           <TrashIcon className="h-4 w-4 mr-2" />
           Delete
         </Button>

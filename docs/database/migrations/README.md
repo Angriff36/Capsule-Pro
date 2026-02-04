@@ -10,7 +10,7 @@ Migrations are managed using **Prisma Migrate** and applied to a Neon PostgreSQL
 - Migration authority: Prisma Migrate (not manual SQL)
 - All migrations are in `packages/database/prisma/migrations/`
 - Each migration has a timestamp prefix: `YYYYMMDDHHMMSS_description/`
-- Always use `pnpm migrate` to create new migrations
+- Always use `pnpm migrate` to create new migrations (runs `db:check` first)
 - Never edit existing migrations after deployment
 
 ## Migration Patterns
@@ -29,11 +29,17 @@ Migrations follow this pattern:
 ### Creating Migrations
 
 ```bash
+# Validate drift before changes
+pnpm db:check
+
 # Development (interactive)
 pnpm migrate
 
-# Production deployment
-pnpm migrate:deploy
+# If drift exists, generate a safe repair migration
+pnpm db:repair
+
+# Production/shared deployment
+pnpm db:deploy
 
 # Check migration status
 pnpm migrate:status
@@ -197,6 +203,7 @@ CREATE TRIGGER "table_name_prevent_tenant_mutation"
 After running a migration, verify:
 
 - [ ] Migration applied successfully (check `pnpm migrate:status`)
+- [ ] `pnpm db:check` passes (no drift)
 - [ ] Prisma client regenerated (`pnpm prisma:generate`)
 - [ ] Application starts without errors
 - [ ] Database queries work correctly

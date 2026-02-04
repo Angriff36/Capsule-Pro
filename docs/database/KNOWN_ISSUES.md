@@ -11,6 +11,8 @@ Last updated: 2025-01-30
 - **Issues resolved**: 4 (Migration rollback, Role model, Computed DEFAULT, UUID function)
 - **Type fixes completed**: 1 (ProposalUpdateData type)
 
+**Note**: `prisma db push` is disabled in this repo. Any references to db push failures below are historical; use `pnpm db:check` + `pnpm db:repair` instead.
+
 ## Critical Issues
 ## Critical Issues
 
@@ -448,7 +450,7 @@ tenantId  String   @map("tenant_id") @db.Uuid
 
 **Problem**:
 - PostgreSQL does not allow column references in DEFAULT expressions
-- Caused `db push` to fail with "cannot use column reference in DEFAULT expression"
+- Caused schema application failures (db push is disabled; use `pnpm db:check` + `pnpm db:repair`)
 
 **Resolution**:
 - Removed computed DEFAULT expression

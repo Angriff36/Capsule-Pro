@@ -18,7 +18,6 @@ import {
 } from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -561,92 +560,94 @@ export function ProposalsClient({
           </h2>
         </div>
         <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell className="text-center" colSpan={columns.length}>
-                  Loading proposals...
-                </TableCell>
-              </TableRow>
-            ) : proposals.length === 0 ? (
-              <TableRow>
-                <TableCell className="text-center" colSpan={columns.length}>
-                  <div className="flex flex-col items-center gap-2 py-8">
-                    <FileText className="size-12 text-muted-foreground" />
-                    <p className="text-muted-foreground">No proposals found</p>
-                    <Button asChild variant="outline">
-                      <Link href="/crm/proposals/new">
-                        Create your first proposal
-                      </Link>
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
-            {pagination.total} proposals
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              disabled={pagination.page === 1}
-              onClick={() => handlePageChange(pagination.page - 1)}
-              size="sm"
-              variant="outline"
-            >
-              Previous
-            </Button>
-            <span className="text-sm">
-              Page {pagination.page} of {pagination.totalPages}
-            </span>
-            <Button
-              disabled={pagination.page === pagination.totalPages}
-              onClick={() => handlePageChange(pagination.page + 1)}
-              size="sm"
-              variant="outline"
-            >
-              Next
-            </Button>
-          </div>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell className="text-center" colSpan={columns.length}>
+                    Loading proposals...
+                  </TableCell>
+                </TableRow>
+              ) : proposals.length === 0 ? (
+                <TableRow>
+                  <TableCell className="text-center" colSpan={columns.length}>
+                    <div className="flex flex-col items-center gap-2 py-8">
+                      <FileText className="size-12 text-muted-foreground" />
+                      <p className="text-muted-foreground">
+                        No proposals found
+                      </p>
+                      <Button asChild variant="outline">
+                        <Link href="/crm/proposals/new">
+                          Create your first proposal
+                        </Link>
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
-      )}
+
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
+              {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+              of {pagination.total} proposals
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                disabled={pagination.page === 1}
+                onClick={() => handlePageChange(pagination.page - 1)}
+                size="sm"
+                variant="outline"
+              >
+                Previous
+              </Button>
+              <span className="text-sm">
+                Page {pagination.page} of {pagination.totalPages}
+              </span>
+              <Button
+                disabled={pagination.page === pagination.totalPages}
+                onClick={() => handlePageChange(pagination.page + 1)}
+                size="sm"
+                variant="outline"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </section>
 
       <AlertDialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen}>

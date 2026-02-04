@@ -93,8 +93,11 @@ export async function GET(
       getRecipeVersionSnapshot(tenantId, recipeId, toId),
     ]);
 
-    if (!fromVersion || !toVersion) {
-      return NextResponse.json({ error: "Recipe version not found" }, { status: 404 });
+    if (!(fromVersion && toVersion)) {
+      return NextResponse.json(
+        { error: "Recipe version not found" },
+        { status: 404 }
+      );
     }
 
     const baseDiff: BaseDiff = {};

@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Activity, CreditCard, DollarSign, Users } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";

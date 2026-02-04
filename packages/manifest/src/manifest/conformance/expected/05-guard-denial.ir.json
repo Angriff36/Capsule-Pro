@@ -11,9 +11,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "completed",
@@ -42,11 +40,7 @@
       ],
       "computedProperties": [],
       "relationships": [],
-      "commands": [
-        "complete",
-        "setPriority",
-        "archive"
-      ],
+      "commands": ["complete", "setPriority", "archive"],
       "constraints": [],
       "policies": []
     }
@@ -120,9 +114,7 @@
           }
         }
       ],
-      "emits": [
-        "TaskCompleted"
-      ]
+      "emits": ["TaskCompleted"]
     },
     {
       "name": "setPriority",
@@ -200,9 +192,7 @@
         }
       ],
       "actions": [],
-      "emits": [
-        "TaskArchived"
-      ]
+      "emits": ["TaskArchived"]
     }
   ],
   "policies": []

@@ -84,7 +84,8 @@ const KitchenTasksPage = async () => {
         <div className="space-y-0.5">
           <h1 className="text-3xl font-bold tracking-tight">Kitchen Tasks</h1>
           <p className="text-muted-foreground">
-            Manage and track all kitchen operations tasks, priorities, and assignments.
+            Manage and track all kitchen operations tasks, priorities, and
+            assignments.
           </p>
         </div>
 
@@ -99,7 +100,9 @@ const KitchenTasksPage = async () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardDescription>Total Tasks</CardDescription>
-                <CardTitle className="text-2xl font-bold">{tasks.length}</CardTitle>
+                <CardTitle className="text-2xl font-bold">
+                  {tasks.length}
+                </CardTitle>
               </CardHeader>
             </Card>
             <Card>

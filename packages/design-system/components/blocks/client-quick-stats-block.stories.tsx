@@ -47,7 +47,7 @@ export const WithNumbers: Story = {
     stats: [
       { label: "Total Events", value: 42 },
       { label: "Interactions", value: 128 },
-      { label: "Total Revenue", value: 48500 },
+      { label: "Total Revenue", value: 48_500 },
       { label: "Contacts", value: 5 },
     ],
   },

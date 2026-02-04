@@ -137,7 +137,9 @@ const NewDishPage = async () => {
               <CardContent className="space-y-6 p-6">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="pricePerPerson">Menu price per person</Label>
+                    <Label htmlFor="pricePerPerson">
+                      Menu price per person
+                    </Label>
                     <Input
                       id="pricePerPerson"
                       name="pricePerPerson"
@@ -168,7 +170,9 @@ const NewDishPage = async () => {
               <CardContent className="space-y-6 p-6">
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="space-y-2">
-                    <Label htmlFor="minPrepLeadDays">Min prep lead (days)</Label>
+                    <Label htmlFor="minPrepLeadDays">
+                      Min prep lead (days)
+                    </Label>
                     <Input
                       id="minPrepLeadDays"
                       min="0"
@@ -177,7 +181,9 @@ const NewDishPage = async () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="maxPrepLeadDays">Max prep lead (days)</Label>
+                    <Label htmlFor="maxPrepLeadDays">
+                      Max prep lead (days)
+                    </Label>
                     <Input
                       id="maxPrepLeadDays"
                       min="0"

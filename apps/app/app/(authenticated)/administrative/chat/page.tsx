@@ -180,7 +180,9 @@ const AdministrativeChatPage = () => {
             {/* Active Conversation */}
             <Card className="flex flex-col">
               <CardHeader>
-                <CardTitle>{currentThread?.title ?? "Select a thread"}</CardTitle>
+                <CardTitle>
+                  {currentThread?.title ?? "Select a thread"}
+                </CardTitle>
                 <p className="text-xs text-muted-foreground">
                   {currentThread?.participants ?? "Waiting for selection"}
                 </p>
@@ -197,12 +199,16 @@ const AdministrativeChatPage = () => {
                       key={message.id}
                     >
                       <div className="flex items-baseline justify-between gap-2">
-                        <p className="text-sm font-semibold">{message.author}</p>
+                        <p className="text-sm font-semibold">
+                          {message.author}
+                        </p>
                         <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
                           {message.time}
                         </p>
                       </div>
-                      <p className="text-sm text-muted-foreground">{message.text}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {message.text}
+                      </p>
                     </div>
                   ))}
                 </div>

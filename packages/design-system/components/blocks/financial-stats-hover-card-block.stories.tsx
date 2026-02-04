@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { FinancialStatsHoverCardBlock } from "./financial-stats-hover-card-block"
+import type { Meta, StoryObj } from "@storybook/react";
+import { FinancialStatsHoverCardBlock } from "./financial-stats-hover-card-block";
 
 const meta = {
   title: "Blocks/FinancialStatsHoverCardBlock",
@@ -8,10 +8,10 @@ const meta = {
   parameters: {
     layout: "centered",
   },
-} satisfies Meta<typeof FinancialStatsHoverCardBlock>
+} satisfies Meta<typeof FinancialStatsHoverCardBlock>;
 
-export default meta
+export default meta;
 
-type Story = StoryObj<typeof meta>
+type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {}
+export const Default: Story = {};

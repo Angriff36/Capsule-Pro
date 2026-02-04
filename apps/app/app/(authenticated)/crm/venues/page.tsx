@@ -64,7 +64,10 @@ const upcomingEvents = [
   },
 ];
 
-const statusVariant: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+const statusVariant: Record<
+  string,
+  "default" | "secondary" | "outline" | "destructive"
+> = {
   Available: "default",
   Booked: "secondary",
   "Needs inspection": "outline",

@@ -17,8 +17,10 @@ All schema changes should now use Prisma Migrate:
 ```bash
 # Make schema changes in packages/database/prisma/schema.prisma
 # Then run:
+pnpm db:check             # Verify DB alignment
 pnpm migrate              # Creates new migration (dev)
-pnpm migrate:deploy       # Applies migrations (production)
+pnpm db:repair            # Generate safe repair migration if drift exists
+pnpm db:deploy            # Applies migrations (shared/production)
 ```
 
 ## Why These Are Archived

@@ -1,12 +1,12 @@
 import { env } from "@/env";
 import "./styles.css";
-import { ClerkProvider } from "@clerk/nextjs";
 import { AnalyticsProvider } from "@repo/analytics/provider";
 import { DesignSystemProvider } from "@repo/design-system";
 import { Toaster } from "@repo/design-system/components/ui/sonner";
 import { fonts } from "@repo/design-system/lib/fonts";
 import { Toolbar } from "@repo/feature-flags/components/toolbar";
 import type { ReactNode } from "react";
+import ClerkProviderClient from "./clerk-provider.client";
 import { AuthHeader } from "./components/auth-header";
 
 type RootLayoutProperties = {
@@ -14,9 +14,9 @@ type RootLayoutProperties = {
 };
 
 const RootLayout = ({ children }: RootLayoutProperties) => (
-  <ClerkProvider>
-    <html className={fonts} lang="en" suppressHydrationWarning>
-      <body>
+  <html className={fonts} lang="en" suppressHydrationWarning>
+    <body>
+      <ClerkProviderClient>
         <AuthHeader />
         <AnalyticsProvider>
           <DesignSystemProvider
@@ -35,9 +35,9 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
         </AnalyticsProvider>
         <Toolbar />
         <Toaster />
-      </body>
-    </html>
-  </ClerkProvider>
+      </ClerkProviderClient>
+    </body>
+  </html>
 );
 
 export default RootLayout;

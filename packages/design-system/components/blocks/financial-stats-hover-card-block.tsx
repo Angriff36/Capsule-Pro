@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { ArrowDown, ArrowUp, DollarSign } from "lucide-react"
+import { ArrowDown, ArrowUp, DollarSign } from "lucide-react";
 
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "../ui/hover-card"
+} from "../ui/hover-card";
 
 const metrics = [
   {
@@ -21,7 +21,7 @@ const metrics = [
     value: "$7.6k",
     tone: "text-red-600 dark:text-red-400",
   },
-]
+];
 
 export function FinancialStatsHoverCardBlock() {
   return (
@@ -34,9 +34,7 @@ export function FinancialStatsHoverCardBlock() {
           <DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
           <div>
             <div className="text-2xl font-bold">$45.2k</div>
-            <div className="text-sm text-muted-foreground">
-              Monthly Revenue
-            </div>
+            <div className="text-sm text-muted-foreground">Monthly Revenue</div>
           </div>
         </button>
       </HoverCardTrigger>
@@ -45,7 +43,7 @@ export function FinancialStatsHoverCardBlock() {
           <h4 className="text-sm font-semibold">Revenue Breakdown</h4>
           <div className="space-y-2 text-sm">
             {metrics.map((metric) => {
-              const Icon = metric.icon
+              const Icon = metric.icon;
               return (
                 <div
                   className="flex items-center justify-between rounded-md bg-muted p-2"
@@ -59,7 +57,7 @@ export function FinancialStatsHoverCardBlock() {
                   </div>
                   <span className="font-medium">{metric.value}</span>
                 </div>
-              )
+              );
             })}
             <div className="flex items-center justify-between pt-2">
               <span className="text-muted-foreground">Net Profit</span>
@@ -72,5 +70,5 @@ export function FinancialStatsHoverCardBlock() {
         </div>
       </HoverCardContent>
     </HoverCard>
-  )
+  );
 }

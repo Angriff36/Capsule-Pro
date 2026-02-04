@@ -100,7 +100,10 @@ const kanbanColumns = [
   },
 ];
 
-const priorityVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+const priorityVariant: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
   High: "destructive",
   Medium: "secondary",
   Low: "outline",
@@ -110,7 +113,9 @@ const AdministrativeKanbanPage = () => (
   <div className="space-y-8">
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Operational Kanban</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Operational Kanban
+        </h1>
         <p className="text-sm text-muted-foreground">
           Keep critical cross-functional requests visible and moving.
         </p>
@@ -145,7 +150,10 @@ const AdministrativeKanbanPage = () => (
                   <span>{task.owner}</span>
                   <span>Due {task.due}</span>
                 </div>
-                <Badge variant={priorityVariant[task.priority]} className="w-fit text-[11px] font-semibold">
+                <Badge
+                  className="w-fit text-[11px] font-semibold"
+                  variant={priorityVariant[task.priority]}
+                >
                   {task.priority} priority
                 </Badge>
               </div>

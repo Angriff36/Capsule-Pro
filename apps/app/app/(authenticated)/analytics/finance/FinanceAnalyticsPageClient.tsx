@@ -84,9 +84,7 @@ export function FinanceAnalyticsPageClient() {
                 <CardTitle>{item.value}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-xs text-muted-foreground">
-                  {item.trend}
-                </p>
+                <p className="text-xs text-muted-foreground">{item.trend}</p>
               </CardContent>
             </Card>
           ))}

@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -24,7 +25,6 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   AlertTriangleIcon,
   CalendarIcon,
@@ -433,231 +433,233 @@ export default function TimecardsPage() {
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[40px]">
-                        <input
-                          checked={selectedEntries.size === timeEntries.length}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedEntries(
-                                new Set(timeEntries.map((e) => e.id))
-                              );
-                            } else {
-                              setSelectedEntries(new Set());
-                            }
-                          }}
-                          type="checkbox"
-                        />
-                      </TableHead>
-                      <TableHead>Employee</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Hours</TableHead>
-                      <TableHead>Scheduled</TableHead>
-                      <TableHead>Break</TableHead>
-                      <TableHead>Cost</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {timeEntries.map((entry) => (
-                      <TableRow
-                        className="cursor-pointer hover:bg-muted/50"
-                        key={entry.id}
-                        onClick={() => openDetailModal(entry)}
-                      >
-                        <TableCell onClick={(e) => e.stopPropagation()}>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[40px]">
                           <input
-                            checked={selectedEntries.has(entry.id)}
-                            onChange={() => toggleSelectEntry(entry.id)}
+                            checked={
+                              selectedEntries.size === timeEntries.length
+                            }
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedEntries(
+                                  new Set(timeEntries.map((e) => e.id))
+                                );
+                              } else {
+                                setSelectedEntries(new Set());
+                              }
+                            }}
                             type="checkbox"
                           />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage
-                                alt={getEmployeeName(
-                                  entry.employee_first_name,
-                                  entry.employee_last_name
-                                )}
-                                src={`${entry.employee_first_name?.[0]}${entry.employee_last_name?.[0]}`}
-                              />
-                              <AvatarFallback>
-                                {getEmployeeName(
-                                  entry.employee_first_name,
-                                  entry.employee_last_name
-                                )
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")
-                                  .toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="font-medium">
-                                {getEmployeeName(
-                                  entry.employee_first_name,
-                                  entry.employee_last_name
-                                )}
-                              </div>
-                              <div className="text-muted-foreground text-xs">
-                                {entry.employee_role}
-                              </div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <CalendarIcon className="size-4 text-muted-foreground" />
-                              <span className="font-medium">
-                                {formatDate(entry.clock_in)}
-                              </span>
-                            </div>
-                            <div className="text-muted-foreground text-xs">
-                              {formatTime(entry.clock_in)} -{" "}
-                              {entry.clock_out
-                                ? formatTime(entry.clock_out)
-                                : "Open"}
-                            </div>
-                            {entry.location_name && (
-                              <div className="text-muted-foreground text-xs">
-                                {entry.location_name}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <div className="font-medium">
-                              {formatHours(entry.actual_hours)}
-                            </div>
-                            {entry.break_minutes > 0 && (
-                              <div className="text-muted-foreground text-xs">
-                                {entry.break_minutes} min break
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {entry.scheduled_hours ? (
-                            <div>
-                              <div className="font-medium">
-                                {formatHours(entry.scheduled_hours)}
-                              </div>
-                              {entry.shift_start && entry.shift_end && (
+                        </TableHead>
+                        <TableHead>Employee</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Hours</TableHead>
+                        <TableHead>Scheduled</TableHead>
+                        <TableHead>Break</TableHead>
+                        <TableHead>Cost</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {timeEntries.map((entry) => (
+                        <TableRow
+                          className="cursor-pointer hover:bg-muted/50"
+                          key={entry.id}
+                          onClick={() => openDetailModal(entry)}
+                        >
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <input
+                              checked={selectedEntries.has(entry.id)}
+                              onChange={() => toggleSelectEntry(entry.id)}
+                              type="checkbox"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage
+                                  alt={getEmployeeName(
+                                    entry.employee_first_name,
+                                    entry.employee_last_name
+                                  )}
+                                  src={`${entry.employee_first_name?.[0]}${entry.employee_last_name?.[0]}`}
+                                />
+                                <AvatarFallback>
+                                  {getEmployeeName(
+                                    entry.employee_first_name,
+                                    entry.employee_last_name
+                                  )
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")
+                                    .toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="font-medium">
+                                  {getEmployeeName(
+                                    entry.employee_first_name,
+                                    entry.employee_last_name
+                                  )}
+                                </div>
                                 <div className="text-muted-foreground text-xs">
-                                  {formatTime(entry.shift_start)} -{" "}
-                                  {formatTime(entry.shift_end)}
+                                  {entry.employee_role}
+                                </div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <CalendarIcon className="size-4 text-muted-foreground" />
+                                <span className="font-medium">
+                                  {formatDate(entry.clock_in)}
+                                </span>
+                              </div>
+                              <div className="text-muted-foreground text-xs">
+                                {formatTime(entry.clock_in)} -{" "}
+                                {entry.clock_out
+                                  ? formatTime(entry.clock_out)
+                                  : "Open"}
+                              </div>
+                              {entry.location_name && (
+                                <div className="text-muted-foreground text-xs">
+                                  {entry.location_name}
                                 </div>
                               )}
                             </div>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">
-                              N/A
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {getExceptionBadge(entry.exception_type)}
-                        </TableCell>
-                        <TableCell>
-                          {formatCurrency(entry.total_cost)}
-                        </TableCell>
-                        <TableCell>
-                          {entry.approved_at ? (
-                            <Badge
-                              className="flex items-center gap-1"
-                              variant="secondary"
-                            >
-                              <CheckCircleIcon className="h-3 w-3" />
-                              Approved
-                            </Badge>
-                          ) : entry.clock_out ? (
-                            <Badge variant="outline">Pending</Badge>
-                          ) : (
-                            <Badge variant="default">
-                              <ClockIcon className="h-3 w-3" />
-                              Open
-                            </Badge>
-                          )}
-                          {entry.approver_first_name && (
-                            <div className="text-muted-foreground text-xs mt-1">
-                              by {entry.approver_first_name}{" "}
-                              {entry.approver_last_name?.[0]}
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="font-medium">
+                                {formatHours(entry.actual_hours)}
+                              </div>
+                              {entry.break_minutes > 0 && (
+                                <div className="text-muted-foreground text-xs">
+                                  {entry.break_minutes} min break
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center gap-1">
-                            {!entry.approved_at && entry.clock_out && (
+                          </TableCell>
+                          <TableCell>
+                            {entry.scheduled_hours ? (
+                              <div>
+                                <div className="font-medium">
+                                  {formatHours(entry.scheduled_hours)}
+                                </div>
+                                {entry.shift_start && entry.shift_end && (
+                                  <div className="text-muted-foreground text-xs">
+                                    {formatTime(entry.shift_start)} -{" "}
+                                    {formatTime(entry.shift_end)}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">
+                                N/A
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {getExceptionBadge(entry.exception_type)}
+                          </TableCell>
+                          <TableCell>
+                            {formatCurrency(entry.total_cost)}
+                          </TableCell>
+                          <TableCell>
+                            {entry.approved_at ? (
+                              <Badge
+                                className="flex items-center gap-1"
+                                variant="secondary"
+                              >
+                                <CheckCircleIcon className="h-3 w-3" />
+                                Approved
+                              </Badge>
+                            ) : entry.clock_out ? (
+                              <Badge variant="outline">Pending</Badge>
+                            ) : (
+                              <Badge variant="default">
+                                <ClockIcon className="h-3 w-3" />
+                                Open
+                              </Badge>
+                            )}
+                            {entry.approver_first_name && (
+                              <div className="text-muted-foreground text-xs mt-1">
+                                by {entry.approver_first_name}{" "}
+                                {entry.approver_last_name?.[0]}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center gap-1">
+                              {!entry.approved_at && entry.clock_out && (
+                                <Button
+                                  className="h-8 w-8 text-green-600 hover:text-green-700"
+                                  disabled={actionLoading}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleApprove(entry.id);
+                                  }}
+                                  size="icon"
+                                  variant="ghost"
+                                >
+                                  <CheckIcon className="size-4" />
+                                </Button>
+                              )}
                               <Button
-                                className="h-8 w-8 text-green-600 hover:text-green-700"
-                                disabled={actionLoading}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleApprove(entry.id);
-                                }}
+                                className="h-8 w-8 text-blue-600 hover:text-blue-700"
                                 size="icon"
                                 variant="ghost"
                               >
-                                <CheckIcon className="size-4" />
+                                <EditIcon className="size-4" />
                               </Button>
-                            )}
-                            <Button
-                              className="h-8 w-8 text-blue-600 hover:text-blue-700"
-                              size="icon"
-                              variant="ghost"
-                            >
-                              <EditIcon className="size-4" />
-                            </Button>
-                            <Button
-                              className="h-8 w-8 text-orange-600 hover:text-orange-700"
-                              size="icon"
-                              variant="ghost"
-                            >
-                              <FlagIcon className="size-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+                              <Button
+                                className="h-8 w-8 text-orange-600 hover:text-orange-700"
+                                size="icon"
+                                variant="ghost"
+                              >
+                                <FlagIcon className="size-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
 
-          <div className="flex items-center justify-between">
-            <p className="text-muted-foreground text-sm">
-              Showing {timeEntries.length} of {pagination.total} entries
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                disabled={pagination.page <= 1}
-                onClick={() => handlePageChange(pagination.page - 1)}
-                size="sm"
-                variant="outline"
-              >
-                Previous
-              </Button>
-              <span className="text-sm">
-                Page {pagination.page} of {pagination.totalPages}
-              </span>
-              <Button
-                disabled={pagination.page >= pagination.totalPages}
-                onClick={() => handlePageChange(pagination.page + 1)}
-                size="sm"
-                variant="outline"
-              >
-                Next
-              </Button>
+            <div className="flex items-center justify-between">
+              <p className="text-muted-foreground text-sm">
+                Showing {timeEntries.length} of {pagination.total} entries
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  disabled={pagination.page <= 1}
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  size="sm"
+                  variant="outline"
+                >
+                  Previous
+                </Button>
+                <span className="text-sm">
+                  Page {pagination.page} of {pagination.totalPages}
+                </span>
+                <Button
+                  disabled={pagination.page >= pagination.totalPages}
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  size="sm"
+                  variant="outline"
+                >
+                  Next
+                </Button>
+              </div>
             </div>
-          </div>
-        </section>
-      </>
+          </section>
+        </>
       )}
 
       {selectedTimeEntry && (

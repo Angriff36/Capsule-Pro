@@ -1,8 +1,5 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
-import {
-  Card,
-  CardContent,
-} from "@repo/design-system/components/ui/card";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { Separator } from "@repo/design-system/components/ui/separator";
 
 const communications = [

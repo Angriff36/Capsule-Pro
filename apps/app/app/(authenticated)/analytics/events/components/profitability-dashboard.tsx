@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -15,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import { useEffect, useState } from "react";
 import type {
   EventProfitabilityMetrics,
@@ -184,10 +184,10 @@ export function ProfitabilityDashboard({
                       />
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Budget: ${metrics.budgetedFoodCost.toFixed(2)}</span>
                       <span>
-                        {metrics.foodCostVariance.toFixed(2)}
+                        Budget: ${metrics.budgetedFoodCost.toFixed(2)}
                       </span>
+                      <span>{metrics.foodCostVariance.toFixed(2)}</span>
                     </div>
                   </div>
 
@@ -211,10 +211,10 @@ export function ProfitabilityDashboard({
                       />
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Budget: ${metrics.budgetedLaborCost.toFixed(2)}</span>
                       <span>
-                        {metrics.laborCostVariance.toFixed(2)}
+                        Budget: ${metrics.budgetedLaborCost.toFixed(2)}
                       </span>
+                      <span>{metrics.laborCostVariance.toFixed(2)}</span>
                     </div>
                   </div>
 
@@ -238,7 +238,9 @@ export function ProfitabilityDashboard({
                       />
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Budget: ${metrics.budgetedOverhead.toFixed(2)}</span>
+                      <span>
+                        Budget: ${metrics.budgetedOverhead.toFixed(2)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -385,9 +387,12 @@ export function ProfitabilityDashboard({
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       {/* Page Header */}
       <div className="space-y-0.5">
-        <h1 className="text-3xl font-bold tracking-tight">Event Profitability</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Event Profitability
+        </h1>
         <p className="text-muted-foreground">
-          Analyze event profitability, margins, cost variance, and revenue trends over time.
+          Analyze event profitability, margins, cost variance, and revenue
+          trends over time.
         </p>
       </div>
 
@@ -399,10 +404,7 @@ export function ProfitabilityDashboard({
           <label className="text-sm font-medium" htmlFor="period-select">
             Period:
           </label>
-          <Select
-            value={selectedPeriod}
-            onValueChange={setSelectedPeriod}
-          >
+          <Select onValueChange={setSelectedPeriod} value={selectedPeriod}>
             <SelectTrigger className="w-[180px]" id="period-select">
               <SelectValue />
             </SelectTrigger>
@@ -526,7 +528,9 @@ export function ProfitabilityDashboard({
                       {historical.map((item, index) => (
                         <tr className="border-b hover:bg-muted/50" key={index}>
                           <td className="py-2">{item.period}</td>
-                          <td className="py-2 text-right">{item.totalEvents}</td>
+                          <td className="py-2 text-right">
+                            {item.totalEvents}
+                          </td>
                           <td className="py-2 text-right">
                             ${item.totalRevenue.toFixed(2)}
                           </td>

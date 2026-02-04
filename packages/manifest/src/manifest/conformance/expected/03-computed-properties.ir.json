@@ -11,9 +11,7 @@
             "name": "number",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "quantity",
@@ -59,10 +57,7 @@
               "name": "quantity"
             }
           },
-          "dependencies": [
-            "price",
-            "quantity"
-          ]
+          "dependencies": ["price", "quantity"]
         },
         {
           "name": "discountedTotal",
@@ -104,10 +99,7 @@
               }
             }
           },
-          "dependencies": [
-            "total",
-            "discountPercent"
-          ]
+          "dependencies": ["total", "discountPercent"]
         },
         {
           "name": "hasDiscount",
@@ -130,9 +122,7 @@
               }
             }
           },
-          "dependencies": [
-            "discountPercent"
-          ]
+          "dependencies": ["discountPercent"]
         },
         {
           "name": "isExpensive",
@@ -155,9 +145,7 @@
               }
             }
           },
-          "dependencies": [
-            "total"
-          ]
+          "dependencies": ["total"]
         }
       ],
       "relationships": [],

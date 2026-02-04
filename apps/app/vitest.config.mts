@@ -23,7 +23,10 @@ export default defineConfig({
             id.includes("database"))
         ) {
           console.log(`[vitest-database-mock] INTERCEPTED database: ${id}`);
-          return path.resolve(__dirname, "./test/mocks/@repo/database.ts");
+          return path.resolve(
+            import.meta.dirname,
+            "./test/mocks/@repo/database.ts"
+          );
         }
         // Intercept imports to the database generated client - multiple patterns
         const normalizedId = id.replace(/\\/g, "/");
@@ -43,7 +46,7 @@ export default defineConfig({
         ) {
           console.log(`[vitest-database-mock] INTERCEPTED client: ${id}`);
           return path.resolve(
-            __dirname,
+            import.meta.dirname,
             "./test/mocks/@repo/generated/client.ts"
           );
         }
@@ -55,7 +58,10 @@ export default defineConfig({
           id.includes("packages/storage")
         ) {
           console.log(`[vitest-database-mock] INTERCEPTED storage: ${id}`);
-          return path.resolve(__dirname, "./test/mocks/@repo/storage.ts");
+          return path.resolve(
+            import.meta.dirname,
+            "./test/mocks/@repo/storage.ts"
+          );
         }
         return undefined;
       },
@@ -117,9 +123,12 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./"),
-      "@repo": path.resolve(__dirname, "../../packages"),
-      "server-only": path.resolve(__dirname, "__tests__/mocks/server-only.ts"),
+      "@": path.resolve(import.meta.dirname, "./"),
+      "@repo": path.resolve(import.meta.dirname, "../../packages"),
+      "server-only": path.resolve(
+        import.meta.dirname,
+        "__tests__/mocks/server-only.ts"
+      ),
     },
   },
   optimizeDeps: {

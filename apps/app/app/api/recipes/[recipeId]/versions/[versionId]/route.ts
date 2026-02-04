@@ -26,7 +26,10 @@ export async function GET(
     );
 
     if (!snapshot) {
-      return NextResponse.json({ error: "Recipe version not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Recipe version not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(snapshot);

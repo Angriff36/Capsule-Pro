@@ -76,12 +76,16 @@ const PayrollPayoutsPage = () => (
                 {payouts.map((payout) => (
                   <TableRow key={payout.target}>
                     <TableCell>{payout.target}</TableCell>
-                    <TableCell className="text-right">{payout.amount}</TableCell>
+                    <TableCell className="text-right">
+                      {payout.amount}
+                    </TableCell>
                     <TableCell>{payout.runDate}</TableCell>
                     <TableCell>
                       <Badge
                         variant={
-                          payout.status === "Scheduled" ? "secondary" : "outline"
+                          payout.status === "Scheduled"
+                            ? "secondary"
+                            : "outline"
                         }
                       >
                         {payout.status}

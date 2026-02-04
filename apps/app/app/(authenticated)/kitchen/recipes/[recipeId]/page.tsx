@@ -3,11 +3,13 @@ import { database, Prisma } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
-import { ArrowLeft, ChefHat, Clock, Edit, Users } from "lucide-react";
+import { ArrowLeft, ChefHat, Clock, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { invariant } from "../../../../lib/invariant";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 import { Header } from "../../../components/header";
+import { RecipeDetailEditButton } from "./components/recipe-detail-edit-button";
 import { RecipeDetailTabs } from "./components/recipe-detail-tabs";
 
 type RecipeDetailRow = {
@@ -50,6 +52,40 @@ type RecipeStepRow = {
 
 const formatMinutes = (minutes?: number | null) =>
   minutes && minutes > 0 ? `${minutes}m` : "-";
+
+const toDecimalNumber = (value: unknown, field: string): number => {
+  if (typeof value === "number") {
+    return value;
+  }
+
+  if (Prisma.Decimal.isDecimal(value)) {
+    const parsed = Number(value.toJSON());
+    invariant(
+      Number.isFinite(parsed),
+      `${field} must be a finite decimal value`
+    );
+    return parsed;
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    invariant(Number.isFinite(parsed), `${field} must be a numeric string`);
+    return parsed;
+  }
+
+  invariant(false, `${field} must be a number or Decimal`);
+};
+
+const toDecimalNumberOrNull = (
+  value: unknown,
+  field: string
+): number | null => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  return toDecimalNumber(value, field);
+};
 
 const RecipeDetailPage = async ({
   params,
@@ -114,18 +150,24 @@ const RecipeDetailPage = async ({
     return notFound();
   }
 
-  const recipe = recipes[0];
+  const recipe = {
+    ...recipes[0],
+    yield_quantity: toDecimalNumberOrNull(
+      recipes[0].yield_quantity,
+      "recipe.yield_quantity"
+    ),
+  };
 
   // Fetch ingredients
-  const ingredients = await database.$queryRaw<IngredientRow[]>(
+  const ingredientRows = await database.$queryRaw<IngredientRow[]>(
     Prisma.sql`
       SELECT
         i.id,
         i.name,
         ri.quantity,
         u.code AS unit_code,
-        ri.notes,
-        ri.order_index
+        ri.preparation_notes AS notes,
+        ri.sort_order AS order_index
       FROM tenant_kitchen.recipe_ingredients ri
       JOIN tenant_kitchen.ingredients i
         ON i.tenant_id = ri.tenant_id
@@ -142,9 +184,13 @@ const RecipeDetailPage = async ({
           LIMIT 1
         )
         AND ri.deleted_at IS NULL
-      ORDER BY ri.order_index ASC
+      ORDER BY ri.sort_order ASC
     `
   );
+  const ingredients = ingredientRows.map((ingredient) => ({
+    ...ingredient,
+    quantity: toDecimalNumber(ingredient.quantity, "ingredient.quantity"),
+  }));
 
   // Get the latest recipe version ID
   const recipeVersion = await database.$queryRaw<{ version_id: string }[]>(
@@ -213,10 +259,10 @@ const RecipeDetailPage = async ({
               </Badge>
             )}
           </div>
-          <Button>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit Recipe
-          </Button>
+          <RecipeDetailEditButton
+            recipeId={recipeId}
+            recipeName={recipe.name}
+          />
         </div>
 
         {recipe.description && (

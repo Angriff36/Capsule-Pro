@@ -11,9 +11,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "quantity",
@@ -42,10 +40,7 @@
       ],
       "computedProperties": [],
       "relationships": [],
-      "commands": [
-        "addItem",
-        "checkStock"
-      ],
+      "commands": ["addItem", "checkStock"],
       "constraints": [],
       "policies": []
     }

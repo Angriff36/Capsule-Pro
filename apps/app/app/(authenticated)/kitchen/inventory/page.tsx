@@ -129,9 +129,12 @@ const KitchenInventoryPage = async () => {
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
         <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">Kitchen Inventory</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Kitchen Inventory
+          </h1>
           <p className="text-muted-foreground">
-            Track kitchen ingredient stock levels, par values, and low stock alerts
+            Track kitchen ingredient stock levels, par values, and low stock
+            alerts
           </p>
         </div>
 
@@ -146,7 +149,9 @@ const KitchenInventoryPage = async () => {
             <Card>
               <CardHeader>
                 <CardDescription>Total Items</CardDescription>
-                <CardTitle className="text-2xl">{inventoryItems.length}</CardTitle>
+                <CardTitle className="text-2xl">
+                  {inventoryItems.length}
+                </CardTitle>
               </CardHeader>
               <CardContent className="text-muted-foreground text-sm">
                 Tracked inventory items
@@ -194,7 +199,9 @@ const KitchenInventoryPage = async () => {
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-amber-800">
                   Items Requiring Reorder
-                  <Badge className="bg-amber-600">{lowStockAlerts.length}</Badge>
+                  <Badge className="bg-amber-600">
+                    {lowStockAlerts.length}
+                  </Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -242,7 +249,9 @@ const KitchenInventoryPage = async () => {
                       <TableHead>Name</TableHead>
                       <TableHead>Category</TableHead>
                       <TableHead className="text-right">On Hand</TableHead>
-                      <TableHead className="text-right">Reorder Level</TableHead>
+                      <TableHead className="text-right">
+                        Reorder Level
+                      </TableHead>
                       <TableHead className="text-right">Unit Cost</TableHead>
                       <TableHead>Status</TableHead>
                     </TableRow>

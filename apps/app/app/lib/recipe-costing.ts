@@ -103,8 +103,8 @@ const calculateRecipeIngredientCost = async (
       FROM tenant_kitchen.recipe_ingredients ri
       JOIN tenant_kitchen.ingredients i ON i.id = ri.ingredient_id
       LEFT JOIN tenant_inventory.inventory_items ii
-        ON ii.item_number = i.name
-        AND ii.tenant_id = ri.tenant_id
+        ON ii.tenant_id = ri.tenant_id
+        AND ii.name = i.name
         AND ii.deleted_at IS NULL
       WHERE ri.tenant_id = ${tenantId}
         AND ri.id = ${recipeIngredientId}

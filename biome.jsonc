@@ -5,15 +5,31 @@
     "includes": [
       "apps/**/*",
       "packages/**/*",
-      "!apps/docs/**/*",
+      "!apps/docs",
       "!packages/design-system/components/ui",
       "!packages/design-system/lib",
       "!packages/design-system/hooks",
       "!packages/collaboration/config.ts",
-      "!packages/cms/basehub-types.d.ts"
+      "!packages/cms/basehub-types.d.ts",
+      "!!**/.codex",
+      "!!**/.claude",
+      "!!**/codex-plans",
+      "!!**/claude-code-plans",
+      "!!**/.next",
+      "!!**/node_modules",
+      "!!**/dist",
+      "!!**/build",
+      "!!**/playwright-report",
+      "!!**/test-results"
     ]
   },
-  "extends": ["ultracite/core", "ultracite/react", "ultracite/next"],
+  "extends": [
+    "ultracite/core",
+    "ultracite/react",
+    "ultracite/next",
+    "ultracite/biome/core",
+    "ultracite/biome/react"
+  ],
   "linter": {
     "rules": {
       "nursery": "off"

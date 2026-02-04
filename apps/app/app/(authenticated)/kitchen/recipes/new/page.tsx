@@ -181,7 +181,9 @@ const NewRecipePage = async () => {
             <Card>
               <CardContent className="space-y-6 p-6">
                 <div className="space-y-2">
-                  <Label htmlFor="ingredients">Ingredients (one per line)</Label>
+                  <Label htmlFor="ingredients">
+                    Ingredients (one per line)
+                  </Label>
                   <Textarea
                     id="ingredients"
                     name="ingredients"

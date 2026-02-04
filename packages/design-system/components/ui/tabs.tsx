@@ -34,10 +34,13 @@ function TabsList({
   )
 }
 
-function TabsTrigger({
-  className,
-  ...props
-}: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
+type TabsTriggerProps = React.ComponentProps<typeof TabsPrimitive.Trigger> & {
+  asChild?: boolean
+}
+
+function TabsTrigger({ className, asChild: _asChild, ...props }: TabsTriggerProps) {
+  // Remove asChild so Radix won't go through Slot/SlotClone (source of the SSR/CSR id mismatch)
+
   return (
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"

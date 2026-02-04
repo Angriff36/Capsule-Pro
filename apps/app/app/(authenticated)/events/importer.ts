@@ -685,7 +685,9 @@ const normalizeList = (values: string[] | undefined) =>
     .map((value) => value.trim())
     .filter((value) => value.length > 0);
 
-const getMissingFieldsFromParsedEvent = (event: ParsedEvent): MissingField[] => {
+const getMissingFieldsFromParsedEvent = (
+  event: ParsedEvent
+): MissingField[] => {
   const missing: MissingField[] = [];
   if (!event.client?.trim()) {
     missing.push("client");
@@ -757,7 +759,8 @@ const deriveMenuQuantity = (item: MenuItem, fallbackHeadcount: number) => {
 
   const servingDetails =
     item.quantityDetails?.filter(
-      (detail) => detail.value > 0 && /serv|pax|guest|portion/i.test(detail.unit)
+      (detail) =>
+        detail.value > 0 && /serv|pax|guest|portion/i.test(detail.unit)
     ) ?? [];
   if (servingDetails.length > 0) {
     const maxDetail = servingDetails.reduce(
@@ -909,9 +912,7 @@ const importMenuToEvent = async (
     }
 
     const specialInstructions = Array.from(entry.instructions).join("; ");
-    const [existingLink] = await database.$queryRaw<
-      Array<{ id: string }>
-    >(
+    const [existingLink] = await database.$queryRaw<Array<{ id: string }>>(
       Prisma.sql`
         SELECT id
         FROM tenant_events.event_dishes
@@ -1194,9 +1195,7 @@ export const importEventFromCsvText = async ({
       notes: `Imported from ${fileName}`,
       mapRow: (row) => {
         const itemName =
-          getValue(row, ["item_name"]) ||
-          getValue(row, ["recipe_name"]) ||
-          "";
+          getValue(row, ["item_name"]) || getValue(row, ["recipe_name"]) || "";
         const quantity = Number(row.quantity ?? 0) || 1;
         const unit = getValue(row, ["unit"]).toLowerCase();
         const servings = unit.includes("serv") && quantity > 0 ? quantity : 1;
@@ -1313,9 +1312,7 @@ export const importEventFromPdf = async ({
   fileName: string;
   content: Buffer;
 }) => {
-  const result = await processMultipleDocuments([
-    { content, fileName },
-  ]);
+  const result = await processMultipleDocuments([{ content, fileName }]);
 
   const mergedEvent = result.mergedEvent;
   if (!mergedEvent) {

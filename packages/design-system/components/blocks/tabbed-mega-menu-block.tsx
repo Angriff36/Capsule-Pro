@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import type { LucideIcon } from "lucide-react"
+import type { LucideIcon } from "lucide-react";
 import {
   Cloud,
   Database,
@@ -8,8 +8,8 @@ import {
   Lock,
   Monitor,
   Smartphone,
-} from "lucide-react"
-import * as React from "react"
+} from "lucide-react";
+import * as React from "react";
 
 import {
   NavigationMenu,
@@ -18,27 +18,27 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "../ui/navigation-menu"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
+} from "../ui/navigation-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 type MegaMenuItem = {
-  icon: LucideIcon
-  title: string
-  description: string
-  href?: string
-}
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  href?: string;
+};
 
 type MegaMenuTab = {
-  value: string
-  label: string
-  items: MegaMenuItem[]
-}
+  value: string;
+  label: string;
+  items: MegaMenuItem[];
+};
 
 type TabbedMegaMenuBlockProps = {
-  tabs?: MegaMenuTab[]
-  ctaText?: string
-  ctaDescription?: string
-}
+  tabs?: MegaMenuTab[];
+  ctaText?: string;
+  ctaDescription?: string;
+};
 
 const defaultTabs: MegaMenuTab[] = [
   {
@@ -104,15 +104,15 @@ const defaultTabs: MegaMenuTab[] = [
       },
     ],
   },
-]
+];
 
 export function TabbedMegaMenuBlock({
   tabs = defaultTabs,
   ctaText = "Need help choosing?",
   ctaDescription = "Our team can help you find the right solution for your needs.",
 }: TabbedMegaMenuBlockProps) {
-  const initialTab = tabs[0]?.value ?? ""
-  const [activeTab, setActiveTab] = React.useState(initialTab)
+  const initialTab = tabs[0]?.value ?? "";
+  const [activeTab, setActiveTab] = React.useState(initialTab);
 
   return (
     <div className="pr-[50vw] pb-[50vh]">
@@ -126,7 +126,9 @@ export function TabbedMegaMenuBlock({
                   <Tabs onValueChange={setActiveTab} value={activeTab}>
                     <TabsList
                       className="grid w-full"
-                      style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}
+                      style={{
+                        gridTemplateColumns: `repeat(${tabs.length}, 1fr)`,
+                      }}
                     >
                       {tabs.map((tab) => (
                         <TabsTrigger key={tab.value} value={tab.value}>
@@ -145,7 +147,7 @@ export function TabbedMegaMenuBlock({
                             const Icon =
                               typeof item.icon === "function"
                                 ? item.icon
-                                : null
+                                : null;
                             return (
                               <NavigationMenuLink
                                 className="flex flex-row items-start gap-3 rounded-md border border-transparent p-3 hover:border-border"
@@ -164,7 +166,7 @@ export function TabbedMegaMenuBlock({
                                   </span>
                                 </div>
                               </NavigationMenuLink>
-                            )
+                            );
                           })}
                         </div>
                       </TabsContent>
@@ -182,5 +184,5 @@ export function TabbedMegaMenuBlock({
         </NavigationMenu>
       </div>
     </div>
-  )
+  );
 }

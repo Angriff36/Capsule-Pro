@@ -1,9 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@repo/auth/server";
 
-const isPublicRoute = createRouteMatcher([
-  "/webhooks(.*)",
-  "/outbox/publish",
-]);
+const isPublicRoute = createRouteMatcher(["/webhooks(.*)", "/outbox/publish"]);
 
 export default clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {
