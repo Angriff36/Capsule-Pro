@@ -7,7 +7,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { keys } from "./keys";
 
-export const initializeSentry = (): ReturnType<typeof Sentry.init> =>
+export const initializeSentry = () =>
   Sentry.init({
     dsn: keys().NEXT_PUBLIC_SENTRY_DSN,
 

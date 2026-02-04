@@ -334,7 +334,7 @@ export async function GET(
         user.email || `${user.firstName} ${user.lastName}`;
     }
 
-    const pdfComponent = <EventDetailPDF data={pdfData} />;
+    const pdfComponent = <EventDetailPDF data={pdfData} /> as React.ReactElement;
 
     if (shouldDownload) {
       // Return as downloadable file

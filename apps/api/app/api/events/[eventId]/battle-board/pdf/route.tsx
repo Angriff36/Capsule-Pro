@@ -370,13 +370,15 @@ async function generateDownloadResponse(
   eventTitle: string
 ) {
   const { pdf } = await import("@react-pdf/renderer");
+  // @ts-expect-error React type mismatch between @types/react 19 and @react-pdf/renderer
+  // biome-ignore lint/correctness/noUnnecessaryAwait: pdf() returns Promise
   const doc = await pdf(pdfComponent);
   const blob = await doc.toBlob();
 
   return new NextResponse(blob, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="battle-board-${eventTitle.replace(/\s+/g, "-").toLowerCase()}.pdf"`,
+      "Content-Disposition": `attachment; filename="battle-board-${eventTitle.replaceAll(/\s+/g, "-").toLowerCase()}.pdf"`,
     },
   });
 }
@@ -389,6 +391,8 @@ async function generateBase64Response(
   eventTitle: string
 ) {
   const { pdf } = await import("@react-pdf/renderer");
+  // @ts-expect-error React type mismatch between @types/react 19 and @react-pdf/renderer
+  // biome-ignore lint/correctness/noUnnecessaryAwait: pdf() returns Promise
   const doc = await pdf(pdfComponent);
   const blob = await doc.toBlob();
   const arrayBuffer = await blob.arrayBuffer();
@@ -396,12 +400,12 @@ async function generateBase64Response(
 
   let binary = "";
   for (const byte of uint8Array) {
-    binary += String.fromCharCode(byte);
+    binary += String.fromCodePoint(byte);
   }
   const base64 = btoa(binary);
 
   return NextResponse.json({
     dataUrl: `data:application/pdf;base64,${base64}`,
-    filename: `battle-board-${eventTitle.replace(/\s+/g, "-").toLowerCase()}.pdf`,
+    filename: `battle-board-${eventTitle.replaceAll(/\s+/g, "-").toLowerCase()}.pdf`,
   });
 }
