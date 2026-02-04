@@ -358,3 +358,7 @@ DATABASE_PRE_MIGRATION_CHECKLIST.md
 DATABASE_PRE_MIGRATION_CHECKLIST.md
 
 .vercel
+/ralph
+IMPLEMENTATION_PLAN_SUMMARY.md
+.mcp.json
+.claude/skills/planning-with-files/

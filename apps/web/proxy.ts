@@ -10,7 +10,6 @@ import {
 import { createNEMO } from "@rescale/nemo";
 import {
   type NextFetchEvent,
-  type NextProxy,
   type NextRequest,
   NextResponse,
 } from "next/server";
@@ -72,4 +71,4 @@ export default authMiddleware(
     // Return middleware response if it exists, otherwise headers response
     return middlewareResponse || headersResponse;
   }
-) satisfies NextProxy;
+);

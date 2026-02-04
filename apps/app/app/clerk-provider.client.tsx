@@ -13,5 +13,9 @@ export default function ClerkProviderClient({
   const { resolvedTheme } = useTheme();
   const baseTheme = resolvedTheme === "dark" ? dark : undefined;
 
-  return <ClerkProvider appearance={{ baseTheme }}>{children}</ClerkProvider>;
+  return (
+    <ClerkProvider appearance={{ baseTheme, cssLayerName: "clerk" }}>
+      {children}
+    </ClerkProvider>
+  );
 }

@@ -1722,7 +1722,7 @@ export function EventDetailsClient({
                       <div className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
                         Prep tasks
                       </div>
-                      <div className="mt-2 text-lg font-semibold">
+                      <div className="mt-2 text-2xl font-semibold">
                         {initialPrepTasks.length}
                       </div>
                       <div className="text-xs text-slate-300">
@@ -1735,11 +1735,13 @@ export function EventDetailsClient({
                       <div className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
                         Inventory coverage
                       </div>
-                      <div className="mt-2 text-lg font-semibold">
+                      <div className="mt-2 text-2xl font-semibold">
                         {inventoryStats.tracked}/{aggregatedIngredients.length}
                       </div>
                       <div className="text-xs text-slate-300">
-                        {inventoryStats.low} low stock alerts
+                        {inventoryStats.low > 0
+                          ? `${inventoryStats.low} low stock alerts`
+                          : "All items tracked"}
                       </div>
                     </div>
                   </div>

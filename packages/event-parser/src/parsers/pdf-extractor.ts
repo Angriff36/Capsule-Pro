@@ -174,30 +174,44 @@ export async function extractPdfText(
   );
 
   try {
-    // Use pdf2json - pure JavaScript PDF parser, no worker issues
-    // Handle both named and default exports for different module formats
+    type Pdf2JsonDataError = { parserError?: Error } | Error;
+
+    type Pdf2JsonParser = {
+      on(
+        event: "pdfParser_dataError",
+        cb: (errData: Pdf2JsonDataError) => void
+      ): void;
+      on(event: "pdfParser_dataReady", cb: (data: any) => void): void;
+
+      // pdf2json docs: parseBuffer(pdfBuffer) after registering handlers
+      parseBuffer(buffer: Buffer): void;
+
+      // destroy isn't documented in the README example, so keep it optional
+      destroy?: () => void;
+    };
+
+    type Pdf2JsonParserCtor = new (...args: any[]) => Pdf2JsonParser;
+
+    const isRecord = (value: unknown): value is Record<string, unknown> =>
+      typeof value === "object" && value !== null;
+
+    const isParserCtor = (value: unknown): value is Pdf2JsonParserCtor =>
+      typeof value === "function";
+
     const pdf2jsonModule = (await import("pdf2json")) as {
       PDFParser?: unknown;
       default?: unknown;
     };
     const defaultExport = pdf2jsonModule.default;
 
-    const isRecord = (value: unknown): value is Record<string, unknown> =>
-      typeof value === "object" && value !== null;
-    const isConstructor = (
-      value: unknown
-    ): value is new (
-      ...args: unknown[]
-    ) => unknown => typeof value === "function";
-
-    const PDFParserClass =
-      (isConstructor(pdf2jsonModule.PDFParser)
+    const PDFParserClass: Pdf2JsonParserCtor | undefined =
+      (isParserCtor(pdf2jsonModule.PDFParser)
         ? pdf2jsonModule.PDFParser
         : undefined) ??
-      (isRecord(defaultExport) && isConstructor(defaultExport.PDFParser)
-        ? defaultExport.PDFParser
+      (isRecord(defaultExport) && isParserCtor((defaultExport as any).PDFParser)
+        ? ((defaultExport as any).PDFParser as Pdf2JsonParserCtor)
         : undefined) ??
-      (isConstructor(defaultExport) ? defaultExport : undefined);
+      (isParserCtor(defaultExport) ? defaultExport : undefined);
 
     if (!PDFParserClass) {
       throw new Error(
@@ -208,41 +222,42 @@ export async function extractPdfText(
     // pdf2json handles Buffer directly
     const buffer = Buffer.from(data);
 
-    // Parse PDF using event-based API
     return new Promise((resolve) => {
-      const pdfParser = new PDFParserClass();
+      const pdfParser: Pdf2JsonParser = new PDFParserClass();
 
-      // Collect all data
       let pdfData: any = null;
 
-      pdfParser.on(
-        "pdfParser_dataError",
-        (errData: { parserError: Error } | Error) => {
-          const errMsg =
-            errData instanceof Error
-              ? errData.message
-              : JSON.stringify(errData);
-          const errStack = errData instanceof Error ? errData.stack : undefined;
-          console.error("[extractPdfText] PDFParser error:", errData);
-          console.error("[extractPdfText] Error message:", errMsg);
-          console.error("[extractPdfText] Error stack:", errStack);
-          errors.push(`Failed to load PDF: ${errMsg}`);
-          if (errStack) {
-            errors.push(`Stack: ${errStack}`);
-          }
-          resolve({
-            lines: [],
-            pageCount: 0,
-            errors,
-          });
+      pdfParser.on("pdfParser_dataError", (errData) => {
+        let errMsg: string;
+        let errStack: string | undefined;
+
+        if (errData instanceof Error) {
+          errMsg = errData.message;
+          errStack = errData.stack;
+        } else if (
+          errData &&
+          typeof errData === "object" &&
+          "parserError" in errData
+        ) {
+          const parserError = (errData as any).parserError;
+          errMsg = parserError?.message ?? JSON.stringify(errData);
+          errStack = parserError?.stack;
+        } else {
+          errMsg = JSON.stringify(errData);
+          errStack = undefined;
         }
-      );
+
+        console.error("[extractPdfText] PDFParser error:", errData);
+        errors.push(`Failed to load PDF: ${errMsg}`);
+        if (errStack) errors.push(`Stack: ${errStack}`);
+
+        resolve({ lines: [], pageCount: 0, errors });
+      });
 
       pdfParser.on("pdfParser_dataReady", (data: any) => {
         pdfData = data;
 
         try {
-          // Extract text from all pages
           const allPageLines: string[] = [];
 
           if (pdfData.Pages) {
@@ -250,11 +265,8 @@ export async function extractPdfText(
               if (page.Texts) {
                 for (const textItem of page.Texts) {
                   if (textItem.R) {
-                    // Array of text runs
                     for (const run of textItem.R) {
-                      if (run.T) {
-                        allPageLines.push(run.T);
-                      }
+                      if (run.T) allPageLines.push(run.T);
                     }
                   }
                 }
@@ -262,13 +274,9 @@ export async function extractPdfText(
             }
           }
 
-          // Clean and filter lines
           const cleanedLines = allPageLines
             .map((line) =>
-              line
-                .replace(/\u2010/g, "-")
-                .replace(/\s+/g, " ")
-                .trim()
+              line.replaceAll("\u2010", "-").replaceAll(/\s+/g, " ").trim()
             )
             .filter((line) => line.length > 0);
 
@@ -286,21 +294,18 @@ export async function extractPdfText(
             errors: [],
           });
 
-          // Clean up
-          pdfParser.destroy();
+          if (typeof pdfParser.destroy === "function") {
+            pdfParser.destroy();
+          }
         } catch (e) {
           errors.push(
             `Failed to process PDF data: ${e instanceof Error ? e.message : "Unknown error"}`
           );
-          resolve({
-            lines: [],
-            pageCount: 0,
-            errors,
-          });
+          resolve({ lines: [], pageCount: 0, errors });
         }
       });
 
-      // Start parsing - maxPagePages=0 means all pages
+      // pdf2json docs show parseBuffer(buffer) usage
       pdfParser.parseBuffer(buffer);
     });
   } catch (e) {
@@ -324,16 +329,18 @@ function emitSegment(segment: string, rows: string[]) {
     return;
   }
 
-  const headerCandidate = trimmed.replace(/\s+/g, " ").toLowerCase();
+  const headerCandidate = trimmed.replaceAll(/\s+/g, " ").toLowerCase();
   if (HEADER_PATTERN.test(headerCandidate)) {
-    rows.push("Category");
-    rows.push("Item");
-    rows.push("Special, Production Notes, Container");
-    rows.push("Quantity/Unit");
+    rows.push(
+      "Category",
+      "Item",
+      "Special, Production Notes, Container",
+      "Quantity/Unit"
+    );
     return;
   }
 
-  const labelMatch = trimmed.match(LABEL_PATTERN);
+  const labelMatch = LABEL_PATTERN.exec(trimmed);
   if (labelMatch) {
     const labelName = labelMatch[1].trim();
     const remainder = labelMatch[2].trim();
