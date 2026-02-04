@@ -16,11 +16,6 @@ import type {
   StaffShift,
 } from "@repo/event-parser";
 import {
-  buildBattleBoardFromEvent,
-  buildInitialChecklist,
-  processMultipleDocuments,
-} from "@repo/event-parser";
-import {
   createEventImportRuntime,
   createOrUpdateEvent,
   generateBattleBoard,
@@ -29,6 +24,15 @@ import {
 } from "@repo/manifest";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+
+type EventParserModule = typeof import("@repo/event-parser");
+
+let eventParserPromise: Promise<EventParserModule> | null = null;
+
+const getEventParser = () => {
+  eventParserPromise ??= import("@repo/event-parser");
+  return eventParserPromise;
+};
 
 type MissingField =
   | "client"
@@ -373,6 +377,7 @@ async function _createBattleBoard(
   tenantId: string,
   eventId: string
 ) {
+  const { buildBattleBoardFromEvent } = await getEventParser();
   const battleBoardResult = buildBattleBoardFromEvent(mergedEvent);
 
   // Save battle board to database
@@ -436,6 +441,7 @@ async function parseDocuments(
     fileName: string;
   }>
 ) {
+  const { processMultipleDocuments } = await getEventParser();
   return await processMultipleDocuments(fileContents);
 }
 
@@ -786,6 +792,7 @@ async function processDocumentsAndGenerateResponse(
           )
         );
 
+        const { buildBattleBoardFromEvent } = await getEventParser();
         const battleBoardResult = buildBattleBoardFromEvent(result.mergedEvent);
         console.log(
           "[processDocumentsAndGenerateResponse] Battle board built successfully"
@@ -906,6 +913,7 @@ async function processDocumentsAndGenerateResponse(
           )
         );
 
+        const { buildInitialChecklist } = await getEventParser();
         const checklistResult = buildInitialChecklist(result.mergedEvent);
         console.log(
           "[processDocumentsAndGenerateResponse] Checklist built successfully, autoFillScore:",
@@ -1050,6 +1058,7 @@ async function _createChecklist(
   tenantId: string,
   eventId: string
 ) {
+  const { buildInitialChecklist } = await getEventParser();
   const checklistResult = buildInitialChecklist(mergedEvent);
   const reportName = deriveEventTitle(mergedEvent, []) || eventId;
 

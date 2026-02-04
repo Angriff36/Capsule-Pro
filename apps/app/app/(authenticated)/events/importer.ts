@@ -3,8 +3,16 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { database, Prisma } from "@repo/database";
 import type { MenuItem, ParsedEvent } from "@repo/event-parser";
-import { processMultipleDocuments } from "@repo/event-parser";
 import { createEventSchema } from "./validation";
+
+type EventParserModule = typeof import("@repo/event-parser");
+
+let eventParserPromise: Promise<EventParserModule> | null = null;
+
+const getEventParser = () => {
+  eventParserPromise ??= import("@repo/event-parser");
+  return eventParserPromise;
+};
 
 type CsvRow = Record<string, string>;
 
@@ -1312,6 +1320,7 @@ export const importEventFromPdf = async ({
   fileName: string;
   content: Buffer;
 }) => {
+  const { processMultipleDocuments } = await getEventParser();
   const result = await processMultipleDocuments([{ content, fileName }]);
 
   const mergedEvent = result.mergedEvent;

@@ -5,6 +5,7 @@
   ],
   "compilerOptions": {
     "ignoreDeprecations": "5.0",
+    "skipLibCheck": true,
     "paths": {
       "@/*": ["./*"],
       "@repo/*": ["../../packages/*"]
