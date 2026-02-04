@@ -95,10 +95,9 @@ function setOptionalStringField(
   if (value === undefined) {
     return;
   }
-  updateData[key] =
-    value === null
-      ? null
-      : (value.toString().trim() as UpdateGuestData[keyof UpdateGuestData]);
+  // Use any to handle the assignment of union types
+  (updateData as any)[key] =
+    value === null ? null : value.toString().trim();
 }
 
 /**
