@@ -24,28 +24,28 @@ import { ImagePlusIcon, PlusIcon, UploadIcon, XIcon } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
 
-type Ingredient = {
+interface Ingredient {
   id: string;
   quantity: string;
   unit: string;
   name: string;
   optional: boolean;
-};
+}
 
-type Instruction = {
+interface Instruction {
   id: string;
   stepNumber: number;
   text: string;
-};
+}
 
-type RecipeImage = {
+interface RecipeImage {
   id: string;
   file: File;
   url: string;
   isMain: boolean;
-};
+}
 
-type RecipeEditorModalProps = {
+interface RecipeEditorModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   recipe?: {
@@ -61,7 +61,7 @@ type RecipeEditorModalProps = {
     instructions?: Instruction[];
   };
   onSave: (data: FormData) => Promise<void>;
-};
+}
 
 const difficultyLevels = ["Easy", "Medium", "Hard"] as const;
 

@@ -9,9 +9,9 @@ import type { Dictionary } from "@repo/internationalization";
 import { PhoneCall } from "lucide-react";
 import Link from "next/link";
 
-type FAQProps = {
+interface FAQProps {
   dictionary: Dictionary;
-};
+}
 
 export const FAQ = ({ dictionary }: FAQProps) => (
   <div className="w-full py-20 lg:py-40">

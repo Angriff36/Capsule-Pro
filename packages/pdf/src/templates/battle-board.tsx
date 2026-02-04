@@ -101,9 +101,9 @@ const styles = StyleSheet.create({
   },
 });
 
-type BattleBoardPDFProps = {
+interface BattleBoardPDFProps {
   data: BattleBoardPDFData;
-};
+}
 
 export const BattleBoardPDF: React.FC<BattleBoardPDFProps> = ({ data }) => {
   const { event, tasks, summary } = data;

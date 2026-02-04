@@ -12,13 +12,13 @@ type RouteParams = Promise<{
   id: string;
 }>;
 
-type AuthContext = {
+interface AuthContext {
   orgId: string;
   userId: string;
   tenantId: string;
-};
+}
 
-type Venue = {
+interface Venue {
   name: string | null;
   addressLine1: string | null;
   addressLine2: string | null;
@@ -26,9 +26,9 @@ type Venue = {
   stateProvince: string | null;
   postalCode: string | null;
   countryCode: string | null;
-};
+}
 
-type EventData = {
+interface EventData {
   id: string;
   title: string;
   eventNumber: string | null;
@@ -39,9 +39,9 @@ type EventData = {
   location: Venue | null;
   venueName: string | null;
   venueAddress: string | null;
-};
+}
 
-type ClientData = {
+interface ClientData {
   id: string;
   company_name: string | null;
   first_name: string | null;
@@ -54,17 +54,17 @@ type ClientData = {
   stateProvince: string | null;
   postalCode: string | null;
   countryCode: string | null;
-};
+}
 
-type Signature = {
+interface Signature {
   id: string;
   signerName: string | null;
   signerEmail: string | null;
   signedAt: Date | null;
   signatureData: string | null;
-};
+}
 
-type Contract = {
+interface Contract {
   id: string;
   contractNumber: string | null;
   title: string;
@@ -75,13 +75,13 @@ type Contract = {
   event: EventData | null;
   client: ClientData | null;
   signatures: Signature[];
-};
+}
 
-type UserData = {
+interface UserData {
   firstName: string | null;
   lastName: string | null;
   email: string | null;
-};
+}
 
 async function getAuthContext(
   orgId: string | null,

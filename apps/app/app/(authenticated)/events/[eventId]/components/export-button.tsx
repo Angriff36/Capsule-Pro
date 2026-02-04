@@ -20,10 +20,10 @@ import {
   exportEvent,
 } from "../../../../lib/use-event-export";
 
-type EventExportButtonProps = {
+interface EventExportButtonProps {
   eventId: string;
   eventName?: string;
-};
+}
 
 /**
  * Export button with dropdown menu for different export options

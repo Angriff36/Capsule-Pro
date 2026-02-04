@@ -19,13 +19,13 @@ import {
 } from "@repo/design-system/components/ui/table";
 import { useMemo, useState } from "react";
 
-type ImportFile = {
+interface ImportFile {
   id: string;
   file_name: string;
   mime_type: string;
   file_size: number;
   created_at: Date;
-};
+}
 
 type CsvRow = string[];
 

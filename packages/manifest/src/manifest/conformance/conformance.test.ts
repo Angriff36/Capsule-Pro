@@ -1,6 +1,6 @@
-import { existsSync, readdirSync, readFileSync } from "fs";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import type { IR } from "../ir";
 import { compileToIR } from "../ir-compiler";
@@ -34,7 +34,9 @@ function loadFixture(name: string): string {
 
 function loadExpectedIR(name: string): IR | null {
   const irPath = join(EXPECTED_DIR, name.replace(".manifest", ".ir.json"));
-  if (!existsSync(irPath)) return null;
+  if (!existsSync(irPath)) {
+    return null;
+  }
   return JSON.parse(readFileSync(irPath, "utf-8"));
 }
 
@@ -53,7 +55,9 @@ function loadExpectedDiagnostics(name: string): ExpectedDiagnostics | null {
     EXPECTED_DIR,
     name.replace(".manifest", ".diagnostics.json")
   );
-  if (!existsSync(diagnosticsPath)) return null;
+  if (!existsSync(diagnosticsPath)) {
+    return null;
+  }
   return JSON.parse(readFileSync(diagnosticsPath, "utf-8"));
 }
 
@@ -153,9 +157,15 @@ function normalizeResult(result: CommandResult): Partial<CommandResult> {
     success: result.success,
     emittedEvents: result.emittedEvents,
   };
-  if (result.result !== undefined) normalized.result = result.result;
-  if (result.error !== undefined) normalized.error = result.error;
-  if (result.deniedBy !== undefined) normalized.deniedBy = result.deniedBy;
+  if (result.result !== undefined) {
+    normalized.result = result.result;
+  }
+  if (result.error !== undefined) {
+    normalized.error = result.error;
+  }
+  if (result.deniedBy !== undefined) {
+    normalized.deniedBy = result.deniedBy;
+  }
   if (result.guardFailure !== undefined) {
     normalized.guardFailure = {
       index: result.guardFailure.index,
@@ -231,7 +241,9 @@ describe("Manifest Conformance Tests", () => {
   describe("Runtime Behavior", () => {
     fixtures.forEach((fixtureName) => {
       const results = loadExpectedResults(fixtureName);
-      if (!results) return;
+      if (!results) {
+        return;
+      }
 
       describe(fixtureName, () => {
         results.testCases.forEach((testCase) => {
@@ -298,7 +310,7 @@ describe("Manifest Conformance Tests", () => {
               );
 
               tc.expectedResult.emittedEvents.forEach((expectedEvent, i) => {
-                const actualEvent = normalizedResult.emittedEvents![i];
+                const actualEvent = normalizedResult.emittedEvents?.[i];
                 expect(actualEvent.name).toBe(expectedEvent.name);
                 expect(actualEvent.channel).toBe(expectedEvent.channel);
                 expect(actualEvent.timestamp).toBe(expectedEvent.timestamp);

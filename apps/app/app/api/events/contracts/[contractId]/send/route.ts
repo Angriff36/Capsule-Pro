@@ -12,17 +12,17 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type ContractSendAPIContext = {
+interface ContractSendAPIContext {
   params: Promise<{
     contractId: string;
   }>;
-};
+}
 
-type SendContractBody = {
+interface SendContractBody {
   clientId: string;
   contractId: string;
   message?: string;
-};
+}
 
 /**
  * POST /api/events/contracts/[contractId]/send
@@ -43,7 +43,7 @@ export async function POST(
 
   try {
     const body = (await request.json()) as SendContractBody;
-    const { clientId, message } = body;
+    const { clientId } = body;
 
     // Check if contract exists and belongs to tenant
     const contract = await database.eventContract.findFirst({

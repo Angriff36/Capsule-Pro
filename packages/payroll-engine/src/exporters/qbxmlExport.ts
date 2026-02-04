@@ -4,16 +4,16 @@ import type { PayrollPeriod, PayrollRecord } from "../models";
 /**
  * QuickBooks Desktop XML Export Configuration
  */
-export type QBXMLExportOptions = {
+export interface QBXMLExportOptions {
   companyName?: string;
   journalEntryPrefix?: string;
   accountMappings?: QBAccountMappings;
-};
+}
 
 /**
  * QuickBooks GL Account Mappings
  */
-export type QBAccountMappings = {
+export interface QBAccountMappings {
   wagesExpense: string; // Expense account for regular wages
   overtimeExpense: string; // Expense account for overtime
   tipsExpense: string; // Expense account for tips
@@ -25,7 +25,7 @@ export type QBAccountMappings = {
   retirementPayable: string; // Liability for 401k
   garnishmentsPayable: string; // Liability for garnishments
   cashAccount: string; // Cash/Bank account for net pay
-};
+}
 
 /**
  * Default QB account mappings

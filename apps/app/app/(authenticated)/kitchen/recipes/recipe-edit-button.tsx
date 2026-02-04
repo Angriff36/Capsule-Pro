@@ -2,10 +2,10 @@
 
 import { Button } from "@repo/design-system/components/ui/button";
 
-type RecipeEditButtonProps = {
+interface RecipeEditButtonProps {
   recipeId: string;
   recipeName: string;
-};
+}
 
 export const RecipeEditButton = ({
   recipeId,

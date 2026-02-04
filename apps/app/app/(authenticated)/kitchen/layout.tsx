@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
-type KitchenLayoutProperties = {
+interface KitchenLayoutProperties {
   readonly children: ReactNode;
-};
+}
 
 const KitchenLayout = ({ children }: KitchenLayoutProperties) => (
   <>{children}</>

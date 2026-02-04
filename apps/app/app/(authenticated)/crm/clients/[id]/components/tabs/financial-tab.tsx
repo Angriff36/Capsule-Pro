@@ -9,7 +9,7 @@ import {
 } from "@repo/design-system/components/ui/card";
 import { CalendarIcon, DollarSignIcon, TrendingUpIcon } from "lucide-react";
 
-type FinancialTabProps = {
+interface FinancialTabProps {
   client: {
     totalRevenue: { total: string } | null;
     defaultPaymentTerms: number | null;
@@ -18,7 +18,7 @@ type FinancialTabProps = {
     eventCount: number;
     createdAt: Date;
   };
-};
+}
 
 export function FinancialTab({ client }: FinancialTabProps) {
   const totalRevenue = client.totalRevenue

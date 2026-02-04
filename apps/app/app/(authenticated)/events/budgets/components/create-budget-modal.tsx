@@ -22,7 +22,7 @@ import type {
   UpdateEventBudgetInput,
 } from "@/app/lib/use-event-budgets";
 
-type CreateBudgetModalProps = {
+interface CreateBudgetModalProps {
   open: boolean;
   onClose: () => void;
   onSave: (
@@ -30,7 +30,7 @@ type CreateBudgetModalProps = {
   ) => Promise<void>;
   budget?: EventBudget;
   loading: boolean;
-};
+}
 
 export function CreateBudgetModal({
   open,

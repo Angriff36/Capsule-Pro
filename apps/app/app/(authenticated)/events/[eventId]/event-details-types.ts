@@ -1,4 +1,4 @@
-export type EventDishSummary = {
+export interface EventDishSummary {
   linkId: string;
   dishId: string;
   name: string;
@@ -11,18 +11,18 @@ export type EventDishSummary = {
   presentationImageUrl: string | null;
   pricePerPerson: number | null;
   costPerPerson: number | null;
-};
+}
 
-export type RecipeIngredientSummary = {
+export interface RecipeIngredientSummary {
   ingredientId: string;
   ingredientName: string;
   quantity: number;
   unitCode: string | null;
   preparationNotes: string | null;
   isOptional: boolean;
-};
+}
 
-export type RecipeStepSummary = {
+export interface RecipeStepSummary {
   stepNumber: number;
   instruction: string;
   durationMinutes: number | null;
@@ -30,9 +30,9 @@ export type RecipeStepSummary = {
   temperatureUnit: string | null;
   equipmentNeeded: string[];
   tips: string | null;
-};
+}
 
-export type RecipeDetailSummary = {
+export interface RecipeDetailSummary {
   recipeId: string;
   recipeName: string;
   versionId: string;
@@ -44,18 +44,18 @@ export type RecipeDetailSummary = {
   restTimeMinutes: number | null;
   ingredients: RecipeIngredientSummary[];
   steps: RecipeStepSummary[];
-};
+}
 
-export type InventoryCoverageItem = {
+export interface InventoryCoverageItem {
   ingredientId: string;
   inventoryItemId: string;
   itemName: string;
   onHand: number | null;
   onHandUnitCode: string | null;
   parLevel: number | null;
-};
+}
 
-export type RelatedEventSummary = {
+export interface RelatedEventSummary {
   id: string;
   title: string;
   eventType: string;
@@ -70,4 +70,4 @@ export type RelatedEventSummary = {
   accessibilityOptions: string[];
   featuredMediaUrl: string | null;
   tags: string[];
-};
+}

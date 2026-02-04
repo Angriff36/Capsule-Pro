@@ -8,22 +8,22 @@ export type ModuleKey =
   | "crm"
   | "analytics";
 
-type ModuleSidebarItem = {
+interface ModuleSidebarItem {
   title: string;
   href?: string;
-};
+}
 
-type ModuleSidebarSection = {
+interface ModuleSidebarSection {
   label: string;
   items: ModuleSidebarItem[];
-};
+}
 
-export type ModuleDefinition = {
+export interface ModuleDefinition {
   key: ModuleKey;
   label: string;
   href: string;
   sidebar: ModuleSidebarSection[];
-};
+}
 
 export const modules: ModuleDefinition[] = [
   {

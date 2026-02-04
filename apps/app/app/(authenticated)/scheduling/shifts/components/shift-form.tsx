@@ -24,7 +24,7 @@ import {
   updateShift,
 } from "../actions";
 
-type Shift = {
+interface Shift {
   id?: string;
   schedule_id?: string;
   employee_id?: string;
@@ -33,16 +33,16 @@ type Shift = {
   shift_end?: string;
   role_during_shift?: string | null;
   notes?: string | null;
-};
+}
 
-type ShiftFormProps = {
+interface ShiftFormProps {
   shift?: Shift | null;
   scheduleId?: string;
   onSuccess?: () => void;
   onCancel?: () => void;
-};
+}
 
-type Employee = {
+interface Employee {
   id: string;
   first_name: string | null;
   last_name: string | null;
@@ -50,18 +50,18 @@ type Employee = {
   role: string;
   is_active: boolean;
   hasConflictingShift?: boolean;
-};
+}
 
-type Location = {
+interface Location {
   id: string;
   name: string;
-};
+}
 
-type Schedule = {
+interface Schedule {
   id: string;
   schedule_date: Date;
   status: string;
-};
+}
 
 const formatDateTimeLocal = (dateStr: string | undefined) => {
   if (!dateStr) {

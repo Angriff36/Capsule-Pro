@@ -30,11 +30,11 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { createClientContact, getClientContacts } from "../../../actions";
 
-type ContactsTabProps = {
+interface ContactsTabProps {
   client: {
     id: string;
   };
-};
+}
 
 export function ContactsTab({ client }: ContactsTabProps) {
   const [contacts, setContacts] = useState<

@@ -7,36 +7,36 @@ import {
   type LifecycleEvent,
 } from "./events.js";
 
-export type WorkflowStep = {
+export interface WorkflowStep {
   id: string;
   agent: Agent;
   dependsOn: string[];
   inputMapping?: Record<string, string>;
   outputMapping?: Record<string, string>;
   condition?: (context: WorkflowContext) => boolean;
-};
+}
 
-export type WorkflowConfig = {
+export interface WorkflowConfig {
   name: string;
   steps: WorkflowStep[];
   parallelExecution?: boolean;
   timeout?: number;
-};
+}
 
-export type WorkflowContext = {
+export interface WorkflowContext {
   workflowId: string;
   stepResults: Map<string, unknown>;
   sharedState: Record<string, unknown>;
   startTime: Date;
-};
+}
 
-export type WorkflowResult = {
+export interface WorkflowResult {
   workflowId: string;
   success: boolean;
   stepResults: Map<string, ExecutionResult>;
   duration: number;
   error?: SDKError;
-};
+}
 
 export class AgentWorkflow {
   public readonly id: string;

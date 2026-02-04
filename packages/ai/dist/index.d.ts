@@ -62,27 +62,27 @@ declare class CancellationError extends SDKError {
 declare function createSDKError(message: string, options: SDKErrorOptions): SDKError;
 
 type EventType = "started" | "progress" | "completed" | "error" | "cancelled" | "toolStarted" | "toolProgress" | "toolCompleted" | "toolError";
-type ProgressEvent = {
+interface ProgressEvent {
     type: "progress";
     stage: string;
     percentage: number;
     message: string;
     estimatedTimeRemaining?: number;
-};
-type ToolEvent = {
+}
+interface ToolEvent {
     type: "toolStarted" | "toolProgress" | "toolCompleted" | "toolError";
     toolName: string;
     toolCallId: string;
     data?: unknown;
     error?: SDKError;
-};
-type LifecycleEvent = {
+}
+interface LifecycleEvent {
     type: "started" | "completed" | "error" | "cancelled";
     agentId: string;
     timestamp: Date;
     data?: unknown;
     error?: SDKError;
-};
+}
 type AgentEvent = ProgressEvent | ToolEvent | LifecycleEvent;
 type GenericListener = (event: AgentEvent) => void;
 declare class AgentEventEmitter {
@@ -177,10 +177,10 @@ declare const MetricsExportSchema: z.ZodObject<{
     destination: z.ZodString;
 }, z.core.$strip>;
 type MetricsExportConfig = z.infer<typeof MetricsExportSchema>;
-type MetricsCollectorOptions = {
+interface MetricsCollectorOptions {
     maxEntries?: number;
     exportConfig?: MetricsExportConfig;
-};
+}
 declare class MetricsCollector {
     private readonly entries;
     private readonly maxEntries;
@@ -201,7 +201,7 @@ declare class MetricsCollector {
     private exportToDatadog;
     destroy(): void;
 }
-type AggregateMetrics = {
+interface AggregateMetrics {
     totalExecutions: number;
     successRate: number;
     averageDuration: number;
@@ -209,31 +209,31 @@ type AggregateMetrics = {
     totalToolCalls: number;
     totalRetries: number;
     totalErrors: number;
-};
+}
 
 type ToolParameterSchema = z.ZodType<unknown>;
-type ToolParameters = {
+interface ToolParameters {
     [key: string]: ToolParameterSchema;
-};
-type ToolResult<T = unknown> = {
+}
+interface ToolResult<T = unknown> {
     success: boolean;
     data?: T;
     error?: SDKError;
-};
+}
 type ToolFunction<TParameters extends Record<string, unknown> = Record<string, unknown>, TReturn = unknown> = (params: TParameters, context?: ToolContext) => Promise<ToolResult<TReturn>>;
-type ToolContext = {
+interface ToolContext {
     agentId: string;
     executionId: string;
     abortSignal?: AbortSignal;
     onProgress?: (data: unknown) => void;
-};
-type ToolOptions = {
+}
+interface ToolOptions {
     name: string;
     description: string;
     parameters?: ToolParameters;
     returns?: ToolParameterSchema;
     retryable?: boolean;
-};
+}
 declare class Tool<TParameters extends Record<string, unknown> = Record<string, unknown>, TReturn = unknown> {
     readonly name: string;
     readonly description: string;
@@ -257,13 +257,13 @@ declare class ToolRegistry {
     clear(): void;
 }
 
-type ExecutionResult = {
+interface ExecutionResult {
     agentId: string;
     executionId: string;
     response: string;
     metrics: Metrics;
     streamed?: boolean;
-};
+}
 interface StreamingResult extends ExecutionResult {
     stream: Readable;
 }
@@ -322,33 +322,33 @@ declare function createAgent(config: AgentConfig, options?: {
     metricsCollector?: MetricsCollector;
 }): Agent;
 
-type WorkflowStep = {
+interface WorkflowStep {
     id: string;
     agent: Agent;
     dependsOn: string[];
     inputMapping?: Record<string, string>;
     outputMapping?: Record<string, string>;
     condition?: (context: WorkflowContext) => boolean;
-};
-type WorkflowConfig = {
+}
+interface WorkflowConfig {
     name: string;
     steps: WorkflowStep[];
     parallelExecution?: boolean;
     timeout?: number;
-};
-type WorkflowContext = {
+}
+interface WorkflowContext {
     workflowId: string;
     stepResults: Map<string, unknown>;
     sharedState: Record<string, unknown>;
     startTime: Date;
-};
-type WorkflowResult = {
+}
+interface WorkflowResult {
     workflowId: string;
     success: boolean;
     stepResults: Map<string, ExecutionResult>;
     duration: number;
     error?: SDKError;
-};
+}
 declare class AgentWorkflow {
     readonly id: string;
     readonly name: string;
@@ -380,14 +380,14 @@ declare class AgentWorkflow {
 }
 declare function createWorkflow(config: WorkflowConfig): AgentWorkflow;
 
-type RetryOptions = {
+interface RetryOptions {
     maxAttempts?: number;
     initialDelay?: number;
     maxDelay?: number;
     backoffMultiplier?: number;
     retryableErrors?: ErrorCode[];
     onRetry?: (attempt: number, error: SDKError) => void;
-};
+}
 declare class RetryManager {
     private readonly maxAttempts;
     private readonly initialDelay;
@@ -403,14 +403,14 @@ declare class RetryManager {
     private ensureSDKError;
 }
 
-type SDKOptions = {
+interface SDKOptions {
     apiKey?: string;
     baseUrl?: string;
     defaultTimeout?: number;
     defaultMaxRetries?: number;
     debug?: boolean;
     metricsCollector?: MetricsCollector;
-};
+}
 declare class AISDK {
     private readonly config;
     private readonly metricsCollector;

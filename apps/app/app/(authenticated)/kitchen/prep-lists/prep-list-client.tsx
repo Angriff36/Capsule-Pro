@@ -49,7 +49,7 @@ import type {
   StationPrepList,
 } from "./actions";
 
-type PrepListClientProps = {
+interface PrepListClientProps {
   eventId: string;
   initialPrepList: PrepListGenerationResult | null;
   availableEvents: Array<{
@@ -58,7 +58,7 @@ type PrepListClientProps = {
     eventDate: Date;
     guestCount: number;
   }>;
-};
+}
 
 const STATION_ICONS = {
   "hot-line": Flame,

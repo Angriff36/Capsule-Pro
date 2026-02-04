@@ -37,9 +37,9 @@ import {
   statusLabels,
 } from "./lib/validation";
 
-type AdminDashboardPageProps = {
+interface AdminDashboardPageProps {
   searchParams?: Promise<{ week?: string }>;
-};
+}
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -162,7 +162,7 @@ const AdminDashboardPage = async ({
   ).length;
 
   // Fetch recent document imports (graceful fallback if table doesn't exist)
-  type DocumentRow = {
+  interface DocumentRow {
     id: string;
     file_name: string;
     file_type: string;
@@ -170,7 +170,7 @@ const AdminDashboardPage = async ({
     parse_error: string | null;
     created_at: Date;
     event_id: string | null;
-  };
+  }
 
   let recentDocuments: DocumentRow[] = [];
   try {

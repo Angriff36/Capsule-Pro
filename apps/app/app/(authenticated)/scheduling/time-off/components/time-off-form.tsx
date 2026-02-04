@@ -22,29 +22,29 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { createTimeOffRequest, getEmployees, timeOffTypes } from "../actions";
 
-type TimeOffRequest = {
+interface TimeOffRequest {
   id?: string;
   employeeId?: string;
   startDate?: string;
   endDate?: string;
   reason?: string;
   requestType?: TimeOffType;
-};
+}
 
-type TimeOffFormProps = {
+interface TimeOffFormProps {
   request?: TimeOffRequest | null;
   onSuccess?: () => void;
   onCancel?: () => void;
-};
+}
 
-type Employee = {
+interface Employee {
   id: string;
   first_name: string | null;
   last_name: string | null;
   email: string;
   role: string;
   is_active: boolean;
-};
+}
 
 export function TimeOffForm({
   request,

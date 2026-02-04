@@ -23,13 +23,13 @@ import type {
   SuggestionPriority,
 } from "../actions/suggestions-types";
 
-type SuggestionsPanelProps = {
+interface SuggestionsPanelProps {
   suggestions: SuggestedAction[];
   isLoading?: boolean;
   onDismiss?: (suggestionId: string) => void;
   onRefresh?: () => void;
   onAction?: (suggestion: SuggestedAction) => void;
-};
+}
 
 const priorityConfig: Record<
   SuggestionPriority,

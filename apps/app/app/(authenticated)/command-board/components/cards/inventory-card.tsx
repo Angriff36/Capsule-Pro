@@ -18,9 +18,9 @@ import {
 import { memo } from "react";
 import type { CommandBoardCard } from "../../types";
 
-type InventoryCardProps = {
+interface InventoryCardProps {
   card: CommandBoardCard;
-};
+}
 
 export const InventoryCard = memo(function InventoryCard({
   card,

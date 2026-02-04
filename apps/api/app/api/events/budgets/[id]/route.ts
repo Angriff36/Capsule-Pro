@@ -13,9 +13,9 @@ import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { validateUpdateEventBudget } from "../validation";
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ id: string }>;
-};
+}
 
 /**
  * GET /api/events/budgets/[id]

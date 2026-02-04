@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-type TimeEntry = {
+interface TimeEntry {
   id: string;
   employee_id: string;
   employee_first_name: string | null;
@@ -53,9 +53,9 @@ type TimeEntry = {
   total_cost: number | null;
   created_at: Date;
   updated_at: Date;
-};
+}
 
-type TimecardDetailModalProps = {
+interface TimecardDetailModalProps {
   timeEntry: TimeEntry | null;
   open: boolean;
   onClose: () => void;
@@ -69,7 +69,7 @@ type TimecardDetailModalProps = {
     }
   ) => void;
   onFlagException: (type: string, notes: string) => void;
-};
+}
 
 function formatCurrency(value: number | null) {
   if (value === null) {

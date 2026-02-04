@@ -23,14 +23,14 @@ import { useCallback, useState } from "react";
 import { createTimelineTask } from "../actions/tasks";
 import type { StaffMember, TimelineTask } from "../types";
 
-type TaskModalProps = {
+interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   eventId: string;
   eventDate: Date;
   staff: StaffMember[];
   onTaskCreated?: (task: TimelineTask) => void;
-};
+}
 
 const CATEGORIES = [
   "Setup",

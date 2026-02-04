@@ -9,13 +9,13 @@ import {
   calculateMidPoint,
 } from "../types";
 
-type ConnectionLinesProps = {
+interface ConnectionLinesProps {
   cards: CommandBoardCard[];
   connections: CardConnection[];
   className?: string;
   onConnectionClick?: (connectionId: string) => void;
   selectedConnectionId?: string;
-};
+}
 
 /**
  * ConnectionLines - Renders SVG connection lines between cards

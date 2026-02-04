@@ -15,7 +15,7 @@ import { Label } from "@repo/design-system/components/ui/label";
 import { CheckIcon, PenIcon, RefreshCwIcon, XIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type SignaturePadProps = {
+interface SignaturePadProps {
   onSave: (
     signatureData: string,
     signerName: string,
@@ -23,7 +23,7 @@ type SignaturePadProps = {
   ) => void;
   onCancel: () => void;
   requireEmail?: boolean;
-};
+}
 
 export function SignaturePad({
   onSave,

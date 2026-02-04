@@ -36,11 +36,11 @@ export default async function globalSetup(config: FullConfig) {
 
   const attemptStatus = await page.evaluate(
     async ({ email, code }) => {
-      type EmailCodeFactor = {
+      interface EmailCodeFactor {
         emailAddressId: string;
         safeIdentifier: string;
         strategy: "email_code";
-      };
+      }
 
       const clerk = (globalThis as unknown as { Clerk?: unknown }).Clerk as
         | {

@@ -17,9 +17,9 @@ import { Mail, MoreVertical, Phone } from "lucide-react";
 import { memo } from "react";
 import type { CommandBoardCard } from "../../types";
 
-type EmployeeCardProps = {
+interface EmployeeCardProps {
   card: CommandBoardCard;
-};
+}
 
 const roleConfig = {
   admin: {

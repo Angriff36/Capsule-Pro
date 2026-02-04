@@ -38,15 +38,15 @@ type MissingField =
   | "headcount"
   | "menuItems";
 
-type MenuImportSummary = {
+interface MenuImportSummary {
   missingQuantities: string[];
   linkedDishes: number;
   createdDishes: number;
   createdRecipes: number;
   updatedLinks: number;
-};
+}
 
-type AggregatedMenuItem = {
+interface AggregatedMenuItem {
   name: string;
   category: string | null;
   serviceLocation: string | null;
@@ -55,7 +55,7 @@ type AggregatedMenuItem = {
   allergens: Set<string>;
   dietaryTags: Set<string>;
   instructions: Set<string>;
-};
+}
 
 const MISSING_FIELD_TAG_PREFIX = "needs:";
 
@@ -368,7 +368,7 @@ const importMenuToEvent = async (
  * Helper function to generate and save battle board
  * Note: Event must be created before calling this function
  */
-async function createBattleBoard(
+async function _createBattleBoard(
   mergedEvent: ParsedEvent,
   tenantId: string,
   eventId: string
@@ -695,7 +695,7 @@ async function processDocumentsAndGenerateResponse(
         // Also create in Manifest if available
         if (engine) {
           try {
-            const eventInstance = engine.createInstance("Event", {
+            const _eventInstance = engine.createInstance("Event", {
               id: actualEventId,
               tenantId,
               eventType: result.mergedEvent.serviceStyle || "catering",
@@ -725,7 +725,7 @@ async function processDocumentsAndGenerateResponse(
       // Update existing event
       if (engine) {
         try {
-          const eventInstance = engine.createInstance("Event", {
+          const _eventInstance = engine.createInstance("Event", {
             id: actualEventId,
             tenantId,
             eventType: result.mergedEvent.serviceStyle || "catering",
@@ -794,7 +794,7 @@ async function processDocumentsAndGenerateResponse(
 
         if (engine) {
           try {
-            const battleBoardInstance = engine.createInstance("BattleBoard", {
+            const _battleBoardInstance = engine.createInstance("BattleBoard", {
               id: battleBoardId,
               tenantId,
               eventId: actualEventId,
@@ -917,7 +917,7 @@ async function processDocumentsAndGenerateResponse(
 
         if (engine) {
           try {
-            const reportInstance = engine.createInstance("EventReport", {
+            const _reportInstance = engine.createInstance("EventReport", {
               id: reportId,
               tenantId,
               eventId: actualEventId,
@@ -1009,7 +1009,7 @@ async function processDocumentsAndGenerateResponse(
 /**
  * Helper function to build and return the response
  */
-type ParseDocumentsResponse = {
+interface ParseDocumentsResponse {
   documents: ProcessedDocument[];
   mergedEvent?: ParsedEvent;
   mergedStaff?: StaffShift[];
@@ -1021,7 +1021,7 @@ type ParseDocumentsResponse = {
   checklist?: unknown;
   checklistId?: string;
   checklistError?: string;
-};
+}
 
 function buildResponse(
   result: {
@@ -1045,7 +1045,7 @@ function buildResponse(
  * Helper function to generate and save checklist
  * Note: Event must be created before calling this function
  */
-async function createChecklist(
+async function _createChecklist(
   mergedEvent: ParsedEvent,
   tenantId: string,
   eventId: string

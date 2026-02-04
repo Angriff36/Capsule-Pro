@@ -45,13 +45,13 @@ import type {
   SummaryItem,
 } from "../actions/event-summary";
 
-type EventSummaryDisplayProps = {
+interface EventSummaryDisplayProps {
   eventId: string;
   eventTitle: string;
   initialSummary?: GeneratedEventSummary | null;
   onGenerate?: () => Promise<GeneratedEventSummary>;
   onDelete?: () => Promise<void>;
-};
+}
 
 const SEVERITY_CONFIG = {
   info: {
@@ -736,14 +736,14 @@ export function EventSummarySkeleton() {
   );
 }
 
-type GenerateEventSummaryModalProps = {
+interface GenerateEventSummaryModalProps {
   eventId: string;
   eventTitle: string;
   onGenerate: () => Promise<GeneratedEventSummary>;
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   showTrigger?: boolean;
-};
+}
 
 export function GenerateEventSummaryModal({
   eventId,

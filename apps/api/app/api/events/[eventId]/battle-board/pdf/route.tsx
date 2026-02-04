@@ -12,7 +12,7 @@ type RouteParams = Promise<{
   eventId: string;
 }>;
 
-type TimelineTask = {
+interface TimelineTask {
   id: string;
   title: string;
   description: string | null;
@@ -28,14 +28,14 @@ type TimelineTask = {
   is_on_critical_path: boolean;
   slack_minutes: number;
   notes: string | null;
-};
+}
 
-type StaffMember = {
+interface StaffMember {
   id: string;
   name: string;
   role: string | null;
   assignment_count: bigint;
-};
+}
 
 /**
  * Fetch event details

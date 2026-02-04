@@ -18,7 +18,7 @@ import {
 } from "@repo/design-system/components/ui/table";
 import { cn } from "@repo/design-system/lib/utils";
 
-type ClientTableProps = {
+interface ClientTableProps {
   clients: Array<{
     id: string;
     name: string;
@@ -29,7 +29,7 @@ type ClientTableProps = {
     averageOrderValue: number;
   }>;
   className?: string;
-};
+}
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {

@@ -20,7 +20,7 @@ import {
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { MapPinIcon, UsersIcon } from "lucide-react";
 
-type EventEditorModalProps = {
+interface EventEditorModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   event?: {
@@ -41,7 +41,7 @@ type EventEditorModalProps = {
     featuredMediaUrl?: string | null;
   };
   onSave: (data: FormData) => Promise<void>;
-};
+}
 
 export const EventEditorModal = ({
   open,

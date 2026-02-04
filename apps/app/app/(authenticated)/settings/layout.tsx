@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
-type SettingsLayoutProperties = {
+interface SettingsLayoutProperties {
   readonly children: ReactNode;
-};
+}
 
 const SettingsLayout = ({ children }: SettingsLayoutProperties) => (
   <>{children}</>

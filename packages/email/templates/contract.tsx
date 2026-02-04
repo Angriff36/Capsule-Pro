@@ -12,12 +12,12 @@ import {
 } from "@react-email/components";
 import type React from "react";
 
-export type ContractTemplateProps = {
+export interface ContractTemplateProps {
   readonly clientName: string;
   readonly contractTitle: string;
   readonly signingUrl: string;
   readonly message?: string;
-};
+}
 
 export const ContractTemplate = ({
   clientName,

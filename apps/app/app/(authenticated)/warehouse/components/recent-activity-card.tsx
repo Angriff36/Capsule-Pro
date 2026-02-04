@@ -14,19 +14,19 @@ import {
   RotateCcwIcon,
 } from "lucide-react";
 
-type Transaction = {
+interface Transaction {
   id: string;
   itemName: string;
   transactionType: string;
   quantity: number;
   transactionDate: Date;
   reference: string | null;
-};
+}
 
-type RecentActivityCardProps = {
+interface RecentActivityCardProps {
   transactions: Transaction[];
   maxItems?: number;
-};
+}
 
 function getTimeAgo(date: Date): string {
   const now = new Date();

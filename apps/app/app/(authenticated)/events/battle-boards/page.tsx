@@ -36,14 +36,14 @@ const statusLabelMap = {
   published: "Published",
 } as const;
 
-type BattleBoardData = {
+interface BattleBoardData {
   meta?: {
     eventName?: string;
     eventDate?: string;
   };
   staff?: Array<{ name: string }>;
   timeline?: Array<{ time: string; item: string }>;
-};
+}
 
 const BattleBoardsPage = async () => {
   const { orgId } = await auth();

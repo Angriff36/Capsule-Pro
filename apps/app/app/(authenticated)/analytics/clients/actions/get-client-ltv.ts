@@ -6,7 +6,7 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 
-export type ClientLTVMetrics = {
+export interface ClientLTVMetrics {
   totalClients: number;
   totalRevenue: number;
   averageOrderValue: number;
@@ -54,16 +54,16 @@ export type ClientLTVMetrics = {
       growthRate: number;
     }>;
   };
-};
+}
 
-type OrderMonthData = {
+interface OrderMonthData {
   month: string;
   total_revenue: string | number;
   order_count: string | number;
   client_count: string | number;
-};
+}
 
-type ClientLTVData = {
+interface ClientLTVData {
   id: string;
   name: string;
   email: string | null;
@@ -72,7 +72,7 @@ type ClientLTVData = {
   lastOrderDate: Date | null;
   averageOrderValue: number;
   createdAt: Date;
-};
+}
 
 export async function getClientLTVMetrics(): Promise<ClientLTVMetrics> {
   const { orgId } = await auth();

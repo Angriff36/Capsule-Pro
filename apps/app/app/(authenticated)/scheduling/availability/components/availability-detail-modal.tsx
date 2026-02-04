@@ -20,7 +20,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { deleteAvailability } from "../actions";
 
-type AvailabilityDetailModalProps = {
+interface AvailabilityDetailModalProps {
   open: boolean;
   onClose: () => void;
   onDelete: () => void;
@@ -40,7 +40,7 @@ type AvailabilityDetailModalProps = {
     created_at: Date;
     updated_at: Date;
   } | null;
-};
+}
 
 export function AvailabilityDetailModal({
   open,

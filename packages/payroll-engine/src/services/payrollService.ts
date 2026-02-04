@@ -23,7 +23,7 @@ import type {
  * Data source interface for fetching payroll inputs
  * Implement this interface to connect to your database
  */
-export type PayrollDataSource = {
+export interface PayrollDataSource {
   getEmployees(tenantId: string): Promise<Employee[]>;
   getRoles(tenantId: string): Promise<Role[]>;
   getTimeEntries(
@@ -48,16 +48,16 @@ export type PayrollDataSource = {
     tenantId: string,
     periodId: string
   ): Promise<PayrollRecord[]>;
-};
+}
 
 /**
  * Payroll Service Configuration
  */
-export type PayrollServiceConfig = {
+export interface PayrollServiceConfig {
   dataSource: PayrollDataSource;
   defaultJurisdiction?: string;
   enableAuditLog?: boolean;
-};
+}
 
 /**
  * Payroll Service
@@ -113,7 +113,7 @@ export class PayrollService {
       };
 
       // Calculate payroll
-      const { records, summary, warnings } = calculatePayroll(input);
+      const { records, summary } = calculatePayroll(input);
 
       // Verify balances
       const validation = verifyPayrollBalances(records);

@@ -6,10 +6,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireTenantId } from "../../../../lib/tenant";
 
-type CandidateRow = {
+interface CandidateRow {
   id: string;
   name: string;
-};
+}
 
 const SUPPLY_KEYWORDS = [
   "chafing",

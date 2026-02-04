@@ -3,7 +3,7 @@
 import { cn } from "@repo/design-system/lib/utils";
 import { memo } from "react";
 
-type GridLayerProps = {
+interface GridLayerProps {
   /** Grid size in pixels */
   gridSize: number;
   /** Whether the grid is visible */
@@ -12,7 +12,7 @@ type GridLayerProps = {
   gridColor?: string;
   /** Additional CSS classes */
   className?: string;
-};
+}
 
 export const GridLayer = memo(function GridLayer({
   gridSize,

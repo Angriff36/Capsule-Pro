@@ -10,9 +10,9 @@ import {
   verifySchedule,
 } from "../validation";
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ shiftId: string }>;
-};
+}
 
 /**
  * GET /api/staff/shifts/[shiftId]

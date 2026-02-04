@@ -19,9 +19,9 @@ import type {
 } from "../types";
 import { validateUpdateCommandBoardRequest } from "../validation";
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ boardId: string }>;
-};
+}
 
 async function fetchBoardWithCards(boardId: string, tenantId: string) {
   return await database.commandBoard.findFirst({

@@ -1,4 +1,4 @@
-export type KitchenEvent = {
+export interface KitchenEvent {
   id: string;
   title: string;
   eventNumber: string | null;
@@ -11,4 +11,4 @@ export type KitchenEvent = {
   notes: string | null;
   tags: string[];
   createdAt: string;
-};
+}

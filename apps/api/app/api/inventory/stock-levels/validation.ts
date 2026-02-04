@@ -23,6 +23,10 @@ const MAX_QUANTITY = 999_999_999.999;
 const MAX_NOTES_LENGTH = 1000;
 const MAX_REFERENCE_LENGTH = 255;
 
+// Top-level regex for performance
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // ============================================================================
 // Validation Functions
 // ============================================================================
@@ -153,10 +157,8 @@ export function validateUUID(
     typeof value === "string",
     `${fieldName} must be a string, received ${typeof value}`
   );
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   invariant(
-    uuidRegex.test(value),
+    UUID_REGEX.test(value),
     `${fieldName} must be a valid UUID, received "${value}"`
   );
 }

@@ -66,17 +66,17 @@ const toDecimalNumberOrNull = (
   return toDecimalNumber(value, field);
 };
 
-type IngredientInput = {
+interface IngredientInput {
   name: string;
   quantity: number;
   unit: string | null;
   preparationNotes: string | null;
   isOptional: boolean;
-};
+}
 
-type StepInput = {
+interface StepInput {
   instruction: string;
-};
+}
 
 const parseJsonArray = (value: string): unknown[] | null => {
   try {
@@ -1251,7 +1251,7 @@ export const restoreRecipeVersion = async (
   return { versionId: newVersionId, versionNumber: nextVersionNumber };
 };
 
-export type RecipeForEdit = {
+export interface RecipeForEdit {
   id: string;
   name: string;
   category: string | null;
@@ -1284,7 +1284,7 @@ export type RecipeForEdit = {
     instruction: string;
     imageUrl: string | null;
   }[];
-};
+}
 
 export const getRecipeForEdit = async (
   recipeId: string

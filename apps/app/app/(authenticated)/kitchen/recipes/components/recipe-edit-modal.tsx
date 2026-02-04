@@ -21,21 +21,21 @@ import {
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { useState } from "react";
 
-type Ingredient = {
+interface Ingredient {
   id?: string;
   name: string;
   quantity: string;
   unit: string;
   notes?: string;
-};
+}
 
-type Step = {
+interface Step {
   id?: string;
   instruction: string;
   step_number: number;
-};
+}
 
-type RecipeEditModalProps = {
+interface RecipeEditModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   recipe?: {
@@ -55,7 +55,7 @@ type RecipeEditModalProps = {
     difficultyLevel?: number;
   };
   onSave?: (data: FormData) => Promise<void>;
-};
+}
 
 const difficultyLevels = [
   { value: "1", label: "Very Easy" },

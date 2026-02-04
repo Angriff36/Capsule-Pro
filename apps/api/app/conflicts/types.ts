@@ -20,7 +20,7 @@ export const ConflictType = {
 
 export type ConflictType = (typeof ConflictType)[keyof typeof ConflictType];
 
-export type Conflict = {
+export interface Conflict {
   id: string;
   type: ConflictType;
   severity: ConflictSeverity;
@@ -33,18 +33,18 @@ export type Conflict = {
   }[];
   suggestedAction?: string;
   createdAt: Date;
-};
+}
 
-export type ConflictDetectionRequest = {
+export interface ConflictDetectionRequest {
   boardId?: string;
   timeRange?: {
     start: Date;
     end: Date;
   };
   entityTypes?: ConflictType[];
-};
+}
 
-export type ConflictDetectionResult = {
+export interface ConflictDetectionResult {
   conflicts: Conflict[];
   summary: {
     total: number;
@@ -52,7 +52,7 @@ export type ConflictDetectionResult = {
     byType: Record<ConflictType, number>;
   };
   analyzedAt: Date;
-};
+}
 
 export const ConflictSchema = z.object({
   id: z.string().uuid(),

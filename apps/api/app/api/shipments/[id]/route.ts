@@ -178,7 +178,7 @@ export async function PUT(
     }
 
     // Build update data
-    type ShipmentUpdateData = {
+    interface ShipmentUpdateData {
       shipmentNumber?: string;
       status?: string;
       eventId?: string | null;
@@ -199,7 +199,7 @@ export async function PUT(
       notes?: string | null;
       internalNotes?: string | null;
       reference?: string | null;
-    };
+    }
 
     const updateData: ShipmentUpdateData = {};
     if (body.shipment_number !== undefined) {

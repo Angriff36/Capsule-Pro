@@ -31,7 +31,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-type RecipeStep = {
+interface RecipeStep {
   stepNumber: number;
   instruction: string;
   durationMinutes: number | null;
@@ -41,9 +41,9 @@ type RecipeStep = {
   tips: string | null;
   videoUrl: string | null;
   imageUrl: string | null;
-};
+}
 
-type RecipeStepsResponse = {
+interface RecipeStepsResponse {
   recipeId: string;
   recipeName: string;
   recipeVersionId: string;
@@ -55,9 +55,9 @@ type RecipeStepsResponse = {
   yieldUnit: string | null;
   steps: RecipeStep[];
   totalDuration: number;
-};
+}
 
-type RecipeIngredient = {
+interface RecipeIngredient {
   id: string;
   name: string;
   quantity: number;
@@ -65,12 +65,12 @@ type RecipeIngredient = {
   notes: string | null;
   isOptional: boolean;
   orderIndex: number;
-};
+}
 
-type MobileRecipeClientProps = {
+interface MobileRecipeClientProps {
   recipeId: string;
   tenantId: string;
-};
+}
 
 const formatTime = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);

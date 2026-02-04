@@ -12,9 +12,9 @@ import {
 import { CheckIcon, EditIcon, FlagIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 
-type TimecardBulkActionsProps = {
+interface TimecardBulkActionsProps {
   totalEntries: number;
-};
+}
 
 export default function TimecardBulkActions({
   totalEntries,

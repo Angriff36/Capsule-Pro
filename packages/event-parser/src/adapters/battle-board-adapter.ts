@@ -18,19 +18,19 @@ import type {
   TimelinePhase,
 } from "../types/event.js";
 
-export type BattleBoardAdapterOptions = {
+export interface BattleBoardAdapterOptions {
   includeTaskLibrary?: boolean;
   defaultLayouts?: BattleBoardLayout[];
   staffParkingDefault?: string;
   staffRestroomsDefault?: string;
-};
+}
 
-export type BattleBoardBuildResult = {
+export interface BattleBoardBuildResult {
   battleBoard: BattleBoardData;
   autoFillScore: number;
   warnings: string[];
   missingFields: string[];
-};
+}
 
 /**
  * Build a battle board from parsed event data

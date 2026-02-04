@@ -6,10 +6,10 @@ import { ClipboardImageButton } from "../../components/clipboard-image-button";
 
 type UploadAction = (formData: FormData) => Promise<void>;
 
-type RecipeImagePlaceholderProps = {
+interface RecipeImagePlaceholderProps {
   recipeName: string;
   uploadAction: UploadAction;
-};
+}
 
 export const RecipeImagePlaceholder = ({
   recipeName,

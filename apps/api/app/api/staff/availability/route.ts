@@ -239,7 +239,7 @@ export async function POST(request: Request) {
   }
 
   // Verify employee exists and is active
-  const { employee, error: employeeError } = await verifyEmployee(
+  const { error: employeeError } = await verifyEmployee(
     tenantId,
     body.employeeId
   );

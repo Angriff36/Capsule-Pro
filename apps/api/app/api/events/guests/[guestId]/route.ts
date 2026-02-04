@@ -5,9 +5,14 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 type Params = Promise<{ guestId: string }>;
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Top-level regex for performance
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type UpdateGuestData = {
+type ValidationResult =
+  | { success: true; data: UpdateGuestData }
+  | { success: false; error: string };
+
+interface UpdateGuestData {
   guestName?: string;
   guestEmail?: string | null;
   guestPhone?: string | null;
@@ -19,7 +24,7 @@ type UpdateGuestData = {
   specialMealNotes?: string | null;
   tableAssignment?: string | null;
   mealPreference?: string | null;
-};
+}
 
 function validateGuestName(guestName: unknown): string | null {
   if (!guestName || typeof guestName !== "string" || guestName.trim() === "") {
@@ -33,7 +38,7 @@ function validateGuestEmail(guestEmail: unknown): string | null {
     if (typeof guestEmail !== "string" || guestEmail.trim() === "") {
       return "Email must be a valid string or null";
     }
-    if (!emailRegex.test(guestEmail.trim())) {
+    if (!EMAIL_REGEX.test(guestEmail.trim())) {
       return "Invalid email format";
     }
   }
@@ -80,6 +85,46 @@ function sanitizeStringArray(restrictions: unknown[]): string[] {
 }
 
 /**
+ * Helper to validate and set optional string fields
+ */
+function setOptionalStringField(
+  updateData: UpdateGuestData,
+  key: keyof UpdateGuestData,
+  value: string | null | undefined
+): void {
+  if (value === undefined) {
+    return;
+  }
+  updateData[key] =
+    value === null
+      ? null
+      : (value.toString().trim() as UpdateGuestData[keyof UpdateGuestData]);
+}
+
+/**
+ * Helper to validate and set fields with validation
+ */
+function setValidatedField<T>(
+  updateData: UpdateGuestData,
+  key: keyof UpdateGuestData,
+  value: T | undefined,
+  validator: (v: T) => string | null,
+  transformer?: (v: T) => UpdateGuestData[keyof UpdateGuestData]
+): ValidationResult | null {
+  if (value === undefined) {
+    return null;
+  }
+  const error = validator(value);
+  if (error) {
+    return { success: false, error };
+  }
+  updateData[key] = transformer
+    ? transformer(value)
+    : (value as UpdateGuestData[keyof UpdateGuestData]);
+  return null;
+}
+
+/**
  * GET /api/events/guests/[guestId]
  * Get a single guest by ID
  */
@@ -110,92 +155,84 @@ export async function GET(_request: Request, { params }: { params: Params }) {
  * Update a guest
  */
 
-function buildUpdateData(
-  body: UpdateGuestData
-): NextResponse | UpdateGuestData {
+function buildUpdateData(body: UpdateGuestData): ValidationResult {
   const updateData: UpdateGuestData = {};
 
-  if (body.guestName !== undefined) {
-    const error = validateGuestName(body.guestName);
-    if (error) {
-      return NextResponse.json({ message: error }, { status: 400 }) as any;
-    }
-    updateData.guestName = body.guestName.trim();
+  // Validate and set required fields
+  let error = setValidatedField(
+    body.guestName,
+    "guestName",
+    body.guestName,
+    validateGuestName,
+    (v) => v.trim()
+  );
+  if (error) {
+    return error;
   }
 
-  if (body.guestEmail !== undefined) {
-    const error = validateGuestEmail(body.guestEmail);
-    if (error) {
-      return NextResponse.json({ message: error }, { status: 400 }) as any;
-    }
-    updateData.guestEmail =
-      body.guestEmail === null ? null : body.guestEmail.trim();
+  error = setValidatedField(
+    body.guestEmail,
+    "guestEmail",
+    body.guestEmail,
+    validateGuestEmail,
+    (v) => (v === null ? null : (v.trim() as UpdateGuestData["guestEmail"]))
+  );
+  if (error) {
+    return error;
   }
 
-  if (body.guestPhone !== undefined) {
-    const error = validateGuestPhone(body.guestPhone);
-    if (error) {
-      return NextResponse.json({ message: error }, { status: 400 }) as any;
-    }
-    updateData.guestPhone =
-      body.guestPhone === null ? null : body.guestPhone.trim();
+  error = setValidatedField(
+    body.guestPhone,
+    "guestPhone",
+    body.guestPhone,
+    validateGuestPhone,
+    (v) => (v === null ? null : (v.trim() as UpdateGuestData["guestPhone"]))
+  );
+  if (error) {
+    return error;
   }
 
+  error = setValidatedField(
+    body.dietaryRestrictions,
+    "dietaryRestrictions",
+    body.dietaryRestrictions,
+    validateDietaryRestrictions,
+    sanitizeStringArray as (
+      v: unknown
+    ) => UpdateGuestData["dietaryRestrictions"]
+  );
+  if (error) {
+    return error;
+  }
+
+  error = setValidatedField(
+    body.allergenRestrictions,
+    "allergenRestrictions",
+    body.allergenRestrictions,
+    validateAllergenRestrictions,
+    sanitizeStringArray as (
+      v: unknown
+    ) => UpdateGuestData["allergenRestrictions"]
+  );
+  if (error) {
+    return error;
+  }
+
+  // Set optional boolean fields
   if (body.isPrimaryContact !== undefined) {
     updateData.isPrimaryContact = Boolean(body.isPrimaryContact);
   }
-
-  if (body.dietaryRestrictions !== undefined) {
-    const error = validateDietaryRestrictions(body.dietaryRestrictions);
-    if (error) {
-      return NextResponse.json({ message: error }, { status: 400 }) as any;
-    }
-    updateData.dietaryRestrictions = sanitizeStringArray(
-      body.dietaryRestrictions
-    );
-  }
-
-  if (body.allergenRestrictions !== undefined) {
-    const error = validateAllergenRestrictions(body.allergenRestrictions);
-    if (error) {
-      return NextResponse.json({ message: error }, { status: 400 }) as any;
-    }
-    updateData.allergenRestrictions = sanitizeStringArray(
-      body.allergenRestrictions
-    );
-  }
-
-  if (body.notes !== undefined) {
-    updateData.notes =
-      body.notes === null ? null : body.notes.toString().trim();
-  }
-
   if (body.specialMealRequired !== undefined) {
     updateData.specialMealRequired = Boolean(body.specialMealRequired);
   }
 
-  if (body.specialMealNotes !== undefined) {
-    updateData.specialMealNotes =
-      body.specialMealNotes === null
-        ? null
-        : body.specialMealNotes.toString().trim();
-  }
+  // Set optional string fields (no validation)
+  setOptionalStringField(updateData, "notes", body.notes);
+  setOptionalStringField(updateData, "specialMealNotes", body.specialMealNotes);
+  setOptionalStringField(updateData, "tableAssignment", body.tableAssignment);
+  setOptionalStringField(updateData, "mealPreference", body.mealPreference);
 
-  if (body.tableAssignment !== undefined) {
-    updateData.tableAssignment =
-      body.tableAssignment === null
-        ? null
-        : body.tableAssignment.toString().trim();
-  }
-
-  if (body.mealPreference !== undefined) {
-    updateData.mealPreference =
-      body.mealPreference === null
-        ? null
-        : body.mealPreference.toString().trim();
-  }
-
-  return updateData;
+  return { success: true, data: updateData };
 }
 
 export async function PUT(request: Request, { params }: { params: Params }) {
@@ -218,9 +255,12 @@ export async function PUT(request: Request, { params }: { params: Params }) {
     return NextResponse.json({ message: "Guest not found" }, { status: 404 });
   }
 
-  const updateDataOrError = buildUpdateData(body);
-  if (updateDataOrError instanceof NextResponse) {
-    return updateDataOrError;
+  const validationResult = buildUpdateData(body);
+  if (!validationResult.success) {
+    return NextResponse.json(
+      { message: validationResult.error },
+      { status: 400 }
+    );
   }
 
   const updatedGuest = await database.eventGuest.update({
@@ -230,7 +270,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
         id: guestId,
       },
     },
-    data: updateDataOrError,
+    data: validationResult.data,
   });
 
   return NextResponse.json({ guest: updatedGuest });

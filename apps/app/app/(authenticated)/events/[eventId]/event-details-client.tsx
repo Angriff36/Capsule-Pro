@@ -144,7 +144,7 @@ type QuickFilter =
 
 type DrawerMode = "instructions" | "ingredients";
 
-type EventDetailsClientProps = {
+interface EventDetailsClientProps {
   budget: EventBudgetForDisplay | null;
   event: Omit<Event, "budget" | "ticketPrice"> & {
     budget: number | null;
@@ -158,7 +158,7 @@ type EventDetailsClientProps = {
   relatedEvents: RelatedEventSummary[];
   relatedGuestCounts: Record<string, number>;
   rsvpCount: number;
-};
+}
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -200,7 +200,7 @@ const endOfDay = (date: Date) =>
 const addDays = (date: Date, days: number) =>
   new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
 
-const addHours = (date: Date, hours: number) =>
+const _addHours = (date: Date, hours: number) =>
   new Date(date.getTime() + hours * 60 * 60 * 1000);
 
 const getTimeZoneLabel = () => {
@@ -282,7 +282,7 @@ export function EventDetailsClient({
   const [selectedDishId, setSelectedDishId] = useState<string | null>(null);
 
   const [showBreakdownModal, setShowBreakdownModal] = useState(false);
-  const [showBreakdown, setShowBreakdown] = useState(false);
+  const [_showBreakdown, setShowBreakdown] = useState(false);
   const [breakdown, setBreakdown] = useState<TaskBreakdown | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState("");
@@ -894,7 +894,7 @@ export function EventDetailsClient({
       return 0;
     }
     const index = Math.floor(counts.length * 0.75);
-    return counts[index] ?? counts[counts.length - 1] ?? 0;
+    return counts[index] ?? counts.at(-1) ?? 0;
   }, [relatedEventsWithCounts]);
 
   const locationOptions = useMemo(() => {
@@ -902,7 +902,7 @@ export function EventDetailsClient({
     let hasUnassigned = false;
 
     for (const related of relatedEventsWithCounts) {
-      if (related.venueAddress && related.venueAddress.trim()) {
+      if (related.venueAddress?.trim()) {
         locations.add(related.venueAddress.trim());
       } else {
         hasUnassigned = true;
@@ -917,7 +917,7 @@ export function EventDetailsClient({
     let hasUnassigned = false;
 
     for (const related of relatedEventsWithCounts) {
-      if (related.venueName && related.venueName.trim()) {
+      if (related.venueName?.trim()) {
         organizers.add(related.venueName.trim());
       } else {
         hasUnassigned = true;
@@ -974,7 +974,7 @@ export function EventDetailsClient({
       }
       if (selectedLocation !== "all") {
         if (selectedLocation === "unassigned") {
-          if (related.venueAddress && related.venueAddress.trim()) {
+          if (related.venueAddress?.trim()) {
             return false;
           }
         } else if ((related.venueAddress ?? "").trim() !== selectedLocation) {
@@ -983,7 +983,7 @@ export function EventDetailsClient({
       }
       if (selectedOrganizer !== "all") {
         if (selectedOrganizer === "unassigned") {
-          if (related.venueName && related.venueName.trim()) {
+          if (related.venueName?.trim()) {
             return false;
           }
         } else if ((related.venueName ?? "").trim() !== selectedOrganizer) {

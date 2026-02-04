@@ -25,13 +25,13 @@ import {
   type Metrics,
 } from "./types.js";
 
-export type ExecutionResult = {
+export interface ExecutionResult {
   agentId: string;
   executionId: string;
   response: string;
   metrics: Metrics;
   streamed?: boolean;
-};
+}
 
 export interface StreamingResult extends ExecutionResult {
   stream: Readable;

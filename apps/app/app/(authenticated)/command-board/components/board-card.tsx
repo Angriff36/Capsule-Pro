@@ -9,7 +9,7 @@ import { InventoryCard } from "./cards/inventory-card";
 import { TaskCard } from "./cards/task-card";
 import { DraggableCard } from "./draggable-card";
 
-type BoardCardProps = {
+interface BoardCardProps {
   card: CommandBoardCard;
   isSelected: boolean;
   canDrag: boolean;
@@ -24,7 +24,7 @@ type BoardCardProps = {
   onSizeChange?: (cardId: string, width: number, height: number) => void;
   onDelete: (cardId: string) => void;
   className?: string;
-};
+}
 
 export const BoardCard = memo(function BoardCard({
   card,

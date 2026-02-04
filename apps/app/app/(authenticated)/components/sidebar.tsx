@@ -27,9 +27,9 @@ import { ModuleHeader } from "./module-header";
 import { getModuleKeyFromPathname, modules } from "./module-nav";
 import { Search } from "./search";
 
-type GlobalSidebarProperties = {
+interface GlobalSidebarProperties {
   readonly children: ReactNode;
-};
+}
 
 const data = {
   navSecondary: [

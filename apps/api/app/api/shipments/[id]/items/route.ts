@@ -11,7 +11,7 @@ import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type ShipmentItemInput = {
+interface ShipmentItemInput {
   item_id: string;
   quantity_shipped: number;
   quantity_received?: number;
@@ -22,7 +22,7 @@ type ShipmentItemInput = {
   condition_notes?: string | null;
   lot_number?: string | null;
   expiration_date?: string | null;
-};
+}
 
 function validateShipmentItemData(item: ShipmentItemInput) {
   if (!item.item_id) {
@@ -148,7 +148,22 @@ export async function POST(
     }
 
     const items = Array.isArray(body) ? body : [body];
-    const createdItems = [];
+    const createdItems: Array<{
+      id: string;
+      tenantId: string;
+      shipmentId: string;
+      itemId: string;
+      quantityShipped: string;
+      quantityReceived: string;
+      quantityDamaged: string;
+      unitId: string | null;
+      unitCost: string | null;
+      totalCost: string | null;
+      condition: string;
+      conditionNotes: string | null;
+      lotNumber: string | null;
+      expirationDate: Date | null;
+    }> = [];
 
     for (const item of items) {
       validateShipmentItemData(item);

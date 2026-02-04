@@ -8,7 +8,7 @@ import { createEventSchema } from "./validation";
 
 type CsvRow = Record<string, string>;
 
-type ImportContext = {
+interface ImportContext {
   tenantId: string;
   locationId: string;
   unitIds: {
@@ -18,7 +18,7 @@ type ImportContext = {
     gram?: number;
     kilogram?: number;
   };
-};
+}
 
 const normalizeHeader = (value: string) =>
   value
@@ -367,11 +367,11 @@ const insertInventoryItem = async (
   return id;
 };
 
-type ItemClassification = {
+interface ItemClassification {
   kind: "dish" | "recipe" | "ingredient" | "supply";
   category?: string;
   tags: string[];
-};
+}
 
 const SUPPLY_KEYWORDS = [
   "chafing",
@@ -657,15 +657,15 @@ type MissingField =
   | "headcount"
   | "menuItems";
 
-type MenuImportSummary = {
+interface MenuImportSummary {
   missingQuantities: string[];
   linkedDishes: number;
   createdDishes: number;
   createdRecipes: number;
   updatedLinks: number;
-};
+}
 
-type AggregatedMenuItem = {
+interface AggregatedMenuItem {
   name: string;
   category: string | null;
   serviceLocation: string | null;
@@ -674,7 +674,7 @@ type AggregatedMenuItem = {
   allergens: Set<string>;
   dietaryTags: Set<string>;
   instructions: Set<string>;
-};
+}
 
 const MISSING_FIELD_TAG_PREFIX = "needs:";
 

@@ -5,7 +5,7 @@
 import type { Proposal } from "@repo/database";
 
 // Line item type from proposal_line_items table
-type ProposalLineItem = {
+interface ProposalLineItem {
   id: string;
   tenant_id: string;
   proposal_id: string;
@@ -19,9 +19,9 @@ type ProposalLineItem = {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-};
+}
 
-export type CreateProposalRequest = {
+export interface CreateProposalRequest {
   clientId?: string | null;
   leadId?: string | null;
   eventId?: string | null;
@@ -41,13 +41,13 @@ export type CreateProposalRequest = {
   notes?: string | null;
   termsAndConditions?: string | null;
   lineItems?: CreateLineItemRequest[];
-};
+}
 
 export type UpdateProposalRequest = Partial<CreateProposalRequest> & {
   id: string;
 };
 
-export type CreateLineItemRequest = {
+export interface CreateLineItemRequest {
   sortOrder?: number;
   itemType: string;
   category?: string | null;
@@ -56,9 +56,9 @@ export type CreateLineItemRequest = {
   unitPrice: number;
   total?: number | null;
   notes?: string | null;
-};
+}
 
-export type ProposalFilters = {
+export interface ProposalFilters {
   search?: string;
   status?: string;
   clientId?: string;
@@ -66,14 +66,14 @@ export type ProposalFilters = {
   eventId?: string;
   dateFrom?: string;
   dateTo?: string;
-};
+}
 
-export type SendProposalRequest = {
+export interface SendProposalRequest {
   recipientEmail?: string;
   message?: string;
-};
+}
 
-export type ProposalListItem = {
+export interface ProposalListItem {
   id: string;
   proposalNumber: string;
   title: string;
@@ -98,7 +98,7 @@ export type ProposalListItem = {
   viewedAt: Date | null;
   acceptedAt: Date | null;
   createdAt: Date;
-};
+}
 
 export type ProposalDetail = Proposal & {
   lineItems: ProposalLineItem[];

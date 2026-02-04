@@ -58,7 +58,7 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { SignaturePad } from "../components/signature-pad";
 
-type ContractDetailClientProps = {
+interface ContractDetailClientProps {
   contract: EventContract;
   event: {
     id: string;
@@ -76,7 +76,7 @@ type ContractDetailClientProps = {
     phone: string | null;
   } | null;
   signatures: ContractSignature[];
-};
+}
 
 type ContractStatus = "draft" | "pending" | "signed" | "expired" | "cancelled";
 

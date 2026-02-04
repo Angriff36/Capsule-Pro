@@ -65,7 +65,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-type Proposal = {
+interface Proposal {
   id: string;
   proposalNumber: string;
   title: string;
@@ -90,19 +90,19 @@ type Proposal = {
     first_name: string | null;
     last_name: string | null;
   } | null;
-};
+}
 
-type PaginationData = {
+interface PaginationData {
   page: number;
   limit: number;
   total: number;
   totalPages: number;
-};
+}
 
-type ProposalsResponse = {
+interface ProposalsResponse {
   data: Proposal[];
   pagination: PaginationData;
-};
+}
 
 const statusVariants: Record<
   string,
@@ -147,12 +147,12 @@ function getClientName(proposal: Proposal): string {
   return "No client";
 }
 
-type ProposalsClientProps = {
+interface ProposalsClientProps {
   initialPage?: number;
   initialSearch?: string;
   initialStatus?: string;
   initialClientId?: string;
-};
+}
 
 export function ProposalsClient({
   initialPage = 1,

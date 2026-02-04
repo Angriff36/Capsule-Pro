@@ -2,12 +2,13 @@ import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import type { DayOfWeek } from "./types";
 
+const TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
 /**
  * Validates time string in HH:MM format (24-hour)
  */
 export function validateTimeFormat(time: string): NextResponse | null {
-  const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-  if (!timeRegex.test(time)) {
+  if (!TIME_REGEX.test(time)) {
     return NextResponse.json(
       {
         message: `Invalid time format: ${time}. Expected HH:MM format (24-hour)`,

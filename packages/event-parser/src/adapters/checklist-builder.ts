@@ -20,13 +20,13 @@ import type {
 
 const CHECKLIST_VERSION = "2025-01-27";
 
-export type ChecklistBuildResult = {
+export interface ChecklistBuildResult {
   checklist: EventChecklist;
   autoFilledCount: number;
   totalQuestions: number;
   warnings: string[];
   missingFields: string[];
-};
+}
 
 /**
  * Build initial checklist with auto-filled answers from parsed event

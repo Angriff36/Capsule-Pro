@@ -36,30 +36,30 @@ import {
 /**
  * Unified export options
  */
-export type ExportOptions = {
+export interface ExportOptions {
   format: ExportFormatType;
   aggregate?: boolean; // For QB exports, create single aggregate entry
   csv?: CsvExportOptions;
   qbxml?: QBXMLExportOptions;
   qbOnlineCsv?: QBOnlineCsvExportOptions;
-};
+}
 
 /**
  * Export result
  */
-export type ExportResult = {
+export interface ExportResult {
   format: ExportFormatType;
   content: string;
   filename: string;
   mimeType: string;
-};
+}
 
-type PayrollExportContext = {
+interface PayrollExportContext {
   format: ExportFormatType;
   aggregate: boolean;
   suffix: string;
   periodSlug: (periodId: string) => string;
-};
+}
 
 type PayrollExportStrategy = (
   context: PayrollExportContext,
@@ -137,12 +137,12 @@ const exportStrategies: Record<ExportFormatType, PayrollExportStrategy> = {
 /**
  * Factory for export strategies.
  */
-export type PayrollExporter = {
+export interface PayrollExporter {
   format: ExportFormatType;
   mimeType: string;
   filename: (periodId: string) => string;
   exportContent: (records: PayrollRecord[], period: PayrollPeriod) => string;
-};
+}
 
 export function createPayrollExporter(options: ExportOptions): PayrollExporter {
   const context = createExportContext(options);

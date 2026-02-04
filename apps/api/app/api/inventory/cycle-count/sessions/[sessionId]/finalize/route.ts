@@ -24,7 +24,7 @@ function getAdjustmentType(variance: number): "increase" | "decrease" | "none" {
   return "none";
 }
 
-type VarianceRecord = {
+interface VarianceRecord {
   id: string;
   itemId: string;
   itemNumber: string | null;
@@ -33,14 +33,14 @@ type VarianceRecord = {
   countedQuantity: { toNumber: () => number };
   variance: { toNumber: () => number };
   storageLocationId: string | null;
-};
+}
 
-type SessionInfo = {
+interface SessionInfo {
   id: string;
   sessionId: string;
   status: string;
   totalVariance: { toNumber: () => number };
-};
+}
 
 function generateVarianceReport(
   record: VarianceRecord,
@@ -150,9 +150,9 @@ async function processInventoryAdjustments(
   }
 }
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ sessionId: string }>;
-};
+}
 
 /**
  * POST /api/inventory/cycle-count/sessions/[sessionId]/finalize - Finalize a session

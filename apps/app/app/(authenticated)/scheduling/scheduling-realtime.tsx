@@ -4,10 +4,10 @@ import Ably from "ably";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-type SchedulingRealtimeProps = {
+interface SchedulingRealtimeProps {
   tenantId: string;
   userId?: string | null;
-};
+}
 
 const authUrl = "/ably/auth";
 

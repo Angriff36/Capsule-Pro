@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
-type CommandBoardLayoutProperties = {
+interface CommandBoardLayoutProperties {
   readonly children: ReactNode;
-};
+}
 
 const CommandBoardLayout = ({ children }: CommandBoardLayoutProperties) => (
   <>{children}</>

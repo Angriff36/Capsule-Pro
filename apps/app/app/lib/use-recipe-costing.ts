@@ -29,7 +29,7 @@ export type CuisineType =
   | "indian"
   | "other";
 
-export type Recipe = {
+export interface Recipe {
   id: string;
   tenantId: string;
   name: string;
@@ -52,9 +52,9 @@ export type Recipe = {
   } | null;
   createdAt: Date;
   updatedAt: Date;
-};
+}
 
-export type RecipeCostBreakdown = {
+export interface RecipeCostBreakdown {
   totalCost: number;
   costPerYield: number;
   costPerPortion: number | null;
@@ -69,9 +69,9 @@ export type RecipeCostBreakdown = {
     portionSize: number | null;
     portionUnit: string | null;
   };
-};
+}
 
-export type IngredientCostBreakdown = {
+export interface IngredientCostBreakdown {
   id: string;
   recipeIngredientId: string;
   name: string;
@@ -83,9 +83,9 @@ export type IngredientCostBreakdown = {
   cost: number;
   hasInventoryItem: boolean;
   inventoryItemId: string | null;
-};
+}
 
-export type RecipeListResponse = {
+export interface RecipeListResponse {
   data: Recipe[];
   pagination: {
     page: number;
@@ -93,9 +93,9 @@ export type RecipeListResponse = {
     total: number;
     totalPages: number;
   };
-};
+}
 
-export type RecipeListFilters = {
+export interface RecipeListFilters {
   search?: string;
   category?: RecipeCategory;
   cuisineType?: CuisineType;
@@ -103,25 +103,25 @@ export type RecipeListFilters = {
   isActive?: boolean;
   page?: number;
   limit?: number;
-};
+}
 
-export type ScaleRecipeRequest = {
+export interface ScaleRecipeRequest {
   targetPortions: number;
   currentYield: number;
-};
+}
 
-export type ScaledRecipeCost = {
+export interface ScaledRecipeCost {
   scaledTotalCost: number;
   scaledCostPerYield: number;
   scaledCostPerPortion: number | null;
   scaleFactor: number;
   originalCost: number;
-};
+}
 
-export type UpdateWasteFactorRequest = {
+export interface UpdateWasteFactorRequest {
   recipeIngredientId: string;
   wasteFactor: number;
-};
+}
 
 // ============================================================================
 // Recipes API
@@ -280,13 +280,13 @@ export async function updateEventBudgets(
 
 import { useEffect, useState } from "react";
 
-export type UseRecipeCostResult = {
+export interface UseRecipeCostResult {
   data: RecipeCostBreakdown | null;
   loading: boolean;
   error: Error | null;
   refetch: () => Promise<void>;
   recalculate: () => Promise<void>;
-};
+}
 
 export function useRecipeCost(recipeVersionId: string): UseRecipeCostResult {
   const [data, setData] = useState<RecipeCostBreakdown | null>(null);
@@ -328,7 +328,7 @@ export function useRecipeCost(recipeVersionId: string): UseRecipeCostResult {
   return { data, loading, error, refetch: fetchCost, recalculate };
 }
 
-export type UseRecipesResult = {
+export interface UseRecipesResult {
   data: Recipe[];
   loading: boolean;
   error: Error | null;
@@ -339,7 +339,7 @@ export type UseRecipesResult = {
     totalPages: number;
   } | null;
   refetch: () => Promise<void>;
-};
+}
 
 export function useRecipes(filters: RecipeListFilters = {}): UseRecipesResult {
   const [data, setData] = useState<Recipe[]>([]);

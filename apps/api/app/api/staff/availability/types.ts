@@ -4,7 +4,7 @@
 
 export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0=Sunday, 1=Monday, etc.
 
-export type EmployeeAvailability = {
+export interface EmployeeAvailability {
   id: string;
   tenant_id: string;
   employee_id: string;
@@ -20,9 +20,9 @@ export type EmployeeAvailability = {
   effective_until: Date | null; // YYYY-MM-DD or null for ongoing
   created_at: Date;
   updated_at: Date;
-};
+}
 
-export type CreateAvailabilityInput = {
+export interface CreateAvailabilityInput {
   employeeId: string;
   dayOfWeek: DayOfWeek;
   startTime: string; // HH:MM format (24-hour)
@@ -30,18 +30,18 @@ export type CreateAvailabilityInput = {
   isAvailable?: boolean; // defaults to true
   effectiveFrom?: string; // YYYY-MM-DD format, defaults to today
   effectiveUntil?: string | null; // YYYY-MM-DD format or null for ongoing
-};
+}
 
-export type UpdateAvailabilityInput = {
+export interface UpdateAvailabilityInput {
   dayOfWeek?: DayOfWeek;
   startTime?: string;
   endTime?: string;
   isAvailable?: boolean;
   effectiveFrom?: string;
   effectiveUntil?: string | null;
-};
+}
 
-export type CreateBatchAvailabilityInput = {
+export interface CreateBatchAvailabilityInput {
   employeeId: string;
   patterns: Array<{
     dayOfWeek: DayOfWeek;
@@ -51,18 +51,18 @@ export type CreateBatchAvailabilityInput = {
   }>;
   effectiveFrom?: string; // YYYY-MM-DD format, defaults to today
   effectiveUntil?: string | null; // YYYY-MM-DD format or null for ongoing
-};
+}
 
-export type AvailabilityFilters = {
+export interface AvailabilityFilters {
   employeeId?: string;
   dayOfWeek?: DayOfWeek;
   effectiveDate?: string; // Filter availability effective on this date
   isActive?: boolean; // Filter currently active availability
   page?: number;
   limit?: number;
-};
+}
 
-export type AvailabilityListResponse = {
+export interface AvailabilityListResponse {
   availability: EmployeeAvailability[];
   pagination: {
     page: number;
@@ -70,9 +70,9 @@ export type AvailabilityListResponse = {
     total: number;
     totalPages: number;
   };
-};
+}
 
-export type EmployeeAvailabilityForDate = {
+export interface EmployeeAvailabilityForDate {
   employee_id: string;
   employee_first_name: string | null;
   employee_last_name: string | null;
@@ -82,14 +82,14 @@ export type EmployeeAvailabilityForDate = {
   day_of_week: number;
   start_time: string;
   end_time: string;
-};
+}
 
-export type EmployeesAvailabilityQuery = {
+export interface EmployeesAvailabilityQuery {
   employeeIds?: string[]; // Specific employees to query
   startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
   includeTimeOff?: boolean; // Also include time-off requests
-};
+}
 
 export interface EmployeeAvailabilityWithTimeOff
   extends EmployeeAvailabilityForDate {

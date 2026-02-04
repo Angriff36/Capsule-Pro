@@ -14,26 +14,26 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { CreateProposalRequest } from "../types";
 import { validateCreateProposalRequest } from "../validation";
 
-type RouteParams = {
+interface RouteParams {
   params: Promise<{ id: string }>;
-};
+}
 
-type ClientSelect = {
+interface ClientSelect {
   id: true;
   company_name: true;
   first_name: true;
   last_name: true;
   email: true;
   phone: true;
-};
+}
 
-type LeadSelect = {
+interface LeadSelect {
   id: true;
   companyName: true;
   contactName: true;
   contactEmail: true;
   contactPhone: true;
-};
+}
 
 /**
  * Fetch client for a proposal

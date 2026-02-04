@@ -19,7 +19,7 @@ export type VarianceReportStatus =
 
 export type SyncStatus = "synced" | "pending" | "failed" | "conflict";
 
-export type CycleCountSession = {
+export interface CycleCountSession {
   id: string;
   tenantId: string;
   locationId: string;
@@ -41,9 +41,9 @@ export type CycleCountSession = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-};
+}
 
-export type CycleCountRecord = {
+export interface CycleCountRecord {
   id: string;
   tenantId: string;
   sessionId: string;
@@ -67,9 +67,9 @@ export type CycleCountRecord = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-};
+}
 
-export type VarianceReport = {
+export interface VarianceReport {
   id: string;
   tenantId: string;
   sessionId: string;
@@ -91,9 +91,9 @@ export type VarianceReport = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-};
+}
 
-export type CycleCountAuditLog = {
+export interface CycleCountAuditLog {
   id: string;
   tenantId: string;
   sessionId: string;
@@ -107,25 +107,25 @@ export type CycleCountAuditLog = {
   ipAddress: string | null;
   userAgent: string | null;
   createdAt: Date;
-};
+}
 
-export type CreateSessionInput = {
+export interface CreateSessionInput {
   locationId: string;
   sessionName: string;
   countType: CycleCountSessionType;
   scheduledDate?: Date;
   notes?: string;
-};
+}
 
-export type UpdateSessionInput = {
+export interface UpdateSessionInput {
   id: string;
   sessionName?: string;
   status?: CycleCountSessionStatus;
   notes?: string;
   approvedById?: string;
-};
+}
 
-export type CreateRecordInput = {
+export interface CreateRecordInput {
   sessionId: string;
   itemId: string;
   itemNumber: string;
@@ -137,23 +137,23 @@ export type CreateRecordInput = {
   notes?: string;
   offlineId?: string;
   syncStatus?: SyncStatus;
-};
+}
 
-export type UpdateRecordInput = {
+export interface UpdateRecordInput {
   id: string;
   countedQuantity?: number;
   notes?: string;
   isVerified?: boolean;
   syncStatus?: SyncStatus;
-};
+}
 
-export type FinalizeSessionInput = {
+export interface FinalizeSessionInput {
   sessionId: string;
   approvedById: string;
   notes?: string;
-};
+}
 
-export type SyncRecordsInput = {
+export interface SyncRecordsInput {
   records: Array<{
     offlineId: string;
     sessionId: string;
@@ -167,22 +167,22 @@ export type SyncRecordsInput = {
     notes?: string;
     syncStatus?: SyncStatus;
   }>;
-};
+}
 
-export type SessionResult = {
+export interface SessionResult {
   success: boolean;
   session?: CycleCountSession;
   error?: string;
-};
+}
 
-export type RecordResult = {
+export interface RecordResult {
   success: boolean;
   record?: CycleCountRecord;
   error?: string;
-};
+}
 
-export type FinalizeResult = {
+export interface FinalizeResult {
   success: boolean;
   sessionId?: string;
   error?: string;
-};
+}

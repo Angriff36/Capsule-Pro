@@ -7,16 +7,16 @@ import { invariant } from "@/app/lib/invariant";
 
 export type StockHealthStatus = "healthy" | "low" | "critical" | "out_of_stock";
 
-export type InventoryItemStatus = {
+export interface InventoryItemStatus {
   status: StockHealthStatus;
   daysUntilReorder: number | null;
   percentageOfReorderLevel: number;
-};
+}
 
-export type StockHealthConfig = {
+export interface StockHealthConfig {
   criticalThresholdPercent: number; // Below this % of reorder level = critical
   lowThresholdPercent: number; // Below this % of reorder level = low
-};
+}
 
 const DEFAULT_CONFIG: StockHealthConfig = {
   criticalThresholdPercent: 50, // Below 50% of reorder level = critical

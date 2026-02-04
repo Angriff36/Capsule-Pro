@@ -8,16 +8,15 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
  * GET /api/kitchen/waste/trends
  * View waste trends over time with analytics
  */
+const UUID_REGEX =
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 const allowedPeriods = ["7d", "30d", "90d", "12m"] as const;
 const allowedGroupBys = ["day", "week", "month"] as const;
 
 type Period = (typeof allowedPeriods)[number];
 type GroupBy = (typeof allowedGroupBys)[number];
 
-const isUuid = (value: string) =>
-  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
-    value
-  );
+const isUuid = (value: string) => UUID_REGEX.test(value);
 
 export async function GET(request: NextRequest) {
   const { orgId } = await auth();
@@ -97,13 +96,13 @@ export async function GET(request: NextRequest) {
 
   // Group data by time period
   type WasteEntry = (typeof entries)[number];
-  type TrendDataPoint = {
+  interface TrendDataPoint {
     period: string;
     totalCost: number;
     totalQuantity: number;
     count: number;
     entries: WasteEntry[];
-  };
+  }
   const trendData: Record<string, TrendDataPoint> = {};
   for (const entry of entries) {
     const date = new Date(entry.loggedAt);
@@ -207,7 +206,12 @@ export async function GET(request: NextRequest) {
     .slice(0, 10);
 
   // Calculate reduction opportunities
-  const reductionOpportunities = [];
+  const reductionOpportunities: Array<{
+    type: string;
+    description: string;
+    potentialSavings: number;
+    priority: string;
+  }> = [];
   if (topItems.length > 0) {
     const topItemCost = topItems[0].cost;
     const potentialSavings = topItemCost * 0.5; // Assume 50% could be prevented

@@ -17,20 +17,20 @@ import {
   UtensilsCrossedIcon,
 } from "lucide-react";
 
-type AllergenStats = {
+interface AllergenStats {
   recipesWithAllergens: number;
   dishesWithAllergens: number;
   activeGuestRestrictions: number;
   pendingWarnings: number;
-};
+}
 
-type StatCard = {
+interface StatCard {
   title: string;
   value: string | number;
   icon: React.ComponentType<{ className?: string }>;
   color: string;
   bgColor: string;
-};
+}
 
 export function AllergenStatsCards({ stats }: { stats: AllergenStats }) {
   const cards: StatCard[] = [

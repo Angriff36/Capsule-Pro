@@ -14,9 +14,9 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { CreateCardRequest } from "../../types";
 import { parseCardListFilters, validateCreateCardRequest } from "./validation";
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ boardId: string }>;
-};
+}
 
 const CARD_SELECT = {
   id: true,

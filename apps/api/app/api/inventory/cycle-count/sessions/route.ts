@@ -24,10 +24,10 @@ type CycleCountSessionStatus =
   | "finalized"
   | "cancelled";
 
-type PaginationParams = {
+interface PaginationParams {
   page: number;
   limit: number;
-};
+}
 
 function parsePaginationParams(
   searchParams: URLSearchParams

@@ -84,14 +84,14 @@ const DIETARY_TAGS = [
   { id: "nut-free", label: "Nut-Free", description: "No nuts or peanuts" },
 ] as const;
 
-type AllergenManagementModalProps = {
+interface AllergenManagementModalProps {
   type: "dish" | "recipe";
   id: string;
   name: string;
   currentAllergens: string[];
   currentDietaryTags: string[];
   tenantId: string;
-};
+}
 
 export function AllergenManagementModal({
   type,

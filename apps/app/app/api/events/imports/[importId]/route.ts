@@ -3,11 +3,11 @@ import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{
     importId: string;
   }>;
-};
+}
 
 export const GET = async (_request: Request, context: RouteContext) => {
   const inline = new URL(_request.url).searchParams.get("inline") === "1";

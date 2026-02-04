@@ -4,25 +4,25 @@
 
 export type ConfidenceLevel = "high" | "medium" | "low";
 
-export type SeniorityInfo = {
+export interface SeniorityInfo {
   level: string;
   rank: number;
-};
+}
 
-export type EmployeeSkill = {
+export interface EmployeeSkill {
   skillId: string;
   skillName: string;
   proficiencyLevel: number;
-};
+}
 
-export type ConflictShift = {
+export interface ConflictShift {
   id: string;
   shiftStart: Date;
   shiftEnd: Date;
   locationName: string;
-};
+}
 
-export type EmployeeCandidate = {
+export interface EmployeeCandidate {
   id: string;
   firstName: string | null;
   lastName: string | null;
@@ -40,9 +40,9 @@ export type EmployeeCandidate = {
   }>;
   hasConflictingShift: boolean;
   conflictingShifts: ConflictShift[];
-};
+}
 
-export type MatchDetails = {
+export interface MatchDetails {
   skillsMatch: boolean;
   skillsMatched: string[];
   skillsMissing: string[];
@@ -50,17 +50,17 @@ export type MatchDetails = {
   availabilityMatch: boolean;
   hasConflicts: boolean;
   costEstimate: number;
-};
+}
 
-export type AssignmentSuggestion = {
+export interface AssignmentSuggestion {
   employee: EmployeeCandidate;
   score: number;
   reasoning: string[];
   confidence: ConfidenceLevel;
   matchDetails: MatchDetails;
-};
+}
 
-export type ShiftRequirement = {
+export interface ShiftRequirement {
   shiftId: string;
   scheduleId: string;
   locationId: string;
@@ -69,25 +69,25 @@ export type ShiftRequirement = {
   roleDuringShift?: string;
   requiredSkills?: string[];
   notes?: string;
-};
+}
 
-export type AutoAssignmentResult = {
+export interface AutoAssignmentResult {
   shiftId: string;
   suggestions: AssignmentSuggestion[];
   bestMatch: AssignmentSuggestion | null;
   canAutoAssign: boolean;
   laborBudgetWarning?: string;
-};
+}
 
-export type BulkAssignmentRequest = {
+export interface BulkAssignmentRequest {
   shifts: Array<{
     shiftId: string;
     locationId?: string;
     requiredSkills?: string[];
   }>;
-};
+}
 
-export type BulkAssignmentResponse = {
+export interface BulkAssignmentResponse {
   results: AutoAssignmentResult[];
   summary: {
     total: number;
@@ -95,19 +95,19 @@ export type BulkAssignmentResponse = {
     hasSuggestions: number;
     noSuggestions: number;
   };
-};
+}
 
-export type AutoAssignRequest = {
+export interface AutoAssignRequest {
   employeeId?: string;
   force?: boolean;
-};
+}
 
-export type AssignmentSuccessResponse = {
+export interface AssignmentSuccessResponse {
   success: boolean;
   shiftId: string;
   employeeId: string;
   message: string;
-};
+}
 
 /**
  * Client-side functions for shift assignment operations

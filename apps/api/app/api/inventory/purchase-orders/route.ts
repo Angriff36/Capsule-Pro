@@ -17,10 +17,10 @@ import type {
 } from "./types";
 import { PO_STATUSES } from "./types";
 
-type PaginationParams = {
+interface PaginationParams {
   page: number;
   limit: number;
-};
+}
 
 /**
  * Parse pagination parameters from URL search params

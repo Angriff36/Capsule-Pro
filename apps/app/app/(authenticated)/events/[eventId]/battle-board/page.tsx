@@ -6,11 +6,11 @@ import { Header } from "../../../components/header";
 import { getEventStaff, getTimelineTasks } from "./actions/tasks";
 import { Timeline } from "./components/timeline";
 
-type BattleBoardPageProps = {
+interface BattleBoardPageProps {
   params: Promise<{
     eventId: string;
   }>;
-};
+}
 
 const BattleBoardPage = async ({ params }: BattleBoardPageProps) => {
   const { eventId } = await params;

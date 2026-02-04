@@ -55,13 +55,13 @@ import * as ToggleGroup from "@repo/design-system/components/ui/toggle-group";
 import * as Tooltip from "@repo/design-system/components/ui/tooltip";
 import type { ComponentType } from "react";
 
-type RegisterMeta = {
+interface RegisterMeta {
   name: string;
   importPath: string;
   importName: string;
   props?: Record<string, unknown>;
   withChildren?: boolean;
-};
+}
 
 type RegisterFn = (
   component: ComponentType,

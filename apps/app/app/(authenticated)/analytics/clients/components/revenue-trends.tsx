@@ -14,7 +14,7 @@ import {
 import { cn } from "@repo/design-system/lib/utils";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
-type RevenueTrendsProps = {
+interface RevenueTrendsProps {
   data: Array<{
     month: string;
     revenue: number;
@@ -22,7 +22,7 @@ type RevenueTrendsProps = {
     clients: number;
   }>;
   className?: string;
-};
+}
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {

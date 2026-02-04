@@ -16,9 +16,9 @@ import type {
   TimelinePhase,
 } from "../types/index.js";
 
-export type ParseOptions = {
+export interface ParseOptions {
   sourceName: string;
-};
+}
 
 // Main parser function
 export function parseTppEvent(
@@ -112,18 +112,18 @@ export function parseTppEvent(
 }
 
 // --- Helper Types ---
-type Section = {
+interface Section {
   label: string;
   lines: string[];
-};
+}
 
-type QuantityParseResult = {
+interface QuantityParseResult {
   primaryQuantity: { value: number; unit: string };
   details: MenuQuantityDetail[];
   specials: string[];
   prepInstructions: string[];
   warnings: string[];
-};
+}
 
 // --- Preprocessing ---
 function preprocessLines(lines: string[]): string[] {

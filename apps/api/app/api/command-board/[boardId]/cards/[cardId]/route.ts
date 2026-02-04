@@ -5,16 +5,16 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { UpdateCommandBoardCardRequest } from "../../../types";
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ boardId: string; cardId: string }>;
-};
+}
 
 type ValidationError = NextResponse | null;
 
-type UpdateFields = {
+interface UpdateFields {
   fields: string[];
   values: (string | number | boolean | Date | null)[];
-};
+}
 
 type Validator = (value: unknown) => ValidationError;
 

@@ -47,15 +47,15 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
-type StaffMember = {
+interface StaffMember {
   name: string;
   role: string;
   shiftStart: string;
   shiftEnd: string;
   station: string;
-};
+}
 
-type TimelineItem = {
+interface TimelineItem {
   time: string;
   item: string;
   team: string;
@@ -63,32 +63,32 @@ type TimelineItem = {
   style: string;
   notes: string;
   hl: boolean;
-};
+}
 
-type Attachment = {
+interface Attachment {
   id: string;
   name: string;
   url: string;
   type: string;
   uploadedAt: string;
-};
+}
 
-type Layout = {
+interface Layout {
   type: string;
   instructions: string;
   linkedMapImage?: string;
-};
+}
 
-type BoardMeta = {
+interface BoardMeta {
   eventName: string;
   eventNumber: string;
   eventDate: string;
   staffRestrooms: string;
   staffParking: string;
   lastUpdatedISO?: string;
-};
+}
 
-type BoardData = {
+interface BoardData {
   schema?: string;
   version?: string;
   meta: BoardMeta;
@@ -96,9 +96,9 @@ type BoardData = {
   timeline: TimelineItem[];
   layouts: Layout[];
   attachments?: Attachment[];
-};
+}
 
-type BattleBoardEditorProps = {
+interface BattleBoardEditorProps {
   board: {
     id: string;
     boardName: string;
@@ -119,7 +119,7 @@ type BattleBoardEditorProps = {
     venueAddress: string | null;
     guestCount: number;
   } | null;
-};
+}
 
 const statusOptions = [
   { value: "draft", label: "Draft" },

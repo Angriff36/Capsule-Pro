@@ -3,9 +3,9 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ id: string }>;
-};
+}
 
 export async function PATCH(request: Request, context: RouteContext) {
   const { orgId, userId: clerkId } = await auth();
@@ -53,7 +53,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   // Update task
-  type TaskUpdateData = {
+  interface TaskUpdateData {
     status?: string;
     priority?: number;
     summary?: string;
@@ -61,7 +61,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     tags?: string[];
     dueDate?: Date | null;
     completedAt?: Date;
-  };
+  }
   const updateData: TaskUpdateData = {};
   if (body.status) {
     updateData.status = body.status;

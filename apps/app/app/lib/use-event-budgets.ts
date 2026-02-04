@@ -17,7 +17,7 @@ export type BudgetLineItemCategory =
   | "equipment"
   | "other";
 
-export type BudgetLineItem = {
+export interface BudgetLineItem {
   id: string;
   tenantId: string;
   budgetId: string;
@@ -32,9 +32,9 @@ export type BudgetLineItem = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-};
+}
 
-export type EventBudget = {
+export interface EventBudget {
   tenantId: string;
   id: string;
   eventId: string;
@@ -49,32 +49,32 @@ export type EventBudget = {
   updatedAt: Date;
   deletedAt: Date | null;
   lineItems?: BudgetLineItem[];
-};
+}
 
-export type CreateEventBudgetInput = {
+export interface CreateEventBudgetInput {
   eventId: string;
   status?: EventBudgetStatus;
   totalBudgetAmount?: number;
   notes?: string;
   lineItems?: CreateBudgetLineItemInput[];
-};
+}
 
-export type CreateBudgetLineItemInput = {
+export interface CreateBudgetLineItemInput {
   category: BudgetLineItemCategory;
   name: string;
   description?: string;
   budgetedAmount: number;
   sortOrder?: number;
   notes?: string;
-};
+}
 
-export type UpdateEventBudgetInput = {
+export interface UpdateEventBudgetInput {
   status?: EventBudgetStatus;
   totalBudgetAmount?: number;
   notes?: string;
-};
+}
 
-export type UpdateBudgetLineItemInput = {
+export interface UpdateBudgetLineItemInput {
   category?: BudgetLineItemCategory;
   name?: string;
   description?: string;
@@ -82,22 +82,22 @@ export type UpdateBudgetLineItemInput = {
   actualAmount?: number;
   sortOrder?: number;
   notes?: string;
-};
+}
 
-export type EventBudgetFilters = {
+export interface EventBudgetFilters {
   eventId?: string;
   status?: EventBudgetStatus;
   page?: number;
   limit?: number;
-};
+}
 
-export type EventBudgetListResponse = {
+export interface EventBudgetListResponse {
   budgets: EventBudget[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
-};
+}
 
 // API Base URL
 const API_BASE = "/api/events/budgets";

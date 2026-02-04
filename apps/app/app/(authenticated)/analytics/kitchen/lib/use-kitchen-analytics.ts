@@ -3,14 +3,14 @@
 import { useEffect, useState } from "react";
 import { invariant } from "@/app/lib/invariant";
 
-type KitchenAnalyticsSummary = {
+interface KitchenAnalyticsSummary {
   period: string;
   startDate: string;
   endDate: string;
   locationId: string | null;
-};
+}
 
-type StationThroughput = {
+interface StationThroughput {
   stationId: string;
   stationName: string;
   load: number;
@@ -19,9 +19,9 @@ type StationThroughput = {
   totalItems: number;
   completedItems: number;
   pendingItems: number;
-};
+}
 
-type KitchenHealth = {
+interface KitchenHealth {
   prepListsSync: {
     rate: number;
     total: number;
@@ -31,48 +31,48 @@ type KitchenHealth = {
   wasteAlerts: number;
   timeToCompletion: string;
   avgMinutes?: number;
-};
+}
 
-type KitchenTrendStation = {
+interface KitchenTrendStation {
   stationName: string;
   total: number;
   completed: number;
   completionRate: number;
-};
+}
 
-type KitchenTrend = {
+interface KitchenTrend {
   date: string;
   stations: KitchenTrendStation[];
-};
+}
 
-type KitchenTopPerformer = {
+interface KitchenTopPerformer {
   employeeId: string;
   firstName: string;
   lastName: string;
   completedTasks: number;
   avgMinutes: number;
-};
+}
 
-export type KitchenAnalyticsData = {
+export interface KitchenAnalyticsData {
   summary: KitchenAnalyticsSummary;
   stationThroughput: StationThroughput[];
   kitchenHealth: KitchenHealth;
   trends: KitchenTrend[];
   topPerformers: KitchenTopPerformer[];
-};
+}
 
-export type UseKitchenAnalyticsOptions = {
+export interface UseKitchenAnalyticsOptions {
   period?: "7d" | "30d" | "90d" | "12m";
   locationId?: string;
   enabled?: boolean;
-};
+}
 
-export type UseKitchenAnalyticsReturn = {
+export interface UseKitchenAnalyticsReturn {
   data: KitchenAnalyticsData | null;
   isLoading: boolean;
   error: Error | null;
   refetch: () => void;
-};
+}
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;

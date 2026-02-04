@@ -9,10 +9,10 @@ import {
 import { cn } from "@repo/design-system/lib/utils";
 import type { ClientLTVMetrics } from "../actions/get-client-ltv";
 
-type MetricsCardsProps = {
+interface MetricsCardsProps {
   metrics: ClientLTVMetrics;
   className?: string;
-};
+}
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {

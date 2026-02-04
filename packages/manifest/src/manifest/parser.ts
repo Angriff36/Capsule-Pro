@@ -56,29 +56,33 @@ export class Parser {
 
     while (!this.isEnd()) {
       this.skipNL();
-      if (this.isEnd()) break;
+      if (this.isEnd()) {
+        break;
+      }
       try {
-        if (this.check("KEYWORD", "module"))
+        if (this.check("KEYWORD", "module")) {
           program.modules.push(this.parseModule());
-        else if (this.check("KEYWORD", "entity"))
+        } else if (this.check("KEYWORD", "entity")) {
           program.entities.push(this.parseEntity());
-        else if (this.check("KEYWORD", "command"))
+        } else if (this.check("KEYWORD", "command")) {
           program.commands.push(this.parseCommand());
-        else if (this.check("KEYWORD", "flow"))
+        } else if (this.check("KEYWORD", "flow")) {
           program.flows.push(this.parseFlow());
-        else if (this.check("KEYWORD", "effect"))
+        } else if (this.check("KEYWORD", "effect")) {
           program.effects.push(this.parseEffect());
-        else if (this.check("KEYWORD", "expose"))
+        } else if (this.check("KEYWORD", "expose")) {
           program.exposures.push(this.parseExpose());
-        else if (this.check("KEYWORD", "compose"))
+        } else if (this.check("KEYWORD", "compose")) {
           program.compositions.push(this.parseComposition());
-        else if (this.check("KEYWORD", "policy"))
+        } else if (this.check("KEYWORD", "policy")) {
           program.policies.push(this.parsePolicy());
-        else if (this.check("KEYWORD", "store"))
+        } else if (this.check("KEYWORD", "store")) {
           program.stores.push(this.parseStore());
-        else if (this.check("KEYWORD", "event"))
+        } else if (this.check("KEYWORD", "event")) {
           program.events.push(this.parseOutboxEvent());
-        else this.advance();
+        } else {
+          this.advance();
+        }
       } catch (e) {
         this.errors.push({
           message: e instanceof Error ? e.message : "Parse error",
@@ -105,16 +109,22 @@ export class Parser {
 
     while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
       this.skipNL();
-      if (this.check("PUNCTUATION", "}")) break;
-      if (this.check("KEYWORD", "entity")) entities.push(this.parseEntity());
-      else if (this.check("KEYWORD", "command"))
+      if (this.check("PUNCTUATION", "}")) {
+        break;
+      }
+      if (this.check("KEYWORD", "entity")) {
+        entities.push(this.parseEntity());
+      } else if (this.check("KEYWORD", "command")) {
         commands.push(this.parseCommand());
-      else if (this.check("KEYWORD", "policy"))
+      } else if (this.check("KEYWORD", "policy")) {
         policies.push(this.parsePolicy());
-      else if (this.check("KEYWORD", "store")) stores.push(this.parseStore());
-      else if (this.check("KEYWORD", "event"))
+      } else if (this.check("KEYWORD", "store")) {
+        stores.push(this.parseStore());
+      } else if (this.check("KEYWORD", "event")) {
         events.push(this.parseOutboxEvent());
-      else this.advance();
+      } else {
+        this.advance();
+      }
       this.skipNL();
     }
     this.consume("PUNCTUATION", "}");
@@ -146,34 +156,41 @@ export class Parser {
 
     while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
       this.skipNL();
-      if (this.check("PUNCTUATION", "}")) break;
+      if (this.check("PUNCTUATION", "}")) {
+        break;
+      }
 
-      if (this.check("KEYWORD", "property"))
+      if (this.check("KEYWORD", "property")) {
         properties.push(this.parseProperty());
-      else if (
+      } else if (
         this.check("KEYWORD", "computed") ||
         this.check("KEYWORD", "derived")
-      )
+      ) {
         computedProperties.push(this.parseComputedProperty());
-      else if (
+      } else if (
         this.check("KEYWORD", "hasMany") ||
         this.check("KEYWORD", "hasOne") ||
         this.check("KEYWORD", "belongsTo") ||
         this.check("KEYWORD", "ref")
-      )
+      ) {
         relationships.push(this.parseRelationship());
-      else if (this.check("KEYWORD", "behavior") || this.check("KEYWORD", "on"))
+      } else if (
+        this.check("KEYWORD", "behavior") ||
+        this.check("KEYWORD", "on")
+      ) {
         behaviors.push(this.parseBehavior());
-      else if (this.check("KEYWORD", "command"))
+      } else if (this.check("KEYWORD", "command")) {
         commands.push(this.parseCommand());
-      else if (this.check("KEYWORD", "constraint"))
+      } else if (this.check("KEYWORD", "constraint")) {
         constraints.push(this.parseConstraint());
-      else if (this.check("KEYWORD", "policy"))
+      } else if (this.check("KEYWORD", "policy")) {
         policies.push(this.parsePolicy());
-      else if (this.check("KEYWORD", "store")) {
+      } else if (this.check("KEYWORD", "store")) {
         this.advance();
         store = this.advance().value;
-      } else this.advance();
+      } else {
+        this.advance();
+      }
       this.skipNL();
     }
     this.consume("PUNCTUATION", "}");
@@ -240,8 +257,9 @@ export class Parser {
       if (
         e.type === "Identifier" &&
         !["self", "this", "user", "context"].includes((e as any).name)
-      )
+      ) {
         deps.add((e as any).name);
+      }
       if (e.type === "MemberAccess") {
         walk((e as any).object);
       }
@@ -249,7 +267,9 @@ export class Parser {
         walk((e as any).left);
         walk((e as any).right);
       }
-      if (e.type === "UnaryOp") walk((e as any).operand);
+      if (e.type === "UnaryOp") {
+        walk((e as any).operand);
+      }
       if (e.type === "Call") {
         walk((e as any).callee);
         (e as any).arguments.forEach(walk);
@@ -259,10 +279,15 @@ export class Parser {
         walk((e as any).consequent);
         walk((e as any).alternate);
       }
-      if (e.type === "Array") (e as any).elements.forEach(walk);
-      if (e.type === "Object")
+      if (e.type === "Array") {
+        (e as any).elements.forEach(walk);
+      }
+      if (e.type === "Object") {
         (e as any).properties.forEach((p: any) => walk(p.value));
-      if (e.type === "Lambda") walk((e as any).body);
+      }
+      if (e.type === "Lambda") {
+        walk((e as any).body);
+      }
     };
     walk(expr);
     return Array.from(deps);
@@ -292,7 +317,9 @@ export class Parser {
     const parameters: ParameterNode[] = [];
     while (!(this.check("PUNCTUATION", ")") || this.isEnd())) {
       const required = !this.check("KEYWORD", "optional");
-      if (!required) this.advance();
+      if (!required) {
+        this.advance();
+      }
       const pname = this.consumeIdentifier().value;
       this.consume("OPERATOR", ":");
       const dataType = this.parseType();
@@ -308,7 +335,9 @@ export class Parser {
         required,
         defaultValue,
       });
-      if (this.check("PUNCTUATION", ",")) this.advance();
+      if (this.check("PUNCTUATION", ",")) {
+        this.advance();
+      }
     }
     this.consume("PUNCTUATION", ")");
 
@@ -327,14 +356,18 @@ export class Parser {
       this.skipNL();
       while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
         this.skipNL();
-        if (this.check("PUNCTUATION", "}")) break;
+        if (this.check("PUNCTUATION", "}")) {
+          break;
+        }
         if (this.check("KEYWORD", "guard") || this.check("KEYWORD", "when")) {
           this.advance();
           guards.push(this.parseExpr());
         } else if (this.check("KEYWORD", "emit")) {
           this.advance();
           emits.push(this.consumeIdentifier().value);
-        } else actions.push(this.parseAction());
+        } else {
+          actions.push(this.parseAction());
+        }
         this.skipNL();
       }
       this.consume("PUNCTUATION", "}");
@@ -384,7 +417,9 @@ export class Parser {
       this.skipNL();
       while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
         this.skipNL();
-        if (this.check("PUNCTUATION", "}")) break;
+        if (this.check("PUNCTUATION", "}")) {
+          break;
+        }
         // Config keys are like object literal keys - allow keywords
         const key = this.consumeIdentifierOrKeyword().value;
         this.consume("OPERATOR", ":");
@@ -417,7 +452,9 @@ export class Parser {
       const fields: ParameterNode[] = [];
       while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
         this.skipNL();
-        if (this.check("PUNCTUATION", "}")) break;
+        if (this.check("PUNCTUATION", "}")) {
+          break;
+        }
         const fname = this.consumeIdentifier().value;
         this.consume("OPERATOR", ":");
         const ftype = this.parseType();
@@ -452,7 +489,9 @@ export class Parser {
   }
 
   private parseBehavior(): BehaviorNode {
-    if (this.check("KEYWORD", "behavior")) this.advance();
+    if (this.check("KEYWORD", "behavior")) {
+      this.advance();
+    }
     this.consume("KEYWORD", "on");
     const trigger = this.parseTrigger();
     const guards: ExpressionNode[] = [];
@@ -466,7 +505,9 @@ export class Parser {
       this.skipNL();
       while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
         this.skipNL();
-        if (this.check("PUNCTUATION", "}")) break;
+        if (this.check("PUNCTUATION", "}")) {
+          break;
+        }
         actions.push(this.parseAction());
         this.skipNL();
       }
@@ -492,7 +533,9 @@ export class Parser {
       parameters = [];
       while (!(this.check("PUNCTUATION", ")") || this.isEnd())) {
         parameters.push(this.consumeIdentifier().value);
-        if (this.check("PUNCTUATION", ",")) this.advance();
+        if (this.check("PUNCTUATION", ",")) {
+          this.advance();
+        }
       }
       this.consume("PUNCTUATION", ")");
     }
@@ -558,7 +601,9 @@ export class Parser {
     const steps: FlowStepNode[] = [];
     while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
       this.skipNL();
-      if (this.check("PUNCTUATION", "}")) break;
+      if (this.check("PUNCTUATION", "}")) {
+        break;
+      }
       steps.push(this.parseFlowStep());
       this.skipNL();
     }
@@ -593,7 +638,9 @@ export class Parser {
       this.skipNL();
       while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
         this.skipNL();
-        if (this.check("PUNCTUATION", "}")) break;
+        if (this.check("PUNCTUATION", "}")) {
+          break;
+        }
         // Config keys are like object literal keys - allow keywords
         const key = this.consumeIdentifierOrKeyword().value;
         this.consume("OPERATOR", ":");
@@ -616,7 +663,9 @@ export class Parser {
       this.advance();
       generateServer = true;
     }
-    if (this.check("STRING")) name = this.advance().value;
+    if (this.check("STRING")) {
+      name = this.advance().value;
+    }
     const operations: string[] = [],
       middleware: string[] = [];
     if (this.check("PUNCTUATION", "{")) {
@@ -624,13 +673,19 @@ export class Parser {
       this.skipNL();
       while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
         this.skipNL();
-        if (this.check("PUNCTUATION", "}")) break;
+        if (this.check("PUNCTUATION", "}")) {
+          break;
+        }
         const val = this.advance().value;
         if (val === "middleware") {
           this.consume("OPERATOR", ":");
           middleware.push(this.consumeIdentifier().value);
-        } else operations.push(val);
-        if (this.check("PUNCTUATION", ",")) this.advance();
+        } else {
+          operations.push(val);
+        }
+        if (this.check("PUNCTUATION", ",")) {
+          this.advance();
+        }
         this.skipNL();
       }
       this.consume("PUNCTUATION", "}");
@@ -655,10 +710,14 @@ export class Parser {
       connections: ConnectionNode[] = [];
     while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
       this.skipNL();
-      if (this.check("PUNCTUATION", "}")) break;
-      if (this.check("KEYWORD", "connect"))
+      if (this.check("PUNCTUATION", "}")) {
+        break;
+      }
+      if (this.check("KEYWORD", "connect")) {
         connections.push(this.parseConnection());
-      else components.push(this.parseComponentRef());
+      } else {
+        components.push(this.parseComponentRef());
+      }
       this.skipNL();
     }
     this.consume("PUNCTUATION", "}");
@@ -824,7 +883,9 @@ export class Parser {
         const args: ExpressionNode[] = [];
         while (!(this.check("PUNCTUATION", ")") || this.isEnd())) {
           args.push(this.parseExpr());
-          if (this.check("PUNCTUATION", ",")) this.advance();
+          if (this.check("PUNCTUATION", ",")) {
+            this.advance();
+          }
         }
         this.consume("PUNCTUATION", ")");
         expr = { type: "Call", callee: expr, arguments: args };
@@ -837,30 +898,35 @@ export class Parser {
           object: expr,
           property: `[${(idx as any).value || ""}]`,
         };
-      } else break;
+      } else {
+        break;
+      }
     }
     return expr;
   }
 
   private parsePrimary(): ExpressionNode {
-    if (this.check("NUMBER"))
+    if (this.check("NUMBER")) {
       return {
         type: "Literal",
         value: Number.parseFloat(this.advance().value),
         dataType: "number",
       };
-    if (this.check("STRING"))
+    }
+    if (this.check("STRING")) {
       return {
         type: "Literal",
         value: this.advance().value,
         dataType: "string",
       };
-    if (this.check("KEYWORD", "true") || this.check("KEYWORD", "false"))
+    }
+    if (this.check("KEYWORD", "true") || this.check("KEYWORD", "false")) {
       return {
         type: "Literal",
         value: this.advance().value === "true",
         dataType: "boolean",
       };
+    }
     if (this.check("KEYWORD", "null")) {
       this.advance();
       return { type: "Literal", value: null, dataType: "null" };
@@ -870,7 +936,9 @@ export class Parser {
       const els: ExpressionNode[] = [];
       while (!(this.check("PUNCTUATION", "]") || this.isEnd())) {
         els.push(this.parseExpr());
-        if (this.check("PUNCTUATION", ",")) this.advance();
+        if (this.check("PUNCTUATION", ",")) {
+          this.advance();
+        }
       }
       this.consume("PUNCTUATION", "]");
       return { type: "Array", elements: els };
@@ -882,13 +950,17 @@ export class Parser {
       const props: { key: string; value: ExpressionNode }[] = [];
       while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
         this.skipNL();
-        if (this.check("PUNCTUATION", "}")) break;
+        if (this.check("PUNCTUATION", "}")) {
+          break;
+        }
         const key = this.check("STRING")
           ? this.advance().value
           : this.consumeIdentifierOrKeyword().value;
         this.consume("OPERATOR", ":");
         props.push({ key, value: this.parseExpr() });
-        if (this.check("PUNCTUATION", ",")) this.advance();
+        if (this.check("PUNCTUATION", ",")) {
+          this.advance();
+        }
         this.skipNL();
       }
       this.consume("PUNCTUATION", "}");
@@ -902,8 +974,11 @@ export class Parser {
       // Try to parse lambda parameters (identifiers only - reserved words not allowed as parameter declarations)
       while (this.check("IDENTIFIER") && !this.isEnd()) {
         params.push(this.advance().value);
-        if (this.check("PUNCTUATION", ",")) this.advance();
-        else break;
+        if (this.check("PUNCTUATION", ",")) {
+          this.advance();
+        } else {
+          break;
+        }
       }
       // Check if this looks like a lambda: (params) =>
       if (this.check("PUNCTUATION", ")")) {
@@ -924,8 +999,9 @@ export class Parser {
       this.check("KEYWORD", "user") ||
       this.check("KEYWORD", "self") ||
       this.check("KEYWORD", "context")
-    )
+    ) {
       return { type: "Identifier", name: this.advance().value };
+    }
     throw new Error(`Unexpected: ${this.current()?.value || "EOF"}`);
   }
 
@@ -934,7 +1010,9 @@ export class Parser {
     return t && t.type === type && (value === undefined || t.value === value);
   }
   private consume(type: string, value?: string) {
-    if (this.check(type, value)) return this.advance();
+    if (this.check(type, value)) {
+      return this.advance();
+    }
     throw new Error(
       `Expected ${value || type}, got ${this.current()?.value || "EOF"}`
     );
@@ -976,7 +1054,9 @@ export class Parser {
   }
 
   private advance() {
-    if (!this.isEnd()) this.pos++;
+    if (!this.isEnd()) {
+      this.pos++;
+    }
     return this.tokens[this.pos - 1];
   }
   private current() {
@@ -988,7 +1068,9 @@ export class Parser {
     );
   }
   private skipNL() {
-    while (this.check("NEWLINE", "\n")) this.advance();
+    while (this.check("NEWLINE", "\n")) {
+      this.advance();
+    }
   }
   private sync() {
     this.advance();
@@ -1008,7 +1090,8 @@ export class Parser {
           "event",
         ].includes(this.current()?.value || "")
       )
-    )
+    ) {
       this.advance();
+    }
   }
 }

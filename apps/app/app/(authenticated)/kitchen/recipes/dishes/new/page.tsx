@@ -19,10 +19,10 @@ import { getTenantIdForOrg } from "../../../../../lib/tenant";
 import { Header } from "../../../../components/header";
 import { createDish } from "../../actions";
 
-type RecipeOption = {
+interface RecipeOption {
   id: string;
   name: string;
-};
+}
 
 const NewDishPage = async () => {
   const { orgId } = await auth();

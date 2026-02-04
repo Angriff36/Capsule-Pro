@@ -2,7 +2,7 @@
  * Event Budget API Types
  */
 
-export type EventBudget = {
+export interface EventBudget {
   tenantId: string;
   id: string;
   eventId: string;
@@ -16,9 +16,9 @@ export type EventBudget = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-};
+}
 
-export type BudgetLineItem = {
+export interface BudgetLineItem {
   tenantId: string;
   id: string;
   budgetId: string;
@@ -33,32 +33,32 @@ export type BudgetLineItem = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-};
+}
 
-export type CreateEventBudgetRequest = {
+export interface CreateEventBudgetRequest {
   eventId: string;
   status?: "draft" | "approved" | "active" | "completed" | "exceeded";
   totalBudgetAmount: number;
   notes?: string;
   lineItems?: CreateBudgetLineItemRequest[];
-};
+}
 
-export type UpdateEventBudgetRequest = {
+export interface UpdateEventBudgetRequest {
   status?: "draft" | "approved" | "active" | "completed" | "exceeded";
   totalBudgetAmount?: number;
   notes?: string;
-};
+}
 
-export type CreateBudgetLineItemRequest = {
+export interface CreateBudgetLineItemRequest {
   category: string;
   name: string;
   description?: string;
   budgetedAmount: number;
   sortOrder?: number;
   notes?: string;
-};
+}
 
-export type UpdateBudgetLineItemRequest = {
+export interface UpdateBudgetLineItemRequest {
   category?: string;
   name?: string;
   description?: string;
@@ -66,21 +66,21 @@ export type UpdateBudgetLineItemRequest = {
   actualAmount?: number;
   sortOrder?: number;
   notes?: string;
-};
+}
 
 export type EventBudgetWithLineItems = EventBudget & {
   lineItems: BudgetLineItem[];
 };
 
-export type EventBudgetListResponse = {
+export interface EventBudgetListResponse {
   budgets: EventBudget[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
-};
+}
 
-export type BudgetSummary = {
+export interface BudgetSummary {
   totalBudgetAmount: number;
   totalActualAmount: number;
   totalVarianceAmount: number;
@@ -91,4 +91,4 @@ export type BudgetSummary = {
     string,
     { budgeted: number; actual: number; variance: number }
   >;
-};
+}

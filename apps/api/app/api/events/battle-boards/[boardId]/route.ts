@@ -12,9 +12,9 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ boardId: string }>;
-};
+}
 
 /**
  * GET /api/events/battle-boards/[boardId]

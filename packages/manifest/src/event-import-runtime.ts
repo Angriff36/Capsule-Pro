@@ -14,7 +14,9 @@ let cachedIR: IR | null = null;
  * Load and compile the Manifest module
  */
 function loadManifestIR(): IR {
-  if (cachedIR) return cachedIR;
+  if (cachedIR) {
+    return cachedIR;
+  }
 
   // Embed the manifest source directly to avoid file system issues
   const manifestSource = `
@@ -232,7 +234,7 @@ export function createEventImportRuntime(tenantId: string, userId: string) {
 export async function processDocumentImport(
   engine: RuntimeEngine,
   importId: string,
-  fileName: string,
+  _fileName: string,
   parsedData: any,
   confidence: number,
   errors?: string[]
@@ -323,8 +325,8 @@ export async function createOrUpdateEvent(
 export async function generateBattleBoard(
   engine: RuntimeEngine,
   battleBoardId: string,
-  tenantId: string,
-  eventId: string | undefined,
+  _tenantId: string,
+  _eventId: string | undefined,
   eventData: any
 ) {
   const battleBoardData = eventData.battleBoard || {};
@@ -347,8 +349,8 @@ export async function generateBattleBoard(
 export async function generateChecklist(
   engine: RuntimeEngine,
   reportId: string,
-  tenantId: string,
-  eventId: string,
+  _tenantId: string,
+  _eventId: string,
   eventData: any,
   checklistData: any
 ) {

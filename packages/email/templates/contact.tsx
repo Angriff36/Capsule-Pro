@@ -10,11 +10,11 @@ import {
   Text,
 } from "@react-email/components";
 
-export type ContactTemplateProps = {
+export interface ContactTemplateProps {
   readonly name: string;
   readonly email: string;
   readonly message: string;
-};
+}
 
 export const ContactTemplate = ({
   name,

@@ -7,9 +7,9 @@ import type { SuggestedAction } from "../../command-board/actions/suggestions-ty
 import { SuggestionsPanel } from "../../command-board/components/suggestions-panel";
 import { useSuggestions } from "../../command-board/hooks/use-suggestions";
 
-type EventsPageWithSuggestionsProps = {
+interface EventsPageWithSuggestionsProps {
   tenantId: string;
-};
+}
 
 export function EventsPageWithSuggestions({
   tenantId,

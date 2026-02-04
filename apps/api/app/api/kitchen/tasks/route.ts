@@ -58,12 +58,12 @@ export async function GET(request: Request) {
 
   // Build task map with claims
   const taskClaimsMap = new Map<string, typeof claims>();
-  claims.forEach((claim) => {
+  for (const claim of claims) {
     if (!taskClaimsMap.has(claim.taskId)) {
       taskClaimsMap.set(claim.taskId, []);
     }
     taskClaimsMap.get(claim.taskId)?.push(claim);
-  });
+  }
 
   // Attach users to claims
   const tasksWithUsers = tasks.map((task) => ({

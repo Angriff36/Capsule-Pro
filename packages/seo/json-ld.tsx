@@ -1,8 +1,8 @@
 import type { Thing, WithContext } from "schema-dts";
 
-type JsonLdProps = {
+interface JsonLdProps {
   code: WithContext<Thing>;
-};
+}
 
 const escapeJsonForHtml = (json: string): string =>
   json
@@ -17,7 +17,6 @@ export const JsonLd = ({ code }: JsonLdProps) => (
     dangerouslySetInnerHTML={{
       __html: escapeJsonForHtml(JSON.stringify(code)),
     }}
-    // biome-ignore lint/security/noDangerouslySetInnerHtml: "This is a JSON-LD script with properly escaped content."
     type="application/ld+json"
   />
 );

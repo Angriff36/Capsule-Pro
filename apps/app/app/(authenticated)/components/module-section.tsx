@@ -1,9 +1,9 @@
 import { Separator } from "@repo/design-system/components/ui/separator";
 
-type ModuleSectionProperties = {
+interface ModuleSectionProperties {
   title: string;
   summary: string;
-};
+}
 
 export const ModuleSection = ({ title, summary }: ModuleSectionProperties) => (
   <div className="flex flex-1 flex-col gap-8 p-4 pt-0">

@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { deleteShift } from "../actions";
 import { ShiftForm } from "./shift-form";
 
-type Shift = {
+interface Shift {
   id: string;
   schedule_id: string;
   employee_id: string;
@@ -38,14 +38,14 @@ type Shift = {
   notes: string | null;
   created_at: Date;
   updated_at: Date;
-};
+}
 
-type ShiftDetailModalProps = {
+interface ShiftDetailModalProps {
   open: boolean;
   onClose: () => void;
   shift: Shift | null;
   onDelete?: () => void;
-};
+}
 
 export function ShiftDetailModal({
   open,

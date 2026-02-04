@@ -4,10 +4,10 @@ import Ably from "ably";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-type RecipesRealtimeProps = {
+interface RecipesRealtimeProps {
   tenantId: string;
   userId?: string | null;
-};
+}
 
 const authUrl = "/ably/auth";
 

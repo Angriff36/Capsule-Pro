@@ -28,7 +28,7 @@ export type ActionHandler =
   | { type: "function"; functionName: string; params?: unknown }
   | { type: "external"; url: string };
 
-export type SuggestedAction = {
+export interface SuggestedAction {
   id: string;
   tenantId: string;
   type: SuggestionType;
@@ -43,9 +43,9 @@ export type SuggestedAction = {
   expiresAt?: Date;
   dismissed: boolean;
   metadata?: Record<string, unknown>;
-};
+}
 
-export type SuggestionContext = {
+export interface SuggestionContext {
   boardId?: string;
   eventId?: string;
   module?: SuggestionCategory;
@@ -80,7 +80,7 @@ export type SuggestionContext = {
       variance: number;
     };
   };
-};
+}
 
 export type GenerateSuggestionsInput = SuggestionContext & {
   tenantId: string;
@@ -88,20 +88,20 @@ export type GenerateSuggestionsInput = SuggestionContext & {
   maxSuggestions?: number;
 };
 
-export type GenerateSuggestionsOutput = {
+export interface GenerateSuggestionsOutput {
   suggestions: SuggestedAction[];
   summary: string;
   generatedAt: Date;
-};
+}
 
-export type DismissSuggestionInput = {
+export interface DismissSuggestionInput {
   id: string;
   tenantId: string;
   reason?: string;
-};
+}
 
-export type ExecuteActionInput = {
+export interface ExecuteActionInput {
   suggestionId: string;
   tenantId: string;
   userId?: string;
-};
+}

@@ -3,7 +3,7 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type WasteEntryDetail = {
+interface WasteEntryDetail {
   id: string;
   tenant_id: string;
   ingredient_id: string;
@@ -20,7 +20,7 @@ type WasteEntryDetail = {
   ingredient_category: string | null;
   user_name: string | null;
   event_name: string | null;
-};
+}
 
 /**
  * GET /api/kitchen/waste/entries/[id]

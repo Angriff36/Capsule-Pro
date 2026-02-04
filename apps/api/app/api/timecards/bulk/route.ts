@@ -3,7 +3,7 @@ import { database, Prisma, type PrismaClient } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type BulkApproveRequest = {
+interface BulkApproveRequest {
   timeEntryIds: string[];
   approve?: boolean;
   rejectionReason?: string;
@@ -19,7 +19,7 @@ type BulkApproveRequest = {
     exceptionType: string;
     notes: string;
   }>;
-};
+}
 
 type TxClient = Omit<
   PrismaClient,

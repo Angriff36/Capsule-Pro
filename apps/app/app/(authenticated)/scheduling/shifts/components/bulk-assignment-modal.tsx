@@ -34,7 +34,7 @@ import {
 } from "../../../../lib/use-assignment";
 import { AssignmentSuggestionCard } from "./assignment-suggestion-card";
 
-type BulkAssignmentModalProps = {
+interface BulkAssignmentModalProps {
   open: boolean;
   onClose: () => void;
   filters?: {
@@ -44,11 +44,11 @@ type BulkAssignmentModalProps = {
     endDate?: string;
   };
   shiftIds?: string[];
-};
+}
 
-type ExpandedShifts = {
+interface ExpandedShifts {
   [shiftId: string]: boolean;
-};
+}
 
 export function BulkAssignmentModal({
   open,

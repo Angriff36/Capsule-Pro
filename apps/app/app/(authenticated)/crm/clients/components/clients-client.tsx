@@ -38,7 +38,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getClients } from "../actions";
 
-type Client = {
+interface Client {
   id: string;
   tenantId: string;
   clientType: string;
@@ -51,15 +51,15 @@ type Client = {
   stateProvince: string | null;
   tags: string[];
   createdAt: Date;
-};
+}
 
-type ClientFilters = {
+interface ClientFilters {
   search?: string;
   tags?: string[];
   assignedTo?: string;
   clientType?: "company" | "individual";
   source?: string;
-};
+}
 
 export function ClientsClient() {
   const router = useRouter();

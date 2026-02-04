@@ -21,24 +21,24 @@ import {
 } from "../ui/navigation-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
-type MegaMenuItem = {
+interface MegaMenuItem {
   icon: LucideIcon;
   title: string;
   description: string;
   href?: string;
-};
+}
 
-type MegaMenuTab = {
+interface MegaMenuTab {
   value: string;
   label: string;
   items: MegaMenuItem[];
-};
+}
 
-type TabbedMegaMenuBlockProps = {
+interface TabbedMegaMenuBlockProps {
   tabs?: MegaMenuTab[];
   ctaText?: string;
   ctaDescription?: string;
-};
+}
 
 const defaultTabs: MegaMenuTab[] = [
   {

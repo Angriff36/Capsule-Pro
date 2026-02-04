@@ -83,7 +83,7 @@ const getDocumentIcon = (documentType: string | null) => {
   }
 };
 
-type Contract = {
+interface Contract {
   id: string;
   tenantId: string;
   eventId: string;
@@ -106,15 +106,15 @@ type Contract = {
     id: string;
     name: string;
   } | null;
-};
+}
 
-type ContractsPageClientProps = {
+interface ContractsPageClientProps {
   contracts: Contract[];
   uniqueStatuses: string[];
   uniqueClients: string[];
   uniqueDocumentTypes: string[];
   tenantId: string;
-};
+}
 
 const ITEMS_PER_PAGE = 12;
 

@@ -14,11 +14,11 @@ import { getTenantIdForOrg } from "../../../../lib/tenant";
 import { Header } from "../../../components/header";
 import { ContractDetailClient } from "./contract-detail-client";
 
-type ContractDetailPageProps = {
+interface ContractDetailPageProps {
   params: Promise<{
     id: string;
   }>;
-};
+}
 
 const ContractDetailPage = async ({ params }: ContractDetailPageProps) => {
   const { id } = await params;

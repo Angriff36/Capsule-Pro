@@ -4,12 +4,12 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 
 // Define types
-type CheckAllergensRequest = {
+interface CheckAllergensRequest {
   eventId: string;
   dishIds?: string[];
-};
+}
 
-type AllergenConflict = {
+interface AllergenConflict {
   guestId: string;
   guestName: string;
   dishId: string;
@@ -17,16 +17,16 @@ type AllergenConflict = {
   allergens: string[];
   severity: "critical" | "warning";
   type: "allergen_conflict" | "dietary_conflict";
-};
+}
 
-type CheckAllergensResponse = {
+interface CheckAllergensResponse {
   conflicts: AllergenConflict[];
   summary: {
     total: number;
     critical: number;
     warning: number;
   };
-};
+}
 
 // Helper function to validate request body
 function validateRequest(body: CheckAllergensRequest): NextResponse | null {

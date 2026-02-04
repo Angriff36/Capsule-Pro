@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-type BlogPostProperties = {
+interface BlogPostProperties {
   readonly params: Promise<{
     slug: string;
   }>;
-};
+}
 
 export const generateMetadata = async (): Promise<Metadata> => {
   // Blog disabled -> no per-post metadata

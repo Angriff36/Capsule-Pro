@@ -13,17 +13,17 @@ import { ContractTemplate, resend } from "@repo/email";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type ContractSendAPIContext = {
+interface ContractSendAPIContext {
   params: Promise<{
     id: string;
   }>;
-};
+}
 
-type SendContractBody = {
+interface SendContractBody {
   clientId: string;
   contractId: string;
   message?: string;
-};
+}
 
 /**
  * POST /api/events/contracts/[id]/send

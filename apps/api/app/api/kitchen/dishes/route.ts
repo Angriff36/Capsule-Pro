@@ -13,17 +13,17 @@ import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type DishListFilters = {
+interface DishListFilters {
   category?: string;
   search?: string;
   hasAllergens?: boolean;
   dietaryTag?: string;
-};
+}
 
-type PaginationParams = {
+interface PaginationParams {
   page: number;
   limit: number;
-};
+}
 
 /**
  * Parse and validate dish list filters from URL search params

@@ -3,7 +3,7 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type EmployeePerformanceRaw = {
+interface EmployeePerformanceRaw {
   employee_id: string;
   first_name: string;
   last_name: string;
@@ -20,9 +20,9 @@ type EmployeePerformanceRaw = {
   rework_count: string;
   client_interactions: string;
   event_participation: string;
-};
+}
 
-type EmployeeMetrics = {
+interface EmployeeMetrics {
   employeeId: string;
   firstName: string;
   lastName: string;
@@ -36,36 +36,36 @@ type EmployeeMetrics = {
   totalHoursWorked: number;
   clientInteractions: number;
   eventParticipation: number;
-};
+}
 
-type MonthlyTrend = {
+interface MonthlyTrend {
   month: string;
   avg_task_completion_rate: string;
   avg_quality_score: string;
   avg_efficiency_score: string;
-};
+}
 
-type ProcessedTrend = {
+interface ProcessedTrend {
   month: string;
   avgTaskCompletionRate: number;
   avgQualityScore: number;
   avgEfficiencyScore: number;
-};
+}
 
-type TopPerformer = {
+interface TopPerformer {
   employeeId: string;
   name: string;
   score: number;
   category: string;
-};
+}
 
-type RoleMetrics = {
+interface RoleMetrics {
   role: string;
   employeeCount: number;
   avgTaskCompletionRate: number;
   avgQualityScore: number;
   avgEfficiencyScore: number;
-};
+}
 
 function getThreeMonthsAgo(): Date {
   const now = new Date();
@@ -243,13 +243,13 @@ function processEmployeeMetrics(
   });
 }
 
-type AverageMetrics = {
+interface AverageMetrics {
   taskCompletionRate: number;
   attendanceRate: number;
   punctualityRate: number;
   qualityScore: number;
   efficiencyScore: number;
-};
+}
 
 function calculateAverageMetrics(employees: EmployeeMetrics[]): AverageMetrics {
   const employeeCount = employees.length;
@@ -348,7 +348,7 @@ function processMonthlyTrends(trends: MonthlyTrend[]): ProcessedTrend[] {
   }));
 }
 
-type SummaryResponse = {
+interface SummaryResponse {
   totalEmployees: number;
   averageTaskCompletionRate: number;
   averageAttendanceRate: number;
@@ -358,7 +358,7 @@ type SummaryResponse = {
   topPerformers: TopPerformer[];
   metricsByRole: RoleMetrics[];
   monthlyTrends: ProcessedTrend[];
-};
+}
 
 function buildSummaryResponse(
   employees: EmployeeMetrics[],

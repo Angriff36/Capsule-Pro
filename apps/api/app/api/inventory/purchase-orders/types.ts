@@ -35,7 +35,7 @@ export type DiscrepancyType = (typeof DISCREPANCY_TYPES)[number];
 /**
  * Purchase Order Item response shape
  */
-export type POItem = {
+export interface POItem {
   id: string;
   tenant_id: string;
   purchase_order_id: string;
@@ -52,7 +52,7 @@ export type POItem = {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-};
+}
 
 /**
  * Purchase Order Item with inventory details
@@ -65,7 +65,7 @@ export interface POItemWithDetails extends POItem {
 /**
  * Purchase Order response shape
  */
-export type PurchaseOrder = {
+export interface PurchaseOrder {
   id: string;
   tenant_id: string;
   po_number: string;
@@ -87,7 +87,7 @@ export type PurchaseOrder = {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-};
+}
 
 /**
  * Purchase Order with items and vendor details
@@ -106,35 +106,35 @@ export interface PurchaseOrderWithDetails extends PurchaseOrder {
 /**
  * List filters for purchase orders
  */
-export type PurchaseOrderListFilters = {
+export interface PurchaseOrderListFilters {
   search?: string;
   status?: POStatus;
   vendor_id?: string;
   location_id?: string;
   po_number?: string;
-};
+}
 
 /**
  * Update quantity received request
  */
-export type UpdateQuantityReceivedRequest = {
+export interface UpdateQuantityReceivedRequest {
   quantity_received: number;
-};
+}
 
 /**
  * Update quality status request
  */
-export type UpdateQualityStatusRequest = {
+export interface UpdateQualityStatusRequest {
   quality_status: QualityStatus;
   discrepancy_type?: DiscrepancyType;
   discrepancy_amount?: number;
   notes?: string;
-};
+}
 
 /**
  * Complete receiving request
  */
-export type CompleteReceivingRequest = {
+export interface CompleteReceivingRequest {
   items: Array<{
     id: string;
     quantity_received: number;
@@ -144,12 +144,12 @@ export type CompleteReceivingRequest = {
     notes?: string;
   }>;
   notes?: string;
-};
+}
 
 /**
  * Paginated list response
  */
-export type PurchaseOrderListResponse = {
+export interface PurchaseOrderListResponse {
   data: PurchaseOrderWithDetails[];
   pagination: {
     page: number;
@@ -157,4 +157,4 @@ export type PurchaseOrderListResponse = {
     total: number;
     totalPages: number;
   };
-};
+}

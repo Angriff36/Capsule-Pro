@@ -3,7 +3,7 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type CurrentMetrics = {
+interface CurrentMetrics {
   total_events: string;
   budgeted_revenue: string;
   actual_revenue: string;
@@ -13,23 +13,23 @@ type CurrentMetrics = {
   actual_labor_cost: string;
   budgeted_other_cost: string;
   actual_other_cost: string;
-};
+}
 
-type PreviousMetrics = {
+interface PreviousMetrics {
   total_events: string;
   budgeted_revenue: string;
   actual_revenue: string;
   actual_food_cost: string;
   actual_labor_cost: string;
-};
+}
 
-type LedgerData = {
+interface LedgerData {
   pending_proposals: string;
   active_contracts: string;
   deposits_received: string;
-};
+}
 
-type FinanceMetrics = {
+interface FinanceMetrics {
   budgetedRevenue: number;
   actualRevenue: number;
   budgetedFoodCost: number;
@@ -43,7 +43,7 @@ type FinanceMetrics = {
   previousLaborCost: number;
   totalCost: number;
   grossProfitMargin: number;
-};
+}
 
 function calculateDateRange(period: string) {
   const now = new Date();

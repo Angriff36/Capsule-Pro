@@ -52,11 +52,11 @@ type TaskWithRelations = KitchenTask & {
   claims: Array<KitchenTaskClaim & { user: UserSelect | null }>;
 };
 
-type ProductionBoardClientProps = {
+interface ProductionBoardClientProps {
   initialTasks: TaskWithRelations[];
   currentUserId?: string | null;
   tenantId?: string;
-};
+}
 
 const STATIONS = [
   { id: "all", label: "All Stations", icon: UtensilsCrossed },

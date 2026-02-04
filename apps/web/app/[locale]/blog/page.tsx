@@ -3,11 +3,11 @@ import { createMetadata } from "@repo/seo/metadata";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-type BlogProps = {
+interface BlogProps {
   params: Promise<{
     locale: string;
   }>;
-};
+}
 
 export const generateMetadata = async ({
   params,

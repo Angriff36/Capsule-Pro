@@ -5,9 +5,9 @@ import { getTenantIdForOrg } from "../../../../lib/tenant";
 import { Header } from "../../../components/header";
 import { ReportEditorClient } from "./report-editor-client";
 
-type PageProps = {
+interface PageProps {
   params: Promise<{ reportId: string }>;
-};
+}
 
 const EventReportDetailPage = async ({ params }: PageProps) => {
   const { orgId } = await auth();

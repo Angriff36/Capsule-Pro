@@ -67,13 +67,13 @@ export async function GET(request: Request) {
   const entryCount = entries.length;
 
   // Group data based on groupBy parameter
-  type WasteGroup = {
+  interface WasteGroup {
     key: string;
     totalCost: number;
     totalQuantity: number;
     count: number;
     entries: typeof entries;
-  };
+  }
   const groupedData: Record<string, WasteGroup> = {};
   for (const entry of entries) {
     let key = "";
@@ -138,12 +138,12 @@ export async function GET(request: Request) {
   });
 
   // Calculate trends by month
-  type MonthlyTrend = {
+  interface MonthlyTrend {
     month: string;
     totalCost: number;
     totalQuantity: number;
     count: number;
-  };
+  }
   const monthlyTrends: Record<string, MonthlyTrend> = {};
   for (const entry of entries) {
     const date = new Date(entry.loggedAt);

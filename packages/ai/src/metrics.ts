@@ -8,10 +8,10 @@ export const MetricsExportSchema = z.object({
 
 export type MetricsExportConfig = z.infer<typeof MetricsExportSchema>;
 
-export type MetricsCollectorOptions = {
+export interface MetricsCollectorOptions {
   maxEntries?: number;
   exportConfig?: MetricsExportConfig;
-};
+}
 
 export class MetricsCollector {
   private readonly entries: Metrics[] = [];
@@ -194,7 +194,7 @@ export class MetricsCollector {
   }
 }
 
-export type AggregateMetrics = {
+export interface AggregateMetrics {
   totalExecutions: number;
   successRate: number;
   averageDuration: number;
@@ -202,4 +202,4 @@ export type AggregateMetrics = {
   totalToolCalls: number;
   totalRetries: number;
   totalErrors: number;
-};
+}

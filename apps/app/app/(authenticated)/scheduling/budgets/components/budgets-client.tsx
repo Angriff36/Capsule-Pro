@@ -545,13 +545,13 @@ export function BudgetsClient() {
 }
 
 // Delete Confirmation Modal
-type BudgetDeleteModalProps = {
+interface BudgetDeleteModalProps {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
   budget: LaborBudget | null;
   loading: boolean;
-};
+}
 
 function BudgetDeleteModal({
   open,

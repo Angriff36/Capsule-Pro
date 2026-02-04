@@ -17,7 +17,7 @@ export type ClientStatus = "active" | "inactive" | "prospect";
 /**
  * Full client record from database
  */
-export type Client = {
+export interface Client {
   tenantId: string;
   id: string;
   clientType: string;
@@ -43,12 +43,12 @@ export type Client = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-};
+}
 
 /**
  * Client contact record
  */
-export type ClientContact = {
+export interface ClientContact {
   tenantId: string;
   id: string;
   clientId: string;
@@ -64,12 +64,12 @@ export type ClientContact = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-};
+}
 
 /**
  * Client preference record
  */
-export type ClientPreference = {
+export interface ClientPreference {
   tenantId: string;
   id: string;
   clientId: string;
@@ -80,12 +80,12 @@ export type ClientPreference = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-};
+}
 
 /**
  * Client interaction (communication log) record
  */
-export type ClientInteraction = {
+export interface ClientInteraction {
   tenantId: string;
   id: string;
   clientId: string | null;
@@ -101,7 +101,7 @@ export type ClientInteraction = {
   updatedAt: Date;
   deletedAt: Date | null;
   correlation_id: string | null;
-};
+}
 
 /**
  * Client with related data for detail view
@@ -117,7 +117,7 @@ export type ClientWithDetails = Client & {
 /**
  * Create client request body
  */
-export type CreateClientRequest = {
+export interface CreateClientRequest {
   clientType?: ClientType;
   company_name?: string;
   first_name?: string;
@@ -138,7 +138,7 @@ export type CreateClientRequest = {
   tags?: string[];
   source?: string;
   assignedTo?: string;
-};
+}
 
 /**
  * Update client request body (all fields optional)
@@ -148,7 +148,7 @@ export type UpdateClientRequest = Partial<CreateClientRequest>;
 /**
  * Create client contact request body
  */
-export type CreateClientContactRequest = {
+export interface CreateClientContactRequest {
   first_name: string;
   last_name: string;
   title?: string;
@@ -158,17 +158,17 @@ export type CreateClientContactRequest = {
   isPrimary?: boolean;
   isBillingContact?: boolean;
   notes?: string;
-};
+}
 
 /**
  * Create client interaction request body
  */
-export type CreateClientInteractionRequest = {
+export interface CreateClientInteractionRequest {
   interactionType: string;
   subject?: string;
   description?: string;
   followUpDate?: string; // ISO date string
-};
+}
 
 /**
  * Update client interaction request body (all fields optional)
@@ -184,26 +184,26 @@ export type UpdateClientInteractionRequest = Partial<{
 /**
  * Client list filters
  */
-export type ClientListFilters = {
+export interface ClientListFilters {
   search?: string; // Search by name, company, email
   tags?: string[]; // Filter by tags
   assignedTo?: string; // Filter by assigned employee
   clientType?: ClientType; // Filter by client type
   source?: string; // Filter by source
-};
+}
 
 /**
  * Pagination parameters
  */
-export type PaginationParams = {
+export interface PaginationParams {
   page?: number;
   limit?: number;
-};
+}
 
 /**
  * Paginated response
  */
-export type PaginatedResponse<T> = {
+export interface PaginatedResponse<T> {
   data: T[];
   pagination: {
     page: number;
@@ -211,4 +211,4 @@ export type PaginatedResponse<T> = {
     total: number;
     totalPages: number;
   };
-};
+}

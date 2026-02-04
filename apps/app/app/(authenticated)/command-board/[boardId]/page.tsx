@@ -5,9 +5,9 @@ import { getTenantIdForOrg } from "../../../lib/tenant";
 import { getCommandBoard, listCommandBoards } from "../actions/boards";
 import { CommandBoardRealtimeContent } from "../command-board-wrapper";
 
-type CommandBoardPageProps = {
+interface CommandBoardPageProps {
   params: Promise<{ boardId: string }>;
-};
+}
 
 export default async function CommandBoardPage({
   params,

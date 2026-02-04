@@ -12,29 +12,29 @@ export type EventType =
   | "toolCompleted"
   | "toolError";
 
-export type ProgressEvent = {
+export interface ProgressEvent {
   type: "progress";
   stage: string;
   percentage: number;
   message: string;
   estimatedTimeRemaining?: number;
-};
+}
 
-export type ToolEvent = {
+export interface ToolEvent {
   type: "toolStarted" | "toolProgress" | "toolCompleted" | "toolError";
   toolName: string;
   toolCallId: string;
   data?: unknown;
   error?: SDKError;
-};
+}
 
-export type LifecycleEvent = {
+export interface LifecycleEvent {
   type: "started" | "completed" | "error" | "cancelled";
   agentId: string;
   timestamp: Date;
   data?: unknown;
   error?: SDKError;
-};
+}
 
 export type AgentEvent = ProgressEvent | ToolEvent | LifecycleEvent;
 

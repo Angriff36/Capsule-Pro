@@ -3,7 +3,10 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-export type StationGroup = {
+// Top-level regex for performance
+const PARAM_PLACEHOLDER_REGEX = /\$\d+/;
+
+export interface StationGroup {
   stationId: string;
   stationName: string;
   items: Array<{
@@ -29,7 +32,7 @@ export type StationGroup = {
     completedAt: Date | null;
     completedBy: string | null;
   }>;
-};
+}
 
 /**
  * GET /api/kitchen/prep-lists/[id]
@@ -243,7 +246,7 @@ export async function PATCH(
 
     // Build dynamic SQL for updates
     const updateClause = updates
-      .map((u, i) => u.replace(/\$\d+/, `$${i + 1}`))
+      .map((u, i) => u.replace(PARAM_PLACEHOLDER_REGEX, `$${i + 1}`))
       .join(", ");
     const sql = `UPDATE tenant_kitchen.prep_lists SET ${updateClause} WHERE tenant_id = $${updates.length + 1} AND id = $${updates.length + 2} AND deleted_at IS NULL`;
 

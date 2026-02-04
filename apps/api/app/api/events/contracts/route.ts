@@ -14,7 +14,7 @@ import type { ContractStatus } from "./types";
 import { CONTRACT_STATUSES } from "./validation";
 
 // Define types
-type CreateContractRequest = {
+interface CreateContractRequest {
   eventId: string;
   clientId: string;
   title?: string;
@@ -22,21 +22,21 @@ type CreateContractRequest = {
   expiresAt?: string;
   documentUrl?: string;
   documentType?: string;
-};
+}
 
 // Removed - imported from ./types
 
-type ContractListFilters = {
+interface ContractListFilters {
   status?: ContractStatus;
   eventId?: string;
   clientId?: string;
   expiring?: boolean;
-};
+}
 
-type PaginationParams = {
+interface PaginationParams {
   page: number;
   limit: number;
-};
+}
 
 /**
  * Parse and validate contract list filters from URL search params

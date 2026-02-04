@@ -1,6 +1,6 @@
 import { database, Prisma } from "@repo/database";
 
-export type RecipeVersionSnapshot = {
+export interface RecipeVersionSnapshot {
   id: string;
   recipeId: string;
   versionNumber: number;
@@ -46,7 +46,7 @@ export type RecipeVersionSnapshot = {
     videoUrl: string | null;
     imageUrl: string | null;
   }[];
-};
+}
 
 export const getRecipeVersionSnapshot = async (
   tenantId: string,

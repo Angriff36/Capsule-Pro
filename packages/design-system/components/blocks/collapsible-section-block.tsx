@@ -35,15 +35,15 @@ import { Separator } from "../ui/separator";
  * ```
  */
 
-export type EmptyStateConfig = {
+export interface EmptyStateConfig {
   icon?: LucideIcon;
   title: string;
   description: string;
   actionLabel?: string;
   onAction?: () => void;
-};
+}
 
-type CollapsibleSectionBlockProps = {
+interface CollapsibleSectionBlockProps {
   /** Icon to display in the header */
   icon: LucideIcon;
   /** Section title */
@@ -68,7 +68,7 @@ type CollapsibleSectionBlockProps = {
   showEmptyState?: boolean;
   /** Optional additional class names for the container */
   className?: string;
-};
+}
 
 export function CollapsibleSectionBlock({
   icon: Icon,
@@ -173,7 +173,7 @@ function EmptyState({
  * consistent header styling.
  */
 
-type SectionHeaderBlockProps = {
+interface SectionHeaderBlockProps {
   icon: LucideIcon;
   title: string;
   /** Tailwind color class for the icon */
@@ -184,7 +184,7 @@ type SectionHeaderBlockProps = {
   badge?: React.ReactNode;
   /** Optional additional class names */
   className?: string;
-};
+}
 
 export function SectionHeaderBlock({
   icon: Icon,

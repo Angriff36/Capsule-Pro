@@ -12,15 +12,15 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type ContractStatusAPIContext = {
+interface ContractStatusAPIContext {
   params: Promise<{
     contractId: string;
   }>;
-};
+}
 
-type StatusUpdateBody = {
+interface StatusUpdateBody {
   status: "draft" | "pending" | "signed" | "expired" | "cancelled";
-};
+}
 
 /**
  * PATCH /api/events/contracts/[contractId]/status

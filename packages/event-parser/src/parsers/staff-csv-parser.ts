@@ -5,11 +5,11 @@
 
 import type { StaffShift } from "../types/index.js";
 
-export type StaffCsvParseResult = {
+export interface StaffCsvParseResult {
   shifts: Map<string, StaffShift[]>; // eventName -> shifts
   errors: string[];
   totalShifts: number;
-};
+}
 
 /**
  * Parse a staff roster CSV file

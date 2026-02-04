@@ -20,10 +20,10 @@ import type {
 import { FSA_STATUSES, ITEM_CATEGORIES } from "./types";
 import { validateCreateInventoryItemRequest } from "./validation";
 
-type PaginationParams = {
+interface PaginationParams {
   page: number;
   limit: number;
-};
+}
 
 /**
  * Parse pagination parameters from URL search params

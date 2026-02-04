@@ -11,25 +11,25 @@ import { type NextRequest, NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type CreateSignatureBody = {
+interface CreateSignatureBody {
   signatureData: string;
   signerName: string;
   signerEmail?: string;
-};
+}
 
 // Define types
-type PaginationParams = {
+interface PaginationParams {
   page: number;
   limit: number;
-};
+}
 
-type SignatureFilters = {
+interface SignatureFilters {
   signerEmail?: string;
   dateFrom?: string;
   dateTo?: string;
-};
+}
 
-type SignatureListResponse = {
+interface SignatureListResponse {
   data: Array<{
     id: string;
     contractId: string;
@@ -46,7 +46,7 @@ type SignatureListResponse = {
     total: number;
     totalPages: number;
   };
-};
+}
 
 /**
  * Parse pagination parameters from URL search params

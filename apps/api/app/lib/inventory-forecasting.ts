@@ -10,13 +10,13 @@ import { database } from "@repo/database";
 import { invariant } from "./invariant";
 
 // Types for forecasting
-export type ForecastRequest = {
+export interface ForecastRequest {
   tenantId: string;
   sku: string;
   horizonDays?: number; // Forecast horizon in days (default: 30)
-};
+}
 
-export type ForecastResult = {
+export interface ForecastResult {
   sku: string;
   currentStock: number;
   depletionDate: Date | null;
@@ -29,16 +29,16 @@ export type ForecastResult = {
     eventId?: string;
     eventName?: string;
   }>;
-};
+}
 
-export type ReorderSuggestionRequest = {
+export interface ReorderSuggestionRequest {
   tenantId: string;
   sku?: string; // If not provided, generates for all low-stock items
   leadTimeDays?: number;
   safetyStockDays?: number;
-};
+}
 
-export type ReorderSuggestionResult = {
+export interface ReorderSuggestionResult {
   sku: string;
   currentStock: number;
   reorderPoint: number;
@@ -46,7 +46,7 @@ export type ReorderSuggestionResult = {
   leadTimeDays: number;
   justification: string;
   urgency: "critical" | "warning" | "info";
-};
+}
 
 /**
  * Calculate depletion forecast for an inventory item
@@ -315,6 +315,11 @@ async function calculateReorderSuggestion(
 ): Promise<ReorderSuggestionResult | null> {
   const { tenantId, sku, leadTimeDays = 7, safetyStockDays = 3 } = request;
 
+  // Validate required SKU
+  if (!sku) {
+    return null;
+  }
+
   // Get current stock and item info from InventoryItem
   // Note: SKU maps to item_number
   const stockLevel = await database.inventoryItem.findFirst({
@@ -335,7 +340,7 @@ async function calculateReorderSuggestion(
   // Get forecast to determine depletion
   const forecast = await calculateDepletionForecast({
     tenantId,
-    sku: sku!, // sku is defined here because we filtered for it earlier
+    sku,
     horizonDays: leadTimeDays + safetyStockDays,
   });
 
@@ -379,7 +384,7 @@ async function calculateReorderSuggestion(
   }
 
   return {
-    sku: sku!,
+    sku,
     currentStock,
     reorderPoint: reorderLevel,
     recommendedOrderQty,
@@ -439,12 +444,14 @@ export async function saveForecastToDatabase(
     const forecastValue = point.projectedStock;
     const lowerBound = forecastValue * 0.9;
     const upperBound = forecastValue * 1.1;
-    const confidenceValue =
-      forecast.confidence === "high"
-        ? 0.9
-        : forecast.confidence === "medium"
-          ? 0.6
-          : 0.3;
+    let confidenceValue: number;
+    if (forecast.confidence === "high") {
+      confidenceValue = 0.9;
+    } else if (forecast.confidence === "medium") {
+      confidenceValue = 0.6;
+    } else {
+      confidenceValue = 0.3;
+    }
 
     if (existing) {
       await database.inventoryForecast.update({

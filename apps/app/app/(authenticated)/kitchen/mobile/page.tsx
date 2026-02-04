@@ -22,7 +22,7 @@ import { useEffect, useState } from "react";
 import { Header } from "../../components/header";
 
 // Types
-type Task = {
+interface Task {
   id: string;
   title: string;
   summary: string | null;
@@ -43,12 +43,12 @@ type Task = {
   isClaimedByOthers?: boolean;
   isAvailable?: boolean;
   claimedAt?: string | null;
-};
+}
 
-type ApiResponse = {
+interface ApiResponse {
   tasks: Task[];
   userId?: string;
-};
+}
 
 const priorityConfig: Record<number, { label: string; color: string }> = {
   1: { label: "CRITICAL", color: "bg-rose-500" },

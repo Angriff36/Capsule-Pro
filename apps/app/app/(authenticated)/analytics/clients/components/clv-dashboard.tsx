@@ -9,11 +9,11 @@ import { MetricsCards } from "./metrics-cards";
 import { PredictiveLTV } from "./predictive-ltv";
 import { RevenueTrends } from "./revenue-trends";
 
-type CLVDashboardProps = {
+interface CLVDashboardProps {
   metrics: ClientLTVMetrics;
   clients: ClientLTVMetrics["topClients"];
   className?: string;
-};
+}
 
 export function CLVDashboard({
   metrics,

@@ -46,7 +46,7 @@ type PreferenceValue =
   | Record<string, unknown>
   | unknown[];
 
-type ClientDetailProps = {
+interface ClientDetailProps {
   client: {
     id: string;
     tenantId: string;
@@ -97,7 +97,7 @@ type ClientDetailProps = {
     eventCount: number;
     totalRevenue: { total: string } | null;
   };
-};
+}
 
 export function ClientDetailClient({ client }: ClientDetailProps) {
   const router = useRouter();

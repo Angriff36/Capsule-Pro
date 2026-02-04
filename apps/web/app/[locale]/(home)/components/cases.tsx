@@ -10,9 +10,9 @@ import type { Dictionary } from "@repo/internationalization";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-type CasesProps = {
+interface CasesProps {
   dictionary: Dictionary;
-};
+}
 
 export const Cases = ({ dictionary }: CasesProps) => {
   const [api, setApi] = useState<CarouselApi>();

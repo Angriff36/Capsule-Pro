@@ -14,6 +14,9 @@ import type {
 } from "./types";
 import { ITEM_CONDITIONS, SHIPMENT_STATUSES } from "./types";
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export function validateShipmentStatus(
   value: unknown
 ): asserts value is ShipmentStatus {
@@ -92,9 +95,7 @@ export function validateUUID(
   if (typeof value !== "string") {
     throw new InvariantError(`${fieldName} must be a string`);
   }
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!uuidRegex.test(value)) {
+  if (!UUID_REGEX.test(value)) {
     throw new InvariantError(`${fieldName} must be a valid UUID`);
   }
 }

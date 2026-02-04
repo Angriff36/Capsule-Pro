@@ -18,7 +18,7 @@ import {
   stockHealthBadgeVariants,
 } from "../lib/inventory-status";
 
-type AlertItem = {
+interface AlertItem {
   id: string;
   name: string;
   itemNumber: string;
@@ -26,12 +26,12 @@ type AlertItem = {
   quantityOnHand: number;
   reorderLevel: number;
   status: StockHealthStatus;
-};
+}
 
-type StockAlertsCardProps = {
+interface StockAlertsCardProps {
   alerts: AlertItem[];
   maxItems?: number;
-};
+}
 
 function getAlertIcon(status: StockHealthStatus) {
   switch (status) {

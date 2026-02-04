@@ -12,7 +12,7 @@ import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-export type RecipeIngredient = {
+export interface RecipeIngredient {
   id: string;
   name: string;
   quantity: number;
@@ -20,7 +20,7 @@ export type RecipeIngredient = {
   notes: string | null;
   isOptional: boolean;
   orderIndex: number;
-};
+}
 
 /**
  * GET /api/kitchen/recipes/[recipeId]/ingredients

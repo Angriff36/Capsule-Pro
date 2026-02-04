@@ -4,13 +4,13 @@ import type { PayrollPeriod, PayrollRecord } from "../models";
 /**
  * CSV Export Configuration
  */
-export type CsvExportOptions = {
+export interface CsvExportOptions {
   includeHeader?: boolean;
   delimiter?: string;
   dateFormat?: "iso" | "us" | "qb";
   maskSensitiveData?: boolean;
   customColumns?: string[];
-};
+}
 
 /**
  * Standard CSV column definitions

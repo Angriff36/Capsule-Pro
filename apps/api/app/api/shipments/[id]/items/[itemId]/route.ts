@@ -11,7 +11,7 @@ import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type ShipmentItemUpdateInput = {
+interface ShipmentItemUpdateInput {
   quantity_shipped?: number;
   quantity_received?: number;
   quantity_damaged?: number;
@@ -21,9 +21,9 @@ type ShipmentItemUpdateInput = {
   condition_notes?: string | null;
   lot_number?: string | null;
   expiration_date?: string | null;
-};
+}
 
-type ShipmentItemUpdateData = {
+interface ShipmentItemUpdateData {
   quantityShipped?: string;
   quantityReceived?: string;
   quantityDamaged?: string;
@@ -34,7 +34,7 @@ type ShipmentItemUpdateData = {
   conditionNotes?: string | null;
   lotNumber?: string | null;
   expirationDate?: Date | null;
-};
+}
 
 function validateShipmentItemUpdate(item: ShipmentItemUpdateInput) {
   if (item.quantity_shipped !== undefined && item.quantity_shipped <= 0) {

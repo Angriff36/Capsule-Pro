@@ -182,7 +182,7 @@ export async function getTimeOffRequestById(
 export async function createTimeOffRequest(
   input: CreateTimeOffRequestInput
 ): Promise<{ request: TimeOffRequest }> {
-  const { orgId, userId } = await auth();
+  const { orgId } = await auth();
   if (!orgId) {
     throw new Error("Not authenticated");
   }
@@ -210,7 +210,7 @@ export async function createTimeOffRequest(
   }
 
   // Verify employee exists and is active
-  const { employee, error } = await verifyEmployee(tenantId, input.employeeId);
+  const { error } = await verifyEmployee(tenantId, input.employeeId);
   if (error) {
     throw new Error("Employee not found or inactive");
   }

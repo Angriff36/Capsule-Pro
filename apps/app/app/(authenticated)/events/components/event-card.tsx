@@ -23,7 +23,7 @@ const statusVariantMap = {
   cancelled: "destructive",
 } as const;
 
-export type EventCardEvent = {
+export interface EventCardEvent {
   id: string;
   title: string;
   eventNumber: string | null;
@@ -33,7 +33,7 @@ export type EventCardEvent = {
   guestCount: number;
   venueName: string | null;
   tags: string[];
-};
+}
 
 export function EventCard({ event }: { event: EventCardEvent }) {
   const date = new Date(event.eventDate);

@@ -17,7 +17,7 @@ type PreferenceValue =
   | Record<string, unknown>
   | unknown[];
 
-type PreferencesTabProps = {
+interface PreferencesTabProps {
   client: {
     preferences: Array<{
       id: string;
@@ -27,7 +27,7 @@ type PreferencesTabProps = {
       notes: string | null;
     }>;
   };
-};
+}
 
 export function PreferencesTab({ client }: PreferencesTabProps) {
   const formatValue = (value: PreferenceValue): string => {

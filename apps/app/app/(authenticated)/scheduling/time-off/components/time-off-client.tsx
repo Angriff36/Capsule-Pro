@@ -36,18 +36,18 @@ import { calculateDuration, formatDate } from "../utils";
 import { TimeOffDetailModal } from "./time-off-detail-modal";
 import { TimeOffForm } from "./time-off-form";
 
-type Employee = {
+interface Employee {
   id: string;
   first_name: string | null;
   last_name: string | null;
   email: string;
   role: string;
-};
+}
 
-type Location = {
+interface Location {
   id: string;
   name: string;
-};
+}
 
 export function TimeOffClient() {
   const router = useRouter();

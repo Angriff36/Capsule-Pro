@@ -137,7 +137,7 @@ test.describe("Event Import Flow", () => {
           .catch(() => "Unknown error");
         console.log("❌ Import failed:", errors);
       }
-    } catch (e) {
+    } catch (_e) {
       console.log("⚠️ Timeout waiting for import result");
     }
   });

@@ -9,7 +9,7 @@ import { Separator } from "@repo/design-system/components/ui/separator";
 import { FileTextIcon } from "lucide-react";
 import Link from "next/link";
 
-type DocumentRow = {
+interface DocumentRow {
   id: string;
   file_name: string;
   file_type: string;
@@ -17,11 +17,11 @@ type DocumentRow = {
   parse_error: string | null;
   created_at: Date;
   event_id: string | null;
-};
+}
 
-type DataImportSectionProps = {
+interface DataImportSectionProps {
   documents: DocumentRow[];
-};
+}
 
 function getTimeAgo(date: Date): string {
   const now = new Date();

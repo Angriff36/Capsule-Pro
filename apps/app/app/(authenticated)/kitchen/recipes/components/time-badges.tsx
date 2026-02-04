@@ -2,7 +2,7 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import { cn } from "@repo/design-system/lib/utils";
 import { ClockIcon, FlameIcon, TimerIcon } from "lucide-react";
 
-type TimeBadgesProps = {
+interface TimeBadgesProps {
   /** Prep time in minutes */
   prepTime?: number | null;
   /** Cook time in minutes */
@@ -13,7 +13,7 @@ type TimeBadgesProps = {
   showIcons?: boolean;
   /** Additional class names for the container */
   className?: string;
-};
+}
 
 /**
  * Formats minutes to a human-readable string.

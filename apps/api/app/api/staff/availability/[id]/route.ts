@@ -11,9 +11,9 @@ import {
   verifyAvailability,
 } from "../validation";
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ id: string }>;
-};
+}
 
 /**
  * GET /api/staff/availability/[id]
@@ -142,11 +142,14 @@ export async function PATCH(request: Request, context: RouteContext) {
       : new Date();
     effectiveFrom.setHours(0, 0, 0, 0);
 
-    const effectiveUntil = body.effectiveUntil
-      ? new Date(body.effectiveUntil)
-      : existingAvail.effective_until
-        ? new Date(existingAvail.effective_until)
-        : null;
+    let effectiveUntil: Date | null;
+    if (body.effectiveUntil) {
+      effectiveUntil = new Date(body.effectiveUntil);
+    } else if (existingAvail.effective_until) {
+      effectiveUntil = new Date(existingAvail.effective_until);
+    } else {
+      effectiveUntil = null;
+    }
     if (effectiveUntil) {
       effectiveUntil.setHours(0, 0, 0, 0);
     }

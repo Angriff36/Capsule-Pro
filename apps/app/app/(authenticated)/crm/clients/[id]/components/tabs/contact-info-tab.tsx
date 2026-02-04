@@ -28,7 +28,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { updateClient } from "../../../actions";
 
-type ContactInfoTabProps = {
+interface ContactInfoTabProps {
   client: {
     id: string;
     clientType: string;
@@ -52,7 +52,7 @@ type ContactInfoTabProps = {
     source: string | null;
   };
   onEdit?: () => void;
-};
+}
 
 export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
   const [isEditing, setIsEditing] = useState(false);

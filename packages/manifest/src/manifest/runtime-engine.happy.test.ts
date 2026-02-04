@@ -27,7 +27,7 @@ test("prep task claim succeeds with explicit context", async () => {
   const result = await engine.runCommand(
     "claim",
     { employeeId: "e1" },
-    { entityName: "PrepTask", instanceId: instance!.id }
+    { entityName: "PrepTask", instanceId: instance?.id }
   );
 
   // Assert success and status becomes "in_progress" and event is emitted
@@ -35,7 +35,7 @@ test("prep task claim succeeds with explicit context", async () => {
   expect(result.emittedEvents.length).toBeGreaterThan(0);
   expect(result.emittedEvents[0].name).toBe("taskClaimed");
 
-  const updated = engine.getInstance("PrepTask", instance!.id);
+  const updated = engine.getInstance("PrepTask", instance?.id);
   expect(updated?.status).toBe("in_progress");
   expect(updated?.assignedTo).toBe("e1");
 });

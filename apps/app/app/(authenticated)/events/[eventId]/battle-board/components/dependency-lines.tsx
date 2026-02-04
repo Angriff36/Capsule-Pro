@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import type { TimelineTask } from "../types";
 
-type DependencyLinesProps = {
+interface DependencyLinesProps {
   tasks: TimelineTask[];
   eventDate: Date;
   showDependencies: boolean;
@@ -12,7 +12,7 @@ type DependencyLinesProps = {
     string,
     { left: number; top: number; width: number; height: number }
   >;
-};
+}
 
 const ROW_HEIGHT = 48;
 

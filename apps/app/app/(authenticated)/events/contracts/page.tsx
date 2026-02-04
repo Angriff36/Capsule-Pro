@@ -21,7 +21,7 @@ import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 import { ContractsPageClient } from "./components/contracts-page-client";
 
-type ContractWithRelations = {
+interface ContractWithRelations {
   id: string;
   tenantId: string;
   eventId: string;
@@ -44,7 +44,7 @@ type ContractWithRelations = {
     id: string;
     name: string;
   } | null;
-};
+}
 
 const ContractsPage = async () => {
   const { orgId } = await auth();

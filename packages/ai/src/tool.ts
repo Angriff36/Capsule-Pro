@@ -3,23 +3,23 @@ import { createSDKError, ERROR_CODES, SDKError } from "./errors.js";
 
 export type ToolParameterSchema = z.ZodType<unknown>;
 
-export type ToolParameters = {
+export interface ToolParameters {
   [key: string]: ToolParameterSchema;
-};
+}
 
-export type ToolResult<T = unknown> = {
+export interface ToolResult<T = unknown> {
   success: boolean;
   data?: T;
   error?: SDKError;
-};
+}
 
-export type ToolDefinition = {
+export interface ToolDefinition {
   name: string;
   description: string;
   parameters: ToolParameters;
   returns: ToolParameterSchema;
   retryable: boolean;
-};
+}
 
 export type ToolFunction<
   TParameters extends Record<string, unknown> = Record<string, unknown>,
@@ -29,20 +29,20 @@ export type ToolFunction<
   context?: ToolContext
 ) => Promise<ToolResult<TReturn>>;
 
-export type ToolContext = {
+export interface ToolContext {
   agentId: string;
   executionId: string;
   abortSignal?: AbortSignal;
   onProgress?: (data: unknown) => void;
-};
+}
 
-export type ToolOptions = {
+export interface ToolOptions {
   name: string;
   description: string;
   parameters?: ToolParameters;
   returns?: ToolParameterSchema;
   retryable?: boolean;
-};
+}
 
 export class Tool<
   TParameters extends Record<string, unknown> = Record<string, unknown>,

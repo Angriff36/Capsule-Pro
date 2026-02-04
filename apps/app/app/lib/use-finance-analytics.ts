@@ -3,24 +3,24 @@
 import { useEffect, useState } from "react";
 
 // TypeScript types for Finance Analytics
-export type FinanceHighlight = {
+export interface FinanceHighlight {
   label: string;
   value: string;
   trend: string;
   isPositive?: boolean;
-};
+}
 
-export type LedgerEntry = {
+export interface LedgerEntry {
   label: string;
   amount: string;
-};
+}
 
-export type FinanceAlert = {
+export interface FinanceAlert {
   message: string;
   severity: "High" | "Medium" | "Low";
-};
+}
 
-export type FinanceMetrics = {
+export interface FinanceMetrics {
   totalEvents: number;
   budgetedRevenue: number;
   actualRevenue: number;
@@ -33,9 +33,9 @@ export type FinanceMetrics = {
   totalCost: number;
   grossProfit: number;
   grossProfitMargin: number;
-};
+}
 
-export type FinanceAnalyticsData = {
+export interface FinanceAnalyticsData {
   summary: {
     period: string;
     startDate: string;
@@ -46,20 +46,20 @@ export type FinanceAnalyticsData = {
   ledgerSummary: LedgerEntry[];
   financeAlerts: FinanceAlert[];
   metrics: FinanceMetrics;
-};
+}
 
-export type UseFinanceAnalyticsOptions = {
+export interface UseFinanceAnalyticsOptions {
   period?: "7d" | "30d" | "90d" | "12m";
   locationId?: string;
   enabled?: boolean;
-};
+}
 
-export type UseFinanceAnalyticsReturn = {
+export interface UseFinanceAnalyticsReturn {
   data: FinanceAnalyticsData | null;
   isLoading: boolean;
   error: Error | null;
   refetch: () => void;
-};
+}
 
 // Helper function to format currency for display
 export function formatCurrency(amount: number): string {

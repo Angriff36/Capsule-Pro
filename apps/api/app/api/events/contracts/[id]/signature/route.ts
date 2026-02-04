@@ -11,12 +11,12 @@ import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 // Define types
-type CreateSignatureRequest = {
+interface CreateSignatureRequest {
   signatureData: string;
   signerName: string;
   signerEmail?: string;
   ipAddress?: string;
-};
+}
 
 type ContractStatus =
   | "draft"

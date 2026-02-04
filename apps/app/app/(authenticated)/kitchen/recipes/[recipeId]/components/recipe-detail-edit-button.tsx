@@ -9,10 +9,10 @@ import {
 } from "../../actions";
 import { RecipeEditModal } from "../../components/recipe-edit-modal";
 
-type RecipeDetailEditButtonProps = {
+interface RecipeDetailEditButtonProps {
   recipeId: string;
   recipeName: string;
-};
+}
 
 const buildEditRecipePayload = (recipe: RecipeForEdit) => ({
   id: recipe.id,

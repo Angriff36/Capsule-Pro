@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
-type PayrollLayoutProperties = {
+interface PayrollLayoutProperties {
   readonly children: ReactNode;
-};
+}
 
 const PayrollLayout = ({ children }: PayrollLayoutProperties) => (
   <>{children}</>

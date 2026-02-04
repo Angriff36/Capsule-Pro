@@ -3,44 +3,44 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type StationMetrics = {
+interface StationMetrics {
   station_id: string;
   station_name: string;
   total_items: string;
   completed_items: string;
   avg_completion_minutes: string;
-};
+}
 
-type PrepListsSync = {
+interface PrepListsSync {
   total: string;
   completed: string;
-};
+}
 
-type TimeToCompletion = {
+interface TimeToCompletion {
   avg_minutes: string;
-};
+}
 
-type StationTrend = {
+interface StationTrend {
   date: string;
   station_name: string;
   completed: string;
   total: string;
-};
+}
 
-type TopPerformer = {
+interface TopPerformer {
   employee_id: string;
   first_name: string;
   last_name: string;
   completed_tasks: string;
   avg_minutes: string;
-};
+}
 
-type DateRange = {
+interface DateRange {
   now: Date;
   startDate: Date;
-};
+}
 
-type StationThroughputData = {
+interface StationThroughputData {
   stationId: string;
   stationName: string;
   load: number;
@@ -49,9 +49,9 @@ type StationThroughputData = {
   totalItems: number;
   completedItems: number;
   pendingItems: number;
-};
+}
 
-type KitchenHealthData = {
+interface KitchenHealthData {
   prepListsSync: {
     rate: number;
     total: number;
@@ -61,9 +61,9 @@ type KitchenHealthData = {
   wasteAlerts: number;
   timeToCompletion: string;
   avgMinutes: number;
-};
+}
 
-type TrendData = {
+interface TrendData {
   date: string;
   stations: Array<{
     stationName: string;
@@ -71,15 +71,15 @@ type TrendData = {
     completed: number;
     completionRate: number;
   }>;
-};
+}
 
-type TopPerformerData = {
+interface TopPerformerData {
   employeeId: string;
   firstName: string;
   lastName: string;
   completedTasks: number;
   avgMinutes: number;
-};
+}
 
 function calculateDateRange(period: string): DateRange {
   const now = new Date();

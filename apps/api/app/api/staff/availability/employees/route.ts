@@ -4,6 +4,138 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
+ * Group availability data rows by employee
+ */
+function groupAvailabilityByEmployee(
+  availabilityData: Array<{
+    employee_id: string;
+    employee_first_name: string | null;
+    employee_last_name: string | null;
+    employee_email: string;
+    employee_role: string;
+    day_of_week: number;
+    start_time: string;
+    end_time: string;
+    is_available: boolean;
+  }>
+) {
+  const employeeAvailability = new Map<
+    string,
+    {
+      employee_id: string;
+      employee_first_name: string | null;
+      employee_last_name: string | null;
+      employee_email: string;
+      employee_role: string;
+      availability: Array<{
+        day_of_week: number;
+        start_time: string;
+        end_time: string;
+        is_available: boolean;
+      }>;
+    }
+  >();
+
+  for (const row of availabilityData) {
+    if (!employeeAvailability.has(row.employee_id)) {
+      employeeAvailability.set(row.employee_id, {
+        employee_id: row.employee_id,
+        employee_first_name: row.employee_first_name,
+        employee_last_name: row.employee_last_name,
+        employee_email: row.employee_email,
+        employee_role: row.employee_role,
+        availability: [],
+      });
+    }
+
+    if (row.day_of_week >= 0) {
+      employeeAvailability.get(row.employee_id)?.availability.push({
+        day_of_week: row.day_of_week,
+        start_time: row.start_time,
+        end_time: row.end_time,
+        is_available: row.is_available,
+      });
+    }
+  }
+
+  return employeeAvailability;
+}
+
+/**
+ * Group time-off data by employee
+ */
+function groupTimeOffByEmployee(
+  timeOffData: Array<{
+    employee_id: string;
+    time_off_id: string;
+    start_date: Date;
+    end_date: Date;
+    status: string;
+    request_type: string;
+  }>
+) {
+  const timeOffByEmployee = new Map<
+    string,
+    Array<{
+      id: string;
+      start_date: Date;
+      end_date: Date;
+      status: string;
+      request_type: string;
+    }>
+  >();
+
+  for (const tor of timeOffData) {
+    if (!timeOffByEmployee.has(tor.employee_id)) {
+      timeOffByEmployee.set(tor.employee_id, []);
+    }
+    timeOffByEmployee.get(tor.employee_id)?.push({
+      id: tor.time_off_id,
+      start_date: tor.start_date,
+      end_date: tor.end_date,
+      status: tor.status,
+      request_type: tor.request_type,
+    });
+  }
+
+  return timeOffByEmployee;
+}
+
+/**
+ * Attach time-off requests to employee results
+ */
+function attachTimeOffToEmployees(
+  employees: Array<{
+    employee_id: string;
+    employee_first_name: string | null;
+    employee_last_name: string | null;
+    employee_email: string;
+    employee_role: string;
+    availability: Array<{
+      day_of_week: number;
+      start_time: string;
+      end_time: string;
+      is_available: boolean;
+    }>;
+  }>,
+  timeOffByEmployee: Map<
+    string,
+    Array<{
+      id: string;
+      start_date: Date;
+      end_date: Date;
+      status: string;
+      request_type: string;
+    }>
+  >
+) {
+  return employees.map((employee) => ({
+    ...employee,
+    time_off_requests: timeOffByEmployee.get(employee.employee_id) || [],
+  }));
+}
+
+/**
  * GET /api/staff/availability/employees
  * Get employee availability for a date range (for scheduling)
  *
@@ -99,46 +231,7 @@ export async function GET(request: Request) {
     );
 
     // Group availability by employee
-    const employeeAvailability = new Map<
-      string,
-      {
-        employee_id: string;
-        employee_first_name: string | null;
-        employee_last_name: string | null;
-        employee_email: string;
-        employee_role: string;
-        availability: Array<{
-          day_of_week: number;
-          start_time: string;
-          end_time: string;
-          is_available: boolean;
-        }>;
-      }
-    >();
-
-    for (const row of availabilityData) {
-      if (!employeeAvailability.has(row.employee_id)) {
-        employeeAvailability.set(row.employee_id, {
-          employee_id: row.employee_id,
-          employee_first_name: row.employee_first_name,
-          employee_last_name: row.employee_last_name,
-          employee_email: row.employee_email,
-          employee_role: row.employee_role,
-          availability: [],
-        });
-      }
-
-      // Only add availability if day_of_week is not -1 (no availability set)
-      if (row.day_of_week >= 0) {
-        employeeAvailability.get(row.employee_id)?.availability.push({
-          day_of_week: row.day_of_week,
-          start_time: row.start_time,
-          end_time: row.end_time,
-          is_available: row.is_available,
-        });
-      }
-    }
-
+    const employeeAvailability = groupAvailabilityByEmployee(availabilityData);
     let result = Array.from(employeeAvailability.values());
 
     // Include time-off requests if requested
@@ -176,35 +269,8 @@ export async function GET(request: Request) {
         `
       );
 
-      // Group time-off requests by employee
-      const timeOffByEmployee = new Map<
-        string,
-        Array<{
-          id: string;
-          start_date: Date;
-          end_date: Date;
-          status: string;
-          request_type: string;
-        }>
-      >();
-      for (const tor of timeOffData) {
-        if (!timeOffByEmployee.has(tor.employee_id)) {
-          timeOffByEmployee.set(tor.employee_id, []);
-        }
-        timeOffByEmployee.get(tor.employee_id)?.push({
-          id: tor.time_off_id,
-          start_date: tor.start_date,
-          end_date: tor.end_date,
-          status: tor.status,
-          request_type: tor.request_type,
-        });
-      }
-
-      // Attach time-off requests to result
-      result = result.map((employee) => ({
-        ...employee,
-        time_off_requests: timeOffByEmployee.get(employee.employee_id) || [],
-      }));
+      const timeOffByEmployee = groupTimeOffByEmployee(timeOffData);
+      result = attachTimeOffToEmployees(result, timeOffByEmployee);
     }
 
     return NextResponse.json({ employees: result });

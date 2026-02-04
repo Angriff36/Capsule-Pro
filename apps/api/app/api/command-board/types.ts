@@ -22,7 +22,7 @@ export type CardStatus = (typeof CARD_STATUSES)[number];
 /**
  * Command Board Card shape
  */
-export type CommandBoardCard = {
+export interface CommandBoardCard {
   id: string;
   tenant_id: string;
   board_id: string;
@@ -40,12 +40,12 @@ export type CommandBoardCard = {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-};
+}
 
 /**
  * Command Board response shape
  */
-export type CommandBoard = {
+export interface CommandBoard {
   id: string;
   tenant_id: string;
   event_id: string | null;
@@ -57,7 +57,7 @@ export type CommandBoard = {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-};
+}
 
 /**
  * Command Board with cards response
@@ -69,19 +69,19 @@ export interface CommandBoardWithCards extends CommandBoard {
 /**
  * Update command board request
  */
-export type UpdateCommandBoardRequest = {
+export interface UpdateCommandBoardRequest {
   name?: string;
   description?: string;
   status?: BoardStatus;
   is_template?: boolean;
   tags?: string[];
   event_id?: string | null;
-};
+}
 
 /**
  * Create card request
  */
-export type CreateCardRequest = {
+export interface CreateCardRequest {
   title: string;
   content?: string;
   cardType?: CardType;
@@ -93,12 +93,12 @@ export type CreateCardRequest = {
   zIndex?: number;
   color?: string;
   metadata?: Record<string, unknown>;
-};
+}
 
 /**
  * Update command board card request
  */
-export type UpdateCommandBoardCardRequest = {
+export interface UpdateCommandBoardCardRequest {
   title?: string;
   content?: string | null;
   card_type?: CardType;
@@ -110,30 +110,30 @@ export type UpdateCommandBoardCardRequest = {
   z_index?: number;
   color?: string | null;
   metadata?: Record<string, unknown>;
-};
+}
 
 /**
  * Create command board request
  */
-export type CreateCommandBoardRequest = {
+export interface CreateCommandBoardRequest {
   name: string;
   description?: string;
   event_id?: string;
   status?: BoardStatus;
   is_template?: boolean;
   tags?: string[];
-};
+}
 
 /**
  * List filters
  */
-export type CommandBoardListFilters = {
+export interface CommandBoardListFilters {
   search?: string;
   status?: BoardStatus;
   event_id?: string;
   is_template?: boolean;
   tags?: string[];
-};
+}
 
 /**
  * Command Board with cards count
@@ -145,7 +145,7 @@ export interface CommandBoardWithCardsCount extends CommandBoard {
 /**
  * Paginated list response
  */
-export type CommandBoardListResponse = {
+export interface CommandBoardListResponse {
   data: CommandBoardWithCardsCount[];
   pagination: {
     page: number;
@@ -153,4 +153,4 @@ export type CommandBoardListResponse = {
     total: number;
     totalPages: number;
   };
-};
+}

@@ -46,7 +46,7 @@ import { RecipesPageClient } from "./recipes-page-client";
 import RecipesRealtime from "./recipes-realtime";
 import { RecipesToolbar } from "./recipes-toolbar";
 
-type RecipeRow = {
+interface RecipeRow {
   id: string;
   name: string;
   description: string | null;
@@ -61,9 +61,9 @@ type RecipeRow = {
   ingredient_count: number;
   dish_count: number;
   image_url: string | null;
-};
+}
 
-type DishRow = {
+interface DishRow {
   id: string;
   name: string;
   category: string | null;
@@ -75,18 +75,18 @@ type DishRow = {
   prep_task_count: number;
   event_count: number;
   is_active: boolean;
-};
+}
 
-type IngredientRow = {
+interface IngredientRow {
   id: string;
   name: string;
   category: string | null;
   allergens: string[] | null;
   unit_code: string | null;
   is_active: boolean;
-};
+}
 
-type RecipesPageProps = {
+interface RecipesPageProps {
   searchParams?: Promise<{
     tab?: string;
     q?: string;
@@ -94,7 +94,7 @@ type RecipesPageProps = {
     dietary?: string;
     status?: string;
   }>;
-};
+}
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",

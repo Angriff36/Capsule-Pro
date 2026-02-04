@@ -194,7 +194,7 @@ const formatDuration = (milliseconds: number): string => {
   return `${minutes}m`;
 };
 
-type FiltersPanelProps = {
+interface FiltersPanelProps {
   className?: string;
   startDate: string;
   setStartDate: (value: string) => void;
@@ -212,7 +212,7 @@ type FiltersPanelProps = {
   filteredCount: number;
   hasActiveFilters: boolean;
   onResetFilters: () => void;
-};
+}
 
 function FiltersPanel({
   className,
@@ -444,7 +444,7 @@ export const KitchenDashboardClient = ({
     let hasUnassigned = false;
 
     for (const event of parsedEvents) {
-      if (event.venueName && event.venueName.trim()) {
+      if (event.venueName?.trim()) {
         venues.add(event.venueName.trim());
       } else {
         hasUnassigned = true;
@@ -488,7 +488,7 @@ export const KitchenDashboardClient = ({
       }
       if (selectedVenue !== "all") {
         if (selectedVenue === "unassigned") {
-          if (event.venueName && event.venueName.trim()) {
+          if (event.venueName?.trim()) {
             return false;
           }
         } else if (event.venueName?.trim() !== selectedVenue) {

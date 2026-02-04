@@ -3,6 +3,9 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
+// Top-level regex for performance
+const PARAM_PLACEHOLDER_REGEX = /\$\d+/;
+
 /**
  * PATCH /api/kitchen/prep-lists/items/[id]
  * Update a prep list item (quantities, completion, etc.)
@@ -61,7 +64,7 @@ export async function PATCH(
 
     // Build dynamic SQL for updates
     const updateClause = updates
-      .map((u, i) => u.replace(/\$\d+/, `$${i + 1}`))
+      .map((u, i) => u.replace(PARAM_PLACEHOLDER_REGEX, `$${i + 1}`))
       .join(", ");
     const valuesArray = [...values, tenantId, id];
     const sql = `UPDATE tenant_kitchen.prep_list_items SET ${updateClause} WHERE tenant_id = $${updates.length + 1} AND id = $${updates.length + 2} AND deleted_at IS NULL`;

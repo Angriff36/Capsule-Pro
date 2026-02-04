@@ -34,7 +34,7 @@ import { getAvailability, getEmployees } from "../actions";
 import { AvailabilityDetailModal } from "./availability-detail-modal";
 import { AvailabilityForm } from "./availability-form";
 
-type Availability = {
+interface Availability {
   id: string;
   employee_id: string;
   employee_first_name: string | null;
@@ -49,20 +49,20 @@ type Availability = {
   effective_until: Date | null;
   created_at: Date;
   updated_at: Date;
-};
+}
 
-type Employee = {
+interface Employee {
   id: string;
   first_name: string | null;
   last_name: string | null;
   email: string;
   role: string;
-};
+}
 
-type Location = {
+interface Location {
   id: string;
   name: string;
-};
+}
 
 export function AvailabilityClient() {
   const router = useRouter();

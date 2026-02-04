@@ -314,14 +314,14 @@ export async function updateAvailability(
   }
 
   // Update only provided fields
-  type EmployeeAvailabilityUpdateData = {
+  interface EmployeeAvailabilityUpdateData {
     day_of_week?: number;
     start_time?: string;
     end_time?: string;
     is_available?: boolean;
     effective_from?: Date;
     effective_until?: Date | null;
-  };
+  }
 
   const updateData: EmployeeAvailabilityUpdateData = {};
 

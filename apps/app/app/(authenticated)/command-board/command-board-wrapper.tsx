@@ -16,12 +16,12 @@ import { SuggestionsPanel } from "./components/suggestions-panel";
 import { useSuggestions } from "./hooks/use-suggestions";
 import type { CommandBoardCard } from "./types";
 
-type CommandBoardRealtimePageProps = {
+interface CommandBoardRealtimePageProps {
   boardId: string;
   orgId: string;
   tenantId: string;
   initialCards?: CommandBoardCard[];
-};
+}
 
 function CommandBoardRealtimeContent({
   boardId,

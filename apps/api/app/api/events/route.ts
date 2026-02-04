@@ -13,18 +13,18 @@ import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type EventListFilters = {
+interface EventListFilters {
   status?: string;
   eventType?: string;
   clientId?: string;
   venueId?: string;
   search?: string;
-};
+}
 
-type PaginationParams = {
+interface PaginationParams {
   page: number;
   limit: number;
-};
+}
 
 /**
  * Parse and validate event list filters from URL search params

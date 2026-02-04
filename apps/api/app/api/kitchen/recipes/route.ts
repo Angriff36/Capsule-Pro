@@ -13,18 +13,18 @@ import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type RecipeListFilters = {
+interface RecipeListFilters {
   category?: string;
   cuisineType?: string;
   search?: string;
   tag?: string;
   isActive?: boolean;
-};
+}
 
-type PaginationParams = {
+interface PaginationParams {
   page: number;
   limit: number;
-};
+}
 
 /**
  * Parse and validate recipe list filters from URL search params

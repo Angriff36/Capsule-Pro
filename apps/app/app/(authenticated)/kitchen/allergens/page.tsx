@@ -31,7 +31,7 @@ import { toast } from "sonner";
 import { AllergenManagementModal } from "./allergen-management-modal";
 
 // Types matching database schema
-type AllergenWarning = {
+interface AllergenWarning {
   id: string;
   eventId?: string;
   dishId?: string;
@@ -58,29 +58,29 @@ type AllergenWarning = {
     id: string;
     name: string;
   };
-};
+}
 
-type Event = {
+interface Event {
   id: string;
   title: string;
   eventDate: Date;
   venueName?: string;
   status: string;
-};
+}
 
-type Dish = {
+interface Dish {
   id: string;
   name: string;
   allergens: string[];
   dietaryTags: string[];
-};
+}
 
-type Recipe = {
+interface Recipe {
   id: string;
   name: string;
   tags: string[];
   category?: string;
-};
+}
 
 export default function AllergenManagementPage() {
   const [searchTerm, setSearchTerm] = useState("");

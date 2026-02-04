@@ -147,18 +147,18 @@ export const RelationshipConfig: Record<
 /**
  * 2D point coordinates
  */
-export type Point = {
+export interface Point {
   x: number;
   y: number;
-};
+}
 
 /**
  * 2D dimensions (width and height)
  */
-export type Dimensions = {
+export interface Dimensions {
   width: number;
   height: number;
-};
+}
 
 /**
  * Bounding box with position and dimensions
@@ -169,7 +169,7 @@ export type BoundingBox = Point & Dimensions;
  * Card position on the canvas
  * Includes position, dimensions, and z-index for layering
  */
-export type CardPosition = {
+export interface CardPosition {
   /** X coordinate on the canvas (in canvas units) */
   x: number;
   /** Y coordinate on the canvas (in canvas units) */
@@ -180,7 +180,7 @@ export type CardPosition = {
   height: number;
   /** Z-index for stacking order (higher = on top) */
   zIndex: number;
-};
+}
 
 /**
  * Partial card position for updates
@@ -194,14 +194,14 @@ export type CardPositionUpdate = Partial<CardPosition>;
 /**
  * Viewport state representing the current view of the canvas
  */
-export type ViewportState = {
+export interface ViewportState {
   /** Current zoom level (0.25 to 2.0) */
   zoom: number;
   /** Pan offset X (canvas units translated left/right) */
   panX: number;
   /** Pan offset Y (canvas units translated up/down) */
   panY: number;
-};
+}
 
 /**
  * Complete viewport configuration including preferences
@@ -220,7 +220,7 @@ export type ViewportConfig = ViewportState & {
 /**
  * Viewport preferences that can be persisted
  */
-export type ViewportPreferences = {
+export interface ViewportPreferences {
   /** Last zoom level used */
   zoom: number;
   /** Last pan X position */
@@ -233,7 +233,7 @@ export type ViewportPreferences = {
   gridSnapEnabled: boolean;
   /** User's preferred grid size */
   gridSize: number;
-};
+}
 
 // =============================================================================
 // Card Types
@@ -253,7 +253,7 @@ export type CardMetadata = CommandBoardCardMetadata & {
  * Command board card with all properties
  * Extends the database model with typed fields
  */
-export type CommandBoardCard = {
+export interface CommandBoardCard {
   id: string;
   tenantId: string;
   boardId: string;
@@ -267,12 +267,12 @@ export type CommandBoardCard = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-};
+}
 
 /**
  * Connection between two cards
  */
-export type CardConnection = {
+export interface CardConnection {
   /** Unique ID for the connection */
   id: string;
   /** Source card ID */
@@ -285,7 +285,7 @@ export type CardConnection = {
   label?: string;
   /** Whether the connection is visible */
   visible: boolean;
-};
+}
 
 /**
  * Create a CommandBoardCard from database model
@@ -317,19 +317,19 @@ export function dbCardToCard(dbCard: DbCommandBoardCard): CommandBoardCard {
 /**
  * Input for creating a new card
  */
-export type CreateCardInput = {
+export interface CreateCardInput {
   title: string;
   content?: string;
   cardType?: CardType;
   position?: Partial<CardPosition>;
   color?: string;
   metadata?: CardMetadata;
-};
+}
 
 /**
  * Input for updating an existing card
  */
-export type UpdateCardInput = {
+export interface UpdateCardInput {
   id: string;
   title?: string;
   content?: string;
@@ -338,7 +338,7 @@ export type UpdateCardInput = {
   position?: CardPositionUpdate;
   color?: string;
   metadata?: CardMetadata;
-};
+}
 
 // =============================================================================
 // Board Types
@@ -347,7 +347,7 @@ export type UpdateCardInput = {
 /**
  * Command board with all properties
  */
-export type CommandBoard = {
+export interface CommandBoard {
   id: string;
   tenantId: string;
   eventId: string | null;
@@ -359,7 +359,7 @@ export type CommandBoard = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-};
+}
 
 /**
  * Create a CommandBoard from database model
@@ -390,18 +390,18 @@ export type CommandBoardWithCards = CommandBoard & {
 /**
  * Input for creating a new board
  */
-export type CreateBoardInput = {
+export interface CreateBoardInput {
   name: string;
   description?: string;
   eventId?: string;
   isTemplate?: boolean;
   tags?: string[];
-};
+}
 
 /**
  * Input for updating an existing board
  */
-export type UpdateBoardInput = {
+export interface UpdateBoardInput {
   id: string;
   name?: string;
   description?: string;
@@ -409,7 +409,7 @@ export type UpdateBoardInput = {
   eventId?: string | null;
   isTemplate?: boolean;
   tags?: string[];
-};
+}
 
 // =============================================================================
 // Board State Types
@@ -419,7 +419,7 @@ export type UpdateBoardInput = {
  * Complete board state including viewport and cards
  * Used for client-side state management
  */
-export type BoardState = {
+export interface BoardState {
   /** The board data */
   board: CommandBoard | null;
   /** All cards on the board */
@@ -438,7 +438,7 @@ export type BoardState = {
   error: string | null;
   /** Whether there are unsaved changes */
   isDirty: boolean;
-};
+}
 
 /**
  * Initial/default board state
@@ -495,7 +495,7 @@ export type BoardAction =
 /**
  * Drag state for tracking card movement
  */
-export type DragState = {
+export interface DragState {
   /** Whether a drag operation is in progress */
   isDragging: boolean;
   /** ID of the card being dragged */
@@ -506,7 +506,7 @@ export type DragState = {
   currentPosition: Point | null;
   /** Offset from card origin to drag point */
   offset: Point | null;
-};
+}
 
 /**
  * Initial drag state
@@ -526,12 +526,12 @@ export const INITIAL_DRAG_STATE: DragState = {
 /**
  * Selection box for multi-select
  */
-export type SelectionBox = {
+export interface SelectionBox {
   /** Starting corner of selection box */
   start: Point;
   /** Ending corner of selection box */
   end: Point;
-};
+}
 
 /**
  * Calculate bounding box from selection box

@@ -4,7 +4,7 @@
 export type EventBudgetStatus = "draft" | "approved" | "locked";
 export type BudgetCategory = "food" | "labor" | "rentals" | "miscellaneous";
 
-export type BudgetLineItem = {
+export interface BudgetLineItem {
   id: string;
   tenant_id: string;
   budget_id: string;
@@ -19,9 +19,9 @@ export type BudgetLineItem = {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-};
+}
 
-export type EventBudget = {
+export interface EventBudget {
   id: string;
   tenant_id: string;
   event_id: string;
@@ -42,9 +42,9 @@ export type EventBudget = {
     event_date: Date;
     client_name?: string;
   };
-};
+}
 
-export type BudgetListResponse = {
+export interface BudgetListResponse {
   data: EventBudget[];
   pagination: {
     page: number;
@@ -52,17 +52,17 @@ export type BudgetListResponse = {
     total: number;
     totalPages: number;
   };
-};
+}
 
-export type CreateBudgetRequest = {
+export interface CreateBudgetRequest {
   eventId: string;
   version?: number;
   status?: EventBudgetStatus;
   notes?: string;
   lineItems?: CreateBudgetLineItemRequest[];
-};
+}
 
-export type CreateBudgetLineItemRequest = {
+export interface CreateBudgetLineItemRequest {
   category: BudgetCategory;
   name: string;
   description?: string;
@@ -70,15 +70,15 @@ export type CreateBudgetLineItemRequest = {
   actualAmount?: number;
   sortOrder?: number;
   notes?: string;
-};
+}
 
-export type UpdateBudgetRequest = {
+export interface UpdateBudgetRequest {
   version?: number;
   status?: EventBudgetStatus;
   notes?: string;
-};
+}
 
-export type CreateLineItemRequest = {
+export interface CreateLineItemRequest {
   budgetId: string;
   category: BudgetCategory;
   name: string;
@@ -87,9 +87,9 @@ export type CreateLineItemRequest = {
   actualAmount?: number;
   sortOrder?: number;
   notes?: string;
-};
+}
 
-export type UpdateLineItemRequest = {
+export interface UpdateLineItemRequest {
   category?: BudgetCategory;
   name?: string;
   description?: string;
@@ -97,7 +97,7 @@ export type UpdateLineItemRequest = {
   actualAmount?: number;
   sortOrder?: number;
   notes?: string;
-};
+}
 
 /**
  * Client-side hooks for budget operations

@@ -8,7 +8,7 @@
 import { database, Prisma } from "@repo/database";
 
 // Types for labor budget operations
-export type LaborBudgetInput = {
+export interface LaborBudgetInput {
   tenantId: string;
   locationId?: string;
   eventId?: string;
@@ -24,9 +24,9 @@ export type LaborBudgetInput = {
   threshold100Pct?: boolean;
   status?: "active" | "paused" | "archived";
   overrideReason?: string;
-};
+}
 
-export type BudgetUtilization = {
+export interface BudgetUtilization {
   budgetId: string;
   budgetName: string;
   budgetType: string;
@@ -38,23 +38,23 @@ export type BudgetUtilization = {
   periodStart?: Date;
   periodEnd?: Date;
   status: "active" | "paused" | "archived";
-};
+}
 
-export type BudgetAlertInput = {
+export interface BudgetAlertInput {
   tenantId: string;
   budgetId: string;
   alertType: "threshold_80" | "threshold_90" | "threshold_100" | "exceeded";
   utilization: number;
   message: string;
-};
+}
 
-export type ShiftCostCalculation = {
+export interface ShiftCostCalculation {
   shiftId: string;
   employeeId: string;
   hourlyRate: number | null;
   shiftHours: number;
   cost: number;
-};
+}
 
 /**
  * Get all budgets for a tenant with optional filtering

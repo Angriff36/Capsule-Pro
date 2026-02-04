@@ -22,7 +22,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
-type ParsedDocument = {
+interface ParsedDocument {
   id: string;
   fileName: string;
   fileType: "pdf" | "csv";
@@ -30,9 +30,9 @@ type ParsedDocument = {
   confidence: number;
   errors: string[];
   warnings: string[];
-};
+}
 
-type ImportResult = {
+interface ImportResult {
   documents: ParsedDocument[];
   mergedEvent?: {
     client?: string;
@@ -63,7 +63,7 @@ type ImportResult = {
   };
   battleBoardId?: string;
   errors: string[];
-};
+}
 
 export function ImportForm() {
   const router = useRouter();

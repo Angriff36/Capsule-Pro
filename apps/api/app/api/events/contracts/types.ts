@@ -23,7 +23,7 @@ export type DocumentType = "pdf" | "docx" | "txt" | "other";
 /**
  * EventContract type from database
  */
-export type EventContract = {
+export interface EventContract {
   tenantId: string;
   id: string;
   eventId: string;
@@ -38,12 +38,12 @@ export type EventContract = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-};
+}
 
 /**
  * ContractSignature type from database
  */
-export type ContractSignature = {
+export interface ContractSignature {
   tenantId: string;
   id: string;
   contractId: string;
@@ -55,12 +55,12 @@ export type ContractSignature = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-};
+}
 
 /**
  * Create contract request body
  */
-export type CreateContractRequest = {
+export interface CreateContractRequest {
   eventId: string;
   clientId: string;
   contractNumber?: string;
@@ -69,7 +69,7 @@ export type CreateContractRequest = {
   documentType?: DocumentType;
   notes?: string;
   expiresAt?: string; // ISO date string
-};
+}
 
 /**
  * Update contract request body (all fields optional)
@@ -81,20 +81,20 @@ export type UpdateContractRequest = Partial<CreateContractRequest> & {
 /**
  * Contract status update request body
  */
-export type ContractStatusUpdate = {
+export interface ContractStatusUpdate {
   status: ContractStatus;
   notes?: string;
-};
+}
 
 /**
  * Create signature request body
  */
-export type CreateSignatureRequest = {
+export interface CreateSignatureRequest {
   signatureData: string;
   signerName: string;
   signerEmail?: string;
   ipAddress?: string;
-};
+}
 
 /**
  * Event contract with related data for detail view
@@ -120,7 +120,7 @@ export type ContractResponse = EventContract & {
 /**
  * Contract list item with minimal data for listing
  */
-export type ContractListItem = {
+export interface ContractListItem {
   id: string;
   contractNumber: string | null;
   title: string;
@@ -134,12 +134,12 @@ export type ContractListItem = {
   createdAt: Date;
   updatedAt: Date;
   signatureCount: number;
-};
+}
 
 /**
  * Contract list response with pagination
  */
-export type ContractListResponse = {
+export interface ContractListResponse {
   data: ContractListItem[];
   pagination: {
     page: number;
@@ -147,7 +147,7 @@ export type ContractListResponse = {
     total: number;
     totalPages: number;
   };
-};
+}
 
 /**
  * Signature response with contract details
@@ -160,7 +160,7 @@ export type SignatureResponse = ContractSignature & {
 /**
  * Signature list response with pagination
  */
-export type SignatureListResponse = {
+export interface SignatureListResponse {
   data: SignatureResponse[];
   pagination: {
     page: number;
@@ -168,12 +168,12 @@ export type SignatureListResponse = {
     total: number;
     totalPages: number;
   };
-};
+}
 
 /**
  * Contract filters
  */
-export type ContractFilters = {
+export interface ContractFilters {
   search?: string; // Search by contract number, title, client name, event name
   status?: ContractStatus; // Filter by status
   clientId?: string; // Filter by client
@@ -184,7 +184,7 @@ export type ContractFilters = {
   expiresFrom?: string; // Filter by expiration date from (ISO string)
   expiresTo?: string; // Filter by expiration date to (ISO string);
   signed?: boolean; // Filter by signature status
-};
+}
 
 /**
  * Contract sort options
@@ -206,41 +206,41 @@ export type SortDirection = "asc" | "desc";
 /**
  * Sort parameters
  */
-export type SortParams = {
+export interface SortParams {
   sortBy: ContractSortOptions;
   direction: SortDirection;
-};
+}
 
 /**
  * Paginated contract list parameters
  */
-export type ContractListParams = {
+export interface ContractListParams {
   filters?: ContractFilters;
   sort?: SortParams;
   page?: number;
   limit?: number;
-};
+}
 
 /**
  * Paginated signature list parameters
  */
-export type SignatureListParams = {
+export interface SignatureListParams {
   contractId?: string; // Filter by specific contract
   signerEmail?: string; // Filter by signer email
   dateFrom?: string; // Filter by signed date from (ISO string)
   dateTo?: string; // Filter by signed date to (ISO string)
   page?: number;
   limit?: number;
-};
+}
 
 /**
  * Contract statistics
  */
-export type ContractStats = {
+export interface ContractStats {
   total: number;
   byStatus: Record<ContractStatus, number>;
   signed: number;
   pending: number;
   expired: number;
   upcomingExpirations: number; // Contracts expiring in next 30 days
-};
+}

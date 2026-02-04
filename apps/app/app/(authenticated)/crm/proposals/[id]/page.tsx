@@ -41,9 +41,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProposalById } from "../actions";
 
-type ProposalPageProps = {
+interface ProposalPageProps {
   params: Promise<{ id: string }>;
-};
+}
 
 export async function generateMetadata({
   params,
@@ -68,7 +68,7 @@ export default async function ProposalDetailPage({
   const { id } = await params;
 
   // Type with relations as returned by getProposalById
-  type ProposalWithRelations = {
+  interface ProposalWithRelations {
     id: string;
     tenantId: string;
     proposalNumber: string;
@@ -131,7 +131,7 @@ export default async function ProposalDetailPage({
       total: number | null;
       notes: string | null;
     }>;
-  };
+  }
 
   let proposal: ProposalWithRelations;
   try {

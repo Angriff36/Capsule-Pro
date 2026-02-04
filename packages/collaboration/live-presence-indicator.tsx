@@ -3,9 +3,9 @@
 import { useOthers } from "@liveblocks/react/suspense";
 import { memo } from "react";
 
-type PresenceIndicatorProps = {
+interface PresenceIndicatorProps {
   className?: string;
-};
+}
 
 function PresenceIndicator({ className = "" }: PresenceIndicatorProps) {
   const others = useOthers();

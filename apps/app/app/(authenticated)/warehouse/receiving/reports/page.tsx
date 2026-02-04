@@ -16,7 +16,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-type SupplierMetrics = {
+interface SupplierMetrics {
   supplier_name: string;
   total_orders: number;
   on_time_deliveries: number;
@@ -24,15 +24,15 @@ type SupplierMetrics = {
   average_lead_time: number;
   total_spent: number;
   discrepancy_rate: number;
-};
+}
 
-type ReceivingSummary = {
+interface ReceivingSummary {
   total_pos_received: number;
   total_items_received: number;
   total_discrepancies: number;
   average_quality_score: number;
   pending_items: number;
-};
+}
 
 export default function ReceivingReportsPage() {
   const supplierMetrics: SupplierMetrics[] = [

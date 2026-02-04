@@ -1,4 +1,4 @@
-export type PDFConfig = {
+export interface PDFConfig {
   filename?: string;
   author?: string;
   title?: string;
@@ -7,16 +7,16 @@ export type PDFConfig = {
   creator?: string;
   producer?: string;
   creationDate?: Date;
-};
+}
 
-export type PDFGenerationOptions = {
+export interface PDFGenerationOptions {
   size?: "A4" | "LETTER" | "LEGAL";
   orientation?: "portrait" | "landscape";
   quality?: "low" | "medium" | "high";
   compression?: boolean;
-};
+}
 
-export type BattleBoardPDFData = {
+export interface BattleBoardPDFData {
   event: {
     id: string;
     name: string;
@@ -57,9 +57,9 @@ export type BattleBoardPDFData = {
     generatedBy: string;
     version: string;
   };
-};
+}
 
-export type ProposalPDFData = {
+export interface ProposalPDFData {
   proposal: {
     id: string;
     proposalNumber: string;
@@ -102,9 +102,9 @@ export type ProposalPDFData = {
     generatedBy: string;
     version: string;
   };
-};
+}
 
-export type ContractPDFData = {
+export interface ContractPDFData {
   contract: {
     id: string;
     title: string;
@@ -137,9 +137,9 @@ export type ContractPDFData = {
     generatedBy: string;
     version: string;
   };
-};
+}
 
-export type EventDetailPDFData = {
+export interface EventDetailPDFData {
   event: {
     id: string;
     name: string;
@@ -183,7 +183,7 @@ export type EventDetailPDFData = {
     generatedBy: string;
     version: string;
   };
-};
+}
 
 export type PDFData =
   | BattleBoardPDFData
@@ -191,7 +191,7 @@ export type PDFData =
   | ContractPDFData
   | EventDetailPDFData;
 
-export type PDFTemplateProps<T = PDFData> = {
+export interface PDFTemplateProps<T = PDFData> {
   data: T;
   config?: PDFConfig;
-};
+}

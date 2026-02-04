@@ -195,7 +195,9 @@ export class IRCompiler {
     if (s.config) {
       for (const [k, v] of Object.entries(s.config)) {
         const val = this.transformExprToValue(v);
-        if (val) config[k] = val;
+        if (val) {
+          config[k] = val;
+        }
       }
     }
     return {
@@ -405,7 +407,9 @@ export class IRCompiler {
       const properties: Record<string, IRValue> = {};
       for (const p of obj.properties) {
         const v = this.transformExprToValue(p.value);
-        if (v) properties[p.key] = v;
+        if (v) {
+          properties[p.key] = v;
+        }
       }
       return { kind: "object", properties };
     }
@@ -416,12 +420,15 @@ export class IRCompiler {
     value: string | number | boolean | null,
     dataType: string
   ): IRValue {
-    if (dataType === "string")
+    if (dataType === "string") {
       return { kind: "string", value: value as string };
-    if (dataType === "number")
+    }
+    if (dataType === "number") {
       return { kind: "number", value: value as number };
-    if (dataType === "boolean")
+    }
+    if (dataType === "boolean") {
       return { kind: "boolean", value: value as boolean };
+    }
     return { kind: "null" };
   }
 }

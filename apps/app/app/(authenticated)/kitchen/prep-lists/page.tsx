@@ -5,9 +5,9 @@ import { Header } from "../../components/header";
 import { generatePrepList, type PrepListGenerationResult } from "./actions";
 import { PrepListClient } from "./prep-list-client";
 
-type PrepListPageProps = {
+interface PrepListPageProps {
   searchParams?: Promise<{ eventId?: string }>;
-};
+}
 
 const KitchenPrepListsPage = async ({ searchParams }: PrepListPageProps) => {
   const { orgId } = await auth();

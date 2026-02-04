@@ -12,7 +12,7 @@ import { Header } from "../../../components/header";
 import { RecipeDetailEditButton } from "./components/recipe-detail-edit-button";
 import { RecipeDetailTabs } from "./components/recipe-detail-tabs";
 
-type RecipeDetailRow = {
+interface RecipeDetailRow {
   id: string;
   name: string;
   description: string | null;
@@ -27,18 +27,18 @@ type RecipeDetailRow = {
   instructions: string | null;
   notes: string | null;
   image_url: string | null;
-};
+}
 
-type IngredientRow = {
+interface IngredientRow {
   id: string;
   name: string;
   quantity: number;
   unit_code: string;
   notes: string | null;
   order_index: number;
-};
+}
 
-type RecipeStepRow = {
+interface RecipeStepRow {
   step_number: number;
   instruction: string;
   duration_minutes: number | null;
@@ -48,7 +48,7 @@ type RecipeStepRow = {
   tips: string | null;
   video_url: string | null;
   image_url: string | null;
-};
+}
 
 const formatMinutes = (minutes?: number | null) =>
   minutes && minutes > 0 ? `${minutes}m` : "-";

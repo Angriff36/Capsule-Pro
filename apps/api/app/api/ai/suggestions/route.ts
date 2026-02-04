@@ -374,7 +374,7 @@ Generate ${maxSuggestions} prioritized suggestions based on this state.`;
     const aiResponse = JSON.parse(result.text.trim());
 
     // Define type for AI response to avoid any
-    type AiSuggestion = {
+    interface AiSuggestion {
       suggestionType: string;
       category: string;
       priority: string;
@@ -384,7 +384,7 @@ Generate ${maxSuggestions} prioritized suggestions based on this state.`;
       actionType: string;
       actionPath?: string;
       estimatedImpact?: string;
-    };
+    }
 
     // Convert to SuggestedAction format
     const suggestions: SuggestedAction[] = (

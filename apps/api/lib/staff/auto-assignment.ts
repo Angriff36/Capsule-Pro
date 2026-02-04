@@ -9,7 +9,7 @@ import { database, Prisma } from "@repo/database";
 import { checkBudgetForShift } from "./labor-budget";
 
 // Types for auto-assignment
-export type ShiftRequirement = {
+export interface ShiftRequirement {
   shiftId: string;
   scheduleId: string;
   locationId: string;
@@ -19,9 +19,9 @@ export type ShiftRequirement = {
   requiredSkills?: string[]; // Array of skill IDs
   eventId?: string; // Event ID for budget tracking
   notes?: string;
-};
+}
 
-export type EmployeeCandidate = {
+export interface EmployeeCandidate {
   id: string;
   firstName: string | null;
   lastName: string | null;
@@ -51,9 +51,9 @@ export type EmployeeCandidate = {
     shiftEnd: Date;
     locationName: string;
   }>;
-};
+}
 
-export type AssignmentSuggestion = {
+export interface AssignmentSuggestion {
   employee: EmployeeCandidate;
   score: number;
   reasoning: string[];
@@ -67,15 +67,15 @@ export type AssignmentSuggestion = {
     hasConflicts: boolean;
     costEstimate: number;
   };
-};
+}
 
-export type AutoAssignmentResult = {
+export interface AutoAssignmentResult {
   shiftId: string;
   suggestions: AssignmentSuggestion[];
   bestMatch: AssignmentSuggestion | null;
   canAutoAssign: boolean;
   laborBudgetWarning?: string;
-};
+}
 
 /**
  * Get eligible employees for a shift with scoring
@@ -84,14 +84,8 @@ export async function getEligibleEmployeesForShift(
   tenantId: string,
   requirement: ShiftRequirement
 ): Promise<AutoAssignmentResult> {
-  const {
-    shiftId,
-    locationId,
-    shiftStart,
-    shiftEnd,
-    roleDuringShift,
-    requiredSkills = [],
-  } = requirement;
+  const { shiftId, locationId, shiftStart, shiftEnd, roleDuringShift } =
+    requirement;
 
   // Get employees with their seniority, skills, and conflict information
   const employees = await database.$queryRaw<
@@ -312,7 +306,7 @@ function scoreEmployeeForShift(
   const skillsMissing: string[] = [];
 
   if (requiredSkills.length > 0) {
-    requiredSkills.forEach((skillId) => {
+    for (const skillId of requiredSkills) {
       if (employeeSkillIds.has(skillId)) {
         const skill = employee.skills.find((s) => s.skill_id === skillId);
         if (skill) {
@@ -322,7 +316,7 @@ function scoreEmployeeForShift(
       } else {
         skillsMissing.push("Missing required skill");
       }
-    });
+    }
   }
 
   const skillsMatch = skillsMissing.length === 0;

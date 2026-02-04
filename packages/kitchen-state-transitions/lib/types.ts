@@ -31,10 +31,10 @@ export type TransitionErrorCode =
 /**
  * Error information for failed transitions
  */
-export type TransitionError = {
+export interface TransitionError {
   code: TransitionErrorCode;
   message: string;
-};
+}
 
 /**
  * Discriminated union for transition results
@@ -46,29 +46,29 @@ export type TransitionResult<T> =
 /**
  * Input for validating state transitions
  */
-export type TaskTransitionInput = {
+export interface TaskTransitionInput {
   taskId: string;
   tenantId: string;
   currentStatus: string;
   targetStatus: string;
   userId?: string;
   note?: string;
-};
+}
 
 /**
  * Input for claiming a task
  */
-export type ClaimInput = {
+export interface ClaimInput {
   taskId: string;
   tenantId: string;
   userId: string;
-};
+}
 
 /**
  * Information about an active claim on a task
  */
-export type ClaimConflictInfo = {
+export interface ClaimConflictInfo {
   claimId: string;
   userId: string;
   claimedAt: Date;
-};
+}

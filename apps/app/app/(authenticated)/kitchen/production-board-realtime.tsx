@@ -4,10 +4,10 @@ import Ably from "ably";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
-type ProductionBoardRealtimeProps = {
+interface ProductionBoardRealtimeProps {
   tenantId: string;
   userId?: string | null;
-};
+}
 
 const authUrl = "/ably/auth";
 

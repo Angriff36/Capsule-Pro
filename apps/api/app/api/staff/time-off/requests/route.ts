@@ -29,7 +29,7 @@ import {
  * - limit: Items per page (default: 50)
  */
 export async function GET(request: Request) {
-  const { orgId, userId } = await auth();
+  const { orgId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
@@ -190,7 +190,7 @@ export async function POST(request: Request) {
   }
 
   // Verify employee exists and is active
-  const { employee, error: employeeError } = await verifyEmployee(
+  const { error: employeeError } = await verifyEmployee(
     tenantId,
     body.employeeId
   );

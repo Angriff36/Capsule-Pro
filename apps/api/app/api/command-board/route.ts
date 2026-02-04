@@ -18,10 +18,10 @@ import type {
 import { BOARD_STATUSES } from "./types";
 import { validateCreateCommandBoardRequest } from "./validation";
 
-type PaginationParams = {
+interface PaginationParams {
   page: number;
   limit: number;
-};
+}
 
 /**
  * Parse pagination parameters from URL search params

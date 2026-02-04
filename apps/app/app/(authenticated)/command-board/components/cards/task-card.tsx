@@ -17,9 +17,9 @@ import { AlertCircle, Calendar, MoreVertical } from "lucide-react";
 import { memo } from "react";
 import type { CommandBoardCard } from "../../types";
 
-type TaskCardProps = {
+interface TaskCardProps {
   card: CommandBoardCard;
-};
+}
 
 const priorityConfig = {
   1: { label: "Critical", color: "bg-rose-500 text-white" },

@@ -16,9 +16,9 @@ import {
   validateUpdateBudgetLineItem,
 } from "../../../validation";
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ id: string; lineItemId: string }>;
-};
+}
 
 /**
  * GET /api/events/budgets/[id]/line-items/[lineItemId]

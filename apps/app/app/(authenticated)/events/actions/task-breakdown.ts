@@ -9,7 +9,7 @@ const AI_MODEL = "gpt-4o-mini";
 
 export type TaskSection = "prep" | "setup" | "cleanup";
 
-export type TaskBreakdownItem = {
+export interface TaskBreakdownItem {
   id: string;
   name: string;
   description?: string;
@@ -25,9 +25,9 @@ export type TaskBreakdownItem = {
   dueInHours?: number;
   historicalContext?: string;
   confidence?: number;
-};
+}
 
-export type TaskBreakdown = {
+export interface TaskBreakdown {
   prep: TaskBreakdownItem[];
   setup: TaskBreakdownItem[];
   cleanup: TaskBreakdownItem[];
@@ -39,12 +39,12 @@ export type TaskBreakdown = {
   generatedAt: Date;
   historicalEventCount?: number;
   disclaimer?: string;
-};
+}
 
-export type GenerateTaskBreakdownParams = {
+export interface GenerateTaskBreakdownParams {
   eventId: string;
   customInstructions?: string;
-};
+}
 
 export async function generateTaskBreakdown({
   eventId,

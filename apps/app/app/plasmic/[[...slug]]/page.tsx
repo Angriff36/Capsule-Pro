@@ -5,12 +5,12 @@ import {
 import { notFound } from "next/navigation";
 import { getPlasmicLoader } from "@/plasmic/plasmic-init";
 
-type PlasmicPageProps = {
+interface PlasmicPageProps {
   params: Promise<{
     slug?: string[];
   }>;
   searchParams?: Record<string, string | string[]>;
-};
+}
 
 const PlasmicPage = async ({ params, searchParams }: PlasmicPageProps) => {
   const { slug } = await params;

@@ -28,7 +28,7 @@ export const DISCREPANCY_TYPES = [
 ] as const;
 export type DiscrepancyType = (typeof DISCREPANCY_TYPES)[number];
 
-export type POItem = {
+export interface POItem {
   id: string;
   tenant_id: string;
   purchase_order_id: string;
@@ -45,14 +45,14 @@ export type POItem = {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-};
+}
 
 export interface POItemWithDetails extends POItem {
   item_number?: string;
   item_name?: string;
 }
 
-export type PurchaseOrder = {
+export interface PurchaseOrder {
   id: string;
   tenant_id: string;
   po_number: string;
@@ -74,7 +74,7 @@ export type PurchaseOrder = {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-};
+}
 
 export interface PurchaseOrderWithDetails extends PurchaseOrder {
   items: POItemWithDetails[];
@@ -87,26 +87,26 @@ export interface PurchaseOrderWithDetails extends PurchaseOrder {
   };
 }
 
-export type PurchaseOrderListFilters = {
+export interface PurchaseOrderListFilters {
   search?: string;
   status?: POStatus;
   vendor_id?: string;
   location_id?: string;
   po_number?: string;
-};
+}
 
-export type UpdateQuantityReceivedRequest = {
+export interface UpdateQuantityReceivedRequest {
   quantity_received: number;
-};
+}
 
-export type UpdateQualityStatusRequest = {
+export interface UpdateQualityStatusRequest {
   quality_status: QualityStatus;
   discrepancy_type?: DiscrepancyType;
   discrepancy_amount?: number;
   notes?: string;
-};
+}
 
-export type CompleteReceivingRequest = {
+export interface CompleteReceivingRequest {
   items: Array<{
     id: string;
     quantity_received: number;
@@ -116,9 +116,9 @@ export type CompleteReceivingRequest = {
     notes?: string;
   }>;
   notes?: string;
-};
+}
 
-export type PurchaseOrderListResponse = {
+export interface PurchaseOrderListResponse {
   data: PurchaseOrderWithDetails[];
   pagination: {
     page: number;
@@ -126,7 +126,7 @@ export type PurchaseOrderListResponse = {
     total: number;
     totalPages: number;
   };
-};
+}
 
 /**
  * Client-side functions for purchase order operations

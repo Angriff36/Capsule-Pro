@@ -44,7 +44,7 @@ import {
 } from "@/app/lib/use-recipe-costing";
 import { restoreRecipeVersion } from "../../actions";
 
-type RecipeDetailRow = {
+interface RecipeDetailRow {
   id: string;
   name: string;
   description: string | null;
@@ -59,26 +59,26 @@ type RecipeDetailRow = {
   instructions: string | null;
   notes: string | null;
   image_url: string | null;
-};
+}
 
-type IngredientRow = {
+interface IngredientRow {
   id: string;
   name: string;
   quantity: number;
   unit_code: string;
   notes: string | null;
   order_index: number;
-};
+}
 
-type RecipeVersionRow = {
+interface RecipeVersionRow {
   id: string;
   version_number: number;
   created_at: string;
   ingredient_count: number;
   step_count: number;
-};
+}
 
-type RecipeVersionDetail = {
+interface RecipeVersionDetail {
   id: string;
   recipeId: string;
   versionNumber: number;
@@ -124,9 +124,9 @@ type RecipeVersionDetail = {
     videoUrl: string | null;
     imageUrl: string | null;
   }[];
-};
+}
 
-type RecipeVersionCompare = {
+interface RecipeVersionCompare {
   from: {
     id: string;
     versionNumber: number;
@@ -205,13 +205,13 @@ type RecipeVersionCompare = {
       }[];
     };
   };
-};
+}
 
-type RecipeDetailTabsProps = {
+interface RecipeDetailTabsProps {
   recipe: RecipeDetailRow;
   ingredients: IngredientRow[];
   recipeVersionId: string | null;
-};
+}
 
 const formatMinutes = (minutes?: number | null) =>
   minutes && minutes > 0 ? `${minutes}m` : "-";

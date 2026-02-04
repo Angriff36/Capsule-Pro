@@ -4,7 +4,7 @@ import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "../../../../../lib/tenant";
 import { getRecipeVersionSnapshot } from "../utils";
 
-type BaseDiff = {
+interface BaseDiff {
   name?: { from: string; to: string };
   category?: { from: string | null; to: string | null };
   cuisineType?: { from: string | null; to: string | null };
@@ -19,18 +19,18 @@ type BaseDiff = {
   difficultyLevel?: { from: number | null; to: number | null };
   instructions?: { from: string | null; to: string | null };
   notes?: { from: string | null; to: string | null };
-};
+}
 
-type IngredientSnapshot = {
+interface IngredientSnapshot {
   ingredientId: string;
   name: string;
   quantity: number;
   unit: string | null;
   preparationNotes: string | null;
   isOptional: boolean;
-};
+}
 
-type StepSnapshot = {
+interface StepSnapshot {
   stepNumber: number;
   instruction: string;
   durationMinutes: number | null;
@@ -40,7 +40,7 @@ type StepSnapshot = {
   tips: string | null;
   videoUrl: string | null;
   imageUrl: string | null;
-};
+}
 
 const normalizeTags = (tags: string[]) => [...tags].sort();
 

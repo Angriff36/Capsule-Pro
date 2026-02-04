@@ -8,9 +8,9 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getClientEventHistory } from "../../../actions";
 
-type EventsTabProps = {
+interface EventsTabProps {
   clientId: string;
-};
+}
 
 export function EventsTab({ clientId }: EventsTabProps) {
   const [events, setEvents] = useState<

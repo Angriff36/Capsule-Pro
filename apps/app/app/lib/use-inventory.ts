@@ -27,7 +27,7 @@ export type ItemCategory = (typeof ITEM_CATEGORIES)[number];
 
 export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
 
-export type InventoryItem = {
+export interface InventoryItem {
   id: string;
   tenant_id: string;
   item_number: string;
@@ -44,14 +44,14 @@ export type InventoryItem = {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-};
+}
 
 export interface InventoryItemWithStatus extends InventoryItem {
   stock_status: StockStatus;
   total_value: number;
 }
 
-export type InventoryItemListResponse = {
+export interface InventoryItemListResponse {
   data: InventoryItemWithStatus[];
   pagination: {
     page: number;
@@ -59,9 +59,9 @@ export type InventoryItemListResponse = {
     total: number;
     totalPages: number;
   };
-};
+}
 
-export type CreateInventoryItemRequest = {
+export interface CreateInventoryItemRequest {
   item_number: string;
   name: string;
   category: string;
@@ -73,9 +73,9 @@ export type CreateInventoryItemRequest = {
   fsa_temp_logged?: boolean;
   fsa_allergen_info?: boolean;
   fsa_traceable?: boolean;
-};
+}
 
-export type UpdateInventoryItemRequest = {
+export interface UpdateInventoryItemRequest {
   item_number?: string;
   name?: string;
   category?: string;
@@ -87,7 +87,7 @@ export type UpdateInventoryItemRequest = {
   fsa_temp_logged?: boolean;
   fsa_allergen_info?: boolean;
   fsa_traceable?: boolean;
-};
+}
 
 /**
  * Client-side functions for inventory operations

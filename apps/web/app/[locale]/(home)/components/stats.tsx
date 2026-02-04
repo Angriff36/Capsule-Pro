@@ -1,9 +1,9 @@
 import type { Dictionary } from "@repo/internationalization";
 import { MoveDownLeft, MoveUpRight } from "lucide-react";
 
-type StatsProps = {
+interface StatsProps {
   dictionary: Dictionary;
-};
+}
 
 export const Stats = ({ dictionary }: StatsProps) => (
   <div className="w-full py-20 lg:py-40">

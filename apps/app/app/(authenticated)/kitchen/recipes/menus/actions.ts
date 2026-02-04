@@ -195,7 +195,7 @@ export const deleteMenu = async (menuId: string) => {
   revalidatePath(`/kitchen/recipes/menus/${menuId}`);
 };
 
-export type MenuSummary = {
+export interface MenuSummary {
   id: string;
   name: string;
   description: string | null;
@@ -207,7 +207,7 @@ export type MenuSummary = {
   maxGuests: number | null;
   dishCount: number;
   createdAt: Date;
-};
+}
 
 export const getMenus = async (): Promise<MenuSummary[]> => {
   const tenantId = await requireTenantId();
@@ -279,7 +279,7 @@ export const getMenus = async (): Promise<MenuSummary[]> => {
   }));
 };
 
-export type MenuDetail = {
+export interface MenuDetail {
   id: string;
   name: string;
   description: string | null;
@@ -301,7 +301,7 @@ export type MenuDetail = {
     dietaryTags: string[];
     allergens: string[];
   }[];
-};
+}
 
 export const getMenuById = async (
   menuId: string
@@ -649,12 +649,12 @@ export const reorderMenuDishes = async (menuId: string, dishIds: string[]) => {
   revalidatePath("/kitchen/recipes/menus");
   revalidatePath(`/kitchen/recipes/menus/${menuId}`);
 };
-export type DishSummary = {
+export interface DishSummary {
   id: string;
   name: string;
   description: string | null;
   category: string | null;
-};
+}
 
 export const getDishes = async (): Promise<DishSummary[]> => {
   const tenantId = await requireTenantId();

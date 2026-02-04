@@ -111,7 +111,7 @@ const allergenDisplayNames: Record<string, { name: string; emoji: string }> = {
 /**
  * Props for the AllergenWarningBanner component
  */
-export type AllergenWarningBannerProps = {
+export interface AllergenWarningBannerProps {
   /** The allergen warning data from the database */
   warning: AllergenWarning & {
     dishName?: string;
@@ -131,7 +131,7 @@ export type AllergenWarningBannerProps = {
   className?: string;
   /** Compact mode for smaller display */
   compact?: boolean;
-};
+}
 
 /**
  * Format allergen names with emoji indicators

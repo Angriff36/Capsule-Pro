@@ -14,12 +14,12 @@ import { type NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type UpdateDishAllergensRequest = {
+interface UpdateDishAllergensRequest {
   id: string;
   tenantId: string;
   allergens: string[];
   dietaryTags: string[];
-};
+}
 
 export async function POST(request: NextRequest) {
   try {

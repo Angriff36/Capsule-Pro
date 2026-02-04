@@ -6,7 +6,7 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 
-export type EventProfitabilityMetrics = {
+export interface EventProfitabilityMetrics {
   eventId: string;
   eventTitle: string;
   eventDate: Date;
@@ -38,9 +38,9 @@ export type EventProfitabilityMetrics = {
     date: Date;
     marginPct: number;
   }>;
-};
+}
 
-export type HistoricalProfitabilityData = {
+export interface HistoricalProfitabilityData {
   period: string;
   totalEvents: number;
   averageGrossMarginPct: number;
@@ -49,7 +49,7 @@ export type HistoricalProfitabilityData = {
   averageFoodCostPct: number;
   averageLaborCostPct: number;
   averageOverheadPct: number;
-};
+}
 
 export async function calculateEventProfitability(
   eventId: string

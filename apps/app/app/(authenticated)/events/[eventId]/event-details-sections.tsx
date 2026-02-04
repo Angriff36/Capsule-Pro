@@ -56,7 +56,7 @@ import {
 } from "../components/task-breakdown-display";
 import type { PrepTaskSummaryClient } from "./prep-task-contract";
 
-export type EventBudgetForDisplay = {
+export interface EventBudgetForDisplay {
   id: string;
   tenantId: string;
   event_id: string | null;
@@ -70,9 +70,9 @@ export type EventBudgetForDisplay = {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-};
+}
 
-export type EventDishRow = {
+export interface EventDishRow {
   link_id: string;
   dish_id: string;
   name: string;
@@ -81,14 +81,14 @@ export type EventDishRow = {
   course: string | null;
   quantity_servings: number;
   dietary_tags: string[] | null;
-};
+}
 
-export type AvailableDishOption = {
+export interface AvailableDishOption {
   id: string;
   name: string;
   category: string | null;
   recipe_name: string | null;
-};
+}
 
 const MISSING_FIELD_LABELS: Record<string, string> = {
   client: "Event title",
@@ -99,10 +99,10 @@ const MISSING_FIELD_LABELS: Record<string, string> = {
   menuItems: "Menu items",
 };
 
-type MissingFieldsBannerProps = {
+interface MissingFieldsBannerProps {
   missingFields: string[];
   onUpdateDetails: () => void;
-};
+}
 
 export function MissingFieldsBanner({
   missingFields,
@@ -136,14 +136,14 @@ export function MissingFieldsBanner({
   );
 }
 
-type DishVariantDialogProps = {
+interface DishVariantDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   sourceName: string;
   variantName: string;
   onVariantNameChange: (value: string) => void;
   onCreate: () => void;
-};
+}
 
 export function DishVariantDialog({
   open,
@@ -190,7 +190,7 @@ export function DishVariantDialog({
   );
 }
 
-type MenuDishesSectionProps = {
+interface MenuDishesSectionProps {
   eventDishes: EventDishRow[];
   availableDishes: AvailableDishOption[];
   isLoading: boolean;
@@ -203,7 +203,7 @@ type MenuDishesSectionProps = {
   onAddDish: () => void;
   onRemoveDish: (linkId: string) => void;
   onOpenVariantDialog: (linkId: string, name: string) => void;
-};
+}
 
 export function MenuDishesSection({
   eventDishes,
@@ -390,11 +390,11 @@ export function MenuDishesSection({
   );
 }
 
-type BudgetSectionProps = {
+interface BudgetSectionProps {
   budget: EventBudgetForDisplay | null;
   onViewBudget: (id: string) => void;
   onCreateBudget: () => void;
-};
+}
 
 export function BudgetSection({
   budget,
@@ -464,7 +464,7 @@ export function BudgetSection({
   );
 }
 
-type TaskBreakdownSectionProps = {
+interface TaskBreakdownSectionProps {
   breakdown: TaskBreakdown | null;
   isGenerating: boolean;
   generationProgress: string;
@@ -472,7 +472,7 @@ type TaskBreakdownSectionProps = {
   onExport: () => void;
   onRegenerate: () => void;
   onSave: () => void;
-};
+}
 
 export function TaskBreakdownSection({
   breakdown,
@@ -531,7 +531,7 @@ export function TaskBreakdownSection({
   );
 }
 
-type ExecutiveSummarySectionProps = {
+interface ExecutiveSummarySectionProps {
   eventId: string;
   eventTitle: string;
   summary: GeneratedEventSummary | null | undefined;
@@ -539,7 +539,7 @@ type ExecutiveSummarySectionProps = {
   onGenerate: () => Promise<GeneratedEventSummary>;
   onDelete: () => Promise<void>;
   onOpenGenerateModal: () => void;
-};
+}
 
 export function ExecutiveSummarySection({
   eventId,
@@ -583,7 +583,7 @@ export function ExecutiveSummarySection({
 
 import type { SuggestedAction } from "../../kitchen/lib/suggestions-types";
 
-type SuggestionsSectionProps = {
+interface SuggestionsSectionProps {
   showSuggestions: boolean;
   onShowSuggestionsChange: (show: boolean) => void;
   suggestions: SuggestedAction[];
@@ -591,7 +591,7 @@ type SuggestionsSectionProps = {
   onRefresh: () => void;
   onDismiss: (id: string) => void;
   onAction: (suggestion: SuggestedAction) => void;
-};
+}
 
 export function SuggestionsSection({
   showSuggestions,
@@ -671,10 +671,10 @@ export function SuggestionsSection({
   );
 }
 
-type SourceDocumentsSectionProps = {
+interface SourceDocumentsSectionProps {
   eventId: string;
   fileCount?: number;
-};
+}
 
 export function SourceDocumentsSection({
   eventId,
@@ -710,10 +710,10 @@ export function SourceDocumentsSection({
   );
 }
 
-type PrepTasksSectionProps = {
+interface PrepTasksSectionProps {
   prepTasks: PrepTaskSummaryClient[];
   onOpenGenerateModal: () => void;
-};
+}
 
 export function PrepTasksSection({
   prepTasks,

@@ -31,13 +31,13 @@ import type {
   UpdateBudgetInput,
 } from "@/app/lib/use-labor-budgets";
 
-type BudgetFormModalProps = {
+interface BudgetFormModalProps {
   open: boolean;
   onClose: () => void;
   onSave: (data: CreateBudgetInput | UpdateBudgetInput) => Promise<void>;
   budget?: LaborBudget;
   loading?: boolean;
-};
+}
 
 export function BudgetFormModal({
   open,

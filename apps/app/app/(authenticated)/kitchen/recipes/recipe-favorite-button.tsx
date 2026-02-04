@@ -2,9 +2,9 @@
 
 import { HeartIcon } from "lucide-react";
 
-type RecipeFavoriteButtonProps = {
+interface RecipeFavoriteButtonProps {
   recipeName: string;
-};
+}
 
 export const RecipeFavoriteButton = ({
   recipeName,

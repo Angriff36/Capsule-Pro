@@ -25,7 +25,9 @@ export class StandaloneGenerator {
     this.emitImports(program);
     this.line();
 
-    for (const store of program.stores) this.genStore(store);
+    for (const store of program.stores) {
+      this.genStore(store);
+    }
     for (const e of program.entities) {
       this.genEntity(e);
       this.line();
@@ -95,8 +97,8 @@ export class StandaloneGenerator {
         );
         break;
       case "localStorage": {
-        const key = store.config?.["key"]
-          ? this.genExpr(store.config["key"])
+        const key = store.config?.key
+          ? this.genExpr(store.config.key)
           : `"${store.entity.toLowerCase()}s"`;
         this.line(
           `const ${storeName}: Store<I${store.entity}> = new LocalStorageStore(${key});`
@@ -194,10 +196,11 @@ export class StandaloneGenerator {
     this.line("if (init) {");
     this.in();
     this.line("if (init.id) this.id = init.id;");
-    for (const p of e.properties)
+    for (const p of e.properties) {
       this.line(
         `if (init.${p.name} !== undefined) this._${p.name}.set(init.${p.name});`
       );
+    }
     this.de();
     this.line("}");
     this.line("this._initBehaviors();");
@@ -217,7 +220,9 @@ export class StandaloneGenerator {
     this.line();
     this.line("private _initBehaviors() {");
     this.in();
-    for (const b of e.behaviors) this.genBehaviorBinding(b);
+    for (const b of e.behaviors) {
+      this.genBehaviorBinding(b);
+    }
     this.de();
     this.line("}");
 
@@ -261,15 +266,20 @@ export class StandaloneGenerator {
     this.line("return {");
     this.in();
     this.line("id: this.id,");
-    for (const p of e.properties) this.line(`${p.name}: this.${p.name},`);
-    for (const cp of e.computedProperties)
+    for (const p of e.properties) {
+      this.line(`${p.name}: this.${p.name},`);
+    }
+    for (const cp of e.computedProperties) {
       this.line(`${cp.name}: this.${cp.name},`);
+    }
     this.de();
     this.line("};");
     this.de();
     this.line("}");
 
-    for (const cmd of e.commands) this.genCommandMethod(cmd);
+    for (const cmd of e.commands) {
+      this.genCommandMethod(cmd);
+    }
     for (const b of e.behaviors) {
       if (b.trigger.event !== "create" && !b.trigger.event.startsWith("_")) {
         this.genBehaviorMethod(b);
@@ -291,13 +301,17 @@ export class StandaloneGenerator {
       }
     }
     for (const cmd of e.commands) {
-      if (cmd.emits) cmd.emits.forEach((ev) => events.add(ev));
+      if (cmd.emits) {
+        cmd.emits.forEach((ev) => events.add(ev));
+      }
     }
     return events;
   }
 
   private relationType(r: RelationshipNode): string {
-    if (r.kind === "hasMany") return `${r.target}[]`;
+    if (r.kind === "hasMany") {
+      return `${r.target}[]`;
+    }
     return `${r.target} | null`;
   }
 
@@ -414,7 +428,9 @@ export class StandaloneGenerator {
 
   private genBehaviorBinding(b: BehaviorNode) {
     if (b.trigger.event === "create") {
-      for (const a of b.actions) this.line(this.genAction(a));
+      for (const a of b.actions) {
+        this.line(this.genAction(a));
+      }
       return;
     }
     const params = b.trigger.parameters?.join(", ") || "d";
@@ -424,7 +440,9 @@ export class StandaloneGenerator {
       const g = b.guards.map((x) => `(${this.genExpr(x)})`).join(" && ");
       this.line(`if (!(${g})) return;`);
     }
-    for (const a of b.actions) this.line(this.genAction(a));
+    for (const a of b.actions) {
+      this.line(this.genAction(a));
+    }
     this.de();
     this.line("});");
   }
@@ -448,19 +466,24 @@ export class StandaloneGenerator {
     target?: string;
     expression: ExpressionNode;
   }): string {
-    if (a.kind === "mutate")
+    if (a.kind === "mutate") {
       return `this.${a.target} = ${this.genExpr(a.expression)};`;
+    }
     if (a.kind === "emit") {
       if (a.expression.type === "Identifier") {
         return `this.emit('${(a.expression as { name: string }).name}', {});`;
       }
       return `this.emit('event', ${this.genExpr(a.expression)});`;
     }
-    if (a.kind === "effect") return `await (${this.genExpr(a.expression)});`;
-    if (a.kind === "publish")
+    if (a.kind === "effect") {
+      return `await (${this.genExpr(a.expression)});`;
+    }
+    if (a.kind === "publish") {
       return `EventBus.publish('event', ${this.genExpr(a.expression)});`;
-    if (a.kind === "persist")
+    }
+    if (a.kind === "persist") {
       return `await ${a.target}Store.update(this.id, this.toJSON());`;
+    }
     return `${this.genExpr(a.expression)};`;
   }
 
@@ -477,16 +500,21 @@ export class StandaloneGenerator {
         this.line(`if (${this.genExpr(s.condition)}) {`);
         this.in();
       }
-      if (s.operation === "map") this.line(`_v = (${expr})(_v);`);
-      else if (s.operation === "filter")
+      if (s.operation === "map") {
+        this.line(`_v = (${expr})(_v);`);
+      } else if (s.operation === "filter") {
         this.line(
           `if (!(${expr})(_v)) return null as unknown as ${this.tsType(f.output)};`
         );
-      else if (s.operation === "validate")
+      } else if (s.operation === "validate") {
         this.line(`if (!(${expr})(_v)) throw new Error('Validation failed');`);
-      else if (s.operation === "transform") this.line(`_v = ${expr};`);
-      else if (s.operation === "tap") this.line(`(${expr})(_v);`);
-      else this.line(`_v = ${expr};`);
+      } else if (s.operation === "transform") {
+        this.line(`_v = ${expr};`);
+      } else if (s.operation === "tap") {
+        this.line(`(${expr})(_v);`);
+      } else {
+        this.line(`_v = ${expr};`);
+      }
       if (s.condition) {
         this.de();
         this.line("}");
@@ -503,10 +531,8 @@ export class StandaloneGenerator {
     this.in();
     this.line(`kind: '${e.kind}' as const,`);
     if (e.kind === "http") {
-      const url = e.config["url"] ? this.genExpr(e.config["url"]) : '""';
-      const method = e.config["method"]
-        ? this.genExpr(e.config["method"])
-        : '"GET"';
+      const url = e.config.url ? this.genExpr(e.config.url) : '""';
+      const method = e.config.method ? this.genExpr(e.config.method) : '"GET"';
       this.line("async execute(data?: unknown) {");
       this.in();
       this.line(
@@ -516,7 +542,7 @@ export class StandaloneGenerator {
       this.de();
       this.line("},");
     } else if (e.kind === "storage") {
-      const key = e.config["key"] ? this.genExpr(e.config["key"]) : '"data"';
+      const key = e.config.key ? this.genExpr(e.config.key) : '"data"';
       this.line(
         `get() { const d = localStorage.getItem(${key}); return d ? JSON.parse(d) : null; },`
       );
@@ -525,8 +551,8 @@ export class StandaloneGenerator {
       );
       this.line(`remove() { localStorage.removeItem(${key}); },`);
     } else if (e.kind === "timer") {
-      const interval = e.config["interval"]
-        ? this.genExpr(e.config["interval"])
+      const interval = e.config.interval
+        ? this.genExpr(e.config.interval)
         : "1000";
       this.line(
         `start(cb: () => void) { return setInterval(cb, ${interval}); },`
@@ -535,8 +561,9 @@ export class StandaloneGenerator {
     } else {
       this.line("config: {");
       this.in();
-      for (const [k, v] of Object.entries(e.config))
+      for (const [k, v] of Object.entries(e.config)) {
         this.line(`${k}: ${this.genExpr(v)},`);
+      }
       this.de();
       this.line("},");
       this.line("execute(_data?: unknown) { /* custom */ },");
@@ -554,24 +581,29 @@ export class StandaloneGenerator {
       const ops = x.operations.length
         ? x.operations
         : ["list", "get", "create", "update", "delete"];
-      if (ops.includes("list"))
+      if (ops.includes("list")) {
         this.line(`async list() { return ${x.entity}Store.getAll(); },`);
-      if (ops.includes("get"))
+      }
+      if (ops.includes("get")) {
         this.line(
           `async get(id: string) { return ${x.entity}Store.getById(id); },`
         );
-      if (ops.includes("create"))
+      }
+      if (ops.includes("create")) {
         this.line(
           `async create(d: Partial<I${x.entity}>) { return ${x.entity}Store.create(d); },`
         );
-      if (ops.includes("update"))
+      }
+      if (ops.includes("update")) {
         this.line(
           `async update(id: string, d: Partial<I${x.entity}>) { return ${x.entity}Store.update(id, d); },`
         );
-      if (ops.includes("delete"))
+      }
+      if (ops.includes("delete")) {
         this.line(
           `async delete(id: string) { return ${x.entity}Store.delete(id); },`
         );
+      }
       this.de();
       this.line("};");
     } else if (x.protocol === "function") {
@@ -615,7 +647,9 @@ export class StandaloneGenerator {
 
   private emitExports(p: ManifestProgram) {
     const exports: string[] = ["setContext", "getContext", "EventBus"];
-    for (const s of p.stores) exports.push(`${s.entity}Store`);
+    for (const s of p.stores) {
+      exports.push(`${s.entity}Store`);
+    }
     if (exports.length) {
       this.line();
       this.line(`export { ${exports.join(", ")} };`);
@@ -630,9 +664,15 @@ export class StandaloneGenerator {
           : String((e as { value: unknown }).value);
       case "Identifier": {
         const name = (e as { name: string }).name;
-        if (name === "self") return "this";
-        if (name === "user") return "getContext().user";
-        if (name === "context") return "getContext()";
+        if (name === "self") {
+          return "this";
+        }
+        if (name === "user") {
+          return "getContext().user";
+        }
+        if (name === "context") {
+          return "getContext()";
+        }
         return name;
       }
       case "BinaryOp": {
@@ -645,7 +685,9 @@ export class StandaloneGenerator {
           is: "===",
           contains: ".includes",
         };
-        if (op === "contains") return `${l}.includes(${r})`;
+        if (op === "contains") {
+          return `${l}.includes(${r})`;
+        }
         return `(${l} ${m[op] || op} ${r})`;
       }
       case "UnaryOp": {
@@ -699,13 +741,19 @@ export class StandaloneGenerator {
       map: "Map",
     };
     let r = m[t.name] || t.name;
-    if (t.generic) r += `<${this.tsType(t.generic)}>`;
-    if (t.nullable) r += " | null";
+    if (t.generic) {
+      r += `<${this.tsType(t.generic)}>`;
+    }
+    if (t.nullable) {
+      r += " | null";
+    }
     return r;
   }
 
   private defVal(t: { name: string; nullable: boolean }): string {
-    if (t.nullable) return "null";
+    if (t.nullable) {
+      return "null";
+    }
     const d: Record<string, string> = {
       string: '""',
       number: "0",

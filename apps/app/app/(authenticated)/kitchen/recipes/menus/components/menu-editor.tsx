@@ -21,14 +21,14 @@ import {
   updateMenu,
 } from "../actions";
 
-type MenuEditorProps = {
+interface MenuEditorProps {
   menuId?: string;
-};
+}
 
-type SelectedDish = {
+interface SelectedDish {
   dish: DishSummary;
   course: string | null;
-};
+}
 
 const COURSE_OPTIONS = [
   { value: "appetizer", label: "Appetizer" },

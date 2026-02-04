@@ -1,4 +1,4 @@
-export type RecipeSeed = {
+export interface RecipeSeed {
   id: string;
   name: string;
   version: number;
@@ -6,18 +6,18 @@ export type RecipeSeed = {
   cost: number;
   yield: number;
   allergens: string[];
-};
+}
 
-export type PrepListSeed = {
+export interface PrepListSeed {
   id: string;
   name: string;
   station: string;
   eventId: string;
   assignedTo: string;
   status: "pending" | "in-progress" | "complete";
-};
+}
 
-export type EventSeed = {
+export interface EventSeed {
   id: string;
   name: string;
   date: string;
@@ -25,32 +25,32 @@ export type EventSeed = {
   budget: number;
   margin: number;
   status: "planning" | "on-site" | "complete";
-};
+}
 
-export type StaffSeed = {
+export interface StaffSeed {
   id: string;
   firstName: string;
   lastName: string;
   role: string;
   station: string;
   availability: string[];
-};
+}
 
-export type ClientSeed = {
+export interface ClientSeed {
   id: string;
   name: string;
   contact: string;
   lifetimeValue: number;
   lastEvent: string;
-};
+}
 
-export type FinanceSeed = {
+export interface FinanceSeed {
   period: string;
   revenue: number;
   cogs: number;
   labor: number;
   netMargin: number;
-};
+}
 
 export const seedRecipes: RecipeSeed[] = [
   {

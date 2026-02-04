@@ -9,18 +9,18 @@ import { useState } from "react";
 export type ExportFormat = "csv" | "pdf";
 export type ExportSection = "summary" | "menu" | "staff" | "guests" | "tasks";
 
-export type EventExportOptions = {
+export interface EventExportOptions {
   format: ExportFormat;
   include: ExportSection[];
   download?: boolean;
-};
+}
 
-export type EventExportResult = {
+export interface EventExportResult {
   filename: string;
   dataUrl?: string;
   content?: string;
   contentType: string;
-};
+}
 
 /**
  * Export an event to CSV or PDF format

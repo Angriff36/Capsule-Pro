@@ -3,20 +3,20 @@ import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-export type UnitConversion = {
+export interface UnitConversion {
   fromUnitId: number;
   toUnitId: number;
   multiplier: number;
-};
+}
 
-export type RecipeCostBreakdown = {
+export interface RecipeCostBreakdown {
   totalCost: number;
   costPerYield: number;
   costPerPortion?: number;
   ingredients: IngredientCostBreakdown[];
-};
+}
 
-export type IngredientCostBreakdown = {
+export interface IngredientCostBreakdown {
   id: string;
   name: string;
   quantity: number;
@@ -26,7 +26,7 @@ export type IngredientCostBreakdown = {
   unitCost: number;
   cost: number;
   hasInventoryItem: boolean;
-};
+}
 
 const _loadUnitConversions = async () => {
   const rows = await database.$queryRaw<UnitConversion[]>(

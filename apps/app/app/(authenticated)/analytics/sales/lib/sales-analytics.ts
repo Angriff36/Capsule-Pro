@@ -5,21 +5,21 @@ import { invariant } from "@/app/lib/invariant";
 export type CellValue = string | number | boolean | Date | null;
 export type DataRow = Record<string, CellValue>;
 
-export type DateWindow = {
+export interface DateWindow {
   start: Date;
   end: Date;
-};
+}
 
-export type SalesData = {
+export interface SalesData {
   masterEvents: DataRow[];
   dealsLost: DataRow[];
   leadSource: DataRow[];
   mappingEventType: DataRow[];
   calcsFunnel: DataRow[];
   rawSheets: Record<string, DataRow[]>;
-};
+}
 
-export type WeeklyMetrics = {
+export interface WeeklyMetrics {
   window: DateWindow;
   revenueByEventType: Array<{ event_type: string; revenue: number }>;
   leadsReceived: number;
@@ -28,9 +28,9 @@ export type WeeklyMetrics = {
   closingRatio: number;
   trendingLost: Array<{ lost_reason: string; count: number }>;
   topPending: DataRow[];
-};
+}
 
-export type MonthlyMetrics = {
+export interface MonthlyMetrics {
   window: DateWindow;
   totalRevenueBooked: number;
   totalEventsClosed: number;
@@ -51,9 +51,9 @@ export type MonthlyMetrics = {
   revenueYoyDelta: number;
   revenueMomPct: number;
   revenueYoyPct: number;
-};
+}
 
-export type QuarterlyMetrics = {
+export interface QuarterlyMetrics {
   window: DateWindow;
   totalRevenueBooked: number;
   totalEventsClosed: number;
@@ -92,9 +92,9 @@ export type QuarterlyMetrics = {
   nextQuarterForecast: number;
   recommendations: string[];
   opportunities: string[];
-};
+}
 
-export type AnnualMetrics = {
+export interface AnnualMetrics {
   window: DateWindow;
   totalRevenueBooked: number;
   totalEventsClosed: number;
@@ -114,9 +114,9 @@ export type AnnualMetrics = {
   pipelineForecast90: number;
   revenueYoyDelta: number;
   revenueYoyPct: number;
-};
+}
 
-export type PeriodSummary = {
+export interface PeriodSummary {
   label: string;
   window: DateWindow;
   leadsReceived: number;
@@ -127,21 +127,21 @@ export type PeriodSummary = {
   revenue: number;
   eventsClosed: number;
   averageEventValue: number;
-};
+}
 
-export type FunnelValidationResult = {
+export interface FunnelValidationResult {
   metric: string;
   expected: number | null;
   actual: number | null;
   delta: number | null;
   delta_pct: number | null;
   status: "Pass" | "Fail" | "Missing";
-};
+}
 
-export type FunnelValidation = {
+export interface FunnelValidation {
   results: FunnelValidationResult[];
   passed: boolean;
-};
+}
 
 const RAW_SHEETS = [
   "RAW_MasterEvents_2025",
@@ -177,18 +177,20 @@ const normalizeMappingKey = (value: CellValue): string | null => {
 
 const getColumns = (rows: DataRow[]): string[] => {
   const columns = new Set<string>();
-  rows.forEach((row) => {
-    Object.keys(row).forEach((key) => columns.add(key));
-  });
+  for (const row of rows) {
+    for (const key of Object.keys(row)) {
+      columns.add(key);
+    }
+  }
   return Array.from(columns);
 };
 
 const findColumn = (rows: DataRow[], candidates: string[]): string | null => {
   const columns = getColumns(rows);
   const normalized = new Map<string, string>();
-  columns.forEach((column) => {
+  for (const column of columns) {
     normalized.set(normalizeName(column), column);
-  });
+  }
   for (const candidate of candidates) {
     const key = normalizeName(candidate);
     const exact = normalized.get(key);
@@ -351,9 +353,9 @@ export const loadSalesData = (workbook: WorkBook): SalesData => {
   const calcsFunnel = sheetData[CALCS_SHEET] ?? [];
   const rawSheets: Record<string, DataRow[]> = {};
 
-  rawSheetNames.forEach((name) => {
+  for (const name of rawSheetNames) {
     rawSheets[name] = sheetData[name] ?? [];
-  });
+  }
 
   return {
     masterEvents: master,
@@ -461,13 +463,13 @@ const applyEventTypeMapping = (
   }
 
   const mapping = new Map<string, string>();
-  mappingRows.forEach((row) => {
+  for (const row of mappingRows) {
     const key = normalizeMappingKey(row[mapServiceCol]);
     const value = row[mapEventCol];
     if (key && typeof value === "string" && value.trim()) {
       mapping.set(key, value.trim());
     }
-  });
+  }
 
   return masterRows.map((row) => {
     const serviceKey = normalizeMappingKey(row[serviceStyleCol]);
@@ -627,7 +629,7 @@ const groupBy = <T>(
   keySelector: (row: T) => string
 ): Map<string, T[]> => {
   const grouped = new Map<string, T[]>();
-  rows.forEach((row) => {
+  for (const row of rows) {
     const key = keySelector(row);
     const bucket = grouped.get(key);
     if (bucket) {
@@ -635,7 +637,7 @@ const groupBy = <T>(
     } else {
       grouped.set(key, [row]);
     }
-  });
+  }
   return grouped;
 };
 
@@ -656,16 +658,16 @@ const meanValues = (values: Array<number | null>): number => {
 };
 
 const valueCounts = (
-  values: Array<CellValue>
+  values: CellValue[]
 ): Array<{
   label: string;
   count: number;
 }> => {
   const counts = new Map<string, number>();
-  values.forEach((value) => {
+  for (const value of values) {
     const key = formatGroupKey(value);
     counts.set(key, (counts.get(key) ?? 0) + 1);
-  });
+  }
   return Array.from(counts.entries())
     .map(([label, count]) => ({ label, count }))
     .sort((a, b) => b.count - a.count);
@@ -676,7 +678,7 @@ const buildDateColumnOptions = (rows: DataRow[]) => {
   const ratios: Record<string, number> = {};
   const scores: Array<{ column: string; score: number; ratio: number }> = [];
 
-  columns.forEach((column) => {
+  for (const column of columns) {
     const name = normalizeName(column);
     let score = 0;
     if (name.includes("date")) {
@@ -715,7 +717,7 @@ const buildDateColumnOptions = (rows: DataRow[]) => {
     score += ratio * 2;
     ratios[column] = ratio;
     scores.push({ column, score, ratio });
-  });
+  }
 
   scores.sort((a, b) => {
     if (a.score !== b.score) {
@@ -798,7 +800,7 @@ export const calculateWeeklyMetrics = (
   let revenueByEventType: Array<{ event_type: string; revenue: number }> = [];
   if (totalCol) {
     const wonRows = eventWindow.filter(
-      (row, index) => statusEvent[index] === "Won"
+      (_row, index) => statusEvent[index] === "Won"
     );
     const eventTypeCol = getColumns(wonRows).includes(EVENT_TYPE_STANDARD_COL)
       ? EVENT_TYPE_STANDARD_COL
@@ -922,7 +924,7 @@ export const calculateMonthlyMetrics = (
 
   if (totalCol) {
     const wonRows = eventWindow.filter(
-      (row, index) => statusEvent[index] === "Won"
+      (_row, index) => statusEvent[index] === "Won"
     );
     const revenues = wonRows.map((row) => toNumber(row[totalCol]) ?? 0);
     totalRevenueBooked = sumValues(revenues);
@@ -1085,7 +1087,7 @@ const calculateTopPackages = (
   if (!eventTypeCol) {
     return [];
   }
-  const wonRows = rows.filter((row, index) => statusSeries[index] === "Won");
+  const wonRows = rows.filter((_row, index) => statusSeries[index] === "Won");
   const grouped = groupBy(wonRows, (row) => formatGroupKey(row[eventTypeCol]));
   return Array.from(grouped.entries())
     .map(([pkg, groupedRows]) => ({
@@ -1241,7 +1243,7 @@ export const calculateQuarterlyMetrics = (
 
   if (totalCol) {
     const wonRows = eventWindow.filter(
-      (row, index) => statusEvent[index] === "Won"
+      (_row, index) => statusEvent[index] === "Won"
     );
     const revenues = wonRows.map((row) => toNumber(row[totalCol]) ?? 0);
     totalRevenueBooked = sumValues(revenues);
@@ -1596,7 +1598,7 @@ const calculatePricingTrends = (
 
 const calculateVenuePerformance = (
   rows: DataRow[],
-  statusSeries: Array<string | null>,
+  _statusSeries: Array<string | null>,
   totalCol: string | null
 ): QuarterlyMetrics["venuePerformance"] => {
   const sourceCol = findColumn(rows, [
@@ -1733,7 +1735,7 @@ const generateOpportunities = (
   }
   const latestDiscount = pricingTrends
     .filter((item) => Number.isFinite(item.avg_discount_rate))
-    .slice(-1)[0];
+    .at(-1);
   if (latestDiscount && latestDiscount.avg_discount_rate > 0.1) {
     opportunities.push(
       "Discounting is elevated this quarter; tighten pricing approvals."
@@ -1780,7 +1782,7 @@ export const calculateAnnualMetrics = (
 
   if (totalCol) {
     const wonRows = eventWindow.filter(
-      (row, index) => statusEvent[index] === "Won"
+      (_row, index) => statusEvent[index] === "Won"
     );
     const revenues = wonRows.map((row) => toNumber(row[totalCol]) ?? 0);
     totalRevenueBooked = sumValues(revenues);
@@ -1993,7 +1995,7 @@ export const calculatePeriodSummary = (
   let averageEventValue = 0;
   if (totalCol) {
     const wonRows = eventWindow.filter(
-      (row, index) => statusEvent[index] === "Won"
+      (_row, index) => statusEvent[index] === "Won"
     );
     revenue = sumValues(wonRows.map((row) => toNumber(row[totalCol]) ?? 0));
     eventsClosed = wonRows.length;
@@ -2095,7 +2097,7 @@ const extractFunnelTargets = (rows: DataRow[]): Record<string, number> => {
       if (!numbers.length) {
         return;
       }
-      const value = numbers[numbers.length - 1];
+      const value = numbers.at(-1);
       if (text.includes("lead") && targets.leads_received === undefined) {
         targets.leads_received = value;
       }

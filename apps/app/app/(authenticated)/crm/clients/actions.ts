@@ -14,15 +14,15 @@ import { invariant } from "@/app/lib/invariant";
 import { getTenantId } from "@/app/lib/tenant";
 
 // Types matching the API
-export type ClientFilters = {
+export interface ClientFilters {
   search?: string;
   tags?: string[];
   assignedTo?: string;
   clientType?: "company" | "individual";
   source?: string;
-};
+}
 
-export type CreateClientInput = {
+export interface CreateClientInput {
   clientType?: "company" | "individual";
   company_name?: string;
   first_name?: string;
@@ -43,9 +43,9 @@ export type CreateClientInput = {
   tags?: string[];
   source?: string;
   assignedTo?: string;
-};
+}
 
-export type CreateClientContactInput = {
+export interface CreateClientContactInput {
   first_name: string;
   last_name: string;
   title?: string;
@@ -55,14 +55,14 @@ export type CreateClientContactInput = {
   isPrimary?: boolean;
   isBillingContact?: boolean;
   notes?: string;
-};
+}
 
-export type CreateClientInteractionInput = {
+export interface CreateClientInteractionInput {
   interactionType: string;
   subject?: string;
   description?: string;
   followUpDate?: string;
-};
+}
 
 /**
  * Get list of clients with filters and pagination
@@ -593,13 +593,13 @@ export async function createClientInteraction(
   return interaction;
 }
 
-export type UpdateClientInteractionInput = {
+export interface UpdateClientInteractionInput {
   interactionType?: string;
   subject?: string;
   description?: string;
   followUpDate?: string;
   followUpCompleted?: boolean;
-};
+}
 
 /**
  * Update a client interaction

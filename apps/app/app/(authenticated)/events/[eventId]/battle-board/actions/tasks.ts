@@ -5,7 +5,7 @@ import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { getTenantIdForOrg } from "../../../../../lib/tenant";
 
-export type CreateTimelineTaskInput = {
+export interface CreateTimelineTaskInput {
   eventId: string;
   title: string;
   description?: string;
@@ -15,9 +15,9 @@ export type CreateTimelineTaskInput = {
   priority: "low" | "medium" | "high" | "critical";
   assigneeId?: string;
   dependencies?: string[];
-};
+}
 
-export type UpdateTimelineTaskInput = {
+export interface UpdateTimelineTaskInput {
   id: string;
   eventId: string;
   title?: string;
@@ -31,7 +31,7 @@ export type UpdateTimelineTaskInput = {
   progress?: number;
   dependencies?: string[];
   notes?: string;
-};
+}
 
 export async function getTimelineTasks(eventId: string) {
   const { orgId } = await auth();

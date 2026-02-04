@@ -33,7 +33,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
-type ChecklistQuestion = {
+interface ChecklistQuestion {
   id: string;
   type: "single-select" | "yes-no" | "yes-no-na" | "text" | "textarea";
   prompt: string;
@@ -45,21 +45,21 @@ type ChecklistQuestion = {
   notes?: string;
   autoFilled?: boolean;
   autoReason?: string;
-};
+}
 
-type ChecklistSection = {
+interface ChecklistSection {
   id: string;
   title: string;
   summary?: string;
   questions: ChecklistQuestion[];
-};
+}
 
-type ChecklistData = {
+interface ChecklistData {
   version?: string;
   sections?: ChecklistSection[];
-};
+}
 
-type ReportEditorProps = {
+interface ReportEditorProps {
   report: {
     id: string;
     eventId: string;
@@ -80,7 +80,7 @@ type ReportEditorProps = {
     venueAddress: string | null;
     guestCount: number;
   };
-};
+}
 
 const statusVariantMap = {
   draft: "secondary",

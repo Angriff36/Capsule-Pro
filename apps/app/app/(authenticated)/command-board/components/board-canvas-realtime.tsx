@@ -33,13 +33,13 @@ import { calculateFitToScreen } from "./viewport-controls";
 
 const VIEWPORT_PREFERENCES_KEY = "command-board-viewport-preferences";
 
-type BoardCanvasProps = {
+interface BoardCanvasProps {
   boardId: string;
   initialCards?: CommandBoardCard[];
   canEdit?: boolean;
   onCardsChange?: (cards: CommandBoardCard[]) => void;
   onViewportChange?: (viewport: ViewportState) => void;
-};
+}
 
 export function BoardCanvas({
   boardId,

@@ -22,11 +22,11 @@ function isEventIdUuid(value: string): boolean {
   return EVENT_ID_UUID_REGEX.test(value);
 }
 
-type EventDetailsPageProps = {
+interface EventDetailsPageProps {
   params: Promise<{
     eventId: string;
   }>;
-};
+}
 
 const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
   const { eventId } = await params;
@@ -64,7 +64,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
     },
   });
 
-  type EventDishRow = {
+  interface EventDishRow {
     linkId: string;
     dishId: string;
     name: string;
@@ -77,7 +77,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
     presentationImageUrl: string | null;
     pricePerPerson: Prisma.Decimal | null;
     costPerPerson: Prisma.Decimal | null;
-  };
+  }
 
   const rawEventDishes = await database.$queryRaw<EventDishRow[]>(
     Prisma.sql`
@@ -133,7 +133,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
   let inventoryCoverage: InventoryCoverageItem[] = [];
 
   if (recipeIds.length > 0) {
-    type RecipeVersionRow = {
+    interface RecipeVersionRow {
       recipeId: string;
       recipeName: string;
       versionId: string;
@@ -143,7 +143,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
       prepTimeMinutes: number | null;
       cookTimeMinutes: number | null;
       restTimeMinutes: number | null;
-    };
+    }
 
     const recipeVersions = await database.$queryRaw<RecipeVersionRow[]>(
       Prisma.sql`
@@ -172,7 +172,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
 
     const recipeVersionIds = recipeVersions.map((row) => row.versionId);
 
-    type RecipeIngredientRow = {
+    interface RecipeIngredientRow {
       recipeVersionId: string;
       ingredientId: string;
       ingredientName: string;
@@ -180,7 +180,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
       unitCode: string | null;
       preparationNotes: string | null;
       isOptional: boolean;
-    };
+    }
 
     const recipeIngredients =
       recipeVersionIds.length > 0
@@ -208,7 +208,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
           )
         : [];
 
-    type RecipeStepRow = {
+    interface RecipeStepRow {
       recipeVersionId: string;
       stepNumber: number;
       instruction: string;
@@ -217,7 +217,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
       temperatureUnit: string | null;
       equipmentNeeded: string[];
       tips: string | null;
-    };
+    }
 
     const recipeSteps =
       recipeVersionIds.length > 0
@@ -301,12 +301,12 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
     );
 
     if (ingredientIds.length > 0) {
-      type InventoryItemRow = {
+      interface InventoryItemRow {
         inventoryItemId: string;
         ingredientId: string;
         itemName: string;
         parLevel: Prisma.Decimal | null;
-      };
+      }
 
       const inventoryItems = await database.$queryRaw<InventoryItemRow[]>(
         Prisma.sql`
@@ -330,11 +330,11 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
         (item) => item.inventoryItemId
       );
 
-      type InventoryStockRow = {
+      interface InventoryStockRow {
         itemId: string;
         onHand: Prisma.Decimal;
         unitCode: string | null;
-      };
+      }
 
       const inventoryStock =
         inventoryItemIds.length > 0
@@ -385,7 +385,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
     }
   }
 
-  type PrepTaskRow = {
+  interface PrepTaskRow {
     id: string;
     name: string;
     status: string;
@@ -393,7 +393,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
     servingsTotal: unknown;
     dueByDate: unknown;
     isEventFinish: unknown;
-  };
+  }
 
   const rawPrepTasks = await database.$queryRaw<PrepTaskRow[]>(
     Prisma.sql`

@@ -2,12 +2,12 @@
 
 import type { ReactNode } from "react";
 
-type AuthProviderProperties = {
+interface AuthProviderProperties {
   children: ReactNode;
   privacyUrl?: string;
   termsUrl?: string;
   helpUrl?: string;
-};
+}
 
 export const AuthProvider = ({ children }: AuthProviderProperties) => {
   // Intentionally does NOT render <ClerkProvider>.

@@ -3,11 +3,11 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 import { Prisma, PrismaClient } from "@repo/database/generated/client";
 import ws from "ws";
 
-type AccountRecord = {
+interface AccountRecord {
   id: string;
   slug: string;
   name: string;
-};
+}
 
 const invariant = (condition: unknown, message: string): asserts condition => {
   if (!condition) {

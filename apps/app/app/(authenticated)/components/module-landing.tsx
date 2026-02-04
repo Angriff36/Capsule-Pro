@@ -1,11 +1,11 @@
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { Separator } from "@repo/design-system/components/ui/separator";
 
-type ModuleLandingProperties = {
+interface ModuleLandingProperties {
   title: string;
   summary: string;
   highlights: string[];
-};
+}
 
 export const ModuleLanding = ({
   title,

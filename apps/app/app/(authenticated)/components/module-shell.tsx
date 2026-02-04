@@ -5,16 +5,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-type ModuleNavItem = {
+interface ModuleNavItem {
   title: string;
   href: string;
-};
+}
 
-type ModuleShellProperties = {
+interface ModuleShellProperties {
   title: string;
   navItems: ModuleNavItem[];
   children: ReactNode;
-};
+}
 
 export const ModuleShell = ({
   title,

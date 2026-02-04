@@ -16,10 +16,10 @@ import type {
 } from "../types";
 import { TRANSACTION_TYPES } from "../types";
 
-type PaginationParams = {
+interface PaginationParams {
   page: number;
   limit: number;
-};
+}
 
 /**
  * Parse pagination parameters from URL search params
@@ -50,11 +50,11 @@ function parseTransactionFilters(
   }
 
   const transactionType = searchParams.get("transactionType");
-  if (transactionType) {
-    // Validate that the transaction type is valid
-    if (TRANSACTION_TYPES.includes(transactionType as TransactionType)) {
-      filters.transactionType = transactionType as TransactionType;
-    }
+  if (
+    transactionType &&
+    TRANSACTION_TYPES.includes(transactionType as TransactionType)
+  ) {
+    filters.transactionType = transactionType as TransactionType;
   }
 
   const locationId = searchParams.get("locationId");

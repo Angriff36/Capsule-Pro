@@ -10,7 +10,7 @@ import {
 import { CheckCircleIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 
-export type MenuCardProps = {
+export interface MenuCardProps {
   id: string;
   name: string;
   description: string | null;
@@ -23,7 +23,7 @@ export type MenuCardProps = {
   dishCount: number;
   dietaryTags?: string[] | null;
   allergens?: string[] | null;
-};
+}
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",

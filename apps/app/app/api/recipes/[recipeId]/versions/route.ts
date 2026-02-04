@@ -34,14 +34,14 @@ export async function GET(
           rv.version_number,
           rv.created_at,
           (
-            SELECT COUNT(*)
+            SELECT COUNT(*)::int
             FROM tenant_kitchen.recipe_ingredients ri
             WHERE ri.tenant_id = rv.tenant_id
               AND ri.recipe_version_id = rv.id
               AND ri.deleted_at IS NULL
           ) as ingredient_count,
           (
-            SELECT COUNT(*)
+            SELECT COUNT(*)::int
             FROM tenant_kitchen.recipe_steps rs
             WHERE rs.tenant_id = rv.tenant_id
               AND rs.recipe_version_id = rv.id

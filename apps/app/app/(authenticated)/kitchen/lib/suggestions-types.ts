@@ -31,7 +31,7 @@ export type ActionHandler =
   | { type: "function"; functionName: string; params?: unknown }
   | { type: "external"; url: string };
 
-export type SuggestedAction = {
+export interface SuggestedAction {
   id: string;
   tenantId: string;
   type: SuggestionType;
@@ -46,9 +46,9 @@ export type SuggestedAction = {
   expiresAt?: Date | string;
   dismissed: boolean;
   metadata?: Record<string, unknown>;
-};
+}
 
-export type SuggestionsResponse = {
+export interface SuggestionsResponse {
   suggestions: SuggestedAction[];
   summary: string;
   generatedAt: Date | string;
@@ -60,4 +60,4 @@ export type SuggestionsResponse = {
     incompleteTasks?: number;
     inventoryAlerts?: number;
   };
-};
+}

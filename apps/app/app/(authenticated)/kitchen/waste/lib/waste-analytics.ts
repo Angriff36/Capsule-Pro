@@ -1,6 +1,6 @@
 import { invariant } from "@/app/lib/invariant";
 
-type WasteTrendsSummary = {
+interface WasteTrendsSummary {
   totalCost: number;
   totalQuantity: number;
   totalEntries: number;
@@ -8,48 +8,48 @@ type WasteTrendsSummary = {
   period: string;
   startDate: string;
   endDate: string;
-};
+}
 
-type WasteTopReason = {
+interface WasteTopReason {
   reason: {
     id: number;
     name: string;
   };
   count: number;
   cost: number;
-};
+}
 
-type WasteReductionOpportunity = {
+interface WasteReductionOpportunity {
   description: string;
   potentialSavings: number;
-};
+}
 
-export type WasteTrendsData = {
+export interface WasteTrendsData {
   summary: WasteTrendsSummary;
   topReasons: WasteTopReason[];
   reductionOpportunities: WasteReductionOpportunity[];
-};
+}
 
-type WasteReportSummary = {
+interface WasteReportSummary {
   totalCost: number;
   totalQuantity: number;
   entryCount: number;
   avgCostPerEntry: number;
-};
+}
 
-type WasteReportRow = {
+interface WasteReportRow {
   key: string;
   label: string;
   count: number;
   totalCost: number;
   avgCostPerEntry: number;
   avgQuantityPerEntry: number;
-};
+}
 
-export type WasteReportData = {
+export interface WasteReportData {
   summary: WasteReportSummary;
   data: WasteReportRow[];
-};
+}
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;

@@ -11,7 +11,7 @@ type RouteParams = Promise<{
   id: string;
 }>;
 
-type ClientSelect = {
+interface ClientSelect {
   id: true;
   company_name: true;
   first_name: true;
@@ -24,9 +24,9 @@ type ClientSelect = {
   stateProvince: true;
   postalCode: true;
   countryCode: true;
-};
+}
 
-type LeadSelect = {
+interface LeadSelect {
   id: true;
   companyName: true;
   contactName: true;
@@ -36,7 +36,7 @@ type LeadSelect = {
   eventDate: true;
   estimatedGuests: true;
   estimatedValue: true;
-};
+}
 
 /**
  * Fetch proposal with all related data
@@ -121,7 +121,7 @@ function fetchUser(
   });
 }
 
-type ProposalClient = {
+interface ProposalClient {
   id: string;
   company_name: string | null;
   first_name: string | null;
@@ -134,9 +134,9 @@ type ProposalClient = {
   stateProvince: string | null;
   postalCode: string | null;
   countryCode: string | null;
-};
+}
 
-type ProposalLead = {
+interface ProposalLead {
   id: string;
   companyName: string | null;
   contactName: string | null;
@@ -146,9 +146,9 @@ type ProposalLead = {
   eventDate: Date | null;
   estimatedGuests: number | null;
   estimatedValue: unknown;
-};
+}
 
-type ProposalEvent = {
+interface ProposalEvent {
   id: string;
   title: string;
   eventNumber: string | number | null;
@@ -176,13 +176,13 @@ type ProposalEvent = {
   venueName: string | null;
   venueAddress: string | null;
   status: string;
-};
+}
 
-type ProposalUser = {
+interface ProposalUser {
   firstName: string | null;
   lastName: string | null;
   email: string | null;
-};
+}
 
 /**
  * Transform client data for PDF

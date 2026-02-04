@@ -33,7 +33,9 @@ export class CodeGenerator {
     this.emitRuntime();
     this.emitStoreRuntime(program);
 
-    for (const store of program.stores) this.genStore(store);
+    for (const store of program.stores) {
+      this.genStore(store);
+    }
     for (const e of program.entities) {
       this.genEntity(e);
       this.line();
@@ -246,8 +248,8 @@ export class CodeGenerator {
         );
         break;
       case "localStorage": {
-        const key = store.config?.["key"]
-          ? this.genExpr(store.config["key"])
+        const key = store.config?.key
+          ? this.genExpr(store.config.key)
           : `"${store.entity.toLowerCase()}s"`;
         this.line(
           `const ${storeName}: Store<I${store.entity}> = new LocalStorageStore(${key});`
@@ -256,8 +258,8 @@ export class CodeGenerator {
       }
       case "supabase":
       case "postgres": {
-        const table = store.config?.["table"]
-          ? this.genExpr(store.config["table"])
+        const table = store.config?.table
+          ? this.genExpr(store.config.table)
           : `"${store.entity.toLowerCase()}s"`;
         this.line(
           `const ${storeName}: Store<I${store.entity}> = new SupabaseStore(${table});`
@@ -348,10 +350,11 @@ export class CodeGenerator {
     this.line("super();");
     this.line("if (init) {");
     this.in();
-    for (const p of e.properties)
+    for (const p of e.properties) {
       this.line(
         `if (init.${p.name} !== undefined) this._${p.name}.set(init.${p.name});`
       );
+    }
     this.de();
     this.line("}");
     this.line("this._initBehaviors();");
@@ -373,7 +376,9 @@ export class CodeGenerator {
     this.line();
     this.line("private _initBehaviors() {");
     this.in();
-    for (const b of e.behaviors) this.genBehaviorBinding(b);
+    for (const b of e.behaviors) {
+      this.genBehaviorBinding(b);
+    }
     this.de();
     this.line("}");
 
@@ -404,18 +409,25 @@ export class CodeGenerator {
     this.in();
     this.line("return {");
     this.in();
-    for (const p of e.properties) this.line(`${p.name}: this.${p.name},`);
-    for (const cp of e.computedProperties)
+    for (const p of e.properties) {
+      this.line(`${p.name}: this.${p.name},`);
+    }
+    for (const cp of e.computedProperties) {
       this.line(`${cp.name}: this.${cp.name},`);
+    }
     this.de();
     this.line("};");
     this.de();
     this.line("}");
 
-    for (const cmd of e.commands) this.genCommandMethod(cmd);
-    for (const b of e.behaviors)
-      if (b.trigger.event !== "create" && !b.trigger.event.startsWith("_"))
+    for (const cmd of e.commands) {
+      this.genCommandMethod(cmd);
+    }
+    for (const b of e.behaviors) {
+      if (b.trigger.event !== "create" && !b.trigger.event.startsWith("_")) {
         this.genBehaviorMethod(b);
+      }
+    }
 
     this.de();
     this.line("}");
@@ -426,18 +438,23 @@ export class CodeGenerator {
     for (const b of e.behaviors) {
       events.add(b.trigger.event);
       for (const a of b.actions) {
-        if (a.kind === "emit" && a.expression.type === "Identifier")
+        if (a.kind === "emit" && a.expression.type === "Identifier") {
           events.add((a.expression as any).name);
+        }
       }
     }
     for (const cmd of e.commands) {
-      if (cmd.emits) cmd.emits.forEach((ev) => events.add(ev));
+      if (cmd.emits) {
+        cmd.emits.forEach((ev) => events.add(ev));
+      }
     }
     return events;
   }
 
   private relationType(r: RelationshipNode): string {
-    if (r.kind === "hasMany") return `${r.target}[]`;
+    if (r.kind === "hasMany") {
+      return `${r.target}[]`;
+    }
     return `${r.target} | null`;
   }
 
@@ -550,7 +567,9 @@ export class CodeGenerator {
 
   private genBehaviorBinding(b: BehaviorNode) {
     if (b.trigger.event === "create") {
-      for (const a of b.actions) this.line(this.genAction(a));
+      for (const a of b.actions) {
+        this.line(this.genAction(a));
+      }
       return;
     }
     const params = b.trigger.parameters?.join(", ") || "d";
@@ -560,7 +579,9 @@ export class CodeGenerator {
       const g = b.guards.map((x) => `(${this.genExpr(x)})`).join(" && ");
       this.line(`if (!(${g})) return;`);
     }
-    for (const a of b.actions) this.line(this.genAction(a));
+    for (const a of b.actions) {
+      this.line(this.genAction(a));
+    }
     this.de();
     this.line("});");
   }
@@ -584,18 +605,24 @@ export class CodeGenerator {
     target?: string;
     expression: ExpressionNode;
   }): string {
-    if (a.kind === "mutate")
+    if (a.kind === "mutate") {
       return `this.${a.target} = ${this.genExpr(a.expression)};`;
+    }
     if (a.kind === "emit") {
-      if (a.expression.type === "Identifier")
+      if (a.expression.type === "Identifier") {
         return `this.emit('${(a.expression as any).name}', {});`;
+      }
       return `this.emit('event', ${this.genExpr(a.expression)});`;
     }
-    if (a.kind === "effect") return `await (${this.genExpr(a.expression)});`;
-    if (a.kind === "publish")
+    if (a.kind === "effect") {
+      return `await (${this.genExpr(a.expression)});`;
+    }
+    if (a.kind === "publish") {
       return `EventBus.publish('event', ${this.genExpr(a.expression)});`;
-    if (a.kind === "persist")
+    }
+    if (a.kind === "persist") {
       return `await ${a.target}Store.update(this.id, this.toJSON());`;
+    }
     return `${this.genExpr(a.expression)};`;
   }
 
@@ -612,14 +639,19 @@ export class CodeGenerator {
         this.line(`if (${this.genExpr(s.condition)}) {`);
         this.in();
       }
-      if (s.operation === "map") this.line(`_v = (${expr})(_v);`);
-      else if (s.operation === "filter")
+      if (s.operation === "map") {
+        this.line(`_v = (${expr})(_v);`);
+      } else if (s.operation === "filter") {
         this.line(`if (!(${expr})(_v)) return null as any;`);
-      else if (s.operation === "validate")
+      } else if (s.operation === "validate") {
         this.line(`if (!(${expr})(_v)) throw new Error('Validation failed');`);
-      else if (s.operation === "transform") this.line(`_v = ${expr};`);
-      else if (s.operation === "tap") this.line(`(${expr})(_v);`);
-      else this.line(`_v = ${expr};`);
+      } else if (s.operation === "transform") {
+        this.line(`_v = ${expr};`);
+      } else if (s.operation === "tap") {
+        this.line(`(${expr})(_v);`);
+      } else {
+        this.line(`_v = ${expr};`);
+      }
       if (s.condition) {
         this.de();
         this.line("}");
@@ -636,10 +668,8 @@ export class CodeGenerator {
     this.in();
     this.line(`kind: '${e.kind}' as const,`);
     if (e.kind === "http") {
-      const url = e.config["url"] ? this.genExpr(e.config["url"]) : '""';
-      const method = e.config["method"]
-        ? this.genExpr(e.config["method"])
-        : '"GET"';
+      const url = e.config.url ? this.genExpr(e.config.url) : '""';
+      const method = e.config.method ? this.genExpr(e.config.method) : '"GET"';
       this.line("async execute(data?: any) {");
       this.in();
       this.line(
@@ -649,7 +679,7 @@ export class CodeGenerator {
       this.de();
       this.line("},");
     } else if (e.kind === "storage") {
-      const key = e.config["key"] ? this.genExpr(e.config["key"]) : '"data"';
+      const key = e.config.key ? this.genExpr(e.config.key) : '"data"';
       this.line(
         `get() { const d = localStorage.getItem(${key}); return d ? JSON.parse(d) : null; },`
       );
@@ -658,8 +688,8 @@ export class CodeGenerator {
       );
       this.line(`remove() { localStorage.removeItem(${key}); },`);
     } else if (e.kind === "timer") {
-      const interval = e.config["interval"]
-        ? this.genExpr(e.config["interval"])
+      const interval = e.config.interval
+        ? this.genExpr(e.config.interval)
         : "1000";
       this.line(
         `start(cb: () => void) { return setInterval(cb, ${interval}); },`
@@ -668,8 +698,9 @@ export class CodeGenerator {
     } else {
       this.line("config: {");
       this.in();
-      for (const [k, v] of Object.entries(e.config))
+      for (const [k, v] of Object.entries(e.config)) {
         this.line(`${k}: ${this.genExpr(v)},`);
+      }
       this.de();
       this.line("},");
       this.line("execute(data?: any) { /* custom */ },");
@@ -687,26 +718,31 @@ export class CodeGenerator {
       const ops = x.operations.length
         ? x.operations
         : ["list", "get", "create", "update", "delete"];
-      if (ops.includes("list"))
+      if (ops.includes("list")) {
         this.line(
           `async list(q?: Record<string, any>) { return ${x.entity}Store.getAll(); },`
         );
-      if (ops.includes("get"))
+      }
+      if (ops.includes("get")) {
         this.line(
           `async get(id: string) { return ${x.entity}Store.getById(id); },`
         );
-      if (ops.includes("create"))
+      }
+      if (ops.includes("create")) {
         this.line(
           `async create(d: Partial<I${x.entity}>) { return ${x.entity}Store.create(d); },`
         );
-      if (ops.includes("update"))
+      }
+      if (ops.includes("update")) {
         this.line(
           `async update(id: string, d: Partial<I${x.entity}>) { return ${x.entity}Store.update(id, d); },`
         );
-      if (ops.includes("delete"))
+      }
+      if (ops.includes("delete")) {
         this.line(
           `async delete(id: string) { return ${x.entity}Store.delete(id); },`
         );
+      }
       this.de();
       this.line("};");
     } else if (x.protocol === "function") {
@@ -836,7 +872,9 @@ export class CodeGenerator {
     this.testOut.push("");
 
     for (const entity of program.entities) {
-      if (entity.constraints.length === 0) continue;
+      if (entity.constraints.length === 0) {
+        continue;
+      }
 
       this.testOut.push(`describe("${entity.name}", () => {`);
 
@@ -871,7 +909,9 @@ export class CodeGenerator {
     }
 
     for (const cmd of program.commands) {
-      if (!cmd.guards?.length) continue;
+      if (!cmd.guards?.length) {
+        continue;
+      }
 
       this.testOut.push(`describe("command: ${cmd.name}", () => {`);
 
@@ -906,14 +946,15 @@ export class CodeGenerator {
     }
     this.line();
     for (const conn of c.connections) {
-      if (conn.transform)
+      if (conn.transform) {
         this.line(
           `this.${conn.from.component}.on('${conn.from.output}', (d) => { const t = (${this.genExpr(conn.transform)})(d); this.${conn.to.component}.emit('${conn.to.input}', t); });`
         );
-      else
+      } else {
         this.line(
           `this.${conn.from.component}.on('${conn.from.output}', (d) => this.${conn.to.component}.emit('${conn.to.input}', d));`
         );
+      }
     }
     this.de();
     this.line("}");
@@ -923,20 +964,33 @@ export class CodeGenerator {
 
   private emitExports(p: ManifestProgram) {
     const exports: string[] = ["setContext", "getContext", "EventBus"];
-    for (const s of p.stores) exports.push(`${s.entity}Store`);
-    for (const e of p.entities) exports.push(e.name);
-    for (const cmd of p.commands) exports.push(cmd.name);
-    for (const f of p.flows) exports.push(f.name);
-    for (const e of p.effects) exports.push(`${e.name}Effect`);
+    for (const s of p.stores) {
+      exports.push(`${s.entity}Store`);
+    }
+    for (const e of p.entities) {
+      exports.push(e.name);
+    }
+    for (const cmd of p.commands) {
+      exports.push(cmd.name);
+    }
+    for (const f of p.flows) {
+      exports.push(f.name);
+    }
+    for (const e of p.effects) {
+      exports.push(`${e.name}Effect`);
+    }
     for (const ev of p.events) {
       exports.push(`publish${ev.name}`);
       exports.push(`subscribe${ev.name}`);
     }
-    for (const x of p.exposures)
+    for (const x of p.exposures) {
       exports.push(
         x.protocol === "rest" ? `${x.name}API` : `create${x.entity}`
       );
-    for (const c of p.compositions) exports.push(c.name);
+    }
+    for (const c of p.compositions) {
+      exports.push(c.name);
+    }
     if (exports.length) {
       this.line();
       this.line(`export { ${exports.join(", ")} };`);
@@ -951,9 +1005,15 @@ export class CodeGenerator {
           : String(e.value);
       case "Identifier": {
         const name = (e as any).name;
-        if (name === "self") return "this";
-        if (name === "user") return "getContext().user";
-        if (name === "context") return "getContext()";
+        if (name === "self") {
+          return "this";
+        }
+        if (name === "user") {
+          return "getContext().user";
+        }
+        if (name === "context") {
+          return "getContext()";
+        }
         return name;
       }
       case "BinaryOp": {
@@ -966,7 +1026,9 @@ export class CodeGenerator {
           is: "===",
           contains: ".includes",
         };
-        if (op === "contains") return `${l}.includes(${r})`;
+        if (op === "contains") {
+          return `${l}.includes(${r})`;
+        }
         return `(${l} ${m[op] || op} ${r})`;
       }
       case "UnaryOp":
@@ -1003,13 +1065,19 @@ export class CodeGenerator {
       map: "Map",
     };
     let r = m[t.name] || t.name;
-    if (t.generic) r += `<${this.tsType(t.generic)}>`;
-    if (t.nullable) r += " | null";
+    if (t.generic) {
+      r += `<${this.tsType(t.generic)}>`;
+    }
+    if (t.nullable) {
+      r += " | null";
+    }
     return r;
   }
 
   private defVal(t: { name: string; nullable: boolean }): string {
-    if (t.nullable) return "null";
+    if (t.nullable) {
+      return "null";
+    }
     const d: Record<string, string> = {
       string: '""',
       number: "0",

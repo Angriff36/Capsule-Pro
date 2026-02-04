@@ -1,4 +1,4 @@
-export type TimelineTask = {
+export interface TimelineTask {
   id: string;
   eventId: string;
   title: string;
@@ -17,9 +17,9 @@ export type TimelineTask = {
   notes?: string;
   createdAt: string;
   updatedAt: string;
-};
+}
 
-export type StaffMember = {
+export interface StaffMember {
   id: string;
   name: string;
   role: string;
@@ -27,9 +27,9 @@ export type StaffMember = {
   availability: "available" | "at_capacity" | "overbooked";
   currentTaskCount: number;
   skills: string[];
-};
+}
 
-export type TimelineState = {
+export interface TimelineState {
   tasks: TimelineTask[];
   staff: StaffMember[];
   selectedTaskIds: string[];
@@ -40,22 +40,22 @@ export type TimelineState = {
   };
   showDependencies: boolean;
   showCriticalPath: boolean;
-};
+}
 
-export type TaskPosition = {
+export interface TaskPosition {
   startTime: number; // Minutes from event start
   duration: number; // Minutes
   row: number;
-};
+}
 
-export type DragState = {
+export interface DragState {
   isDragging: boolean;
   taskId: string | null;
   startX: number;
   startY: number;
   originalStartTime: number;
   originalDuration: number;
-};
+}
 
 export const TASK_STATUS_COLORS = {
   not_started: "bg-slate-100 text-slate-700 border-slate-300",

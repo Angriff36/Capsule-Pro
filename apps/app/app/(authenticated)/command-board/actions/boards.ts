@@ -40,11 +40,11 @@ function dbBoardToBoard(board: {
   };
 }
 
-export type BoardResult = {
+export interface BoardResult {
   success: boolean;
   board?: CommandBoard;
   error?: string;
-};
+}
 
 export interface CommandBoardWithCards extends CommandBoard {
   cards: CommandBoardCard[];

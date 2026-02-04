@@ -11,14 +11,14 @@ export type EventValidationStatus =
   | "time_overlap"
   | "incomplete";
 
-type EventValidationInput = {
+interface EventValidationInput {
   venueName: string | null;
   staffCount: number;
   guestCount: number;
   eventDate: Date;
   startTime: Date | null;
   endTime: Date | null;
-};
+}
 
 /**
  * Determines validation status for an event based on completeness and staffing.

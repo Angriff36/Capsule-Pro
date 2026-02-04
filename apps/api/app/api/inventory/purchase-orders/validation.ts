@@ -138,6 +138,58 @@ export function validateUpdateQualityStatusRequest(
 }
 
 /**
+ * Validate a single receiving item
+ */
+function validateReceivingItem(item: unknown, index: number): void {
+  if (!item || typeof item !== "object") {
+    throw new InvariantError(`items[${index}] must be an object`);
+  }
+
+  const i = item as {
+    id?: string;
+    quantity_received?: unknown;
+    quality_status?: unknown;
+    discrepancy_type?: unknown;
+    discrepancy_amount?: unknown;
+    notes?: unknown;
+  };
+
+  if (!i.id || typeof i.id !== "string") {
+    throw new InvariantError(
+      `items[${index}].id is required and must be a string`
+    );
+  }
+
+  if (i.quantity_received === undefined || i.quantity_received === null) {
+    throw new InvariantError(`items[${index}].quantity_received is required`);
+  }
+
+  validateNonNegativeNumber(
+    i.quantity_received,
+    `items[${index}].quantity_received`
+  );
+
+  if (!i.quality_status) {
+    throw new InvariantError(`items[${index}].quality_status is required`);
+  }
+
+  validateQualityStatus(i.quality_status);
+
+  if (i.discrepancy_type) {
+    validateDiscrepancyType(i.discrepancy_type);
+  }
+
+  validateNonNegativeNumber(
+    i.discrepancy_amount,
+    `items[${index}].discrepancy_amount`
+  );
+
+  if (i.notes !== undefined && typeof i.notes !== "string") {
+    throw new InvariantError(`items[${index}].notes must be a string`);
+  }
+}
+
+/**
  * Validate complete receiving request
  */
 export function validateCompleteReceivingRequest(
@@ -160,45 +212,7 @@ export function validateCompleteReceivingRequest(
 
   // Validate each item
   for (let i = 0; i < body.items.length; i++) {
-    const item = body.items[i];
-
-    if (!item.id || typeof item.id !== "string") {
-      throw new InvariantError(
-        `items[${i}].id is required and must be a string`
-      );
-    }
-
-    if (
-      item.quantity_received === undefined ||
-      item.quantity_received === null
-    ) {
-      throw new InvariantError(`items[${i}].quantity_received is required`);
-    }
-
-    validateNonNegativeNumber(
-      item.quantity_received,
-      `items[${i}].quantity_received`
-    );
-
-    if (!item.quality_status) {
-      throw new InvariantError(`items[${i}].quality_status is required`);
-    }
-
-    validateQualityStatus(item.quality_status);
-
-    // Optional fields
-    if (item.discrepancy_type) {
-      validateDiscrepancyType(item.discrepancy_type);
-    }
-
-    validateNonNegativeNumber(
-      item.discrepancy_amount,
-      `items[${i}].discrepancy_amount`
-    );
-
-    if (item.notes !== undefined && typeof item.notes !== "string") {
-      throw new InvariantError(`items[${i}].notes must be a string`);
-    }
+    validateReceivingItem(body.items[i], i);
   }
 
   // Validate notes is string if provided

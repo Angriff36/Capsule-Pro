@@ -12,9 +12,9 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ reportId: string }>;
-};
+}
 
 /**
  * GET /api/events/reports/[reportId]

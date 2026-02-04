@@ -12,7 +12,7 @@ import { Separator } from "@repo/design-system/components/ui/separator";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 
-type StationStats = {
+interface StationStats {
   station_id: string;
   station_name: string;
   total_tasks: number;
@@ -20,7 +20,7 @@ type StationStats = {
   in_progress_tasks: number;
   open_tasks: number;
   team_members: number;
-};
+}
 
 // Badge variants map for stations
 const stationBadgeVariant: Record<

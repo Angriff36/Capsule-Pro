@@ -12,17 +12,17 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type ContractSignaturesAPIContext = {
+interface ContractSignaturesAPIContext {
   params: Promise<{
     contractId: string;
   }>;
-};
+}
 
-type CreateSignatureBody = {
+interface CreateSignatureBody {
   signatureData: string;
   signerName: string;
   signerEmail?: string;
-};
+}
 
 /**
  * POST /api/events/contracts/[contractId]/signatures

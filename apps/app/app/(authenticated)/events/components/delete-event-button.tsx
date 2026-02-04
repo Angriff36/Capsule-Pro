@@ -16,7 +16,7 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 import { deleteEventById } from "../actions";
 
-type DeleteEventButtonProps = {
+interface DeleteEventButtonProps {
   eventId: string;
   eventTitle: string;
   variant?:
@@ -30,7 +30,7 @@ type DeleteEventButtonProps = {
   className?: string;
   /** When true, show icon-only button (for list cards). */
   iconOnly?: boolean;
-};
+}
 
 export function DeleteEventButton({
   eventId,

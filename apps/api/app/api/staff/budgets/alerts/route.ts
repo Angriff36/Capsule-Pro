@@ -29,15 +29,19 @@ export async function GET(request: Request) {
   const isAcknowledged = searchParams.get("isAcknowledged");
   const alertType = searchParams.get("alertType") || undefined;
 
+  let acknowledgedFilter: boolean | undefined;
+  if (isAcknowledged === "true") {
+    acknowledgedFilter = true;
+  } else if (isAcknowledged === "false") {
+    acknowledgedFilter = false;
+  } else {
+    acknowledgedFilter = undefined;
+  }
+
   try {
     const alerts = await getBudgetAlerts(tenantId, {
       budgetId,
-      isAcknowledged:
-        isAcknowledged === "true"
-          ? true
-          : isAcknowledged === "false"
-            ? false
-            : undefined,
+      isAcknowledged: acknowledgedFilter,
       alertType,
     });
 

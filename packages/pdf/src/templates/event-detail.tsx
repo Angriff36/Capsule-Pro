@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   },
 });
 
-type EventDetailPDFProps = {
+interface EventDetailPDFProps {
   data: {
     event: {
       id: string;
@@ -191,7 +191,7 @@ type EventDetailPDFProps = {
       version: string;
     };
   };
-};
+}
 
 export const EventDetailPDF: React.FC<EventDetailPDFProps> = ({ data }) => {
   const { event, dishes, tasks, guests, staff, metadata } = data;

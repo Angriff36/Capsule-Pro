@@ -34,7 +34,7 @@ export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
 /**
  * Inventory Item response shape
  */
-export type InventoryItem = {
+export interface InventoryItem {
   id: string;
   tenant_id: string;
   item_number: string;
@@ -51,7 +51,7 @@ export type InventoryItem = {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-};
+}
 
 /**
  * Computed stock status for UI display
@@ -64,7 +64,7 @@ export interface InventoryItemWithStatus extends InventoryItem {
 /**
  * Create inventory item request
  */
-export type CreateInventoryItemRequest = {
+export interface CreateInventoryItemRequest {
   item_number: string;
   name: string;
   category: string;
@@ -76,12 +76,12 @@ export type CreateInventoryItemRequest = {
   fsa_temp_logged?: boolean;
   fsa_allergen_info?: boolean;
   fsa_traceable?: boolean;
-};
+}
 
 /**
  * Update inventory item request
  */
-export type UpdateInventoryItemRequest = {
+export interface UpdateInventoryItemRequest {
   item_number?: string;
   name?: string;
   category?: string;
@@ -93,23 +93,23 @@ export type UpdateInventoryItemRequest = {
   fsa_temp_logged?: boolean;
   fsa_allergen_info?: boolean;
   fsa_traceable?: boolean;
-};
+}
 
 /**
  * List filters
  */
-export type InventoryItemListFilters = {
+export interface InventoryItemListFilters {
   search?: string;
   category?: string;
   stock_status?: StockStatus;
   fsa_status?: FSAStatus;
   tags?: string[];
-};
+}
 
 /**
  * Paginated list response
  */
-export type InventoryItemListResponse = {
+export interface InventoryItemListResponse {
   data: InventoryItemWithStatus[];
   pagination: {
     page: number;
@@ -117,14 +117,14 @@ export type InventoryItemListResponse = {
     total: number;
     totalPages: number;
   };
-};
+}
 
 /**
  * Search parameters
  */
-export type InventoryItemSearchParams = {
+export interface InventoryItemSearchParams {
   query: string;
   categories?: string[];
   tags?: string[];
   limit?: number;
-};
+}

@@ -41,31 +41,31 @@ import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-type LineItem = {
+interface LineItem {
   id: string;
   itemType: string;
   description: string;
   quantity: number;
   unitPrice: number;
   notes?: string;
-};
+}
 
-type ClientOption = {
+interface ClientOption {
   id: string;
   company_name: string | null;
   first_name: string | null;
   last_name: string | null;
   email: string | null;
-};
+}
 
-type ProposalFormProps = {
+interface ProposalFormProps {
   proposal: Proposal | null;
   action: (
     previousState: { redirect: string } | null,
     formData: FormData
   ) => Promise<{ redirect: string } | null>;
   submitLabel: string;
-};
+}
 
 const itemTypes = [
   { value: "menu", label: "Menu Item" },

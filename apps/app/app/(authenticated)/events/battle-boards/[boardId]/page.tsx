@@ -5,9 +5,9 @@ import { getTenantIdForOrg } from "../../../../lib/tenant";
 import { Header } from "../../../components/header";
 import { BattleBoardEditorClient } from "./battle-board-editor-client";
 
-type PageProps = {
+interface PageProps {
   params: Promise<{ boardId: string }>;
-};
+}
 
 const BattleBoardDetailPage = async ({ params }: PageProps) => {
   const { orgId } = await auth();

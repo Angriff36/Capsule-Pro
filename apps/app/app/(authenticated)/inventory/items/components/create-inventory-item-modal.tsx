@@ -38,12 +38,12 @@ import {
   updateInventoryItem,
 } from "../../../../lib/use-inventory";
 
-type CreateInventoryItemModalProps = {
+interface CreateInventoryItemModalProps {
   open: boolean;
   onClose: () => void;
   onCreated: () => void;
   editItem?: InventoryItemWithStatus | null;
-};
+}
 
 export const CreateInventoryItemModal = ({
   open,

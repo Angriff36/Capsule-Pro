@@ -15,9 +15,9 @@ import type { Dictionary } from "@repo/internationalization";
 import { User } from "lucide-react";
 import { useEffect, useState } from "react";
 
-type TestimonialsProps = {
+interface TestimonialsProps {
   dictionary: Dictionary;
-};
+}
 
 export const Testimonials = ({ dictionary }: TestimonialsProps) => {
   const [api, setApi] = useState<CarouselApi>();

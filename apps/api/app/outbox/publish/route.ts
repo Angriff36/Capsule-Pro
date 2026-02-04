@@ -3,16 +3,9 @@ import { getChannelName, type RealtimeEventBase } from "@repo/realtime";
 import Ably from "ably";
 import { env } from "@/env";
 
-type PublishRequest = {
+interface PublishRequest {
   limit?: number;
-};
-
-type PublishResponse = {
-  published: number;
-  failed: number;
-  skipped?: number;
-  oldestPendingSeconds?: number;
-};
+}
 
 // Payload size limits (Ably max is ~64 KiB on most plans)
 const WARN_PAYLOAD_SIZE = 32 * 1024; // 32 KiB
@@ -78,7 +71,7 @@ function getMessageSize(message: unknown): number {
  * Raw OutboxEvent type for $queryRaw results.
  * Prisma doesn't expose SKIP LOCKED, so we use raw SQL.
  */
-type RawOutboxEvent = {
+interface RawOutboxEvent {
   id: string;
   tenantId: string;
   aggregateType: string;
@@ -89,7 +82,7 @@ type RawOutboxEvent = {
   error: string | null;
   createdAt: Date;
   publishedAt: Date | null;
-};
+}
 
 export async function POST(request: Request) {
   if (!isAuthorized(request.headers.get("authorization"))) {

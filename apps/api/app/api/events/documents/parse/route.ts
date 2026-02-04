@@ -25,16 +25,16 @@ import {
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type ParseParams = {
+interface ParseParams {
   eventId: string | null;
   generateChecklist: boolean;
   generateBattleBoard: boolean;
-};
+}
 
-type ImportRecord = {
+interface ImportRecord {
   importId: string;
   document: ProcessedDocument;
-};
+}
 
 type MissingField =
   | "client"
@@ -44,22 +44,22 @@ type MissingField =
   | "headcount"
   | "menuItems";
 
-type DishMatch = {
+interface DishMatch {
   name: string;
   dishId: string;
   eventDishId: string;
-};
+}
 
-type MenuImportSummary = {
+interface MenuImportSummary {
   dishMatches: DishMatch[];
   missingQuantities: string[];
   linkedDishes: number;
   createdDishes: number;
   createdRecipes: number;
   updatedLinks: number;
-};
+}
 
-type AggregatedMenuItem = {
+interface AggregatedMenuItem {
   name: string;
   category: string | null;
   serviceLocation: string | null;
@@ -68,16 +68,23 @@ type AggregatedMenuItem = {
   allergens: Set<string>;
   dietaryTags: Set<string>;
   instructions: Set<string>;
-};
+}
 
 const MISSING_FIELD_TAG_PREFIX = "needs:";
 
-const normalizeName = (value: string) => value.trim().replace(/\s+/g, " ");
+// Top-level regex for performance
+const WHITESPACE_REGEX = /\s+/g;
+const FILE_EXTENSION_REGEX = /\.[^/.]+$/;
+const HYPHEN_UNDERSCORE_REGEX = /[-_]+/g;
+const SERVING_UNIT_REGEX = /serv|pax|guest|portion/i;
+
+const normalizeName = (value: string) =>
+  value.trim().replace(WHITESPACE_REGEX, " ");
 
 const getFileLabel = (fileName: string) =>
   fileName
-    .replace(/\.[^/.]+$/, "")
-    .replace(/[_-]+/g, " ")
+    .replace(FILE_EXTENSION_REGEX, "")
+    .replace(HYPHEN_UNDERSCORE_REGEX, " ")
     .trim();
 
 const getMissingFieldsFromParsedEvent = (
@@ -162,8 +169,7 @@ const deriveMenuQuantity = (item: MenuItem, fallbackHeadcount: number) => {
 
   const servingDetails =
     item.quantityDetails?.filter(
-      (detail) =>
-        detail.value > 0 && /serv|pax|guest|portion/i.test(detail.unit)
+      (detail) => detail.value > 0 && SERVING_UNIT_REGEX.test(detail.unit)
     ) ?? [];
   if (servingDetails.length > 0) {
     const maxDetail = servingDetails.reduce(

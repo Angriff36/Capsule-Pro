@@ -14,9 +14,9 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { FSAStatus, InventoryItemWithStatus } from "../types";
 import { validateUpdateInventoryItemRequest } from "../validation";
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ id: string }>;
-};
+}
 
 /**
  * Calculate stock status based on quantity and reorder level

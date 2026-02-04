@@ -12,9 +12,9 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { CompleteReceivingRequest } from "../../types";
 import { validateCompleteReceivingRequest } from "../../validation";
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ id: string }>;
-};
+}
 
 /**
  * POST /api/inventory/purchase-orders/[id]/complete - Complete receiving workflow

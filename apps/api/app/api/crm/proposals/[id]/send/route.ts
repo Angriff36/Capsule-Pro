@@ -13,17 +13,17 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { SendProposalRequest } from "../../types";
 import { validateSendProposalRequest } from "../../validation";
 
-type RouteParams = {
+interface RouteParams {
   params: Promise<{ id: string }>;
-};
+}
 
-type ClientSelect = {
+interface ClientSelect {
   email: true;
-};
+}
 
-type LeadSelect = {
+interface LeadSelect {
   contactEmail: true;
-};
+}
 
 /**
  * Fetch client email

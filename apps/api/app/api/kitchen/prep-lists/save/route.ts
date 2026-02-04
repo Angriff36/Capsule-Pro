@@ -3,12 +3,12 @@ import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type PrepListIngredient = {
+interface PrepListIngredient {
   ingredientName: string;
   scaledQuantity: number;
   scaledUnit: string;
   preparationNotes?: string;
-};
+}
 
 export async function POST(request: NextRequest) {
   try {

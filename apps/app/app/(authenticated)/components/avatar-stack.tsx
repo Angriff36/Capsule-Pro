@@ -12,9 +12,9 @@ import {
   TooltipTrigger,
 } from "@repo/design-system/components/ui/tooltip";
 
-type PresenceAvatarProps = {
+interface PresenceAvatarProps {
   info?: Liveblocks["UserMeta"]["info"];
-};
+}
 
 const PresenceAvatar = ({ info }: PresenceAvatarProps) => (
   <Tooltip delayDuration={0}>

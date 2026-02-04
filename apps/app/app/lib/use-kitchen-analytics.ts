@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 // Types for kitchen analytics data
-export type StationThroughput = {
+export interface StationThroughput {
   stationId: string;
   stationName: string;
   load: number;
@@ -12,9 +12,9 @@ export type StationThroughput = {
   totalItems: number;
   completedItems: number;
   pendingItems: number;
-};
+}
 
-export type KitchenHealth = {
+export interface KitchenHealth {
   prepListsSync: {
     rate: number;
     total: number;
@@ -24,29 +24,29 @@ export type KitchenHealth = {
   wasteAlerts: number;
   timeToCompletion: string;
   avgMinutes: number;
-};
+}
 
-export type StationTrend = {
+export interface StationTrend {
   stationName: string;
   total: number;
   completed: number;
   completionRate: number;
-};
+}
 
-export type DateTrend = {
+export interface DateTrend {
   date: string;
   stations: StationTrend[];
-};
+}
 
-export type TopPerformer = {
+export interface TopPerformer {
   employeeId: string;
   firstName: string;
   lastName: string;
   completedTasks: number;
   avgMinutes: number;
-};
+}
 
-export type KitchenAnalyticsResponse = {
+export interface KitchenAnalyticsResponse {
   summary: {
     period: string;
     startDate: string;
@@ -57,14 +57,14 @@ export type KitchenAnalyticsResponse = {
   kitchenHealth: KitchenHealth;
   trends: DateTrend[];
   topPerformers: TopPerformer[];
-};
+}
 
-export type UseKitchenAnalyticsResult = {
+export interface UseKitchenAnalyticsResult {
   data: KitchenAnalyticsResponse | null;
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
-};
+}
 
 async function fetchKitchenAnalytics(
   period?: string,

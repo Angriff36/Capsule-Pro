@@ -44,11 +44,11 @@ import {
   updateClientInteraction,
 } from "../../../actions";
 
-type CommunicationsTabProps = {
+interface CommunicationsTabProps {
   clientId: string;
-};
+}
 
-type Interaction = {
+interface Interaction {
   id: string;
   interactionType: string;
   subject: string | null;
@@ -56,7 +56,7 @@ type Interaction = {
   interactionDate: Date;
   followUpDate: Date | null;
   followUpCompleted: boolean;
-};
+}
 
 const INTERACTION_TYPES = [
   { value: "email", label: "Email", icon: MailIcon },

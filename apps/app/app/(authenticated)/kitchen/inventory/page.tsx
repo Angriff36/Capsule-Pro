@@ -21,7 +21,7 @@ import {
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 
-type InventoryItemRow = {
+interface InventoryItemRow {
   id: string;
   item_number: string;
   name: string;
@@ -30,16 +30,16 @@ type InventoryItemRow = {
   unit_cost: number;
   reorder_level: number;
   tags: string[];
-};
+}
 
-type InventoryAlertRow = {
+interface InventoryAlertRow {
   id: string;
   item_id: string;
   alert_type: string;
   threshold_value: number;
   triggered_at: Date;
   item_name: string;
-};
+}
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",

@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
-type AnalyticsLayoutProperties = {
+interface AnalyticsLayoutProperties {
   readonly children: ReactNode;
-};
+}
 
 const AnalyticsLayout = ({ children }: AnalyticsLayoutProperties) => (
   <>{children}</>

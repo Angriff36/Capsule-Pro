@@ -42,12 +42,12 @@ import {
 import { DependencyLines } from "./dependency-lines";
 import { TaskModal } from "./task-modal";
 
-type TimelineProps = {
+interface TimelineProps {
   eventId: string;
   eventDate: Date;
   initialTasks: TimelineTask[];
   initialStaff: StaffMember[];
-};
+}
 
 const MINUTES_PER_HOUR = 60;
 const PIXELS_PER_MINUTE = 4;
@@ -55,12 +55,12 @@ const SNAP_INTERVAL = 5;
 const ROW_HEIGHT = 48;
 const MIN_TASK_WIDTH = 30;
 
-type TaskAction = {
+interface TaskAction {
   id: string;
   type: "create" | "update" | "delete";
   previousState?: TimelineTask;
   newState?: TimelineTask;
-};
+}
 
 export function Timeline({
   eventId,

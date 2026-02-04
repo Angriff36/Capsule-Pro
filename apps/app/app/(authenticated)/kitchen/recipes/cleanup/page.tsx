@@ -14,7 +14,7 @@ import { getTenantIdForOrg } from "../../../../lib/tenant";
 import { Header } from "../../../components/header";
 import { cleanupImportedItems } from "./server-actions";
 
-type CleanupCandidate = {
+interface CleanupCandidate {
   id: string;
   name: string;
   category: string | null;
@@ -22,12 +22,12 @@ type CleanupCandidate = {
   dish_count: number;
   ingredient_count: number;
   step_count: number;
-};
+}
 
-type Classification = {
+interface Classification {
   action: "inventory" | "ingredient" | "skip";
   category: string;
-};
+}
 
 const SUPPLY_KEYWORDS = [
   "chafing",

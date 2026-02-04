@@ -14,7 +14,7 @@ import { invariant } from "@/app/lib/invariant";
 import { getTenantId } from "@/app/lib/tenant";
 
 // Types matching the API
-export type ProposalFilters = {
+export interface ProposalFilters {
   search?: string;
   status?: string;
   clientId?: string;
@@ -22,9 +22,9 @@ export type ProposalFilters = {
   eventId?: string;
   dateFrom?: string;
   dateTo?: string;
-};
+}
 
-export type CreateProposalInput = {
+export interface CreateProposalInput {
   clientId?: string | null;
   leadId?: string | null;
   eventId?: string | null;
@@ -51,9 +51,9 @@ export type CreateProposalInput = {
   notes?: string | null;
   termsAndConditions?: string | null;
   lineItems?: CreateLineItemInput[];
-};
+}
 
-export type CreateLineItemInput = {
+export interface CreateLineItemInput {
   sortOrder?: number;
   itemType: string;
   description: string;
@@ -61,12 +61,12 @@ export type CreateLineItemInput = {
   unitPrice: number;
   total?: number | null;
   notes?: string | null;
-};
+}
 
-export type SendProposalInput = {
+export interface SendProposalInput {
   recipientEmail?: string;
   message?: string;
-};
+}
 
 // Type for proposal update data - matches Prisma.ProposalUpdateInput
 type ProposalUpdateData = Prisma.ProposalUncheckedUpdateInput;

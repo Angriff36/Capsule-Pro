@@ -15,10 +15,10 @@ import type {
   ConflictType,
 } from "../conflict-types";
 
-type ConflictWarningPanelProps = {
+interface ConflictWarningPanelProps {
   conflicts: Conflict[];
   onClose?: () => void;
-};
+}
 
 const severityConfig = {
   critical: {

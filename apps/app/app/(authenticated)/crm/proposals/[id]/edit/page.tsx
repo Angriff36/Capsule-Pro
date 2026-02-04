@@ -12,9 +12,9 @@ import { notFound } from "next/navigation";
 import { getProposalById, updateProposal } from "../../actions";
 import { ProposalForm } from "../../components/proposal-form";
 
-type EditProposalPageProps = {
+interface EditProposalPageProps {
   params: Promise<{ id: string }>;
-};
+}
 
 export async function generateMetadata({
   params,

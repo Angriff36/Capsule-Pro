@@ -2,7 +2,7 @@
 
 export type TimelinePhase = "setup" | "service" | "teardown" | "other";
 
-export type EventTimelineEntry = {
+export interface EventTimelineEntry {
   label: string;
   time?: string;
   endTime?: string;
@@ -11,33 +11,33 @@ export type EventTimelineEntry = {
   description?: string;
   phase: TimelinePhase;
   raw: string;
-};
+}
 
-export type EventContact = {
+export interface EventContact {
   name: string;
   role?: string;
   phone?: string;
   email?: string;
   notes?: string;
-};
+}
 
-export type EventVenue = {
+export interface EventVenue {
   name: string;
   address: string;
   geo?: { lat: number; lng: number };
-};
+}
 
-export type EventTimes = {
+export interface EventTimes {
   start: string;
   end: string;
-};
+}
 
-export type MenuQuantityDetail = {
+export interface MenuQuantityDetail {
   value: number;
   unit: string;
   label?: string;
   raw?: string;
-};
+}
 
 export type ServiceLocation =
   | "finish_at_event"
@@ -46,7 +46,7 @@ export type ServiceLocation =
   | "action_station"
   | "other";
 
-export type MenuItem = {
+export interface MenuItem {
   category: string;
   categoryPath?: string[];
   group?: string;
@@ -64,9 +64,9 @@ export type MenuItem = {
   allergens: string[];
   specials: string[];
   preparationNotes?: string;
-};
+}
 
-export type StaffShift = {
+export interface StaffShift {
   name: string;
   position: string;
   scheduledIn: string;
@@ -75,33 +75,33 @@ export type StaffShift = {
   actualHours?: number;
   rate: number;
   tasks?: string[];
-};
+}
 
 export type FlagSeverity = "low" | "medium" | "high" | "critical";
 
-export type Flag = {
+export interface Flag {
   code: string;
   severity: FlagSeverity;
   message: string;
   evidenceRef: string[];
   autoResolution?: string;
   resolved: boolean;
-};
+}
 
 export type EvidenceType = "extraction" | "validation" | "inference";
 
-export type Evidence = {
+export interface Evidence {
   id: string;
   type: EvidenceType;
   source: string;
   data: unknown;
   confidence: number;
   timestamp: string;
-};
+}
 
 export type EventStatus = "draft" | "validated" | "approved" | "completed";
 
-export type ParsedEvent = {
+export interface ParsedEvent {
   id: string;
   number: string;
   client: string;
@@ -121,17 +121,17 @@ export type ParsedEvent = {
   flags: Flag[];
   evidence: Evidence[];
   status: EventStatus;
-};
+}
 
-export type ParsedEventResult = {
+export interface ParsedEventResult {
   event: ParsedEvent;
   warnings: string[];
   flags: Flag[];
   reviewItems: string[];
   confidence: number;
-};
+}
 
-export type ParsedFile = {
+export interface ParsedFile {
   id: string;
   name: string;
   type: "pdf" | "csv";
@@ -140,9 +140,9 @@ export type ParsedFile = {
   extractedData: unknown;
   confidence: number;
   errors: string[];
-};
+}
 
-export type ReviewQueueItem = {
+export interface ReviewQueueItem {
   id: string;
   eventId: string;
   type: "validation" | "ambiguity" | "conflict";
@@ -150,4 +150,4 @@ export type ReviewQueueItem = {
   suggestedResolution?: string;
   requiresHuman: boolean;
   priority: number;
-};
+}

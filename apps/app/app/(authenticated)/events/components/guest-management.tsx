@@ -55,35 +55,35 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-type EventDish = {
+interface EventDish {
   link_id: string;
   dish_id: string;
   name: string;
   category: string | null;
   dietary_tags: string[] | null;
   course: string | null;
-};
+}
 
-type ConflictAlert = {
+interface ConflictAlert {
   type: "allergen" | "dietary";
   severity: "critical" | "warning";
   dishName: string;
   restriction: string;
   message: string;
-};
+}
 
-type GuestManagementProps = {
+interface GuestManagementProps {
   eventId: string;
-};
+}
 
-type GuestsResponse = {
+interface GuestsResponse {
   guests: EventGuest[];
   pagination: {
     limit: number;
     offset: number;
     total: number;
   };
-};
+}
 
 // Common dietary restrictions and allergens
 const COMMON_DIETARY_RESTRICTIONS = [

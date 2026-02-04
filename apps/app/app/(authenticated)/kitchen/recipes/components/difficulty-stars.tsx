@@ -1,7 +1,7 @@
 import { cn } from "@repo/design-system/lib/utils";
 import { StarIcon } from "lucide-react";
 
-type DifficultyStarsProps = {
+interface DifficultyStarsProps {
   /** Difficulty rating from 1 to 5 */
   rating: number;
   /** Maximum stars to display */
@@ -10,7 +10,7 @@ type DifficultyStarsProps = {
   size?: "sm" | "md" | "lg";
   /** Additional class names */
   className?: string;
-};
+}
 
 const sizeClasses = {
   sm: "size-3",

@@ -15,29 +15,29 @@ import { Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-type InventoryItem = {
+interface InventoryItem {
   id: string;
   name: string;
   item_number: string;
-};
+}
 
-type WasteReason = {
+interface WasteReason {
   id: number;
   code: string;
   name: string;
   description: string | null;
   colorHex: string | null;
   sortOrder: number;
-};
+}
 
-type Unit = {
+interface Unit {
   id: number;
   code: string;
   name: string;
   name_plural: string;
   unit_system: string;
   unit_type: string;
-};
+}
 
 export function WasteEntriesClient() {
   const [submitting, setSubmitting] = useState(false);

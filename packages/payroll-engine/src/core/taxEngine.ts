@@ -101,20 +101,20 @@ const PAY_PERIODS_PER_YEAR: Record<string, number> = {
   monthly: 12,
 };
 
-export type TaxCalculationInput = {
+export interface TaxCalculationInput {
   grossPay: Currency;
   preTaxDeductions: Currency;
   employee: Employee;
   ytdGrossPay?: Currency;
   ytdSocialSecurityWages?: Currency;
   payPeriodFrequency?: "weekly" | "biweekly" | "semimonthly" | "monthly";
-};
+}
 
-export type TaxCalculationResult = {
+export interface TaxCalculationResult {
   taxableIncome: Currency;
   withholdings: TaxWithholding[];
   totalTax: Currency;
-};
+}
 
 /**
  * Calculate progressive tax using bracket system
@@ -145,7 +145,6 @@ export function calculateTaxes(
     grossPay,
     preTaxDeductions,
     employee,
-    ytdGrossPay = Currency.zero(),
     ytdSocialSecurityWages = Currency.zero(),
     payPeriodFrequency = "biweekly",
   } = input;

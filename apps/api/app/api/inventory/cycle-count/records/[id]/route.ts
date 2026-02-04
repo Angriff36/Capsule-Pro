@@ -18,9 +18,9 @@ function toNumber(value: { toNumber: () => number }): number {
   return value.toNumber();
 }
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ id: string }>;
-};
+}
 
 /**
  * Map cycle count record to response format

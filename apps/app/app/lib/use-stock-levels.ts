@@ -30,7 +30,7 @@ export type AdjustmentReason =
   | "spoilage"
   | "other";
 
-export type StockLevelWithStatus = {
+export interface StockLevelWithStatus {
   tenantId: string;
   id: string;
   inventoryItemId: string;
@@ -57,9 +57,9 @@ export type StockLevelWithStatus = {
   totalValue: number;
   parStatus: "below_par" | "at_par" | "above_par" | "no_par_set";
   stockOutRisk: boolean;
-};
+}
 
-export type StockLevelFilters = {
+export interface StockLevelFilters {
   search?: string;
   category?: string;
   locationId?: string;
@@ -68,9 +68,9 @@ export type StockLevelFilters = {
   outOfStock?: boolean;
   page?: number;
   limit?: number;
-};
+}
 
-export type StockLevelListResponse = {
+export interface StockLevelListResponse {
   data: StockLevelWithStatus[];
   pagination: {
     page: number;
@@ -84,9 +84,9 @@ export type StockLevelListResponse = {
     belowParCount: number;
     outOfStockCount: number;
   };
-};
+}
 
-export type CreateAdjustmentRequest = {
+export interface CreateAdjustmentRequest {
   inventoryItemId: string;
   storageLocationId: string | null;
   quantity: number;
@@ -94,9 +94,9 @@ export type CreateAdjustmentRequest = {
   reason: AdjustmentReason;
   notes?: string;
   referenceId?: string;
-};
+}
 
-export type CreateAdjustmentResponse = {
+export interface CreateAdjustmentResponse {
   success: boolean;
   message: string;
   adjustment: {
@@ -107,9 +107,9 @@ export type CreateAdjustmentResponse = {
     transactionId: string;
   };
   stockLevel: StockLevelWithStatus;
-};
+}
 
-export type InventoryTransaction = {
+export interface InventoryTransaction {
   tenantId: string;
   id: string;
   inventoryItemId: string;
@@ -139,9 +139,9 @@ export type InventoryTransaction = {
     name: string;
     email: string;
   } | null;
-};
+}
 
-export type TransactionFilters = {
+export interface TransactionFilters {
   inventoryItemId?: string;
   transactionType?: TransactionType;
   locationId?: string;
@@ -149,9 +149,9 @@ export type TransactionFilters = {
   endDate?: string;
   page?: number;
   limit?: number;
-};
+}
 
-export type TransactionListResponse = {
+export interface TransactionListResponse {
   data: InventoryTransaction[];
   pagination: {
     page: number;
@@ -159,9 +159,9 @@ export type TransactionListResponse = {
     total: number;
     totalPages: number;
   };
-};
+}
 
-export type StorageLocation = {
+export interface StorageLocation {
   id: string;
   tenantId: string;
   name: string;
@@ -170,11 +170,11 @@ export type StorageLocation = {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-};
+}
 
-export type LocationListResponse = {
+export interface LocationListResponse {
   data: StorageLocation[];
-};
+}
 
 // ============================================================================
 // Stock Levels API

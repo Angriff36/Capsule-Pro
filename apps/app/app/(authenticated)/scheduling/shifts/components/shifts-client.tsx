@@ -41,7 +41,7 @@ import { BulkAssignmentModal } from "./bulk-assignment-modal";
 import { ShiftDetailModal } from "./shift-detail-modal";
 import { ShiftForm } from "./shift-form";
 
-type Shift = {
+interface Shift {
   id: string;
   schedule_id: string;
   employee_id: string;
@@ -57,20 +57,20 @@ type Shift = {
   notes: string | null;
   created_at: Date;
   updated_at: Date;
-};
+}
 
-type Employee = {
+interface Employee {
   id: string;
   first_name: string | null;
   last_name: string | null;
   email: string;
   role: string;
-};
+}
 
-type Location = {
+interface Location {
   id: string;
   name: string;
-};
+}
 
 export function ShiftsClient() {
   const router = useRouter();

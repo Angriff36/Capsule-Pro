@@ -16,16 +16,16 @@ export const CONTRACT_STATUSES = [
 
 export type ContractStatus = (typeof CONTRACT_STATUSES)[number];
 
-export type ContractFilters = {
+export interface ContractFilters {
   search?: string;
   status?: ContractStatus;
   eventId?: string;
   clientId?: string;
   dateFrom?: string;
   dateTo?: string;
-};
+}
 
-export type CreateContractRequest = {
+export interface CreateContractRequest {
   eventId: string;
   clientId: string;
   title?: string;
@@ -33,9 +33,9 @@ export type CreateContractRequest = {
   expiresAt?: string | Date;
   documentUrl?: string;
   documentType?: string;
-};
+}
 
-export type UpdateContractRequest = {
+export interface UpdateContractRequest {
   id: string;
   eventId?: string;
   clientId?: string;
@@ -45,16 +45,16 @@ export type UpdateContractRequest = {
   documentUrl?: string;
   documentType?: string;
   status?: ContractStatus;
-};
+}
 
-export type ContractSignatureData = {
+export interface ContractSignatureData {
   signerName: string;
   signerEmail: string;
   signerTitle?: string;
   signatureDate: string | Date;
   ipAddress?: string;
   userAgent?: string;
-};
+}
 
 export function parseContractFilters(
   searchParams: URLSearchParams

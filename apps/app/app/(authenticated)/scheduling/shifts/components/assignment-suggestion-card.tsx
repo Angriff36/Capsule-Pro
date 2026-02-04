@@ -33,12 +33,12 @@ import {
   getScoreColor,
 } from "../../../../lib/use-assignment";
 
-type AssignmentSuggestionCardProps = {
+interface AssignmentSuggestionCardProps {
   suggestion: AssignmentSuggestion;
   isBestMatch?: boolean;
   onSelect?: () => void;
   selected?: boolean;
-};
+}
 
 export function AssignmentSuggestionCard({
   suggestion,

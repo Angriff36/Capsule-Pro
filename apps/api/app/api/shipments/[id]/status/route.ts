@@ -35,14 +35,14 @@ function validateStatusTransition(currentStatus: string, newStatus: string) {
   }
 }
 
-type ShipmentStatusRequestBody = {
+interface ShipmentStatusRequestBody {
   status: string;
   shipped_date?: string | null;
   actual_delivery_date?: string | null;
   delivered_by?: string | null;
   received_by?: string | null;
   signature?: string | null;
-};
+}
 
 function validateDeliveryConfirmation(
   status: string,

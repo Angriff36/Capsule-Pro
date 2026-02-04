@@ -52,13 +52,13 @@ function roundHours(hours: number, rule: RoundingRule): number {
   return strategy(hours);
 }
 
-type TipAllocationContext = {
+interface TipAllocationContext {
   pool: TipPool;
   employeeId: string;
   employeeHours: number;
   totalHoursAllEmployees: number;
   employeeCount: number;
-};
+}
 
 type TipAllocationStrategy = (context: TipAllocationContext) => Currency;
 
@@ -226,7 +226,7 @@ function applyDeductions(
   return { preTax, postTax, preTaxTotal, postTaxTotal };
 }
 
-type PayrollRecordBuildInput = {
+interface PayrollRecordBuildInput {
   employee: Employee;
   role: Role;
   timeEntries: TimeEntryInput[];
@@ -237,7 +237,7 @@ type PayrollRecordBuildInput = {
   periodEnd: Date;
   totalHoursAllEmployees: number;
   employeeCount: number;
-};
+}
 
 function buildPayrollRecord(input: PayrollRecordBuildInput): PayrollRecord {
   const {
@@ -464,7 +464,6 @@ export function calculatePayroll(input: PayrollCalculationInput): {
   warnings: string[];
 } {
   const {
-    tenantId,
     periodId,
     periodStart,
     periodEnd,

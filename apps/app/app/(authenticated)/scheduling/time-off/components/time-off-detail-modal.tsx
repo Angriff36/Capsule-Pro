@@ -19,12 +19,12 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { deleteTimeOffRequest, updateTimeOffStatus } from "../actions";
 
-type TimeOffDetailModalProps = {
+interface TimeOffDetailModalProps {
   open: boolean;
   onClose: () => void;
   timeOffRequest: TimeOffRequest | null;
   onDelete?: () => void;
-};
+}
 
 // Helper to get status badge style
 const getStatusBadgeVariant = (

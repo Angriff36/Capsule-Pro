@@ -3,22 +3,22 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type ClaimAction = {
+interface ClaimAction {
   taskId: string;
   action: string;
   timestamp: string;
-};
+}
 
-type SyncResult = {
+interface SyncResult {
   successful: Array<{ taskId: string; action: string }>;
   failed: Array<{ taskId: string; action: string; error: string }>;
-};
+}
 
-type User = {
+interface User {
   id: string;
   firstName: string | null;
   lastName: string | null;
-};
+}
 
 async function processClaimAction(
   tenantId: string,

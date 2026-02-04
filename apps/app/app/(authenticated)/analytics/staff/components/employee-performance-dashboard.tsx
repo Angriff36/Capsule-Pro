@@ -21,9 +21,9 @@ import type {
   EmployeePerformanceSummary,
 } from "../actions/get-employee-performance";
 
-type EmployeePerformanceDashboardProps = {
+interface EmployeePerformanceDashboardProps {
   employeeId?: string;
-};
+}
 
 export function EmployeePerformanceDashboard({
   employeeId,

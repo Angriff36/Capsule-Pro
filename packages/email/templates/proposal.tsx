@@ -12,13 +12,13 @@ import {
 } from "@react-email/components";
 import type React from "react";
 
-export type ProposalTemplateProps = {
+export interface ProposalTemplateProps {
   readonly recipientName: string;
   readonly proposalTitle: string;
   readonly proposalUrl: string;
   readonly message?: string;
   readonly totalAmount?: string;
-};
+}
 
 export const ProposalTemplate = ({
   recipientName,

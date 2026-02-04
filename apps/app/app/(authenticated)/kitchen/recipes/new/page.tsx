@@ -18,11 +18,11 @@ import { notFound } from "next/navigation";
 import { Header } from "../../../components/header";
 import { createRecipe } from "../actions";
 
-type UnitRow = {
+interface UnitRow {
   id: number;
   code: string;
   name: string;
-};
+}
 
 const NewRecipePage = async () => {
   const { orgId } = await auth();

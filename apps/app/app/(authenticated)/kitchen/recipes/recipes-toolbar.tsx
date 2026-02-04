@@ -19,13 +19,13 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-type RecipesTab = {
+interface RecipesTab {
   value: string;
   label: string;
   count?: number;
-};
+}
 
-type RecipesToolbarProps = {
+interface RecipesToolbarProps {
   tabs: RecipesTab[];
   activeTab: string;
   initialQuery?: string;
@@ -36,7 +36,7 @@ type RecipesToolbarProps = {
     label: string;
     href: string;
   };
-};
+}
 
 const buildSearchParams = (
   current: URLSearchParams,

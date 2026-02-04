@@ -11,7 +11,7 @@ export type AlertType =
   | "threshold_100"
   | "exceeded";
 
-export type LaborBudget = {
+export interface LaborBudget {
   id: string;
   tenant_id: string;
   location_id: string | null;
@@ -31,9 +31,9 @@ export type LaborBudget = {
   override_reason: string | null;
   created_at: Date;
   updated_at: Date;
-};
+}
 
-export type BudgetUtilization = {
+export interface BudgetUtilization {
   budgetId: string;
   budgetName: string;
   budgetType: string;
@@ -45,9 +45,9 @@ export type BudgetUtilization = {
   periodStart?: Date;
   periodEnd?: Date;
   status: BudgetStatus;
-};
+}
 
-export type BudgetAlert = {
+export interface BudgetAlert {
   id: string;
   tenant_id: string;
   budget_id: string;
@@ -60,13 +60,13 @@ export type BudgetAlert = {
   is_resolved: boolean;
   resolved_at: Date | null;
   created_at: Date;
-};
+}
 
 export interface BudgetWithUtilization extends LaborBudget {
   utilization?: BudgetUtilization;
 }
 
-export type CreateBudgetInput = {
+export interface CreateBudgetInput {
   name: string;
   description?: string;
   budgetType: BudgetType;
@@ -79,9 +79,9 @@ export type CreateBudgetInput = {
   threshold80Pct?: boolean;
   threshold90Pct?: boolean;
   threshold100Pct?: boolean;
-};
+}
 
-export type UpdateBudgetInput = {
+export interface UpdateBudgetInput {
   name?: string;
   description?: string;
   budgetTarget?: number;
@@ -90,20 +90,20 @@ export type UpdateBudgetInput = {
   threshold80Pct?: boolean;
   threshold90Pct?: boolean;
   threshold100Pct?: boolean;
-};
+}
 
-export type BudgetFilters = {
+export interface BudgetFilters {
   locationId?: string;
   eventId?: string;
   budgetType?: BudgetType;
   status?: BudgetStatus;
-};
+}
 
-export type AlertFilters = {
+export interface AlertFilters {
   budgetId?: string;
   isAcknowledged?: boolean;
   alertType?: AlertType;
-};
+}
 
 // API Client Functions
 const API_BASE = "/api/staff/budgets";

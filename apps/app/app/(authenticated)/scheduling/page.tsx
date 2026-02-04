@@ -35,28 +35,28 @@ import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
 import SchedulingRealtime from "./scheduling-realtime";
 
-type ScheduleSummaryRow = {
+interface ScheduleSummaryRow {
   shift_date: Date;
   shift_count: number;
   staff_count: number;
   open_count: number;
-};
+}
 
-type HappeningShiftRow = {
+interface HappeningShiftRow {
   shift_start: Date;
   shift_end: Date;
   first_name: string | null;
   last_name: string | null;
   role: string | null;
-};
+}
 
-type LeaderboardRow = {
+interface LeaderboardRow {
   employee_id: string;
   first_name: string | null;
   last_name: string | null;
   role: string | null;
   shift_count: number;
-};
+}
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",

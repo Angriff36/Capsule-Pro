@@ -12,9 +12,9 @@ import { Building2, Mail, MapPin, MoreVertical, Phone } from "lucide-react";
 import { memo } from "react";
 import type { CommandBoardCard } from "../../types";
 
-type ClientCardProps = {
+interface ClientCardProps {
   card: CommandBoardCard;
-};
+}
 
 const clientTypeConfig = {
   company: {

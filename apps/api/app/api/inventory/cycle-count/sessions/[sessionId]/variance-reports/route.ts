@@ -13,9 +13,9 @@ function toNumber(value: { toNumber: () => number }): number {
   return value.toNumber();
 }
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ sessionId: string }>;
-};
+}
 
 type VarianceReportStatus = "pending" | "reviewed" | "approved" | "rejected";
 

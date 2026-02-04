@@ -5,14 +5,14 @@ import {
   SDKError,
 } from "./errors.js";
 
-export type RetryOptions = {
+export interface RetryOptions {
   maxAttempts?: number;
   initialDelay?: number;
   maxDelay?: number;
   backoffMultiplier?: number;
   retryableErrors?: ErrorCode[];
   onRetry?: (attempt: number, error: SDKError) => void;
-};
+}
 
 export class RetryManager {
   private readonly maxAttempts: number;

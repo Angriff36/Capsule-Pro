@@ -20,13 +20,13 @@ import { CanvasViewport } from "./canvas-viewport";
 import { GridLayer } from "./grid-layer";
 import { calculateFitToScreen } from "./viewport-controls";
 
-type BoardCanvasProps = {
+interface BoardCanvasProps {
   boardId: string;
   initialCards?: CommandBoardCard[];
   canEdit?: boolean;
   onCardsChange?: (cards: CommandBoardCard[]) => void;
   onViewportChange?: (viewport: ViewportState) => void;
-};
+}
 
 export function BoardCanvas({
   boardId,

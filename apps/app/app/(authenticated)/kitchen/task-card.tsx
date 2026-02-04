@@ -32,11 +32,11 @@ type TaskWithRelations = KitchenTask & {
   claims: Array<KitchenTaskClaim & { user: UserSelect | null }>;
 };
 
-type TaskCardProps = {
+interface TaskCardProps {
   task: TaskWithRelations;
   currentUserId?: string | null;
   compact?: boolean;
-};
+}
 
 const priorityConfig = {
   1: { label: "Critical", color: "bg-rose-500 text-white", dot: "bg-rose-500" },

@@ -28,11 +28,11 @@ function positionToDb(position: CardPosition): {
   };
 }
 
-export type CardResult = {
+export interface CardResult {
   success: boolean;
   card?: CommandBoardCard;
   error?: string;
-};
+}
 
 export async function createCard(
   boardId: string,

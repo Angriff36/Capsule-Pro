@@ -33,7 +33,7 @@ import {
 } from "../../../../lib/use-assignment";
 import { AssignmentSuggestionCard } from "./assignment-suggestion-card";
 
-type AutoAssignmentModalProps = {
+interface AutoAssignmentModalProps {
   open: boolean;
   onClose: () => void;
   shiftId: string;
@@ -44,7 +44,7 @@ type AutoAssignmentModalProps = {
     locationName?: string;
     role?: string;
   };
-};
+}
 
 export function AutoAssignmentModal({
   open,

@@ -14,10 +14,10 @@ import type {
   StockReorderStatus,
 } from "./types";
 
-type PaginationParams = {
+interface PaginationParams {
   page: number;
   limit: number;
-};
+}
 
 /**
  * Parse pagination parameters from URL search params
@@ -148,6 +148,114 @@ function calculateStockOutRisk(
 }
 
 /**
+ * Group stock records by item ID and location
+ */
+function groupStockByItemAndLocation(
+  stockRecords: Array<{
+    itemId: string;
+    storageLocationId: string;
+    quantity_on_hand: number | string;
+    last_counted_at: Date | null;
+  }>
+) {
+  const stockByItemAndLocation = new Map<
+    string,
+    Map<string, { quantity: number; lastCountedAt: Date | null }>
+  >();
+
+  for (const stock of stockRecords) {
+    let itemMap = stockByItemAndLocation.get(stock.itemId);
+    if (!itemMap) {
+      itemMap = new Map();
+      stockByItemAndLocation.set(stock.itemId, itemMap);
+    }
+    itemMap.set(stock.storageLocationId, {
+      quantity: Number(stock.quantity_on_hand),
+      lastCountedAt: stock.last_counted_at,
+    });
+  }
+
+  return stockByItemAndLocation;
+}
+
+/**
+ * Check if an item passes calculated filters
+ */
+function passesCalculatedFilters(
+  reorderStatus: StockReorderStatus,
+  quantityOnHand: number,
+  reorderLevel: number,
+  filters: StockLevelFilters
+): boolean {
+  if (filters.reorderStatus && reorderStatus !== filters.reorderStatus) {
+    return false;
+  }
+  if (filters.lowStock && quantityOnHand > reorderLevel) {
+    return false;
+  }
+  if (filters.outOfStock && quantityOnHand > 0) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Create a stock level object for an item
+ */
+function createStockLevel(
+  item: {
+    tenantId: string;
+    id: string;
+    item_number: string;
+    name: string;
+    category: string | null;
+    quantityOnHand: number | string;
+    reorder_level: number | null;
+    unitCost: number | string;
+    createdAt: Date;
+    updatedAt: Date;
+  },
+  quantityOnHand: number,
+  reorderLevel: number,
+  parLevel: number | null,
+  totalValueItem: number,
+  reorderStatus: StockReorderStatus,
+  parStatus: string,
+  stockOutRisk: boolean,
+  locationFilter: string | null,
+  locationStock?: { quantity: number; lastCountedAt: Date | null },
+  storageLocation?: { id: string; name: string }
+): StockLevelWithStatus {
+  return {
+    tenantId: item.tenantId,
+    id: item.id,
+    inventoryItemId: item.id,
+    storageLocationId: locationFilter,
+    quantityOnHand: locationStock?.quantity ?? quantityOnHand,
+    reorderLevel,
+    parLevel,
+    lastCountedAt: locationStock?.lastCountedAt ?? null,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+    item: {
+      id: item.id,
+      itemNumber: item.item_number,
+      name: item.name,
+      category: item.category,
+      unitCost: Number(item.unitCost),
+      unit: null,
+    },
+    storageLocation: storageLocation
+      ? { id: storageLocation.id, name: storageLocation.name }
+      : null,
+    reorderStatus,
+    totalValue: totalValueItem,
+    parStatus,
+    stockOutRisk,
+  };
+}
+
+/**
  * GET /api/inventory/stock-levels - List stock levels with pagination and filters
  */
 export async function GET(request: Request) {
@@ -201,11 +309,12 @@ export async function GET(request: Request) {
     `;
 
     // Filter by location if specified
-    const locationFilter = filters.locationId
-      ? storageLocations.some((l) => l.id === filters.locationId)
+    let locationFilter: string | null = null;
+    if (filters.locationId) {
+      locationFilter = storageLocations.some((l) => l.id === filters.locationId)
         ? filters.locationId
-        : null
-      : null;
+        : null;
+    }
 
     // Get total count for pagination
     const _total = await database.inventoryItem.count({ where });
@@ -236,22 +345,7 @@ export async function GET(request: Request) {
     });
 
     // Group stock by item ID and location
-    const stockByItemAndLocation = new Map<
-      string,
-      Map<string, { quantity: number; lastCountedAt: Date | null }>
-    >();
-
-    for (const stock of stockRecords) {
-      let itemMap = stockByItemAndLocation.get(stock.itemId);
-      if (!itemMap) {
-        itemMap = new Map();
-        stockByItemAndLocation.set(stock.itemId, itemMap);
-      }
-      itemMap.set(stock.storageLocationId, {
-        quantity: Number(stock.quantity_on_hand),
-        lastCountedAt: stock.last_counted_at,
-      });
-    }
+    const stockByItemAndLocation = groupStockByItemAndLocation(stockRecords);
 
     // Build stock levels with status
     const stockLevels: StockLevelWithStatus[] = [];
@@ -280,15 +374,14 @@ export async function GET(request: Request) {
       const totalValueItem = quantityOnHand * unitCost;
 
       // Apply filters that require calculation
-      if (filters.reorderStatus && reorderStatus !== filters.reorderStatus) {
-        continue;
-      }
-
-      if (filters.lowStock && quantityOnHand > reorderLevel) {
-        continue;
-      }
-
-      if (filters.outOfStock && quantityOnHand > 0) {
+      if (
+        !passesCalculatedFilters(
+          reorderStatus,
+          quantityOnHand,
+          reorderLevel,
+          filters
+        )
+      ) {
         continue;
       }
 
@@ -312,61 +405,37 @@ export async function GET(request: Request) {
             (l) => l.id === locationFilter
           );
 
-          stockLevels.push({
-            tenantId: item.tenantId,
-            id: item.id,
-            inventoryItemId: item.id,
-            storageLocationId: locationFilter,
-            quantityOnHand: locationStock.quantity,
-            reorderLevel,
-            parLevel,
-            lastCountedAt: locationStock.lastCountedAt,
-            createdAt: item.createdAt,
-            updatedAt: item.updatedAt,
-            item: {
-              id: item.id,
-              itemNumber: item.item_number,
-              name: item.name,
-              category: item.category,
-              unitCost: Number(item.unitCost),
-              unit: null,
-            },
-            storageLocation: storageLocation
-              ? { id: storageLocation.id, name: storageLocation.name }
-              : null,
-            reorderStatus,
-            totalValue: totalValueItem,
-            parStatus,
-            stockOutRisk,
-          });
+          stockLevels.push(
+            createStockLevel(
+              item,
+              quantityOnHand,
+              reorderLevel,
+              parLevel,
+              totalValueItem,
+              reorderStatus,
+              parStatus,
+              stockOutRisk,
+              locationFilter,
+              locationStock,
+              storageLocation
+            )
+          );
         }
       } else {
         // Show aggregated stock across all locations for the item
-        stockLevels.push({
-          tenantId: item.tenantId,
-          id: item.id,
-          inventoryItemId: item.id,
-          storageLocationId: null,
-          quantityOnHand,
-          reorderLevel,
-          parLevel,
-          lastCountedAt: null,
-          createdAt: item.createdAt,
-          updatedAt: item.updatedAt,
-          item: {
-            id: item.id,
-            itemNumber: item.item_number,
-            name: item.name,
-            category: item.category,
-            unitCost: Number(item.unitCost),
-            unit: null,
-          },
-          storageLocation: null,
-          reorderStatus,
-          totalValue: totalValueItem,
-          parStatus,
-          stockOutRisk,
-        });
+        stockLevels.push(
+          createStockLevel(
+            item,
+            quantityOnHand,
+            reorderLevel,
+            parLevel,
+            totalValueItem,
+            reorderStatus,
+            parStatus,
+            stockOutRisk,
+            null
+          )
+        );
       }
     }
 

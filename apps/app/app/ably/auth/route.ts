@@ -2,9 +2,9 @@ import { auth } from "@repo/auth/server";
 import Ably from "ably";
 import { NextResponse } from "next/server";
 
-type AuthRequest = {
+interface AuthRequest {
   tenantId: string;
-};
+}
 
 const getClientId = (tenantId: string, userId: string) =>
   `tenant:${tenantId}:user:${userId}`;

@@ -9,7 +9,7 @@ import {
 } from "@repo/design-system/components/ui/card";
 import { cn } from "@repo/design-system/lib/utils";
 
-type CohortAnalysisProps = {
+interface CohortAnalysisProps {
   data: Array<{
     cohort: string;
     month0: number;
@@ -26,7 +26,7 @@ type CohortAnalysisProps = {
     month11: number;
   }>;
   className?: string;
-};
+}
 
 function getRetentionColor(value: number): string {
   if (value >= 80) {

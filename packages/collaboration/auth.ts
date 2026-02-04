@@ -12,17 +12,17 @@ type Json =
       [key: string]: Json | undefined;
     };
 
-type LiveblocksUserInfo = {
+interface LiveblocksUserInfo {
   [key: string]: Json | undefined;
   name?: string;
   avatar?: string;
-};
+}
 
-type AuthenticateOptions = {
+interface AuthenticateOptions {
   userId: string;
   orgId: string;
   userInfo?: LiveblocksUserInfo;
-};
+}
 
 const secret = keys().LIVEBLOCKS_SECRET;
 

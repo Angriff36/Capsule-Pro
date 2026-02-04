@@ -12,7 +12,7 @@ import { detectPdfFormat, extractPdfText } from "./pdf-extractor.js";
 import { getEventNamesFromShifts, parseStaffCsv } from "./staff-csv-parser.js";
 import { parseTppEvent } from "./tpp-event-parser.js";
 
-export type ProcessedDocument = {
+export interface ProcessedDocument {
   id: string;
   fileName: string;
   fileType: "pdf" | "csv";
@@ -23,12 +23,12 @@ export type ProcessedDocument = {
   availableEventNames?: string[];
   errors: string[];
   warnings: string[];
-};
+}
 
-export type ProcessDocumentOptions = {
+export interface ProcessDocumentOptions {
   fileName: string;
   sourceName?: string;
-};
+}
 
 /**
  * Process a document and route to appropriate parser

@@ -21,9 +21,9 @@ import type {
   HistoricalProfitabilityData,
 } from "../actions/get-event-profitability";
 
-type ProfitabilityDashboardProps = {
+interface ProfitabilityDashboardProps {
   eventId?: string;
-};
+}
 
 export function ProfitabilityDashboard({
   eventId,

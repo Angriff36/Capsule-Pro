@@ -13,7 +13,7 @@ export type TimeOffType =
   | "PATERNITY_LEAVE"
   | "OTHER";
 
-export type TimeOffRequest = {
+export interface TimeOffRequest {
   id: string;
   tenant_id: string;
   employee_id: string;
@@ -33,22 +33,22 @@ export type TimeOffRequest = {
   processed_by_first_name: string | null;
   processed_by_last_name: string | null;
   rejection_reason: string | null;
-};
+}
 
-export type CreateTimeOffRequestInput = {
+export interface CreateTimeOffRequestInput {
   employeeId: string;
   startDate: string; // ISO date string
   endDate: string; // ISO date string
   reason?: string;
   requestType: TimeOffType;
-};
+}
 
-export type UpdateTimeOffStatusInput = {
+export interface UpdateTimeOffStatusInput {
   status: TimeOffStatus;
   rejectionReason?: string; // Required when status is REJECTED
-};
+}
 
-export type TimeOffRequestFilters = {
+export interface TimeOffRequestFilters {
   employeeId?: string;
   status?: TimeOffStatus;
   startDate?: string; // Filter requests starting on or after this date
@@ -56,9 +56,9 @@ export type TimeOffRequestFilters = {
   requestType?: TimeOffType;
   page?: number;
   limit?: number;
-};
+}
 
-export type TimeOffRequestsListResponse = {
+export interface TimeOffRequestsListResponse {
   requests: TimeOffRequest[];
   pagination: {
     page: number;
@@ -66,4 +66,4 @@ export type TimeOffRequestsListResponse = {
     total: number;
     totalPages: number;
   };
-};
+}

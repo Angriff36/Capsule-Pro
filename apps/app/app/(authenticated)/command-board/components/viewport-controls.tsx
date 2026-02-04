@@ -18,7 +18,7 @@ import {
 // Types
 // =============================================================================
 
-export type ViewportControlsProps = {
+export interface ViewportControlsProps {
   /** Current viewport state */
   viewport: ViewportState;
   /** Callback to zoom in */
@@ -44,9 +44,9 @@ export type ViewportControlsProps = {
     | "inline";
   /** Whether controls are disabled */
   disabled?: boolean;
-};
+}
 
-export type FitToScreenOptions = {
+export interface FitToScreenOptions {
   /** Bounding boxes of all items to fit */
   bounds: BoundingBox[];
   /** Container dimensions */
@@ -58,7 +58,7 @@ export type FitToScreenOptions = {
   minZoom?: number;
   /** Maximum zoom level */
   maxZoom?: number;
-};
+}
 
 // =============================================================================
 // Utility Functions
@@ -221,14 +221,14 @@ function ResetIcon({ className }: { className?: string }) {
 // Helper Components
 // =============================================================================
 
-type ControlButtonProps = {
+interface ControlButtonProps {
   onClick: () => void;
   disabled?: boolean;
   tooltip: string;
   shortcut?: string;
   ariaLabel: string;
   children: ReactNode;
-};
+}
 
 function ControlButton({
   onClick,
@@ -400,13 +400,13 @@ export function ViewportControls({
 // Preset Zoom Levels Component
 // =============================================================================
 
-type ZoomPresetsProps = {
+interface ZoomPresetsProps {
   onZoomTo: (zoom: number) => void;
   currentZoom: number;
   presets?: number[];
   className?: string;
   disabled?: boolean;
-};
+}
 
 /**
  * ZoomPresets - Quick zoom level selection buttons
@@ -535,7 +535,7 @@ export function ViewportToolbar({
 // Hook: useViewportControls
 // =============================================================================
 
-type UseViewportControlsOptions = {
+interface UseViewportControlsOptions {
   /** Initial viewport state */
   initialViewport?: Partial<ViewportState>;
   /** Minimum zoom level */
@@ -546,7 +546,7 @@ type UseViewportControlsOptions = {
   containerRef?: React.RefObject<HTMLElement>;
   /** Function to get all content bounds for fit-to-screen */
   getContentBounds?: () => BoundingBox[];
-};
+}
 
 /**
  * Hook for managing viewport controls with fit-to-screen support

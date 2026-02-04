@@ -4,12 +4,12 @@ import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 
-type StationMapping = {
+interface StationMapping {
   stationId: string;
   stationName: string;
   icon: string;
   color: string;
-};
+}
 
 const PREP_STATIONS: StationMapping[] = [
   {
@@ -44,7 +44,7 @@ const PREP_STATIONS: StationMapping[] = [
   },
 ];
 
-export type IngredientItem = {
+export interface IngredientItem {
   ingredientId: string;
   ingredientName: string;
   category: string | null;
@@ -56,9 +56,9 @@ export type IngredientItem = {
   isOptional: boolean;
   preparationNotes: string | null;
   allergens: string[];
-};
+}
 
-type RecipeInfo = {
+interface RecipeInfo {
   id: string;
   name: string;
   versionId: string;
@@ -68,9 +68,9 @@ type RecipeInfo = {
   cookTimeMinutes: number | null;
   category: string | null;
   tags: string[];
-};
+}
 
-type DishInfo = {
+interface DishInfo {
   id: string;
   name: string;
   recipeId: string | null;
@@ -80,9 +80,9 @@ type DishInfo = {
   servingPortion: number;
   course: string | null;
   quantityServings: number;
-};
+}
 
-export type StationPrepList = {
+export interface StationPrepList {
   stationId: string;
   stationName: string;
   icon: string;
@@ -97,9 +97,9 @@ export type StationPrepList = {
     status: string;
     priority: number;
   }>;
-};
+}
 
-export type PrepListGenerationResult = {
+export interface PrepListGenerationResult {
   eventId: string;
   eventTitle: string;
   eventDate: Date;
@@ -110,14 +110,14 @@ export type PrepListGenerationResult = {
   totalIngredients: number;
   totalEstimatedTime: number;
   generatedAt: Date;
-};
+}
 
-type GeneratePrepListInput = {
+interface GeneratePrepListInput {
   eventId: string;
   batchMultiplier?: number;
   dietaryRestrictions?: string[];
   customInstructions?: string;
-};
+}
 
 export async function generatePrepList(
   input: GeneratePrepListInput

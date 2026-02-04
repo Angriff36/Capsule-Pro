@@ -26,7 +26,7 @@ import {
 // Types
 // =============================================================================
 
-type CanvasViewportProps = {
+interface CanvasViewportProps {
   /** Child elements to render within the viewport */
   children?: ReactNode;
   /** Additional CSS classes for the viewport container */
@@ -55,23 +55,23 @@ type CanvasViewportProps = {
   maxZoom?: number;
   /** Function to get all content bounds for fit-to-screen */
   getContentBounds?: () => BoundingBox[];
-};
+}
 
-type PanState = {
+interface PanState {
   isPanning: boolean;
   startX: number;
   startY: number;
   startPanX: number;
   startPanY: number;
-};
+}
 
 // Public API exposed via ref
-export type ViewportRef = {
+export interface ViewportRef {
   zoomIn: () => void;
   zoomOut: () => void;
   resetViewport: () => void;
   setZoom: (zoom: number) => void;
-};
+}
 
 // =============================================================================
 // Hook: useViewportState
@@ -543,14 +543,14 @@ export const CanvasViewport = forwardRef<ViewportRef, CanvasViewportProps>(
 // Sub-component: ViewportControlBar
 // =============================================================================
 
-type ViewportControlBarProps = {
+interface ViewportControlBarProps {
   viewport: ViewportState;
   onZoomIn: () => void;
   onZoomOut: () => void;
   onReset: () => void;
   minZoom: number;
   maxZoom: number;
-};
+}
 
 function ViewportControlBar({
   viewport,

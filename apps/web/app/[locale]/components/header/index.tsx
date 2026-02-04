@@ -17,9 +17,9 @@ import { useState } from "react";
 import { env } from "@/env";
 import { LanguageSwitcher } from "./language-switcher";
 
-type HeaderProps = {
+interface HeaderProps {
   dictionary: Dictionary;
-};
+}
 
 export const Header = ({ dictionary }: HeaderProps) => {
   const navigationItems = [

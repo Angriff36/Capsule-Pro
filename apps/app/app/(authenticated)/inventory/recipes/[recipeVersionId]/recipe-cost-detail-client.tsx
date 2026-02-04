@@ -55,9 +55,9 @@ import {
   useRecipeCost,
 } from "../../../../lib/use-recipe-costing";
 
-type RecipeCostDetailClientProps = {
+interface RecipeCostDetailClientProps {
   recipeVersionId: string;
-};
+}
 
 export const RecipeCostDetailClient = ({
   recipeVersionId,

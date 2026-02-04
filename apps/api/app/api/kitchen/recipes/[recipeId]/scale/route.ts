@@ -3,18 +3,18 @@ import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-export type PortionScaleRequest = {
+export interface PortionScaleRequest {
   recipeVersionId: string;
   targetPortions: number;
   currentYield: number;
-};
+}
 
-export type ScaledRecipeCost = {
+export interface ScaledRecipeCost {
   scaledTotalCost: number;
   scaledCostPerYield: number;
   scaleFactor: number;
   originalCost: number;
-};
+}
 
 const updateRecipeIngredientWasteFactor = async (
   recipeIngredientId: string,
@@ -118,7 +118,7 @@ export async function PATCH(
 ) {
   try {
     const { recipeId } = await params;
-    const recipeVersionId = recipeId;
+    const _recipeVersionId = recipeId;
     const body = await request.json();
     const { recipeIngredientId, wasteFactor } = body;
     const { orgId } = await auth();

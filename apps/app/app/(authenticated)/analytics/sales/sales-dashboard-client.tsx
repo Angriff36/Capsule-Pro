@@ -164,10 +164,10 @@ const findRowLabel = (row: DataRow): string | null => {
   return fallback ? String(fallback[1]) : null;
 };
 
-type TopItem = {
+interface TopItem {
   label: string;
   value: number;
-};
+}
 
 const getTopItem = <T extends Record<string, CellValue>>(
   items: T[],
@@ -195,11 +195,11 @@ const getTopItem = <T extends Record<string, CellValue>>(
   return top;
 };
 
-type KpiCardProps = {
+interface KpiCardProps {
   label: string;
   value: string;
   subtext?: string;
-};
+}
 
 const KpiCard = ({ label, value, subtext }: KpiCardProps) => (
   <Card>
@@ -215,12 +215,12 @@ const KpiCard = ({ label, value, subtext }: KpiCardProps) => (
   </Card>
 );
 
-type BarChartCardProps = {
+interface BarChartCardProps {
   title: string;
   description?: string;
   data: Array<{ label: string; value: number }>;
   valueFormatter?: (value: number) => string;
-};
+}
 
 const BarChartCard = ({
   title,
@@ -290,12 +290,12 @@ const BarChartCard = ({
   );
 };
 
-type LineChartCardProps = {
+interface LineChartCardProps {
   title: string;
   description?: string;
   data: Array<{ label: string; value: number }>;
   valueFormatter?: (value: number) => string;
-};
+}
 
 const LineChartCard = ({
   title,
@@ -420,12 +420,12 @@ const mapRowsWithDates = (
     return next;
   });
 
-type ReportSummary = {
+interface ReportSummary {
   title: string;
   windowLabel: string;
   kpis: KpiCardProps[];
   highlights?: string[];
-};
+}
 
 const pdfStyles = StyleSheet.create({
   page: {
@@ -499,7 +499,7 @@ const SalesReportDocument = ({ summary }: { summary: ReportSummary }) => (
           </View>
         ))}
       </View>
-      {summary.highlights && summary.highlights.length ? (
+      {summary.highlights?.length ? (
         <View style={pdfStyles.section}>
           <Text style={pdfStyles.sectionTitle}>Highlights</Text>
           {summary.highlights.map((item, index) => (
@@ -529,12 +529,12 @@ const ReportDownload = ({
   </Button>
 );
 
-type DataTableProps = {
+interface DataTableProps {
   rows: DataRow[];
   columns?: string[];
   maxRows?: number;
   emptyText?: string;
-};
+}
 
 const DataTable = ({
   rows,
@@ -585,9 +585,9 @@ const DataTable = ({
   );
 };
 
-type ComparisonTableProps = {
+interface ComparisonTableProps {
   summaries: PeriodSummary[];
-};
+}
 
 const ComparisonTable = ({ summaries }: ComparisonTableProps) => (
   <div className="overflow-x-auto rounded-lg border">
@@ -640,9 +640,9 @@ const ComparisonTable = ({ summaries }: ComparisonTableProps) => (
   </div>
 );
 
-type ValidationTableProps = {
+interface ValidationTableProps {
   results: FunnelValidationResult[];
-};
+}
 
 const ValidationTable = ({ results }: ValidationTableProps) => {
   if (!results.length) {
@@ -721,9 +721,9 @@ const ValidationTable = ({ results }: ValidationTableProps) => {
   );
 };
 
-type PricingSummaryTableProps = {
+interface PricingSummaryTableProps {
   rows: QuarterlyMetrics["pricingSummary"];
-};
+}
 
 const PricingSummaryTable = ({ rows }: PricingSummaryTableProps) => {
   if (!rows.length) {
@@ -768,9 +768,9 @@ const PricingSummaryTable = ({ rows }: PricingSummaryTableProps) => {
   );
 };
 
-type SegmentSummaryTableProps = {
+interface SegmentSummaryTableProps {
   rows: QuarterlyMetrics["segmentSummary"];
-};
+}
 
 const SegmentSummaryTable = ({ rows }: SegmentSummaryTableProps) => {
   if (!rows.length) {
@@ -811,9 +811,9 @@ const SegmentSummaryTable = ({ rows }: SegmentSummaryTableProps) => {
   );
 };
 
-type FunnelBySourceTableProps = {
+interface FunnelBySourceTableProps {
   rows: QuarterlyMetrics["funnelBySource"];
-};
+}
 
 const FunnelBySourceTable = ({ rows }: FunnelBySourceTableProps) => {
   if (!rows.length) {
@@ -1531,10 +1531,10 @@ export function SalesDashboardClient() {
                       maxRows={5}
                       rows={metrics.weekly.topPending.map((row) => {
                         const next: DataRow = { ...row };
-                        const statusValue = row["_status"];
+                        const statusValue = row._status;
                         if (statusValue !== undefined) {
                           next.status = statusValue;
-                          delete next["_status"];
+                          next._status = undefined;
                         }
                         return next;
                       })}

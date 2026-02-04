@@ -15,9 +15,9 @@ import type {
   QualityStatus,
 } from "../types";
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ id: string }>;
-};
+}
 
 /**
  * GET /api/inventory/purchase-orders/[id] - Get a single purchase order by ID

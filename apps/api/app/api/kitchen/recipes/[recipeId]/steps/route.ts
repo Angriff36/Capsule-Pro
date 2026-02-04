@@ -12,7 +12,7 @@ import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-export type RecipeStep = {
+export interface RecipeStep {
   stepNumber: number;
   instruction: string;
   durationMinutes: number | null;
@@ -22,9 +22,9 @@ export type RecipeStep = {
   tips: string | null;
   videoUrl: string | null;
   imageUrl: string | null;
-};
+}
 
-export type RecipeStepsResponse = {
+export interface RecipeStepsResponse {
   recipeId: string;
   recipeName: string;
   recipeVersionId: string;
@@ -36,7 +36,7 @@ export type RecipeStepsResponse = {
   yieldUnit: string | null;
   steps: RecipeStep[];
   totalDuration: number; // Total time in minutes for all timed steps
-};
+}
 
 /**
  * GET /api/kitchen/recipes/[recipeId]/steps

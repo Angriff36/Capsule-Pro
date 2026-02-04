@@ -23,9 +23,9 @@ function toNumber(value: { toNumber: () => number }): number {
   return value.toNumber();
 }
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ sessionId: string }>;
-};
+}
 
 /**
  * Map cycle count session to response format
@@ -81,6 +81,51 @@ function mapSession(session: {
 /**
  * Build update data for session
  */
+const VALID_STATUSES: CycleCountSessionStatus[] = [
+  "draft",
+  "in_progress",
+  "completed",
+  "finalized",
+  "cancelled",
+] as const;
+
+function validateStringField(value: unknown, fieldName: string): string {
+  if (typeof value !== "string") {
+    throw new InvariantError(`${fieldName} must be a string`);
+  }
+  return value;
+}
+
+function validateStatus(value: unknown): CycleCountSessionStatus {
+  if (!VALID_STATUSES.includes(value as CycleCountSessionStatus)) {
+    throw new InvariantError(
+      `status must be one of: ${VALID_STATUSES.join(", ")}`
+    );
+  }
+  return value as CycleCountSessionStatus;
+}
+
+function getStatusTimestamp(
+  status: CycleCountSessionStatus,
+  existing: {
+    startedAt: Date | null;
+    completedAt: Date | null;
+    finalizedAt: Date | null;
+  }
+): { startedAt?: Date; completedAt?: Date; finalizedAt?: Date } {
+  const timestamps: Record<string, Date> = {};
+  if (status === "in_progress" && !existing.startedAt) {
+    timestamps.startedAt = new Date();
+  }
+  if (status === "completed" && !existing.completedAt) {
+    timestamps.completedAt = new Date();
+  }
+  if (status === "finalized" && !existing.finalizedAt) {
+    timestamps.finalizedAt = new Date();
+  }
+  return timestamps;
+}
+
 function buildSessionUpdateData(
   body: Record<string, unknown>,
   existing: {
@@ -92,52 +137,27 @@ function buildSessionUpdateData(
   const updateData: Record<string, unknown> = {};
 
   if (body.session_name !== undefined) {
-    if (typeof body.session_name !== "string") {
-      throw new InvariantError("session_name must be a string");
-    }
-    updateData.sessionName = body.session_name;
+    updateData.sessionName = validateStringField(
+      body.session_name,
+      "session_name"
+    );
   }
 
   if (body.status !== undefined) {
-    const validStatuses: CycleCountSessionStatus[] = [
-      "draft",
-      "in_progress",
-      "completed",
-      "finalized",
-      "cancelled",
-    ];
-
-    if (!validStatuses.includes(body.status as CycleCountSessionStatus)) {
-      throw new InvariantError(
-        `status must be one of: ${validStatuses.join(", ")}`
-      );
-    }
-
-    updateData.status = body.status;
-
-    if (body.status === "in_progress" && !existing.startedAt) {
-      updateData.startedAt = new Date();
-    }
-    if (body.status === "completed" && !existing.completedAt) {
-      updateData.completedAt = new Date();
-    }
-    if (body.status === "finalized" && !existing.finalizedAt) {
-      updateData.finalizedAt = new Date();
-    }
+    const status = validateStatus(body.status);
+    updateData.status = status;
+    Object.assign(updateData, getStatusTimestamp(status, existing));
   }
 
   if (body.notes !== undefined) {
-    if (typeof body.notes !== "string") {
-      throw new InvariantError("notes must be a string");
-    }
-    updateData.notes = body.notes;
+    updateData.notes = validateStringField(body.notes, "notes");
   }
 
   if (body.approved_by_id !== undefined) {
-    if (typeof body.approved_by_id !== "string") {
-      throw new InvariantError("approved_by_id must be a string");
-    }
-    updateData.approvedById = body.approved_by_id;
+    updateData.approvedById = validateStringField(
+      body.approved_by_id,
+      "approved_by_id"
+    );
   }
 
   return updateData;

@@ -15,7 +15,7 @@ import {
 import { cn } from "@repo/design-system/lib/utils";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
-type PredictiveLTVProps = {
+interface PredictiveLTVProps {
   data: {
     averagePredictedLTV: number;
     confidence: number;
@@ -28,7 +28,7 @@ type PredictiveLTVProps = {
     }>;
   };
   className?: string;
-};
+}
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {

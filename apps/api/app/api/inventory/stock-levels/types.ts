@@ -55,7 +55,7 @@ export type AdjustmentStatus =
 /**
  * Stock level at a specific location
  */
-export type StockLevel = {
+export interface StockLevel {
   tenantId: string;
   id: string;
   inventoryItemId: string;
@@ -66,7 +66,7 @@ export type StockLevel = {
   lastCountedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
-};
+}
 
 /**
  * Stock level with associated item details
@@ -99,7 +99,7 @@ export interface StockLevelWithStatus extends StockLevelWithItem {
 /**
  * Filters for listing stock levels
  */
-export type StockLevelFilters = {
+export interface StockLevelFilters {
   search?: string;
   category?: string;
   locationId?: string;
@@ -108,12 +108,12 @@ export type StockLevelFilters = {
   outOfStock?: boolean;
   page?: number;
   limit?: number;
-};
+}
 
 /**
  * Response for stock levels list endpoint
  */
-export type StockLevelListResponse = {
+export interface StockLevelListResponse {
   data: StockLevelWithStatus[];
   pagination: {
     page: number;
@@ -127,7 +127,7 @@ export type StockLevelListResponse = {
     belowParCount: number;
     outOfStockCount: number;
   };
-};
+}
 
 // ============================================================================
 // Adjustment Types
@@ -136,7 +136,7 @@ export type StockLevelListResponse = {
 /**
  * Request to create a stock adjustment
  */
-export type CreateAdjustmentRequest = {
+export interface CreateAdjustmentRequest {
   inventoryItemId: string;
   storageLocationId: string | null;
   quantity: number;
@@ -144,12 +144,12 @@ export type CreateAdjustmentRequest = {
   reason: AdjustmentReason;
   notes?: string;
   referenceId?: string;
-};
+}
 
 /**
  * Response after creating an adjustment
  */
-export type CreateAdjustmentResponse = {
+export interface CreateAdjustmentResponse {
   success: boolean;
   message: string;
   adjustment: {
@@ -160,7 +160,7 @@ export type CreateAdjustmentResponse = {
     transactionId: string;
   };
   stockLevel: StockLevelWithStatus;
-};
+}
 
 // ============================================================================
 // Transaction Types
@@ -169,7 +169,7 @@ export type CreateAdjustmentResponse = {
 /**
  * Inventory transaction record
  */
-export type InventoryTransaction = {
+export interface InventoryTransaction {
   tenantId: string;
   id: string;
   inventoryItemId: string;
@@ -184,7 +184,7 @@ export type InventoryTransaction = {
   notes: string | null;
   performedBy: string | null;
   createdAt: Date;
-};
+}
 
 /**
  * Transaction with associated item details
@@ -210,7 +210,7 @@ export interface TransactionWithDetails extends InventoryTransaction {
 /**
  * Filters for listing transactions
  */
-export type TransactionFilters = {
+export interface TransactionFilters {
   inventoryItemId?: string;
   transactionType?: TransactionType;
   locationId?: string;
@@ -218,12 +218,12 @@ export type TransactionFilters = {
   endDate?: string;
   page?: number;
   limit?: number;
-};
+}
 
 /**
  * Response for transactions list endpoint
  */
-export type TransactionListResponse = {
+export interface TransactionListResponse {
   data: TransactionWithDetails[];
   pagination: {
     page: number;
@@ -231,7 +231,7 @@ export type TransactionListResponse = {
     total: number;
     totalPages: number;
   };
-};
+}
 
 // ============================================================================
 // Location Types
@@ -240,7 +240,7 @@ export type TransactionListResponse = {
 /**
  * Storage location for inventory
  */
-export type StorageLocation = {
+export interface StorageLocation {
   id: string;
   tenantId: string;
   name: string;
@@ -249,14 +249,14 @@ export type StorageLocation = {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-};
+}
 
 /**
  * Response for locations list endpoint
  */
-export type LocationListResponse = {
+export interface LocationListResponse {
   data: StorageLocation[];
-};
+}
 
 // ============================================================================
 // Constants

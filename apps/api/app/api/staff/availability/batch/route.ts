@@ -72,7 +72,7 @@ export async function POST(request: Request) {
   }
 
   // Verify employee exists and is active
-  const { employee, error: employeeError } = await verifyEmployee(
+  const { error: employeeError } = await verifyEmployee(
     tenantId,
     body.employeeId
   );
@@ -87,16 +87,15 @@ export async function POST(request: Request) {
   }> = [];
 
   for (const pattern of body.patterns) {
-    const { hasOverlap, overlappingAvailability } =
-      await checkOverlappingAvailability(
-        tenantId,
-        body.employeeId,
-        pattern.dayOfWeek,
-        pattern.startTime,
-        pattern.endTime,
-        effectiveFrom,
-        effectiveUntil
-      );
+    const { hasOverlap } = await checkOverlappingAvailability(
+      tenantId,
+      body.employeeId,
+      pattern.dayOfWeek,
+      pattern.startTime,
+      pattern.endTime,
+      effectiveFrom,
+      effectiveUntil
+    );
 
     if (hasOverlap) {
       errors.push({

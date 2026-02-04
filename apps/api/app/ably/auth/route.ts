@@ -5,9 +5,9 @@ import { env } from "@/env";
 
 export const runtime = "nodejs";
 
-type AuthRequest = {
+interface AuthRequest {
   tenantId: string;
-};
+}
 
 const getClientId = (tenantId: string, userId: string) =>
   `tenant:${tenantId}:user:${userId}`;

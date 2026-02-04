@@ -3,9 +3,9 @@
 import { useOthers } from "@liveblocks/react/suspense";
 import { memo } from "react";
 
-type LiveCursorsProps = {
+interface LiveCursorsProps {
   containerRef: React.RefObject<HTMLDivElement>;
-};
+}
 
 function LiveCursorsComponent({ containerRef }: LiveCursorsProps) {
   const others = useOthers();

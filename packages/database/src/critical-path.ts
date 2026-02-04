@@ -19,14 +19,14 @@ function invariant(condition: unknown, message: string): asserts condition {
   }
 }
 
-export type TaskForCPM = {
+export interface TaskForCPM {
   id: string;
   startTime: Date;
   endTime: Date;
   dependencies: string[];
-};
+}
 
-export type CriticalPathResult = {
+export interface CriticalPathResult {
   taskId: string;
   earliestStart: Date; // ES
   earliestFinish: Date; // EF
@@ -34,7 +34,7 @@ export type CriticalPathResult = {
   latestFinish: Date; // LF
   slackMinutes: number;
   isOnCriticalPath: boolean;
-};
+}
 
 /**
  * Calculate the critical path through a set of tasks.

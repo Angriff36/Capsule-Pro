@@ -9,9 +9,9 @@ import type { ReactNode } from "react";
 import ClerkProviderClient from "./clerk-provider.client";
 import { AuthHeader } from "./components/auth-header";
 
-type RootLayoutProperties = {
+interface RootLayoutProperties {
   readonly children: ReactNode;
-};
+}
 
 const RootLayout = ({ children }: RootLayoutProperties) => (
   <html className={fonts} lang="en" suppressHydrationWarning>

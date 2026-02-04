@@ -11,9 +11,9 @@ import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { validateUpdateQuantityReceivedRequest } from "../../../../validation";
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ id: string; itemId: string }>;
-};
+}
 
 /**
  * PUT /api/inventory/purchase-orders/[id]/items/[itemId]/quantity - Update quantity received

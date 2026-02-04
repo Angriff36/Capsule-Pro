@@ -6,9 +6,9 @@ import { DevConsoleBodyClass } from "./components/body-class";
 import { DevConsoleSidebar } from "./components/sidebar";
 import { DevConsoleTopbar } from "./components/topbar";
 
-type DevConsoleLayoutProperties = {
+interface DevConsoleLayoutProperties {
   readonly children: ReactNode;
-};
+}
 
 const DevConsoleLayout = async ({ children }: DevConsoleLayoutProperties) => {
   if (env.ARCJET_KEY) {

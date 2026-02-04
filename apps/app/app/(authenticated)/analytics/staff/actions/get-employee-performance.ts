@@ -6,7 +6,7 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 
-export type EmployeePerformanceMetrics = {
+export interface EmployeePerformanceMetrics {
   employeeId: string;
   firstName: string;
   lastName: string;
@@ -38,9 +38,9 @@ export type EmployeePerformanceMetrics = {
   clientInteractions: number;
   eventParticipation: number;
   totalHoursWorked: number;
-};
+}
 
-export type EmployeePerformanceSummary = {
+export interface EmployeePerformanceSummary {
   totalEmployees: number;
   averageTaskCompletionRate: number;
   averageAttendanceRate: number;
@@ -66,7 +66,7 @@ export type EmployeePerformanceSummary = {
     avgQualityScore: number;
     avgEfficiencyScore: number;
   }>;
-};
+}
 
 export async function getEmployeePerformance(
   employeeId: string

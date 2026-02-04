@@ -2,12 +2,12 @@
 
 import { memo } from "react";
 
-type CursorProps = {
+interface CursorProps {
   x: number;
   y: number;
   color: string;
   name: string;
-};
+}
 
 function Cursor({ x, y, color, name }: CursorProps) {
   return (

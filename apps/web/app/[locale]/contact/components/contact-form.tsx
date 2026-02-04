@@ -15,9 +15,9 @@ import { format } from "date-fns";
 import { CalendarIcon, Check, MoveRight } from "lucide-react";
 import { useState } from "react";
 
-type ContactFormProps = {
+interface ContactFormProps {
   dictionary: Dictionary;
-};
+}
 
 export const ContactForm = ({ dictionary }: ContactFormProps) => {
   const [date, setDate] = useState<Date | undefined>(new Date());

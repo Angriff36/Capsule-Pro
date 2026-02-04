@@ -27,9 +27,9 @@ import {
 import { memo } from "react";
 import type { CommandBoardCard } from "../../types";
 
-type EventCardProps = {
+interface EventCardProps {
   card: CommandBoardCard;
-};
+}
 
 const statusVariantMap = {
   confirmed: "default" as const,

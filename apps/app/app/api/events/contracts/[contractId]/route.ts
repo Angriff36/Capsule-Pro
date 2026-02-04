@@ -12,11 +12,11 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type ContractAPIContext = {
+interface ContractAPIContext {
   params: Promise<{
     contractId: string;
   }>;
-};
+}
 
 /**
  * DELETE /api/events/contracts/[contractId]

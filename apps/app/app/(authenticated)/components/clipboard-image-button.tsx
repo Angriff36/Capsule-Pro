@@ -3,13 +3,13 @@
 import { UploadIcon } from "lucide-react";
 import type { ClipboardEvent, MouseEvent } from "react";
 
-type ClipboardImageButtonProps = {
+interface ClipboardImageButtonProps {
   label: string;
   onImage: (file: File) => void;
   disabled?: boolean;
   className?: string;
   showUploadIcon?: boolean;
-};
+}
 
 const extractClipboardImage = (event: ClipboardEvent<HTMLButtonElement>) => {
   const files = Array.from(event.clipboardData.files ?? []);

@@ -6,7 +6,7 @@ import Moveable, { type OnDrag, type OnResize } from "react-moveable";
 import type { CommandBoardCard, Point } from "../types";
 import { snapToGrid as snapToGridUtil } from "../types";
 
-type DraggableCardProps = {
+interface DraggableCardProps {
   /** The card to render */
   card: CommandBoardCard;
   /** Whether the card is selected */
@@ -33,7 +33,7 @@ type DraggableCardProps = {
   className?: string;
   /** Card content renderer */
   children: React.ReactNode;
-};
+}
 
 /**
  * DraggableCard - A card component with drag and resize capabilities using react-moveable

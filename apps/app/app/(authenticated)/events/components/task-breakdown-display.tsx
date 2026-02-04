@@ -85,12 +85,12 @@ const _SECTION_COLORS = {
   cleanup: "bg-orange-500",
 } as const;
 
-type TaskCardProps = {
+interface TaskCardProps {
   task: TaskBreakdownItem;
   section: TaskSection;
   onComplete?: (taskId: string, completed: boolean) => void;
   onAssign?: (taskId: string) => void;
-};
+}
 
 function TaskCard({ task, section, onComplete, onAssign }: TaskCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -281,12 +281,12 @@ function TaskCard({ task, section, onComplete, onAssign }: TaskCardProps) {
   );
 }
 
-type TaskSectionProps = {
+interface TaskSectionProps {
   section: TaskSection;
   tasks: TaskBreakdownItem[];
   onComplete?: (taskId: string, completed: boolean) => void;
   onAssign?: (taskId: string) => void;
-};
+}
 
 function TaskSectionComponent({
   section,
@@ -363,14 +363,14 @@ function TaskSectionComponent({
   );
 }
 
-type TaskBreakdownDisplayProps = {
+interface TaskBreakdownDisplayProps {
   breakdown: TaskBreakdown;
   onRegenerate?: () => void;
   onExport?: () => void;
   onSave?: () => void;
   isGenerating?: boolean;
   generationProgress?: string;
-};
+}
 
 export function TaskBreakdownDisplay({
   breakdown,
@@ -607,9 +607,9 @@ export function TaskBreakdownDisplay({
   );
 }
 
-type TaskBreakdownSkeletonProps = {
+interface TaskBreakdownSkeletonProps {
   sections?: number;
-};
+}
 
 export function TaskBreakdownSkeleton({
   sections = 3,
@@ -645,7 +645,7 @@ export function TaskBreakdownSkeleton({
   );
 }
 
-type GenerateTaskBreakdownModalProps = {
+interface GenerateTaskBreakdownModalProps {
   eventId: string;
   eventTitle: string;
   eventDate: string;
@@ -655,7 +655,7 @@ type GenerateTaskBreakdownModalProps = {
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   showTrigger?: boolean;
-};
+}
 
 export function GenerateTaskBreakdownModal({
   eventId,

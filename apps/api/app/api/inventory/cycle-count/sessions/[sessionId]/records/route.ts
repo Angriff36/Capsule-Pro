@@ -13,10 +13,10 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 type SyncStatus = "synced" | "pending" | "failed" | "conflict";
 
-type PaginationParams = {
+interface PaginationParams {
   page: number;
   limit: number;
-};
+}
 
 function parsePaginationParams(
   searchParams: URLSearchParams
@@ -33,9 +33,9 @@ function toNumber(value: { toNumber: () => number }): number {
   return value.toNumber();
 }
 
-type RouteContext = {
+interface RouteContext {
   params: Promise<{ sessionId: string }>;
-};
+}
 
 /**
  * Map cycle count record to response format

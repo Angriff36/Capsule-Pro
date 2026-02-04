@@ -34,14 +34,14 @@ const TPP_MARKERS = [
 /**
  * PDF metadata info structure
  */
-type PdfMetadataInfo = {
+interface PdfMetadataInfo {
   Title?: string;
   Author?: string;
   Subject?: string;
   Creator?: string;
-};
+}
 
-export type PdfExtractionResult = {
+export interface PdfExtractionResult {
   lines: string[];
   pageCount: number;
   metadata?: {
@@ -51,9 +51,9 @@ export type PdfExtractionResult = {
     creator?: string;
   };
   errors: string[];
-};
+}
 
-function extractMetadata(pdf: { getMetadata: () => Promise<unknown> }) {
+function _extractMetadata(pdf: { getMetadata: () => Promise<unknown> }) {
   return pdf
     .getMetadata()
     .then((metadataResult) => {
@@ -71,7 +71,7 @@ function extractMetadata(pdf: { getMetadata: () => Promise<unknown> }) {
 /**
  * Collapse text items by Y position to preserve line structure
  */
-function collapseTextItems(items: any[]): string[] {
+function _collapseTextItems(items: any[]): string[] {
   const rows: string[] = [];
   let currentLine = "";
   let lastY: number | null = null;
@@ -131,7 +131,7 @@ export async function extractPdfText(
   pdfBuffer: ArrayBuffer | Uint8Array
 ): Promise<PdfExtractionResult> {
   const errors: string[] = [];
-  const allLines: string[] = [];
+  const _allLines: string[] = [];
 
   // Debug logging to trace data type
   console.log("[extractPdfText] Input type:", pdfBuffer.constructor.name);
@@ -358,11 +358,11 @@ function emitSegment(segment: string, rows: string[]) {
 /**
  * Detect PDF format (TPP, generic, etc.)
  */
-export type FormatDetectionResult = {
+export interface FormatDetectionResult {
   format: "tpp" | "generic";
   confidence: number;
   markers: string[];
-};
+}
 
 export function detectPdfFormat(lines: string[]): FormatDetectionResult {
   const markers: string[] = [];

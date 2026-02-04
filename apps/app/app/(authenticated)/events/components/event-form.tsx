@@ -4,11 +4,11 @@ import { Input } from "@repo/design-system/components/ui/input";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { eventStatuses } from "../constants";
 
-type EventFormProps = {
+interface EventFormProps {
   event?: Event | null;
   action: (formData: FormData) => Promise<void>;
   submitLabel: string;
-};
+}
 
 const formatDateValue = (value?: Date | null): string => {
   if (!value) {

@@ -14,11 +14,11 @@ import { notFound, redirect } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
 import { Header } from "../components/header";
 
-type SearchPageProperties = {
+interface SearchPageProperties {
   searchParams: Promise<{
     q: string;
   }>;
-};
+}
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   dateStyle: "medium",

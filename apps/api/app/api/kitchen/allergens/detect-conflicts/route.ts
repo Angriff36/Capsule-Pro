@@ -13,9 +13,127 @@ import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type DetectConflictsRequest = {
+interface DetectConflictsRequest {
   eventId: string;
-};
+}
+
+interface GuestData {
+  id: string;
+  guestName: string | null;
+  allergenRestrictions: string[] | null;
+  dietaryRestrictions: string[] | null;
+}
+
+interface DishData {
+  id: string;
+  name: string;
+  allergens: string[];
+  dietaryTags: string[];
+}
+
+/**
+ * Check for allergen conflicts between a guest and dish
+ */
+function findAllergenConflicts(guest: GuestData, dish: DishData): string[] {
+  if (
+    !guest.allergenRestrictions ||
+    guest.allergenRestrictions.length === 0 ||
+    !dish.allergens ||
+    dish.allergens.length === 0
+  ) {
+    return [];
+  }
+
+  const conflicts: string[] = [];
+  for (const allergen of guest.allergenRestrictions) {
+    if (
+      dish.allergens.some(
+        (dishAllergen) =>
+          dishAllergen.toLowerCase().includes(allergen.toLowerCase()) ||
+          allergen.toLowerCase().includes(dishAllergen.toLowerCase())
+      )
+    ) {
+      conflicts.push(allergen);
+    }
+  }
+  return conflicts;
+}
+
+/**
+ * Check for dietary conflicts between a guest and dish
+ */
+function findDietaryConflicts(guest: GuestData, dish: DishData): string[] {
+  if (
+    !guest.dietaryRestrictions ||
+    guest.dietaryRestrictions.length === 0 ||
+    !dish.dietaryTags ||
+    dish.dietaryTags.length === 0
+  ) {
+    return [];
+  }
+
+  const conflicts: string[] = [];
+  for (const restriction of guest.dietaryRestrictions) {
+    if (
+      dish.dietaryTags.some(
+        (dietaryTag) =>
+          dietaryTag.toLowerCase().includes(restriction.toLowerCase()) ||
+          restriction.toLowerCase().includes(dietaryTag.toLowerCase())
+      )
+    ) {
+      conflicts.push(restriction);
+    }
+  }
+  return conflicts;
+}
+
+/**
+ * Create an allergen warning in the database
+ */
+async function createAllergenWarning(
+  tenantId: string,
+  eventId: string,
+  guest: GuestData,
+  dish: DishData,
+  conflictingAllergens: string[]
+): Promise<void> {
+  await database.allergenWarning.create({
+    data: {
+      tenantId,
+      eventId,
+      dishId: dish.id,
+      warningType: "allergen_conflict",
+      allergens: conflictingAllergens,
+      affectedGuests: [guest.id],
+      severity: "critical",
+      notes: `Guest "${guest.guestName}" has allergen restrictions: ${conflictingAllergens.join(", ")}. Dish "${dish.name}" contains these allergens.`,
+    },
+  });
+}
+
+/**
+ * Create a dietary warning in the database
+ */
+async function createDietaryWarning(
+  tenantId: string,
+  eventId: string,
+  guest: GuestData,
+  dish: DishData,
+  conflictingDietaryTags: string[]
+): Promise<void> {
+  await database.allergenWarning.create({
+    data: {
+      tenantId,
+      eventId,
+      dishId: dish.id,
+      warningType: "dietary_conflict",
+      allergens: conflictingDietaryTags,
+      affectedGuests: [guest.id],
+      severity: "warning",
+      notes: `Guest "${guest.guestName}" has dietary restrictions: ${conflictingDietaryTags.join(", ")}. Dish "${dish.name}" conflicts with these restrictions.`,
+    },
+  });
+}
 
 /**
  * POST /api/kitchen/allergens/detect-conflicts
@@ -119,82 +237,30 @@ export async function POST(request: Request) {
     // Check for conflicts and create warnings
     for (const guest of guests) {
       for (const dish of dishes) {
-        const conflictingAllergens: string[] = [];
-        const conflictingDietaryTags: string[] = [];
-
-        // Check allergen conflicts (critical)
-        if (
-          guest.allergenRestrictions &&
-          guest.allergenRestrictions.length > 0 &&
-          dish.allergens &&
-          dish.allergens.length > 0
-        ) {
-          for (const allergen of guest.allergenRestrictions) {
-            if (
-              dish.allergens.some(
-                (dishAllergen) =>
-                  dishAllergen.toLowerCase().includes(allergen.toLowerCase()) ||
-                  allergen.toLowerCase().includes(dishAllergen.toLowerCase())
-              )
-            ) {
-              conflictingAllergens.push(allergen);
-            }
-          }
-        }
-
-        // Check dietary restriction conflicts (warning)
-        if (
-          guest.dietaryRestrictions &&
-          guest.dietaryRestrictions.length > 0 &&
-          dish.dietaryTags &&
-          dish.dietaryTags.length > 0
-        ) {
-          for (const restriction of guest.dietaryRestrictions) {
-            if (
-              dish.dietaryTags.some(
-                (dietaryTag) =>
-                  dietaryTag
-                    .toLowerCase()
-                    .includes(restriction.toLowerCase()) ||
-                  restriction.toLowerCase().includes(dietaryTag.toLowerCase())
-              )
-            ) {
-              conflictingDietaryTags.push(restriction);
-            }
-          }
-        }
+        const conflictingAllergens = findAllergenConflicts(guest, dish);
+        const conflictingDietaryTags = findDietaryConflicts(guest, dish);
 
         // Create warning for allergen conflicts (critical severity)
         if (conflictingAllergens.length > 0) {
-          await database.allergenWarning.create({
-            data: {
-              tenantId,
-              eventId: body.eventId,
-              dishId: dish.id,
-              warningType: "allergen_conflict",
-              allergens: conflictingAllergens,
-              affectedGuests: [guest.id],
-              severity: "critical",
-              notes: `Guest "${guest.guestName}" has allergen restrictions: ${conflictingAllergens.join(", ")}. Dish "${dish.name}" contains these allergens.`,
-            },
-          });
+          await createAllergenWarning(
+            tenantId,
+            body.eventId,
+            guest,
+            dish,
+            conflictingAllergens
+          );
           warningsCreated++;
         }
 
         // Create warning for dietary conflicts (warning severity)
         if (conflictingDietaryTags.length > 0) {
-          await database.allergenWarning.create({
-            data: {
-              tenantId,
-              eventId: body.eventId,
-              dishId: dish.id,
-              warningType: "dietary_conflict",
-              allergens: conflictingDietaryTags,
-              affectedGuests: [guest.id],
-              severity: "warning",
-              notes: `Guest "${guest.guestName}" has dietary restrictions: ${conflictingDietaryTags.join(", ")}. Dish "${dish.name}" conflicts with these restrictions.`,
-            },
-          });
+          await createDietaryWarning(
+            tenantId,
+            body.eventId,
+            guest,
+            dish,
+            conflictingDietaryTags
+          );
           warningsCreated++;
         }
       }

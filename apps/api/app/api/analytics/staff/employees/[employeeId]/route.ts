@@ -3,27 +3,27 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type TaskMetrics = {
+interface TaskMetrics {
   total_tasks: string;
   completed_tasks: string;
   avg_duration_hours: string;
   on_time_tasks: string;
-};
+}
 
-type TimeEntryMetrics = {
+interface TimeEntryMetrics {
   total_shifts: string;
   attended_shifts: string;
   punctual_shifts: string;
   total_hours: string;
   unique_days: string;
-};
+}
 
-type TaskProgressMetrics = {
+interface TaskProgressMetrics {
   progress_count: string;
   rework_count: string;
-};
+}
 
-type EmployeeMetrics = {
+interface EmployeeMetrics {
   employeeId: string;
   firstName: string;
   lastName: string;
@@ -50,7 +50,7 @@ type EmployeeMetrics = {
   clientInteractions: number;
   eventParticipation: number;
   totalHoursWorked: number;
-};
+}
 
 function getThreeMonthsAgo(): Date {
   const now = new Date();
