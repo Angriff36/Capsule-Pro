@@ -39,8 +39,8 @@ export async function processDocument(fileContent, options) {
     }
     if (fileType === "pdf") {
         // Debug logging
-        console.log('[processDocument] PDF file type:', fileContent.constructor.name);
-        console.log('[processDocument] Original fileContent type:', Object.getPrototypeOf(fileContent).constructor.name);
+        console.log("[processDocument] PDF file type:", fileContent.constructor.name);
+        console.log("[processDocument] Original fileContent type:", Object.getPrototypeOf(fileContent).constructor.name);
         // Extract text from PDF
         // Handle various input types that Next.js might pass us
         let pdfBuffer;
@@ -51,14 +51,16 @@ export async function processDocument(fileContent, options) {
         else if (fileContent instanceof ArrayBuffer) {
             pdfBuffer = new Uint8Array(fileContent);
         }
-        else if (typeof fileContent === 'string') {
+        else if (typeof fileContent === "string") {
             pdfBuffer = new TextEncoder().encode(fileContent);
         }
         else {
             // Fallback: try to handle any other type (Buffer, Next.js File, etc.)
             const unknownContent = fileContent;
             // Check for Buffer-like objects with buffer, byteOffset, byteLength properties
-            if ('buffer' in unknownContent && 'byteOffset' in unknownContent && 'byteLength' in unknownContent) {
+            if ("buffer" in unknownContent &&
+                "byteOffset" in unknownContent &&
+                "byteLength" in unknownContent) {
                 const bufferLike = unknownContent;
                 pdfBuffer = new Uint8Array(bufferLike.buffer, bufferLike.byteOffset, bufferLike.byteLength);
             }
@@ -66,8 +68,8 @@ export async function processDocument(fileContent, options) {
                 throw new Error(`Unsupported PDF input type: ${unknownContent.constructor.name}`);
             }
         }
-        console.log('[processDocument] Converted pdfBuffer type:', pdfBuffer.constructor.name);
-        console.log('[processDocument] pdfBuffer length:', pdfBuffer.length);
+        console.log("[processDocument] Converted pdfBuffer type:", pdfBuffer.constructor.name);
+        console.log("[processDocument] pdfBuffer length:", pdfBuffer.length);
         // Skip slice() debug logging to avoid detached ArrayBuffer issues
         const extractResult = await extractPdfText(pdfBuffer);
         errors.push(...extractResult.errors);

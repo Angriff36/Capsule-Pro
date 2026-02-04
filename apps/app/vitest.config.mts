@@ -63,6 +63,13 @@ export default defineConfig({
             "./test/mocks/@repo/storage.ts"
           );
         }
+        // Intercept @clerk/nextjs
+        if (id === "@clerk/nextjs") {
+          return path.resolve(
+            import.meta.dirname,
+            "./test/mocks/@clerk/nextjs.tsx"
+          );
+        }
         return undefined;
       },
       load(id) {

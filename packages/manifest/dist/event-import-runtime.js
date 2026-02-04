@@ -4,14 +4,15 @@
  * This module integrates Manifest language runtime with the document parsing workflow.
  * It orchestrates the flow: Document Import -> Event Creation -> Battle Board/Checklist Generation
  */
-import { RuntimeEngine, compileToIR } from './index';
+import { compileToIR, RuntimeEngine } from "./index";
 let cachedIR = null;
 /**
  * Load and compile the Manifest module
  */
 function loadManifestIR() {
-    if (cachedIR)
+    if (cachedIR) {
         return cachedIR;
+    }
     // Embed the manifest source directly to avoid file system issues
     const manifestSource = `
 module EventImport {
@@ -198,7 +199,7 @@ module EventImport {
 `;
     const { ir, diagnostics } = compileToIR(manifestSource);
     if (!ir) {
-        throw new Error(`Failed to compile Manifest module: ${diagnostics.map((d) => d.message).join(', ')}`);
+        throw new Error(`Failed to compile Manifest module: ${diagnostics.map((d) => d.message).join(", ")}`);
     }
     cachedIR = ir;
     return ir;
@@ -217,30 +218,28 @@ export function createEventImportRuntime(tenantId, userId) {
 /**
  * Process a document import using Manifest commands
  */
-export async function processDocumentImport(engine, importId, fileName, parsedData, confidence, errors) {
+export async function processDocumentImport(engine, importId, _fileName, parsedData, confidence, errors) {
     // Start processing
-    const processResult = await engine.runCommand('process', {}, {
-        entityName: 'DocumentImport',
+    const processResult = await engine.runCommand("process", {}, {
+        entityName: "DocumentImport",
         instanceId: importId,
     });
     if (!processResult.success) {
-        throw new Error(`Failed to start processing: ${processResult.error || 'Unknown error'}`);
+        throw new Error(`Failed to start processing: ${processResult.error || "Unknown error"}`);
     }
     // Complete or fail based on results
     if (errors && errors.length > 0) {
-        const failResult = await engine.runCommand('failParsing', { errors }, {
-            entityName: 'DocumentImport',
+        const failResult = await engine.runCommand("failParsing", { errors }, {
+            entityName: "DocumentImport",
             instanceId: importId,
         });
         return failResult;
     }
-    else {
-        const completeResult = await engine.runCommand('completeParsing', { parsedData, confidence }, {
-            entityName: 'DocumentImport',
-            instanceId: importId,
-        });
-        return completeResult;
-    }
+    const completeResult = await engine.runCommand("completeParsing", { parsedData, confidence }, {
+        entityName: "DocumentImport",
+        instanceId: importId,
+    });
+    return completeResult;
 }
 /**
  * Create or update an event from parsed data
@@ -248,34 +247,32 @@ export async function processDocumentImport(engine, importId, fileName, parsedDa
 export async function createOrUpdateEvent(engine, eventId, tenantId, parsedEvent) {
     if (eventId) {
         // Update existing event
-        const updateResult = await engine.runCommand('updateFromImport', { importData: parsedEvent }, {
-            entityName: 'Event',
+        const updateResult = await engine.runCommand("updateFromImport", { importData: parsedEvent }, {
+            entityName: "Event",
             instanceId: eventId,
         });
         return updateResult;
     }
-    else {
-        // Create new event
-        const newEventId = engine.createInstance('Event', {
-            id: crypto.randomUUID(),
-            tenantId,
-            eventType: parsedEvent.serviceStyle || 'catering',
-            eventDate: parsedEvent.date || new Date().toISOString(),
-        });
-        const createResult = await engine.runCommand('createFromImport', { importData: parsedEvent }, {
-            entityName: 'Event',
-            instanceId: newEventId?.id,
-        });
-        return { ...createResult, eventId: newEventId?.id };
-    }
+    // Create new event
+    const newEventId = engine.createInstance("Event", {
+        id: crypto.randomUUID(),
+        tenantId,
+        eventType: parsedEvent.serviceStyle || "catering",
+        eventDate: parsedEvent.date || new Date().toISOString(),
+    });
+    const createResult = await engine.runCommand("createFromImport", { importData: parsedEvent }, {
+        entityName: "Event",
+        instanceId: newEventId?.id,
+    });
+    return { ...createResult, eventId: newEventId?.id };
 }
 /**
  * Generate battle board from event data
  */
-export async function generateBattleBoard(engine, battleBoardId, tenantId, eventId, eventData) {
+export async function generateBattleBoard(engine, battleBoardId, _tenantId, _eventId, eventData) {
     const battleBoardData = eventData.battleBoard || {};
-    const result = await engine.runCommand('generateFromEvent', { eventData: { ...eventData, battleBoard: battleBoardData } }, {
-        entityName: 'BattleBoard',
+    const result = await engine.runCommand("generateFromEvent", { eventData: { ...eventData, battleBoard: battleBoardData } }, {
+        entityName: "BattleBoard",
         instanceId: battleBoardId,
     });
     return result;
@@ -283,9 +280,9 @@ export async function generateBattleBoard(engine, battleBoardId, tenantId, event
 /**
  * Generate checklist/report from event data
  */
-export async function generateChecklist(engine, reportId, tenantId, eventId, eventData, checklistData) {
-    const result = await engine.runCommand('generateFromEvent', { eventData, checklistData }, {
-        entityName: 'EventReport',
+export async function generateChecklist(engine, reportId, _tenantId, _eventId, eventData, checklistData) {
+    const result = await engine.runCommand("generateFromEvent", { eventData, checklistData }, {
+        entityName: "EventReport",
         instanceId: reportId,
     });
     return result;
@@ -296,16 +293,16 @@ export async function generateChecklist(engine, reportId, tenantId, eventId, eve
 export function setupEventListeners(engine, handlers) {
     const unsubscribe = engine.onEvent(async (event) => {
         switch (event.name) {
-            case 'DocumentParsed':
+            case "DocumentParsed":
                 await handlers.onDocumentParsed?.(event);
                 break;
-            case 'EventCreated':
+            case "EventCreated":
                 await handlers.onEventCreated?.(event);
                 break;
-            case 'BattleBoardGenerated':
+            case "BattleBoardGenerated":
                 await handlers.onBattleBoardGenerated?.(event);
                 break;
-            case 'ChecklistGenerated':
+            case "ChecklistGenerated":
                 await handlers.onChecklistGenerated?.(event);
                 break;
         }

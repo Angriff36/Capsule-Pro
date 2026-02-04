@@ -3,7 +3,7 @@
  * Routes uploaded files to appropriate parsers based on file type and detected format
  */
 import type { ParsedEvent, ParsedEventResult, StaffShift } from "../types/index.js";
-export type ProcessedDocument = {
+export interface ProcessedDocument {
     id: string;
     fileName: string;
     fileType: "pdf" | "csv";
@@ -14,11 +14,11 @@ export type ProcessedDocument = {
     availableEventNames?: string[];
     errors: string[];
     warnings: string[];
-};
-export type ProcessDocumentOptions = {
+}
+export interface ProcessDocumentOptions {
     fileName: string;
     sourceName?: string;
-};
+}
 /**
  * Process a document and route to appropriate parser
  */

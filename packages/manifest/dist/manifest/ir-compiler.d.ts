@@ -1,4 +1,4 @@
-import { CompileToIRResult } from './ir';
+import type { CompileToIRResult } from "./ir";
 export declare class IRCompiler {
     private diagnostics;
     compileToIR(source: string): CompileToIRResult;

@@ -12,26 +12,115 @@
  * Do NOT create a second list elsewhere.
  */
 export const KEYWORDS = new Set([
-    'entity', 'property', 'behavior', 'constraint', 'flow', 'effect', 'expose', 'compose',
-    'command', 'module', 'policy', 'store', 'event', 'computed', 'derived',
-    'hasMany', 'hasOne', 'belongsTo', 'ref', 'through',
-    'on', 'when', 'then', 'emit', 'mutate', 'compute', 'guard', 'publish', 'persist',
-    'as', 'from', 'to', 'with', 'where', 'connect', 'returns',
-    'string', 'number', 'boolean', 'list', 'map', 'any', 'void',
-    'true', 'false', 'null',
-    'required', 'unique', 'indexed', 'private', 'readonly', 'optional',
-    'rest', 'graphql', 'websocket', 'function', 'server',
-    'http', 'storage', 'timer', 'custom',
-    'memory', 'postgres', 'supabase', 'localStorage',
-    'read', 'write', 'delete', 'execute', 'all', 'allow', 'deny',
-    'and', 'or', 'not', 'is', 'in', 'contains',
-    'user', 'self', 'context'
+    "entity",
+    "property",
+    "behavior",
+    "constraint",
+    "flow",
+    "effect",
+    "expose",
+    "compose",
+    "command",
+    "module",
+    "policy",
+    "store",
+    "event",
+    "computed",
+    "derived",
+    "hasMany",
+    "hasOne",
+    "belongsTo",
+    "ref",
+    "through",
+    "on",
+    "when",
+    "then",
+    "emit",
+    "mutate",
+    "compute",
+    "guard",
+    "publish",
+    "persist",
+    "as",
+    "from",
+    "to",
+    "with",
+    "where",
+    "connect",
+    "returns",
+    "string",
+    "number",
+    "boolean",
+    "list",
+    "map",
+    "any",
+    "void",
+    "true",
+    "false",
+    "null",
+    "required",
+    "unique",
+    "indexed",
+    "private",
+    "readonly",
+    "optional",
+    "rest",
+    "graphql",
+    "websocket",
+    "function",
+    "server",
+    "http",
+    "storage",
+    "timer",
+    "custom",
+    "memory",
+    "postgres",
+    "supabase",
+    "localStorage",
+    "read",
+    "write",
+    "delete",
+    "execute",
+    "all",
+    "allow",
+    "deny",
+    "and",
+    "or",
+    "not",
+    "is",
+    "in",
+    "contains",
+    "user",
+    "self",
+    "context",
 ]);
 const OPERATORS = new Set([
-    '+', '-', '*', '/', '%', '=', '==', '!=', '<', '>', '<=', '>=',
-    '&&', '||', '!', '?', ':', '->', '=>', '|', '&', '.', '..', '?.'
+    "+",
+    "-",
+    "*",
+    "/",
+    "%",
+    "=",
+    "==",
+    "!=",
+    "<",
+    ">",
+    "<=",
+    ">=",
+    "&&",
+    "||",
+    "!",
+    "?",
+    ":",
+    "->",
+    "=>",
+    "|",
+    "&",
+    ".",
+    "..",
+    "?.",
 ]);
-const PUNCTUATION = new Set(['(', ')', '{', '}', '[', ']', ',', ';', '@']);
+const PUNCTUATION = new Set(["(", ")", "{", "}", "[", "]", ",", ";", "@"]);
 export class Lexer {
     source;
     pos = 0;
@@ -44,11 +133,16 @@ export class Lexer {
     tokenize() {
         while (this.pos < this.source.length) {
             this.skipWhitespace();
-            if (this.pos >= this.source.length)
+            if (this.pos >= this.source.length) {
                 break;
+            }
             const char = this.source[this.pos];
-            if (char === '\n') {
-                this.tokens.push({ type: 'NEWLINE', value: '\n', position: this.position() });
+            if (char === "\n") {
+                this.tokens.push({
+                    type: "NEWLINE",
+                    value: "\n",
+                    position: this.position(),
+                });
                 this.advance();
                 this.line++;
                 this.col = 1;
@@ -58,7 +152,7 @@ export class Lexer {
                 this.readString(char);
                 continue;
             }
-            if (char === '`') {
+            if (char === "`") {
                 this.readTemplate();
                 continue;
             }
@@ -66,7 +160,7 @@ export class Lexer {
                 this.readNumber();
                 continue;
             }
-            if (this.isAlpha(char) || char === '_') {
+            if (this.isAlpha(char) || char === "_") {
                 this.readIdentifier();
                 continue;
             }
@@ -75,32 +169,39 @@ export class Lexer {
                 continue;
             }
             if (PUNCTUATION.has(char)) {
-                this.tokens.push({ type: 'PUNCTUATION', value: char, position: this.position() });
+                this.tokens.push({
+                    type: "PUNCTUATION",
+                    value: char,
+                    position: this.position(),
+                });
                 this.advance();
                 continue;
             }
             this.advance();
         }
-        this.tokens.push({ type: 'EOF', value: '', position: this.position() });
+        this.tokens.push({ type: "EOF", value: "", position: this.position() });
         return this.tokens;
     }
     skipWhitespace() {
         while (this.pos < this.source.length) {
             const c = this.source[this.pos];
-            if (c === ' ' || c === '\t' || c === '\r') {
+            if (c === " " || c === "\t" || c === "\r") {
                 this.advance();
                 continue;
             }
-            if (c === '/' && this.source[this.pos + 1] === '/') {
-                while (this.pos < this.source.length && this.source[this.pos] !== '\n')
+            if (c === "/" && this.source[this.pos + 1] === "/") {
+                while (this.pos < this.source.length &&
+                    this.source[this.pos] !== "\n") {
                     this.advance();
+                }
                 continue;
             }
-            if (c === '/' && this.source[this.pos + 1] === '*') {
+            if (c === "/" && this.source[this.pos + 1] === "*") {
                 this.advance();
                 this.advance();
-                while (this.pos < this.source.length && !(this.source[this.pos] === '*' && this.source[this.pos + 1] === '/')) {
-                    if (this.source[this.pos] === '\n') {
+                while (this.pos < this.source.length &&
+                    !(this.source[this.pos] === "*" && this.source[this.pos + 1] === "/")) {
+                    if (this.source[this.pos] === "\n") {
                         this.line++;
                         this.col = 0;
                     }
@@ -115,12 +216,12 @@ export class Lexer {
     }
     readString(quote) {
         this.advance();
-        let value = '';
+        let value = "";
         while (this.pos < this.source.length && this.source[this.pos] !== quote) {
-            if (this.source[this.pos] === '\\') {
+            if (this.source[this.pos] === "\\") {
                 this.advance();
                 const esc = this.source[this.pos];
-                value += esc === 'n' ? '\n' : esc === 't' ? '\t' : esc;
+                value += esc === "n" ? "\n" : esc === "t" ? "\t" : esc;
             }
             else {
                 value += this.source[this.pos];
@@ -128,13 +229,13 @@ export class Lexer {
             this.advance();
         }
         this.advance();
-        this.tokens.push({ type: 'STRING', value, position: this.position() });
+        this.tokens.push({ type: "STRING", value, position: this.position() });
     }
     readTemplate() {
         this.advance();
-        let value = '';
-        while (this.pos < this.source.length && this.source[this.pos] !== '`') {
-            if (this.source[this.pos] === '\n') {
+        let value = "";
+        while (this.pos < this.source.length && this.source[this.pos] !== "`") {
+            if (this.source[this.pos] === "\n") {
                 this.line++;
                 this.col = 0;
             }
@@ -142,40 +243,67 @@ export class Lexer {
             this.advance();
         }
         this.advance();
-        this.tokens.push({ type: 'STRING', value, position: this.position() });
+        this.tokens.push({ type: "STRING", value, position: this.position() });
     }
     readNumber() {
-        let value = '';
-        while (this.pos < this.source.length && (this.isDigit(this.source[this.pos]) || this.source[this.pos] === '.')) {
+        let value = "";
+        while (this.pos < this.source.length &&
+            (this.isDigit(this.source[this.pos]) || this.source[this.pos] === ".")) {
             value += this.source[this.pos];
             this.advance();
         }
-        this.tokens.push({ type: 'NUMBER', value, position: this.position() });
+        this.tokens.push({ type: "NUMBER", value, position: this.position() });
     }
     readIdentifier() {
-        let value = '';
-        while (this.pos < this.source.length && (this.isAlphaNum(this.source[this.pos]) || this.source[this.pos] === '_')) {
+        let value = "";
+        while (this.pos < this.source.length &&
+            (this.isAlphaNum(this.source[this.pos]) || this.source[this.pos] === "_")) {
             value += this.source[this.pos];
             this.advance();
         }
-        this.tokens.push({ type: KEYWORDS.has(value) ? 'KEYWORD' : 'IDENTIFIER', value, position: this.position() });
+        this.tokens.push({
+            type: KEYWORDS.has(value) ? "KEYWORD" : "IDENTIFIER",
+            value,
+            position: this.position(),
+        });
     }
     readOperator() {
         const two = this.source.slice(this.pos, this.pos + 2);
         if (OPERATORS.has(two)) {
-            this.tokens.push({ type: 'OPERATOR', value: two, position: this.position() });
+            this.tokens.push({
+                type: "OPERATOR",
+                value: two,
+                position: this.position(),
+            });
             this.advance();
             this.advance();
         }
         else {
-            this.tokens.push({ type: 'OPERATOR', value: this.source[this.pos], position: this.position() });
+            this.tokens.push({
+                type: "OPERATOR",
+                value: this.source[this.pos],
+                position: this.position(),
+            });
             this.advance();
         }
     }
-    isDigit(c) { return c >= '0' && c <= '9'; }
-    isAlpha(c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'); }
-    isAlphaNum(c) { return this.isAlpha(c) || this.isDigit(c); }
-    isOpStart(c) { return OPERATORS.has(c) || OPERATORS.has(c + this.source[this.pos + 1]); }
-    advance() { this.pos++; this.col++; }
-    position() { return { line: this.line, column: this.col }; }
+    isDigit(c) {
+        return c >= "0" && c <= "9";
+    }
+    isAlpha(c) {
+        return (c >= "a" && c <= "z") || (c >= "A" && c <= "Z");
+    }
+    isAlphaNum(c) {
+        return this.isAlpha(c) || this.isDigit(c);
+    }
+    isOpStart(c) {
+        return OPERATORS.has(c) || OPERATORS.has(c + this.source[this.pos + 1]);
+    }
+    advance() {
+        this.pos++;
+        this.col++;
+    }
+    position() {
+        return { line: this.line, column: this.col };
+    }
 }

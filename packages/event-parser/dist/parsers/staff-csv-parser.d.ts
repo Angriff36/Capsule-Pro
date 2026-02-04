@@ -3,11 +3,11 @@
  * Parses Time & Attendance CSV exports to extract staff shift data
  */
 import type { StaffShift } from "../types/index.js";
-export type StaffCsvParseResult = {
+export interface StaffCsvParseResult {
     shifts: Map<string, StaffShift[]>;
     errors: string[];
     totalShifts: number;
-};
+}
 /**
  * Parse a staff roster CSV file
  * Expected columns: Event Name, First Name, Last Name, Position, Scheduled In, Scheduled Out, Scheduled Hours

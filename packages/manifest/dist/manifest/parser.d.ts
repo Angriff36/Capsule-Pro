@@ -1,4 +1,4 @@
-import { ManifestProgram, CompilationError } from './types';
+import type { CompilationError, ManifestProgram } from "./types";
 export declare class Parser {
     private tokens;
     private pos;

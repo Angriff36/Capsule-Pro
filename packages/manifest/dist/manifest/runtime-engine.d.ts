@@ -1,4 +1,4 @@
-import { IR, IREntity, IRCommand, IRPolicy, IRExpression } from './ir';
+import type { IR, IRCommand, IREntity, IRExpression, IRPolicy } from "./ir";
 export interface RuntimeContext {
     user?: {
         id: string;
@@ -49,11 +49,11 @@ export interface Store<T extends EntityInstance = EntityInstance> {
 }
 type EventListener = (event: EmittedEvent) => void;
 export declare class RuntimeEngine {
-    private ir;
+    private readonly ir;
     private context;
-    private options;
-    private stores;
-    private eventListeners;
+    private readonly options;
+    private readonly stores;
+    private readonly eventListeners;
     private eventLog;
     constructor(ir: IR, context?: RuntimeContext, options?: RuntimeOptions);
     private initializeStores;

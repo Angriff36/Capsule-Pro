@@ -3,7 +3,7 @@
  * Extracts text from PDF files using pdfjs-dist
  * Uses dynamic import to avoid Next.js bundling issues
  */
-export type PdfExtractionResult = {
+export interface PdfExtractionResult {
     lines: string[];
     pageCount: number;
     metadata?: {
@@ -13,7 +13,7 @@ export type PdfExtractionResult = {
         creator?: string;
     };
     errors: string[];
-};
+}
 /**
  * Extract text from a PDF buffer
  * Uses dynamic import to avoid Next.js bundling issues with pdfjs-dist workers
@@ -22,10 +22,10 @@ export declare function extractPdfText(pdfBuffer: ArrayBuffer | Uint8Array): Pro
 /**
  * Detect PDF format (TPP, generic, etc.)
  */
-export type FormatDetectionResult = {
+export interface FormatDetectionResult {
     format: "tpp" | "generic";
     confidence: number;
     markers: string[];
-};
+}
 export declare function detectPdfFormat(lines: string[]): FormatDetectionResult;
 //# sourceMappingURL=pdf-extractor.d.ts.map

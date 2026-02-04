@@ -5,13 +5,13 @@
  */
 import type { ChecklistQuestionState, ChecklistSectionState, EventChecklist } from "../types/checklist.js";
 import type { ParsedEvent } from "../types/event.js";
-export type ChecklistBuildResult = {
+export interface ChecklistBuildResult {
     checklist: EventChecklist;
     autoFilledCount: number;
     totalQuestions: number;
     warnings: string[];
     missingFields: string[];
-};
+}
 /**
  * Build initial checklist with auto-filled answers from parsed event
  */

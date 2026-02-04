@@ -6,7 +6,7 @@ import type { Prisma, PrismaClient } from "@repo/database";
 /**
  * Input for creating an outbox event.
  */
-export type CreateOutboxEventInput = {
+export interface CreateOutboxEventInput {
     /** Tenant identifier */
     tenantId: string;
     /** Aggregate type (e.g., "KitchenTask", "Event") */
@@ -19,7 +19,7 @@ export type CreateOutboxEventInput = {
     payload: Record<string, unknown>;
     /** When the event occurred (defaults to now) */
     occurredAt?: Date;
-};
+}
 /**
  * Create an outbox event record.
  *

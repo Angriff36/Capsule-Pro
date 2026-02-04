@@ -1,25 +1,25 @@
-export type BattleBoardMeta = {
+export interface BattleBoardMeta {
     eventName: string;
     eventNumber: string;
     eventDate: string;
     staffRestrooms: string;
     staffParking: string;
     lastUpdatedISO?: string;
-};
-export type BattleBoardStaff = {
+}
+export interface BattleBoardStaff {
     name: string;
     role: string;
     shiftStart: string;
     shiftEnd: string;
     station: string;
-};
-export type BattleBoardLayout = {
+}
+export interface BattleBoardLayout {
     type: string;
     instructions: string;
     linkedMapImage?: string;
-};
+}
 export type TimelineStyle = "setup" | "service" | "breakdown" | "other";
-export type BattleBoardTimeline = {
+export interface BattleBoardTimeline {
     time: string;
     item: string;
     team: string;
@@ -27,15 +27,15 @@ export type BattleBoardTimeline = {
     style: TimelineStyle | string;
     notes: string;
     hl: boolean;
-};
-export type BattleBoardAttachment = {
+}
+export interface BattleBoardAttachment {
     label: string;
     name: string;
     type: string;
     size: number;
     src: string;
-};
-export type BattleBoardTask = {
+}
+export interface BattleBoardTask {
     id: string;
     name: string;
     description: string;
@@ -43,8 +43,8 @@ export type BattleBoardTask = {
     defaultTeam: string;
     defaultLocation: string;
     defaultStyle: TimelineStyle;
-};
-export type BattleBoardData = {
+}
+export interface BattleBoardData {
     schema?: string;
     version?: string;
     meta: BattleBoardMeta;
@@ -53,7 +53,7 @@ export type BattleBoardData = {
     timeline: BattleBoardTimeline[];
     attachments: BattleBoardAttachment[];
     taskLibrary?: BattleBoardTask[];
-};
+}
 export type PartialBattleBoardData = Partial<BattleBoardData> & {
     meta?: Partial<BattleBoardMeta>;
 };

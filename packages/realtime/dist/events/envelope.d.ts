@@ -7,7 +7,7 @@ export declare const REALTIME_EVENT_VERSION: 1;
  * Base interface for all realtime events.
  * These fields are included in every Ably message for consumer deduplication and ordering.
  */
-export type RealtimeEventBase = {
+export interface RealtimeEventBase {
     /** Unique event ID (mirrors OutboxEvent.id, used for consumer deduplication) */
     id: string;
     /** Schema version for evolution */
@@ -20,7 +20,7 @@ export type RealtimeEventBase = {
     aggregateId: string;
     /** ISO 8601 timestamp - when the domain event occurred (authoritative for ordering) */
     occurredAt: string;
-};
+}
 /** Discriminated union type for all realtime events */
 export type RealtimeEvent = RealtimeEventBase & {
     eventType: string;
