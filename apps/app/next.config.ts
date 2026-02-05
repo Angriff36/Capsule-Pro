@@ -85,13 +85,14 @@ let nextConfig: NextConfig = withToolbar(
           },
         ];
 
-        // Combine with existing externals
+        // Combine with existing externals.
+        // NOTE: We intentionally do NOT externalize @repo/event-parser here.
+        // Keeping it bundled avoids Node.js trying to require() an ESM-only package on Vercel.
         webpackConfig.externals = [
           ...(Array.isArray(existingExternals)
             ? existingExternals
             : [existingExternals]),
           ...pdfjsExternals,
-          { "@repo/event-parser": "@repo/event-parser" },
         ];
       }
       return webpackConfig;

@@ -1023,7 +1023,7 @@ async function processDocumentsAndGenerateResponse(
 
   return response;
 }
-  
+
 /**
  * Helper function to build and return the response
  */
