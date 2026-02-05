@@ -91,6 +91,7 @@ model Account {
   eventReports          EventReport[]
   budgetLineItems       BudgetLineItem[]
   budgetAlerts          BudgetAlert[]
+  adminTasks            AdminTask[]
 
   @@map("accounts")
   @@schema("platform")
@@ -1672,6 +1673,32 @@ model Report {
 
   @@id([tenantId, id])
   @@map("reports")
+  @@schema("tenant_admin")
+}
+
+model AdminTask {
+  tenantId    String    @map("tenant_id") @db.Uuid
+  id          String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String
+  description String?
+  status      String    @default("backlog")
+  priority    String    @default("medium")
+  category    String?
+  dueDate     DateTime? @map("due_date") @db.Date
+  assignedTo  String?   @map("assigned_to") @db.Uuid
+  createdBy   String?   @map("created_by") @db.Uuid
+  sourceType  String?   @map("source_type")
+  sourceId    String?   @map("source_id") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant      Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([tenantId], map: "admin_tasks_tenant_idx")
+  @@index([tenantId, status], map: "admin_tasks_status_idx")
+  @@index([tenantId, dueDate], map: "admin_tasks_due_idx")
+  @@map("admin_tasks")
   @@schema("tenant_admin")
 }
 

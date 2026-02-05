@@ -1,5 +1,35 @@
 # Events UI Implementation Plan - Analysis Summary
 
+## 🛑 BLOCKER - Build Failure (Dependency Issue)
+
+**Status:** BLOCKING ALL WORK  
+**Date Identified:** 2025-02-05  
+**Severity:** Critical - outside Events UI scope, requires human intervention
+
+### Error
+```
+Build failed: Attempted import error: 'useEffectEvent' is not exported from 'react'
+Source: @fumadocs/* (fumadocs-ui or fumadocs-core)
+```
+
+### Analysis
+- The `fumadocs` documentation library is trying to use `useEffectEvent` which is a React 19 experimental API
+- Current React version in this project does not export this hook
+- This is a **dependency version mismatch**, not a code issue
+- The error is in `apps/docs` (fumadocs), NOT in the Events UI focus area
+
+### Resolution Required (Human Action)
+1. Check fumadocs version compatibility with current React version
+2. Either upgrade React or downgrade fumadocs
+3. This cannot be fixed by the Events UI loop
+
+### Impact
+- Husky pre-push hook runs build check → build fails → push fails
+- Loop keeps retrying the same failure
+- No Events UI work can be pushed until this is resolved
+
+---
+
 ## Overview
 
 This implementation plan addresses the Events area UI with primary focus on the eventId (event detail) page and secondary focus on the broader Events area including budgets, battle-boards, contracts, reports, kitchen-dashboard, and import pages.

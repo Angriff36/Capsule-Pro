@@ -6,3 +6,10 @@ Persist Sales Dashboard Data
 5. Update UI: on load, check for stored dataset; allow use without upload; surface status and last updated.
 6. Add error handling and guardrails (invalid columns, parse failures, missing data) with clear UI messaging.
 7. Manual verification: upload, refresh, cross-device login, replace data, and regression test charts.
+
+Administrative Kanban Auto-Generation
+1. Identify "red card" sources (equipment/vehicle flags, maintenance reports, inventory exceptions).
+2. Add mapping rules to turn red-carded items into admin kanban tasks with source_type/source_id linkage.
+3. De-duplicate tasks when the same red card is re-opened or updated.
+4. Notify assignees on new auto-generated tasks (Slack/email in-app).
+5. Add audit trail for auto-created tasks (who/what created, linked source, timestamps).
