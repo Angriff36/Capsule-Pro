@@ -472,7 +472,11 @@ async function createImportRecords(
         mimeType = "text/csv";
       }
 
-      // Create import record matching EventImport schema
+      // Prisma Bytes in Node.js expects Buffer; doc may be missing if parser returned fewer items
+      const rawContent = await file.arrayBuffer();
+      const contentBuffer = Buffer.from(rawContent);
+
+      // Create import record matching EventImport schema (parseErrors is required)
       const importRecord = await database.eventImport.create({
         data: {
           tenantId,
@@ -480,7 +484,10 @@ async function createImportRecords(
           fileName: file.name,
           mimeType,
           fileSize: file.size,
-          content: new Uint8Array(await file.arrayBuffer()),
+          content: contentBuffer,
+          parseErrors: doc?.errors ?? [],
+          fileType: doc?.fileType ?? (ext === "csv" ? "csv" : "pdf"),
+          detectedFormat: doc?.detectedFormat ?? null,
         },
       });
 
@@ -1170,19 +1177,17 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("[POST] Error parsing documents:", error);
 
-    // Provide more detailed error information for debugging
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     const errorStack = error instanceof Error ? error.stack : undefined;
 
     console.error("[POST] Error details:", { errorMessage, errorStack });
 
-    // In development, return more details; in production, return generic message
+    // Always include details in response so client/Network tab can show the real error
     return NextResponse.json(
       {
         message: "Failed to parse documents",
-        details:
-          process.env.NODE_ENV === "development" ? errorMessage : undefined,
+        details: errorMessage,
         ...(process.env.NODE_ENV === "development" && errorStack
           ? { stack: errorStack }
           : {}),

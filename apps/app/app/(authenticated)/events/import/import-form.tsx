@@ -162,9 +162,11 @@ export function ImportForm() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `Import failed: ${response.statusText}`
-        );
+        const message =
+          errorData.details ??
+          errorData.message ??
+          `Import failed: ${response.statusText}`;
+        throw new Error(message);
       }
 
       const data = await response.json();

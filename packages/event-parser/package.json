@@ -1,6 +1,42 @@
 {
   "name": "@repo/event-parser",
   "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./parsers": {
+      "types": "./dist/parsers/index.d.ts",
+      "import": "./dist/parsers/index.js",
+      "require": "./dist/parsers/index.js",
+      "default": "./dist/parsers/index.js"
+    },
+    "./adapters": {
+      "types": "./dist/adapters/index.d.ts",
+      "import": "./dist/adapters/index.js",
+      "require": "./dist/adapters/index.js",
+      "default": "./dist/adapters/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js",
+      "require": "./dist/types/index.js",
+      "default": "./dist/types/index.js"
+    },
+    "./data": {
+      "types": "./dist/data/index.d.ts",
+      "import": "./dist/data/index.js",
+      "require": "./dist/data/index.js",
+      "default": "./dist/data/index.js"
+    }
+  },
   "dependencies": {
     "pdf2json": "^4.0.2"
   },
@@ -8,34 +44,8 @@
     "@repo/typescript-config": "workspace:*",
     "typescript": "^5.9.3"
   },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./parsers": {
-      "types": "./dist/parsers/index.d.ts",
-      "import": "./dist/parsers/index.js"
-    },
-    "./adapters": {
-      "types": "./dist/adapters/index.d.ts",
-      "import": "./dist/adapters/index.js"
-    },
-    "./types": {
-      "types": "./dist/types/index.d.ts",
-      "import": "./dist/types/index.js"
-    },
-    "./data": {
-      "types": "./dist/data/index.d.ts",
-      "import": "./dist/data/index.js"
-    }
-  },
-  "main": "./dist/index.js",
-  "private": true,
   "scripts": {
     "build": "tsc",
     "type-check": "tsc --noEmit"
-  },
-  "type": "module",
-  "types": "./dist/index.d.ts"
+  }
 }
