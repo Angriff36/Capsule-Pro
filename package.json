@@ -38,7 +38,7 @@
     "vitest": "^4.0.18"
   },
   "engines": {
-    "node": ">=20 <23"
+    "node": ">=22 <23"
   },
   "files": [
     "dist/index.js"
@@ -47,9 +47,13 @@
   "pnpm": {
     "peerDependencyRules": {
       "allowedVersions": {
+        "@types/react": ">=19",
+        "@types/react-dom": ">=19",
+        "ai": ">=6",
         "react": ">=19",
         "react-dom": ">=19",
-        "next": ">=15"
+        "next": ">=15",
+        "zod": ">=4"
       }
     },
     "overrides": {

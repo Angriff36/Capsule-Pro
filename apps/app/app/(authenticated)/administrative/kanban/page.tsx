@@ -8,8 +8,8 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { AdminTaskDialog } from "./components/admin-task-dialog";
 import { listAdminTasks, updateAdminTaskStatus } from "./actions";
+import { AdminTaskDialog } from "./components/admin-task-dialog";
 
 const columns = [
   {
@@ -130,9 +130,14 @@ const AdministrativeKanbanPage = async () => {
                         >
                           {task.priority} priority
                         </Badge>
-                        <Badge variant="outline">{statusLabels[task.status]}</Badge>
+                        <Badge variant="outline">
+                          {statusLabels[task.status]}
+                        </Badge>
                       </div>
-                      <form action={updateAdminTaskStatus} className="flex items-center gap-2">
+                      <form
+                        action={updateAdminTaskStatus}
+                        className="flex items-center gap-2"
+                      >
                         <input name="taskId" type="hidden" value={task.id} />
                         <select
                           className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs"

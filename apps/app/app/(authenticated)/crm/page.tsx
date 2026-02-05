@@ -206,9 +206,7 @@ const CrmPage = async () => {
                 <CardTitle>{metric.value}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {metric.detail}
-                </p>
+                <p className="text-sm text-muted-foreground">{metric.detail}</p>
               </CardContent>
             </Card>
           ))}
@@ -223,7 +221,9 @@ const CrmPage = async () => {
           <Card>
             <CardHeader>
               <CardTitle>Top Clients (by LTV)</CardTitle>
-              <CardDescription>Track who drives repeat business.</CardDescription>
+              <CardDescription>
+                Track who drives repeat business.
+              </CardDescription>
             </CardHeader>
             <CardContent className="overflow-x-auto">
               <div className="rounded-md border">
@@ -296,7 +296,9 @@ const CrmPage = async () => {
                     <p className="text-xs text-muted-foreground">
                       {note.channel}
                     </p>
-                    <p className="text-sm text-muted-foreground">{note.summary}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {note.summary}
+                    </p>
                   </div>
                 ))
               )}

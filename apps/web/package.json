@@ -41,7 +41,7 @@
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": "20.x"
+    "node": "22.x"
   },
   "private": true,
   "scripts": {

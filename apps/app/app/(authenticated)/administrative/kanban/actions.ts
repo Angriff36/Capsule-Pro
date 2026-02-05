@@ -126,7 +126,10 @@ export async function createAdminTask(formData: FormData): Promise<void> {
   const dueDate = parseDate(getString(formData, "dueDate"));
 
   invariant(title, "Title is required");
-  invariant(adminStatuses.includes(status as AdminTaskStatus), "Invalid status");
+  invariant(
+    adminStatuses.includes(status as AdminTaskStatus),
+    "Invalid status"
+  );
   invariant(
     adminPriorities.includes(priority as AdminTaskPriority),
     "Invalid priority"
@@ -173,7 +176,10 @@ export async function updateAdminTaskStatus(formData: FormData): Promise<void> {
 
   invariant(taskId, "Task ID is required");
   invariant(status, "Status is required");
-  invariant(adminStatuses.includes(status as AdminTaskStatus), "Invalid status");
+  invariant(
+    adminStatuses.includes(status as AdminTaskStatus),
+    "Invalid status"
+  );
 
   await database.adminTask.update({
     where: {

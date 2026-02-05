@@ -7,12 +7,12 @@
     "react": "19.2.4"
   },
   "devDependencies": {
-    "@react-email/preview-server": "^5.2.6",
+    "@react-email/preview-server": "^5.2.7",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "25.2.0",
     "@types/react": "19.2.11",
     "next": "15.4.11",
-    "react-email": "5.2.6",
+    "react-email": "5.2.7",
     "typescript": "^5.9.3"
   },
   "private": true,

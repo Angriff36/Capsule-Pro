@@ -8,7 +8,7 @@ import { AdministrativeChatClient } from "./components/admin-chat-client";
 const AdministrativeChatPage = async () => {
   const { orgId, userId } = await auth();
 
-  if (!orgId || !userId) {
+  if (!(orgId && userId)) {
     notFound();
   }
 

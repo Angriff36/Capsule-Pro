@@ -127,9 +127,7 @@ const AdministrativeOverviewBoardsPage = async () => {
         ORDER BY e.event_date ASC, e.created_at ASC
       `
     ),
-    database.$queryRaw<
-      Array<{ total_tasks: bigint; completed_tasks: bigint }>
-    >(
+    database.$queryRaw<Array<{ total_tasks: bigint; completed_tasks: bigint }>>(
       Prisma.sql`
         SELECT
           COUNT(*)::bigint AS total_tasks,
@@ -141,9 +139,7 @@ const AdministrativeOverviewBoardsPage = async () => {
           AND created_at <= ${week.end}
       `
     ),
-    database.$queryRaw<
-      Array<{ total_tasks: bigint; completed_tasks: bigint }>
-    >(
+    database.$queryRaw<Array<{ total_tasks: bigint; completed_tasks: bigint }>>(
       Prisma.sql`
         SELECT
           COUNT(*)::bigint AS total_tasks,
@@ -383,7 +379,8 @@ const AdministrativeOverviewBoardsPage = async () => {
       <div className="space-y-0.5">
         <h1 className="text-3xl font-bold tracking-tight">Overview Boards</h1>
         <p className="text-muted-foreground">
-          Strategic snapshots that keep leadership aware of cross-module momentum.
+          Strategic snapshots that keep leadership aware of cross-module
+          momentum.
         </p>
       </div>
 
@@ -402,7 +399,9 @@ const AdministrativeOverviewBoardsPage = async () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="text-2xl font-bold">{snapshot.value}</p>
-                <p className="text-sm text-muted-foreground">{snapshot.trend}</p>
+                <p className="text-sm text-muted-foreground">
+                  {snapshot.trend}
+                </p>
               </CardContent>
             </Card>
           ))}
@@ -430,7 +429,9 @@ const AdministrativeOverviewBoardsPage = async () => {
                   key={action.title}
                 >
                   <p className="text-sm font-medium">{action.title}</p>
-                  <p className="text-xs text-muted-foreground">{action.owner}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {action.owner}
+                  </p>
                   <p className="text-xs text-muted-foreground">{action.eta}</p>
                   <Badge variant="secondary">{action.status}</Badge>
                 </div>
@@ -487,11 +488,15 @@ const AdministrativeOverviewBoardsPage = async () => {
             <CardContent>
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Tab updates today</span>
+                  <span className="text-muted-foreground">
+                    Tab updates today
+                  </span>
                   <span className="font-medium">{tasksUpdatedToday}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">New tasks created</span>
+                  <span className="text-muted-foreground">
+                    New tasks created
+                  </span>
                   <span className="font-medium">{tasksCreatedToday}</span>
                 </div>
                 <Separator />

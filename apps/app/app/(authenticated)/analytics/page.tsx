@@ -220,7 +220,9 @@ const AnalyticsPage = async () => {
   const previousLaborActual = Number(previousLabor?.actual_labor ?? 0);
 
   const laborUtilization =
-    currentLaborBudget > 0 ? (currentLaborActual / currentLaborBudget) * 100 : 0;
+    currentLaborBudget > 0
+      ? (currentLaborActual / currentLaborBudget) * 100
+      : 0;
   const previousLaborUtilization =
     previousLaborBudget > 0
       ? (previousLaborActual / previousLaborBudget) * 100
@@ -397,7 +399,9 @@ const AnalyticsPage = async () => {
                 ) : (
                   topEvents.map((event) => (
                     <TableRow key={event.id}>
-                      <TableCell className="font-medium">{event.title}</TableCell>
+                      <TableCell className="font-medium">
+                        {event.title}
+                      </TableCell>
                       <TableCell className="text-right">
                         {currencyFormatter.format(Number(event.revenue ?? 0))}
                       </TableCell>
@@ -408,9 +412,7 @@ const AnalyticsPage = async () => {
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant={
-                            statusVariantMap[event.status] ?? "outline"
-                          }
+                          variant={statusVariantMap[event.status] ?? "outline"}
                         >
                           {event.status}
                         </Badge>

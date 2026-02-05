@@ -1,39 +1,42 @@
-# Events UI Build Prompt
+<!--0a. Study `specs/*` with up to 500 parallel Sonnet subagents to learn the application specifications.
+<!--0b. Study @IMPLEMENTATION_PLAN.md.
+<!--0c. For reference, the application source code is in `src/*`.
+<!--
+<!--1. Your task is to implement functionality per the specifications using parallel subagents. Follow @IMPLEMENTATION_PLAN.md and choose the most important item to address. Before making changes, search the codebase (don't assume not implemented) using Sonnet subagents. You may use up to 500 parallel Sonnet subagents for searches/reads and only 1 Sonnet subagent for build/tests. Use Opus subagents when complex reasoning is needed (debugging, architectural decisions).
+<!--2. After implementing functionality or resolving problems, run the tests for that unit of code that was improved. If functionality is missing then it's your job to add it as per the application specifications. Ultrathink.
+<!--3. When you discover issues, immediately update @IMPLEMENTATION_PLAN.md with your findings using a subagent. When resolved, update and remove the item.
+<!--4. When the tests pass, update @IMPLEMENTATION_PLAN.md, then `git add -A` then `git commit` with a message describing the changes. After the commit, `git push`.
+<!--
+<!--99999. Important: When authoring documentation, capture the why — tests and implementation importance.
+<!--999999. Important: Single sources of truth, no migrations/adapters. If tests unrelated to your work fail, resolve them as part of the increment.
+<!--9999999. As soon as there are no build or test errors create a git tag. If there are no git tags start at 0.0.0 and increment patch by 1 for example 0.0.1  if 0.0.0 does not exist.
+<!--99999999. You may add extra logging if required to debug issues.
+<!--999999999. Keep @IMPLEMENTATION_PLAN.md current with learnings using a subagent — future work depends on this to avoid duplicating efforts. Update especially after finishing your turn.
+<!--9999999999. When you learn something new about how to run the application, update @AGENTS.md using a subagent but keep it brief. For example if you run commands multiple times before learning the correct command then that file should be updated.
+<!--99999999999. For any bugs you notice, resolve them or document them in @IMPLEMENTATION_PLAN.md using a subagent even if it is unrelated to the current piece of work.
+<!--999999999999. Implement functionality completely. Placeholders and stubs waste efforts and time redoing the same work.
+<!--9999999999999. When @IMPLEMENTATION_PLAN.md becomes large periodically clean out the items that are completed from the file using a subagent.
+<!--99999999999999. If you find inconsistencies in the specs/* then use an Opus 4.5 subagent with 'ultrathink' requested to update the specs.
+<!--999999999999999. IMPORTANT: Keep @AGENTS.md operational only — status updates and progress notes belong in `IMPLEMENTATION_PLAN.md`. A bloated AGENTS.md pollutes every future loop's context. 
+THE COMMENTED OUT TEXT IS A TEMPLATE, USE IT TO CREATE A BUILD PROMPT SPECIFIC TO THE RELEVANT SPEC DONT REPLACE IT -->
 
-## Context
-Focus area: Events page UI fixes, primarily `apps/web/app/events/[eventId]/*` and secondary areas in `apps/web/app/events/*` (budgets, battle-boards, contracts, reports, kitchen-dashboard, imports).
+0a. Study `specs/bundle-containment.md` with up to 500 parallel Sonnet subagents to learn the bundle containment specifications.
+0b. Study @IMPLEMENTATION_PLAN.md.
+0c. For reference, the application source code is in `apps/app/` and `packages/`.
 
-0a. Study @IMPLEMENTATION_PLAN.md to understand current priorities and progress.
-0b. Study @IMPLEMENTATION_PLAN_SUMMARY.md for the overall architecture analysis.
-0c. For reference, the Events UI source code is in `apps/web/app/events/*`.
+1. Your task is to implement the bundle containment spec (specs/bundle-containment.md) using parallel subagents. Follow @IMPLEMENTATION_PLAN.md and choose the most important item to address from R1-R4 (client dependency isolation, edge instrumentation containment, middleware scope reduction, import chain leak identification). Before making changes, search the codebase for current bundle structure and import patterns using Sonnet subagents. You may use up to 500 parallel Sonnet subagents for searches/reads and only 1 Sonnet subagent for build/tests. Use Opus subagents when complex reasoning is needed (debugging, architectural decisions).
+2. After implementing functionality or resolving problems, run the tests for that unit of code that was improved. If functionality is missing then it's your job to add it as per the bundle containment spec. Ultrathink.
+3. When you discover issues, immediately update @IMPLEMENTATION_PLAN.md with your findings using a subagent. When resolved, update and remove the item.
+4. When the tests pass, update @IMPLEMENTATION_PLAN.md, then `git add -A` then `git commit` with a message describing the changes. After the commit, `git push`.
 
-## Primary Task
-
-1. Your task is to fix Events UI issues per @IMPLEMENTATION_PLAN.md. Choose the highest priority incomplete item (P0 > P1 > P2 > P3). Before making changes, search the codebase to understand current implementation using Sonnet subagents. You may use up to 500 parallel Sonnet subagents for searches/reads and only 1 Sonnet subagent for build/tests. Use Opus subagents for complex refactoring decisions.
-
-2. **Critical P0 Issues to prioritize:**
-   - Fix hardcoded dark theme in `event-details-client.tsx` (replace `bg-[#0b0f1a] text-slate-50` with theme-aware classes)
-   - Update sidebar navigation (`module-nav.ts`) to include missing pages: Budgets, Battle Boards, Contracts, Reports
-   - Fix breadcrumb navigation to use URL-based generation
-   - Eliminate `any` types in Reports and other components
-   - Split `event-details-client.tsx` (3054 lines) into focused components (<500 lines each)
-
-3. After implementing a fix, run relevant tests. Commands:
-   - Typecheck: `pnpm typecheck`
-   - Lint: `pnpm lint`
-   - Tests: `pnpm test -- --filter=web`
-
-4. When you fix an issue, update @IMPLEMENTATION_PLAN.md marking items complete. When tests pass: `git add -A`, `git commit` with descriptive message, `git push`.
-
-## Important Guidelines
-
-99999. Theme fixes: Use Tailwind's `dark:` variants and existing theme tokens from the design system. Never hardcode colors.
-999999. Component splitting: Extract logical sections (EventHeader, EventDetails, EventTimeline, EventBudget, etc.) as separate files in `components/event/`.
-9999999. Type safety: Replace all `any` with proper types. Use existing types from `@capsule/types` package.
-99999999. Keep @IMPLEMENTATION_PLAN.md current — mark items complete, add discovered issues.
-999999999. Loading states: Use existing Skeleton components from `@capsule/ui`.
-9999999999. Accessibility: Add ARIA labels, keyboard navigation support, proper heading hierarchy.
-99999999999. When you learn something about the codebase, update @AGENTS.md briefly.
-999999999999. Focus on one P0 item per iteration. Complete it fully before moving to next.
-9999999999999. Test your changes visually if possible: `pnpm dev --filter=web`
-99999999999999. Document component relationships and data flow when splitting large components.
+99999. Important: When authoring documentation, capture the why — tests and implementation importance.
+999999. Important: Single sources of truth, no migrations/adapters. If tests unrelated to your work fail, resolve them as part of the increment.
+9999999. As soon as there are no build or test errors create a git tag. If there are no git tags start at 0.0.0 and increment patch by 1 for example 0.0.1  if 0.0.0 does not exist.
+99999999. You may add extra logging if required to debug issues.
+999999999. Keep @IMPLEMENTATION_PLAN.md current with learnings using a subagent — future work depends on this to avoid duplicating efforts. Update especially after finishing your turn.
+9999999999. When you learn something new about how to run the application, update @AGENTS.md using a subagent but keep it brief. For example if you run commands multiple times before learning the correct command then that file should be updated.
+99999999999. For any bugs you notice, resolve them or document them in @IMPLEMENTATION_PLAN.md using a subagent even if it is unrelated to the current piece of work.
+999999999999. Implement functionality completely. Placeholders and stubs waste efforts and time redoing the same work.
+9999999999999. When @IMPLEMENTATION_PLAN.md becomes large periodically clean out the items that are completed from the file using a subagent.
+99999999999999. If you find inconsistencies in the specs/* then use an Opus 4.5 subagent with 'ultrathink' requested to update the specs.
+999999999999999. IMPORTANT: Keep @AGENTS.md operational only — status updates and progress notes belong in `IMPLEMENTATION_PLAN.md`. A bloated AGENTS.md pollutes every future loop's context. 

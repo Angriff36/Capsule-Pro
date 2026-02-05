@@ -1,7 +1,9 @@
 {
   "name": "docs",
   "dependencies": {
-    "fumadocs-mdx": "^14.2.6",
+    "fumadocs-core": "^15.7.9",
+    "fumadocs-mdx": "^11.9.0",
+    "fumadocs-ui": "^15.7.11",
     "next": "15.4.11",
     "react": "19.2.4",
     "react-dom": "19.2.4"
@@ -13,8 +15,6 @@
     "@types/node": "25.2.0",
     "@types/react": "19.2.11",
     "@types/react-dom": "19.2.3",
-    "fumadocs-core": "^16.5.0",
-    "fumadocs-ui": "^16.5.0",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3"
   },

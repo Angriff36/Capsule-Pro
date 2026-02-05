@@ -1,6 +1,5 @@
 "use client";
 
-import Ably from "ably";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -10,6 +9,7 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import Ably from "ably";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 interface AdminChatMessage {
@@ -133,7 +133,9 @@ export function AdministrativeChatClient({
           setIsConnected(stateChange.current === "connected");
         });
 
-        const channel = client.channels.get(`tenant:${tenantId}:${channelSuffix}`);
+        const channel = client.channels.get(
+          `tenant:${tenantId}:${channelSuffix}`
+        );
         channelRef.current = channel;
 
         try {
@@ -197,7 +199,7 @@ export function AdministrativeChatClient({
   const handleSend = async () => {
     const trimmed = draft.trim();
 
-    if (!trimmed || !channelRef.current) {
+    if (!(trimmed && channelRef.current)) {
       return;
     }
 
@@ -256,7 +258,9 @@ export function AdministrativeChatClient({
                       {message.time}
                     </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">{message.text}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {message.text}
+                  </p>
                 </div>
               ))
             )}
