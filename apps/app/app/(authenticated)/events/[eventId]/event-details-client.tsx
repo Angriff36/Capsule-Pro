@@ -1446,17 +1446,17 @@ export function EventDetailsClient({
             </p>
           </div>
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-            <Card className="border-border/60 bg-card/70 text-foreground shadow-[0_20px_60px_-30px_rgba(0,0,0,0.6)]">
+            <Card className="border-border/60 bg-card/70 text-foreground shadow-xl">
               <CardHeader className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
                   <Badge
                     className={cn(
                       "border text-[11px]",
                       isLive
-                        ? "border-emerald-400/40 bg-emerald-500/20 text-emerald-200"
+                        ? "border-success/40 bg-success/20 text-success"
                         : isPast
                           ? "border-slate-500/40 bg-slate-500/10 text-foreground"
-                          : "border-sky-400/40 bg-sky-500/10 text-sky-200"
+                          : "border-info/40 bg-info/10 text-info"
                     )}
                     variant="outline"
                   >
@@ -1464,7 +1464,7 @@ export function EventDetailsClient({
                   </Badge>
                   {soldOut && (
                     <Badge
-                      className="border-rose-500/40 bg-rose-500/20 text-rose-100"
+                      className="border-destructive/40 bg-destructive/20 text-destructive"
                       variant="outline"
                     >
                       Sold out
@@ -1472,7 +1472,7 @@ export function EventDetailsClient({
                   )}
                   {!soldOut && limited && (
                     <Badge
-                      className="border-amber-400/40 bg-amber-500/20 text-amber-100"
+                      className="border-warning/40 bg-warning/20 text-warning"
                       variant="outline"
                     >
                       Limited
@@ -1555,7 +1555,7 @@ export function EventDetailsClient({
                     <div className="text-xs text-muted-foreground">
                       {event.venueAddress ?? "Venue address not set"}
                     </div>
-                    <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-1 text-[11px] text-emerald-200">
+                    <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-success/30 bg-success/10 px-2 py-1 text-[11px] text-success">
                       <ShieldCheckIcon className="size-3" />
                       Verified venue
                     </div>
@@ -1602,7 +1602,7 @@ export function EventDetailsClient({
 
                 <div className="flex flex-wrap items-center gap-2">
                   <Button
-                    className="bg-emerald-400 text-slate-950 hover:bg-emerald-300"
+                    className="bg-success text-success-foreground hover:bg-success/90"
                     disabled={soldOut}
                     onClick={() => setQuickRsvpOpen(true)}
                   >
@@ -1665,7 +1665,7 @@ export function EventDetailsClient({
                   />
                 ) : (
                   <div className="flex h-72 flex-col items-center justify-center gap-2 text-muted-foreground">
-                    <SparklesIcon className="size-10 text-foreground0" />
+                    <SparklesIcon className="size-10 text-foreground/60" />
                     <p className="text-sm">Featured media not set</p>
                   </div>
                 )}
@@ -1687,7 +1687,7 @@ export function EventDetailsClient({
               <Card className="border-border/60 bg-card/70 text-foreground">
                 <CardHeader className="space-y-1">
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    <ActivityIcon className="size-5 text-emerald-400" />
+                    <ActivityIcon className="size-5 text-success" />
                     Operations snapshot
                   </CardTitle>
                   <CardDescription className="text-muted-foreground">
@@ -1775,7 +1775,7 @@ export function EventDetailsClient({
             <Card className="border-border/60 bg-card/70 text-foreground">
               <CardHeader className="space-y-1">
                 <CardTitle className="flex items-center gap-2 text-lg">
-                  <ChefHatIcon className="size-5 text-amber-300" />
+                  <ChefHatIcon className="size-5 text-warning" />
                   Menu intelligence
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">
@@ -1803,7 +1803,7 @@ export function EventDetailsClient({
                 ) : (
                   dishRows.map((row, index) => (
                     <div
-                      className="group rounded-2xl border border-border/70 bg-muted/40 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-emerald-500/40"
+                      className="group rounded-2xl border border-border/70 bg-muted/40 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-success/40"
                       key={`${row.dish.dishId}-${index}`}
                       style={{ animationDelay: `${index * 40}ms` }}
                     >
@@ -1866,7 +1866,7 @@ export function EventDetailsClient({
                                     </span>
                                     {row.recipe.versionId ? (
                                       <Link
-                                        className="text-emerald-300 hover:text-emerald-200"
+                                        className="text-success hover:text-success/80"
                                         href={`/inventory/recipes/${row.recipe.versionId}`}
                                       >
                                         View recipe
@@ -1924,7 +1924,7 @@ export function EventDetailsClient({
                         </Badge>
                         {row.dish.pricePerPerson !== null && (
                           <Badge
-                            className="border-emerald-400/40 bg-emerald-500/10 text-emerald-200"
+                            className="border-success/40 bg-success/10 text-success"
                             variant="outline"
                           >
                             Price {formatCurrency(row.dish.pricePerPerson)} /
@@ -1933,7 +1933,7 @@ export function EventDetailsClient({
                         )}
                         {row.dish.costPerPerson !== null && (
                           <Badge
-                            className="border-amber-400/40 bg-amber-500/10 text-amber-100"
+                            className="border-warning/40 bg-warning/10 text-warning"
                             variant="outline"
                           >
                             Cost {formatCurrency(row.dish.costPerPerson)} /
@@ -1988,7 +1988,7 @@ export function EventDetailsClient({
               <Card className="border-border/60 bg-card/70 text-foreground">
                 <CardHeader className="space-y-1">
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    <ClipboardCopyIcon className="size-5 text-sky-300" />
+                    <ClipboardCopyIcon className="size-5 text-info" />
                     Ingredient coverage
                   </CardTitle>
                   <CardDescription className="text-muted-foreground">
@@ -2065,8 +2065,8 @@ export function EventDetailsClient({
                                     className={cn(
                                       "border",
                                       isShort || isLow
-                                        ? "border-rose-400/40 bg-rose-500/20 text-rose-100"
-                                        : "border-emerald-400/40 bg-emerald-500/10 text-emerald-200"
+                                        ? "border-destructive/40 bg-destructive/20 text-destructive"
+                                        : "border-success/40 bg-success/10 text-success"
                                     )}
                                     variant="outline"
                                   >
@@ -2101,7 +2101,7 @@ export function EventDetailsClient({
                               />
                             )}
                             {ingredient.sources.length > 0 && (
-                              <p className="mt-2 text-[11px] text-foreground0">
+                              <p className="mt-2 text-[11px] text-foreground/70">
                                 Used in {ingredient.sources.join(", ")}
                               </p>
                             )}
@@ -2181,7 +2181,7 @@ export function EventDetailsClient({
             </div>
             <div className="flex items-center gap-2">
               <Button
-                className="bg-emerald-400 text-slate-950 hover:bg-emerald-300"
+                className="bg-success text-success-foreground hover:bg-success/90"
                 onClick={() => setQuickRsvpOpen(true)}
               >
                 Quick RSVP
@@ -2375,7 +2375,7 @@ export function EventDetailsClient({
                   <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {featuredEvents.map((related, index) => (
                       <Link
-                        className="group overflow-hidden rounded-2xl border border-border/70 bg-muted/40 transition hover:-translate-y-0.5 hover:border-emerald-400/50"
+                        className="group overflow-hidden rounded-2xl border border-border/70 bg-muted/40 transition hover:-translate-y-0.5 hover:border-success/50"
                         href={`/events/${related.id}`}
                         key={related.id}
                         style={{ animationDelay: `${index * 50}ms` }}
@@ -2389,7 +2389,7 @@ export function EventDetailsClient({
                               src={related.featuredMediaUrl}
                             />
                           ) : (
-                            <div className="flex h-full items-center justify-center bg-gradient-to-br from-card to-muted text-foreground0">
+                            <div className="flex h-full items-center justify-center bg-gradient-to-br from-card to-muted text-foreground/60">
                               <CrownIcon className="size-6" />
                             </div>
                           )}
@@ -2410,7 +2410,7 @@ export function EventDetailsClient({
                           <p className="text-xs text-muted-foreground">
                             {related.venueName ?? "Venue TBD"}
                           </p>
-                          <div className="mt-2 flex items-center gap-1 text-[11px] text-emerald-200">
+                          <div className="mt-2 flex items-center gap-1 text-[11px] text-success">
                             <ShieldCheckIcon className="size-3" />
                             Verified venue
                           </div>
@@ -2424,7 +2424,7 @@ export function EventDetailsClient({
                 <Card className="border-border/60 bg-card/70 text-foreground">
                   <CardHeader className="space-y-1">
                     <CardTitle className="flex items-center gap-2 text-lg">
-                      <TimerIcon className="size-4 text-emerald-300" />
+                      <TimerIcon className="size-4 text-success" />
                       Today&apos;s spotlight
                     </CardTitle>
                     <CardDescription className="text-muted-foreground">
@@ -2440,7 +2440,7 @@ export function EventDetailsClient({
                     ) : (
                       todayEvents.slice(0, 3).map((related) => (
                         <Link
-                          className="flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-muted/40 px-3 py-2 text-sm transition hover:border-emerald-400/40"
+                          className="flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-muted/40 px-3 py-2 text-sm transition hover:border-success/40"
                           href={`/events/${related.id}`}
                           key={related.id}
                         >
@@ -2475,7 +2475,7 @@ export function EventDetailsClient({
                 <Card className="border-border/60 bg-card/70 text-foreground">
                   <CardHeader className="space-y-1">
                     <CardTitle className="flex items-center gap-2 text-lg">
-                      <CalendarDaysIcon className="size-4 text-sky-300" />
+                      <CalendarDaysIcon className="size-4 text-info" />
                       This week
                     </CardTitle>
                     <CardDescription className="text-muted-foreground">
@@ -2493,7 +2493,7 @@ export function EventDetailsClient({
                       <div className="flex flex-wrap gap-2">
                         {thisWeekEvents.slice(0, 8).map((related) => (
                           <Link
-                            className="rounded-full border border-border/70 bg-muted/40 px-3 py-1 text-xs text-foreground transition hover:border-emerald-400/40"
+                            className="rounded-full border border-border/70 bg-muted/40 px-3 py-1 text-xs text-foreground transition hover:border-success/40"
                             href={`/events/${related.id}`}
                             key={related.id}
                           >
@@ -2510,7 +2510,7 @@ export function EventDetailsClient({
               </div>
 
               {dateRangeInvalid && (
-                <Card className="border-rose-500/40 bg-rose-500/10 text-rose-100">
+                <Card className="border-destructive/40 bg-destructive/10 text-destructive">
                   <CardContent className="py-6 text-sm">
                     End date must be after the start date. Adjust your range or
                     reset filters.
@@ -2570,7 +2570,7 @@ export function EventDetailsClient({
 
                     return (
                       <Link
-                        className="group rounded-2xl border border-border/70 bg-muted/40 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-emerald-400/50"
+                        className="group rounded-2xl border border-border/70 bg-muted/40 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-success/50"
                         href={`/events/${related.id}`}
                         key={related.id}
                         style={{ animationDelay: `${index * 40}ms` }}
@@ -2580,10 +2580,10 @@ export function EventDetailsClient({
                             className={cn(
                               "border text-[11px]",
                               relatedLive
-                                ? "border-emerald-400/40 bg-emerald-500/20 text-emerald-200"
+                                ? "border-success/40 bg-success/20 text-success"
                                 : relatedPast
                                   ? "border-slate-500/40 bg-slate-500/10 text-foreground"
-                                  : "border-sky-400/40 bg-sky-500/10 text-sky-200"
+                                  : "border-info/40 bg-info/10 text-info"
                             )}
                             variant="outline"
                           >
@@ -2595,7 +2595,7 @@ export function EventDetailsClient({
                           </Badge>
                           {relatedSoldOut && (
                             <Badge
-                              className="border-rose-500/40 bg-rose-500/20 text-rose-100"
+                              className="border-destructive/40 bg-destructive/20 text-destructive"
                               variant="outline"
                             >
                               Sold out
@@ -2603,7 +2603,7 @@ export function EventDetailsClient({
                           )}
                           {!relatedSoldOut && relatedLimited && (
                             <Badge
-                              className="border-amber-400/40 bg-amber-500/20 text-amber-100"
+                              className="border-warning/40 bg-warning/20 text-warning"
                               variant="outline"
                             >
                               Limited
@@ -2653,7 +2653,7 @@ export function EventDetailsClient({
                                 ? `Starts in ${formatDuration(relatedTimeUntil)}`
                                 : "Completed"}
                           </div>
-                          <div className="flex items-center gap-1 text-emerald-200">
+                          <div className="flex items-center gap-1 text-success">
                             <ShieldCheckIcon className="size-3" />
                             Verified venue
                           </div>
@@ -2698,7 +2698,7 @@ export function EventDetailsClient({
                             related.rsvpCount >= related.guestCount;
                           return (
                             <Link
-                              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-card/60 px-4 py-3 text-sm transition hover:border-emerald-400/40"
+                              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-card/60 px-4 py-3 text-sm transition hover:border-success/40"
                               href={`/events/${related.id}`}
                               key={related.id}
                             >
@@ -2714,10 +2714,10 @@ export function EventDetailsClient({
                                   className={cn(
                                     "border text-[11px]",
                                     relatedLive
-                                      ? "border-emerald-400/40 bg-emerald-500/20 text-emerald-200"
+                                      ? "border-success/40 bg-success/20 text-success"
                                       : relatedPast
                                         ? "border-slate-500/40 bg-slate-500/10 text-foreground"
-                                        : "border-sky-400/40 bg-sky-500/10 text-sky-200"
+                                        : "border-info/40 bg-info/10 text-info"
                                   )}
                                   variant="outline"
                                 >
@@ -2729,7 +2729,7 @@ export function EventDetailsClient({
                                 </Badge>
                                 {relatedSoldOut && (
                                   <Badge
-                                    className="border-rose-500/40 bg-rose-500/20 text-rose-100"
+                                    className="border-destructive/40 bg-destructive/20 text-destructive"
                                     variant="outline"
                                   >
                                     Sold out
@@ -3032,7 +3032,7 @@ export function EventDetailsClient({
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-muted/95 px-4 py-3 backdrop-blur sm:hidden">
         <div className="flex items-center gap-2">
           <Button
-            className="flex-1 bg-emerald-400 text-slate-950 hover:bg-emerald-300"
+            className="flex-1 bg-success text-success-foreground hover:bg-success/90"
             disabled={soldOut}
             onClick={() => setQuickRsvpOpen(true)}
             size="sm"

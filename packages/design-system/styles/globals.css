@@ -31,6 +31,11 @@
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
   --success: #4b5a40;
+  --success-foreground: #f7f4ef;
+  --warning: #b4791b;
+  --warning-foreground: #f7f4ef;
+  --info: #1a6b8a;
+  --info-foreground: #f7f4ef;
   --border: #e0d7cc;
   --input: #e0d7cc;
   --ring: var(--brand-golden-zest);
@@ -72,6 +77,11 @@
   --destructive: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.637 0.237 25.331);
   --success: #6b7a4f;
+  --success-foreground: #1e1c1a;
+  --warning: #c98a1e;
+  --warning-foreground: #1e1c1a;
+  --info: #2a9ab8;
+  --info-foreground: #1e1c1a;
   --border: #332f2c;
   --input: #332f2c;
   --ring: var(--brand-golden-zest);
@@ -113,6 +123,13 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
