@@ -26,8 +26,8 @@ You are close. Apply the corrections and reorder phases for ROI before execution
 
 - [x] Record current shared client bundle size: **245KB** (completed successfully)
 - [x] Build completed successfully with shared bundle size of 245KB for the app
-- [ ] Record `/analytics/sales` route payload size
-- [ ] Record edge instrumentation bundle size
+- [x] Record `/analytics/sales` route payload size: **3.37 kB size / 266 kB first load JS** (2026-02-05)
+- [x] Record edge instrumentation bundle size: **255 kB parsed / 76 kB gzip / 1.55 MB stat** (2026-02-05)
 - [x] Run `pnpm build` with analyzer enabled
 
 ---
@@ -84,11 +84,11 @@ const AnalyticsSalesPage = () => (
 
 **Files to Create**:
 - [x] `apps/app/app/(authenticated)/analytics/sales/actions.ts` (server actions for PDF generation)
-- [ ] `packages/pdf/src/server-actions.ts` (exportable PDF utilities)
+- [x] `packages/pdf/src/server-actions.ts` (dropped — app-local server action is sufficient right now)
 
 **Files to Modify**:
 - [x] `apps/app/app/(authenticated)/analytics/sales/sales-dashboard-client.tsx` (remove react-pdf imports)
-- [ ] `apps/app/app/(authenticated)/analytics/sales/lib/sales-analytics.ts` (keep xlsx but lazy load read function)
+- [x] `apps/app/app/(authenticated)/analytics/sales/lib/sales-analytics.ts` (keep xlsx but lazy load read function)
 
 **Acceptance**: `@react-pdf/renderer` not in client bundle; PDFs still generate correctly
 **✅ COMPLETED**: Created actions.tsx server action with generateSalesReportPdf function, created pdf-components.tsx for the PDF document component, removed @react-pdf/renderer from client bundle.
@@ -315,7 +315,7 @@ pnpm build
 
 **2026-02-05 - Final Verification**: ✅ Build succeeded
 - Shared bundle size: **245KB** (baseline maintained)
-- `/analytics/sales` route: **271KB** (heavy libraries isolated to route-level chunk)
+- `/analytics/sales` route: **266KB** (first load JS; route size 3.37 kB)
 - Middleware bundle: **161KB** (optimized matcher scope)
 - All P0-P2 requirements verified complete
 - Tests: **25/25 passed**
@@ -349,8 +349,9 @@ All P0-P2 bundle containment requirements have been implemented and verified. Th
 
 ### Bundle Size Metrics
 - **Shared Bundle**: 245 KB (baseline maintained)
-- **Analytics/Sales Route**: 271 KB (heavy libraries isolated)
+- **Analytics/Sales Route**: 266 KB first load JS (route size 3.37 kB)
 - **Middleware**: 161 KB (optimized matcher)
+- **Edge Instrumentation**: 255 kB parsed / 76 kB gzip / 1.55 MB stat
 
 ### Requirements Verification
 All R1-R3 implementations verified complete:
@@ -367,6 +368,70 @@ All R1-R3 implementations verified complete:
 
 ### Conclusion
 The bundle containment specification (`specs/bundle-containment.md`) has been fully implemented and verified. All heavyweight dependencies are properly isolated behind execution boundaries, middleware scope has been optimized, and the shared bundle baseline of 245 KB has been maintained throughout the implementation.
+
+---
+
+## CRITICAL FIX (2026-02-05): Design System → Observability Leak
+
+### Issue Discovery
+After initial verification, the server was extremely slow to start with warnings about:
+- `Critical dependency: the request of a dependency is an expression` (OpenTelemetry)
+- `[webpack.cache.PackFileCacheStrategy] Serializing big strings` (massive cache)
+
+### Root Cause Analysis
+Import trace revealed server-only observability code leaking into the client bundle:
+
+```
+packages/observability/error.ts 
+  → packages/design-system/lib/utils.ts 
+    → packages/design-system/lib/fonts.ts 
+      → app/layout.tsx
+```
+
+**The culprit**: `packages/design-system/lib/utils.ts` imported `parseError` from `@repo/observability/error`, which in turn imports:
+- `@sentry/nextjs` (server instrumentation)
+- `@logtail/next` (logging)
+- Which pull in `@opentelemetry/instrumentation` and `@prisma/instrumentation`
+
+This caused Next.js to bundle the entire Node.js/Sentry/OTel/Prisma instrumentation tree into the design-system package, which is shared across all routes including `app/layout.tsx`.
+
+### Fix Applied
+**Files Modified**:
+- `packages/design-system/lib/utils.ts` - Removed `parseError` import, created lightweight `extractErrorMessage()` helper
+- `packages/design-system/package.json` - Removed `@repo/observability` dependency
+
+**Before** (BAD):
+```typescript
+import { parseError } from '@repo/observability/error'; // ❌ Pulls in Sentry + OTel
+
+export const handleError = (error: unknown): void => {
+  const message = parseError(error);
+  toast.error(message);
+};
+```
+
+**After** (GOOD):
+```typescript
+// No observability import - client-safe
+
+const extractErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String(error.message);
+  }
+  return String(error) || 'An error occurred';
+};
+
+export const handleError = (error: unknown): void => {
+  const message = extractErrorMessage(error);
+  toast.error(message);
+};
+```
+
+### Key Lesson
+**Never import server observability (`@repo/observability/*`) from shared UI packages.**
+- Keep `parseError` with Sentry logging for server-only contexts (API routes, server actions)
+- Use lightweight error extraction for client-side UI utilities
 
 ---
 
