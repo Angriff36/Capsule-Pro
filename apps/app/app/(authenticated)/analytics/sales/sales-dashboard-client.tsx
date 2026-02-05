@@ -1034,7 +1034,7 @@ export function SalesDashboardClient() {
       // Lazy load xlsx only when user uploads a file - keeps it out of initial bundle
       const xlsx = await import("xlsx");
       const workbook = xlsx.read(buffer, { type: "array", cellDates: true });
-      const data = loadSalesData(workbook);
+      const data = await loadSalesData(workbook);
       setSalesData(data);
       setFileName(file.name);
       setDateDefaultsSet(false);

@@ -2,6 +2,9 @@
  * This file configures the initialization of Sentry for edge runtime.
  * The config you add here will be used whenever a page or API route is loaded in an edge runtime.
  * https://docs.sentry.io/platforms/javascript/guides/nextjs/
+ *
+ * Note: This file is dynamically imported by instrumentation.ts, so imports here
+ * are already lazy-loaded at the edge runtime level.
  */
 
 import * as Sentry from "@sentry/nextjs";

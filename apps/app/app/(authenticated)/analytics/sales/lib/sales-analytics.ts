@@ -1,6 +1,11 @@
 import type { WorkBook, WorkSheet } from "xlsx";
-import { utils } from "xlsx";
 import { invariant } from "@/app/lib/invariant";
+
+// Lazy load xlsx utils to keep it out of initial bundle
+const getXlsxUtils = async () => {
+  const xlsx = await import("xlsx");
+  return xlsx.utils;
+};
 
 export type CellValue = string | number | boolean | Date | null;
 export type DataRow = Record<string, CellValue>;
@@ -301,7 +306,8 @@ const cleanRows = (rows: DataRow[]): DataRow[] => {
   });
 };
 
-const parseSheetRows = (sheet: WorkSheet): DataRow[] => {
+const parseSheetRows = async (sheet: WorkSheet): Promise<DataRow[]> => {
+  const utils = await getXlsxUtils();
   const rows = utils.sheet_to_json(sheet, {
     defval: null,
     raw: true,
@@ -317,7 +323,7 @@ const parseSheetRows = (sheet: WorkSheet): DataRow[] => {
   });
 };
 
-export const loadSalesData = (workbook: WorkBook): SalesData => {
+export const loadSalesData = async (workbook: WorkBook): Promise<SalesData> => {
   const sheetNames = workbook.SheetNames;
   const rawSheetNames = sheetNames.filter((name) =>
     normalizeName(name).startsWith("raw ")
@@ -343,7 +349,7 @@ export const loadSalesData = (workbook: WorkBook): SalesData => {
   for (const name of toRead) {
     const sheet = workbook.Sheets[name];
     invariant(sheet, `Sheet "${name}" not found in workbook`);
-    sheetData[name] = cleanRows(parseSheetRows(sheet));
+    sheetData[name] = cleanRows(await parseSheetRows(sheet));
   }
 
   const mapping = sheetData[MAP_SHEET] ?? [];
