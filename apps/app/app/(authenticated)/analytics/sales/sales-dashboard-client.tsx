@@ -1,14 +1,6 @@
 "use client";
 
 import {
-  Document,
-  Page,
-  PDFDownloadLink,
-  StyleSheet,
-  Text,
-  View,
-} from "@react-pdf/renderer";
-import {
   Alert,
   AlertDescription,
   AlertTitle,
@@ -61,7 +53,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { read } from "xlsx";
+import { generateSalesReportPdf } from "./actions.tsx";
 import {
   type AnnualMetrics,
   buildDateColumnOptionsForUI,
@@ -427,107 +419,55 @@ interface ReportSummary {
   highlights?: string[];
 }
 
-const pdfStyles = StyleSheet.create({
-  page: {
-    padding: 32,
-    fontSize: 11,
-    fontFamily: "Helvetica",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 700,
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 11,
-    color: "#6b7280",
-    marginBottom: 16,
-  },
-  section: {
-    marginBottom: 12,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: 600,
-    marginBottom: 8,
-  },
-  kpiRow: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 4,
-  },
-  kpiLabel: {
-    fontSize: 10,
-    color: "#374151",
-  },
-  kpiValue: {
-    fontSize: 11,
-    fontWeight: 600,
-  },
-  kpiSub: {
-    fontSize: 9,
-    color: "#6b7280",
-    marginBottom: 4,
-  },
-  listItem: {
-    fontSize: 10,
-    color: "#374151",
-    marginBottom: 3,
-  },
-});
-
-const SalesReportDocument = ({ summary }: { summary: ReportSummary }) => (
-  <Document>
-    <Page size="LETTER" style={pdfStyles.page}>
-      <Text style={pdfStyles.title}>{summary.title}</Text>
-      <Text style={pdfStyles.subtitle}>{summary.windowLabel}</Text>
-      <View style={pdfStyles.section}>
-        <Text style={pdfStyles.sectionTitle}>Key Metrics</Text>
-        {summary.kpis.map((kpi) => (
-          <View key={kpi.label}>
-            <View style={pdfStyles.kpiRow}>
-              <Text style={pdfStyles.kpiLabel}>{kpi.label}</Text>
-              <Text style={pdfStyles.kpiValue}>{kpi.value}</Text>
-            </View>
-            {kpi.subtext ? (
-              <Text style={pdfStyles.kpiSub}>{kpi.subtext}</Text>
-            ) : null}
-          </View>
-        ))}
-      </View>
-      {summary.highlights?.length ? (
-        <View style={pdfStyles.section}>
-          <Text style={pdfStyles.sectionTitle}>Highlights</Text>
-          {summary.highlights.map((item, index) => (
-            <Text key={`${item}-${index}`} style={pdfStyles.listItem}>
-              - {item}
-            </Text>
-          ))}
-        </View>
-      ) : null}
-    </Page>
-  </Document>
-);
+// Client-side PDF download component using server action
+// @react-pdf/renderer is kept on the server to reduce client bundle size
 const ReportDownload = ({
   summary,
   fileName,
 }: {
   summary: ReportSummary;
   fileName: string;
-}) => (
-  <Button asChild variant="secondary">
-    <PDFDownloadLink
-      document={<SalesReportDocument summary={summary} />}
-      fileName={fileName}
-    >
-      {({ loading }) => (loading ? "Preparing PDF..." : "Download PDF")}
-    </PDFDownloadLink>
-  </Button>
-);
+}) => {
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleDownload = async () => {
+    setIsPending(true);
+    setError(null);
+    try {
+      const result = await generateSalesReportPdf(summary);
+      if (!(result.success && result.data)) {
+        setError(result.error ?? "Failed to generate PDF");
+        return;
+      }
+      // Convert base64 to blob and download
+      const byteCharacters = atob(result.data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      link.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <Button disabled={isPending} onClick={handleDownload} variant="secondary">
+        {isPending ? "Preparing PDF..." : "Download PDF"}
+      </Button>
+      {error && <p className="text-xs text-destructive">{error}</p>}
+    </div>
+  );
+};
 
 interface DataTableProps {
   rows: DataRow[];
@@ -1091,7 +1031,9 @@ export function SalesDashboardClient() {
     setLoadError(null);
     try {
       const buffer = await file.arrayBuffer();
-      const workbook = read(buffer, { type: "array", cellDates: true });
+      // Lazy load xlsx only when user uploads a file - keeps it out of initial bundle
+      const xlsx = await import("xlsx");
+      const workbook = xlsx.read(buffer, { type: "array", cellDates: true });
       const data = loadSalesData(workbook);
       setSalesData(data);
       setFileName(file.name);

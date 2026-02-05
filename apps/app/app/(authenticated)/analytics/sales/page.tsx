@@ -1,5 +1,5 @@
-import { SalesDashboardClient } from "./sales-dashboard-client";
+import { SalesDashboardWrapper } from "./sales-dashboard-wrapper";
 
-const AnalyticsSalesPage = () => <SalesDashboardClient />;
+const AnalyticsSalesPage = () => <SalesDashboardWrapper />;
 
 export default AnalyticsSalesPage;
