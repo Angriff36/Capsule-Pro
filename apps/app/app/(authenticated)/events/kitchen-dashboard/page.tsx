@@ -58,7 +58,10 @@ const KitchenDashboardPage = async () => {
 
   return (
     <>
-      <Header page="Kitchen Dashboard" pages={["Events"]}>
+      <Header
+        page="Kitchen Dashboard"
+        pages={[{ label: "Events", href: "/events" }]}
+      >
         <div className="flex items-center gap-2">
           <Button asChild size="sm" variant="secondary">
             <Link href="/events">All Events</Link>

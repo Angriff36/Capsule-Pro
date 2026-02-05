@@ -96,7 +96,11 @@ const ContractDetailPage = async ({ params }: ContractDetailPageProps) => {
     <>
       <Header
         page={contract.title}
-        pages={["Operations", "Events", "Contracts"]}
+        pages={[
+          { label: "Operations", href: "/operations" },
+          { label: "Events", href: "/events" },
+          { label: "Contracts", href: "/events/contracts" },
+        ]}
       >
         <div className="flex items-center gap-2">
           <a

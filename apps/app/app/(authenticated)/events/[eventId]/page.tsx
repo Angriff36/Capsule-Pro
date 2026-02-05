@@ -482,7 +482,13 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
 
   return (
     <>
-      <Header page={event.title} pages={["Operations", "Events"]}>
+      <Header
+        page={event.title}
+        pages={[
+          { label: "Operations", href: "/operations" },
+          { label: "Events", href: "/events" },
+        ]}
+      >
         <div className="flex items-center gap-2">
           <a
             className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-input bg-background px-4 py-2 font-medium text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"

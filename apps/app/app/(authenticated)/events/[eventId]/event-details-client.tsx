@@ -1430,7 +1430,7 @@ export function EventDetailsClient({
   );
 
   return (
-    <div className="relative min-h-screen bg-[#0b0f1a] text-slate-50">
+    <div className="relative min-h-screen bg-background text-foreground">
       <GridBackground className="pointer-events-none absolute inset-0 opacity-15" />
       <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pb-28 pt-10 sm:px-6 lg:px-8">
         <MissingFieldsBanner
@@ -1441,21 +1441,21 @@ export function EventDetailsClient({
 
         <section>
           <div className="mb-4 flex items-center gap-2">
-            <p className="text-xs uppercase tracking-[0.25em] text-slate-400">
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
               Event Overview
             </p>
           </div>
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-            <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.6)]">
+            <Card className="border-border/60 bg-card/70 text-foreground shadow-[0_20px_60px_-30px_rgba(0,0,0,0.6)]">
               <CardHeader className="space-y-4">
-                <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.18em] text-slate-300">
+                <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
                   <Badge
                     className={cn(
                       "border text-[11px]",
                       isLive
                         ? "border-emerald-400/40 bg-emerald-500/20 text-emerald-200"
                         : isPast
-                          ? "border-slate-500/40 bg-slate-500/10 text-slate-200"
+                          ? "border-slate-500/40 bg-slate-500/10 text-foreground"
                           : "border-sky-400/40 bg-sky-500/10 text-sky-200"
                     )}
                     variant="outline"
@@ -1483,7 +1483,7 @@ export function EventDetailsClient({
                   </Badge>
                   {event.eventFormat && (
                     <Badge
-                      className="border-slate-600/60 bg-slate-950/30 text-slate-200"
+                      className="border-border/60 bg-muted/30 text-foreground"
                       variant="outline"
                     >
                       {formatEventFormat(event.eventFormat)}
@@ -1491,7 +1491,7 @@ export function EventDetailsClient({
                   )}
                   {event.ticketTier && (
                     <Badge
-                      className="border-slate-600/60 bg-slate-950/30 text-slate-200"
+                      className="border-border/60 bg-muted/30 text-foreground"
                       variant="outline"
                     >
                       {event.ticketTier}
@@ -1502,8 +1502,9 @@ export function EventDetailsClient({
                   <CardTitle className="text-3xl font-semibold tracking-tight">
                     {event.title}
                   </CardTitle>
-                  <CardDescription className="text-slate-300">
-                    {event.eventType} <span className="text-slate-500">•</span>{" "}
+                  <CardDescription className="text-muted-foreground">
+                    {event.eventType}{" "}
+                    <span className="text-muted-foreground">•</span>{" "}
                     {event.venueName ?? "Venue TBD"}
                   </CardDescription>
                 </div>
@@ -1511,7 +1512,7 @@ export function EventDetailsClient({
                   {displayedTags.length > 0 ? (
                     displayedTags.map((tag) => (
                       <Badge
-                        className="border-slate-700/70 bg-slate-950/40 text-slate-200"
+                        className="border-border/70 bg-muted/40 text-foreground"
                         key={tag}
                         variant="outline"
                       >
@@ -1519,14 +1520,16 @@ export function EventDetailsClient({
                       </Badge>
                     ))
                   ) : (
-                    <span className="text-xs text-slate-400">No tags yet</span>
+                    <span className="text-xs text-muted-foreground">
+                      No tags yet
+                    </span>
                   )}
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
-                    <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                  <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
+                    <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                       <CalendarDaysIcon className="size-3" />
                       Date & Time
                     </div>
@@ -1534,22 +1537,22 @@ export function EventDetailsClient({
                       {dateFormatter.format(eventDate)}
                     </div>
                     {/* Event schema stores date without time-of-day. */}
-                    <div className="text-sm text-slate-300">
+                    <div className="text-sm text-muted-foreground">
                       Time not set • {timeZoneLabel}
                     </div>
-                    <div className="mt-1 text-xs text-slate-400">
+                    <div className="mt-1 text-xs text-muted-foreground">
                       {timeStatusLabel}
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
-                    <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                  <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
+                    <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                       <MapPinIcon className="size-3" />
                       Organizer / Venue
                     </div>
                     <div className="mt-2 text-sm font-semibold">
                       {event.venueName ?? "Organizer not set"}
                     </div>
-                    <div className="text-xs text-slate-300">
+                    <div className="text-xs text-muted-foreground">
                       {event.venueAddress ?? "Venue address not set"}
                     </div>
                     <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-1 text-[11px] text-emerald-200">
@@ -1557,35 +1560,35 @@ export function EventDetailsClient({
                       Verified venue
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
-                    <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                  <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
+                    <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                       <WalletIcon className="size-3" />
                       Pricing & Format
                     </div>
                     <div className="mt-2 text-lg font-semibold">
                       {ticketPriceLabel}
                     </div>
-                    <div className="text-xs text-slate-300">
+                    <div className="text-xs text-muted-foreground">
                       {event.ticketTier ?? "Ticket tier not set"}
                     </div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-xs text-muted-foreground">
                       {formatEventFormat(event.eventFormat)}
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
-                    <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                  <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
+                    <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                       <UsersIcon className="size-3" />
                       Capacity & RSVPs
                     </div>
                     <div className="mt-2 text-lg font-semibold">
                       {rsvpCount} RSVPs
                     </div>
-                    <div className="text-xs text-slate-300">
+                    <div className="text-xs text-muted-foreground">
                       {capacity > 0
                         ? `${capacity} total capacity`
                         : "Capacity not set"}
                     </div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-xs text-muted-foreground">
                       {soldOut
                         ? "Sold out"
                         : limited
@@ -1652,7 +1655,7 @@ export function EventDetailsClient({
             </Card>
 
             <div className="space-y-6">
-              <div className="relative overflow-hidden rounded-3xl border border-slate-800/60 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900">
+              <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-card via-muted to-card">
                 {featuredMediaUrl ? (
                   <img
                     alt={event.title}
@@ -1661,39 +1664,39 @@ export function EventDetailsClient({
                     src={featuredMediaUrl}
                   />
                 ) : (
-                  <div className="flex h-72 flex-col items-center justify-center gap-2 text-slate-400">
-                    <SparklesIcon className="size-10 text-slate-500" />
+                  <div className="flex h-72 flex-col items-center justify-center gap-2 text-muted-foreground">
+                    <SparklesIcon className="size-10 text-foreground0" />
                     <p className="text-sm">Featured media not set</p>
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-muted/80 via-muted/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <p className="text-[11px] uppercase tracking-[0.25em] text-slate-300">
+                  <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
                     Featured media
                   </p>
                   <p className="mt-1 text-lg font-semibold">
                     {event.eventType}
                   </p>
-                  <p className="text-xs text-slate-300">
+                  <p className="text-xs text-muted-foreground">
                     {event.venueName ?? "Venue TBD"} •{" "}
                     {shortDateFormatter.format(eventDate)}
                   </p>
                 </div>
               </div>
 
-              <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50">
+              <Card className="border-border/60 bg-card/70 text-foreground">
                 <CardHeader className="space-y-1">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <ActivityIcon className="size-5 text-emerald-400" />
                     Operations snapshot
                   </CardTitle>
-                  <CardDescription className="text-slate-300">
+                  <CardDescription className="text-muted-foreground">
                     Live readiness across guests, tasks, and inventory.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
-                    <div className="flex items-center justify-between text-xs text-slate-400">
+                  <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>RSVP progress</span>
                       <span>
                         {capacity > 0
@@ -1709,7 +1712,7 @@ export function EventDetailsClient({
                           : 0
                       }
                     />
-                    <div className="mt-2 text-xs text-slate-300">
+                    <div className="mt-2 text-xs text-muted-foreground">
                       {soldOut
                         ? "Guest list is full"
                         : limited
@@ -1718,27 +1721,27 @@ export function EventDetailsClient({
                     </div>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
-                      <div className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                    <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
+                      <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                         Prep tasks
                       </div>
                       <div className="mt-2 text-2xl font-semibold">
                         {initialPrepTasks.length}
                       </div>
-                      <div className="text-xs text-slate-300">
+                      <div className="text-xs text-muted-foreground">
                         {taskSummary.pending} pending •{" "}
                         {taskSummary.in_progress} in progress •{" "}
                         {taskSummary.completed} done
                       </div>
                     </div>
-                    <div className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
-                      <div className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                    <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
+                      <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                         Inventory coverage
                       </div>
                       <div className="mt-2 text-2xl font-semibold">
                         {inventoryStats.tracked}/{aggregatedIngredients.length}
                       </div>
-                      <div className="text-xs text-slate-300">
+                      <div className="text-xs text-muted-foreground">
                         {inventoryStats.low > 0
                           ? `${inventoryStats.low} low stock alerts`
                           : "All items tracked"}
@@ -1764,28 +1767,28 @@ export function EventDetailsClient({
 
         <section id="recipes">
           <div className="mb-4 flex items-center gap-2">
-            <p className="text-xs uppercase tracking-[0.25em] text-slate-400">
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
               Menu Intelligence
             </p>
           </div>
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-            <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50">
+            <Card className="border-border/60 bg-card/70 text-foreground">
               <CardHeader className="space-y-1">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <ChefHatIcon className="size-5 text-amber-300" />
                   Menu intelligence
                 </CardTitle>
-                <CardDescription className="text-slate-300">
+                <CardDescription className="text-muted-foreground">
                   Recipes, yields, and ingredient summaries for this event.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {dishRows.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-slate-800/70 p-8 text-center">
-                    <p className="text-sm text-slate-300">
+                  <div className="rounded-2xl border border-dashed border-border/70 p-8 text-center">
+                    <p className="text-sm text-muted-foreground">
                       No dishes linked yet.
                     </p>
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Add dishes to start building recipe intelligence.
                     </p>
                     <Button
@@ -1800,19 +1803,19 @@ export function EventDetailsClient({
                 ) : (
                   dishRows.map((row, index) => (
                     <div
-                      className="group rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-emerald-500/40"
+                      className="group rounded-2xl border border-border/70 bg-muted/40 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-emerald-500/40"
                       key={`${row.dish.dishId}-${index}`}
                       style={{ animationDelay: `${index * 40}ms` }}
                     >
                       <div className="flex flex-wrap items-start justify-between gap-4">
                         <div className="space-y-1">
-                          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                          <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                             {row.dish.course ?? "Course not set"}
                           </p>
                           <p className="text-lg font-semibold">
                             {row.dish.name}
                           </p>
-                          <p className="text-xs text-slate-300">
+                          <p className="text-xs text-muted-foreground">
                             {row.dish.recipeName ?? "Recipe not linked"}
                           </p>
                         </div>
@@ -1826,7 +1829,7 @@ export function EventDetailsClient({
                             </PopoverTrigger>
                             <PopoverContent
                               align="end"
-                              className="w-72 border-slate-800 bg-slate-950 text-slate-50"
+                              className="w-72 border-border bg-muted text-foreground"
                             >
                               {row.recipe ? (
                                 <div className="space-y-3 text-sm">
@@ -1835,7 +1838,7 @@ export function EventDetailsClient({
                                       {row.recipe.recipeName}
                                     </span>
                                     <Badge
-                                      className="border-slate-700/70 bg-slate-900/70 text-slate-200"
+                                      className="border-border/70 bg-card/70 text-foreground"
                                       variant="outline"
                                     >
                                       {row.recipe.ingredients.length}{" "}
@@ -1849,14 +1852,14 @@ export function EventDetailsClient({
                                         key={ingredient.ingredientId}
                                       >
                                         <span>{ingredient.ingredientName}</span>
-                                        <span className="text-slate-300">
+                                        <span className="text-muted-foreground">
                                           {ingredient.scaledQuantity}{" "}
                                           {ingredient.unitCode ?? ""}
                                         </span>
                                       </div>
                                     ))}
                                   </div>
-                                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                                  <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                                     <span>
                                       Yield: {row.recipe.yieldQuantity}{" "}
                                       {row.recipe.yieldUnitCode ?? "servings"}
@@ -1872,7 +1875,7 @@ export function EventDetailsClient({
                                   </div>
                                 </div>
                               ) : (
-                                <p className="text-sm text-slate-300">
+                                <p className="text-sm text-muted-foreground">
                                   No recipe linked yet.
                                 </p>
                               )}
@@ -1912,9 +1915,9 @@ export function EventDetailsClient({
                           </Button>
                         </div>
                       </div>
-                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-300">
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                         <Badge
-                          className="border-slate-700/70 bg-slate-900/70"
+                          className="border-border/70 bg-card/70"
                           variant="outline"
                         >
                           {row.dish.quantityServings} servings
@@ -1939,7 +1942,7 @@ export function EventDetailsClient({
                         )}
                         {row.dish.dietaryTags.map((tag) => (
                           <Badge
-                            className="border-slate-700/70 bg-slate-900/70 text-slate-200"
+                            className="border-border/70 bg-card/70 text-foreground"
                             key={tag}
                             variant="outline"
                           >
@@ -1948,7 +1951,7 @@ export function EventDetailsClient({
                         ))}
                       </div>
                       {row.recipe && (
-                        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-400 opacity-0 transition group-hover:opacity-100">
+                        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground opacity-0 transition group-hover:opacity-100">
                           <span>
                             Prep: {row.recipe.prepTimeMinutes ?? 0}m • Cook:{" "}
                             {row.recipe.cookTimeMinutes ?? 0}m • Rest:{" "}
@@ -1982,24 +1985,24 @@ export function EventDetailsClient({
                 showAddDialog={showAddDishDialog}
               />
 
-              <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50">
+              <Card className="border-border/60 bg-card/70 text-foreground">
                 <CardHeader className="space-y-1">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <ClipboardCopyIcon className="size-5 text-sky-300" />
                     Ingredient coverage
                   </CardTitle>
-                  <CardDescription className="text-slate-300">
+                  <CardDescription className="text-muted-foreground">
                     Consolidated ingredient list mapped against inventory
                     levels.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {aggregatedIngredients.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-slate-800/70 p-8 text-center">
-                      <p className="text-sm text-slate-300">
+                    <div className="rounded-2xl border border-dashed border-border/70 p-8 text-center">
+                      <p className="text-sm text-muted-foreground">
                         No ingredients yet.
                       </p>
-                      <p className="mt-1 text-xs text-slate-400">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         Link recipes to see ingredient coverage.
                       </p>
                     </div>
@@ -2041,7 +2044,7 @@ export function EventDetailsClient({
 
                         return (
                           <div
-                            className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4"
+                            className="rounded-2xl border border-border/70 bg-muted/40 p-4"
                             key={ingredient.ingredientId}
                           >
                             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -2049,10 +2052,10 @@ export function EventDetailsClient({
                                 <p className="font-semibold">
                                   {ingredient.ingredientName}
                                 </p>
-                                <p className="text-xs text-slate-400">
+                                <p className="text-xs text-muted-foreground">
                                   Required: {requiredLabel}
                                 </p>
-                                <p className="text-xs text-slate-400">
+                                <p className="text-xs text-muted-foreground">
                                   On hand: {onHandLabel}
                                 </p>
                               </div>
@@ -2075,7 +2078,7 @@ export function EventDetailsClient({
                                   </Badge>
                                 ) : (
                                   <Badge
-                                    className="border-slate-600/60 bg-slate-900/70 text-slate-200"
+                                    className="border-border/60 bg-card/70 text-foreground"
                                     variant="outline"
                                   >
                                     Not tracked
@@ -2083,7 +2086,7 @@ export function EventDetailsClient({
                                 )}
                                 {ingredient.isOptional && (
                                   <Badge
-                                    className="border-slate-600/60 bg-slate-900/70 text-slate-200"
+                                    className="border-border/60 bg-card/70 text-foreground"
                                     variant="outline"
                                   >
                                     Optional
@@ -2098,7 +2101,7 @@ export function EventDetailsClient({
                               />
                             )}
                             {ingredient.sources.length > 0 && (
-                              <p className="mt-2 text-[11px] text-slate-500">
+                              <p className="mt-2 text-[11px] text-foreground0">
                                 Used in {ingredient.sources.join(", ")}
                               </p>
                             )}
@@ -2115,7 +2118,7 @@ export function EventDetailsClient({
 
         <section>
           <div className="mb-4 flex items-center gap-2">
-            <p className="text-xs uppercase tracking-[0.25em] text-slate-400">
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
               AI Insights
             </p>
           </div>
@@ -2168,11 +2171,11 @@ export function EventDetailsClient({
         <section className="space-y-4" id="guests">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-400">
+              <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
                 Guests & RSVPs
               </p>
               <h2 className="text-2xl font-semibold">Guest management</h2>
-              <p className="text-sm text-slate-300">
+              <p className="text-sm text-muted-foreground">
                 Manage RSVPs, dietary restrictions, and seating preferences.
               </p>
             </div>
@@ -2188,7 +2191,7 @@ export function EventDetailsClient({
               </Button>
             </div>
           </div>
-          <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50">
+          <Card className="border-border/60 bg-card/70 text-foreground">
             <CardContent className="pt-6">
               <GuestManagement eventId={event.id} />
             </CardContent>
@@ -2198,17 +2201,17 @@ export function EventDetailsClient({
         <section className="space-y-6" id="explore">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-400">
+              <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
                 Event explorer
               </p>
               <h2 className="text-2xl font-semibold">Schedule + browse</h2>
-              <p className="text-sm text-slate-300">
+              <p className="text-sm text-muted-foreground">
                 Editorial overview for high-volume event browsing.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <ToggleGroup
-                className="rounded-full border border-slate-800/70 bg-slate-950/40"
+                className="rounded-full border border-border/70 bg-muted/40"
                 onValueChange={(value) => {
                   if (value) {
                     setExplorerView(value as ExplorerView);
@@ -2230,7 +2233,7 @@ export function EventDetailsClient({
                 onValueChange={(value) => setSortBy(value as SortOption)}
                 value={sortBy}
               >
-                <SelectTrigger className="w-[160px] border-slate-800/70 bg-slate-950/40">
+                <SelectTrigger className="w-[160px] border-border/70 bg-muted/40">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -2248,11 +2251,11 @@ export function EventDetailsClient({
                   </Button>
                 </SheetTrigger>
                 <SheetContent
-                  className="border-slate-800 bg-slate-950 text-slate-50"
+                  className="border-border bg-muted text-foreground"
                   side="left"
                 >
                   <SheetHeader>
-                    <SheetTitle className="text-slate-100">Filters</SheetTitle>
+                    <SheetTitle className="text-foreground">Filters</SheetTitle>
                   </SheetHeader>
                   <div className="px-4 pb-6">
                     <FiltersPanel />
@@ -2263,10 +2266,10 @@ export function EventDetailsClient({
           </div>
           <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
             <aside className="sticky top-6 hidden self-start lg:block">
-              <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50">
+              <Card className="border-border/60 bg-card/70 text-foreground">
                 <CardHeader>
                   <CardTitle className="text-base">Filters</CardTitle>
-                  <CardDescription className="text-slate-300">
+                  <CardDescription className="text-muted-foreground">
                     Refine by date, venue, tags, and accessibility.
                   </CardDescription>
                 </CardHeader>
@@ -2347,10 +2350,10 @@ export function EventDetailsClient({
                 )}
               </div>
 
-              <div className="rounded-3xl border border-slate-800/60 bg-slate-900/70 p-6">
+              <div className="rounded-3xl border border-border/60 bg-card/70 p-6">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.25em] text-slate-400">
+                    <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
                       Featured
                     </p>
                     <h3 className="text-xl font-semibold">
@@ -2358,21 +2361,21 @@ export function EventDetailsClient({
                     </h3>
                   </div>
                   <Badge
-                    className="border-slate-700/70 bg-slate-950/40 text-slate-200"
+                    className="border-border/70 bg-muted/40 text-foreground"
                     variant="outline"
                   >
                     {featuredEvents.length} featured
                   </Badge>
                 </div>
                 {featuredEvents.length === 0 ? (
-                  <p className="mt-4 text-sm text-slate-300">
+                  <p className="mt-4 text-sm text-muted-foreground">
                     No featured events available yet.
                   </p>
                 ) : (
                   <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {featuredEvents.map((related, index) => (
                       <Link
-                        className="group overflow-hidden rounded-2xl border border-slate-800/70 bg-slate-950/40 transition hover:-translate-y-0.5 hover:border-emerald-400/50"
+                        className="group overflow-hidden rounded-2xl border border-border/70 bg-muted/40 transition hover:-translate-y-0.5 hover:border-emerald-400/50"
                         href={`/events/${related.id}`}
                         key={related.id}
                         style={{ animationDelay: `${index * 50}ms` }}
@@ -2386,14 +2389,14 @@ export function EventDetailsClient({
                               src={related.featuredMediaUrl}
                             />
                           ) : (
-                            <div className="flex h-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-950 text-slate-500">
+                            <div className="flex h-full items-center justify-center bg-gradient-to-br from-card to-muted text-foreground0">
                               <CrownIcon className="size-6" />
                             </div>
                           )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-muted/70 via-transparent to-transparent" />
                         </div>
                         <div className="space-y-1 p-3">
-                          <div className="flex items-center justify-between text-xs text-slate-400">
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
                             <span>
                               {shortDateFormatter.format(
                                 new Date(related.eventDate)
@@ -2404,7 +2407,7 @@ export function EventDetailsClient({
                           <p className="text-sm font-semibold">
                             {related.title}
                           </p>
-                          <p className="text-xs text-slate-300">
+                          <p className="text-xs text-muted-foreground">
                             {related.venueName ?? "Venue TBD"}
                           </p>
                           <div className="mt-2 flex items-center gap-1 text-[11px] text-emerald-200">
@@ -2418,37 +2421,37 @@ export function EventDetailsClient({
                 )}
               </div>
               <div className="grid gap-4 md:grid-cols-2">
-                <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50">
+                <Card className="border-border/60 bg-card/70 text-foreground">
                   <CardHeader className="space-y-1">
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <TimerIcon className="size-4 text-emerald-300" />
                       Today&apos;s spotlight
                     </CardTitle>
-                    <CardDescription className="text-slate-300">
+                    <CardDescription className="text-muted-foreground">
                       {todayEvents.length} event
                       {todayEvents.length === 1 ? "" : "s"} today.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {todayEvents.length === 0 ? (
-                      <p className="text-sm text-slate-300">
+                      <p className="text-sm text-muted-foreground">
                         No events scheduled for today.
                       </p>
                     ) : (
                       todayEvents.slice(0, 3).map((related) => (
                         <Link
-                          className="flex items-center justify-between gap-3 rounded-xl border border-slate-800/70 bg-slate-950/40 px-3 py-2 text-sm transition hover:border-emerald-400/40"
+                          className="flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-muted/40 px-3 py-2 text-sm transition hover:border-emerald-400/40"
                           href={`/events/${related.id}`}
                           key={related.id}
                         >
                           <div>
                             <p className="font-semibold">{related.title}</p>
-                            <p className="text-xs text-slate-400">
+                            <p className="text-xs text-muted-foreground">
                               {related.venueName ?? "Venue TBD"}
                             </p>
                           </div>
                           <Badge
-                            className="border-slate-700/70 bg-slate-900/70 text-slate-200"
+                            className="border-border/70 bg-card/70 text-foreground"
                             variant="outline"
                           >
                             {related.rsvpCount}/{related.guestCount || 0} RSVPs
@@ -2469,13 +2472,13 @@ export function EventDetailsClient({
                   </CardContent>
                 </Card>
 
-                <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50">
+                <Card className="border-border/60 bg-card/70 text-foreground">
                   <CardHeader className="space-y-1">
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <CalendarDaysIcon className="size-4 text-sky-300" />
                       This week
                     </CardTitle>
-                    <CardDescription className="text-slate-300">
+                    <CardDescription className="text-muted-foreground">
                       {thisWeekEvents.length} event
                       {thisWeekEvents.length === 1 ? "" : "s"} in the next 7
                       days.
@@ -2483,14 +2486,14 @@ export function EventDetailsClient({
                   </CardHeader>
                   <CardContent>
                     {thisWeekEvents.length === 0 ? (
-                      <p className="text-sm text-slate-300">
+                      <p className="text-sm text-muted-foreground">
                         No events scheduled this week.
                       </p>
                     ) : (
                       <div className="flex flex-wrap gap-2">
                         {thisWeekEvents.slice(0, 8).map((related) => (
                           <Link
-                            className="rounded-full border border-slate-800/70 bg-slate-950/40 px-3 py-1 text-xs text-slate-200 transition hover:border-emerald-400/40"
+                            className="rounded-full border border-border/70 bg-muted/40 px-3 py-1 text-xs text-foreground transition hover:border-emerald-400/40"
                             href={`/events/${related.id}`}
                             key={related.id}
                           >
@@ -2515,17 +2518,17 @@ export function EventDetailsClient({
                 </Card>
               )}
               {sortedRelatedEvents.length === 0 ? (
-                <Card className="border-slate-800/60 bg-slate-900/70 text-slate-50">
+                <Card className="border-border/60 bg-card/70 text-foreground">
                   <CardContent className="py-10 text-center">
-                    <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-slate-950/60">
-                      <Globe2Icon className="size-5 text-slate-400" />
+                    <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-muted/60">
+                      <Globe2Icon className="size-5 text-muted-foreground" />
                     </div>
-                    <p className="text-sm text-slate-200">
+                    <p className="text-sm text-foreground">
                       {hasActiveFilters
                         ? "No events match the current filters."
                         : "No events available yet."}
                     </p>
-                    <p className="mt-2 text-xs text-slate-400">
+                    <p className="mt-2 text-xs text-muted-foreground">
                       Try resetting filters or browse all events.
                     </p>
                     <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -2567,7 +2570,7 @@ export function EventDetailsClient({
 
                     return (
                       <Link
-                        className="group rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-emerald-400/50"
+                        className="group rounded-2xl border border-border/70 bg-muted/40 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-emerald-400/50"
                         href={`/events/${related.id}`}
                         key={related.id}
                         style={{ animationDelay: `${index * 40}ms` }}
@@ -2579,7 +2582,7 @@ export function EventDetailsClient({
                               relatedLive
                                 ? "border-emerald-400/40 bg-emerald-500/20 text-emerald-200"
                                 : relatedPast
-                                  ? "border-slate-500/40 bg-slate-500/10 text-slate-200"
+                                  ? "border-slate-500/40 bg-slate-500/10 text-foreground"
                                   : "border-sky-400/40 bg-sky-500/10 text-sky-200"
                             )}
                             variant="outline"
@@ -2611,12 +2614,12 @@ export function EventDetailsClient({
                           <p className="text-lg font-semibold">
                             {related.title}
                           </p>
-                          <p className="text-xs text-slate-300">
+                          <p className="text-xs text-muted-foreground">
                             {shortDateFormatter.format(relatedDate)} •{" "}
                             {related.venueName ?? "Venue TBD"}
                           </p>
                         </div>
-                        <div className="mt-3 flex items-center justify-between text-xs text-slate-400">
+                        <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                           <span>{related.eventType}</span>
                           <span>
                             {related.ticketPrice === null
@@ -2626,14 +2629,14 @@ export function EventDetailsClient({
                                 : formatCurrency(related.ticketPrice)}
                           </span>
                         </div>
-                        <div className="mt-3 flex items-center gap-2 text-xs text-slate-300">
+                        <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
                           <UsersIcon className="size-3" />
                           {related.rsvpCount}/{related.guestCount || 0} RSVPs
                         </div>
                         <div className="mt-3 flex flex-wrap gap-2">
                           {related.tags.slice(0, 3).map((tag) => (
                             <Badge
-                              className="border-slate-700/70 bg-slate-900/70 text-slate-200"
+                              className="border-border/70 bg-card/70 text-foreground"
                               key={tag}
                               variant="outline"
                             >
@@ -2641,7 +2644,7 @@ export function EventDetailsClient({
                             </Badge>
                           ))}
                         </div>
-                        <div className="mt-3 space-y-1 text-xs text-slate-400 opacity-0 transition group-hover:opacity-100">
+                        <div className="mt-3 space-y-1 text-xs text-muted-foreground opacity-0 transition group-hover:opacity-100">
                           <div className="flex items-center gap-2">
                             <TimerIcon className="size-3" />
                             {relatedLive
@@ -2663,7 +2666,7 @@ export function EventDetailsClient({
                 <div className="space-y-4">
                   {timelineGroups.map((group) => (
                     <div
-                      className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4"
+                      className="rounded-2xl border border-border/70 bg-muted/40 p-4"
                       key={group.key}
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -2671,12 +2674,12 @@ export function EventDetailsClient({
                           <p className="text-sm font-semibold">
                             {dateFormatter.format(group.date)}
                           </p>
-                          <p className="text-xs text-slate-400">
+                          <p className="text-xs text-muted-foreground">
                             {group.items.length} events
                           </p>
                         </div>
                         <Badge
-                          className="border-slate-700/70 bg-slate-900/70 text-slate-200"
+                          className="border-border/70 bg-card/70 text-foreground"
                           variant="outline"
                         >
                           {shortDateFormatter.format(group.date)}
@@ -2695,25 +2698,25 @@ export function EventDetailsClient({
                             related.rsvpCount >= related.guestCount;
                           return (
                             <Link
-                              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800/70 bg-slate-900/60 px-4 py-3 text-sm transition hover:border-emerald-400/40"
+                              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-card/60 px-4 py-3 text-sm transition hover:border-emerald-400/40"
                               href={`/events/${related.id}`}
                               key={related.id}
                             >
                               <div className="space-y-1">
                                 <p className="font-semibold">{related.title}</p>
-                                <p className="text-xs text-slate-400">
+                                <p className="text-xs text-muted-foreground">
                                   {related.venueName ?? "Venue TBD"} •{" "}
                                   {related.eventType}
                                 </p>
                               </div>
-                              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
+                              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                                 <Badge
                                   className={cn(
                                     "border text-[11px]",
                                     relatedLive
                                       ? "border-emerald-400/40 bg-emerald-500/20 text-emerald-200"
                                       : relatedPast
-                                        ? "border-slate-500/40 bg-slate-500/10 text-slate-200"
+                                        ? "border-slate-500/40 bg-slate-500/10 text-foreground"
                                         : "border-sky-400/40 bg-sky-500/10 text-sky-200"
                                   )}
                                   variant="outline"
@@ -2804,10 +2807,10 @@ export function EventDetailsClient({
       />
 
       <Dialog onOpenChange={setQuickRsvpOpen} open={quickRsvpOpen}>
-        <DialogContent className="border-slate-800 bg-slate-950 text-slate-50">
+        <DialogContent className="border-border bg-muted text-foreground">
           <DialogHeader>
             <DialogTitle>Add RSVP</DialogTitle>
-            <DialogDescription className="text-slate-300">
+            <DialogDescription className="text-muted-foreground">
               Add a guest to the RSVP list for {event.title}.
             </DialogDescription>
           </DialogHeader>
@@ -2845,20 +2848,20 @@ export function EventDetailsClient({
 
       <Sheet onOpenChange={setDrawerOpen} open={drawerOpen}>
         <SheetContent
-          className="border-slate-800 bg-slate-950 text-slate-50 sm:max-w-2xl lg:max-w-4xl"
+          className="border-border bg-muted text-foreground sm:max-w-2xl lg:max-w-4xl"
           side="right"
         >
-          <SheetHeader className="border-b border-slate-800 pb-4">
-            <SheetTitle className="text-slate-50">
+          <SheetHeader className="border-b border-border pb-4">
+            <SheetTitle className="text-foreground">
               {selectedDish?.name ?? "Recipe details"}
             </SheetTitle>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted-foreground">
               {selectedRecipe?.recipeName ?? "Recipe not linked"}
             </p>
           </SheetHeader>
           <div className="flex flex-wrap items-center gap-2 px-4">
             <ToggleGroup
-              className="rounded-full border border-slate-800/70 bg-slate-900/60"
+              className="rounded-full border border-border/70 bg-card/60"
               onValueChange={(value) => {
                 if (value) {
                   setDrawerMode(value as DrawerMode);
@@ -2891,26 +2894,32 @@ export function EventDetailsClient({
             {selectedRecipe ? (
               <>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  <div className="rounded-xl border border-slate-800/70 bg-slate-900/60 p-3 text-sm">
-                    <div className="text-xs text-slate-400">Prep time</div>
+                  <div className="rounded-xl border border-border/70 bg-card/60 p-3 text-sm">
+                    <div className="text-xs text-muted-foreground">
+                      Prep time
+                    </div>
                     <div className="font-semibold">
                       {selectedRecipe.prepTimeMinutes ?? 0}m
                     </div>
                   </div>
-                  <div className="rounded-xl border border-slate-800/70 bg-slate-900/60 p-3 text-sm">
-                    <div className="text-xs text-slate-400">Cook time</div>
+                  <div className="rounded-xl border border-border/70 bg-card/60 p-3 text-sm">
+                    <div className="text-xs text-muted-foreground">
+                      Cook time
+                    </div>
                     <div className="font-semibold">
                       {selectedRecipe.cookTimeMinutes ?? 0}m
                     </div>
                   </div>
-                  <div className="rounded-xl border border-slate-800/70 bg-slate-900/60 p-3 text-sm">
-                    <div className="text-xs text-slate-400">Rest time</div>
+                  <div className="rounded-xl border border-border/70 bg-card/60 p-3 text-sm">
+                    <div className="text-xs text-muted-foreground">
+                      Rest time
+                    </div>
                     <div className="font-semibold">
                       {selectedRecipe.restTimeMinutes ?? 0}m
                     </div>
                   </div>
-                  <div className="rounded-xl border border-slate-800/70 bg-slate-900/60 p-3 text-sm">
-                    <div className="text-xs text-slate-400">Yield</div>
+                  <div className="rounded-xl border border-border/70 bg-card/60 p-3 text-sm">
+                    <div className="text-xs text-muted-foreground">Yield</div>
                     <div className="font-semibold">
                       {selectedRecipe.yieldQuantity}{" "}
                       {selectedRecipe.yieldUnitCode ?? "servings"}
@@ -2923,7 +2932,7 @@ export function EventDetailsClient({
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold">Ingredients</h3>
                       <Badge
-                        className="border-slate-700/70 bg-slate-900/60 text-slate-200"
+                        className="border-border/70 bg-card/60 text-foreground"
                         variant="outline"
                       >
                         {selectedScaledIngredients.length} items
@@ -2932,7 +2941,7 @@ export function EventDetailsClient({
                     <div className="space-y-2">
                       {selectedScaledIngredients.map((ingredient) => (
                         <div
-                          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800/70 bg-slate-900/60 px-3 py-2 text-sm"
+                          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-card/60 px-3 py-2 text-sm"
                           key={ingredient.ingredientId}
                         >
                           <div>
@@ -2940,19 +2949,19 @@ export function EventDetailsClient({
                               {ingredient.ingredientName}
                             </p>
                             {ingredient.preparationNotes && (
-                              <p className="text-xs text-slate-400">
+                              <p className="text-xs text-muted-foreground">
                                 {ingredient.preparationNotes}
                               </p>
                             )}
                           </div>
-                          <div className="flex items-center gap-2 text-xs text-slate-300">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span>
                               {ingredient.scaledQuantity}{" "}
                               {ingredient.unitCode ?? ""}
                             </span>
                             {ingredient.isOptional && (
                               <Badge
-                                className="border-slate-700/70 bg-slate-950/40 text-slate-200"
+                                className="border-border/70 bg-muted/40 text-foreground"
                                 variant="outline"
                               >
                                 Optional
@@ -2970,25 +2979,25 @@ export function EventDetailsClient({
                       <ol className="space-y-4">
                         {selectedRecipe.steps.map((step) => (
                           <li
-                            className="rounded-2xl border border-slate-800/70 bg-slate-900/60 p-4"
+                            className="rounded-2xl border border-border/70 bg-card/60 p-4"
                             key={`${step.stepNumber}-${step.instruction}`}
                           >
-                            <div className="flex items-center justify-between text-xs text-slate-400">
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
                               <span>Step {step.stepNumber}</span>
                               {step.durationMinutes && (
                                 <span>{step.durationMinutes}m</span>
                               )}
                             </div>
-                            <p className="mt-2 text-sm text-slate-100">
+                            <p className="mt-2 text-sm text-foreground">
                               {step.instruction}
                             </p>
                             {step.equipmentNeeded.length > 0 && (
-                              <p className="mt-2 text-xs text-slate-400">
+                              <p className="mt-2 text-xs text-muted-foreground">
                                 Equipment: {step.equipmentNeeded.join(", ")}
                               </p>
                             )}
                             {step.tips && (
-                              <p className="mt-2 text-xs text-slate-300">
+                              <p className="mt-2 text-xs text-muted-foreground">
                                 Tip: {step.tips}
                               </p>
                             )}
@@ -2996,13 +3005,13 @@ export function EventDetailsClient({
                         ))}
                       </ol>
                     ) : selectedRecipe.instructions ? (
-                      <div className="rounded-2xl border border-slate-800/70 bg-slate-900/60 p-4 text-sm text-slate-100">
+                      <div className="rounded-2xl border border-border/70 bg-card/60 p-4 text-sm text-foreground">
                         <p className="whitespace-pre-line">
                           {selectedRecipe.instructions}
                         </p>
                       </div>
                     ) : (
-                      <p className="text-sm text-slate-300">
+                      <p className="text-sm text-muted-foreground">
                         No instructions available.
                       </p>
                     )}
@@ -3010,8 +3019,8 @@ export function EventDetailsClient({
                 )}
               </>
             ) : (
-              <div className="rounded-2xl border border-dashed border-slate-800/70 p-8 text-center">
-                <p className="text-sm text-slate-300">
+              <div className="rounded-2xl border border-dashed border-border/70 p-8 text-center">
+                <p className="text-sm text-muted-foreground">
                   No recipe linked to this dish yet.
                 </p>
               </div>
@@ -3020,7 +3029,7 @@ export function EventDetailsClient({
         </SheetContent>
       </Sheet>
 
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-800 bg-slate-950/95 px-4 py-3 backdrop-blur sm:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-muted/95 px-4 py-3 backdrop-blur sm:hidden">
         <div className="flex items-center gap-2">
           <Button
             className="flex-1 bg-emerald-400 text-slate-950 hover:bg-emerald-300"

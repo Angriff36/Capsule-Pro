@@ -14,7 +14,10 @@ const ImportEventPage = async () => {
 
   return (
     <>
-      <Header page="Import Event Documents" pages={["Events"]}>
+      <Header
+        page="Import Event Documents"
+        pages={[{ label: "Events", href: "/events" }]}
+      >
         <div className="flex items-center gap-2">
           <Button asChild variant="ghost">
             <Link href="/events">Events</Link>

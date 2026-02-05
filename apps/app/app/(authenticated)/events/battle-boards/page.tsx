@@ -74,7 +74,10 @@ const BattleBoardsPage = async () => {
 
   return (
     <>
-      <Header page="Battle Boards" pages={["Events"]}>
+      <Header
+        page="Battle Boards"
+        pages={[{ label: "Events", href: "/events" }]}
+      >
         <div className="flex items-center gap-2">
           <Button asChild variant="secondary">
             <Link href="/events">Events</Link>

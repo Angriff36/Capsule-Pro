@@ -56,7 +56,10 @@ const EventReportDetailPage = async ({ params }: PageProps) => {
     <>
       <Header
         page={event.title || event.eventNumber || event.id}
-        pages={["Events", "Reports"]}
+        pages={[
+          { label: "Events", href: "/events" },
+          { label: "Reports", href: "/events/reports" },
+        ]}
       />
       <div className="flex flex-1 flex-col p-4 pt-0">
         <ReportEditorClient

@@ -54,7 +54,13 @@ const BattleBoardDetailPage = async ({ params }: PageProps) => {
 
   return (
     <>
-      <Header page={board.board_name} pages={["Events", "Battle Boards"]} />
+      <Header
+        page={board.board_name}
+        pages={[
+          { label: "Events", href: "/events" },
+          { label: "Battle Boards", href: "/events/battle-boards" },
+        ]}
+      />
       <div className="flex flex-1 flex-col p-4 pt-0">
         <BattleBoardEditorClient
           board={{
