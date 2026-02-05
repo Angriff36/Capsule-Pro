@@ -1,27 +1,10 @@
 {
   "name": "@repo/ai",
   "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./package.json": "./package.json"
-  },
-  "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
-  },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.25",
     "@t3-oss/env-nextjs": "^0.13.10",
-    "ai": "^6.0.68",
+    "ai": "^6.0.70",
     "react": "19.2.4",
     "streamdown": "^2.1.0",
     "tailwind-merge": "^3.4.0",
@@ -31,9 +14,26 @@
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@types/node": "25.2.0",
-    "@types/react": "19.2.10",
+    "@types/react": "19.2.11",
     "@types/react-dom": "19.2.3",
     "@types/uuid": "^11.0.0",
     "typescript": "^5.9.3"
-  }
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "private": true,
+  "scripts": {
+    "build": "tsup",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts"
 }

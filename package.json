@@ -1,61 +1,27 @@
 {
   "name": "next-forge",
   "version": "5.3.2",
-  "packageManager": "pnpm@10.22.0",
-  "engines": {
-    "node": "20.x"
-  },
   "bin": {
     "next-forge": "dist/index.js"
   },
-  "files": [
-    "dist/index.js"
-  ],
-  "scripts": {
-    "docs:list": "tsx ./tools/scripts/docs-list.ts",
-    "browser-tools": "pnpm dlx @modelcontextprotocol/server-playwright",
-    "build": "turbo build",
-    "dev": "turbo dev --parallel",
-    "dev:check": "node scripts/dev.mjs",
-    "dev:apps": "turbo dev --parallel --filter=app --filter=web --filter=api",
-    "check": "ultracite check",
-    "fix": "ultracite fix",
-    "test": "turbo test",
-    "analyze": "turbo analyze",
-    "translate": "turbo translate",
-    "boundaries": "turbo boundaries",
-    "bump-deps": "pnpm dlx npm-check-updates --deep -u --reject recharts && pnpm install",
-    "bump-ui": "cd packages/design-system && pnpm dlx shadcn@latest add --all --overwrite",
-    "prisma:format": "pnpm --filter @repo/database exec prisma format",
-    "prisma:generate": "pnpm --filter @repo/database exec prisma generate",
-    "db:check": "node scripts/db-drift-check.mjs",
-    "db:deploy": "pnpm --filter @repo/database exec prisma migrate deploy",
-    "db:dev": "pnpm --filter @repo/database exec prisma migrate dev",
-    "db:push": "echo \"❌ Disabled. Use db:dev (migrate dev) or db:deploy (migrate deploy).\" && exit 1",
-    "db:repair": "node scripts/db-drift-repair.mjs",
-    "migrate:deploy": "pnpm --filter @repo/database exec prisma migrate deploy",
-    "migrate:status": "pnpm --filter @repo/database exec prisma migrate status",
-    "predev": "pnpm db:check",
-    "clean:preview": "git clean -ndx",
-    "clean:hard": "git clean -xdf",
-    "clean:node_modules": "git clean -xdf node_modules",
-    "secrets:scan": "secretlint \"**/*\"",
-    "prepare": "husky",
-    "migrate": "pnpm db:check && pnpm prisma:format && pnpm prisma:generate && pnpm db:dev",
-    "vercel:bisect": "node scripts/vercel-bisect.mjs"
+  "dependencies": {
+    "@prisma/adapter-neon": "7.3.0",
+    "@prisma/client": "7.3.0",
+    "ai": "^6.0.70",
+    "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
     "@auto-it/first-time-contributor": "^11.3.6",
-    "@biomejs/biome": "2.3.13",
+    "@biomejs/biome": "2.3.14",
     "@clack/prompts": "^1.0.0",
-    "@clerk/testing": "^1.13.33",
+    "@clerk/testing": "^1.13.34",
     "@playwright/test": "1.58.1",
     "@repo/typescript-config": "workspace:*",
     "@secretlint/secretlint-rule-database-connection-string": "^11.3.1",
     "@secretlint/secretlint-rule-preset-recommend": "^11.3.1",
-    "@turbo/gen": "2.8.1",
+    "@turbo/gen": "2.8.3",
     "@types/node": "25.2.0",
-    "baseline-browser-mapping": "latest",
+    "baseline-browser-mapping": "^2.9.19",
     "commander": "^14.0.3",
     "husky": "^9.1.7",
     "node-mocks-http": "^1.17.2",
@@ -63,25 +29,40 @@
     "prettier": "3.8.1",
     "prisma": "7.3.0",
     "secretlint": "^11.3.1",
+    "syncpack": "14.0.0-alpha.40",
     "tsup": "^8.5.1",
     "tsx": "^4.21.0",
-    "turbo": "2.8.1",
-    "typescript": "5.9.3",
+    "turbo": "2.8.3",
+    "typescript": "^5.9.3",
     "ultracite": "7.1.4",
     "vitest": "^4.0.18"
   },
+  "engines": {
+    "node": ">=20 <23"
+  },
+  "files": [
+    "dist/index.js"
+  ],
+  "packageManager": "pnpm@10.22.0",
   "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "react": ">=19",
+        "react-dom": ">=19",
+        "next": ">=15"
+      }
+    },
     "overrides": {
       "parse5": "^7.2.1",
-      "next": "15.4.10",
-      "react": "19.2.3",
-      "react-dom": "19.2.3",
-      "@types/react": "19.2.7",
+      "next": "15.4.11",
+      "react": "19.2.4",
+      "react-dom": "19.2.4",
+      "@types/react": "19.2.11",
       "@types/react-dom": "19.2.3",
       "prisma": "7.3.0",
       "@prisma/client": "7.3.0",
       "@prisma/adapter-neon": "7.3.0",
-      "baseline-browser-mapping": "latest",
+      "baseline-browser-mapping": "^2.9.19",
       "prettier": "3.8.1"
     },
     "ignoredBuiltDependencies": [
@@ -102,11 +83,41 @@
       "ultracite": "patches/ultracite.patch"
     }
   },
-  "type": "module",
-  "dependencies": {
-    "@prisma/adapter-neon": "7.3.0",
-    "@prisma/client": "7.3.0",
-    "ai": "^6.0.68",
-    "pdf-parse": "^2.4.5"
-  }
+  "scripts": {
+    "analyze": "turbo analyze",
+    "boundaries": "turbo boundaries",
+    "browser-tools": "pnpm dlx @modelcontextprotocol/server-playwright",
+    "build": "turbo build",
+    "bump-deps": "pnpm dlx npm-check-updates --deep -u --reject recharts && pnpm install",
+    "bump-ui": "cd packages/design-system && pnpm dlx shadcn@latest add --all --overwrite",
+    "clean:hard": "git clean -xdf",
+    "clean:node_modules": "git clean -xdf node_modules",
+    "clean:preview": "git clean -ndx",
+    "ports": "pwsh -Command \"2221..2226 | ForEach-Object { $port = $_; Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue } }\"",
+    "db:check": "node scripts/db-drift-check.mjs",
+    "db:deploy": "pnpm --filter @repo/database exec prisma migrate deploy",
+    "db:dev": "pnpm --filter @repo/database exec prisma migrate dev",
+    "db:push": "echo \"❌ Disabled. Use db:dev (migrate dev) or db:deploy (migrate deploy).\" && exit 1",
+    "db:repair": "node scripts/db-drift-repair.mjs",
+    "dev": "turbo dev --parallel",
+    "dev:apps": "turbo dev --parallel --filter=app --filter=web --filter=api",
+    "dev:check": "node scripts/dev.mjs",
+    "docs:list": "tsx ./tools/scripts/docs-list.ts",
+    "lint": "pnpm dlx ultracite check",
+    "lint:fix": "pnpm dlx ultracite fix",
+    "migrate": "pnpm db:check && pnpm prisma:format && pnpm prisma:generate && pnpm db:dev",
+    "migrate:deploy": "pnpm --filter @repo/database exec prisma migrate deploy",
+    "migrate:status": "pnpm --filter @repo/database exec prisma migrate status",
+    "predev": "pnpm db:check",
+    "prepare": "husky",
+    "prisma:format": "pnpm --filter @repo/database exec prisma format",
+    "prisma:generate": "pnpm --filter @repo/database exec prisma generate",
+    "secrets:scan": "secretlint \"**/*\"",
+    "test": "turbo test",
+    "test:e2e": "playwright test",
+    "test:kitchen": "playwright test e2e/kitchen-workflow.spec.ts",
+    "translate": "turbo translate",
+    "vercel:bisect": "node scripts/vercel-bisect.mjs"
+  },
+  "type": "module"
 }

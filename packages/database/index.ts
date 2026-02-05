@@ -10,8 +10,25 @@ import { createTenantClient } from "./tenant";
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 neonConfig.webSocketConstructor = ws;
+// Use HTTP fetch for queries when possible; avoids WebSocket "Connection terminated unexpectedly" (neondatabase/serverless#168)
+neonConfig.poolQueryViaFetch = true;
 
-const adapter = new PrismaNeon({ connectionString: keys().DATABASE_URL });
+const connectionString = keys().DATABASE_URL;
+// Dev-only: confirm which host we're using (no credentials)
+if (process.env.NODE_ENV !== "production" && typeof process !== "undefined") {
+  try {
+    const u = new URL(connectionString);
+    console.info(
+      "[db] Using Neon host:",
+      u.hostname,
+      "(pooler:",
+      u.hostname.includes("-pooler") + ")"
+    );
+  } catch {
+    // ignore
+  }
+}
+const adapter = new PrismaNeon({ connectionString });
 
 export const database = globalForPrisma.prisma || new PrismaClient({ adapter });
 

@@ -63,5 +63,11 @@
   },
   "[mdx]": {
     "editor.defaultFormatter": "biomejs.biome"
+  },
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "cmd",
+      "args": ["/c", "npx", "chrome-devtools-mcp@latest", "--autoConnect"]
+    }
   }
 }

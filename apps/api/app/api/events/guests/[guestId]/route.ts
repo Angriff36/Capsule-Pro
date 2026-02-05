@@ -96,8 +96,7 @@ function setOptionalStringField(
     return;
   }
   // Use any to handle the assignment of union types
-  (updateData as any)[key] =
-    value === null ? null : value.toString().trim();
+  (updateData as any)[key] = value === null ? null : value.toString().trim();
 }
 
 /**

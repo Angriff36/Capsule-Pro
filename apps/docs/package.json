@@ -1,28 +1,28 @@
 {
   "name": "docs",
-  "private": true,
-  "scripts": {
-    "dev": "next dev -p 2224",
-    "build": "next build",
-    "start": "next start -p 2224",
-    "lint": "next lint"
+  "dependencies": {
+    "fumadocs-mdx": "^14.2.6",
+    "next": "15.4.11",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
   },
   "devDependencies": {
     "@repo/design-system": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/mdx": "^2.0.13",
     "@types/node": "25.2.0",
-    "@types/react": "18.3.27",
-    "@types/react-dom": "18.3.7",
+    "@types/react": "19.2.11",
+    "@types/react-dom": "19.2.3",
     "fumadocs-core": "^16.5.0",
     "fumadocs-ui": "^16.5.0",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3"
   },
-  "dependencies": {
-    "fumadocs-mdx": "^14.2.6",
-    "next": "15.4.10",
-    "react": "18.3.1",
-    "react-dom": "18.3.1"
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev -p 2224",
+    "lint": "next lint",
+    "start": "next start -p 2224"
   }
 }

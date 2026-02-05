@@ -1,11 +1,6 @@
 {
   "name": "@repo/collaboration",
   "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
-  },
   "dependencies": {
     "@liveblocks/client": "^3.13.3",
     "@liveblocks/node": "^3.13.3",
@@ -18,7 +13,12 @@
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@types/node": "25.2.0",
-    "@types/react": "19.2.10",
+    "@types/react": "19.2.11",
     "@types/react-dom": "19.2.3"
+  },
+  "private": true,
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   }
 }

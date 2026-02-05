@@ -1,15 +1,6 @@
 {
   "name": "@repo/pdf",
   "version": "0.0.0",
-  "private": true,
-  "main": "./src/index.ts",
-  "exports": {
-    ".": "./src/index.ts"
-  },
-  "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
-  },
   "dependencies": {
     "@react-pdf/renderer": "^4.3.2",
     "@t3-oss/env-nextjs": "^0.13.10",
@@ -19,7 +10,16 @@
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@types/node": "25.2.0",
-    "@types/react": "19.2.10",
+    "@types/react": "19.2.11",
     "typescript": "^5.9.3"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "main": "./src/index.ts",
+  "private": true,
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   }
 }

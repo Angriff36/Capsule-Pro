@@ -1,11 +1,6 @@
 {
   "name": "@repo/storage",
   "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
-  },
   "dependencies": {
     "@t3-oss/env-nextjs": "^0.13.10",
     "@vercel/blob": "^2.0.1",
@@ -13,5 +8,10 @@
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*"
+  },
+  "private": true,
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   }
 }
