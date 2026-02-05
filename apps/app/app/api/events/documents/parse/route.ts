@@ -587,6 +587,7 @@ async function processDocumentsAndGenerateResponse(
         manifestImportIds.push(manifestImport?.id || importId);
 
         // Process through Manifest
+        if (doc.errors && doc.errors.length > 0) {
           await manifest.processDocumentImport(
             engine,
             manifestImport?.id || importId,
@@ -595,230 +596,234 @@ async function processDocumentsAndGenerateResponse(
             0,
             doc.errors
           );
-        } else 
+        } else {
           await manifest.processDocumentImport(
-          await processDocumentImport(
             engine,
             manifestImport?.id || importId,
             doc.fileName,
             doc.parsedEvent || {},
             doc.confidence || 0
           );
-      }
-    console.log(
-      "[processDocumentsAndGenerateResponse] Processed",
-      manifestImportIds.length,
-      "imports through Manifest"
-    );
-  }
-  catch (manifestError)
-  console.error(
-    "[processDocumentsAndGenerateResponse] Manifest processing failed, continuing:",
-    manifestError
-  );
-}
-
-// Build response
-const response = buildResponse(result, importRecords);
-console.log("[processDocumentsAndGenerateResponse] response built");
-
-// Handle event creation/update - MUST happen before generating artifacts
-let actualEventId = eventId;
-if (result.mergedEvent) {
-  const missingFields = getMissingFieldsFromParsedEvent(result.mergedEvent);
-  const derivedTitle = deriveEventTitle(result.mergedEvent, files);
-  const parsedDate = parseEventDate(result.mergedEvent.date);
-  const resolvedEventDate = parsedDate ?? new Date();
-
-  console.log(
-    "[processDocumentsAndGenerateResponse] Parsed event data:",
-    JSON.stringify(
-      {
-        client: result.mergedEvent.client,
-        number: result.mergedEvent.number,
-        date: result.mergedEvent.date,
-        serviceStyle: result.mergedEvent.serviceStyle,
-        headcount: result.mergedEvent.headcount,
-        venue: result.mergedEvent.venue,
-        status: result.mergedEvent.status,
-        kits: result.mergedEvent.kits,
-        menuSectionsCount: result.mergedEvent.menuSections?.length || 0,
-        timelineCount: result.mergedEvent.timeline?.length || 0,
-        staffingCount: result.mergedEvent.staffing?.length || 0,
-      },
-      null,
-      2
-    )
-  );
-
-  if (!actualEventId) {
-    console.log(
-      "[processDocumentsAndGenerateResponse] Creating new event from parsed data"
-    );
-    try {
-      // Build comprehensive notes from parsed data
-      const notesParts: string[] = [
-        `Imported from ${files.map((file) => file.name).join(", ")}`,
-      ];
-      if (result.mergedEvent.notes && result.mergedEvent.notes.length > 0) {
-        notesParts.push(...result.mergedEvent.notes);
-      }
-      if (result.mergedEvent.flags && result.mergedEvent.flags.length > 0) {
-        const flagMessages = result.mergedEvent.flags
-          .map((f) => f.message)
-          .filter(Boolean);
-        if (flagMessages.length > 0) {
-          notesParts.push(`Flags: ${flagMessages.join("; ")}`);
         }
       }
-
-      const newEvent = await database.event.create({
-        data: {
-          tenantId,
-          title: derivedTitle,
-          eventType: result.mergedEvent.serviceStyle || "catering",
-          eventDate: resolvedEventDate,
-          guestCount:
-            result.mergedEvent.headcount > 0 ? result.mergedEvent.headcount : 0,
-          status: missingFields.length > 0 ? "draft" : "confirmed",
-          eventNumber: result.mergedEvent.number || undefined,
-          venueName: result.mergedEvent.venue?.name || undefined,
-          venueAddress: result.mergedEvent.venue?.address || undefined,
-          notes: notesParts.join("\n\n"),
-          tags: buildEventTags(
-            ["imported", ...(result.mergedEvent.kits || [])],
-            missingFields
-          ),
-        },
-      });
-      actualEventId = newEvent.id;
       console.log(
-        "[processDocumentsAndGenerateResponse] Event created:",
-        actualEventId
+        "[processDocumentsAndGenerateResponse] Processed",
+        manifestImportIds.length,
+        "imports through Manifest"
       );
+    } catch (manifestError) {
+      console.error(
+        "[processDocumentsAndGenerateResponse] Manifest processing failed, continuing:",
+        manifestError
+      );
+      // Continue without Manifest
+    }
+  }
 
-      for (const record of importRecords) {
-        await database.eventImport.update({
-          where: { id: record.importId },
-          data: { eventId: actualEventId },
+  // Build response
+  const response = buildResponse(result, importRecords);
+  console.log("[processDocumentsAndGenerateResponse] response built");
+
+  // Handle event creation/update - MUST happen before generating artifacts
+  let actualEventId = eventId;
+  if (result.mergedEvent) {
+    const missingFields = getMissingFieldsFromParsedEvent(result.mergedEvent);
+    const derivedTitle = deriveEventTitle(result.mergedEvent, files);
+    const parsedDate = parseEventDate(result.mergedEvent.date);
+    const resolvedEventDate = parsedDate ?? new Date();
+
+    console.log(
+      "[processDocumentsAndGenerateResponse] Parsed event data:",
+      JSON.stringify(
+        {
+          client: result.mergedEvent.client,
+          number: result.mergedEvent.number,
+          date: result.mergedEvent.date,
+          serviceStyle: result.mergedEvent.serviceStyle,
+          headcount: result.mergedEvent.headcount,
+          venue: result.mergedEvent.venue,
+          status: result.mergedEvent.status,
+          kits: result.mergedEvent.kits,
+          menuSectionsCount: result.mergedEvent.menuSections?.length || 0,
+          timelineCount: result.mergedEvent.timeline?.length || 0,
+          staffingCount: result.mergedEvent.staffing?.length || 0,
+        },
+        null,
+        2
+      )
+    );
+
+    if (!actualEventId) {
+      console.log(
+        "[processDocumentsAndGenerateResponse] Creating new event from parsed data"
+      );
+      try {
+        // Build comprehensive notes from parsed data
+        const notesParts: string[] = [
+          `Imported from ${files.map((file) => file.name).join(", ")}`,
+        ];
+        if (result.mergedEvent.notes && result.mergedEvent.notes.length > 0) {
+          notesParts.push(...result.mergedEvent.notes);
+        }
+        if (result.mergedEvent.flags && result.mergedEvent.flags.length > 0) {
+          const flagMessages = result.mergedEvent.flags
+            .map((f) => f.message)
+            .filter(Boolean);
+          if (flagMessages.length > 0) {
+            notesParts.push(`Flags: ${flagMessages.join("; ")}`);
+          }
+        }
+
+        const newEvent = await database.event.create({
+          data: {
+            tenantId,
+            title: derivedTitle,
+            eventType: result.mergedEvent.serviceStyle || "catering",
+            eventDate: resolvedEventDate,
+            guestCount:
+              result.mergedEvent.headcount > 0
+                ? result.mergedEvent.headcount
+                : 0,
+            status: missingFields.length > 0 ? "draft" : "confirmed",
+            eventNumber: result.mergedEvent.number || undefined,
+            venueName: result.mergedEvent.venue?.name || undefined,
+            venueAddress: result.mergedEvent.venue?.address || undefined,
+            notes: notesParts.join("\n\n"),
+            tags: buildEventTags(
+              ["imported", ...(result.mergedEvent.kits || [])],
+              missingFields
+            ),
+          },
         });
-      }
+        actualEventId = newEvent.id;
+        console.log(
+          "[processDocumentsAndGenerateResponse] Event created:",
+          actualEventId
+        );
 
-      // Also create in Manifest if available
-      if (engine) {
-        try {
-          const _eventInstance = engine.createInstance("Event", {
+        for (const record of importRecords) {
+          await database.eventImport.update({
+            where: { id: record.importId },
+            data: { eventId: actualEventId },
+          });
+        }
+
+        // Also create in Manifest if available
+        if (engine) {
+          try {
+            const _eventInstance = engine.createInstance("Event", {
               id: actualEventId,
               tenantId,
               eventType: result.mergedEvent.serviceStyle || "catering",
               eventDate: result.mergedEvent.date || new Date().toISOString(),
+            });
+
             await manifest.createOrUpdateEvent(
-            await createOrUpdateEvent(
               engine,
               undefined,
               tenantId,
               result.mergedEvent
             );
-        } catch (manifestError) {
-          console.error(
-            "[processDocumentsAndGenerateResponse] Manifest event creation failed (non-blocking):",
-            manifestError
-          );
+          } catch (manifestError) {
+            console.error(
+              "[processDocumentsAndGenerateResponse] Manifest event creation failed (non-blocking):",
+              manifestError
+            );
+          }
         }
+      } catch (dbError) {
+        console.error(
+          "[processDocumentsAndGenerateResponse] Failed to create event in database:",
+          dbError
+        );
+        throw dbError; // Re-throw - we can't generate artifacts without an event
       }
-    } catch (dbError) {
-      console.error(
-        "[processDocumentsAndGenerateResponse] Failed to create event in database:",
-        dbError
-      );
-      throw dbError; // Re-throw - we can't generate artifacts without an event
-    }
-  } else if (actualEventId) {
-    // Update existing event
-    if (engine) {
-      try {
-        const _eventInstance = engine.createInstance("Event", {
+    } else if (actualEventId) {
+      // Update existing event
+      if (engine) {
+        try {
+          const _eventInstance = engine.createInstance("Event", {
             id: actualEventId,
             tenantId,
             eventType: result.mergedEvent.serviceStyle || "catering",
             eventDate: result.mergedEvent.date || new Date().toISOString(),
+          });
+
           await manifest.createOrUpdateEvent(
-          await createOrUpdateEvent(
             engine,
             actualEventId,
             tenantId,
             result.mergedEvent
           );
-      } catch (manifestError) {
+        } catch (manifestError) {
+          console.error(
+            "[processDocumentsAndGenerateResponse] Manifest event update failed (non-blocking):",
+            manifestError
+          );
+        }
+      }
+    }
+
+    if (actualEventId) {
+      try {
+        await importMenuToEvent(tenantId, actualEventId, result.mergedEvent);
+      } catch (menuError) {
         console.error(
-          "[processDocumentsAndGenerateResponse] Manifest event update failed (non-blocking):",
-          manifestError
+          "[processDocumentsAndGenerateResponse] Menu import failed:",
+          menuError
         );
       }
     }
   }
 
-  if (actualEventId) {
-    try {
-      await importMenuToEvent(tenantId, actualEventId, result.mergedEvent);
-    } catch (menuError) {
-      console.error(
-        "[processDocumentsAndGenerateResponse] Menu import failed:",
-        menuError
+  // Generate battle board via Manifest if requested
+  if (shouldGenerateBattleBoard) {
+    if (!result.mergedEvent) {
+      console.warn(
+        "[processDocumentsAndGenerateResponse] Cannot generate battle board: no merged event data"
       );
-    }
-  }
-}
+      response.battleBoardError = "No event data extracted from documents";
+    } else if (actualEventId) {
+      try {
+        console.log(
+          "[processDocumentsAndGenerateResponse] Creating battle board"
+        );
+        console.log(
+          "[processDocumentsAndGenerateResponse] Event data:",
+          JSON.stringify(
+            {
+              client: result.mergedEvent.client,
+              number: result.mergedEvent.number,
+              date: result.mergedEvent.date,
+              times: result.mergedEvent.times,
+              headcount: result.mergedEvent.headcount,
+              menuSections: result.mergedEvent.menuSections?.length || 0,
+            },
+            null,
+            2
+          )
+        );
 
-// Generate battle board via Manifest if requested
-if (shouldGenerateBattleBoard) {
-  if (!result.mergedEvent) {
-    console.warn(
-      "[processDocumentsAndGenerateResponse] Cannot generate battle board: no merged event data"
-    );
-    response.battleBoardError = "No event data extracted from documents";
-  } else if (actualEventId) {
-    try {
-      console.log(
-        "[processDocumentsAndGenerateResponse] Creating battle board"
-      );
-      console.log(
-        "[processDocumentsAndGenerateResponse] Event data:",
-        JSON.stringify(
-          {
-            client: result.mergedEvent.client,
-            number: result.mergedEvent.number,
-            date: result.mergedEvent.date,
-            times: result.mergedEvent.times,
-            headcount: result.mergedEvent.headcount,
-            menuSections: result.mergedEvent.menuSections?.length || 0,
-          },
-          null,
-          2
-        )
-      );
+        const { buildBattleBoardFromEvent } = await getEventParser();
+        const battleBoardResult = buildBattleBoardFromEvent(result.mergedEvent);
+        console.log(
+          "[processDocumentsAndGenerateResponse] Battle board built successfully"
+        );
+        const battleBoardId = crypto.randomUUID();
 
-      const { buildBattleBoardFromEvent } = await getEventParser();
-      const battleBoardResult = buildBattleBoardFromEvent(result.mergedEvent);
-      console.log(
-        "[processDocumentsAndGenerateResponse] Battle board built successfully"
-      );
-      const battleBoardId = crypto.randomUUID();
-
-      if (engine) {
-        try {
-          const _battleBoardInstance = engine.createInstance("BattleBoard", {
-            id: battleBoardId,
-            tenantId,
-            eventId: actualEventId,
-            boardName:
-              result.mergedEvent.client ||
-              result.mergedEvent.number ||
-              actualEventId ||
-              "",
-          });
-          await manifest.generateBattleBoard(
-            await generateBattleBoard(
+        if (engine) {
+          try {
+            const _battleBoardInstance = engine.createInstance("BattleBoard", {
+              id: battleBoardId,
+              tenantId,
+              eventId: actualEventId,
+              boardName:
+                result.mergedEvent.client ||
+                result.mergedEvent.number ||
+                actualEventId ||
+                "",
+            });
+            await manifest.generateBattleBoard(
               engine,
               battleBoardId,
               tenantId,
@@ -828,116 +833,115 @@ if (shouldGenerateBattleBoard) {
                 battleBoard: battleBoardResult.battleBoard,
               }
             );
-        } catch (manifestError) {
-          console.error(
-            "[processDocumentsAndGenerateResponse] Manifest battle board generation failed, using fallback:",
-            manifestError
-          );
-          // Fall through to database save
+          } catch (manifestError) {
+            console.error(
+              "[processDocumentsAndGenerateResponse] Manifest battle board generation failed, using fallback:",
+              manifestError
+            );
+            // Fall through to database save
+          }
         }
+
+        // Save to database
+        console.log(
+          "[processDocumentsAndGenerateResponse] Saving battle board to database:",
+          {
+            battleBoardId,
+            eventId: actualEventId,
+            boardName:
+              result.mergedEvent.client ||
+              result.mergedEvent.number ||
+              actualEventId ||
+              "",
+          }
+        );
+
+        const savedBattleBoard = await database.battleBoard.create({
+          data: {
+            tenantId,
+            id: battleBoardId,
+            eventId: actualEventId,
+            board_name:
+              result.mergedEvent.client ||
+              result.mergedEvent.number ||
+              actualEventId ||
+              "",
+            board_type: "event-specific",
+            schema_version: "mangia-battle-board@1",
+            boardData: battleBoardResult.battleBoard as object,
+            status: "draft",
+            is_template: false,
+            tags: ["imported"],
+          },
+        });
+
+        console.log(
+          "[processDocumentsAndGenerateResponse] Battle board saved:",
+          savedBattleBoard.id
+        );
+        response.battleBoard = battleBoardResult.battleBoard;
+        response.battleBoardId = savedBattleBoard.id;
+      } catch (error) {
+        console.error(
+          "[processDocumentsAndGenerateResponse] Battle board generation failed:",
+          error
+        );
+        response.battleBoardError =
+          error instanceof Error ? error.message : "Unknown error";
       }
-
-      // Save to database
-      console.log(
-        "[processDocumentsAndGenerateResponse] Saving battle board to database:",
-        {
-          battleBoardId,
-          eventId: actualEventId,
-          boardName:
-            result.mergedEvent.client ||
-            result.mergedEvent.number ||
-            actualEventId ||
-            "",
-        }
-      );
-
-      const savedBattleBoard = await database.battleBoard.create({
-        data: {
-          tenantId,
-          id: battleBoardId,
-          eventId: actualEventId,
-          board_name:
-            result.mergedEvent.client ||
-            result.mergedEvent.number ||
-            actualEventId ||
-            "",
-          board_type: "event-specific",
-          schema_version: "mangia-battle-board@1",
-          boardData: battleBoardResult.battleBoard as object,
-          status: "draft",
-          is_template: false,
-          tags: ["imported"],
-        },
-      });
-
-      console.log(
-        "[processDocumentsAndGenerateResponse] Battle board saved:",
-        savedBattleBoard.id
-      );
-      response.battleBoard = battleBoardResult.battleBoard;
-      response.battleBoardId = savedBattleBoard.id;
-    } catch (error) {
-      console.error(
-        "[processDocumentsAndGenerateResponse] Battle board generation failed:",
-        error
+    } else {
+      console.warn(
+        "[processDocumentsAndGenerateResponse] Cannot generate battle board: no event ID"
       );
       response.battleBoardError =
-        error instanceof Error ? error.message : "Unknown error";
+        "Event must be created before generating battle board";
     }
-  } else {
-    console.warn(
-      "[processDocumentsAndGenerateResponse] Cannot generate battle board: no event ID"
-    );
-    response.battleBoardError =
-      "Event must be created before generating battle board";
   }
-}
 
-// Generate checklist via Manifest if requested
-if (shouldGenerateChecklist) {
-  if (!result.mergedEvent) {
-    console.warn(
-      "[processDocumentsAndGenerateResponse] Cannot generate checklist: no merged event data"
-    );
-    response.checklistError = "No event data extracted from documents";
-  } else if (actualEventId) {
-    try {
-      console.log("[processDocumentsAndGenerateResponse] Creating checklist");
-      console.log(
-        "[processDocumentsAndGenerateResponse] Event data for checklist:",
-        JSON.stringify(
-          {
-            client: result.mergedEvent.client,
-            number: result.mergedEvent.number,
-            date: result.mergedEvent.date,
-            times: result.mergedEvent.times,
-            headcount: result.mergedEvent.headcount,
-            menuSections: result.mergedEvent.menuSections?.length || 0,
-          },
-          null,
-          2
-        )
+  // Generate checklist via Manifest if requested
+  if (shouldGenerateChecklist) {
+    if (!result.mergedEvent) {
+      console.warn(
+        "[processDocumentsAndGenerateResponse] Cannot generate checklist: no merged event data"
       );
+      response.checklistError = "No event data extracted from documents";
+    } else if (actualEventId) {
+      try {
+        console.log("[processDocumentsAndGenerateResponse] Creating checklist");
+        console.log(
+          "[processDocumentsAndGenerateResponse] Event data for checklist:",
+          JSON.stringify(
+            {
+              client: result.mergedEvent.client,
+              number: result.mergedEvent.number,
+              date: result.mergedEvent.date,
+              times: result.mergedEvent.times,
+              headcount: result.mergedEvent.headcount,
+              menuSections: result.mergedEvent.menuSections?.length || 0,
+            },
+            null,
+            2
+          )
+        );
 
-      const { buildInitialChecklist } = await getEventParser();
-      const checklistResult = buildInitialChecklist(result.mergedEvent);
-      console.log(
-        "[processDocumentsAndGenerateResponse] Checklist built successfully, autoFillScore:",
-        checklistResult.autoFilledCount,
-        "totalQuestions:",
-        checklistResult.totalQuestions
-      );
-      const reportId = crypto.randomUUID();
+        const { buildInitialChecklist } = await getEventParser();
+        const checklistResult = buildInitialChecklist(result.mergedEvent);
+        console.log(
+          "[processDocumentsAndGenerateResponse] Checklist built successfully, autoFillScore:",
+          checklistResult.autoFilledCount,
+          "totalQuestions:",
+          checklistResult.totalQuestions
+        );
+        const reportId = crypto.randomUUID();
 
-      if (engine) {
-        try {
-          const _reportInstance = engine.createInstance("EventReport", {
-            id: reportId,
-            tenantId,
-            eventId: actualEventId,
-          });
-          await manifest.generateChecklist(
-            await generateChecklist(
+        if (engine) {
+          try {
+            const _reportInstance = engine.createInstance("EventReport", {
+              id: reportId,
+              tenantId,
+              eventId: actualEventId,
+            });
+            await manifest.generateChecklist(
               engine,
               reportId,
               tenantId,
@@ -945,81 +949,81 @@ if (shouldGenerateChecklist) {
               result.mergedEvent,
               checklistResult
             );
-        } catch (manifestError) {
-          console.error(
-            "[processDocumentsAndGenerateResponse] Manifest checklist generation failed, using fallback:",
-            manifestError
-          );
-          // Fall through to database save
+          } catch (manifestError) {
+            console.error(
+              "[processDocumentsAndGenerateResponse] Manifest checklist generation failed, using fallback:",
+              manifestError
+            );
+            // Fall through to database save
+          }
         }
+
+        // Save to database
+        const completionPercent =
+          checklistResult.totalQuestions > 0
+            ? Math.round(
+                (checklistResult.autoFilledCount /
+                  checklistResult.totalQuestions) *
+                  100
+              )
+            : 0;
+        const reportName = derivedTitle || actualEventId;
+
+        console.log(
+          "[processDocumentsAndGenerateResponse] Saving checklist to database:",
+          {
+            reportId,
+            eventId: actualEventId,
+            completion: completionPercent,
+            autoFillScore: checklistResult.autoFilledCount,
+            totalQuestions: checklistResult.totalQuestions,
+          }
+        );
+
+        const savedReport = await database.eventReport.create({
+          data: {
+            tenantId,
+            id: reportId,
+            eventId: actualEventId,
+            name: reportName,
+            status: "draft",
+            completion: completionPercent,
+            autoFillScore: checklistResult.autoFilledCount,
+            checklistData: {
+              checklist: checklistResult.checklist,
+              warnings: checklistResult.warnings,
+            } as Prisma.InputJsonObject,
+            parsedEventData: result.mergedEvent as Prisma.InputJsonObject,
+          },
+        });
+
+        console.log(
+          "[processDocumentsAndGenerateResponse] Checklist saved:",
+          savedReport.id
+        );
+
+        response.checklist = checklistResult;
+        response.checklistId = savedReport.id;
+      } catch (error) {
+        console.error(
+          "[processDocumentsAndGenerateResponse] Checklist generation failed:",
+          error
+        );
+        response.checklistError =
+          error instanceof Error ? error.message : "Unknown error";
       }
-
-      // Save to database
-      const completionPercent =
-        checklistResult.totalQuestions > 0
-          ? Math.round(
-              (checklistResult.autoFilledCount /
-                checklistResult.totalQuestions) *
-                100
-            )
-          : 0;
-      const reportName = derivedTitle || actualEventId;
-
-      console.log(
-        "[processDocumentsAndGenerateResponse] Saving checklist to database:",
-        {
-          reportId,
-          eventId: actualEventId,
-          completion: completionPercent,
-          autoFillScore: checklistResult.autoFilledCount,
-          totalQuestions: checklistResult.totalQuestions,
-        }
-      );
-
-      const savedReport = await database.eventReport.create({
-        data: {
-          tenantId,
-          id: reportId,
-          eventId: actualEventId,
-          name: reportName,
-          status: "draft",
-          completion: completionPercent,
-          autoFillScore: checklistResult.autoFilledCount,
-          checklistData: {
-            checklist: checklistResult.checklist,
-            warnings: checklistResult.warnings,
-          } as Prisma.InputJsonObject,
-          parsedEventData: result.mergedEvent as Prisma.InputJsonObject,
-        },
-      });
-
-      console.log(
-        "[processDocumentsAndGenerateResponse] Checklist saved:",
-        savedReport.id
-      );
-
-      response.checklist = checklistResult;
-      response.checklistId = savedReport.id;
-    } catch (error) {
-      console.error(
-        "[processDocumentsAndGenerateResponse] Checklist generation failed:",
-        error
+    } else {
+      console.warn(
+        "[processDocumentsAndGenerateResponse] Cannot generate checklist: no event ID"
       );
       response.checklistError =
-        error instanceof Error ? error.message : "Unknown error";
+        "Event must be created before generating checklist";
     }
-  } else {
-    console.warn(
-      "[processDocumentsAndGenerateResponse] Cannot generate checklist: no event ID"
-    );
-    response.checklistError =
-      "Event must be created before generating checklist";
   }
-}
 
-return response;
+  return response;
 }
-
+  
 /**
  * Helper function to build and return the response
  */
