@@ -567,12 +567,55 @@ const runtime = await createKitchenOpsRuntime({
   - `recipes-page-client.tsx` - Now uses actions-manifest (fixed)
 
 **Next Steps:**
-- Display constraint outcomes (WARN/BLOCK) to users in UI
+- **PRIORITY**: Integrate existing `ConstraintOverrideDialog` component
+- Refactor server actions to return `CommandResult` instead of throwing errors
+- Update frontend to display constraint outcomes using `useConstraintOverride` hook
 - Migrate remaining actions (`updateRecipeImage`, menu actions) to use Manifest
 - Add telemetry hooks for constraint tracking
 
 **Files Modified:**
 - `apps/app/app/(authenticated)/kitchen/recipes/recipes-page-client.tsx` - Updated import to use actions-manifest
+
+---
+
+### 2025-02-06: Constraint Outcomes UI Component Analysis
+
+**Status:** DOCUMENTED - Component exists, integration work needed
+
+**Existing Component:**
+- `packages/design-system/components/constraint-override-dialog.tsx` - Complete constraint UI
+- `ConstraintOverrideDialog` component with:
+  - WARN/BLOCK constraint display with proper styling
+  - Override reason selection (predefined codes from `OVERRIDE_REASON_CODES`)
+  - Additional details textarea
+  - Permission checking (`canOverride` prop)
+  - `useConstraintOverride` hook for easy integration
+
+**Integration Challenge:**
+- Current server actions throw errors for blocking constraints
+- Error throwing prevents `constraintOutcomes` from being returned to client
+- Frontend needs structured results to use the dialog component
+
+**Required Changes:**
+1. Refactor `actions-manifest.ts` to return `CommandResult` with `constraintOutcomes`
+2. Update frontend to use `useConstraintOverride` hook
+3. Handle override flow: user confirms → re-run command with override
+
+**Example Integration Pattern:**
+```tsx
+import { ConstraintOverrideDialog, useConstraintOverride } from "@repo/design-system/components/constraint-override-dialog";
+
+// In component
+const { showOverrideDialog, setShowOverrideDialog, overrideConstraints, handleOverride } =
+  useConstraintOverride({
+    result: commandResult,
+    onSuccess: () => router.push("/kitchen/recipes"),
+    onOverride: async (reason, details) => {
+      const result = await createRecipeWithOverride(formData, reason, details);
+      // handle result
+    },
+  });
+```
 
 ---
 
