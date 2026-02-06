@@ -24,11 +24,8 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import type { ConstraintOutcome } from "@repo/kitchen-ops";
-import {
-  OVERRIDE_REASON_CODES,
-  type OverrideReasonCode,
-} from "@repo/kitchen-ops";
+import type { ConstraintOutcome } from "@repo/manifest";
+import { OVERRIDE_REASON_CODES, type OverrideReasonCode } from "@repo/manifest";
 import { AlertCircle, Info, ShieldAlert, TriangleAlert } from "lucide-react";
 import * as React from "react";
 

@@ -1,12 +1,20 @@
 "use client";
 
+import {
+  ConstraintOverrideDialog,
+  useConstraintOverride,
+} from "@repo/design-system/components/constraint-override-dialog";
 import { Button } from "@repo/design-system/components/ui/button";
-import { useState } from "react";
+import type { OverrideReasonCode } from "@repo/manifest";
+import { useRouter } from "next/navigation";
+import { startTransition, useState, useTransition } from "react";
+import type { ManifestActionResult } from "../../actions-manifest-v2";
 import {
   getRecipeForEdit,
   type RecipeForEdit,
   updateRecipe,
-} from "../../actions-manifest";
+  updateRecipeWithOverride,
+} from "../../actions-manifest-v2";
 import { RecipeEditModal } from "../../components/recipe-edit-modal";
 
 interface RecipeDetailEditButtonProps {
@@ -44,68 +52,125 @@ export const RecipeDetailEditButton = ({
   recipeId,
   recipeName,
 }: RecipeDetailEditButtonProps) => {
+  const router = useRouter();
+  const [isPending, startTransitionAction] = useTransition();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editRecipeData, setEditRecipeData] = useState<RecipeForEdit | null>(
     null
   );
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<ManifestActionResult | null>(null);
+  const [cachedFormData, setCachedFormData] = useState<FormData | null>(null);
 
-  const handleEditClick = async () => {
+  const handleEditClick = () => {
     setIsLoading(true);
-    setErrorMessage(null);
-    try {
-      const data = await getRecipeForEdit(recipeId);
-      if (!data) {
-        setErrorMessage("Recipe not found.");
-        return;
+    setError(null);
+    startTransition(async () => {
+      try {
+        const data = await getRecipeForEdit(recipeId);
+        if (!data) {
+          setError("Recipe not found.");
+          return;
+        }
+        setEditRecipeData(data);
+        setIsEditModalOpen(true);
+      } catch (err) {
+        console.error("Failed to load recipe for edit:", err);
+        setError("Failed to load recipe. Please try again.");
+      } finally {
+        setIsLoading(false);
       }
-      setEditRecipeData(data);
-      setIsEditModalOpen(true);
-    } catch (error) {
-      console.error("Failed to load recipe for edit:", error);
-      setErrorMessage("Failed to load recipe. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
-  const handleUpdateRecipe = async (formData: FormData) => {
-    setErrorMessage(null);
-    try {
-      await updateRecipe(recipeId, formData);
-      setIsEditModalOpen(false);
-      setEditRecipeData(null);
-      window.location.reload();
-    } catch (error) {
-      console.error("Failed to update recipe:", error);
-      setErrorMessage("Failed to update recipe. Please try again.");
-      throw error;
-    }
+  const handleUpdateRecipe = (formData: FormData) => {
+    setError(null);
+    setResult(null);
+    setCachedFormData(formData);
+
+    startTransitionAction(async () => {
+      try {
+        const actionResult = await updateRecipe(recipeId, formData);
+        setResult(actionResult);
+
+        if (actionResult.success) {
+          setIsEditModalOpen(false);
+          setEditRecipeData(null);
+          if (actionResult.redirectUrl) {
+            router.push(actionResult.redirectUrl);
+          } else {
+            router.refresh();
+          }
+        } else if (actionResult.error) {
+          setError(actionResult.error);
+        }
+      } catch (err) {
+        console.error("Failed to update recipe:", err);
+        setError("Failed to update recipe. Please try again.");
+      }
+    });
+  };
+
+  const handleOverride = async (
+    reason: OverrideReasonCode,
+    details: string
+  ) => {
+    if (!cachedFormData) return;
+
+    startTransitionAction(async () => {
+      try {
+        const actionResult = await updateRecipeWithOverride(
+          recipeId,
+          cachedFormData,
+          reason,
+          details
+        );
+        setResult(actionResult);
+
+        if (actionResult.success) {
+          setIsEditModalOpen(false);
+          setEditRecipeData(null);
+          if (actionResult.redirectUrl) {
+            router.push(actionResult.redirectUrl);
+          } else {
+            router.refresh();
+          }
+        } else if (actionResult.error) {
+          setError(actionResult.error);
+        }
+      } catch (err) {
+        console.error("Failed to update recipe with override:", err);
+        setError("Failed to update recipe. Please try again.");
+      }
+    });
   };
 
   const handleEditModalClose = (open: boolean) => {
     setIsEditModalOpen(open);
     if (!open) {
       setEditRecipeData(null);
-      setErrorMessage(null);
+      setError(null);
+      setResult(null);
     }
   };
+
+  const constraintState = useConstraintOverride(result ?? {}, {
+    onOverride: handleOverride,
+  });
 
   return (
     <div className="flex flex-col items-end gap-2">
       <Button
         aria-label={`Edit ${recipeName}`}
-        disabled={isLoading}
+        disabled={isLoading || isPending}
         onClick={handleEditClick}
         type="button"
       >
-        {isLoading ? "Loading..." : "Edit Recipe"}
+        {isLoading || isPending ? "Loading..." : "Edit Recipe"}
       </Button>
 
-      {errorMessage && (
-        <p className="text-destructive text-sm">{errorMessage}</p>
-      )}
+      {error && <p className="text-destructive text-sm">{error}</p>}
 
       {editRecipeData && (
         <RecipeEditModal
@@ -116,6 +181,14 @@ export const RecipeDetailEditButton = ({
           recipe={buildEditRecipePayload(editRecipeData)}
         />
       )}
+
+      <ConstraintOverrideDialog
+        actionDescription="update this recipe"
+        constraints={constraintState.overrideConstraints}
+        onConfirm={constraintState.handleOverride}
+        onOpenChange={constraintState.setShowOverrideDialog}
+        open={constraintState.showOverrideDialog}
+      />
     </div>
   );
 };

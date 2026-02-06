@@ -40,9 +40,13 @@ export type {
   IRStore,
   IRType,
   IRValue,
+  OverrideReasonCode,
   OverrideRequest,
   PropertyModifier,
 } from "./manifest/ir";
+
+// Export constants
+export { OVERRIDE_REASON_CODES } from "./manifest/ir";
 // Export compiler
 export { compileToIR } from "./manifest/ir-compiler";
 // Export runtime engine

@@ -121,6 +121,13 @@ Manifest Runtime Version: v0.3.0
     - 39-station-capacity.manifest
     - 40-inventory-reserve.manifest
     - kitchen-ops-full.manifest
+- [x] Integrate ConstraintOverrideDialog component for recipe/dish actions (2025-02-06)
+  - Created `actions-manifest-v2.ts` with server actions returning `ManifestActionResult`
+  - Actions support `overrideRequests` parameter for constraint override workflow
+  - Client components created for recipe/dish forms with constraint override dialog
+  - Moved `OVERRIDE_REASON_CODES` to `@repo/manifest` for client-side compatibility
+  - Users can now override blocking constraints with reason tracking
+  - Frontend shows constraint dialog when blocking constraints exist
 
 **Owner:** Loop
 
@@ -616,6 +623,45 @@ const { showOverrideDialog, setShowOverrideDialog, overrideConstraints, handleOv
     },
   });
 ```
+
+---
+
+### 2025-02-06: Constraint Override Dialog Integration
+
+**Status:** COMPLETED
+
+**What Was Implemented:**
+- Created `actions-manifest-v2.ts` with new server actions that return `ManifestActionResult` instead of throwing errors
+- Actions now support `overrideRequests` parameter for constraint override workflow
+- `createRecipe`, `updateRecipe`, `createDish` return structured results with `constraintOutcomes`
+- Helper actions `createRecipeWithOverride`, `updateRecipeWithOverride`, `createDishWithOverride` for override retry
+- Client components created to integrate with `ConstraintOverrideDialog`:
+  - `new-recipe-form-client.tsx` - Client-side recipe creation form
+  - `new-dish-form-client.tsx` - Client-side dish creation form
+- Updated `recipe-detail-edit-button.tsx` to use constraint override workflow
+- Moved `OVERRIDE_REASON_CODES` and `OverrideReasonCode` to `@repo/manifest` package for client-side compatibility
+- Updated `ConstraintOverrideDialog` to import from `@repo/manifest` instead of `@repo/kitchen-ops`
+
+**Files Created:**
+- `apps/app/app/(authenticated)/kitchen/recipes/actions-manifest-v2.ts` - New server actions with CommandResult return
+- `apps/app/app/(authenticated)/kitchen/recipes/components/new-recipe-form-client.tsx` - Client recipe form
+- `apps/app/app/(authenticated)/kitchen/recipes/components/new-dish-form-client.tsx` - Client dish form
+- `apps/app/app/(authenticated)/kitchen/recipes/components/recipe-form-with-constraints.tsx` - Reusable form wrapper
+
+**Files Modified:**
+- `packages/manifest/src/manifest/ir.ts` - Added OVERRIDE_REASON_CODES and OverrideReasonCode
+- `packages/manifest/src/index.ts` - Exported override reason codes and type
+- `packages/design-system/components/constraint-override-dialog.tsx` - Changed imports to @repo/manifest
+- `packages/kitchen-ops/src/index.ts` - Re-export OVERRIDE_REASON_CODES from @repo/manifest
+- `apps/app/app/(authenticated)/kitchen/recipes/new/page.tsx` - Uses client form component
+- `apps/app/app/(authenticated)/kitchen/recipes/dishes/new/page.tsx` - Uses client form component
+- `apps/app/app/(authenticated)/kitchen/recipes/[recipeId]/components/recipe-detail-edit-button.tsx` - Uses override workflow
+
+**Integration Pattern:**
+1. User submits form → Server action returns `ManifestActionResult`
+2. If blocking constraints exist → `ConstraintOverrideDialog` shows constraints
+3. User selects override reason and confirms → Action retried with override requests
+4. On success → Navigate to redirect URL
 
 ---
 

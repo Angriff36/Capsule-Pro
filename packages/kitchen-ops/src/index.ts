@@ -1623,19 +1623,8 @@ export async function createInventoryItemInstance(
 
 import type { ConstraintOutcome, OverrideRequest } from "@repo/manifest";
 
-/**
- * Override reason codes following the spec
- */
-export const OVERRIDE_REASON_CODES = {
-  customer_request: "Customer Request",
-  equipment_failure: "Equipment Failure",
-  time_crunch: "Time Crunch",
-  substitution: "Substitution Available",
-  staffing_gap: "Staffing Gap",
-  other: "Other",
-} as const;
-
-export type OverrideReasonCode = keyof typeof OVERRIDE_REASON_CODES;
+// Re-export override reason codes from @repo/manifest for single source of truth
+export { OVERRIDE_REASON_CODES, type OverrideReasonCode } from "@repo/manifest";
 
 /**
  * Severity level for constraint outcomes
