@@ -3,6 +3,7 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -10,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -74,7 +74,7 @@ interface Location {
 
 export function ShiftsClient() {
   const router = useRouter();
-  const searchParams = useSearchParams() ?? new URLSearchParams();
+  const searchParams = useSearchParams();
 
   // State
   const [shifts, setShifts] = useState<Shift[]>([]);
@@ -121,7 +121,7 @@ export function ShiftsClient() {
     } finally {
       setLoading(false);
     }
-  }, [filters, pagination.page, pagination]);
+  }, [filters, pagination.page]);
 
   // Fetch filter options
   const fetchFilterOptions = useCallback(async () => {
@@ -147,9 +147,7 @@ export function ShiftsClient() {
   useEffect(() => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
-      if (value) {
-        params.set(key, value);
-      }
+      if (value) params.set(key, value);
     });
     const queryString = params.toString();
     router.push(`/scheduling/shifts${queryString ? `?${queryString}` : ""}`);
@@ -301,7 +299,9 @@ export function ShiftsClient() {
 
       {/* Filters Section */}
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">Filters</h2>
+        <h2 className="text-sm font-medium text-muted-foreground">
+          Filters
+        </h2>
         <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
           <FilterIcon className="h-4 w-4 text-muted-foreground" />
           <Input
@@ -377,62 +377,62 @@ export function ShiftsClient() {
         </h2>
         <div className="border rounded-lg">
           <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell
+                  className="h-24 text-center"
+                  colSpan={columns.length}
+                >
+                  <Loader2Icon className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+                </TableCell>
+              </TableRow>
+            ) : shifts.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  className="h-24 text-center text-muted-foreground"
+                  colSpan={columns.length}
+                >
+                  No shifts found. Create a new shift to get started.
+                </TableCell>
+              </TableRow>
+            ) : (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  className="cursor-pointer hover:bg-muted/50"
+                  key={row.id}
+                  onClick={() => handleRowClick(row.original)}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
                   ))}
                 </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell
-                    className="h-24 text-center"
-                    colSpan={columns.length}
-                  >
-                    <Loader2Icon className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
-                  </TableCell>
-                </TableRow>
-              ) : shifts.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    className="h-24 text-center text-muted-foreground"
-                    colSpan={columns.length}
-                  >
-                    No shifts found. Create a new shift to get started.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    className="cursor-pointer hover:bg-muted/50"
-                    key={row.id}
-                    onClick={() => handleRowClick(row.original)}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
       </section>
 
       {/* Pagination */}

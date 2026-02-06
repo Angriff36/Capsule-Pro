@@ -1,62 +1,88 @@
 # IMPLEMENTATION PLAN
+Capsule-Pro / Manifest Runtime Integration
 
-Persistent iteration memory between loop executions.
+This document is the persistent handoff artifact between loop iterations.
 
-Tracks:
-- Active work
-- Discovered constraints
-- Completed work
+It MUST remain concise and internally consistent.
+It is NOT a specification archive or design journal.
 
-Does NOT store background essays or speculative design.
+Authoritative sources of truth:
+- Repository source code
+- specs/*
+- Tests / conformance fixtures
+
+This file tracks ONLY:
+
+1. Active work items
+2. Verified constraints discovered during implementation
+3. Completion history
+
+Nothing else.
 
 ---
 
-## Baseline Runtime Truth
+## Current Platform Baseline
 
 Manifest Runtime Version: v0.3.0
 
 Confirmed capabilities:
 
-- Typed IR
+- Typed IR schema
 - Deterministic execution
 - Binary command result model
+- No severity levels
+- No structured constraint outcome array
 
-Not present:
-
-- Severity levels
-- Structured constraint outcomes
-
-These MUST NOT be assumed elsewhere.
+Any feature beyond this must be implemented before use.
 
 ---
 
-## Active Work
+## Active Tasks
 
-### P0 Runtime Alignment
-- Identify all code expecting extended result structures
-- Refactor adapters to binary result contract
-- Add conformance fixtures for failure edge cases
+### P0 — Manifest Runtime Alignment
 
-### P1 Kitchen Ops Integration
-- Map entities → Manifest
-- Implement guard enforcement
-- Implement override logging
-- Validate deterministic replay
+- [ ] Replace all assumptions of severity/graded outcomes with binary runtime behavior
+- [ ] Identify all runtime call sites expecting extended result shapes
+- [ ] Refactor adapters to respect v0.3.0 execution contract
+- [ ] Add conformance fixtures covering edge-case command failures
 
-### P2 Diagnostics Surface
-- Standardize runtime error reporting
-- Align UI/API formatting
-- Add denial explanation tests
+Owner: Loop
 
 ---
 
-## Constraints Learned
+### P1 — Kitchen Ops Rule Integration
 
-- One iteration = one completed task + validation + commit
-- Code/tests outrank plan assumptions
-- Plan must remain concise
+- [ ] Map PrepTask, Station, Shift entities to Manifest entities
+- [ ] Implement guards enforcing inventory constraints
+- [ ] Implement override logging mechanism
+- [ ] Validate deterministic replay of workflows
+
+Owner: Loop
+
+---
+
+### P2 — Diagnostics Surface
+
+- [ ] Unify runtime error reporting format
+- [ ] Ensure API/UI receive consistent diagnostics
+- [ ] Add test coverage for denial explanations
+
+Owner: Loop
+
+---
+
+## Verified Constraints
+
+- Loop iteration completes only after:
+  - Validation passes
+  - Plan updated
+  - Commit created
+
+- Plan must not exceed actionable size.
+  Background material belongs in `/docs`.
 
 ---
 
 ## Completed Work
+
 (empty)
