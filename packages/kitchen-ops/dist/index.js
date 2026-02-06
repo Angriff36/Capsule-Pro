@@ -124,9 +124,12 @@ export function createPostgresStoreProvider(databaseUrl, tenantId) {
  */
 export async function createPrepTaskRuntime(context) {
     const ir = await loadPrepTaskManifestIR();
-    const options = context.databaseUrl
+    const options = context.databaseUrl || context.telemetry
         ? {
-            storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
+            ...(context.databaseUrl && {
+                storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
+            }),
+            ...(context.telemetry && { telemetry: context.telemetry }),
         }
         : undefined;
     const engine = new RuntimeEngine(ir, context, options);
@@ -137,9 +140,12 @@ export async function createPrepTaskRuntime(context) {
  */
 export async function createStationRuntime(context) {
     const ir = await loadStationManifestIR();
-    const options = context.databaseUrl
+    const options = context.databaseUrl || context.telemetry
         ? {
-            storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
+            ...(context.databaseUrl && {
+                storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
+            }),
+            ...(context.telemetry && { telemetry: context.telemetry }),
         }
         : undefined;
     const engine = new RuntimeEngine(ir, context, options);
@@ -150,9 +156,12 @@ export async function createStationRuntime(context) {
  */
 export async function createInventoryRuntime(context) {
     const ir = await loadInventoryManifestIR();
-    const options = context.databaseUrl
+    const options = context.databaseUrl || context.telemetry
         ? {
-            storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
+            ...(context.databaseUrl && {
+                storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
+            }),
+            ...(context.telemetry && { telemetry: context.telemetry }),
         }
         : undefined;
     const engine = new RuntimeEngine(ir, context, options);
@@ -179,7 +188,6 @@ export async function createKitchenOpsRuntime(context) {
             ...stationIR.entities,
             ...inventoryIR.entities,
         ],
-        stores: [...prepTaskIR.stores, ...stationIR.stores, ...inventoryIR.stores],
         events: [...prepTaskIR.events, ...stationIR.events, ...inventoryIR.events],
         commands: [
             ...prepTaskIR.commands,
@@ -192,9 +200,12 @@ export async function createKitchenOpsRuntime(context) {
             ...inventoryIR.policies,
         ],
     };
-    const options = context.databaseUrl
+    const options = context.databaseUrl || context.telemetry
         ? {
-            storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
+            ...(context.databaseUrl && {
+                storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
+            }),
+            ...(context.telemetry && { telemetry: context.telemetry }),
         }
         : undefined;
     const engine = new RuntimeEngine(combinedIR, context, options);

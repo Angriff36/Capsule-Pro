@@ -547,7 +547,7 @@ export class RuntimeEngine {
             };
         }
         // vNext: Evaluate command constraints (after policies, before guards)
-        const constraintResult = await this.evaluateCommandConstraints(command, evalContext, options.overrideRequests);
+        const constraintResult = await this.evaluateCommandConstraints(command, evalContext, options.overrideRequests, options.entityName);
         if (!constraintResult.allowed) {
             // Find the blocking constraint for the error message
             const blocking = constraintResult.outcomes.find((o) => !(o.passed || o.overridden) && o.severity === "block");
@@ -618,7 +618,7 @@ export class RuntimeEngine {
             this.eventLog.push(emitted);
             this.notifyListeners(emitted);
         }
-        return {
+        const commandResult = {
             success: true,
             result,
             // Include constraint outcomes in successful result
@@ -627,6 +627,9 @@ export class RuntimeEngine {
                 : undefined,
             emittedEvents,
         };
+        // Telemetry: report command execution
+        this.options.telemetry?.onCommandExecuted?.(command, commandResult, options.entityName);
+        return commandResult;
     }
     buildEvalContext(input, instance, entityName) {
         const baseContext = {
@@ -1246,10 +1249,12 @@ export class RuntimeEngine {
      * vNext: Evaluate command constraints with override support
      * Returns allowed flag and all constraint outcomes
      */
-    async evaluateCommandConstraints(command, evalContext, overrideRequests) {
+    async evaluateCommandConstraints(command, evalContext, overrideRequests, entityName) {
         const outcomes = [];
         for (const constraint of command.constraints || []) {
             const outcome = await this.evaluateConstraint(constraint, evalContext);
+            // Telemetry: report constraint evaluation
+            this.options.telemetry?.onConstraintEvaluated?.(outcome, command.name, entityName);
             // Check for override if constraint failed and is overrideable
             if (!outcome.passed && constraint.overrideable) {
                 // First check for explicit override request
@@ -1260,7 +1265,7 @@ export class RuntimeEngine {
                         if (authorized) {
                             outcome.overridden = true;
                             outcome.overriddenBy = overrideReq.authorizedBy;
-                            await this.emitOverrideAppliedEvent(constraint, overrideReq, outcome);
+                            await this.emitOverrideAppliedEvent(constraint, overrideReq, outcome, command.name, entityName);
                         }
                     }
                 }
@@ -1314,7 +1319,9 @@ export class RuntimeEngine {
     /**
      * vNext: Emit OverrideApplied event for auditing
      */
-    async emitOverrideAppliedEvent(constraint, overrideReq, outcome) {
+    async emitOverrideAppliedEvent(constraint, overrideReq, outcome, commandName, entityName) {
+        // Telemetry: report override applied
+        this.options.telemetry?.onOverrideApplied?.(constraint, overrideReq, outcome, commandName);
         const event = {
             name: "OverrideApplied",
             channel: "system",
@@ -1325,6 +1332,8 @@ export class RuntimeEngine {
                 reason: overrideReq.reason,
                 authorizedBy: overrideReq.authorizedBy,
                 timestamp: this.getNow(),
+                commandName,
+                entityName,
             },
             timestamp: this.getNow(),
             provenance: this.getProvenanceInfo(),

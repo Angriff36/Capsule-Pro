@@ -1,4 +1,4 @@
-import type { ConcurrencyConflict, ConstraintOutcome, IR, IRCommand, IREntity, IRExpression, IRPolicy, IRProvenance, OverrideRequest } from "./ir";
+import type { ConcurrencyConflict, ConstraintOutcome, IR, IRCommand, IRConstraint, IREntity, IRExpression, IRPolicy, IRProvenance, OverrideRequest } from "./ir";
 export interface RuntimeContext {
     user?: {
         id: string;
@@ -53,6 +53,33 @@ export interface RuntimeOptions {
      * ```
      */
     storeProvider?: (entityName: string) => Store | undefined;
+    /**
+     * Optional telemetry callbacks for observability.
+     * Called at key points during command execution for metrics, logging, and tracing.
+     *
+     * @example
+     * ```typescript
+     * import * as Sentry from '@sentry/nextjs';
+     *
+     * const runtime = new RuntimeEngine(ir, context, {
+     *   telemetry: {
+     *     onConstraintEvaluated: (outcome, commandName) => {
+     *       Sentry.metrics.increment('constraint.evaluated', 1, {
+     *         tags: { severity: outcome.severity, passed: outcome.passed.toString() }
+     *       });
+     *     }
+     *   }
+     * });
+     * ```
+     */
+    telemetry?: {
+        /** Called after each constraint evaluation with the outcome and command name */
+        onConstraintEvaluated?: (outcome: Readonly<ConstraintOutcome>, commandName: string, entityName?: string) => void;
+        /** Called when an override is applied to a constraint */
+        onOverrideApplied?: (constraint: Readonly<IRConstraint>, overrideReq: Readonly<OverrideRequest>, outcome: Readonly<ConstraintOutcome>, commandName: string) => void;
+        /** Called after command execution with the result */
+        onCommandExecuted?: (command: Readonly<IRCommand>, result: Readonly<CommandResult>, entityName?: string) => void;
+    };
 }
 export interface EntityInstance {
     id: string;

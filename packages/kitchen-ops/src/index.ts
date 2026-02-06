@@ -132,6 +132,82 @@ export interface KitchenOpsContext extends RuntimeContext {
    * Defaults to undefined (in-memory storage).
    */
   databaseUrl?: string;
+  /**
+   * Optional telemetry callbacks for observability.
+   * Use this to integrate with Sentry, Logtail, or other telemetry services.
+   *
+   * @example
+   * ```typescript
+   * import * as Sentry from '@sentry/nextjs';
+   *
+   * const runtime = await createPrepTaskRuntime({
+   *   ...context,
+   *   telemetry: {
+   *     onConstraintEvaluated: (outcome, commandName, entityName) => {
+   *       if (outcome.severity !== 'ok') {
+   *         Sentry.metrics.increment('manifest.constraint.evaluated', 1, {
+   *           tags: {
+   *             severity: outcome.severity,
+   *             passed: String(outcome.passed),
+   *             overridden: String(outcome.overridden),
+   *             entity: entityName || 'unknown',
+   *             command: commandName
+   *           }
+   *         });
+   *       }
+   *     },
+   *     onOverrideApplied: (constraint, overrideReq, outcome, commandName) => {
+   *       Sentry.metrics.increment('manifest.override.applied', 1, {
+   *         tags: {
+   *           constraintCode: constraint.code,
+   *           severity: outcome.severity,
+   *           command: commandName
+   *         }
+   *       });
+   *     },
+   *     onCommandExecuted: (command, result, entityName) => {
+   *       if (!result.success) {
+   *         Sentry.metrics.increment('manifest.command.failed', 1, {
+   *           tags: { entity: entityName || 'unknown', command: command.name }
+   *         });
+   *       }
+   *       const blockedCount = result.constraintOutcomes?.filter(
+   *         o => !o.passed && !o.overridden && o.severity === 'block'
+   *       ).length ?? 0;
+   *       const warnCount = result.constraintOutcomes?.filter(
+   *         o => !o.passed && o.severity === 'warn'
+   *       ).length ?? 0;
+   *       if (blockedCount > 0 || warnCount > 0) {
+   *         Sentry.metrics.increment('manifest.constraint.blocked', blockedCount, {
+   *           tags: { entity: entityName || 'unknown' }
+   *         });
+   *         Sentry.metrics.increment('manifest.constraint.warn', warnCount, {
+   *           tags: { entity: entityName || 'unknown' }
+   *         });
+   *       }
+   *     }
+   *   }
+   * });
+   * ```
+   */
+  telemetry?: {
+    onConstraintEvaluated?: (
+      outcome: Readonly<import("@repo/manifest").ConstraintOutcome>,
+      commandName: string,
+      entityName?: string
+    ) => void;
+    onOverrideApplied?: (
+      constraint: Readonly<import("@repo/manifest").IRConstraint>,
+      overrideReq: Readonly<import("@repo/manifest").OverrideRequest>,
+      outcome: Readonly<import("@repo/manifest").ConstraintOutcome>,
+      commandName: string
+    ) => void;
+    onCommandExecuted?: (
+      command: Readonly<import("@repo/manifest").IRCommand>,
+      result: Readonly<import("@repo/manifest").CommandResult>,
+      entityName?: string
+    ) => void;
+  };
 }
 
 /**
@@ -210,14 +286,18 @@ export function createPostgresStoreProvider(
  */
 export async function createPrepTaskRuntime(context: KitchenOpsContext) {
   const ir = await loadPrepTaskManifestIR();
-  const options = context.databaseUrl
-    ? {
-        storeProvider: createPostgresStoreProvider(
-          context.databaseUrl,
-          context.tenantId
-        ),
-      }
-    : undefined;
+  const options =
+    context.databaseUrl || context.telemetry
+      ? {
+          ...(context.databaseUrl && {
+            storeProvider: createPostgresStoreProvider(
+              context.databaseUrl,
+              context.tenantId
+            ),
+          }),
+          ...(context.telemetry && { telemetry: context.telemetry }),
+        }
+      : undefined;
   const engine = new RuntimeEngine(ir, context, options);
   return engine;
 }
@@ -227,14 +307,18 @@ export async function createPrepTaskRuntime(context: KitchenOpsContext) {
  */
 export async function createStationRuntime(context: KitchenOpsContext) {
   const ir = await loadStationManifestIR();
-  const options = context.databaseUrl
-    ? {
-        storeProvider: createPostgresStoreProvider(
-          context.databaseUrl,
-          context.tenantId
-        ),
-      }
-    : undefined;
+  const options =
+    context.databaseUrl || context.telemetry
+      ? {
+          ...(context.databaseUrl && {
+            storeProvider: createPostgresStoreProvider(
+              context.databaseUrl,
+              context.tenantId
+            ),
+          }),
+          ...(context.telemetry && { telemetry: context.telemetry }),
+        }
+      : undefined;
   const engine = new RuntimeEngine(ir, context, options);
   return engine;
 }
@@ -244,14 +328,18 @@ export async function createStationRuntime(context: KitchenOpsContext) {
  */
 export async function createInventoryRuntime(context: KitchenOpsContext) {
   const ir = await loadInventoryManifestIR();
-  const options = context.databaseUrl
-    ? {
-        storeProvider: createPostgresStoreProvider(
-          context.databaseUrl,
-          context.tenantId
-        ),
-      }
-    : undefined;
+  const options =
+    context.databaseUrl || context.telemetry
+      ? {
+          ...(context.databaseUrl && {
+            storeProvider: createPostgresStoreProvider(
+              context.databaseUrl,
+              context.tenantId
+            ),
+          }),
+          ...(context.telemetry && { telemetry: context.telemetry }),
+        }
+      : undefined;
   const engine = new RuntimeEngine(ir, context, options);
   return engine;
 }
@@ -278,7 +366,6 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
       ...stationIR.entities,
       ...inventoryIR.entities,
     ],
-    stores: [...prepTaskIR.stores, ...stationIR.stores, ...inventoryIR.stores],
     events: [...prepTaskIR.events, ...stationIR.events, ...inventoryIR.events],
     commands: [
       ...prepTaskIR.commands,
@@ -292,14 +379,18 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
     ],
   };
 
-  const options = context.databaseUrl
-    ? {
-        storeProvider: createPostgresStoreProvider(
-          context.databaseUrl,
-          context.tenantId
-        ),
-      }
-    : undefined;
+  const options =
+    context.databaseUrl || context.telemetry
+      ? {
+          ...(context.databaseUrl && {
+            storeProvider: createPostgresStoreProvider(
+              context.databaseUrl,
+              context.tenantId
+            ),
+          }),
+          ...(context.telemetry && { telemetry: context.telemetry }),
+        }
+      : undefined;
   const engine = new RuntimeEngine(combinedIR, context, options);
   return engine;
 }

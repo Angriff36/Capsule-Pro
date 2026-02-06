@@ -86,6 +86,46 @@ export interface RuntimeOptions {
    * ```
    */
   storeProvider?: (entityName: string) => Store | undefined;
+  /**
+   * Optional telemetry callbacks for observability.
+   * Called at key points during command execution for metrics, logging, and tracing.
+   *
+   * @example
+   * ```typescript
+   * import * as Sentry from '@sentry/nextjs';
+   *
+   * const runtime = new RuntimeEngine(ir, context, {
+   *   telemetry: {
+   *     onConstraintEvaluated: (outcome, commandName) => {
+   *       Sentry.metrics.increment('constraint.evaluated', 1, {
+   *         tags: { severity: outcome.severity, passed: outcome.passed.toString() }
+   *       });
+   *     }
+   *   }
+   * });
+   * ```
+   */
+  telemetry?: {
+    /** Called after each constraint evaluation with the outcome and command name */
+    onConstraintEvaluated?: (
+      outcome: Readonly<ConstraintOutcome>,
+      commandName: string,
+      entityName?: string
+    ) => void;
+    /** Called when an override is applied to a constraint */
+    onOverrideApplied?: (
+      constraint: Readonly<IRConstraint>,
+      overrideReq: Readonly<OverrideRequest>,
+      outcome: Readonly<ConstraintOutcome>,
+      commandName: string
+    ) => void;
+    /** Called after command execution with the result */
+    onCommandExecuted?: (
+      command: Readonly<IRCommand>,
+      result: Readonly<CommandResult>,
+      entityName?: string
+    ) => void;
+  };
 }
 
 export interface EntityInstance {
@@ -880,7 +920,8 @@ export class RuntimeEngine {
     const constraintResult = await this.evaluateCommandConstraints(
       command,
       evalContext,
-      options.overrideRequests
+      options.overrideRequests,
+      options.entityName
     );
     if (!constraintResult.allowed) {
       // Find the blocking constraint for the error message
@@ -970,7 +1011,7 @@ export class RuntimeEngine {
       this.notifyListeners(emitted);
     }
 
-    return {
+    const commandResult: CommandResult = {
       success: true,
       result,
       // Include constraint outcomes in successful result
@@ -980,6 +1021,15 @@ export class RuntimeEngine {
           : undefined,
       emittedEvents,
     };
+
+    // Telemetry: report command execution
+    this.options.telemetry?.onCommandExecuted?.(
+      command,
+      commandResult,
+      options.entityName
+    );
+
+    return commandResult;
   }
 
   private buildEvalContext(
@@ -1747,12 +1797,20 @@ export class RuntimeEngine {
   private async evaluateCommandConstraints(
     command: IRCommand,
     evalContext: Record<string, unknown>,
-    overrideRequests?: OverrideRequest[]
+    overrideRequests?: OverrideRequest[],
+    entityName?: string
   ): Promise<{ allowed: boolean; outcomes: ConstraintOutcome[] }> {
     const outcomes: ConstraintOutcome[] = [];
 
     for (const constraint of command.constraints || []) {
       const outcome = await this.evaluateConstraint(constraint, evalContext);
+
+      // Telemetry: report constraint evaluation
+      this.options.telemetry?.onConstraintEvaluated?.(
+        outcome,
+        command.name,
+        entityName
+      );
 
       // Check for override if constraint failed and is overrideable
       if (!outcome.passed && constraint.overrideable) {
@@ -1773,7 +1831,9 @@ export class RuntimeEngine {
               await this.emitOverrideAppliedEvent(
                 constraint,
                 overrideReq,
-                outcome
+                outcome,
+                command.name,
+                entityName
               );
             }
           }
@@ -1855,8 +1915,18 @@ export class RuntimeEngine {
   private async emitOverrideAppliedEvent(
     constraint: IRConstraint,
     overrideReq: OverrideRequest,
-    outcome: ConstraintOutcome
+    outcome: ConstraintOutcome,
+    commandName: string,
+    entityName?: string
   ): Promise<void> {
+    // Telemetry: report override applied
+    this.options.telemetry?.onOverrideApplied?.(
+      constraint,
+      overrideReq,
+      outcome,
+      commandName
+    );
+
     const event: EmittedEvent = {
       name: "OverrideApplied",
       channel: "system",
@@ -1867,6 +1937,8 @@ export class RuntimeEngine {
         reason: overrideReq.reason,
         authorizedBy: overrideReq.authorizedBy,
         timestamp: this.getNow(),
+        commandName,
+        entityName,
       },
       timestamp: this.getNow(),
       provenance: this.getProvenanceInfo(),
