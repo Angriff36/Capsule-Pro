@@ -5,6 +5,7 @@
  * using the existing Prisma schema. It bridges the gap between Manifest's entity
  * model and the Prisma database tables.
  */
+import { Prisma } from "@repo/database";
 /**
  * Prisma-backed store for PrepTask entities
  *
@@ -756,6 +757,10 @@ export function createPrismaStoreProvider(prisma, tenantId) {
                 return new RecipeIngredientPrismaStore(prisma, tenantId);
             case "Dish":
                 return new DishPrismaStore(prisma, tenantId);
+            case "Menu":
+                return new MenuPrismaStore(prisma, tenantId);
+            case "MenuDish":
+                return new MenuDishPrismaStore(prisma, tenantId);
             // TODO: Add StationPrismaStore and InventoryItemPrismaStore as needed
             default:
                 return undefined;
@@ -834,6 +839,258 @@ export async function syncDishToPrisma(prisma, tenantId, entity) {
     const store = new DishPrismaStore(prisma, tenantId);
     // Check if dish exists
     const existing = await prisma.dish.findFirst({
+        where: { tenantId, id: entity.id, deletedAt: null },
+    });
+    if (existing) {
+        await store.update(entity.id, entity);
+    }
+    else {
+        await store.create(entity);
+    }
+}
+/**
+ * Prisma-backed store for Menu entities
+ *
+ * Maps Manifest Menu entities to the Prisma Menu table.
+ */
+export class MenuPrismaStore {
+    prisma;
+    tenantId;
+    constructor(prisma, tenantId) {
+        this.prisma = prisma;
+        this.tenantId = tenantId;
+    }
+    async getAll() {
+        const menus = await this.prisma.menu.findMany({
+            where: { tenantId: this.tenantId, deletedAt: null },
+        });
+        return menus.map((menu) => this.mapToManifestEntity(menu));
+    }
+    async getById(id) {
+        const menu = await this.prisma.menu.findFirst({
+            where: { tenantId: this.tenantId, id, deletedAt: null },
+        });
+        return menu ? this.mapToManifestEntity(menu) : undefined;
+    }
+    async create(data) {
+        const menu = await this.prisma.menu.create({
+            data: {
+                tenantId: this.tenantId,
+                id: data.id,
+                name: data.name,
+                description: data.description || null,
+                category: data.category || null,
+                isActive: data.isActive ?? true,
+                basePrice: data.basePrice
+                    ? new Prisma.Decimal(data.basePrice)
+                    : null,
+                pricePerPerson: data.pricePerPerson
+                    ? new Prisma.Decimal(data.pricePerPerson)
+                    : null,
+                minGuests: data.minGuests || null,
+                maxGuests: data.maxGuests || null,
+            },
+        });
+        return this.mapToManifestEntity(menu);
+    }
+    async update(id, data) {
+        try {
+            const updated = await this.prisma.menu.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
+                data: {
+                    name: data.name,
+                    description: data.description,
+                    category: data.category,
+                    isActive: data.isActive,
+                    basePrice: data.basePrice
+                        ? new Prisma.Decimal(data.basePrice)
+                        : undefined,
+                    pricePerPerson: data.pricePerPerson
+                        ? new Prisma.Decimal(data.pricePerPerson)
+                        : undefined,
+                    minGuests: data.minGuests,
+                    maxGuests: data.maxGuests,
+                    updatedAt: new Date(),
+                },
+            });
+            return this.mapToManifestEntity(updated);
+        }
+        catch {
+            return undefined;
+        }
+    }
+    async delete(id) {
+        try {
+            await this.prisma.menu.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
+                data: { deletedAt: new Date() },
+            });
+            return true;
+        }
+        catch {
+            return false;
+        }
+    }
+    async clear() {
+        await this.prisma.menu.updateMany({
+            where: { tenantId: this.tenantId },
+            data: { deletedAt: new Date() },
+        });
+    }
+    mapToManifestEntity(menu) {
+        return {
+            id: menu.id,
+            tenantId: menu.tenantId,
+            name: menu.name,
+            description: menu.description ?? "",
+            category: menu.category ?? "",
+            isActive: menu.isActive,
+            basePrice: Number(menu.basePrice ?? 0),
+            pricePerPerson: Number(menu.pricePerPerson ?? 0),
+            minGuests: menu.minGuests ?? 0,
+            maxGuests: menu.maxGuests ?? 0,
+            hasPricePerPerson: menu.pricePerPerson !== null && Number(menu.pricePerPerson) > 0,
+            hasGuestConstraints: menu.minGuests !== null ||
+                (menu.maxGuests !== null && Number(menu.maxGuests) > 0),
+            guestRangeValid: (menu.minGuests ?? 0) <=
+                (menu.maxGuests ? Number(menu.maxGuests) : Number.MAX_SAFE_INTEGER),
+            createdAt: menu.createdAt.getTime(),
+            updatedAt: menu.updatedAt.getTime(),
+        };
+    }
+}
+/**
+ * Prisma-backed store for MenuDish entities
+ *
+ * Maps Manifest MenuDish entities to the Prisma MenuDish table.
+ */
+export class MenuDishPrismaStore {
+    prisma;
+    tenantId;
+    constructor(prisma, tenantId) {
+        this.prisma = prisma;
+        this.tenantId = tenantId;
+    }
+    async getAll() {
+        const menuDishes = await this.prisma.menuDish.findMany({
+            where: { tenantId: this.tenantId, deletedAt: null },
+        });
+        return menuDishes.map((md) => this.mapToManifestEntity(md));
+    }
+    async getById(id) {
+        const menuDish = await this.prisma.menuDish.findFirst({
+            where: { tenantId: this.tenantId, id, deletedAt: null },
+        });
+        return menuDish ? this.mapToManifestEntity(menuDish) : undefined;
+    }
+    async create(data) {
+        const menuDish = await this.prisma.menuDish.create({
+            data: {
+                tenantId: this.tenantId,
+                id: data.id,
+                menuId: data.menuId,
+                dishId: data.dishId,
+                course: data.course || null,
+                sortOrder: data.sortOrder ?? 0,
+                isOptional: data.isOptional ?? false,
+            },
+        });
+        return this.mapToManifestEntity(menuDish);
+    }
+    async update(id, data) {
+        try {
+            const updated = await this.prisma.menuDish.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
+                data: {
+                    course: data.course,
+                    sortOrder: data.sortOrder,
+                    isOptional: data.isOptional,
+                    updatedAt: new Date(),
+                },
+            });
+            return this.mapToManifestEntity(updated);
+        }
+        catch {
+            return undefined;
+        }
+    }
+    async delete(id) {
+        try {
+            await this.prisma.menuDish.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
+                data: { deletedAt: new Date() },
+            });
+            return true;
+        }
+        catch {
+            return false;
+        }
+    }
+    async clear() {
+        await this.prisma.menuDish.updateMany({
+            where: { tenantId: this.tenantId },
+            data: { deletedAt: new Date() },
+        });
+    }
+    mapToManifestEntity(menuDish) {
+        return {
+            id: menuDish.id,
+            tenantId: menuDish.tenantId,
+            menuId: menuDish.menuId,
+            dishId: menuDish.dishId,
+            course: menuDish.course ?? "",
+            sortOrder: menuDish.sortOrder,
+            isOptional: menuDish.isOptional,
+            createdAt: menuDish.createdAt.getTime(),
+            updatedAt: menuDish.updatedAt.getTime(),
+        };
+    }
+}
+/**
+ * Load a Menu from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export async function loadMenuFromPrisma(prisma, tenantId, menuId) {
+    const store = new MenuPrismaStore(prisma, tenantId);
+    return store.getById(menuId);
+}
+/**
+ * Sync a Menu from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export async function syncMenuToPrisma(prisma, tenantId, entity) {
+    const store = new MenuPrismaStore(prisma, tenantId);
+    // Check if menu exists
+    const existing = await prisma.menu.findFirst({
+        where: { tenantId, id: entity.id, deletedAt: null },
+    });
+    if (existing) {
+        await store.update(entity.id, entity);
+    }
+    else {
+        await store.create(entity);
+    }
+}
+/**
+ * Load a MenuDish from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export async function loadMenuDishFromPrisma(prisma, tenantId, menuDishId) {
+    const store = new MenuDishPrismaStore(prisma, tenantId);
+    return store.getById(menuDishId);
+}
+/**
+ * Sync a MenuDish from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export async function syncMenuDishToPrisma(prisma, tenantId, entity) {
+    const store = new MenuDishPrismaStore(prisma, tenantId);
+    // Check if menu dish exists
+    const existing = await prisma.menuDish.findFirst({
         where: { tenantId, id: entity.id, deletedAt: null },
     });
     if (existing) {

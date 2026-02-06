@@ -239,6 +239,18 @@ export interface OverrideRequest {
     timestamp: number;
 }
 /**
+ * Override reason codes for constraint overrides
+ */
+export declare const OVERRIDE_REASON_CODES: {
+    readonly customer_request: "Customer Request";
+    readonly equipment_failure: "Equipment Failure";
+    readonly time_crunch: "Time Crunch";
+    readonly substitution: "Substitution Available";
+    readonly staffing_gap: "Staffing Gap";
+    readonly other: "Other";
+};
+export type OverrideReasonCode = keyof typeof OVERRIDE_REASON_CODES;
+/**
  * Concurrency conflict details for optimistic locking
  */
 export interface ConcurrencyConflict {

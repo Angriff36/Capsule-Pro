@@ -165,4 +165,62 @@ export declare function loadDishFromPrisma(prisma: PrismaClient, tenantId: strin
  * Called after Manifest commands execute to persist the updated state.
  */
 export declare function syncDishToPrisma(prisma: PrismaClient, tenantId: string, entity: EntityInstance): Promise<void>;
+/**
+ * Prisma-backed store for Menu entities
+ *
+ * Maps Manifest Menu entities to the Prisma Menu table.
+ */
+export declare class MenuPrismaStore implements Store<EntityInstance> {
+    private prisma;
+    private tenantId;
+    constructor(prisma: PrismaClient, tenantId: string);
+    getAll(): Promise<EntityInstance[]>;
+    getById(id: string): Promise<EntityInstance | undefined>;
+    create(data: Partial<EntityInstance>): Promise<EntityInstance>;
+    update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
+    delete(id: string): Promise<boolean>;
+    clear(): Promise<void>;
+    private mapToManifestEntity;
+}
+/**
+ * Prisma-backed store for MenuDish entities
+ *
+ * Maps Manifest MenuDish entities to the Prisma MenuDish table.
+ */
+export declare class MenuDishPrismaStore implements Store<EntityInstance> {
+    private prisma;
+    private tenantId;
+    constructor(prisma: PrismaClient, tenantId: string);
+    getAll(): Promise<EntityInstance[]>;
+    getById(id: string): Promise<EntityInstance | undefined>;
+    create(data: Partial<EntityInstance>): Promise<EntityInstance>;
+    update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
+    delete(id: string): Promise<boolean>;
+    clear(): Promise<void>;
+    private mapToManifestEntity;
+}
+/**
+ * Load a Menu from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export declare function loadMenuFromPrisma(prisma: PrismaClient, tenantId: string, menuId: string): Promise<EntityInstance | undefined>;
+/**
+ * Sync a Menu from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export declare function syncMenuToPrisma(prisma: PrismaClient, tenantId: string, entity: EntityInstance): Promise<void>;
+/**
+ * Load a MenuDish from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export declare function loadMenuDishFromPrisma(prisma: PrismaClient, tenantId: string, menuDishId: string): Promise<EntityInstance | undefined>;
+/**
+ * Sync a MenuDish from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export declare function syncMenuDishToPrisma(prisma: PrismaClient, tenantId: string, entity: EntityInstance): Promise<void>;
 //# sourceMappingURL=prisma-store.d.ts.map

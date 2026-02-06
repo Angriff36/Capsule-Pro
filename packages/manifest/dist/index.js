@@ -9,6 +9,8 @@
  */
 // Export event import runtime helpers
 export { createEventImportRuntime, createOrUpdateEvent, generateBattleBoard, generateChecklist, processDocumentImport, setupEventListeners, } from "./event-import-runtime";
+// Export constants
+export { OVERRIDE_REASON_CODES } from "./manifest/ir";
 // Export compiler
 export { compileToIR } from "./manifest/ir-compiler";
 // Export runtime engine

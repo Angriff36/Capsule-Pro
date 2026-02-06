@@ -12,6 +12,7 @@
  * - Recipe: update, deactivate, activate
  * - RecipeVersion: create
  * - Dish: updatePricing, updateLeadTime
+ * - Menu: update, activate, deactivate
  */
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -45,11 +46,18 @@ function loadInventoryManifestSource() {
 function loadRecipeManifestSource() {
     return readFileSync(join(MANIFESTS_DIR, "recipe-rules.manifest"), "utf-8");
 }
+/**
+ * Load menu manifest source from file
+ */
+function loadMenuManifestSource() {
+    return readFileSync(join(MANIFESTS_DIR, "menu-rules.manifest"), "utf-8");
+}
 // Cached compiled IR for each manifest
 let cachedPrepTaskIR = null;
 let cachedStationIR = null;
 let cachedInventoryIR = null;
 let cachedRecipeIR = null;
+let cachedMenuIR = null;
 /**
  * Compile and cache the PrepTask manifest IR
  */
@@ -111,6 +119,21 @@ async function loadRecipeManifestIR() {
     return ir;
 }
 /**
+ * Compile and cache the Menu manifest IR
+ */
+async function loadMenuManifestIR() {
+    if (cachedMenuIR) {
+        return cachedMenuIR;
+    }
+    const manifestSource = loadMenuManifestSource();
+    const { ir, diagnostics } = await compileToIR(manifestSource);
+    if (!ir) {
+        throw new Error(`Failed to compile Menu manifest: ${diagnostics.map((d) => d.message).join(", ")}`);
+    }
+    cachedMenuIR = ir;
+    return ir;
+}
+/**
  * Create a PostgresStore provider for persistent entity storage.
  *
  * @param databaseUrl - PostgreSQL connection string
@@ -130,6 +153,8 @@ export function createPostgresStoreProvider(databaseUrl, tenantId) {
             Ingredient: `kitchen_ingredients${tenantSuffix}`,
             RecipeIngredient: `kitchen_recipe_ingredients${tenantSuffix}`,
             Dish: `kitchen_dishes${tenantSuffix}`,
+            Menu: `kitchen_menus${tenantSuffix}`,
+            MenuDish: `kitchen_menu_dishes${tenantSuffix}`,
         };
         const tableName = tableNameMap[entityName];
         if (!tableName) {
@@ -230,6 +255,26 @@ export async function createRecipeRuntime(context) {
     return engine;
 }
 /**
+ * Create a kitchen operations runtime for menus
+ */
+export async function createMenuRuntime(context) {
+    const ir = await loadMenuManifestIR();
+    const options = context.storeProvider || context.databaseUrl || context.telemetry
+        ? {
+            ...(context.storeProvider && {
+                storeProvider: context.storeProvider,
+            }),
+            ...(context.databaseUrl &&
+                !context.storeProvider && {
+                storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
+            }),
+            ...(context.telemetry && { telemetry: context.telemetry }),
+        }
+        : undefined;
+    const engine = new RuntimeEngine(ir, context, options);
+    return engine;
+}
+/**
  * Create a combined kitchen operations runtime
  */
 export async function createKitchenOpsRuntime(context) {
@@ -237,6 +282,7 @@ export async function createKitchenOpsRuntime(context) {
     const stationIR = await loadStationManifestIR();
     const inventoryIR = await loadInventoryManifestIR();
     const recipeIR = await loadRecipeManifestIR();
+    const menuIR = await loadMenuManifestIR();
     // Combine IRs - in a real implementation, you'd merge modules
     const combinedIR = {
         version: "1.0",
@@ -246,30 +292,35 @@ export async function createKitchenOpsRuntime(context) {
             ...(stationIR.modules || []),
             ...(inventoryIR.modules || []),
             ...(recipeIR.modules || []),
+            ...(menuIR.modules || []),
         ],
         entities: [
             ...prepTaskIR.entities,
             ...stationIR.entities,
             ...inventoryIR.entities,
             ...recipeIR.entities,
+            ...menuIR.entities,
         ],
         events: [
             ...prepTaskIR.events,
             ...stationIR.events,
             ...inventoryIR.events,
             ...recipeIR.events,
+            ...menuIR.events,
         ],
         commands: [
             ...prepTaskIR.commands,
             ...stationIR.commands,
             ...inventoryIR.commands,
             ...recipeIR.commands,
+            ...menuIR.commands,
         ],
         policies: [
             ...prepTaskIR.policies,
             ...stationIR.policies,
             ...inventoryIR.policies,
             ...recipeIR.policies,
+            ...menuIR.policies,
         ],
     };
     const options = context.storeProvider || context.databaseUrl || context.telemetry
@@ -784,6 +835,97 @@ export async function createRecipe(engine, recipeId, name, category, cuisineType
         isActive: true,
     };
 }
+/**
+ * Update a menu
+ */
+export async function updateMenu(engine, menuId, newName, newDescription, newCategory, newBasePrice, newPricePerPerson, newMinGuests, newMaxGuests, newIsActive, overrideRequests) {
+    const result = await engine.runCommand("update", {
+        newName,
+        newDescription,
+        newCategory,
+        newBasePrice,
+        newPricePerPerson,
+        newMinGuests,
+        newMaxGuests,
+        newIsActive,
+    }, {
+        entityName: "Menu",
+        instanceId: menuId,
+        overrideRequests,
+    });
+    const instance = await engine.getInstance("Menu", menuId);
+    return {
+        ...result,
+        menuId,
+        name: instance?.name,
+        isActive: instance?.isActive,
+    };
+}
+/**
+ * Activate a menu
+ */
+export async function activateMenu(engine, menuId, overrideRequests) {
+    const result = await engine.runCommand("activate", {}, {
+        entityName: "Menu",
+        instanceId: menuId,
+        overrideRequests,
+    });
+    const instance = await engine.getInstance("Menu", menuId);
+    return {
+        ...result,
+        menuId,
+        name: instance?.name,
+        isActive: true,
+    };
+}
+/**
+ * Deactivate a menu
+ */
+export async function deactivateMenu(engine, menuId, overrideRequests) {
+    const result = await engine.runCommand("deactivate", {}, {
+        entityName: "Menu",
+        instanceId: menuId,
+        overrideRequests,
+    });
+    const instance = await engine.getInstance("Menu", menuId);
+    return {
+        ...result,
+        menuId,
+        name: instance?.name,
+        isActive: false,
+    };
+}
+/**
+ * Create a menu
+ */
+export async function createMenu(engine, menuId, name, description, category, basePrice, pricePerPerson, minGuests, maxGuests) {
+    // Create the Menu entity instance
+    await engine.createInstance("Menu", {
+        id: menuId,
+        tenantId: engine.getContext("tenantId"),
+        name,
+        description,
+        category,
+        isActive: true,
+        basePrice,
+        pricePerPerson,
+        minGuests,
+        maxGuests,
+        hasPricePerPerson: pricePerPerson > 0,
+        hasGuestConstraints: minGuests > 0 || maxGuests > 0,
+        guestRangeValid: maxGuests >= minGuests,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+    });
+    const instance = await engine.getInstance("Menu", menuId);
+    return {
+        success: true,
+        emittedEvents: [],
+        menuId,
+        name: instance?.name,
+        isActive: true,
+    };
+}
 // ============ Event Handling ============
 /**
  * Setup event listeners for kitchen operations
@@ -883,6 +1025,31 @@ export function setupKitchenOpsEventListeners(engine, handlers) {
             case "DishLeadTimeUpdated":
                 await handlers.onDishLeadTimeUpdated?.(event);
                 break;
+            // Menu events
+            case "MenuCreated":
+                await handlers.onMenuCreated?.(event);
+                break;
+            case "MenuUpdated":
+                await handlers.onMenuUpdated?.(event);
+                break;
+            case "MenuDeactivated":
+                await handlers.onMenuDeactivated?.(event);
+                break;
+            case "MenuActivated":
+                await handlers.onMenuActivated?.(event);
+                break;
+            case "MenuDishAdded":
+                await handlers.onMenuDishAdded?.(event);
+                break;
+            case "MenuDishRemoved":
+                await handlers.onMenuDishRemoved?.(event);
+                break;
+            case "MenuDishUpdated":
+                await handlers.onMenuDishUpdated?.(event);
+                break;
+            case "MenuDishesReordered":
+                await handlers.onMenuDishesReordered?.(event);
+                break;
             // Override events
             case "ConstraintOverridden":
                 await handlers.onConstraintOverridden?.(event);
@@ -972,17 +1139,8 @@ export async function createInventoryItemInstance(engine, data) {
         updatedAt: Date.now(),
     });
 }
-/**
- * Override reason codes following the spec
- */
-export const OVERRIDE_REASON_CODES = {
-    customer_request: "Customer Request",
-    equipment_failure: "Equipment Failure",
-    time_crunch: "Time Crunch",
-    substitution: "Substitution Available",
-    staffing_gap: "Staffing Gap",
-    other: "Other",
-};
+// Re-export override reason codes from @repo/manifest for single source of truth
+export { OVERRIDE_REASON_CODES } from "@repo/manifest";
 /**
  * Check if a constraint outcome requires user attention
  */
@@ -1107,4 +1265,4 @@ export function formatPolicyDenial(denial) {
     };
 }
 // ============ Prisma Store Exports ============
-export { createPrismaStoreProvider, loadPrepTaskFromPrisma, PrepTaskPrismaStore, syncPrepTaskToPrisma, } from "./prisma-store.js";
+export { createPrismaStoreProvider, loadMenuDishFromPrisma, loadMenuFromPrisma, loadPrepTaskFromPrisma, MenuDishPrismaStore, MenuPrismaStore, PrepTaskPrismaStore, syncMenuDishToPrisma, syncMenuToPrisma, syncPrepTaskToPrisma, } from "./prisma-store.js";

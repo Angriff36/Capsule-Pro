@@ -12,6 +12,7 @@
  * - Recipe: update, deactivate, activate
  * - RecipeVersion: create
  * - Dish: updatePricing, updateLeadTime
+ * - Menu: update, activate, deactivate
  */
 import type { CommandResult, EmittedEvent, RuntimeContext } from "@repo/manifest";
 import { RuntimeEngine } from "@repo/manifest";
@@ -171,6 +172,10 @@ export declare function createInventoryRuntime(context: KitchenOpsContext): Prom
  */
 export declare function createRecipeRuntime(context: KitchenOpsContext): Promise<any>;
 /**
+ * Create a kitchen operations runtime for menus
+ */
+export declare function createMenuRuntime(context: KitchenOpsContext): Promise<any>;
+/**
  * Create a combined kitchen operations runtime
  */
 export declare function createKitchenOpsRuntime(context: KitchenOpsContext): Promise<any>;
@@ -283,6 +288,30 @@ export declare function createDish(engine: RuntimeEngine, dishId: string, name: 
  */
 export declare function createRecipe(engine: RuntimeEngine, recipeId: string, name: string, category: string, cuisineType: string, description: string, tags: string): Promise<RecipeCommandResult>;
 /**
+ * Result of a menu command
+ */
+export interface MenuCommandResult extends CommandResult {
+    menuId: string;
+    name?: string;
+    isActive?: boolean;
+}
+/**
+ * Update a menu
+ */
+export declare function updateMenu(engine: RuntimeEngine, menuId: string, newName: string, newDescription: string, newCategory: string, newBasePrice: number, newPricePerPerson: number, newMinGuests: number, newMaxGuests: number, newIsActive: boolean, overrideRequests?: OverrideRequest[]): Promise<MenuCommandResult>;
+/**
+ * Activate a menu
+ */
+export declare function activateMenu(engine: RuntimeEngine, menuId: string, overrideRequests?: OverrideRequest[]): Promise<MenuCommandResult>;
+/**
+ * Deactivate a menu
+ */
+export declare function deactivateMenu(engine: RuntimeEngine, menuId: string, overrideRequests?: OverrideRequest[]): Promise<MenuCommandResult>;
+/**
+ * Create a menu
+ */
+export declare function createMenu(engine: RuntimeEngine, menuId: string, name: string, description: string, category: string, basePrice: number, pricePerPerson: number, minGuests: number, maxGuests: number): Promise<MenuCommandResult>;
+/**
  * Setup event listeners for kitchen operations
  */
 export declare function setupKitchenOpsEventListeners(engine: RuntimeEngine, handlers: {
@@ -315,6 +344,14 @@ export declare function setupKitchenOpsEventListeners(engine: RuntimeEngine, han
     onDishCreated?: (event: EmittedEvent) => Promise<void>;
     onDishPricingUpdated?: (event: EmittedEvent) => Promise<void>;
     onDishLeadTimeUpdated?: (event: EmittedEvent) => Promise<void>;
+    onMenuCreated?: (event: EmittedEvent) => Promise<void>;
+    onMenuUpdated?: (event: EmittedEvent) => Promise<void>;
+    onMenuDeactivated?: (event: EmittedEvent) => Promise<void>;
+    onMenuActivated?: (event: EmittedEvent) => Promise<void>;
+    onMenuDishAdded?: (event: EmittedEvent) => Promise<void>;
+    onMenuDishRemoved?: (event: EmittedEvent) => Promise<void>;
+    onMenuDishUpdated?: (event: EmittedEvent) => Promise<void>;
+    onMenuDishesReordered?: (event: EmittedEvent) => Promise<void>;
     onConstraintOverridden?: (event: EmittedEvent) => Promise<void>;
     onConstraintSatisfiedAfterOverride?: (event: EmittedEvent) => Promise<void>;
 }): any;
@@ -367,18 +404,7 @@ export declare function createInventoryItemInstance(engine: RuntimeEngine, data:
     locationId?: string;
 }): Promise<any>;
 import type { ConstraintOutcome, OverrideRequest } from "@repo/manifest";
-/**
- * Override reason codes following the spec
- */
-export declare const OVERRIDE_REASON_CODES: {
-    readonly customer_request: "Customer Request";
-    readonly equipment_failure: "Equipment Failure";
-    readonly time_crunch: "Time Crunch";
-    readonly substitution: "Substitution Available";
-    readonly staffing_gap: "Staffing Gap";
-    readonly other: "Other";
-};
-export type OverrideReasonCode = keyof typeof OVERRIDE_REASON_CODES;
+export { OVERRIDE_REASON_CODES, type OverrideReasonCode } from "@repo/manifest";
 /**
  * Severity level for constraint outcomes
  */
@@ -483,5 +509,5 @@ export declare function formatPolicyDenial(denial: NonNullable<CommandResultWith
         value: string;
     }>;
 };
-export { createPrismaStoreProvider, loadPrepTaskFromPrisma, PrepTaskPrismaStore, syncPrepTaskToPrisma, } from "./prisma-store.js";
+export { createPrismaStoreProvider, loadMenuDishFromPrisma, loadMenuFromPrisma, loadPrepTaskFromPrisma, MenuDishPrismaStore, MenuPrismaStore, PrepTaskPrismaStore, syncMenuDishToPrisma, syncMenuToPrisma, syncPrepTaskToPrisma, } from "./prisma-store.js";
 //# sourceMappingURL=index.d.ts.map
