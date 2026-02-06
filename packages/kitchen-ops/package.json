@@ -17,6 +17,10 @@
     "./prisma-store": {
       "types": "./dist/prisma-store.d.ts",
       "import": "./dist/prisma-store.js"
+    },
+    "./api-response": {
+      "types": "./dist/api-response.d.ts",
+      "import": "./dist/api-response.js"
     }
   },
   "scripts": {

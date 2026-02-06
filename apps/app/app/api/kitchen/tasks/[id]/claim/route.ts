@@ -5,6 +5,12 @@ import {
   createPrepTaskRuntime,
   type KitchenOpsContext,
 } from "@repo/kitchen-ops";
+import {
+  type ApiErrorResponse,
+  type ApiSuccessResponse,
+  createNextResponse,
+  hasBlockingConstraints,
+} from "@repo/kitchen-ops/api-response";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -23,11 +29,18 @@ interface RouteContext {
  * - Audit logging
  *
  * The runtime is backed by Prisma for persistence.
+ *
+ * Response format (standardized):
+ * - Success: { success: true, data: { claim, ... }, emittedEvents: [...] }
+ * - Error: { success: false, message: "...", constraintOutcomes: [...] }
  */
 export async function POST(request: Request, context: RouteContext) {
   const { orgId, userId: clerkId } = await auth();
   if (!(orgId && clerkId)) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { success: false, message: "Unauthorized" },
+      { status: 401 }
+    );
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
@@ -44,7 +57,7 @@ export async function POST(request: Request, context: RouteContext) {
 
   if (!currentUser) {
     return NextResponse.json(
-      { message: "User not found in database" },
+      { success: false, message: "User not found in database" },
       { status: 400 }
     );
   }
@@ -58,7 +71,11 @@ export async function POST(request: Request, context: RouteContext) {
 
   if (existingClaim) {
     return NextResponse.json(
-      { message: "Task already claimed. Please release it first." },
+      {
+        success: false,
+        message: "Task already claimed. Please release it first.",
+        errorCode: "TASK_ALREADY_CLAIMED",
+      },
       { status: 409 }
     );
   }
@@ -87,7 +104,10 @@ export async function POST(request: Request, context: RouteContext) {
     });
 
     if (!task) {
-      return NextResponse.json({ message: "Task not found" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, message: "Task not found" },
+        { status: 404 }
+      );
     }
 
     // Load the task entity into Manifest
@@ -123,18 +143,13 @@ export async function POST(request: Request, context: RouteContext) {
     // Execute the claim command via Manifest
     const result = await claimPrepTask(runtime, id, currentUser.id, stationId);
 
-    // Check for blocking constraints
-    const blockingConstraints = result.constraintOutcomes?.filter(
-      (o) => !o.passed && o.severity === "block"
-    );
-
-    if (blockingConstraints && blockingConstraints.length > 0) {
-      return NextResponse.json(
-        {
-          message: "Cannot claim task due to constraint violations",
-          constraintOutcomes: blockingConstraints,
-        },
-        { status: 400 }
+    // Check for blocking constraints using standardized helper
+    if (hasBlockingConstraints(result)) {
+      return createNextResponse(
+        NextResponse,
+        result,
+        { taskId: id },
+        { errorMessagePrefix: "Cannot claim task" }
       );
     }
 
@@ -191,29 +206,38 @@ export async function POST(request: Request, context: RouteContext) {
         },
       });
 
-      return NextResponse.json(
-        {
+      // Return standardized success response
+      const successResponse: ApiSuccessResponse<{
+        claim: typeof claim;
+        taskId: string;
+        status: string;
+      }> = {
+        success: true,
+        data: {
           claim,
-          constraintOutcomes: result.constraintOutcomes,
-          emittedEvents: result.emittedEvents,
+          taskId: id,
+          status: "in_progress",
         },
-        { status: 201 }
-      );
+        emittedEvents: result.emittedEvents,
+      };
+
+      return NextResponse.json(successResponse, { status: 201 });
     }
 
     return NextResponse.json(
-      { message: "Failed to claim task" },
+      { success: false, message: "Failed to claim task" },
       { status: 500 }
     );
   } catch (error) {
     console.error("Error claiming task via Manifest:", error);
-    return NextResponse.json(
-      {
-        message: "Failed to claim task",
-        error: error instanceof Error ? error.message : String(error),
-      },
-      { status: 500 }
-    );
+
+    const errorResponse: ApiErrorResponse = {
+      success: false,
+      message: "Failed to claim task",
+      error: error instanceof Error ? error.message : String(error),
+    };
+
+    return NextResponse.json(errorResponse, { status: 500 });
   }
 }
 

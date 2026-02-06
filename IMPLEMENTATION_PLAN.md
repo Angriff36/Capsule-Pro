@@ -215,8 +215,18 @@ Manifest Runtime Version: v0.3.0
 ### P3 - Diagnostics and Observability
 
 **Tasks:**
-- [ ] Unify runtime error reporting format across all Manifest usage
-- [ ] Ensure API/UI receive consistent `CommandResult` shapes
+- [x] Unify runtime error reporting format across all Manifest usage (2025-02-06)
+  - Created `packages/kitchen-ops/src/api-response.ts` module
+  - Added standardized response types: `ApiSuccessResponse`, `ApiErrorResponse`, `ApiResponse`
+  - Added response builder functions: `apiSuccess()`, `apiError()`, `formatCommandResult()`
+  - Added constraint helper functions: `hasBlockingConstraints()`, `hasWarningConstraints()`, `getBlockingConstraintOutcomes()`, `getWarningConstraintOutcomes()`
+  - Added Next.js response helper: `createNextResponse()`
+  - Added error types: `ManifestConstraintError`, `ManifestPolicyError`, `ManifestConflictError`
+  - Updated `/api/kitchen/tasks/[id]/claim/route.ts` to use standardized response format
+- [x] Ensure API/UI receive consistent `CommandResult` shapes (2025-02-06)
+  - All responses now follow `{ success: true/false, data/message, constraintOutcomes?, emittedEvents? }` format
+  - HTTP status codes properly mapped: 200 (success), 400 (constraints), 403 (policy), 409 (conflict), 500 (error)
+  - Constraint outcomes include: code, constraintName, severity, message, formatted, details, passed, overridden, overriddenBy, resolved
 - [ ] Add test coverage for denial explanations with resolved values
 - [ ] Create diagnostics UI component for constraint outcomes
 - [ ] Add override audit log viewer
@@ -797,5 +807,63 @@ const { showOverrideDialog, setShowOverrideDialog, overrideConstraints, handleOv
 - Uses `useConstraintOverride` hook for dialog management
 - Constraint override workflow retries server action with override requests
 - Form wrapper component enables code reuse between create and update flows
+
+---
+
+### 2025-02-06: API Response Standardization for Manifest
+
+**Status:** COMPLETED
+
+**What Was Implemented:**
+- Created `packages/kitchen-ops/src/api-response.ts` module for standardized API responses
+- Added type-safe response builders for Manifest CommandResult handling
+- Standardized HTTP status codes based on constraint severity and failure type
+- Updated `/api/kitchen/tasks/[id]/claim/route.ts` to use new response format
+
+**API Response Format (Standardized):**
+- Success: `{ success: true, data: {...}, constraintOutcomes?: [...], emittedEvents?: [...] }`
+- Error: `{ success: false, message: "...", error?: "...", errorCode?: "...", constraintOutcomes?: [...], details?: {...} }`
+- HTTP Status Codes:
+  - 200: Success
+  - 400: Bad Request (blocking constraints, guard failures)
+  - 403: Forbidden (policy denial)
+  - 409: Conflict (concurrency conflict)
+  - 500: Internal Server Error
+
+**Helper Functions Created:**
+- `apiSuccess<T>()` - Build success response with data and constraint outcomes
+- `apiError()` - Build error response with proper error codes and constraint details
+- `formatCommandResult<T>()` - Convert CommandResult to [ApiResponse, StatusCode]
+- `hasBlockingConstraints()` - Check for blocking constraints
+- `hasWarningConstraints()` - Check for warning constraints
+- `getBlockingConstraintOutcomes()` - Get only blocking constraints
+- `getWarningConstraintOutcomes()` - Get only warning constraints
+- `createNextResponse<T>()` - Create Next.js Response from CommandResult
+
+**Custom Error Types:**
+- `ManifestConstraintError` - Thrown when blocking constraints exist
+- `ManifestPolicyError` - Thrown when policy denies access
+- `ManifestConflictError` - Thrown when concurrency conflict detected
+- `throwIfNotSuccessful()` - Convert CommandResult to appropriate error or void
+
+**Type Guards:**
+- `isBlockingConstraint()` - Check if outcome is a blocking constraint
+- `isWarningConstraint()` - Check if outcome is a warning constraint
+- `isFailedConstraint()` - Check if outcome failed
+
+**Files Created:**
+- `packages/kitchen-ops/src/api-response.ts` - API response utilities module
+
+**Files Modified:**
+- `packages/kitchen-ops/package.json` - Added `/api-response` export
+- `apps/app/app/api/kitchen/tasks/[id]/claim/route.ts` - Updated to use standardized response format
+
+**Architecture Notes:**
+- Standardized response format enables consistent frontend error handling
+- HTTP status codes align with REST conventions for different failure types
+- Constraint outcomes include resolved values for debugging and UI display
+- Type-safe builders reduce boilerplate and ensure consistency
+- Error types enable try/catch patterns with proper error classification
+- Future work: Update remaining API routes to use standardized format
 
 ---
