@@ -86,11 +86,50 @@ async function loadInventoryManifestIR() {
     return ir;
 }
 /**
+ * Create a PostgresStore provider for persistent entity storage.
+ *
+ * @param databaseUrl - PostgreSQL connection string
+ * @param tenantId - Tenant ID for table namespacing (optional)
+ * @returns A store provider function for RuntimeEngine
+ */
+export function createPostgresStoreProvider(databaseUrl, tenantId) {
+    const tenantSuffix = tenantId ? `_${tenantId.replace(/-/g, "_")}` : "";
+    return (entityName) => {
+        // Map entity names to table names
+        const tableNameMap = {
+            PrepTask: `kitchen_prep_tasks${tenantSuffix}`,
+            Station: `kitchen_stations${tenantSuffix}`,
+            InventoryItem: `kitchen_inventory_items${tenantSuffix}`,
+        };
+        const tableName = tableNameMap[entityName];
+        if (!tableName) {
+            return undefined; // Use default (memory) store for unknown entities
+        }
+        // Dynamically import PostgresStore only when databaseUrl is provided
+        // This avoids requiring the pg package in environments that don't need it
+        try {
+            const { PostgresStore: PGStore, } = require("@repo/manifest/src/manifest/stores.node");
+            return new PGStore({
+                connectionString: databaseUrl,
+                tableName,
+            });
+        }
+        catch {
+            return undefined; // Fall back to memory store if PostgresStore is unavailable
+        }
+    };
+}
+/**
  * Create a kitchen operations runtime for prep tasks
  */
 export async function createPrepTaskRuntime(context) {
     const ir = await loadPrepTaskManifestIR();
-    const engine = new RuntimeEngine(ir, context);
+    const options = context.databaseUrl
+        ? {
+            storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
+        }
+        : undefined;
+    const engine = new RuntimeEngine(ir, context, options);
     return engine;
 }
 /**
@@ -98,7 +137,12 @@ export async function createPrepTaskRuntime(context) {
  */
 export async function createStationRuntime(context) {
     const ir = await loadStationManifestIR();
-    const engine = new RuntimeEngine(ir, context);
+    const options = context.databaseUrl
+        ? {
+            storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
+        }
+        : undefined;
+    const engine = new RuntimeEngine(ir, context, options);
     return engine;
 }
 /**
@@ -106,7 +150,12 @@ export async function createStationRuntime(context) {
  */
 export async function createInventoryRuntime(context) {
     const ir = await loadInventoryManifestIR();
-    const engine = new RuntimeEngine(ir, context);
+    const options = context.databaseUrl
+        ? {
+            storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
+        }
+        : undefined;
+    const engine = new RuntimeEngine(ir, context, options);
     return engine;
 }
 /**
@@ -143,7 +192,12 @@ export async function createKitchenOpsRuntime(context) {
             ...inventoryIR.policies,
         ],
     };
-    const engine = new RuntimeEngine(combinedIR, context);
+    const options = context.databaseUrl
+        ? {
+            storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
+        }
+        : undefined;
+    const engine = new RuntimeEngine(combinedIR, context, options);
     return engine;
 }
 // ============ Prep Task Commands ============

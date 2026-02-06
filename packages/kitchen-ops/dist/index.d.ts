@@ -10,7 +10,7 @@
  * - Station: assignTask, removeTask, updateCapacity, deactivate, activate, updateEquipment
  * - InventoryItem: reserve, consume, waste, adjust, restock, releaseReservation
  */
-import type { CommandResult, EmittedEvent, RuntimeContext } from "@repo/manifest";
+import type { CommandResult, EmittedEvent, RuntimeContext, Store } from "@repo/manifest";
 import { RuntimeEngine } from "@repo/manifest";
 /**
  * Kitchen Ops Runtime Context
@@ -19,6 +19,12 @@ export interface KitchenOpsContext extends RuntimeContext {
     tenantId: string;
     userId: string;
     userRole?: string;
+    /**
+     * Optional connection string for PostgresStore.
+     * If provided, entities will be persisted in PostgreSQL.
+     * Defaults to undefined (in-memory storage).
+     */
+    databaseUrl?: string;
 }
 /**
  * Result of a prep task command
@@ -46,6 +52,14 @@ export interface InventoryCommandResult extends CommandResult {
     quantityReserved?: number;
     quantityAvailable?: number;
 }
+/**
+ * Create a PostgresStore provider for persistent entity storage.
+ *
+ * @param databaseUrl - PostgreSQL connection string
+ * @param tenantId - Tenant ID for table namespacing (optional)
+ * @returns A store provider function for RuntimeEngine
+ */
+export declare function createPostgresStoreProvider(databaseUrl: string, tenantId?: string): (entityName: string) => Store | undefined;
 /**
  * Create a kitchen operations runtime for prep tasks
  */

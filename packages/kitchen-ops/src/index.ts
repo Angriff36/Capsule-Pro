@@ -20,6 +20,7 @@ import type {
   IR,
   IRDiagnostic,
   RuntimeContext,
+  Store,
 } from "@repo/manifest";
 import { compileToIR, RuntimeEngine } from "@repo/manifest";
 
@@ -125,6 +126,12 @@ export interface KitchenOpsContext extends RuntimeContext {
   tenantId: string;
   userId: string;
   userRole?: string;
+  /**
+   * Optional connection string for PostgresStore.
+   * If provided, entities will be persisted in PostgreSQL.
+   * Defaults to undefined (in-memory storage).
+   */
+  databaseUrl?: string;
 }
 
 /**
@@ -157,11 +164,61 @@ export interface InventoryCommandResult extends CommandResult {
 }
 
 /**
+ * Create a PostgresStore provider for persistent entity storage.
+ *
+ * @param databaseUrl - PostgreSQL connection string
+ * @param tenantId - Tenant ID for table namespacing (optional)
+ * @returns A store provider function for RuntimeEngine
+ */
+export function createPostgresStoreProvider(
+  databaseUrl: string,
+  tenantId?: string
+): (entityName: string) => Store | undefined {
+  const tenantSuffix = tenantId ? `_${tenantId.replace(/-/g, "_")}` : "";
+
+  return (entityName: string) => {
+    // Map entity names to table names
+    const tableNameMap: Record<string, string> = {
+      PrepTask: `kitchen_prep_tasks${tenantSuffix}`,
+      Station: `kitchen_stations${tenantSuffix}`,
+      InventoryItem: `kitchen_inventory_items${tenantSuffix}`,
+    };
+
+    const tableName = tableNameMap[entityName];
+    if (!tableName) {
+      return undefined; // Use default (memory) store for unknown entities
+    }
+
+    // Dynamically import PostgresStore only when databaseUrl is provided
+    // This avoids requiring the pg package in environments that don't need it
+    try {
+      const {
+        PostgresStore: PGStore,
+      } = require("@repo/manifest/src/manifest/stores.node");
+      return new PGStore({
+        connectionString: databaseUrl,
+        tableName,
+      }) as Store;
+    } catch {
+      return undefined; // Fall back to memory store if PostgresStore is unavailable
+    }
+  };
+}
+
+/**
  * Create a kitchen operations runtime for prep tasks
  */
 export async function createPrepTaskRuntime(context: KitchenOpsContext) {
   const ir = await loadPrepTaskManifestIR();
-  const engine = new RuntimeEngine(ir, context);
+  const options = context.databaseUrl
+    ? {
+        storeProvider: createPostgresStoreProvider(
+          context.databaseUrl,
+          context.tenantId
+        ),
+      }
+    : undefined;
+  const engine = new RuntimeEngine(ir, context, options);
   return engine;
 }
 
@@ -170,7 +227,15 @@ export async function createPrepTaskRuntime(context: KitchenOpsContext) {
  */
 export async function createStationRuntime(context: KitchenOpsContext) {
   const ir = await loadStationManifestIR();
-  const engine = new RuntimeEngine(ir, context);
+  const options = context.databaseUrl
+    ? {
+        storeProvider: createPostgresStoreProvider(
+          context.databaseUrl,
+          context.tenantId
+        ),
+      }
+    : undefined;
+  const engine = new RuntimeEngine(ir, context, options);
   return engine;
 }
 
@@ -179,7 +244,15 @@ export async function createStationRuntime(context: KitchenOpsContext) {
  */
 export async function createInventoryRuntime(context: KitchenOpsContext) {
   const ir = await loadInventoryManifestIR();
-  const engine = new RuntimeEngine(ir, context);
+  const options = context.databaseUrl
+    ? {
+        storeProvider: createPostgresStoreProvider(
+          context.databaseUrl,
+          context.tenantId
+        ),
+      }
+    : undefined;
+  const engine = new RuntimeEngine(ir, context, options);
   return engine;
 }
 
@@ -219,7 +292,15 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
     ],
   };
 
-  const engine = new RuntimeEngine(combinedIR, context);
+  const options = context.databaseUrl
+    ? {
+        storeProvider: createPostgresStoreProvider(
+          context.databaseUrl,
+          context.tenantId
+        ),
+      }
+    : undefined;
+  const engine = new RuntimeEngine(combinedIR, context, options);
   return engine;
 }
 

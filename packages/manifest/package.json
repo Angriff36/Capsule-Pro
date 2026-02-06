@@ -22,6 +22,10 @@
     "./types": {
       "types": "./dist/types.d.ts",
       "import": "./dist/types.js"
+    },
+    "./stores.node": {
+      "types": "./src/manifest/stores.node.ts",
+      "import": "./src/manifest/stores.node.ts"
     }
   },
   "main": "./dist/index.js",

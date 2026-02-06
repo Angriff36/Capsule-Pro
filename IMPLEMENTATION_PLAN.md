@@ -25,64 +25,237 @@ Nothing else.
 
 Manifest Runtime Version: v0.3.0
 
-Confirmed capabilities:
-
+**Verified Capabilities:**
 - Typed IR schema
 - Deterministic execution
-- Binary command result model
-- No severity levels
-- No structured constraint outcome array
+- Three-tier constraint severity model: OK, WARN, BLOCK
+- `ConstraintOutcome` with code, severity, message, details, resolved values
+- `OverrideRequest` with authorization support
+- `CommandResult` with `constraintOutcomes`, `overrideRequests`, `concurrencyConflict`
+- Override workflow with policy-based authorization
+- Template interpolation for constraint messages
+- Structured details mapping for UI display
+- Event emission for OverrideApplied, ConcurrencyConflict
+- Optimistic concurrency control with version properties
 
-Any feature beyond this must be implemented before use.
+**Kitchen-Ops Integration Status:**
+- `packages/kitchen-ops/` provides complete runtime wrappers for PrepTask, Station, InventoryItem
+- Server actions exist: `manifestClaimPrepTask`, `manifestCompletePrepTask`, etc.
+- Override API endpoint: `/api/kitchen/overrides`
+- Three manifest files: prep-task-rules, station-rules, inventory-rules
+- **GAP**: API routes bypass Manifest (direct DB mutations)
+- **COMPLETED**: PostgresStore integration added (2025-02-06)
+  - `createPostgresStoreProvider()` function for persistent storage
+  - `KitchenOpsContext.databaseUrl` option enables Postgres backing
+  - Table namespacing per tenant: `kitchen_prep_tasks_{tenantId}`, etc.
+- **GAP**: Missing conformance tests
 
 ---
 
 ## Active Tasks
 
-### P0 — Manifest Runtime Alignment
+### P0 - Complete Kitchen Ops Migration to Manifest
 
-- [ ] Replace all assumptions of severity/graded outcomes with binary runtime behavior
-- [ ] Identify all runtime call sites expecting extended result shapes
-- [ ] Refactor adapters to respect v0.3.0 execution contract
-- [ ] Add conformance fixtures covering edge-case command failures
+**Current State:**
+- Server actions in `apps/app/app/(authenticated)/kitchen/prep-tasks/actions.ts` use Manifest runtime
+- API routes in `apps/app/app/api/kitchen/tasks/[id]/claim/route.ts` bypass Manifest
 
-Owner: Loop
+**Tasks:**
+- [ ] Replace direct DB mutations in API routes with Manifest runtime commands
+- [x] Implement PostgresStore for persistent entity storage (currently memory-only)
+- [x] Add storeProvider to runtime initialization for Postgres backing
+- [ ] Audit all kitchen mutation paths for Manifest compliance
+- [ ] Add telemetry: count WARN/BLOCK constraints, override usage, top constraint codes
+- [ ] Write conformance fixtures for all prep-task, station, and inventory commands
 
----
-
-### P1 — Kitchen Ops Rule Integration
-
-- [ ] Map PrepTask, Station, Shift entities to Manifest entities
-- [ ] Implement guards enforcing inventory constraints
-- [ ] Implement override logging mechanism
-- [ ] Validate deterministic replay of workflows
-
-Owner: Loop
+**Owner:** Loop
 
 ---
 
-### P2 — Diagnostics Surface
+### P1 - Event Import Workflow Manifest Integration
 
-- [ ] Unify runtime error reporting format
-- [ ] Ensure API/UI receive consistent diagnostics
-- [ ] Add test coverage for denial explanations
+**Current State:**
+- `apps/app/app/api/events/documents/parse/route.ts` has incomplete/broken Manifest integration
+- References to `createEventImportRuntime`, `processDocumentImport`, `createOrUpdateEvent` don't exist
+- Try-catch fallback to original behavior (non-deterministic)
 
-Owner: Loop
+**Tasks:**
+- [ ] Create event-import-rules.manifest with DocumentImport, Event, EventReport entities
+- [ ] Implement commands: parseDocument, validateEvent, createEvent, generateChecklist, generateBattleBoard
+- [ ] Define constraints for: missing fields, validation failures, data quality
+- [ ] Create event-import-runtime.ts in packages/kitchen-ops or new package
+- [ ] Replace broken integration with working Manifest-powered workflow
+- [ ] Emit structured events for each workflow step
+- [ ] Add idempotency keys for retry safety
+
+**Owner:** Loop
+
+---
+
+### P2 - Spec Implementation (56 Total Specs, 17 TODO)
+
+**Completed Specs (non-TODO):**
+- All feature specs exist and are well-defined
+
+**TODO Specs Requiring Implementation:**
+- `manifest-kitchen-ops-rules-overrides` - Foundation spec (in progress)
+- `ai-employee-conflict-detection`
+- `ai-inventory-conflict-detection`
+- `ai-venue-conflict-detection`
+- `ai-equipment-conflict-detection`
+- `event-timeline-builder`
+- `kitchen-allergen-tracking`
+- `mobile-time-clock`
+- `scheduling-labor-budget-tracking`
+- `scheduling-auto-assignment`
+- `warehouse-shipment-tracking`
+- `scheduling-availability-tracking`
+- `warehouse-receiving-workflow`
+- `scheduling-shift-crud`
+- `ai-suggested-next-actions`
+
+**Tasks:**
+- [ ] Prioritize TODO specs by business value and dependencies
+- [ ] For each spec: create corresponding .manifest file or use existing runtime
+- [ ] Implement commands, guards, constraints following severity model
+- [ ] Add conformance tests for each spec
+- [ ] Document integration points with existing API routes
+
+**Owner:** Loop
+
+---
+
+### P3 - Diagnostics and Observability
+
+**Tasks:**
+- [ ] Unify runtime error reporting format across all Manifest usage
+- [ ] Ensure API/UI receive consistent `CommandResult` shapes
+- [ ] Add test coverage for denial explanations with resolved values
+- [ ] Create diagnostics UI component for constraint outcomes
+- [ ] Add override audit log viewer
+
+**Owner:** Loop
 
 ---
 
 ## Verified Constraints
 
+### Manifest Runtime v0.3.0 Facts
+
+1. **Severity Model IS Implemented**
+   - `IRConstraint.severity?: "ok" | "warn" | "block"` exists
+   - `ConstraintOutcome.severity: "ok" | "warn" | "block"` is returned
+   - Previous plan stating "no severity levels" was incorrect
+
+2. **Constraint Evaluation Returns Full Outcomes**
+   - `evaluateCommandConstraints()` returns `ConstraintOutcome[]`
+   - Each outcome has: code, constraintName, severity, formatted, message, details, passed, overridden, overriddenBy, resolved
+   - Template interpolation via `interpolateTemplate()`
+
+3. **Override Workflow is Complete**
+   - `OverrideRequest` type with constraintCode, reason, authorizedBy, timestamp
+   - `validateOverrideAuthorization()` checks policies or defaults to admin role
+   - `emitOverrideAppliedEvent()` audits all overrides
+   - `overrideable?: boolean` on constraints
+   - `overridePolicyRef?: string` for policy-based authorization
+
+4. **Optimistic Concurrency Control**
+   - `versionProperty` and `versionAtProperty` on IREntity
+   - `ConcurrencyConflict` event emission on version mismatch
+   - Auto-increment version on successful updates
+
+5. **Event Provenance**
+   - `EmittedEvent.provenance` contains contentHash, compilerVersion, schemaVersion
+   - `IRProvenance` with contentHash, irHash, compilerVersion, schemaVersion, compiledAt
+   - `verifyIRHash()` for integrity checking
+   - `requireValidProvenance` option for production safety
+
+### Loop Iteration Rules
+
 - Loop iteration completes only after:
-  - Validation passes
-  - Plan updated
+  - Validation passes (pnpm lint, format, type-check, build)
+  - Plan updated (this file)
   - Commit created
 
 - Plan must not exceed actionable size.
   Background material belongs in `/docs`.
 
+### Code Quality Standards
+
+- **No `any` types**: Use Prisma inference or `unknown` + narrowing
+- **Windows paths**: Use backslashes for Edit tool paths
+- **pnpm only**: No npm/yarn
+- **Run validation after implementation**: pnpm install, lint, format, test, build
+
 ---
 
 ## Completed Work
 
-(empty)
+### 2025-01-XX: Initial Platform Audit
+
+**Discovery:**
+- Manifest v0.3.0 is fully functional with severity levels and override support
+- Kitchen-Ops runtime implementation exists and is comprehensive
+- Server actions use Manifest correctly
+- API routes need migration
+- Event import integration broken
+- 17 specs marked TODO awaiting implementation
+
+**Files Analyzed:**
+- `packages/manifest/src/manifest/runtime-engine.ts` (2027 lines)
+- `packages/manifest/src/manifest/ir.ts` (ConstraintOutcome, OverrideRequest defined)
+- `packages/manifest/src/manifest/types.ts` (AST nodes with severity)
+- `packages/kitchen-ops/src/index.ts` (1232 lines, complete wrappers)
+- `packages/kitchen-ops/manifests/*.manifest` (3 files with constraints)
+- `apps/app/app/(authenticated)/kitchen/prep-tasks/actions.ts` (uses runtime)
+- `apps/app/app/api/kitchen/overrides/route.ts` (override endpoint)
+- `apps/app/app/api/events/documents/parse/route.ts` (broken integration)
+- `specs/manifest-kitchen-ops-rules-overrides_TODO/*.md` (foundation spec)
+
+**Corrected Misconceptions:**
+- Previous plan stated "no severity levels" - INCORRECT, severity exists
+- Previous plan stated "no structured constraint outcome array" - INCORRECT, exists
+- Reality: v0.3.0 has complete implementation, gaps are in adoption, not capability
+
+**Next Actions:**
+- Migrate API routes to use Manifest runtime
+- Fix event import workflow
+- Implement TODO specs with Manifest backing
+- Add conformance tests
+
+---
+
+### 2025-02-06: PostgresStore Integration for Kitchen-Ops
+
+**Completed:**
+- Added `stores.node` export to `packages/manifest/package.json`
+- Implemented `createPostgresStoreProvider()` in `packages/kitchen-ops/src/index.ts`
+  - Maps entity names to table names: `PrepTask` → `kitchen_prep_tasks_{tenantId}`, etc.
+  - Dynamic require to avoid hard dependency on `pg` package
+  - Graceful fallback to memory store if PostgresStore unavailable
+- Extended `KitchenOpsContext` with optional `databaseUrl` property
+- Updated all four runtime creation functions to use `storeProvider` option:
+  - `createPrepTaskRuntime()`
+  - `createStationRuntime()`
+  - `createInventoryRuntime()`
+  - `createKitchenOpsRuntime()`
+
+**Files Modified:**
+- `packages/manifest/package.json` - Added stores.node export
+- `packages/kitchen-ops/src/index.ts` - Added PostgresStore integration
+
+**Usage:**
+```typescript
+const runtime = await createKitchenOpsRuntime({
+  tenantId: "tenant-123",
+  userId: "user-123",
+  userRole: "kitchen_staff",
+  databaseUrl: process.env.DATABASE_URL, // Enables Postgres persistence
+});
+```
+
+**Table Schema (auto-created by PostgresStore):**
+- `id` (TEXT PRIMARY KEY)
+- `data` (JSONB NOT NULL)
+- `created_at`, `updated_at` (TIMESTAMP)
+- GIN index on `data` for efficient querying
