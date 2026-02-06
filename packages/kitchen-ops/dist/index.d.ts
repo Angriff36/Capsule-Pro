@@ -10,8 +10,9 @@
  * - Station: assignTask, removeTask, updateCapacity, deactivate, activate, updateEquipment
  * - InventoryItem: reserve, consume, waste, adjust, restock, releaseReservation
  */
-import type { CommandResult, EmittedEvent, RuntimeContext, Store } from "@repo/manifest";
+import type { CommandResult, EmittedEvent, RuntimeContext } from "@repo/manifest";
 import { RuntimeEngine } from "@repo/manifest";
+import type { Store } from "@repo/manifest";
 /**
  * Kitchen Ops Runtime Context
  */
@@ -20,9 +21,19 @@ export interface KitchenOpsContext extends RuntimeContext {
     userId: string;
     userRole?: string;
     /**
+     * Optional store provider for entity persistence.
+     * If provided, entities will be persisted using this store.
+     * Use `createPrismaStoreProvider(prisma, tenantId)` for Prisma-backed storage.
+     * Defaults to undefined (in-memory storage).
+     */
+    storeProvider?: (entityName: string) => Store | undefined;
+    /**
      * Optional connection string for PostgresStore.
      * If provided, entities will be persisted in PostgreSQL.
      * Defaults to undefined (in-memory storage).
+     *
+     * @deprecated Use `storeProvider` with `createPrismaStoreProvider` for better
+     * integration with existing Prisma schema.
      */
     databaseUrl?: string;
     /**

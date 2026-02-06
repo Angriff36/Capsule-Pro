@@ -92,6 +92,14 @@ Manifest Runtime Version: v0.3.0
     - Runtime uses in-memory storage by default (no `databaseUrl` passed)
     - PostgresStore creates separate tables instead of using existing Prisma schema
   - **NEXT STEPS**: Create Manifest runtimes for Recipe, Dish, Menu, PrepList entities (future work)
+- [x] Enable PrismaStore in API routes for persistent storage (2025-02-06)
+  - Added `storeProvider` option to `KitchenOpsContext` interface
+  - Updated all runtime creation functions (`createPrepTaskRuntime`, `createStationRuntime`, `createInventoryRuntime`, `createKitchenOpsRuntime`) to support `storeProvider` from context
+  - API routes now use `createPrismaStoreProvider(database, tenantId)` via dynamic import
+  - `/api/kitchen/tasks/[id]/claim` - Runtime now uses PrismaStore for entity persistence
+  - `/api/kitchen/tasks/[id]` PATCH - Runtime now uses PrismaStore for entity persistence
+  - **Note**: The current implementation still uses manual sync to Prisma for outbox events and progress tracking
+  - **FUTURE**: Could simplify further by leveraging Store's auto-persistence for all mutations
 - [x] Add telemetry: count WARN/BLOCK constraints, override usage, top constraint codes (2025-02-06)
   - Added telemetry hooks to RuntimeOptions interface in manifest runtime
   - `onConstraintEvaluated` callback for each constraint evaluation
@@ -404,3 +412,32 @@ const runtime = await createKitchenOpsRuntime({
 - Consumers (like apps/app) can integrate with Sentry, Logtail, or other observability services
 - Example usage shows Sentry metrics integration for constraint counting and override tracking
 - Conformance fixtures exist and cover the main command flows for all three entity types
+
+---
+
+### 2025-02-06: PrismaStore Integration in API Routes
+
+**Completed:**
+- Added `storeProvider` option to `KitchenOpsContext` interface
+- Updated all runtime creation functions to support `storeProvider` from context:
+  - `createPrepTaskRuntime()`
+  - `createStationRuntime()`
+  - `createInventoryRuntime()`
+  - `createKitchenOpsRuntime()`
+- API routes now use PrismaStore for entity persistence:
+  - `/api/kitchen/tasks/[id]/claim/route.ts` - Uses `createPrismaStoreProvider(database, tenantId)`
+  - `/api/kitchen/tasks/[id]/route.ts` (PATCH) - Uses `createPrismaStoreProvider(database, tenantId)`
+- Dynamic import pattern used to avoid circular dependency issues with the PrismaStore subpath
+
+**Files Modified:**
+- `packages/kitchen-ops/src/index.ts` - Added `storeProvider` option to KitchenOpsContext and updated all runtime creation functions
+- `apps/app/app/api/kitchen/tasks/[id]/claim/route.ts` - Added PrismaStore provider via dynamic import
+- `apps/app/app/api/kitchen/tasks/[id]/route.ts` - Added PrismaStore provider via dynamic import
+- `IMPLEMENTATION_PLAN.md` - Updated P0 task status and added completion history
+
+**Architecture Notes:**
+- `storeProvider` takes precedence over `databaseUrl` when both are provided
+- PrismaStore integrates with existing Prisma schema (PrepTask + KitchenTaskClaim tables)
+- The implementation still uses manual sync for outbox events and progress tracking
+- Future enhancement: Could leverage Store's auto-persistence to reduce manual sync code
+

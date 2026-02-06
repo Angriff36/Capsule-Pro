@@ -20,7 +20,6 @@ import type {
   IR,
   IRDiagnostic,
   RuntimeContext,
-  Store,
 } from "@repo/manifest";
 import { compileToIR, RuntimeEngine } from "@repo/manifest";
 
@@ -119,6 +118,8 @@ async function loadInventoryManifestIR(): Promise<IR> {
   return ir;
 }
 
+import type { Store } from "@repo/manifest";
+
 /**
  * Kitchen Ops Runtime Context
  */
@@ -127,9 +128,19 @@ export interface KitchenOpsContext extends RuntimeContext {
   userId: string;
   userRole?: string;
   /**
+   * Optional store provider for entity persistence.
+   * If provided, entities will be persisted using this store.
+   * Use `createPrismaStoreProvider(prisma, tenantId)` for Prisma-backed storage.
+   * Defaults to undefined (in-memory storage).
+   */
+  storeProvider?: (entityName: string) => Store | undefined;
+  /**
    * Optional connection string for PostgresStore.
    * If provided, entities will be persisted in PostgreSQL.
    * Defaults to undefined (in-memory storage).
+   *
+   * @deprecated Use `storeProvider` with `createPrismaStoreProvider` for better
+   * integration with existing Prisma schema.
    */
   databaseUrl?: string;
   /**
@@ -287,14 +298,18 @@ export function createPostgresStoreProvider(
 export async function createPrepTaskRuntime(context: KitchenOpsContext) {
   const ir = await loadPrepTaskManifestIR();
   const options =
-    context.databaseUrl || context.telemetry
+    context.storeProvider || context.databaseUrl || context.telemetry
       ? {
-          ...(context.databaseUrl && {
-            storeProvider: createPostgresStoreProvider(
-              context.databaseUrl,
-              context.tenantId
-            ),
+          ...(context.storeProvider && {
+            storeProvider: context.storeProvider,
           }),
+          ...(context.databaseUrl &&
+            !context.storeProvider && {
+              storeProvider: createPostgresStoreProvider(
+                context.databaseUrl,
+                context.tenantId
+              ),
+            }),
           ...(context.telemetry && { telemetry: context.telemetry }),
         }
       : undefined;
@@ -308,14 +323,18 @@ export async function createPrepTaskRuntime(context: KitchenOpsContext) {
 export async function createStationRuntime(context: KitchenOpsContext) {
   const ir = await loadStationManifestIR();
   const options =
-    context.databaseUrl || context.telemetry
+    context.storeProvider || context.databaseUrl || context.telemetry
       ? {
-          ...(context.databaseUrl && {
-            storeProvider: createPostgresStoreProvider(
-              context.databaseUrl,
-              context.tenantId
-            ),
+          ...(context.storeProvider && {
+            storeProvider: context.storeProvider,
           }),
+          ...(context.databaseUrl &&
+            !context.storeProvider && {
+              storeProvider: createPostgresStoreProvider(
+                context.databaseUrl,
+                context.tenantId
+              ),
+            }),
           ...(context.telemetry && { telemetry: context.telemetry }),
         }
       : undefined;
@@ -329,14 +348,18 @@ export async function createStationRuntime(context: KitchenOpsContext) {
 export async function createInventoryRuntime(context: KitchenOpsContext) {
   const ir = await loadInventoryManifestIR();
   const options =
-    context.databaseUrl || context.telemetry
+    context.storeProvider || context.databaseUrl || context.telemetry
       ? {
-          ...(context.databaseUrl && {
-            storeProvider: createPostgresStoreProvider(
-              context.databaseUrl,
-              context.tenantId
-            ),
+          ...(context.storeProvider && {
+            storeProvider: context.storeProvider,
           }),
+          ...(context.databaseUrl &&
+            !context.storeProvider && {
+              storeProvider: createPostgresStoreProvider(
+                context.databaseUrl,
+                context.tenantId
+              ),
+            }),
           ...(context.telemetry && { telemetry: context.telemetry }),
         }
       : undefined;
@@ -380,14 +403,18 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
   };
 
   const options =
-    context.databaseUrl || context.telemetry
+    context.storeProvider || context.databaseUrl || context.telemetry
       ? {
-          ...(context.databaseUrl && {
-            storeProvider: createPostgresStoreProvider(
-              context.databaseUrl,
-              context.tenantId
-            ),
+          ...(context.storeProvider && {
+            storeProvider: context.storeProvider,
           }),
+          ...(context.databaseUrl &&
+            !context.storeProvider && {
+              storeProvider: createPostgresStoreProvider(
+                context.databaseUrl,
+                context.tenantId
+              ),
+            }),
           ...(context.telemetry && { telemetry: context.telemetry }),
         }
       : undefined;

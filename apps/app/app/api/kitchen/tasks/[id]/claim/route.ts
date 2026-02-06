@@ -64,10 +64,15 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   // Create the Manifest runtime context
+  const { createPrismaStoreProvider } = await import(
+    "@repo/kitchen-ops/prisma-store"
+  );
+
   const runtimeContext: KitchenOpsContext = {
     tenantId,
     userId: currentUser.id,
     userRole: currentUser.role,
+    storeProvider: createPrismaStoreProvider(database, tenantId),
   };
 
   try {

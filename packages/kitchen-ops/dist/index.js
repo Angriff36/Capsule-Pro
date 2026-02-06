@@ -124,9 +124,13 @@ export function createPostgresStoreProvider(databaseUrl, tenantId) {
  */
 export async function createPrepTaskRuntime(context) {
     const ir = await loadPrepTaskManifestIR();
-    const options = context.databaseUrl || context.telemetry
+    const options = context.storeProvider || context.databaseUrl || context.telemetry
         ? {
-            ...(context.databaseUrl && {
+            ...(context.storeProvider && {
+                storeProvider: context.storeProvider,
+            }),
+            ...(context.databaseUrl &&
+                !context.storeProvider && {
                 storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
             }),
             ...(context.telemetry && { telemetry: context.telemetry }),
@@ -140,9 +144,13 @@ export async function createPrepTaskRuntime(context) {
  */
 export async function createStationRuntime(context) {
     const ir = await loadStationManifestIR();
-    const options = context.databaseUrl || context.telemetry
+    const options = context.storeProvider || context.databaseUrl || context.telemetry
         ? {
-            ...(context.databaseUrl && {
+            ...(context.storeProvider && {
+                storeProvider: context.storeProvider,
+            }),
+            ...(context.databaseUrl &&
+                !context.storeProvider && {
                 storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
             }),
             ...(context.telemetry && { telemetry: context.telemetry }),
@@ -156,9 +164,13 @@ export async function createStationRuntime(context) {
  */
 export async function createInventoryRuntime(context) {
     const ir = await loadInventoryManifestIR();
-    const options = context.databaseUrl || context.telemetry
+    const options = context.storeProvider || context.databaseUrl || context.telemetry
         ? {
-            ...(context.databaseUrl && {
+            ...(context.storeProvider && {
+                storeProvider: context.storeProvider,
+            }),
+            ...(context.databaseUrl &&
+                !context.storeProvider && {
                 storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
             }),
             ...(context.telemetry && { telemetry: context.telemetry }),
@@ -200,9 +212,13 @@ export async function createKitchenOpsRuntime(context) {
             ...inventoryIR.policies,
         ],
     };
-    const options = context.databaseUrl || context.telemetry
+    const options = context.storeProvider || context.databaseUrl || context.telemetry
         ? {
-            ...(context.databaseUrl && {
+            ...(context.storeProvider && {
+                storeProvider: context.storeProvider,
+            }),
+            ...(context.databaseUrl &&
+                !context.storeProvider && {
                 storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
             }),
             ...(context.telemetry && { telemetry: context.telemetry }),

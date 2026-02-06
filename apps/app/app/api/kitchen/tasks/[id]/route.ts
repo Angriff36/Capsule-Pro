@@ -73,10 +73,16 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   // Handle status changes via Manifest commands
   if (body.status) {
+    // Create Prisma store provider for Manifest runtime
+    const { createPrismaStoreProvider } = await import(
+      "@repo/kitchen-ops/prisma-store"
+    );
+
     const runtimeContext: KitchenOpsContext = {
       tenantId,
       userId: employeeId || "",
       userRole: undefined, // TODO: get user role from auth
+      storeProvider: createPrismaStoreProvider(database, tenantId),
     };
 
     try {
