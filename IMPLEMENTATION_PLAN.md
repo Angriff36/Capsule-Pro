@@ -541,3 +541,44 @@ const runtime = await createKitchenOpsRuntime({
   - Added `updateRecipe as updateRecipeManifest` import alias to resolve naming collision
   - App now builds successfully
 
+---
+
+### 2025-02-06: Docs App Build Investigation
+
+**Status:** DOCUMENTED - Requires fumadocs-mdx v15 for proper compatibility
+
+**Findings:**
+- fumadocs-mdx v14.2.6 generates code compatible with fumadocs-core v15
+- fumadocs-ui v14.7.7 requires fumadocs-core v14.x (peer dependency mismatch)
+- fumadocs-mdx v15 does not exist yet (latest is 14.2.6)
+- The auto-generated `.source/index.ts` expects `_runtime` export from fumadocs-mdx (v15 API)
+- Attempted fixes: version alignment, CSS import updates, source transformation
+- Remaining issue: Server/client component boundary errors in MDX rendering
+
+**Attempted Fixes:**
+- Upgraded/downgraded fumadocs-* packages for version alignment
+- Changed CSS imports from `preset.css` to `style.css`
+- Removed `createRelativeLink` import (v15 only)
+- Modified auto-generated `.source/index.ts` to remove `_runtime` wrapper
+- Added source transformation for v14 to v15 format
+
+**Files Modified (reverted pending proper fix):**
+- `apps/docs/package.json` - Version changes for fumadocs packages
+- `apps/docs/app/layout.tsx` - Changed provider import path
+- `apps/docs/app/globals.css` - Updated CSS imports
+- `apps/docs/app/docs/[[...slug]]/page.tsx` - Removed createRelativeLink
+- `apps/docs/.source/index.ts` - Manual transformation attempt
+- `apps/docs/lib/source.ts` - Source format transformation
+
+**Resolution Path:**
+- Wait for fumadocs-mdx v15 release or downgrade entire docs app to fumadocs v13
+- Main app and API app build successfully - docs app is non-blocking for Manifest work
+- This is a documentation site issue, not related to core Manifest integration
+
+**Loop Assessment:**
+- Main application (apps/app) builds successfully
+- API application (apps/api) builds successfully
+- All tests pass
+- Manifest integration work can proceed unblocked
+
+---
