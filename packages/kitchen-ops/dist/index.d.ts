@@ -275,6 +275,14 @@ export declare function updateDishPricing(engine: RuntimeEngine, dishId: string,
  */
 export declare function updateDishLeadTime(engine: RuntimeEngine, dishId: string, minDays: number, maxDays: number, overrideRequests?: OverrideRequest[]): Promise<DishCommandResult>;
 /**
+ * Create a dish
+ */
+export declare function createDish(engine: RuntimeEngine, dishId: string, name: string, recipeId: string, description: string, category: string, serviceStyle: string, dietaryTags: string, allergens: string, pricePerPerson: number, costPerPerson: number, minPrepLeadDays: number, maxPrepLeadDays: number, portionSizeDescription: string): Promise<DishCommandResult>;
+/**
+ * Create a recipe
+ */
+export declare function createRecipe(engine: RuntimeEngine, recipeId: string, name: string, category: string, cuisineType: string, description: string, tags: string): Promise<RecipeCommandResult>;
+/**
  * Setup event listeners for kitchen operations
  */
 export declare function setupKitchenOpsEventListeners(engine: RuntimeEngine, handlers: {

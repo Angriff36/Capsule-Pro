@@ -1254,6 +1254,96 @@ export async function updateDishLeadTime(
   };
 }
 
+/**
+ * Create a dish
+ */
+export async function createDish(
+  engine: RuntimeEngine,
+  dishId: string,
+  name: string,
+  recipeId: string,
+  description: string,
+  category: string,
+  serviceStyle: string,
+  dietaryTags: string,
+  allergens: string,
+  pricePerPerson: number,
+  costPerPerson: number,
+  minPrepLeadDays: number,
+  maxPrepLeadDays: number,
+  portionSizeDescription: string
+): Promise<DishCommandResult> {
+  // Create the Dish entity instance
+  await engine.createInstance("Dish", {
+    id: dishId,
+    tenantId: engine.getContext<string>("tenantId"),
+    name,
+    recipeId,
+    description,
+    category,
+    serviceStyle,
+    presentationImageUrl: "",
+    dietaryTags,
+    allergens,
+    pricePerPerson,
+    costPerPerson,
+    minPrepLeadDays,
+    maxPrepLeadDays,
+    portionSizeDescription,
+    isActive: true,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  });
+
+  const instance = await engine.getInstance("Dish", dishId);
+  return {
+    success: true,
+    emittedEvents: [],
+    dishId,
+    name: instance?.name as string | undefined,
+    pricePerPerson: instance?.pricePerPerson as number | undefined,
+    costPerPerson: instance?.costPerPerson as number | undefined,
+  } as DishCommandResult;
+}
+
+/**
+ * Create a recipe
+ */
+export async function createRecipe(
+  engine: RuntimeEngine,
+  recipeId: string,
+  name: string,
+  category: string,
+  cuisineType: string,
+  description: string,
+  tags: string
+): Promise<RecipeCommandResult> {
+  // Create the Recipe entity instance
+  await engine.createInstance("Recipe", {
+    id: recipeId,
+    tenantId: engine.getContext<string>("tenantId"),
+    name,
+    category,
+    cuisineType,
+    description,
+    tags,
+    isActive: true,
+    hasVersion: true,
+    tagCount: tags ? tags.split(",").length : 0,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  });
+
+  const instance = await engine.getInstance("Recipe", recipeId);
+  return {
+    success: true,
+    emittedEvents: [],
+    recipeId,
+    name: instance?.name as string | undefined,
+    isActive: true,
+  } as RecipeCommandResult;
+}
+
 // ============ Event Handling ============
 
 /**

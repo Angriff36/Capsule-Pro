@@ -526,5 +526,13 @@ const runtime = await createKitchenOpsRuntime({
   - `/api/kitchen/manifest/recipes/[recipeId]/activate` (POST) - Activate recipe
   - `/api/kitchen/manifest/recipes/[recipeId]/deactivate` (POST) - Deactivate recipe with reason
   - `/api/kitchen/manifest/dishes/[dishId]/pricing` (PATCH) - Update dish pricing with margin validation
-- Next step: Migrate recipe actions in `apps/app/app/(authenticated)/kitchen/recipes/actions.ts` to use the Recipe runtime
+- **COMPLETED**: Additional Recipe and Dish API routes added (2025-02-06)
+  - `POST /api/kitchen/manifest/recipes` - Create new recipe with Manifest runtime
+  - `POST /api/kitchen/manifest/recipes/[recipeId]/versions` - Create new recipe version
+  - `POST /api/kitchen/manifest/recipes/[recipeId]/restore` - Restore previous recipe version
+  - `POST /api/kitchen/manifest/dishes` - Create new dish with Manifest runtime
+- **COMPLETED**: Added `createRecipe` and `createDish` wrapper functions to kitchen-ops (2025-02-06)
+  - `createRecipe()` - Creates Recipe entity through Manifest runtime
+  - `createDish()` - Creates Dish entity through Manifest runtime
+- Next steps: Migrate server actions in `apps/app/app/(authenticated)/kitchen/recipes/actions.ts` to use the new API routes, add constraint outcomes tracking to UI
 

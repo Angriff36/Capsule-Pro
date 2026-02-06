@@ -721,6 +721,69 @@ export async function updateDishLeadTime(engine, dishId, minDays, maxDays, overr
         costPerPerson: instance?.costPerPerson,
     };
 }
+/**
+ * Create a dish
+ */
+export async function createDish(engine, dishId, name, recipeId, description, category, serviceStyle, dietaryTags, allergens, pricePerPerson, costPerPerson, minPrepLeadDays, maxPrepLeadDays, portionSizeDescription) {
+    // Create the Dish entity instance
+    await engine.createInstance("Dish", {
+        id: dishId,
+        tenantId: engine.getContext("tenantId"),
+        name,
+        recipeId,
+        description,
+        category,
+        serviceStyle,
+        presentationImageUrl: "",
+        dietaryTags,
+        allergens,
+        pricePerPerson,
+        costPerPerson,
+        minPrepLeadDays,
+        maxPrepLeadDays,
+        portionSizeDescription,
+        isActive: true,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+    });
+    const instance = await engine.getInstance("Dish", dishId);
+    return {
+        success: true,
+        emittedEvents: [],
+        dishId,
+        name: instance?.name,
+        pricePerPerson: instance?.pricePerPerson,
+        costPerPerson: instance?.costPerPerson,
+    };
+}
+/**
+ * Create a recipe
+ */
+export async function createRecipe(engine, recipeId, name, category, cuisineType, description, tags) {
+    // Create the Recipe entity instance
+    await engine.createInstance("Recipe", {
+        id: recipeId,
+        tenantId: engine.getContext("tenantId"),
+        name,
+        category,
+        cuisineType,
+        description,
+        tags,
+        isActive: true,
+        hasVersion: true,
+        tagCount: tags ? tags.split(",").length : 0,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+    });
+    const instance = await engine.getInstance("Recipe", recipeId);
+    return {
+        success: true,
+        emittedEvents: [],
+        recipeId,
+        name: instance?.name,
+        isActive: true,
+    };
+}
 // ============ Event Handling ============
 /**
  * Setup event listeners for kitchen operations
