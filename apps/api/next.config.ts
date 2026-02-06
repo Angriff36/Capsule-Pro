@@ -9,6 +9,18 @@ let nextConfig: NextConfig = withLogging({
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Transpile workspace packages
+  transpilePackages: [
+    "@repo/auth",
+    "@repo/database",
+    "@repo/analytics",
+    "@repo/observability",
+    "@repo/security",
+    "@repo/event-parser",
+  ],
+  experimental: {
+    optimizePackageImports: ["date-fns"],
+  },
   // Externalize pdfjs-dist to avoid bundling issues in API routes
   serverExternalPackages: [
     "pdfjs-dist",
@@ -16,19 +28,35 @@ let nextConfig: NextConfig = withLogging({
     "got",
     "keyv",
     "cacheable-request",
+    "@sentry/nextjs",
+    "@sentry/node",
+    "@opentelemetry/api",
+    "@opentelemetry/sdk-node",
+    "@opentelemetry/instrumentation",
   ],
   webpack: (
-    config: { externals?: string[] },
+    webpackConfig: any,
     { isServer }: { isServer: boolean }
   ) => {
     if (isServer) {
       // Exclude pdfjs-dist worker from server-side bundling
-      config.externals = [
-        ...(config.externals || []),
+      webpackConfig.externals = [
+        ...(webpackConfig.externals || []),
         "pdfjs-dist/legacy/build/pdf.worker.mjs",
       ];
+
+      // Suppress 'Critical dependency' and large string warnings
+      webpackConfig.ignoreWarnings = [
+        ...(webpackConfig.ignoreWarnings || []),
+        { module: /@opentelemetry/ },
+        { module: /@sentry/ },
+        {
+          message:
+            /Critical dependency: the request of a dependency is an expression/,
+        },
+      ];
     }
-    return config;
+    return webpackConfig;
   },
 });
 

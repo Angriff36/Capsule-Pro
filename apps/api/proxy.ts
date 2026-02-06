@@ -1,10 +1,22 @@
 import { clerkMiddleware, createRouteMatcher } from "@repo/auth/server";
 
-const isPublicRoute = createRouteMatcher(["/webhooks(.*)", "/outbox/publish"]);
+const isPublicRoute = createRouteMatcher([
+  "/webhooks(.*)",
+  "/outbox/publish",
+  "/api/health",
+]);
 
 export default clerkMiddleware(async (auth, req) => {
+  // If hitting the API directly from a browser without a session, 
+  // we want to return a 401 JSON instead of a redirect loop.
   if (!isPublicRoute(req)) {
-    await auth.protect();
+    const { userId } = await auth();
+    if (!userId) {
+      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
   }
 });
 

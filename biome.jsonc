@@ -11,16 +11,16 @@
       "!packages/design-system/hooks",
       "!packages/collaboration/config.ts",
       "!packages/cms/basehub-types.d.ts",
-      "!!**/.codex",
-      "!!**/.claude",
-      "!!**/codex-plans",
-      "!!**/claude-code-plans",
-      "!!**/.next",
-      "!!**/node_modules",
-      "!!**/dist",
-      "!!**/build",
-      "!!**/playwright-report",
-      "!!**/test-results"
+      "!**/.codex",
+      "!**/.claude",
+      "!**/codex-plans",
+      "!**/claude-code-plans",
+      "!**/.next",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/build",
+      "!**/playwright-report",
+      "!**/test-results"
     ]
   },
   "extends": [

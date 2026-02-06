@@ -5,7 +5,7 @@ import type { NextConfig } from "next";
 import { env } from "./env";
 
 const apiBaseUrl = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223"
+  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:2223"
 ).replace(/\/$/, "");
 
 type WebpackConfig = Parameters<NonNullable<NextConfig["webpack"]>>[0];
@@ -44,6 +44,46 @@ const rewrites: NextConfig["rewrites"] = async () => {
       source: "/api/events/:path*",
       destination: `${apiBaseUrl}/api/events/:path*`,
     },
+    {
+      source: "/api/administrative/:path*",
+      destination: `${apiBaseUrl}/api/administrative/:path*`,
+    },
+    {
+      source: "/api/staff/:path*",
+      destination: `${apiBaseUrl}/api/staff/:path*`,
+    },
+    {
+      source: "/api/locations/:path*",
+      destination: `${apiBaseUrl}/api/locations/:path*`,
+    },
+    {
+      source: "/api/ai/:path*",
+      destination: `${apiBaseUrl}/api/ai/:path*`,
+    },
+    {
+      source: "/api/crm/:path*",
+      destination: `${apiBaseUrl}/api/crm/:path*`,
+    },
+    {
+      source: "/api/payroll/:path*",
+      destination: `${apiBaseUrl}/api/payroll/:path*`,
+    },
+    {
+      source: "/api/timecards/:path*",
+      destination: `${apiBaseUrl}/api/timecards/:path*`,
+    },
+    {
+      source: "/api/collaboration/:path*",
+      destination: `${apiBaseUrl}/api/collaboration/:path*`,
+    },
+    {
+      source: "/api/command-board/:path*",
+      destination: `${apiBaseUrl}/api/command-board/:path*`,
+    },
+    {
+      source: "/api/conflicts/:path*",
+      destination: `${apiBaseUrl}/api/conflicts/:path*`,
+    },
   ];
 };
 
@@ -54,12 +94,42 @@ let nextConfig: NextConfig = withToolbar(
     typescript: {
       ignoreBuildErrors: true,
     },
-    // Transpile design-system package for webpack
-    transpilePackages: ["@repo/design-system"],
+    // Transpile workspace packages and heavy libraries for better performance
+    transpilePackages: [
+      "@repo/design-system",
+      "@repo/auth",
+      "@repo/database",
+      "@repo/analytics",
+      "@repo/observability",
+      "@repo/security",
+      "@repo/feature-flags",
+      "@repo/event-parser",
+      "@repo/webhooks",
+      "@repo/notifications",
+      "@repo/collaboration",
+      "@repo/manifest",
+      "@repo/seo",
+    ],
+    experimental: {
+      optimizePackageImports: [
+        "lucide-react",
+        "date-fns",
+        "recharts",
+        "@repo/design-system",
+      ],
+    },
     rewrites,
     // Externalize pdfjs-dist and ably to avoid bundling issues
     // ably: Turbopack + Ably causes keyv dynamic require failures in SSR
-    serverExternalPackages: ["pdfjs-dist", "ably"],
+    serverExternalPackages: [
+      "pdfjs-dist",
+      "ably",
+      "@sentry/nextjs",
+      "@sentry/node",
+      "@opentelemetry/api",
+      "@opentelemetry/sdk-node",
+      "@opentelemetry/instrumentation",
+    ],
     webpack: (webpackConfig: WebpackConfig, context: WebpackContext) => {
       if (context.isServer) {
         // Externalize pdfjs-dist - use function to catch all nested imports
@@ -93,6 +163,17 @@ let nextConfig: NextConfig = withToolbar(
             ? existingExternals
             : [existingExternals]),
           ...pdfjsExternals,
+        ];
+
+        // Suppress 'Critical dependency' and large string warnings that bloat logs/context
+        webpackConfig.ignoreWarnings = [
+          ...(webpackConfig.ignoreWarnings || []),
+          { module: /@opentelemetry/ },
+          { module: /@sentry/ },
+          {
+            message:
+              /Critical dependency: the request of a dependency is an expression/,
+          },
         ];
       }
       return webpackConfig;
