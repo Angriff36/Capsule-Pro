@@ -17,7 +17,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../../../lib/tenant";
 import { Header } from "../../../../components/header";
-import { createDish } from "../../actions";
+import { createDish } from "../../actions-manifest";
 
 interface RecipeOption {
   id: string;

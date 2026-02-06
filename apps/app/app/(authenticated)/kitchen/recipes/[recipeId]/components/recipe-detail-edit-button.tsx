@@ -6,7 +6,7 @@ import {
   getRecipeForEdit,
   type RecipeForEdit,
   updateRecipe,
-} from "../../actions";
+} from "../../actions-manifest";
 import { RecipeEditModal } from "../../components/recipe-edit-modal";
 
 interface RecipeDetailEditButtonProps {

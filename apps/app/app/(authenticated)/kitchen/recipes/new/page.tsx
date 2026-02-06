@@ -16,7 +16,7 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "../../../components/header";
-import { createRecipe } from "../actions";
+import { createRecipe } from "../actions-manifest";
 
 interface UnitRow {
   id: number;
