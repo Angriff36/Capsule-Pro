@@ -73,7 +73,25 @@ Manifest Runtime Version: v0.3.0
   - `PrepTaskPrismaStore` class maps Manifest PrepTask to Prisma PrepTask + KitchenTaskClaim tables
   - `createPrismaStoreProvider()` function for Store interface
   - Handles claim synchronization between Manifest's inline claimedBy/claimedAt and Prisma's separate KitchenTaskClaim table
-- [ ] Audit all kitchen mutation paths for Manifest compliance
+- [x] Audit all kitchen mutation paths for Manifest compliance (COMPLETED 2025-02-06)
+  - **CRITICAL FINDING**: Only ~30% of kitchen mutations use Manifest runtime
+  - **Recipe/Dish/Menu Management**: All use direct SQL mutations (6 files)
+    - `apps/app/app/(authenticated)/kitchen/recipes/actions.ts`
+    - `apps/app/app/(authenticated)/kitchen/recipes/cleanup/server-actions.ts`
+    - `apps/app/app/(authenticated)/kitchen/recipes/menus/actions.ts`
+  - **Prep List Management**: Direct SQL mutations (2 files)
+    - `apps/app/app/(authenticated)/kitchen/prep-lists/actions.ts`
+    - `apps/app/app/api/kitchen/prep-lists/save-db/route.ts`
+  - **Recipe Costing**: Direct DB updates via `recipe-costing.ts`
+    - `/api/kitchen/recipes/[recipeVersionId]/cost/route.ts`
+    - `/api/kitchen/recipes/[recipeVersionId]/update-budgets/route.ts`
+  - **PrepTask API Routes**: Hybrid approach - Manifest for constraint checking, Prisma for persistence
+    - `/api/kitchen/tasks/[id]/claim` - Uses `claimPrepTask()` for constraints, manual sync to Prisma
+    - `/api/kitchen/tasks/[id]` PATCH - Uses Manifest commands for status changes, direct Prisma for other updates
+  - **PrismaStore Integration**: PrismaStore adapter exists but not used in runtime creation
+    - Runtime uses in-memory storage by default (no `databaseUrl` passed)
+    - PostgresStore creates separate tables instead of using existing Prisma schema
+  - **NEXT STEPS**: Create Manifest runtimes for Recipe, Dish, Menu, PrepList entities (future work)
 - [x] Add telemetry: count WARN/BLOCK constraints, override usage, top constraint codes (2025-02-06)
   - Added telemetry hooks to RuntimeOptions interface in manifest runtime
   - `onConstraintEvaluated` callback for each constraint evaluation
