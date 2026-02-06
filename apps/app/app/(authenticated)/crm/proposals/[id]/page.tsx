@@ -39,6 +39,7 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { apiUrl } from "@/app/lib/api";
 import { getProposalById } from "../actions";
 
 interface ProposalPageProps {
@@ -222,7 +223,7 @@ export default async function ProposalDetailPage({
         <div className="flex items-center gap-2">
           {proposal.status === "draft" && (
             <form
-              action={`/api/crm/proposals/${proposal.id}/send`}
+              action={apiUrl(`/api/crm/proposals/${proposal.id}/send`)}
               method="POST"
             >
               <Button type="submit">

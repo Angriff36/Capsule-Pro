@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 // TypeScript types for Finance Analytics
 export interface FinanceHighlight {
@@ -104,7 +105,9 @@ export async function fetchFinanceAnalytics(
     params.set("locationId", locationId);
   }
 
-  const response = await fetch(`/api/analytics/finance?${params.toString()}`);
+  const response = await apiFetch(
+    `/api/analytics/finance?${params.toString()}`
+  );
 
   if (!response.ok) {
     const error = await response

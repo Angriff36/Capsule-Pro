@@ -40,6 +40,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 interface LineItem {
   id: string;
@@ -142,7 +143,7 @@ export function ProposalForm({
   useEffect(() => {
     async function fetchClients() {
       try {
-        const response = await fetch("/api/crm/clients?limit=1000");
+        const response = await apiFetch("/api/crm/clients?limit=1000");
         if (!response.ok) {
           throw new Error("Failed to fetch clients");
         }

@@ -37,6 +37,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 import {
   getRecipeCost,
   type IngredientCostBreakdown,
@@ -401,7 +402,7 @@ function HistoryTabContent({
     const fetchVersions = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/api/recipes/${recipeId}/versions`);
+        const response = await apiFetch(`/api/recipes/${recipeId}/versions`);
         if (response.ok) {
           const data = await response.json();
           setVersions(data);
@@ -433,7 +434,7 @@ function HistoryTabContent({
     setViewLoading(true);
     setViewingDetail(null);
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `/api/recipes/${recipeId}/versions/${version.id}`
       );
       if (!response.ok) {
@@ -459,7 +460,7 @@ function HistoryTabContent({
     setCompareError(null);
     setCompareData(null);
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `/api/recipes/${recipeId}/versions/compare?from=${compareFrom}&to=${compareTo}`
       );
       if (!response.ok) {

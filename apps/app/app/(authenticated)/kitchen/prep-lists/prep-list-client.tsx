@@ -43,6 +43,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 import type {
   IngredientItem,
   PrepListGenerationResult,
@@ -291,7 +292,7 @@ export function PrepListClient({
 
     setIsGenerating(true);
     try {
-      const response = await fetch("/api/kitchen/prep-lists/generate", {
+      const response = await apiFetch("/api/kitchen/prep-lists/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -351,7 +352,7 @@ export function PrepListClient({
 
     setIsSaving(true);
     try {
-      const response = await fetch("/api/kitchen/prep-lists/save", {
+      const response = await apiFetch("/api/kitchen/prep-lists/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -384,7 +385,7 @@ export function PrepListClient({
 
     setIsSavingToDb(true);
     try {
-      const response = await fetch("/api/kitchen/prep-lists/save-db", {
+      const response = await apiFetch("/api/kitchen/prep-lists/save-db", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

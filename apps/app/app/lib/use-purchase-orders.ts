@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 // Type definitions matching the API response
 export const PO_STATUSES = [
   "draft",
@@ -165,7 +166,7 @@ export async function listPurchaseOrders(params: {
     searchParams.set("limit", params.limit.toString());
   }
 
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/inventory/purchase-orders?${searchParams.toString()}`
   );
 
@@ -181,7 +182,7 @@ export async function listPurchaseOrders(params: {
 export async function getPurchaseOrder(
   poId: string
 ): Promise<PurchaseOrderWithDetails> {
-  const response = await fetch(`/api/inventory/purchase-orders/${poId}`);
+  const response = await apiFetch(`/api/inventory/purchase-orders/${poId}`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -208,7 +209,7 @@ export async function updatePurchaseOrderItemQuantity(
   itemId: string,
   request: UpdateQuantityReceivedRequest
 ): Promise<POItemWithDetails> {
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/inventory/purchase-orders/${poId}/items/${itemId}/quantity`,
     {
       method: "PUT",
@@ -231,7 +232,7 @@ export async function updatePurchaseOrderItemQuality(
   itemId: string,
   request: UpdateQualityStatusRequest
 ): Promise<POItemWithDetails> {
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/inventory/purchase-orders/${poId}/items/${itemId}/quality`,
     {
       method: "PUT",
@@ -253,7 +254,7 @@ export async function completePurchaseOrderReceiving(
   poId: string,
   request: CompleteReceivingRequest
 ): Promise<PurchaseOrderWithDetails> {
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/inventory/purchase-orders/${poId}/complete`,
     {
       method: "POST",

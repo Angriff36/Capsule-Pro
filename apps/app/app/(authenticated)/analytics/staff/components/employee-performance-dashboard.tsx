@@ -16,6 +16,7 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 import type {
   EmployeePerformanceMetrics,
   EmployeePerformanceSummary,
@@ -43,13 +44,13 @@ export function EmployeePerformanceDashboard({
         setLoading(true);
 
         if (employeeId) {
-          const response = await fetch(
+          const response = await apiFetch(
             `/api/analytics/staff/employees/${employeeId}?period=${selectedPeriod}`
           );
           const data = await response.json();
           setMetrics(data);
         } else {
-          const response = await fetch(
+          const response = await apiFetch(
             `/api/analytics/staff/summary?period=${selectedPeriod}`
           );
           const data = await response.json();

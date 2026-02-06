@@ -14,6 +14,7 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 interface InventoryItem {
   id: string;
@@ -60,13 +61,13 @@ export function WasteEntriesClient() {
         setLoading(true);
         // Fetch inventory items, waste reasons, and units in parallel
         const [itemsRes, reasonsRes, unitsRes] = await Promise.all([
-          fetch("/api/inventory/items?limit=500", {
+          apiFetch("/api/inventory/items?limit=500", {
             credentials: "include",
           }),
-          fetch("/api/kitchen/waste/reasons", {
+          apiFetch("/api/kitchen/waste/reasons", {
             credentials: "include",
           }),
-          fetch("/api/kitchen/waste/units", {
+          apiFetch("/api/kitchen/waste/units", {
             credentials: "include",
           }),
         ]);
@@ -112,7 +113,7 @@ export function WasteEntriesClient() {
     setSubmitting(true);
 
     try {
-      const response = await fetch("/api/kitchen/waste/entries", {
+      const response = await apiFetch("/api/kitchen/waste/entries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

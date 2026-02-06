@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 // Types for kitchen analytics data
 export interface StationThroughput {
@@ -78,7 +79,7 @@ async function fetchKitchenAnalytics(
     params.set("locationId", locationId);
   }
 
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/analytics/kitchen${params.toString() ? `?${params.toString()}` : ""}`
   );
 

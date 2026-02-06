@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 // Type definitions matching the API response
 
 export type ConfidenceLevel = "high" | "medium" | "low";
@@ -129,7 +130,7 @@ export async function getAssignmentSuggestions(
     searchParams.set("requiredSkills", params.requiredSkills.join(","));
   }
 
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/staff/shifts/${shiftId}/assignment-suggestions?${searchParams.toString()}`
   );
 
@@ -146,7 +147,7 @@ export async function autoAssignShift(
   shiftId: string,
   request: AutoAssignRequest
 ): Promise<AssignmentSuccessResponse> {
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/staff/shifts/${shiftId}/assignment-suggestions`,
     {
       method: "POST",
@@ -184,7 +185,7 @@ export async function getBulkAssignmentSuggestions(params?: {
     searchParams.set("endDate", params.endDate);
   }
 
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/staff/shifts/bulk-assignment-suggestions?${searchParams.toString()}`
   );
 
@@ -202,7 +203,7 @@ export async function getBulkAssignmentSuggestions(params?: {
 export async function getBulkSuggestionsForShifts(
   request: BulkAssignmentRequest
 ): Promise<BulkAssignmentResponse> {
-  const response = await fetch(
+  const response = await apiFetch(
     "/api/staff/shifts/bulk-assignment-suggestions",
     {
       method: "POST",

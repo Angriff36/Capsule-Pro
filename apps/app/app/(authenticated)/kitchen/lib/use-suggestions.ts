@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 import type { SuggestedAction, SuggestionsResponse } from "./suggestions-types";
 
 export function useSuggestions(tenantId?: string | null) {
@@ -29,7 +30,9 @@ export function useSuggestions(tenantId?: string | null) {
         params.append("timeframe", options.timeframe);
       }
 
-      const response = await fetch(`/api/ai/suggestions?${params.toString()}`);
+      const response = await apiFetch(
+        `/api/ai/suggestions?${params.toString()}`
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch suggestions");

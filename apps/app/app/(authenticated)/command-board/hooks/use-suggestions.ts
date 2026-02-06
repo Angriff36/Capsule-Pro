@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 import type { SuggestedAction } from "../actions/suggestions-types";
 
 export function useSuggestions(
@@ -30,7 +31,9 @@ export function useSuggestions(
         params.append("eventId", eventId);
       }
 
-      const response = await fetch(`/api/ai/suggestions?${params.toString()}`);
+      const response = await apiFetch(
+        `/api/ai/suggestions?${params.toString()}`
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch suggestions");

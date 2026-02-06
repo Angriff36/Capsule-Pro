@@ -30,6 +30,7 @@ import {
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 interface RecipeStep {
   stepNumber: number;
@@ -103,8 +104,8 @@ export const MobileRecipeClient = ({
       try {
         setLoading(true);
         const [stepsRes, ingredientsRes] = await Promise.all([
-          fetch(`/api/kitchen/recipes/${recipeId}/steps`),
-          fetch(`/api/kitchen/recipes/${recipeId}/ingredients`),
+          apiFetch(`/api/kitchen/recipes/${recipeId}/steps`),
+          apiFetch(`/api/kitchen/recipes/${recipeId}/ingredients`),
         ]);
 
         if (!(stepsRes.ok && ingredientsRes.ok)) {

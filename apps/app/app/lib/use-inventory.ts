@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 // Type definitions matching the API response
 export const FSA_STATUSES = [
   "unknown",
@@ -126,7 +127,7 @@ export async function listInventoryItems(params: {
     searchParams.set("limit", params.limit.toString());
   }
 
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/inventory/items?${searchParams.toString()}`
   );
 
@@ -142,7 +143,7 @@ export async function listInventoryItems(params: {
 export async function getInventoryItem(
   itemId: string
 ): Promise<InventoryItemWithStatus> {
-  const response = await fetch(`/api/inventory/items/${itemId}`);
+  const response = await apiFetch(`/api/inventory/items/${itemId}`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -156,7 +157,7 @@ export async function getInventoryItem(
 export async function createInventoryItem(
   request: CreateInventoryItemRequest
 ): Promise<InventoryItemWithStatus> {
-  const response = await fetch("/api/inventory/items", {
+  const response = await apiFetch("/api/inventory/items", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(request),
@@ -175,7 +176,7 @@ export async function updateInventoryItem(
   itemId: string,
   request: UpdateInventoryItemRequest
 ): Promise<InventoryItemWithStatus> {
-  const response = await fetch(`/api/inventory/items/${itemId}`, {
+  const response = await apiFetch(`/api/inventory/items/${itemId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(request),
@@ -191,7 +192,7 @@ export async function updateInventoryItem(
 
 // Delete an inventory item (soft delete)
 export async function deleteInventoryItem(itemId: string): Promise<void> {
-  const response = await fetch(`/api/inventory/items/${itemId}`, {
+  const response = await apiFetch(`/api/inventory/items/${itemId}`, {
     method: "DELETE",
   });
 

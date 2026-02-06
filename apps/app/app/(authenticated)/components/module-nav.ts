@@ -3,6 +3,7 @@ export type ModuleKey =
   | "kitchen"
   | "warehouse"
   | "scheduling"
+  | "staff"
   | "payroll"
   | "administrative"
   | "crm"
@@ -115,6 +116,22 @@ export const modules: ModuleDefinition[] = [
           { title: "Availability", href: "/scheduling/availability" },
           { title: "Requests", href: "/scheduling/requests" },
           { title: "Budgets", href: "/scheduling/budgets" },
+        ],
+      },
+    ],
+  },
+  {
+    key: "staff",
+    label: "Staff",
+    href: "/staff",
+    sidebar: [
+      {
+        label: "Staff",
+        items: [
+          { title: "Team", href: "/staff/team" },
+          { title: "Schedule", href: "/staff/schedule" },
+          { title: "Availability", href: "/staff/availability" },
+          { title: "Time Off", href: "/staff/time-off" },
         ],
       },
     ],

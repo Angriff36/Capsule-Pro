@@ -32,6 +32,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 interface ChecklistQuestion {
   id: string;
@@ -154,7 +155,7 @@ export function ReportEditorClient({ report, event }: ReportEditorProps) {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/events/reports/${report.id}`, {
+      const response = await apiFetch(`/api/events/reports/${report.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -186,7 +187,7 @@ export function ReportEditorClient({ report, event }: ReportEditorProps) {
     setStatus("completed");
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/events/reports/${report.id}`, {
+      const response = await apiFetch(`/api/events/reports/${report.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

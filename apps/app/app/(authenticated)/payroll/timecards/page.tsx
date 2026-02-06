@@ -38,6 +38,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 import TimecardDetailModal from "./timecard-detail-modal";
 
 interface TimeEntry {
@@ -192,7 +193,7 @@ export default function TimecardsPage() {
         params.set("endDate", endDate);
       }
 
-      const response = await fetch(`/api/timecards?${params.toString()}`);
+      const response = await apiFetch(`/api/timecards?${params.toString()}`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch timecards");
@@ -224,7 +225,7 @@ export default function TimecardsPage() {
   const handleApprove = async (entryId: string) => {
     setActionLoading(true);
     try {
-      const response = await fetch("/api/timecards/bulk", {
+      const response = await apiFetch("/api/timecards/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -254,7 +255,7 @@ export default function TimecardsPage() {
   ) => {
     setActionLoading(true);
     try {
-      const response = await fetch("/api/timecards/bulk", {
+      const response = await apiFetch("/api/timecards/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -294,7 +295,7 @@ export default function TimecardsPage() {
   ): Promise<void> => {
     setActionLoading(true);
     try {
-      const response = await fetch("/api/timecards/bulk", {
+      const response = await apiFetch("/api/timecards/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

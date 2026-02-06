@@ -25,6 +25,7 @@ import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import { EditIcon, LoaderIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 const COMMON_ALLERGENS = [
   { id: "peanuts", label: "Peanuts", description: "Legumes including peanuts" },
@@ -134,9 +135,7 @@ export function AllergenManagementModal({
         return;
       }
 
-      const endpoint = "/api/kitchen/allergens/update-dish";
-
-      const response = await fetch(endpoint, {
+      const response = await apiFetch("/api/kitchen/allergens/update-dish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -45,6 +45,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 import { listInventoryItems } from "../../../lib/use-inventory";
 import {
   type CreateShipmentRequest,
@@ -196,7 +197,7 @@ export const ShipmentsPageClient = () => {
   // Load shipment items
   const loadShipmentItems = useCallback(async (shipmentId: string) => {
     try {
-      const response = await fetch(`/api/shipments/${shipmentId}/items`);
+      const response = await apiFetch(`/api/shipments/${shipmentId}/items`);
       if (response.ok) {
         const items = await response.json();
         setShipmentItems(items);
@@ -289,7 +290,7 @@ export const ShipmentsPageClient = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `/api/shipments/${selectedShipment.id}/items`,
         {
           method: "POST",

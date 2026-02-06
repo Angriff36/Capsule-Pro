@@ -28,6 +28,7 @@ import {
 import { AlertTriangle, CheckCircle2, Loader2, SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 import { AllergenManagementModal } from "./allergen-management-modal";
 
 // Types matching database schema
@@ -96,7 +97,7 @@ export default function AllergenManagementPage() {
   // Fetch function declarations (must be before useEffect hooks that use them)
   const fetchWarnings = async () => {
     try {
-      const response = await fetch("/api/kitchen/allergens/warnings");
+      const response = await apiFetch("/api/kitchen/allergens/warnings");
       if (!response.ok) {
         // Don't throw - handle gracefully and return empty array
         console.warn("Failed to fetch warnings, server may be unavailable");
@@ -114,7 +115,7 @@ export default function AllergenManagementPage() {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch("/api/events?limit=50");
+      const response = await apiFetch("/api/events?limit=50");
       if (!response.ok) {
         console.warn("Failed to fetch events, server may be unavailable");
         setEvents([]);
@@ -130,7 +131,7 @@ export default function AllergenManagementPage() {
 
   const fetchDishes = async () => {
     try {
-      const response = await fetch("/api/kitchen/dishes?limit=100");
+      const response = await apiFetch("/api/kitchen/dishes?limit=100");
       if (!response.ok) {
         console.warn("Failed to fetch dishes, server may be unavailable");
         setDishes([]);
@@ -146,7 +147,7 @@ export default function AllergenManagementPage() {
 
   const fetchRecipes = async () => {
     try {
-      const response = await fetch("/api/kitchen/recipes?limit=100");
+      const response = await apiFetch("/api/kitchen/recipes?limit=100");
       if (!response.ok) {
         console.warn("Failed to fetch recipes, server may be unavailable");
         setRecipes([]);
@@ -219,7 +220,7 @@ export default function AllergenManagementPage() {
   const handleAcknowledgeWarning = async (warningId: string) => {
     setActionLoading(true);
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         "/api/events/allergens/warnings/acknowledge",
         {
           method: "POST",
@@ -254,7 +255,7 @@ export default function AllergenManagementPage() {
   ) => {
     setActionLoading(true);
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         "/api/events/allergens/warnings/acknowledge",
         {
           method: "POST",

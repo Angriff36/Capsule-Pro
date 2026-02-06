@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 import { invariant } from "@/app/lib/invariant";
 
 interface KitchenAnalyticsSummary {
@@ -302,7 +303,9 @@ export async function fetchKitchenAnalytics(
     params.set("locationId", locationId);
   }
 
-  const response = await fetch(`/api/analytics/kitchen?${params.toString()}`);
+  const response = await apiFetch(
+    `/api/analytics/kitchen?${params.toString()}`
+  );
 
   if (!response.ok) {
     const error = await response

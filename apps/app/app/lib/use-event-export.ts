@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 /**
  * Client-side hook for event export functionality
@@ -38,7 +39,7 @@ export async function exportEvent(
   const includeParam = include.join(",");
   const downloadParam = download ? "true" : "false";
 
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/events/${eventId}/export/${format}?include=${includeParam}&download=${downloadParam}`,
     {
       method: "GET",

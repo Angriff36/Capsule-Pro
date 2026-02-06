@@ -157,7 +157,7 @@ export async function listRecipes(
     params.set("limit", filters.limit.toString());
   }
 
-  const response = await fetch(`/api/kitchen/recipes?${params.toString()}`);
+  const response = await apiFetch(`/api/kitchen/recipes?${params.toString()}`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -173,7 +173,9 @@ export async function listRecipes(
 export async function getRecipeCost(
   recipeVersionId: string
 ): Promise<RecipeCostBreakdown> {
-  const response = await fetch(`/api/kitchen/recipes/${recipeVersionId}/cost`);
+  const response = await apiFetch(
+    `/api/kitchen/recipes/${recipeVersionId}/cost`
+  );
 
   if (!response.ok) {
     const error = await response.json();
@@ -189,9 +191,12 @@ export async function getRecipeCost(
 export async function recalculateRecipeCost(
   recipeVersionId: string
 ): Promise<RecipeCostBreakdown> {
-  const response = await fetch(`/api/kitchen/recipes/${recipeVersionId}/cost`, {
-    method: "POST",
-  });
+  const response = await apiFetch(
+    `/api/kitchen/recipes/${recipeVersionId}/cost`,
+    {
+      method: "POST",
+    }
+  );
 
   if (!response.ok) {
     const error = await response.json();
@@ -208,7 +213,7 @@ export async function scaleRecipe(
   recipeVersionId: string,
   request: ScaleRecipeRequest
 ): Promise<ScaledRecipeCost> {
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/kitchen/recipes/${recipeVersionId}/scale`,
     {
       method: "POST",
@@ -234,7 +239,7 @@ export async function updateWasteFactor(
   recipeVersionId: string,
   request: UpdateWasteFactorRequest
 ): Promise<{ success: boolean; message: string }> {
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/kitchen/recipes/${recipeVersionId}/scale`,
     {
       method: "PATCH",
@@ -259,7 +264,7 @@ export async function updateWasteFactor(
 export async function updateEventBudgets(
   recipeVersionId: string
 ): Promise<{ success: boolean; message: string; affectedEvents: number }> {
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/kitchen/recipes/${recipeVersionId}/update-budgets`,
     {
       method: "POST",
@@ -279,6 +284,7 @@ export async function updateEventBudgets(
 // ============================================================================
 
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 export interface UseRecipeCostResult {
   data: RecipeCostBreakdown | null;

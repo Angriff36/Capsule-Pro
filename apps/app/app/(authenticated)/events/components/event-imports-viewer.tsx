@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { useMemo, useState } from "react";
+import { apiFetch, apiUrl } from "@/app/lib/api";
 
 interface ImportFile {
   id: string;
@@ -106,7 +107,9 @@ export const EventImportsViewer = ({ imports }: { imports: ImportFile[] }) => {
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/events/imports/${file.id}?inline=1`);
+      const response = await apiFetch(
+        `/api/events/imports/${file.id}?inline=1`
+      );
       const text = await response.text();
       setCsvData(parseCsv(text));
     } finally {
@@ -142,7 +145,7 @@ export const EventImportsViewer = ({ imports }: { imports: ImportFile[] }) => {
                 View
               </Button>
               <Button asChild size="sm" variant="ghost">
-                <a href={`/api/events/imports/${file.id}`}>Download</a>
+                <a href={apiUrl(`/api/events/imports/${file.id}`)}>Download</a>
               </Button>
             </div>
           </div>
@@ -162,7 +165,7 @@ export const EventImportsViewer = ({ imports }: { imports: ImportFile[] }) => {
               return (
                 <iframe
                   className="h-[70vh] w-full rounded-md border"
-                  src={`/api/events/imports/${current.id}?inline=1`}
+                  src={apiUrl(`/api/events/imports/${current.id}?inline=1`)}
                   title={current.file_name}
                 />
               );
@@ -174,7 +177,7 @@ export const EventImportsViewer = ({ imports }: { imports: ImportFile[] }) => {
                   <img
                     alt={current.file_name}
                     className="max-h-[65vh] w-auto rounded-md"
-                    src={`/api/events/imports/${current.id}?inline=1`}
+                    src={apiUrl(`/api/events/imports/${current.id}?inline=1`)}
                   />
                 </div>
               );

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 interface ParsedDocument {
   id: string;
@@ -152,7 +153,7 @@ export function ImportForm() {
         params.append("generateBattleBoard", "true");
       }
 
-      const response = await fetch(
+      const response = await apiFetch(
         `/api/events/documents/parse?${params.toString()}`,
         {
           method: "POST",

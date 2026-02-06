@@ -16,6 +16,7 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 import type {
   EventProfitabilityMetrics,
   HistoricalProfitabilityData,
@@ -43,11 +44,13 @@ export function ProfitabilityDashboard({
         setLoading(true);
 
         if (eventId) {
-          const response = await fetch(`/api/events/${eventId}/profitability`);
+          const response = await apiFetch(
+            `/api/events/${eventId}/profitability`
+          );
           const data = await response.json();
           setMetrics(data);
         } else {
-          const response = await fetch(
+          const response = await apiFetch(
             `/api/analytics/events/profitability?period=${selectedPeriod}`
           );
           const data = await response.json();

@@ -92,6 +92,9 @@ model Account {
   budgetLineItems       BudgetLineItem[]
   budgetAlerts          BudgetAlert[]
   adminTasks            AdminTask[]
+  adminChatThreads      AdminChatThread[]
+  adminChatParticipants AdminChatParticipant[]
+  adminChatMessages     AdminChatMessage[]
 
   @@map("accounts")
   @@schema("platform")
@@ -147,6 +150,8 @@ model User {
   roleId          String?        @map("role_id") @db.Uuid
   tenant          Account        @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   payrollRole     Role?          @relation("EmployeeRole", fields: [roleId, tenantId], references: [id, tenantId])
+  adminChatParticipants AdminChatParticipant[]
+  adminChatMessages     AdminChatMessage[]
 
   @@id([tenantId, id])
   @@unique([tenantId, id], map: "employees_tenant_id_unique_idx")
@@ -1699,6 +1704,76 @@ model AdminTask {
   @@index([tenantId, status], map: "admin_tasks_status_idx")
   @@index([tenantId, dueDate], map: "admin_tasks_due_idx")
   @@map("admin_tasks")
+  @@schema("tenant_admin")
+}
+
+model AdminChatThread {
+  tenantId       String                  @map("tenant_id") @db.Uuid
+  id             String                  @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  threadType     String                  @map("thread_type")
+  slug           String?
+  directKey      String?                 @map("direct_key")
+  createdBy      String?                 @map("created_by") @db.Uuid
+  lastMessageAt  DateTime?               @map("last_message_at") @db.Timestamptz(6)
+  createdAt      DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime                @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime?               @map("deleted_at") @db.Timestamptz(6)
+  tenant         Account                 @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  participants   AdminChatParticipant[]
+  messages       AdminChatMessage[]
+
+  @@id([tenantId, id])
+  @@unique([tenantId, slug], map: "admin_chat_thread_slug_unique")
+  @@unique([tenantId, directKey], map: "admin_chat_thread_direct_key_unique")
+  @@index([tenantId, threadType], map: "admin_chat_thread_type_idx")
+  @@index([tenantId, lastMessageAt(sort: Desc)], map: "admin_chat_thread_last_message_idx")
+  @@map("admin_chat_threads")
+  @@schema("tenant_admin")
+}
+
+model AdminChatParticipant {
+  tenantId   String           @map("tenant_id") @db.Uuid
+  id         String           @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  threadId   String           @map("thread_id") @db.Uuid
+  userId     String           @map("user_id") @db.Uuid
+  archivedAt DateTime?        @map("archived_at") @db.Timestamptz(6)
+  clearedAt  DateTime?        @map("cleared_at") @db.Timestamptz(6)
+  lastReadAt DateTime?        @map("last_read_at") @db.Timestamptz(6)
+  createdAt  DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt  DateTime?        @map("deleted_at") @db.Timestamptz(6)
+  tenant     Account          @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  thread     AdminChatThread  @relation(fields: [tenantId, threadId], references: [tenantId, id], onDelete: Cascade)
+  user       User             @relation(fields: [tenantId, userId], references: [tenantId, id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, threadId, userId], map: "admin_chat_participant_unique")
+  @@index([tenantId, userId], map: "admin_chat_participant_user_idx")
+  @@index([tenantId, threadId], map: "admin_chat_participant_thread_idx")
+  @@index([tenantId, archivedAt], map: "admin_chat_participant_archived_idx")
+  @@map("admin_chat_participants")
+  @@schema("tenant_admin")
+}
+
+model AdminChatMessage {
+  tenantId   String          @map("tenant_id") @db.Uuid
+  id         String          @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  threadId   String          @map("thread_id") @db.Uuid
+  authorId   String          @map("author_id") @db.Uuid
+  authorName String          @map("author_name")
+  text       String
+  createdAt  DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt  DateTime?       @map("deleted_at") @db.Timestamptz(6)
+  tenant     Account         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  thread     AdminChatThread @relation(fields: [tenantId, threadId], references: [tenantId, id], onDelete: Cascade)
+  author     User            @relation(fields: [tenantId, authorId], references: [tenantId, id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([tenantId, threadId, createdAt(sort: Desc)], map: "admin_chat_message_thread_created_idx")
+  @@index([tenantId, authorId], map: "admin_chat_message_author_idx")
+  @@index([tenantId, threadId, deletedAt], map: "admin_chat_message_active_idx")
+  @@map("admin_chat_messages")
   @@schema("tenant_admin")
 }
 

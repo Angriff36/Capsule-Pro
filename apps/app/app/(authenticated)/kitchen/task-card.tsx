@@ -22,6 +22,7 @@ import { differenceInMinutes, format, isPast } from "date-fns";
 import { ChevronRight, Clock, MoreVertical, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 type UserSelect = Pick<
   DbUser,
@@ -208,7 +209,7 @@ export function TaskCard({
     }
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/kitchen/tasks/${task.id}/claim`, {
+      const response = await apiFetch(`/api/kitchen/tasks/${task.id}/claim`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ employeeId: currentUserId }),
@@ -231,7 +232,7 @@ export function TaskCard({
     }
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/kitchen/tasks/${task.id}/release`, {
+      const response = await apiFetch(`/api/kitchen/tasks/${task.id}/release`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ employeeId: currentUserId }),
@@ -251,7 +252,7 @@ export function TaskCard({
   const handleStatusChange = async (newStatus: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/kitchen/tasks/${task.id}`, {
+      const response = await apiFetch(`/api/kitchen/tasks/${task.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),

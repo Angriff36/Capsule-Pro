@@ -54,6 +54,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 interface EventDish {
   link_id: string;
@@ -160,7 +161,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
           params.append("guestName", query);
         }
 
-        const response = await fetch(
+        const response = await apiFetch(
           `/api/events/${eventId}/guests${params.toString() ? `?${params.toString()}` : ""}`
         );
 
@@ -183,7 +184,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
   // Fetch event dishes for conflict detection
   const fetchEventDishes = useCallback(async () => {
     try {
-      const response = await fetch(`/api/events/${eventId}/dishes`);
+      const response = await apiFetch(`/api/events/${eventId}/dishes`);
       if (response.ok) {
         const dishes = await response.json();
         setEventDishes(dishes);
@@ -392,7 +393,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
     }
 
     try {
-      const response = await fetch(`/api/events/${eventId}/guests`, {
+      const response = await apiFetch(`/api/events/${eventId}/guests`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -427,11 +428,14 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
     }
 
     try {
-      const response = await fetch(`/api/events/guests/${selectedGuest.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const response = await apiFetch(
+        `/api/events/guests/${selectedGuest.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
 
       if (!response.ok) {
         const error = await response.json();
@@ -455,7 +459,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
   const deleteGuest = async (guestId: string) => {
     setIsDeleting(true);
     try {
-      const response = await fetch(`/api/events/guests/${guestId}`, {
+      const response = await apiFetch(`/api/events/guests/${guestId}`, {
         method: "DELETE",
       });
 

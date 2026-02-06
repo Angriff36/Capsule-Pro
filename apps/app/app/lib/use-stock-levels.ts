@@ -1,3 +1,4 @@
+import { apiFetch } from "@/app/lib/api";
 /**
  * Stock Levels Client API Functions
  *
@@ -213,7 +214,7 @@ export async function listStockLevels(
     params.set("limit", filters.limit.toString());
   }
 
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/inventory/stock-levels?${params.toString()}`
   );
 
@@ -231,7 +232,7 @@ export async function listStockLevels(
 export async function createAdjustment(
   request: CreateAdjustmentRequest
 ): Promise<CreateAdjustmentResponse> {
-  const response = await fetch("/api/inventory/stock-levels/adjust", {
+  const response = await apiFetch("/api/inventory/stock-levels/adjust", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -281,7 +282,7 @@ export async function listTransactions(
     params.set("limit", filters.limit.toString());
   }
 
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/inventory/stock-levels/transactions?${params.toString()}`
   );
 
@@ -301,7 +302,7 @@ export async function listTransactions(
  * List storage locations
  */
 export async function listLocations(): Promise<LocationListResponse> {
-  const response = await fetch("/api/inventory/stock-levels/locations");
+  const response = await apiFetch("/api/inventory/stock-levels/locations");
 
   if (!response.ok) {
     const error = await response.json();

@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 // Type definitions matching the API response
 export type EventBudgetStatus = "draft" | "approved" | "locked";
 export type BudgetCategory = "food" | "labor" | "rentals" | "miscellaneous";
@@ -124,7 +125,7 @@ export async function listBudgets(params: {
     searchParams.set("limit", params.limit.toString());
   }
 
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/events/budgets?${searchParams.toString()}`
   );
 
@@ -138,7 +139,7 @@ export async function listBudgets(params: {
 
 // Get a single budget by ID
 export async function getBudget(budgetId: string): Promise<EventBudget> {
-  const response = await fetch(`/api/events/budgets/${budgetId}`);
+  const response = await apiFetch(`/api/events/budgets/${budgetId}`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -153,7 +154,7 @@ export async function getBudget(budgetId: string): Promise<EventBudget> {
 export async function createBudget(
   request: CreateBudgetRequest
 ): Promise<EventBudget> {
-  const response = await fetch("/api/events/budgets", {
+  const response = await apiFetch("/api/events/budgets", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(request),
@@ -173,7 +174,7 @@ export async function updateBudget(
   budgetId: string,
   request: UpdateBudgetRequest
 ): Promise<EventBudget> {
-  const response = await fetch(`/api/events/budgets/${budgetId}`, {
+  const response = await apiFetch(`/api/events/budgets/${budgetId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(request),
@@ -190,7 +191,7 @@ export async function updateBudget(
 
 // Delete a budget
 export async function deleteBudget(budgetId: string): Promise<void> {
-  const response = await fetch(`/api/events/budgets/${budgetId}`, {
+  const response = await apiFetch(`/api/events/budgets/${budgetId}`, {
     method: "DELETE",
   });
 
@@ -204,7 +205,7 @@ export async function deleteBudget(budgetId: string): Promise<void> {
 export async function getLineItems(
   budgetId: string
 ): Promise<BudgetLineItem[]> {
-  const response = await fetch(`/api/events/budgets/${budgetId}/line-items`);
+  const response = await apiFetch(`/api/events/budgets/${budgetId}/line-items`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -219,7 +220,7 @@ export async function getLineItems(
 export async function createLineItem(
   request: CreateLineItemRequest
 ): Promise<BudgetLineItem> {
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/events/budgets/${request.budgetId}/line-items`,
     {
       method: "POST",
@@ -243,7 +244,7 @@ export async function updateLineItem(
   lineItemId: string,
   request: UpdateLineItemRequest
 ): Promise<BudgetLineItem> {
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/events/budgets/${budgetId}/line-items/${lineItemId}`,
     {
       method: "PUT",
@@ -266,7 +267,7 @@ export async function deleteLineItem(
   budgetId: string,
   lineItemId: string
 ): Promise<void> {
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/events/budgets/${budgetId}/line-items/${lineItemId}`,
     { method: "DELETE" }
   );

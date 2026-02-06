@@ -4,6 +4,7 @@ import { LivePresenceIndicator, Room } from "@repo/collaboration";
 import { Button } from "@repo/design-system/components/ui/button";
 import { RefreshCw, Sparkles } from "lucide-react";
 import { useState } from "react";
+import { apiUrl } from "@/app/lib/api";
 import {
   type Conflict,
   type ConflictDetectionResult,
@@ -68,7 +69,7 @@ function CommandBoardRealtimeContent({
 
   return (
     <Room
-      authEndpoint="/api/collaboration/auth"
+      authEndpoint={apiUrl("/api/collaboration/auth")}
       fallback={
         <div className="flex h-full items-center justify-center text-sm">
           Connecting...

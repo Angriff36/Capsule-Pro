@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 import { Header } from "../../components/header";
 
 // Types
@@ -122,7 +123,7 @@ export default function KitchenMobilePage() {
   // Fetch available tasks
   const fetchAvailableTasks = async () => {
     try {
-      const response = await fetch("/api/kitchen/tasks/available");
+      const response = await apiFetch("/api/kitchen/tasks/available");
       if (response.ok) {
         const data: ApiResponse = await response.json();
         setAvailableTasks(data.tasks);
@@ -136,7 +137,7 @@ export default function KitchenMobilePage() {
   // Fetch my tasks
   const fetchMyTasks = async () => {
     try {
-      const response = await fetch("/api/kitchen/tasks/my-tasks");
+      const response = await apiFetch("/api/kitchen/tasks/my-tasks");
       if (response.ok) {
         const data: ApiResponse = await response.json();
         setMyTasks(data.tasks);
@@ -175,7 +176,7 @@ export default function KitchenMobilePage() {
     }
 
     try {
-      const response = await fetch("/api/kitchen/tasks/sync-claims", {
+      const response = await apiFetch("/api/kitchen/tasks/sync-claims", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ claims: syncQueue }),
@@ -216,7 +217,7 @@ export default function KitchenMobilePage() {
     }
 
     try {
-      const response = await fetch(`/api/kitchen/tasks/${taskId}/claim`, {
+      const response = await apiFetch(`/api/kitchen/tasks/${taskId}/claim`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -255,7 +256,7 @@ export default function KitchenMobilePage() {
     }
 
     try {
-      const response = await fetch(`/api/kitchen/tasks/${taskId}/release`, {
+      const response = await apiFetch(`/api/kitchen/tasks/${taskId}/release`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -279,7 +280,7 @@ export default function KitchenMobilePage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/kitchen/tasks/${taskId}`, {
+      const response = await apiFetch(`/api/kitchen/tasks/${taskId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "completed" }),

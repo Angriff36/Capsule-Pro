@@ -1,3 +1,4 @@
+import { apiFetch } from "@/app/lib/api";
 /**
  * Shipments Client API Functions
  *
@@ -314,7 +315,7 @@ export async function listShipments(
     params.set("limit", filters.limit.toString());
   }
 
-  const response = await fetch(`/api/shipments?${params.toString()}`);
+  const response = await apiFetch(`/api/shipments?${params.toString()}`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -351,7 +352,7 @@ export async function listShipments(
 export async function getShipment(
   shipmentId: string
 ): Promise<ShipmentWithItems> {
-  const response = await fetch(`/api/shipments/${shipmentId}`);
+  const response = await apiFetch(`/api/shipments/${shipmentId}`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -367,7 +368,7 @@ export async function getShipment(
 export async function createShipment(
   request: CreateShipmentRequest
 ): Promise<Shipment> {
-  const response = await fetch("/api/shipments", {
+  const response = await apiFetch("/api/shipments", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(request),
@@ -388,7 +389,7 @@ export async function updateShipment(
   shipmentId: string,
   request: UpdateShipmentRequest
 ): Promise<Shipment> {
-  const response = await fetch(`/api/shipments/${shipmentId}`, {
+  const response = await apiFetch(`/api/shipments/${shipmentId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(request),
@@ -406,7 +407,7 @@ export async function updateShipment(
  * Delete a shipment (soft delete)
  */
 export async function deleteShipment(shipmentId: string): Promise<void> {
-  const response = await fetch(`/api/shipments/${shipmentId}`, {
+  const response = await apiFetch(`/api/shipments/${shipmentId}`, {
     method: "DELETE",
   });
 
@@ -427,7 +428,7 @@ export async function updateShipmentStatus(
   shipmentId: string,
   request: UpdateShipmentStatusRequest
 ): Promise<Shipment> {
-  const response = await fetch(`/api/shipments/${shipmentId}/status`, {
+  const response = await apiFetch(`/api/shipments/${shipmentId}/status`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(request),
@@ -451,7 +452,7 @@ export async function updateShipmentStatus(
 export async function listShipmentItems(
   shipmentId: string
 ): Promise<ShipmentItem[]> {
-  const response = await fetch(`/api/shipments/${shipmentId}/items`);
+  const response = await apiFetch(`/api/shipments/${shipmentId}/items`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -468,7 +469,7 @@ export async function addShipmentItem(
   shipmentId: string,
   request: CreateShipmentItemRequest
 ): Promise<ShipmentItem> {
-  const response = await fetch(`/api/shipments/${shipmentId}/items`, {
+  const response = await apiFetch(`/api/shipments/${shipmentId}/items`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(request),
@@ -490,11 +491,14 @@ export async function updateShipmentItem(
   itemId: string,
   request: UpdateShipmentItemRequest
 ): Promise<ShipmentItem> {
-  const response = await fetch(`/api/shipments/${shipmentId}/items/${itemId}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(request),
-  });
+  const response = await apiFetch(
+    `/api/shipments/${shipmentId}/items/${itemId}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    }
+  );
 
   if (!response.ok) {
     const error = await response.json();
@@ -511,9 +515,12 @@ export async function deleteShipmentItem(
   shipmentId: string,
   itemId: string
 ): Promise<void> {
-  const response = await fetch(`/api/shipments/${shipmentId}/items/${itemId}`, {
-    method: "DELETE",
-  });
+  const response = await apiFetch(
+    `/api/shipments/${shipmentId}/items/${itemId}`,
+    {
+      method: "DELETE",
+    }
+  );
 
   if (!response.ok) {
     const error = await response.json();

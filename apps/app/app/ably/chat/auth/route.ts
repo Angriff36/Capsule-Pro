@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
 import Ably from "ably";
 import { NextResponse } from "next/server";
 
@@ -8,6 +9,10 @@ interface AuthRequest {
 
 const getClientId = (tenantId: string, userId: string) =>
   `tenant:${tenantId}:user:${userId}`;
+const teamChannelForTenant = (tenantId: string) =>
+  `tenant:${tenantId}:admin-chat`;
+const directChannelForThread = (tenantId: string, threadId: string) =>
+  `tenant:${tenantId}:admin-chat:thread:${threadId}`;
 
 export async function POST(request: Request) {
   const { userId, sessionClaims } = await auth();
@@ -32,14 +37,54 @@ export async function POST(request: Request) {
   }
 
   const clientId = getClientId(tenantId, userId);
-  const channel = `tenant:${tenantId}:admin-chat`;
-  const ably = new Ably.Rest(apiKey);
+  const channel = teamChannelForTenant(tenantId);
+  const ably = new Ably.Rest({ key: apiKey });
+  const employee = await database.user.findFirst({
+    where: {
+      tenantId,
+      authUserId: userId,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!employee) {
+    return new NextResponse("Employee not found", { status: 404 });
+  }
+
+  const directThreads = await database.adminChatParticipant.findMany({
+    where: {
+      tenantId,
+      userId: employee.id,
+      deletedAt: null,
+      thread: {
+        deletedAt: null,
+        threadType: "direct",
+      },
+    },
+    select: {
+      threadId: true,
+    },
+  });
+
+  const capability: Record<string, string[]> = {
+    [channel]: ["publish", "subscribe"],
+  };
+
+  for (const thread of directThreads) {
+    capability[directChannelForThread(tenantId, thread.threadId)] = [
+      "publish",
+      "subscribe",
+    ];
+  }
 
   let tokenRequest;
   try {
     tokenRequest = await ably.auth.createTokenRequest({
       clientId,
-      capability: { [channel]: ["publish", "subscribe"] },
+      capability,
     });
   } catch (error) {
     const code = (error as { code?: number } | null)?.code;

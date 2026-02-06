@@ -64,6 +64,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 interface Proposal {
   id: string;
@@ -195,7 +196,9 @@ export function ProposalsClient({
         params.set("clientId", searchParams.get("clientId")!);
       }
 
-      const response = await fetch(`/api/crm/proposals?${params.toString()}`);
+      const response = await apiFetch(
+        `/api/crm/proposals?${params.toString()}`
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch proposals");
       }
@@ -272,7 +275,7 @@ export function ProposalsClient({
 
     setIsDeleting(true);
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `/api/crm/proposals/${proposalToDelete.id}`,
         {
           method: "DELETE",
@@ -301,11 +304,14 @@ export function ProposalsClient({
   const handleSendProposal = async (proposal: Proposal) => {
     setIsSending(true);
     try {
-      const response = await fetch(`/api/crm/proposals/${proposal.id}/send`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
+      const response = await apiFetch(
+        `/api/crm/proposals/${proposal.id}/send`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to send proposal");
@@ -327,7 +333,7 @@ export function ProposalsClient({
   const handleDuplicateProposal = async (proposal: Proposal) => {
     try {
       // Fetch full proposal with line items
-      const response = await fetch(`/api/crm/proposals/${proposal.id}`);
+      const response = await apiFetch(`/api/crm/proposals/${proposal.id}`);
       if (!response.ok) {
         throw new Error("Failed to fetch proposal");
       }
@@ -335,7 +341,7 @@ export function ProposalsClient({
       const fullProposal = await response.json();
 
       // Create duplicate
-      const createResponse = await fetch("/api/crm/proposals", {
+      const createResponse = await apiFetch("/api/crm/proposals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

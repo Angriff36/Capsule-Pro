@@ -1,3 +1,4 @@
+import { apiFetch } from "@/app/lib/api";
 import { invariant } from "@/app/lib/invariant";
 
 interface WasteTrendsSummary {
@@ -225,7 +226,7 @@ export const parseWasteReportResponse = (payload: unknown): WasteReportData => {
 };
 
 export async function fetchWasteTrends(): Promise<WasteTrendsData> {
-  const response = await fetch(
+  const response = await apiFetch(
     "/api/kitchen/waste/trends?period=30d&groupBy=day"
   );
 
@@ -251,7 +252,7 @@ export async function fetchWasteTrends(): Promise<WasteTrendsData> {
 }
 
 export async function fetchWasteReports(): Promise<WasteReportData> {
-  const response = await fetch("/api/kitchen/waste/reports?groupBy=reason");
+  const response = await apiFetch("/api/kitchen/waste/reports?groupBy=reason");
 
   if (!response.ok) {
     console.warn("Failed to fetch waste reports, server may be unavailable");

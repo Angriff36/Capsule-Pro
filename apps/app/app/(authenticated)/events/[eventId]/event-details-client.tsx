@@ -77,6 +77,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 import { useSuggestions } from "../../kitchen/lib/use-suggestions";
 import { updateEvent } from "../actions";
 import {
@@ -675,7 +676,7 @@ export function EventDetailsClient({
     setRsvpCount(optimisticCount);
 
     try {
-      const response = await fetch(`/api/events/${event.id}/guests`, {
+      const response = await apiFetch(`/api/events/${event.id}/guests`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -1,6 +1,7 @@
 "use client";
 
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 // Types
 export interface ForecastPoint {
@@ -59,7 +60,7 @@ export async function getDepletionForecast(
     save: save.toString(),
   });
 
-  const response = await fetch(`/api/inventory/forecasts?${params}`);
+  const response = await apiFetch(`/api/inventory/forecasts?${params}`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -83,7 +84,7 @@ export async function getSavedForecasts(
     to: toDate.toISOString(),
   });
 
-  const response = await fetch(`/api/inventory/forecasts?${params}`);
+  const response = await apiFetch(`/api/inventory/forecasts?${params}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch saved forecasts");
@@ -111,7 +112,7 @@ export async function getBatchForecasts(
     to: toDate.toISOString(),
   });
 
-  const response = await fetch(`/api/inventory/forecasts/batch?${params}`);
+  const response = await apiFetch(`/api/inventory/forecasts/batch?${params}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch batch forecasts");
@@ -145,7 +146,9 @@ export async function getReorderSuggestions(
   params.set("leadTimeDays", leadTimeDays.toString());
   params.set("safetyStockDays", safetyStockDays.toString());
 
-  const response = await fetch(`/api/inventory/reorder-suggestions?${params}`);
+  const response = await apiFetch(
+    `/api/inventory/reorder-suggestions?${params}`
+  );
 
   if (!response.ok) {
     throw new Error("Failed to fetch reorder suggestions");
@@ -167,7 +170,7 @@ export async function generateReorderSuggestions(
   count: number;
   suggestions: ReorderSuggestion[];
 }> {
-  const response = await fetch("/api/inventory/reorder-suggestions", {
+  const response = await apiFetch("/api/inventory/reorder-suggestions", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ sku, leadTimeDays, safetyStockDays, save }),

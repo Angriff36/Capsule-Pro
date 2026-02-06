@@ -46,6 +46,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 interface StaffMember {
   name: string;
@@ -240,7 +241,7 @@ export function BattleBoardEditorClient({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/events/battle-boards/${board.id}`, {
+      const response = await apiFetch(`/api/events/battle-boards/${board.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

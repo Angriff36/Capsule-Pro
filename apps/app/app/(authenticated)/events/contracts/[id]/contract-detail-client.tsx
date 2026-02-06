@@ -56,6 +56,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 import { SignaturePad } from "../components/signature-pad";
 
 interface ContractDetailClientProps {
@@ -139,7 +140,7 @@ export function ContractDetailClient({
   const handleStatusChange = useCallback(
     async (newStatus: ContractStatus) => {
       try {
-        const response = await fetch(
+        const response = await apiFetch(
           `/api/events/contracts/${contract.id}/status`,
           {
             method: "PATCH",
@@ -164,7 +165,7 @@ export function ContractDetailClient({
 
   const handleDelete = useCallback(async () => {
     try {
-      const response = await fetch(`/api/events/contracts/${contract.id}`, {
+      const response = await apiFetch(`/api/events/contracts/${contract.id}`, {
         method: "DELETE",
       });
 
@@ -182,7 +183,7 @@ export function ContractDetailClient({
 
   const handleSendToClient = useCallback(async () => {
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `/api/events/contracts/${contract.id}/send`,
         {
           method: "POST",
@@ -219,7 +220,7 @@ export function ContractDetailClient({
       formData.append("contractId", contract.id);
 
       try {
-        const response = await fetch(
+        const response = await apiFetch(
           `/api/events/contracts/${contract.id}/document`,
           {
             method: "POST",
@@ -248,7 +249,7 @@ export function ContractDetailClient({
   const handleSignatureSave = useCallback(
     async (signatureData: string, signerName: string, signerEmail?: string) => {
       try {
-        const response = await fetch(
+        const response = await apiFetch(
           `/api/events/contracts/${contract.id}/signatures`,
           {
             method: "POST",
