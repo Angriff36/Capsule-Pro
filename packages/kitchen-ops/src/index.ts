@@ -9,6 +9,9 @@
  * - PrepTask: claim, start, complete, release, reassign, updateQuantity, cancel
  * - Station: assignTask, removeTask, updateCapacity, deactivate, activate, updateEquipment
  * - InventoryItem: reserve, consume, waste, adjust, restock, releaseReservation
+ * - Recipe: update, deactivate, activate
+ * - RecipeVersion: create
+ * - Dish: updatePricing, updateLeadTime
  */
 
 import { readFileSync } from "node:fs";
@@ -50,10 +53,18 @@ function loadInventoryManifestSource(): string {
   return readFileSync(join(MANIFESTS_DIR, "inventory-rules.manifest"), "utf-8");
 }
 
+/**
+ * Load recipe manifest source from file
+ */
+function loadRecipeManifestSource(): string {
+  return readFileSync(join(MANIFESTS_DIR, "recipe-rules.manifest"), "utf-8");
+}
+
 // Cached compiled IR for each manifest
 let cachedPrepTaskIR: IR | null = null;
 let cachedStationIR: IR | null = null;
 let cachedInventoryIR: IR | null = null;
+let cachedRecipeIR: IR | null = null;
 
 /**
  * Compile and cache the PrepTask manifest IR
@@ -115,6 +126,27 @@ async function loadInventoryManifestIR(): Promise<IR> {
   }
 
   cachedInventoryIR = ir;
+  return ir;
+}
+
+/**
+ * Compile and cache the Recipe manifest IR
+ */
+async function loadRecipeManifestIR(): Promise<IR> {
+  if (cachedRecipeIR) {
+    return cachedRecipeIR;
+  }
+
+  const manifestSource = loadRecipeManifestSource();
+  const { ir, diagnostics } = await compileToIR(manifestSource);
+
+  if (!ir) {
+    throw new Error(
+      `Failed to compile Recipe manifest: ${diagnostics.map((d: IRDiagnostic) => d.message).join(", ")}`
+    );
+  }
+
+  cachedRecipeIR = ir;
   return ir;
 }
 
@@ -251,6 +283,25 @@ export interface InventoryCommandResult extends CommandResult {
 }
 
 /**
+ * Result of a recipe command
+ */
+export interface RecipeCommandResult extends CommandResult {
+  recipeId: string;
+  name?: string;
+  isActive?: boolean;
+}
+
+/**
+ * Result of a dish command
+ */
+export interface DishCommandResult extends CommandResult {
+  dishId: string;
+  name?: string;
+  pricePerPerson?: number;
+  costPerPerson?: number;
+}
+
+/**
  * Create a PostgresStore provider for persistent entity storage.
  *
  * @param databaseUrl - PostgreSQL connection string
@@ -269,6 +320,11 @@ export function createPostgresStoreProvider(
       PrepTask: `kitchen_prep_tasks${tenantSuffix}`,
       Station: `kitchen_stations${tenantSuffix}`,
       InventoryItem: `kitchen_inventory_items${tenantSuffix}`,
+      Recipe: `kitchen_recipes${tenantSuffix}`,
+      RecipeVersion: `kitchen_recipe_versions${tenantSuffix}`,
+      Ingredient: `kitchen_ingredients${tenantSuffix}`,
+      RecipeIngredient: `kitchen_recipe_ingredients${tenantSuffix}`,
+      Dish: `kitchen_dishes${tenantSuffix}`,
     };
 
     const tableName = tableNameMap[entityName];
@@ -368,12 +424,38 @@ export async function createInventoryRuntime(context: KitchenOpsContext) {
 }
 
 /**
+ * Create a kitchen operations runtime for recipes
+ */
+export async function createRecipeRuntime(context: KitchenOpsContext) {
+  const ir = await loadRecipeManifestIR();
+  const options =
+    context.storeProvider || context.databaseUrl || context.telemetry
+      ? {
+          ...(context.storeProvider && {
+            storeProvider: context.storeProvider,
+          }),
+          ...(context.databaseUrl &&
+            !context.storeProvider && {
+              storeProvider: createPostgresStoreProvider(
+                context.databaseUrl,
+                context.tenantId
+              ),
+            }),
+          ...(context.telemetry && { telemetry: context.telemetry }),
+        }
+      : undefined;
+  const engine = new RuntimeEngine(ir, context, options);
+  return engine;
+}
+
+/**
  * Create a combined kitchen operations runtime
  */
 export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
   const prepTaskIR = await loadPrepTaskManifestIR();
   const stationIR = await loadStationManifestIR();
   const inventoryIR = await loadInventoryManifestIR();
+  const recipeIR = await loadRecipeManifestIR();
 
   // Combine IRs - in a real implementation, you'd merge modules
   const combinedIR: IR = {
@@ -383,22 +465,31 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
       ...(prepTaskIR.modules || []),
       ...(stationIR.modules || []),
       ...(inventoryIR.modules || []),
+      ...(recipeIR.modules || []),
     ],
     entities: [
       ...prepTaskIR.entities,
       ...stationIR.entities,
       ...inventoryIR.entities,
+      ...recipeIR.entities,
     ],
-    events: [...prepTaskIR.events, ...stationIR.events, ...inventoryIR.events],
+    events: [
+      ...prepTaskIR.events,
+      ...stationIR.events,
+      ...inventoryIR.events,
+      ...recipeIR.events,
+    ],
     commands: [
       ...prepTaskIR.commands,
       ...stationIR.commands,
       ...inventoryIR.commands,
+      ...recipeIR.commands,
     ],
     policies: [
       ...prepTaskIR.policies,
       ...stationIR.policies,
       ...inventoryIR.policies,
+      ...recipeIR.policies,
     ],
   };
 
@@ -973,6 +1064,196 @@ export async function releaseInventoryReservation(
   };
 }
 
+// ============ Recipe Commands ============
+
+/**
+ * Update a recipe
+ */
+export async function updateRecipe(
+  engine: RuntimeEngine,
+  recipeId: string,
+  newName: string,
+  newCategory: string,
+  newCuisineType: string,
+  newDescription: string,
+  newTags: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<RecipeCommandResult> {
+  const result = await engine.runCommand(
+    "update",
+    { newName, newCategory, newCuisineType, newDescription, newTags },
+    {
+      entityName: "Recipe",
+      instanceId: recipeId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("Recipe", recipeId);
+  return {
+    ...result,
+    recipeId,
+    name: instance?.name as string | undefined,
+    isActive: instance?.isActive as boolean | undefined,
+  };
+}
+
+/**
+ * Deactivate a recipe
+ */
+export async function deactivateRecipe(
+  engine: RuntimeEngine,
+  recipeId: string,
+  reason: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<RecipeCommandResult> {
+  const result = await engine.runCommand(
+    "deactivate",
+    { reason },
+    {
+      entityName: "Recipe",
+      instanceId: recipeId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("Recipe", recipeId);
+  return {
+    ...result,
+    recipeId,
+    name: instance?.name as string | undefined,
+    isActive: false,
+  };
+}
+
+/**
+ * Activate a recipe
+ */
+export async function activateRecipe(
+  engine: RuntimeEngine,
+  recipeId: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<RecipeCommandResult> {
+  const result = await engine.runCommand(
+    "activate",
+    {},
+    {
+      entityName: "Recipe",
+      instanceId: recipeId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("Recipe", recipeId);
+  return {
+    ...result,
+    recipeId,
+    name: instance?.name as string | undefined,
+    isActive: true,
+  };
+}
+
+/**
+ * Create a recipe version
+ */
+export async function createRecipeVersion(
+  engine: RuntimeEngine,
+  versionId: string,
+  yieldQty: number,
+  yieldUnit: number,
+  prepTime: number,
+  cookTime: number,
+  restTime: number,
+  difficulty: number,
+  instructionsText: string,
+  notesText: string
+): Promise<RecipeCommandResult> {
+  const result = await engine.runCommand(
+    "create",
+    {
+      yieldQty,
+      yieldUnit,
+      prepTime,
+      cookTime,
+      restTime,
+      difficulty,
+      instructionsText,
+      notesText,
+    },
+    {
+      entityName: "RecipeVersion",
+      instanceId: versionId,
+    }
+  );
+
+  return {
+    ...result,
+    recipeId: versionId,
+  };
+}
+
+// ============ Dish Commands ============
+
+/**
+ * Update dish pricing
+ */
+export async function updateDishPricing(
+  engine: RuntimeEngine,
+  dishId: string,
+  newPrice: number,
+  newCost: number,
+  overrideRequests?: OverrideRequest[]
+): Promise<DishCommandResult> {
+  const result = await engine.runCommand(
+    "updatePricing",
+    { newPrice, newCost },
+    {
+      entityName: "Dish",
+      instanceId: dishId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("Dish", dishId);
+  return {
+    ...result,
+    dishId,
+    name: instance?.name as string | undefined,
+    pricePerPerson: instance?.pricePerPerson as number | undefined,
+    costPerPerson: instance?.costPerPerson as number | undefined,
+  };
+}
+
+/**
+ * Update dish lead time
+ */
+export async function updateDishLeadTime(
+  engine: RuntimeEngine,
+  dishId: string,
+  minDays: number,
+  maxDays: number,
+  overrideRequests?: OverrideRequest[]
+): Promise<DishCommandResult> {
+  const result = await engine.runCommand(
+    "updateLeadTime",
+    { minDays, maxDays },
+    {
+      entityName: "Dish",
+      instanceId: dishId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("Dish", dishId);
+  return {
+    ...result,
+    dishId,
+    name: instance?.name as string | undefined,
+    pricePerPerson: instance?.pricePerPerson as number | undefined,
+    costPerPerson: instance?.costPerPerson as number | undefined,
+  };
+}
+
 // ============ Event Handling ============
 
 /**
@@ -999,6 +1280,20 @@ export function setupKitchenOpsEventListeners(
     onInventoryAdjusted?: (event: EmittedEvent) => Promise<void>;
     onInventoryRestocked?: (event: EmittedEvent) => Promise<void>;
     onInventoryReservationReleased?: (event: EmittedEvent) => Promise<void>;
+    // Recipe events
+    onRecipeCreated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeUpdated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeDeactivated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeActivated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeVersionCreated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeVersionRestored?: (event: EmittedEvent) => Promise<void>;
+    onIngredientAllergensUpdated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeIngredientUpdated?: (event: EmittedEvent) => Promise<void>;
+    // Dish events
+    onDishCreated?: (event: EmittedEvent) => Promise<void>;
+    onDishPricingUpdated?: (event: EmittedEvent) => Promise<void>;
+    onDishLeadTimeUpdated?: (event: EmittedEvent) => Promise<void>;
+    // Override events
     onConstraintOverridden?: (event: EmittedEvent) => Promise<void>;
     onConstraintSatisfiedAfterOverride?: (event: EmittedEvent) => Promise<void>;
   }
@@ -1061,6 +1356,41 @@ export function setupKitchenOpsEventListeners(
         break;
       case "InventoryReservationReleased":
         await handlers.onInventoryReservationReleased?.(event);
+        break;
+      // Recipe events
+      case "RecipeCreated":
+        await handlers.onRecipeCreated?.(event);
+        break;
+      case "RecipeUpdated":
+        await handlers.onRecipeUpdated?.(event);
+        break;
+      case "RecipeDeactivated":
+        await handlers.onRecipeDeactivated?.(event);
+        break;
+      case "RecipeActivated":
+        await handlers.onRecipeActivated?.(event);
+        break;
+      case "RecipeVersionCreated":
+        await handlers.onRecipeVersionCreated?.(event);
+        break;
+      case "RecipeVersionRestored":
+        await handlers.onRecipeVersionRestored?.(event);
+        break;
+      case "IngredientAllergensUpdated":
+        await handlers.onIngredientAllergensUpdated?.(event);
+        break;
+      case "RecipeIngredientUpdated":
+        await handlers.onRecipeIngredientUpdated?.(event);
+        break;
+      // Dish events
+      case "DishCreated":
+        await handlers.onDishCreated?.(event);
+        break;
+      case "DishPricingUpdated":
+        await handlers.onDishPricingUpdated?.(event);
+        break;
+      case "DishLeadTimeUpdated":
+        await handlers.onDishLeadTimeUpdated?.(event);
         break;
       // Override events
       case "ConstraintOverridden":

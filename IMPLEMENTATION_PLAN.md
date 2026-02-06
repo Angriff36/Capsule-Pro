@@ -42,12 +42,19 @@ Manifest Runtime Version: v0.3.0
 - `packages/kitchen-ops/` provides complete runtime wrappers for PrepTask, Station, InventoryItem
 - Server actions exist: `manifestClaimPrepTask`, `manifestCompletePrepTask`, etc.
 - Override API endpoint: `/api/kitchen/overrides`
-- Three manifest files: prep-task-rules, station-rules, inventory-rules
+- Four manifest files: prep-task-rules, station-rules, inventory-rules, recipe-rules
 - **GAP**: API routes bypass Manifest (direct DB mutations)
 - **COMPLETED**: PostgresStore integration added (2025-02-06)
   - `createPostgresStoreProvider()` function for persistent storage
   - `KitchenOpsContext.databaseUrl` option enables Postgres backing
   - Table namespacing per tenant: `kitchen_prep_tasks_{tenantId}`, etc.
+- **COMPLETED**: Recipe runtime integration added (2025-02-06)
+  - `recipe-rules.manifest` file with Recipe, RecipeVersion, Ingredient, RecipeIngredient, Dish entities
+  - `createRecipeRuntime()` function for recipe-specific operations
+  - Recipe commands: update, deactivate, activate, createVersion
+  - Dish commands: updatePricing, updateLeadTime
+  - Constraint checks for recipe validation (difficulty, time, margin warnings)
+  - Event handlers for RecipeCreated, RecipeUpdated, RecipeDeactivated, etc.
 - **GAP**: Missing conformance tests
 
 ---
@@ -472,4 +479,46 @@ const runtime = await createKitchenOpsRuntime({
 - Main application builds and all tests pass
 - Lint issues fixed (1351+ pre-existing errors remain - separate cleanup task needed)
 - Manifest integration remains functional (kitchen-ops, event import, telemetry)
+
+---
+
+### 2025-02-06: Recipe Runtime Integration
+
+**Completed:**
+- Created `recipe-rules.manifest` file with five entity definitions:
+  - Recipe: update, deactivate, activate commands
+  - RecipeVersion: create command with yield, time, difficulty validation
+  - Ingredient: allergen tracking with constraint warnings
+  - RecipeIngredient: quantity update with increase warnings
+  - Dish: pricing and lead time update commands with margin validation
+- Added Recipe runtime support to `packages/kitchen-ops/src/index.ts`:
+  - `loadRecipeManifestSource()` and `loadRecipeManifestIR()` functions
+  - `createRecipeRuntime()` factory function
+  - Recipe command wrappers: `updateRecipe`, `deactivateRecipe`, `activateRecipe`
+  - RecipeVersion command wrapper: `createRecipeVersion`
+  - Dish command wrappers: `updateDishPricing`, `updateDishLeadTime`
+  - Updated `createKitchenOpsRuntime()` to include recipe IR
+  - Updated PostgresStore table mapping for Recipe entities
+  - Added Recipe/Dish event handlers to `setupKitchenOpsEventListeners()`
+- Constraint severity model implemented for Recipe operations:
+  - WARN: Long recipe time (>8 hours), high difficulty (4+), tight margin (>70% cost)
+  - WARN: Recipe price decreases, allergen presence
+  - BLOCK: Invalid yield (<=0), invalid difficulty (not 1-5), negative time values
+- Event definitions for recipe lifecycle:
+  - RecipeCreated, RecipeUpdated, RecipeDeactivated, RecipeActivated
+  - RecipeVersionCreated, RecipeVersionRestored
+  - IngredientAllergensUpdated, RecipeIngredientUpdated
+  - DishCreated, DishPricingUpdated, DishLeadTimeUpdated
+
+**Files Modified:**
+- `packages/kitchen-ops/manifests/recipe-rules.manifest` - Created new manifest file
+- `packages/kitchen-ops/src/index.ts` - Added Recipe runtime support, commands, event handlers
+- `IMPLEMENTATION_PLAN.md` - Updated baseline with Recipe runtime status
+
+**Architecture Notes:**
+- Recipe entities follow the same pattern as PrepTask, Station, InventoryItem
+- Constraints provide validation for recipe quality and business rules
+- Events enable audit trail and reactive UI updates
+- PostgresStore table namespacing supports multi-tenant Recipe storage
+- Next step: Migrate recipe actions in `apps/app/app/(authenticated)/kitchen/recipes/actions.ts` to use the Recipe runtime
 

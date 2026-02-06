@@ -9,6 +9,9 @@
  * - PrepTask: claim, start, complete, release, reassign, updateQuantity, cancel
  * - Station: assignTask, removeTask, updateCapacity, deactivate, activate, updateEquipment
  * - InventoryItem: reserve, consume, waste, adjust, restock, releaseReservation
+ * - Recipe: update, deactivate, activate
+ * - RecipeVersion: create
+ * - Dish: updatePricing, updateLeadTime
  */
 import type { CommandResult, EmittedEvent, RuntimeContext } from "@repo/manifest";
 import { RuntimeEngine } from "@repo/manifest";
@@ -127,6 +130,23 @@ export interface InventoryCommandResult extends CommandResult {
     quantityAvailable?: number;
 }
 /**
+ * Result of a recipe command
+ */
+export interface RecipeCommandResult extends CommandResult {
+    recipeId: string;
+    name?: string;
+    isActive?: boolean;
+}
+/**
+ * Result of a dish command
+ */
+export interface DishCommandResult extends CommandResult {
+    dishId: string;
+    name?: string;
+    pricePerPerson?: number;
+    costPerPerson?: number;
+}
+/**
  * Create a PostgresStore provider for persistent entity storage.
  *
  * @param databaseUrl - PostgreSQL connection string
@@ -146,6 +166,10 @@ export declare function createStationRuntime(context: KitchenOpsContext): Promis
  * Create a kitchen operations runtime for inventory
  */
 export declare function createInventoryRuntime(context: KitchenOpsContext): Promise<any>;
+/**
+ * Create a kitchen operations runtime for recipes
+ */
+export declare function createRecipeRuntime(context: KitchenOpsContext): Promise<any>;
 /**
  * Create a combined kitchen operations runtime
  */
@@ -227,6 +251,30 @@ export declare function restockInventory(engine: RuntimeEngine, itemId: string, 
  */
 export declare function releaseInventoryReservation(engine: RuntimeEngine, itemId: string, quantity: number, eventId: string, userId: string, overrideRequests?: OverrideRequest[]): Promise<InventoryCommandResult>;
 /**
+ * Update a recipe
+ */
+export declare function updateRecipe(engine: RuntimeEngine, recipeId: string, newName: string, newCategory: string, newCuisineType: string, newDescription: string, newTags: string, overrideRequests?: OverrideRequest[]): Promise<RecipeCommandResult>;
+/**
+ * Deactivate a recipe
+ */
+export declare function deactivateRecipe(engine: RuntimeEngine, recipeId: string, reason: string, overrideRequests?: OverrideRequest[]): Promise<RecipeCommandResult>;
+/**
+ * Activate a recipe
+ */
+export declare function activateRecipe(engine: RuntimeEngine, recipeId: string, overrideRequests?: OverrideRequest[]): Promise<RecipeCommandResult>;
+/**
+ * Create a recipe version
+ */
+export declare function createRecipeVersion(engine: RuntimeEngine, versionId: string, yieldQty: number, yieldUnit: number, prepTime: number, cookTime: number, restTime: number, difficulty: number, instructionsText: string, notesText: string): Promise<RecipeCommandResult>;
+/**
+ * Update dish pricing
+ */
+export declare function updateDishPricing(engine: RuntimeEngine, dishId: string, newPrice: number, newCost: number, overrideRequests?: OverrideRequest[]): Promise<DishCommandResult>;
+/**
+ * Update dish lead time
+ */
+export declare function updateDishLeadTime(engine: RuntimeEngine, dishId: string, minDays: number, maxDays: number, overrideRequests?: OverrideRequest[]): Promise<DishCommandResult>;
+/**
  * Setup event listeners for kitchen operations
  */
 export declare function setupKitchenOpsEventListeners(engine: RuntimeEngine, handlers: {
@@ -248,6 +296,17 @@ export declare function setupKitchenOpsEventListeners(engine: RuntimeEngine, han
     onInventoryAdjusted?: (event: EmittedEvent) => Promise<void>;
     onInventoryRestocked?: (event: EmittedEvent) => Promise<void>;
     onInventoryReservationReleased?: (event: EmittedEvent) => Promise<void>;
+    onRecipeCreated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeUpdated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeDeactivated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeActivated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeVersionCreated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeVersionRestored?: (event: EmittedEvent) => Promise<void>;
+    onIngredientAllergensUpdated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeIngredientUpdated?: (event: EmittedEvent) => Promise<void>;
+    onDishCreated?: (event: EmittedEvent) => Promise<void>;
+    onDishPricingUpdated?: (event: EmittedEvent) => Promise<void>;
+    onDishLeadTimeUpdated?: (event: EmittedEvent) => Promise<void>;
     onConstraintOverridden?: (event: EmittedEvent) => Promise<void>;
     onConstraintSatisfiedAfterOverride?: (event: EmittedEvent) => Promise<void>;
 }): any;
