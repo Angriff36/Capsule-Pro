@@ -121,15 +121,7 @@ let nextConfig: NextConfig = withToolbar(
     rewrites,
     // Externalize pdfjs-dist and ably to avoid bundling issues
     // ably: Turbopack + Ably causes keyv dynamic require failures in SSR
-    serverExternalPackages: [
-      "pdfjs-dist",
-      "ably",
-      "@sentry/nextjs",
-      "@sentry/node",
-      "@opentelemetry/api",
-      "@opentelemetry/sdk-node",
-      "@opentelemetry/instrumentation",
-    ],
+    serverExternalPackages: ["pdfjs-dist", "ably"],
     webpack: (webpackConfig: WebpackConfig, context: WebpackContext) => {
       if (context.isServer) {
         // Externalize pdfjs-dist - use function to catch all nested imports

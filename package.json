@@ -104,7 +104,7 @@
     "db:push": "echo \"❌ Disabled. Use db:dev (migrate dev) or db:deploy (migrate deploy).\" && exit 1",
     "db:repair": "node scripts/db-drift-repair.mjs",
     "dev": "turbo dev --parallel",
-    "dev:apps": "turbo dev --parallel --filter=app --filter=web --filter=api",
+    "dev:apps": "turbo dev --parallel --filter=app --filter=api",
     "dev:check": "node scripts/dev.mjs",
     "docs:list": "tsx ./tools/scripts/docs-list.ts",
     "lint": "pnpm dlx ultracite check",

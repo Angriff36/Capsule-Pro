@@ -28,11 +28,6 @@ let nextConfig: NextConfig = withLogging({
     "got",
     "keyv",
     "cacheable-request",
-    "@sentry/nextjs",
-    "@sentry/node",
-    "@opentelemetry/api",
-    "@opentelemetry/sdk-node",
-    "@opentelemetry/instrumentation",
   ],
   webpack: (
     webpackConfig: any,
