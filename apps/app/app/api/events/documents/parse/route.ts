@@ -19,21 +19,12 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 type EventParserModule = typeof import("@repo/event-parser");
-type ManifestModule = typeof import("@repo/manifest");
 
 let eventParserPromise: Promise<EventParserModule> | null = null;
-let manifestPromise: Promise<ManifestModule> | null = null;
 
 const getEventParser = () => {
   eventParserPromise ??= import("@repo/event-parser");
   return eventParserPromise;
-};
-
-/** Dynamic import so Vercel CJS bundle never require()s ESM @repo/manifest (and thus @repo/event-parser). */
-const getManifest = () => {
-  manifestPromise ??= import("@repo/manifest");
-  return manifestPromise;
-  return manifestPromise;
 };
 
 type MissingField =
@@ -519,11 +510,31 @@ async function processDocumentsAndGenerateResponse(
     "files"
   );
   // Initialize Manifest runtime via dynamic import (avoids require() of ESM on Vercel)
-  const manifest = await getManifest();
-  let engine;
+  let engine:
+    | Awaited<
+        ReturnType<typeof import("@repo/manifest").createEventImportRuntime>
+      >
+    | undefined;
+  let processDoc:
+    | typeof import("@repo/manifest").processDocumentImport
+    | undefined;
+  let createUpdateEvent:
+    | typeof import("@repo/manifest").createOrUpdateEvent
+    | undefined;
+  let generateBattleBoardFn:
+    | typeof import("@repo/manifest").generateBattleBoard
+    | undefined;
+  let generateChecklistFn:
+    | typeof import("@repo/manifest").generateChecklist
+    | undefined;
+
   try {
-    engine = manifest.createEventImportRuntime(tenantId, userId);
-    engine = createEventImportRuntime(tenantId, userId);
+    const manifest = await import("@repo/manifest");
+    engine = await manifest.createEventImportRuntime(tenantId, userId);
+    processDoc = manifest.processDocumentImport;
+    createUpdateEvent = manifest.createOrUpdateEvent;
+    generateBattleBoardFn = manifest.generateBattleBoard;
+    generateChecklistFn = manifest.generateChecklist;
     console.log(
       "[processDocumentsAndGenerateResponse] Manifest runtime initialized"
     );
@@ -566,7 +577,7 @@ async function processDocumentsAndGenerateResponse(
   );
 
   // Process each document import through Manifest (if available)
-  if (engine) {
+  if (engine && processDoc) {
     try {
       const manifestImportIds: string[] = [];
       for (const importRecord of importRecords) {
@@ -574,7 +585,7 @@ async function processDocumentsAndGenerateResponse(
         const doc = importRecord.document;
 
         // Create Manifest instance for DocumentImport
-        const manifestImport = engine.createInstance("DocumentImport", {
+        await engine.createInstance("DocumentImport", {
           id: importId,
           tenantId,
           fileName: doc.fileName,
@@ -584,22 +595,22 @@ async function processDocumentsAndGenerateResponse(
           parseStatus: "pending",
         });
 
-        manifestImportIds.push(manifestImport?.id || importId);
+        manifestImportIds.push(importId);
 
         // Process through Manifest
         if (doc.errors && doc.errors.length > 0) {
-          await manifest.processDocumentImport(
+          await processDoc(
             engine,
-            manifestImport?.id || importId,
+            importId,
             doc.fileName,
             doc.parsedEvent || {},
             0,
             doc.errors
           );
         } else {
-          await manifest.processDocumentImport(
+          await processDoc(
             engine,
-            manifestImport?.id || importId,
+            importId,
             doc.fileName,
             doc.parsedEvent || {},
             doc.confidence || 0
@@ -626,9 +637,10 @@ async function processDocumentsAndGenerateResponse(
 
   // Handle event creation/update - MUST happen before generating artifacts
   let actualEventId = eventId;
+  let derivedTitle = "";
   if (result.mergedEvent) {
     const missingFields = getMissingFieldsFromParsedEvent(result.mergedEvent);
-    const derivedTitle = deriveEventTitle(result.mergedEvent, files);
+    derivedTitle = deriveEventTitle(result.mergedEvent, files);
     const parsedDate = parseEventDate(result.mergedEvent.date);
     const resolvedEventDate = parsedDate ?? new Date();
 
@@ -709,16 +721,16 @@ async function processDocumentsAndGenerateResponse(
         }
 
         // Also create in Manifest if available
-        if (engine) {
+        if (engine && createUpdateEvent) {
           try {
-            const _eventInstance = engine.createInstance("Event", {
+            await engine.createInstance("Event", {
               id: actualEventId,
               tenantId,
               eventType: result.mergedEvent.serviceStyle || "catering",
               eventDate: result.mergedEvent.date || new Date().toISOString(),
             });
 
-            await manifest.createOrUpdateEvent(
+            await createUpdateEvent(
               engine,
               undefined,
               tenantId,
@@ -740,16 +752,16 @@ async function processDocumentsAndGenerateResponse(
       }
     } else if (actualEventId) {
       // Update existing event
-      if (engine) {
+      if (engine && createUpdateEvent) {
         try {
-          const _eventInstance = engine.createInstance("Event", {
+          await engine.createInstance("Event", {
             id: actualEventId,
             tenantId,
             eventType: result.mergedEvent.serviceStyle || "catering",
             eventDate: result.mergedEvent.date || new Date().toISOString(),
           });
 
-          await manifest.createOrUpdateEvent(
+          await createUpdateEvent(
             engine,
             actualEventId,
             tenantId,
@@ -811,9 +823,9 @@ async function processDocumentsAndGenerateResponse(
         );
         const battleBoardId = crypto.randomUUID();
 
-        if (engine) {
+        if (engine && generateBattleBoardFn) {
           try {
-            const _battleBoardInstance = engine.createInstance("BattleBoard", {
+            await engine.createInstance("BattleBoard", {
               id: battleBoardId,
               tenantId,
               eventId: actualEventId,
@@ -823,7 +835,7 @@ async function processDocumentsAndGenerateResponse(
                 actualEventId ||
                 "",
             });
-            await manifest.generateBattleBoard(
+            await generateBattleBoardFn(
               engine,
               battleBoardId,
               tenantId,
@@ -934,14 +946,14 @@ async function processDocumentsAndGenerateResponse(
         );
         const reportId = crypto.randomUUID();
 
-        if (engine) {
+        if (engine && generateChecklistFn) {
           try {
-            const _reportInstance = engine.createInstance("EventReport", {
+            await engine.createInstance("EventReport", {
               id: reportId,
               tenantId,
               eventId: actualEventId,
             });
-            await manifest.generateChecklist(
+            await generateChecklistFn(
               engine,
               reportId,
               tenantId,
