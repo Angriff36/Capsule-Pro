@@ -520,5 +520,11 @@ const runtime = await createKitchenOpsRuntime({
 - Constraints provide validation for recipe quality and business rules
 - Events enable audit trail and reactive UI updates
 - PostgresStore table namespacing supports multi-tenant Recipe storage
+- **COMPLETED**: PrismaStore adapters added for Recipe, RecipeVersion, Ingredient, RecipeIngredient, Dish entities (2025-02-06)
+- **COMPLETED**: API routes created for Recipe operations using Manifest runtime (2025-02-06)
+  - `/api/kitchen/manifest/recipes/[recipeId]/metadata` (PATCH) - Update recipe metadata with constraint checking
+  - `/api/kitchen/manifest/recipes/[recipeId]/activate` (POST) - Activate recipe
+  - `/api/kitchen/manifest/recipes/[recipeId]/deactivate` (POST) - Deactivate recipe with reason
+  - `/api/kitchen/manifest/dishes/[dishId]/pricing` (PATCH) - Update dish pricing with margin validation
 - Next step: Migrate recipe actions in `apps/app/app/(authenticated)/kitchen/recipes/actions.ts` to use the Recipe runtime
 
