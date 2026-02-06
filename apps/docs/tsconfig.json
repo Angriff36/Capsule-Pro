@@ -4,11 +4,12 @@
 
     "declaration": false,
     "declarationMap": false,
-    
+
     "paths": {
       "@/*": ["./*"],
       "@repo/*": ["../../packages/*"],
-      "fumadocs-mdx:collections/*": ["./.source/*"]
+      "fumadocs-mdx:collections/*": ["./.source/*"],
+      "@/.source": ["./.source/index.ts"]
     },
     "strictNullChecks": true
   },

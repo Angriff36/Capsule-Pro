@@ -145,12 +145,14 @@ export async function PATCH(request: Request, context: RouteContext) {
     );
 
     const now = new Date();
-    const data =
-      action === "archive"
-        ? { archivedAt: now }
-        : action === "unarchive"
-          ? { archivedAt: null }
-          : { clearedAt: now };
+    let data;
+    if (action === "archive") {
+      data = { archivedAt: now };
+    } else if (action === "unarchive") {
+      data = { archivedAt: null };
+    } else {
+      data = { clearedAt: now };
+    }
 
     const updated = await database.adminChatParticipant.update({
       where: {
