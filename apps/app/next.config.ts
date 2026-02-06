@@ -4,6 +4,11 @@ import { withLogging, withSentry } from "@repo/observability/next-config";
 import type { NextConfig } from "next";
 import { env } from "./env";
 
+const OPENTELEMETRY_EXCLUDE = /@opentelemetry/;
+const SENTRY_EXCLUDE = /@sentry/;
+const CRITICAL_DEPENDENCY_WARNING =
+  /Critical dependency: the request of a dependency is an expression/;
+
 const apiBaseUrl = (
   process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:2223"
 ).replace(/\/$/, "");
@@ -111,6 +116,7 @@ let nextConfig: NextConfig = withToolbar(
       "@repo/seo",
     ],
     experimental: {
+      instrumentationHook: true,
       optimizePackageImports: [
         "lucide-react",
         "date-fns",
@@ -160,11 +166,10 @@ let nextConfig: NextConfig = withToolbar(
         // Suppress 'Critical dependency' and large string warnings that bloat logs/context
         webpackConfig.ignoreWarnings = [
           ...(webpackConfig.ignoreWarnings || []),
-          { module: /@opentelemetry/ },
-          { module: /@sentry/ },
+          { module: OPENTELEMETRY_EXCLUDE },
+          { module: SENTRY_EXCLUDE },
           {
-            message:
-              /Critical dependency: the request of a dependency is an expression/,
+            message: CRITICAL_DEPENDENCY_WARNING,
           },
         ];
       }

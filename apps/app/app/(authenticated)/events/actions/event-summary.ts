@@ -2,6 +2,7 @@
 
 import { openai } from "@ai-sdk/openai";
 import { database, Prisma } from "@repo/database";
+import { withServerActionInstrumentation } from "@sentry/nextjs";
 import { generateText } from "ai";
 import { requireTenantId } from "../../../lib/tenant";
 import { calculateEventProfitability } from "../../analytics/events/actions/get-event-profitability";
@@ -116,32 +117,36 @@ export async function getEventSummary(
 export async function generateEventSummary(
   eventId: string
 ): Promise<GeneratedEventSummary> {
-  const tenantId = await requireTenantId();
-  const startTime = Date.now();
+  return withServerActionInstrumentation(
+    "generateEventSummary",
+    { recordResponse: true },
+    async () => {
+      const tenantId = await requireTenantId();
+      const startTime = Date.now();
 
-  const event = await database.event.findFirst({
-    where: {
-      tenantId,
-      id: eventId,
-    },
-  });
+    const event = await database.event.findFirst({
+      where: {
+        tenantId,
+        id: eventId,
+      },
+    });
 
-  if (!event) {
-    throw new Error("Event not found");
-  }
+    if (!event) {
+      throw new Error("Event not found");
+    }
 
-  const eventDishesResult = await database.$queryRaw<
-    Array<{
-      link_id: string;
-      dish_id: string;
-      name: string;
-      category: string | null;
-      course: string | null;
-      quantity_servings: number;
-      dietary_tags: string[] | null;
-    }>
-  >(
-    Prisma.sql`
+    const eventDishesResult = await database.$queryRaw<
+      Array<{
+        link_id: string;
+        dish_id: string;
+        name: string;
+        category: string | null;
+        course: string | null;
+        quantity_servings: number;
+        dietary_tags: string[] | null;
+      }>
+    >(
+      Prisma.sql`
       SELECT
         ed.id AS link_id,
         ed.dish_id,
@@ -157,18 +162,18 @@ export async function generateEventSummary(
         AND ed.deleted_at IS NULL
       ORDER BY ed.created_at
     `
-  );
+    );
 
-  const prepTasksResult = await database.$queryRaw<
-    Array<{
-      id: string;
-      name: string;
-      status: string;
-      priority: number;
-      estimated_minutes: number | null;
-    }>
-  >(
-    Prisma.sql`
+    const prepTasksResult = await database.$queryRaw<
+      Array<{
+        id: string;
+        name: string;
+        status: string;
+        priority: number;
+        estimated_minutes: number | null;
+      }>
+    >(
+      Prisma.sql`
       SELECT
         id,
         name,
@@ -181,25 +186,25 @@ export async function generateEventSummary(
         AND deleted_at IS NULL
       ORDER BY due_by_date
     `
-  );
+    );
 
-  let profitability = null;
-  let profitabilityError = null;
-  try {
-    profitability = await calculateEventProfitability(eventId);
-  } catch (error) {
-    profitabilityError =
-      error instanceof Error ? error.message : "Unknown error";
-  }
+    let profitability = null;
+    let profitabilityError = null;
+    try {
+      profitability = await calculateEventProfitability(eventId);
+    } catch (error) {
+      profitabilityError =
+        error instanceof Error ? error.message : "Unknown error";
+    }
 
-  const staffAssignmentsResult = await database.$queryRaw<
-    Array<{
-      id: string;
-      role: string;
-      employee_name: string | null;
-    }>
-  >(
-    Prisma.sql`
+    const staffAssignmentsResult = await database.$queryRaw<
+      Array<{
+        id: string;
+        role: string;
+        employee_name: string | null;
+      }>
+    >(
+      Prisma.sql`
       SELECT
         esa.id,
         esa.role,
@@ -210,43 +215,43 @@ export async function generateEventSummary(
         AND esa.event_id = ${eventId}
         AND esa.deleted_at IS NULL
     `
-  );
+    );
 
-  const eventData = {
-    id: event.id,
-    title: event.title,
-    eventType: event.eventType,
-    eventDate: event.eventDate.toISOString(),
-    guestCount: event.guestCount,
-    status: event.status,
-    venueName: event.venueName,
-    venueAddress: event.venueAddress,
-    budget: event.budget ? Number(event.budget) : null,
-    notes: event.notes,
-    tags: event.tags,
-  };
+    const eventData = {
+      id: event.id,
+      title: event.title,
+      eventType: event.eventType,
+      eventDate: event.eventDate.toISOString(),
+      guestCount: event.guestCount,
+      status: event.status,
+      venueName: event.venueName,
+      venueAddress: event.venueAddress,
+      budget: event.budget ? Number(event.budget) : null,
+      notes: event.notes,
+      tags: event.tags,
+    };
 
-  const dishesData = eventDishesResult.map((d) => ({
-    name: d.name,
-    category: d.category,
-    course: d.course,
-    servings: d.quantity_servings,
-    dietaryTags: d.dietary_tags,
-  }));
+    const dishesData = eventDishesResult.map((d) => ({
+      name: d.name,
+      category: d.category,
+      course: d.course,
+      servings: d.quantity_servings,
+      dietaryTags: d.dietary_tags,
+    }));
 
-  const tasksData = prepTasksResult.map((t) => ({
-    name: t.name,
-    status: t.status,
-    priority: t.priority,
-    estimatedMinutes: t.estimated_minutes,
-  }));
+    const tasksData = prepTasksResult.map((t) => ({
+      name: t.name,
+      status: t.status,
+      priority: t.priority,
+      estimatedMinutes: t.estimated_minutes,
+    }));
 
-  const staffData = staffAssignmentsResult.map((s) => ({
-    role: s.role,
-    employeeName: s.employee_name,
-  }));
+    const staffData = staffAssignmentsResult.map((s) => ({
+      role: s.role,
+      employeeName: s.employee_name,
+    }));
 
-  const systemPrompt = `You are an event management analyst that creates comprehensive executive summaries for completed events. Your task is to analyze event data and generate a detailed summary with:
+    const systemPrompt = `You are an event management analyst that creates comprehensive executive summaries for completed events. Your task is to analyze event data and generate a detailed summary with:
 
 1. HIGHLIGHTS - Key successes, achievements, and positive outcomes
 2. ISSUES - Problems, challenges, or areas needing attention
@@ -272,7 +277,7 @@ Return your analysis as a structured JSON object with this exact format:
   "overallSummary": "A 2-3 paragraph executive summary of the event"
 }`;
 
-  const userPrompt = `Analyze this event data and generate an executive summary:
+    const userPrompt = `Analyze this event data and generate an executive summary:
 
 EVENT:
 ${JSON.stringify(eventData, null, 2)}
@@ -307,39 +312,39 @@ ${
 
 Please provide a comprehensive executive summary following the system prompt guidelines.`;
 
-  const result = await generateText({
-    model: openai(AI_MODEL),
-    system: systemPrompt,
-    prompt: userPrompt,
-    temperature: 0.5,
-  });
+    const result = await generateText({
+      model: openai(AI_MODEL),
+      system: systemPrompt,
+      prompt: userPrompt,
+      temperature: 0.5,
+    });
 
-  let summaryData: EventSummaryData;
-  try {
-    const jsonMatch = result.text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      summaryData = JSON.parse(jsonMatch[0]) as EventSummaryData;
-    } else {
-      throw new Error("No JSON found in response");
+    let summaryData: EventSummaryData;
+    try {
+      const jsonMatch = result.text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        summaryData = JSON.parse(jsonMatch[0]) as EventSummaryData;
+      } else {
+        throw new Error("No JSON found in response");
+      }
+    } catch (error) {
+      console.error("Failed to parse AI response:", error);
+      summaryData = {
+        highlights: [],
+        issues: [],
+        financialPerformance: [],
+        clientFeedback: [],
+        insights: [],
+        overallSummary:
+          "Unable to generate summary from AI response. Please review event data manually.",
+      };
     }
-  } catch (error) {
-    console.error("Failed to parse AI response:", error);
-    summaryData = {
-      highlights: [],
-      issues: [],
-      financialPerformance: [],
-      clientFeedback: [],
-      insights: [],
-      overallSummary:
-        "Unable to generate summary from AI response. Please review event data manually.",
-    };
-  }
 
-  const endTime = Date.now();
-  const generationDurationMs = endTime - startTime;
+    const endTime = Date.now();
+    const generationDurationMs = endTime - startTime;
 
-  const summaryRecord = await database.$queryRaw<Array<{ id: string }>>(
-    Prisma.sql`
+    const summaryRecord = await database.$queryRaw<Array<{ id: string }>>(
+      Prisma.sql`
       INSERT INTO tenant_events.event_summaries (
         tenant_id,
         id,
@@ -371,20 +376,21 @@ Please provide a comprehensive executive summary following the system prompt gui
       )
       RETURNING id
     `
-  );
+    );
 
-  return {
-    id: summaryRecord[0].id,
-    eventId,
-    highlights: summaryData.highlights,
-    issues: summaryData.issues,
-    financialPerformance: summaryData.financialPerformance,
-    clientFeedback: summaryData.clientFeedback,
-    insights: summaryData.insights,
-    overallSummary: summaryData.overallSummary,
-    generatedAt: new Date(),
-    generationDurationMs,
-  };
+    return {
+      id: summaryRecord[0].id,
+      eventId,
+      highlights: summaryData.highlights,
+      issues: summaryData.issues,
+      financialPerformance: summaryData.financialPerformance,
+      clientFeedback: summaryData.clientFeedback,
+      insights: summaryData.insights,
+      overallSummary: summaryData.overallSummary,
+      generatedAt: new Date(),
+      generationDurationMs,
+    };
+  });
 }
 
 export async function deleteEventSummary(summaryId: string): Promise<void> {

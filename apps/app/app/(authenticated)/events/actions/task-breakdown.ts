@@ -2,6 +2,7 @@
 
 import { openai } from "@ai-sdk/openai";
 import { database, Prisma } from "@repo/database";
+import { withServerActionInstrumentation } from "@sentry/nextjs";
 import { generateText } from "ai";
 import { requireTenantId } from "../../../lib/tenant";
 
@@ -50,7 +51,11 @@ export async function generateTaskBreakdown({
   eventId,
   customInstructions,
 }: GenerateTaskBreakdownParams): Promise<TaskBreakdown> {
-  const tenantId = await requireTenantId();
+  return withServerActionInstrumentation(
+    "generateTaskBreakdown",
+    { recordResponse: true },
+    async () => {
+      const tenantId = await requireTenantId();
 
   const event = await database.event.findFirst({
     where: {
@@ -158,7 +163,8 @@ export async function generateTaskBreakdown({
       similarEvents.length === 0
         ? "Generated from event details (no historical data available)"
         : undefined,
-  };
+    };
+  });
 }
 
 async function generateTasksFromAI(
