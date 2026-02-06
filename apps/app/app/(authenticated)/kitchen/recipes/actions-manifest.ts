@@ -8,6 +8,7 @@ import {
   createRecipeRuntime,
   createRecipeVersion,
   type KitchenOpsContext,
+  updateRecipe as updateRecipeManifest,
 } from "@repo/kitchen-ops";
 import { put } from "@repo/storage";
 import { revalidatePath } from "next/cache";
@@ -767,7 +768,7 @@ export const updateRecipe = async (recipeId: string, formData: FormData) => {
     updatedAt: Date.now(),
   });
 
-  const updateResult = await updateRecipe(
+  const updateResult = await updateRecipeManifest(
     runtime,
     recipeId,
     name,
@@ -1136,10 +1137,17 @@ export const createDish = async (formData: FormData) => {
 
 // For now, keep updateRecipeImage and restoreRecipeVersion from original
 // These can be migrated later if needed
+// Note: In "use server" files, we must import and re-export individually
 
-export type { RecipeForEdit } from "./actions";
-export {
-  getRecipeForEdit,
-  restoreRecipeVersion,
-  updateRecipeImage,
+import {
+  getRecipeForEdit as _getRecipeForEdit,
+  restoreRecipeVersion as _restoreRecipeVersion,
+  updateRecipeImage as _updateRecipeImage,
 } from "./actions";
+
+export const getRecipeForEdit = _getRecipeForEdit;
+export const restoreRecipeVersion = _restoreRecipeVersion;
+export const updateRecipeImage = _updateRecipeImage;
+
+// Type export
+export type { RecipeForEdit } from "./actions";

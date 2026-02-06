@@ -535,4 +535,9 @@ const runtime = await createKitchenOpsRuntime({
   - `createRecipe()` - Creates Recipe entity through Manifest runtime
   - `createDish()` - Creates Dish entity through Manifest runtime
 - Next steps: Migrate server actions in `apps/app/app/(authenticated)/kitchen/recipes/actions.ts` to use the new API routes, add constraint outcomes tracking to UI
+- **COMPLETED**: Fixed `actions-manifest.ts` naming conflict and build errors (2025-02-06)
+  - Fixed recursive call bug in `updateRecipe` server action - was calling itself instead of Manifest wrapper
+  - Fixed "use server" export issue - changed from `export { ... } from "./actions"` to import/re-export pattern
+  - Added `updateRecipe as updateRecipeManifest` import alias to resolve naming collision
+  - App now builds successfully
 
