@@ -1,0 +1,228 @@
+{
+  "testCases": [
+    {
+      "name": "claim prep task succeeds when task is open",
+      "setup": {
+        "createInstance": {
+          "entity": "PrepTask",
+          "data": {
+            "id": "task-1",
+            "tenantId": "tenant-1",
+            "name": "Prep Vegetables",
+            "status": "open",
+            "claimedBy": "",
+            "claimedAt": 0,
+            "stationId": "",
+            "priority": 3,
+            "quantityTotal": 10,
+            "quantityCompleted": 0,
+            "eventId": "event-1"
+          }
+        }
+      },
+      "command": {
+        "name": "claim",
+        "entityName": "PrepTask",
+        "instanceId": "task-1",
+        "input": { "stationId": "station-1", "userId": "user-1" }
+      },
+      "expectedResult": {
+        "success": true,
+        "emittedEvents": [
+          {
+            "name": "PrepTaskClaimed",
+            "channel": "kitchen.task.claimed",
+            "payload": {
+              "taskId": "task-1",
+              "claimedBy": "user-1",
+              "stationId": "station-1",
+              "timestamp": 1000000000000
+            },
+            "timestamp": 1000000000000
+          }
+        ]
+      },
+      "expectedInstanceState": {
+        "id": "task-1",
+        "tenantId": "tenant-1",
+        "name": "Prep Vegetables",
+        "status": "in_progress",
+        "claimedBy": "user-1",
+        "claimedAt": 1000000000000,
+        "stationId": "station-1",
+        "priority": 3,
+        "quantityTotal": 10,
+        "quantityCompleted": 0,
+        "eventId": "event-1"
+      }
+    },
+    {
+      "name": "complete prep task succeeds when user is claimer",
+      "setup": {
+        "createInstance": {
+          "entity": "PrepTask",
+          "data": {
+            "id": "task-2",
+            "tenantId": "tenant-1",
+            "name": "Complete Me",
+            "status": "in_progress",
+            "claimedBy": "user-1",
+            "claimedAt": 999999999000,
+            "stationId": "station-1",
+            "priority": 3,
+            "quantityTotal": 10,
+            "quantityCompleted": 0,
+            "eventId": "event-1"
+          }
+        }
+      },
+      "command": {
+        "name": "complete",
+        "entityName": "PrepTask",
+        "instanceId": "task-2",
+        "input": { "quantity": 10, "userId": "user-1" }
+      },
+      "expectedResult": {
+        "success": true,
+        "emittedEvents": [
+          {
+            "name": "PrepTaskCompleted",
+            "channel": "kitchen.task.completed",
+            "payload": {
+              "taskId": "task-2",
+              "completedBy": "user-1",
+              "quantity": 10,
+              "timestamp": 1000000000000
+            },
+            "timestamp": 1000000000000
+          }
+        ]
+      },
+      "expectedInstanceState": {
+        "id": "task-2",
+        "tenantId": "tenant-1",
+        "name": "Complete Me",
+        "status": "done",
+        "claimedBy": "user-1",
+        "claimedAt": 999999999000,
+        "stationId": "station-1",
+        "priority": 3,
+        "quantityTotal": 10,
+        "quantityCompleted": 10,
+        "eventId": "event-1"
+      }
+    },
+    {
+      "name": "release prep task succeeds when user is claimer",
+      "setup": {
+        "createInstance": {
+          "entity": "PrepTask",
+          "data": {
+            "id": "task-3",
+            "tenantId": "tenant-1",
+            "name": "Release Me",
+            "status": "in_progress",
+            "claimedBy": "user-1",
+            "claimedAt": 999999999000,
+            "stationId": "station-1",
+            "priority": 3,
+            "quantityTotal": 10,
+            "quantityCompleted": 0,
+            "eventId": "event-1"
+          }
+        }
+      },
+      "command": {
+        "name": "release",
+        "entityName": "PrepTask",
+        "instanceId": "task-3",
+        "input": { "userId": "user-1", "reason": "Shift ending" }
+      },
+      "expectedResult": {
+        "success": true,
+        "emittedEvents": [
+          {
+            "name": "PrepTaskReleased",
+            "channel": "kitchen.task.released",
+            "payload": {
+              "taskId": "task-3",
+              "releasedBy": "user-1",
+              "reason": "Shift ending",
+              "timestamp": 1000000000000
+            },
+            "timestamp": 1000000000000
+          }
+        ]
+      },
+      "expectedInstanceState": {
+        "id": "task-3",
+        "tenantId": "tenant-1",
+        "name": "Release Me",
+        "status": "open",
+        "claimedBy": "",
+        "claimedAt": 0,
+        "stationId": "",
+        "priority": 3,
+        "quantityTotal": 10,
+        "quantityCompleted": 0,
+        "eventId": "event-1"
+      }
+    },
+    {
+      "name": "cancel prep task succeeds when not completed",
+      "setup": {
+        "createInstance": {
+          "entity": "PrepTask",
+          "data": {
+            "id": "task-4",
+            "tenantId": "tenant-1",
+            "name": "Cancel This",
+            "status": "open",
+            "claimedBy": "",
+            "claimedAt": 0,
+            "stationId": "",
+            "priority": 3,
+            "quantityTotal": 10,
+            "quantityCompleted": 0,
+            "eventId": "event-1"
+          }
+        }
+      },
+      "command": {
+        "name": "cancel",
+        "entityName": "PrepTask",
+        "instanceId": "task-4",
+        "input": { "reason": "No longer needed", "canceledBy": "user-1" }
+      },
+      "expectedResult": {
+        "success": true,
+        "emittedEvents": [
+          {
+            "name": "PrepTaskCanceled",
+            "channel": "kitchen.task.canceled",
+            "payload": {
+              "taskId": "task-4",
+              "canceledBy": "user-1",
+              "reason": "No longer needed",
+              "timestamp": 1000000000000
+            },
+            "timestamp": 1000000000000
+          }
+        ]
+      },
+      "expectedInstanceState": {
+        "id": "task-4",
+        "tenantId": "tenant-1",
+        "name": "Cancel This",
+        "status": "canceled",
+        "claimedBy": "",
+        "claimedAt": 0,
+        "stationId": "",
+        "priority": 3,
+        "quantityTotal": 10,
+        "quantityCompleted": 0,
+        "eventId": "event-1"
+      }
+    }
+  ]
+}

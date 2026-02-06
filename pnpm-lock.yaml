@@ -1158,6 +1158,22 @@ importers:
         specifier: 15.4.11
         version: 15.4.11(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
 
+  packages/kitchen-ops:
+    dependencies:
+      '@repo/manifest':
+        specifier: workspace:*
+        version: link:../manifest
+      '@repo/manifest-specs':
+        specifier: workspace:*
+        version: link:../manifest-specs
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/kitchen-state-transitions:
     devDependencies:
       '@repo/typescript-config':
@@ -1171,6 +1187,19 @@ importers:
         version: 5.9.3
 
   packages/manifest:
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/manifest-specs:
+    dependencies:
+      '@repo/manifest':
+        specifier: workspace:*
+        version: link:../manifest
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*

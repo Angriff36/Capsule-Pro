@@ -82,6 +82,7 @@ export const KEYWORDS = new Set([
     "delete",
     "execute",
     "all",
+    "override",
     "allow",
     "deny",
     "and",
@@ -93,6 +94,11 @@ export const KEYWORDS = new Set([
     "user",
     "self",
     "context",
+    // vNext constraint keywords
+    "overrideable",
+    "ok",
+    "warn",
+    "block",
 ]);
 const OPERATORS = new Set([
     "+",
@@ -133,9 +139,8 @@ export class Lexer {
     tokenize() {
         while (this.pos < this.source.length) {
             this.skipWhitespace();
-            if (this.pos >= this.source.length) {
+            if (this.pos >= this.source.length)
                 break;
-            }
             const char = this.source[this.pos];
             if (char === "\n") {
                 this.tokens.push({
@@ -190,10 +195,8 @@ export class Lexer {
                 continue;
             }
             if (c === "/" && this.source[this.pos + 1] === "/") {
-                while (this.pos < this.source.length &&
-                    this.source[this.pos] !== "\n") {
+                while (this.pos < this.source.length && this.source[this.pos] !== "\n")
                     this.advance();
-                }
                 continue;
             }
             if (c === "/" && this.source[this.pos + 1] === "*") {

@@ -1,5 +1,12 @@
 {
   "version": "1.0",
+  "provenance": {
+    "contentHash": "normalized-content-hash",
+    "irHash": "e35d21e808ed46414488d85d93a1717d1653b7ac3db7073ad267157083850d63",
+    "compilerVersion": "0.3.0",
+    "schemaVersion": "1.0",
+    "compiledAt": "2024-01-01T00:00:00.000Z"
+  },
   "modules": [],
   "entities": [
     {
@@ -101,6 +108,7 @@
           }
         }
       ],
+      "constraints": [],
       "actions": [
         {
           "kind": "mutate",
@@ -165,6 +173,7 @@
           }
         }
       ],
+      "constraints": [],
       "actions": [
         {
           "kind": "mutate",
@@ -191,6 +200,7 @@
           "property": "completed"
         }
       ],
+      "constraints": [],
       "actions": [],
       "emits": ["TaskArchived"]
     }

@@ -21,6 +21,10 @@
     "test": {
       "dependsOn": ["^test"]
     },
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "cache": false
+    },
     "analyze": {
       "dependsOn": ["^analyze"]
     },

@@ -7,7 +7,7 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  // If hitting the API directly from a browser without a session, 
+  // If hitting the API directly from a browser without a session,
   // we want to return a 401 JSON instead of a redirect loop.
   if (!isPublicRoute(req)) {
     const { userId } = await auth();

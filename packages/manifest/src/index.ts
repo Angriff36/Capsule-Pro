@@ -21,6 +21,7 @@ export {
 // Export types
 export type {
   CompileToIRResult,
+  ConstraintOutcome,
   IR,
   IRAction,
   IRCommand,
@@ -39,6 +40,7 @@ export type {
   IRStore,
   IRType,
   IRValue,
+  OverrideRequest,
   PropertyModifier,
 } from "./manifest/ir";
 // Export compiler

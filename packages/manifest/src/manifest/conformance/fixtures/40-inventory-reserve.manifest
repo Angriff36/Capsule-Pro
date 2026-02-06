@@ -1,0 +1,90 @@
+// Test: Inventory reservation constraints
+
+entity InventoryItem {
+  property required id: string
+  property required tenantId: string
+  property required name: string
+  property required quantityOnHand: number = 0
+  property required quantityReserved: number = 0
+  property required parLevel: number = 0
+  property required costPerUnit: number = 0
+  property required locationId: string = ""
+  property isActive: boolean = true
+
+  computed quantityAvailable: number = self.quantityOnHand - self.quantityReserved
+  computed isBelowPar: boolean = self.quantityOnHand < self.parLevel
+  computed stockoutRisk: string = self.quantityAvailable <= 0 ? "out_of_stock" : self.quantityAvailable < self.parLevel * 0.5 ? "low" : "normal"
+
+  constraint positiveQuantities: self.quantityOnHand >= 0 and self.quantityReserved >= 0 "Quantities must be non-negative"
+  constraint reserveDoesNotExceedOnHand: self.quantityReserved <= self.quantityOnHand "Cannot reserve more than available"
+
+  command reserve(quantity: number, eventId: string) {
+    constraint belowParWarn:warn self.quantityOnHand < self.parLevel "Item is below par level"
+    constraint lowStockWarn:warn self.quantityAvailable < quantity * 2 "Low stock warning"
+    constraint noStockout:block self.quantityAvailable >= quantity "Insufficient stock for reservation"
+
+    mutate quantityReserved = self.quantityReserved + quantity
+
+    emit InventoryReserved
+  }
+
+  command consume(quantity: number, lotId: string) {
+    constraint consumeWarn:warn self.quantityOnHand < quantity * 1.5 "Consuming significant portion of stock"
+    constraint enoughStock:block self.quantityOnHand >= quantity "Insufficient stock on hand"
+
+    mutate quantityOnHand = self.quantityOnHand - quantity
+    mutate quantityReserved = max(0, self.quantityReserved - quantity)
+
+    emit InventoryConsumed
+  }
+
+  command restock(quantity: number, costPerUnit: number) {
+    guard quantity > 0 "Restock quantity must be positive"
+
+    mutate quantityOnHand = self.quantityOnHand + quantity
+    mutate costPerUnit = costPerUnit
+
+    emit InventoryRestocked
+  }
+
+  command waste(quantity: number, reason: string, lotId: string) {
+    constraint wasteWarn:warn quantity > self.quantityOnHand * 0.1 "Large waste quantity logged"
+    constraint enoughStock:block self.quantityOnHand >= quantity "Insufficient stock to waste"
+
+    mutate quantityOnHand = self.quantityOnHand - quantity
+    mutate quantityReserved = max(0, self.quantityReserved - quantity)
+
+    emit InventoryWasted
+  }
+}
+
+store InventoryItem in memory
+
+event InventoryReserved: "kitchen.inventory.reserved" {
+  itemId: string
+  quantity: number
+  eventId: string
+  timestamp: number
+}
+
+event InventoryConsumed: "kitchen.inventory.consumed" {
+  itemId: string
+  quantity: number
+  lotId: string
+  timestamp: number
+}
+
+event InventoryRestocked: "kitchen.inventory.restocked" {
+  itemId: string
+  quantity: number
+  costPerUnit: number
+  timestamp: number
+}
+
+event InventoryWasted: "kitchen.inventory.wasted" {
+  itemId: string
+  quantity: number
+  reason: string
+  lotId: string
+  timestamp: number
+}

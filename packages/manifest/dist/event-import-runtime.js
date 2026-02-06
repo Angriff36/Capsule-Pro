@@ -9,7 +9,7 @@ let cachedIR = null;
 /**
  * Load and compile the Manifest module
  */
-function loadManifestIR() {
+async function loadManifestIR() {
     if (cachedIR) {
         return cachedIR;
     }
@@ -197,7 +197,7 @@ module EventImport {
   }
 }
 `;
-    const { ir, diagnostics } = compileToIR(manifestSource);
+    const { ir, diagnostics } = await compileToIR(manifestSource);
     if (!ir) {
         throw new Error(`Failed to compile Manifest module: ${diagnostics.map((d) => d.message).join(", ")}`);
     }
@@ -207,8 +207,8 @@ module EventImport {
 /**
  * Create a runtime engine with tenant context
  */
-export function createEventImportRuntime(tenantId, userId) {
-    const ir = loadManifestIR();
+export async function createEventImportRuntime(tenantId, userId) {
+    const ir = await loadManifestIR();
     const engine = new RuntimeEngine(ir, {
         tenantId,
         userId,
@@ -254,7 +254,7 @@ export async function createOrUpdateEvent(engine, eventId, tenantId, parsedEvent
         return updateResult;
     }
     // Create new event
-    const newEventId = engine.createInstance("Event", {
+    const newEventId = await engine.createInstance("Event", {
         id: crypto.randomUUID(),
         tenantId,
         eventType: parsedEvent.serviceStyle || "catering",

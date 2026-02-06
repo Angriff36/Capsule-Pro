@@ -9,7 +9,7 @@ import { RuntimeEngine } from "./index";
 /**
  * Create a runtime engine with tenant context
  */
-export declare function createEventImportRuntime(tenantId: string, userId: string): RuntimeEngine;
+export declare function createEventImportRuntime(tenantId: string, userId: string): Promise<RuntimeEngine>;
 /**
  * Process a document import using Manifest commands
  */
@@ -24,6 +24,10 @@ export declare function createOrUpdateEvent(engine: RuntimeEngine, eventId: stri
     error?: string;
     deniedBy?: string;
     guardFailure?: import("./index").GuardFailure;
+    policyDenial?: import("./manifest/runtime-engine").PolicyDenial;
+    constraintOutcomes?: import("./index").ConstraintOutcome[];
+    overrideRequests?: import("./index").OverrideRequest[];
+    concurrencyConflict?: import("./manifest/ir").ConcurrencyConflict;
     emittedEvents: EmittedEvent[];
 }>;
 /**

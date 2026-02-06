@@ -13,7 +13,7 @@ let cachedIR: IR | null = null;
 /**
  * Load and compile the Manifest module
  */
-function loadManifestIR(): IR {
+async function loadManifestIR(): Promise<IR> {
   if (cachedIR) {
     return cachedIR;
   }
@@ -203,7 +203,7 @@ module EventImport {
 }
 `;
 
-  const { ir, diagnostics } = compileToIR(manifestSource);
+  const { ir, diagnostics } = await compileToIR(manifestSource);
 
   if (!ir) {
     throw new Error(
@@ -218,8 +218,11 @@ module EventImport {
 /**
  * Create a runtime engine with tenant context
  */
-export function createEventImportRuntime(tenantId: string, userId: string) {
-  const ir = loadManifestIR();
+export async function createEventImportRuntime(
+  tenantId: string,
+  userId: string
+) {
+  const ir = await loadManifestIR();
   const engine = new RuntimeEngine(ir, {
     tenantId,
     userId,
@@ -300,7 +303,7 @@ export async function createOrUpdateEvent(
     return updateResult;
   }
   // Create new event
-  const newEventId = engine.createInstance("Event", {
+  const newEventId = await engine.createInstance("Event", {
     id: crypto.randomUUID(),
     tenantId,
     eventType: parsedEvent.serviceStyle || "catering",

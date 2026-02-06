@@ -28,6 +28,7 @@ model Account {
   prepLists             PrepList[]
   prepListItems         PrepListItem[]
   prepTasks             PrepTask[]
+  stations              Station[]
   taskClaims            KitchenTaskClaim[]
   taskProgress          KitchenTaskProgress[]
   events                Event[]
@@ -292,8 +293,9 @@ model PrepListItem {
   tenantId             String    @map("tenant_id") @db.Uuid
   id                   String    @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
   prepListId           String    @map("prep_list_id") @db.Uuid
-  stationId            String    @map("station_id")
+  stationId            String?   @map("station_id")
   stationName          String    @map("station_name")
+  station              Station?  @relation("PrepListStation", fields: [stationId, tenantId], references: [id, tenantId], onDelete: Restrict)
   ingredientId         String    @map("ingredient_id") @db.Uuid
   ingredientName       String    @map("ingredient_name")
   category             String?
@@ -323,6 +325,31 @@ model PrepListItem {
   @@index([ingredientId])
   @@index([isCompleted])
   @@map("prep_list_items")
+  @@schema("tenant_kitchen")
+}
+
+model Station {
+  tenantId                  String   @map("tenant_id") @db.Uuid
+  id                        String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  locationId                String   @map("location_id") @db.Uuid
+  name                      String
+  stationType               String   @map("station_type") // 'hot-line', 'cold-prep', 'bakery', 'garnish', 'prep-station'
+  capacitySimultaneousTasks Int      @default(1) @map("capacity_simultaneous_tasks")
+  equipmentList             String[]
+  isActive                  Boolean  @default(true) @map("is_active")
+  notes                     String?  @db.Text
+  createdAt                 DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                 DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt                 DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  prepListItems             PrepListItem[] @relation("PrepListStation")
+
+  tenant                    Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, id])
+  @@index([tenantId, locationId])
+  @@map("stations")
   @@schema("tenant_kitchen")
 }
 
@@ -2768,6 +2795,30 @@ model WasteEntry {
   @@index([loggedBy])
   @@index([tenantId, loggedAt(sort: Desc)])
   @@map("waste_entries")
+  @@schema("tenant_kitchen")
+}
+
+/// Override audit trail for tracking constraint overrides
+model OverrideAudit {
+  tenantId        String    @default("")
+  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  entityType      String    @map("entity_type")
+  entityId        String    @db.Uuid
+  constraintId    String    @map("constraint_id")
+  guardExpression String?   @map("guard_expression") @db.Text
+  overriddenBy    String    @map("overridden_by") @db.Uuid
+  overrideReason  String    @map("override_reason") @db.Text
+  authorizedBy    String?   @map("authorized_by") @db.Uuid
+  authorizedAt    DateTime? @map("authorized_at") @db.Timestamptz(6)
+
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@unique([tenantId, id])
+  @@index([tenantId, entityType, entityId])
+  @@index([tenantId, overriddenBy])
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@map("override_audit")
   @@schema("tenant_kitchen")
 }
 

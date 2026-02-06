@@ -3,14 +3,12 @@ import { Parser } from "./parser";
 import type { CompilationResult, ManifestProgram } from "./types";
 
 export class ManifestCompiler {
-  private readonly parser = new Parser();
-  private readonly generator = new CodeGenerator();
+  private parser = new Parser();
+  private generator = new CodeGenerator();
 
   compile(source: string): CompilationResult {
     const { program, errors } = this.parser.parse(source);
-    if (errors.length > 0) {
-      return { success: false, errors, ast: program };
-    }
+    if (errors.length > 0) return { success: false, errors, ast: program };
     try {
       const { code, serverCode, testCode } = this.generator.generate(program);
       return {
@@ -35,7 +33,7 @@ export class ManifestCompiler {
     }
   }
 
-  parse(source: string): { program: ManifestProgram; errors: any[] } {
+  parse(source: string): { program: ManifestProgram; errors: unknown[] } {
     return this.parser.parse(source);
   }
 }

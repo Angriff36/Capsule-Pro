@@ -1,0 +1,723 @@
+{
+  "testCases": [
+    {
+      "name": "claim prep task succeeds when task is open and station has capacity",
+      "context": {
+        "user": { "id": "user-1", "role": "line_cook" },
+        "station": {
+          "id": "station-1",
+          "name": "Hot Line",
+          "capacity": 5,
+          "currentTasks": 2
+        }
+      },
+      "setup": {
+        "createInstance": {
+          "entity": "PrepTask",
+          "data": {
+            "id": "task-1",
+            "tenantId": "tenant-1",
+            "name": "Prep Vegetables",
+            "status": "open",
+            "claimedBy": "",
+            "claimedAt": 0,
+            "stationId": "",
+            "priority": 3,
+            "quantityTotal": 10,
+            "quantityCompleted": 0,
+            "eventId": "event-1"
+          }
+        }
+      },
+      "command": {
+        "name": "claim",
+        "entityName": "PrepTask",
+        "instanceId": "task-1",
+        "input": { "stationId": "station-1" }
+      },
+      "expectedResult": {
+        "success": true,
+        "emittedEvents": [
+          {
+            "name": "PrepTaskClaimed",
+            "channel": "kitchen.task.claimed",
+            "payload": {
+              "taskId": "task-1",
+              "claimedBy": "user-1",
+              "stationId": "station-1",
+              "timestamp": 1000000000000
+            },
+            "timestamp": 1000000000000
+          }
+        ]
+      },
+      "expectedInstanceState": {
+        "id": "task-1",
+        "tenantId": "tenant-1",
+        "name": "Prep Vegetables",
+        "status": "in_progress",
+        "claimedBy": "user-1",
+        "claimedAt": 1000000000000,
+        "stationId": "station-1",
+        "priority": 3,
+        "quantityTotal": 10,
+        "quantityCompleted": 0,
+        "eventId": "event-1"
+      }
+    },
+    {
+      "name": "claim prep task fails when task is not open",
+      "context": {
+        "user": { "id": "user-1", "role": "line_cook" },
+        "station": {
+          "id": "station-1",
+          "name": "Hot Line",
+          "capacity": 5,
+          "currentTasks": 2
+        }
+      },
+      "setup": {
+        "createInstance": {
+          "entity": "PrepTask",
+          "data": {
+            "id": "task-2",
+            "tenantId": "tenant-1",
+            "name": "In Progress Task",
+            "status": "in_progress",
+            "claimedBy": "user-2",
+            "claimedAt": 999999999000,
+            "stationId": "station-1",
+            "priority": 3,
+            "quantityTotal": 10,
+            "quantityCompleted": 0,
+            "eventId": "event-1"
+          }
+        }
+      },
+      "command": {
+        "name": "claim",
+        "entityName": "PrepTask",
+        "instanceId": "task-2",
+        "input": { "stationId": "station-1" }
+      },
+      "expectedResult": {
+        "success": false,
+        "error": "Guard condition failed for command 'claim'",
+        "emittedEvents": []
+      }
+    },
+    {
+      "name": "complete prep task succeeds when user is claimer",
+      "context": {
+        "user": { "id": "user-1", "role": "line_cook" }
+      },
+      "setup": {
+        "createInstance": {
+          "entity": "PrepTask",
+          "data": {
+            "id": "task-3",
+            "tenantId": "tenant-1",
+            "name": "Complete Me",
+            "status": "in_progress",
+            "claimedBy": "user-1",
+            "claimedAt": 999999999000,
+            "stationId": "station-1",
+            "priority": 3,
+            "quantityTotal": 10,
+            "quantityCompleted": 0,
+            "eventId": "event-1"
+          }
+        }
+      },
+      "command": {
+        "name": "complete",
+        "entityName": "PrepTask",
+        "instanceId": "task-3",
+        "input": { "quantity": 10 }
+      },
+      "expectedResult": {
+        "success": true,
+        "emittedEvents": [
+          {
+            "name": "PrepTaskCompleted",
+            "channel": "kitchen.task.completed",
+            "payload": {
+              "taskId": "task-3",
+              "completedBy": "user-1",
+              "quantity": 10,
+              "timestamp": 1000000000000
+            },
+            "timestamp": 1000000000000
+          }
+        ]
+      },
+      "expectedInstanceState": {
+        "id": "task-3",
+        "tenantId": "tenant-1",
+        "name": "Complete Me",
+        "status": "done",
+        "claimedBy": "user-1",
+        "claimedAt": 999999999000,
+        "stationId": "station-1",
+        "priority": 3,
+        "quantityTotal": 10,
+        "quantityCompleted": 10,
+        "eventId": "event-1"
+      }
+    },
+    {
+      "name": "complete prep task fails when user is not claimer",
+      "context": {
+        "user": { "id": "user-2", "role": "line_cook" }
+      },
+      "setup": {
+        "createInstance": {
+          "entity": "PrepTask",
+          "data": {
+            "id": "task-4",
+            "tenantId": "tenant-1",
+            "name": "Not My Task",
+            "status": "in_progress",
+            "claimedBy": "user-1",
+            "claimedAt": 999999999000,
+            "stationId": "station-1",
+            "priority": 3,
+            "quantityTotal": 10,
+            "quantityCompleted": 0,
+            "eventId": "event-1"
+          }
+        }
+      },
+      "command": {
+        "name": "complete",
+        "entityName": "PrepTask",
+        "instanceId": "task-4",
+        "input": { "quantity": 10 }
+      },
+      "expectedResult": {
+        "success": false,
+        "error": "Guard condition failed for command 'complete'",
+        "emittedEvents": []
+      }
+    },
+    {
+      "name": "release prep task succeeds when user is claimer",
+      "context": {
+        "user": { "id": "user-1", "role": "line_cook" }
+      },
+      "setup": {
+        "createInstance": {
+          "entity": "PrepTask",
+          "data": {
+            "id": "task-5",
+            "tenantId": "tenant-1",
+            "name": "Release Me",
+            "status": "in_progress",
+            "claimedBy": "user-1",
+            "claimedAt": 999999999000,
+            "stationId": "station-1",
+            "priority": 3,
+            "quantityTotal": 10,
+            "quantityCompleted": 0,
+            "eventId": "event-1"
+          }
+        }
+      },
+      "command": {
+        "name": "release",
+        "entityName": "PrepTask",
+        "instanceId": "task-5",
+        "input": { "reason": "Shift ending" }
+      },
+      "expectedResult": {
+        "success": true,
+        "emittedEvents": [
+          {
+            "name": "PrepTaskReleased",
+            "channel": "kitchen.task.released",
+            "payload": {
+              "taskId": "task-5",
+              "releasedBy": "user-1",
+              "reason": "Shift ending",
+              "timestamp": 1000000000000
+            },
+            "timestamp": 1000000000000
+          }
+        ]
+      },
+      "expectedInstanceState": {
+        "id": "task-5",
+        "tenantId": "tenant-1",
+        "name": "Release Me",
+        "status": "open",
+        "claimedBy": "",
+        "claimedAt": 0,
+        "stationId": "",
+        "priority": 3,
+        "quantityTotal": 10,
+        "quantityCompleted": 0,
+        "eventId": "event-1"
+      }
+    },
+    {
+      "name": "reserve inventory succeeds when sufficient stock available",
+      "context": {},
+      "setup": {
+        "createInstance": {
+          "entity": "InventoryItem",
+          "data": {
+            "id": "item-1",
+            "tenantId": "tenant-1",
+            "name": "Tomatoes",
+            "quantityOnHand": 100,
+            "quantityReserved": 20,
+            "parLevel": 50,
+            "costPerUnit": 2.5,
+            "locationId": "storage-1",
+            "isActive": true
+          }
+        }
+      },
+      "command": {
+        "name": "reserve",
+        "entityName": "InventoryItem",
+        "instanceId": "item-1",
+        "input": { "quantity": 30, "eventId": "event-1" }
+      },
+      "expectedResult": {
+        "success": true,
+        "emittedEvents": [
+          {
+            "name": "InventoryReserved",
+            "channel": "kitchen.inventory.reserved",
+            "payload": {
+              "itemId": "item-1",
+              "quantity": 30,
+              "eventId": "event-1",
+              "timestamp": 1000000000000
+            },
+            "timestamp": 1000000000000
+          }
+        ]
+      },
+      "expectedInstanceState": {
+        "id": "item-1",
+        "tenantId": "tenant-1",
+        "name": "Tomatoes",
+        "quantityOnHand": 100,
+        "quantityReserved": 50,
+        "parLevel": 50,
+        "costPerUnit": 2.5,
+        "locationId": "storage-1",
+        "isActive": true
+      }
+    },
+    {
+      "name": "reserve inventory fails when insufficient stock available",
+      "context": {},
+      "setup": {
+        "createInstance": {
+          "entity": "InventoryItem",
+          "data": {
+            "id": "item-2",
+            "tenantId": "tenant-1",
+            "name": "Rare Item",
+            "quantityOnHand": 50,
+            "quantityReserved": 40,
+            "parLevel": 100,
+            "costPerUnit": 10,
+            "locationId": "storage-1",
+            "isActive": true
+          }
+        }
+      },
+      "command": {
+        "name": "reserve",
+        "entityName": "InventoryItem",
+        "instanceId": "item-2",
+        "input": { "quantity": 20, "eventId": "event-1" }
+      },
+      "expectedResult": {
+        "success": false,
+        "error": "Guard condition failed for command 'reserve'",
+        "emittedEvents": []
+      }
+    },
+    {
+      "name": "consume inventory succeeds when sufficient stock on hand",
+      "context": {},
+      "setup": {
+        "createInstance": {
+          "entity": "InventoryItem",
+          "data": {
+            "id": "item-3",
+            "tenantId": "tenant-1",
+            "name": "Flour",
+            "quantityOnHand": 100,
+            "quantityReserved": 20,
+            "parLevel": 50,
+            "costPerUnit": 1.5,
+            "locationId": "storage-1",
+            "isActive": true
+          }
+        }
+      },
+      "command": {
+        "name": "consume",
+        "entityName": "InventoryItem",
+        "instanceId": "item-3",
+        "input": { "quantity": 25, "lotId": "lot-1" }
+      },
+      "expectedResult": {
+        "success": true,
+        "emittedEvents": [
+          {
+            "name": "InventoryConsumed",
+            "channel": "kitchen.inventory.consumed",
+            "payload": {
+              "itemId": "item-3",
+              "quantity": 25,
+              "lotId": "lot-1",
+              "timestamp": 1000000000000
+            },
+            "timestamp": 1000000000000
+          }
+        ]
+      },
+      "expectedInstanceState": {
+        "id": "item-3",
+        "tenantId": "tenant-1",
+        "name": "Flour",
+        "quantityOnHand": 75,
+        "quantityReserved": 0,
+        "parLevel": 50,
+        "costPerUnit": 1.5,
+        "locationId": "storage-1",
+        "isActive": true
+      }
+    },
+    {
+      "name": "assign task to station succeeds when below capacity",
+      "context": {},
+      "setup": {
+        "createInstance": {
+          "entity": "Station",
+          "data": {
+            "id": "station-2",
+            "tenantId": "tenant-1",
+            "name": "Cold Prep",
+            "capacity": 3,
+            "currentTasks": 1,
+            "isActive": true
+          }
+        }
+      },
+      "command": {
+        "name": "assignTask",
+        "entityName": "Station",
+        "instanceId": "station-2",
+        "input": { "taskId": "task-10" }
+      },
+      "expectedResult": {
+        "success": true,
+        "emittedEvents": [
+          {
+            "name": "StationTaskAssigned",
+            "channel": "kitchen.station.task.assigned",
+            "payload": {
+              "stationId": "station-2",
+              "taskId": "task-10",
+              "timestamp": 1000000000000
+            },
+            "timestamp": 1000000000000
+          }
+        ]
+      },
+      "expectedInstanceState": {
+        "id": "station-2",
+        "tenantId": "tenant-1",
+        "name": "Cold Prep",
+        "capacity": 3,
+        "currentTasks": 2,
+        "isActive": true
+      }
+    },
+    {
+      "name": "assign task to station fails when at capacity",
+      "context": {},
+      "setup": {
+        "createInstance": {
+          "entity": "Station",
+          "data": {
+            "id": "station-3",
+            "tenantId": "tenant-1",
+            "name": "Full Station",
+            "capacity": 2,
+            "currentTasks": 2,
+            "isActive": true
+          }
+        }
+      },
+      "command": {
+        "name": "assignTask",
+        "entityName": "Station",
+        "instanceId": "station-3",
+        "input": { "taskId": "task-11" }
+      },
+      "expectedResult": {
+        "success": false,
+        "error": "Guard condition failed for command 'assignTask'",
+        "emittedEvents": []
+      }
+    },
+    {
+      "name": "assign task to station fails when inactive",
+      "context": {},
+      "setup": {
+        "createInstance": {
+          "entity": "Station",
+          "data": {
+            "id": "station-4",
+            "tenantId": "tenant-1",
+            "name": "Inactive Station",
+            "capacity": 5,
+            "currentTasks": 0,
+            "isActive": false
+          }
+        }
+      },
+      "command": {
+        "name": "assignTask",
+        "entityName": "Station",
+        "instanceId": "station-4",
+        "input": { "taskId": "task-12" }
+      },
+      "expectedResult": {
+        "success": false,
+        "error": "Guard condition failed for command 'assignTask'",
+        "emittedEvents": []
+      }
+    },
+    {
+      "name": "restock inventory succeeds with positive quantity",
+      "context": {},
+      "setup": {
+        "createInstance": {
+          "entity": "InventoryItem",
+          "data": {
+            "id": "item-4",
+            "tenantId": "tenant-1",
+            "name": "Sugar",
+            "quantityOnHand": 10,
+            "quantityReserved": 0,
+            "parLevel": 50,
+            "costPerUnit": 1.0,
+            "locationId": "storage-1",
+            "isActive": true
+          }
+        }
+      },
+      "command": {
+        "name": "restock",
+        "entityName": "InventoryItem",
+        "instanceId": "item-4",
+        "input": { "quantity": 50, "costPerUnit": 1.2 }
+      },
+      "expectedResult": {
+        "success": true,
+        "emittedEvents": [
+          {
+            "name": "InventoryRestocked",
+            "channel": "kitchen.inventory.restocked",
+            "payload": {
+              "itemId": "item-4",
+              "quantity": 50,
+              "costPerUnit": 1.2,
+              "timestamp": 1000000000000
+            },
+            "timestamp": 1000000000000
+          }
+        ]
+      },
+      "expectedInstanceState": {
+        "id": "item-4",
+        "tenantId": "tenant-1",
+        "name": "Sugar",
+        "quantityOnHand": 60,
+        "quantityReserved": 0,
+        "parLevel": 50,
+        "costPerUnit": 1.2,
+        "locationId": "storage-1",
+        "isActive": true
+      }
+    },
+    {
+      "name": "cancel prep task succeeds when not completed",
+      "context": {
+        "user": { "id": "user-1", "role": "line_cook" }
+      },
+      "setup": {
+        "createInstance": {
+          "entity": "PrepTask",
+          "data": {
+            "id": "task-6",
+            "tenantId": "tenant-1",
+            "name": "Cancel This",
+            "status": "open",
+            "claimedBy": "",
+            "claimedAt": 0,
+            "stationId": "",
+            "priority": 3,
+            "quantityTotal": 10,
+            "quantityCompleted": 0,
+            "eventId": "event-1"
+          }
+        }
+      },
+      "command": {
+        "name": "cancel",
+        "entityName": "PrepTask",
+        "instanceId": "task-6",
+        "input": { "reason": "No longer needed" }
+      },
+      "expectedResult": {
+        "success": true,
+        "emittedEvents": [
+          {
+            "name": "PrepTaskCanceled",
+            "channel": "kitchen.task.canceled",
+            "payload": {
+              "taskId": "task-6",
+              "canceledBy": "user-1",
+              "reason": "No longer needed",
+              "timestamp": 1000000000000
+            },
+            "timestamp": 1000000000000
+          }
+        ]
+      },
+      "expectedInstanceState": {
+        "id": "task-6",
+        "tenantId": "tenant-1",
+        "name": "Cancel This",
+        "status": "canceled",
+        "claimedBy": "",
+        "claimedAt": 0,
+        "stationId": "",
+        "priority": 3,
+        "quantityTotal": 10,
+        "quantityCompleted": 0,
+        "eventId": "event-1"
+      }
+    },
+    {
+      "name": "cancel prep task fails when already canceled",
+      "context": {
+        "user": { "id": "user-1", "role": "line_cook" }
+      },
+      "setup": {
+        "createInstance": {
+          "entity": "PrepTask",
+          "data": {
+            "id": "task-7",
+            "tenantId": "tenant-1",
+            "name": "Already Canceled",
+            "status": "canceled",
+            "claimedBy": "",
+            "claimedAt": 0,
+            "stationId": "",
+            "priority": 3,
+            "quantityTotal": 10,
+            "quantityCompleted": 0,
+            "eventId": "event-1"
+          }
+        }
+      },
+      "command": {
+        "name": "cancel",
+        "entityName": "PrepTask",
+        "instanceId": "task-7",
+        "input": { "reason": "Duplicate cancel" }
+      },
+      "expectedResult": {
+        "success": false,
+        "error": "Guard condition failed for command 'cancel'",
+        "emittedEvents": []
+      }
+    },
+    {
+      "name": "remove task from station succeeds when tasks exist",
+      "context": {},
+      "setup": {
+        "createInstance": {
+          "entity": "Station",
+          "data": {
+            "id": "station-5",
+            "tenantId": "tenant-1",
+            "name": "Garnish Station",
+            "capacity": 3,
+            "currentTasks": 2,
+            "isActive": true
+          }
+        }
+      },
+      "command": {
+        "name": "removeTask",
+        "entityName": "Station",
+        "instanceId": "station-5",
+        "input": { "taskId": "task-20" }
+      },
+      "expectedResult": {
+        "success": true,
+        "emittedEvents": [
+          {
+            "name": "StationTaskRemoved",
+            "channel": "kitchen.station.task.removed",
+            "payload": {
+              "stationId": "station-5",
+              "taskId": "task-20",
+              "timestamp": 1000000000000
+            },
+            "timestamp": 1000000000000
+          }
+        ]
+      },
+      "expectedInstanceState": {
+        "id": "station-5",
+        "tenantId": "tenant-1",
+        "name": "Garnish Station",
+        "capacity": 3,
+        "currentTasks": 1,
+        "isActive": true
+      }
+    },
+    {
+      "name": "remove task from station fails when no tasks exist",
+      "context": {},
+      "setup": {
+        "createInstance": {
+          "entity": "Station",
+          "data": {
+            "id": "station-6",
+            "tenantId": "tenant-1",
+            "name": "Empty Station",
+            "capacity": 3,
+            "currentTasks": 0,
+            "isActive": true
+          }
+        }
+      },
+      "command": {
+        "name": "removeTask",
+        "entityName": "Station",
+        "instanceId": "station-6",
+        "input": { "taskId": "task-21" }
+      },
+      "expectedResult": {
+        "success": false,
+        "error": "Guard condition failed for command 'removeTask'",
+        "emittedEvents": []
+      }
+    }
+  ]
+}

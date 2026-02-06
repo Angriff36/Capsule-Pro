@@ -1,5 +1,12 @@
 {
   "version": "1.0",
+  "provenance": {
+    "contentHash": "normalized-content-hash",
+    "irHash": "c9acf9c2ee36fa303cedbe805e09e3c570bea961a50879c631d43515eab3ec5d",
+    "compilerVersion": "0.3.0",
+    "schemaVersion": "1.0",
+    "compiledAt": "2024-01-01T00:00:00.000Z"
+  },
   "modules": [],
   "entities": [
     {
@@ -88,6 +95,7 @@
       "entity": "Document",
       "parameters": [],
       "guards": [],
+      "constraints": [],
       "actions": [
         {
           "kind": "mutate",
@@ -108,6 +116,7 @@
       "entity": "Document",
       "parameters": [],
       "guards": [],
+      "constraints": [],
       "actions": [],
       "emits": ["DocumentDeleted"]
     }

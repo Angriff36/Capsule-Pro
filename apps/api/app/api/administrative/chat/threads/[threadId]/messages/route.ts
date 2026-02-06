@@ -2,10 +2,10 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import Ably from "ably";
 import { NextResponse } from "next/server";
+import { corsHeaders } from "@/app/lib/cors";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { env } from "@/env";
-import { corsHeaders } from "@/app/lib/cors";
 
 export const runtime = "nodejs";
 
@@ -217,13 +217,16 @@ export async function GET(request: Request, context: RouteContext) {
     const nextBefore =
       ordered.length === limit ? ordered[0]?.createdAt.toISOString() : null;
 
-    return NextResponse.json({
-      messages: ordered,
-      hasMore: ordered.length === limit,
-      nextBefore,
-    }, {
-      headers: corsHeaders(request, "GET, POST, OPTIONS"),
-    });
+    return NextResponse.json(
+      {
+        messages: ordered,
+        hasMore: ordered.length === limit,
+        nextBefore,
+      },
+      {
+        headers: corsHeaders(request, "GET, POST, OPTIONS"),
+      }
+    );
   } catch (error) {
     if (error instanceof InvariantError) {
       return NextResponse.json(

@@ -1,0 +1,30 @@
+{
+  "name": "@repo/manifest-specs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./prep-task-rules": {
+      "types": "./src/kitchen-ops/prep-task-rules.manifest.ts",
+      "default": "./src/kitchen-ops/prep-task-rules.manifest.ts"
+    },
+    "./inventory-rules": {
+      "types": "./src/kitchen-ops/inventory-rules.manifest.ts",
+      "default": "./src/kitchen-ops/inventory-rules.manifest.ts"
+    },
+    "./station-rules": {
+      "types": "./src/kitchen-ops/station-rules.manifest.ts",
+      "default": "./src/kitchen-ops/station-rules.manifest.ts"
+    }
+  },
+  "dependencies": {
+    "@repo/manifest": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  }
+}

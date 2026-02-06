@@ -59,6 +59,8 @@ export interface CommandNode extends ASTNode {
     name: string;
     parameters: ParameterNode[];
     guards?: ExpressionNode[];
+    /** Command-level constraints (pre-execution validation) */
+    constraints?: ConstraintNode[];
     actions: ActionNode[];
     emits?: string[];
     returns?: TypeNode;
@@ -73,7 +75,7 @@ export interface ParameterNode extends ASTNode {
 export interface PolicyNode extends ASTNode {
     type: "Policy";
     name: string;
-    action: "read" | "write" | "delete" | "execute" | "all";
+    action: "read" | "write" | "delete" | "execute" | "all" | "override";
     expression: ExpressionNode;
     message?: string;
 }
@@ -118,8 +120,20 @@ export interface ActionNode extends ASTNode {
 export interface ConstraintNode extends ASTNode {
     type: "Constraint";
     name: string;
+    /** Stable identifier for overrides/auditing (defaults to name) */
+    code?: string;
     expression: ExpressionNode;
+    /** Constraint severity level (default: block) */
+    severity?: "ok" | "warn" | "block";
     message?: string;
+    /** Template for error messages with interpolation */
+    messageTemplate?: string;
+    /** Structured details for UI (key-value pairs with expressions) */
+    detailsMapping?: Record<string, ExpressionNode>;
+    /** Can this constraint be overridden? */
+    overrideable?: boolean;
+    /** Policy that authorizes overrides */
+    overridePolicyRef?: string;
 }
 export interface FlowNode extends ASTNode {
     type: "Flow";

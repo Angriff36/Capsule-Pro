@@ -1,9 +1,9 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { NextResponse } from "next/server";
+import { corsHeaders } from "@/app/lib/cors";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { corsHeaders } from "@/app/lib/cors";
 
 const TEAM_THREAD_TYPE = "team";
 const UUID_REGEX =

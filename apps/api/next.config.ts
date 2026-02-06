@@ -29,10 +29,7 @@ let nextConfig: NextConfig = withLogging({
     "keyv",
     "cacheable-request",
   ],
-  webpack: (
-    webpackConfig: any,
-    { isServer }: { isServer: boolean }
-  ) => {
+  webpack: (webpackConfig: any, { isServer }: { isServer: boolean }) => {
     if (isServer) {
       // Exclude pdfjs-dist worker from server-side bundling
       webpackConfig.externals = [

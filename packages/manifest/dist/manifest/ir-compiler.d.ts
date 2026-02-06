@@ -1,7 +1,12 @@
 import type { CompileToIRResult } from "./ir";
+import { type IRCache } from "./ir-cache";
 export declare class IRCompiler {
     private diagnostics;
-    compileToIR(source: string): CompileToIRResult;
+    private cache;
+    constructor(cache?: IRCache);
+    compileToIR(source: string, options?: {
+        useCache?: boolean;
+    }): Promise<CompileToIRResult>;
     private transformProgram;
     private transformModule;
     private transformEntity;
@@ -20,5 +25,5 @@ export declare class IRCompiler {
     private transformExprToValue;
     private literalToValue;
 }
-export declare function compileToIR(source: string): CompileToIRResult;
+export declare function compileToIR(source: string): Promise<CompileToIRResult>;
 //# sourceMappingURL=ir-compiler.d.ts.map

@@ -1,9 +1,9 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { NextResponse } from "next/server";
+import { corsHeaders } from "@/app/lib/cors";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { corsHeaders } from "@/app/lib/cors";
 
 const TEAM_THREAD_SLUG = "team";
 const TEAM_THREAD_TYPE = "team";
@@ -262,12 +262,15 @@ export async function GET(request: Request) {
         return rightTime - leftTime;
       });
 
-    return NextResponse.json({
-      threads: team ? [team, ...direct] : direct,
-      teamThreadId: team?.id ?? teamThread.id,
-    }, {
-      headers: corsHeaders(request, "GET, POST, OPTIONS"),
-    });
+    return NextResponse.json(
+      {
+        threads: team ? [team, ...direct] : direct,
+        teamThreadId: team?.id ?? teamThread.id,
+      },
+      {
+        headers: corsHeaders(request, "GET, POST, OPTIONS"),
+      }
+    );
   } catch (error) {
     console.error("Failed to load admin chat threads:", error);
     return NextResponse.json(

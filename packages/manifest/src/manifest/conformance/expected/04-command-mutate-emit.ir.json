@@ -1,5 +1,12 @@
 {
   "version": "1.0",
+  "provenance": {
+    "contentHash": "normalized-content-hash",
+    "irHash": "1fc5901d4f0b29e7c78f2b2d95c8d035064ad10ba6157a99d2e360cff2afe836",
+    "compilerVersion": "0.3.0",
+    "schemaVersion": "1.0",
+    "compiledAt": "2024-01-01T00:00:00.000Z"
+  },
   "modules": [],
   "entities": [
     {
@@ -102,6 +109,7 @@
       "entity": "Counter",
       "parameters": [],
       "guards": [],
+      "constraints": [],
       "actions": [
         {
           "kind": "mutate",
@@ -130,6 +138,7 @@
       "entity": "Counter",
       "parameters": [],
       "guards": [],
+      "constraints": [],
       "actions": [
         {
           "kind": "mutate",
@@ -159,6 +168,7 @@
         }
       ],
       "guards": [],
+      "constraints": [],
       "actions": [
         {
           "kind": "mutate",

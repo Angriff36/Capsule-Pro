@@ -13,12 +13,14 @@ import type {
   IRParameter,
   IRPolicy,
   IRProperty,
+  IRProvenance,
   IRRelationship,
   IRStore,
   IRType,
   IRValue,
   PropertyModifier,
 } from "./ir";
+import { globalIRCache, type IRCache } from "./ir-cache";
 import { Parser } from "./parser";
 import type {
   ActionNode,
@@ -36,12 +38,84 @@ import type {
   StoreNode,
   TypeNode,
 } from "./types";
+import { COMPILER_VERSION, SCHEMA_VERSION } from "./version";
+
+/**
+ * Compute SHA-256 hash of the source manifest
+ */
+async function computeContentHash(source: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(source);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * Create provenance metadata for the IR
+ */
+async function createProvenance(
+  source: string,
+  irHash?: string
+): Promise<IRProvenance> {
+  return {
+    contentHash: await computeContentHash(source),
+    irHash,
+    compilerVersion: COMPILER_VERSION,
+    schemaVersion: SCHEMA_VERSION,
+    compiledAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Compute SHA-256 hash of the IR for runtime integrity verification
+ * This creates a canonical representation by sorting keys and excluding the irHash itself
+ */
+async function computeIRHash(ir: IR): Promise<string> {
+  // Create a copy of the IR without the irHash for hashing
+  const { provenance, ...irWithoutProvenance } = ir as IR & {
+    provenance: IRProvenance;
+  };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { irHash: _irHash, ...provenanceWithoutIrHash } = provenance;
+
+  const canonical = {
+    ...irWithoutProvenance,
+    provenance: provenanceWithoutIrHash,
+  };
+
+  // Use deterministic JSON serialization
+  const json = JSON.stringify(canonical, Object.keys(canonical).sort());
+  const encoder = new TextEncoder();
+  const data = encoder.encode(json);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 export class IRCompiler {
   private diagnostics: IRDiagnostic[] = [];
+  private cache: IRCache;
 
-  compileToIR(source: string): CompileToIRResult {
+  constructor(cache?: IRCache) {
+    this.cache = cache ?? globalIRCache;
+  }
+
+  async compileToIR(
+    source: string,
+    options?: { useCache?: boolean }
+  ): Promise<CompileToIRResult> {
     this.diagnostics = [];
+
+    // vNext: Check cache before compilation
+    const useCache = options?.useCache ?? true;
+    if (useCache) {
+      const contentHash = await computeContentHash(source);
+      const cached = this.cache.get(contentHash);
+      if (cached) {
+        return { ir: cached as IR, diagnostics: [] };
+      }
+    }
 
     const parser = new Parser();
     const { program, errors } = parser.parse(source);
@@ -59,11 +133,21 @@ export class IRCompiler {
       return { ir: null, diagnostics: this.diagnostics };
     }
 
-    const ir = this.transformProgram(program);
+    const ir = await this.transformProgram(program, source);
+
+    // vNext: Cache the compiled IR
+    if (useCache && ir) {
+      const contentHash = await computeContentHash(source);
+      this.cache.set(contentHash, ir);
+    }
+
     return { ir, diagnostics: this.diagnostics };
   }
 
-  private transformProgram(program: ManifestProgram): IR {
+  private async transformProgram(
+    program: ManifestProgram,
+    source: string
+  ): Promise<IR> {
     const modules: IRModule[] = program.modules.map((m) =>
       this.transformModule(m)
     );
@@ -106,14 +190,23 @@ export class IRCompiler {
       ),
     ];
 
-    return {
+    // Create IR without irHash first, then compute hash and add to provenance
+    const irWithoutHash: IR = {
       version: "1.0",
+      provenance: await createProvenance(source),
       modules,
       entities,
       stores,
       events,
       commands,
       policies,
+    };
+
+    // Compute the IR hash and create final IR with hash in provenance
+    const irHash = await computeIRHash(irWithoutHash);
+    return {
+      ...irWithoutHash,
+      provenance: await createProvenance(source, irHash),
     };
   }
 
@@ -185,8 +278,21 @@ export class IRCompiler {
   private transformConstraint(c: ConstraintNode): IRConstraint {
     return {
       name: c.name,
+      code: c.code || c.name, // Default to name if code not specified
       expression: this.transformExpression(c.expression),
+      severity: c.severity || "block", // Default to block
       message: c.message,
+      messageTemplate: c.messageTemplate,
+      detailsMapping: c.detailsMapping
+        ? Object.fromEntries(
+            Object.entries(c.detailsMapping).map(([k, v]) => [
+              k,
+              this.transformExpression(v),
+            ])
+          )
+        : undefined,
+      overrideable: c.overrideable,
+      overridePolicyRef: c.overridePolicyRef,
     };
   }
 
@@ -195,9 +301,7 @@ export class IRCompiler {
     if (s.config) {
       for (const [k, v] of Object.entries(s.config)) {
         const val = this.transformExprToValue(v);
-        if (val) {
-          config[k] = val;
-        }
+        if (val) config[k] = val;
       }
     }
     return {
@@ -237,6 +341,9 @@ export class IRCompiler {
       entity: entityName,
       parameters: c.parameters.map((p) => this.transformParameter(p)),
       guards: (c.guards || []).map((g) => this.transformExpression(g)),
+      constraints: (c.constraints || []).map((c) =>
+        this.transformConstraint(c)
+      ), // vNext
       actions: c.actions.map((a) => this.transformAction(a)),
       emits: c.emits || [],
       returns: c.returns ? this.transformType(c.returns) : undefined,
@@ -407,9 +514,7 @@ export class IRCompiler {
       const properties: Record<string, IRValue> = {};
       for (const p of obj.properties) {
         const v = this.transformExprToValue(p.value);
-        if (v) {
-          properties[p.key] = v;
-        }
+        if (v) properties[p.key] = v;
       }
       return { kind: "object", properties };
     }
@@ -420,20 +525,17 @@ export class IRCompiler {
     value: string | number | boolean | null,
     dataType: string
   ): IRValue {
-    if (dataType === "string") {
+    if (dataType === "string")
       return { kind: "string", value: value as string };
-    }
-    if (dataType === "number") {
+    if (dataType === "number")
       return { kind: "number", value: value as number };
-    }
-    if (dataType === "boolean") {
+    if (dataType === "boolean")
       return { kind: "boolean", value: value as boolean };
-    }
     return { kind: "null" };
   }
 }
 
-export function compileToIR(source: string): CompileToIRResult {
+export async function compileToIR(source: string): Promise<CompileToIRResult> {
   const compiler = new IRCompiler();
   return compiler.compileToIR(source);
 }
