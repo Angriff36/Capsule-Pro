@@ -342,4 +342,5 @@ export declare function formatPolicyDenial(denial: NonNullable<CommandResultWith
         value: string;
     }>;
 };
+export { createPrismaStoreProvider, loadPrepTaskFromPrisma, PrepTaskPrismaStore, syncPrepTaskToPrisma, } from "./prisma-store.js";
 //# sourceMappingURL=index.d.ts.map

@@ -13,6 +13,10 @@
     "./runtime": {
       "types": "./dist/runtime.d.ts",
       "import": "./dist/runtime.js"
+    },
+    "./prisma-store": {
+      "types": "./dist/prisma-store.d.ts",
+      "import": "./dist/prisma-store.js"
     }
   },
   "scripts": {
@@ -20,6 +24,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@repo/database": "workspace:*",
     "@repo/manifest": "workspace:*",
     "@repo/manifest-specs": "workspace:*"
   },

@@ -1310,3 +1310,12 @@ export function formatPolicyDenial(
       })) || [],
   };
 }
+
+// ============ Prisma Store Exports ============
+
+export {
+  createPrismaStoreProvider,
+  loadPrepTaskFromPrisma,
+  PrepTaskPrismaStore,
+  syncPrepTaskToPrisma,
+} from "./prisma-store.js";

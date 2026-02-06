@@ -61,9 +61,18 @@ Manifest Runtime Version: v0.3.0
 - API routes in `apps/app/app/api/kitchen/tasks/[id]/claim/route.ts` bypass Manifest
 
 **Tasks:**
-- [ ] Replace direct DB mutations in API routes with Manifest runtime commands
-- [x] Implement PostgresStore for persistent entity storage (currently memory-only)
-- [x] Add storeProvider to runtime initialization for Postgres backing
+- [x] Replace direct DB mutations in API routes with Manifest runtime commands (2025-02-06)
+  - Migrated `/api/kitchen/tasks/[id]/claim` to use `claimPrepTask` via Manifest runtime
+  - Migrated `/api/kitchen/tasks/[id]` PATCH to use `completePrepTask`, `cancelPrepTask`, `releasePrepTask`
+- [x] Implement PostgresStore for persistent entity storage (2025-02-06)
+  - `createPostgresStoreProvider()` function for persistent storage
+  - `KitchenOpsContext.databaseUrl` option enables Postgres backing
+  - Table namespacing per tenant: `kitchen_prep_tasks_{tenantId}`, etc.
+- [x] Add storeProvider to runtime initialization for Postgres backing (2025-02-06)
+- [x] Create PrismaStore adapter for bridging Manifest entities to existing Prisma schema (2025-02-06)
+  - `PrepTaskPrismaStore` class maps Manifest PrepTask to Prisma PrepTask + KitchenTaskClaim tables
+  - `createPrismaStoreProvider()` function for Store interface
+  - Handles claim synchronization between Manifest's inline claimedBy/claimedAt and Prisma's separate KitchenTaskClaim table
 - [ ] Audit all kitchen mutation paths for Manifest compliance
 - [ ] Add telemetry: count WARN/BLOCK constraints, override usage, top constraint codes
 - [ ] Write conformance fixtures for all prep-task, station, and inventory commands
@@ -259,3 +268,40 @@ const runtime = await createKitchenOpsRuntime({
 - `data` (JSONB NOT NULL)
 - `created_at`, `updated_at` (TIMESTAMP)
 - GIN index on `data` for efficient querying
+
+---
+
+### 2025-02-06: API Route Migration to Manifest + PrismaStore Adapter
+
+**Completed:**
+- Created `packages/kitchen-ops/src/prisma-store.ts` with Prisma-backed Store implementation
+  - `PrepTaskPrismaStore` class bridges Manifest entities to existing Prisma schema
+  - Handles claim synchronization between Manifest inline fields and Prisma's KitchenTaskClaim table
+  - `createPrismaStoreProvider()` factory for runtime configuration
+  - `loadPrepTaskFromPrisma()` and `syncPrepTaskToPrisma()` helper functions
+- Updated `packages/kitchen-ops/package.json`:
+  - Added `@repo/database` dependency
+  - Added `/prisma-store` export for Store implementations
+- Updated `packages/kitchen-ops/src/index.ts`:
+  - Exported PrismaStore types and functions
+- Migrated API routes to use Manifest runtime:
+  - `/api/kitchen/tasks/[id]/claim/route.ts` - Now uses `claimPrepTask()` via Manifest
+  - `/api/kitchen/tasks/[id]/route.ts` (PATCH) - Now uses `completePrepTask()`, `cancelPrepTask()`, `releasePrepTask()`
+  - Both routes handle constraint outcomes (BLOCK severity returns 400)
+  - Both routes include constraint outcomes in response payload
+  - Both routes create outbox events with constraint data
+
+**Files Modified:**
+- `packages/kitchen-ops/src/prisma-store.ts` - Created new file
+- `packages/kitchen-ops/package.json` - Added database dependency and prisma-store export
+- `packages/kitchen-ops/src/index.ts` - Added PrismaStore exports
+- `apps/app/app/api/kitchen/tasks/[id]/claim/route.ts` - Migrated to Manifest runtime
+- `apps/app/app/api/kitchen/tasks/[id]/route.ts` - Migrated to Manifest runtime
+- `IMPLEMENTATION_PLAN.md` - Updated task status and added completion history
+
+**Architecture Notes:**
+- Manifest uses command-based mutations (claim, complete, cancel, release)
+- Prisma uses generic field updates - mapping requires routing status changes to appropriate commands
+- Non-status updates (priority, tags, etc.) still use direct Prisma updates
+- Status changes through Manifest enable constraint checking and event emission
+- PrismaStore adapter maintains existing database schema (no migration needed)
