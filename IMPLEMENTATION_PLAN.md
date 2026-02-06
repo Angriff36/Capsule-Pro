@@ -543,6 +543,39 @@ const runtime = await createKitchenOpsRuntime({
 
 ---
 
+### 2025-02-06: Frontend Migration to Manifest Actions
+
+**Status:** COMPLETED
+
+**What Was Fixed:**
+- Updated `recipes-page-client.tsx` to use `actions-manifest.ts` instead of `actions.ts`
+- All recipe CRUD operations now use Manifest runtime for constraint checking
+- `createRecipe`, `updateRecipe`, `getRecipeForEdit` now go through Manifest
+
+**Current State:**
+- `actions-manifest.ts` provides Manifest-enabled server actions with:
+  - FormData parsing for complex ingredient/step data
+  - Image upload handling
+  - Manifest constraint checking (WARN/BLOCK severity)
+  - Direct Prisma persistence for complex relational data
+- `actions.ts` still used for: `updateRecipeImage`, menu-related actions
+- Frontend components using Manifest actions:
+  - `new/page.tsx` - Uses `createRecipe` from actions-manifest
+  - `dishes/new/page.tsx` - Uses `createDish` from actions-manifest
+  - `[recipeId]/components/recipe-detail-tabs.tsx` - Uses `restoreRecipeVersion`
+  - `[recipeId]/components/recipe-detail-edit-button.tsx` - Uses `updateRecipe`, `getRecipeForEdit`
+  - `recipes-page-client.tsx` - Now uses actions-manifest (fixed)
+
+**Next Steps:**
+- Display constraint outcomes (WARN/BLOCK) to users in UI
+- Migrate remaining actions (`updateRecipeImage`, menu actions) to use Manifest
+- Add telemetry hooks for constraint tracking
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/kitchen/recipes/recipes-page-client.tsx` - Updated import to use actions-manifest
+
+---
+
 ### 2025-02-06: Docs App Build Investigation
 
 **Status:** DOCUMENTED - Requires fumadocs-mdx v15 for proper compatibility
