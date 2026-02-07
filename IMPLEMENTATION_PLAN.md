@@ -142,6 +142,13 @@ Manifest Runtime Version: v0.3.0
   - Updated new menu page to use Manifest-enabled client component
   - Frontend now shows ConstraintOverrideDialog when blocking constraints exist
   - Users can override blocking constraints with reason tracking
+- [x] Add PrepList runtime integration with constraint checking (2025-02-06)
+  - Created `prep-list-rules.manifest` file with PrepList and PrepListItem entities
+  - Added `createPrepListRuntime()` function
+  - PrepList commands: update, updateBatchMultiplier, finalize, activate, deactivate, markCompleted, cancel
+  - PrepListItem commands: updateQuantity, updateStation, updatePrepNotes, markCompleted, markUncompleted
+  - Added PrepListPrismaStore and PrepListItemPrismaStore adapters
+  - PrepList operations now return structured constraint outcomes
 
 **Owner:** Loop
 

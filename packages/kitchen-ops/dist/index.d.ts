@@ -13,6 +13,8 @@
  * - RecipeVersion: create
  * - Dish: updatePricing, updateLeadTime
  * - Menu: update, activate, deactivate
+ * - PrepList: update, updateBatchMultiplier, finalize, activate, deactivate, markCompleted, cancel
+ * - PrepListItem: updateQuantity, updateStation, updatePrepNotes, markCompleted, markUncompleted
  */
 import type { CommandResult, EmittedEvent, RuntimeContext } from "@repo/manifest";
 import { RuntimeEngine } from "@repo/manifest";
@@ -176,6 +178,10 @@ export declare function createRecipeRuntime(context: KitchenOpsContext): Promise
  */
 export declare function createMenuRuntime(context: KitchenOpsContext): Promise<any>;
 /**
+ * Create a kitchen operations runtime for prep lists
+ */
+export declare function createPrepListRuntime(context: KitchenOpsContext): Promise<any>;
+/**
  * Create a combined kitchen operations runtime
  */
 export declare function createKitchenOpsRuntime(context: KitchenOpsContext): Promise<any>;
@@ -312,6 +318,77 @@ export declare function deactivateMenu(engine: RuntimeEngine, menuId: string, ov
  */
 export declare function createMenu(engine: RuntimeEngine, menuId: string, name: string, description: string, category: string, basePrice: number, pricePerPerson: number, minGuests: number, maxGuests: number): Promise<MenuCommandResult>;
 /**
+ * Result of a prep list command
+ */
+export interface PrepListCommandResult extends CommandResult {
+    prepListId: string;
+    name?: string;
+    status?: string;
+    totalItems?: number;
+    totalEstimatedTime?: number;
+}
+/**
+ * Result of a prep list item command
+ */
+export interface PrepListItemCommandResult extends CommandResult {
+    itemId: string;
+    prepListId: string;
+    ingredientName?: string;
+    isCompleted?: boolean;
+}
+/**
+ * Update a prep list
+ */
+export declare function updatePrepList(engine: RuntimeEngine, prepListId: string, newName: string, newDietaryRestrictions: string, newNotes: string, overrideRequests?: OverrideRequest[]): Promise<PrepListCommandResult>;
+/**
+ * Update prep list batch multiplier
+ */
+export declare function updatePrepListBatchMultiplier(engine: RuntimeEngine, prepListId: string, newMultiplier: number, overrideRequests?: OverrideRequest[]): Promise<PrepListCommandResult>;
+/**
+ * Finalize a prep list
+ */
+export declare function finalizePrepList(engine: RuntimeEngine, prepListId: string, overrideRequests?: OverrideRequest[]): Promise<PrepListCommandResult>;
+/**
+ * Activate a prep list
+ */
+export declare function activatePrepList(engine: RuntimeEngine, prepListId: string, overrideRequests?: OverrideRequest[]): Promise<PrepListCommandResult>;
+/**
+ * Deactivate a prep list
+ */
+export declare function deactivatePrepList(engine: RuntimeEngine, prepListId: string, overrideRequests?: OverrideRequest[]): Promise<PrepListCommandResult>;
+/**
+ * Mark prep list as completed
+ */
+export declare function markPrepListCompleted(engine: RuntimeEngine, prepListId: string, overrideRequests?: OverrideRequest[]): Promise<PrepListCommandResult>;
+/**
+ * Cancel a prep list
+ */
+export declare function cancelPrepList(engine: RuntimeEngine, prepListId: string, reason: string, overrideRequests?: OverrideRequest[]): Promise<PrepListCommandResult>;
+/**
+ * Update prep list item quantity
+ */
+export declare function updatePrepListItemQuantity(engine: RuntimeEngine, itemId: string, newBaseQuantity: number, newScaledQuantity: number, newBaseUnit: string, newScaledUnit: string, overrideRequests?: OverrideRequest[]): Promise<PrepListItemCommandResult>;
+/**
+ * Update prep list item station
+ */
+export declare function updatePrepListItemStation(engine: RuntimeEngine, itemId: string, newStationId: string, newStationName: string, overrideRequests?: OverrideRequest[]): Promise<PrepListItemCommandResult>;
+/**
+ * Update prep list item notes
+ */
+export declare function updatePrepListItemNotes(engine: RuntimeEngine, itemId: string, newNotes: string, newDietarySubstitutions: string, overrideRequests?: OverrideRequest[]): Promise<PrepListItemCommandResult>;
+/**
+ * Mark prep list item as completed
+ */
+export declare function markPrepListItemCompleted(engine: RuntimeEngine, itemId: string, completedByUserId: string, overrideRequests?: OverrideRequest[]): Promise<PrepListItemCommandResult>;
+/**
+ * Mark prep list item as uncompleted
+ */
+export declare function markPrepListItemUncompleted(engine: RuntimeEngine, itemId: string, overrideRequests?: OverrideRequest[]): Promise<PrepListItemCommandResult>;
+/**
+ * Create a prep list
+ */
+export declare function createPrepList(engine: RuntimeEngine, prepListId: string, eventId: string, name: string, batchMultiplier: number, dietaryRestrictions: string, totalItems: number, totalEstimatedTime: number, notes: string): Promise<PrepListCommandResult>;
+/**
  * Setup event listeners for kitchen operations
  */
 export declare function setupKitchenOpsEventListeners(engine: RuntimeEngine, handlers: {
@@ -352,6 +429,20 @@ export declare function setupKitchenOpsEventListeners(engine: RuntimeEngine, han
     onMenuDishRemoved?: (event: EmittedEvent) => Promise<void>;
     onMenuDishUpdated?: (event: EmittedEvent) => Promise<void>;
     onMenuDishesReordered?: (event: EmittedEvent) => Promise<void>;
+    onPrepListCreated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListUpdated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListBatchMultiplierUpdated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListFinalized?: (event: EmittedEvent) => Promise<void>;
+    onPrepListActivated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListDeactivated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListCompleted?: (event: EmittedEvent) => Promise<void>;
+    onPrepListCancelled?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemCreated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemUpdated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemStationChanged?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemNotesUpdated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemCompleted?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemUncompleted?: (event: EmittedEvent) => Promise<void>;
     onConstraintOverridden?: (event: EmittedEvent) => Promise<void>;
     onConstraintSatisfiedAfterOverride?: (event: EmittedEvent) => Promise<void>;
 }): any;
@@ -509,5 +600,5 @@ export declare function formatPolicyDenial(denial: NonNullable<CommandResultWith
         value: string;
     }>;
 };
-export { createPrismaStoreProvider, loadMenuDishFromPrisma, loadMenuFromPrisma, loadPrepTaskFromPrisma, MenuDishPrismaStore, MenuPrismaStore, PrepTaskPrismaStore, syncMenuDishToPrisma, syncMenuToPrisma, syncPrepTaskToPrisma, } from "./prisma-store.js";
+export { createPrismaStoreProvider, loadMenuDishFromPrisma, loadMenuFromPrisma, loadPrepListFromPrisma, loadPrepListItemFromPrisma, loadPrepTaskFromPrisma, MenuDishPrismaStore, MenuPrismaStore, PrepListItemPrismaStore, PrepListPrismaStore, PrepTaskPrismaStore, syncMenuDishToPrisma, syncMenuToPrisma, syncPrepListItemToPrisma, syncPrepListToPrisma, syncPrepTaskToPrisma, } from "./prisma-store.js";
 //# sourceMappingURL=index.d.ts.map

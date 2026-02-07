@@ -223,4 +223,62 @@ export declare function loadMenuDishFromPrisma(prisma: PrismaClient, tenantId: s
  * Called after Manifest commands execute to persist the updated state.
  */
 export declare function syncMenuDishToPrisma(prisma: PrismaClient, tenantId: string, entity: EntityInstance): Promise<void>;
+/**
+ * Prisma-backed store for PrepList entities
+ *
+ * Maps Manifest PrepList entities to the Prisma PrepList table.
+ */
+export declare class PrepListPrismaStore implements Store<EntityInstance> {
+    private prisma;
+    private tenantId;
+    constructor(prisma: PrismaClient, tenantId: string);
+    getAll(): Promise<EntityInstance[]>;
+    getById(id: string): Promise<EntityInstance | undefined>;
+    create(data: Partial<EntityInstance>): Promise<EntityInstance>;
+    update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
+    delete(id: string): Promise<boolean>;
+    clear(): Promise<void>;
+    private mapToManifestEntity;
+}
+/**
+ * Prisma-backed store for PrepListItem entities
+ *
+ * Maps Manifest PrepListItem entities to the Prisma PrepListItem table.
+ */
+export declare class PrepListItemPrismaStore implements Store<EntityInstance> {
+    private prisma;
+    private tenantId;
+    constructor(prisma: PrismaClient, tenantId: string);
+    getAll(): Promise<EntityInstance[]>;
+    getById(id: string): Promise<EntityInstance | undefined>;
+    create(data: Partial<EntityInstance>): Promise<EntityInstance>;
+    update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
+    delete(id: string): Promise<boolean>;
+    clear(): Promise<void>;
+    private mapToManifestEntity;
+}
+/**
+ * Load a PrepList from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export declare function loadPrepListFromPrisma(prisma: PrismaClient, tenantId: string, prepListId: string): Promise<EntityInstance | undefined>;
+/**
+ * Sync a PrepList from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export declare function syncPrepListToPrisma(prisma: PrismaClient, tenantId: string, entity: EntityInstance): Promise<void>;
+/**
+ * Load a PrepListItem from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export declare function loadPrepListItemFromPrisma(prisma: PrismaClient, tenantId: string, itemId: string): Promise<EntityInstance | undefined>;
+/**
+ * Sync a PrepListItem from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export declare function syncPrepListItemToPrisma(prisma: PrismaClient, tenantId: string, entity: EntityInstance): Promise<void>;
 //# sourceMappingURL=prisma-store.d.ts.map

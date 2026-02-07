@@ -12,6 +12,8 @@ import type {
   KitchenTaskClaim,
   Menu,
   MenuDish,
+  PrepList,
+  PrepListItem,
   PrepTask,
   PrismaClient,
   Recipe,
@@ -857,6 +859,10 @@ export function createPrismaStoreProvider(
         return new MenuPrismaStore(prisma, tenantId);
       case "MenuDish":
         return new MenuDishPrismaStore(prisma, tenantId);
+      case "PrepList":
+        return new PrepListPrismaStore(prisma, tenantId);
+      case "PrepListItem":
+        return new PrepListItemPrismaStore(prisma, tenantId);
       // TODO: Add StationPrismaStore and InventoryItemPrismaStore as needed
       default:
         return undefined;
@@ -1259,6 +1265,360 @@ export async function syncMenuDishToPrisma(
 
   // Check if menu dish exists
   const existing = await prisma.menuDish.findFirst({
+    where: { tenantId, id: entity.id, deletedAt: null },
+  });
+
+  if (existing) {
+    await store.update(entity.id, entity);
+  } else {
+    await store.create(entity);
+  }
+}
+
+/**
+ * Prisma-backed store for PrepList entities
+ *
+ * Maps Manifest PrepList entities to the Prisma PrepList table.
+ */
+export class PrepListPrismaStore implements Store<EntityInstance> {
+  constructor(
+    private prisma: PrismaClient,
+    private tenantId: string
+  ) {}
+
+  async getAll(): Promise<EntityInstance[]> {
+    const prepLists = await this.prisma.prepList.findMany({
+      where: { tenantId: this.tenantId, deletedAt: null },
+    });
+    return prepLists.map((prepList) => this.mapToManifestEntity(prepList));
+  }
+
+  async getById(id: string): Promise<EntityInstance | undefined> {
+    const prepList = await this.prisma.prepList.findFirst({
+      where: { tenantId: this.tenantId, id, deletedAt: null },
+    });
+    return prepList ? this.mapToManifestEntity(prepList) : undefined;
+  }
+
+  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
+    const prepList = await this.prisma.prepList.create({
+      data: {
+        tenantId: this.tenantId,
+        id: data.id as string,
+        eventId: data.eventId as string,
+        name: data.name as string,
+        batchMultiplier: (data.batchMultiplier as number) ?? 1,
+        dietaryRestrictions: (data.dietaryRestrictions as string[]) || [],
+        status: (data.status as string) || "draft",
+        totalItems: (data.totalItems as number) || 0,
+        totalEstimatedTime: (data.totalEstimatedTime as number) || 0,
+        notes: (data.notes as string) || null,
+        generatedAt: data.generatedAt
+          ? new Date(data.generatedAt as number)
+          : new Date(),
+        finalizedAt: data.finalizedAt
+          ? new Date(data.finalizedAt as number)
+          : null,
+      },
+    });
+    return this.mapToManifestEntity(prepList);
+  }
+
+  async update(
+    id: string,
+    data: Partial<EntityInstance>
+  ): Promise<EntityInstance | undefined> {
+    try {
+      const updated = await this.prisma.prepList.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: {
+          name: data.name as string | undefined,
+          batchMultiplier: data.batchMultiplier as number | undefined,
+          dietaryRestrictions: data.dietaryRestrictions as string[] | undefined,
+          status: data.status as string | undefined,
+          totalItems: data.totalItems as number | undefined,
+          totalEstimatedTime: data.totalEstimatedTime as number | undefined,
+          notes: data.notes as string | null | undefined,
+          finalizedAt: data.finalizedAt
+            ? new Date(data.finalizedAt as number)
+            : undefined,
+          updatedAt: new Date(),
+        },
+      });
+      return this.mapToManifestEntity(updated);
+    } catch {
+      return undefined;
+    }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      await this.prisma.prepList.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: { deletedAt: new Date() },
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async clear(): Promise<void> {
+    await this.prisma.prepList.updateMany({
+      where: { tenantId: this.tenantId },
+      data: { deletedAt: new Date() },
+    });
+  }
+
+  private mapToManifestEntity(prepList: PrepList): EntityInstance {
+    const batchMultiplier = Number(prepList.batchMultiplier ?? 1);
+    return {
+      id: prepList.id,
+      tenantId: prepList.tenantId,
+      eventId: prepList.eventId,
+      name: prepList.name,
+      batchMultiplier,
+      dietaryRestrictions: Array.isArray(prepList.dietaryRestrictions)
+        ? prepList.dietaryRestrictions.join(",")
+        : "",
+      status: prepList.status ?? "draft",
+      totalItems: prepList.totalItems ?? 0,
+      totalEstimatedTime: prepList.totalEstimatedTime ?? 0,
+      notes: prepList.notes ?? "",
+      generatedAt: prepList.generatedAt
+        ? prepList.generatedAt.getTime()
+        : Date.now(),
+      finalizedAt: prepList.finalizedAt ? prepList.finalizedAt.getTime() : 0,
+      isActive: prepList.deletedAt === null,
+      isDraft: prepList.status === "draft",
+      isFinalized: prepList.status === "finalized",
+      isCompleted: prepList.status === "completed",
+      hasItems: (prepList.totalItems ?? 0) > 0,
+      avgTimePerItem:
+        (prepList.totalItems ?? 0) > 0
+          ? (prepList.totalEstimatedTime ?? 0) / (prepList.totalItems ?? 1)
+          : 0,
+      createdAt: prepList.createdAt.getTime(),
+      updatedAt: prepList.updatedAt.getTime(),
+    };
+  }
+}
+
+/**
+ * Prisma-backed store for PrepListItem entities
+ *
+ * Maps Manifest PrepListItem entities to the Prisma PrepListItem table.
+ */
+export class PrepListItemPrismaStore implements Store<EntityInstance> {
+  constructor(
+    private prisma: PrismaClient,
+    private tenantId: string
+  ) {}
+
+  async getAll(): Promise<EntityInstance[]> {
+    const items = await this.prisma.prepListItem.findMany({
+      where: { tenantId: this.tenantId, deletedAt: null },
+    });
+    return items.map((item) => this.mapToManifestEntity(item));
+  }
+
+  async getById(id: string): Promise<EntityInstance | undefined> {
+    const item = await this.prisma.prepListItem.findFirst({
+      where: { tenantId: this.tenantId, id, deletedAt: null },
+    });
+    return item ? this.mapToManifestEntity(item) : undefined;
+  }
+
+  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
+    const item = await this.prisma.prepListItem.create({
+      data: {
+        tenantId: this.tenantId,
+        id: data.id as string,
+        prepListId: data.prepListId as string,
+        stationId: (data.stationId as string) || null,
+        stationName: data.stationName as string,
+        ingredientId: data.ingredientId as string,
+        ingredientName: data.ingredientName as string,
+        category: (data.category as string) || null,
+        baseQuantity: (data.baseQuantity as number) ?? 0,
+        baseUnit: (data.baseUnit as string) || "",
+        scaledQuantity: (data.scaledQuantity as number) ?? 0,
+        scaledUnit: (data.scaledUnit as string) || "",
+        isOptional: (data.isOptional as boolean) ?? false,
+        preparationNotes: (data.preparationNotes as string) || null,
+        allergens: (data.allergens as string[]) || [],
+        dietarySubstitutions: (data.dietarySubstitutions as string[]) || [],
+        dishId: (data.dishId as string) || null,
+        dishName: (data.dishName as string) || null,
+        recipeVersionId: (data.recipeVersionId as string) || null,
+        sortOrder: (data.sortOrder as number) ?? 0,
+        isCompleted: (data.isCompleted as boolean) ?? false,
+        completedAt: data.completedAt
+          ? new Date(data.completedAt as number)
+          : null,
+        completedBy: (data.completedBy as string) || null,
+      },
+    });
+    return this.mapToManifestEntity(item);
+  }
+
+  async update(
+    id: string,
+    data: Partial<EntityInstance>
+  ): Promise<EntityInstance | undefined> {
+    try {
+      const updated = await this.prisma.prepListItem.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: {
+          stationId: data.stationId as string | null | undefined,
+          stationName: data.stationName as string | undefined,
+          baseQuantity: data.baseQuantity as number | undefined,
+          scaledQuantity: data.scaledQuantity as number | undefined,
+          baseUnit: data.baseUnit as string | undefined,
+          scaledUnit: data.scaledUnit as string | undefined,
+          preparationNotes: data.preparationNotes as string | null | undefined,
+          allergens: data.allergens as string[] | undefined,
+          dietarySubstitutions: data.dietarySubstitutions as
+            | string[]
+            | undefined,
+          sortOrder: data.sortOrder as number | undefined,
+          isCompleted: data.isCompleted as boolean | undefined,
+          completedAt: data.completedAt
+            ? new Date(data.completedAt as number)
+            : undefined,
+          completedBy: data.completedBy as string | null | undefined,
+          updatedAt: new Date(),
+        },
+      });
+      return this.mapToManifestEntity(updated);
+    } catch {
+      return undefined;
+    }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      await this.prisma.prepListItem.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: { deletedAt: new Date() },
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async clear(): Promise<void> {
+    await this.prisma.prepListItem.updateMany({
+      where: { tenantId: this.tenantId },
+      data: { deletedAt: new Date() },
+    });
+  }
+
+  private mapToManifestEntity(item: PrepListItem): EntityInstance {
+    return {
+      id: item.id,
+      tenantId: item.tenantId,
+      prepListId: item.prepListId,
+      stationId: item.stationId ?? "",
+      stationName: item.stationName ?? "",
+      ingredientId: item.ingredientId,
+      ingredientName: item.ingredientName ?? "",
+      category: item.category ?? "",
+      baseQuantity: Number(item.baseQuantity ?? 0),
+      baseUnit: item.baseUnit ?? "",
+      scaledQuantity: Number(item.scaledQuantity ?? 0),
+      scaledUnit: item.scaledUnit ?? "",
+      isOptional: item.isOptional ?? false,
+      preparationNotes: item.preparationNotes ?? "",
+      allergens: Array.isArray(item.allergens) ? item.allergens.join(",") : "",
+      dietarySubstitutions: Array.isArray(item.dietarySubstitutions)
+        ? item.dietarySubstitutions.join(",")
+        : "",
+      dishId: item.dishId ?? "",
+      dishName: item.dishName ?? "",
+      recipeVersionId: item.recipeVersionId ?? "",
+      sortOrder: item.sortOrder ?? 0,
+      isCompleted: item.isCompleted ?? false,
+      completedAt: item.completedAt ? item.completedAt.getTime() : 0,
+      completedBy: item.completedBy ?? "",
+      hasAllergens: Array.isArray(item.allergens) && item.allergens.length > 0,
+      hasDietarySubstitutions:
+        Array.isArray(item.dietarySubstitutions) &&
+        item.dietarySubstitutions.length > 0,
+      isRequired: !(item.isOptional ?? false),
+      createdAt: item.createdAt.getTime(),
+      updatedAt: item.updatedAt.getTime(),
+    };
+  }
+}
+
+/**
+ * Load a PrepList from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export async function loadPrepListFromPrisma(
+  prisma: PrismaClient,
+  tenantId: string,
+  prepListId: string
+): Promise<EntityInstance | undefined> {
+  const store = new PrepListPrismaStore(prisma, tenantId);
+  return store.getById(prepListId);
+}
+
+/**
+ * Sync a PrepList from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export async function syncPrepListToPrisma(
+  prisma: PrismaClient,
+  tenantId: string,
+  entity: EntityInstance
+): Promise<void> {
+  const store = new PrepListPrismaStore(prisma, tenantId);
+
+  // Check if prep list exists
+  const existing = await prisma.prepList.findFirst({
+    where: { tenantId, id: entity.id, deletedAt: null },
+  });
+
+  if (existing) {
+    await store.update(entity.id, entity);
+  } else {
+    await store.create(entity);
+  }
+}
+
+/**
+ * Load a PrepListItem from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export async function loadPrepListItemFromPrisma(
+  prisma: PrismaClient,
+  tenantId: string,
+  itemId: string
+): Promise<EntityInstance | undefined> {
+  const store = new PrepListItemPrismaStore(prisma, tenantId);
+  return store.getById(itemId);
+}
+
+/**
+ * Sync a PrepListItem from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export async function syncPrepListItemToPrisma(
+  prisma: PrismaClient,
+  tenantId: string,
+  entity: EntityInstance
+): Promise<void> {
+  const store = new PrepListItemPrismaStore(prisma, tenantId);
+
+  // Check if prep list item exists
+  const existing = await prisma.prepListItem.findFirst({
     where: { tenantId, id: entity.id, deletedAt: null },
   });
 

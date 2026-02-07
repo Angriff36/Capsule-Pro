@@ -13,6 +13,8 @@
  * - RecipeVersion: create
  * - Dish: updatePricing, updateLeadTime
  * - Menu: update, activate, deactivate
+ * - PrepList: update, updateBatchMultiplier, finalize, activate, deactivate, markCompleted, cancel
+ * - PrepListItem: updateQuantity, updateStation, updatePrepNotes, markCompleted, markUncompleted
  */
 
 import { readFileSync } from "node:fs";
@@ -68,12 +70,20 @@ function loadMenuManifestSource(): string {
   return readFileSync(join(MANIFESTS_DIR, "menu-rules.manifest"), "utf-8");
 }
 
+/**
+ * Load prep list manifest source from file
+ */
+function loadPrepListManifestSource(): string {
+  return readFileSync(join(MANIFESTS_DIR, "prep-list-rules.manifest"), "utf-8");
+}
+
 // Cached compiled IR for each manifest
 let cachedPrepTaskIR: IR | null = null;
 let cachedStationIR: IR | null = null;
 let cachedInventoryIR: IR | null = null;
 let cachedRecipeIR: IR | null = null;
 let cachedMenuIR: IR | null = null;
+let cachedPrepListIR: IR | null = null;
 
 /**
  * Compile and cache the PrepTask manifest IR
@@ -177,6 +187,27 @@ async function loadMenuManifestIR(): Promise<IR> {
   }
 
   cachedMenuIR = ir;
+  return ir;
+}
+
+/**
+ * Compile and cache the PrepList manifest IR
+ */
+async function loadPrepListManifestIR(): Promise<IR> {
+  if (cachedPrepListIR) {
+    return cachedPrepListIR;
+  }
+
+  const manifestSource = loadPrepListManifestSource();
+  const { ir, diagnostics } = await compileToIR(manifestSource);
+
+  if (!ir) {
+    throw new Error(
+      `Failed to compile PrepList manifest: ${diagnostics.map((d: IRDiagnostic) => d.message).join(", ")}`
+    );
+  }
+
+  cachedPrepListIR = ir;
   return ir;
 }
 
@@ -357,6 +388,8 @@ export function createPostgresStoreProvider(
       Dish: `kitchen_dishes${tenantSuffix}`,
       Menu: `kitchen_menus${tenantSuffix}`,
       MenuDish: `kitchen_menu_dishes${tenantSuffix}`,
+      PrepList: `kitchen_prep_lists${tenantSuffix}`,
+      PrepListItem: `kitchen_prep_list_items${tenantSuffix}`,
     };
 
     const tableName = tableNameMap[entityName];
@@ -506,6 +539,31 @@ export async function createMenuRuntime(context: KitchenOpsContext) {
 }
 
 /**
+ * Create a kitchen operations runtime for prep lists
+ */
+export async function createPrepListRuntime(context: KitchenOpsContext) {
+  const ir = await loadPrepListManifestIR();
+  const options =
+    context.storeProvider || context.databaseUrl || context.telemetry
+      ? {
+          ...(context.storeProvider && {
+            storeProvider: context.storeProvider,
+          }),
+          ...(context.databaseUrl &&
+            !context.storeProvider && {
+              storeProvider: createPostgresStoreProvider(
+                context.databaseUrl,
+                context.tenantId
+              ),
+            }),
+          ...(context.telemetry && { telemetry: context.telemetry }),
+        }
+      : undefined;
+  const engine = new RuntimeEngine(ir, context, options);
+  return engine;
+}
+
+/**
  * Create a combined kitchen operations runtime
  */
 export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
@@ -514,6 +572,7 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
   const inventoryIR = await loadInventoryManifestIR();
   const recipeIR = await loadRecipeManifestIR();
   const menuIR = await loadMenuManifestIR();
+  const prepListIR = await loadPrepListManifestIR();
 
   // Combine IRs - in a real implementation, you'd merge modules
   const combinedIR: IR = {
@@ -525,6 +584,7 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
       ...(inventoryIR.modules || []),
       ...(recipeIR.modules || []),
       ...(menuIR.modules || []),
+      ...(prepListIR.modules || []),
     ],
     entities: [
       ...prepTaskIR.entities,
@@ -532,6 +592,7 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
       ...inventoryIR.entities,
       ...recipeIR.entities,
       ...menuIR.entities,
+      ...prepListIR.entities,
     ],
     events: [
       ...prepTaskIR.events,
@@ -539,6 +600,7 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
       ...inventoryIR.events,
       ...recipeIR.events,
       ...menuIR.events,
+      ...prepListIR.events,
     ],
     commands: [
       ...prepTaskIR.commands,
@@ -546,6 +608,7 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
       ...inventoryIR.commands,
       ...recipeIR.commands,
       ...menuIR.commands,
+      ...prepListIR.commands,
     ],
     policies: [
       ...prepTaskIR.policies,
@@ -553,6 +616,7 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
       ...inventoryIR.policies,
       ...recipeIR.policies,
       ...menuIR.policies,
+      ...prepListIR.policies,
     ],
   };
 
@@ -1559,6 +1623,420 @@ export async function createMenu(
   } as MenuCommandResult;
 }
 
+// ============ Prep List Commands ============
+
+/**
+ * Result of a prep list command
+ */
+export interface PrepListCommandResult extends CommandResult {
+  prepListId: string;
+  name?: string;
+  status?: string;
+  totalItems?: number;
+  totalEstimatedTime?: number;
+}
+
+/**
+ * Result of a prep list item command
+ */
+export interface PrepListItemCommandResult extends CommandResult {
+  itemId: string;
+  prepListId: string;
+  ingredientName?: string;
+  isCompleted?: boolean;
+}
+
+/**
+ * Update a prep list
+ */
+export async function updatePrepList(
+  engine: RuntimeEngine,
+  prepListId: string,
+  newName: string,
+  newDietaryRestrictions: string,
+  newNotes: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListCommandResult> {
+  const result = await engine.runCommand(
+    "update",
+    { newName, newDietaryRestrictions, newNotes },
+    {
+      entityName: "PrepList",
+      instanceId: prepListId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepList", prepListId);
+  return {
+    ...result,
+    prepListId,
+    name: instance?.name as string | undefined,
+    status: instance?.status as string | undefined,
+  };
+}
+
+/**
+ * Update prep list batch multiplier
+ */
+export async function updatePrepListBatchMultiplier(
+  engine: RuntimeEngine,
+  prepListId: string,
+  newMultiplier: number,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListCommandResult> {
+  const result = await engine.runCommand(
+    "updateBatchMultiplier",
+    { newMultiplier },
+    {
+      entityName: "PrepList",
+      instanceId: prepListId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepList", prepListId);
+  return {
+    ...result,
+    prepListId,
+    name: instance?.name as string | undefined,
+    totalItems: instance?.totalItems as number | undefined,
+  };
+}
+
+/**
+ * Finalize a prep list
+ */
+export async function finalizePrepList(
+  engine: RuntimeEngine,
+  prepListId: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListCommandResult> {
+  const result = await engine.runCommand(
+    "finalize",
+    {},
+    {
+      entityName: "PrepList",
+      instanceId: prepListId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepList", prepListId);
+  return {
+    ...result,
+    prepListId,
+    name: instance?.name as string | undefined,
+    status: instance?.status as string | undefined,
+    totalItems: instance?.totalItems as number | undefined,
+  };
+}
+
+/**
+ * Activate a prep list
+ */
+export async function activatePrepList(
+  engine: RuntimeEngine,
+  prepListId: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListCommandResult> {
+  const result = await engine.runCommand(
+    "activate",
+    {},
+    {
+      entityName: "PrepList",
+      instanceId: prepListId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepList", prepListId);
+  return {
+    ...result,
+    prepListId,
+    name: instance?.name as string | undefined,
+    isActive: true,
+  };
+}
+
+/**
+ * Deactivate a prep list
+ */
+export async function deactivatePrepList(
+  engine: RuntimeEngine,
+  prepListId: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListCommandResult> {
+  const result = await engine.runCommand(
+    "deactivate",
+    {},
+    {
+      entityName: "PrepList",
+      instanceId: prepListId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepList", prepListId);
+  return {
+    ...result,
+    prepListId,
+    name: instance?.name as string | undefined,
+    isActive: false,
+  };
+}
+
+/**
+ * Mark prep list as completed
+ */
+export async function markPrepListCompleted(
+  engine: RuntimeEngine,
+  prepListId: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListCommandResult> {
+  const result = await engine.runCommand(
+    "markCompleted",
+    {},
+    {
+      entityName: "PrepList",
+      instanceId: prepListId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepList", prepListId);
+  return {
+    ...result,
+    prepListId,
+    name: instance?.name as string | undefined,
+    status: instance?.status as string | undefined,
+  };
+}
+
+/**
+ * Cancel a prep list
+ */
+export async function cancelPrepList(
+  engine: RuntimeEngine,
+  prepListId: string,
+  reason: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListCommandResult> {
+  const result = await engine.runCommand(
+    "cancel",
+    { reason },
+    {
+      entityName: "PrepList",
+      instanceId: prepListId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepList", prepListId);
+  return {
+    ...result,
+    prepListId,
+    name: instance?.name as string | undefined,
+    status: instance?.status as string | undefined,
+  };
+}
+
+/**
+ * Update prep list item quantity
+ */
+export async function updatePrepListItemQuantity(
+  engine: RuntimeEngine,
+  itemId: string,
+  newBaseQuantity: number,
+  newScaledQuantity: number,
+  newBaseUnit: string,
+  newScaledUnit: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListItemCommandResult> {
+  const result = await engine.runCommand(
+    "updateQuantity",
+    { newBaseQuantity, newScaledQuantity, newBaseUnit, newScaledUnit },
+    {
+      entityName: "PrepListItem",
+      instanceId: itemId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepListItem", itemId);
+  return {
+    ...result,
+    itemId,
+    prepListId: instance?.prepListId as string | undefined,
+    ingredientName: instance?.ingredientName as string | undefined,
+  };
+}
+
+/**
+ * Update prep list item station
+ */
+export async function updatePrepListItemStation(
+  engine: RuntimeEngine,
+  itemId: string,
+  newStationId: string,
+  newStationName: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListItemCommandResult> {
+  const result = await engine.runCommand(
+    "updateStation",
+    { newStationId, newStationName },
+    {
+      entityName: "PrepListItem",
+      instanceId: itemId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepListItem", itemId);
+  return {
+    ...result,
+    itemId,
+    prepListId: instance?.prepListId as string | undefined,
+    ingredientName: instance?.ingredientName as string | undefined,
+  };
+}
+
+/**
+ * Update prep list item notes
+ */
+export async function updatePrepListItemNotes(
+  engine: RuntimeEngine,
+  itemId: string,
+  newNotes: string,
+  newDietarySubstitutions: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListItemCommandResult> {
+  const result = await engine.runCommand(
+    "updatePrepNotes",
+    { newNotes, newDietarySubstitutions },
+    {
+      entityName: "PrepListItem",
+      instanceId: itemId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepListItem", itemId);
+  return {
+    ...result,
+    itemId,
+    prepListId: instance?.prepListId as string | undefined,
+    ingredientName: instance?.ingredientName as string | undefined,
+  };
+}
+
+/**
+ * Mark prep list item as completed
+ */
+export async function markPrepListItemCompleted(
+  engine: RuntimeEngine,
+  itemId: string,
+  completedByUserId: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListItemCommandResult> {
+  const result = await engine.runCommand(
+    "markCompleted",
+    { completedByUserId },
+    {
+      entityName: "PrepListItem",
+      instanceId: itemId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepListItem", itemId);
+  return {
+    ...result,
+    itemId,
+    prepListId: instance?.prepListId as string | undefined,
+    ingredientName: instance?.ingredientName as string | undefined,
+    isCompleted: true,
+  };
+}
+
+/**
+ * Mark prep list item as uncompleted
+ */
+export async function markPrepListItemUncompleted(
+  engine: RuntimeEngine,
+  itemId: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListItemCommandResult> {
+  const result = await engine.runCommand(
+    "markUncompleted",
+    {},
+    {
+      entityName: "PrepListItem",
+      instanceId: itemId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepListItem", itemId);
+  return {
+    ...result,
+    itemId,
+    prepListId: instance?.prepListId as string | undefined,
+    ingredientName: instance?.ingredientName as string | undefined,
+    isCompleted: false,
+  };
+}
+
+/**
+ * Create a prep list
+ */
+export async function createPrepList(
+  engine: RuntimeEngine,
+  prepListId: string,
+  eventId: string,
+  name: string,
+  batchMultiplier: number,
+  dietaryRestrictions: string,
+  totalItems: number,
+  totalEstimatedTime: number,
+  notes: string
+): Promise<PrepListCommandResult> {
+  // Create the PrepList entity instance
+  await engine.createInstance("PrepList", {
+    id: prepListId,
+    tenantId: engine.getContext<string>("tenantId"),
+    eventId,
+    name,
+    batchMultiplier,
+    dietaryRestrictions,
+    status: "draft",
+    totalItems,
+    totalEstimatedTime,
+    notes,
+    generatedAt: Date.now(),
+    finalizedAt: 0,
+    isActive: true,
+    isDraft: true,
+    isFinalized: false,
+    isCompleted: false,
+    hasItems: totalItems > 0,
+    avgTimePerItem: totalItems > 0 ? totalEstimatedTime / totalItems : 0,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  });
+
+  const instance = await engine.getInstance("PrepList", prepListId);
+  return {
+    success: true,
+    emittedEvents: [],
+    prepListId,
+    name: instance?.name as string | undefined,
+    status: instance?.status as string | undefined,
+    totalItems: instance?.totalItems as number | undefined,
+    totalEstimatedTime: instance?.totalEstimatedTime as number | undefined,
+  } as PrepListCommandResult;
+}
+
 // ============ Event Handling ============
 
 /**
@@ -1607,6 +2085,21 @@ export function setupKitchenOpsEventListeners(
     onMenuDishRemoved?: (event: EmittedEvent) => Promise<void>;
     onMenuDishUpdated?: (event: EmittedEvent) => Promise<void>;
     onMenuDishesReordered?: (event: EmittedEvent) => Promise<void>;
+    // PrepList events
+    onPrepListCreated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListUpdated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListBatchMultiplierUpdated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListFinalized?: (event: EmittedEvent) => Promise<void>;
+    onPrepListActivated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListDeactivated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListCompleted?: (event: EmittedEvent) => Promise<void>;
+    onPrepListCancelled?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemCreated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemUpdated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemStationChanged?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemNotesUpdated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemCompleted?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemUncompleted?: (event: EmittedEvent) => Promise<void>;
     // Override events
     onConstraintOverridden?: (event: EmittedEvent) => Promise<void>;
     onConstraintSatisfiedAfterOverride?: (event: EmittedEvent) => Promise<void>;
@@ -1730,6 +2223,49 @@ export function setupKitchenOpsEventListeners(
         break;
       case "MenuDishesReordered":
         await handlers.onMenuDishesReordered?.(event);
+        break;
+      // PrepList events
+      case "PrepListCreated":
+        await handlers.onPrepListCreated?.(event);
+        break;
+      case "PrepListUpdated":
+        await handlers.onPrepListUpdated?.(event);
+        break;
+      case "PrepListBatchMultiplierUpdated":
+        await handlers.onPrepListBatchMultiplierUpdated?.(event);
+        break;
+      case "PrepListFinalized":
+        await handlers.onPrepListFinalized?.(event);
+        break;
+      case "PrepListActivated":
+        await handlers.onPrepListActivated?.(event);
+        break;
+      case "PrepListDeactivated":
+        await handlers.onPrepListDeactivated?.(event);
+        break;
+      case "PrepListCompleted":
+        await handlers.onPrepListCompleted?.(event);
+        break;
+      case "PrepListCancelled":
+        await handlers.onPrepListCancelled?.(event);
+        break;
+      case "PrepListItemCreated":
+        await handlers.onPrepListItemCreated?.(event);
+        break;
+      case "PrepListItemUpdated":
+        await handlers.onPrepListItemUpdated?.(event);
+        break;
+      case "PrepListItemStationChanged":
+        await handlers.onPrepListItemStationChanged?.(event);
+        break;
+      case "PrepListItemNotesUpdated":
+        await handlers.onPrepListItemNotesUpdated?.(event);
+        break;
+      case "PrepListItemCompleted":
+        await handlers.onPrepListItemCompleted?.(event);
+        break;
+      case "PrepListItemUncompleted":
+        await handlers.onPrepListItemUncompleted?.(event);
         break;
       // Override events
       case "ConstraintOverridden":
@@ -2093,11 +2629,17 @@ export {
   createPrismaStoreProvider,
   loadMenuDishFromPrisma,
   loadMenuFromPrisma,
+  loadPrepListFromPrisma,
+  loadPrepListItemFromPrisma,
   loadPrepTaskFromPrisma,
   MenuDishPrismaStore,
   MenuPrismaStore,
+  PrepListItemPrismaStore,
+  PrepListPrismaStore,
   PrepTaskPrismaStore,
   syncMenuDishToPrisma,
   syncMenuToPrisma,
+  syncPrepListItemToPrisma,
+  syncPrepListToPrisma,
   syncPrepTaskToPrisma,
 } from "./prisma-store.js";
