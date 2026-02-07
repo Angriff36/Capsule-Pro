@@ -39,7 +39,9 @@ function printUsage() {
   console.error("Arguments:");
   console.error("  <entity>           Entity name (e.g., Recipe, Dish, Menu)");
   console.error("  <input.manifest>   Path to the .manifest file");
-  console.error("  --output <file>    Output route.ts file path");
+  console.error(
+    "  --output <file>    Output route.ts file path (must contain /app/app/api/)"
+  );
   console.error(
     "  --ops <operations> Comma-separated operations (default: list)"
   );
@@ -54,12 +56,17 @@ function printUsage() {
   );
   console.error("");
   console.error("Example:");
+  console.error("  capsule-pro-generate Recipe recipe-rules.manifest \\");
   console.error(
-    "  capsule-pro-generate Recipe recipe-rules.manifest --output apps/app/app/api/kitchen/manifest/recipes/route.ts"
+    "    --output apps/app/app/api/kitchen/manifest/recipes/route.ts"
   );
+  console.error("");
+  console.error("Multiple operations:");
+  console.error("  capsule-pro-generate Recipe recipe-rules.manifest \\");
   console.error(
-    "  capsule-pro-generate Recipe recipe-rules.manifest --output apps/app/app/api/kitchen/manifest/recipes/route.ts --ops list,get"
+    "    --output apps/app/app/api/kitchen/manifest/recipes/route.ts \\"
   );
+  console.error("    --ops list,get,create");
 }
 
 function parseArgs(args: string[]): CliArgs {
@@ -100,12 +107,50 @@ function resolvePath(path: string): string {
   return resolve(process.cwd(), path);
 }
 
-function main() {
+async function main() {
   const args = process.argv.slice(2);
   const { entityName, inputFile, outputFile, operations } = parseArgs(args);
 
   const inputPath = resolvePath(inputFile);
   const outputPath = resolvePath(outputFile);
+
+  // Validate output path follows Next.js App Router convention
+  // Next.js convention: app/api/**/route.(js|ts) under the app root
+  const normalizedPath = outputPath.replace(/\\/g, "/");
+  const hasAppApi = normalizedPath.includes("/app/api/");
+  const endsWithRouteTs = normalizedPath.endsWith("/route.ts");
+
+  if (!(hasAppApi && endsWithRouteTs)) {
+    console.error(
+      "Error: Output path must follow Next.js App Router convention"
+    );
+    if (!hasAppApi) {
+      console.error("  - Path must contain '/app/api/' for route handlers");
+    }
+    if (!endsWithRouteTs) {
+      console.error("  - Path must end with '/route.ts'");
+    }
+    console.error("");
+    console.error(`Got: ${outputPath}`);
+    console.error("");
+    console.error("Expected pattern: <app-root>/app/api/<path>/route.ts");
+    console.error(
+      "Example: apps/app/app/api/kitchen/manifest/recipes/route.ts"
+    );
+    process.exit(1);
+  }
+
+  // Warn if path doesn't match expected repo structure (but don't fail)
+  if (!normalizedPath.includes("apps/app/app/api")) {
+    console.warn("");
+    console.warn(
+      "Warning: Output path doesn't match expected repo structure (apps/app/app/api/...)"
+    );
+    console.warn(
+      "  This may be correct if you're using a different app structure"
+    );
+    console.warn("");
+  }
 
   // Check if input file exists
   if (!existsSync(inputPath)) {
@@ -127,14 +172,37 @@ function main() {
 
     // Compile to IR
     console.error("Compiling manifest to IR...");
-    const result = compileToIR(manifest);
-
-    if (result.diagnostics && result.diagnostics.length > 0) {
+    let result;
+    try {
+      result = await compileToIR(manifest);
+    } catch (e) {
       console.error("");
-      console.error("Diagnostics:");
-      for (const diag of result.diagnostics) {
-        console.error(`  ${diag.level}: ${diag.message}`);
+      console.error("Exception during compilation:");
+      if (e instanceof Error) {
+        console.error(`  ${e.message}`);
+        if (e.stack) {
+          console.error(`  ${e.stack}`);
+        }
+      } else {
+        console.error(`  ${String(e)}`);
       }
+      process.exit(1);
+    }
+
+    // Always show diagnostics if present
+    console.error("");
+    console.error("Diagnostics:");
+    if (result.diagnostics && result.diagnostics.length > 0) {
+      for (const diag of result.diagnostics) {
+        console.error(`  [${diag.severity || diag.level}] ${diag.message}`);
+        if (diag.line !== undefined) {
+          console.error(
+            `    at line ${diag.line}${diag.column ? `:${diag.column}` : ""}`
+          );
+        }
+      }
+    } else {
+      console.error("  (none)");
     }
 
     if (!result.ir) {

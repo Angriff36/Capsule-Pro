@@ -2437,7 +2437,7 @@ export async function createInventoryItemInstance(
 
 // ============ Override Types and Utilities ============
 
-import type { ConstraintOutcome, OverrideRequest } from "@repo/manifest";
+import type { ConstraintOutcome } from "@repo/manifest";
 
 // Re-export override reason codes from @repo/manifest for single source of truth
 export { OVERRIDE_REASON_CODES, type OverrideReasonCode } from "@repo/manifest";

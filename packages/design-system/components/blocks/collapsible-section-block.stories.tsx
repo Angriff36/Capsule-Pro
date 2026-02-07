@@ -96,7 +96,9 @@ export const EmptyState: Story = {
       subtitle="No budget created yet"
       title="Event Budget"
       triggerText="View budget"
-    />
+    >
+      {null}
+    </CollapsibleSectionBlock>
   ),
 };
 
@@ -118,7 +120,9 @@ export const NoSubtitle: Story = {
       showEmptyState
       title="Guest List"
       triggerText="View guests"
-    />
+    >
+      {null}
+    </CollapsibleSectionBlock>
   ),
 };
 
@@ -171,7 +175,9 @@ export const StackedSections: Story = {
         subtitle="Draft - v1"
         title="Event Budget"
         triggerText="View budget"
-      />
+      >
+        {null}
+      </CollapsibleSectionBlock>
 
       <CollapsibleSectionBlock
         defaultOpen
@@ -310,7 +316,9 @@ export const EmptyStateNoIcon: Story = {
       subtitle="No tasks yet"
       title="Prep Tasks"
       triggerText="View tasks"
-    />
+    >
+      {null}
+    </CollapsibleSectionBlock>
   ),
 };
 

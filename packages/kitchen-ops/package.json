@@ -21,6 +21,10 @@
     "./api-response": {
       "types": "./dist/api-response.d.ts",
       "import": "./dist/api-response.js"
+    },
+    "./route-helpers": {
+      "types": "./dist/route-helpers.d.ts",
+      "import": "./dist/route-helpers.js"
     }
   },
   "scripts": {

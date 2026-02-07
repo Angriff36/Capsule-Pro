@@ -1,128 +1,12 @@
 /**
- * Route Handler Helpers for Manifest Integration
+ * Route Handler Response Helpers for Manifest Integration
  *
- * This module provides reusable utilities for Next.js App Router route handlers
- * that integrate with the Manifest runtime. It extracts common patterns from
- * manual integration into reusable helper functions.
+ * This module provides reusable response utilities for Next.js App Router route handlers
+ * that integrate with the Manifest runtime. These are pure response formatting utilities
+ * with no dependencies on auth or tenant resolution.
  *
- * These helpers are used by both manually-written and generated route handlers.
+ * Auth and context setup should be handled at the app level, not in shared packages.
  */
-
-import { auth } from "@repo/auth/server";
-import type { PrismaClient } from "@repo/database";
-import { database } from "@repo/database";
-import type { KitchenOpsContext } from "@repo/kitchen-ops";
-import { createPrismaStoreProvider } from "@repo/kitchen-ops/prisma-store";
-
-// ============ Types ============
-
-/**
- * Result of route handler setup
- */
-export interface RouteHandlerContext {
-  /** Tenant ID for the current organization */
-  tenantId: string;
-  /** Current user from database */
-  user: { id: string; role: string; authUserId: string };
-  /** Manifest runtime context */
-  runtimeContext: KitchenOpsContext;
-  /** Prisma client for direct queries */
-  prisma: PrismaClient;
-}
-
-/**
- * Options for creating a runtime context
- */
-export interface RuntimeContextOptions {
-  /** Custom store provider (optional) */
-  storeProvider?: KitchenOpsContext["storeProvider"];
-}
-
-// ============ Auth & Context Helpers ============
-
-/**
- * Set up route handler context with auth and tenant resolution
- *
- * This is the standard setup pattern for Manifest route handlers:
- * 1. Auth check
- * 2. Tenant resolution
- * 3. User lookup
- * 4. Runtime context creation
- *
- * @returns Route handler context or error response
- *
- * @example
- * ```typescript
- * export async function GET(request: Request) {
- *   const context = await setupRouteContext();
- *   if (!context) return manifestErrorResponse(new Error("Unauthorized"), 401);
- *
- *   const runtime = await createRecipeRuntime(context.runtimeContext);
- *   // ... use runtime
- * }
- * ```
- */
-export async function setupRouteContext(
-  options?: RuntimeContextOptions
-): Promise<RouteHandlerContext | null> {
-  // 1. Auth check
-  const authResult = await auth();
-  const { orgId } = authResult;
-  if (!orgId) {
-    return null;
-  }
-
-  // 2. Tenant resolution
-  const tenantId = await getTenantIdForOrg(orgId);
-
-  // 3. Get current user
-  const user = await database.user.findFirst({
-    where: {
-      AND: [{ tenantId }, { authUserId: authResult.userId ?? "" }],
-    },
-  });
-
-  if (!user) {
-    return null;
-  }
-
-  // 4. Create runtime context
-  const runtimeContext: KitchenOpsContext = {
-    tenantId,
-    userId: user.id,
-    userRole: user.role,
-    storeProvider:
-      options?.storeProvider ?? createPrismaStoreProvider(database, tenantId),
-  };
-
-  return {
-    tenantId,
-    user: {
-      id: user.id,
-      role: user.role,
-      authUserId: user.authUserId,
-    },
-    runtimeContext,
-    prisma: database,
-  };
-}
-
-/**
- * Helper to get tenant ID from org ID
- * (Copied from app/lib/tenant.ts to avoid circular dependencies)
- */
-async function getTenantIdForOrg(orgId: string): Promise<string> {
-  const org = await database.organization.findFirst({
-    where: { id: orgId },
-    select: { tenantId: true },
-  });
-
-  if (!org?.tenantId) {
-    throw new Error("Organization not found or has no tenant");
-  }
-
-  return org.tenantId;
-}
 
 // ============ Route Handler Response Helpers ============
 
@@ -289,34 +173,6 @@ export function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-// ============ Route Handler Wrapper ============
-
-/**
- * Wrapper for route handlers with standard error handling
- *
- * @example
- * ```typescript
- * export const GET = withRouteHandler(async (context) => {
- *   const runtime = await createRecipeRuntime(context.runtimeContext);
- *   const recipes = await runtime.query("Recipe");
- *   return manifestSuccessResponse({ recipes });
- * });
- * ```
- */
-export async function withRouteHandler(
-  handler: (context: RouteHandlerContext) => Promise<Response>
-): Promise<Response> {
-  try {
-    const context = await setupRouteContext();
-    if (!context) {
-      return unauthorizedResponse();
-    }
-    return handler(context);
-  } catch (error) {
-    return serverErrorResponse(error);
-  }
-}
-
 // ============ Entity Operation Helpers ============
 
 /**
@@ -347,9 +203,15 @@ export function checkCommandResult(result: {
   // Check for blocking constraints
   const blockingConstraints = result.constraintOutcomes?.filter(
     (outcome: unknown) => {
-      // @ts-expect-error - outcome shape varies
+      const o = outcome as {
+        passed?: boolean;
+        severity?: string;
+        overridden?: boolean;
+      };
       return (
-        !outcome.passed && outcome.severity === "block" && !outcome.overridden
+        !o.passed &&
+        (o.severity === "block" || o.severity === "error") &&
+        !o.overridden
       );
     }
   );

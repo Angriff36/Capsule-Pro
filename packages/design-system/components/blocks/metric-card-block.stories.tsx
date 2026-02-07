@@ -130,6 +130,10 @@ export const WithSmallValue: Story = {
  * Dashboard grid showing multiple metric cards together
  */
 export const DashboardGrid: Story = {
+  args: {
+    description: "",
+    value: "",
+  },
   render: () => (
     <div className="w-[800px]">
       <div className="mb-4 text-sm font-medium text-muted-foreground">
@@ -163,6 +167,10 @@ export const DashboardGrid: Story = {
  * Focus metrics grid without trend indicators
  */
 export const FocusMetricsGrid: Story = {
+  args: {
+    description: "",
+    value: "",
+  },
   render: () => (
     <div className="w-[800px]">
       <div className="mb-4 text-sm font-medium text-muted-foreground">
@@ -193,6 +201,10 @@ export const FocusMetricsGrid: Story = {
  * Cost analysis metrics with colored values and multi-line details
  */
 export const CostAnalysisGrid: Story = {
+  args: {
+    description: "",
+    value: "",
+  },
   render: () => (
     <div className="w-[800px]">
       <div className="mb-4 text-sm font-medium text-muted-foreground">

@@ -11,7 +11,6 @@
  */
 
 import type { IR } from "../manifest/ir";
-import type { EntityNode } from "../manifest/types";
 
 const VERSION = "0.1.0";
 
@@ -50,9 +49,7 @@ export function generateCapsuleProRouteHandler(
   const { entityName, operations, sourceManifest } = options;
 
   // Find the entity in IR
-  const entity = ir.modules
-    .flatMap((m) => m.entities)
-    .find((e) => e.name === entityName);
+  const entity = ir.entities.find((e) => e.name === entityName);
 
   if (!entity) {
     throw new Error(`Entity "${entityName}" not found in IR`);
@@ -80,21 +77,33 @@ export function generateCapsuleProRouteHandler(
   lines.push("");
 
   // ===== Imports =====
+  // Check if any operation needs runtime (mutations)
+  const needsRuntime = operations.some(
+    (op) => !["list", "get"].includes(op.operation)
+  );
+
   lines.push('import { auth } from "@repo/auth/server";');
   lines.push('import { database } from "@repo/database";');
+
+  if (needsRuntime) {
+    lines.push("import {");
+    lines.push(`  create${entityName}Runtime,`);
+    lines.push("  type KitchenOpsContext,");
+    lines.push('} from "@repo/kitchen-ops";');
+  }
+
   lines.push("import {");
-  lines.push(`  create${entityName}Runtime,`);
-  lines.push("  type KitchenOpsContext,");
-  lines.push('} from "@repo/kitchen-ops";');
-  lines.push("import {");
-  lines.push("  setupRouteContext,");
   lines.push("  manifestErrorResponse,");
   lines.push("  manifestSuccessResponse,");
   lines.push('} from "@repo/kitchen-ops/route-helpers";');
   lines.push('import { getTenantIdForOrg } from "@/app/lib/tenant";');
-  lines.push(
-    'import { createPrismaStoreProvider } from "@repo/kitchen-ops/prisma-store";'
-  );
+
+  if (needsRuntime) {
+    lines.push(
+      'import { createPrismaStoreProvider } from "@repo/kitchen-ops/prisma-store";'
+    );
+  }
+
   lines.push("");
 
   // ===== Handler Comments =====
@@ -114,7 +123,7 @@ export function generateCapsuleProRouteHandler(
 
   // ===== Route Handler Methods =====
   for (const op of operations) {
-    lines.push(generateRouteHandlerMethod(entityName, op, entity));
+    lines.push(generateRouteHandlerMethod(entityName, op));
     lines.push("");
   }
 
@@ -126,8 +135,7 @@ export function generateCapsuleProRouteHandler(
  */
 function generateRouteHandlerMethod(
   entityName: string,
-  operation: RouteOperation,
-  entity?: EntityNode
+  operation: RouteOperation
 ): string {
   const lines: string[] = [];
 
@@ -145,41 +153,46 @@ function generateRouteHandlerMethod(
   lines.push("  const tenantId = await getTenantIdForOrg(orgId);");
   lines.push("");
 
-  lines.push("  // 3. Get current user");
-  lines.push("  const currentUser = await database.user.findFirst({");
-  lines.push("    where: {");
-  lines.push(
-    '      AND: [{ tenantId }, { authUserId: (await auth()).userId ?? "" }],'
-  );
-  lines.push("    },");
-  lines.push("  });");
-  lines.push("");
+  // Only create runtime context for operations that need it (mutations)
+  const needsRuntime = !["list", "get"].includes(operation.operation);
 
-  lines.push("  if (!currentUser) {");
-  lines.push(
-    '    return manifestErrorResponse(new Error("User not found"), 400);'
-  );
-  lines.push("  }");
-  lines.push("");
+  if (needsRuntime) {
+    lines.push("  // 3. Get current user");
+    lines.push("  const currentUser = await database.user.findFirst({");
+    lines.push("    where: {");
+    lines.push(
+      '      AND: [{ tenantId }, { authUserId: (await auth()).userId ?? "" }],'
+    );
+    lines.push("    },");
+    lines.push("  });");
+    lines.push("");
 
-  lines.push("  // 4. Create runtime context");
-  lines.push("  const runtimeContext: KitchenOpsContext = {");
-  lines.push("    tenantId,");
-  lines.push("    userId: currentUser.id,");
-  lines.push("    userRole: currentUser.role,");
-  lines.push(
-    "    storeProvider: createPrismaStoreProvider(database, tenantId),"
-  );
-  lines.push("  };");
-  lines.push("");
+    lines.push("  if (!currentUser) {");
+    lines.push(
+      '    return manifestErrorResponse(new Error("User not found"), 400);'
+    );
+    lines.push("  }");
+    lines.push("");
 
-  lines.push("  // 5. Create runtime");
-  lines.push(
-    `  const runtime = await create${entityName}Runtime(runtimeContext);`
-  );
-  lines.push("");
+    lines.push("  // 4. Create runtime context");
+    lines.push("  const runtimeContext: KitchenOpsContext = {");
+    lines.push("    tenantId,");
+    lines.push("    userId: currentUser.id,");
+    lines.push("    userRole: currentUser.role,");
+    lines.push(
+      "    storeProvider: createPrismaStoreProvider(database, tenantId),"
+    );
+    lines.push("  };");
+    lines.push("");
 
-  lines.push("  // 6. Execute operation");
+    lines.push("  // 5. Create runtime");
+    lines.push(
+      `  const runtime = await create${entityName}Runtime(runtimeContext);`
+    );
+    lines.push("");
+  }
+
+  lines.push(`  // ${needsRuntime ? "6" : "3"}. Execute operation`);
   lines.push("  try {");
 
   // Operation-specific logic
@@ -191,10 +204,10 @@ function generateRouteHandlerMethod(
       lines.push(generateGetOperation(entityName));
       break;
     case "create":
-      lines.push(generateCreateOperation(entityName, entity));
+      lines.push(generateCreateOperation(entityName));
       break;
     case "update":
-      lines.push(generateUpdateOperation(entityName, entity));
+      lines.push(generateUpdateOperation(entityName));
       break;
     case "delete":
       lines.push(generateDeleteOperation(entityName));
@@ -222,11 +235,22 @@ function generateRouteHandlerMethod(
  */
 function generateListOperation(entityName: string): string {
   const lines: string[] = [];
+  const modelName = entityName.charAt(0).toLowerCase() + entityName.slice(1);
+  const pluralName = camelCasePlural(entityName);
 
-  lines.push(`    // List all ${entityName} entities`);
-  lines.push(`    const items = await runtime.query("${entityName}");`);
+  lines.push(`    // Query ${entityName} using Prisma (runtime is for commands, not queries)`);
+  lines.push(`    const ${pluralName} = await database.${modelName}.findMany({`);
+  lines.push("      where: {");
+  lines.push("        tenantId,");
+  lines.push("        deletedAt: null,");
+  lines.push("      },");
+  lines.push("      orderBy: {");
+  lines.push('        createdAt: "desc",');
+  lines.push("      },");
+  lines.push("    });");
+  lines.push("");
   lines.push(
-    `    return manifestSuccessResponse({ ${camelCasePlural(entityName)}: items });`
+    `    return manifestSuccessResponse({ ${pluralName} });`
   );
 
   return lines.join("\n");
@@ -263,10 +287,7 @@ function generateGetOperation(entityName: string): string {
 /**
  * Generate CREATE operation logic with constraint checking
  */
-function generateCreateOperation(
-  entityName: string,
-  entity?: EntityNode
-): string {
+function generateCreateOperation(entityName: string): string {
   const lines: string[] = [];
 
   lines.push("    // Parse request body");
@@ -308,10 +329,7 @@ function generateCreateOperation(
 /**
  * Generate UPDATE operation logic with constraint checking
  */
-function generateUpdateOperation(
-  entityName: string,
-  entity?: EntityNode
-): string {
+function generateUpdateOperation(entityName: string): string {
   const lines: string[] = [];
 
   lines.push("    // Get ID from URL");
@@ -341,12 +359,18 @@ function generateUpdateOperation(
   lines.push(
     "        const o = outcome as { passed?: boolean; severity?: string; overridden?: boolean };"
   );
-  lines.push(`        return !o.passed && o.severity === "block" && !o.overridden;");
+  lines.push(
+    '        return !o.passed && o.severity === "block" && !o.overridden;'
+  );
   lines.push("      }");
   lines.push("    );");
   lines.push("    ");
-  lines.push("    if (blockingConstraints && blockingConstraints.length > 0) {");
-  lines.push(`      return manifestErrorResponse(new Error("Command blocked by constraint"), 400, {`);
+  lines.push(
+    "    if (blockingConstraints && blockingConstraints.length > 0) {"
+  );
+  lines.push(
+    `      return manifestErrorResponse(new Error("Command blocked by constraint"), 400, {`
+  );
   lines.push("        constraintOutcomes: blockingConstraints,");
   lines.push("      });");
   lines.push("    }");
@@ -423,12 +447,18 @@ function generateCommandOperation(
   lines.push(
     "        const o = outcome as { passed?: boolean; severity?: string; overridden?: boolean };"
   );
-  lines.push(`        return !o.passed && o.severity === "block" && !o.overridden;");
+  lines.push(
+    '        return !o.passed && o.severity === "block" && !o.overridden;'
+  );
   lines.push("      }");
   lines.push("    );");
   lines.push("    ");
-  lines.push("    if (blockingConstraints && blockingConstraints.length > 0) {");
-  lines.push(`      return manifestErrorResponse(new Error("Command blocked by constraint"), 400, {`);
+  lines.push(
+    "    if (blockingConstraints && blockingConstraints.length > 0) {"
+  );
+  lines.push(
+    `      return manifestErrorResponse(new Error("Command blocked by constraint"), 400, {`
+  );
   lines.push("        constraintOutcomes: blockingConstraints,");
   lines.push("      });");
   lines.push("    }");

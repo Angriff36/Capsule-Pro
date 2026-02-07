@@ -2,25 +2,35 @@
   "root": true,
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "files": {
-    "includes": [
-      "apps/**/*",
-      "packages/**/*",
-      "!apps/docs",
-      "!packages/design-system/components/ui",
-      "!packages/design-system/lib",
-      "!packages/design-system/hooks",
-      "!packages/collaboration/config.ts",
-      "!packages/cms/basehub-types.d.ts",
-      "!**/.codex",
-      "!**/.claude",
-      "!**/codex-plans",
-      "!**/claude-code-plans",
-      "!**/.next",
-      "!**/node_modules",
-      "!**/dist",
-      "!**/build",
-      "!**/playwright-report",
-      "!**/test-results"
+    "includes": ["apps/**", "packages/**"],
+    "experimentalScannerIgnores": [
+      "apps/docs/**",
+      "packages/design-system/components/ui/**",
+      "packages/design-system/lib/**",
+      "packages/design-system/hooks/**",
+      "packages/collaboration/config.ts",
+      "packages/cms/basehub-types.d.ts",
+      "**/.codex/**",
+      "**/.claude/**",
+      "**/codex-plans/**",
+      "**/claude-code-plans/**",
+      "**/.next/**",
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/playwright-report/**",
+      "**/test-results/**",
+      "**/test-gen/**",
+      "**/generated/**",
+      "**/.turbo/**",
+      "**/.vercel/**",
+      "**/storybook-static/**",
+      "**/.contentlayer/**",
+      "**/.content-collections/**",
+      "**/.react-email/**",
+      "**/out/**",
+      "**/.specify/**",
+      "**/*.tsbuildinfo"
     ]
   },
   "extends": [
@@ -32,13 +42,53 @@
   ],
   "linter": {
     "rules": {
-      "nursery": "off"
+      "nursery": "off",
+      "suspicious": {
+        "noExplicitAny": "warn"
+      }
     }
   },
   "javascript": {
     "globals": ["Liveblocks"]
   },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
   "overrides": [
+    {
+      "includes": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.test.skip.ts",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/playwright-verify-*.spec.ts"
+      ],
+      "javascript": {
+        "globals": [
+          "vitest",
+          "vi",
+          "describe",
+          "it",
+          "test",
+          "expect",
+          "beforeAll",
+          "afterAll",
+          "beforeEach",
+          "afterEach",
+          "jest"
+        ]
+      },
+      "linter": {
+        "rules": {
+          "performance": {
+            "useTopLevelRegex": "off"
+          }
+        }
+      }
+    },
     {
       "includes": ["packages/**"],
       "linter": {

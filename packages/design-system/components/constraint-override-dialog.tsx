@@ -270,7 +270,7 @@ function ConstraintAlert({ constraint }: ConstraintAlertProps) {
  * Hook to manage constraint override state and callbacks
  */
 export function useConstraintOverride<
-  T extends { constraintOutcomes?: ConstraintOutcome[] },
+  T extends { constraintOutcomes?: ConstraintOutcome[]; success?: boolean },
 >({
   result,
   onSuccess,
@@ -289,7 +289,7 @@ export function useConstraintOverride<
 
   // Check if we need to show override dialog
   React.useEffect(() => {
-    if (result.constraintOutcomes && result.constraintOutcomes.length > 0) {
+    if (result?.constraintOutcomes && result.constraintOutcomes.length > 0) {
       const blocking = result.constraintOutcomes.filter(
         (c) => !c.passed && c.severity === "block"
       );
@@ -327,12 +327,12 @@ export function useConstraintOverride<
     handleCancel,
     // Helper to check if we have blocking constraints
     hasBlockingConstraints:
-      result.constraintOutcomes?.filter(
+      result?.constraintOutcomes?.filter(
         (c) => !c.passed && c.severity === "block"
       ).length ?? 0,
     // Helper to get all actionable constraints
     actionableConstraints:
-      result.constraintOutcomes?.filter(
+      result?.constraintOutcomes?.filter(
         (c) => !c.passed && (c.severity === "warn" || c.severity === "block")
       ) ?? [],
   };

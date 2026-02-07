@@ -25,12 +25,12 @@ export async function sendSms(to: string, message: string): Promise<void> {
   const authToken = env.TWILIO_AUTH_TOKEN;
   const fromNumber = env.TWILIO_PHONE_NUMBER;
 
-  if (accountSid === false || authToken === false || fromNumber === false) {
+  if (!accountSid || !authToken || !fromNumber) {
     throw new Error("Twilio credentials not configured");
   }
 
   const twilio = await import("twilio");
-  const client = twilio(accountSid, authToken);
+  const client = twilio.default(accountSid, authToken);
 
   try {
     await client.messages.create({

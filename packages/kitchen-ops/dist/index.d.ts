@@ -35,7 +35,7 @@
  * - PrepList: update, updateBatchMultiplier, finalize, activate, deactivate, markCompleted, cancel
  * - PrepListItem: updateQuantity, updateStation, updatePrepNotes, markCompleted, markUncompleted
  */
-import type { CommandResult, EmittedEvent, RuntimeContext } from "@repo/manifest";
+import type { CommandResult, EmittedEvent, OverrideRequest, RuntimeContext } from "@repo/manifest";
 import { RuntimeEngine } from "@repo/manifest";
 import type { Store } from "@repo/manifest";
 /**
@@ -513,7 +513,7 @@ export declare function createInventoryItemInstance(engine: RuntimeEngine, data:
     costPerUnit?: number;
     locationId?: string;
 }): Promise<any>;
-import type { ConstraintOutcome, OverrideRequest } from "@repo/manifest";
+import type { ConstraintOutcome } from "@repo/manifest";
 export { OVERRIDE_REASON_CODES, type OverrideReasonCode } from "@repo/manifest";
 /**
  * Severity level for constraint outcomes

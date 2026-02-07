@@ -4,7 +4,9 @@
   "dependencies": {},
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "typescript": "^5.9.3"
+    "@types/node": "^22.10.5",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.8"
   },
   "exports": {
     ".": {
@@ -40,7 +42,9 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "bin": {
     "manifest-compile": "./bin/compile.ts",

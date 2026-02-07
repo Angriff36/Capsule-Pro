@@ -16,7 +16,6 @@ export {
 export type {
   ClaimConflictInfo,
   ClaimInput,
-  KitchenTaskStatus,
   TaskTransitionInput,
   TransitionError,
   TransitionResult,

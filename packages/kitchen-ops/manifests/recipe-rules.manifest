@@ -134,7 +134,7 @@ entity Ingredient {
 
   constraint validName: self.name != null and self.name != "" "Ingredient name is required"
 
-  constraint warnMajorAllergen:warn self.allergens != null and contains(self.allergens, "nuts") or contains(self.allergens, "dairy") or contains(self.allergens, "gluten") {
+  constraint warnMajorAllergen:warn self.allergens != null and (self.allergens contains "nuts" or self.allergens contains "dairy" or self.allergens contains "gluten") {
     messageTemplate: "Ingredient contains major allergen: {allergens}"
     details: {
       allergens: self.allergens
