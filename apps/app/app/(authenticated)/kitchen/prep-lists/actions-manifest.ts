@@ -232,7 +232,6 @@ export const createPrepListManifest = async (
   const createResult = await createPrepList(
     runtime,
     prepListId,
-    tenantId,
     input.eventId,
     name,
     input.batchMultiplier ?? 1,
@@ -367,7 +366,6 @@ export const createPrepListManifest = async (
       name,
       totalItems: input.totalItems ?? 0,
       batchMultiplier: input.batchMultiplier ?? 1,
-      constraintOutcomes: createResult.constraintOutcomes,
     }
   );
 
@@ -511,7 +509,6 @@ export const updatePrepListManifest = async (
       prepListId: input.prepListId,
       oldName: existing.name,
       newName: name,
-      constraintOutcomes: updateResult.constraintOutcomes,
     }
   );
 

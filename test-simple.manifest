@@ -1,0 +1,21 @@
+// Simple test manifest
+entity TestEntity {
+  property required id: string
+  property required name: string
+  property count: number = 0
+
+  constraint positiveCount: self.count >= 0 "Count must be non-negative"
+
+  command updateName(newName: string) {
+    guard newName != null and newName != "" "Name is required"
+    mutate name = newName
+    emit TestEntityUpdated
+  }
+
+  store TestEntity in memory
+}
+
+event TestEntityUpdated: "test.updated" {
+  entityId: string
+  name: string
+}

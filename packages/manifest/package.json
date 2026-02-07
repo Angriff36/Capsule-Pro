@@ -19,6 +19,14 @@
       "types": "./dist/compiler.d.ts",
       "import": "./dist/compiler.js"
     },
+    "./generator": {
+      "types": "./src/manifest/generator.ts",
+      "import": "./src/manifest/generator.ts"
+    },
+    "./parser": {
+      "types": "./src/manifest/parser.ts",
+      "import": "./src/manifest/parser.ts"
+    },
     "./types": {
       "types": "./dist/types.d.ts",
       "import": "./dist/types.js"
@@ -33,6 +41,10 @@
   "scripts": {
     "build": "tsc",
     "type-check": "tsc --noEmit"
+  },
+  "bin": {
+    "manifest-compile": "./bin/compile.ts",
+    "capsule-pro-generate": "./bin/capsule-pro-generate.ts"
   },
   "type": "module",
   "types": "./dist/index.d.ts"

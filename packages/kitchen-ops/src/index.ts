@@ -5,7 +5,16 @@
  * using the Manifest language. It handles prep tasks, station management,
  * and inventory operations with proper constraint checking and event emission.
  *
- * ⚠️ IMPORTANT: Constraint Handling Pattern
+ * ℹ️ Code Generation Workflow (Preferred for New Features)
+ * =========================================================
+ * For new Manifest features, consider using the code generator:
+ *
+ * 1. Edit .manifest file in packages/kitchen-ops/manifests/
+ * 2. Run: npx tsx packages/manifest/bin/compile.ts <file>.manifest --output ./generated
+ * 3. Review and use the generated code
+ * 4. See .specify/memory/AGENTS.md for when to use code generation vs manual integration
+ *
+ * ⚠️ Constraint Handling Pattern
  * ===========================================
  * When using this runtime, you MUST check constraint outcomes:
  *
@@ -35,6 +44,7 @@ import type {
   EmittedEvent,
   IR,
   IRDiagnostic,
+  OverrideRequest,
   RuntimeContext,
 } from "@repo/manifest";
 import { compileToIR, RuntimeEngine } from "@repo/manifest";
@@ -2009,7 +2019,8 @@ export async function createPrepList(
   dietaryRestrictions: string,
   totalItems: number,
   totalEstimatedTime: number,
-  notes: string
+  notes: string,
+  overrideRequests?: OverrideRequest[]
 ): Promise<PrepListCommandResult> {
   // Create the PrepList entity instance
   await engine.createInstance("PrepList", {
@@ -2036,9 +2047,19 @@ export async function createPrepList(
   });
 
   const instance = await engine.getInstance("PrepList", prepListId);
+
+  // Apply override requests if provided
+  if (overrideRequests && overrideRequests.length > 0) {
+    for (const override of overrideRequests) {
+      engine.executeCommand("overrideRequest", override);
+    }
+  }
+
   return {
     success: true,
     emittedEvents: [],
+    constraintOutcomes: [],
+    overrideRequests: overrideRequests ?? [],
     prepListId,
     name: instance?.name as string | undefined,
     status: instance?.status as string | undefined,

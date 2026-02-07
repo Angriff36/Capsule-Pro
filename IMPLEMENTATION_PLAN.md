@@ -845,15 +845,43 @@ const { showOverrideDialog, setShowOverrideDialog, overrideConstraints, handleOv
 - `apps/app/app/(authenticated)/kitchen/prep-lists/actions-manifest.ts` - PrepList server actions with Manifest
 
 **Architecture Notes:**
-- PrepList frontend integration (constraint override dialog) is still pending
+- PrepList frontend integration (constraint override dialog) completed (2025-02-06)
 - API routes still use direct database operations (future work to migrate)
 - The generation flow (`generatePrepList` → `savePrepListToDatabase`) remains unchanged
 - New Manifest-enabled actions provide an alternative path for constraint-aware prep list management
+- **COMPLETED**: Frontend constraint override dialog integration (2025-02-06)
+  - Created `PrepListSaveButton` component with Manifest constraint checking
+  - Updated `prep-list-client.tsx` to use the new button component
+  - Users can now override blocking constraints with reason tracking
+  - ConstraintOverrideDialog shows constraints when prep list validation fails
 
 **Next Steps:**
-- Create frontend components for PrepList constraint override workflow
 - Migrate API routes to use Manifest runtime (currently direct SQL)
 - Add telemetry integration for PrepList constraint tracking
+
+---
+
+### 2025-02-06: PrepList Frontend Constraint Override Integration
+
+**Status:** COMPLETED
+
+**What Was Implemented:**
+- Created `PrepListSaveButton` component for Manifest constraint checking
+  - Wraps the "Save to Database" action with runtime validation
+  - Shows ConstraintOverrideDialog when blocking constraints exist
+  - Handles override workflow with reason tracking
+- Updated `prep-list-client.tsx` to use the new button component
+- Updated `createPrepList` function in `packages/kitchen-ops/src/index.ts` to support override requests
+- Fixed type issues with OverrideRequest imports and InputJsonValue payloads
+
+**Files Created:**
+- `apps/app/app/(authenticated)/kitchen/prep-lists/components/prep-list-form-with-constraints.tsx` - PrepListSaveButton component
+- `apps/app/app/(authenticated)/kitchen/prep-lists/components/index.ts` - Component barrel export
+
+**Files Modified:**
+- `apps/app/app/(authenticated)/kitchen/prep-lists/prep-list-client.tsx` - Uses PrepListSaveButton
+- `packages/kitchen-ops/src/index.ts` - Added OverrideRequest import and parameter to createPrepList
+- `apps/app/app/(authenticated)/kitchen/prep-lists/actions-manifest.ts` - Fixed InputJsonValue issues in outbox events
 
 ---
 

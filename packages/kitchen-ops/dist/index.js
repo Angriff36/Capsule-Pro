@@ -5,6 +5,25 @@
  * using the Manifest language. It handles prep tasks, station management,
  * and inventory operations with proper constraint checking and event emission.
  *
+ * ℹ️ Code Generation Workflow (Preferred for New Features)
+ * =========================================================
+ * For new Manifest features, consider using the code generator:
+ *
+ * 1. Edit .manifest file in packages/kitchen-ops/manifests/
+ * 2. Run: npx tsx packages/manifest/bin/compile.ts <file>.manifest --output ./generated
+ * 3. Review and use the generated code
+ * 4. See .specify/memory/AGENTS.md for when to use code generation vs manual integration
+ *
+ * ⚠️ Constraint Handling Pattern
+ * ===========================================
+ * When using this runtime, you MUST check constraint outcomes:
+ *
+ * 1. createInstance() returns undefined when constraints fail
+ * 2. executeCommand() returns CommandResult with constraint outcomes
+ * 3. Use api-response.ts utilities for consistent responses
+ * 4. See .specify/memory/AGENTS.md for full pattern documentation
+ * 5. Tests at apps/api/__tests__/kitchen/manifest-constraints.test.ts verify this
+ *
  * Commands:
  * - PrepTask: claim, start, complete, release, reassign, updateQuantity, cancel
  * - Station: assignTask, removeTask, updateCapacity, deactivate, activate, updateEquipment
@@ -1188,7 +1207,7 @@ export async function markPrepListItemUncompleted(engine, itemId, overrideReques
 /**
  * Create a prep list
  */
-export async function createPrepList(engine, prepListId, eventId, name, batchMultiplier, dietaryRestrictions, totalItems, totalEstimatedTime, notes) {
+export async function createPrepList(engine, prepListId, eventId, name, batchMultiplier, dietaryRestrictions, totalItems, totalEstimatedTime, notes, overrideRequests) {
     // Create the PrepList entity instance
     await engine.createInstance("PrepList", {
         id: prepListId,
@@ -1213,9 +1232,17 @@ export async function createPrepList(engine, prepListId, eventId, name, batchMul
         updatedAt: Date.now(),
     });
     const instance = await engine.getInstance("PrepList", prepListId);
+    // Apply override requests if provided
+    if (overrideRequests && overrideRequests.length > 0) {
+        for (const override of overrideRequests) {
+            engine.executeCommand("overrideRequest", override);
+        }
+    }
     return {
         success: true,
         emittedEvents: [],
+        constraintOutcomes: [],
+        overrideRequests: overrideRequests ?? [],
         prepListId,
         name: instance?.name,
         status: instance?.status,

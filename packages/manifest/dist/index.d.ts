@@ -8,6 +8,7 @@
  *   import type { IR, CommandResult } from '@repo/manifest';
  */
 export { createEventImportRuntime, createOrUpdateEvent, generateBattleBoard, generateChecklist, processDocumentImport, setupEventListeners, } from "./event-import-runtime";
+export { type CapsuleProGeneratorOptions, generateCapsuleProRouteHandler, type RouteOperation, } from "./generators/capsule-pro";
 export type { CompileToIRResult, ConstraintOutcome, IR, IRAction, IRCommand, IRComputedProperty, IRConstraint, IRDiagnostic, IREntity, IREvent, IREventField, IRExpression, IRModule, IRParameter, IRPolicy, IRProperty, IRRelationship, IRStore, IRType, IRValue, OverrideReasonCode, OverrideRequest, PropertyModifier, } from "./manifest/ir";
 export { OVERRIDE_REASON_CODES } from "./manifest/ir";
 export { compileToIR } from "./manifest/ir-compiler";

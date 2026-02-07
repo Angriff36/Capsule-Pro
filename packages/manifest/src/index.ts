@@ -17,6 +17,12 @@ export {
   processDocumentImport,
   setupEventListeners,
 } from "./event-import-runtime";
+// Export Capsule-Pro projection generator
+export {
+  type CapsuleProGeneratorOptions,
+  generateCapsuleProRouteHandler,
+  type RouteOperation,
+} from "./generators/capsule-pro";
 // CompileToIRResult is defined in ir.ts
 // Export types
 export type {
@@ -44,7 +50,6 @@ export type {
   OverrideRequest,
   PropertyModifier,
 } from "./manifest/ir";
-
 // Export constants
 export { OVERRIDE_REASON_CODES } from "./manifest/ir";
 // Export compiler

@@ -9,6 +9,8 @@
  */
 // Export event import runtime helpers
 export { createEventImportRuntime, createOrUpdateEvent, generateBattleBoard, generateChecklist, processDocumentImport, setupEventListeners, } from "./event-import-runtime";
+// Export Capsule-Pro projection generator
+export { generateCapsuleProRouteHandler, } from "./generators/capsule-pro";
 // Export constants
 export { OVERRIDE_REASON_CODES } from "./manifest/ir";
 // Export compiler
