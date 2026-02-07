@@ -125,9 +125,10 @@ let nextConfig: NextConfig = withToolbar(
       ],
     },
     rewrites,
-    // Externalize pdfjs-dist and ably to avoid bundling issues
+    // Externalize pdfjs-dist, ably, and pdfkit to avoid bundling issues
     // ably: Turbopack + Ably causes keyv dynamic require failures in SSR
-    serverExternalPackages: ["pdfjs-dist", "ably"],
+    // pdfkit: Needs access to .afm font files from node_modules
+    serverExternalPackages: ["pdfjs-dist", "ably", "pdfkit", "@capsule-pro/sales-reporting"],
     webpack: (webpackConfig: WebpackConfig, context: WebpackContext) => {
       if (context.isServer) {
         // Externalize pdfjs-dist - use function to catch all nested imports
