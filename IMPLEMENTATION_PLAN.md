@@ -55,7 +55,10 @@ Manifest Runtime Version: v0.3.0
   - Dish commands: updatePricing, updateLeadTime
   - Constraint checks for recipe validation (difficulty, time, margin warnings)
   - Event handlers for RecipeCreated, RecipeUpdated, RecipeDeactivated, etc.
-- **GAP**: Missing conformance tests
+- **COMPLETED**: Conformance tests added (2025-02-06)
+  - 41-preptask-claim.manifest with full IR and runtime tests
+  - Tests claim, complete, release commands with guards and state mutations
+  - All 7 tests passing (1 IR compilation + 6 runtime)
 
 ---
 
@@ -120,6 +123,7 @@ Manifest Runtime Version: v0.3.0
     - 38-prep-task-constraint-severity.manifest
     - 39-station-capacity.manifest
     - 40-inventory-reserve.manifest
+    - 41-preptask-claim.manifest (NEW - full IR + runtime validation)
     - kitchen-ops-full.manifest
 - [x] Integrate ConstraintOverrideDialog component for recipe/dish actions (2025-02-06)
   - Created `actions-manifest-v2.ts` with server actions returning `ManifestActionResult`
