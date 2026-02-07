@@ -807,6 +807,56 @@ const { showOverrideDialog, setShowOverrideDialog, overrideConstraints, handleOv
 
 ---
 
+### 2025-02-06: PrepList Server Actions with Manifest Integration
+
+**Status:** COMPLETED
+
+**What Was Implemented:**
+- Created `actions-manifest.ts` for PrepList server actions with constraint checking
+- Actions follow the same pattern as Recipe/Menu Manifest actions
+- All PrepList lifecycle actions now use Manifest runtime:
+  - `createPrepListManifest` - Create new prep list with constraint checking
+  - `updatePrepListManifest` - Update prep list (draft only) with constraint checking
+  - `updateBatchMultiplierManifest` - Update batch multiplier with constraint checking
+  - `finalizePrepListManifest` - Finalize prep list (requires items) with constraint checking
+  - `activatePrepListManifest` / `deactivatePrepListManifest` - Activate/deactivate prep list
+  - `markPrepListCompletedManifest` - Mark finalized prep list as completed
+  - `cancelPrepListManifest` - Cancel prep list with reason
+- All PrepListItem actions now use Manifest runtime:
+  - `updatePrepListItemQuantityManifest` - Update item quantity with constraint checking
+  - `updatePrepListItemStationManifest` - Update item station with constraint checking
+  - `updatePrepListItemNotesManifest` - Update item notes
+  - `markPrepListItemCompletedManifest` - Mark item as completed
+  - `markPrepListItemUncompletedManifest` - Mark item as uncompleted
+- Actions return `PrepListManifestActionResult` with constraint outcomes
+- Override workflow supported with `WithOverride` helper functions
+- Re-exports existing generation actions (`generatePrepList`, `savePrepListToDatabase`, `savePrepListToProductionBoard`)
+
+**Constraint Warnings Implemented:**
+- warnZeroItems: Prep list has no items
+- warnLargeBatchMultiplier: Batch multiplier > 5x
+- warnLongTotalTime: Total prep time > 8 hours
+- warnManyItems: Prep list has > 50 items
+- warnQuantityIncrease: Quantity increased by 50% or more
+- warnStationChange: Reassigning item to different station
+- warnMajorAllergen: Item contains major allergen (nuts, dairy, gluten, shellfish, eggs)
+
+**Files Created:**
+- `apps/app/app/(authenticated)/kitchen/prep-lists/actions-manifest.ts` - PrepList server actions with Manifest
+
+**Architecture Notes:**
+- PrepList frontend integration (constraint override dialog) is still pending
+- API routes still use direct database operations (future work to migrate)
+- The generation flow (`generatePrepList` → `savePrepListToDatabase`) remains unchanged
+- New Manifest-enabled actions provide an alternative path for constraint-aware prep list management
+
+**Next Steps:**
+- Create frontend components for PrepList constraint override workflow
+- Migrate API routes to use Manifest runtime (currently direct SQL)
+- Add telemetry integration for PrepList constraint tracking
+
+---
+
 ### 2025-02-06: Menu Frontend Integration
 
 **Status:** COMPLETED
