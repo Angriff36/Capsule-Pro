@@ -5,6 +5,16 @@
  * using the Manifest language. It handles prep tasks, station management,
  * and inventory operations with proper constraint checking and event emission.
  *
+ * ⚠️ IMPORTANT: Constraint Handling Pattern
+ * ===========================================
+ * When using this runtime, you MUST check constraint outcomes:
+ *
+ * 1. createInstance() returns undefined when constraints fail
+ * 2. executeCommand() returns CommandResult with constraint outcomes
+ * 3. Use api-response.ts utilities for consistent responses
+ * 4. See .specify/memory/AGENTS.md for full pattern documentation
+ * 5. Tests at apps/api/__tests__/kitchen/manifest-constraints.test.ts verify this
+ *
  * Commands:
  * - PrepTask: claim, start, complete, release, reassign, updateQuantity, cancel
  * - Station: assignTask, removeTask, updateCapacity, deactivate, activate, updateEquipment

@@ -82,3 +82,25 @@ Fix all 1016 pre-commit linting errors from Ultracite/Biome to enable commits.
 - Total errors: 1016 (many may be duplicates or cascading fixes)
 - Main categories: regex placement, `any` types, nested ternary, complexity
 - Complexity issues require extracting helper functions or services
+
+## Implementation Patterns
+See `.specify/memory/AGENTS.md` for discoverable patterns to follow when implementing features.
+
+## Backpressure
+After implementing changes, verify with:
+
+```bash
+# 1. Check for database drift (fails if schema changed without migration)
+pnpm db:check
+
+# 2. Run tests for constraint enforcement
+pnpm test apps/api/__tests__/kitchen/manifest-constraints.test.ts
+
+# 3. Full lint check
+pnpm dlx ultracite check
+
+# 4. Build check
+pnpm build
+```
+
+If `db:check` fails, schema changes were made without migrations - run `pnpm db:repair` to generate migration.

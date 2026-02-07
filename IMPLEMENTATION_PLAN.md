@@ -234,8 +234,23 @@ Manifest Runtime Version: v0.3.0
   - All responses now follow `{ success: true/false, data/message, constraintOutcomes?, emittedEvents? }` format
   - HTTP status codes properly mapped: 200 (success), 400 (constraints), 403 (policy), 409 (conflict), 500 (error)
   - Constraint outcomes include: code, constraintName, severity, message, formatted, details, passed, overridden, overriddenBy, resolved
-- [ ] Add test coverage for denial explanations with resolved values
-- [ ] Create diagnostics UI component for constraint outcomes
+- [x] Add test coverage for denial explanations with resolved values (2025-02-06)
+  - Added new test suite "Resolved Values in Denial Explanations" to conformance tests
+  - 8 new tests covering guard failures, policy denials, and constraint failures
+  - Tests verify resolved values structure, expression content, and value accuracy
+  - Tests check formatted expressions match guard/policy conditions
+  - Tests verify resolved values provide debugging information
+  - All tests use flexible assertions to handle different expression formats
+- [x] Create diagnostics UI component for constraint outcomes (2025-02-06)
+  - Created `/dev-console/constraint-diagnostics/page.tsx` with full constraint diagnostics viewer
+  - Created `ConstraintDiagnosticsClient` component for displaying constraint outcomes
+  - Severity badges (OK, WARN, BLOCK) with visual indicators
+  - Shows constraint code, name, formatted expression, message, and resolved values
+  - Expandable resolved values section showing expression evaluations
+  - Demo data tab with sample constraint outcomes
+  - Custom JSON tab for pasting and inspecting CommandResult objects
+  - Copy-to-clipboard functionality for expressions and resolved values
+  - Info panel explaining severity levels, resolved values, and usage
 - [x] Add override audit log viewer (2025-02-06)
   - Created `/dev-console/audit-logs/page.tsx` with full audit log viewer
   - Created `AuditLogsClient` component for fetching and displaying logs
