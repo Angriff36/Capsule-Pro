@@ -229,7 +229,14 @@ Manifest Runtime Version: v0.3.0
   - Constraint outcomes include: code, constraintName, severity, message, formatted, details, passed, overridden, overriddenBy, resolved
 - [ ] Add test coverage for denial explanations with resolved values
 - [ ] Create diagnostics UI component for constraint outcomes
-- [ ] Add override audit log viewer
+- [x] Add override audit log viewer (2025-02-06)
+  - Created `/dev-console/audit-logs/page.tsx` with full audit log viewer
+  - Created `AuditLogsClient` component for fetching and displaying logs
+  - Filters by entity type and entity ID
+  - Displays date, entity info, constraint code, reason, and authorizer
+  - Shows loading, error, and empty states
+  - Refresh button for manual data reload
+  - Info panel explaining what's tracked and retention policy
 
 **Owner:** Loop
 
@@ -865,5 +872,41 @@ const { showOverrideDialog, setShowOverrideDialog, overrideConstraints, handleOv
 - Type-safe builders reduce boilerplate and ensure consistency
 - Error types enable try/catch patterns with proper error classification
 - Future work: Update remaining API routes to use standardized format
+
+---
+
+### 2025-02-06: Override Audit Log Viewer
+
+**Status:** COMPLETED
+
+**What Was Implemented:**
+- Created `/dev-console/audit-logs/page.tsx` with full audit log viewer UI
+- Created `AuditLogsClient` component for client-side data fetching and display
+- Filters by entity type (PrepTask, Recipe, Dish, Menu, etc.) and entity ID
+- Displays audit log entries in a table with:
+  - Date/time of override
+  - Entity type and ID
+  - Constraint code (formatted from SNAKE_CASE to Title Case)
+  - Override reason (truncated with tooltip)
+  - Authorizing user ID
+- Shows loading, error, and empty states with appropriate UI
+- Refresh button for manual data reload
+- Info panel explaining what's tracked and retention policy
+
+**Files Created:**
+- `apps/app/app/(dev-console)/dev-console/audit-logs/audit-logs-client.tsx` - Client component with data fetching
+- `apps/app/app/(dev-console)/dev-console/audit-logs/page.tsx` - Page component (updated from placeholder)
+
+**Files Modified:**
+- `IMPLEMENTATION_PLAN.md` - Updated P3 task status and added completion history
+
+**Architecture Notes:**
+- Uses existing `/api/kitchen/overrides` GET endpoint for data fetching
+- Handles API requirement of both entityType and entityId parameters
+- When no filters selected, fetches from multiple entity types in parallel
+- Results are sorted by creation date (newest first) and limited to 100 entries
+- Styled to match dev console aesthetic using existing CSS classes
+- Integrates with design system's Table component for consistent styling
+- Error handling includes retry functionality
 
 ---
