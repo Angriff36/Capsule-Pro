@@ -471,50 +471,17 @@ C:\projects\capsule-pro\packages\database\prisma\
 
 ---
 
-### Phase 2: High Impact Features (Medium Effort)
+### Phase 2: High Impact Features (Medium Effort) ✅ COMPLETE
 
-#### Task 5: Implement Named Layouts
-**Estimated: 10-12 hours** | Impact: High | Effort: Medium-High
+#### Task 5: Implement Named Layouts ✅ COMPLETE
+**Status:** Implemented in commit 3b96274a8
+- Database: CommandBoardLayout model added, migration deployed
+- Server Actions: saveLayout, listLayouts, getLayout, deleteLayout
+- UI Components: LayoutSwitcher dropdown, SaveLayoutDialog
+- Layouts save viewport, visible cards, grid settings
+- Per-user isolation (different users have different layouts)
 
-**Why this matters:** Major feature gap - users expect to save different board views.
-
-**Implementation:**
-
-**Database:**
-- Add `CommandBoardLayout` model to Prisma schema
-- Create migration using `pnpm migrate`
-
-**Server Actions:** Create `layouts.ts`
-```typescript
-// C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\actions\layouts.ts
-- saveLayout(boardId, userId, name, viewport, visibleCards, gridSize, showGrid, snapToGrid)
-- listLayouts(boardId, userId)
-- deleteLayout(layoutId)
-- applyLayout(layoutId) - restores viewport and card visibility
-```
-
-**UI Components:**
-- Add layout switcher dropdown to toolbar (shows saved layouts)
-- Add "Save Current Layout" dialog (name input)
-- Layout thumbnail preview (optional - can use canvas screenshot)
-
-**Files to create:**
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\actions\layouts.ts`
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\layout-switcher.tsx`
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\save-layout-dialog.tsx`
-
-**Files to modify:**
-- `C:\projects\capsule-pro\packages\database\prisma\schema.prisma` (add CommandBoardLayout model)
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` (integrate layout switching)
-
-**Acceptance Criteria:**
-- User can save current layout with custom name
-- Layout switcher shows all saved layouts
-- Switching layout restores viewport and card positions
-- Deleting layout removes it from list
-- Layouts are per-user (different users have different layouts)
-
-**Dependencies:** Requires database migration
+**Phase 2 Summary:** Named Layouts feature complete! Users can save and switch between different board views.
 
 ---
 
@@ -522,8 +489,9 @@ C:\projects\capsule-pro\packages\database\prisma\
 
 #### Task 6: Bulk Edit System
 **Estimated: 12-16 hours** | Impact: High | Effort: High
+**Status:** Prerequisites met (Tasks 3 & 4 complete)
 
-**Prerequisites:** Task 3 (Shift+click) and Task 4 (Drag selection) must be complete
+**Prerequisites:** Task 3 (Shift+click) and Task 4 (Drag selection) must be complete ✅
 
 **Implementation:**
 
