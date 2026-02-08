@@ -23,6 +23,11 @@ import {
   updateGroup,
 } from "../actions/groups";
 import {
+  getConnectionsForBoard,
+  deleteConnection as deleteConnectionAction,
+  updateConnection as updateConnectionAction,
+} from "../actions/connections";
+import {
   type BoardState,
   type CardConnection,
   CardType,
@@ -36,6 +41,7 @@ import {
 import { BoardCard } from "./board-card";
 import { BulkEditDialog } from "./bulk-edit-dialog";
 import { CanvasViewport } from "./canvas-viewport";
+import { ConnectionDialog } from "./connection-dialog";
 import { ConnectionLines } from "./connection-lines";
 import { CreateGroupDialog } from "./create-group-dialog";
 import { GridLayer } from "./grid-layer";
@@ -103,6 +109,14 @@ export function BoardCanvas({
   const [showBulkEditDialog, setShowBulkEditDialog] = useState(false);
   // Create group dialog state
   const [showCreateGroupDialog, setShowCreateGroupDialog] = useState(false);
+  // Connection dialog state
+  const [showConnectionDialog, setShowConnectionDialog] = useState(false);
+  const [connectionSourceCardId, setConnectionSourceCardId] = useState<
+    string | null
+  >(null);
+  const [connectionTargetCardId, setConnectionTargetCardId] = useState<
+    string | null
+  >(null);
 
   // Groups state
   const [groups, setGroups] = useState<CommandBoardGroup[]>([]);
@@ -832,6 +846,27 @@ export function BoardCanvas({
     });
   }, [boardId]);
 
+  // Fetch connections for this board from database
+  useEffect(() => {
+    const fetchConnections = async () => {
+      const result = await getConnectionsForBoard(boardId);
+      if (result.success && result.connections) {
+        // Merge database connections with existing auto-generated connections
+        // Database connections take precedence (update or replace auto-generated)
+        const dbConnectionIds = new Set(result.connections.map((c) => c.id));
+        const autoGenConnections = connections.filter(
+          (c) => !dbConnectionIds.has(c.id)
+        );
+        setConnections([...result.connections, ...autoGenConnections]);
+      }
+    };
+    fetchConnections().catch((error) => {
+      console.log("Failed to fetch connections:", error);
+    });
+    // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boardId]);
+
   // Group handlers
   const handleGroupPositionChange = useCallback(
     (groupId: string, position: Point) => {
@@ -987,6 +1022,28 @@ export function BoardCanvas({
     });
   }, [boardId]);
 
+  // Connection handlers
+  const handleRefreshConnections = useCallback(async () => {
+    const result = await getConnectionsForBoard(boardId);
+    if (result.success && result.connections) {
+      setConnections(result.connections);
+    }
+  }, [boardId]);
+
+  const handleConnectionCreated = useCallback(() => {
+    handleRefreshConnections();
+  }, [handleRefreshConnections]);
+
+  const handleConnectionDeleted = useCallback(async () => {
+    // Refresh connections after deletion
+    await handleRefreshConnections();
+    setSelectedConnectionId(null);
+    setState((prev) => ({
+      ...prev,
+      selectedConnectionId: null,
+    }));
+  }, [handleRefreshConnections]);
+
   return (
     <div
       aria-label="Command board canvas"
@@ -1106,6 +1163,34 @@ export function BoardCanvas({
                     <rect x="3" y="14" width="7" height="7" />
                   </svg>
                   Group {state.selectedCardIds.length} Cards
+                </Button>
+              )}
+
+              {/* Create Connection Button - show when exactly 2 cards selected */}
+              {state.selectedCardIds.length === 2 && (
+                <Button
+                  onClick={() => {
+                    setConnectionSourceCardId(state.selectedCardIds[0] ?? null);
+                    setConnectionTargetCardId(state.selectedCardIds[1] ?? null);
+                    setShowConnectionDialog(true);
+                  }}
+                  size="sm"
+                  variant="secondary"
+                >
+                  <svg
+                    className="mr-2 h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                  </svg>
+                  Connect Cards
                 </Button>
               )}
             </>
@@ -1471,6 +1556,17 @@ export function BoardCanvas({
         selectedCards={state.cards.filter((c) =>
           state.selectedCardIds.includes(c.id)
         )}
+      />
+
+      {/* Connection Dialog */}
+      <ConnectionDialog
+        open={showConnectionDialog}
+        onOpenChange={setShowConnectionDialog}
+        boardId={boardId}
+        cards={state.cards}
+        sourceCardId={connectionSourceCardId}
+        targetCardId={connectionTargetCardId}
+        onCreate={handleConnectionCreated}
       />
     </div>
   );

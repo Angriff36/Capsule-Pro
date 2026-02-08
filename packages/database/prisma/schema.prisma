@@ -80,10 +80,11 @@ model Account {
   timeEntries           TimeEntry[]
   employeeLocations      EmployeeLocation[]
   commandBoards          CommandBoard[]
-  commandBoardCards      CommandBoardCard[]
-  commandBoardLayouts    CommandBoardLayout[]
-  commandBoardGroups     CommandBoardGroup[]
-  timelineTasks          TimelineTask[]
+  commandBoardCards       CommandBoardCard[]
+  commandBoardLayouts     CommandBoardLayout[]
+  commandBoardGroups      CommandBoardGroup[]
+  commandBoardConnections CommandBoardConnection[]
+  timelineTasks           TimelineTask[]
   timecardEditRequests  TimecardEditRequest[]
   allergenWarnings      AllergenWarning[]
   eventGuests           EventGuest[]
@@ -1099,6 +1100,7 @@ model CommandBoard {
   tenant      Account             @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   cards       CommandBoardCard[]
   groups      CommandBoardGroup[]
+  connections CommandBoardConnection[]
 
   @@id([tenantId, id])
   @@index([eventId])
@@ -1184,6 +1186,30 @@ model CommandBoardGroup {
   @@id([tenantId, id])
   @@index([boardId])
   @@map("command_board_groups")
+  @@schema("tenant_events")
+}
+
+model CommandBoardConnection {
+  tenantId          String   @map("tenant_id") @db.Uuid
+  id                String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  boardId           String   @map("board_id") @db.Uuid
+  fromCardId        String   @map("from_card_id") @db.Uuid
+  toCardId          String   @map("to_card_id") @db.Uuid
+  relationshipType  String   @default("generic") @map("relationship_type")
+  label             String?
+  visible           Boolean  @default(true)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant            Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  board             CommandBoard @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([boardId])
+  @@index([fromCardId])
+  @@index([toCardId])
+  @@unique([boardId, fromCardId, toCardId, relationshipType], map: "unique_connection_per_board")
+  @@map("command_board_connections")
   @@schema("tenant_events")
 }
 
