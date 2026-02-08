@@ -13,6 +13,18 @@
     "./runtime": {
       "types": "./dist/runtime.d.ts",
       "import": "./dist/runtime.js"
+    },
+    "./prisma-store": {
+      "types": "./dist/prisma-store.d.ts",
+      "import": "./dist/prisma-store.js"
+    },
+    "./api-response": {
+      "types": "./dist/api-response.d.ts",
+      "import": "./dist/api-response.js"
+    },
+    "./route-helpers": {
+      "types": "./dist/route-helpers.d.ts",
+      "import": "./dist/route-helpers.js"
     }
   },
   "scripts": {
@@ -20,6 +32,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@repo/database": "workspace:*",
     "@repo/manifest": "workspace:*",
     "@repo/manifest-specs": "workspace:*"
   },

@@ -43,7 +43,7 @@ import {
   type IngredientCostBreakdown,
   type RecipeCostBreakdown,
 } from "@/app/lib/use-recipe-costing";
-import { restoreRecipeVersion } from "../../actions";
+import { restoreRecipeVersion } from "../../actions-manifest";
 
 interface RecipeDetailRow {
   id: string;

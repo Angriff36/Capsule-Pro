@@ -4,6 +4,9 @@
 # AI agent planning directories (archived to docs/task-plans/ when complete)
 /claude-code-plans/
 /codex-plans/
+.codex/
+.claude/
+.specify/
 
 # Storybook build artifacts
 **/storybook-static/
@@ -317,7 +320,6 @@ storybook-static/
 apps/storybook/storybook-static/
 
 # AI agent files and local documentation
-.claude/ralph-loop.local.md
 .playwright-mcp/
 findings.md
 learnings.json

@@ -30,7 +30,6 @@ import {
   Check,
   ChefHat,
   Clock,
-  Database,
   Download,
   Flame,
   Leaf,
@@ -49,6 +48,7 @@ import type {
   PrepListGenerationResult,
   StationPrepList,
 } from "./actions";
+import { PrepListSaveButton } from "./components/prep-list-form-with-constraints";
 
 interface PrepListClientProps {
   eventId: string;
@@ -469,24 +469,10 @@ export function PrepListClient({
               >
                 <Download className="h-4 w-4" />
               </Button>
-              <Button
-                disabled={isSavingToDb || prepList.totalIngredients === 0}
-                onClick={handleSaveToDatabase}
-                size="sm"
-                variant="secondary"
-              >
-                {isSavingToDb ? (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Database className="mr-2 h-4 w-4" />
-                    Save to Database
-                  </>
-                )}
-              </Button>
+              <PrepListSaveButton
+                disabled={prepList.totalIngredients === 0}
+                prepList={prepList}
+              />
               <Button
                 disabled={isSaving || prepList.totalIngredients === 0}
                 onClick={handleSave}

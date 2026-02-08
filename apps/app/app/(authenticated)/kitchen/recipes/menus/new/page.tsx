@@ -1,6 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { Header } from "../../../../components/header";
-import { MenuEditor } from "../components/menu-editor";
+import { NewMenuFormClient } from "../components/new-menu-form-client";
 
 export default async function NewMenuPage() {
   const { userId } = await auth();
@@ -18,7 +18,7 @@ export default async function NewMenuPage() {
       />
       <div className="flex-1 p-6">
         <div className="max-w-4xl mx-auto">
-          <MenuEditor />
+          <NewMenuFormClient />
         </div>
       </div>
     </div>

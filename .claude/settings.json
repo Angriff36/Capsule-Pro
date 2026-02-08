@@ -51,7 +51,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm dlx ultracite fix"
+            "command": "pnpm dlx ultracite check $FILES"
           }
         ]
       }

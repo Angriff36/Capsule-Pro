@@ -74,7 +74,7 @@ interface Location {
 
 export function ShiftsClient() {
   const router = useRouter();
-  const searchParams = useSearchParams() ?? new URLSearchParams();
+  const searchParams = useSearchParams();
 
   // State
   const [shifts, setShifts] = useState<Shift[]>([]);
@@ -121,7 +121,7 @@ export function ShiftsClient() {
     } finally {
       setLoading(false);
     }
-  }, [filters, pagination.page, pagination]);
+  }, [filters, pagination.page]);
 
   // Fetch filter options
   const fetchFilterOptions = useCallback(async () => {
@@ -147,9 +147,7 @@ export function ShiftsClient() {
   useEffect(() => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
-      if (value) {
-        params.set(key, value);
-      }
+      if (value) params.set(key, value);
     });
     const queryString = params.toString();
     router.push(`/scheduling/shifts${queryString ? `?${queryString}` : ""}`);

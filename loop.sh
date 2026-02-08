@@ -56,8 +56,8 @@ while true; do
     cat "$PROMPT_FILE" | claude -p \
         --dangerously-skip-permissions \
         --output-format=stream-json \
-        --verbose \
         --model opus \
+        --verbose
 
     # Push changes after each iteration
     git push origin "$CURRENT_BRANCH" || {

@@ -1,7 +1,13 @@
 import { config, withAnalyzer } from "@repo/next-config";
 import { withLogging, withSentry } from "@repo/observability/next-config";
 import type { NextConfig } from "next";
+import type { Configuration } from "webpack";
 import { env } from "@/env";
+
+const OPENTELEMETRY_EXCLUDE = /@opentelemetry/;
+const SENTRY_EXCLUDE = /@sentry/;
+const CRITICAL_DEPENDENCY_WARNING =
+  /Critical dependency: the request of a dependency is an expression/;
 
 let nextConfig: NextConfig = withLogging({
   ...config,
@@ -29,22 +35,32 @@ let nextConfig: NextConfig = withLogging({
     "keyv",
     "cacheable-request",
   ],
-  webpack: (webpackConfig: any, { isServer }: { isServer: boolean }) => {
+  webpack: (
+    webpackConfig: Configuration,
+    { isServer }: { isServer: boolean }
+  ) => {
     if (isServer) {
       // Exclude pdfjs-dist worker from server-side bundling
+      const externals = webpackConfig.externals;
+      let externalsArray: unknown[] = [];
+      if (Array.isArray(externals)) {
+        externalsArray = externals;
+      } else if (externals) {
+        externalsArray = [externals];
+      }
+
       webpackConfig.externals = [
-        ...(webpackConfig.externals || []),
+        ...externalsArray,
         "pdfjs-dist/legacy/build/pdf.worker.mjs",
       ];
 
       // Suppress 'Critical dependency' and large string warnings
       webpackConfig.ignoreWarnings = [
         ...(webpackConfig.ignoreWarnings || []),
-        { module: /@opentelemetry/ },
-        { module: /@sentry/ },
+        { module: OPENTELEMETRY_EXCLUDE },
+        { module: SENTRY_EXCLUDE },
         {
-          message:
-            /Critical dependency: the request of a dependency is an expression/,
+          message: CRITICAL_DEPENDENCY_WARNING,
         },
       ];
     }

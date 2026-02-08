@@ -1,10 +1,38 @@
-0a. Study `specs/*` using the Task tool with subagent_type='Explore' (up to 500 parallel Sonnet subagents) to learn the application specifications.
+<!--PROMPTS
+<!--The instruction set for each loop iteration. Swap between PLANNING and BUILDING versions as needed.
+<!--
+<!--Prompt Structure:
+<!--
+<!--Section	Purpose
+<!--Phase 0 (0a, 0b, 0c)	Orient: study specs, source location, current plan
+<!--Phase 1-4	Main instructions: task, validation, commit
+<!--999... numbering	Guardrails/invariants (higher number = more critical)
+<!--Key Language Patterns (Geoff's specific phrasing):
+<!--
+<!--"study" (not "read" or "look at")
+<!--"don't assume not implemented" (critical - the Achilles' heel)
+<!--"using parallel subagents" / "up to N subagents"
+<!--"only 1 subagent for build/tests" (backpressure control)
+<!--"Think extra hard" (now "Ultrathink)
+<!--"capture the why"
+<!--"keep it up to date"
+<!--"if functionality is missing then it's your job to add it"
+<!--"resolve them or document them"
+<!--PROMPT_plan.md Template
+<!--Notes:
+<!--
+<!--Update [project-specific goal] placeholder below.
+<!--Current subagents names presume using Claude. -->
+
+
+
+0a. Study `specs/*` with up to 250 parallel Sonnet subagents to learn the application specifications.
 0b. Study @IMPLEMENTATION_PLAN.md (if present) to understand the plan so far.
-0c. Study `packages/*` and `apps/*` using the Task tool with subagent_type='Explore' (up to 500 parallel Sonnet subagents) to understand shared utilities & components.
-0d. For reference, the application source code is in `apps/*` and `packages/*`.
+0c. Study ``apps/app/app/*`lib/*` with up to 250 parallel Sonnet subagents to understand shared utilities & components.
+0d. For reference, the application source code is in `apps/app/app/*`
 
-1. Study @IMPLEMENTATION_PLAN.md (if present; it may be incorrect) and use up to 500 Sonnet subagents (using the Task tool with subagent_type='Explore') to study existing source code and compare it against `specs/*`. Use an Opus subagent (Task tool with subagent_type='Opus') to analyze findings, prioritize tasks, and create/update @IMPLEMENTATION_PLAN.md as a bullet point list sorted in priority of items yet to be implemented. Ultrathink. Consider searching for TODO, minimal implementations, placeholders, skipped/flaky tests, and inconsistent patterns. Study @IMPLEMENTATION_PLAN.md to determine starting point for research and keep it up to date with items considered complete/incomplete using subagents.
+1. Study @IMPLEMENTATION_PLAN.md (if present; it may be incorrect) and use up to 500 Sonnet subagents to study existing source code in `apps/app/app/*` and compare it against `specs/*`. Use an Opus subagent to analyze findings, prioritize tasks, and create/update @IMPLEMENTATION_PLAN.md as a bullet point list sorted in priority of items yet to be implemented. Ultrathink. Consider searching for TODO, minimal implementations, placeholders, skipped/flaky tests, and inconsistent patterns. Study @IMPLEMENTATION_PLAN.md to determine starting point for research and keep it up to date with items considered complete/incomplete using subagents.
 
-IMPORTANT: Plan only. Do NOT implement anything. Do NOT run builds/tests/lint/typecheck/dev. Do NOT assume functionality is missing; confirm with code search first. Return summaries only. Never return raw file dumps or full match lists. Use `list_dir` or `file_search` for directory listing; `LS` is unavailable. Treat `packages/design-system` and other packages as the project's standard library for shared utilities and components. Prefer consolidated, idiomatic implementations there over ad-hoc copies.
+IMPORTANT: Plan only. Do NOT implement anything. Do NOT assume functionality is missing; confirm with code search first. Treat `packages/*` as the project's standard library for shared utilities and components. Prefer consolidated, idiomatic implementations there over ad-hoc copies.
 
-ULTIMATE GOAL: Integrate the Manifest runtime (v0.3.0+) into Capsule-Pro for Kitchen Ops business rules enforcement. All kitchen operations state mutations go through Manifest commands with constraint severity (OK/WARN/BLOCK), override workflows, event choreography, and conformance test coverage. The Manifest package at C:/projects/manifest/ is now at v0.3.0 with vNext features complete. Consider missing elements and plan accordingly. If an element is missing, search first to confirm it doesn't exist, then if needed author the specification at specs/FILENAME.md. If you create a new element then document the plan to implement it in @IMPLEMENTATION_PLAN.md using a subagent.
+ULTIMATE GOAL: We want to achieve Implementing Manifest fully into capsule-pro, with it being utilized to its fullest to replace or alleviate as much complexity and cross system nuance as possible. Consider missing elements and plan accordingly. If an element is missing, search first to confirm it doesn't exist, then if needed author the specification at specs/FILENAME.md. If you create a new element then document the plan to implement it in @IMPLEMENTATION_PLAN.md using a subagent.

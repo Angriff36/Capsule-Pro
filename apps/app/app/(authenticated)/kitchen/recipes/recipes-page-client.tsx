@@ -9,7 +9,7 @@ import {
   getRecipeForEdit,
   type RecipeForEdit,
   updateRecipe,
-} from "./actions";
+} from "./actions-manifest";
 import { RecipeEditModal } from "./components/recipe-edit-modal";
 import { RecipeEditorModal } from "./recipe-editor-modal";
 

@@ -608,4 +608,269 @@ describe("Manifest Conformance Tests", () => {
       expect(instance2?.id).toBe("test-id-2");
     });
   });
+
+  describe("Resolved Values in Denial Explanations", () => {
+    it("guard failure includes resolved expression values", async () => {
+      const source = loadFixture("05-guard-denial.manifest");
+      const { ir } = await compileToIR(source);
+      const engine = new RuntimeEngine(ir!, {}, createDeterministicOptions());
+
+      await engine.createInstance("Task", {
+        id: "task-1",
+        title: "Test",
+        completed: true,
+      } as EntityInstance);
+
+      const result = await engine.runCommand(
+        "complete",
+        {},
+        {
+          entityName: "Task",
+          instanceId: "task-1",
+        }
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.guardFailure).toBeDefined();
+      expect(result.guardFailure?.resolved).toBeDefined();
+      expect(Array.isArray(result.guardFailure?.resolved)).toBe(true);
+
+      // Verify resolved values contain at least one expression with its evaluated value
+      expect(result.guardFailure?.resolved?.length).toBeGreaterThan(0);
+
+      // Check each resolved entry has the expected structure
+      result.guardFailure?.resolved?.forEach((resolved) => {
+        expect(resolved.expression).toBeDefined();
+        expect(typeof resolved.expression).toBe("string");
+        expect(resolved.value).toBeDefined();
+      });
+
+      // Verify that the guard expression contains "completed"
+      const hasCompletedExpression = result.guardFailure?.resolved?.some((r) =>
+        r.expression.includes("completed")
+      );
+      expect(hasCompletedExpression).toBe(true);
+    });
+
+    it("policy denial includes resolved expression values", async () => {
+      const source = loadFixture("06-policy-denial.manifest");
+      const { ir } = await compileToIR(source);
+      const engine = new RuntimeEngine(
+        ir!,
+        { user: { id: "user-1", role: "user" } },
+        createDeterministicOptions()
+      );
+
+      await engine.createInstance("Document", {
+        id: "doc-1",
+        title: "Test",
+      } as EntityInstance);
+
+      const result = await engine.runCommand(
+        "makePublic",
+        {},
+        {
+          entityName: "Document",
+          instanceId: "doc-1",
+        }
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.policyDenial).toBeDefined();
+      expect(result.policyDenial?.resolved).toBeDefined();
+      expect(Array.isArray(result.policyDenial?.resolved)).toBe(true);
+
+      // Verify resolved values contain at least one expression with its evaluated value
+      expect(result.policyDenial?.resolved?.length).toBeGreaterThan(0);
+
+      // Check each resolved entry has the expected structure
+      result.policyDenial?.resolved?.forEach((resolved) => {
+        expect(resolved.expression).toBeDefined();
+        expect(typeof resolved.expression).toBe("string");
+        expect(resolved.value).toBeDefined();
+      });
+
+      // Verify that the policy expression contains "role"
+      const hasRoleExpression = result.policyDenial?.resolved?.some((r) =>
+        r.expression.includes("role")
+      );
+      expect(hasRoleExpression).toBe(true);
+
+      // Verify one of the resolved values has the actual role value
+      const hasUserRoleValue = result.policyDenial?.resolved?.some(
+        (r) => r.value === "user"
+      );
+      expect(hasUserRoleValue).toBe(true);
+    });
+
+    it("constraint failure includes resolved expression values", async () => {
+      const source = loadFixture("21-constraint-outcomes.manifest");
+      const { ir } = await compileToIR(source);
+      const engine = new RuntimeEngine(ir!, {}, createDeterministicOptions());
+
+      // Check constraints for an order with negative amount
+      const failures = await engine.checkConstraints("Order", {
+        id: "test-order",
+        customerId: "customer-1",
+        status: "pending",
+        amount: -100,
+        priority: "normal",
+        createdAt: 1_000_000_000_000,
+      });
+
+      expect(failures.length).toBeGreaterThan(0);
+
+      const positiveAmountFailure = failures.find(
+        (f) => f.constraintName === "positiveAmount"
+      );
+      expect(positiveAmountFailure).toBeDefined();
+      expect(positiveAmountFailure?.resolved).toBeDefined();
+      expect(Array.isArray(positiveAmountFailure?.resolved)).toBe(true);
+
+      // Verify resolved values contain at least one expression
+      expect(positiveAmountFailure?.resolved?.length).toBeGreaterThan(0);
+
+      // Check each resolved entry has the expected structure
+      positiveAmountFailure?.resolved?.forEach((resolved) => {
+        expect(resolved.expression).toBeDefined();
+        expect(typeof resolved.expression).toBe("string");
+        expect(resolved.value).toBeDefined();
+      });
+
+      // Verify that the constraint expression contains "amount"
+      const hasAmountExpression = positiveAmountFailure?.resolved?.some((r) =>
+        r.expression.includes("amount")
+      );
+      expect(hasAmountExpression).toBe(true);
+
+      // Verify one of the resolved values has the actual amount value
+      const hasAmountValue = positiveAmountFailure?.resolved?.some(
+        (r) => r.value === -100
+      );
+      expect(hasAmountValue).toBe(true);
+    });
+
+    it("multiple constraint failures each include resolved values", async () => {
+      const source = loadFixture("21-constraint-outcomes.manifest");
+      const { ir } = await compileToIR(source);
+      const engine = new RuntimeEngine(ir!, {}, createDeterministicOptions());
+
+      // Check constraints for an order that triggers multiple failures
+      const failures = await engine.checkConstraints("Order", {
+        id: "multi-fail-order",
+        customerId: "customer-1",
+        status: "cancelled",
+        amount: 2000,
+        priority: "high",
+        createdAt: 0,
+      });
+
+      // Should have multiple failures
+      expect(failures.length).toBeGreaterThanOrEqual(3);
+
+      // Each failure should have resolved values
+      failures.forEach((failure) => {
+        expect(failure.resolved).toBeDefined();
+        expect(Array.isArray(failure.resolved)).toBe(true);
+        expect(failure.resolved?.length).toBeGreaterThan(0);
+
+        // Verify each resolved entry has expression and value
+        failure.resolved?.forEach((resolved) => {
+          expect(resolved.expression).toBeDefined();
+          expect(typeof resolved.expression).toBe("string");
+          expect(resolved.value).toBeDefined();
+        });
+      });
+    });
+
+    it("resolved values provide debugging information for constraint failures", async () => {
+      const source = loadFixture("21-constraint-outcomes.manifest");
+      const { ir } = await compileToIR(source);
+      const engine = new RuntimeEngine(ir!, {}, createDeterministicOptions());
+
+      // Create a scenario with invalid status
+      const failures = await engine.checkConstraints("Order", {
+        id: "invalid-order",
+        customerId: "customer-1",
+        status: "unknown",
+        amount: 100,
+        priority: "normal",
+        createdAt: 1_000_000_000_000,
+      });
+
+      const validStatusFailure = failures.find(
+        (f) => f.constraintName === "validStatus"
+      );
+      expect(validStatusFailure).toBeDefined();
+
+      // Verify resolved values contain the status value that caused failure
+      const hasStatusValue = validStatusFailure?.resolved?.some(
+        (r) => r.value === "unknown"
+      );
+      expect(hasStatusValue).toBe(true);
+
+      // Verify the formatted expression contains the constraint expression
+      expect(validStatusFailure?.formatted).toBeDefined();
+      expect(validStatusFailure?.formatted).toContain("status");
+    });
+
+    it("guard failure formatted expression matches guard condition", async () => {
+      const source = loadFixture("05-guard-denial.manifest");
+      const { ir } = await compileToIR(source);
+      const engine = new RuntimeEngine(ir!, {}, createDeterministicOptions());
+
+      await engine.createInstance("Task", {
+        id: "task-2",
+        title: "Test",
+        completed: true,
+      } as EntityInstance);
+
+      const result = await engine.runCommand(
+        "complete",
+        {},
+        {
+          entityName: "Task",
+          instanceId: "task-2",
+        }
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.guardFailure?.formatted).toBeDefined();
+
+      // The formatted expression should contain the key parts of the guard
+      expect(result.guardFailure?.formatted).toContain("not");
+      expect(result.guardFailure?.formatted).toContain("completed");
+    });
+
+    it("policy denial formatted expression matches policy condition", async () => {
+      const source = loadFixture("06-policy-denial.manifest");
+      const { ir } = await compileToIR(source);
+      const engine = new RuntimeEngine(
+        ir!,
+        { user: { id: "user-1", role: "user" } },
+        createDeterministicOptions()
+      );
+
+      await engine.createInstance("Document", {
+        id: "doc-2",
+        title: "Test",
+      } as EntityInstance);
+
+      const result = await engine.runCommand(
+        "makePublic",
+        {},
+        {
+          entityName: "Document",
+          instanceId: "doc-2",
+        }
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.policyDenial?.formatted).toBeDefined();
+
+      // The formatted expression should contain the key parts of the policy
+      expect(result.policyDenial?.formatted).toContain("role");
+      expect(result.policyDenial?.formatted).toContain("admin");
+    });
+  });
 });

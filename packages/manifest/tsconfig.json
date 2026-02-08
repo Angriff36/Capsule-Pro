@@ -18,7 +18,8 @@
     "src/manifest/ir.ts",
     "src/manifest/lexer.ts",
     "src/manifest/parser.ts",
-    "src/manifest/types.ts"
+    "src/manifest/types.ts",
+    "src/generators/**/*.ts"
   ],
   "exclude": [
     "node_modules",

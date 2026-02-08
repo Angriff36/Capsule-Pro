@@ -19,7 +19,7 @@ function createTestPeriod(): PayrollPeriod {
     tenantId: testTenantId,
     startDate: new Date("2024-01-01"),
     endDate: new Date("2024-01-14"),
-    status: "completed",
+    status: "finalized",
     currency: "USD",
   };
 }

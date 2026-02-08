@@ -19,10 +19,10 @@
   },
   "biome.configurationPath": "biome.jsonc",
   "editor.codeActionsOnSave": {
-    "source.fixAll.biome": "explicit",
+    "quickfix.biome": "explicit",
     "source.organizeImports.biome": "explicit"
   },
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "biomejs.biome",
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
   "editor.formatOnSaveMode": "file",

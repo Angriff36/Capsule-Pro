@@ -4,7 +4,7 @@ import {
   DocsDescription,
   DocsPage,
   DocsTitle,
-} from "fumadocs-ui/layouts/docs/page";
+} from "fumadocs-ui/page";
 import { createRelativeLink } from "fumadocs-ui/mdx";
 import type { MDXContent } from "mdx/types";
 import type { Metadata } from "next";

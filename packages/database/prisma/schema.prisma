@@ -2800,11 +2800,11 @@ model WasteEntry {
 
 /// Override audit trail for tracking constraint overrides
 model OverrideAudit {
-  tenantId        String    @default("")
+  tenantId        String    @map("tenant_id") @db.Uuid
   id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
   entityType      String    @map("entity_type")
-  entityId        String    @db.Uuid
+  entityId        String    @map("entity_id") @db.Uuid
   constraintId    String    @map("constraint_id")
   guardExpression String?   @map("guard_expression") @db.Text
   overriddenBy    String    @map("overridden_by") @db.Uuid

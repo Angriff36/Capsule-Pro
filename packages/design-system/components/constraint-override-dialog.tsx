@@ -24,11 +24,8 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import type { ConstraintOutcome } from "@repo/kitchen-ops";
-import {
-  OVERRIDE_REASON_CODES,
-  type OverrideReasonCode,
-} from "@repo/kitchen-ops";
+import type { ConstraintOutcome } from "@repo/manifest";
+import { OVERRIDE_REASON_CODES, type OverrideReasonCode } from "@repo/manifest";
 import { AlertCircle, Info, ShieldAlert, TriangleAlert } from "lucide-react";
 import * as React from "react";
 
@@ -273,7 +270,7 @@ function ConstraintAlert({ constraint }: ConstraintAlertProps) {
  * Hook to manage constraint override state and callbacks
  */
 export function useConstraintOverride<
-  T extends { constraintOutcomes?: ConstraintOutcome[] },
+  T extends { constraintOutcomes?: ConstraintOutcome[]; success?: boolean },
 >({
   result,
   onSuccess,
@@ -292,7 +289,7 @@ export function useConstraintOverride<
 
   // Check if we need to show override dialog
   React.useEffect(() => {
-    if (result.constraintOutcomes && result.constraintOutcomes.length > 0) {
+    if (result?.constraintOutcomes && result.constraintOutcomes.length > 0) {
       const blocking = result.constraintOutcomes.filter(
         (c) => !c.passed && c.severity === "block"
       );
@@ -330,12 +327,12 @@ export function useConstraintOverride<
     handleCancel,
     // Helper to check if we have blocking constraints
     hasBlockingConstraints:
-      result.constraintOutcomes?.filter(
+      result?.constraintOutcomes?.filter(
         (c) => !c.passed && c.severity === "block"
       ).length ?? 0,
     // Helper to get all actionable constraints
     actionableConstraints:
-      result.constraintOutcomes?.filter(
+      result?.constraintOutcomes?.filter(
         (c) => !c.passed && (c.severity === "warn" || c.severity === "block")
       ) ?? [],
   };

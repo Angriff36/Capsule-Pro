@@ -1,0 +1,250 @@
+{
+  "testCases": [
+    {
+      "name": "claim command succeeds on open task",
+      "setup": {
+        "createInstance": {
+          "entity": "PrepTask",
+          "data": {
+            "id": "task-1",
+            "tenantId": "tenant-123",
+            "name": "Chop Vegetables",
+            "status": "open",
+            "quantityTotal": 10,
+            "priority": 3
+          }
+        }
+      },
+      "command": {
+        "name": "claim",
+        "entityName": "PrepTask",
+        "instanceId": "task-1",
+        "input": {
+          "targetStationId": "station-1",
+          "userId": "user-1"
+        }
+      },
+      "expectedResult": {
+        "success": true,
+        "emittedEvents": [
+          {
+            "name": "PrepTaskClaimed",
+            "channel": "prep.task.claimed",
+            "payload": {
+              "taskId": "task-1",
+              "userId": "user-1",
+              "stationId": "station-1",
+              "claimedAt": 1000000000000
+            },
+            "timestamp": 1000000000000
+          }
+        ]
+      },
+      "expectedInstanceState": {
+        "id": "task-1",
+        "tenantId": "tenant-123",
+        "name": "Chop Vegetables",
+        "status": "in_progress",
+        "stationId": "station-1",
+        "claimedBy": "user-1",
+        "claimedAt": 1000000000000,
+        "quantityTotal": 10,
+        "quantityCompleted": 0,
+        "dueByDate": 0,
+        "priority": 3
+      }
+    },
+    {
+      "name": "claim command fails with empty userId",
+      "setup": {
+        "createInstance": {
+          "entity": "PrepTask",
+          "data": {
+            "id": "task-2",
+            "tenantId": "tenant-123",
+            "name": "Guard Test Task",
+            "status": "open"
+          }
+        }
+      },
+      "command": {
+        "name": "claim",
+        "entityName": "PrepTask",
+        "instanceId": "task-2",
+        "input": {
+          "stationId": "station-1",
+          "userId": ""
+        }
+      },
+      "expectedResult": {
+        "success": false,
+        "error": "Guard condition failed for command 'claim'",
+        "emittedEvents": []
+      }
+    },
+    {
+      "name": "claim command fails on in_progress task",
+      "setup": {
+        "createInstance": {
+          "entity": "PrepTask",
+          "data": {
+            "id": "task-3",
+            "tenantId": "tenant-123",
+            "name": "Already Claimed Task",
+            "status": "in_progress",
+            "claimedBy": "user-2"
+          }
+        }
+      },
+      "command": {
+        "name": "claim",
+        "entityName": "PrepTask",
+        "instanceId": "task-3",
+        "input": {
+          "targetStationId": "station-1",
+          "userId": "user-1"
+        }
+      },
+      "expectedResult": {
+        "success": false,
+        "error": "Guard condition failed for command 'claim'",
+        "emittedEvents": []
+      }
+    },
+    {
+      "name": "complete command succeeds with full quantity",
+      "setup": {
+        "createInstance": {
+          "entity": "PrepTask",
+          "data": {
+            "id": "task-4",
+            "tenantId": "tenant-123",
+            "name": "Complete Task",
+            "status": "in_progress",
+            "claimedBy": "user-1",
+            "quantityTotal": 10,
+            "quantityCompleted": 0
+          }
+        }
+      },
+      "command": {
+        "name": "complete",
+        "entityName": "PrepTask",
+        "instanceId": "task-4",
+        "input": {
+          "amountCompleted": 10,
+          "userId": "user-1"
+        }
+      },
+      "expectedResult": {
+        "success": true,
+        "emittedEvents": [
+          {
+            "name": "PrepTaskCompleted",
+            "channel": "prep.task.completed",
+            "payload": {
+              "taskId": "task-4",
+              "userId": "user-1",
+              "amountCompleted": 10
+            },
+            "timestamp": 1000000000000
+          }
+        ]
+      },
+      "expectedInstanceState": {
+        "id": "task-4",
+        "tenantId": "tenant-123",
+        "name": "Complete Task",
+        "status": "done",
+        "stationId": "",
+        "claimedBy": "user-1",
+        "claimedAt": 0,
+        "quantityTotal": 10,
+        "quantityCompleted": 10,
+        "dueByDate": 0,
+        "priority": 5
+      }
+    },
+    {
+      "name": "release command succeeds",
+      "setup": {
+        "createInstance": {
+          "entity": "PrepTask",
+          "data": {
+            "id": "task-5",
+            "tenantId": "tenant-123",
+            "name": "Release Task",
+            "status": "in_progress",
+            "claimedBy": "user-1",
+            "claimedAt": 1000000000000,
+            "stationId": "station-1"
+          }
+        }
+      },
+      "command": {
+        "name": "release",
+        "entityName": "PrepTask",
+        "instanceId": "task-5",
+        "input": {
+          "userId": "user-1"
+        }
+      },
+      "expectedResult": {
+        "success": true,
+        "emittedEvents": [
+          {
+            "name": "PrepTaskReleased",
+            "channel": "prep.task.released",
+            "payload": {
+              "taskId": "task-5",
+              "userId": "user-1"
+            },
+            "timestamp": 1000000000000
+          }
+        ]
+      },
+      "expectedInstanceState": {
+        "id": "task-5",
+        "tenantId": "tenant-123",
+        "name": "Release Task",
+        "status": "open",
+        "stationId": "",
+        "claimedBy": "",
+        "claimedAt": 0,
+        "quantityTotal": 0,
+        "quantityCompleted": 0,
+        "dueByDate": 0,
+        "priority": 5
+      }
+    },
+    {
+      "name": "release command fails for wrong user",
+      "setup": {
+        "createInstance": {
+          "entity": "PrepTask",
+          "data": {
+            "id": "task-6",
+            "tenantId": "tenant-123",
+            "name": "Wrong User Task",
+            "status": "in_progress",
+            "claimedBy": "user-2",
+            "claimedAt": 1000000000000
+          }
+        }
+      },
+      "command": {
+        "name": "release",
+        "entityName": "PrepTask",
+        "instanceId": "task-6",
+        "input": {
+          "userId": "user-1"
+        }
+      },
+      "expectedResult": {
+        "success": false,
+        "error": "Guard condition failed for command 'release'",
+        "emittedEvents": []
+      }
+    }
+  ]
+}

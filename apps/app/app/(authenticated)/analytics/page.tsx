@@ -120,7 +120,7 @@ const AnalyticsPage = async () => {
     ),
     database.$queryRaw<Array<{ waste_cost: string | null }>>(
       Prisma.sql`
-        SELECT COALESCE(SUM(total_cost), 0)::numeric AS waste_cost
+        SELECT COALESCE(SUM("totalCost"), 0)::numeric AS waste_cost
         FROM tenant_kitchen.waste_entries
         WHERE tenant_id = ${tenantId}::uuid
           AND deleted_at IS NULL
@@ -130,7 +130,7 @@ const AnalyticsPage = async () => {
     ),
     database.$queryRaw<Array<{ waste_cost: string | null }>>(
       Prisma.sql`
-        SELECT COALESCE(SUM(total_cost), 0)::numeric AS waste_cost
+        SELECT COALESCE(SUM("totalCost"), 0)::numeric AS waste_cost
         FROM tenant_kitchen.waste_entries
         WHERE tenant_id = ${tenantId}::uuid
           AND deleted_at IS NULL

@@ -5,10 +5,35 @@
  * using the Manifest language. It handles prep tasks, station management,
  * and inventory operations with proper constraint checking and event emission.
  *
+ * ℹ️ Code Generation Workflow (Preferred for New Features)
+ * =========================================================
+ * For new Manifest features, consider using the code generator:
+ *
+ * 1. Edit .manifest file in packages/kitchen-ops/manifests/
+ * 2. Run: npx tsx packages/manifest/bin/compile.ts <file>.manifest --output ./generated
+ * 3. Review and use the generated code
+ * 4. See .specify/memory/AGENTS.md for when to use code generation vs manual integration
+ *
+ * ⚠️ Constraint Handling Pattern
+ * ===========================================
+ * When using this runtime, you MUST check constraint outcomes:
+ *
+ * 1. createInstance() returns undefined when constraints fail
+ * 2. executeCommand() returns CommandResult with constraint outcomes
+ * 3. Use api-response.ts utilities for consistent responses
+ * 4. See .specify/memory/AGENTS.md for full pattern documentation
+ * 5. Tests at apps/api/__tests__/kitchen/manifest-constraints.test.ts verify this
+ *
  * Commands:
  * - PrepTask: claim, start, complete, release, reassign, updateQuantity, cancel
  * - Station: assignTask, removeTask, updateCapacity, deactivate, activate, updateEquipment
  * - InventoryItem: reserve, consume, waste, adjust, restock, releaseReservation
+ * - Recipe: update, deactivate, activate
+ * - RecipeVersion: create
+ * - Dish: updatePricing, updateLeadTime
+ * - Menu: update, activate, deactivate
+ * - PrepList: update, updateBatchMultiplier, finalize, activate, deactivate, markCompleted, cancel
+ * - PrepListItem: updateQuantity, updateStation, updatePrepNotes, markCompleted, markUncompleted
  */
 
 import { readFileSync } from "node:fs";
@@ -19,6 +44,7 @@ import type {
   EmittedEvent,
   IR,
   IRDiagnostic,
+  OverrideRequest,
   RuntimeContext,
 } from "@repo/manifest";
 import { compileToIR, RuntimeEngine } from "@repo/manifest";
@@ -50,10 +76,34 @@ function loadInventoryManifestSource(): string {
   return readFileSync(join(MANIFESTS_DIR, "inventory-rules.manifest"), "utf-8");
 }
 
+/**
+ * Load recipe manifest source from file
+ */
+function loadRecipeManifestSource(): string {
+  return readFileSync(join(MANIFESTS_DIR, "recipe-rules.manifest"), "utf-8");
+}
+
+/**
+ * Load menu manifest source from file
+ */
+function loadMenuManifestSource(): string {
+  return readFileSync(join(MANIFESTS_DIR, "menu-rules.manifest"), "utf-8");
+}
+
+/**
+ * Load prep list manifest source from file
+ */
+function loadPrepListManifestSource(): string {
+  return readFileSync(join(MANIFESTS_DIR, "prep-list-rules.manifest"), "utf-8");
+}
+
 // Cached compiled IR for each manifest
 let cachedPrepTaskIR: IR | null = null;
 let cachedStationIR: IR | null = null;
 let cachedInventoryIR: IR | null = null;
+let cachedRecipeIR: IR | null = null;
+let cachedMenuIR: IR | null = null;
+let cachedPrepListIR: IR | null = null;
 
 /**
  * Compile and cache the PrepTask manifest IR
@@ -119,12 +169,169 @@ async function loadInventoryManifestIR(): Promise<IR> {
 }
 
 /**
+ * Compile and cache the Recipe manifest IR
+ */
+async function loadRecipeManifestIR(): Promise<IR> {
+  if (cachedRecipeIR) {
+    return cachedRecipeIR;
+  }
+
+  const manifestSource = loadRecipeManifestSource();
+  const { ir, diagnostics } = await compileToIR(manifestSource);
+
+  if (!ir) {
+    throw new Error(
+      `Failed to compile Recipe manifest: ${diagnostics.map((d: IRDiagnostic) => d.message).join(", ")}`
+    );
+  }
+
+  cachedRecipeIR = ir;
+  return ir;
+}
+
+/**
+ * Compile and cache the Menu manifest IR
+ */
+async function loadMenuManifestIR(): Promise<IR> {
+  if (cachedMenuIR) {
+    return cachedMenuIR;
+  }
+
+  const manifestSource = loadMenuManifestSource();
+  const { ir, diagnostics } = await compileToIR(manifestSource);
+
+  if (!ir) {
+    throw new Error(
+      `Failed to compile Menu manifest: ${diagnostics.map((d: IRDiagnostic) => d.message).join(", ")}`
+    );
+  }
+
+  cachedMenuIR = ir;
+  return ir;
+}
+
+/**
+ * Compile and cache the PrepList manifest IR
+ */
+async function loadPrepListManifestIR(): Promise<IR> {
+  if (cachedPrepListIR) {
+    return cachedPrepListIR;
+  }
+
+  const manifestSource = loadPrepListManifestSource();
+  const { ir, diagnostics } = await compileToIR(manifestSource);
+
+  if (!ir) {
+    throw new Error(
+      `Failed to compile PrepList manifest: ${diagnostics.map((d: IRDiagnostic) => d.message).join(", ")}`
+    );
+  }
+
+  cachedPrepListIR = ir;
+  return ir;
+}
+
+import type { Store } from "@repo/manifest";
+
+/**
  * Kitchen Ops Runtime Context
  */
 export interface KitchenOpsContext extends RuntimeContext {
   tenantId: string;
   userId: string;
   userRole?: string;
+  /**
+   * Optional store provider for entity persistence.
+   * If provided, entities will be persisted using this store.
+   * Use `createPrismaStoreProvider(prisma, tenantId)` for Prisma-backed storage.
+   * Defaults to undefined (in-memory storage).
+   */
+  storeProvider?: (entityName: string) => Store | undefined;
+  /**
+   * Optional connection string for PostgresStore.
+   * If provided, entities will be persisted in PostgreSQL.
+   * Defaults to undefined (in-memory storage).
+   *
+   * @deprecated Use `storeProvider` with `createPrismaStoreProvider` for better
+   * integration with existing Prisma schema.
+   */
+  databaseUrl?: string;
+  /**
+   * Optional telemetry callbacks for observability.
+   * Use this to integrate with Sentry, Logtail, or other telemetry services.
+   *
+   * @example
+   * ```typescript
+   * import * as Sentry from '@sentry/nextjs';
+   *
+   * const runtime = await createPrepTaskRuntime({
+   *   ...context,
+   *   telemetry: {
+   *     onConstraintEvaluated: (outcome, commandName, entityName) => {
+   *       if (outcome.severity !== 'ok') {
+   *         Sentry.metrics.increment('manifest.constraint.evaluated', 1, {
+   *           tags: {
+   *             severity: outcome.severity,
+   *             passed: String(outcome.passed),
+   *             overridden: String(outcome.overridden),
+   *             entity: entityName || 'unknown',
+   *             command: commandName
+   *           }
+   *         });
+   *       }
+   *     },
+   *     onOverrideApplied: (constraint, overrideReq, outcome, commandName) => {
+   *       Sentry.metrics.increment('manifest.override.applied', 1, {
+   *         tags: {
+   *           constraintCode: constraint.code,
+   *           severity: outcome.severity,
+   *           command: commandName
+   *         }
+   *       });
+   *     },
+   *     onCommandExecuted: (command, result, entityName) => {
+   *       if (!result.success) {
+   *         Sentry.metrics.increment('manifest.command.failed', 1, {
+   *           tags: { entity: entityName || 'unknown', command: command.name }
+   *         });
+   *       }
+   *       const blockedCount = result.constraintOutcomes?.filter(
+   *         o => !o.passed && !o.overridden && o.severity === 'block'
+   *       ).length ?? 0;
+   *       const warnCount = result.constraintOutcomes?.filter(
+   *         o => !o.passed && o.severity === 'warn'
+   *       ).length ?? 0;
+   *       if (blockedCount > 0 || warnCount > 0) {
+   *         Sentry.metrics.increment('manifest.constraint.blocked', blockedCount, {
+   *           tags: { entity: entityName || 'unknown' }
+   *         });
+   *         Sentry.metrics.increment('manifest.constraint.warn', warnCount, {
+   *           tags: { entity: entityName || 'unknown' }
+   *         });
+   *       }
+   *     }
+   *   }
+   * });
+   * ```
+   */
+  telemetry?: {
+    onConstraintEvaluated?: (
+      outcome: Readonly<import("@repo/manifest").ConstraintOutcome>,
+      commandName: string,
+      entityName?: string
+    ) => void;
+    onOverrideApplied?: (
+      constraint: Readonly<import("@repo/manifest").IRConstraint>,
+      overrideReq: Readonly<import("@repo/manifest").OverrideRequest>,
+      outcome: Readonly<import("@repo/manifest").ConstraintOutcome>,
+      commandName: string
+    ) => void;
+    onCommandExecuted?: (
+      command: Readonly<import("@repo/manifest").IRCommand>,
+      result: Readonly<import("@repo/manifest").CommandResult>,
+      entityName?: string
+    ) => void;
+  };
 }
 
 /**
@@ -157,11 +364,97 @@ export interface InventoryCommandResult extends CommandResult {
 }
 
 /**
+ * Result of a recipe command
+ */
+export interface RecipeCommandResult extends CommandResult {
+  recipeId: string;
+  name?: string;
+  isActive?: boolean;
+}
+
+/**
+ * Result of a dish command
+ */
+export interface DishCommandResult extends CommandResult {
+  dishId: string;
+  name?: string;
+  pricePerPerson?: number;
+  costPerPerson?: number;
+}
+
+/**
+ * Create a PostgresStore provider for persistent entity storage.
+ *
+ * @param databaseUrl - PostgreSQL connection string
+ * @param tenantId - Tenant ID for table namespacing (optional)
+ * @returns A store provider function for RuntimeEngine
+ */
+export function createPostgresStoreProvider(
+  databaseUrl: string,
+  tenantId?: string
+): (entityName: string) => Store | undefined {
+  const tenantSuffix = tenantId ? `_${tenantId.replace(/-/g, "_")}` : "";
+
+  return (entityName: string) => {
+    // Map entity names to table names
+    const tableNameMap: Record<string, string> = {
+      PrepTask: `kitchen_prep_tasks${tenantSuffix}`,
+      Station: `kitchen_stations${tenantSuffix}`,
+      InventoryItem: `kitchen_inventory_items${tenantSuffix}`,
+      Recipe: `kitchen_recipes${tenantSuffix}`,
+      RecipeVersion: `kitchen_recipe_versions${tenantSuffix}`,
+      Ingredient: `kitchen_ingredients${tenantSuffix}`,
+      RecipeIngredient: `kitchen_recipe_ingredients${tenantSuffix}`,
+      Dish: `kitchen_dishes${tenantSuffix}`,
+      Menu: `kitchen_menus${tenantSuffix}`,
+      MenuDish: `kitchen_menu_dishes${tenantSuffix}`,
+      PrepList: `kitchen_prep_lists${tenantSuffix}`,
+      PrepListItem: `kitchen_prep_list_items${tenantSuffix}`,
+    };
+
+    const tableName = tableNameMap[entityName];
+    if (!tableName) {
+      return undefined; // Use default (memory) store for unknown entities
+    }
+
+    // Dynamically import PostgresStore only when databaseUrl is provided
+    // This avoids requiring the pg package in environments that don't need it
+    try {
+      const {
+        PostgresStore: PGStore,
+      } = require("@repo/manifest/src/manifest/stores.node");
+      return new PGStore({
+        connectionString: databaseUrl,
+        tableName,
+      }) as Store;
+    } catch {
+      return undefined; // Fall back to memory store if PostgresStore is unavailable
+    }
+  };
+}
+
+/**
  * Create a kitchen operations runtime for prep tasks
  */
 export async function createPrepTaskRuntime(context: KitchenOpsContext) {
   const ir = await loadPrepTaskManifestIR();
-  const engine = new RuntimeEngine(ir, context);
+  const options =
+    context.storeProvider || context.databaseUrl || context.telemetry
+      ? {
+          ...(context.storeProvider && {
+            storeProvider: context.storeProvider,
+          }),
+          ...(context.databaseUrl &&
+            !context.storeProvider && {
+              storeProvider: createPostgresStoreProvider(
+                context.databaseUrl,
+                context.tenantId
+              ),
+            }),
+          ...(context.telemetry && { telemetry: context.telemetry }),
+        }
+      : undefined;
+  const engine = new RuntimeEngine(ir, context, options);
   return engine;
 }
 
@@ -170,7 +463,23 @@ export async function createPrepTaskRuntime(context: KitchenOpsContext) {
  */
 export async function createStationRuntime(context: KitchenOpsContext) {
   const ir = await loadStationManifestIR();
-  const engine = new RuntimeEngine(ir, context);
+  const options =
+    context.storeProvider || context.databaseUrl || context.telemetry
+      ? {
+          ...(context.storeProvider && {
+            storeProvider: context.storeProvider,
+          }),
+          ...(context.databaseUrl &&
+            !context.storeProvider && {
+              storeProvider: createPostgresStoreProvider(
+                context.databaseUrl,
+                context.tenantId
+              ),
+            }),
+          ...(context.telemetry && { telemetry: context.telemetry }),
+        }
+      : undefined;
+  const engine = new RuntimeEngine(ir, context, options);
   return engine;
 }
 
@@ -179,7 +488,98 @@ export async function createStationRuntime(context: KitchenOpsContext) {
  */
 export async function createInventoryRuntime(context: KitchenOpsContext) {
   const ir = await loadInventoryManifestIR();
-  const engine = new RuntimeEngine(ir, context);
+  const options =
+    context.storeProvider || context.databaseUrl || context.telemetry
+      ? {
+          ...(context.storeProvider && {
+            storeProvider: context.storeProvider,
+          }),
+          ...(context.databaseUrl &&
+            !context.storeProvider && {
+              storeProvider: createPostgresStoreProvider(
+                context.databaseUrl,
+                context.tenantId
+              ),
+            }),
+          ...(context.telemetry && { telemetry: context.telemetry }),
+        }
+      : undefined;
+  const engine = new RuntimeEngine(ir, context, options);
+  return engine;
+}
+
+/**
+ * Create a kitchen operations runtime for recipes
+ */
+export async function createRecipeRuntime(context: KitchenOpsContext) {
+  const ir = await loadRecipeManifestIR();
+  const options =
+    context.storeProvider || context.databaseUrl || context.telemetry
+      ? {
+          ...(context.storeProvider && {
+            storeProvider: context.storeProvider,
+          }),
+          ...(context.databaseUrl &&
+            !context.storeProvider && {
+              storeProvider: createPostgresStoreProvider(
+                context.databaseUrl,
+                context.tenantId
+              ),
+            }),
+          ...(context.telemetry && { telemetry: context.telemetry }),
+        }
+      : undefined;
+  const engine = new RuntimeEngine(ir, context, options);
+  return engine;
+}
+
+/**
+ * Create a kitchen operations runtime for menus
+ */
+export async function createMenuRuntime(context: KitchenOpsContext) {
+  const ir = await loadMenuManifestIR();
+  const options =
+    context.storeProvider || context.databaseUrl || context.telemetry
+      ? {
+          ...(context.storeProvider && {
+            storeProvider: context.storeProvider,
+          }),
+          ...(context.databaseUrl &&
+            !context.storeProvider && {
+              storeProvider: createPostgresStoreProvider(
+                context.databaseUrl,
+                context.tenantId
+              ),
+            }),
+          ...(context.telemetry && { telemetry: context.telemetry }),
+        }
+      : undefined;
+  const engine = new RuntimeEngine(ir, context, options);
+  return engine;
+}
+
+/**
+ * Create a kitchen operations runtime for prep lists
+ */
+export async function createPrepListRuntime(context: KitchenOpsContext) {
+  const ir = await loadPrepListManifestIR();
+  const options =
+    context.storeProvider || context.databaseUrl || context.telemetry
+      ? {
+          ...(context.storeProvider && {
+            storeProvider: context.storeProvider,
+          }),
+          ...(context.databaseUrl &&
+            !context.storeProvider && {
+              storeProvider: createPostgresStoreProvider(
+                context.databaseUrl,
+                context.tenantId
+              ),
+            }),
+          ...(context.telemetry && { telemetry: context.telemetry }),
+        }
+      : undefined;
+  const engine = new RuntimeEngine(ir, context, options);
   return engine;
 }
 
@@ -190,6 +590,9 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
   const prepTaskIR = await loadPrepTaskManifestIR();
   const stationIR = await loadStationManifestIR();
   const inventoryIR = await loadInventoryManifestIR();
+  const recipeIR = await loadRecipeManifestIR();
+  const menuIR = await loadMenuManifestIR();
+  const prepListIR = await loadPrepListManifestIR();
 
   // Combine IRs - in a real implementation, you'd merge modules
   const combinedIR: IR = {
@@ -199,27 +602,61 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
       ...(prepTaskIR.modules || []),
       ...(stationIR.modules || []),
       ...(inventoryIR.modules || []),
+      ...(recipeIR.modules || []),
+      ...(menuIR.modules || []),
+      ...(prepListIR.modules || []),
     ],
     entities: [
       ...prepTaskIR.entities,
       ...stationIR.entities,
       ...inventoryIR.entities,
+      ...recipeIR.entities,
+      ...menuIR.entities,
+      ...prepListIR.entities,
     ],
-    stores: [...prepTaskIR.stores, ...stationIR.stores, ...inventoryIR.stores],
-    events: [...prepTaskIR.events, ...stationIR.events, ...inventoryIR.events],
+    events: [
+      ...prepTaskIR.events,
+      ...stationIR.events,
+      ...inventoryIR.events,
+      ...recipeIR.events,
+      ...menuIR.events,
+      ...prepListIR.events,
+    ],
     commands: [
       ...prepTaskIR.commands,
       ...stationIR.commands,
       ...inventoryIR.commands,
+      ...recipeIR.commands,
+      ...menuIR.commands,
+      ...prepListIR.commands,
     ],
     policies: [
       ...prepTaskIR.policies,
       ...stationIR.policies,
       ...inventoryIR.policies,
+      ...recipeIR.policies,
+      ...menuIR.policies,
+      ...prepListIR.policies,
     ],
   };
 
-  const engine = new RuntimeEngine(combinedIR, context);
+  const options =
+    context.storeProvider || context.databaseUrl || context.telemetry
+      ? {
+          ...(context.storeProvider && {
+            storeProvider: context.storeProvider,
+          }),
+          ...(context.databaseUrl &&
+            !context.storeProvider && {
+              storeProvider: createPostgresStoreProvider(
+                context.databaseUrl,
+                context.tenantId
+              ),
+            }),
+          ...(context.telemetry && { telemetry: context.telemetry }),
+        }
+      : undefined;
+  const engine = new RuntimeEngine(combinedIR, context, options);
   return engine;
 }
 
@@ -774,6 +1211,863 @@ export async function releaseInventoryReservation(
   };
 }
 
+// ============ Recipe Commands ============
+
+/**
+ * Update a recipe
+ */
+export async function updateRecipe(
+  engine: RuntimeEngine,
+  recipeId: string,
+  newName: string,
+  newCategory: string,
+  newCuisineType: string,
+  newDescription: string,
+  newTags: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<RecipeCommandResult> {
+  const result = await engine.runCommand(
+    "update",
+    { newName, newCategory, newCuisineType, newDescription, newTags },
+    {
+      entityName: "Recipe",
+      instanceId: recipeId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("Recipe", recipeId);
+  return {
+    ...result,
+    recipeId,
+    name: instance?.name as string | undefined,
+    isActive: instance?.isActive as boolean | undefined,
+  };
+}
+
+/**
+ * Deactivate a recipe
+ */
+export async function deactivateRecipe(
+  engine: RuntimeEngine,
+  recipeId: string,
+  reason: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<RecipeCommandResult> {
+  const result = await engine.runCommand(
+    "deactivate",
+    { reason },
+    {
+      entityName: "Recipe",
+      instanceId: recipeId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("Recipe", recipeId);
+  return {
+    ...result,
+    recipeId,
+    name: instance?.name as string | undefined,
+    isActive: false,
+  };
+}
+
+/**
+ * Activate a recipe
+ */
+export async function activateRecipe(
+  engine: RuntimeEngine,
+  recipeId: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<RecipeCommandResult> {
+  const result = await engine.runCommand(
+    "activate",
+    {},
+    {
+      entityName: "Recipe",
+      instanceId: recipeId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("Recipe", recipeId);
+  return {
+    ...result,
+    recipeId,
+    name: instance?.name as string | undefined,
+    isActive: true,
+  };
+}
+
+/**
+ * Create a recipe version
+ */
+export async function createRecipeVersion(
+  engine: RuntimeEngine,
+  versionId: string,
+  yieldQty: number,
+  yieldUnit: number,
+  prepTime: number,
+  cookTime: number,
+  restTime: number,
+  difficulty: number,
+  instructionsText: string,
+  notesText: string
+): Promise<RecipeCommandResult> {
+  const result = await engine.runCommand(
+    "create",
+    {
+      yieldQty,
+      yieldUnit,
+      prepTime,
+      cookTime,
+      restTime,
+      difficulty,
+      instructionsText,
+      notesText,
+    },
+    {
+      entityName: "RecipeVersion",
+      instanceId: versionId,
+    }
+  );
+
+  return {
+    ...result,
+    recipeId: versionId,
+  };
+}
+
+// ============ Dish Commands ============
+
+/**
+ * Update dish pricing
+ */
+export async function updateDishPricing(
+  engine: RuntimeEngine,
+  dishId: string,
+  newPrice: number,
+  newCost: number,
+  overrideRequests?: OverrideRequest[]
+): Promise<DishCommandResult> {
+  const result = await engine.runCommand(
+    "updatePricing",
+    { newPrice, newCost },
+    {
+      entityName: "Dish",
+      instanceId: dishId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("Dish", dishId);
+  return {
+    ...result,
+    dishId,
+    name: instance?.name as string | undefined,
+    pricePerPerson: instance?.pricePerPerson as number | undefined,
+    costPerPerson: instance?.costPerPerson as number | undefined,
+  };
+}
+
+/**
+ * Update dish lead time
+ */
+export async function updateDishLeadTime(
+  engine: RuntimeEngine,
+  dishId: string,
+  minDays: number,
+  maxDays: number,
+  overrideRequests?: OverrideRequest[]
+): Promise<DishCommandResult> {
+  const result = await engine.runCommand(
+    "updateLeadTime",
+    { minDays, maxDays },
+    {
+      entityName: "Dish",
+      instanceId: dishId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("Dish", dishId);
+  return {
+    ...result,
+    dishId,
+    name: instance?.name as string | undefined,
+    pricePerPerson: instance?.pricePerPerson as number | undefined,
+    costPerPerson: instance?.costPerPerson as number | undefined,
+  };
+}
+
+/**
+ * Create a dish
+ */
+export async function createDish(
+  engine: RuntimeEngine,
+  dishId: string,
+  name: string,
+  recipeId: string,
+  description: string,
+  category: string,
+  serviceStyle: string,
+  dietaryTags: string,
+  allergens: string,
+  pricePerPerson: number,
+  costPerPerson: number,
+  minPrepLeadDays: number,
+  maxPrepLeadDays: number,
+  portionSizeDescription: string
+): Promise<DishCommandResult> {
+  // Create the Dish entity instance
+  await engine.createInstance("Dish", {
+    id: dishId,
+    tenantId: engine.getContext<string>("tenantId"),
+    name,
+    recipeId,
+    description,
+    category,
+    serviceStyle,
+    presentationImageUrl: "",
+    dietaryTags,
+    allergens,
+    pricePerPerson,
+    costPerPerson,
+    minPrepLeadDays,
+    maxPrepLeadDays,
+    portionSizeDescription,
+    isActive: true,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  });
+
+  const instance = await engine.getInstance("Dish", dishId);
+  return {
+    success: true,
+    emittedEvents: [],
+    dishId,
+    name: instance?.name as string | undefined,
+    pricePerPerson: instance?.pricePerPerson as number | undefined,
+    costPerPerson: instance?.costPerPerson as number | undefined,
+  } as DishCommandResult;
+}
+
+/**
+ * Create a recipe
+ */
+export async function createRecipe(
+  engine: RuntimeEngine,
+  recipeId: string,
+  name: string,
+  category: string,
+  cuisineType: string,
+  description: string,
+  tags: string
+): Promise<RecipeCommandResult> {
+  // Create the Recipe entity instance
+  await engine.createInstance("Recipe", {
+    id: recipeId,
+    tenantId: engine.getContext<string>("tenantId"),
+    name,
+    category,
+    cuisineType,
+    description,
+    tags,
+    isActive: true,
+    hasVersion: true,
+    tagCount: tags ? tags.split(",").length : 0,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  });
+
+  const instance = await engine.getInstance("Recipe", recipeId);
+  return {
+    success: true,
+    emittedEvents: [],
+    recipeId,
+    name: instance?.name as string | undefined,
+    isActive: true,
+  } as RecipeCommandResult;
+}
+
+// ============ Menu Commands ============
+
+/**
+ * Result of a menu command
+ */
+export interface MenuCommandResult extends CommandResult {
+  menuId: string;
+  name?: string;
+  isActive?: boolean;
+}
+
+/**
+ * Update a menu
+ */
+export async function updateMenu(
+  engine: RuntimeEngine,
+  menuId: string,
+  newName: string,
+  newDescription: string,
+  newCategory: string,
+  newBasePrice: number,
+  newPricePerPerson: number,
+  newMinGuests: number,
+  newMaxGuests: number,
+  newIsActive: boolean,
+  overrideRequests?: OverrideRequest[]
+): Promise<MenuCommandResult> {
+  const result = await engine.runCommand(
+    "update",
+    {
+      newName,
+      newDescription,
+      newCategory,
+      newBasePrice,
+      newPricePerPerson,
+      newMinGuests,
+      newMaxGuests,
+      newIsActive,
+    },
+    {
+      entityName: "Menu",
+      instanceId: menuId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("Menu", menuId);
+  return {
+    ...result,
+    menuId,
+    name: instance?.name as string | undefined,
+    isActive: instance?.isActive as boolean | undefined,
+  };
+}
+
+/**
+ * Activate a menu
+ */
+export async function activateMenu(
+  engine: RuntimeEngine,
+  menuId: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<MenuCommandResult> {
+  const result = await engine.runCommand(
+    "activate",
+    {},
+    {
+      entityName: "Menu",
+      instanceId: menuId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("Menu", menuId);
+  return {
+    ...result,
+    menuId,
+    name: instance?.name as string | undefined,
+    isActive: true,
+  };
+}
+
+/**
+ * Deactivate a menu
+ */
+export async function deactivateMenu(
+  engine: RuntimeEngine,
+  menuId: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<MenuCommandResult> {
+  const result = await engine.runCommand(
+    "deactivate",
+    {},
+    {
+      entityName: "Menu",
+      instanceId: menuId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("Menu", menuId);
+  return {
+    ...result,
+    menuId,
+    name: instance?.name as string | undefined,
+    isActive: false,
+  };
+}
+
+/**
+ * Create a menu
+ */
+export async function createMenu(
+  engine: RuntimeEngine,
+  menuId: string,
+  name: string,
+  description: string,
+  category: string,
+  basePrice: number,
+  pricePerPerson: number,
+  minGuests: number,
+  maxGuests: number
+): Promise<MenuCommandResult> {
+  // Create the Menu entity instance
+  await engine.createInstance("Menu", {
+    id: menuId,
+    tenantId: engine.getContext<string>("tenantId"),
+    name,
+    description,
+    category,
+    isActive: true,
+    basePrice,
+    pricePerPerson,
+    minGuests,
+    maxGuests,
+    hasPricePerPerson: pricePerPerson > 0,
+    hasGuestConstraints: minGuests > 0 || maxGuests > 0,
+    guestRangeValid: maxGuests >= minGuests,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  });
+
+  const instance = await engine.getInstance("Menu", menuId);
+  return {
+    success: true,
+    emittedEvents: [],
+    menuId,
+    name: instance?.name as string | undefined,
+    isActive: true,
+  } as MenuCommandResult;
+}
+
+// ============ Prep List Commands ============
+
+/**
+ * Result of a prep list command
+ */
+export interface PrepListCommandResult extends CommandResult {
+  prepListId: string;
+  name?: string;
+  status?: string;
+  totalItems?: number;
+  totalEstimatedTime?: number;
+}
+
+/**
+ * Result of a prep list item command
+ */
+export interface PrepListItemCommandResult extends CommandResult {
+  itemId: string;
+  prepListId: string;
+  ingredientName?: string;
+  isCompleted?: boolean;
+}
+
+/**
+ * Update a prep list
+ */
+export async function updatePrepList(
+  engine: RuntimeEngine,
+  prepListId: string,
+  newName: string,
+  newDietaryRestrictions: string,
+  newNotes: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListCommandResult> {
+  const result = await engine.runCommand(
+    "update",
+    { newName, newDietaryRestrictions, newNotes },
+    {
+      entityName: "PrepList",
+      instanceId: prepListId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepList", prepListId);
+  return {
+    ...result,
+    prepListId,
+    name: instance?.name as string | undefined,
+    status: instance?.status as string | undefined,
+  };
+}
+
+/**
+ * Update prep list batch multiplier
+ */
+export async function updatePrepListBatchMultiplier(
+  engine: RuntimeEngine,
+  prepListId: string,
+  newMultiplier: number,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListCommandResult> {
+  const result = await engine.runCommand(
+    "updateBatchMultiplier",
+    { newMultiplier },
+    {
+      entityName: "PrepList",
+      instanceId: prepListId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepList", prepListId);
+  return {
+    ...result,
+    prepListId,
+    name: instance?.name as string | undefined,
+    totalItems: instance?.totalItems as number | undefined,
+  };
+}
+
+/**
+ * Finalize a prep list
+ */
+export async function finalizePrepList(
+  engine: RuntimeEngine,
+  prepListId: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListCommandResult> {
+  const result = await engine.runCommand(
+    "finalize",
+    {},
+    {
+      entityName: "PrepList",
+      instanceId: prepListId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepList", prepListId);
+  return {
+    ...result,
+    prepListId,
+    name: instance?.name as string | undefined,
+    status: instance?.status as string | undefined,
+    totalItems: instance?.totalItems as number | undefined,
+  };
+}
+
+/**
+ * Activate a prep list
+ */
+export async function activatePrepList(
+  engine: RuntimeEngine,
+  prepListId: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListCommandResult> {
+  const result = await engine.runCommand(
+    "activate",
+    {},
+    {
+      entityName: "PrepList",
+      instanceId: prepListId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepList", prepListId);
+  return {
+    ...result,
+    prepListId,
+    name: instance?.name as string | undefined,
+    isActive: true,
+  };
+}
+
+/**
+ * Deactivate a prep list
+ */
+export async function deactivatePrepList(
+  engine: RuntimeEngine,
+  prepListId: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListCommandResult> {
+  const result = await engine.runCommand(
+    "deactivate",
+    {},
+    {
+      entityName: "PrepList",
+      instanceId: prepListId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepList", prepListId);
+  return {
+    ...result,
+    prepListId,
+    name: instance?.name as string | undefined,
+    isActive: false,
+  };
+}
+
+/**
+ * Mark prep list as completed
+ */
+export async function markPrepListCompleted(
+  engine: RuntimeEngine,
+  prepListId: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListCommandResult> {
+  const result = await engine.runCommand(
+    "markCompleted",
+    {},
+    {
+      entityName: "PrepList",
+      instanceId: prepListId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepList", prepListId);
+  return {
+    ...result,
+    prepListId,
+    name: instance?.name as string | undefined,
+    status: instance?.status as string | undefined,
+  };
+}
+
+/**
+ * Cancel a prep list
+ */
+export async function cancelPrepList(
+  engine: RuntimeEngine,
+  prepListId: string,
+  reason: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListCommandResult> {
+  const result = await engine.runCommand(
+    "cancel",
+    { reason },
+    {
+      entityName: "PrepList",
+      instanceId: prepListId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepList", prepListId);
+  return {
+    ...result,
+    prepListId,
+    name: instance?.name as string | undefined,
+    status: instance?.status as string | undefined,
+  };
+}
+
+/**
+ * Update prep list item quantity
+ */
+export async function updatePrepListItemQuantity(
+  engine: RuntimeEngine,
+  itemId: string,
+  newBaseQuantity: number,
+  newScaledQuantity: number,
+  newBaseUnit: string,
+  newScaledUnit: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListItemCommandResult> {
+  const result = await engine.runCommand(
+    "updateQuantity",
+    { newBaseQuantity, newScaledQuantity, newBaseUnit, newScaledUnit },
+    {
+      entityName: "PrepListItem",
+      instanceId: itemId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepListItem", itemId);
+  return {
+    ...result,
+    itemId,
+    prepListId: instance?.prepListId as string | undefined,
+    ingredientName: instance?.ingredientName as string | undefined,
+  };
+}
+
+/**
+ * Update prep list item station
+ */
+export async function updatePrepListItemStation(
+  engine: RuntimeEngine,
+  itemId: string,
+  newStationId: string,
+  newStationName: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListItemCommandResult> {
+  const result = await engine.runCommand(
+    "updateStation",
+    { newStationId, newStationName },
+    {
+      entityName: "PrepListItem",
+      instanceId: itemId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepListItem", itemId);
+  return {
+    ...result,
+    itemId,
+    prepListId: instance?.prepListId as string | undefined,
+    ingredientName: instance?.ingredientName as string | undefined,
+  };
+}
+
+/**
+ * Update prep list item notes
+ */
+export async function updatePrepListItemNotes(
+  engine: RuntimeEngine,
+  itemId: string,
+  newNotes: string,
+  newDietarySubstitutions: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListItemCommandResult> {
+  const result = await engine.runCommand(
+    "updatePrepNotes",
+    { newNotes, newDietarySubstitutions },
+    {
+      entityName: "PrepListItem",
+      instanceId: itemId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepListItem", itemId);
+  return {
+    ...result,
+    itemId,
+    prepListId: instance?.prepListId as string | undefined,
+    ingredientName: instance?.ingredientName as string | undefined,
+  };
+}
+
+/**
+ * Mark prep list item as completed
+ */
+export async function markPrepListItemCompleted(
+  engine: RuntimeEngine,
+  itemId: string,
+  completedByUserId: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListItemCommandResult> {
+  const result = await engine.runCommand(
+    "markCompleted",
+    { completedByUserId },
+    {
+      entityName: "PrepListItem",
+      instanceId: itemId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepListItem", itemId);
+  return {
+    ...result,
+    itemId,
+    prepListId: instance?.prepListId as string | undefined,
+    ingredientName: instance?.ingredientName as string | undefined,
+    isCompleted: true,
+  };
+}
+
+/**
+ * Mark prep list item as uncompleted
+ */
+export async function markPrepListItemUncompleted(
+  engine: RuntimeEngine,
+  itemId: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListItemCommandResult> {
+  const result = await engine.runCommand(
+    "markUncompleted",
+    {},
+    {
+      entityName: "PrepListItem",
+      instanceId: itemId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepListItem", itemId);
+  return {
+    ...result,
+    itemId,
+    prepListId: instance?.prepListId as string | undefined,
+    ingredientName: instance?.ingredientName as string | undefined,
+    isCompleted: false,
+  };
+}
+
+/**
+ * Create a prep list
+ */
+export async function createPrepList(
+  engine: RuntimeEngine,
+  prepListId: string,
+  eventId: string,
+  name: string,
+  batchMultiplier: number,
+  dietaryRestrictions: string,
+  totalItems: number,
+  totalEstimatedTime: number,
+  notes: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListCommandResult> {
+  // Create the PrepList entity instance
+  await engine.createInstance("PrepList", {
+    id: prepListId,
+    tenantId: engine.getContext<string>("tenantId"),
+    eventId,
+    name,
+    batchMultiplier,
+    dietaryRestrictions,
+    status: "draft",
+    totalItems,
+    totalEstimatedTime,
+    notes,
+    generatedAt: Date.now(),
+    finalizedAt: 0,
+    isActive: true,
+    isDraft: true,
+    isFinalized: false,
+    isCompleted: false,
+    hasItems: totalItems > 0,
+    avgTimePerItem: totalItems > 0 ? totalEstimatedTime / totalItems : 0,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  });
+
+  const instance = await engine.getInstance("PrepList", prepListId);
+
+  // Apply override requests if provided
+  if (overrideRequests && overrideRequests.length > 0) {
+    for (const override of overrideRequests) {
+      engine.executeCommand("overrideRequest", override);
+    }
+  }
+
+  return {
+    success: true,
+    emittedEvents: [],
+    constraintOutcomes: [],
+    overrideRequests: overrideRequests ?? [],
+    prepListId,
+    name: instance?.name as string | undefined,
+    status: instance?.status as string | undefined,
+    totalItems: instance?.totalItems as number | undefined,
+    totalEstimatedTime: instance?.totalEstimatedTime as number | undefined,
+  } as PrepListCommandResult;
+}
+
 // ============ Event Handling ============
 
 /**
@@ -800,6 +2094,44 @@ export function setupKitchenOpsEventListeners(
     onInventoryAdjusted?: (event: EmittedEvent) => Promise<void>;
     onInventoryRestocked?: (event: EmittedEvent) => Promise<void>;
     onInventoryReservationReleased?: (event: EmittedEvent) => Promise<void>;
+    // Recipe events
+    onRecipeCreated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeUpdated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeDeactivated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeActivated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeVersionCreated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeVersionRestored?: (event: EmittedEvent) => Promise<void>;
+    onIngredientAllergensUpdated?: (event: EmittedEvent) => Promise<void>;
+    onRecipeIngredientUpdated?: (event: EmittedEvent) => Promise<void>;
+    // Dish events
+    onDishCreated?: (event: EmittedEvent) => Promise<void>;
+    onDishPricingUpdated?: (event: EmittedEvent) => Promise<void>;
+    onDishLeadTimeUpdated?: (event: EmittedEvent) => Promise<void>;
+    // Menu events
+    onMenuCreated?: (event: EmittedEvent) => Promise<void>;
+    onMenuUpdated?: (event: EmittedEvent) => Promise<void>;
+    onMenuDeactivated?: (event: EmittedEvent) => Promise<void>;
+    onMenuActivated?: (event: EmittedEvent) => Promise<void>;
+    onMenuDishAdded?: (event: EmittedEvent) => Promise<void>;
+    onMenuDishRemoved?: (event: EmittedEvent) => Promise<void>;
+    onMenuDishUpdated?: (event: EmittedEvent) => Promise<void>;
+    onMenuDishesReordered?: (event: EmittedEvent) => Promise<void>;
+    // PrepList events
+    onPrepListCreated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListUpdated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListBatchMultiplierUpdated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListFinalized?: (event: EmittedEvent) => Promise<void>;
+    onPrepListActivated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListDeactivated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListCompleted?: (event: EmittedEvent) => Promise<void>;
+    onPrepListCancelled?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemCreated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemUpdated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemStationChanged?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemNotesUpdated?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemCompleted?: (event: EmittedEvent) => Promise<void>;
+    onPrepListItemUncompleted?: (event: EmittedEvent) => Promise<void>;
+    // Override events
     onConstraintOverridden?: (event: EmittedEvent) => Promise<void>;
     onConstraintSatisfiedAfterOverride?: (event: EmittedEvent) => Promise<void>;
   }
@@ -862,6 +2194,109 @@ export function setupKitchenOpsEventListeners(
         break;
       case "InventoryReservationReleased":
         await handlers.onInventoryReservationReleased?.(event);
+        break;
+      // Recipe events
+      case "RecipeCreated":
+        await handlers.onRecipeCreated?.(event);
+        break;
+      case "RecipeUpdated":
+        await handlers.onRecipeUpdated?.(event);
+        break;
+      case "RecipeDeactivated":
+        await handlers.onRecipeDeactivated?.(event);
+        break;
+      case "RecipeActivated":
+        await handlers.onRecipeActivated?.(event);
+        break;
+      case "RecipeVersionCreated":
+        await handlers.onRecipeVersionCreated?.(event);
+        break;
+      case "RecipeVersionRestored":
+        await handlers.onRecipeVersionRestored?.(event);
+        break;
+      case "IngredientAllergensUpdated":
+        await handlers.onIngredientAllergensUpdated?.(event);
+        break;
+      case "RecipeIngredientUpdated":
+        await handlers.onRecipeIngredientUpdated?.(event);
+        break;
+      // Dish events
+      case "DishCreated":
+        await handlers.onDishCreated?.(event);
+        break;
+      case "DishPricingUpdated":
+        await handlers.onDishPricingUpdated?.(event);
+        break;
+      case "DishLeadTimeUpdated":
+        await handlers.onDishLeadTimeUpdated?.(event);
+        break;
+      // Menu events
+      case "MenuCreated":
+        await handlers.onMenuCreated?.(event);
+        break;
+      case "MenuUpdated":
+        await handlers.onMenuUpdated?.(event);
+        break;
+      case "MenuDeactivated":
+        await handlers.onMenuDeactivated?.(event);
+        break;
+      case "MenuActivated":
+        await handlers.onMenuActivated?.(event);
+        break;
+      case "MenuDishAdded":
+        await handlers.onMenuDishAdded?.(event);
+        break;
+      case "MenuDishRemoved":
+        await handlers.onMenuDishRemoved?.(event);
+        break;
+      case "MenuDishUpdated":
+        await handlers.onMenuDishUpdated?.(event);
+        break;
+      case "MenuDishesReordered":
+        await handlers.onMenuDishesReordered?.(event);
+        break;
+      // PrepList events
+      case "PrepListCreated":
+        await handlers.onPrepListCreated?.(event);
+        break;
+      case "PrepListUpdated":
+        await handlers.onPrepListUpdated?.(event);
+        break;
+      case "PrepListBatchMultiplierUpdated":
+        await handlers.onPrepListBatchMultiplierUpdated?.(event);
+        break;
+      case "PrepListFinalized":
+        await handlers.onPrepListFinalized?.(event);
+        break;
+      case "PrepListActivated":
+        await handlers.onPrepListActivated?.(event);
+        break;
+      case "PrepListDeactivated":
+        await handlers.onPrepListDeactivated?.(event);
+        break;
+      case "PrepListCompleted":
+        await handlers.onPrepListCompleted?.(event);
+        break;
+      case "PrepListCancelled":
+        await handlers.onPrepListCancelled?.(event);
+        break;
+      case "PrepListItemCreated":
+        await handlers.onPrepListItemCreated?.(event);
+        break;
+      case "PrepListItemUpdated":
+        await handlers.onPrepListItemUpdated?.(event);
+        break;
+      case "PrepListItemStationChanged":
+        await handlers.onPrepListItemStationChanged?.(event);
+        break;
+      case "PrepListItemNotesUpdated":
+        await handlers.onPrepListItemNotesUpdated?.(event);
+        break;
+      case "PrepListItemCompleted":
+        await handlers.onPrepListItemCompleted?.(event);
+        break;
+      case "PrepListItemUncompleted":
+        await handlers.onPrepListItemUncompleted?.(event);
         break;
       // Override events
       case "ConstraintOverridden":
@@ -1002,21 +2437,10 @@ export async function createInventoryItemInstance(
 
 // ============ Override Types and Utilities ============
 
-import type { ConstraintOutcome, OverrideRequest } from "@repo/manifest";
+import type { ConstraintOutcome } from "@repo/manifest";
 
-/**
- * Override reason codes following the spec
- */
-export const OVERRIDE_REASON_CODES = {
-  customer_request: "Customer Request",
-  equipment_failure: "Equipment Failure",
-  time_crunch: "Time Crunch",
-  substitution: "Substitution Available",
-  staffing_gap: "Staffing Gap",
-  other: "Other",
-} as const;
-
-export type OverrideReasonCode = keyof typeof OVERRIDE_REASON_CODES;
+// Re-export override reason codes from @repo/manifest for single source of truth
+export { OVERRIDE_REASON_CODES, type OverrideReasonCode } from "@repo/manifest";
 
 /**
  * Severity level for constraint outcomes
@@ -1229,3 +2653,24 @@ export function formatPolicyDenial(
       })) || [],
   };
 }
+
+// ============ Prisma Store Exports ============
+
+export {
+  createPrismaStoreProvider,
+  loadMenuDishFromPrisma,
+  loadMenuFromPrisma,
+  loadPrepListFromPrisma,
+  loadPrepListItemFromPrisma,
+  loadPrepTaskFromPrisma,
+  MenuDishPrismaStore,
+  MenuPrismaStore,
+  PrepListItemPrismaStore,
+  PrepListPrismaStore,
+  PrepTaskPrismaStore,
+  syncMenuDishToPrisma,
+  syncMenuToPrisma,
+  syncPrepListItemToPrisma,
+  syncPrepListToPrisma,
+  syncPrepTaskToPrisma,
+} from "./prisma-store.js";

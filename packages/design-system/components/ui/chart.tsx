@@ -66,7 +66,7 @@ function ChartContainer({
       >
         <ChartStyle id={chartId} config={config} />
         <ResponsiveContainer>
-          {children}
+          {children as React.ReactElement}
         </ResponsiveContainer>
       </div>
     </ChartContext.Provider>
@@ -108,9 +108,11 @@ ${colorConfig
 
 // Lazy load recharts Tooltip
 const ChartTooltip = dynamic(
-  () => import("recharts").then((mod) => mod.Tooltip),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  () => import("recharts").then((mod) => mod.Tooltip as React.ComponentType<any>),
   { ssr: false }
-)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+) as React.ComponentType<any>
 
 function ChartTooltipContent({
   active,
@@ -273,9 +275,11 @@ function ChartTooltipContent({
 
 // Lazy load recharts Legend
 const ChartLegend = dynamic(
-  () => import("recharts").then((mod) => mod.Legend),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  () => import("recharts").then((mod) => mod.Legend as React.ComponentType<any>),
   { ssr: false }
-)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+) as React.ComponentType<any>
 
 function ChartLegendContent({
   className,

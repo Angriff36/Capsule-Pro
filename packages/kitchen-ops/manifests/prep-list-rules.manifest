@@ -1,0 +1,387 @@
+// Kitchen Ops - Prep List Rules
+// Manifest spec for prep list operations with constraints, guards, and events
+
+entity PrepList {
+  property required id: string
+  property required tenantId: string
+  property required eventId: string
+  property required name: string
+  property batchMultiplier: number = 1
+  property dietaryRestrictions: string = ""
+  property status: string = "draft"
+  property totalItems: number = 0
+  property totalEstimatedTime: number = 0
+  property notes: string = ""
+  property generatedAt: number = 0
+  property finalizedAt: number = 0
+  property isActive: boolean = true
+
+  computed isDraft: boolean = self.status == "draft"
+  computed isFinalized: boolean = self.status == "finalized"
+  computed isCompleted: boolean = self.status == "completed"
+  computed hasItems: boolean = self.totalItems > 0
+  computed avgTimePerItem: number = self.totalItems > 0 ? (self.totalEstimatedTime / self.totalItems) : 0
+
+  constraint validName: self.name != null and self.name != "" "Prep list name is required"
+  constraint validEventId: self.eventId != null and self.eventId != "" "Event ID is required"
+  constraint validBatchMultiplier: self.batchMultiplier > 0 "Batch multiplier must be positive"
+  constraint validStatus: self.status in ["draft", "finalized", "completed", "cancelled"] "Status must be valid"
+  constraint positiveTotalItems: self.totalItems >= 0 "Total items must be non-negative"
+  constraint positiveTotalTime: self.totalEstimatedTime >= 0 "Total estimated time must be non-negative"
+
+  constraint warnZeroItems:warn self.totalItems == 0 {
+    messageTemplate: "Prep list has no items"
+    details: {
+      totalItems: self.totalItems
+    }
+  }
+
+  constraint warnLargeBatchMultiplier:warn self.batchMultiplier > 5 {
+    messageTemplate: "Large batch multiplier ({multiplier}x) - verify quantities"
+    details: {
+      batchMultiplier: self.batchMultiplier
+    }
+  }
+
+  constraint warnLongTotalTime:warn self.totalEstimatedTime > 480 {
+    messageTemplate: "Total prep time exceeds {hours} hours"
+    details: {
+      totalEstimatedTime: self.totalEstimatedTime
+      totalHours: self.totalEstimatedTime / 60
+    }
+  }
+
+  constraint warnManyItems:warn self.totalItems > 50 {
+    messageTemplate: "Prep list has many items ({count}) - consider splitting by station"
+    details: {
+      totalItems: self.totalItems
+    }
+  }
+
+  command update(newName: string, newDietaryRestrictions: string, newNotes: string) {
+    guard self.status == "draft" "Can only update draft prep lists"
+
+    guard newName != null and newName != "" "Prep list name is required"
+
+    constraint warnNameChange:warn self.name != newName {
+      messageTemplate: "Renaming prep list from '{oldName}' to '{newName}'"
+      details: {
+        oldName: self.name
+        newName: newName
+      }
+    }
+
+    mutate name = newName
+    mutate dietaryRestrictions = newDietaryRestrictions
+    mutate notes = newNotes
+
+    emit PrepListUpdated
+  }
+
+  command updateBatchMultiplier(newMultiplier: number) {
+    guard self.status == "draft" "Can only update draft prep lists"
+    guard newMultiplier != null and newMultiplier > 0 "Batch multiplier must be positive"
+
+    constraint warnLargeMultiplierIncrease:warn newMultiplier > self.batchMultiplier * 2 {
+      messageTemplate: "Batch multiplier doubled or more (from {oldMultiplier}x to {newMultiplier}x)"
+      details: {
+        oldMultiplier: self.batchMultiplier
+        newMultiplier: newMultiplier
+      }
+    }
+
+    mutate batchMultiplier = newMultiplier
+
+    emit PrepListBatchMultiplierUpdated
+  }
+
+  command finalize() {
+    guard self.status == "draft" "Can only finalize draft prep lists"
+    guard self.totalItems > 0 "Cannot finalize prep list with no items"
+
+    mutate status = "finalized"
+    mutate finalizedAt = now()
+
+    emit PrepListFinalized
+  }
+
+  command activate() {
+    guard self.isActive == false "Prep list is already active"
+
+    mutate isActive = true
+
+    emit PrepListActivated
+  }
+
+  command deactivate() {
+    guard self.isActive == true "Prep list is already inactive"
+
+    mutate isActive = false
+
+    emit PrepListDeactivated
+  }
+
+  command markCompleted() {
+    guard self.status == "finalized" "Can only mark finalized prep lists as completed"
+
+    mutate status = "completed"
+
+    emit PrepListCompleted
+  }
+
+  command cancel(reason: string) {
+    guard self.status != "completed" "Cannot cancel completed prep lists"
+
+    mutate status = "cancelled"
+
+    emit PrepListCancelled
+  }
+
+  store PrepList in memory
+}
+
+entity PrepListItem {
+  property required id: string
+  property required tenantId: string
+  property required prepListId: string
+  property required stationId: string
+  property required stationName: string
+  property required ingredientId: string
+  property required ingredientName: string
+  property category: string = ""
+  property baseQuantity: number = 0
+  property baseUnit: string = ""
+  property scaledQuantity: number = 0
+  property scaledUnit: string = ""
+  property isOptional: boolean = false
+  property preparationNotes: string = ""
+  property allergens: string = ""
+  property dietarySubstitutions: string = ""
+  property dishId: string = ""
+  property dishName: string = ""
+  property recipeVersionId: string = ""
+  property sortOrder: number = 0
+  property isCompleted: boolean = false
+  property completedAt: number = 0
+  property completedBy: string = ""
+
+  computed hasAllergens: boolean = self.allergens != null and self.allergens != ""
+  computed hasDietarySubstitutions: boolean = self.dietarySubstitutions != null and self.dietarySubstitutions != ""
+  computed isRequired: boolean = self.isOptional == false
+
+  constraint validPrepListId: self.prepListId != null and self.prepListId != "" "Prep list ID is required"
+  constraint validStationName: self.stationName != null and self.stationName != "" "Station name is required"
+  constraint validIngredientId: self.ingredientId != null and self.ingredientId != "" "Ingredient ID is required"
+  constraint validIngredientName: self.ingredientName != null and self.ingredientName != "" "Ingredient name is required"
+  constraint positiveSortOrder: self.sortOrder >= 0 "Sort order must be non-negative"
+  constraint positiveScaledQuantity: self.scaledQuantity >= 0 "Scaled quantity must be non-negative"
+
+  constraint warnMajorAllergen:warn self.allergens != null and (contains(self.allergens, "nuts") or contains(self.allergens, "dairy") or contains(self.allergens, "gluten") or contains(self.allergens, "shellfish") or contains(self.allergens, "eggs")) {
+    messageTemplate: "Item contains major allergen: {allergens}"
+    details: {
+      allergens: self.allergens
+      ingredientName: self.ingredientName
+    }
+  }
+
+  constraint warnOptionalRequired:warn self.isOptional == true and self.dishName != null and self.dishName != "" {
+    messageTemplate: "Optional item for required dish: {dishName}"
+    details: {
+      dishName: self.dishName
+      ingredientName: self.ingredientName
+    }
+  }
+
+  command updateQuantity(newBaseQuantity: number, newScaledQuantity: number, newBaseUnit: string, newScaledUnit: string) {
+    guard newBaseQuantity != null and newBaseQuantity >= 0 "Base quantity must be non-negative"
+    guard newScaledQuantity != null and newScaledQuantity >= 0 "Scaled quantity must be non-negative"
+
+    constraint warnQuantityIncrease:warn newScaledQuantity > self.scaledQuantity * 1.5 {
+      messageTemplate: "Quantity increased by 50% or more"
+      details: {
+        oldScaledQuantity: self.scaledQuantity
+        newScaledQuantity: newScaledQuantity
+        increasePercent: ((newScaledQuantity - self.scaledQuantity) / self.scaledQuantity) * 100
+      }
+    }
+
+    mutate baseQuantity = newBaseQuantity
+    mutate scaledQuantity = newScaledQuantity
+    mutate baseUnit = newBaseUnit
+    mutate scaledUnit = newScaledUnit
+
+    emit PrepListItemUpdated
+  }
+
+  command updateStation(newStationId: string, newStationName: string) {
+    guard newStationId != null and newStationId != "" "Station ID is required"
+    guard newStationName != null and newStationName != "" "Station name is required"
+
+    constraint warnStationChange:warn self.stationId != newStationId {
+      messageTemplate: "Reassigning from '{oldStation}' to '{newStation}'"
+      details: {
+        oldStationName: self.stationName
+        newStationName: newStationName
+      }
+    }
+
+    mutate stationId = newStationId
+    mutate stationName = newStationName
+
+    emit PrepListItemStationChanged
+  }
+
+  command updatePrepNotes(newNotes: string, newDietarySubstitutions: string) {
+    mutate preparationNotes = newNotes
+    mutate dietarySubstitutions = newDietarySubstitutions
+
+    emit PrepListItemNotesUpdated
+  }
+
+  command markCompleted(completedByUserId: string) {
+    guard self.isCompleted == false "Item is already completed"
+    guard completedByUserId != null and completedByUserId != "" "User ID is required"
+
+    mutate isCompleted = true
+    mutate completedAt = now()
+    mutate completedBy = completedByUserId
+
+    emit PrepListItemCompleted
+  }
+
+  command markUncompleted() {
+    guard self.isCompleted == true "Item is not completed"
+
+    mutate isCompleted = false
+    mutate completedAt = 0
+    mutate completedBy = ""
+
+    emit PrepListItemUncompleted
+  }
+
+  store PrepListItem in memory
+}
+
+// Policy definitions
+policy PrepListManagement execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage prep lists"
+policy PrepListFinalize execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and above can finalize prep lists"
+policy PrepListDelete execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and above can delete prep lists"
+
+// Event definitions
+event PrepListCreated: "kitchen.preplist.created" {
+  prepListId: string
+  tenantId: string
+  eventId: string
+  name: string
+  totalItems: number
+  batchMultiplier: number
+  createdAt: number
+}
+
+event PrepListUpdated: "kitchen.preplist.updated" {
+  prepListId: string
+  tenantId: string
+  oldName: string
+  newName: string
+  updatedAt: number
+}
+
+event PrepListBatchMultiplierUpdated: "kitchen.preplist.batch_multiplier_updated" {
+  prepListId: string
+  tenantId: string
+  oldMultiplier: number
+  newMultiplier: number
+  updatedAt: number
+}
+
+event PrepListFinalized: "kitchen.preplist.finalized" {
+  prepListId: string
+  tenantId: string
+  eventId: string
+  totalItems: number
+  totalEstimatedTime: number
+  finalizedAt: number
+}
+
+event PrepListActivated: "kitchen.preplist.activated" {
+  prepListId: string
+  tenantId: string
+  name: string
+  activatedAt: number
+}
+
+event PrepListDeactivated: "kitchen.preplist.deactivated" {
+  prepListId: string
+  tenantId: string
+  name: string
+  deactivatedAt: number
+}
+
+event PrepListCompleted: "kitchen.preplist.completed" {
+  prepListId: string
+  tenantId: string
+  eventId: string
+  completedAt: number
+}
+
+event PrepListCancelled: "kitchen.preplist.cancelled" {
+  prepListId: string
+  tenantId: string
+  reason: string
+  cancelledAt: number
+}
+
+event PrepListItemCreated: "kitchen.preplist.item_created" {
+  itemId: string
+  prepListId: string
+  tenantId: string
+  ingredientName: string
+  stationName: string
+  scaledQuantity: number
+  createdAt: number
+}
+
+event PrepListItemUpdated: "kitchen.preplist.item_updated" {
+  itemId: string
+  prepListId: string
+  tenantId: string
+  ingredientName: string
+  oldScaledQuantity: number
+  newScaledQuantity: number
+  updatedAt: number
+}
+
+event PrepListItemStationChanged: "kitchen.preplist.item_station_changed" {
+  itemId: string
+  prepListId: string
+  tenantId: string
+  ingredientName: string
+  oldStationName: string
+  newStationName: string
+  changedAt: number
+}
+
+event PrepListItemNotesUpdated: "kitchen.preplist.item_notes_updated" {
+  itemId: string
+  prepListId: string
+  tenantId: string
+  ingredientName: string
+  updatedAt: number
+}
+
+event PrepListItemCompleted: "kitchen.preplist.item_completed" {
+  itemId: string
+  prepListId: string
+  tenantId: string
+  ingredientName: string
+  completedBy: string
+  completedAt: number
+}
+
+event PrepListItemUncompleted: "kitchen.preplist.item_uncompleted" {
+  itemId: string
+  prepListId: string
+  tenantId: string
+  ingredientName: string
+  uncompletedAt: number
+}
