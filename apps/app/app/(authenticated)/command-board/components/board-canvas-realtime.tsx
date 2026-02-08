@@ -72,6 +72,11 @@ export function BoardCanvas({
     string | null
   >(null);
 
+  // Drag selection state
+  const [isDraggingSelection, setIsDraggingSelection] = useState(false);
+  const [selectionStart, setSelectionStart] = useState<{ x: number; y: number } | null>(null);
+  const [selectionEnd, setSelectionEnd] = useState<{ x: number; y: number } | null>(null);
+
   const { updateCursor, updateSelectedCard, clearPresence } =
     useCommandBoardPresence();
   const broadcast = useBroadcastEvent();
@@ -507,6 +512,100 @@ export function BoardCanvas({
     [canEdit, updateSelectedCard]
   );
 
+  // Helper to check if a card intersects with the selection rectangle
+  const cardIntersectsSelection = useCallback(
+    (card: CommandBoardCard, selStart: Point, selEnd: Point): boolean => {
+      // Normalize selection rectangle (handle negative width/height)
+      const minX = Math.min(selStart.x, selEnd.x);
+      const maxX = Math.max(selStart.x, selEnd.x);
+      const minY = Math.min(selStart.y, selEnd.y);
+      const maxY = Math.max(selStart.y, selEnd.y);
+
+      // Card bounds
+      const cardLeft = card.position.x;
+      const cardRight = card.position.x + card.position.width;
+      const cardTop = card.position.y;
+      const cardBottom = card.position.y + card.position.height;
+
+      // Check intersection
+      return !(cardRight < minX || cardLeft > maxX || cardBottom < minY || cardTop > maxY);
+    },
+    []
+  );
+
+  // Handle mouse down on canvas background to start selection
+  const handleCanvasMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (!canEdit || e.button !== 0) {
+        return; // Only left click
+      }
+
+      // Check if clicking on a card (target should be canvas or grid)
+      const target = e.target as HTMLElement;
+      if (target.closest("[data-card-id]")) {
+        return; // Clicked on a card, let card handle it
+      }
+
+      // Start selection drag
+      const canvasRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      const x = (e.clientX - canvasRect.left) / state.viewport.zoom;
+      const y = (e.clientY - canvasRect.top) / state.viewport.zoom;
+
+      setSelectionStart({ x, y });
+      setSelectionEnd({ x, y });
+      setIsDraggingSelection(true);
+
+      // Clear selection when starting new drag (unless Shift is held)
+      if (!e.shiftKey) {
+        setState((prev) => ({
+          ...prev,
+          selectedCardIds: [],
+        }));
+      }
+    },
+    [canEdit, state.viewport.zoom]
+  );
+
+  // Handle mouse move during selection drag
+  const handleCanvasMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isDraggingSelection || !selectionStart) {
+        return;
+      }
+
+      const canvasRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      const x = (e.clientX - canvasRect.left) / state.viewport.zoom;
+      const y = (e.clientY - canvasRect.top) / state.viewport.zoom;
+
+      setSelectionEnd({ x, y });
+
+      // Calculate which cards are in selection
+      const cardsInSelection = state.cards.filter((card) =>
+        cardIntersectsSelection(card, selectionStart, { x, y })
+      );
+
+      // Update selection (additive if Shift is held)
+      setState((prev) => {
+        const newSelection = e.shiftKey
+          ? [...new Set([...prev.selectedCardIds, ...cardsInSelection.map((c) => c.id)])]
+          : cardsInSelection.map((c) => c.id);
+
+        return {
+          ...prev,
+          selectedCardIds: newSelection,
+        };
+      });
+    },
+    [isDraggingSelection, selectionStart, state.viewport.zoom, state.cards, cardIntersectsSelection]
+  );
+
+  // Handle mouse up to end selection
+  const handleCanvasMouseUp = useCallback(() => {
+    setIsDraggingSelection(false);
+    setSelectionStart(null);
+    setSelectionEnd(null);
+  }, []);
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!canEdit) {
@@ -515,6 +614,10 @@ export function BoardCanvas({
 
       if (e.key === "Escape") {
         updateSelectedCard(null);
+        // Cancel selection drag
+        setIsDraggingSelection(false);
+        setSelectionStart(null);
+        setSelectionEnd(null);
         setState((prev) => ({
           ...prev,
           selectedCardIds: [],
@@ -787,7 +890,13 @@ export function BoardCanvas({
         onViewportChange={handleViewportChange}
         showControls={true}
       >
-        <div className="relative min-h-[4000px] min-w-[4000px]">
+        <div
+          className="relative min-h-[4000px] min-w-[4000px]"
+          onMouseDown={handleCanvasMouseDown}
+          onMouseMove={handleCanvasMouseMove}
+          onMouseUp={handleCanvasMouseUp}
+          onMouseLeave={handleCanvasMouseUp}
+        >
           <GridLayer
             className="absolute inset-0"
             gridSize={gridSize}
@@ -800,6 +909,20 @@ export function BoardCanvas({
               connections={connections}
               onConnectionClick={handleConnectionClick}
               selectedConnectionId={selectedConnectionId ?? undefined}
+            />
+          )}
+
+          {/* Selection rectangle (marquee) */}
+          {isDraggingSelection && selectionStart && selectionEnd && (
+            <div
+              className="pointer-events-none absolute border-2 border-primary bg-primary/10"
+              style={{
+                left: `${Math.min(selectionStart.x, selectionEnd.x)}px`,
+                top: `${Math.min(selectionStart.y, selectionEnd.y)}px`,
+                width: `${Math.abs(selectionEnd.x - selectionStart.x)}px`,
+                height: `${Math.abs(selectionEnd.y - selectionStart.y)}px`,
+                zIndex: 9999,
+              }}
             />
           )}
 
