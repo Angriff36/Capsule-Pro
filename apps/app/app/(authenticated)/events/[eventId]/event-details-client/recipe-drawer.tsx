@@ -13,7 +13,10 @@ import {
   ToggleGroupItem,
 } from "@repo/design-system/components/ui/toggle-group";
 import Link from "next/link";
-import type { EventDishSummary, RecipeDetailSummary } from "../event-details-types";
+import type {
+  EventDishSummary,
+  RecipeDetailSummary,
+} from "../event-details-types";
 
 type DrawerMode = "instructions" | "ingredients";
 
@@ -63,9 +66,7 @@ export function RecipeDrawer({
             type="single"
             value={drawerMode}
           >
-            <ToggleGroupItem value="instructions">
-              Instructions
-            </ToggleGroupItem>
+            <ToggleGroupItem value="instructions">Instructions</ToggleGroupItem>
             <ToggleGroupItem value="ingredients">Ingredients</ToggleGroupItem>
           </ToggleGroup>
           <Button
@@ -88,25 +89,19 @@ export function RecipeDrawer({
             <>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-xl border border-border/70 bg-card/60 p-3 text-sm">
-                  <div className="text-xs text-muted-foreground">
-                    Prep time
-                  </div>
+                  <div className="text-xs text-muted-foreground">Prep time</div>
                   <div className="font-semibold">
                     {selectedRecipe.prepTimeMinutes ?? 0}m
                   </div>
                 </div>
                 <div className="rounded-xl border border-border/70 bg-card/60 p-3 text-sm">
-                  <div className="text-xs text-muted-foreground">
-                    Cook time
-                  </div>
+                  <div className="text-xs text-muted-foreground">Cook time</div>
                   <div className="font-semibold">
                     {selectedRecipe.cookTimeMinutes ?? 0}m
                   </div>
                 </div>
                 <div className="rounded-xl border border-border/70 bg-card/60 p-3 text-sm">
-                  <div className="text-xs text-muted-foreground">
-                    Rest time
-                  </div>
+                  <div className="text-xs text-muted-foreground">Rest time</div>
                   <div className="font-semibold">
                     {selectedRecipe.restTimeMinutes ?? 0}m
                   </div>

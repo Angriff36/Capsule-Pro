@@ -238,8 +238,12 @@ function generateListOperation(entityName: string): string {
   const modelName = entityName.charAt(0).toLowerCase() + entityName.slice(1);
   const pluralName = camelCasePlural(entityName);
 
-  lines.push(`    // Query ${entityName} using Prisma (runtime is for commands, not queries)`);
-  lines.push(`    const ${pluralName} = await database.${modelName}.findMany({`);
+  lines.push(
+    `    // Query ${entityName} using Prisma (runtime is for commands, not queries)`
+  );
+  lines.push(
+    `    const ${pluralName} = await database.${modelName}.findMany({`
+  );
   lines.push("      where: {");
   lines.push("        tenantId,");
   lines.push("        deletedAt: null,");
@@ -249,9 +253,7 @@ function generateListOperation(entityName: string): string {
   lines.push("      },");
   lines.push("    });");
   lines.push("");
-  lines.push(
-    `    return manifestSuccessResponse({ ${pluralName} });`
-  );
+  lines.push(`    return manifestSuccessResponse({ ${pluralName} });`);
 
   return lines.join("\n");
 }

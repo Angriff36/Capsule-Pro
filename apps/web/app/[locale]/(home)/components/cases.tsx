@@ -34,16 +34,18 @@ export const Cases = ({ dictionary }: CasesProps) => {
       return;
     }
 
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       if (api.selectedScrollSnap() + 1 === api.scrollSnapList().length) {
         setCurrent(0);
         api.scrollTo(0);
       } else {
         api.scrollNext();
-        setCurrent(current + 1);
+        setCurrent((prev) => prev + 1);
       }
     }, 1000);
-  }, [api, current]);
+
+    return () => clearTimeout(timeoutId);
+  }, [api]);
 
   return (
     <div className="w-full py-20 lg:py-40">

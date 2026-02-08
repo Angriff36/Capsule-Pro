@@ -1,5 +1,5 @@
-"use client"
+"use client";
 
-import { toast as sonnerToast } from "sonner"
+import { toast as sonnerToast } from "sonner";
 
-export { sonnerToast as toast }
+export { sonnerToast as toast };

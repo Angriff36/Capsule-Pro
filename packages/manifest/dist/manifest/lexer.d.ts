@@ -14,24 +14,24 @@ import type { Token } from "./types";
  */
 export declare const KEYWORDS: Set<string>;
 export declare class Lexer {
-    private source;
-    private pos;
-    private line;
-    private col;
-    private tokens;
-    constructor(source: string);
-    tokenize(): Token[];
-    private skipWhitespace;
-    private readString;
-    private readTemplate;
-    private readNumber;
-    private readIdentifier;
-    private readOperator;
-    private isDigit;
-    private isAlpha;
-    private isAlphaNum;
-    private isOpStart;
-    private advance;
-    private position;
+  private source;
+  private pos;
+  private line;
+  private col;
+  private tokens;
+  constructor(source: string);
+  tokenize(): Token[];
+  private skipWhitespace;
+  private readString;
+  private readTemplate;
+  private readNumber;
+  private readIdentifier;
+  private readOperator;
+  private isDigit;
+  private isAlpha;
+  private isAlphaNum;
+  private isOpStart;
+  private advance;
+  private position;
 }
 //# sourceMappingURL=lexer.d.ts.map

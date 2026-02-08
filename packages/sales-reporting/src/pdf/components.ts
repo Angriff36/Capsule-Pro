@@ -1,12 +1,12 @@
-import PDFDocument from 'pdfkit';
-import { TableOptions, COLORS } from '../types';
-import { PAGE } from './document';
+import type PDFDocument from "pdfkit";
+import { COLORS, type TableOptions } from "../types";
+import { PAGE } from "./document";
 
 export interface MetricCardData {
   label: string;
   value: string;
   subtext?: string;
-  trend?: 'up' | 'down' | 'neutral';
+  trend?: "up" | "down" | "neutral";
 }
 
 export function drawMetricCards(
@@ -27,21 +27,43 @@ export function drawMetricCards(
     const cardY = y + row * (cardHeight + gap);
 
     doc.save();
-    doc.roundedRect(cardX, cardY, cardWidth, cardHeight, 4)
+    doc
+      .roundedRect(cardX, cardY, cardWidth, cardHeight, 4)
       .fill(COLORS.metricBg);
 
-    doc.fontSize(20).font('Helvetica-Bold').fillColor(COLORS.navy)
-      .text(card.value, cardX + 12, cardY + 12, { width: cardWidth - 24, lineBreak: false });
+    doc
+      .fontSize(20)
+      .font("Helvetica-Bold")
+      .fillColor(COLORS.navy)
+      .text(card.value, cardX + 12, cardY + 12, {
+        width: cardWidth - 24,
+        lineBreak: false,
+      });
 
-    doc.fontSize(8).font('Helvetica').fillColor(COLORS.lightText)
-      .text(card.label, cardX + 12, cardY + 36, { width: cardWidth - 24, lineBreak: false });
+    doc
+      .fontSize(8)
+      .font("Helvetica")
+      .fillColor(COLORS.lightText)
+      .text(card.label, cardX + 12, cardY + 36, {
+        width: cardWidth - 24,
+        lineBreak: false,
+      });
 
     if (card.subtext) {
-      const subtextColor = card.trend === 'up' ? COLORS.green
-        : card.trend === 'down' ? COLORS.red
-        : COLORS.mediumText;
-      doc.fontSize(7).font('Helvetica').fillColor(subtextColor)
-        .text(card.subtext, cardX + 12, cardY + 48, { width: cardWidth - 24, lineBreak: false });
+      const subtextColor =
+        card.trend === "up"
+          ? COLORS.green
+          : card.trend === "down"
+            ? COLORS.red
+            : COLORS.mediumText;
+      doc
+        .fontSize(7)
+        .font("Helvetica")
+        .fillColor(subtextColor)
+        .text(card.subtext, cardX + 12, cardY + 48, {
+          width: cardWidth - 24,
+          lineBreak: false,
+        });
     }
 
     doc.restore();
@@ -59,14 +81,21 @@ export function drawSectionTitle(
   title: string,
   y: number
 ): number {
-  doc.moveTo(PAGE.margin, y)
+  doc
+    .moveTo(PAGE.margin, y)
     .lineTo(PAGE.margin + PAGE.contentWidth, y)
     .strokeColor(COLORS.border)
     .lineWidth(0.5)
     .stroke();
 
-  doc.fontSize(12).font('Helvetica-Bold').fillColor(COLORS.navy)
-    .text(title, PAGE.margin, y + 8, { width: PAGE.contentWidth, lineBreak: false });
+  doc
+    .fontSize(12)
+    .font("Helvetica-Bold")
+    .fillColor(COLORS.navy)
+    .text(title, PAGE.margin, y + 8, {
+      width: PAGE.contentWidth,
+      lineBreak: false,
+    });
 
   const returnY = y + 28;
   doc.x = PAGE.margin;
@@ -87,10 +116,13 @@ export function drawTable(
 
   let colX = x;
   columns.forEach((col) => {
-    doc.fontSize(8).font('Helvetica-Bold').fillColor(COLORS.white)
+    doc
+      .fontSize(8)
+      .font("Helvetica-Bold")
+      .fillColor(COLORS.white)
       .text(col.header, colX + padding, y + 8, {
         width: col.width - padding * 2,
-        align: col.align || 'left',
+        align: col.align || "left",
         lineBreak: false,
       });
     colX += col.width;
@@ -107,10 +139,13 @@ export function drawTable(
     row.forEach((cell, cellIndex) => {
       const col = columns[cellIndex];
       if (!col) return;
-      doc.fontSize(8).font('Helvetica').fillColor(COLORS.darkText)
+      doc
+        .fontSize(8)
+        .font("Helvetica")
+        .fillColor(COLORS.darkText)
         .text(cell, colX + padding, currentY + 6, {
           width: col.width - padding * 2,
-          align: col.align || 'left',
+          align: col.align || "left",
           lineBreak: false,
         });
       colX += col.width;
@@ -119,7 +154,8 @@ export function drawTable(
     currentY += rowHeight;
   });
 
-  doc.rect(x, y, width, headerHeight + rows.length * rowHeight)
+  doc
+    .rect(x, y, width, headerHeight + rows.length * rowHeight)
     .strokeColor(COLORS.border)
     .lineWidth(0.5)
     .stroke();
@@ -140,8 +176,13 @@ export function drawTextBlock(
 
   items.forEach((item) => {
     doc.circle(PAGE.margin + 4, currentY + 5, 2.5).fill(bulletColor);
-    const textHeight = doc.heightOfString(item, { width: PAGE.contentWidth - 14 });
-    doc.fontSize(9).font('Helvetica').fillColor(COLORS.darkText)
+    const textHeight = doc.heightOfString(item, {
+      width: PAGE.contentWidth - 14,
+    });
+    doc
+      .fontSize(9)
+      .font("Helvetica")
+      .fillColor(COLORS.darkText)
       .text(item, PAGE.margin + 14, currentY, {
         width: PAGE.contentWidth - 14,
         lineGap: 2,

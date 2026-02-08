@@ -25,7 +25,7 @@ export async function sendSms(to: string, message: string): Promise<void> {
   const authToken = env.TWILIO_AUTH_TOKEN;
   const fromNumber = env.TWILIO_PHONE_NUMBER;
 
-  if (!accountSid || !authToken || !fromNumber) {
+  if (!(accountSid && authToken && fromNumber)) {
     throw new Error("Twilio credentials not configured");
   }
 

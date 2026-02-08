@@ -61,7 +61,16 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
     notFound();
   }
 
-  const { event, rsvpCount, eventDishes, rawPrepTasks, relatedEvents, relatedGuestCounts, recipeDetails, inventoryCoverage } = data;
+  const {
+    event,
+    rsvpCount,
+    eventDishes,
+    rawPrepTasks,
+    relatedEvents,
+    relatedGuestCounts,
+    recipeDetails,
+    inventoryCoverage,
+  } = data;
 
   // Normalize and validate prep tasks
   const normalizedPrepTasks = rawPrepTasks.map((row) => ({

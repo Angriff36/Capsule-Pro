@@ -1,33 +1,32 @@
-import * as React from "react"
-
-import { cn } from "@repo/design-system/lib/utils"
+import { cn } from "@repo/design-system/lib/utils";
+import * as React from "react";
 
 interface GridBackgroundProps extends React.ComponentProps<"div"> {
   /**
    * The size of each grid cell in pixels
    * @default 24
    */
-  gridSize?: number
+  gridSize?: number;
   /**
    * The color of the grid lines
    * @default "var(--border)"
    */
-  gridColor?: string
+  gridColor?: string;
   /**
    * The opacity of the grid lines (0-1)
    * @default 0.5
    */
-  gridOpacity?: number
+  gridOpacity?: number;
   /**
    * Whether to show a radial fade effect from center
    * @default false
    */
-  fade?: boolean
+  fade?: boolean;
   /**
    * The variant of the grid pattern
    * @default "lines"
    */
-  variant?: "lines" | "dots"
+  variant?: "lines" | "dots";
 }
 
 function GridBackground({
@@ -43,22 +42,22 @@ function GridBackground({
 }: GridBackgroundProps) {
   const backgroundImage = React.useMemo(() => {
     if (variant === "dots") {
-      return `radial-gradient(circle, ${gridColor} 1px, transparent 1px)`
+      return `radial-gradient(circle, ${gridColor} 1px, transparent 1px)`;
     }
-    return `linear-gradient(${gridColor} 1px, transparent 1px), linear-gradient(to right, ${gridColor} 1px, transparent 1px)`
-  }, [variant, gridColor])
+    return `linear-gradient(${gridColor} 1px, transparent 1px), linear-gradient(to right, ${gridColor} 1px, transparent 1px)`;
+  }, [variant, gridColor]);
 
   const backgroundSize = React.useMemo(() => {
     if (variant === "dots") {
-      return `${gridSize}px ${gridSize}px`
+      return `${gridSize}px ${gridSize}px`;
     }
-    return `${gridSize}px ${gridSize}px`
-  }, [variant, gridSize])
+    return `${gridSize}px ${gridSize}px`;
+  }, [variant, gridSize]);
 
   return (
     <div
-      data-slot="grid-background"
       className={cn("relative size-full", className)}
+      data-slot="grid-background"
       {...props}
     >
       <div
@@ -77,12 +76,10 @@ function GridBackground({
           ...style,
         }}
       />
-      {children && (
-        <div className="relative z-10 size-full">{children}</div>
-      )}
+      {children && <div className="relative z-10 size-full">{children}</div>}
     </div>
-  )
+  );
 }
 
-export { GridBackground }
-export type { GridBackgroundProps }
+export { GridBackground };
+export type { GridBackgroundProps };

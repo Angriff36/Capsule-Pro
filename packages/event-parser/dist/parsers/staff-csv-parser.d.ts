@@ -4,9 +4,9 @@
  */
 import type { StaffShift } from "../types/index.js";
 export interface StaffCsvParseResult {
-    shifts: Map<string, StaffShift[]>;
-    errors: string[];
-    totalShifts: number;
+  shifts: Map<string, StaffShift[]>;
+  errors: string[];
+  totalShifts: number;
 }
 /**
  * Parse a staff roster CSV file
@@ -16,9 +16,14 @@ export declare function parseStaffCsv(csvContent: string): StaffCsvParseResult;
 /**
  * Get all event names from parsed shifts
  */
-export declare function getEventNamesFromShifts(result: StaffCsvParseResult): string[];
+export declare function getEventNamesFromShifts(
+  result: StaffCsvParseResult
+): string[];
 /**
  * Get shifts for a specific event
  */
-export declare function getShiftsForEvent(result: StaffCsvParseResult, eventName: string): StaffShift[];
+export declare function getShiftsForEvent(
+  result: StaffCsvParseResult,
+  eventName: string
+): StaffShift[];
 //# sourceMappingURL=staff-csv-parser.d.ts.map

@@ -28,16 +28,18 @@ export const Testimonials = ({ dictionary }: TestimonialsProps) => {
       return;
     }
 
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       if (api.selectedScrollSnap() + 1 === api.scrollSnapList().length) {
         setCurrent(0);
         api.scrollTo(0);
       } else {
         api.scrollNext();
-        setCurrent(current + 1);
+        setCurrent((prev) => prev + 1);
       }
     }, 4000);
-  }, [api, current]);
+
+    return () => clearTimeout(timeoutId);
+  }, [api]);
 
   return (
     <div className="w-full py-20 lg:py-40">
@@ -48,8 +50,8 @@ export const Testimonials = ({ dictionary }: TestimonialsProps) => {
           </h2>
           <Carousel className="w-full" setApi={setApi}>
             <CarouselContent>
-              {dictionary.web.home.testimonials.items.map((item, index) => (
-                <CarouselItem className="lg:basis-1/2" key={index}>
+              {dictionary.web.home.testimonials.items.map((item) => (
+                <CarouselItem className="lg:basis-1/2" key={item.title}>
                   <div className="flex aspect-video h-full flex-col justify-between rounded-md bg-muted p-6 lg:col-span-2">
                     <User className="h-8 w-8 stroke-1" />
                     <div className="flex flex-col gap-4">

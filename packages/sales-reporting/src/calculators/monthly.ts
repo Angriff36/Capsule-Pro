@@ -1,9 +1,20 @@
-import { SalesRecord, MonthlyMetrics } from '../types';
+import type { MonthlyMetrics, SalesRecord } from "../types";
 import {
-  filterByDateRange, filterByStatus, sumRevenue,
-  groupBy, conversionRate, averageRevenue,
-} from './shared';
-import { subtractMonths, subtractYears, startOfMonth, endOfMonth, getWeeksInRange, formatDateShort } from '../utils/date';
+  endOfMonth,
+  formatDateShort,
+  getWeeksInRange,
+  startOfMonth,
+  subtractMonths,
+  subtractYears,
+} from "../utils/date";
+import {
+  averageRevenue,
+  conversionRate,
+  filterByDateRange,
+  filterByStatus,
+  groupBy,
+  sumRevenue,
+} from "./shared";
 
 export function calculateMonthlyMetrics(
   allRecords: SalesRecord[],
@@ -11,31 +22,31 @@ export function calculateMonthlyMetrics(
   end: Date
 ): MonthlyMetrics {
   const records = filterByDateRange(allRecords, start, end);
-  const wonRecords = filterByStatus(records, 'won');
-  const lostRecords = filterByStatus(records, 'lost');
-  const proposalRecords = filterByStatus(records, 'proposal_sent');
-  const pendingRecords = filterByStatus(records, 'pending');
+  const wonRecords = filterByStatus(records, "won");
+  const lostRecords = filterByStatus(records, "lost");
+  const proposalRecords = filterByStatus(records, "proposal_sent");
+  const pendingRecords = filterByStatus(records, "pending");
 
   const totalRevenue = sumRevenue(wonRecords);
 
   const prevStart = startOfMonth(subtractMonths(start, 1));
   const prevEnd = endOfMonth(subtractMonths(start, 1));
   const prevRecords = filterByDateRange(allRecords, prevStart, prevEnd);
-  const prevWon = filterByStatus(prevRecords, 'won');
+  const prevWon = filterByStatus(prevRecords, "won");
   const previousMonthRevenue = prevWon.length > 0 ? sumRevenue(prevWon) : null;
 
   const yoyStart = startOfMonth(subtractYears(start, 1));
   const yoyEnd = endOfMonth(subtractYears(start, 1));
   const yoyRecords = filterByDateRange(allRecords, yoyStart, yoyEnd);
-  const yoyWon = filterByStatus(yoyRecords, 'won');
+  const yoyWon = filterByStatus(yoyRecords, "won");
   const yearOverYearRevenue = yoyWon.length > 0 ? sumRevenue(yoyWon) : null;
 
   const avgEventValue = averageRevenue(wonRecords);
 
-  const sourceGroups = groupBy(records, r => r.leadSource || 'Unknown');
-  const leadSourceBreakdown: MonthlyMetrics['leadSourceBreakdown'] = {};
+  const sourceGroups = groupBy(records, (r) => r.leadSource || "Unknown");
+  const leadSourceBreakdown: MonthlyMetrics["leadSourceBreakdown"] = {};
   for (const [source, recs] of Object.entries(sourceGroups)) {
-    const won = filterByStatus(recs, 'won');
+    const won = filterByStatus(recs, "won");
     leadSourceBreakdown[source] = {
       count: recs.length,
       revenue: sumRevenue(won),
@@ -51,12 +62,12 @@ export function calculateMonthlyMetrics(
   };
 
   const weeks = getWeeksInRange(start, end);
-  const winLossTrends = weeks.map(week => {
+  const winLossTrends = weeks.map((week) => {
     const weekRecords = filterByDateRange(allRecords, week.start, week.end);
     return {
       period: formatDateShort(week.start),
-      wins: filterByStatus(weekRecords, 'won').length,
-      losses: filterByStatus(weekRecords, 'lost').length,
+      wins: filterByStatus(weekRecords, "won").length,
+      losses: filterByStatus(weekRecords, "lost").length,
     };
   });
 

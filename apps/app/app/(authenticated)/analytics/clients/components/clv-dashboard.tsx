@@ -12,7 +12,8 @@ import { MetricsCards } from "./metrics-cards";
 // Lazy load chart components to reduce initial bundle size
 // Recharts (~200KB gzipped) is only loaded when these components are rendered
 const RevenueTrends = dynamic(
-  () => import("./revenue-trends").then((mod) => ({ default: mod.RevenueTrends })),
+  () =>
+    import("./revenue-trends").then((mod) => ({ default: mod.RevenueTrends })),
   {
     loading: () => (
       <div className="flex h-[300px] w-full items-center justify-center">
@@ -23,7 +24,8 @@ const RevenueTrends = dynamic(
 );
 
 const PredictiveLTV = dynamic(
-  () => import("./predictive-ltv").then((mod) => ({ default: mod.PredictiveLTV })),
+  () =>
+    import("./predictive-ltv").then((mod) => ({ default: mod.PredictiveLTV })),
   {
     loading: () => (
       <div className="flex h-[340px] w-full items-center justify-center">

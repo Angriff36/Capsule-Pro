@@ -22,11 +22,7 @@ const RootLayout = async ({ children, params }: RootLayoutProperties) => {
   const dictionary = await getDictionary(locale);
 
   return (
-    <html
-      className={cn(fonts, "scroll-smooth")}
-      lang="en"
-      suppressHydrationWarning
-    >
+    <html className={cn(fonts, "scroll-smooth")} lang={locale}>
       <body>
         <AnalyticsProvider>
           <DesignSystemProvider>

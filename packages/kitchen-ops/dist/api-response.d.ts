@@ -19,57 +19,57 @@ export type ConstraintSeverity = "ok" | "warn" | "block";
  * Formatted constraint outcome for API responses
  */
 export interface ApiConstraintOutcome {
-    /** Stable constraint identifier */
-    code: string;
-    /** Constraint display name */
-    constraintName: string;
-    /** Severity level */
-    severity: ConstraintSeverity;
-    /** User-friendly error message */
-    message: string;
-    /** Formatted expression with values */
-    formatted: string;
-    /** Structured details with resolved values */
-    details?: Record<string, unknown>;
-    /** Whether constraint passed */
-    passed: boolean;
-    /** Whether constraint was overridden */
-    overridden?: boolean;
-    /** User who authorized override */
-    overriddenBy?: string;
-    /** Resolved expression values for debugging */
-    resolved?: Array<{
-        expression: string;
-        value: unknown;
-    }>;
+  /** Stable constraint identifier */
+  code: string;
+  /** Constraint display name */
+  constraintName: string;
+  /** Severity level */
+  severity: ConstraintSeverity;
+  /** User-friendly error message */
+  message: string;
+  /** Formatted expression with values */
+  formatted: string;
+  /** Structured details with resolved values */
+  details?: Record<string, unknown>;
+  /** Whether constraint passed */
+  passed: boolean;
+  /** Whether constraint was overridden */
+  overridden?: boolean;
+  /** User who authorized override */
+  overriddenBy?: string;
+  /** Resolved expression values for debugging */
+  resolved?: Array<{
+    expression: string;
+    value: unknown;
+  }>;
 }
 /**
  * Standard error response format
  */
 export interface ApiErrorResponse {
-    success: false;
-    /** Human-readable error message */
-    message: string;
-    /** Detailed error message (optional) */
-    error?: string;
-    /** Application-specific error code */
-    errorCode?: string;
-    /** Constraint violations that caused the error */
-    constraintOutcomes?: ApiConstraintOutcome[];
-    /** Additional error context */
-    details?: Record<string, unknown>;
+  success: false;
+  /** Human-readable error message */
+  message: string;
+  /** Detailed error message (optional) */
+  error?: string;
+  /** Application-specific error code */
+  errorCode?: string;
+  /** Constraint violations that caused the error */
+  constraintOutcomes?: ApiConstraintOutcome[];
+  /** Additional error context */
+  details?: Record<string, unknown>;
 }
 /**
  * Standard success response format
  */
 export interface ApiSuccessResponse<T = unknown> {
-    success: true;
-    /** Response data */
-    data: T;
-    /** Constraint outcomes (warnings, info) */
-    constraintOutcomes?: ApiConstraintOutcome[];
-    /** Emitted events for reactive updates */
-    emittedEvents?: EmittedEvent[];
+  success: true;
+  /** Response data */
+  data: T;
+  /** Constraint outcomes (warnings, info) */
+  constraintOutcomes?: ApiConstraintOutcome[];
+  /** Emitted events for reactive updates */
+  emittedEvents?: EmittedEvent[];
 }
 /**
  * Union type for all API responses
@@ -82,15 +82,24 @@ export type ResponseStatusCode = 200 | 201 | 400 | 401 | 403 | 409 | 500;
 /**
  * Determine HTTP status code based on CommandResult
  */
-export declare function getStatusCodeForResult(result: CommandResult): ResponseStatusCode;
+export declare function getStatusCodeForResult(
+  result: CommandResult
+): ResponseStatusCode;
 /**
  * Create a success API response
  */
-export declare function apiSuccess<T>(data: T, result?: CommandResult): ApiSuccessResponse<T>;
+export declare function apiSuccess<T>(
+  data: T,
+  result?: CommandResult
+): ApiSuccessResponse<T>;
 /**
  * Create an error API response
  */
-export declare function apiError(message: string, result?: CommandResult, additionalContext?: Record<string, unknown>): ApiErrorResponse;
+export declare function apiError(
+  message: string,
+  result?: CommandResult,
+  additionalContext?: Record<string, unknown>
+): ApiErrorResponse;
 /**
  * Format a CommandResult into an API response with status code
  *
@@ -100,7 +109,12 @@ export declare function apiError(message: string, result?: CommandResult, additi
  * @param errorMessagePrefix - Prefix for error messages
  * @returns Tuple of [response, statusCode]
  */
-export declare function formatCommandResult<T>(result: CommandResult, data: T, successMessage?: string, errorMessagePrefix?: string): [ApiResponse<T>, ResponseStatusCode];
+export declare function formatCommandResult<T>(
+  result: CommandResult,
+  data: T,
+  successMessage?: string,
+  errorMessagePrefix?: string
+): [ApiResponse<T>, ResponseStatusCode];
 /**
  * Check if a CommandResult has blocking constraints
  */
@@ -112,18 +126,25 @@ export declare function hasWarningConstraints(result: CommandResult): boolean;
 /**
  * Get only blocking constraints from result
  */
-export declare function getBlockingConstraintOutcomes(result: CommandResult): ApiConstraintOutcome[];
+export declare function getBlockingConstraintOutcomes(
+  result: CommandResult
+): ApiConstraintOutcome[];
 /**
  * Get only warning constraints from result
  */
-export declare function getWarningConstraintOutcomes(result: CommandResult): ApiConstraintOutcome[];
+export declare function getWarningConstraintOutcomes(
+  result: CommandResult
+): ApiConstraintOutcome[];
 /**
  * Type for Next.js Response constructor (avoiding direct import)
  */
 export type NextResponseConstructor = {
-    json: (body: unknown, init?: {
-        status?: number;
-    }) => Response;
+  json: (
+    body: unknown,
+    init?: {
+      status?: number;
+    }
+  ) => Response;
 };
 export type ResponseLike = Response;
 /**
@@ -142,32 +163,48 @@ export type ResponseLike = Response;
  * }
  * ```
  */
-export declare function createNextResponse<T>(responseClass: NextResponseConstructor, result: CommandResult, data: T, options?: {
+export declare function createNextResponse<T>(
+  responseClass: NextResponseConstructor,
+  result: CommandResult,
+  data: T,
+  options?: {
     successMessage?: string;
     errorMessagePrefix?: string;
-}): ResponseLike;
+  }
+): ResponseLike;
 /**
  * Manifest constraint violation error
  */
 export declare class ManifestConstraintError extends Error {
-    readonly constraintOutcomes: ApiConstraintOutcome[];
-    readonly details?: Record<string, unknown> | undefined;
-    constructor(message: string, constraintOutcomes: ApiConstraintOutcome[], details?: Record<string, unknown> | undefined);
+  readonly constraintOutcomes: ApiConstraintOutcome[];
+  readonly details?: Record<string, unknown> | undefined;
+  constructor(
+    message: string,
+    constraintOutcomes: ApiConstraintOutcome[],
+    details?: Record<string, unknown> | undefined
+  );
 }
 /**
  * Manifest policy denial error
  */
 export declare class ManifestPolicyError extends Error {
-    readonly policyName: string;
-    readonly details?: Record<string, unknown> | undefined;
-    constructor(message: string, policyName: string, details?: Record<string, unknown> | undefined);
+  readonly policyName: string;
+  readonly details?: Record<string, unknown> | undefined;
+  constructor(
+    message: string,
+    policyName: string,
+    details?: Record<string, unknown> | undefined
+  );
 }
 /**
  * Manifest concurrency conflict error
  */
 export declare class ManifestConflictError extends Error {
-    readonly conflict: NonNullable<CommandResult["concurrencyConflict"]>;
-    constructor(message: string, conflict: NonNullable<CommandResult["concurrencyConflict"]>);
+  readonly conflict: NonNullable<CommandResult["concurrencyConflict"]>;
+  constructor(
+    message: string,
+    conflict: NonNullable<CommandResult["concurrencyConflict"]>
+  );
 }
 /**
  * Convert CommandResult to appropriate error type

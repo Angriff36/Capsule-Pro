@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { toast as sonnerToast } from "sonner"
+import { toast as sonnerToast } from "sonner";
 
-type Toast = typeof sonnerToast
+type Toast = typeof sonnerToast;
 
 export function useToast() {
-  return { toast: sonnerToast } as { toast: Toast }
+  return { toast: sonnerToast } as { toast: Toast };
 }

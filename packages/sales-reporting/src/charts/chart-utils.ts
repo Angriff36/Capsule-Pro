@@ -1,12 +1,15 @@
-import { formatCurrency, formatNumber } from '../utils/formatting';
+import { formatCurrency, formatNumber } from "../utils/formatting";
 
-export function niceScale(maxValue: number, tickCount: number): { max: number; step: number; ticks: number[] } {
+export function niceScale(
+  maxValue: number,
+  tickCount: number
+): { max: number; step: number; ticks: number[] } {
   if (maxValue <= 0) {
     return { max: 100, step: 20, ticks: [0, 20, 40, 60, 80, 100] };
   }
 
   const roughStep = maxValue / tickCount;
-  const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
+  const magnitude = 10 ** Math.floor(Math.log10(roughStep));
   const residual = roughStep / magnitude;
 
   let niceStep: number;

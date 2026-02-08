@@ -1,12 +1,19 @@
-import { SalesRecord } from '../types';
-import { isInRange } from '../utils/date';
+import type { SalesRecord } from "../types";
+import { isInRange } from "../utils/date";
 
-export function filterByDateRange(records: SalesRecord[], start: Date, end: Date): SalesRecord[] {
-  return records.filter(r => isInRange(r.date, start, end));
+export function filterByDateRange(
+  records: SalesRecord[],
+  start: Date,
+  end: Date
+): SalesRecord[] {
+  return records.filter((r) => isInRange(r.date, start, end));
 }
 
-export function filterByStatus(records: SalesRecord[], status: SalesRecord['status']): SalesRecord[] {
-  return records.filter(r => r.status === status);
+export function filterByStatus(
+  records: SalesRecord[],
+  status: SalesRecord["status"]
+): SalesRecord[] {
+  return records.filter((r) => r.status === status);
 }
 
 export function sumRevenue(records: SalesRecord[]): number {
@@ -40,8 +47,10 @@ export function averageRevenue(records: SalesRecord[]): number {
 }
 
 export function conversionRate(records: SalesRecord[]): number {
-  const decided = records.filter(r => r.status === 'won' || r.status === 'lost');
+  const decided = records.filter(
+    (r) => r.status === "won" || r.status === "lost"
+  );
   if (decided.length === 0) return 0;
-  const won = decided.filter(r => r.status === 'won').length;
+  const won = decided.filter((r) => r.status === "won").length;
   return won / decided.length;
 }

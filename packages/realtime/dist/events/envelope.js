@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Realtime event envelope base types.
  * All realtime events extend this base interface.

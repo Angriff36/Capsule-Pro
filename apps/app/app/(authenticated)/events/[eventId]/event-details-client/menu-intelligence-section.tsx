@@ -18,19 +18,18 @@ import { Progress } from "@repo/design-system/components/ui/progress";
 import { cn } from "@repo/design-system/lib/utils";
 import {
   ChefHatIcon,
-  ClipboardCopyIcon,
   ChevronRightIcon,
+  ClipboardCopyIcon,
   ListIcon,
-  SparklesIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { MenuDishesSection } from "../event-details-sections";
 import type {
   EventDishSummary,
   InventoryCoverageItem,
   RecipeDetailSummary,
 } from "../event-details-types";
-import { MenuDishesSection } from "../event-details-sections";
-import { formatCurrency, scaleIngredients } from "./utils";
+import { formatCurrency } from "./utils";
 
 type DrawerMode = "instructions" | "ingredients";
 
@@ -154,9 +153,7 @@ export function MenuIntelligenceSection({
                       <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                         {row.dish.course ?? "Course not set"}
                       </p>
-                      <p className="text-lg font-semibold">
-                        {row.dish.name}
-                      </p>
+                      <p className="text-lg font-semibold">{row.dish.name}</p>
                       <p className="text-xs text-muted-foreground">
                         {row.dish.recipeName ?? "Recipe not linked"}
                       </p>
@@ -183,8 +180,7 @@ export function MenuIntelligenceSection({
                                   className="border-border/70 bg-card/70 text-foreground"
                                   variant="outline"
                                 >
-                                  {row.recipe.ingredients.length}{" "}
-                                  ingredients
+                                  {row.recipe.ingredients.length} ingredients
                                 </Badge>
                               </div>
                               <div className="max-h-56 space-y-2 overflow-y-auto pr-1 text-xs">
@@ -269,8 +265,7 @@ export function MenuIntelligenceSection({
                         className="border-success/40 bg-success/10 text-success"
                         variant="outline"
                       >
-                        Price {formatCurrency(row.dish.pricePerPerson)} /
-                        person
+                        Price {formatCurrency(row.dish.pricePerPerson)} / person
                       </Badge>
                     )}
                     {row.dish.costPerPerson !== null && (
@@ -278,8 +273,7 @@ export function MenuIntelligenceSection({
                         className="border-warning/40 bg-warning/10 text-warning"
                         variant="outline"
                       >
-                        Cost {formatCurrency(row.dish.costPerPerson)} /
-                        person
+                        Cost {formatCurrency(row.dish.costPerPerson)} / person
                       </Badge>
                     )}
                     {row.dish.dietaryTags.map((tag) => (
@@ -334,8 +328,7 @@ export function MenuIntelligenceSection({
                 Ingredient coverage
               </CardTitle>
               <CardDescription className="text-muted-foreground">
-                Consolidated ingredient list mapped against inventory
-                levels.
+                Consolidated ingredient list mapped against inventory levels.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -437,10 +430,7 @@ export function MenuIntelligenceSection({
                           </div>
                         </div>
                         {coverageRatio !== null && (
-                          <Progress
-                            className="mt-3"
-                            value={coverageRatio}
-                          />
+                          <Progress className="mt-3" value={coverageRatio} />
                         )}
                         {ingredient.sources.length > 0 && (
                           <p className="mt-2 text-[11px] text-foreground/70">

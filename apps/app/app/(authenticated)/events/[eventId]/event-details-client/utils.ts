@@ -10,7 +10,7 @@
  * Hydration-safe currency formatter.
  * Memoize this in your component if using frequently.
  */
-export const createCurrencyFormatter = (locale: string = "en-US") => {
+export const createCurrencyFormatter = (locale = "en-US") => {
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: "USD",
@@ -21,14 +21,14 @@ export const createCurrencyFormatter = (locale: string = "en-US") => {
 /**
  * Format a currency value using the specified locale.
  */
-export const formatCurrency = (value: number, locale: string = "en-US"): string => {
+export const formatCurrency = (value: number, locale = "en-US"): string => {
   return createCurrencyFormatter(locale).format(value);
 };
 
 /**
  * Hydration-safe short date formatter (month: short, day: numeric).
  */
-export const createShortDateFormatter = (locale: string = "en-US") => {
+export const createShortDateFormatter = (locale = "en-US") => {
   return new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "numeric",
@@ -150,10 +150,7 @@ export const buildCalendarUrl = (
     .replace(/-/g, "");
   const title = encodeURIComponent(eventTitle);
   const details = encodeURIComponent(
-    [
-      eventType ? `Event type: ${eventType}` : "",
-      notes ?? "",
-    ]
+    [eventType ? `Event type: ${eventType}` : "", notes ?? ""]
       .filter(Boolean)
       .join("\n")
   );

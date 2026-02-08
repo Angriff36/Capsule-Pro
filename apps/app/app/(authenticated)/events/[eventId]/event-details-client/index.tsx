@@ -6,6 +6,7 @@ import { Separator } from "@repo/design-system/components/ui/separator";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useSuggestions } from "../../../kitchen/lib/use-suggestions";
 import { updateEvent } from "../../actions";
 import {
   addDishToEvent,
@@ -25,14 +26,13 @@ import {
   type TaskBreakdown,
 } from "../../actions/task-breakdown";
 import { GenerateEventSummaryModal } from "../../components/event-summary-display";
-import { useSuggestions } from "../../../kitchen/lib/use-suggestions";
-import {
-  type EventBudgetForDisplay,
-  type AvailableDishOption,
-  DishVariantDialog,
-} from "../event-details-sections";
 import { GenerateTaskBreakdownModal } from "../../components/task-breakdown-display";
 import { EventEditorModal } from "../../event-editor-modal";
+import {
+  type AvailableDishOption,
+  DishVariantDialog,
+  type EventBudgetForDisplay,
+} from "../event-details-sections";
 import type {
   EventDishSummary,
   InventoryCoverageItem,
@@ -41,14 +41,12 @@ import type {
 } from "../event-details-types";
 import type { PrepTaskSummaryClient } from "../prep-task-contract";
 import { AIInsightsPanel } from "./ai-insights-panel";
-import { EventOverviewCard } from "./event-overview-card";
 import { EventExplorer } from "./event-explorer";
+import { EventOverviewCard } from "./event-overview-card";
 import { GuestManagementSection } from "./guest-management-section";
 import { MenuIntelligenceSection } from "./menu-intelligence-section";
 import { RecipeDrawer } from "./recipe-drawer";
 import {
-  addDays,
-  buildCalendarUrl,
   endOfDay,
   formatCurrency,
   formatDuration,
@@ -510,7 +508,9 @@ export function EventDetailsClient({
         month: "short",
         day: "numeric",
         year: "numeric",
-      }).format(eventDate)} (${timeZoneLabel})\nVenue: ${event.venueName ?? "TBD"}\nLink: ${window.location.origin}/events/${event.id}`
+      }).format(
+        eventDate
+      )} (${timeZoneLabel})\nVenue: ${event.venueName ?? "TBD"}\nLink: ${window.location.origin}/events/${event.id}`
     );
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
@@ -732,10 +732,7 @@ export function EventDetailsClient({
       ],
     ];
 
-    const pushTask = (
-      section: string,
-      task: TaskBreakdown["prep"][number]
-    ) => {
+    const pushTask = (section: string, task: TaskBreakdown["prep"][number]) => {
       rows.push([
         section,
         task.name,
@@ -793,9 +790,7 @@ export function EventDetailsClient({
       >
         Open RSVP
       </button>
-      <div
-        className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-muted/95 px-4 py-3 backdrop-blur sm:hidden"
-      >
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-muted/95 px-4 py-3 backdrop-blur sm:hidden">
         <div className="flex items-center gap-2">
           <button
             className="flex-1 bg-success text-success-foreground hover:bg-success/90 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
@@ -850,87 +845,87 @@ export function EventDetailsClient({
         <Separator />
 
         <EventOverviewCard
-          event={event}
-          rsvpCount={rsvpCount}
-          prepTasks={initialPrepTasks}
           aggregatedIngredientsCount={aggregatedIngredients.length}
-          inventoryStats={inventoryStats}
-          taskSummary={taskSummary}
-          isLive={isLive}
-          isPast={isPast}
-          isUpcoming={isUpcoming}
-          isSoldOut={soldOut}
-          isLimited={limited}
           availability={availability}
           capacity={capacity}
-          eventStatusLabel={eventStatusLabel}
-          timeStatusLabel={timeStatusLabel}
-          ticketPriceLabel={ticketPriceLabel}
-          timeZoneLabel={timeZoneLabel}
+          displayedTags={displayedTags}
+          event={event}
           eventDate={eventDate}
           eventStart={eventStart}
-          now={now}
-          isSaved={isSaved}
-          saveReady={saveReady}
+          eventStatusLabel={eventStatusLabel}
           featuredMediaUrl={featuredMediaUrl}
-          displayedTags={displayedTags}
-          onQuickRsvp={() => setQuickRsvpOpen(true)}
-          onToggleSave={handleToggleSave}
-          onShare={handleShare}
-          onInviteTeam={handleInviteTeam}
-          onEditEvent={() => setShowEditEvent(true)}
-          onUpdateDetails={() => setShowEditEvent(true)}
+          inventoryStats={inventoryStats}
+          isLimited={limited}
+          isLive={isLive}
+          isPast={isPast}
+          isSaved={isSaved}
+          isSoldOut={soldOut}
+          isUpcoming={isUpcoming}
           missingFields={missingFields}
+          now={now}
+          onEditEvent={() => setShowEditEvent(true)}
+          onInviteTeam={handleInviteTeam}
+          onQuickRsvp={() => setQuickRsvpOpen(true)}
+          onShare={handleShare}
+          onToggleSave={handleToggleSave}
+          onUpdateDetails={() => setShowEditEvent(true)}
+          prepTasks={initialPrepTasks}
+          rsvpCount={rsvpCount}
+          saveReady={saveReady}
+          taskSummary={taskSummary}
+          ticketPriceLabel={ticketPriceLabel}
+          timeStatusLabel={timeStatusLabel}
+          timeZoneLabel={timeZoneLabel}
         />
 
         <MenuIntelligenceSection
-          dishRows={dishRows}
           aggregatedIngredients={aggregatedIngredients}
-          inventoryByIngredient={inventoryByIngredient}
-          menuDishRows={menuDishRows}
           availableDishes={availableDishes}
+          dishRows={dishRows}
+          inventoryByIngredient={inventoryByIngredient}
           isLoadingDishes={isLoadingDishes}
-          showAddDishDialog={showAddDishDialog}
-          selectedDishIdForAdd={selectedDishIdForAdd}
-          selectedCourse={selectedCourse}
-          onOpenRecipeDrawer={openRecipeDrawer}
+          menuDishRows={menuDishRows}
           onAddDish={handleAddDish}
-          onRemoveDish={handleRemoveDish}
+          onOpenRecipeDrawer={openRecipeDrawer}
           onOpenVariantDialog={openVariantDialog}
-          onShowAddDialogChange={setShowAddDishDialog}
-          onSelectedDishIdChange={setSelectedDishIdForAdd}
+          onRemoveDish={handleRemoveDish}
           onSelectedCourseChange={setSelectedCourse}
+          onSelectedDishIdChange={setSelectedDishIdForAdd}
+          onShowAddDialogChange={setShowAddDishDialog}
+          selectedCourse={selectedCourse}
+          selectedDishIdForAdd={selectedDishIdForAdd}
+          showAddDishDialog={showAddDishDialog}
         />
 
         <AIInsightsPanel
+          breakdown={breakdown}
+          budget={budget}
           eventId={event.id}
           eventTitle={event.title}
-          summary={summary}
-          isLoadingSummary={isLoadingSummary}
-          breakdown={breakdown}
-          isGenerating={isGenerating}
           generationProgress={generationProgress}
-          suggestions={suggestions}
-          suggestionsLoading={suggestionsLoading}
-          showSuggestions={showSuggestions}
-          prepTasks={sortedPrepTasks}
-          budget={budget}
-          onGenerateSummary={handleGenerateSummary}
+          isGenerating={isGenerating}
+          isLoadingSummary={isLoadingSummary}
+          onCreateBudget={() => router.push("/events/budgets")}
           onDeleteSummary={handleDeleteSummary}
-          onOpenSummaryModal={() => setShowSummaryModal(true)}
-          onOpenBreakdownModal={() => setShowBreakdownModal(true)}
-          onRegenerateBreakdown={() => void handleGenerateBreakdown()}
-          onExportBreakdown={handleExportBreakdown}
-          onSaveBreakdown={handleSaveBreakdown}
-          onRefreshSuggestions={fetchSuggestions}
           onDismissSuggestion={dismissSuggestion}
+          onExportBreakdown={handleExportBreakdown}
+          onGenerateSummary={handleGenerateSummary}
           onHandleSuggestionAction={handleAction}
-          onShowSuggestionsChange={setShowSuggestions}
+          onOpenBreakdownModal={() => setShowBreakdownModal(true)}
           onOpenGenerateModal={() => setShowBreakdownModal(true)}
+          onOpenSummaryModal={() => setShowSummaryModal(true)}
+          onRefreshSuggestions={fetchSuggestions}
+          onRegenerateBreakdown={() => void handleGenerateBreakdown()}
+          onSaveBreakdown={handleSaveBreakdown}
+          onShowSuggestionsChange={setShowSuggestions}
           onViewBudget={(budgetId) =>
             router.push(`/events/budgets/${budgetId}`)
           }
-          onCreateBudget={() => router.push("/events/budgets")}
+          prepTasks={sortedPrepTasks}
+          showSuggestions={showSuggestions}
+          suggestions={suggestions}
+          suggestionsLoading={suggestionsLoading}
+          summary={summary}
         />
 
         <GuestManagementSection
@@ -941,32 +936,32 @@ export function EventDetailsClient({
         />
 
         <EventExplorer
-          now={now}
           explorerView={explorerView}
-          sortBy={sortBy}
+          now={now}
           quickFilters={quickFilters}
-          selectedDateStart={selectedDateStart}
-          selectedDateEnd={selectedDateEnd}
-          selectedLocation={selectedLocation}
-          selectedOrganizer={selectedOrganizer}
-          selectedFormat={selectedFormat}
-          selectedPrice={selectedPrice}
-          selectedTags={selectedTags}
-          selectedAccessibility={selectedAccessibility}
           relatedEvents={relatedEvents}
           relatedGuestCounts={relatedGuestCounts}
+          resetFilters={resetFilters}
+          selectedAccessibility={selectedAccessibility}
+          selectedDateEnd={selectedDateEnd}
+          selectedDateStart={selectedDateStart}
+          selectedFormat={selectedFormat}
+          selectedLocation={selectedLocation}
+          selectedOrganizer={selectedOrganizer}
+          selectedPrice={selectedPrice}
+          selectedTags={selectedTags}
           setExplorerView={setExplorerView}
-          setSortBy={setSortBy}
           setQuickFilters={setQuickFilters}
-          setSelectedDateStart={setSelectedDateStart}
+          setSelectedAccessibility={setSelectedAccessibility}
           setSelectedDateEnd={setSelectedDateEnd}
+          setSelectedDateStart={setSelectedDateStart}
+          setSelectedFormat={setSelectedFormat}
           setSelectedLocation={setSelectedLocation}
           setSelectedOrganizer={setSelectedOrganizer}
-          setSelectedFormat={setSelectedFormat}
           setSelectedPrice={setSelectedPrice}
           setSelectedTags={setSelectedTags}
-          setSelectedAccessibility={setSelectedAccessibility}
-          resetFilters={resetFilters}
+          setSortBy={setSortBy}
+          sortBy={sortBy}
         />
       </div>
 
@@ -1042,24 +1037,24 @@ export function EventDetailsClient({
           </div>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <label htmlFor="rsvp-name" className="text-sm font-medium">
+              <label className="text-sm font-medium" htmlFor="rsvp-name">
                 Guest name
               </label>
               <input
-                id="rsvp-name"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                id="rsvp-name"
                 onChange={(value) => setQuickRsvpName(value.target.value)}
                 placeholder="Full name"
                 value={quickRsvpName}
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="rsvp-email" className="text-sm font-medium">
+              <label className="text-sm font-medium" htmlFor="rsvp-email">
                 Guest email
               </label>
               <input
-                id="rsvp-email"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                id="rsvp-email"
                 onChange={(value) => setQuickRsvpEmail(value.target.value)}
                 placeholder="Optional email"
                 type="email"
@@ -1102,13 +1097,13 @@ export function EventDetailsClient({
       </div>
 
       <RecipeDrawer
-        open={drawerOpen}
+        drawerMode={drawerMode}
+        onDrawerModeChange={setDrawerMode}
         onOpenChange={setDrawerOpen}
+        open={drawerOpen}
         selectedDish={selectedDish}
         selectedRecipe={selectedRecipe}
         selectedScaledIngredients={selectedScaledIngredients}
-        drawerMode={drawerMode}
-        onDrawerModeChange={setDrawerMode}
       />
     </div>
   );

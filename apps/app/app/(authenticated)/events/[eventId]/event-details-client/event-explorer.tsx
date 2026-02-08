@@ -45,7 +45,6 @@ import {
   Globe2Icon,
   LayoutGridIcon,
   ListIcon,
-  MapPinIcon,
   ShieldCheckIcon,
   TagIcon,
   TicketIcon,
@@ -283,8 +282,7 @@ export function EventExplorer({
     const isRelatedSoldOut =
       related.guestCount > 0 && related.rsvpCount >= related.guestCount;
     const isRelatedHighCapacity =
-      highCapacityThreshold > 0 &&
-      related.guestCount >= highCapacityThreshold;
+      highCapacityThreshold > 0 && related.guestCount >= highCapacityThreshold;
 
     if (quickFilters.includes("live-now") && !isRelatedLive) {
       return false;
@@ -375,7 +373,9 @@ export function EventExplorer({
   const timelineGroups = (() => {
     const groups = new Map<string, typeof sortedRelatedEvents>();
     for (const related of sortedRelatedEvents) {
-      const key = createCalendarDateFormatter().format(new Date(related.eventDate));
+      const key = createCalendarDateFormatter().format(
+        new Date(related.eventDate)
+      );
       const existing = groups.get(key);
       if (existing) {
         existing.push(related);
@@ -527,7 +527,9 @@ export function EventExplorer({
                       onCheckedChange={() => {
                         setSelectedTags(
                           selectedTags.includes(tag)
-                            ? selectedTags.filter((value: string) => value !== tag)
+                            ? selectedTags.filter(
+                                (value: string) => value !== tag
+                              )
                             : [...selectedTags, tag]
                         );
                       }}
@@ -578,7 +580,9 @@ export function EventExplorer({
                       onCheckedChange={() => {
                         setSelectedAccessibility(
                           selectedAccessibility.includes(option)
-                            ? selectedAccessibility.filter((value: string) => value !== option)
+                            ? selectedAccessibility.filter(
+                                (value: string) => value !== option
+                              )
                             : [...selectedAccessibility, option]
                         );
                       }}
@@ -705,9 +709,7 @@ export function EventExplorer({
               onClick={() => toggleQuickFilter("starting-soon")}
               size="sm"
               variant={
-                quickFilters.includes("starting-soon")
-                  ? "default"
-                  : "outline"
+                quickFilters.includes("starting-soon") ? "default" : "outline"
               }
             >
               <AlarmClockIcon className="mr-2 size-3" />
@@ -717,9 +719,7 @@ export function EventExplorer({
               onClick={() => toggleQuickFilter("high-capacity")}
               size="sm"
               variant={
-                quickFilters.includes("high-capacity")
-                  ? "default"
-                  : "outline"
+                quickFilters.includes("high-capacity") ? "default" : "outline"
               }
             >
               <UsersIcon className="mr-2 size-3" />
@@ -738,18 +738,14 @@ export function EventExplorer({
             <Button
               onClick={() => toggleQuickFilter("free")}
               size="sm"
-              variant={
-                quickFilters.includes("free") ? "default" : "outline"
-              }
+              variant={quickFilters.includes("free") ? "default" : "outline"}
             >
               Free
             </Button>
             <Button
               onClick={() => toggleQuickFilter("paid")}
               size="sm"
-              variant={
-                quickFilters.includes("paid") ? "default" : "outline"
-              }
+              variant={quickFilters.includes("paid") ? "default" : "outline"}
             >
               Paid
             </Button>
@@ -766,9 +762,7 @@ export function EventExplorer({
                 <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
                   Featured
                 </p>
-                <h3 className="text-xl font-semibold">
-                  13 featured events
-                </h3>
+                <h3 className="text-xl font-semibold">13 featured events</h3>
               </div>
               <Badge
                 className="border-border/70 bg-muted/40 text-foreground"
@@ -814,9 +808,7 @@ export function EventExplorer({
                         </span>
                         <span>{related.eventType}</span>
                       </div>
-                      <p className="text-sm font-semibold">
-                        {related.title}
-                      </p>
+                      <p className="text-sm font-semibold">{related.title}</p>
                       <p className="text-xs text-muted-foreground">
                         {related.venueName ?? "Venue TBD"}
                       </p>
@@ -890,8 +882,7 @@ export function EventExplorer({
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">
                   {thisWeekEvents.length} event
-                  {thisWeekEvents.length === 1 ? "" : "s"} in the next 7
-                  days.
+                  {thisWeekEvents.length === 1 ? "" : "s"} in the next 7 days.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -907,9 +898,7 @@ export function EventExplorer({
                         href={`/events/${related.id}`}
                         key={related.id}
                       >
-                        {shortDateFormatter.format(
-                          new Date(related.eventDate)
-                        )}{" "}
+                        {shortDateFormatter.format(new Date(related.eventDate))}{" "}
                         • {related.title}
                       </Link>
                     ))}
@@ -962,8 +951,7 @@ export function EventExplorer({
                 const relatedDate = new Date(related.eventDate);
                 const relatedStart = startOfDay(relatedDate);
                 const relatedEnd = endOfDay(relatedDate);
-                const relatedLive =
-                  now >= relatedStart && now <= relatedEnd;
+                const relatedLive = now >= relatedStart && now <= relatedEnd;
                 const relatedPast = now > relatedEnd;
                 const relatedUpcoming = now < relatedStart;
                 const relatedSoldOut =
@@ -973,10 +961,8 @@ export function EventExplorer({
                   related.guestCount > 0 &&
                   !relatedSoldOut &&
                   related.rsvpCount / related.guestCount >= 0.85;
-                const relatedTimeUntil =
-                  relatedStart.getTime() - now.getTime();
-                const relatedTimeSince =
-                  now.getTime() - relatedStart.getTime();
+                const relatedTimeUntil = relatedStart.getTime() - now.getTime();
+                const relatedTimeSince = now.getTime() - relatedStart.getTime();
 
                 return (
                   <Link
@@ -1021,9 +1007,7 @@ export function EventExplorer({
                       )}
                     </div>
                     <div className="mt-3 space-y-1">
-                      <p className="text-lg font-semibold">
-                        {related.title}
-                      </p>
+                      <p className="text-lg font-semibold">{related.title}</p>
                       <p className="text-xs text-muted-foreground">
                         {shortDateFormatter.format(relatedDate)} •{" "}
                         {related.venueName ?? "Venue TBD"}

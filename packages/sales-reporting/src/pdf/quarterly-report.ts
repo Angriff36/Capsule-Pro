@@ -1,46 +1,65 @@
-import PDFDocument from 'pdfkit';
-import { QuarterlyMetrics, ReportConfig, COLORS } from '../types';
-import { createDocument, collectBuffer, drawHeader, drawPageFooter, addPageBreak, PAGE } from './document';
+import { drawBarChart, drawLineChart } from "../charts";
+import { COLORS, type QuarterlyMetrics, type ReportConfig } from "../types";
+import { formatDateShort, getQuarterLabel } from "../utils/date";
 import {
-  drawMetricCards, drawSectionTitle, drawTable,
-  drawTextBlock, ensureSpace,
-} from './components';
-import { drawBarChart, drawLineChart } from '../charts';
-import { formatCurrencyFull, formatPercent, formatNumber } from '../utils/formatting';
-import { getQuarterLabel, formatDateShort } from '../utils/date';
+  formatCurrencyFull,
+  formatNumber,
+  formatPercent,
+} from "../utils/formatting";
+import {
+  drawMetricCards,
+  drawSectionTitle,
+  drawTable,
+  drawTextBlock,
+  ensureSpace,
+} from "./components";
+import {
+  addPageBreak,
+  collectBuffer,
+  createDocument,
+  drawHeader,
+  drawPageFooter,
+  PAGE,
+} from "./document";
 
 export async function generateQuarterlyPdf(
   metrics: QuarterlyMetrics,
   config: ReportConfig
 ): Promise<Buffer> {
   const doc = createDocument();
-  const companyName = config.companyName || 'Sales Report';
+  const companyName = config.companyName || "Sales Report";
   const dateRange = `${getQuarterLabel(metrics.dateRange.start)}  |  ${formatDateShort(metrics.dateRange.start)} — ${formatDateShort(metrics.dateRange.end)}`;
 
-  let y = drawHeader(doc, companyName, 'Quarterly Sales Report', dateRange);
+  let y = drawHeader(doc, companyName, "Quarterly Sales Report", dateRange);
 
-  const totalDeals = Object.values(metrics.customerSegments)
-    .reduce((sum, s) => sum + s.count, 0);
+  const totalDeals = Object.values(metrics.customerSegments).reduce(
+    (sum, s) => sum + s.count,
+    0
+  );
   const avgDealValue = totalDeals > 0 ? metrics.totalRevenue / totalDeals : 0;
 
   y = drawMetricCards(doc, y, [
     {
-      label: 'Total Revenue',
+      label: "Total Revenue",
       value: formatCurrencyFull(metrics.totalRevenue),
     },
     {
-      label: 'Total Deals',
+      label: "Total Deals",
       value: formatNumber(totalDeals),
     },
     {
-      label: 'Avg Sales Cycle',
-      value: metrics.salesCycleLength.avg > 0 ? `${metrics.salesCycleLength.avg}d` : 'N/A',
-      subtext: metrics.salesCycleLength.avg > 0
-        ? `${metrics.salesCycleLength.min}d min / ${metrics.salesCycleLength.max}d max`
-        : undefined,
+      label: "Avg Sales Cycle",
+      value:
+        metrics.salesCycleLength.avg > 0
+          ? `${metrics.salesCycleLength.avg}d`
+          : "N/A",
+      subtext:
+        metrics.salesCycleLength.avg > 0
+          ? `${metrics.salesCycleLength.min}d min / ${metrics.salesCycleLength.max}d max`
+          : undefined,
     },
     {
-      label: 'Avg Deal Value',
+      label: "Avg Deal Value",
       value: formatCurrencyFull(avgDealValue),
     },
   ]);
@@ -49,7 +68,7 @@ export async function generateQuarterlyPdf(
 
   const segments = Object.entries(metrics.customerSegments);
   if (segments.length > 0) {
-    y = drawSectionTitle(doc, 'Customer Segment Analysis', y);
+    y = drawSectionTitle(doc, "Customer Segment Analysis", y);
     y = drawBarChart(doc, {
       x: PAGE.margin,
       y,
@@ -58,7 +77,7 @@ export async function generateQuarterlyPdf(
       data: segments
         .sort((a, b) => b[1].revenue - a[1].revenue)
         .map(([label, data]) => ({ label, value: data.revenue })),
-      title: '',
+      title: "",
       showCurrency: true,
     });
 
@@ -68,11 +87,11 @@ export async function generateQuarterlyPdf(
       y,
       width: PAGE.contentWidth,
       columns: [
-        { header: 'Segment', width: 130 },
-        { header: 'Deals', width: 70, align: 'center' },
-        { header: 'Revenue', width: 110, align: 'right' },
-        { header: 'Avg Value', width: 100, align: 'right' },
-        { header: 'Cycle (days)', width: 102, align: 'right' },
+        { header: "Segment", width: 130 },
+        { header: "Deals", width: 70, align: "center" },
+        { header: "Revenue", width: 110, align: "right" },
+        { header: "Avg Value", width: 100, align: "right" },
+        { header: "Cycle (days)", width: 102, align: "right" },
       ],
       rows: segments
         .sort((a, b) => b[1].revenue - a[1].revenue)
@@ -83,7 +102,7 @@ export async function generateQuarterlyPdf(
           formatCurrencyFull(data.avgValue),
           metrics.salesCycleLength.bySegment[segment]
             ? String(metrics.salesCycleLength.bySegment[segment])
-            : 'N/A',
+            : "N/A",
         ]),
     });
   }
@@ -91,18 +110,23 @@ export async function generateQuarterlyPdf(
   y = addPageBreak(doc);
 
   if (metrics.pricingTrends.length > 0) {
-    y = drawSectionTitle(doc, 'Pricing Trends', y);
+    y = drawSectionTitle(doc, "Pricing Trends", y);
     y = drawLineChart(doc, {
       x: PAGE.margin,
       y,
       width: PAGE.contentWidth,
       height: 210,
-      series: [{
-        label: 'Avg Deal Value',
-        data: metrics.pricingTrends.map(t => ({ label: t.month, value: t.avgValue })),
-        color: COLORS.navy,
-      }],
-      title: '',
+      series: [
+        {
+          label: "Avg Deal Value",
+          data: metrics.pricingTrends.map((t) => ({
+            label: t.month,
+            value: t.avgValue,
+          })),
+          color: COLORS.navy,
+        },
+      ],
+      title: "",
       showCurrency: true,
     });
   }
@@ -111,17 +135,17 @@ export async function generateQuarterlyPdf(
   const referrals = Object.entries(metrics.referralPerformance);
   if (referrals.length > 0) {
     y = ensureSpace(doc, y, 160);
-    y = drawSectionTitle(doc, 'Referral & Lead Source Performance', y);
+    y = drawSectionTitle(doc, "Referral & Lead Source Performance", y);
     y = drawTable(doc, {
       x: PAGE.margin,
       y,
       width: PAGE.contentWidth,
       columns: [
-        { header: 'Source', width: 130 },
-        { header: 'Leads', width: 70, align: 'center' },
-        { header: 'Revenue', width: 110, align: 'right' },
-        { header: 'Conv. Rate', width: 100, align: 'right' },
-        { header: 'Rev/Lead', width: 102, align: 'right' },
+        { header: "Source", width: 130 },
+        { header: "Leads", width: 70, align: "center" },
+        { header: "Revenue", width: 110, align: "right" },
+        { header: "Conv. Rate", width: 100, align: "right" },
+        { header: "Rev/Lead", width: 102, align: "right" },
       ],
       rows: referrals
         .sort((a, b) => b[1].revenue - a[1].revenue)
@@ -130,7 +154,9 @@ export async function generateQuarterlyPdf(
           String(data.count),
           formatCurrencyFull(data.revenue),
           formatPercent(data.conversionRate),
-          data.count > 0 ? formatCurrencyFull(Math.round(data.revenue / data.count)) : '$0',
+          data.count > 0
+            ? formatCurrencyFull(Math.round(data.revenue / data.count))
+            : "$0",
         ]),
     });
   }
@@ -138,31 +164,36 @@ export async function generateQuarterlyPdf(
   y = addPageBreak(doc);
 
   if (metrics.recommendations.length > 0) {
-    y = drawSectionTitle(doc, 'Recommendations', y);
+    y = drawSectionTitle(doc, "Recommendations", y);
     y = drawTextBlock(doc, y, metrics.recommendations, COLORS.navy);
   }
 
   y += 15;
-  y = drawSectionTitle(doc, 'Next Quarter Goals', y);
-  y = drawMetricCards(doc, y, [
-    {
-      label: 'Revenue Target',
-      value: formatCurrencyFull(metrics.nextQuarterGoals.revenueTarget),
-      subtext: '+10% growth target',
-      trend: 'up',
-    },
-    {
-      label: 'Lead Target',
-      value: formatNumber(metrics.nextQuarterGoals.leadTarget),
-      subtext: 'To hit revenue goal',
-    },
-    {
-      label: 'Conversion Target',
-      value: formatPercent(metrics.nextQuarterGoals.conversionTarget),
-      subtext: '+5pp improvement',
-      trend: 'up',
-    },
-  ], 3);
+  y = drawSectionTitle(doc, "Next Quarter Goals", y);
+  y = drawMetricCards(
+    doc,
+    y,
+    [
+      {
+        label: "Revenue Target",
+        value: formatCurrencyFull(metrics.nextQuarterGoals.revenueTarget),
+        subtext: "+10% growth target",
+        trend: "up",
+      },
+      {
+        label: "Lead Target",
+        value: formatNumber(metrics.nextQuarterGoals.leadTarget),
+        subtext: "To hit revenue goal",
+      },
+      {
+        label: "Conversion Target",
+        value: formatPercent(metrics.nextQuarterGoals.conversionTarget),
+        subtext: "+5pp improvement",
+        trend: "up",
+      },
+    ],
+    3
+  );
 
   drawPageFooter(doc);
   return collectBuffer(doc);

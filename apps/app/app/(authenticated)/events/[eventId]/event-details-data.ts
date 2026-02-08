@@ -15,8 +15,8 @@
  * All functions are wrapped with React.cache() for automatic deduplication.
  */
 
-import { cache } from "react";
 import { database, Prisma } from "@repo/database";
+import { cache } from "react";
 import type {
   EventDishSummary,
   InventoryCoverageItem,
@@ -32,33 +32,29 @@ import type {
  * Fetches the base event record by ID.
  * @tier 1 (Independent)
  */
-export const getEvent = cache(
-  async (tenantId: string, eventId: string) => {
-    return database.event.findFirst({
-      where: {
-        tenantId,
-        id: eventId,
-        deletedAt: null,
-      },
-    });
-  }
-);
+export const getEvent = cache(async (tenantId: string, eventId: string) => {
+  return database.event.findFirst({
+    where: {
+      tenantId,
+      id: eventId,
+      deletedAt: null,
+    },
+  });
+});
 
 /**
  * Counts total RSVPs for the event.
  * @tier 1 (Independent)
  */
-export const getRsvpCount = cache(
-  async (tenantId: string, eventId: string) => {
-    return database.eventGuest.count({
-      where: {
-        tenantId,
-        eventId,
-        deletedAt: null,
-      },
-    });
-  }
-);
+export const getRsvpCount = cache(async (tenantId: string, eventId: string) => {
+  return database.eventGuest.count({
+    where: {
+      tenantId,
+      eventId,
+      deletedAt: null,
+    },
+  });
+});
 
 interface EventDishRow {
   linkId: string;
@@ -555,7 +551,10 @@ export async function fetchAllEventDetailsData(
       ? await getInventoryStock(tenantId, inventoryItemIds)
       : [];
 
-  const stockByItem = new Map<string, { onHand: number; unitCode: string | null }>();
+  const stockByItem = new Map<
+    string,
+    { onHand: number; unitCode: string | null }
+  >();
 
   for (const stock of inventoryStock) {
     const existing = stockByItem.get(stock.itemId);
@@ -570,23 +569,27 @@ export async function fetchAllEventDetailsData(
     });
   }
 
-  const inventoryCoverage: InventoryCoverageItem[] = inventoryItems.map((item) => {
-    const stock = stockByItem.get(item.inventoryItemId);
-    return {
-      ingredientId: item.ingredientId,
-      inventoryItemId: item.inventoryItemId,
-      itemName: item.itemName,
-      onHand: stock ? stock.onHand : null,
-      onHandUnitCode: stock ? stock.unitCode : null,
-      parLevel: item.parLevel ? Number(item.parLevel) : null,
-    };
-  });
+  const inventoryCoverage: InventoryCoverageItem[] = inventoryItems.map(
+    (item) => {
+      const stock = stockByItem.get(item.inventoryItemId);
+      return {
+        ingredientId: item.ingredientId,
+        inventoryItemId: item.inventoryItemId,
+        itemName: item.itemName,
+        onHand: stock ? stock.onHand : null,
+        onHandUnitCode: stock ? stock.unitCode : null,
+        parLevel: item.parLevel ? Number(item.parLevel) : null,
+      };
+    }
+  );
 
   // ==============================================================================
   // Build related events summary
   // ==============================================================================
   const relatedGuestCountMap = new Map<string, number>(
-    relatedGuestCounts.map((row) => [row.eventId, row._count._all] as [string, number])
+    relatedGuestCounts.map(
+      (row) => [row.eventId, row._count._all] as [string, number]
+    )
   );
 
   const relatedEventsForClient: RelatedEventSummary[] = relatedEvents.map(

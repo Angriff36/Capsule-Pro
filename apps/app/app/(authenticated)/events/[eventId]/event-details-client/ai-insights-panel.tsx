@@ -1,5 +1,11 @@
 "use client";
 
+import type { SuggestedAction } from "../../../kitchen/lib/suggestions-types";
+import type {
+  EventBudgetForDisplay,
+  GeneratedEventSummary,
+  TaskBreakdown,
+} from "../event-details-sections";
 import {
   BudgetSection,
   ExecutiveSummarySection,
@@ -7,12 +13,6 @@ import {
   SuggestionsSection,
   TaskBreakdownSection,
 } from "../event-details-sections";
-import type {
-  EventBudgetForDisplay,
-  GeneratedEventSummary,
-  TaskBreakdown,
-} from "../event-details-sections";
-import type { SuggestedAction } from "../../../kitchen/lib/suggestions-types";
 import type { PrepTaskSummaryClient } from "../prep-task-contract";
 
 interface AIInsightsPanelProps {

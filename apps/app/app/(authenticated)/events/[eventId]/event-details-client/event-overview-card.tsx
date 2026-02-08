@@ -14,32 +14,19 @@ import { Progress } from "@repo/design-system/components/ui/progress";
 import { cn } from "@repo/design-system/lib/utils";
 import {
   ActivityIcon,
-  AlarmClockIcon,
   CalendarDaysIcon,
   CalendarPlusIcon,
-  ChevronRightIcon,
-  LayoutGridIcon,
   Link as LinkIcon,
-  ListIcon,
   MapPinIcon,
   PartyPopperIcon,
   ShieldCheckIcon,
   SparklesIcon,
-  TagIcon,
-  TicketIcon,
-  TimerIcon,
   UsersIcon,
   WalletIcon,
 } from "lucide-react";
 import Link from "next/link";
 import type { PrepTaskSummaryClient } from "../prep-task-contract";
-import type { InventoryCoverageItem } from "../event-details-types";
-import {
-  buildCalendarUrl,
-  formatCurrency,
-  formatDuration,
-  formatEventFormat,
-} from "./utils";
+import { buildCalendarUrl, formatEventFormat } from "./utils";
 
 const statusVariantMap = {
   draft: "outline",
@@ -176,11 +163,7 @@ export function EventOverviewCard({
                 </div>
               </div>
             </div>
-            <Button
-              onClick={onUpdateDetails}
-              size="sm"
-              variant="outline"
-            >
+            <Button onClick={onUpdateDetails} size="sm" variant="outline">
               Update details
             </Button>
           </div>
@@ -366,10 +349,7 @@ export function EventOverviewCard({
                   variant="outline"
                 >
                   <svg
-                    className={cn(
-                      "mr-2 size-4",
-                      isSaved && "fill-current"
-                    )}
+                    className={cn("mr-2 size-4", isSaved && "fill-current")}
                     fill="none"
                     stroke="currentColor"
                     strokeLinecap="round"
@@ -385,10 +365,7 @@ export function EventOverviewCard({
                   <LinkIcon className="mr-2 size-4" />
                   Share
                 </Button>
-                <Button
-                  asChild
-                  variant="ghost"
-                >
+                <Button asChild variant="ghost">
                   <a
                     href={buildCalendarUrl(
                       event.title,
@@ -415,10 +392,7 @@ export function EventOverviewCard({
                     View organizer
                   </Link>
                 </Button>
-                <Button
-                  onClick={onEditEvent}
-                  variant="ghost"
-                >
+                <Button onClick={onEditEvent} variant="ghost">
                   <SparklesIcon className="mr-2 size-4" />
                   Edit details
                 </Button>
@@ -446,9 +420,7 @@ export function EventOverviewCard({
                 <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
                   Featured media
                 </p>
-                <p className="mt-1 text-lg font-semibold">
-                  {event.eventType}
-                </p>
+                <p className="mt-1 text-lg font-semibold">{event.eventType}</p>
                 <p className="text-xs text-muted-foreground">
                   {event.venueName ?? "Venue TBD"} •{" "}
                   {new Intl.DateTimeFormat("en-US", {
@@ -504,9 +476,8 @@ export function EventOverviewCard({
                       {prepTasks.length}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {taskSummary.pending} pending •{" "}
-                      {taskSummary.in_progress} in progress •{" "}
-                      {taskSummary.completed} done
+                      {taskSummary.pending} pending • {taskSummary.in_progress}{" "}
+                      in progress • {taskSummary.completed} done
                     </div>
                   </div>
                   <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">

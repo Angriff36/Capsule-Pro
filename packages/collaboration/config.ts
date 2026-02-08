@@ -35,21 +35,25 @@ declare global {
     };
 
     // Custom events, for useBroadcastEvent, useEventListener
-    RoomEvent: {
-      type: "CARD_ADDED";
-      cardId: string;
-    } | {
-      type: "CARD_DELETED";
-      cardId: string;
-    } | {
-      type: "CARD_UPDATED";
-      cardId: string;
-    } | {
-      type: "CARD_MOVED";
-      cardId: string;
-      x: number;
-      y: number;
-    };
+    RoomEvent:
+      | {
+          type: "CARD_ADDED";
+          cardId: string;
+        }
+      | {
+          type: "CARD_DELETED";
+          cardId: string;
+        }
+      | {
+          type: "CARD_UPDATED";
+          cardId: string;
+        }
+      | {
+          type: "CARD_MOVED";
+          cardId: string;
+          x: number;
+          y: number;
+        };
 
     // Custom metadata set on threads, for useThreads, useCreateThread, etc.
     ThreadMetadata: {};

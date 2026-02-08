@@ -1,20 +1,22 @@
-import PDFDocument from 'pdfkit';
-import { LineChartOptions, COLORS } from '../types';
-import { niceScale, formatAxisLabel } from './chart-utils';
+import type PDFDocument from "pdfkit";
+import { COLORS, type LineChartOptions } from "../types";
+import { formatAxisLabel, niceScale } from "./chart-utils";
 
-export function drawLineChart(doc: InstanceType<typeof PDFDocument>, options: LineChartOptions): number {
-  const {
-    x, y, width, height,
-    series, title,
-    showCurrency = false,
-  } = options;
+export function drawLineChart(
+  doc: InstanceType<typeof PDFDocument>,
+  options: LineChartOptions
+): number {
+  const { x, y, width, height, series, title, showCurrency = false } = options;
 
   if (series.length === 0) return y;
 
   doc.save();
 
   if (title) {
-    doc.fontSize(11).font('Helvetica-Bold').fillColor(COLORS.darkText)
+    doc
+      .fontSize(11)
+      .font("Helvetica-Bold")
+      .fillColor(COLORS.darkText)
       .text(title, x, y, { width, lineBreak: false });
   }
 
@@ -27,34 +29,45 @@ export function drawLineChart(doc: InstanceType<typeof PDFDocument>, options: Li
 
   let allValues: number[] = [];
   for (const s of series) {
-    allValues = allValues.concat(s.data.map(d => d.value));
+    allValues = allValues.concat(s.data.map((d) => d.value));
   }
   const maxValue = Math.max(...allValues, 1);
   const scale = niceScale(maxValue, 4);
 
   for (const tick of scale.ticks) {
     const tickY = chartBottom - (tick / scale.max) * chartHeight;
-    doc.moveTo(chartLeft, tickY)
+    doc
+      .moveTo(chartLeft, tickY)
       .lineTo(chartLeft + chartWidth, tickY)
       .strokeColor(COLORS.border)
       .lineWidth(0.5)
       .stroke();
 
-    doc.fontSize(7).font('Helvetica').fillColor(COLORS.lightText)
-      .text(
-        formatAxisLabel(tick, showCurrency),
-        x, tickY - 4,
-        { width: labelAreaWidth - 8, align: 'right', lineBreak: false }
-      );
+    doc
+      .fontSize(7)
+      .font("Helvetica")
+      .fillColor(COLORS.lightText)
+      .text(formatAxisLabel(tick, showCurrency), x, tickY - 4, {
+        width: labelAreaWidth - 8,
+        align: "right",
+        lineBreak: false,
+      });
   }
 
-  const maxPoints = Math.max(...series.map(s => s.data.length));
-  const labels = series[0]?.data.map(d => d.label) ?? [];
+  const maxPoints = Math.max(...series.map((s) => s.data.length));
+  const labels = series[0]?.data.map((d) => d.label) ?? [];
 
   labels.forEach((label, i) => {
     const labelX = chartLeft + (i / Math.max(maxPoints - 1, 1)) * chartWidth;
-    doc.fontSize(7).font('Helvetica').fillColor(COLORS.mediumText)
-      .text(label, labelX - 25, chartBottom + 6, { width: 50, align: 'center', lineBreak: false });
+    doc
+      .fontSize(7)
+      .font("Helvetica")
+      .fillColor(COLORS.mediumText)
+      .text(label, labelX - 25, chartBottom + 6, {
+        width: 50,
+        align: "center",
+        lineBreak: false,
+      });
   });
 
   for (const s of series) {
@@ -84,13 +97,17 @@ export function drawLineChart(doc: InstanceType<typeof PDFDocument>, options: Li
     let legendX = chartLeft;
     for (const s of series) {
       doc.rect(legendX, legendY, 10, 10).fill(s.color);
-      doc.fontSize(7).font('Helvetica').fillColor(COLORS.mediumText)
+      doc
+        .fontSize(7)
+        .font("Helvetica")
+        .fillColor(COLORS.mediumText)
         .text(s.label, legendX + 14, legendY + 1, { lineBreak: false });
       legendX += doc.widthOfString(s.label) + 30;
     }
   }
 
-  doc.moveTo(chartLeft, chartBottom)
+  doc
+    .moveTo(chartLeft, chartBottom)
     .lineTo(chartLeft + chartWidth, chartBottom)
     .strokeColor(COLORS.border)
     .lineWidth(1)

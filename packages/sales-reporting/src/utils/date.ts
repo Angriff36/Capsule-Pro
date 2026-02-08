@@ -33,18 +33,56 @@ export function endOfQuarter(date: Date): Date {
 }
 
 export function formatDateShort(date: Date): string {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
   return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 }
 
 export function formatMonthYear(date: Date): string {
-  const months = ['January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'];
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
   return `${months[date.getMonth()]} ${date.getFullYear()}`;
 }
 
 export function formatMonthShort(date: Date): string {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
   return `${months[date.getMonth()]} ${date.getFullYear()}`;
 }
 
@@ -69,7 +107,10 @@ export function getMonthsInRange(start: Date, end: Date): Date[] {
   return months;
 }
 
-export function getWeeksInRange(start: Date, end: Date): Array<{ start: Date; end: Date }> {
+export function getWeeksInRange(
+  start: Date,
+  end: Date
+): Array<{ start: Date; end: Date }> {
   const weeks: Array<{ start: Date; end: Date }> = [];
   const current = new Date(start);
   while (current <= end) {
