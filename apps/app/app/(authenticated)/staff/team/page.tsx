@@ -20,6 +20,7 @@ import {
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { AddStaffForm } from "./components/add-staff-form";
+import { AddEmployeeToBoardButton } from "./components/add-employee-to-board-button";
 
 interface EmployeeRow {
   id: string;
@@ -112,6 +113,7 @@ const StaffTeamPage = async () => {
                     <TableHead>Status</TableHead>
                     <TableHead>Employment</TableHead>
                     <TableHead>Added</TableHead>
+                    <TableHead className="w-[120px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -138,6 +140,13 @@ const StaffTeamPage = async () => {
                       </TableCell>
                       <TableCell>
                         {dateFormatter.format(employee.createdAt)}
+                      </TableCell>
+                      <TableCell>
+                        <AddEmployeeToBoardButton
+                          employeeId={employee.id}
+                          employeeName={formatName(employee)}
+                          employeeRole={formatEnum(employee.role)}
+                        />
                       </TableCell>
                     </TableRow>
                   ))}

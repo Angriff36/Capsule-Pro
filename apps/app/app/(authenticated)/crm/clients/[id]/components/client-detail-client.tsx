@@ -14,6 +14,7 @@ import {
   ArrowLeftIcon,
   CalendarIcon,
   DollarSignIcon,
+  KanbanIcon,
   MailIcon,
   MessageSquareIcon,
   PhoneIcon,
@@ -23,6 +24,7 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import { AddToBoardDialog } from "../../../../command-board/components/add-to-board-dialog";
 import { useState } from "react";
 import { toast } from "sonner";
 import { deleteClient } from "../../actions";
@@ -208,10 +210,24 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
             </div>
           </div>
         </div>
-        <Button disabled={isDeleting} onClick={handleDelete} variant="outline">
-          <TrashIcon className="h-4 w-4 mr-2" />
-          Delete
-        </Button>
+        <div className="flex items-center gap-2">
+          <AddToBoardDialog
+            defaultBoardDescription={`Client: ${getClientDisplayName()}`}
+            defaultBoardName={`Client: ${getClientDisplayName()}`}
+            entityId={clientId}
+            entityType="client"
+            trigger={
+              <Button variant="outline">
+                <KanbanIcon className="h-4 w-4 mr-2" />
+                Add to Board
+              </Button>
+            }
+          />
+          <Button disabled={isDeleting} onClick={handleDelete} variant="outline">
+            <TrashIcon className="h-4 w-4 mr-2" />
+            Delete
+          </Button>
+        </div>
       </div>
 
       <Separator />
