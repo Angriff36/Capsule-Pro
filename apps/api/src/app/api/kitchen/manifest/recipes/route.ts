@@ -33,7 +33,7 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export async function GET(request: Request) {
   // 1. Auth check
-  const { orgId } = await auth();
+  const { orgId, userId } = await auth();
   if (!orgId) {
     return manifestErrorResponse(new Error("Unauthorized"), 401);
   }
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
   // 3. Get current user
   const currentUser = await database.user.findFirst({
     where: {
-      AND: [{ tenantId }, { authUserId: (await auth()).userId ?? "" }],
+      AND: [{ tenantId }, { authUserId: userId ?? "" }],
     },
   });
 

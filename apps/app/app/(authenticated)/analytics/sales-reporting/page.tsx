@@ -45,8 +45,11 @@ export default function SalesReportingPage() {
 
       // Find date columns
       const header = lines[0].toLowerCase();
+      const headerCells = header.split(',');
       const dateColumns = ['date', 'record_date', 'entry_date', 'event_date', 'created_date'];
-      const dateColIndex = dateColumns.findIndex(col => header.includes(col));
+      const dateColIndex = headerCells.findIndex(cell => 
+        dateColumns.some(col => cell.includes(col))
+      );
 
       if (dateColIndex === -1) {
         setError('No date column found. File should have a "date" column.');
@@ -57,7 +60,7 @@ export default function SalesReportingPage() {
       const dates: Date[] = [];
       for (let i = 1; i < lines.length; i++) {
         const cells = lines[i].split(',');
-        const dateStr = cells[0]?.replace(/"/g, '').trim();
+        const dateStr = cells[dateColIndex]?.replace(/"/g, '').trim();
         if (dateStr) {
           const d = new Date(dateStr);
           if (!isNaN(d.getTime())) dates.push(d);
