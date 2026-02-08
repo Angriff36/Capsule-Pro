@@ -108,6 +108,7 @@ export function BoardCanvas({
       zoom: state.viewport.zoom,
       panX: state.viewport.panX,
       panY: state.viewport.panY,
+      showConnections: true, // Default value for file without connections
     };
     localStorage.setItem(VIEWPORT_PREFERENCES_KEY, JSON.stringify(prefs));
   }, [gridSize, showGrid, snapToGrid, state.viewport]);

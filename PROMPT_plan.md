@@ -35,6 +35,8 @@
 
 IMPORTANT: Plan only. Do NOT implement anything. Do NOT assume functionality is missing; confirm with code search first. Treat `packages/*` as the project's standard library for shared utilities and components. Prefer consolidated, idiomatic implementations there over ad-hoc copies.
 
-ULTIMATE GOAL: We want to achieve performance increases and an events page cleanup and layout overhaul apps\app\app\(authenticated)\events\[eventId]\page.tsx. Focus on the following specs: specs\hydration-resistance_TODO
-specs\performance-enhancements_TODO
-specs\bundle_implementation. Consider missing elements and plan accordingly. If an element is missing, search first to confirm it doesn't exist, then if needed author the specification at specs/FILENAME.md. If you create a new element then document the plan to implement it in @IMPLEMENTATION_PLAN.md using a subagent.
+ULTIMATE GOAL: We want to focus on implementing the full command board implementation. complete these specs fully: specs\strategic-command-board-foundation_TODO
+specs\command-board-entity-cards_TODO
+specs\command-board-persistence_TODO
+specs\command-board-realtime-sync_TODO
+specs\command-board-relationship-lines_TODO. Consider missing elements and plan accordingly. If an element is missing, search first to confirm it doesn't exist, then if needed author the specification at specs/FILENAME.md. If you create a new element then document the plan to implement it in @IMPLEMENTATION_PLAN.md using a subagent.

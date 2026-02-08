@@ -233,6 +233,8 @@ export interface ViewportPreferences {
   gridSnapEnabled: boolean;
   /** User's preferred grid size */
   gridSize: number;
+  /** User's connection lines show preference */
+  showConnections: boolean;
 }
 
 // =============================================================================

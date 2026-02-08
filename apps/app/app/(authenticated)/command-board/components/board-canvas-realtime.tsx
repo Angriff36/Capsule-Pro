@@ -58,6 +58,7 @@ export function BoardCanvas({
   const [gridSize, setGridSize] = useState(40);
   const [showGrid, setShowGrid] = useState(true);
   const [snapToGrid, setSnapToGrid] = useState(true);
+  const [showConnections, setShowConnections] = useState(true);
   const [selectedCardType, setSelectedCardType] = useState<CardType>(
     CardType.generic
   );
@@ -209,6 +210,7 @@ export function BoardCanvas({
         setGridSize(prefs.gridSize ?? 40);
         setShowGrid(prefs.showGrid ?? true);
         setSnapToGrid(prefs.gridSnapEnabled ?? true);
+        setShowConnections(prefs.showConnections ?? true);
         setState((prev) => ({
           ...prev,
           viewport: {
@@ -231,9 +233,10 @@ export function BoardCanvas({
       zoom: state.viewport.zoom,
       panX: state.viewport.panX,
       panY: state.viewport.panY,
+      showConnections,
     };
     localStorage.setItem(VIEWPORT_PREFERENCES_KEY, JSON.stringify(prefs));
-  }, [gridSize, showGrid, snapToGrid, state.viewport]);
+  }, [gridSize, showGrid, snapToGrid, state.viewport, showConnections]);
 
   useEffect(() => {
     onCardsChange?.(state.cards);
@@ -340,18 +343,32 @@ export function BoardCanvas({
   }, [boardId, selectedCardType, state.cards.length, broadcast]);
 
   const handleCardClick = useCallback(
-    (cardId: string) => {
+    (e: React.MouseEvent, cardId: string) => {
       if (!canEdit) {
         return;
       }
 
+      const isShiftHeld = e.shiftKey;
       updateSelectedCard(cardId);
       setSelectedConnectionId(null);
       setState((prev) => {
         const isAlreadySelected = prev.selectedCardIds.includes(cardId);
+
+        if (isShiftHeld) {
+          // Shift+click: toggle selection
+          return {
+            ...prev,
+            selectedCardIds: isAlreadySelected
+              ? prev.selectedCardIds.filter((id) => id !== cardId)
+              : [...prev.selectedCardIds, cardId],
+            selectedConnectionId: null,
+          };
+        }
+
+        // Normal click: replace selection with this card only
         return {
           ...prev,
-          selectedCardIds: isAlreadySelected ? [] : [cardId],
+          selectedCardIds: [cardId],
           selectedConnectionId: null,
         };
       });
@@ -721,6 +738,18 @@ export function BoardCanvas({
               </span>
             </label>
 
+            <label className="group flex cursor-pointer items-center gap-2.5 transition-colors hover:bg-accent/50 -mx-1.5 rounded px-1.5 py-1">
+              <input
+                checked={showConnections}
+                className="h-4 w-4 rounded border-primary text-primary focus:ring-primary focus:ring-2 focus:ring-offset-0"
+                onChange={(e) => setShowConnections(e.target.checked)}
+                type="checkbox"
+              />
+              <span className="text-sm text-foreground group-hover:text-foreground">
+                Show Connections
+              </span>
+            </label>
+
             <div className="flex items-center gap-2.5">
               <span className="text-sm text-muted-foreground">Grid Size:</span>
               <div className="relative">
@@ -765,12 +794,14 @@ export function BoardCanvas({
             showGrid={showGrid}
           />
 
-          <ConnectionLines
-            cards={state.cards}
-            connections={connections}
-            onConnectionClick={handleConnectionClick}
-            selectedConnectionId={selectedConnectionId ?? undefined}
-          />
+          {showConnections && (
+            <ConnectionLines
+              cards={state.cards}
+              connections={connections}
+              onConnectionClick={handleConnectionClick}
+              selectedConnectionId={selectedConnectionId ?? undefined}
+            />
+          )}
 
           {state.cards.map((card) => (
             <BoardCard
@@ -779,7 +810,7 @@ export function BoardCanvas({
               gridSize={gridSize}
               isSelected={state.selectedCardIds.includes(card.id)}
               key={card.id}
-              onClick={() => handleCardClick(card.id)}
+              onClick={(e) => handleCardClick(e, card.id)}
               onDelete={handleDeleteCard}
               onPositionChange={handleCardPositionChange}
               onSizeChange={handleCardSizeChange}

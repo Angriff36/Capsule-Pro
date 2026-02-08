@@ -6,6 +6,8 @@ import { ClientCard } from "./cards/client-card";
 import { EmployeeCard } from "./cards/employee-card";
 import { EventCard } from "./cards/event-card";
 import { InventoryCard } from "./cards/inventory-card";
+import { NoteCard } from "./cards/note-card";
+import { RecipeCard } from "./cards/recipe-card";
 import { TaskCard } from "./cards/task-card";
 import { DraggableCard } from "./draggable-card";
 
@@ -16,7 +18,7 @@ interface BoardCardProps {
   gridSize: number;
   snapToGridEnabled: boolean;
   viewportZoom: number;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
   onPositionChange: (
     cardId: string,
     position: { x: number; y: number }
@@ -52,6 +54,10 @@ export const BoardCard = memo(function BoardCard({
         return <EmployeeCard card={card} />;
       case "inventory":
         return <InventoryCard card={card} />;
+      case "generic":
+        return <NoteCard card={card} />;
+      case "recipe":
+        return <RecipeCard card={card} />;
       default: {
         // Generic card with better visual hierarchy
         return (
@@ -74,7 +80,7 @@ export const BoardCard = memo(function BoardCard({
                   </svg>
                 </div>
                 <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {card.cardType === "generic" ? "Note" : card.cardType}
+                  {card.cardType}
                 </span>
               </div>
 

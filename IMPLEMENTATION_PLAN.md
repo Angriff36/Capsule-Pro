@@ -1,874 +1,878 @@
-# Implementation Plan: Performance & Hydration Optimization
-
-**Date**: 2025-02-07
-**Project**: Capsule Pro (next-forge)
-**Focus**: Critical component refactoring, hydration resistance, bundle optimization, performance hardening
-
----
+# Command Board Feature - Implementation Plan
 
 ## Executive Summary
 
-This implementation plan addresses **critical code quality and performance issues** identified through comprehensive codebase analysis. The research revealed **one component exceeding 3000 lines** (10x the guideline), systemic hydration risks across both applications, zero ISR caching strategy, and significant bundle optimization opportunities.
-
-### Critical Findings Requiring Immediate Action
-
-1. **MONOLITH COMPONENT CRISIS**: `event-details-client.tsx` at **3,064 lines** with 25 useState, 4 useEffect, 13 useMemo, 9 useCallback - immediate maintainability and performance emergency
-2. **12-Query Waterfall**: Events page performs sequential database queries with no parallelization or React.cache() - major TTFB impact
-3. **Hydration Risks Everywhere**: Intl formatters without explicit locale, Date.now() during render, localStorage accessed without hydration guards, array index keys
-4. **0% ISR Adoption**: Not a single page uses export const revalidate despite 70% of content being cacheable
-5. **Middleware Overreach**: Clerk SDK (~70-100KB) runs on ALL requests via overly broad matcher
-6. **Heavy Dependencies**: react-pdf, Recharts loaded eagerly instead of lazy-loaded
-
-### Scope
-
-This plan covers **two applications**:
-- **apps/app** - Main application (critical events page overhaul, bundle optimization)
-- **apps/web** - Marketing site (hydration fixes, caching strategy)
+The Command Board feature has a **solid foundation** with approximately **60-65% completion**. Core canvas, 5 of 7 entity card types, real-time sync (via **Liveblocks**, not Ably), and relationship visualization are functional. **Key gaps**: Note and Recipe card types fall back to generic renderer (missing specialized components), Named layouts lack database model and UI (only localStorage exists), Bulk edit is minimal (only basic multi-select), Grouping is completely missing (0% complete).
 
 ---
 
-## Priority Classifications
+## Feature-by-Feature Status
 
-- **P0 (Critical)**: 1000+ line components, data loss risks, security vulnerabilities, production-breaking issues
-- **P1 (High)**: Hydration errors, performance degradation, major UX impact
-- **P2 (Medium)**: Code quality improvements, minor UX issues
-- **P3 (Low)**: Polish, nice-to-haves
-
----
-
-## Phase 0: Events Page Emergency Refactoring (P0 - CRITICAL)
-
-### Task 0.1: Split Event Details Client Monolith ✅ COMPLETED (2025-02-07)
-**Priority**: P0 (Critical)
-**File**: `C:\projects\capsule-pro\apps\app\app\(authenticated)\events\[eventId]\event-details-client.tsx` (3,064 lines → modularized)
-
-**Problem**: Massive client component violates all maintainability guidelines. 10x the 300-line limit with 70 hooks total. Multiple hydration risks: Intl formatters, Date.now() usage, localStorage access, window object references.
-
-**Acceptance Criteria**:
-- [x] Create component directory: `event-details-client/`
-- [x] Extract `EventOverviewCard` component (~300 lines) - event info, media, stats
-- [x] Extract `MenuIntelligenceSection` (~400 lines) - dishes, ingredients, inventory
-- [x] Extract `AIInsightsPanel` (~300 lines) - summary, task breakdown, suggestions
-- [x] Extract `GuestManagementSection` (~300 lines) - RSVPs, guest list
-- [x] Extract `EventExplorer` (~400 lines) - related events, filtering, timeline
-- [x] Extract `RecipeDrawer` modal (~200 lines) - recipe details sheet
-- [x] Main index component handles composition with state management
-- [x] Fix Intl formatter hydration issues (moved to wrapper functions with locale dep)
-- [x] All extracted components have proper TypeScript interfaces
-- [x] All state management uses proper typed hooks
-- [x] Tests pass: `pnpm test` (107 tests passed)
-- [x] No type errors in refactored code
-
-**Implementation Structure**:
-```
-event-details-client/
-  ├── index.tsx              # Main composition (~1000 lines with state)
-  ├── event-overview-card.tsx  # Event overview section (~250 lines)
-  ├── menu-intelligence-section.tsx  # Menu and ingredient coverage (~350 lines)
-  ├── ai-insights-panel.tsx  # AI insights composition (~110 lines)
-  ├── guest-management-section.tsx  # RSVP and guest management (~75 lines)
-  ├── event-explorer.tsx  # Event browser with filters (~850 lines)
-  ├── recipe-drawer.tsx  # Recipe details sheet (~130 lines)
-  └── utils.ts  # Helper functions with Intl formatters (~160 lines)
-```
-
-**Notes**:
-- FiltersPanel is embedded in EventExplorer component (inline implementation)
-- Custom hooks remain in index.tsx (state management is component-specific)
-- Original event-details-client.tsx now re-exports from the new directory
-- Hydration-safe Intl formatters created in utils.ts with explicit locale parameters
+| Feature | Status | Completion | Key Gaps |
+|---------|--------|------------|----------|
+| **Strategic Foundation** | Functional | 90% | Browser fullscreen mode, enhanced grid snapping guides |
+| **Entity Cards** | Partial | 71% (5/7 types) | Missing Note Card, Recipe Card specialized components |
+| **Layout Persistence** | Partial | 40% | No database model, no named layouts UI |
+| **Real-time Sync** | Mostly Complete | 75% | No offline queue, no conflict resolution UI, events not persisted to database |
+| **Connection Lines** | Mostly Complete | 80% | No visibility toggle UI, no manual connection creation |
+| **Bulk Edit** | Minimal | 10% | No Shift+click, no drag selection, no bulk dialog |
+| **Grouping** | Missing | 0% | No database model, no components, no actions |
 
 ---
 
-### Task 0.2: Optimize Server Data Fetching (Parallelize Waterfall) ✅ COMPLETED (2025-02-07)
-**Priority**: P0 (Critical)
-**File**: `C:\projects\capsule-pro\apps\app\app\(authenticated)\events\[eventId]\page.tsx`
+## Specification-by-Specification Status
 
-**Problem**: Server component performs **12 sequential database queries** in a waterfall pattern. No React.cache() usage. No Suspense boundaries. Independent queries wait for previous queries to complete unnecessarily.
+### 1. Strategic Command Board Foundation
+**Status: COMPLETE (90%)**
 
-**Acceptance Criteria**:
-- [x] Create `event-details-data.ts` for modular data fetching functions
-- [x] Implement parallel fetching with Promise.all() for independent queries:
-  - [x] Event info + RSVP count + dishes + prep tasks + related events run in parallel (Tier 1)
-  - [x] Recipe queries + guest counts run in parallel (Tier 2)
-  - [x] Ingredients + steps run in parallel (Tier 3)
-  - [x] Inventory queries properly sequenced (Tier 4-5)
-- [x] Add React.cache() wrapper to all data functions for deduplication
-- [x] Page component reduced to <200 lines (540 → ~145 lines)
-- [x] Document data dependencies in comments
-- [x] Tests pass: `pnpm test` (107 tests passed)
-- [x] No functionality regressions
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Full-screen canvas | Complete | `CanvasViewport` with 4000x4000px canvas |
+| Drag-and-drop functionality | Complete | `DraggableCard` with react-moveable |
+| Grid system | Complete | `GridLayer` with configurable sizes (20/40/60px) |
+| Zoom controls | Complete | 0.25x to 2x zoom with wheel/buttons |
+| Pan functionality | Complete | Middle-click or Space+drag |
+| Multiple entity types | Partial | 5/7 card types implemented (missing: note, recipe) |
+| Grid snapping | Partial | Basic snap to grid, no enhanced snapping guides |
+| Full-screen mode | Missing | No browser fullscreen API integration |
 
-**Implementation Structure**:
-```
-event-details-data.ts (~620 lines):
-  - Tier 1 functions (parallel): getEvent, getRsvpCount, getEventDishes, getPrepTasksRaw, getRelatedEvents
-  - Tier 2 functions (parallel): getRecipeVersions, getRelatedGuestCounts
-  - Tier 3 functions (parallel): getRecipeIngredients, getRecipeSteps
-  - Tier 4 function: getInventoryItems
-  - Tier 5 function: getInventoryStock
-  - Main orchestration: fetchAllEventDetailsData()
-```
+**Files:**
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\canvas-viewport.tsx` - Zoom/pan viewport component
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\draggable-card.tsx` - Drag/resize with react-moveable
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\grid-layer.tsx` - Grid background with configurable size
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\viewport-controls.tsx` - Zoom controls UI
 
-**Notes**:
-- All functions wrapped with React.cache() for automatic deduplication
-- Parallel execution reduces TTFB by ~30% compared to sequential execution
-- Page component now just calls fetchAllEventDetailsData() and passes data to client
-
-**Implementation Pattern**:
-```typescript
-// Parallel independent queries
-const [event, rsvpCount, eventDishes] = await Promise.all([
-  getEvent(eventId, tenantId),
-  getRsvpCount(eventId, tenantId),
-  getEventDishes(eventId, tenantId),
-]);
-
-// Dependent queries after
-const recipeDetails = eventDishes.length > 0
-  ? await Promise.all([
-      getRecipeVersions(eventDishes, tenantId),
-      getRecipeIngredients(eventDishes, tenantId),
-      getRecipeSteps(eventDishes, tenantId),
-    ])
-  : [[], [], []];
-
-// Independent inventory queries
-const [inventoryItems, stockLevels, prepTasks] = await Promise.all([
-  getInventoryItems(eventId, tenantId),
-  getInventoryStock(eventId, tenantId),
-  getPrepTasks(eventId, tenantId),
-]);
-```
-
-**Dependencies**: None (can run parallel to Task 0.1)
-**Estimated Time**: 5 hours
-**Risk**: Medium - requires understanding query dependencies
+**Acceptance Status:**
+- Canvas renders with grid and zoom controls
+- Drag entity moves smoothly, position updates
+- Zoom in/out works correctly (0.25x-2x range)
+- Pan board works (middle-click or Space+drag)
+- Fit to screen functionality exists
+- Keyboard shortcuts (Space to pan, +/- to zoom, Escape to deselect)
+- Missing: Browser fullscreen mode, enhanced grid snapping guides
 
 ---
 
-### Task 0.3: Lazy Load Heavy Analytics Components ✅ COMPLETED (2025-02-07)
-**Priority**: P0 (Critical)
-**Files**:
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\analytics\sales\pdf-components.tsx` (react-pdf)
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\analytics\clients\components\revenue-trends.tsx` (Recharts)
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\analytics\clients\components\predictive-ltv.tsx` (Recharts)
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\analytics\sales\sales-dashboard-client.tsx` (Recharts)
+### 2. Command Board Entity Cards
+**Status: PARTIAL (71% - 5 of 7 types)**
 
-**Acceptance Criteria**:
-- [x] Identify all heavy library imports:
-  - [x] `react-pdf` - already lazy-loaded in server action (actions.tsx)
-  - [x] `recharts` in revenue-trends.tsx - now lazy-loaded via clv-dashboard
-  - [x] `recharts` in predictive-ltv.tsx - now lazy-loaded via clv-dashboard
-  - [x] `recharts` in sales-dashboard-client.tsx - already lazy-loaded via wrapper with ssr: false
-- [x] Replace with dynamic imports using `next/dynamic`
-- [x] Add loading skeletons for all lazy components
-- [x] Set `ssr: false` for sales-dashboard-client (client-only)
-- [x] Tests pass: `pnpm test` (107 tests passed)
-- [x] No functionality regressions
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Display entity cards for 5 types | Complete | TaskCard, EventCard, ClientCard, EmployeeCard, InventoryCard |
+| Show key information | Complete | Each specialized card shows relevant data |
+| Support dragging cards | Complete | Via DraggableCard wrapper |
+| Quick actions | Complete | Edit, view details buttons on cards |
+| Color-code by type/status | Complete | Status badges, type indicators |
+| Card selection (single) | Complete | Click to select, Escape to deselect |
+| Card selection (multiple) | Partial | Only Ctrl+A works; missing Shift+click, drag selection |
+| Visual selection feedback | Missing | No selection border highlight on cards |
 
-**Implementation Details**:
-- Updated `clv-dashboard.tsx` to lazy-load `RevenueTrends` and `PredictiveLTV` with Skeleton loaders
-- `sales-dashboard-client.tsx` already lazy-loaded via `sales-dashboard-wrapper.tsx` with `ssr: false`
-- PDF generation already lazy-loaded in server action (not in client bundle)
+**Files:**
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\task-card.tsx` - Task card with priority, status, due dates
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\event-card.tsx` - Event card with date, venue, guest count
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\client-card.tsx` - Client card with contact details
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\employee-card.tsx` - Employee card with role, avatar
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\inventory-card.tsx` - Inventory card with quantity, reorder level
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-card.tsx` - Card wrapper with routing logic
 
-**Notes**:
-- Recharts (~200KB gzipped) now only loads when users visit analytics pages
-- Skeleton loaders prevent layout shift during lazy loading
+**MISSING Card Types (use generic fallback):**
+- `components/cards/note-card.tsx` - Falls back to generic renderer with "Note" label
+- `components/cards/recipe-card.tsx` - Falls back to generic renderer showing "recipe" as type
 
----
-
-### Task 0.4: Optimize Event Details Component Loading ✅ COMPLETED (2025-02-07)
-**Priority**: P1 (High)
-**File**: `C:\projects\capsule-pro\apps\app\app\(authenticated)\events\[eventId]\page.tsx`
-
-**Problem**: After Task 0.1 splits the monolith, heavy child components (AIInsightsPanel, EventExplorer) should be lazy-loaded to reduce initial bundle.
-
-**Acceptance Criteria**:
-- [x] Lazy load AIInsightsPanel (below-the-fold content)
-- [x] Lazy load EventExplorer section (secondary feature)
-- [x] Keep EventOverviewCard and MenuIntelligenceSection eager (above-fold)
-- [x] Add loading skeletons for lazy sections
-- [x] Measure bundle size reduction
-- [x] No layout shift during lazy load
-
-**Implementation**:
-- Created `lazy-ai-insights-panel.tsx` - dynamic import with skeleton matching 2-column layout
-- Created `lazy-event-explorer.tsx` - dynamic import with skeleton matching filters + grid layout
-- Updated `index.tsx` to import from lazy wrappers instead of direct imports
-- Skeletons use `Skeleton` component from design system to prevent layout shift
-
-**Notes**:
-- EventExplorer is ~42KB - now code-split and loaded on-demand
-- AIInsightsPanel contains multiple sections (summary, tasks, suggestions, prep tasks, budget)
-- Skeleton loaders preserve component dimensions during lazy load
-- Tests pass: `pnpm test` (107 tests passed)
-- Build succeeds with no errors
+**Missing Multi-Select Features:**
+- Shift+click additive selection
+- Visual drag-selection box (marquee)
+- Visual selection border on selected cards
 
 ---
 
-## Phase 1: Hydration Resistance Fixes (P1 - apps/web)
+### 3. Command Board Layout Persistence
+**Status: PARTIAL (40%)**
 
-### Task 1.1: Fix Intl.NumberFormat/DateTimeFormat without Locale ✅ COMPLETED (2025-02-07)
-**Priority**: P1 (High)
-**Files**:
-- `C:\projects\capsule-pro\apps\web\app\[locale]\(home)\components\stats.tsx` (lines 36-38)
-- `C:\projects\capsule-pro\apps\web\components\sidebar.tsx` (lines 21-26) - already OK
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Save entity positions per user | Complete | Database persistence via updateCard action |
+| Save zoom/view preferences | Complete | localStorage persistence in board-canvas-realtime.tsx |
+| Restore saved layout | Complete | Auto-restores from localStorage on mount |
+| Support multiple saved layouts (named views) | Missing | No database model or UI |
+| Auto-persist layout changes | Partial | Positions persist, but not named layouts |
+| Tenant isolation | Complete | Prisma queries filtered by tenantId |
 
-**Problem**: Intl.NumberFormat and Intl.DateTimeFormat called without explicit locale parameter. Server may use different default locale than client, causing hydration mismatch.
+**Files:**
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` (lines 204-236) - LocalStorage persistence
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\actions\cards.ts` - Position persistence via updateCard
 
-**Specific Issues**:
-- `stats.tsx:36-38`: `new Intl.NumberFormat()` without locale - FIXED
-- `sidebar.tsx:21-26`: Already has explicit locale (no fix needed)
+**CRITICAL MISSING:** Named layouts feature requires:
+1. Database model: `CommandBoardLayout` (does not exist)
+2. API actions: `saveLayout`, `listLayouts`, `deleteLayout`, `applyLayout`
+3. UI components: Layout switcher, save layout dialog
 
-**Acceptance Criteria**:
-- [x] All Intl.NumberFormat calls specify locale parameter (e.g., `Intl.NumberFormat(locale || "en-US")`)
-- [x] Components receive locale as prop from parent layout
-- [x] No hardcoded "en-US" in Intl calls (sidebar already OK)
-- [x] Tests pass: `pnpm test` (107 tests passed)
+**Missing Database Schema:**
+```prisma
+model CommandBoardLayout {
+  tenantId     String   @map("tenant_id") @db.Uuid
+  id           String   @default(gen_random_uuid()) @db.Uuid
+  boardId      String   @map("board_id") @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  name         String
+  viewport     Json
+  visibleCards String[]
+  gridSize     Int      @default(40)
+  showGrid     Boolean  @default(true)
+  snapToGrid   Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-**Implementation**:
-- Added `locale?: string` prop to Stats component with default "en-US"
-- Updated Intl.NumberFormat to use `new Intl.NumberFormat(locale)`
-- Updated home page to pass `locale={locale}` to Stats component
-
----
-
-### Task 1.2: Fix useState with new Date() Initialization ✅ COMPLETED (2025-02-07)
-**Priority**: P1 (High)
-**File**: `C:\projects\capsule-pro\apps\web\app\[locale]\contact\components\contact-form.tsx` (line 23)
-
-**Acceptance Criteria**:
-- [x] Date state uses lazy initialization: `useState(() => new Date())`
-- [x] Tests pass
-
-**Implementation**:
-```typescript
-// Changed from:
-const [date, setDate] = useState<Date | undefined>(new Date());
-// To:
-const [date, setDate] = useState<Date | undefined>(() => new Date());
-```
-
----
-
-### Task 1.3: Fix Non-Deterministic Array Keys ✅ COMPLETED (2025-02-07)
-**Priority**: P1 (High)
-**Files**:
-- `C:\projects\capsule-pro\apps\web\app\[locale]\(home)\components\cases.tsx` (line 61) - static carousel, index OK
-- `C:\projects\capsule-pro\apps\web\app\[locale]\(home)\components\faq.tsx` - FIXED using `item.question`
-- `C:\projects\capsule-pro\apps\web\app\[locale]\(home)\components\testimonials.tsx` - FIXED using `item.title`
-- `C:\projects\capsule-pro\apps\web\app\[locale]\(home)\components\stats.tsx` - FIXED using `item.title`
-- `C:\projects\capsule-pro\apps\web\app\[locale]\contact\components\contact-form.tsx` - FIXED using `benefit.title`
-- `C:\projects\capsule-pro\apps\web\app\[locale]\components\header\index.tsx` - FIXED using `subItem.title`
-
-**Acceptance Criteria**:
-- [x] All .map() iterations use unique, stable keys from data
-- [x] Keys derived from data properties: title, question
-- [x] No array index used as key (except for static, never-reordering lists)
-- [x] Tests pass
-
----
-
-### Task 1.4: Fix setTimeout Without Cleanup ✅ COMPLETED (2025-02-07)
-**Priority**: P1 (High)
-**Files**:
-- `C:\projects\capsule-pro\apps\web\app\[locale]\(home)\components\cases.tsx` (line 37)
-- `C:\projects\capsule-pro\apps\web\app\[locale]\(home)\components\testimonials.tsx` (line 31)
-
-**Acceptance Criteria**:
-- [x] All setTimeout/setInterval have cleanup functions returning clearTimeout/clearInterval
-- [x] Tests pass
-
-**Implementation**:
-```typescript
-// Added cleanup function and fixed state updater pattern
-const timeoutId = setTimeout(() => {
-  setCurrent((prev) => prev + 1);  // updater function instead of current
-}, timeout);
-return () => clearTimeout(timeoutId);
-```
-
----
-
-### Task 1.5: Address suppressHydrationWarning ✅ COMPLETED (2025-02-07)
-**Priority**: P2 (Medium)
-**File**: `C:\projects\capsule-pro\apps\web\app\[locale]\layout.tsx` (line 28)
-
-**Acceptance Criteria**:
-- [x] Investigated why hydration warning exists (hardcoded `lang="en"`)
-- [x] Changed `lang="en"` to `lang={locale}` to match route param
-- [x] Removed suppressHydrationWarning
-- [x] Tests pass
-
-**Implementation**:
-```typescript
-// Before: <html lang="en" suppressHydrationWarning>
-// After:  <html lang={locale}>
-```
-
----
-
-### Task 1.6: Fix Additional useState(Date) Hydration Issues in apps/app ✅ COMPLETED (2025-02-07)
-**Priority**: P1 (High)
-**Files**:
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\kitchen\production-board-client.tsx` (line 343)
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\events\[eventId]\battle-board\components\timeline.tsx` (line 79)
-
-**Problem**: Additional useState(Date) initialization issues found in apps/app that were not covered in Task 1.2. These cause hydration mismatches when server renders with a different date than client.
-
-**Acceptance Criteria**:
-- [x] Fixed `useState(new Date())` to use lazy initialization: `useState(() => new Date())`
-- [x] production-board-client.tsx selectedDate state now uses lazy initialization
-- [x] timeline.tsx currentTime state now uses lazy initialization
-- [x] All setTimeout/setInterval usages verified to have proper cleanup
-- [x] Tests pass: `pnpm test` (162 tests passed)
-
-**Implementation**:
-```typescript
-// Before:
-const [selectedDate, setSelectedDate] = useState(new Date());
-const [currentTime, setCurrentTime] = useState(new Date());
-
-// After:
-const [selectedDate, setSelectedDate] = useState(() => new Date());
-const [currentTime, setCurrentTime] = useState(() => new Date());
-```
-
-**Notes**:
-- All Date.now() usages were reviewed and found to be in event handlers (not during render) - no hydration risk
-- All setTimeout/setInterval usages have proper cleanup functions
-- KitchenClock in production-board-client.tsx already uses hydration-safe pattern (null initial state)
-
----
-
-## Phase 2: Performance Hardening (P1-P2)
-
-### Task 2.1: Add ISR Caching Strategy ✅ COMPLETED (2025-02-07)
-**Priority**: P1 (High)
-**Files**: All page.tsx files in `C:\projects\capsule-pro\apps\web\app\[locale]`
-
-**Problem**: 0% of pages use `export const revalidate`. Every page request hits the server despite 70% of content being cacheable (home, pricing, legal, blog listing).
-
-**Acceptance Criteria**:
-- [x] **Home page**: `export const revalidate = 3600` (1 hour) - content changes infrequently
-- [x] **Pricing page**: `export const revalidate = 86400` (24 hours) - rarely changes
-- [x] **Contact page**: `export const revalidate = 86400` (24 hours) - static content
-- [x] **Legal pages**: `export const revalidate = 86400` (24 hours) - legal/[slug]/page.tsx
-- [x] **Blog listing**: `export const revalidate = 1800` (30 minutes) - new posts added
-- [x] **Blog post pages**: `export const revalidate = 3600` (1 hour) - edits happen
-- [x] Build succeeds with cache headers
-
-**Files Updated**:
-```
-apps/web/app/[locale]/(home)/page.tsx     (3600s)
-apps/web/app/[locale]/pricing/page.tsx    (86400s)
-apps/web/app/[locale]/contact/page.tsx    (86400s)
-apps/web/app/[locale]/blog/page.tsx       (1800s)
-apps/web/app/[locale]/blog/[slug]/page.tsx (3600s)
-apps/web/app/[locale]/legal/[slug]/page.tsx (86400s)
-```
-
-**Notes**:
-- Legal pages use `[slug]` dynamic route (not separate terms/privacy routes)
-- ISR revalidation will happen automatically via Next.js stale-while-revalidate
-- Cache headers will be respected by Vercel/Next.js deployment
-
----
-
-### Task 2.2: Optimize Middleware Matcher ✅ COMPLETED (2025-02-07)
-**Priority**: P2 (Medium)
-**File**: `C:\projects\capsule-pro\apps\api\proxy.ts` (matcher config)
-
-**Problem**: Overly broad matcher `"/((?!_next|[^?]*\\.(?:html?|css...)).*)"` runs middleware on EVERY request, including static assets and public pages. Clerk SDK (~70-100KB) loaded unnecessarily.
-
-**Current Matcher**:
-```typescript
-// Runs on ALL routes except _next and static files
-matcher: "/((?!_next|[^?]*\\.(?:html?|css|js|json|ico)).*)"
-```
-
-**Acceptance Criteria**:
-- [x] Audit which routes ACTUALLY need middleware (auth-protected routes)
-- [x] Narrow matcher to only protected routes:
-  - [x] `/api/*` - API routes
-  - [x] `/trpc/*` - tRPC routes
-- [x] Explicitly exclude public pages:
-  - [x] Marketing site routes
-  - [x] Static assets
-- [x] Document which routes require middleware in comment
-- [x] Verify middleware still protects auth routes
-- [x] Verify public pages don't trigger middleware (check network tab)
-- [x] Tests pass (especially auth tests)
-
-**Implementation**:
-```typescript
-export const config = {
-  // Narrow matcher to only API and tRPC routes
-  // This prevents Clerk SDK from loading on public marketing pages
-  matcher: [
-    // Match all API routes
-    "/api(.*)",
-    // Match all tRPC routes
-    "/trpc(.*)",
-  ],
-};
-```
-
-**Dependencies**: None
-**Estimated Time**: 1 hour
-**Risk**: Medium - if misconfigured, could break auth or expose protected routes
-
----
-
-### Task 2.3: Contain Edge Instrumentation Bundle ✅ COMPLETED (2025-02-07)
-**Priority**: P1 (High)
-**File**: `C:\projects\capsule-pro\apps\app\instrumentation.ts` or `instrumentation-client.ts`
-
-**Problem**: Edge instrumentation module includes telemetry imports at top level, bloating edge runtime bundle.
-
-**Acceptance Criteria**:
-- [x] Inspect current instrumentation.ts/js imports
-- [x] Move heavyweight imports inside `register()` function
-- [x] Apply runtime gating where applicable (only load Sentry if DSN present)
-- [x] Avoid top-level imports of:
-  - [x] Telemetry frameworks
-  - [x] UA parsing libraries
-  - [x] Non-edge-safe packages
-- [x] Measure edge bundle size reduction with analyzer
-- [x] Verify telemetry still works correctly
-- [x] No functional regression in error tracking
-
-**Implementation**:
-```typescript
-// Before - top-level imports
-import { initializeSentry } from "@repo/observability/instrumentation";
-
-export const register = initializeSentry;
-
-// After - runtime gating + lazy imports
-// Only initialize Sentry if DSN is configured
-export async function register() {
-  const hasSentryDsn = Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN);
-
-  if (!hasSentryDsn) {
-    return;
-  }
-
-  const { initializeSentry } = await import("@repo/observability/instrumentation");
-  await initializeSentry();
+  @@id([tenantId, id])
+  @@unique([boardId, userId, name])
+  @@index([boardId])
+  @@index([userId])
+  @@map("command_board_layouts")
+  @@schema("tenant_events")
 }
 ```
 
-**Files Updated**:
-- `apps/app/instrumentation.ts` - Added DSN gating before importing Sentry
-- `apps/api/instrumentation.ts` - Added DSN gating + dynamic import
-- `apps/web/instrumentation.ts` - Added DSN gating + dynamic import
-- `packages/observability/edge.ts` - Changed to dynamic import of Sentry
-
-**Dependencies**: None
-**Estimated Time**: 2 hours
-
----
-
-### Task 2.4: Run Bundle Analysis and Trace Heavy Dependencies ✅ COMPLETED (2025-02-07)
-**Priority**: P2 (Medium)
-**Command**: `pnpm analyze`
-
-**Problem**: Need baseline metrics to measure optimization impact and identify remaining heavy dependencies.
-
-**Acceptance Criteria**:
-- [x] Run bundle analyzer on both apps/app and apps/web
-- [x] Document current bundle sizes:
-  - [x] Shared client bundle size
-  - [x] Edge instrumentation bundle size
-  - [x] /analytics/sales route payload
-  - [x] /events/[eventId] route payload
-- [x] Identify top heaviest modules
-- [x] Trace import chains for heavy modules
-- [x] Identify opportunities for additional lazy loading
-- [x] Save analyzer output for comparison
-- [x] Document findings in docs/ or IMPLEMENTATION_PLAN.md
-
-**Baseline Bundle Sizes (2025-02-07)**:
-
-**Web App (apps/web)**:
-- First Load JS shared by all: **245 kB**
-- Top shared chunks:
-  - `chunks/983-ba85ef26701e969d.js`: 150 kB
-  - `chunks/f15febea-e59d64706b121035.js`: 38.2 kB (likely React/Next.js)
-  - `chunks/fc37b89a-d49161d839c85b36.js`: 54.1 kB
-- Home page (`/[locale]`): 354 kB First Load JS
-- Contact page: 309 kB First Load JS
-- Pricing page: 328 kB First Load JS
-- Blog routes: ~245-258 kB First Load JS
-- Largest dynamic route: Contact page at 26.5 kB (client component)
-
-**Main App (apps/app)**:
-- First Load JS shared by all: **203 kB**
-- Middleware: **136 kB** (Clerk SDK + auth logic)
-- Top shared chunks:
-  - `chunks/3610-b88704cc8d7972ec.js`: 146 kB
-  - `chunks/785b2751-4560b5c85ee55f3d.js`: 54.1 kB
-- Events page (`/events/[eventId]`): **349 kB** First Load JS (34.6 kB page)
-- Kitchen recipes (`/kitchen/recipes`): **374 kB** First Load JS (10.5 kB page)
-- Plasmic host: **471 kB** First Load JS (150 kB page)
-- Middleware remains at 136 kB after Task 2.2 optimization (minimal change as expected)
-
-**API App**:
-- Middleware: **161 kB** (Clerk SDK for API auth)
-
-**Key Findings**:
-1. **Largest shared chunks**: 146-150 kB chunks dominate both apps
-2. **Middleware sizes**: 136-161 kB (Clerk SDK ~70-100KB of this)
-3. **Events page**: 349 kB is reasonable after previous optimizations (was significantly larger before monolith split)
-4. **Recharts lazy loading**: Successfully reduces bundle for non-analytics pages
-5. **ISR caching**: Will reduce server load but doesn't affect client bundle size
-6. **Plasmic route**: 471 kB is the largest single route (visual editor)
-
-**Analyzer Reports Saved To**:
-- `apps/web/.next/analyze/nodejs.html`
-- `apps/web/.next/analyze/edge.html`
-- `apps/web/.next/analyze/client.html`
-- `apps/app/.next/analyze/nodejs.html`
-- `apps/app/.next/analyze/edge.html`
-- `apps/app/.next/analyze/client.html`
+**Acceptance Status:**
+- Entity positions saved automatically
+- Refresh page restores layout
+- Create named view - NOT IMPLEMENTED
+- Switch between saved views - NOT IMPLEMENTED
+- View board as different user shows their layout - Works via localStorage
+- Layout save fails with error message - NOT IMPLEMENTED (silent failures)
 
 ---
 
-## Phase 3: Code Quality Improvements (P2-P3)
+### 4. Real-time Command Board Sync
+**Status: MOSTLY COMPLETE (75%)**
 
-### Task 3.1: Extract Navigation Logic from Header ✅ COMPLETED (2025-02-07)
-**Priority**: P2 (Medium)
-**File**: `C:\projects\capsule-pro\apps\web\app\[locale]\components\header\index.tsx` (200 lines → 82 lines)
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Sync entity positions | Complete | Broadcasts CARD_MOVED events via Liveblocks |
+| Show cursor positions | Complete | `LiveCursors` from @repo/collaboration |
+| Sync entity updates | Complete | CARD_UPDATED event handling |
+| Handle concurrent edits | Complete | Last-write-wins via Liveblocks |
+| Presence indicators | Complete | `useCommandBoardPresence` hook |
+| Reconnection handling | Partial | Liveblocks handles basic reconnection, no offline queue |
+| Conflict resolution UI | Missing | No manual merge interface |
+| Network interruption recovery | Missing | No offline edit queue, no debouncing |
 
-**Problem**: Header component approaching 300-line guideline. Navigation items, mobile menu logic, and desktop menu intermingled.
+**Technology Stack:**
+- **Liveblocks** (NOT Ably) - `@liveblocks/client`, `@liveblocks/node`, `@liveblocks/react`
+- Custom `@repo/collaboration` package wrapping Liveblocks
 
-**Acceptance Criteria**:
-- [x] Extract navigation items config to `navigation-config.ts`
-- [x] Extract mobile menu to `mobile-nav.tsx`
-- [x] Extract desktop menu to `desktop-nav.tsx`
-- [x] Extract language switcher if present
-- [x] Header index reduced to <150 lines (82 lines achieved)
-- [x] Tests pass (107 tests passed)
-- [x] No visual regressions in header behavior
-- [x] JSDoc documentation added
+**Files:**
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\command-board-realtime-client.tsx` - Real-time client setup
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` (lines 246-285) - Event listeners for CARD_MOVED, CARD_ADDED, CARD_DELETED
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\command-board-wrapper.tsx` - Liveblocks Room integration
+- `C:\projects\capsule-pro\packages\collaboration\` - Custom collaboration package
 
-**Implementation Structure**:
+**Real-time Events Implemented:**
+- `CARD_MOVED` - Position sync during drag
+- `CARD_ADDED` - New card appearance
+- `CARD_DELETED` - Card removal
+- Presence/cursor tracking via `LiveCursors` component
+
+**Missing:**
+- Explicit offline edit queue (edits lost if offline)
+- Conflict resolution UI for manual merge decisions
+- Debouncing for rapid position updates
+- Network status indicator
+- Optimistic UI updates with rollback on conflict
+- Event persistence to database (events only broadcast via Liveblocks, not stored)
+
+---
+
+### 5. Visual Relationship Connectors
+**Status: MOSTLY COMPLETE (80%)**
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Display relationship lines | Complete | `ConnectionLines` SVG component |
+| Different line styles per type | Complete | 5 relationship types with colors/dash arrays |
+| Auto-update on drag | Complete | Lines recalculate on card position change |
+| Support multiple relationships | Complete | Auto-generates all valid connections |
+| Highlight on hover/selection | Complete | Selected state with glow effect |
+| Toggle visibility | Partial | Code supports it but NO UI checkbox in settings |
+| Manual connection creation | Missing | No drag-to-connect or context menu |
+| Delete individual connections | Missing | No connection context menu |
+
+**Files:**
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\connection-lines.tsx` - SVG connection rendering with 5 types
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` (lines 79-198) - Auto-connection detection logic
+
+**Auto-connection Logic (Automatic based on metadata):**
+- Client -> Event (via `metadata.entityId`)
+- Event -> Task (via `metadata.eventId`)
+- Event -> Inventory (via `metadata.eventId`)
+- Task -> Employee (via `metadata.assignee`)
+
+**Connection Types Implemented:**
+- `client_to_event` (blue solid - "has")
+- `event_to_task` (green solid - "includes")
+- `task_to_employee` (orange dashed - "assigned")
+- `event_to_inventory` (purple solid - "uses")
+- `generic` (gray dotted - "related")
+
+**QUICK WIN:** Add "Show Connections" checkbox to toolbar settings panel (code already has `showConnections` state, just needs UI control)
+
+**Missing:**
+- UI toggle for connection visibility (settings panel has no checkbox)
+- Manual relationship creation UI (drag from card edge to another card)
+- Delete/hide individual connections (no connection context menu)
+- Edit connection properties (label, type)
+
+---
+
+### 6. Bulk Edit Operations
+**Status: MINIMAL (10%)**
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Select multiple entities | Partial | Only single selection + Ctrl+A |
+| Shift+click selection | Missing | No additive keyboard selection |
+| Drag selection box (marquee) | Missing | No visual selection rectangle |
+| Identify common properties | Missing | No bulk edit analysis |
+| Apply bulk edits | Missing | No bulk update endpoint |
+| Preview changes | Missing | No preview dialog |
+| Support undo/redo | Missing | No history stack |
+| Validate bulk edits | Missing | No validation logic |
+| Visual selection feedback | Missing | No border on selected cards |
+
+**Current Implementation:**
+- Single card selection: Click to select, Escape to deselect
+- Select all: Ctrl+A works
+- Delete selected: Delete key removes selected cards
+- Selection state: `selectedCardIds` in `board-canvas-realtime.tsx`
+
+**Database Schema:**
+- No changes needed (can use existing cards table)
+
+**Required Files to Create:**
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\bulk-edit-dialog.tsx` - Dialog for editing multiple cards
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\selection-box.tsx` - Drag selection rectangle
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\actions\bulk-update-cards.ts` - Server action for bulk updates
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\hooks\use-bulk-selection.ts` - Hook for bulk selection logic
+
+---
+
+### 7. Bulk Grouping and Combining
+**Status: MISSING (0%)**
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Select and group entities | Missing | No grouping functionality |
+| Create named groups | Missing | No group entity |
+| Visual clustering | Missing | No group container |
+| Expand/collapse groups | Missing | No group state |
+| Move groups as unit | Missing | No group drag logic |
+| Ungroup entities | Missing | No ungroup action |
+
+**Missing Database Schema:**
+```prisma
+model CommandBoardGroup {
+  tenantId  String   @map("tenant_id") @db.Uuid
+  id        String   @default(gen_random_uuid()) @db.Uuid
+  boardId   String   @map("board_id") @db.Uuid
+  name      String
+  color     String?
+  collapsed Boolean  @default(false)
+  positionX Int      @default(0) @map("position_x")
+  positionY Int      @default(0) @map("position_y")
+  width     Int      @default(300)
+  height    Int      @default(200)
+  zIndex    Int      @default(0) @map("z_index")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  board     CommandBoard @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
+  cards     CommandBoardCard[]
+
+  @@id([tenantId, id])
+  @@index([boardId])
+  @@map("command_board_groups")
+  @@schema("tenant_events")
+}
 ```
-components/header/
-  ├── index.tsx              # Main header composition (82 lines)
-  ├── navigation-config.ts   # Nav items config (buildNavigationItems helper)
-  ├── desktop-nav.tsx        # Desktop navigation (70 lines)
-  ├── mobile-nav.tsx         # Mobile menu drawer (66 lines)
-  └── language-switcher.tsx  # Locale switcher (already existed)
+
+**Required Schema Update to CommandBoardCard:**
+```prisma
+// Add to CommandBoardCard model:
+groupId String? @map("group_id") @db.Uuid
+group   CommandBoardGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+```
+
+**Required Files to Create:**
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\group-container.tsx`
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\create-group-dialog.tsx`
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\actions\groups.ts`
+- Update `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` to render groups
+
+---
+
+## Database Schema Status
+
+### Existing Models (COMPLETE)
+```prisma
+model CommandBoard {
+  tenantId    String   @map("tenant_id") @db.Uuid
+  id          String   @default(gen_random_uuid()) @db.Uuid
+  eventId     String?  @map("event_id") @db.Uuid
+  name        String
+  description String?
+  status      String   @default("draft")
+  isTemplate  Boolean  @default(false) @map("is_template")  // UNUSED - requires template feature
+  tags        String[]
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  cards CommandBoardCard[]
+
+  @@id([tenantId, id])
+  @@index([eventId])
+  @@index([tags], map: "idx_command_boards_tags_gin", type: Gin)
+  @@map("command_boards")
+  @@schema("tenant_events")
+}
+
+model CommandBoardCard {
+  tenantId  String   @map("tenant_id") @db.Uuid
+  id        String   @default(gen_random_uuid()) @db.Uuid
+  boardId   String   @map("board_id") @db.Uuid
+  title     String
+  content   String?
+  cardType  String   @default("task") @map("card_type")
+  status    String   @default("pending")
+  positionX Int      @default(0) @map("position_x")
+  positionY Int      @default(0) @map("position_y")
+  width     Int      @default(200)
+  height    Int      @default(150)
+  zIndex    Int      @default(0) @map("z_index")
+  color     String?
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  board CommandBoard @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([boardId])
+  @@index([zIndex])
+  @@map("command_board_cards")
+  @@schema("tenant_events")
+}
+```
+
+**IMPORTANT SCHEMA NOTE:** The project uses `dbgenerated("gen_random_uuid()")` throughout the schema. Follow this existing pattern for consistency when adding new models.
+
+### Missing Models
+- `CommandBoardLayout` (for named views feature)
+- `CommandBoardGroup` (for grouping feature)
+- `CommandBoardTemplate` (for template system - optional)
+
+---
+
+## File Structure Reference
+
+```
+C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board/
+├── page.tsx                          # Root page (redirects to default)
+├── [boardId]/page.tsx                # Dynamic board page
+├── layout.tsx                        # Layout wrapper
+├── command-board-wrapper.tsx         # Main wrapper component (Liveblocks Room)
+├── command-board-realtime-client.tsx # Real-time client setup
+├── types.ts                          # TypeScript types and utilities
+├── actions/
+│   ├── boards.ts                     # Board CRUD operations
+│   ├── cards.ts                      # Card CRUD operations
+│   ├── entity-cards.ts               # Entity card creation
+│   ├── conflicts.ts                  # Conflict detection
+│   ├── suggestions.ts                # AI suggestions
+│   ├── suggestions-types.ts          # Suggestion types
+│   ├── layouts.ts                    # [MISSING] Named layouts CRUD
+│   ├── bulk-update-cards.ts          # [MISSING] Bulk edit operations
+│   └── groups.ts                     # [MISSING] Group CRUD operations
+├── components/
+│   ├── board-canvas.tsx              # Non-realtime canvas
+│   ├── board-canvas-realtime.tsx     # Realtime canvas with Liveblocks
+│   ├── board-card.tsx                # Card wrapper component (handles note/recipe fallback)
+│   ├── canvas-viewport.tsx           # Zoom/pan viewport
+│   ├── connection-lines.tsx          # SVG connection rendering
+│   ├── draggable-card.tsx            # Drag/resize with react-moveable
+│   ├── grid-layer.tsx                # Grid background
+│   ├── viewport-controls.tsx         # Zoom controls UI
+│   ├── conflict-warning-panel.tsx    # Conflict warnings
+│   ├── suggestions-panel.tsx         # AI suggestions UI
+│   ├── selection-box.tsx             # [MISSING] Drag selection box
+│   ├── bulk-edit-dialog.tsx          # [MISSING] Bulk edit dialog
+│   ├── group-container.tsx           # [MISSING] Group rendering
+│   ├── create-group-dialog.tsx       # [MISSING] Group creation
+│   ├── layout-switcher.tsx           # [MISSING] Layout switcher
+│   └── save-layout-dialog.tsx        # [MISSING] Save layout dialog
+│   └── cards/
+│       ├── task-card.tsx             # Task card (COMPLETE)
+│       ├── event-card.tsx            # Event card (COMPLETE)
+│       ├── client-card.tsx           # Client card (COMPLETE)
+│       ├── employee-card.tsx         # Employee card (COMPLETE)
+│       ├── inventory-card.tsx        # Inventory card (COMPLETE)
+│       ├── note-card.tsx             # [MISSING] Falls back to generic
+│       └── recipe-card.tsx           # [MISSING] Falls back to generic
+└── hooks/
+    ├── use-suggestions.ts            # AI suggestions hook
+    ├── use-bulk-selection.ts         # [MISSING] Bulk selection hook
+    └── use-undo-redo.ts              # [MISSING] Undo/redo hook
+
+C:\projects\capsule-pro\packages\collaboration/
+├── index.ts                          # Main exports
+├── room.tsx                          # Liveblocks Room wrapper
+├── hooks.ts                          # Custom hooks (useBroadcastEvent, useEventListener)
+├── live-cursors.tsx                  # Cursor display component
+├── live-cursor.tsx                   # Single cursor component
+├── live-presence-indicator.tsx       # Presence indicator
+├── use-command-board-presence.ts     # Board-specific presence hook
+├── auth.ts                           # Liveblocks authentication
+├── config.ts                         # Liveblocks configuration
+└── keys.ts                           # API keys
+
+C:\projects\capsule-pro\packages\database\prisma\
+└── schema.prisma                     # Database schema (uses dbgenerated("gen_random_uuid()"))
 ```
 
 ---
 
-### Task 3.2: Extract Footer Navigation Config ✅ COMPLETED (2025-02-07)
-**Priority**: P3 (Low)
-**File**: `C:\projects\capsule-pro\apps\web\app\[locale]\components\footer.tsx` (118 lines → 108 lines)
+## Implementation Tasks (Prioritized by Impact vs Effort)
 
-**Problem**: Footer navigation items hardcoded in component, harder to maintain.
+### Phase 1: Quick Wins (Low Effort, High Visibility)
 
-**Acceptance Criteria**:
-- [x] Extract navigation items to `footer-config.ts`
-- [x] Simplify footer component logic
-- [x] Footer component uses `buildFooterNavigationItems()` helper
-- [x] Tests pass (107 tests passed)
-- [x] JSDoc documentation added
+#### Task 1: Add Connection Visibility Toggle UI
+**Estimated: 1-2 hours** | Impact: High | Effort: Low
 
-**Implementation Structure**:
-```
-components/
-  ├── footer.tsx         # Main footer with CMS Feed
-  └── footer-config.ts   # Navigation config helper
-```
+**Why this is first:** Code already has `showConnections` state in `board-canvas-realtime.tsx`. Only needs UI checkbox in settings panel.
 
----
+**Implementation:**
+- Add "Show Connections" checkbox to toolbar/settings panel
+- Wire up to existing `showConnections` state
+- Toggle re-renders `ConnectionLines` component
 
-### Task 3.3: Add Component Documentation ✅ COMPLETED (2025-02-07)
-**Priority**: P3 (Low)
-**Files**: All components in `C:\projects\capsule-pro\apps\web\app\[locale]\components`
+**Files to modify:**
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` (add checkbox to settings panel)
 
-**Problem**: Missing JSDoc comments for complex components. Future developers lack context.
-
-**Acceptance Criteria**:
-- [x] Add JSDoc to Header component (purpose, props, features)
-- [x] Add JSDoc to Footer component (CMS integration, features)
-- [x] Add JSDoc to LanguageSwitcher component (URL handling behavior)
-- [x] Document prop types and purposes
-- [x] Document non-obvious behavior (hydration decisions, etc.)
-- [x] Tests pass (107 tests passed)
+**Acceptance Criteria:**
+- Settings panel displays "Show Connections" checkbox
+- Toggling checkbox shows/hides connection lines
+- Preference persists in localStorage
 
 ---
 
-## Phase 4: Testing & Validation (P1)
+#### Task 2: Complete Missing Card Types (Note and Recipe)
+**Estimated: 4-6 hours** | Impact: High | Effort: Medium
 
-### Task 4.1: Add Hydration Regression Tests ✅ COMPLETED (2025-02-07)
-**Priority**: P1 (High)
-**File**: New test files in `apps/web/__tests__` or `apps/web/app/__tests__`
+**Why this matters:** Currently note and recipe cards fall back to generic renderer, providing poor UX for these entity types.
 
-**Problem**: No automated tests to catch hydration regressions. Could re-introduce hydration bugs.
+**Implementation:**
 
-**Acceptance Criteria**:
-- [x] Create test suite for server component rendering
-- [x] Create test suite for client component hydration
-- [x] Test Intl formatting with different locales (en-US, es, fr)
-- [x] Test form state initialization
-- [x] Test components with Date objects
-- [x] Test array key rendering
-- [x] CI/CD runs tests automatically (via pnpm test)
-- [x] All tests pass (14 tests passing)
-- [x] Tests catch deliberate hydration bugs (verify effectiveness)
-
-**Implementation**:
+**Create Note Card:**
 ```typescript
-// apps/web/__tests__/hydration.test.tsx
-import { render } from '@testing-library/react'
-import Stats from '../app/[locale]/(home)/components/stats'
-
-describe('Hydration Stability', () => {
-  it('should render Stats component without hydration mismatch', () => {
-    const { container } = render(<Stats dictionary={mockDict} locale="en-US" />)
-    expect(container).toMatchSnapshot()
-  })
-
-  it('should handle different locales correctly', () => {
-    const { container: enContainer } = render(<Stats dictionary={mockDict} locale="en-US" />)
-    const { container: esContainer } = render(<Stats dictionary={mockDict} locale="es" />)
-    // Verify formatting differs appropriately
-  })
-})
+// C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\note-card.tsx
+- Rich text editing support (textarea or lightweight editor)
+- Note-specific styling (yellow sticky note aesthetic)
+- Color picker for note background (yellow, blue, green, pink)
+- Display note content from metadata or content field
+- Edit button to open full note editor
 ```
 
-**Files Created**:
-- `apps/web/__tests__/hydration.test.tsx` - Main hydration test suite (14 tests)
-- `apps/web/vitest.config.mts` - Vitest config for web app with React plugin
-- `apps/web/test/mocks/next-image.tsx` - Mock for Next.js Image component
-- `apps/web/test/mocks/next-link.tsx` - Mock for Next.js Link component
-- `apps/web/test/mocks/server-only.ts` - Mock for server-only module
+**Create Recipe Card:**
+```typescript
+// C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\recipe-card.tsx
+- Ingredients display from metadata.ingredients array
+- Steps/preparation display from metadata.steps
+- Preparation time and servings from metadata
+- Link to inventory items (for ingredients)
+- View recipe details button
+```
 
-**Testing Infrastructure Updates**:
-- Added `web` project to root `vitest.config.ts`
-- Updated `vitest.setup.ts` with:
-  - React global availability for Next.js components
-  - `window.matchMedia` mock for embla-carousel
-  - `IntersectionObserver` mock for embla-carousel/Next.js
-  - `ResizeObserver` mock for embla-carousel
-- Added test script to `apps/web/package.json` to enable hydration regression testing:
-  ```json
-  "test": "vitest run"
-  ```
+**Update board-card.tsx:**
+```typescript
+// Add to switch statement in renderCardContent():
+case "note":
+  return <NoteCard card={card} />;
+case "recipe":
+  return <RecipeCard card={card} />;
+```
 
-**Test Coverage**:
-- Stats component: Intl.NumberFormat with locale variants
-- ContactForm: useState lazy Date initialization
-- FAQ component: Stable array keys from question field
-- Testimonials component: setTimeout cleanup, stable keys
-- Cases component: setTimeout cleanup, static carousel
-- Sequential render consistency verification
+**Files to create:**
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\note-card.tsx`
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\recipe-card.tsx`
 
-**Dependencies**: Tasks 1.1-1.4 (fix hydration issues first, then test)
-**Estimated Time**: 4 hours
+**Files to modify:**
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-card.tsx` (add cases to switch statement)
 
----
-
-### Task 4.2: Performance Benchmarking ✅ COMPLETED (2025-02-07)
-**Priority**: P2 (Medium)
-**File**: `docs/PERFORMANCE_BASELINE.md`
-
-**Problem**: No baseline performance metrics. Can't measure improvement.
-
-**Acceptance Criteria**:
-- [x] Bundle size analysis documented (from Task 2.4)
-- [x] Baseline report saved to docs/PERFORMANCE_BASELINE.md
-- [x] Document optimization results and impacts
-- [x] Document target metrics for future Lighthouse testing
-- [x] Identify next steps for Lighthouse CI integration
-
-**Notes**:
-- Lighthouse metrics require publicly accessible URLs or deployed environment
-- Bundle analysis provides meaningful baseline data
-- Key metrics documented: First Load JS, middleware sizes, route payloads
-- TTFB improved ~30% via query parallelization (Task 0.2)
-- ISR caching will reduce server load (Task 2.1)
-- Recharts lazy loading reduces non-analytics route bundles (Task 0.3)
-
-**Recommendations**:
-- Install `@lhci/cli` for automated Lighthouse testing
-- Configure `.lighthousrc.js` with production URLs
-- Add Lighthouse CI to CI/CD pipeline
+**Acceptance Criteria:**
+- Note cards render with sticky note styling
+- Recipe cards display ingredients and prep steps
+- Both card types have specialized quick actions
+- Generic fallback no longer used for these types
 
 ---
 
-## Execution Order & Timeline
+#### Task 3: Implement Shift+Click Selection
+**Estimated: 2-3 hours** | Impact: Medium | Effort: Low
 
-### Week 1: Critical Events Page Overhaul
-**Goal**: Eliminate the 3000-line monolith and fix data fetching waterfall
+**Why this matters:** Enables basic multi-select workflow without complex drag selection.
 
-1. **Task 0.1**: Split event-details-client (10h) - DO THIS FIRST
-2. **Task 0.2**: Parallelize server data fetching (5h) - can run parallel to #1
-3. **Task 0.3**: Lazy load analytics components (3h) - independent
+**Implementation:**
+- Add Shift+click handler to `board-card.tsx`
+- Toggle selection state when Shift is held
+- Add visual border to selected cards (CSS class update)
+- Update selection state management in `board-canvas-realtime.tsx`
 
-**Week 1 Total**: 18 hours
-**Outcome**: Events page maintainable, faster TTFB, reduced bundle
+**Files to modify:**
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-card.tsx` (add Shift+click logic)
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` (selection state)
 
----
-
-### Week 2: Hydration Fixes (apps/web)
-**Goal**: Eliminate all hydration warnings and non-deterministic rendering
-
-4. **Task 1.1**: Fix Intl usage (1h)
-5. **Task 1.2**: Fix useState Date init (0.5h)
-6. **Task 1.3**: Fix array keys (2h)
-7. **Task 1.4**: Fix setTimeout cleanup (1h)
-8. **Task 1.5**: Address suppressHydrationWarning (0.5h)
-
-**Week 2 Total**: 5 hours
-**Outcome**: Zero hydration warnings, stable rendering
+**Acceptance Criteria:**
+- Shift+click adds/removes card from selection
+- Selected cards show visual border highlight
+- Ctrl+A still selects all cards
+- Escape deselects all cards
 
 ---
 
-### Week 3: Performance Hardening
-**Goal**: Reduce bundle sizes, add caching, optimize middleware
+### Phase 2: High Impact Features (Medium Effort)
 
-9. **Task 2.1**: Add ISR caching (2h)
-10. **Task 2.3**: Contain edge instrumentation (2h)
-11. **Task 2.2**: Optimize middleware (1h)
-12. **Task 2.4**: Bundle analysis (2h)
-13. **Task 0.4**: Lazy load event components (2h) - depends on Task 0.1
+#### Task 4: Implement Drag Selection Box (Marquee)
+**Estimated: 6-8 hours** | Impact: High | Effort: Medium
 
-**Week 3 Total**: 9 hours
-**Outcome**: Faster page loads, reduced middleware overhead, smaller bundles
+**Why this matters:** Enables true bulk operations workflow with visual selection.
 
----
+**Implementation:**
 
-### Week 4: Testing & Code Quality
-**Goal**: Ensure regressions don't happen, polish code quality
+**Create Selection Box Component:**
+```typescript
+// C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\selection-box.tsx
+- Visual rectangle overlay on canvas drag
+- Calculate intersection with card bounds
+- Add/remove cards from selection based on intersection
+```
 
-14. **Task 4.1**: Hydration regression tests (4h)
-15. **Task 4.2**: Performance benchmarking (3h)
-16. **Task 3.1**: Extract header navigation (2h)
-17. **Task 3.2**: Extract footer config (1h)
-18. **Task 3.3**: Add documentation (2h)
+**Add Selection Mode:**
+- Listen for mouse events on canvas background
+- Draw SVG rect overlay during drag
+- Calculate card intersections using bounding box logic
+- Update `selectedCardIds` state on drag end
 
-**Week 4 Total**: 12 hours
-**Outcome**: Test coverage, performance baselines, cleaner code
+**Files to create:**
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\selection-box.tsx`
 
----
+**Files to modify:**
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` (add selection mode)
 
-**Grand Total**: 44 hours (~5-6 weeks part-time)
-**Critical Path**: Task 0.1 → Task 0.4
+**Acceptance Criteria:**
+- Ctrl+drag or Shift+drag creates selection rectangle
+- Cards within rectangle are selected
+- Selection supports additive selection (Shift+drag adds to selection)
+- Visual feedback shows selection area
 
----
-
-## Validation Checklist
-
-Before marking this plan complete, verify:
-
-- [x] **Hydration**: Hydration regression tests pass (14 tests in apps/web)
-- [ ] **React Strict Mode**: No warnings in development (manual testing required)
-- [ ] **Lighthouse**: Scores >= 90 on Performance, Accessibility, Best Practices (requires deployed URL)
-- [x] **Bundle Size**: Shared client bundle at 203 kB (apps/app) - baseline established
-- [x] **TTFB**: Query parallelization implemented in Task 0.2 (~30% improvement expected)
-- [x] **Tests**: All tests pass: `pnpm test` (162 tests: app=107, api=27, web=14, hydration=14)
-- [x] **Build**: Build succeeds: `pnpm build` (21 tasks successful)
-- [x] **Lint**: Lint issues resolved - biome.jsonc updated with overrides for generated files and test mocks
-- [x] **Format**: Code formatted with Ultracite
-- [x] **TypeScript**: No type errors (build succeeds)
-- [ ] **Manual Testing**: All pages tested (home, contact, pricing, events, analytics)
-- [ ] **Regression**: Performance tests show no degradation
-
-**Last Updated**: 2025-02-07 (Session: Task 1.6 completed - fixed useState(Date) hydration issues in apps/app)
-
-**Remaining Work**:
-- Manual browser testing for hydration warnings
-- Lighthouse CI setup for automated performance testing
-- Full manual QA of all pages
-- **Known Issue**: basehub CLI has compatibility issues on Windows affecting web app build (basehub/basehub-cli#234)
+**Dependencies:** None (can be done in parallel with Task 3)
 
 ---
 
-## Risk Assessment
+#### Task 5: Implement Named Layouts
+**Estimated: 10-12 hours** | Impact: High | Effort: Medium-High
 
-| Task | Risk | Impact | Mitigation |
-|------|------|--------|------------|
-| 0.1 Split event-details-client | High | State management breakage | Incremental extraction, thorough testing |
-| 0.2 Parallelize queries | Medium | Data dependency issues | Careful audit of query dependencies |
-| 0.3 Lazy load analytics | Low | PDF generation breaks | Test PDF export thoroughly |
-| 1.1 Fix Intl usage | Low | Display format changes | Verify formats visually |
-| 1.2 Fix useState Date | Low | Date picker breaks | Test contact form submission |
-| 1.3 Fix array keys | Medium | Component reordering bugs | Test filtering/sorting features |
-| 2.1 Add ISR caching | Medium | Stale data served | Verify revalidation works |
-| 2.2 Optimize middleware | High | Auth bypass or exposure | Comprehensive auth testing |
-| 2.3 Edge instrumentation | Medium | Telemetry failure | Verify Sentry logs errors |
-| 2.4 Bundle analysis | Low | None | Purely diagnostic |
+**Why this matters:** Major feature gap - users expect to save different board views.
+
+**Implementation:**
+
+**Database:**
+- Add `CommandBoardLayout` model to Prisma schema
+- Create migration using `pnpm migrate`
+
+**Server Actions:** Create `layouts.ts`
+```typescript
+// C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\actions\layouts.ts
+- saveLayout(boardId, userId, name, viewport, visibleCards, gridSize, showGrid, snapToGrid)
+- listLayouts(boardId, userId)
+- deleteLayout(layoutId)
+- applyLayout(layoutId) - restores viewport and card visibility
+```
+
+**UI Components:**
+- Add layout switcher dropdown to toolbar (shows saved layouts)
+- Add "Save Current Layout" dialog (name input)
+- Layout thumbnail preview (optional - can use canvas screenshot)
+
+**Files to create:**
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\actions\layouts.ts`
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\layout-switcher.tsx`
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\save-layout-dialog.tsx`
+
+**Files to modify:**
+- `C:\projects\capsule-pro\packages\database\prisma\schema.prisma` (add CommandBoardLayout model)
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` (integrate layout switching)
+
+**Acceptance Criteria:**
+- User can save current layout with custom name
+- Layout switcher shows all saved layouts
+- Switching layout restores viewport and card positions
+- Deleting layout removes it from list
+- Layouts are per-user (different users have different layouts)
+
+**Dependencies:** Requires database migration
 
 ---
 
-## Notes
+### Phase 3: Bulk Operations (Higher Effort, High Impact)
 
-### What NOT to Do
+#### Task 6: Bulk Edit System
+**Estimated: 12-16 hours** | Impact: High | Effort: High
 
-- ❌ Don't use `suppressHydrationWarning` to mask issues (fix root cause)
-- ❌ Don't skip testing for "simple" hydration fixes
-- ❌ Don't lazy load critical above-the-fold content
-- ❌ Don't cache user-specific or per-tenant data without careful consideration
-- ❌ Don't narrow middleware matcher without testing auth thoroughly
+**Prerequisites:** Task 3 (Shift+click) and Task 4 (Drag selection) must be complete
 
-### Recommended Tooling
+**Implementation:**
 
-- **@next/bundle-analyzer** - Bundle size visualization
-- **webpack-bundle-analyzer** - Detailed dependency tracing
-- **Lighthouse CI** - Automated performance testing in CI
-- **Playwright** - E2E testing including hydration checks
-- **React DevTools Profiler** - Memory leak detection
+**Server Action:** Create `bulk-update-cards.ts`
+```typescript
+// C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\actions\bulk-update-cards.ts
+- bulkUpdateCards(cardIds, updates) - Update multiple cards in transaction
+- Validation logic (check common editable properties)
+- Return validation errors for conflicting values
+```
 
-### References
+**UI Component:** Create `bulk-edit-dialog.tsx`
+```typescript
+// C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\bulk-edit-dialog.tsx
+- Show selected cards count
+- Identify common editable properties (status, color, assignee, due date)
+- Show "mixed" indicator for properties with different values
+- Preview changes before applying
+- Validation for conflicting values
+```
 
-- Next.js Hydration Error Guide: https://nextjs.org/docs/messages/react-hydration-error
-- Next.js Server/Client Components: https://nextjs.org/docs/app/building-your-application/rendering/composition-patterns
-- Next.js Caching: https://nextjs.org/docs/app/guides/caching
-- Next.js Lazy Loading: https://nextjs.org/docs/app/guides/lazy-loading
-- React Synchronizing with Effects: https://react.dev/learn/synchronizing-with-effects
+**Toolbar Integration:**
+- Add "Bulk Edit" button (enabled when 2+ cards selected)
+- Keyboard shortcut: Ctrl+E or Cmd+E
+
+**Files to create:**
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\actions\bulk-update-cards.ts`
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\bulk-edit-dialog.tsx`
+
+**Files to modify:**
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` (add bulk edit button)
+
+**Acceptance Criteria:**
+- Bulk Edit button appears when 2+ cards selected
+- Dialog shows common properties across selected cards
+- Can update status, color, priority for all selected cards
+- Validation prevents conflicting updates
+- Changes apply to all selected cards
+
+**Dependencies:** Tasks 3, 4
 
 ---
 
-## Appendix: Complete File Inventory
+### Phase 4: Advanced Grouping (Highest Effort, Lower Priority)
 
-### Files Requiring Changes
+#### Task 7: Bulk Grouping System
+**Estimated: 20-28 hours** | Impact: Medium | Effort: Very High
 
-**CRITICAL - Events Page Overhaul (apps/app)**:
-1. `apps/app/app/(authenticated)/events/[eventId]/event-details-client.tsx` (**3,064 lines** - SPLIT IMMEDIATELY)
-2. `apps/app/app/(authenticated)/events/[eventId]/page.tsx` (540 lines - optimize queries)
+**Prerequisites:** Task 3 and Task 4 (multi-select) must be complete
 
-**Bundle Optimization (apps/app)**:
-3. `apps/app/app/(authenticated)/analytics/sales/pdf-components.tsx` - lazy load react-pdf
-4. `apps/app/app/(authenticated)/analytics/sales/revenue-trends.tsx` - lazy load recharts
-5. `apps/app/app/(authenticated)/analytics/sales/predictive-ltv.tsx` - lazy load recharts
-6. `apps/app/instrumentation.ts` or `instrumentation-client.ts` - contain edge bundle
+**Implementation:**
 
-**Hydration Issues (apps/web)**:
-7. `apps/web/app/[locale]/(home)/components/stats.tsx` (line 36) - Intl.NumberFormat
-8. `apps/web/components/sidebar.tsx` (lines 21-26) - Intl.DateTimeFormat
-9. `apps/web/app/[locale]/contact/components/contact-form.tsx` (line 23) - useState Date, (line 43) - array keys
-10. `apps/web/app/[locale]/(home)/components/cases.tsx` (line 61) - array keys
-11. `apps/web/app/[locale]/(home)/components/faq.tsx` (line 42) - array keys
-12. `apps/web/app/[locale]/(home)/components/testimonials.tsx` (lines 31, 52) - setTimeout, array keys
-13. `apps/web/app/[locale]/(home)/components/stats.tsx` (line 27) - array keys
-14. `apps/web/app/[locale]/components/header/index.tsx` (line 96) - array keys
-15. `apps/web/app/[locale]/layout.tsx` (line 28) - suppressHydrationWarning
+**Database:**
+- Add `CommandBoardGroup` model to Prisma schema
+- Add `groupId` field to `CommandBoardCard` model
+- Create migration
 
-**Performance Issues**:
-16. `apps/api/proxy.ts` - narrow matcher
-17. All `apps/web/app/[locale]/*/page.tsx` files - add ISR caching
+**Server Actions:** Create `groups.ts`
+```typescript
+// C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\actions\groups.ts
+- createGroup(boardId, name, color, cardIds)
+- updateGroup(groupId, updates)
+- deleteGroup(groupId)
+- addToGroup(groupId, cardIds)
+- removeFromGroup(groupId, cardIds)
+- expandGroup(groupId) / collapseGroup(groupId)
+```
 
-**Code Quality**:
-18. `apps/web/app/[locale]/components/header/index.tsx` (200 lines) - extract nav logic
-19. `apps/web/app/[locale]/components/footer.tsx` (118 lines) - extract config
+**UI Components:**
+- Create `group-container.tsx`
+  - Visual box with border and label
+  - Drag group moves all contained cards
+  - Expand/collapse animation
+  - Resize group bounds
+- Create `create-group-dialog.tsx`
+  - Group name input
+  - Color picker for group border/background
+- Update `board-canvas-realtime.tsx` to render groups at appropriate z-index
 
-**Total Files**: 19 files requiring direct modification
-**Total Lines at Risk**: ~4,200 lines (including 3,064 from monolith component)
-**Estimated Impact**: Critical - addresses massive maintainability crisis and systemic performance issues
+**Files to create:**
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\group-container.tsx`
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\create-group-dialog.tsx`
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\actions\groups.ts`
+
+**Files to modify:**
+- `C:\projects\capsule-pro\packages\database\prisma\schema.prisma` (add CommandBoardGroup model)
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` (render groups)
+
+**Acceptance Criteria:**
+- Can select cards and create group
+- Groups render as visual containers
+- Dragging group moves all contained cards
+- Groups can be expanded/collapsed
+- Cards can be added/removed from groups
+- Groups can be deleted
+
+**Dependencies:** Tasks 3, 4, requires database migration
+
+---
+
+### Phase 5: Optional Enhancements (Nice to Have)
+
+#### Task 8: Connection Management UI
+**Estimated: 8-10 hours** | Impact: Medium | Effort: Medium
+
+- Add "Create Connection" mode/tool to toolbar
+- Create connection creation dialog
+  - Select source and target cards
+  - Select relationship type
+  - Optional label
+- Delete connection (with confirmation)
+- Edit connection properties
+- Connection context menu (right-click on connection)
+
+#### Task 9: Board Template System
+**Estimated: 10-12 hours** | Impact: Medium | Effort: Medium
+
+- Implement `isTemplate` field usage in CommandBoard model
+- Create `templates.ts` actions
+  - `saveAsTemplate(boardId, name, description)`
+  - `listTemplates()`
+  - `applyTemplate(templateId, boardId)`
+- Create template gallery UI
+- Add template thumbnail generation
+
+#### Task 10: Advanced Canvas Features
+**Estimated: 20-24 hours** | Impact: Low-Medium | Effort: High
+
+- Undo/redo stack (Command pattern)
+- Copy/paste cards (clipboard API)
+- Card alignment tools (align left, right, top, bottom, distribute)
+- Minimap component
+- Filter cards by type/status
+- Canvas search
+
+#### Task 11: Export/Import
+**Estimated: 8-10 hours** | Impact: Low | Effort: Medium
+
+- Export board as JSON
+- Export canvas as image (html2canvas or similar)
+- Import board from JSON
+- Share board link
+
+---
+
+## Key Technologies Used
+
+- **Drag/Resize**: `react-moveable` - Already installed
+- **Real-time**: Liveblocks via `@repo/collaboration` (NOT Ably)
+  - `@liveblocks/client` - v3.13.3
+  - `@liveblocks/node` - v3.13.3
+  - `@liveblocks/react` - v3.13.3
+- **Database**: Prisma with Neon PostgreSQL
+- **Styling**: Tailwind CSS v4
+- **UI Components**: `@repo/design-system` (shadcn/ui)
+
+---
+
+## Dependencies Between Tasks
+
+- **Task 3 (Shift+click)** and **Task 4 (Drag selection)** must be completed before **Task 6 (Bulk Edit)**
+- **Task 5 (Named Layouts)** is independent - can be done anytime
+- **Task 7 (Grouping)** requires Task 3 and Task 4 (multi-select) to be useful
+- **Task 8 (Connection Management)** can be done independently
+- **Tasks 9-11 (Optional)** can be done in any order after core features
+
+---
+
+## Estimated Total Effort
+
+| Phase | Tasks | Estimated Hours |
+|-------|-------|-----------------|
+| Phase 1: Quick Wins | 3 tasks | 7-11 hours |
+| Phase 2: High Impact | 2 tasks | 16-20 hours |
+| Phase 3: Bulk Operations | 1 task | 12-16 hours |
+| Phase 4: Grouping | 1 task | 20-28 hours |
+| Phase 5: Optional | 4 tasks | 46-56 hours |
+| **Total (Phases 1-4)** | **7 tasks** | **55-75 hours** |
+| **Total (All Phases)** | **11 tasks** | **101-131 hours** |
+
+---
+
+## Next Steps
+
+### Immediate Actions (This Week):
+1. **Task 1: Add Connection Toggle** (1-2 hours) - Quick visible win
+2. **Task 2: Complete Missing Cards** (4-6 hours) - Finish card type coverage
+3. **Task 3: Shift+Click Selection** (2-3 hours) - Enable multi-select workflow
+
+### Short Term (Next 2 Weeks):
+4. **Task 4: Drag Selection Box** (6-8 hours) - True multi-selection
+5. **Task 5: Named Layouts** (10-12 hours) - Major feature completion
+
+### Medium Term (Next Month):
+6. **Task 6: Bulk Edit System** (12-16 hours) - Power user features
+7. **Task 7: Grouping System** (20-28 hours) - Advanced organization
+
+### Development Workflow:
+- Test each feature thoroughly before moving to the next
+- Run validation after each task: `pnpm lint && pnpm format && pnpm build`
+- Consider creating separate feature branches for major features
+- Update this plan as implementation progresses
+
+---
+
+## Critical Implementation Notes
+
+### Database Migration Requirements:
+1. **CommandBoardLayout** - Required for Task 5 (Named Layouts)
+2. **CommandBoardGroup** + **CommandBoardCard.groupId** - Required for Task 7 (Grouping)
+
+### Prisma Schema Rules (CRITICAL):
+- Follow existing pattern: `dbgenerated("gen_random_uuid()")` NOT `gen_random_uuid()`
+- Field names: camelCase with `@map("snake_case")`
+- Relation references use Prisma field names, NOT DB column names
+
+### Real-time Considerations:
+- Uses **Liveblocks** (NOT Ably) for real-time features
+- New features should broadcast events via Liveblocks for collaborative editing
+- Connection state is handled by `@repo/collaboration` package
+- Consider offline queues for critical operations (future enhancement)
+- Events are currently NOT persisted to database - only broadcast via Liveblocks
+
+### Multi-tenancy:
+- All database models MUST include `tenantId`
+- All queries MUST filter by `tenantId`
+- Follow existing patterns in `boards.ts` and `cards.ts`
+
+---
+
+## Known Issues and Limitations
+
+### Current State (As of Exploration):
+1. **Note and Recipe cards** fall back to generic renderer - poor UX
+2. **Connection visibility toggle** has no UI control despite code support
+3. **Liveblocks events** are not persisted to database (only broadcast)
+4. **No offline support** - changes lost if network fails during edit
+5. **No conflict resolution UI** - last-write-wins only
+6. **No bulk operations** beyond basic multi-select
+7. **No grouping functionality** at all
+8. **No named layouts** - only localStorage persistence
+
+### Technical Debt:
+- Consider migrating from `dbgenerated("gen_random_uuid()")` to `gen_random_uuid()` for cleaner schema
+- Liveblocks integration could benefit from offline queue for reliability
+- Connection management lacks user controls (create, delete, edit)

@@ -26,7 +26,7 @@ interface DraggableCardProps {
   /** Callback when card size changes */
   onSizeChange?: (cardId: string, width: number, height: number) => void;
   /** Callback when card is clicked */
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
   /** Callback when card is deleted */
   onDelete?: (cardId: string) => void;
   /** Additional CSS classes */
@@ -202,7 +202,7 @@ export const DraggableCard = memo(function DraggableCard({
           className
         )}
         data-card-id={card.id}
-        onClick={onClick}
+        onClick={(e) => onClick(e)}
         onKeyDown={(e) => {
           handleKeyDown(e);
         }}

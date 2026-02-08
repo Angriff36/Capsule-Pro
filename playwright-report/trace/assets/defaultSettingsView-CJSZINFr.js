@@ -25296,12 +25296,10 @@ class qv {
           "done"
         );
       }
-    } else if (r.nodeName.toLowerCase() !== "textarea") {
-      if (!r.isContentEditable)
-        throw this.createStacklessError(
-          "Element is not an <input>, <textarea> or [contenteditable] element"
-        );
-    }
+    } else if (r.nodeName.toLowerCase() !== "textarea" && !r.isContentEditable)
+      throw this.createStacklessError(
+        "Element is not an <input>, <textarea> or [contenteditable] element"
+      );
     return this.selectText(r), "needsinput";
   }
   selectText(e) {
