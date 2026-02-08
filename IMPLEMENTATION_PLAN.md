@@ -624,6 +624,10 @@ describe('Hydration Stability', () => {
   - `window.matchMedia` mock for embla-carousel
   - `IntersectionObserver` mock for embla-carousel/Next.js
   - `ResizeObserver` mock for embla-carousel
+- Added test script to `apps/web/package.json` to enable hydration regression testing:
+  ```json
+  "test": "vitest run"
+  ```
 
 **Test Coverage**:
 - Stats component: Intl.NumberFormat with locale variants
@@ -736,7 +740,7 @@ Before marking this plan complete, verify:
 - [ ] **Lighthouse**: Scores >= 90 on Performance, Accessibility, Best Practices (requires deployed URL)
 - [x] **Bundle Size**: Shared client bundle at 203 kB (apps/app) - baseline established
 - [x] **TTFB**: Query parallelization implemented in Task 0.2 (~30% improvement expected)
-- [x] **Tests**: All tests pass: `pnpm test` (148 tests: app=107, api=27, web=14)
+- [x] **Tests**: All tests pass: `pnpm test` (162 tests: app=107, api=27, web=14, hydration=14)
 - [x] **Build**: Build succeeds: `pnpm build` (21 tasks successful)
 - [x] **Lint**: Lint issues resolved - biome.jsonc updated with overrides for generated files and test mocks
 - [x] **Format**: Code formatted with Ultracite
@@ -744,12 +748,13 @@ Before marking this plan complete, verify:
 - [ ] **Manual Testing**: All pages tested (home, contact, pricing, events, analytics)
 - [ ] **Regression**: Performance tests show no degradation
 
-**Last Updated**: 2025-02-07 (Session: resolved lint issues - unused variables, array keys, async/await, biome overrides)
+**Last Updated**: 2025-02-07 (Session: test script added to apps/web/package.json, test count updated to 162)
 
 **Remaining Work**:
 - Manual browser testing for hydration warnings
 - Lighthouse CI setup for automated performance testing
 - Full manual QA of all pages
+- **Known Issue**: basehub CLI has compatibility issues on Windows affecting web app build (basehub/basehub-cli#234)
 
 ---
 
