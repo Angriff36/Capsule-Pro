@@ -2,7 +2,7 @@
 
 import { database, type Prisma } from "@repo/database";
 import { requireTenantId } from "../../../lib/tenant";
-import type { CardMetadata, CardType, CreateCardInput } from "../types";
+import type { CardMetadata, CardType, CreateCardInput, EntityType } from "../types";
 import type { CardResult } from "./cards";
 
 export type CreateEntityCardInput = CreateCardInput & {
@@ -10,12 +10,22 @@ export type CreateEntityCardInput = CreateCardInput & {
   entityId: string;
 };
 
+/**
+ * Validates that an entity exists and returns its basic display info.
+ * The card will store entityId/entityType for live data fetching instead of snapshots.
+ */
 async function getClientMetadata(
   tenantId: string,
   entityId: string
-): Promise<{ title: string; metadata: CardMetadata } | null> {
+): Promise<{ title: string; cardType: CardType } | null> {
   const client = await database.client.findUnique({
     where: { tenantId_id: { tenantId, id: entityId } },
+    select: {
+      clientType: true,
+      company_name: true,
+      first_name: true,
+      last_name: true,
+    },
   });
 
   if (!client) {
@@ -26,75 +36,59 @@ async function getClientMetadata(
     client.company_name ||
     `${client.first_name} ${client.last_name}`.trim() ||
     "Client";
-  const metadata: CardMetadata = {
-    clientType: client.clientType,
-    companyName: client.company_name,
-    firstName: client.first_name,
-    lastName: client.last_name,
-    email: client.email,
-    phone: client.phone,
-    city: client.city,
-    stateProvince: client.stateProvince,
-  };
 
-  return { title, metadata };
+  return { title, cardType: "client" };
 }
 
 async function getEventMetadata(
   tenantId: string,
   entityId: string
-): Promise<{ title: string; metadata: CardMetadata } | null> {
+): Promise<{ title: string; cardType: CardType } | null> {
   const event = await database.event.findFirst({
     where: { tenantId, id: entityId },
+    select: {
+      title: true,
+      status: true,
+    },
   });
 
   if (!event) {
     return null;
   }
 
-  const title = event.title;
-  const metadata: CardMetadata = {
-    status: event.status,
-    eventType: event.eventType,
-    eventDate: event.eventDate,
-    guestCount: event.guestCount,
-    budget: event.budget ? Number(event.budget) : undefined,
-    venueName: event.venueName,
-    venueAddress: event.venueAddress,
-  };
-
-  return { title, metadata };
+  return { title: event.title, cardType: "event" };
 }
 
 async function getTaskMetadata(
   tenantId: string,
   entityId: string
-): Promise<{ title: string; metadata: CardMetadata } | null> {
+): Promise<{ title: string; cardType: CardType } | null> {
   const task = await database.kitchenTask.findFirst({
     where: { tenantId, id: entityId },
+    select: {
+      title: true,
+      status: true,
+    },
   });
 
   if (!task) {
     return null;
   }
 
-  const title = task.title;
-  const metadata: CardMetadata = {
-    status: task.status,
-    priority: task.priority,
-    dueDate: task.dueDate,
-    summary: task.summary,
-  };
-
-  return { title, metadata };
+  return { title: task.title, cardType: "task" };
 }
 
 async function getEmployeeMetadata(
   tenantId: string,
   entityId: string
-): Promise<{ title: string; metadata: CardMetadata } | null> {
+): Promise<{ title: string; cardType: CardType } | null> {
   const user = await database.user.findUnique({
     where: { tenantId_id: { tenantId, id: entityId } },
+    select: {
+      firstName: true,
+      lastName: true,
+      role: true,
+    },
   });
 
   if (!user) {
@@ -102,39 +96,26 @@ async function getEmployeeMetadata(
   }
 
   const title = `${user.firstName} ${user.lastName}`.trim() || "Employee";
-  const metadata: CardMetadata = {
-    role: user.role,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
-    avatarUrl: user.avatarUrl,
-  };
-
-  return { title, metadata };
+  return { title, cardType: "employee" };
 }
 
 async function getInventoryMetadata(
   tenantId: string,
   entityId: string
-): Promise<{ title: string; metadata: CardMetadata } | null> {
+): Promise<{ title: string; cardType: CardType } | null> {
   const item = await database.inventoryItem.findUnique({
     where: { tenantId_id: { tenantId, id: entityId } },
+    select: {
+      name: true,
+      category: true,
+    },
   });
 
   if (!item) {
     return null;
   }
 
-  const title = item.name;
-  const metadata: CardMetadata = {
-    itemNumber: item.item_number,
-    category: item.category,
-    unitCost: item.unitCost,
-    quantityOnHand: item.quantityOnHand,
-    reorderLevel: item.reorder_level,
-  };
-
-  return { title, metadata };
+  return { title: item.name, cardType: "inventory" };
 }
 
 export async function createEntityCard(
@@ -146,10 +127,8 @@ export async function createEntityCard(
 
     let cardType: CardType = "generic";
     let title = input.title;
-    let metadata: CardMetadata = {
-      entityId: input.entityId,
-    };
 
+    // Validate entity exists and get initial title/cardType
     switch (input.entityType) {
       case "client": {
         const result = await getClientMetadata(tenantId, input.entityId);
@@ -157,8 +136,7 @@ export async function createEntityCard(
           return { success: false, error: "Client not found" };
         }
         title = result.title;
-        cardType = "client";
-        metadata = { ...metadata, ...result.metadata };
+        cardType = result.cardType;
         break;
       }
       case "event": {
@@ -167,8 +145,7 @@ export async function createEntityCard(
           return { success: false, error: "Event not found" };
         }
         title = result.title;
-        cardType = "event";
-        metadata = { ...metadata, ...result.metadata };
+        cardType = result.cardType;
         break;
       }
       case "task": {
@@ -177,8 +154,7 @@ export async function createEntityCard(
           return { success: false, error: "Task not found" };
         }
         title = result.title;
-        cardType = "task";
-        metadata = { ...metadata, ...result.metadata };
+        cardType = result.cardType;
         break;
       }
       case "employee": {
@@ -187,8 +163,7 @@ export async function createEntityCard(
           return { success: false, error: "Employee not found" };
         }
         title = result.title;
-        cardType = "employee";
-        metadata = { ...metadata, ...result.metadata };
+        cardType = result.cardType;
         break;
       }
       case "inventory": {
@@ -197,8 +172,7 @@ export async function createEntityCard(
           return { success: false, error: "Inventory item not found" };
         }
         title = result.title;
-        cardType = "inventory";
-        metadata = { ...metadata, ...result.metadata };
+        cardType = result.cardType;
         break;
       }
       default: {
@@ -206,6 +180,7 @@ export async function createEntityCard(
       }
     }
 
+    // Create card with entity reference fields for live data fetching
     const card = await database.commandBoardCard.create({
       data: {
         tenantId,
@@ -221,8 +196,10 @@ export async function createEntityCard(
         height: input.position?.height ?? 180,
         zIndex: input.position?.zIndex ?? 1,
         color: input.color ?? null,
-        // @ts-expect-error - Metadata type incompatibility with Prisma JsonValue
-        metadata: metadata as Prisma.JsonValue,
+        entityId: input.entityId,
+        entityType: input.entityType,
+        // Minimal metadata - card components will fetch live data
+        metadata: {},
       },
     });
 
@@ -245,6 +222,8 @@ export async function createEntityCard(
         },
         color: card.color,
         metadata: (card.metadata as CardMetadata) || {},
+        entityId: card.entityId ?? undefined,
+        entityType: (card.entityType ?? undefined) as EntityType | undefined,
         createdAt: card.createdAt,
         updatedAt: card.updatedAt,
         deletedAt: card.deletedAt,

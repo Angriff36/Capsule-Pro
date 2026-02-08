@@ -247,10 +247,12 @@ export interface ViewportPreferences {
  */
 export type CommandBoardCardMetadata = Record<string, unknown>;
 
-export type CardMetadata = CommandBoardCardMetadata & {
-  /** Reference to external entity ID (event, client, task, etc.) */
-  entityId?: string;
-};
+export type CardMetadata = CommandBoardCardMetadata;
+
+/**
+ * Entity type for linked entity cards
+ */
+export type EntityType = "client" | "event" | "task" | "employee" | "inventory";
 
 /**
  * Command board card with all properties
@@ -267,6 +269,10 @@ export interface CommandBoardCard {
   position: CardPosition;
   color: string | null;
   metadata: CardMetadata;
+  /** Entity ID if this card represents a real entity */
+  entityId?: string;
+  /** Entity type if this card represents a real entity */
+  entityType?: EntityType;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -311,6 +317,8 @@ export function dbCardToCard(dbCard: DbCommandBoardCard): CommandBoardCard {
     },
     color: dbCard.color,
     metadata: (dbCard.metadata as CardMetadata) || {},
+    entityId: (dbCard.entityId ?? undefined),
+    entityType: (dbCard.entityType as EntityType | undefined),
     createdAt: dbCard.createdAt,
     updatedAt: dbCard.updatedAt,
     deletedAt: dbCard.deletedAt,

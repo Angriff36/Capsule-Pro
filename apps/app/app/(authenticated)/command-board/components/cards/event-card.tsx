@@ -24,8 +24,12 @@ import {
   MoreVertical,
   Users,
 } from "lucide-react";
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { CommandBoardCard } from "../../types";
+import type { EventEntityData } from "../../actions/entity-data";
+import { getEntityData } from "../../actions/entity-data";
 
 interface EventCardProps {
   card: CommandBoardCard;
@@ -40,22 +44,38 @@ const statusVariantMap = {
 };
 
 export const EventCard = memo(function EventCard({ card }: EventCardProps) {
-  const metadata = card.metadata as {
-    status?: string;
-    eventDate?: string | Date;
-    guestCount?: number;
-    budget?: number;
-    venueName?: string;
-    eventType?: string;
-  };
-  const status = metadata.status || "confirmed";
+  const router = useRouter();
+  const [entityData, setEntityData] = useState<EventEntityData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch live entity data if card is linked to an entity
+  useEffect(() => {
+    if (card.entityType === "event" && card.entityId) {
+      setIsLoading(true);
+      getEntityData("event", card.entityId)
+        .then((data) => {
+          if (data && data.entityType === "event") {
+            setEntityData(data);
+          }
+        })
+        .finally(() => setIsLoading(false));
+    }
+  }, [card.entityId, card.entityType]);
+
+  // Use live data if available, otherwise fall back to metadata (for backwards compatibility)
+  const status = entityData?.status ?? "confirmed";
   const variant =
     statusVariantMap[status as keyof typeof statusVariantMap] ?? "outline";
-  const eventDate = metadata.eventDate ? new Date(metadata.eventDate) : null;
-  const guestCount = metadata.guestCount || 0;
-  const budget = metadata.budget;
-  const venueName = metadata.venueName;
-  const eventType = metadata.eventType || "Event";
+  const eventDate = entityData?.eventDate
+    ? new Date(entityData.eventDate)
+    : null;
+  const guestCount = entityData?.guestCount ?? 0;
+  const budget = entityData?.budget;
+  const venueName = entityData?.venueName;
+  const eventType = entityData?.eventType ?? "Event";
+  const eventId = entityData?.eventId ?? card.entityId;
+
+  const isLinked = !!card.entityId && card.entityType === "event";
 
   return (
     <Card className="h-full">
@@ -65,15 +85,32 @@ export const EventCard = memo(function EventCard({ card }: EventCardProps) {
             <div className="flex items-center gap-2 text-xs">
               <CardDescription className="capitalize text-muted-foreground">
                 {eventType}
+                {isLinked && (
+                  <span className="ml-1.5 inline-flex items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                    Live
+                  </span>
+                )}
               </CardDescription>
             </div>
-            <CardTitle className="line-clamp-2 leading-tight">
-              {card.title}
-            </CardTitle>
+            {isLinked ? (
+              <Link
+                href={`/events/${eventId}`}
+                className="block hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <CardTitle className="line-clamp-2 leading-tight">
+                  {card.title}
+                </CardTitle>
+              </Link>
+            ) : (
+              <CardTitle className="line-clamp-2 leading-tight">
+                {card.title}
+              </CardTitle>
+            )}
           </div>
           <CardAction>
             <Badge className="capitalize" variant={variant}>
-              {status}
+              {isLoading ? "..." : status}
             </Badge>
           </CardAction>
         </div>
@@ -135,10 +172,40 @@ export const EventCard = memo(function EventCard({ card }: EventCardProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>View Event</DropdownMenuItem>
-            <DropdownMenuItem>Edit Details</DropdownMenuItem>
-            <DropdownMenuItem>Open Battle Board</DropdownMenuItem>
-            <DropdownMenuItem>View Proposal</DropdownMenuItem>
+            {isLinked ? (
+              <>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/events/${eventId}`);
+                  }}
+                >
+                  View Event
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/events/${eventId}/edit`);
+                  }}
+                >
+                  Edit Details
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/events/${eventId}/battle-board`);
+                  }}
+                >
+                  Open Battle Board
+                </DropdownMenuItem>
+              </>
+            ) : (
+              <>
+                <DropdownMenuItem disabled>View Event</DropdownMenuItem>
+                <DropdownMenuItem disabled>Edit Details</DropdownMenuItem>
+              </>
+            )}
+            <DropdownMenuItem disabled>View Proposal</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </CardAction>

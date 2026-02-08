@@ -1110,32 +1110,35 @@ model CommandBoard {
 }
 
 model CommandBoardCard {
-  tenantId  String               @map("tenant_id") @db.Uuid
-  id        String               @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  boardId   String               @map("board_id") @db.Uuid
-  title     String
-  content   String?
-  cardType  String               @default("task") @map("card_type")
-  status    String               @default("pending")
-  positionX Int                  @default(0) @map("position_x")
-  positionY Int                  @default(0) @map("position_y")
-  width     Int                  @default(200)
-  height    Int                  @default(150)
-  zIndex    Int                  @default(0) @map("z_index")
-  color     String?
-  metadata  Json                 @default("{}")
-  groupId   String?              @map("group_id") @db.Uuid
-  createdAt DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt DateTime?            @map("deleted_at") @db.Timestamptz(6)
-  tenant    Account              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  board     CommandBoard         @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
-  group     CommandBoardGroup?   @relation("CardGroup", fields: [tenantId, groupId], references: [tenantId, id])
+  tenantId   String               @map("tenant_id") @db.Uuid
+  id         String               @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  boardId    String               @map("board_id") @db.Uuid
+  title      String
+  content    String?
+  cardType   String               @default("task") @map("card_type")
+  status     String               @default("pending")
+  positionX  Int                  @default(0) @map("position_x")
+  positionY  Int                  @default(0) @map("position_y")
+  width      Int                  @default(200)
+  height     Int                  @default(150)
+  zIndex     Int                  @default(0) @map("z_index")
+  color      String?
+  metadata   Json                 @default("{}")
+  groupId    String?              @map("group_id") @db.Uuid
+  entityId   String?              @map("entity_id") @db.Uuid
+  entityType String?              @map("entity_type")
+  createdAt  DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt  DateTime?            @map("deleted_at") @db.Timestamptz(6)
+  tenant     Account              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  board      CommandBoard         @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
+  group      CommandBoardGroup?   @relation("CardGroup", fields: [tenantId, groupId], references: [tenantId, id])
 
   @@id([tenantId, id])
   @@index([boardId])
   @@index([zIndex])
   @@index([groupId])
+  @@index([entityId, entityType])
   @@map("command_board_cards")
   @@schema("tenant_events")
 }
