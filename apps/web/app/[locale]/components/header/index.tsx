@@ -9,8 +9,8 @@ import { useState } from "react";
 import { env } from "@/env";
 import { DesktopNav } from "./desktop-nav";
 import { LanguageSwitcher } from "./language-switcher";
-import { buildNavigationItems } from "./navigation-config";
 import { MobileNav } from "./mobile-nav";
+import { buildNavigationItems } from "./navigation-config";
 
 /**
  * Props for the Header component
@@ -36,14 +36,14 @@ interface HeaderProps {
 export const Header = ({ dictionary }: HeaderProps) => {
   const navigationItems = buildNavigationItems(
     dictionary,
-    env.NEXT_PUBLIC_DOCS_URL,
+    env.NEXT_PUBLIC_DOCS_URL
   );
 
   const [isOpen, setOpen] = useState(false);
   return (
     <header className="sticky top-0 left-0 z-40 w-full border-b bg-background">
       <div className="container relative mx-auto flex min-h-20 flex-row items-center gap-4 lg:grid lg:grid-cols-3">
-        <DesktopNav navigationItems={navigationItems} dictionary={dictionary} />
+        <DesktopNav dictionary={dictionary} navigationItems={navigationItems} />
         <div className="flex items-center gap-2 lg:justify-center">
           <svg
             className="h-[18px] w-[18px] -translate-y-[0.5px] fill-current"
@@ -87,8 +87,8 @@ export const Header = ({ dictionary }: HeaderProps) => {
             {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
           <MobileNav
-            navigationItems={navigationItems}
             isOpen={isOpen}
+            navigationItems={navigationItems}
             setOpen={setOpen}
           />
         </div>

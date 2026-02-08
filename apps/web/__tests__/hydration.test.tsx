@@ -14,13 +14,11 @@
  * Related: IMPLEMENTATION_PLAN.md Phase 1 (Hydration Resistance Fixes)
  */
 
-import { render, waitFor } from "@testing-library/react";
-import React from "react";
-import { describe, expect, it, vi } from "vitest";
-
+import { render } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { Cases } from "../app/[locale]/(home)/components/cases";
 // Import components to test
 import { FAQ } from "../app/[locale]/(home)/components/faq";
-import { Cases } from "../app/[locale]/(home)/components/cases";
 import { Stats } from "../app/[locale]/(home)/components/stats";
 import { Testimonials } from "../app/[locale]/(home)/components/testimonials";
 import { ContactForm } from "../app/[locale]/contact/components/contact-form";
@@ -59,8 +57,7 @@ const createMockDictionary = () => ({
       },
       features: {
         title: "Built for Enterprise Operations",
-        description:
-          "Integrated modules designed to work together seamlessly.",
+        description: "Integrated modules designed to work together seamlessly.",
         items: [
           {
             title: "Unified Management",
@@ -190,7 +187,7 @@ describe("Hydration Regression Tests", () => {
     it("should render Stats component without hydration mismatch with en-US locale", () => {
       const dictionary = createMockDictionary();
       const { container } = render(
-        <Stats dictionary={dictionary} locale="en-US" />,
+        <Stats dictionary={dictionary} locale="en-US" />
       );
 
       expect(container).toBeDefined();
@@ -202,13 +199,13 @@ describe("Hydration Regression Tests", () => {
     it("should handle different locales correctly", () => {
       const dictionary = createMockDictionary();
       const { container: enContainer } = render(
-        <Stats dictionary={dictionary} locale="en-US" />,
+        <Stats dictionary={dictionary} locale="en-US" />
       );
       const { container: esContainer } = render(
-        <Stats dictionary={dictionary} locale="es-ES" />,
+        <Stats dictionary={dictionary} locale="es-ES" />
       );
       const { container: frContainer } = render(
-        <Stats dictionary={dictionary} locale="fr-FR" />,
+        <Stats dictionary={dictionary} locale="fr-FR" />
       );
 
       // All containers should render without errors
@@ -225,7 +222,7 @@ describe("Hydration Regression Tests", () => {
     it("should use stable keys from data (item.title)", () => {
       const dictionary = createMockDictionary();
       const { container } = render(
-        <Stats dictionary={dictionary} locale="en-US" />,
+        <Stats dictionary={dictionary} locale="en-US" />
       );
 
       // Each stat item should be rendered
@@ -265,21 +262,17 @@ describe("Hydration Regression Tests", () => {
       expect(container).toBeDefined();
       // FAQ items should be rendered
       expect(container.textContent).toContain(
-        dictionary.web.home.faq.items[0].question,
+        dictionary.web.home.faq.items[0].question
       );
       expect(container.textContent).toContain(
-        dictionary.web.home.faq.items[1].question,
+        dictionary.web.home.faq.items[1].question
       );
     });
 
     it("should render FAQ items consistently across multiple renders", () => {
       const dictionary = createMockDictionary();
-      const { container: container1 } = render(
-        <FAQ dictionary={dictionary} />,
-      );
-      const { container: container2 } = render(
-        <FAQ dictionary={dictionary} />,
-      );
+      const { container: container1 } = render(<FAQ dictionary={dictionary} />);
+      const { container: container2 } = render(<FAQ dictionary={dictionary} />);
 
       // Both renders should produce the same content
       expect(container1.textContent).toBe(container2.textContent);
@@ -301,7 +294,7 @@ describe("Hydration Regression Tests", () => {
 
       expect(container).toBeDefined();
       expect(container.textContent).toContain(
-        dictionary.web.home.testimonials.items[0].title,
+        dictionary.web.home.testimonials.items[0].title
       );
     });
 
@@ -352,9 +345,7 @@ describe("Hydration Regression Tests", () => {
       const { container } = render(<Cases dictionary={dictionary} />);
 
       expect(container).toBeDefined();
-      expect(container.textContent).toContain(
-        dictionary.web.home.cases.title,
-      );
+      expect(container.textContent).toContain(dictionary.web.home.cases.title);
     });
 
     it("should handle setTimeout with proper cleanup on unmount", async () => {
@@ -381,9 +372,7 @@ describe("Hydration Regression Tests", () => {
 
       // Cases uses a static array that never reorders, so index keys are acceptable
       expect(container).toBeDefined();
-      expect(container.textContent).toContain(
-        dictionary.web.home.cases.title,
-      );
+      expect(container.textContent).toContain(dictionary.web.home.cases.title);
     });
   });
 
@@ -393,19 +382,19 @@ describe("Hydration Regression Tests", () => {
 
       // First render
       const { container: container1 } = render(
-        <Stats dictionary={dictionary} locale="en-US" />,
+        <Stats dictionary={dictionary} locale="en-US" />
       );
       const content1 = container1.textContent;
 
       // Second render
       const { container: container2 } = render(
-        <Stats dictionary={dictionary} locale="en-US" />,
+        <Stats dictionary={dictionary} locale="en-US" />
       );
       const content2 = container2.textContent;
 
       // Third render
       const { container: container3 } = render(
-        <Stats dictionary={dictionary} locale="en-US" />,
+        <Stats dictionary={dictionary} locale="en-US" />
       );
       const content3 = container3.textContent;
 

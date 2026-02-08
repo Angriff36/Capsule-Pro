@@ -1,4 +1,3 @@
-import type { Dictionary } from "@repo/internationalization";
 import { MoveRight } from "lucide-react";
 import Link from "next/link";
 import type { NavigationItem } from "./navigation-config";

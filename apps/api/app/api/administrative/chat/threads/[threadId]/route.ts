@@ -145,7 +145,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     );
 
     const now = new Date();
-    let data;
+    let data: { archivedAt: Date } | { archivedAt: null } | { clearedAt: Date };
     if (action === "archive") {
       data = { archivedAt: now };
     } else if (action === "unarchive") {

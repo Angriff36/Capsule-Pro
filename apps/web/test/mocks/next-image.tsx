@@ -1,4 +1,3 @@
-import React from "react";
 import type { ImageProps } from "next/image";
 
 // Mock Next.js Image component for vitest

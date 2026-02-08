@@ -2,7 +2,7 @@
   "root": true,
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "files": {
-    "includes": ["apps/**", "packages/**"],
+    "ignoreUnknown": false,
     "experimentalScannerIgnores": [
       "apps/docs/**",
       "packages/design-system/components/ui/**",

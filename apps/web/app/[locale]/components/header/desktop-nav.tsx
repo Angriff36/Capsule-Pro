@@ -17,10 +17,7 @@ interface DesktopNavProps {
   dictionary: Dictionary;
 }
 
-export function DesktopNav({
-  navigationItems,
-  dictionary,
-}: DesktopNavProps) {
+export function DesktopNav({ navigationItems, dictionary }: DesktopNavProps) {
   return (
     <div className="hidden flex-row items-center justify-start gap-4 lg:flex">
       <NavigationMenu className="flex items-start justify-start">

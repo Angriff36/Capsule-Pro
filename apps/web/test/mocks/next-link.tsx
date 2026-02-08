@@ -1,5 +1,5 @@
-import React from "react";
 import type { LinkProps } from "next/link";
+import type React from "react";
 
 // Mock Next.js Link component for vitest
 export default function Link({

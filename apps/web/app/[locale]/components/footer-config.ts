@@ -1,5 +1,4 @@
 import type { LegalPost } from "@repo/cms";
-import { env } from "@/env";
 
 export interface NavigationItem {
   title: string;
@@ -18,7 +17,7 @@ export interface SubNavigationItem {
  */
 export function buildFooterNavigationItems(
   legalPages: LegalPost[],
-  docsUrl?: string,
+  docsUrl?: string
 ): NavigationItem[] {
   const navigationItems: NavigationItem[] = [
     {

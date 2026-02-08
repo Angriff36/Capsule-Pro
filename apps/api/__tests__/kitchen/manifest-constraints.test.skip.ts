@@ -18,8 +18,14 @@
 // import { POST as createRecipe } from "@/app/api/kitchen/manifest/recipes/route";
 
 // Temporary stubs to make tests syntactically valid while skipped
-const createDish = (() => {}) as any;
-const createRecipe = (() => {}) as any;
+// biome-ignore lint/suspicious/noEmptyBlockStatements: Intentional stubs for skipped tests
+const createDish = (() => {
+  // Stub implementation
+}) as never;
+// biome-ignore lint/suspicious/noEmptyBlockStatements: Intentional stubs for skipped tests
+const createRecipe = (() => {
+  // Stub implementation
+}) as never;
 
 // Mock auth
 vi.mock("@repo/auth/server", () => ({

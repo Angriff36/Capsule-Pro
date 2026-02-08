@@ -1,9 +1,9 @@
 import "@testing-library/jest-dom/vitest";
-import { vi } from "vitest";
 
 // Make React available globally for components that don't import it explicitly
 // (Next.js with new JSX transform doesn't require React imports)
 import React from "react";
+import { vi } from "vitest";
 
 global.React = React;
 
@@ -28,23 +28,47 @@ class MockIntersectionObserver implements IntersectionObserver {
   readonly rootMargin: string = "";
   readonly thresholds: ReadonlyArray<number> = [];
 
-  constructor() {}
-  disconnect() {}
-  observe() {}
+  constructor() {
+    // Intentional empty constructor for mock
+  }
+
+  disconnect() {
+    // Intentional empty mock method
+  }
+
+  observe() {
+    // Intentional empty mock method
+  }
+
   takeRecords(): IntersectionObserverEntry[] {
     return [];
   }
-  unobserve() {}
+
+  unobserve() {
+    // Intentional empty mock method
+  }
 }
 
-global.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
+global.IntersectionObserver =
+  MockIntersectionObserver as unknown as typeof IntersectionObserver;
 
 // Mock ResizeObserver for embla-carousel
 class MockResizeObserver implements ResizeObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  unobserve() {}
+  constructor() {
+    // Intentional empty constructor for mock
+  }
+
+  disconnect() {
+    // Intentional empty mock method
+  }
+
+  observe() {
+    // Intentional empty mock method
+  }
+
+  unobserve() {
+    // Intentional empty mock method
+  }
 }
 
 global.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver;

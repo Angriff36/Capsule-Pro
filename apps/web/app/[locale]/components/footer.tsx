@@ -24,7 +24,7 @@ export const Footer = () => (
 
       const navigationItems = buildFooterNavigationItems(
         data._componentInstances.legalPagesItem.items,
-        env.NEXT_PUBLIC_DOCS_URL,
+        env.NEXT_PUBLIC_DOCS_URL
       );
 
       return (

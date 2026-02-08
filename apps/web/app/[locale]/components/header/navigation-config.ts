@@ -17,7 +17,7 @@ export interface SubNavigationItem {
  */
 export function buildNavigationItems(
   dictionary: Dictionary,
-  docsUrl?: string,
+  docsUrl?: string
 ): NavigationItem[] {
   const navigationItems: NavigationItem[] = [
     {
