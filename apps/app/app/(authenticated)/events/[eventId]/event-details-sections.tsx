@@ -770,3 +770,7 @@ export function PrepTasksSection({
     </CollapsibleSectionBlock>
   );
 }
+
+// Re-export types for convenience
+export type { GeneratedEventSummary } from "../actions/event-summary";
+export type { TaskBreakdown } from "../actions/task-breakdown";
