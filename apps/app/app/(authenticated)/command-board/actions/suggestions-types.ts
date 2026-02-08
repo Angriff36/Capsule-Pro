@@ -17,6 +17,15 @@ export type SuggestionCategory =
   | "inventory"
   | "general";
 
+export interface CardToCreate {
+  entityType: "client" | "event" | "task" | "employee" | "inventory" | "note";
+  entityId?: string;
+  title: string;
+  content?: string;
+  position: { x: number; y: number; width: number; height: number; zIndex: number };
+  color?: string;
+}
+
 export type ActionHandler =
   | { type: "navigate"; path: string }
   | {
@@ -26,7 +35,12 @@ export type ActionHandler =
       payload?: unknown;
     }
   | { type: "function"; functionName: string; params?: unknown }
-  | { type: "external"; url: string };
+  | { type: "external"; url: string }
+  | {
+      type: "bulk_create_cards";
+      cards: CardToCreate[];
+      message?: string; // Success message to show after creation
+    };
 
 export interface SuggestedAction {
   id: string;

@@ -168,7 +168,9 @@ export function SuggestionsPanel({
                       size="sm"
                       variant="default"
                     >
-                      Take Action
+                      {suggestion.action.type === "bulk_create_cards"
+                        ? `Add ${suggestion.action.cards.length} Cards`
+                        : "Take Action"}
                     </Button>
                   </CardContent>
                 </Card>

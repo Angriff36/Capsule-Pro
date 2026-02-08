@@ -4,6 +4,7 @@ import { LivePresenceIndicator, Room } from "@repo/collaboration";
 import { Button } from "@repo/design-system/components/ui/button";
 import { RefreshCw, Sparkles } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { apiUrl } from "@/app/lib/api";
 import {
   type Conflict,
@@ -11,6 +12,7 @@ import {
   detectConflicts,
 } from "./actions/conflicts";
 import type { SuggestedAction } from "./actions/suggestions-types";
+import { bulkCreateCards } from "./actions/bulk-create-cards";
 import { BoardCanvas } from "./components/board-canvas-realtime";
 import { BoardHeader } from "./components/board-header";
 import { ConflictWarningPanel } from "./components/conflict-warning-panel";
@@ -64,9 +66,24 @@ function CommandBoardRealtimeContent({
     }
   };
 
-  const handleActionClick = (suggestion: SuggestedAction) => {
+  const handleActionClick = async (suggestion: SuggestedAction) => {
     if (suggestion.action.type === "navigate") {
       window.location.href = suggestion.action.path;
+    } else if (suggestion.action.type === "bulk_create_cards") {
+      // Handle bulk card creation - adds cards directly to the board
+      const result = await bulkCreateCards(boardId, {
+        cards: suggestion.action.cards,
+      });
+
+      if (result.success && result.cards) {
+        // Add new cards to the local state
+        setCards((prev) => [...prev, ...result.cards!]);
+        toast.success(
+          suggestion.action.message ?? `Added ${result.created} cards to board`
+        );
+      } else {
+        toast.error(result.error || "Failed to create cards");
+      }
     }
   };
 
