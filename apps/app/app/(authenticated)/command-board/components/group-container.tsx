@@ -2,12 +2,7 @@
 
 import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
-import {
-  ChevronDown,
-  ChevronRight,
-  MoreVertical,
-  Trash2,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, MoreVertical, Trash2 } from "lucide-react";
 import { memo, useCallback, useRef, useState } from "react";
 import Moveable, { type OnDrag, type OnResize } from "react-moveable";
 import type { CommandBoardGroup, Point } from "../types";
@@ -67,7 +62,9 @@ export const GroupContainer = memo(function GroupContainer({
 }: GroupContainerProps) {
   const groupRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStartPosition, setDragStartPosition] = useState<Point | null>(null);
+  const [dragStartPosition, setDragStartPosition] = useState<Point | null>(
+    null
+  );
   const [showMenu, setShowMenu] = useState(false);
 
   // Handle drag start - store initial canvas position
@@ -195,14 +192,11 @@ export const GroupContainer = memo(function GroupContainer({
     [group.id, onDelete]
   );
 
-  const handleMenuToggle = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setShowMenu((prev) => !prev);
-    },
-    []
-  );
+  const handleMenuToggle = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowMenu((prev) => !prev);
+  }, []);
 
   // Handle keyboard delete
   const handleKeyDown = useCallback(

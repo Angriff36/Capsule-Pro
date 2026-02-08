@@ -9,12 +9,12 @@ import {
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
 import { Building2, Mail, MapPin, MoreVertical, Phone } from "lucide-react";
-import { memo, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { CommandBoardCard } from "../../types";
+import { memo, useEffect, useState } from "react";
 import type { ClientEntityData } from "../../actions/entity-data";
 import { getEntityData } from "../../actions/entity-data";
+import type { CommandBoardCard } from "../../types";
 
 interface ClientCardProps {
   card: CommandBoardCard;
@@ -92,8 +92,8 @@ export const ClientCard = memo(function ClientCard({ card }: ClientCardProps) {
           <Building2 className="h-4 w-4 text-muted-foreground" />
           {isLinked ? (
             <Link
-              href={`/crm/clients/${card.entityId}`}
               className="hover:underline"
+              href={`/crm/clients/${card.entityId}`}
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="line-clamp-1 font-semibold text-sm">
@@ -101,7 +101,9 @@ export const ClientCard = memo(function ClientCard({ card }: ClientCardProps) {
               </h3>
             </Link>
           ) : (
-            <h3 className="line-clamp-1 font-semibold text-sm">{companyName}</h3>
+            <h3 className="line-clamp-1 font-semibold text-sm">
+              {companyName}
+            </h3>
           )}
           {isLinked && (
             <span className="inline-flex items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">

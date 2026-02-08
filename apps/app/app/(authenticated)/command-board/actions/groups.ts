@@ -134,7 +134,9 @@ export async function createGroup(
   }
 }
 
-export async function updateGroup(input: UpdateGroupInput): Promise<GroupResult> {
+export async function updateGroup(
+  input: UpdateGroupInput
+): Promise<GroupResult> {
   try {
     const tenantId = await requireTenantId();
 
@@ -315,7 +317,8 @@ export async function addCardsToGroup(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to add cards to group",
+      error:
+        error instanceof Error ? error.message : "Failed to add cards to group",
     };
   }
 }
@@ -340,12 +343,17 @@ export async function removeCardsFromGroup(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to remove cards from group",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to remove cards from group",
     };
   }
 }
 
-export async function toggleGroupCollapsed(groupId: string): Promise<GroupResult> {
+export async function toggleGroupCollapsed(
+  groupId: string
+): Promise<GroupResult> {
   try {
     const tenantId = await requireTenantId();
 
@@ -409,7 +417,10 @@ export async function toggleGroupCollapsed(groupId: string): Promise<GroupResult
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to toggle group collapsed state",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to toggle group collapsed state",
     };
   }
 }

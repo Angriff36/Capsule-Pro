@@ -102,7 +102,11 @@ export default async function CommandBoardPage({
 
   return (
     <CommandBoardRealtimeContent
+      boardDescription={boardData.description}
       boardId={boardData.id}
+      boardName={boardData.name}
+      boardStatus={boardData.status}
+      boardTags={boardData.tags}
       initialCards={boardData.cards}
       orgId={orgId}
       tenantId={tenantId}

@@ -25,8 +25,8 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { useState } from "react";
 import { deleteConnection, updateConnection } from "../actions/connections";
-import { RelationshipConfig, RelationshipType } from "../types";
 import type { CardConnection } from "../types";
+import { RelationshipConfig, type RelationshipType } from "../types";
 
 interface ConnectionContextMenuProps {
   connection: CardConnection;
@@ -93,16 +93,16 @@ export function ConnectionContextMenu({
 
   return (
     <>
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <Popover onOpenChange={setIsOpen} open={isOpen}>
         <PopoverTrigger asChild>
           <Button
-            variant="ghost"
-            size="sm"
             className="h-6 px-2 text-xs"
             onClick={(e) => {
               e.stopPropagation();
               setIsOpen(true);
             }}
+            size="sm"
+            variant="ghost"
           >
             <svg
               className="h-3 w-3"
@@ -171,7 +171,7 @@ export function ConnectionContextMenu({
       </Popover>
 
       {/* Edit Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+      <Dialog onOpenChange={setShowEditDialog} open={showEditDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Connection</DialogTitle>
@@ -185,10 +185,10 @@ export function ConnectionContextMenu({
             <div className="grid gap-2">
               <Label htmlFor="edit-relationship-type">Relationship Type</Label>
               <Select
-                value={relationshipType}
                 onValueChange={(value) =>
                   setRelationshipType(value as RelationshipType)
                 }
+                value={relationshipType}
               >
                 <SelectTrigger id="edit-relationship-type">
                   <SelectValue />
@@ -214,9 +214,9 @@ export function ConnectionContextMenu({
               <Label htmlFor="edit-connection-label">Label (Optional)</Label>
               <Input
                 id="edit-connection-label"
+                onChange={(e) => setLabel(e.target.value)}
                 placeholder="Custom label for the connection"
                 value={label}
-                onChange={(e) => setLabel(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
                 Default: {currentConfig.label}
@@ -232,7 +232,7 @@ export function ConnectionContextMenu({
                 onChange={(e) => setVisible(e.target.checked)}
                 type="checkbox"
               />
-              <Label htmlFor="edit-visible" className="cursor-pointer">
+              <Label className="cursor-pointer" htmlFor="edit-visible">
                 Visible on board
               </Label>
             </div>
@@ -243,14 +243,14 @@ export function ConnectionContextMenu({
 
           <DialogFooter>
             <Button
+              disabled={isUpdating}
+              onClick={() => setShowEditDialog(false)}
               type="button"
               variant="outline"
-              onClick={() => setShowEditDialog(false)}
-              disabled={isUpdating}
             >
               Cancel
             </Button>
-            <Button type="button" onClick={handleUpdate} disabled={isUpdating}>
+            <Button disabled={isUpdating} onClick={handleUpdate} type="button">
               {isUpdating ? "Updating..." : "Update Connection"}
             </Button>
           </DialogFooter>
@@ -258,13 +258,13 @@ export function ConnectionContextMenu({
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <Dialog onOpenChange={setShowDeleteDialog} open={showDeleteDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Delete Connection</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this connection? This action cannot be
-              undone.
+              Are you sure you want to delete this connection? This action
+              cannot be undone.
             </DialogDescription>
           </DialogHeader>
 
@@ -272,18 +272,18 @@ export function ConnectionContextMenu({
 
           <DialogFooter>
             <Button
+              disabled={isUpdating}
+              onClick={() => setShowDeleteDialog(false)}
               type="button"
               variant="outline"
-              onClick={() => setShowDeleteDialog(false)}
-              disabled={isUpdating}
             >
               Cancel
             </Button>
             <Button
+              disabled={isUpdating}
+              onClick={handleDelete}
               type="button"
               variant="destructive"
-              onClick={handleDelete}
-              disabled={isUpdating}
             >
               {isUpdating ? "Deleting..." : "Delete Connection"}
             </Button>

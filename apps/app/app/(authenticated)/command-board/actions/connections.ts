@@ -2,10 +2,7 @@
 
 import { database } from "@repo/database";
 import { requireTenantId } from "../../../lib/tenant";
-import type {
-  CardConnection,
-  RelationshipType,
-} from "../types";
+import type { CardConnection, RelationshipType } from "../types";
 
 export interface ConnectionResult {
   success: boolean;
@@ -115,7 +112,8 @@ export async function createConnection(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to create connection",
+      error:
+        error instanceof Error ? error.message : "Failed to create connection",
     };
   }
 }
@@ -166,7 +164,8 @@ export async function updateConnection(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to update connection",
+      error:
+        error instanceof Error ? error.message : "Failed to update connection",
     };
   }
 }
@@ -194,14 +193,13 @@ export async function deleteConnection(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to delete connection",
+      error:
+        error instanceof Error ? error.message : "Failed to delete connection",
     };
   }
 }
 
-export async function getConnectionsForBoard(
-  boardId: string
-): Promise<{
+export async function getConnectionsForBoard(boardId: string): Promise<{
   success: boolean;
   connections?: CardConnection[];
   error?: string;
@@ -234,14 +232,13 @@ export async function getConnectionsForBoard(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to get connections",
+      error:
+        error instanceof Error ? error.message : "Failed to get connections",
     };
   }
 }
 
-export async function getConnectionsForCard(
-  cardId: string
-): Promise<{
+export async function getConnectionsForCard(cardId: string): Promise<{
   success: boolean;
   connections?: CardConnection[];
   error?: string;
@@ -252,10 +249,7 @@ export async function getConnectionsForCard(
     const connections = await database.commandBoardConnection.findMany({
       where: {
         tenantId,
-        OR: [
-          { fromCardId: cardId },
-          { toCardId: cardId },
-        ],
+        OR: [{ fromCardId: cardId }, { toCardId: cardId }],
         deletedAt: null,
       },
       orderBy: {
@@ -277,7 +271,8 @@ export async function getConnectionsForCard(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to get connections",
+      error:
+        error instanceof Error ? error.message : "Failed to get connections",
     };
   }
 }

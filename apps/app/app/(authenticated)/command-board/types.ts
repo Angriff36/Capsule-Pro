@@ -317,8 +317,8 @@ export function dbCardToCard(dbCard: DbCommandBoardCard): CommandBoardCard {
     },
     color: dbCard.color,
     metadata: (dbCard.metadata as CardMetadata) || {},
-    entityId: (dbCard.entityId ?? undefined),
-    entityType: (dbCard.entityType as EntityType | undefined),
+    entityId: dbCard.entityId ?? undefined,
+    entityType: dbCard.entityType as EntityType | undefined,
     createdAt: dbCard.createdAt,
     updatedAt: dbCard.updatedAt,
     deletedAt: dbCard.deletedAt,
@@ -774,7 +774,9 @@ export interface CommandBoardGroup {
 /**
  * Create a CommandBoardGroup from database model
  */
-export function dbGroupToGroup(dbGroup: DbCommandBoardGroup & { cards?: Array<{ id: string }> }): CommandBoardGroup {
+export function dbGroupToGroup(
+  dbGroup: DbCommandBoardGroup & { cards?: Array<{ id: string }> }
+): CommandBoardGroup {
   return {
     id: dbGroup.id,
     tenantId: dbGroup.tenantId,

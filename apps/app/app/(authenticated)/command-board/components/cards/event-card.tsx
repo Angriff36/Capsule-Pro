@@ -24,12 +24,12 @@ import {
   MoreVertical,
   Users,
 } from "lucide-react";
-import { memo, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { CommandBoardCard } from "../../types";
+import { memo, useEffect, useState } from "react";
 import type { EventEntityData } from "../../actions/entity-data";
 import { getEntityData } from "../../actions/entity-data";
+import type { CommandBoardCard } from "../../types";
 
 interface EventCardProps {
   card: CommandBoardCard;
@@ -94,8 +94,8 @@ export const EventCard = memo(function EventCard({ card }: EventCardProps) {
             </div>
             {isLinked ? (
               <Link
-                href={`/events/${eventId}`}
                 className="block hover:underline"
+                href={`/events/${eventId}`}
                 onClick={(e) => e.stopPropagation()}
               >
                 <CardTitle className="line-clamp-2 leading-tight">

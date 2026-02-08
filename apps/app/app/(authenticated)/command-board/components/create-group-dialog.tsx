@@ -137,9 +137,9 @@ export function CreateGroupDialog({
               ))}
               <button
                 className={`h-8 w-8 rounded border-2 transition-all ${
-                  !selectedColor && !customColor
-                    ? "border-foreground scale-110"
-                    : "border-transparent hover:scale-105"
+                  selectedColor || customColor
+                    ? "border-transparent hover:scale-105"
+                    : "border-foreground scale-110"
                 } bg-gradient-to-br from-gray-100 to-gray-300`}
                 onClick={() => {
                   setSelectedColor(null);
@@ -152,7 +152,10 @@ export function CreateGroupDialog({
 
             {/* Custom Color Input */}
             <div className="flex gap-2 items-center">
-              <Label htmlFor="custom-color" className="text-sm text-muted-foreground">
+              <Label
+                className="text-sm text-muted-foreground"
+                htmlFor="custom-color"
+              >
                 Custom:
               </Label>
               <Input
@@ -193,7 +196,10 @@ export function CreateGroupDialog({
           >
             Cancel
           </Button>
-          <Button disabled={isCreating || !groupName.trim()} onClick={handleCreate}>
+          <Button
+            disabled={isCreating || !groupName.trim()}
+            onClick={handleCreate}
+          >
             {isCreating ? "Creating..." : "Create Group"}
           </Button>
         </DialogFooter>

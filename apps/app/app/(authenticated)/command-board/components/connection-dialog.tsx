@@ -20,8 +20,8 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { useEffect, useState } from "react";
 import { createConnection } from "../actions/connections";
-import { RelationshipConfig, RelationshipType } from "../types";
 import type { CommandBoardCard } from "../types";
+import { RelationshipConfig, RelationshipType } from "../types";
 
 interface ConnectionDialogProps {
   open: boolean;
@@ -94,7 +94,7 @@ export function ConnectionDialog({
   }, [sourceCardId, targetCardId, cards]);
 
   const handleCreate = async () => {
-    if (!sourceCardId || !targetCardId) {
+    if (!(sourceCardId && targetCardId)) {
       setError("Please select both source and target cards");
       return;
     }
@@ -139,7 +139,7 @@ export function ConnectionDialog({
   const targetCard = cards.find((c) => c.id === targetCardId);
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog onOpenChange={handleOpenChange} open={open}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Create Connection</DialogTitle>
@@ -154,8 +154,8 @@ export function ConnectionDialog({
             <Label htmlFor="source-card">From Card</Label>
             <Select
               defaultValue={initialSourceCardId ?? undefined}
-              value={sourceCardId || undefined}
               onValueChange={setSourceCardId}
+              value={sourceCardId || undefined}
             >
               <SelectTrigger id="source-card">
                 <SelectValue placeholder="Select source card" />
@@ -180,8 +180,8 @@ export function ConnectionDialog({
             <Label htmlFor="target-card">To Card</Label>
             <Select
               defaultValue={initialTargetCardId ?? undefined}
-              value={targetCardId || undefined}
               onValueChange={setTargetCardId}
+              value={targetCardId || undefined}
             >
               <SelectTrigger id="target-card">
                 <SelectValue placeholder="Select target card" />
@@ -205,10 +205,10 @@ export function ConnectionDialog({
           <div className="grid gap-2">
             <Label htmlFor="relationship-type">Relationship Type</Label>
             <Select
-              value={relationshipType}
               onValueChange={(value) =>
                 setRelationshipType(value as RelationshipType)
               }
+              value={relationshipType}
             >
               <SelectTrigger id="relationship-type">
                 <SelectValue />
@@ -234,9 +234,9 @@ export function ConnectionDialog({
             <Label htmlFor="connection-label">Label (Optional)</Label>
             <Input
               id="connection-label"
+              onChange={(e) => setLabel(e.target.value)}
               placeholder="Custom label for the connection"
               value={label}
-              onChange={(e) => setLabel(e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
               Leave empty to use the default label for the relationship type
@@ -244,24 +244,22 @@ export function ConnectionDialog({
           </div>
 
           {/* Error Message */}
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
+          {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
 
         <DialogFooter>
           <Button
+            disabled={isCreating}
+            onClick={() => onOpenChange(false)}
             type="button"
             variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isCreating}
           >
             Cancel
           </Button>
           <Button
-            type="button"
-            onClick={handleCreate}
             disabled={isCreating || !sourceCardId || !targetCardId}
+            onClick={handleCreate}
+            type="button"
           >
             {isCreating ? "Creating..." : "Create Connection"}
           </Button>

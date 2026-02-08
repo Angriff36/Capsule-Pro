@@ -1,9 +1,11 @@
-import { redirect } from "next/navigation";
+import { BoardsListClient } from "./components/boards-list-client";
 
-// Redirect root command-board route to a default board
-// In the future, this could show a list of boards or create a new one
 export default async function CommandBoardRootPage() {
-  // For now, redirect to a default board ID
-  // You can change this to show a list of boards instead
-  redirect("/command-board/default");
+  return <BoardsListClient />;
 }
+
+export const metadata = {
+  title: "Command Boards",
+  description:
+    "Manage your strategic command boards for planning and coordination.",
+};

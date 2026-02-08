@@ -1,8 +1,13 @@
 "use server";
 
-import { database, type Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { requireTenantId } from "../../../lib/tenant";
-import type { CardMetadata, CardType, CreateCardInput, EntityType } from "../types";
+import type {
+  CardMetadata,
+  CardType,
+  CreateCardInput,
+  EntityType,
+} from "../types";
 import type { CardResult } from "./cards";
 
 export type CreateEntityCardInput = CreateCardInput & {

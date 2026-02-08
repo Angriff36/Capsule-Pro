@@ -16,17 +16,13 @@ import {
   useState,
 } from "react";
 import { createCard, deleteCard, updateCard } from "../actions/cards";
+import { getConnectionsForBoard } from "../actions/connections";
 import {
   deleteGroup,
   getGroupsForBoard,
   toggleGroupCollapsed,
   updateGroup,
 } from "../actions/groups";
-import {
-  getConnectionsForBoard,
-  deleteConnection as deleteConnectionAction,
-  updateConnection as updateConnectionAction,
-} from "../actions/connections";
 import {
   type BoardState,
   type CardConnection,
@@ -876,8 +872,10 @@ export function BoardCanvas({
         return;
       }
 
-      const deltaX = (position.x ?? currentGroup.position.x) - currentGroup.position.x;
-      const deltaY = (position.y ?? currentGroup.position.y) - currentGroup.position.y;
+      const deltaX =
+        (position.x ?? currentGroup.position.x) - currentGroup.position.x;
+      const deltaY =
+        (position.y ?? currentGroup.position.y) - currentGroup.position.y;
 
       // Update group position
       setGroups((prev) =>
@@ -983,15 +981,18 @@ export function BoardCanvas({
     }
   }, []);
 
-  const handleDeleteGroup = useCallback(async (groupId: string) => {
-    const result = await deleteGroup(groupId);
-    if (result.success) {
-      setGroups((prev) => prev.filter((g) => g.id !== groupId));
-      if (selectedGroupId === groupId) {
-        setSelectedGroupId(null);
+  const handleDeleteGroup = useCallback(
+    async (groupId: string) => {
+      const result = await deleteGroup(groupId);
+      if (result.success) {
+        setGroups((prev) => prev.filter((g) => g.id !== groupId));
+        if (selectedGroupId === groupId) {
+          setSelectedGroupId(null);
+        }
       }
-    }
-  }, [selectedGroupId]);
+    },
+    [selectedGroupId]
+  );
 
   const handleGroupClick = useCallback(
     (e: React.MouseEvent, groupId: string) => {
@@ -1157,10 +1158,10 @@ export function BoardCanvas({
                     viewBox="0 0 24 24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <rect x="3" y="3" width="7" height="7" />
-                    <rect x="14" y="3" width="7" height="7" />
-                    <rect x="14" y="14" width="7" height="7" />
-                    <rect x="3" y="14" width="7" height="7" />
+                    <rect height="7" width="7" x="3" y="3" />
+                    <rect height="7" width="7" x="14" y="3" />
+                    <rect height="7" width="7" x="14" y="14" />
+                    <rect height="7" width="7" x="3" y="14" />
                   </svg>
                   Group {state.selectedCardIds.length} Cards
                 </Button>
@@ -1221,7 +1222,9 @@ export function BoardCanvas({
           <Button
             onClick={toggleFullscreen}
             size="sm"
-            title={isFullscreen ? "Exit fullscreen (Esc)" : "Enter fullscreen (F)"}
+            title={
+              isFullscreen ? "Exit fullscreen (Esc)" : "Enter fullscreen (F)"
+            }
             variant="outline"
           >
             {isFullscreen ? (
@@ -1399,8 +1402,8 @@ export function BoardCanvas({
               <GroupContainer
                 canDrag={canEdit}
                 canResize={true}
-                group={group}
                 gridSize={gridSize}
+                group={group}
                 isSelected={selectedGroupId === group.id}
                 key={group.id}
                 onClick={handleGroupClick}
@@ -1436,20 +1439,20 @@ export function BoardCanvas({
           {visibleCards
             .filter((card) => !groups.some((g) => g.cardIds.includes(card.id)))
             .map((card) => (
-            <BoardCard
-              canDrag={canEdit}
-              card={card}
-              gridSize={gridSize}
-              isSelected={state.selectedCardIds.includes(card.id)}
-              key={card.id}
-              onClick={(e) => handleCardClick(e, card.id)}
-              onDelete={handleDeleteCard}
-              onPositionChange={handleCardPositionChange}
-              onSizeChange={handleCardSizeChange}
-              snapToGridEnabled={snapToGrid}
-              viewportZoom={state.viewport.zoom}
-            />
-          ))}
+              <BoardCard
+                canDrag={canEdit}
+                card={card}
+                gridSize={gridSize}
+                isSelected={state.selectedCardIds.includes(card.id)}
+                key={card.id}
+                onClick={(e) => handleCardClick(e, card.id)}
+                onDelete={handleDeleteCard}
+                onPositionChange={handleCardPositionChange}
+                onSizeChange={handleCardSizeChange}
+                snapToGridEnabled={snapToGrid}
+                viewportZoom={state.viewport.zoom}
+              />
+            ))}
 
           {showEmptyState && (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -1550,8 +1553,8 @@ export function BoardCanvas({
       {/* Create Group Dialog */}
       <CreateGroupDialog
         boardId={boardId}
-        onOpenChange={setShowCreateGroupDialog}
         onCreate={handleCreateGroup}
+        onOpenChange={setShowCreateGroupDialog}
         open={showCreateGroupDialog}
         selectedCards={state.cards.filter((c) =>
           state.selectedCardIds.includes(c.id)
@@ -1560,13 +1563,13 @@ export function BoardCanvas({
 
       {/* Connection Dialog */}
       <ConnectionDialog
-        open={showConnectionDialog}
-        onOpenChange={setShowConnectionDialog}
         boardId={boardId}
         cards={state.cards}
+        onCreate={handleConnectionCreated}
+        onOpenChange={setShowConnectionDialog}
+        open={showConnectionDialog}
         sourceCardId={connectionSourceCardId}
         targetCardId={connectionTargetCardId}
-        onCreate={handleConnectionCreated}
       />
     </div>
   );

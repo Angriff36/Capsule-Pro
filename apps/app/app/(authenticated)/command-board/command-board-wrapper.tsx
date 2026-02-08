@@ -12,6 +12,7 @@ import {
 } from "./actions/conflicts";
 import type { SuggestedAction } from "./actions/suggestions-types";
 import { BoardCanvas } from "./components/board-canvas-realtime";
+import { BoardHeader } from "./components/board-header";
 import { ConflictWarningPanel } from "./components/conflict-warning-panel";
 import { SuggestionsPanel } from "./components/suggestions-panel";
 import { useSuggestions } from "./hooks/use-suggestions";
@@ -21,6 +22,10 @@ interface CommandBoardRealtimePageProps {
   boardId: string;
   orgId: string;
   tenantId: string;
+  boardName?: string;
+  boardStatus?: string;
+  boardDescription?: string | null;
+  boardTags?: string[];
   initialCards?: CommandBoardCard[];
 }
 
@@ -28,6 +33,10 @@ function CommandBoardRealtimeContent({
   boardId,
   orgId,
   tenantId,
+  boardName,
+  boardStatus,
+  boardDescription,
+  boardTags,
   initialCards = [],
 }: CommandBoardRealtimePageProps) {
   const [cards, setCards] = useState<CommandBoardCard[]>(initialCards);
@@ -77,53 +86,62 @@ function CommandBoardRealtimeContent({
       }
       id={roomId}
     >
-      <div className="h-full w-full">
-        <LivePresenceIndicator className="absolute top-4 right-4 z-50" />
-        <div className="absolute top-4 left-4 z-50 flex gap-2">
-          <Button
-            disabled={isDetectingConflicts}
-            onClick={handleDetectConflicts}
-            variant="outline"
-          >
-            <RefreshCw
-              className={`h-4 w-4 ${isDetectingConflicts ? "animate-spin" : ""}`}
-            />
-            {isDetectingConflicts ? "Detecting..." : "Detect Conflicts"}
-          </Button>
-          <Button
-            onClick={() => {
-              setShowSuggestions(!showSuggestions);
-              if (!showSuggestions && suggestions.length === 0) {
-                fetchSuggestions();
-              }
-            }}
-            variant="outline"
-          >
-            <Sparkles className="h-4 w-4" />
-            AI Suggestions
-          </Button>
-        </div>
-        <ConflictWarningPanel
-          conflicts={conflicts}
-          onClose={handleDismissConflicts}
-        />
-        {showSuggestions && (
-          <div className="absolute right-4 top-16 z-40 h-3/4 w-96 shadow-xl">
-            <SuggestionsPanel
-              isLoading={suggestionsLoading}
-              onAction={handleActionClick}
-              onDismiss={dismissSuggestion}
-              onRefresh={fetchSuggestions}
-              suggestions={suggestions}
-            />
-          </div>
-        )}
-        <BoardCanvas
+      <div className="flex h-full w-full flex-col">
+        <BoardHeader
+          boardDescription={boardDescription}
           boardId={boardId}
-          canEdit={true}
-          initialCards={cards}
-          onCardsChange={setCards}
+          boardName={boardName}
+          boardStatus={boardStatus}
+          boardTags={boardTags}
         />
+        <div className="relative flex-1">
+          <LivePresenceIndicator className="absolute top-4 right-4 z-50" />
+          <div className="absolute top-4 left-4 z-50 flex gap-2">
+            <Button
+              disabled={isDetectingConflicts}
+              onClick={handleDetectConflicts}
+              variant="outline"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${isDetectingConflicts ? "animate-spin" : ""}`}
+              />
+              {isDetectingConflicts ? "Detecting..." : "Detect Conflicts"}
+            </Button>
+            <Button
+              onClick={() => {
+                setShowSuggestions(!showSuggestions);
+                if (!showSuggestions && suggestions.length === 0) {
+                  fetchSuggestions();
+                }
+              }}
+              variant="outline"
+            >
+              <Sparkles className="h-4 w-4" />
+              AI Suggestions
+            </Button>
+          </div>
+          <ConflictWarningPanel
+            conflicts={conflicts}
+            onClose={handleDismissConflicts}
+          />
+          {showSuggestions && (
+            <div className="absolute right-4 top-16 z-40 h-3/4 w-96 shadow-xl">
+              <SuggestionsPanel
+                isLoading={suggestionsLoading}
+                onAction={handleActionClick}
+                onDismiss={dismissSuggestion}
+                onRefresh={fetchSuggestions}
+                suggestions={suggestions}
+              />
+            </div>
+          )}
+          <BoardCanvas
+            boardId={boardId}
+            canEdit={true}
+            initialCards={cards}
+            onCardsChange={setCards}
+          />
+        </div>
       </div>
     </Room>
   );
