@@ -340,7 +340,7 @@ export function ProductionBoardClient({
   tenantId,
 }: ProductionBoardClientProps) {
   const router = useRouter();
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [selectedStation, setSelectedStation] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);

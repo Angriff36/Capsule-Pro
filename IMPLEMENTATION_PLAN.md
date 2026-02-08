@@ -309,6 +309,39 @@ return () => clearTimeout(timeoutId);
 
 ---
 
+### Task 1.6: Fix Additional useState(Date) Hydration Issues in apps/app ✅ COMPLETED (2025-02-07)
+**Priority**: P1 (High)
+**Files**:
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\kitchen\production-board-client.tsx` (line 343)
+- `C:\projects\capsule-pro\apps\app\app\(authenticated)\events\[eventId]\battle-board\components\timeline.tsx` (line 79)
+
+**Problem**: Additional useState(Date) initialization issues found in apps/app that were not covered in Task 1.2. These cause hydration mismatches when server renders with a different date than client.
+
+**Acceptance Criteria**:
+- [x] Fixed `useState(new Date())` to use lazy initialization: `useState(() => new Date())`
+- [x] production-board-client.tsx selectedDate state now uses lazy initialization
+- [x] timeline.tsx currentTime state now uses lazy initialization
+- [x] All setTimeout/setInterval usages verified to have proper cleanup
+- [x] Tests pass: `pnpm test` (162 tests passed)
+
+**Implementation**:
+```typescript
+// Before:
+const [selectedDate, setSelectedDate] = useState(new Date());
+const [currentTime, setCurrentTime] = useState(new Date());
+
+// After:
+const [selectedDate, setSelectedDate] = useState(() => new Date());
+const [currentTime, setCurrentTime] = useState(() => new Date());
+```
+
+**Notes**:
+- All Date.now() usages were reviewed and found to be in event handlers (not during render) - no hydration risk
+- All setTimeout/setInterval usages have proper cleanup functions
+- KitchenClock in production-board-client.tsx already uses hydration-safe pattern (null initial state)
+
+---
+
 ## Phase 2: Performance Hardening (P1-P2)
 
 ### Task 2.1: Add ISR Caching Strategy ✅ COMPLETED (2025-02-07)
@@ -748,7 +781,7 @@ Before marking this plan complete, verify:
 - [ ] **Manual Testing**: All pages tested (home, contact, pricing, events, analytics)
 - [ ] **Regression**: Performance tests show no degradation
 
-**Last Updated**: 2025-02-07 (Session: test script added to apps/web/package.json, test count updated to 162)
+**Last Updated**: 2025-02-07 (Session: Task 1.6 completed - fixed useState(Date) hydration issues in apps/app)
 
 **Remaining Work**:
 - Manual browser testing for hydration warnings

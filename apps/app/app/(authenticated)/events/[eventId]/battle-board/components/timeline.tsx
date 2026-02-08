@@ -76,7 +76,7 @@ export function Timeline({
   const [showCriticalPath, setShowCriticalPath] = useState(true);
   const [zoom, setZoom] = useState(100);
   const [_scrollX, setScrollX] = useState(0);
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState(() => new Date());
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [undoStack, setUndoStack] = useState<TaskAction[]>([]);
   const [redoStack, setRedoStack] = useState<TaskAction[]>([]);
