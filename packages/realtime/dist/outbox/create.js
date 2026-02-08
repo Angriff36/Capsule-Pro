@@ -1,3 +1,4 @@
+"use strict";
 /**
  * createOutboxEvent helper for inserting events into the outbox table.
  * This function can be called within Prisma transactions for atomicity.
@@ -29,18 +30,18 @@ exports.createOutboxEvent = createOutboxEvent;
  * ```
  */
 async function createOutboxEvent(db, input) {
-  const occurredAt = input.occurredAt ?? new Date();
-  return db.outboxEvent.create({
-    data: {
-      tenantId: input.tenantId,
-      aggregateType: input.aggregateType,
-      aggregateId: input.aggregateId,
-      eventType: input.eventType,
-      payload: {
-        ...input.payload,
-        occurredAt: occurredAt.toISOString(),
-      },
-      status: "pending",
-    },
-  });
+    const occurredAt = input.occurredAt ?? new Date();
+    return db.outboxEvent.create({
+        data: {
+            tenantId: input.tenantId,
+            aggregateType: input.aggregateType,
+            aggregateId: input.aggregateId,
+            eventType: input.eventType,
+            payload: {
+                ...input.payload,
+                occurredAt: occurredAt.toISOString(),
+            },
+            status: "pending",
+        },
+    });
 }

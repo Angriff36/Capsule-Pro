@@ -1,11 +1,10 @@
 // src/index.ts
-
-import { generateText } from "ai";
+import { z as z5 } from "zod";
 
 // src/agent.ts
 import { Readable } from "stream";
+import { generateText } from "ai";
 import { v4 as uuidv4 } from "uuid";
-import { z as z5 } from "zod";
 
 // src/errors.ts
 var ERROR_CODES = {
@@ -23,7 +22,7 @@ var ERROR_CODES = {
   CANCELLATION_FAILED: "CANCELLATION_FAILED",
   METRICS_ERROR: "METRICS_ERROR",
   CONFIG_INVALID: "CONFIG_INVALID",
-  INTERNAL_ERROR: "INTERNAL_ERROR",
+  INTERNAL_ERROR: "INTERNAL_ERROR"
 };
 var SDKError = class extends Error {
   code;
@@ -58,7 +57,7 @@ var SDKError = class extends Error {
       troubleshootingUrl: this.troubleshootingUrl,
       context: this.context,
       timestamp: this.timestamp.toISOString(),
-      stack: this.stack,
+      stack: this.stack
     };
   }
 };
@@ -68,7 +67,7 @@ var AuthenticationError = class extends SDKError {
       ...options,
       code: ERROR_CODES.AUTH_INVALID,
       retryable: true,
-      troubleshootingUrl: "https://docs.example.com/auth",
+      troubleshootingUrl: "https://docs.example.com/auth"
     });
     this.name = "AuthenticationError";
   }
@@ -79,7 +78,7 @@ var AuthenticationExpiredError = class extends SDKError {
       ...options,
       code: ERROR_CODES.AUTH_EXPIRED,
       retryable: true,
-      troubleshootingUrl: "https://docs.example.com/auth#expired",
+      troubleshootingUrl: "https://docs.example.com/auth#expired"
     });
     this.name = "AuthenticationExpiredError";
   }
@@ -90,7 +89,7 @@ var RateLimitExceededError = class extends SDKError {
       ...options,
       code: ERROR_CODES.RATE_LIMIT_EXCEEDED,
       retryable: true,
-      troubleshootingUrl: "https://docs.example.com/rate-limit",
+      troubleshootingUrl: "https://docs.example.com/rate-limit"
     });
     this.name = "RateLimitExceededError";
   }
@@ -101,7 +100,7 @@ var TimeoutError = class extends SDKError {
       ...options,
       code: ERROR_CODES.TIMEOUT,
       retryable: true,
-      troubleshootingUrl: "https://docs.example.com/timeout",
+      troubleshootingUrl: "https://docs.example.com/timeout"
     });
     this.name = "TimeoutError";
   }
@@ -112,7 +111,7 @@ var ToolExecutionError = class extends SDKError {
       ...options,
       code: ERROR_CODES.TOOL_EXECUTION_FAILED,
       retryable: options?.retryable ?? true,
-      troubleshootingUrl: "https://docs.example.com/tools#execution",
+      troubleshootingUrl: "https://docs.example.com/tools#execution"
     });
     this.name = "ToolExecutionError";
   }
@@ -123,7 +122,7 @@ var ToolValidationError = class extends SDKError {
       ...options,
       code: ERROR_CODES.TOOL_VALIDATION_FAILED,
       retryable: false,
-      troubleshootingUrl: "https://docs.example.com/tools#validation",
+      troubleshootingUrl: "https://docs.example.com/tools#validation"
     });
     this.name = "ToolValidationError";
   }
@@ -135,7 +134,7 @@ var AgentNotFoundError = class extends SDKError {
       code: ERROR_CODES.AGENT_NOT_FOUND,
       agentId,
       retryable: false,
-      troubleshootingUrl: "https://docs.example.com/agents#not-found",
+      troubleshootingUrl: "https://docs.example.com/agents#not-found"
     });
     this.name = "AgentNotFoundError";
   }
@@ -146,7 +145,7 @@ var AgentExecutionError = class extends SDKError {
       ...options,
       code: ERROR_CODES.AGENT_EXECUTION_FAILED,
       retryable: options?.retryable ?? true,
-      troubleshootingUrl: "https://docs.example.com/agents#execution",
+      troubleshootingUrl: "https://docs.example.com/agents#execution"
     });
     this.name = "AgentExecutionError";
   }
@@ -157,7 +156,7 @@ var WorkflowError = class extends SDKError {
       ...options,
       code: ERROR_CODES.WORKFLOW_ERROR,
       retryable: options?.retryable ?? false,
-      troubleshootingUrl: "https://docs.example.com/workflows#errors",
+      troubleshootingUrl: "https://docs.example.com/workflows#errors"
     });
     this.name = "WorkflowError";
   }
@@ -168,7 +167,7 @@ var StateError = class extends SDKError {
       ...options,
       code: ERROR_CODES.STATE_ERROR,
       retryable: false,
-      troubleshootingUrl: "https://docs.example.com/state#errors",
+      troubleshootingUrl: "https://docs.example.com/state#errors"
     });
     this.name = "StateError";
   }
@@ -179,40 +178,26 @@ var CancellationError = class extends SDKError {
       ...options,
       code: ERROR_CODES.CANCELLATION_FAILED,
       retryable: false,
-      troubleshootingUrl: "https://docs.example.com/cancellation",
+      troubleshootingUrl: "https://docs.example.com/cancellation"
     });
     this.name = "CancellationError";
   }
 };
 var SDK_ERROR_FACTORIES = {
-  [ERROR_CODES.AUTH_INVALID]: (message, options) =>
-    new AuthenticationError(message, options),
-  [ERROR_CODES.AUTH_EXPIRED]: (message, options) =>
-    new AuthenticationExpiredError(message, options),
-  [ERROR_CODES.RATE_LIMIT_EXCEEDED]: (message, options) =>
-    new RateLimitExceededError(message, options),
-  [ERROR_CODES.TIMEOUT]: (message, options) =>
-    new TimeoutError(message, options),
-  [ERROR_CODES.TOOL_EXECUTION_FAILED]: (message, options) =>
-    new ToolExecutionError(message, options),
-  [ERROR_CODES.TOOL_VALIDATION_FAILED]: (message, options) =>
-    new ToolValidationError(message, options),
-  [ERROR_CODES.AGENT_EXECUTION_FAILED]: (message, options) =>
-    new AgentExecutionError(message, options),
-  [ERROR_CODES.WORKFLOW_ERROR]: (message, options) =>
-    new WorkflowError(message, options),
-  [ERROR_CODES.STATE_ERROR]: (message, options) =>
-    new StateError(message, options),
-  [ERROR_CODES.CANCELLATION_FAILED]: (message, options) =>
-    new CancellationError(message, options),
-  [ERROR_CODES.INTERNAL_ERROR]: (message, options) =>
-    new SDKError(message, options),
-  [ERROR_CODES.TOOL_NOT_FOUND]: (message, options) =>
-    new SDKError(message, options),
-  [ERROR_CODES.AGENT_NOT_FOUND]: (message, options) =>
-    new SDKError(message, options),
-  [ERROR_CODES.CONFIG_INVALID]: (message, options) =>
-    new SDKError(message, options),
+  [ERROR_CODES.AUTH_INVALID]: (message, options) => new AuthenticationError(message, options),
+  [ERROR_CODES.AUTH_EXPIRED]: (message, options) => new AuthenticationExpiredError(message, options),
+  [ERROR_CODES.RATE_LIMIT_EXCEEDED]: (message, options) => new RateLimitExceededError(message, options),
+  [ERROR_CODES.TIMEOUT]: (message, options) => new TimeoutError(message, options),
+  [ERROR_CODES.TOOL_EXECUTION_FAILED]: (message, options) => new ToolExecutionError(message, options),
+  [ERROR_CODES.TOOL_VALIDATION_FAILED]: (message, options) => new ToolValidationError(message, options),
+  [ERROR_CODES.AGENT_EXECUTION_FAILED]: (message, options) => new AgentExecutionError(message, options),
+  [ERROR_CODES.WORKFLOW_ERROR]: (message, options) => new WorkflowError(message, options),
+  [ERROR_CODES.STATE_ERROR]: (message, options) => new StateError(message, options),
+  [ERROR_CODES.CANCELLATION_FAILED]: (message, options) => new CancellationError(message, options),
+  [ERROR_CODES.INTERNAL_ERROR]: (message, options) => new SDKError(message, options),
+  [ERROR_CODES.TOOL_NOT_FOUND]: (message, options) => new SDKError(message, options),
+  [ERROR_CODES.AGENT_NOT_FOUND]: (message, options) => new SDKError(message, options),
+  [ERROR_CODES.CONFIG_INVALID]: (message, options) => new SDKError(message, options)
 };
 function createSDKError(message, options) {
   const factory = SDK_ERROR_FACTORIES[options.code];
@@ -221,7 +206,6 @@ function createSDKError(message, options) {
 
 // src/events.ts
 import { EventEmitter as NodeEventEmitter } from "events";
-
 var AgentEventEmitter = class {
   emitter;
   constructor() {
@@ -287,10 +271,9 @@ var AgentEventEmitter = class {
 
 // src/metrics.ts
 import { z } from "zod";
-
 var MetricsExportSchema = z.object({
   format: z.enum(["json", "prometheus", "datadog", "webhook"]),
-  destination: z.string(),
+  destination: z.string()
 });
 var MetricsCollector = class {
   entries = [];
@@ -301,7 +284,7 @@ var MetricsCollector = class {
     json: () => JSON.stringify(this.entries, null, 2),
     prometheus: () => this.exportToPrometheus(),
     datadog: () => this.exportToDatadog(),
-    webhook: () => this.exportToWebhook(),
+    webhook: () => this.exportToWebhook()
   };
   constructor(options = {}) {
     this.maxEntries = options.maxEntries ?? 1e3;
@@ -333,7 +316,7 @@ var MetricsCollector = class {
         totalTokens: 0,
         totalToolCalls: 0,
         totalRetries: 0,
-        totalErrors: 0,
+        totalErrors: 0
       };
     }
     const successfulExecutions = agentMetrics.filter(
@@ -357,7 +340,7 @@ var MetricsCollector = class {
       totalTokens,
       totalToolCalls,
       totalRetries,
-      totalErrors,
+      totalErrors
     };
   }
   getAll() {
@@ -395,9 +378,9 @@ var MetricsCollector = class {
     const response = await fetch(this.exportConfig.destination, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify(this.entries),
+      body: JSON.stringify(this.entries)
     });
     if (!response.ok) {
       throw new Error(`Failed to export metrics: ${response.statusText}`);
@@ -424,12 +407,14 @@ var MetricsCollector = class {
   exportToDatadog() {
     const _series = this.entries.map((metric) => ({
       metric: "agent.execution",
-      points: [[Math.floor(metric.timestamp.getTime() / 1e3), metric.duration]],
+      points: [
+        [Math.floor(metric.timestamp.getTime() / 1e3), metric.duration]
+      ],
       tags: [
         `agent:${metric.agentId}`,
         `status:${metric.status}`,
-        `errors:${metric.errors}`,
-      ],
+        `errors:${metric.errors}`
+      ]
     }));
     return this.exportToWebhook();
   }
@@ -446,24 +431,22 @@ import { createOpenAI } from "@ai-sdk/openai";
 // src/keys.ts
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z as z2 } from "zod";
-
-var keys = () =>
-  createEnv({
-    server: {
-      OPENAI_API_KEY: z2.string().startsWith("sk-").optional(),
-    },
-    runtimeEnv: {
-      OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    },
-  });
+var keys = () => createEnv({
+  server: {
+    OPENAI_API_KEY: z2.string().startsWith("sk-").optional()
+  },
+  runtimeEnv: {
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY
+  }
+});
 
 // src/models.ts
 var openai = createOpenAI({
-  apiKey: keys().OPENAI_API_KEY,
+  apiKey: keys().OPENAI_API_KEY
 });
 var models = {
   chat: openai("gpt-4o-mini"),
-  embeddings: openai("text-embedding-3-small"),
+  embeddings: openai("text-embedding-3-small")
 };
 
 // src/retry.ts
@@ -484,7 +467,7 @@ var RetryManager = class {
         ERROR_CODES.RATE_LIMIT_EXCEEDED,
         ERROR_CODES.TIMEOUT,
         ERROR_CODES.TOOL_EXECUTION_FAILED,
-        ERROR_CODES.AUTH_EXPIRED,
+        ERROR_CODES.AUTH_EXPIRED
       ]
     );
     this.onRetry = options.onRetry;
@@ -497,7 +480,7 @@ var RetryManager = class {
         if (abortSignal?.aborted) {
           throw createSDKError("Operation was cancelled", {
             code: ERROR_CODES.CANCELLATION_FAILED,
-            retryable: false,
+            retryable: false
           });
         }
         return await operation();
@@ -530,7 +513,7 @@ var RetryManager = class {
         reject(
           createSDKError("Operation was cancelled during retry delay", {
             code: ERROR_CODES.CANCELLATION_FAILED,
-            retryable: false,
+            retryable: false
           })
         );
         return;
@@ -541,7 +524,7 @@ var RetryManager = class {
         reject(
           createSDKError("Operation was cancelled during retry delay", {
             code: ERROR_CODES.CANCELLATION_FAILED,
-            retryable: false,
+            retryable: false
           })
         );
       });
@@ -555,7 +538,7 @@ var RetryManager = class {
     const stack = error instanceof Error ? error.stack : void 0;
     const sdkError = createSDKError(message, {
       code: ERROR_CODES.INTERNAL_ERROR,
-      retryable: false,
+      retryable: false
     });
     if (stack) {
       sdkError.stack = stack;
@@ -566,7 +549,6 @@ var RetryManager = class {
 
 // src/tool.ts
 import { z as z3 } from "zod";
-
 var Tool = class {
   name;
   description;
@@ -590,15 +572,12 @@ var Tool = class {
     } catch (error) {
       return {
         success: false,
-        error:
-          error instanceof SDKError
-            ? error
-            : createSDKError(`Tool execution failed: ${String(error)}`, {
-                code: ERROR_CODES.TOOL_EXECUTION_FAILED,
-                toolName: this.name,
-                retryable: this.retryable,
-                context: { params },
-              }),
+        error: error instanceof SDKError ? error : createSDKError(`Tool execution failed: ${String(error)}`, {
+          code: ERROR_CODES.TOOL_EXECUTION_FAILED,
+          toolName: this.name,
+          retryable: this.retryable,
+          context: { params }
+        })
       };
     }
   }
@@ -606,14 +585,12 @@ var Tool = class {
     const schema = this.createParameterSchema();
     const result = await schema.safeParseAsync(params);
     if (!result.success) {
-      const errorMessages = result.error.issues
-        .map((e) => e.message)
-        .join(", ");
+      const errorMessages = result.error.issues.map((e) => e.message).join(", ");
       throw createSDKError(`Invalid parameters: ${errorMessages}`, {
         code: ERROR_CODES.TOOL_VALIDATION_FAILED,
         toolName: this.name,
         retryable: false,
-        context: { errors: result.error.issues, params },
+        context: { errors: result.error.issues, params }
       });
     }
     return result.data;
@@ -636,7 +613,7 @@ var ToolRegistry = class {
       throw createSDKError(`Tool already registered: ${tool.name}`, {
         code: ERROR_CODES.TOOL_NOT_FOUND,
         toolName: tool.name,
-        retryable: false,
+        retryable: false
       });
     }
     this.tools.set(tool.name, tool);
@@ -660,7 +637,6 @@ var ToolRegistry = class {
 
 // src/types.ts
 import { z as z4 } from "zod";
-
 var AgentConfigSchema = z4.object({
   name: z4.string().min(1).max(100),
   instructions: z4.string().min(1).max(1e4),
@@ -668,28 +644,28 @@ var AgentConfigSchema = z4.object({
   maxRetries: z4.number().min(0).max(10).optional(),
   timeout: z4.number().min(1e3).max(3e5).optional(),
   streaming: z4.boolean().optional(),
-  debug: z4.boolean().optional(),
+  debug: z4.boolean().optional()
 });
 var ToolConfigSchema = z4.object({
   name: z4.string().min(1).max(100),
   description: z4.string().min(1).max(1e3),
   parameters: z4.record(z4.string(), z4.unknown()).optional(),
   returns: z4.record(z4.string(), z4.unknown()).optional(),
-  retryable: z4.boolean().optional(),
+  retryable: z4.boolean().optional()
 });
 var ExecutionOptionsSchema = z4.object({
   prompt: z4.string().min(1),
   context: z4.record(z4.string(), z4.unknown()).optional(),
   stream: z4.boolean().optional(),
   onProgress: z4.function().optional(),
-  signal: z4.instanceof(AbortSignal).optional(),
+  signal: z4.instanceof(AbortSignal).optional()
 });
 var RetryConfigSchema = z4.object({
   maxAttempts: z4.number().min(1).max(10).optional(),
   initialDelay: z4.number().min(100).max(1e4).optional(),
   maxDelay: z4.number().min(1e3).max(6e4).optional(),
   backoffMultiplier: z4.number().min(1.1).max(5).optional(),
-  retryableErrors: z4.array(z4.string()).optional(),
+  retryableErrors: z4.array(z4.string()).optional()
 });
 var MetricsSchema = z4.object({
   agentId: z4.string(),
@@ -697,13 +673,13 @@ var MetricsSchema = z4.object({
   tokens: z4.object({
     input: z4.number(),
     output: z4.number(),
-    total: z4.number(),
+    total: z4.number()
   }),
   toolCalls: z4.number(),
   retries: z4.number(),
   errors: z4.number(),
   status: z4.enum(["success", "error", "cancelled"]),
-  timestamp: z4.date(),
+  timestamp: z4.date()
 });
 var SDKConfigSchema = z4.object({
   apiKey: z4.string().optional(),
@@ -711,7 +687,7 @@ var SDKConfigSchema = z4.object({
   defaultTimeout: z4.number().min(1e3).max(3e5).optional(),
   defaultMaxRetries: z4.number().min(0).max(10).optional(),
   debug: z4.boolean().optional(),
-  environmentVariables: z4.boolean().optional(),
+  environmentVariables: z4.boolean().optional()
 });
 
 // src/agent.ts
@@ -744,8 +720,7 @@ var Agent = class {
     this.eventEmitter = new AgentEventEmitter();
     this.toolRegistry = new ToolRegistry();
     this.metricsCollector = options.metricsCollector ?? new MetricsCollector();
-    this.executionHandler =
-      options.executionHandler ?? this.defaultExecutionHandler.bind(this);
+    this.executionHandler = options.executionHandler ?? this.defaultExecutionHandler.bind(this);
     if (this.debug) {
       console.log(`[Agent] Created agent: ${this.name} (${this.id})`);
     }
@@ -769,7 +744,7 @@ var Agent = class {
       throw createSDKError("Agent is already executing", {
         code: ERROR_CODES.AGENT_EXECUTION_FAILED,
         agentId: this.id,
-        retryable: false,
+        retryable: false
       });
     }
     const parsed = ExecutionOptionsSchema.parse(options);
@@ -791,9 +766,9 @@ var Agent = class {
             type: "toolError",
             toolName: "agent",
             toolCallId: executionId,
-            error,
+            error
           });
-        },
+        }
       });
       const retryResult = await retryManager.execute(async () => {
         const response = await this.executionHandler(parsed.prompt, {
@@ -801,7 +776,7 @@ var Agent = class {
           executionId,
           tools: this.toolRegistry,
           abortSignal: this.abortController?.signal ?? new AbortSignal(),
-          onProgress: (event) => this.eventEmitter.emit(event.type, event),
+          onProgress: (event) => this.eventEmitter.emit(event.type, event)
         });
         return response;
       }, this.abortController?.signal);
@@ -813,15 +788,13 @@ var Agent = class {
         tokens: {
           input: this.estimateTokenCount(parsed.prompt),
           output: this.estimateTokenCount(responseStr),
-          total:
-            this.estimateTokenCount(parsed.prompt) +
-            this.estimateTokenCount(responseStr),
+          total: this.estimateTokenCount(parsed.prompt) + this.estimateTokenCount(responseStr)
         },
         toolCalls: 0,
         retries: retryManager instanceof RetryManager ? this.maxRetries : 0,
         errors: 0,
         status: "success",
-        timestamp: /* @__PURE__ */ new Date(),
+        timestamp: /* @__PURE__ */ new Date()
       };
       this.metricsCollector.record(metrics);
       this.emitCompleted(executionId, responseStr);
@@ -834,31 +807,28 @@ var Agent = class {
         agentId: this.id,
         executionId,
         response: responseStr,
-        metrics,
+        metrics
       };
     } catch (error) {
       const duration = Date.now() - startTime;
-      const sdkError =
-        error instanceof SDKError
-          ? error
-          : createSDKError(String(error), {
-              code: ERROR_CODES.AGENT_EXECUTION_FAILED,
-              agentId: this.id,
-              retryable: true,
-            });
+      const sdkError = error instanceof SDKError ? error : createSDKError(String(error), {
+        code: ERROR_CODES.AGENT_EXECUTION_FAILED,
+        agentId: this.id,
+        retryable: true
+      });
       const metrics = {
         agentId: this.id,
         duration,
         tokens: {
           input: this.estimateTokenCount(parsed.prompt),
           output: 0,
-          total: this.estimateTokenCount(parsed.prompt),
+          total: this.estimateTokenCount(parsed.prompt)
         },
         toolCalls: 0,
         retries: 0,
         errors: 1,
         status: "error",
-        timestamp: /* @__PURE__ */ new Date(),
+        timestamp: /* @__PURE__ */ new Date()
       };
       this.metricsCollector.record(metrics);
       this.emitError(executionId, sdkError);
@@ -888,7 +858,7 @@ var Agent = class {
         executionId,
         tools: this.toolRegistry,
         abortSignal: this.abortController?.signal ?? new AbortSignal(),
-        onProgress: (event) => this.eventEmitter.emit(event.type, event),
+        onProgress: (event) => this.eventEmitter.emit(event.type, event)
       });
       if (!(response instanceof Readable)) {
         throw createSDKError(
@@ -896,7 +866,7 @@ var Agent = class {
           {
             code: ERROR_CODES.AGENT_EXECUTION_FAILED,
             agentId: this.id,
-            retryable: false,
+            retryable: false
           }
         );
       }
@@ -908,7 +878,7 @@ var Agent = class {
             this.push(chunk);
           }
           this.push(null);
-        },
+        }
       });
       const duration = Date.now() - startTime;
       const metrics = {
@@ -917,15 +887,13 @@ var Agent = class {
         tokens: {
           input: this.estimateTokenCount(parsed.prompt),
           output: this.estimateTokenCount(fullResponse),
-          total:
-            this.estimateTokenCount(parsed.prompt) +
-            this.estimateTokenCount(fullResponse),
+          total: this.estimateTokenCount(parsed.prompt) + this.estimateTokenCount(fullResponse)
         },
         toolCalls: 0,
         retries: 0,
         errors: 0,
         status: "success",
-        timestamp: /* @__PURE__ */ new Date(),
+        timestamp: /* @__PURE__ */ new Date()
       };
       this.metricsCollector.record(metrics);
       return {
@@ -934,31 +902,28 @@ var Agent = class {
         response: fullResponse,
         metrics,
         stream,
-        streamed: true,
+        streamed: true
       };
     } catch (error) {
       const duration = Date.now() - startTime;
-      const sdkError =
-        error instanceof SDKError
-          ? error
-          : createSDKError(String(error), {
-              code: ERROR_CODES.AGENT_EXECUTION_FAILED,
-              agentId: this.id,
-              retryable: true,
-            });
+      const sdkError = error instanceof SDKError ? error : createSDKError(String(error), {
+        code: ERROR_CODES.AGENT_EXECUTION_FAILED,
+        agentId: this.id,
+        retryable: true
+      });
       const metrics = {
         agentId: this.id,
         duration,
         tokens: {
           input: this.estimateTokenCount(parsed.prompt),
           output: 0,
-          total: this.estimateTokenCount(parsed.prompt),
+          total: this.estimateTokenCount(parsed.prompt)
         },
         toolCalls: 0,
         retries: 0,
         errors: 1,
         status: "error",
-        timestamp: /* @__PURE__ */ new Date(),
+        timestamp: /* @__PURE__ */ new Date()
       };
       this.metricsCollector.record(metrics);
       this.emitError(executionId, sdkError);
@@ -979,7 +944,7 @@ var Agent = class {
     const duration = Date.now() - startTime;
     if (duration > 2e3) {
       throw new CancellationError("Cancellation took longer than 2 seconds", {
-        agentId: this.id,
+        agentId: this.id
       });
     }
     if (this.debug) {
@@ -1037,19 +1002,19 @@ var Agent = class {
         type: "progress",
         stage: "calling_llm",
         percentage: 0,
-        message: "Calling GPT-4o-mini...",
+        message: "Calling GPT-4o-mini..."
       });
       const result = await generateText({
         model: models.chat,
         system: this.instructions,
         prompt,
-        temperature: 0.7,
+        temperature: 0.7
       });
       context.onProgress({
         type: "progress",
         stage: "llm_response",
         percentage: 100,
-        message: "Received response from GPT-4o-mini",
+        message: "Received response from GPT-4o-mini"
       });
       return result.text;
     } catch (error) {
@@ -1062,7 +1027,7 @@ var Agent = class {
           code: ERROR_CODES.AGENT_EXECUTION_FAILED,
           agentId: this.id,
           retryable: true,
-          context: { originalError: error },
+          context: { originalError: error }
         }
       );
     }
@@ -1072,7 +1037,7 @@ var Agent = class {
       type: "started",
       agentId: this.id,
       timestamp: /* @__PURE__ */ new Date(),
-      data: { executionId },
+      data: { executionId }
     };
     this.eventEmitter.emit("started", event);
   }
@@ -1081,7 +1046,7 @@ var Agent = class {
       type: "completed",
       agentId: this.id,
       timestamp: /* @__PURE__ */ new Date(),
-      data: { executionId, response },
+      data: { executionId, response }
     };
     this.eventEmitter.emit("completed", event);
   }
@@ -1091,7 +1056,7 @@ var Agent = class {
       agentId: this.id,
       timestamp: /* @__PURE__ */ new Date(),
       data: { executionId },
-      error,
+      error
     };
     this.eventEmitter.emit("error", event);
   }
@@ -1105,7 +1070,6 @@ function createAgent(config, options) {
 
 // src/workflow.ts
 import { v4 as uuidv42 } from "uuid";
-
 var AgentWorkflow = class {
   id;
   name;
@@ -1126,7 +1090,7 @@ var AgentWorkflow = class {
       workflowId: this.id,
       stepResults: /* @__PURE__ */ new Map(),
       sharedState: {},
-      startTime: /* @__PURE__ */ new Date(),
+      startTime: /* @__PURE__ */ new Date()
     };
     this.validateAndOrderSteps();
   }
@@ -1138,7 +1102,7 @@ var AgentWorkflow = class {
       if (tempVisited.has(stepId)) {
         throw createSDKError(`Circular dependency detected: ${stepId}`, {
           code: ERROR_CODES.WORKFLOW_ERROR,
-          retryable: false,
+          retryable: false
         });
       }
       if (visited.has(stepId)) {
@@ -1153,7 +1117,7 @@ var AgentWorkflow = class {
               `Invalid dependency: ${depId} for step ${stepId}`,
               {
                 code: ERROR_CODES.WORKFLOW_ERROR,
-                retryable: false,
+                retryable: false
               }
             );
           }
@@ -1194,24 +1158,21 @@ var AgentWorkflow = class {
         workflowId: this.id,
         success: true,
         stepResults: this.context.stepResults,
-        duration,
+        duration
       };
     } catch (error) {
       const duration = Date.now() - startTime;
-      const sdkError =
-        error instanceof SDKError
-          ? error
-          : createSDKError(String(error), {
-              code: ERROR_CODES.WORKFLOW_ERROR,
-              retryable: true,
-            });
+      const sdkError = error instanceof SDKError ? error : createSDKError(String(error), {
+        code: ERROR_CODES.WORKFLOW_ERROR,
+        retryable: true
+      });
       this.emitWorkflowError(sdkError, duration);
       return {
         workflowId: this.id,
         success: false,
         stepResults: this.context.stepResults,
         duration,
-        error: sdkError,
+        error: sdkError
       };
     }
   }
@@ -1265,7 +1226,7 @@ var AgentWorkflow = class {
           "Cannot determine execution order - possible circular dependency",
           {
             code: ERROR_CODES.WORKFLOW_ERROR,
-            retryable: false,
+            retryable: false
           }
         );
       }
@@ -1280,7 +1241,7 @@ var AgentWorkflow = class {
     try {
       const input = this.prepareStepInput(step);
       const result = await step.agent.execute({
-        prompt: input,
+        prompt: input
       });
       this.context.stepResults.set(step.id, result);
       if (step.outputMapping) {
@@ -1294,13 +1255,10 @@ var AgentWorkflow = class {
       this.emitStepCompleted(step, duration);
     } catch (error) {
       const duration = Date.now() - stepStartTime;
-      const sdkError =
-        error instanceof SDKError
-          ? error
-          : createSDKError(String(error), {
-              code: ERROR_CODES.AGENT_EXECUTION_FAILED,
-              retryable: false,
-            });
+      const sdkError = error instanceof SDKError ? error : createSDKError(String(error), {
+        code: ERROR_CODES.AGENT_EXECUTION_FAILED,
+        retryable: false
+      });
       this.emitStepError(step, sdkError, duration);
       throw sdkError;
     }
@@ -1311,9 +1269,7 @@ var AgentWorkflow = class {
     }
     const parts = [];
     for (const [inputKey, contextKey] of Object.entries(step.inputMapping)) {
-      const value =
-        this.context.sharedState[contextKey] ??
-        this.context.stepResults.get(contextKey);
+      const value = this.context.sharedState[contextKey] ?? this.context.stepResults.get(contextKey);
       if (value !== void 0) {
         parts.push(`${inputKey}: ${JSON.stringify(value)}`);
       }
@@ -1325,7 +1281,7 @@ var AgentWorkflow = class {
       type: "started",
       agentId: this.id,
       timestamp: /* @__PURE__ */ new Date(),
-      data: { workflowName: this.name, stepCount: this.steps.length },
+      data: { workflowName: this.name, stepCount: this.steps.length }
     };
     this.eventEmitter.emit("started", event);
   }
@@ -1334,7 +1290,7 @@ var AgentWorkflow = class {
       type: "completed",
       agentId: this.id,
       timestamp: /* @__PURE__ */ new Date(),
-      data: { workflowName: this.name, duration, stepCount: this.steps.length },
+      data: { workflowName: this.name, duration, stepCount: this.steps.length }
     };
     this.eventEmitter.emit("completed", event);
   }
@@ -1344,7 +1300,7 @@ var AgentWorkflow = class {
       agentId: this.id,
       timestamp: /* @__PURE__ */ new Date(),
       data: { workflowName: this.name, duration },
-      error,
+      error
     };
     this.eventEmitter.emit("error", event);
   }
@@ -1353,7 +1309,7 @@ var AgentWorkflow = class {
       type: "started",
       agentId: step.agent.id,
       timestamp: /* @__PURE__ */ new Date(),
-      data: { stepId: step.id, stepName: step.agent.name },
+      data: { stepId: step.id, stepName: step.agent.name }
     };
     this.eventEmitter.emit("started", event);
   }
@@ -1362,7 +1318,7 @@ var AgentWorkflow = class {
       type: "completed",
       agentId: step.agent.id,
       timestamp: /* @__PURE__ */ new Date(),
-      data: { stepId: step.id, stepName: step.agent.name, duration },
+      data: { stepId: step.id, stepName: step.agent.name, duration }
     };
     this.eventEmitter.emit("completed", event);
   }
@@ -1372,7 +1328,7 @@ var AgentWorkflow = class {
       agentId: step.agent.id,
       timestamp: /* @__PURE__ */ new Date(),
       data: { stepId: step.id, stepName: step.agent.name, duration },
-      error,
+      error
     };
     this.eventEmitter.emit("error", event);
   }
@@ -1406,7 +1362,7 @@ var AISDK = class {
       defaultTimeout: options.defaultTimeout ?? 6e4,
       defaultMaxRetries: options.defaultMaxRetries ?? 3,
       debug: options.debug ?? false,
-      metricsCollector: options.metricsCollector ?? new MetricsCollector(),
+      metricsCollector: options.metricsCollector ?? new MetricsCollector()
     };
     this.metricsCollector = this.config.metricsCollector;
     if (this.config.debug) {
@@ -1424,8 +1380,7 @@ var AISDK = class {
       const isValid = await this.credentialValidator();
       if (!isValid) {
         throw new AuthenticationError("Invalid API key provided", {
-          troubleshootingUrl:
-            "https://docs.example.com/getting-started#api-key",
+          troubleshootingUrl: "https://docs.example.com/getting-started#api-key"
         });
       }
     }
@@ -1439,7 +1394,7 @@ var AISDK = class {
       {
         ...config,
         timeout: config.timeout ?? this.config.defaultTimeout,
-        maxRetries: config.maxRetries ?? this.config.defaultMaxRetries,
+        maxRetries: config.maxRetries ?? this.config.defaultMaxRetries
       },
       options
     );
@@ -1451,7 +1406,7 @@ var AISDK = class {
       description: options.description,
       parameters: options.parameters ?? {},
       returns: options.returns ?? z5.unknown(),
-      retryable: options.retryable,
+      retryable: options.retryable
     });
     return tool;
   }
@@ -1498,8 +1453,7 @@ function getSDK() {
     throw createSDKError("SDK not initialized. Call initializeSDK() first.", {
       code: ERROR_CODES.CONFIG_INVALID,
       retryable: false,
-      troubleshootingUrl:
-        "https://docs.example.com/getting-started#initialization",
+      troubleshootingUrl: "https://docs.example.com/getting-started#initialization"
     });
   }
   return sdkInstance;
@@ -1527,6 +1481,6 @@ export {
   createTool,
   createWorkflow,
   getSDK,
-  initializeSDK,
+  initializeSDK
 };
 //# sourceMappingURL=index.js.map

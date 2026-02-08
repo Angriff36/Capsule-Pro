@@ -7,12 +7,21 @@
  * are already lazy-loaded at the edge runtime level.
  */
 
-import * as Sentry from "@sentry/nextjs";
 import { keys } from "./keys";
 
-export const initializeSentry = (): ReturnType<typeof Sentry.init> =>
-  Sentry.init({
-    dsn: keys().NEXT_PUBLIC_SENTRY_DSN,
+export const initializeSentry = async (): Promise<void> => {
+  // Import Sentry dynamically to reduce edge bundle size when not using Sentry
+  const Sentry = await import("@sentry/nextjs");
+
+  const dsn = keys().NEXT_PUBLIC_SENTRY_DSN;
+
+  // Don't initialize if DSN is not configured
+  if (!dsn) {
+    return;
+  }
+
+  Sentry.default.init({
+    dsn,
 
     // Enable logging
     enableLogs: true,
@@ -26,6 +35,7 @@ export const initializeSentry = (): ReturnType<typeof Sentry.init> =>
     // Integrations for console logging
     integrations: [
       // Send console.log, console.error, and console.warn calls as logs to Sentry
-      Sentry.consoleLoggingIntegration({ levels: ["log", "error", "warn"] }),
+      Sentry.default.consoleLoggingIntegration({ levels: ["log", "error", "warn"] }),
     ],
   });
+};

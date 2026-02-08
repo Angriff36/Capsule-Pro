@@ -10,11 +10,7 @@
 /**
  * Create a standard error response
  */
-export declare function manifestErrorResponse(
-  error: Error | string,
-  statusCode?: number,
-  details?: Record<string, unknown>
-): Response;
+export declare function manifestErrorResponse(error: Error | string, statusCode?: number, details?: Record<string, unknown>): Response;
 /**
  * Create a standard success response
  */
@@ -26,10 +22,7 @@ export declare function unauthorizedResponse(message?: string): Response;
 /**
  * Standard 400 Bad Request response
  */
-export declare function badRequestResponse(
-  message: string,
-  details?: Record<string, unknown>
-): Response;
+export declare function badRequestResponse(message: string, details?: Record<string, unknown>): Response;
 /**
  * Standard 403 Forbidden response
  */
@@ -45,26 +38,15 @@ export declare function serverErrorResponse(error: unknown): Response;
 /**
  * Safely parse JSON from request with error handling
  */
-export declare function parseRequestBody<T = unknown>(
-  request: Request
-): Promise<T | null>;
+export declare function parseRequestBody<T = unknown>(request: Request): Promise<T | null>;
 /**
  * Get a required field from request body
  */
-export declare function requireField<T>(
-  body: Record<string, unknown>,
-  fieldName: string,
-  validator?: (value: unknown) => value is T
-): T | null;
+export declare function requireField<T>(body: Record<string, unknown>, fieldName: string, validator?: (value: unknown) => value is T): T | null;
 /**
  * Get an optional field from request body with default
  */
-export declare function optionalField<T>(
-  body: Record<string, unknown>,
-  fieldName: string,
-  defaultValue: T,
-  validator?: (value: unknown) => value is T
-): T;
+export declare function optionalField<T>(body: Record<string, unknown>, fieldName: string, defaultValue: T, validator?: (value: unknown) => value is T): T;
 /**
  * String field validator
  */
@@ -84,15 +66,12 @@ export declare function isNonEmptyString(value: unknown): value is string;
 /**
  * Check if entity creation succeeded (constraint validation passed)
  */
-export declare function checkEntityCreation<T>(
-  entity: T | undefined,
-  constraintDiagnostics?: unknown
-): T;
+export declare function checkEntityCreation<T>(entity: T | undefined, constraintDiagnostics?: unknown): T;
 /**
  * Check command result for blocking constraints
  */
 export declare function checkCommandResult(result: {
-  success: boolean;
-  constraintOutcomes?: unknown[];
+    success: boolean;
+    constraintOutcomes?: unknown[];
 }): void;
 //# sourceMappingURL=route-helpers.d.ts.map

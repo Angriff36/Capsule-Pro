@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Channel naming conventions for realtime events.
  * Phase 1 uses tenant-wide channels only.
@@ -16,10 +17,10 @@ exports.isValidTenantChannel = isValidTenantChannel;
  * @throws Error if tenantId is empty or invalid
  */
 function getChannelName(tenantId) {
-  if (!tenantId || tenantId.trim() === "") {
-    throw new Error("tenantId is required");
-  }
-  return `tenant:${tenantId}`;
+    if (!tenantId || tenantId.trim() === "") {
+        throw new Error("tenantId is required");
+    }
+    return `tenant:${tenantId}`;
 }
 /**
  * Extract the module name from an eventType string.
@@ -30,11 +31,11 @@ function getChannelName(tenantId) {
  * @throws Error if eventType format is invalid
  */
 function getModuleFromEventType(eventType) {
-  const parts = eventType.split(".");
-  if (parts.length < 2) {
-    throw new Error(`Invalid eventType format: ${eventType}`);
-  }
-  return parts[0];
+    const parts = eventType.split(".");
+    if (parts.length < 2) {
+        throw new Error(`Invalid eventType format: ${eventType}`);
+    }
+    return parts[0];
 }
 /**
  * Parse a channel name to extract the tenantId.
@@ -43,8 +44,8 @@ function getModuleFromEventType(eventType) {
  * @returns Object with tenantId, or null if not a tenant channel
  */
 function parseChannelName(channel) {
-  const match = channel.match(/^tenant:(.+)$/);
-  return match ? { tenantId: match[1] } : null;
+    const match = channel.match(/^tenant:(.+)$/);
+    return match ? { tenantId: match[1] } : null;
 }
 /**
  * Check if a channel name is a valid tenant channel.
@@ -53,5 +54,5 @@ function parseChannelName(channel) {
  * @returns true if valid tenant channel
  */
 function isValidTenantChannel(channel) {
-  return /^tenant:[^:]+$/.test(channel);
+    return /^tenant:[^:]+$/.test(channel);
 }

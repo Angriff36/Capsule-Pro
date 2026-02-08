@@ -7,18 +7,18 @@ import type { Prisma, PrismaClient } from "@repo/database";
  * Input for creating an outbox event.
  */
 export interface CreateOutboxEventInput {
-  /** Tenant identifier */
-  tenantId: string;
-  /** Aggregate type (e.g., "KitchenTask", "Event") */
-  aggregateType: string;
-  /** Aggregate instance ID */
-  aggregateId: string;
-  /** Event type (e.g., "kitchen.task.claimed") */
-  eventType: string;
-  /** Event payload */
-  payload: Record<string, unknown>;
-  /** When the event occurred (defaults to now) */
-  occurredAt?: Date;
+    /** Tenant identifier */
+    tenantId: string;
+    /** Aggregate type (e.g., "KitchenTask", "Event") */
+    aggregateType: string;
+    /** Aggregate instance ID */
+    aggregateId: string;
+    /** Event type (e.g., "kitchen.task.claimed") */
+    eventType: string;
+    /** Event payload */
+    payload: Record<string, unknown>;
+    /** When the event occurred (defaults to now) */
+    occurredAt?: Date;
 }
 /**
  * Create an outbox event record.
@@ -44,19 +44,16 @@ export interface CreateOutboxEventInput {
  * });
  * ```
  */
-export declare function createOutboxEvent(
-  db: PrismaClient | Prisma.TransactionClient,
-  input: CreateOutboxEventInput
-): Promise<{
-  error: string | null;
-  id: string;
-  tenantId: string;
-  aggregateType: string;
-  aggregateId: string;
-  createdAt: Date;
-  eventType: string;
-  payload: import("@prisma/client/runtime/client").JsonValue;
-  status: import("@repo/database").OutboxStatus;
-  publishedAt: Date | null;
+export declare function createOutboxEvent(db: PrismaClient | Prisma.TransactionClient, input: CreateOutboxEventInput): Promise<{
+    error: string | null;
+    id: string;
+    tenantId: string;
+    aggregateType: string;
+    aggregateId: string;
+    createdAt: Date;
+    eventType: string;
+    payload: import("@prisma/client/runtime/client").JsonValue;
+    status: import("@repo/database").OutboxStatus;
+    publishedAt: Date | null;
 }>;
 //# sourceMappingURL=create.d.ts.map

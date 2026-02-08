@@ -17,29 +17,16 @@ export declare function createChecklistFromTemplate(): ChecklistSectionState[];
 /**
  * Count total questions in checklist
  */
-export declare function countChecklistQuestions(
-  sections: ChecklistSectionState[]
-): {
-  total: number;
-  required: number;
-  answered: number;
-  autoFilled: number;
+export declare function countChecklistQuestions(sections: ChecklistSectionState[]): {
+    total: number;
+    required: number;
+    answered: number;
+    autoFilled: number;
 };
 /**
  * Allergen reference data
  */
-export declare const COMMON_ALLERGENS: readonly [
-  "Dairy",
-  "Eggs",
-  "Fish",
-  "Shellfish",
-  "Tree Nuts",
-  "Peanuts",
-  "Wheat",
-  "Soy",
-  "Sesame",
-  "Gluten",
-];
+export declare const COMMON_ALLERGENS: readonly ["Dairy", "Eggs", "Fish", "Shellfish", "Tree Nuts", "Peanuts", "Wheat", "Soy", "Sesame", "Gluten"];
 /**
  * Standard position/role mappings
  */

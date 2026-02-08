@@ -1,1 +1,1 @@
-{"version":3,"file":"monthly-report.d.ts","sourceRoot":"","sources":["../../src/pdf/monthly-report.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,cAAc,EAAE,YAAY,EAAU,MAAM,UAAU,CAAC;AAehE,wBAAsB,kBAAkB,CACtC,OAAO,EAAE,cAAc,EACvB,MAAM,EAAE,YAAY,GACnB,OAAO,CAAC,MAAM,CAAC,CAoKjB"}
+{"version":3,"file":"monthly-report.d.ts","sourceRoot":"","sources":["../../src/pdf/monthly-report.ts"],"names":[],"mappings":"AACA,OAAO,EAAU,KAAK,cAAc,EAAE,KAAK,YAAY,EAAE,MAAM,UAAU,CAAC;AAiC1E,wBAAsB,kBAAkB,CACtC,OAAO,EAAE,cAAc,EACvB,MAAM,EAAE,YAAY,GACnB,OAAO,CAAC,MAAM,CAAC,CAwLjB"}

@@ -27,7 +27,7 @@ export declare function getModuleFromEventType(eventType: string): string;
  * @returns Object with tenantId, or null if not a tenant channel
  */
 export declare function parseChannelName(channel: string): {
-  tenantId: string;
+    tenantId: string;
 } | null;
 /**
  * Check if a channel name is a valid tenant channel.

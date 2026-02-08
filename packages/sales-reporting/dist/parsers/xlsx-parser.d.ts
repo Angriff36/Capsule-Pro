@@ -1,3 +1,3 @@
-import { SalesRecord } from "../types";
+import type { SalesRecord } from "../types";
 export declare function parseXlsx(data: Buffer): SalesRecord[];
 //# sourceMappingURL=xlsx-parser.d.ts.map

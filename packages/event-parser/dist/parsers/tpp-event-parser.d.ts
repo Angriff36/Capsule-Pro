@@ -5,10 +5,7 @@
  */
 import type { ParsedEventResult } from "../types/index.js";
 export interface ParseOptions {
-  sourceName: string;
+    sourceName: string;
 }
-export declare function parseTppEvent(
-  rawLines: string[],
-  options: ParseOptions
-): ParsedEventResult;
+export declare function parseTppEvent(rawLines: string[], options: ParseOptions): ParsedEventResult;
 //# sourceMappingURL=tpp-event-parser.d.ts.map
