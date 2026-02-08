@@ -1,17 +1,13 @@
 "use client";
 
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import { Card } from "@repo/design-system/components/ui/card";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@repo/design-system/components/ui/toggle-group";
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
-import {
-  LayoutGridIcon,
-  ListIcon,
-} from "lucide-react";
+import { LayoutGridIcon, ListIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 
 /**
@@ -53,7 +49,10 @@ function EventExplorerSkeleton() {
           <Skeleton className="h-4 w-64" />
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <ToggleGroup className="rounded-full border border-border/70 bg-muted/40" type="single">
+          <ToggleGroup
+            className="rounded-full border border-border/70 bg-muted/40"
+            type="single"
+          >
             <ToggleGroupItem className="gap-2" value="grid">
               <LayoutGridIcon className="size-4" />
               Grid
@@ -102,13 +101,16 @@ function EventExplorerSkeleton() {
           <div className="rounded-3xl border border-border/60 bg-card/70 p-6">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
               <Skeleton className="h-5 w-32" />
-              <Badge className="border-border/70 bg-muted/40 text-foreground" variant="outline">
+              <Badge
+                className="border-border/70 bg-muted/40 text-foreground"
+                variant="outline"
+              >
                 <Skeleton className="h-4 w-20" />
               </Badge>
             </div>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-48 w-full rounded-2xl" />
+                <Skeleton className="h-48 w-full rounded-2xl" key={i} />
               ))}
             </div>
           </div>
@@ -138,7 +140,7 @@ function EventExplorerSkeleton() {
           {/* Main event grid */}
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-48 w-full rounded-2xl" />
+              <Skeleton className="h-48 w-full rounded-2xl" key={i} />
             ))}
           </div>
         </div>

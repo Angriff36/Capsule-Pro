@@ -10,7 +10,7 @@ import { notFound } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 
 // ISR: Revalidate daily - legal content rarely changes
-export const revalidate = 86400;
+export const revalidate = 86_400;
 
 interface LegalPageProperties {
   readonly params: Promise<{

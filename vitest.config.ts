@@ -33,6 +33,10 @@ export default defineConfig({
       root: "./apps/api",
     },
     {
+      name: "web",
+      root: "./apps/web",
+    },
+    {
       name: "database",
       root: "./packages/database",
     },

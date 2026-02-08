@@ -35,7 +35,9 @@ export const initializeSentry = async (): Promise<void> => {
     // Integrations for console logging
     integrations: [
       // Send console.log, console.error, and console.warn calls as logs to Sentry
-      Sentry.default.consoleLoggingIntegration({ levels: ["log", "error", "warn"] }),
+      Sentry.default.consoleLoggingIntegration({
+        levels: ["log", "error", "warn"],
+      }),
     ],
   });
 };

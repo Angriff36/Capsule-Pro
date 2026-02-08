@@ -40,12 +40,12 @@ import type {
   RelatedEventSummary,
 } from "../event-details-types";
 import type { PrepTaskSummaryClient } from "../prep-task-contract";
-// Lazy-loaded below-the-fold components for bundle optimization
-import { AIInsightsPanel } from "./lazy-ai-insights-panel";
-import { EventExplorer } from "./lazy-event-explorer";
 // Above-fold critical components loaded eagerly
 import { EventOverviewCard } from "./event-overview-card";
 import { GuestManagementSection } from "./guest-management-section";
+// Lazy-loaded below-the-fold components for bundle optimization
+import { AIInsightsPanel } from "./lazy-ai-insights-panel";
+import { EventExplorer } from "./lazy-event-explorer";
 import { MenuIntelligenceSection } from "./menu-intelligence-section";
 import { RecipeDrawer } from "./recipe-drawer";
 import {

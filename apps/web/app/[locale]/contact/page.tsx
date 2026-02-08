@@ -10,7 +10,7 @@ interface ContactProps {
 }
 
 // ISR: Revalidate daily - contact page has static content
-export const revalidate = 86400;
+export const revalidate = 86_400;
 
 export const generateMetadata = async ({
   params,
