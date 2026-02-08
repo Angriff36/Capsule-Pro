@@ -40,8 +40,10 @@ import type {
   RelatedEventSummary,
 } from "../event-details-types";
 import type { PrepTaskSummaryClient } from "../prep-task-contract";
-import { AIInsightsPanel } from "./ai-insights-panel";
-import { EventExplorer } from "./event-explorer";
+// Lazy-loaded below-the-fold components for bundle optimization
+import { AIInsightsPanel } from "./lazy-ai-insights-panel";
+import { EventExplorer } from "./lazy-event-explorer";
+// Above-fold critical components loaded eagerly
 import { EventOverviewCard } from "./event-overview-card";
 import { GuestManagementSection } from "./guest-management-section";
 import { MenuIntelligenceSection } from "./menu-intelligence-section";
