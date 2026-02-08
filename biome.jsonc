@@ -10,6 +10,8 @@
       "packages/design-system/hooks/**",
       "packages/collaboration/config.ts",
       "packages/cms/basehub-types.d.ts",
+      "**/basehub-types.d.ts",
+      "**/test/mocks/**",
       "**/.codex/**",
       "**/.claude/**",
       "**/codex-plans/**",
@@ -106,6 +108,37 @@
           "performance": {
             "noBarrelFile": "error"
           }
+        }
+      }
+    },
+    {
+      "includes": ["**/postcss.config.*"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noBarrelFile": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/basehub-types.d.ts", "**/test/mocks/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          },
+          "correctness": {
+            "useImageSize": "off"
+          },
+          "performance": {
+            "noImgElement": "off"
+          }
+        }
+      },
+      "javascript": {
+        "formatter": {
+          "enabled": false
         }
       }
     }

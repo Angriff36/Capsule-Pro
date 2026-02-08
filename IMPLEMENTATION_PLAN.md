@@ -738,13 +738,13 @@ Before marking this plan complete, verify:
 - [x] **TTFB**: Query parallelization implemented in Task 0.2 (~30% improvement expected)
 - [x] **Tests**: All tests pass: `pnpm test` (148 tests: app=107, api=27, web=14)
 - [x] **Build**: Build succeeds: `pnpm build` (21 tasks successful)
-- [ ] **Lint**: Lint errors remain in excluded/generated directories (design-system/ui)
+- [x] **Lint**: Lint issues resolved - biome.jsonc updated with overrides for generated files and test mocks
 - [x] **Format**: Code formatted with Ultracite
 - [x] **TypeScript**: No type errors (build succeeds)
 - [ ] **Manual Testing**: All pages tested (home, contact, pricing, events, analytics)
 - [ ] **Regression**: Performance tests show no degradation
 
-**Last Updated**: 2025-02-07 (Session: fixed hydration test imports, API any types, biome ignores)
+**Last Updated**: 2025-02-07 (Session: resolved lint issues - unused variables, array keys, async/await, biome overrides)
 
 **Remaining Work**:
 - Manual browser testing for hydration warnings

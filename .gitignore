@@ -369,3 +369,5 @@ IMPLEMENTATION_PLAN_SUMMARY.md
 .codex/skills/spec-prompt-template-generator/SKILL.md
 skills/spec-prompt-template-generator/SKILL.md
 spec-prompt-template-generator.md
+# Auto-generated types\n**/basehub-types.d.ts
+# Test mocks\napps/*/test/mocks/**

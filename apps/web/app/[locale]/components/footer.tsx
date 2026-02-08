@@ -19,6 +19,7 @@ import { buildFooterNavigationItems } from "./footer-config";
  */
 export const Footer = () => (
   <Feed queries={[legal.postsQuery]}>
+    {/* biome-ignore lint/suspicious/useAwait: async required for "use server" directive */}
     {async ([data]) => {
       "use server";
 

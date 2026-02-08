@@ -21,7 +21,7 @@ interface TestimonialsProps {
 
 export const Testimonials = ({ dictionary }: TestimonialsProps) => {
   const [api, setApi] = useState<CarouselApi>();
-  const [current, setCurrent] = useState(0);
+  const [_current, setCurrent] = useState(0);
 
   useEffect(() => {
     if (!api) {
