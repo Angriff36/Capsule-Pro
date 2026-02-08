@@ -12,11 +12,11 @@ The Command Board has **technical features implemented** but **CRITICAL UX AND I
 - ✅ Real-time sync via Liveblocks
 - ✅ Bulk edit, layouts, AI suggestions
 
-**USER EXPERIENCE: 50% Complete** 🚨
+**USER EXPERIENCE: 60% Complete** 🚨
 - ✅ Entity linking implemented for live data fetching
 - ✅ Board management UI complete (list, create, edit, delete, switch)
-- ❌ No integration with Events, CRM, Kitchen, Staff modules
-- ❌ Visual design unprofessional
+- ✅ Events module integration complete (Add to Board button)
+- ❌ No integration with CRM, Kitchen, Staff modules
 - ❌ AI features not discoverable or useful
 
 **See [COMMAND_BOARD_VALIDATION_REPORT.md](./COMMAND_BOARD_VALIDATION_REPORT.md) for full analysis.**
@@ -73,14 +73,21 @@ The Command Board has **technical features implemented** but **CRITICAL UX AND I
 - **Fix:** Board-aware AI actions, auto-conflict detection
 - **Estimated:** 1-2 days
 
-### 🔴 P1: Module Integration Missing
+### 🟡 P1: Module Integration Missing - IN PROGRESS (Feb 8, 2026)
 **Problem:** Board is isolated from rest of application.
-- ❌ No "Add to Board" button on Events
+- ✅ **FIXED:** Added "Add to Board" button to Events module
+- ✅ **FIXED:** Created reusable AddToBoardDialog component for all entity types
+- ✅ **FIXED:** Integration allows creating new board or adding to existing board
 - ❌ No "Add to Board" button on CRM clients
-- ❌ No way to bring tasks/staff to board
-- **Impact:** Board is disconnected silo, not workflow hub
-- **Fix:** Add integration buttons across modules
+- ❌ No "Add to Board" button on Kitchen tasks
+- ❌ No "Add to Board" button on Staff module
+- **Impact:** Board is becoming a workflow hub
+- **Fix:** Add integration buttons across remaining modules
 - **Estimated:** 1-2 days
+- **Files created:**
+  - `apps/app/app/(authenticated)/command-board/components/add-to-board-dialog.tsx`
+- **Files modified:**
+  - `apps/app/app/(authenticated)/events/[eventId]/event-details-client/event-overview-card.tsx`
 
 **Total Critical Path:** 6-11 days to make board actually usable
 
