@@ -82,6 +82,7 @@ model Account {
   commandBoards          CommandBoard[]
   commandBoardCards      CommandBoardCard[]
   commandBoardLayouts    CommandBoardLayout[]
+  commandBoardGroups     CommandBoardGroup[]
   timelineTasks          TimelineTask[]
   timecardEditRequests  TimecardEditRequest[]
   allergenWarnings      AllergenWarning[]
@@ -1084,19 +1085,20 @@ model BattleBoard {
 }
 
 model CommandBoard {
-  tenantId    String             @map("tenant_id") @db.Uuid
-  id          String             @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  eventId     String?            @map("event_id") @db.Uuid
+  tenantId    String              @map("tenant_id") @db.Uuid
+  id          String              @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId     String?             @map("event_id") @db.Uuid
   name        String
   description String?
-  status      String             @default("draft")
-  isTemplate  Boolean            @default(false) @map("is_template")
+  status      String              @default("draft")
+  isTemplate  Boolean             @default(false) @map("is_template")
   tags        String[]
-  createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt   DateTime?          @map("deleted_at") @db.Timestamptz(6)
-  tenant      Account            @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime?           @map("deleted_at") @db.Timestamptz(6)
+  tenant      Account             @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   cards       CommandBoardCard[]
+  groups      CommandBoardGroup[]
 
   @@id([tenantId, id])
   @@index([eventId])
@@ -1106,29 +1108,32 @@ model CommandBoard {
 }
 
 model CommandBoardCard {
-  tenantId  String       @map("tenant_id") @db.Uuid
-  id        String       @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  boardId   String       @map("board_id") @db.Uuid
+  tenantId  String               @map("tenant_id") @db.Uuid
+  id        String               @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  boardId   String               @map("board_id") @db.Uuid
   title     String
   content   String?
-  cardType  String       @default("task") @map("card_type")
-  status    String       @default("pending")
-  positionX Int          @default(0) @map("position_x")
-  positionY Int          @default(0) @map("position_y")
-  width     Int          @default(200)
-  height    Int          @default(150)
-  zIndex    Int          @default(0) @map("z_index")
+  cardType  String               @default("task") @map("card_type")
+  status    String               @default("pending")
+  positionX Int                  @default(0) @map("position_x")
+  positionY Int                  @default(0) @map("position_y")
+  width     Int                  @default(200)
+  height    Int                  @default(150)
+  zIndex    Int                  @default(0) @map("z_index")
   color     String?
-  metadata  Json         @default("{}")
-  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt DateTime?    @map("deleted_at") @db.Timestamptz(6)
-  tenant    Account      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  board     CommandBoard @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
+  metadata  Json                 @default("{}")
+  groupId   String?              @map("group_id") @db.Uuid
+  createdAt DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime?            @map("deleted_at") @db.Timestamptz(6)
+  tenant    Account              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  board     CommandBoard         @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
+  group     CommandBoardGroup?   @relation("CardGroup", fields: [tenantId, groupId], references: [tenantId, id])
 
   @@id([tenantId, id])
   @@index([boardId])
   @@index([zIndex])
+  @@index([groupId])
   @@map("command_board_cards")
   @@schema("tenant_events")
 }
@@ -1154,6 +1159,31 @@ model CommandBoardLayout {
   @@index([boardId])
   @@index([userId])
   @@map("command_board_layouts")
+  @@schema("tenant_events")
+}
+
+model CommandBoardGroup {
+  tenantId  String   @map("tenant_id") @db.Uuid
+  id        String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  boardId   String   @map("board_id") @db.Uuid
+  name      String
+  color     String?
+  collapsed Boolean  @default(false)
+  positionX Int      @default(0) @map("position_x")
+  positionY Int      @default(0) @map("position_y")
+  width     Int      @default(300)
+  height    Int      @default(200)
+  zIndex    Int      @default(0) @map("z_index")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant    Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  board     CommandBoard @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
+  cards     CommandBoardCard[] @relation("CardGroup")
+
+  @@id([tenantId, id])
+  @@index([boardId])
+  @@map("command_board_groups")
   @@schema("tenant_events")
 }
 

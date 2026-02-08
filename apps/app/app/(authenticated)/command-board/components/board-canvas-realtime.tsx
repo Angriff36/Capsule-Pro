@@ -11,15 +11,23 @@ import {
   type KeyboardEvent,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
 import { createCard, deleteCard, updateCard } from "../actions/cards";
 import {
+  deleteGroup,
+  getGroupsForBoard,
+  toggleGroupCollapsed,
+  updateGroup,
+} from "../actions/groups";
+import {
   type BoardState,
   type CardConnection,
   CardType,
   type CommandBoardCard,
+  type CommandBoardGroup,
   INITIAL_BOARD_STATE,
   type Point,
   type ViewportPreferences,
@@ -29,7 +37,9 @@ import { BoardCard } from "./board-card";
 import { BulkEditDialog } from "./bulk-edit-dialog";
 import { CanvasViewport } from "./canvas-viewport";
 import { ConnectionLines } from "./connection-lines";
+import { CreateGroupDialog } from "./create-group-dialog";
 import { GridLayer } from "./grid-layer";
+import { GroupContainer } from "./group-container";
 import { LayoutSwitcher } from "./layout-switcher";
 import { SaveLayoutDialog } from "./save-layout-dialog";
 import { calculateFitToScreen } from "./viewport-controls";
@@ -90,10 +100,24 @@ export function BoardCanvas({
   const [showSaveLayoutDialog, setShowSaveLayoutDialog] = useState(false);
   // Bulk edit dialog state
   const [showBulkEditDialog, setShowBulkEditDialog] = useState(false);
+  // Create group dialog state
+  const [showCreateGroupDialog, setShowCreateGroupDialog] = useState(false);
+
+  // Groups state
+  const [groups, setGroups] = useState<CommandBoardGroup[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
   const { updateCursor, updateSelectedCard, clearPresence } =
     useCommandBoardPresence();
   const broadcast = useBroadcastEvent();
+
+  // Filter cards that should be visible (exclude cards in collapsed groups)
+  const visibleCards = useMemo(() => {
+    const collapsedGroupCardIds = new Set(
+      groups.filter((g) => g.collapsed).flatMap((g) => g.cardIds)
+    );
+    return state.cards.filter((c) => !collapsedGroupCardIds.has(c.id));
+  }, [state.cards, groups]);
 
   useEffect(() => {
     const autoGenerateConnections = () => {
@@ -759,6 +783,174 @@ export function BoardCanvas({
     [clearPresence]
   );
 
+  // Fetch groups for this board
+  useEffect(() => {
+    const fetchGroups = async () => {
+      const result = await getGroupsForBoard(boardId);
+      if (result.success && result.groups) {
+        setGroups(result.groups);
+      }
+    };
+    fetchGroups().catch((error) => {
+      console.log("Failed to fetch groups:", error);
+    });
+  }, [boardId]);
+
+  // Group handlers
+  const handleGroupPositionChange = useCallback(
+    (groupId: string, position: Point) => {
+      // Find the current group to calculate delta
+      const currentGroup = groups.find((g) => g.id === groupId);
+      if (!currentGroup) {
+        return;
+      }
+
+      const deltaX = (position.x ?? currentGroup.position.x) - currentGroup.position.x;
+      const deltaY = (position.y ?? currentGroup.position.y) - currentGroup.position.y;
+
+      // Update group position
+      setGroups((prev) =>
+        prev.map((g) =>
+          g.id === groupId
+            ? { ...g, position: { ...g.position, ...position } }
+            : g
+        )
+      );
+
+      // Move all cards in the group by the same delta
+      if (deltaX !== 0 || deltaY !== 0) {
+        setState((prev) => ({
+          ...prev,
+          cards: prev.cards.map((card) =>
+            currentGroup.cardIds.includes(card.id)
+              ? {
+                  ...card,
+                  position: {
+                    ...card.position,
+                    x: card.position.x + deltaX,
+                    y: card.position.y + deltaY,
+                  },
+                }
+              : card
+          ),
+        }));
+
+        // Persist card position changes
+        for (const cardId of currentGroup.cardIds) {
+          const card = state.cards.find((c) => c.id === cardId);
+          if (card) {
+            updateCard({
+              id: cardId,
+              position: {
+                x: card.position.x + deltaX,
+                y: card.position.y + deltaY,
+              },
+            }).catch((error) => {
+              console.log("Failed to update card position:", error);
+            });
+          }
+        }
+      }
+
+      // Persist the group position change
+      updateGroup({
+        id: groupId,
+        position: {
+          x: position.x ?? currentGroup.position.x,
+          y: position.y ?? currentGroup.position.y,
+          width: currentGroup.position.width,
+          height: currentGroup.position.height,
+          zIndex: currentGroup.position.zIndex,
+        },
+      }).catch((error) => {
+        console.log("Failed to update group position:", error);
+      });
+    },
+    [groups, state.cards]
+  );
+
+  const handleGroupSizeChange = useCallback(
+    (groupId: string, width: number, height: number) => {
+      setGroups((prev) =>
+        prev.map((g) =>
+          g.id === groupId
+            ? {
+                ...g,
+                position: { ...g.position, width, height },
+              }
+            : g
+        )
+      );
+
+      // Persist the change
+      const group = groups.find((g) => g.id === groupId);
+      if (group) {
+        updateGroup({
+          id: groupId,
+          position: {
+            x: group.position.x,
+            y: group.position.y,
+            width,
+            height,
+            zIndex: group.position.zIndex,
+          },
+        }).catch((error) => {
+          console.log("Failed to update group size:", error);
+        });
+      }
+    },
+    [groups]
+  );
+
+  const handleToggleGroupCollapse = useCallback(async (groupId: string) => {
+    const result = await toggleGroupCollapsed(groupId);
+    if (result.success && result.group) {
+      const updatedGroup = result.group;
+      setGroups((prev) =>
+        prev.map((g) => (g.id === groupId ? updatedGroup : g))
+      );
+    }
+  }, []);
+
+  const handleDeleteGroup = useCallback(async (groupId: string) => {
+    const result = await deleteGroup(groupId);
+    if (result.success) {
+      setGroups((prev) => prev.filter((g) => g.id !== groupId));
+      if (selectedGroupId === groupId) {
+        setSelectedGroupId(null);
+      }
+    }
+  }, [selectedGroupId]);
+
+  const handleGroupClick = useCallback(
+    (e: React.MouseEvent, groupId: string) => {
+      if (!canEdit) {
+        return;
+      }
+      e.stopPropagation();
+      setSelectedGroupId(groupId);
+      setState((prev) => ({
+        ...prev,
+        selectedCardIds: [],
+        selectedConnectionId: null,
+      }));
+    },
+    [canEdit]
+  );
+
+  const handleCreateGroup = useCallback(() => {
+    // Refresh groups after creating a new one
+    const refreshGroups = async () => {
+      const result = await getGroupsForBoard(boardId);
+      if (result.success && result.groups) {
+        setGroups(result.groups);
+      }
+    };
+    refreshGroups().catch((error) => {
+      console.log("Failed to refresh groups:", error);
+    });
+  }, [boardId]);
+
   return (
     <div
       aria-label="Command board canvas"
@@ -852,6 +1044,32 @@ export function BoardCanvas({
                     <path d="m15 5 4 4" />
                   </svg>
                   Edit {state.selectedCardIds.length} Cards
+                </Button>
+              )}
+
+              {/* Create Group Button - only show when 2+ cards selected */}
+              {state.selectedCardIds.length >= 2 && (
+                <Button
+                  onClick={() => setShowCreateGroupDialog(true)}
+                  size="sm"
+                  variant="secondary"
+                >
+                  <svg
+                    className="mr-2 h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                  </svg>
+                  Group {state.selectedCardIds.length} Cards
                 </Button>
               )}
             </>
@@ -1016,7 +1234,52 @@ export function BoardCanvas({
             />
           )}
 
-          {state.cards.map((card) => (
+          {/* Groups - render before cards so cards appear on top */}
+          {groups.map((group) => {
+            const cardsInGroup = state.cards.filter((c) =>
+              group.cardIds.includes(c.id)
+            );
+            return (
+              <GroupContainer
+                canDrag={canEdit}
+                canResize={true}
+                group={group}
+                gridSize={gridSize}
+                isSelected={selectedGroupId === group.id}
+                key={group.id}
+                onClick={handleGroupClick}
+                onDelete={handleDeleteGroup}
+                onPositionChange={handleGroupPositionChange}
+                onSizeChange={handleGroupSizeChange}
+                onToggleCollapse={handleToggleGroupCollapse}
+                snapToGridEnabled={snapToGrid}
+                viewportZoom={state.viewport.zoom}
+              >
+                {/* Cards in this group are rendered inside */}
+                {!group.collapsed &&
+                  cardsInGroup.map((card) => (
+                    <BoardCard
+                      canDrag={canEdit}
+                      card={card}
+                      gridSize={gridSize}
+                      isSelected={state.selectedCardIds.includes(card.id)}
+                      key={card.id}
+                      onClick={(e) => handleCardClick(e, card.id)}
+                      onDelete={handleDeleteCard}
+                      onPositionChange={handleCardPositionChange}
+                      onSizeChange={handleCardSizeChange}
+                      snapToGridEnabled={snapToGrid}
+                      viewportZoom={state.viewport.zoom}
+                    />
+                  ))}
+              </GroupContainer>
+            );
+          })}
+
+          {/* Cards not in any group or in collapsed groups */}
+          {visibleCards
+            .filter((card) => !groups.some((g) => g.cardIds.includes(card.id)))
+            .map((card) => (
             <BoardCard
               canDrag={canEdit}
               card={card}
@@ -1123,6 +1386,17 @@ export function BoardCanvas({
           }
         }}
         open={showBulkEditDialog}
+        selectedCards={state.cards.filter((c) =>
+          state.selectedCardIds.includes(c.id)
+        )}
+      />
+
+      {/* Create Group Dialog */}
+      <CreateGroupDialog
+        boardId={boardId}
+        onOpenChange={setShowCreateGroupDialog}
+        onCreate={handleCreateGroup}
+        open={showCreateGroupDialog}
         selectedCards={state.cards.filter((c) =>
           state.selectedCardIds.includes(c.id)
         )}

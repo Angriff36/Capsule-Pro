@@ -8,6 +8,7 @@
 import type {
   CommandBoard as DbCommandBoard,
   CommandBoardCard as DbCommandBoardCard,
+  CommandBoardGroup as DbCommandBoardGroup,
 } from "@repo/database/types";
 
 // =============================================================================
@@ -739,4 +740,71 @@ export function detectRelationshipType(
   }
 
   return RelationshipType.generic;
+}
+
+// =============================================================================
+// Group Types
+// =============================================================================
+
+/**
+ * Command board group for organizing cards
+ */
+export interface CommandBoardGroup {
+  id: string;
+  tenantId: string;
+  boardId: string;
+  name: string;
+  color: string | null;
+  collapsed: boolean;
+  position: CardPosition;
+  cardIds: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
+/**
+ * Create a CommandBoardGroup from database model
+ */
+export function dbGroupToGroup(dbGroup: DbCommandBoardGroup & { cards?: Array<{ id: string }> }): CommandBoardGroup {
+  return {
+    id: dbGroup.id,
+    tenantId: dbGroup.tenantId,
+    boardId: dbGroup.boardId,
+    name: dbGroup.name,
+    color: dbGroup.color,
+    collapsed: dbGroup.collapsed,
+    position: {
+      x: dbGroup.positionX,
+      y: dbGroup.positionY,
+      width: dbGroup.width,
+      height: dbGroup.height,
+      zIndex: dbGroup.zIndex,
+    },
+    cardIds: dbGroup.cards?.map((c) => c.id) ?? [],
+    createdAt: dbGroup.createdAt,
+    updatedAt: dbGroup.updatedAt,
+    deletedAt: dbGroup.deletedAt,
+  };
+}
+
+/**
+ * Input for creating a new group
+ */
+export interface CreateGroupInput {
+  name: string;
+  color?: string | null;
+  position?: Partial<CardPosition>;
+  cardIds?: string[];
+}
+
+/**
+ * Input for updating an existing group
+ */
+export interface UpdateGroupInput {
+  id: string;
+  name?: string;
+  color?: string | null;
+  collapsed?: boolean;
+  position?: CardPositionUpdate;
 }
