@@ -10,6 +10,9 @@ import {
 import { Languages } from "lucide-react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 
+/**
+ * Available languages for the application
+ */
 const languages = [
   { label: "🇬🇧 English", value: "en" },
   { label: "🇪🇸 Español", value: "es" },
@@ -19,6 +22,16 @@ const languages = [
   { label: "🇵🇹 Português", value: "pt" },
 ];
 
+/**
+ * Language switcher dropdown component
+ *
+ * Allows users to change the application locale. When a language is selected:
+ * 1. The current locale in the URL path is replaced with the selected locale
+ * 2. The router navigates to the new localized path
+ *
+ * The component handles the case where the default locale (en) may not be
+ * present in the URL by normalizing the path before replacing the locale.
+ */
 export const LanguageSwitcher = () => {
   const router = useRouter();
   const pathname = usePathname();
