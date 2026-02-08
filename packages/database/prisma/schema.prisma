@@ -78,10 +78,11 @@ model Account {
   schedules             Schedule[]
   scheduleShifts        ScheduleShift[]
   timeEntries           TimeEntry[]
-  employeeLocations     EmployeeLocation[]
-  commandBoards         CommandBoard[]
-  commandBoardCards     CommandBoardCard[]
-  timelineTasks         TimelineTask[]
+  employeeLocations      EmployeeLocation[]
+  commandBoards          CommandBoard[]
+  commandBoardCards      CommandBoardCard[]
+  commandBoardLayouts    CommandBoardLayout[]
+  timelineTasks          TimelineTask[]
   timecardEditRequests  TimecardEditRequest[]
   allergenWarnings      AllergenWarning[]
   eventGuests           EventGuest[]
@@ -1129,6 +1130,30 @@ model CommandBoardCard {
   @@index([boardId])
   @@index([zIndex])
   @@map("command_board_cards")
+  @@schema("tenant_events")
+}
+
+model CommandBoardLayout {
+  tenantId     String    @map("tenant_id") @db.Uuid
+  id           String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  boardId      String    @map("board_id") @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  name         String
+  viewport     Json
+  visibleCards String[]
+  gridSize     Int       @default(40) @map("grid_size")
+  showGrid     Boolean   @default(true) @map("show_grid")
+  snapToGrid   Boolean   @default(true) @map("snap_to_grid")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant       Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@unique([boardId, userId, name])
+  @@index([boardId])
+  @@index([userId])
+  @@map("command_board_layouts")
   @@schema("tenant_events")
 }
 

@@ -444,140 +444,34 @@ C:\projects\capsule-pro\packages\database\prisma\
 
 ## Implementation Tasks (Prioritized by Impact vs Effort)
 
-### Phase 1: Quick Wins (Low Effort, High Visibility)
+### Phase 1: Quick Wins (Low Effort, High Visibility) ✅ COMPLETE
 
-#### Task 1: Add Connection Visibility Toggle UI
-**Estimated: 1-2 hours** | Impact: High | Effort: Low
+#### Task 1: Add Connection Visibility Toggle UI ✅ COMPLETE
+**Status:** Already implemented - checkbox exists in settings panel (lines 741-751)
 
-**Why this is first:** Code already has `showConnections` state in `board-canvas-realtime.tsx`. Only needs UI checkbox in settings panel.
+#### Task 2: Complete Missing Card Types (Note and Recipe) ✅ COMPLETE
+**Status:** Implemented in commit c5b83e3ec
+- NoteCard with color-coded sticky note design (yellow, blue, green, pink, purple)
+- RecipeCard with difficulty badges, prep/cook time, ingredients, and steps
+- Both cards route through board-card.tsx
 
-**Implementation:**
-- Add "Show Connections" checkbox to toolbar/settings panel
-- Wire up to existing `showConnections` state
-- Toggle re-renders `ConnectionLines` component
+#### Task 3: Shift+Click Selection ✅ COMPLETE
+**Status:** Already implemented in handleCardClick (lines 357-365)
+- Shift+click toggles card selection
+- Visual border feedback on selected cards
 
-**Files to modify:**
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` (add checkbox to settings panel)
+#### Task 4: Drag Selection Box (Marquee) ✅ COMPLETE
+**Status:** Implemented in commit 193a43552
+- Drag on canvas background creates selection rectangle
+- Shift+drag for additive selection
+- Visual selection rectangle with primary border and background
+- Esc key cancels selection
 
-**Acceptance Criteria:**
-- Settings panel displays "Show Connections" checkbox
-- Toggling checkbox shows/hides connection lines
-- Preference persists in localStorage
-
----
-
-#### Task 2: Complete Missing Card Types (Note and Recipe)
-**Estimated: 4-6 hours** | Impact: High | Effort: Medium
-
-**Why this matters:** Currently note and recipe cards fall back to generic renderer, providing poor UX for these entity types.
-
-**Implementation:**
-
-**Create Note Card:**
-```typescript
-// C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\note-card.tsx
-- Rich text editing support (textarea or lightweight editor)
-- Note-specific styling (yellow sticky note aesthetic)
-- Color picker for note background (yellow, blue, green, pink)
-- Display note content from metadata or content field
-- Edit button to open full note editor
-```
-
-**Create Recipe Card:**
-```typescript
-// C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\recipe-card.tsx
-- Ingredients display from metadata.ingredients array
-- Steps/preparation display from metadata.steps
-- Preparation time and servings from metadata
-- Link to inventory items (for ingredients)
-- View recipe details button
-```
-
-**Update board-card.tsx:**
-```typescript
-// Add to switch statement in renderCardContent():
-case "note":
-  return <NoteCard card={card} />;
-case "recipe":
-  return <RecipeCard card={card} />;
-```
-
-**Files to create:**
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\note-card.tsx`
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\recipe-card.tsx`
-
-**Files to modify:**
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-card.tsx` (add cases to switch statement)
-
-**Acceptance Criteria:**
-- Note cards render with sticky note styling
-- Recipe cards display ingredients and prep steps
-- Both card types have specialized quick actions
-- Generic fallback no longer used for these types
-
----
-
-#### Task 3: Implement Shift+Click Selection
-**Estimated: 2-3 hours** | Impact: Medium | Effort: Low
-
-**Why this matters:** Enables basic multi-select workflow without complex drag selection.
-
-**Implementation:**
-- Add Shift+click handler to `board-card.tsx`
-- Toggle selection state when Shift is held
-- Add visual border to selected cards (CSS class update)
-- Update selection state management in `board-canvas-realtime.tsx`
-
-**Files to modify:**
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-card.tsx` (add Shift+click logic)
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` (selection state)
-
-**Acceptance Criteria:**
-- Shift+click adds/removes card from selection
-- Selected cards show visual border highlight
-- Ctrl+A still selects all cards
-- Escape deselects all cards
+**Phase 1 Summary:** All Quick Wins complete! Multi-select workflow fully functional.
 
 ---
 
 ### Phase 2: High Impact Features (Medium Effort)
-
-#### Task 4: Implement Drag Selection Box (Marquee)
-**Estimated: 6-8 hours** | Impact: High | Effort: Medium
-
-**Why this matters:** Enables true bulk operations workflow with visual selection.
-
-**Implementation:**
-
-**Create Selection Box Component:**
-```typescript
-// C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\selection-box.tsx
-- Visual rectangle overlay on canvas drag
-- Calculate intersection with card bounds
-- Add/remove cards from selection based on intersection
-```
-
-**Add Selection Mode:**
-- Listen for mouse events on canvas background
-- Draw SVG rect overlay during drag
-- Calculate card intersections using bounding box logic
-- Update `selectedCardIds` state on drag end
-
-**Files to create:**
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\selection-box.tsx`
-
-**Files to modify:**
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` (add selection mode)
-
-**Acceptance Criteria:**
-- Ctrl+drag or Shift+drag creates selection rectangle
-- Cards within rectangle are selected
-- Selection supports additive selection (Shift+drag adds to selection)
-- Visual feedback shows selection area
-
-**Dependencies:** None (can be done in parallel with Task 3)
-
----
 
 #### Task 5: Implement Named Layouts
 **Estimated: 10-12 hours** | Impact: High | Effort: Medium-High

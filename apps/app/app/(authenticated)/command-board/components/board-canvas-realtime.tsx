@@ -30,6 +30,8 @@ import { CanvasViewport } from "./canvas-viewport";
 import { ConnectionLines } from "./connection-lines";
 import { GridLayer } from "./grid-layer";
 import { calculateFitToScreen } from "./viewport-controls";
+import { LayoutSwitcher } from "./layout-switcher";
+import { SaveLayoutDialog } from "./save-layout-dialog";
 
 const VIEWPORT_PREFERENCES_KEY = "command-board-viewport-preferences";
 
@@ -76,6 +78,9 @@ export function BoardCanvas({
   const [isDraggingSelection, setIsDraggingSelection] = useState(false);
   const [selectionStart, setSelectionStart] = useState<{ x: number; y: number } | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<{ x: number; y: number } | null>(null);
+
+  // Layout dialog state
+  const [showSaveLayoutDialog, setShowSaveLayoutDialog] = useState(false);
 
   const { updateCursor, updateSelectedCard, clearPresence } =
     useCommandBoardPresence();
@@ -789,6 +794,22 @@ export function BoardCanvas({
             </>
           )}
 
+          <LayoutSwitcher
+            boardId={boardId}
+            currentGridSize={gridSize}
+            currentShowGrid={showGrid}
+            currentSnapToGrid={snapToGrid}
+            currentViewport={state.viewport}
+            currentVisibleCards={state.cards.map((c) => c.id)}
+            onLoadLayout={(viewport, visibleCards, newGridSize, newShowGrid, newSnapToGrid) => {
+              setGridSize(newGridSize);
+              setShowGrid(newShowGrid);
+              setSnapToGrid(newSnapToGrid);
+              handleViewportChange(viewport);
+            }}
+            onSaveClick={() => setShowSaveLayoutDialog(true)}
+          />
+
           <Button
             onClick={() => setShowSettings((prev) => !prev)}
             size="sm"
@@ -990,6 +1011,21 @@ export function BoardCanvas({
           )}
         </div>
       </CanvasViewport>
+
+      {/* Save Layout Dialog */}
+      <SaveLayoutDialog
+        boardId={boardId}
+        gridSize={gridSize}
+        showGrid={showGrid}
+        snapToGrid={snapToGrid}
+        viewport={state.viewport}
+        visibleCards={state.cards.map((c) => c.id)}
+        onOpenChange={setShowSaveLayoutDialog}
+        open={showSaveLayoutDialog}
+        onSave={() => {
+          // Optional: refresh layouts list
+        }}
+      />
     </div>
   );
 }
