@@ -8,13 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
-import {
-  ChefHat,
-  Clock,
-  MoreVertical,
-  Scale,
-  Users,
-} from "lucide-react";
+import { ChefHat, Clock, MoreVertical, Scale, Users } from "lucide-react";
 import { memo } from "react";
 import type { CommandBoardCard } from "../../types";
 
@@ -62,7 +56,9 @@ export const RecipeCard = memo(function RecipeCard({ card }: RecipeCardProps) {
       <div className="mb-2 flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <ChefHat className="h-4 w-4 text-orange-500" />
-          <Badge className={`border-0 ${difficultyConfigItem.color} font-medium text-xs`}>
+          <Badge
+            className={`border-0 ${difficultyConfigItem.color} font-medium text-xs`}
+          >
             {difficultyConfigItem.label}
           </Badge>
         </div>
@@ -96,12 +92,14 @@ export const RecipeCard = memo(function RecipeCard({ card }: RecipeCardProps) {
       {/* Ingredients preview */}
       {ingredients.length > 0 && (
         <div className="mb-3">
-          <p className="mb-1.5 font-medium text-foreground text-xs">Ingredients:</p>
+          <p className="mb-1.5 font-medium text-foreground text-xs">
+            Ingredients:
+          </p>
           <div className="flex flex-wrap gap-1">
             {ingredients.slice(0, 4).map((ingredient, index) => (
               <Badge
-                key={index}
                 className="bg-muted text-muted-foreground font-normal text-[10px]"
+                key={index}
                 variant="outline"
               >
                 {ingredient.amount ? `${ingredient.amount} ` : ""}
@@ -149,15 +147,9 @@ export const RecipeCard = memo(function RecipeCard({ card }: RecipeCardProps) {
               <ChefHat className="mr-2 h-4 w-4" />
               View Recipe
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              Edit Recipe
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              Scale Recipe
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              Add to Menu
-            </DropdownMenuItem>
+            <DropdownMenuItem>Edit Recipe</DropdownMenuItem>
+            <DropdownMenuItem>Scale Recipe</DropdownMenuItem>
+            <DropdownMenuItem>Add to Menu</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

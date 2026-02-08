@@ -61,7 +61,9 @@ export const NoteCard = memo(function NoteCard({ card }: NoteCardProps) {
       <div className="mb-2 flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <StickyNote className="h-4 w-4 text-amber-600" />
-          <Badge className={`border-0 ${colorConfig.badge} font-medium text-xs`}>
+          <Badge
+            className={`border-0 ${colorConfig.badge} font-medium text-xs`}
+          >
             Note
           </Badge>
         </div>
@@ -95,11 +97,7 @@ export const NoteCard = memo(function NoteCard({ card }: NoteCardProps) {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              className="h-7 w-7 p-0"
-              size="sm"
-              variant="ghost"
-            >
+            <Button className="h-7 w-7 p-0" size="sm" variant="ghost">
               <MoreVertical className="h-3.5 w-3.5 text-gray-600" />
             </Button>
           </DropdownMenuTrigger>
@@ -108,12 +106,8 @@ export const NoteCard = memo(function NoteCard({ card }: NoteCardProps) {
               <StickyNote className="mr-2 h-4 w-4" />
               View Full Note
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              Edit Content
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              Change Color
-            </DropdownMenuItem>
+            <DropdownMenuItem>Edit Content</DropdownMenuItem>
+            <DropdownMenuItem>Change Color</DropdownMenuItem>
             <DropdownMenuItem className="text-destructive">
               <Trash2 className="mr-2 h-4 w-4" />
               Delete Note

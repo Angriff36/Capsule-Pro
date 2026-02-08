@@ -1,8 +1,8 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { revalidatePath } from "next/cache";
 import { db } from "@repo/database";
+import { revalidatePath } from "next/cache";
 import type { ViewportState } from "../types";
 
 export interface SaveLayoutInput {
@@ -42,10 +42,12 @@ export interface LayoutDetail extends LayoutListItem {
 /**
  * Save a new named layout for the current user
  */
-export async function saveLayout(input: SaveLayoutInput): Promise<LayoutResult> {
+export async function saveLayout(
+  input: SaveLayoutInput
+): Promise<LayoutResult> {
   const { userId, tenantId } = await auth();
 
-  if (!userId || !tenantId) {
+  if (!(userId && tenantId)) {
     return { success: false, error: "Unauthorized" };
   }
 
@@ -100,7 +102,7 @@ export async function saveLayout(input: SaveLayoutInput): Promise<LayoutResult> 
       },
     });
 
-    revalidatePath(`/command-board/[boardId]`);
+    revalidatePath("/command-board/[boardId]");
 
     return {
       success: true,
@@ -123,7 +125,7 @@ export async function listLayouts(
 ): Promise<{ success: boolean; data?: LayoutListItem[]; error?: string }> {
   const { userId, tenantId } = await auth();
 
-  if (!userId || !tenantId) {
+  if (!(userId && tenantId)) {
     return { success: false, error: "Unauthorized" };
   }
 
@@ -172,7 +174,7 @@ export async function getLayout(
 ): Promise<{ success: boolean; data?: LayoutDetail; error?: string }> {
   const { userId, tenantId } = await auth();
 
-  if (!userId || !tenantId) {
+  if (!(userId && tenantId)) {
     return { success: false, error: "Unauthorized" };
   }
 
@@ -221,7 +223,7 @@ export async function deleteLayout(
 ): Promise<{ success: boolean; error?: string }> {
   const { userId, tenantId } = await auth();
 
-  if (!userId || !tenantId) {
+  if (!(userId && tenantId)) {
     return { success: false, error: "Unauthorized" };
   }
 
@@ -238,7 +240,7 @@ export async function deleteLayout(
       },
     });
 
-    revalidatePath(`/command-board/[boardId]`);
+    revalidatePath("/command-board/[boardId]");
 
     return { success: true };
   } catch (error) {

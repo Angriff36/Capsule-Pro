@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   DropdownMenu,
@@ -10,14 +9,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
+import { ChevronDown, Layout, Loader2, Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
-  Layout,
-  Loader2,
-  Plus,
-  Trash2,
-  ChevronDown,
-} from "lucide-react";
-import { listLayouts, deleteLayout, getLayout, type LayoutListItem } from "../actions/layouts";
+  deleteLayout,
+  getLayout,
+  type LayoutListItem,
+  listLayouts,
+} from "../actions/layouts";
 import type { ViewportState } from "../types";
 
 interface LayoutSwitcherProps {
@@ -98,9 +97,9 @@ export function LayoutSwitcher({
   };
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
       <DropdownMenuTrigger asChild>
-        <Button size="sm" variant="outline" className="gap-2">
+        <Button className="gap-2" size="sm" variant="outline">
           <Layout className="h-4 w-4" />
           <span>Layouts</span>
           <ChevronDown className="h-3.5 w-3.5 opacity-50" />
@@ -114,7 +113,7 @@ export function LayoutSwitcher({
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem onClick={handleSaveCurrent} className="gap-2">
+        <DropdownMenuItem className="gap-2" onClick={handleSaveCurrent}>
           <Plus className="h-4 w-4 text-muted-foreground" />
           <span>Save Current Layout</span>
         </DropdownMenuItem>
@@ -133,17 +132,17 @@ export function LayoutSwitcher({
           <div className="max-h-64 overflow-y-auto">
             {layouts.map((layout) => (
               <DropdownMenuItem
+                className="flex items-center justify-between gap-2"
                 key={layout.id}
                 onClick={() => handleLoadLayout(layout.id)}
-                className="flex items-center justify-between gap-2"
               >
                 <span className="flex-1 truncate">{layout.name}</span>
                 <Button
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
                   disabled={isDeleting === layout.id}
                   onClick={(e) => handleDeleteLayout(layout.id, e)}
                   size="sm"
                   variant="ghost"
-                  className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
                 >
                   {isDeleting === layout.id ? (
                     <Loader2 className="h-3 w-3 animate-spin" />

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
@@ -12,7 +11,8 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { saveLayout, type SaveLayoutInput } from "../actions/layouts";
+import { useState } from "react";
+import { type SaveLayoutInput, saveLayout } from "../actions/layouts";
 import type { ViewportState } from "../types";
 
 interface SaveLayoutDialogProps {
@@ -75,7 +75,7 @@ export function SaveLayoutDialog({
   };
 
   const handleOpenChange = (newOpen: boolean) => {
-    if (!newOpen || !isSaving) {
+    if (!(newOpen && isSaving)) {
       onOpenChange(newOpen);
       if (!newOpen) {
         setName("");
@@ -85,7 +85,7 @@ export function SaveLayoutDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog onOpenChange={handleOpenChange} open={open}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Save Layout</DialogTitle>
@@ -98,9 +98,8 @@ export function SaveLayoutDialog({
           <div className="space-y-2">
             <Label htmlFor="layout-name">Layout Name</Label>
             <Input
+              autoFocus
               id="layout-name"
-              placeholder="My Default View"
-              value={name}
               onChange={(e) => {
                 setName(e.target.value);
                 setError(null);
@@ -110,7 +109,8 @@ export function SaveLayoutDialog({
                   handleSave();
                 }
               }}
-              autoFocus
+              placeholder="My Default View"
+              value={name}
             />
             {error && <p className="text-destructive text-sm">{error}</p>}
           </div>

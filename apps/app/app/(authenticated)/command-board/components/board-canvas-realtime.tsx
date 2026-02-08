@@ -26,12 +26,13 @@ import {
   type ViewportState,
 } from "../types";
 import { BoardCard } from "./board-card";
+import { BulkEditDialog } from "./bulk-edit-dialog";
 import { CanvasViewport } from "./canvas-viewport";
 import { ConnectionLines } from "./connection-lines";
 import { GridLayer } from "./grid-layer";
-import { calculateFitToScreen } from "./viewport-controls";
 import { LayoutSwitcher } from "./layout-switcher";
 import { SaveLayoutDialog } from "./save-layout-dialog";
+import { calculateFitToScreen } from "./viewport-controls";
 
 const VIEWPORT_PREFERENCES_KEY = "command-board-viewport-preferences";
 
@@ -76,11 +77,19 @@ export function BoardCanvas({
 
   // Drag selection state
   const [isDraggingSelection, setIsDraggingSelection] = useState(false);
-  const [selectionStart, setSelectionStart] = useState<{ x: number; y: number } | null>(null);
-  const [selectionEnd, setSelectionEnd] = useState<{ x: number; y: number } | null>(null);
+  const [selectionStart, setSelectionStart] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [selectionEnd, setSelectionEnd] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   // Layout dialog state
   const [showSaveLayoutDialog, setShowSaveLayoutDialog] = useState(false);
+  // Bulk edit dialog state
+  const [showBulkEditDialog, setShowBulkEditDialog] = useState(false);
 
   const { updateCursor, updateSelectedCard, clearPresence } =
     useCommandBoardPresence();
@@ -533,7 +542,12 @@ export function BoardCanvas({
       const cardBottom = card.position.y + card.position.height;
 
       // Check intersection
-      return !(cardRight < minX || cardLeft > maxX || cardBottom < minY || cardTop > maxY);
+      return !(
+        cardRight < minX ||
+        cardLeft > maxX ||
+        cardBottom < minY ||
+        cardTop > maxY
+      );
     },
     []
   );
@@ -552,7 +566,9 @@ export function BoardCanvas({
       }
 
       // Start selection drag
-      const canvasRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      const canvasRect = (
+        e.currentTarget as HTMLElement
+      ).getBoundingClientRect();
       const x = (e.clientX - canvasRect.left) / state.viewport.zoom;
       const y = (e.clientY - canvasRect.top) / state.viewport.zoom;
 
@@ -574,11 +590,13 @@ export function BoardCanvas({
   // Handle mouse move during selection drag
   const handleCanvasMouseMove = useCallback(
     (e: React.MouseEvent) => {
-      if (!isDraggingSelection || !selectionStart) {
+      if (!(isDraggingSelection && selectionStart)) {
         return;
       }
 
-      const canvasRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      const canvasRect = (
+        e.currentTarget as HTMLElement
+      ).getBoundingClientRect();
       const x = (e.clientX - canvasRect.left) / state.viewport.zoom;
       const y = (e.clientY - canvasRect.top) / state.viewport.zoom;
 
@@ -592,7 +610,12 @@ export function BoardCanvas({
       // Update selection (additive if Shift is held)
       setState((prev) => {
         const newSelection = e.shiftKey
-          ? [...new Set([...prev.selectedCardIds, ...cardsInSelection.map((c) => c.id)])]
+          ? [
+              ...new Set([
+                ...prev.selectedCardIds,
+                ...cardsInSelection.map((c) => c.id),
+              ]),
+            ]
           : cardsInSelection.map((c) => c.id);
 
         return {
@@ -601,7 +624,13 @@ export function BoardCanvas({
         };
       });
     },
-    [isDraggingSelection, selectionStart, state.viewport.zoom, state.cards, cardIntersectsSelection]
+    [
+      isDraggingSelection,
+      selectionStart,
+      state.viewport.zoom,
+      state.cards,
+      cardIntersectsSelection,
+    ]
   );
 
   // Handle mouse up to end selection
@@ -643,6 +672,16 @@ export function BoardCanvas({
           ...prev,
           selectedCardIds: prev.cards.map((c) => c.id),
         }));
+      }
+
+      // Ctrl+E / Cmd+E to open bulk edit dialog
+      if (
+        e.key === "e" &&
+        (e.metaKey || e.ctrlKey) &&
+        state.selectedCardIds.length >= 2
+      ) {
+        e.preventDefault();
+        setShowBulkEditDialog(true);
       }
 
       const selectedCard =
@@ -791,6 +830,30 @@ export function BoardCanvas({
                 </svg>
                 Add Card
               </Button>
+
+              {/* Bulk Edit Button - only show when 2+ cards selected */}
+              {state.selectedCardIds.length >= 2 && (
+                <Button
+                  onClick={() => setShowBulkEditDialog(true)}
+                  size="sm"
+                  variant="secondary"
+                >
+                  <svg
+                    className="mr-2 h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                    <path d="m15 5 4 4" />
+                  </svg>
+                  Edit {state.selectedCardIds.length} Cards
+                </Button>
+              )}
             </>
           )}
 
@@ -801,7 +864,13 @@ export function BoardCanvas({
             currentSnapToGrid={snapToGrid}
             currentViewport={state.viewport}
             currentVisibleCards={state.cards.map((c) => c.id)}
-            onLoadLayout={(viewport, visibleCards, newGridSize, newShowGrid, newSnapToGrid) => {
+            onLoadLayout={(
+              viewport,
+              visibleCards,
+              newGridSize,
+              newShowGrid,
+              newSnapToGrid
+            ) => {
               setGridSize(newGridSize);
               setShowGrid(newShowGrid);
               setSnapToGrid(newSnapToGrid);
@@ -914,9 +983,9 @@ export function BoardCanvas({
         <div
           className="relative min-h-[4000px] min-w-[4000px]"
           onMouseDown={handleCanvasMouseDown}
+          onMouseLeave={handleCanvasMouseUp}
           onMouseMove={handleCanvasMouseMove}
           onMouseUp={handleCanvasMouseUp}
-          onMouseLeave={handleCanvasMouseUp}
         >
           <GridLayer
             className="absolute inset-0"
@@ -1016,15 +1085,47 @@ export function BoardCanvas({
       <SaveLayoutDialog
         boardId={boardId}
         gridSize={gridSize}
+        onOpenChange={setShowSaveLayoutDialog}
+        onSave={() => {
+          // Optional: refresh layouts list
+        }}
+        open={showSaveLayoutDialog}
         showGrid={showGrid}
         snapToGrid={snapToGrid}
         viewport={state.viewport}
         visibleCards={state.cards.map((c) => c.id)}
-        onOpenChange={setShowSaveLayoutDialog}
-        open={showSaveLayoutDialog}
-        onSave={() => {
-          // Optional: refresh layouts list
+      />
+
+      {/* Bulk Edit Dialog */}
+      <BulkEditDialog
+        onOpenChange={setShowBulkEditDialog}
+        onUpdate={async () => {
+          // Refresh cards from server after bulk update
+          // This ensures we get the latest state including any server-side defaults
+          const updatedIds = state.selectedCardIds;
+          if (updatedIds.length === 0) return;
+
+          // Fetch updated cards
+          try {
+            const response = await fetch(`/api/command-board/${boardId}/cards`);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.cards) {
+                setState((prev) => ({
+                  ...prev,
+                  cards: data.cards,
+                }));
+              }
+            }
+          } catch {
+            // If fetch fails, the optimistic update from the dialog will still work
+            console.log("Failed to refresh cards after bulk update");
+          }
         }}
+        open={showBulkEditDialog}
+        selectedCards={state.cards.filter((c) =>
+          state.selectedCardIds.includes(c.id)
+        )}
       />
     </div>
   );
