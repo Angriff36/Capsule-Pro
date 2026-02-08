@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-The Command Board feature has a **strong foundation** with approximately **95% completion**. Core canvas, all 7 entity card types, real-time sync (via **Liveblocks**, not Ably), relationship visualization, named layouts, bulk edit, and grouping are functional. **Key gaps**: Connection visibility toggle has UI but could be enhanced, Manual connection creation is missing.
+The Command Board feature has a **strong foundation** with approximately **96% completion**. Core canvas, all 7 entity card types, real-time sync (via **Liveblocks**, not Ably), relationship visualization, named layouts, bulk edit, grouping, and browser fullscreen mode are functional. **Key gaps**: Manual connection creation is missing.
 
 ---
 
@@ -10,11 +10,11 @@ The Command Board feature has a **strong foundation** with approximately **95% c
 
 | Feature | Status | Completion | Key Gaps |
 |---------|--------|------------|----------|
-| **Strategic Foundation** | Functional | 90% | Browser fullscreen mode, enhanced grid snapping guides |
+| **Strategic Foundation** | Functional | 95% | Enhanced grid snapping guides |
 | **Entity Cards** | Complete | 100% (7/7 types) | All card types implemented |
 | **Layout Persistence** | Complete | 100% | Named layouts with database persistence |
 | **Real-time Sync** | Mostly Complete | 75% | No offline queue, no conflict resolution UI, events not persisted to database |
-| **Connection Lines** | Mostly Complete | 80% | Visibility toggle exists, no manual connection creation |
+| **Connection Lines** | Mostly Complete | 85% | No manual connection creation |
 | **Bulk Edit** | Complete | 100% | Multi-select, drag selection, bulk edit dialog all functional |
 | **Grouping** | Complete | 100% | Database model, components, actions all implemented |
 
@@ -23,7 +23,7 @@ The Command Board feature has a **strong foundation** with approximately **95% c
 ## Specification-by-Specification Status
 
 ### 1. Strategic Command Board Foundation
-**Status: COMPLETE (90%)**
+**Status: COMPLETE (95%)**
 
 | Feature | Status | Notes |
 |---------|--------|-------|
@@ -32,9 +32,9 @@ The Command Board feature has a **strong foundation** with approximately **95% c
 | Grid system | Complete | `GridLayer` with configurable sizes (20/40/60px) |
 | Zoom controls | Complete | 0.25x to 2x zoom with wheel/buttons |
 | Pan functionality | Complete | Middle-click or Space+drag |
-| Multiple entity types | Partial | 5/7 card types implemented (missing: note, recipe) |
+| Multiple entity types | Complete | All 7 card types implemented (task, event, client, employee, inventory, note, recipe) |
 | Grid snapping | Partial | Basic snap to grid, no enhanced snapping guides |
-| Full-screen mode | Missing | No browser fullscreen API integration |
+| Full-screen mode | Complete | Browser fullscreen API with toggle button and F key shortcut |
 
 **Files:**
 - `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\canvas-viewport.tsx` - Zoom/pan viewport component
@@ -43,13 +43,14 @@ The Command Board feature has a **strong foundation** with approximately **95% c
 - `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\viewport-controls.tsx` - Zoom controls UI
 
 **Acceptance Status:**
-- Canvas renders with grid and zoom controls
-- Drag entity moves smoothly, position updates
-- Zoom in/out works correctly (0.25x-2x range)
-- Pan board works (middle-click or Space+drag)
-- Fit to screen functionality exists
-- Keyboard shortcuts (Space to pan, +/- to zoom, Escape to deselect)
-- Missing: Browser fullscreen mode, enhanced grid snapping guides
+- Canvas renders with grid and zoom controls ✅
+- Drag entity moves smoothly, position updates ✅
+- Zoom in/out works correctly (0.25x-2x range) ✅
+- Pan board works (middle-click or Space+drag) ✅
+- Fit to screen functionality exists ✅
+- Keyboard shortcuts (Space to pan, +/- to zoom, Escape to deselect, F for fullscreen) ✅
+- Browser fullscreen mode with toggle button ✅
+- Missing: Enhanced grid snapping guides
 
 ---
 
@@ -183,7 +184,7 @@ model CommandBoardLayout {
 ---
 
 ### 5. Visual Relationship Connectors
-**Status: MOSTLY COMPLETE (80%)**
+**Status: MOSTLY COMPLETE (85%)**
 
 | Feature | Status | Notes |
 |---------|--------|-------|
@@ -192,7 +193,7 @@ model CommandBoardLayout {
 | Auto-update on drag | Complete | Lines recalculate on card position change |
 | Support multiple relationships | Complete | Auto-generates all valid connections |
 | Highlight on hover/selection | Complete | Selected state with glow effect |
-| Toggle visibility | Partial | Code supports it but NO UI checkbox in settings |
+| Toggle visibility | Complete | "Show Connections" checkbox in settings panel |
 | Manual connection creation | Missing | No drag-to-connect or context menu |
 | Delete individual connections | Missing | No connection context menu |
 
@@ -213,10 +214,7 @@ model CommandBoardLayout {
 - `event_to_inventory` (purple solid - "uses")
 - `generic` (gray dotted - "related")
 
-**QUICK WIN:** Add "Show Connections" checkbox to toolbar settings panel (code already has `showConnections` state, just needs UI control)
-
 **Missing:**
-- UI toggle for connection visibility (settings panel has no checkbox)
 - Manual relationship creation UI (drag from card edge to another card)
 - Delete/hide individual connections (no connection context menu)
 - Edit connection properties (label, type)
@@ -772,15 +770,16 @@ C:\projects\capsule-pro\packages\database\prisma\
 
 ## Known Issues and Limitations
 
-### Current State (As of Exploration):
-1. **Note and Recipe cards** fall back to generic renderer - poor UX
-2. **Connection visibility toggle** has no UI control despite code support
-3. **Liveblocks events** are not persisted to database (only broadcast)
-4. **No offline support** - changes lost if network fails during edit
-5. **No conflict resolution UI** - last-write-wins only
-6. **No bulk operations** beyond basic multi-select
-7. **No grouping functionality** at all
-8. **No named layouts** - only localStorage persistence
+### Current State (As of Latest Update):
+1. **Note and Recipe cards** - ✅ Now implemented with specialized components
+2. **Connection visibility toggle** - ✅ Checkbox added to settings panel
+3. **Browser fullscreen mode** - ✅ Implemented with toggle button and F key shortcut
+4. **Liveblocks events** are not persisted to database (only broadcast)
+5. **No offline support** - changes lost if network fails during edit
+6. **No conflict resolution UI** - last-write-wins only
+7. **Bulk operations** - ✅ Complete with multi-select, drag selection, bulk edit dialog
+8. **Grouping functionality** - ✅ Complete with database model, components, and actions
+9. **Named layouts** - ✅ Complete with database persistence
 
 ### Technical Debt:
 - Consider migrating from `dbgenerated("gen_random_uuid()")` to `gen_random_uuid()` for cleaner schema

@@ -80,6 +80,7 @@ export function BoardCanvas({
   const [showEmptyState, setShowEmptyState] = useState(
     initialCards.length === 0
   );
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [connections, setConnections] = useState<CardConnection[]>([]);
   const [selectedConnectionId, setSelectedConnectionId] = useState<
     string | null
@@ -288,6 +289,31 @@ export function BoardCanvas({
   useEffect(() => {
     onViewportChange?.(state.viewport);
   }, [state.viewport, onViewportChange]);
+
+  // Track fullscreen state changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
+
+  // Fullscreen toggle function
+  const toggleFullscreen = useCallback(() => {
+    if (!containerRef.current) {
+      return;
+    }
+
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      containerRef.current.requestFullscreen();
+    }
+  }, []);
 
   useEventListener((event) => {
     const eventData = event.event;
@@ -708,6 +734,15 @@ export function BoardCanvas({
         setShowBulkEditDialog(true);
       }
 
+      // F key to toggle fullscreen (when not in an input)
+      if (e.key === "f" && !e.metaKey && !e.ctrlKey) {
+        const target = e.target as HTMLElement;
+        if (target.tagName !== "INPUT" && target.tagName !== "TEXTAREA") {
+          e.preventDefault();
+          toggleFullscreen();
+        }
+      }
+
       const selectedCard =
         state.selectedCardIds.length === 1
           ? state.cards.find((c) => c.id === state.selectedCardIds[0])
@@ -773,6 +808,7 @@ export function BoardCanvas({
       gridSize,
       updateSelectedCard,
       handleCardPositionChange,
+      toggleFullscreen,
     ]
   );
 
@@ -1096,6 +1132,41 @@ export function BoardCanvas({
             }}
             onSaveClick={() => setShowSaveLayoutDialog(true)}
           />
+
+          <Button
+            onClick={toggleFullscreen}
+            size="sm"
+            title={isFullscreen ? "Exit fullscreen (Esc)" : "Enter fullscreen (F)"}
+            variant="outline"
+          >
+            {isFullscreen ? (
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+              </svg>
+            ) : (
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+              </svg>
+            )}
+          </Button>
 
           <Button
             onClick={() => setShowSettings((prev) => !prev)}
