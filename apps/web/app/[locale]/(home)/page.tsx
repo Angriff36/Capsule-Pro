@@ -17,6 +17,9 @@ interface HomeProps {
   }>;
 }
 
+// ISR: Revalidate every hour - home page content changes infrequently
+export const revalidate = 3600;
+
 export const generateMetadata = async ({
   params,
 }: HomeProps): Promise<Metadata> => {

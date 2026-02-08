@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+// ISR: Revalidate every hour - blog posts may be edited
+export const revalidate = 3600;
+
 interface BlogPostProperties {
   readonly params: Promise<{
     slug: string;

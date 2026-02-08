@@ -9,6 +9,9 @@ interface BlogProps {
   }>;
 }
 
+// ISR: Revalidate every 30 minutes - new posts may be added
+export const revalidate = 1800;
+
 export const generateMetadata = async ({
   params,
 }: BlogProps): Promise<Metadata> => {
