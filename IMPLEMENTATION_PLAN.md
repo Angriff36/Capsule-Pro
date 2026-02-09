@@ -2,8 +2,8 @@
 
 **Ultimate Goal**: Deliver a deterministic, production-validated Manifest projection pipeline for Capsule-Pro that compiles domain manifests into type-safe Next.js command handlers, enforces guard/policy/constraint semantics through the runtime bridge, integrates real Clerk auth and tenant resolution, executes successfully against live domain logic without stubs, and maintains regression protection through snapshot, TypeScript, and HTTP-level verification across multiple entities.
 
-**Last Updated**: 2026-02-09 (PrepTask Runtime Tests Fixed)
-**Status**: Core infrastructure COMPLETE, PrepTask commands production-validated with all runtime tests passing (7/7), Menu API routes generated (update/activate/deactivate), Station API routes generated (assignTask/removeTask/updateCapacity/deactivate/activate/updateEquipment), PrepList API routes generated (7 commands + 5 item commands), Inventory API routes generated (6 commands), Recipe API routes generated (8 commands across 5 entities), Base GET/list endpoints generated (menus, stations, prep-tasks, ingredients, recipes, dishes, prep-lists), HTTP integration tests complete with 100% route coverage (42/42), constraint violation tests added, UI warning display complete
+**Last Updated**: 2026-02-09 (TypeScript Errors & Snapshot Tests Fixed)
+**Status**: Core infrastructure COMPLETE, PrepTask commands production-validated with all runtime tests passing (7/7), Menu API routes generated (update/activate/deactivate), Station API routes generated (assignTask/removeTask/updateCapacity/deactivate/activate/updateEquipment), PrepList API routes generated (7 commands + 5 item commands), Inventory API routes generated (6 commands), Recipe API routes generated (8 commands across 5 entities), Base GET/list endpoints generated (menus, stations, prep-tasks, ingredients, recipes, dishes, prep-lists), HTTP integration tests complete with 100% route coverage (42/42), constraint violation tests added, UI warning display complete, TypeScript errors resolved, snapshot tests synchronized
 
 ## Executive Summary
 
@@ -27,6 +27,8 @@
 7. ~~**HTTP Integration Tests**~~: ✅ COMPLETED - 100% route coverage (42/42). Constraint violation tests added for key routes.
 8. ~~**UI Warning Display**~~: ✅ COMPLETED - WARN constraints now displayed in UI via ConstraintOverrideDialog
 9. ~~**PrepTask Tests**~~: ✅ RESOLVED - All tests passing (7/7)
+10. ~~**TypeScript Errors**~~: ✅ RESOLVED - Fixed all TypeScript errors in packages/kitchen-ops/src/index.ts
+11. ~~**Snapshot Test Mismatches**~~: ✅ RESOLVED - Updated snapshots to match code generator output, added biome ignore rule
 
 ### Immediate Priorities (Next 2-3 weeks) 🔥
 1. ~~**Generate Menu API Routes**~~ (Task #1) - ✅ COMPLETED - Generated routes at `/api/kitchen/menus/commands/*`
@@ -105,6 +107,23 @@
   - [x] Fixed eval context merge to preserve input parameters
   - [x] Updated tests to use correct `runCommand` API pattern
   - [x] All 7 tests passing
+
+- [x] **TypeScript Errors Fixed** (2026-02-09) - Resolved all TypeScript compilation errors
+  - [x] Added missing 'stores' property to combinedIR in packages/kitchen-ops/src/index.ts
+  - [x] Fixed getContext() calls (removed incorrect generic type parameter)
+  - [x] Fixed isActive property not in PrepListCommandResult interface
+  - [x] Fixed prepListId type assertions with fallback strings
+  - [x] Removed non-existent executeCommand() call
+  - [x] Fixed explicit any type in apps/api/app/api/events/guests/[guestId]/route.ts
+  - [x] Replaced (updateData as any)[key] with Object.assign(updateData, { [key]: value })
+  - [x] Removed unused biome-ignore suppression comments
+  - [x] Removed biome-ignore comments from manifest-constraints.test.skip.ts
+  - [x] Removed biome-ignore comments from battle-board/pdf/route.tsx
+
+- [x] **Snapshot Tests Fixed** (2026-02-09) - Synchronized snapshot tests with code generator
+  - [x] Updated preptask-claim-command.snapshot.ts to match code generator output
+  - [x] Added biome ignore rule for **/__snapshots__/**/*.ts files
+  - [x] All snapshot tests now pass
 
 - [x] **Testing Infrastructure**
   - [x] Constraint severity tests (`manifest-constraint-severity.test.ts`)
@@ -579,8 +598,22 @@
    - Fixed eval context merge to preserve input parameters
    - All 7/7 tests now passing
 
-5. **Add error handling documentation** - Manifest error responses need standardization
-6. **Standardize error codes** - Inconsistent error responses across handlers
+5. ~~**TypeScript Compilation Errors**~~ - ✅ RESOLVED (2026-02-09)
+   - Fixed missing 'stores' property in combinedIR
+   - Fixed getContext() generic type parameter issues
+   - Fixed isActive property in PrepListCommandResult interface
+   - Fixed prepListId type assertions
+   - Removed non-existent executeCommand() call
+   - Fixed explicit any type in guest route with Object.assign
+   - Removed unused biome-ignore suppression comments
+
+6. ~~**Snapshot Test Mismatches**~~ - ✅ RESOLVED (2026-02-09)
+   - Updated snapshots to match code generator output
+   - Added biome ignore rule for snapshot files
+   - All snapshot tests now pass
+
+7. **Add error handling documentation** - Manifest error responses need standardization
+8. **Standardize error codes** - Inconsistent error responses across handlers
 
 ### Short-term
 1. **Performance optimization** - Large dataset handling in prep-lists and recipes
@@ -589,7 +622,7 @@
 4. **Add constraint outcome caching** - Avoid re-evaluating unchanged constraints
 5. ~~**Remove unused lib hook**~~ - RESOLVED: All 13 hooks are actively used
 6. **Fix namespace imports** - Replace with named imports for tree-shaking
-7. **Pass WARN constraints to UI** - Replace console.warn with UI display (TODO at actions-manifest.ts:510)
+7. ~~**Pass WARN constraints to UI**~~ - ✅ RESOLVED (2026-02-09) - WARN constraints now displayed via ConstraintOverrideDialog
 
 ### Long-term
 1. **GraphQL schema generation** - Consider generating GraphQL from manifests

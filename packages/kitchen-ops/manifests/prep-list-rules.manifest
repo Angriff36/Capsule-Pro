@@ -176,7 +176,7 @@ entity PrepListItem {
   constraint positiveSortOrder: self.sortOrder >= 0 "Sort order must be non-negative"
   constraint positiveScaledQuantity: self.scaledQuantity >= 0 "Scaled quantity must be non-negative"
 
-  constraint warnMajorAllergen:warn self.allergens != null and (contains(self.allergens, "nuts") or contains(self.allergens, "dairy") or contains(self.allergens, "gluten") or contains(self.allergens, "shellfish") or contains(self.allergens, "eggs")) {
+  constraint warnMajorAllergen:warn self.allergens != null and (self.allergens contains "nuts" or self.allergens contains "dairy" or self.allergens contains "gluten" or self.allergens contains "shellfish" or self.allergens contains "eggs") {
     messageTemplate: "Item contains major allergen: {allergens}"
     details: {
       allergens: self.allergens
