@@ -15,7 +15,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { compileToIR } from "@repo/manifest";
-import { getProjection } from "@repo/manifest/src/manifest/projections/registry";
+import { getProjection } from "@repo/manifest/projections";
 import { describe, expect, it } from "vitest";
 
 const MANIFEST_PATH = join(

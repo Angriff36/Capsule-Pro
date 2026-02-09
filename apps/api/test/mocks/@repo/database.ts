@@ -51,6 +51,24 @@ export const Prisma: {
 // Re-export all Prisma types (you can add more as needed)
 export const PrismaClient: unknown = vi.fn();
 
+// Helper to create a mock Prisma model
+function createMockModel() {
+  return {
+    findMany: vi.fn(),
+    findUnique: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    createMany: vi.fn(),
+    update: vi.fn(),
+    updateMany: vi.fn(),
+    delete: vi.fn(),
+    deleteMany: vi.fn(),
+    count: vi.fn(),
+    aggregate: vi.fn(),
+    groupBy: vi.fn(),
+  };
+}
+
 // Mock database instance
 export const database: Record<string, unknown> = {
   $queryRaw: vi.fn(),
@@ -59,6 +77,20 @@ export const database: Record<string, unknown> = {
   $disconnect: vi.fn(),
   $on: vi.fn(),
   $use: vi.fn(),
+  // Add Prisma models
+  prepTask: createMockModel(),
+  outboxEvent: createMockModel(),
+  menu: createMockModel(),
+  menuDish: createMockModel(),
+  recipe: createMockModel(),
+  recipeVersion: createMockModel(),
+  ingredient: createMockModel(),
+  recipeIngredient: createMockModel(),
+  dish: createMockModel(),
+  prepList: createMockModel(),
+  prepListItem: createMockModel(),
+  inventoryItem: createMockModel(),
+  station: createMockModel(),
 };
 
 // Mock tenantDatabase function

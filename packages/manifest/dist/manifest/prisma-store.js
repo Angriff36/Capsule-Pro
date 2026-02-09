@@ -263,7 +263,7 @@ export class ConcurrencyConflictError extends Error {
  * });
  * ```
  */
-export function createPrismaOutboxWriter(aggregateType, tenantId, defaultAggregateId) {
+export function createPrismaOutboxWriter(aggregateType, tenantId) {
     return async (prisma, events) => {
         if (events.length === 0)
             return;
@@ -273,7 +273,7 @@ export function createPrismaOutboxWriter(aggregateType, tenantId, defaultAggrega
                 eventType: event.eventType,
                 payload: event.payload,
                 aggregateType,
-                aggregateId: event.aggregateId ?? defaultAggregateId ?? "",
+                aggregateId: event.aggregateId ?? "",
                 status: "pending",
             })),
         });

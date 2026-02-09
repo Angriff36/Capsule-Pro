@@ -12,7 +12,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { compileToIR } from "@repo/manifest";
-import { getProjection } from "@repo/manifest/src/manifest/projections/registry";
+import { getProjection } from "@repo/manifest/projections";
 import { describe, expect, it } from "vitest";
 
 const SNAP_DIR = join(import.meta.dirname, "__snapshots__");
@@ -105,7 +105,6 @@ describe("Projection proof: PrepTask.claim golden snapshot", () => {
         // Override paths to be relative to baseUrl (apps/api)
         paths: {
           "@/*": ["./*"],
-          "@repo/*": ["../../packages/*"],
         },
       },
       include: ["../__snapshots__/preptask-claim-command.snapshot.ts"],

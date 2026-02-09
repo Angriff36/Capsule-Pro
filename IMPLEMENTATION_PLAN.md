@@ -5,12 +5,14 @@
 **Last Updated**: 2026-02-09
 **Status**: ✅ **PRODUCTION READY - ALL 42 COMMAND ROUTES GENERATED**
 - All 180 tests passing (100%)
+- 5 integration tests skipped (require real database)
 - **42 API command routes generated** in apps/api at `/api/kitchen/{entity}/commands/{command}/route.ts`
 - TypeScript compilation successful for apps/api
 - Prep list auto-generation complete with event-driven triggers
 - All TypeScript errors resolved across entire codebase
 - Command-level constraint tests complete (runtime-level)
 - All snapshot tests synchronized with corrected import format
+- **Module resolution fixed**: Removed `@repo/*` path mappings that interfered with package.json exports
 
 ---
 

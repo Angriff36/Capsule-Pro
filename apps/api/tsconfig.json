@@ -4,8 +4,7 @@
     "ignoreDeprecations": "5.0",
     "skipLibCheck": true,
     "paths": {
-      "@/*": ["./*"],
-      "@repo/*": ["../../packages/*"]
+      "@/*": ["./*"]
     },
     "strictNullChecks": true
   },

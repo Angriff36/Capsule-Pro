@@ -9,7 +9,7 @@
  * @packageDocumentation
  */
 import type { PrismaClient } from "@repo/database";
-import type { EntityInstance, Store } from "./runtime-engine";
+import type { EntityInstance, Store } from "./runtime-engine.js";
 /**
  * Configuration for PrismaStore.
  */
@@ -148,5 +148,5 @@ export declare class ConcurrencyConflictError extends Error {
  * });
  * ```
  */
-export declare function createPrismaOutboxWriter(aggregateType: string, tenantId: string, defaultAggregateId?: string): OutboxEventWriter;
+export declare function createPrismaOutboxWriter(aggregateType: string, tenantId: string): OutboxEventWriter;
 //# sourceMappingURL=prisma-store.d.ts.map

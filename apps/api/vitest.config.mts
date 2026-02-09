@@ -79,8 +79,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./"),
-      // Keep other @repo/* packages pointing to the real packages
-      "@repo": path.resolve(import.meta.dirname, "../../packages"),
       "server-only": path.resolve(
         import.meta.dirname,
         "./test/mocks/server-only.ts"
