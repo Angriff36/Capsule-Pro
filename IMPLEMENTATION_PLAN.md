@@ -2,8 +2,8 @@
 
 **Ultimate Goal**: Deliver a deterministic, production-validated Manifest projection pipeline for Capsule-Pro that compiles domain manifests into type-safe Next.js command handlers, enforces guard/policy/constraint semantics through the runtime bridge, integrates real Clerk auth and tenant resolution, executes successfully against live domain logic without stubs, and maintains regression protection through snapshot, TypeScript, and HTTP-level verification across multiple entities.
 
-**Last Updated**: 2026-02-09 (TypeScript Errors & Snapshot Tests Fixed)
-**Status**: Core infrastructure COMPLETE, PrepTask commands production-validated with all runtime tests passing (7/7), Menu API routes generated (update/activate/deactivate), Station API routes generated (assignTask/removeTask/updateCapacity/deactivate/activate/updateEquipment), PrepList API routes generated (7 commands + 5 item commands), Inventory API routes generated (6 commands), Recipe API routes generated (8 commands across 5 entities), Base GET/list endpoints generated (menus, stations, prep-tasks, ingredients, recipes, dishes, prep-lists), HTTP integration tests complete with 100% route coverage (42/42), constraint violation tests added, UI warning display complete, TypeScript errors resolved, snapshot tests synchronized
+**Last Updated**: 2026-02-09 (All Tests Passing - 149/149)
+**Status**: Core infrastructure COMPLETE, PrepTask commands production-validated with all runtime tests passing (7/7), Menu API routes generated (update/activate/deactivate), Station API routes generated (assignTask/removeTask/updateCapacity/deactivate/activate/updateEquipment), PrepList API routes generated (7 commands + 5 item commands), Inventory API routes generated (6 commands), Recipe API routes generated (8 commands across 5 entities), Base GET/list endpoints generated (menus, stations, prep-tasks, ingredients, recipes, dishes, prep-lists), HTTP integration tests complete with 100% route coverage (42/42), constraint violation tests added, UI warning display complete, TypeScript errors resolved, snapshot tests synchronized. All HTTP integration tests passing, all TypeScript errors resolved
 
 ## Executive Summary
 
@@ -124,6 +124,13 @@
   - [x] Updated preptask-claim-command.snapshot.ts to match code generator output
   - [x] Added biome ignore rule for **/__snapshots__/**/*.ts files
   - [x] All snapshot tests now pass
+
+- [x] **HTTP Integration Tests Fixed** (2026-02-09) - Fixed contains operator syntax in PrepList manifest
+  - [x] Changed contains(self.allergens, "nuts") to self.allergens contains "nuts"
+  - [x] The contains operator is a binary operator, not a function call
+  - [x] This fixed HTTP integration test failures (9 tests now passing)
+  - [x] All 149 tests now passing (100%)
+  - [x] All HTTP integration tests passing, all TypeScript errors resolved
 
 - [x] **Testing Infrastructure**
   - [x] Constraint severity tests (`manifest-constraint-severity.test.ts`)
@@ -417,8 +424,7 @@
 - ✅ Tenant resolution tests (400 "Tenant not found") - Representative coverage
 
 **Known Issues**:
-- Some PrepList tests are failing due to a pre-existing bug with the `contains` operator in the PrepList manifest compilation
-- This is a separate issue from the HTTP test infrastructure and does not affect the validity of the test framework
+- ~~Some PrepList tests are failing due to a pre-existing bug with the `contains` operator in the PrepList manifest compilation~~ - ✅ RESOLVED (2026-02-09) - Fixed contains operator syntax in PrepList manifest (changed from function call to binary operator), all 9 HTTP integration tests now passing
 
 **Tasks**:
 - [x] Set up test harness for Next.js API routes - Uses `@vitest-environment node` with `new Request()` pattern
