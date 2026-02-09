@@ -369,6 +369,14 @@ export async function createKitchenOpsRuntime(context) {
             ...menuIR.entities,
             ...prepListIR.entities,
         ],
+        stores: [
+            ...(prepTaskIR.stores || []),
+            ...(stationIR.stores || []),
+            ...(inventoryIR.stores || []),
+            ...(recipeIR.stores || []),
+            ...(menuIR.stores || []),
+            ...(prepListIR.stores || []),
+        ],
         events: [
             ...prepTaskIR.events,
             ...stationIR.events,
@@ -850,7 +858,7 @@ export async function createDish(engine, dishId, name, recipeId, description, ca
     // Create the Dish entity instance
     await engine.createInstance("Dish", {
         id: dishId,
-        tenantId: engine.getContext("tenantId"),
+        tenantId: engine.getContext().tenantId,
         name,
         recipeId,
         description,
@@ -885,7 +893,7 @@ export async function createRecipe(engine, recipeId, name, category, cuisineType
     // Create the Recipe entity instance
     await engine.createInstance("Recipe", {
         id: recipeId,
-        tenantId: engine.getContext("tenantId"),
+        tenantId: engine.getContext().tenantId,
         name,
         category,
         cuisineType,
@@ -973,7 +981,7 @@ export async function createMenu(engine, menuId, name, description, category, ba
     // Create the Menu entity instance
     await engine.createInstance("Menu", {
         id: menuId,
-        tenantId: engine.getContext("tenantId"),
+        tenantId: engine.getContext().tenantId,
         name,
         description,
         category,
@@ -1063,7 +1071,7 @@ export async function activatePrepList(engine, prepListId, overrideRequests) {
         ...result,
         prepListId,
         name: instance?.name,
-        isActive: true,
+        status: instance?.status,
     };
 }
 /**
@@ -1080,7 +1088,7 @@ export async function deactivatePrepList(engine, prepListId, overrideRequests) {
         ...result,
         prepListId,
         name: instance?.name,
-        isActive: false,
+        status: instance?.status,
     };
 }
 /**
@@ -1130,7 +1138,7 @@ export async function updatePrepListItemQuantity(engine, itemId, newBaseQuantity
     return {
         ...result,
         itemId,
-        prepListId: instance?.prepListId,
+        prepListId: instance?.prepListId ?? "",
         ingredientName: instance?.ingredientName,
     };
 }
@@ -1147,7 +1155,7 @@ export async function updatePrepListItemStation(engine, itemId, newStationId, ne
     return {
         ...result,
         itemId,
-        prepListId: instance?.prepListId,
+        prepListId: instance?.prepListId ?? "",
         ingredientName: instance?.ingredientName,
     };
 }
@@ -1164,7 +1172,7 @@ export async function updatePrepListItemNotes(engine, itemId, newNotes, newDieta
     return {
         ...result,
         itemId,
-        prepListId: instance?.prepListId,
+        prepListId: instance?.prepListId ?? "",
         ingredientName: instance?.ingredientName,
     };
 }
@@ -1181,7 +1189,7 @@ export async function markPrepListItemCompleted(engine, itemId, completedByUserI
     return {
         ...result,
         itemId,
-        prepListId: instance?.prepListId,
+        prepListId: instance?.prepListId ?? "",
         ingredientName: instance?.ingredientName,
         isCompleted: true,
     };
@@ -1199,7 +1207,7 @@ export async function markPrepListItemUncompleted(engine, itemId, overrideReques
     return {
         ...result,
         itemId,
-        prepListId: instance?.prepListId,
+        prepListId: instance?.prepListId ?? "",
         ingredientName: instance?.ingredientName,
         isCompleted: false,
     };
@@ -1211,7 +1219,7 @@ export async function createPrepList(engine, prepListId, eventId, name, batchMul
     // Create the PrepList entity instance
     await engine.createInstance("PrepList", {
         id: prepListId,
-        tenantId: engine.getContext("tenantId"),
+        tenantId: engine.getContext().tenantId,
         eventId,
         name,
         batchMultiplier,
@@ -1232,12 +1240,6 @@ export async function createPrepList(engine, prepListId, eventId, name, batchMul
         updatedAt: Date.now(),
     });
     const instance = await engine.getInstance("PrepList", prepListId);
-    // Apply override requests if provided
-    if (overrideRequests && overrideRequests.length > 0) {
-        for (const override of overrideRequests) {
-            engine.executeCommand("overrideRequest", override);
-        }
-    }
     return {
         success: true,
         emittedEvents: [],

@@ -26,11 +26,7 @@ Object.defineProperty(window, "matchMedia", {
 class MockIntersectionObserver implements IntersectionObserver {
   readonly root: Element | Document | null = null;
   readonly rootMargin: string = "";
-  readonly thresholds: ReadonlyArray<number> = [];
-
-  constructor() {
-    // Intentional empty constructor for mock
-  }
+  readonly thresholds: readonly number[] = [];
 
   disconnect() {
     // Intentional empty mock method
@@ -54,10 +50,6 @@ global.IntersectionObserver =
 
 // Mock ResizeObserver for embla-carousel
 class MockResizeObserver implements ResizeObserver {
-  constructor() {
-    // Intentional empty constructor for mock
-  }
-
   disconnect() {
     // Intentional empty mock method
   }

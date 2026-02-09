@@ -179,31 +179,31 @@ export declare function createPostgresStoreProvider(databaseUrl: string, tenantI
 /**
  * Create a kitchen operations runtime for prep tasks
  */
-export declare function createPrepTaskRuntime(context: KitchenOpsContext): Promise<any>;
+export declare function createPrepTaskRuntime(context: KitchenOpsContext): Promise<RuntimeEngine>;
 /**
  * Create a kitchen operations runtime for stations
  */
-export declare function createStationRuntime(context: KitchenOpsContext): Promise<any>;
+export declare function createStationRuntime(context: KitchenOpsContext): Promise<RuntimeEngine>;
 /**
  * Create a kitchen operations runtime for inventory
  */
-export declare function createInventoryRuntime(context: KitchenOpsContext): Promise<any>;
+export declare function createInventoryRuntime(context: KitchenOpsContext): Promise<RuntimeEngine>;
 /**
  * Create a kitchen operations runtime for recipes
  */
-export declare function createRecipeRuntime(context: KitchenOpsContext): Promise<any>;
+export declare function createRecipeRuntime(context: KitchenOpsContext): Promise<RuntimeEngine>;
 /**
  * Create a kitchen operations runtime for menus
  */
-export declare function createMenuRuntime(context: KitchenOpsContext): Promise<any>;
+export declare function createMenuRuntime(context: KitchenOpsContext): Promise<RuntimeEngine>;
 /**
  * Create a kitchen operations runtime for prep lists
  */
-export declare function createPrepListRuntime(context: KitchenOpsContext): Promise<any>;
+export declare function createPrepListRuntime(context: KitchenOpsContext): Promise<RuntimeEngine>;
 /**
  * Create a combined kitchen operations runtime
  */
-export declare function createKitchenOpsRuntime(context: KitchenOpsContext): Promise<any>;
+export declare function createKitchenOpsRuntime(context: KitchenOpsContext): Promise<RuntimeEngine>;
 /**
  * Claim a prep task
  */
@@ -464,7 +464,7 @@ export declare function setupKitchenOpsEventListeners(engine: RuntimeEngine, han
     onPrepListItemUncompleted?: (event: EmittedEvent) => Promise<void>;
     onConstraintOverridden?: (event: EmittedEvent) => Promise<void>;
     onConstraintSatisfiedAfterOverride?: (event: EmittedEvent) => Promise<void>;
-}): any;
+}): () => void;
 /**
  * Get all emitted events from the runtime
  */
@@ -485,7 +485,7 @@ export declare function createPrepTaskInstance(engine: RuntimeEngine, data: {
     dueByDate?: number;
     priority?: number;
     stationId?: string;
-}): Promise<any>;
+}): Promise<import("@repo/manifest").EntityInstance | undefined>;
 /**
  * Create a station instance
  */
@@ -497,7 +497,7 @@ export declare function createStationInstance(engine: RuntimeEngine, data: {
     stationType?: string;
     capacitySimultaneousTasks?: number;
     equipmentList?: string;
-}): Promise<any>;
+}): Promise<import("@repo/manifest").EntityInstance | undefined>;
 /**
  * Create an inventory item instance
  */
@@ -512,7 +512,7 @@ export declare function createInventoryItemInstance(engine: RuntimeEngine, data:
     parLevel?: number;
     costPerUnit?: number;
     locationId?: string;
-}): Promise<any>;
+}): Promise<import("@repo/manifest").EntityInstance | undefined>;
 import type { ConstraintOutcome } from "@repo/manifest";
 export { OVERRIDE_REASON_CODES, type OverrideReasonCode } from "@repo/manifest";
 /**

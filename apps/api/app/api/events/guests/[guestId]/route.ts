@@ -96,7 +96,9 @@ function setOptionalStringField(
     return;
   }
   // Use Object.assign to handle the assignment of union types in a type-safe way
-  Object.assign(updateData, { [key]: value === null ? null : value.toString().trim() });
+  Object.assign(updateData, {
+    [key]: value === null ? null : value.toString().trim(),
+  });
 }
 
 /**

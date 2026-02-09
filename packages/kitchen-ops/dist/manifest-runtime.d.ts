@@ -12,11 +12,11 @@ interface GeneratedRuntimeContext {
         tenantId: string;
     };
 }
-export declare function createPrepTaskManifestRuntime(ctx: GeneratedRuntimeContext): Promise<any>;
-export declare function createStationManifestRuntime(ctx: GeneratedRuntimeContext): Promise<any>;
-export declare function createInventoryManifestRuntime(ctx: GeneratedRuntimeContext): Promise<any>;
-export declare function createRecipeManifestRuntime(ctx: GeneratedRuntimeContext): Promise<any>;
-export declare function createMenuManifestRuntime(ctx: GeneratedRuntimeContext): Promise<any>;
-export declare function createPrepListManifestRuntime(ctx: GeneratedRuntimeContext): Promise<any>;
+export declare function createPrepTaskManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("@repo/manifest").RuntimeEngine>;
+export declare function createStationManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("@repo/manifest").RuntimeEngine>;
+export declare function createInventoryManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("@repo/manifest").RuntimeEngine>;
+export declare function createRecipeManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("@repo/manifest").RuntimeEngine>;
+export declare function createMenuManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("@repo/manifest").RuntimeEngine>;
+export declare function createPrepListManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("@repo/manifest").RuntimeEngine>;
 export {};
 //# sourceMappingURL=manifest-runtime.d.ts.map
