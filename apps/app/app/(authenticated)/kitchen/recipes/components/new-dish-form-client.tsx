@@ -335,6 +335,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
         onConfirm={constraintState.handleOverride}
         onOpenChange={constraintState.setShowOverrideDialog}
         open={constraintState.showOverrideDialog}
+        warningsOnly={constraintState.warningsOnly}
       />
 
       {error && (

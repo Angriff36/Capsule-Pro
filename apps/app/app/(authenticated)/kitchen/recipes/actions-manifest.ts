@@ -503,11 +503,11 @@ export const createRecipe = async (formData: FormData) => {
   }
 
   // Log warning constraints for observability
+  // Note: constraintOutcomes are included in outbox event below for UI consumption
   const warningConstraints = versionResult.constraintOutcomes?.filter(
     (o) => !o.passed && o.severity === "warn"
   );
   if (warningConstraints && warningConstraints.length > 0) {
-    // TODO: Pass these to UI for display
     console.warn(
       "[Manifest] Recipe creation warnings:",
       warningConstraints.map((c) => `${c.code}: ${c.formatted}`)
@@ -1068,11 +1068,11 @@ export const createDish = async (formData: FormData) => {
   }
 
   // Log warning constraints for observability
+  // Note: constraintOutcomes are included in outbox event below for UI consumption
   const warningConstraints = result.constraintOutcomes?.filter(
     (o) => !o.passed && o.severity === "warn"
   );
   if (warningConstraints && warningConstraints.length > 0) {
-    // TODO: Pass these to UI for display
     console.warn(
       "[Manifest] Dish creation warnings:",
       warningConstraints.map((c) => `${c.code}: ${c.formatted}`)

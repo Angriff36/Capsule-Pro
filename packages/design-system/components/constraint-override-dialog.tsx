@@ -66,6 +66,10 @@ export interface ConstraintOverrideDialogProps {
    * Whether the user has permission to override
    */
   canOverride?: boolean;
+  /**
+   * Whether this is a warning-only dialog (no override needed, just acknowledgment)
+   */
+  warningsOnly?: boolean;
 }
 
 export function ConstraintOverrideDialog({
@@ -78,6 +82,7 @@ export function ConstraintOverrideDialog({
   description,
   actionDescription = "perform this action",
   canOverride = true,
+  warningsOnly = false,
 }: ConstraintOverrideDialogProps) {
   const [selectedReason, setSelectedReason] =
     React.useState<OverrideReasonCode>("other");
@@ -110,24 +115,38 @@ export function ConstraintOverrideDialog({
       <AlertDialogContent className="max-w-lg">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            {hasBlocking ? (
+            {warningsOnly ? (
+              <TriangleAlert className="h-5 w-5 text-warning" />
+            ) : hasBlocking ? (
               <ShieldAlert className="h-5 w-5 text-destructive" />
             ) : (
               <TriangleAlert className="h-5 w-5 text-warning" />
             )}
-            {title}
+            {warningsOnly ? "Action Completed with Warnings" : title}
           </AlertDialogTitle>
           <AlertDialogDescription>
             {description || (
               <>
-                This {actionDescription} is blocked by{" "}
-                {hasBlocking && hasWarnings
-                  ? "blocking constraints and warnings"
-                  : hasBlocking
-                    ? "blocking constraints"
-                    : "warnings"}
-                . You can proceed with an override, or cancel to address the
-                issues.
+                {warningsOnly ? (
+                  <>
+                    This {actionDescription} completed successfully, but there{" "}
+                    {actionableConstraints.length > 1 ? "are" : "is"}{" "}
+                    {actionableConstraints.length} warning
+                    {actionableConstraints.length > 1 ? "s" : ""} you should be
+                    aware of.
+                  </>
+                ) : (
+                  <>
+                    This {actionDescription} is blocked by{" "}
+                    {hasBlocking && hasWarnings
+                      ? "blocking constraints and warnings"
+                      : hasBlocking
+                        ? "blocking constraints"
+                        : "warnings"}
+                    . You can proceed with an override, or cancel to address the
+                    issues.
+                  </>
+                )}
               </>
             )}
           </AlertDialogDescription>
@@ -141,7 +160,7 @@ export function ConstraintOverrideDialog({
 
         <Separator />
 
-        {canOverride ? (
+        {!warningsOnly && canOverride ? (
           <div className="space-y-4">
             <div className="space-y-2">
               <label
@@ -206,12 +225,16 @@ export function ConstraintOverrideDialog({
         )}
 
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={handleCancel}>Cancel</AlertDialogCancel>
-          {canOverride && (
+          {!warningsOnly && <AlertDialogCancel onClick={handleCancel}>Cancel</AlertDialogCancel>}
+          {warningsOnly ? (
+            <AlertDialogAction onClick={handleCancel}>
+              Acknowledge
+            </AlertDialogAction>
+          ) : canOverride ? (
             <AlertDialogAction onClick={handleConfirm}>
               Proceed with Override
             </AlertDialogAction>
-          )}
+          ) : null}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -283,18 +306,33 @@ export function useConstraintOverride<
   onOverride?: (reason: OverrideReasonCode, details: string, data: T) => void;
 }) {
   const [showOverrideDialog, setShowOverrideDialog] = React.useState(false);
+  const [warningsOnly, setWarningsOnly] = React.useState(false);
   const [overrideConstraints, setOverrideConstraints] = React.useState<
     ConstraintOutcome[]
   >([]);
 
-  // Check if we need to show override dialog
+  // Check if we need to show override dialog or warning display
   React.useEffect(() => {
     if (result?.constraintOutcomes && result.constraintOutcomes.length > 0) {
       const blocking = result.constraintOutcomes.filter(
         (c) => !c.passed && c.severity === "block"
       );
+      const warnings = result.constraintOutcomes.filter(
+        (c) => !c.passed && c.severity === "warn"
+      );
+
+      // Show dialog for blocking constraints (action failed)
       if (blocking.length > 0 && !result.success) {
         setOverrideConstraints(blocking);
+        setWarningsOnly(false);
+        setShowOverrideDialog(true);
+        return;
+      }
+
+      // Show dialog for warning constraints (action succeeded but with warnings)
+      if (warnings.length > 0 && result.success) {
+        setOverrideConstraints(warnings);
+        setWarningsOnly(true);
         setShowOverrideDialog(true);
       }
     }
@@ -325,10 +363,17 @@ export function useConstraintOverride<
     handleError,
     handleOverride,
     handleCancel,
+    warningsOnly,
+    setWarningsOnly,
     // Helper to check if we have blocking constraints
     hasBlockingConstraints:
       result?.constraintOutcomes?.filter(
         (c) => !c.passed && c.severity === "block"
+      ).length ?? 0,
+    // Helper to check if we have warning constraints only
+    hasWarningConstraints:
+      result?.constraintOutcomes?.filter(
+        (c) => !c.passed && c.severity === "warn"
       ).length ?? 0,
     // Helper to get all actionable constraints
     actionableConstraints:

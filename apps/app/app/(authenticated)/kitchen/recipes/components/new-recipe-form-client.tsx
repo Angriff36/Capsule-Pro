@@ -355,6 +355,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
         onConfirm={constraintState.handleOverride}
         onOpenChange={constraintState.setShowOverrideDialog}
         open={constraintState.showOverrideDialog}
+        warningsOnly={constraintState.warningsOnly}
       />
 
       {error && (

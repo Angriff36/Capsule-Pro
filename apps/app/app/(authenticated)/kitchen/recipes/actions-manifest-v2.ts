@@ -545,6 +545,7 @@ export const createRecipe = async (
   }
 
   // Log warning constraints for observability
+  // Note: constraintOutcomes are already included in the success response below
   const warningConstraints = versionResult.constraintOutcomes?.filter(
     (o) => !o.passed && o.severity === "warn"
   );

@@ -181,6 +181,7 @@ export function RecipeFormWithConstraints({
         onConfirm={constraintState.handleOverride}
         onOpenChange={constraintState.setShowOverrideDialog}
         open={constraintState.showOverrideDialog}
+        warningsOnly={constraintState.warningsOnly}
       />
       {error && (
         <Alert className="mt-4" variant="destructive">
