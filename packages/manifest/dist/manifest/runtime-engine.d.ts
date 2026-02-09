@@ -226,11 +226,12 @@ export declare class RuntimeEngine {
     getAllInstances(entityName: string): Promise<EntityInstance[]>;
     getInstance(entityName: string, id: string): Promise<EntityInstance | undefined>;
     /**
-     * Check entity constraints against instance data
-     * Returns array of constraint failures (empty if all pass)
-     * Useful for diagnostic purposes without mutating state
+     * Check entity constraints against instance data.
+     * Returns array of constraint outcomes (includes severity information).
+     * Useful for diagnostic purposes without mutating state.
+     * Callers can filter by severity to determine blocking vs warning constraints.
      */
-    checkConstraints(entityName: string, data: Record<string, unknown>): Promise<ConstraintFailure[]>;
+    checkConstraints(entityName: string, data: Record<string, unknown>): Promise<ConstraintOutcome[]>;
     createInstance(entityName: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
     updateInstance(entityName: string, id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
     deleteInstance(entityName: string, id: string): Promise<boolean>;
@@ -242,25 +243,18 @@ export declare class RuntimeEngine {
     private buildEvalContext;
     private checkPolicies;
     /**
-     * Validate entity constraints against instance data
-     * Returns array of constraint failures (empty if all pass)
+     * Validate entity constraints against instance data.
+     * Returns array of constraint outcomes with severity information.
+     * Callers should filter by severity === 'block' to determine if execution should be blocked.
      *
      * Constraint semantics:
      * - Expression evaluates to TRUE → condition is met → constraint PASSES
      * - Expression evaluates to FALSE → condition is not met → constraint FAILS
      *
-     * Severity affects what gets reported as failures:
-     * - severity='block': Failed constraints are returned as failures (block execution)
-     * - severity='warn': Failed constraints are NOT returned as failures (informational only)
-     * - severity='ok': Failed constraints are NOT returned as failures (informational only)
-     *
-     * CONSTRAINT SEMANTICS (vNext hybrid support):
-     * - Positive constraints (default): Expression describes what MUST be true for validity
-     *   - When FALSE → constraint FAILS (e.g., "amount >= 0" fails when amount = -1)
-     *   - When TRUE → constraint PASSES
-     * - Negative constraints (detected by "severity" prefix): Expression describes BAD state
-     *   - When TRUE → constraint FIRES (e.g., "status == 'cancelled'" fires when cancelled)
-     *   - When FALSE → constraint PASSES (no bad state present)
+     * Severity levels:
+     * - severity='block': Failed constraints block execution
+     * - severity='warn': Failed constraints produce outcomes but do not block
+     * - severity='ok': Failed constraints are informational only
      */
     private validateConstraints;
     private extractContextKeys;

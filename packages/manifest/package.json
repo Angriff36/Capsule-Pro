@@ -13,6 +13,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./projections": {
+      "types": "./src/manifest/projections/index.ts",
+      "import": "./src/manifest/projections/index.ts"
+    },
     "./runtime": {
       "types": "./dist/runtime.d.ts",
       "import": "./dist/runtime.js"
@@ -48,7 +52,8 @@
   },
   "bin": {
     "manifest-compile": "./bin/compile.ts",
-    "capsule-pro-generate": "./bin/capsule-pro-generate.ts"
+    "capsule-pro-generate": "./bin/capsule-pro-generate.ts",
+    "manifest-generate": "./bin/generate-projection.ts"
   },
   "type": "module",
   "types": "./dist/index.d.ts"

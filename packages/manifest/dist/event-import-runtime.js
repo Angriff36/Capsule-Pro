@@ -305,6 +305,9 @@ export function setupEventListeners(engine, handlers) {
             case "ChecklistGenerated":
                 await handlers.onChecklistGenerated?.(event);
                 break;
+            default:
+                console.warn(`Unexpected event type: ${event.name}`);
+                break;
         }
     });
     return unsubscribe;
