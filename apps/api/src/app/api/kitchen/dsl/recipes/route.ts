@@ -69,6 +69,8 @@ export async function GET(request: Request) {
     const items = await runtime.getAllInstances("Recipe");
     return manifestSuccessResponse({ recipes: items });
   } catch (error) {
-    return manifestErrorResponse(error instanceof Error ? error : new Error(String(error)));
+    return manifestErrorResponse(
+      error instanceof Error ? error : new Error(String(error))
+    );
   }
 }

@@ -36,6 +36,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
 
 // Mock auth
 vi.mock("@repo/auth/server", () => ({
@@ -133,7 +134,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         "@/app/api/kitchen/prep-tasks/commands/claim/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-tasks/commands/claim",
         {
           method: "POST",
@@ -201,7 +202,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         "@/app/api/kitchen/prep-tasks/commands/claim/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-tasks/commands/claim",
         {
           method: "POST",
@@ -266,7 +267,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         "@/app/api/kitchen/prep-tasks/commands/complete/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-tasks/commands/complete",
         {
           method: "POST",
@@ -330,7 +331,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         "@/app/api/kitchen/prep-tasks/commands/complete/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-tasks/commands/complete",
         {
           method: "POST",
@@ -394,7 +395,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         "@/app/api/kitchen/prep-tasks/commands/reassign/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-tasks/commands/reassign",
         {
           method: "POST",
@@ -457,7 +458,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         "@/app/api/kitchen/prep-tasks/commands/reassign/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-tasks/commands/reassign",
         {
           method: "POST",
@@ -521,7 +522,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         "@/app/api/kitchen/prep-tasks/commands/update-quantity/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-tasks/commands/update-quantity",
         {
           method: "POST",
@@ -583,7 +584,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         "@/app/api/kitchen/prep-tasks/commands/update-quantity/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-tasks/commands/update-quantity",
         {
           method: "POST",
@@ -646,7 +647,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         "@/app/api/kitchen/prep-tasks/commands/cancel/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-tasks/commands/cancel",
         {
           method: "POST",
@@ -708,7 +709,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         "@/app/api/kitchen/prep-tasks/commands/cancel/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-tasks/commands/cancel",
         {
           method: "POST",
@@ -772,7 +773,7 @@ describe("Manifest Command Constraints - Recipe Commands", () => {
         "@/app/api/kitchen/recipes/commands/update/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/commands/update",
         {
           method: "POST",
@@ -831,7 +832,7 @@ describe("Manifest Command Constraints - Recipe Commands", () => {
         "@/app/api/kitchen/recipes/commands/update/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/commands/update",
         {
           method: "POST",
@@ -905,7 +906,7 @@ describe("Manifest Command Constraints - Dish Commands (Recipe domain)", () => {
         "@/app/api/kitchen/dishes/commands/update-pricing/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/dishes/commands/update-pricing",
         {
           method: "POST",
@@ -970,7 +971,7 @@ describe("Manifest Command Constraints - Dish Commands (Recipe domain)", () => {
         "@/app/api/kitchen/dishes/commands/update-pricing/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/dishes/commands/update-pricing",
         {
           method: "POST",
@@ -1033,7 +1034,7 @@ describe("Manifest Command Constraints - Dish Commands (Recipe domain)", () => {
         "@/app/api/kitchen/dishes/commands/update-pricing/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/dishes/commands/update-pricing",
         {
           method: "POST",
@@ -1097,7 +1098,7 @@ describe("Manifest Command Constraints - Menu Commands", () => {
         "@/app/api/kitchen/menus/commands/update/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/menus/commands/update",
         {
           method: "POST",
@@ -1161,7 +1162,7 @@ describe("Manifest Command Constraints - Menu Commands", () => {
         "@/app/api/kitchen/menus/commands/update/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/menus/commands/update",
         {
           method: "POST",
@@ -1223,7 +1224,7 @@ describe("Manifest Command Constraints - Menu Commands", () => {
         "@/app/api/kitchen/menus/commands/update/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/menus/commands/update",
         {
           method: "POST",
@@ -1298,7 +1299,7 @@ describe("Manifest Command Constraints - PrepList Commands", () => {
         "@/app/api/kitchen/prep-lists/commands/update/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/commands/update",
         {
           method: "POST",
@@ -1363,7 +1364,7 @@ describe("Manifest Command Constraints - PrepList Commands", () => {
         "@/app/api/kitchen/prep-lists/commands/update-batch-multiplier/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/commands/update-batch-multiplier",
         {
           method: "POST",
@@ -1423,7 +1424,7 @@ describe("Manifest Command Constraints - PrepList Commands", () => {
         "@/app/api/kitchen/prep-lists/commands/update-batch-multiplier/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/commands/update-batch-multiplier",
         {
           method: "POST",
@@ -1502,7 +1503,7 @@ describe("Manifest Command Constraints - PrepListItem Commands (PrepList domain)
         "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
         {
           method: "POST",
@@ -1574,7 +1575,7 @@ describe("Manifest Command Constraints - PrepListItem Commands (PrepList domain)
         "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
         {
           method: "POST",

@@ -7,7 +7,7 @@
  * @module kitchen-ops/prep-list-autogeneration
  */
 
-import { type Prisma, PrismaClient } from "@repo/database";
+import type { Prisma, PrismaClient } from "@repo/database";
 import { createOutboxEvent } from "@repo/realtime";
 
 /**
@@ -232,11 +232,7 @@ export async function generatePrepListImmediately(
     error?: string;
   }>
 ): Promise<PrepListAutoGenerationResult> {
-  const {
-    eventId,
-    batchMultiplier = 1,
-    dietaryRestrictions = [],
-  } = input;
+  const { eventId, batchMultiplier = 1, dietaryRestrictions = [] } = input;
 
   try {
     const result = await generatePrepListFn({

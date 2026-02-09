@@ -41,18 +41,20 @@ let nextConfig: NextConfig = withLogging({
   ) => {
     if (isServer) {
       // Exclude pdfjs-dist worker from server-side bundling
-      const externals = webpackConfig.externals;
-      let externalsArray: unknown[] = [];
-      if (Array.isArray(externals)) {
-        externalsArray = externals;
-      } else if (externals) {
-        externalsArray = [externals];
-      }
+      const existingExternals = webpackConfig.externals;
+      const pdfjsExternal = "pdfjs-dist/legacy/build/pdf.worker.mjs";
 
+      // Type cast to satisfy TypeScript - webpack handles this at runtime
       webpackConfig.externals = [
-        ...externalsArray,
-        "pdfjs-dist/legacy/build/pdf.worker.mjs",
-      ];
+        ...(Array.isArray(existingExternals)
+          ? (existingExternals as Array<
+              string | RegExp | Function | Record<string, unknown>
+            >)
+          : existingExternals
+            ? [existingExternals as string | RegExp | Function]
+            : []),
+        pdfjsExternal,
+      ] as Configuration["externals"];
 
       // Suppress 'Critical dependency' and large string warnings
       webpackConfig.ignoreWarnings = [

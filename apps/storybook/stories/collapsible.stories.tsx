@@ -4,8 +4,8 @@ import {
   CollapsibleTrigger,
 } from "@repo/design-system/components/ui/collapsible";
 import type { Meta, StoryObj } from "@storybook/react";
-import type { ComponentProps } from "react";
 import { Info } from "lucide-react";
+import type { ComponentProps } from "react";
 
 /**
  * An interactive component which expands/collapses a panel.

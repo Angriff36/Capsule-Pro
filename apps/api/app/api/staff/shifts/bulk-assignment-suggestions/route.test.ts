@@ -142,7 +142,7 @@ describe("bulk-assignment-suggestions route", () => {
     vi.mocked(auth).mockResolvedValue({
       userId: "user-1",
       orgId: mockOrgId,
-    });
+    } as unknown as Awaited<ReturnType<typeof auth>>);
     vi.mocked(getTenantIdForOrg).mockResolvedValue(mockTenantId);
   });
 
@@ -269,7 +269,7 @@ describe("bulk-assignment-suggestions route", () => {
       vi.mocked(auth).mockResolvedValue({
         userId: "user-1",
         orgId: null,
-      });
+      } as unknown as Awaited<ReturnType<typeof auth>>);
 
       const request = new NextRequest(
         "https://example.com/api/staff/shifts/bulk-assignment-suggestions"
@@ -425,7 +425,7 @@ describe("bulk-assignment-suggestions route", () => {
       vi.mocked(auth).mockResolvedValue({
         userId: "user-1",
         orgId: null,
-      });
+      } as unknown as Awaited<ReturnType<typeof auth>>);
 
       const request = new NextRequest(
         "https://example.com/api/staff/shifts/bulk-assignment-suggestions",

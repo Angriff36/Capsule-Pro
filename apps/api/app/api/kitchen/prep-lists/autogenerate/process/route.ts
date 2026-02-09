@@ -26,10 +26,7 @@ export async function POST() {
     const { orgId } = await auth();
 
     if (!orgId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Process pending generations
@@ -42,7 +39,8 @@ export async function POST() {
         // or implement the business logic directly
         return {
           success: false,
-          error: "Prep list generation should be triggered via /api/kitchen/prep-lists/generate endpoint",
+          error:
+            "Prep list generation should be triggered via /api/kitchen/prep-lists/generate endpoint",
         };
       }
     );
@@ -70,10 +68,7 @@ export async function GET() {
     const { orgId } = await auth();
 
     if (!orgId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Count pending generations

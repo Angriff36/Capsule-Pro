@@ -15,7 +15,7 @@
  */
 
 import { execSync } from "node:child_process";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const MANIFEST_DIR = "packages/kitchen-ops/manifests";
@@ -35,7 +35,9 @@ function log(message, color = "reset") {
 }
 
 function logStep(step) {
-  log(`\n${colors.bold}${colors.blue}Step ${step.number}: ${step.title}${colors.reset}`);
+  log(
+    `\n${colors.bold}${colors.blue}Step ${step.number}: ${step.title}${colors.reset}`
+  );
 }
 
 function logSuccess(message) {
@@ -56,7 +58,7 @@ function runCommand(command, { cwd, ignoreStderr = false } = {}) {
     const result = execSync(command, options);
     return { success: true, output: result.toString() };
   } catch (error) {
-    if (!ignoreStderr || !error.stderr?.toString().includes("Warning:")) {
+    if (!(ignoreStderr && error.stderr?.toString().includes("Warning:"))) {
       return {
         success: false,
         output: error.stdout?.toString() || "",
@@ -76,7 +78,9 @@ function checkManifestDirectory() {
     return false;
   }
 
-  const files = readdirSync(MANIFEST_DIR).filter((f) => f.endsWith(".manifest"));
+  const files = readdirSync(MANIFEST_DIR).filter((f) =>
+    f.endsWith(".manifest")
+  );
   if (files.length === 0) {
     logWarning("No manifest files found");
     return false;
@@ -91,7 +95,9 @@ function checkManifestDirectory() {
 function validateManifests() {
   logStep({ number: 2, title: "Validate manifest compilation" });
 
-  const files = readdirSync(MANIFEST_DIR).filter((f) => f.endsWith(".manifest"));
+  const files = readdirSync(MANIFEST_DIR).filter((f) =>
+    f.endsWith(".manifest")
+  );
   let allValid = true;
 
   for (const file of files) {
@@ -108,7 +114,9 @@ function validateManifests() {
     } else {
       logError(`${file} failed to compile`);
       if (result.error) {
-        log(`    Error: ${result.error.split("\n").slice(0, 3).join("\n    ")}`);
+        log(
+          `    Error: ${result.error.split("\n").slice(0, 3).join("\n    ")}`
+        );
       }
       allValid = false;
     }
@@ -127,11 +135,10 @@ function runConformanceTests() {
   if (result.success) {
     logSuccess("Conformance tests passed");
     return true;
-  } else {
-    logError("Conformance tests failed");
-    log(`    ${result.output.split("\n").slice(-5).join("\n    ")}`);
-    return false;
   }
+  logError("Conformance tests failed");
+  log(`    ${result.output.split("\n").slice(-5).join("\n    ")}`);
+  return false;
 }
 
 // Step 4: Run integration tests
@@ -146,11 +153,10 @@ function runIntegrationTests() {
   if (result.success) {
     logSuccess("Integration tests passed");
     return true;
-  } else {
-    logError("Integration tests failed");
-    log(`    ${result.output.split("\n").slice(-10).join("\n    ")}`);
-    return false;
   }
+  logError("Integration tests failed");
+  log(`    ${result.output.split("\n").slice(-10).join("\n    ")}`);
+  return false;
 }
 
 // Step 5: Check generated code is up-to-date
@@ -175,18 +181,17 @@ function checkGeneratedCode() {
   if (gitResult.success && gitResult.output.trim() === "") {
     logSuccess("Generated code is up-to-date");
     return true;
-  } else {
-    logWarning("Generated code has uncommitted changes");
-    log("    Changed files:");
-    gitResult.output
-      .trim()
-      .split("\n")
-      .forEach((f) => log(`      - ${f}`));
-    log("\n    Run the following to update:");
-    log("      git add apps/api/app/api/kitchen/");
-    log('      git commit -m "feat: regenerate manifest-generated routes"');
-    return false;
   }
+  logWarning("Generated code has uncommitted changes");
+  log("    Changed files:");
+  gitResult.output
+    .trim()
+    .split("\n")
+    .forEach((f) => log(`      - ${f}`));
+  log("\n    Run the following to update:");
+  log("      git add apps/api/app/api/kitchen/");
+  log('      git commit -m "feat: regenerate manifest-generated routes"');
+  return false;
 }
 
 // Step 6: TypeScript check
@@ -199,23 +204,16 @@ function runTypeScriptCheck() {
   if (result.success) {
     logSuccess("TypeScript compilation passed");
     return true;
-  } else {
-    logError("TypeScript compilation failed");
-    log(`    ${result.output.split("\n").slice(-10).join("\n    ")}`);
-    return false;
   }
+  logError("TypeScript compilation failed");
+  log(`    ${result.output.split("\n").slice(-10).join("\n    ")}`);
+  return false;
 }
 
 // Main function
 function main() {
-  log(
-    `${colors.bold}${colors.blue}Manifest Validation${colors.reset}`,
-    "blue"
-  );
-  log(
-    `${colors.blue}======================${colors.reset}\n`,
-    "blue"
-  );
+  log(`${colors.bold}${colors.blue}Manifest Validation${colors.reset}`, "blue");
+  log(`${colors.blue}======================${colors.reset}\n`, "blue");
 
   const results = {
     manifestDirectory: checkManifestDirectory(),
@@ -234,14 +232,8 @@ function main() {
   }
 
   // Summary
-  log(
-    `\n${colors.bold}${colors.blue}Summary${colors.reset}`,
-    "blue"
-  );
-  log(
-    `${colors.blue}=======${colors.reset}\n`,
-    "blue"
-  );
+  log(`\n${colors.bold}${colors.blue}Summary${colors.reset}`, "blue");
+  log(`${colors.blue}=======${colors.reset}\n`, "blue");
 
   const allPassed = Object.entries(results).every(([key, value]) => {
     const label = key
@@ -250,15 +242,17 @@ function main() {
     if (value) {
       logSuccess(label);
       return true;
-    } else {
-      logError(label);
-      return false;
     }
+    logError(label);
+    return false;
   });
 
   log("");
   if (allPassed) {
-    log(`${colors.green}${colors.bold}All checks passed!${colors.reset}`, "green");
+    log(
+      `${colors.green}${colors.bold}All checks passed!${colors.reset}`,
+      "green"
+    );
     log(
       `${colors.green}You're ready to push your manifest changes.${colors.reset}`,
       "green"

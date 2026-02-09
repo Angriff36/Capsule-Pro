@@ -16,8 +16,8 @@ import {
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
 import type { Meta, StoryObj } from "@storybook/react";
-import type { ComponentProps } from "react";
 import { Mail, Plus, PlusCircle, Search, UserPlus } from "lucide-react";
+import type { ComponentProps } from "react";
 
 /**
  * Displays a menu to the user — such as a set of actions or functions —

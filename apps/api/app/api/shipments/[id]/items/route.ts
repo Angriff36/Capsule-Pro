@@ -153,16 +153,18 @@ export async function POST(
       tenantId: string;
       shipmentId: string;
       itemId: string;
-      quantityShipped: string;
-      quantityReceived: string;
-      quantityDamaged: string;
-      unitId: string | null;
-      unitCost: string | null;
-      totalCost: string | null;
+      quantityShipped: number;
+      quantityReceived: number;
+      quantityDamaged: number;
+      unitId: number | null;
+      unitCost: number | null;
+      totalCost: number;
       condition: string;
       conditionNotes: string | null;
       lotNumber: string | null;
       expirationDate: Date | null;
+      createdAt: Date;
+      updatedAt: Date;
     }> = [];
 
     for (const item of items) {
@@ -226,21 +228,21 @@ export async function POST(
 
       createdItems.push({
         id: created.id,
-        tenant_id: created.tenantId,
-        shipment_id: created.shipmentId,
-        item_id: created.itemId,
-        quantity_shipped: Number(created.quantityShipped),
-        quantity_received: Number(created.quantityReceived),
-        quantity_damaged: Number(created.quantityDamaged),
-        unit_id: created.unitId,
-        unit_cost: created.unitCost ? Number(created.unitCost) : null,
-        total_cost: Number(created.totalCost),
-        condition: created.condition,
-        condition_notes: created.conditionNotes,
-        lot_number: created.lotNumber,
-        expiration_date: created.expirationDate,
-        created_at: created.createdAt,
-        updated_at: created.updatedAt,
+        tenantId: created.tenantId,
+        shipmentId: created.shipmentId,
+        itemId: created.itemId,
+        quantityShipped: Number(created.quantityShipped),
+        quantityReceived: Number(created.quantityReceived),
+        quantityDamaged: Number(created.quantityDamaged),
+        unitId: created.unitId,
+        unitCost: created.unitCost ? Number(created.unitCost) : null,
+        totalCost: Number(created.totalCost),
+        condition: (created.condition ?? "unknown") as string,
+        conditionNotes: created.conditionNotes,
+        lotNumber: created.lotNumber,
+        expirationDate: created.expirationDate,
+        createdAt: created.createdAt,
+        updatedAt: created.updatedAt,
       });
     }
 

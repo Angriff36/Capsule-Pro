@@ -17,6 +17,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
 
 // Mock auth
 vi.mock("@repo/auth/server", () => ({
@@ -76,13 +77,13 @@ describe("Manifest HTTP Constraint Enforcement - Recipe Commands", () => {
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/recipes/commands/update/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/commands/update",
         {
           method: "POST",
@@ -109,7 +110,7 @@ describe("Manifest HTTP Constraint Enforcement - Recipe Commands", () => {
         "@/app/api/kitchen/recipes/commands/update/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/commands/update",
         {
           method: "POST",
@@ -156,7 +157,7 @@ describe("Manifest HTTP Constraint Enforcement - Recipe Commands", () => {
         "@/app/api/kitchen/recipes/commands/update/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/commands/update",
         {
           method: "POST",
@@ -190,13 +191,13 @@ describe("Manifest HTTP Constraint Enforcement - Dish Commands", () => {
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/dishes/commands/update-pricing/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/dishes/commands/update-pricing",
         {
           method: "POST",
@@ -244,7 +245,7 @@ describe("Manifest HTTP Constraint Enforcement - Dish Commands", () => {
         "@/app/api/kitchen/dishes/commands/update-pricing/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/dishes/commands/update-pricing",
         {
           method: "POST",
@@ -270,13 +271,13 @@ describe("Manifest HTTP Constraint Enforcement - Dish Commands", () => {
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/dishes/commands/update-lead-time/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/dishes/commands/update-lead-time",
         {
           method: "POST",
@@ -309,13 +310,13 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/menus/commands/update/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/menus/commands/update",
         {
           method: "POST",
@@ -361,7 +362,7 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
         "@/app/api/kitchen/menus/commands/update/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/menus/commands/update",
         {
           method: "POST",
@@ -388,13 +389,13 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/menus/commands/activate/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/menus/commands/activate",
         {
           method: "POST",
@@ -419,13 +420,13 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/menus/commands/deactivate/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/menus/commands/deactivate",
         {
           method: "POST",
@@ -456,13 +457,13 @@ describe("Manifest HTTP Constraint Enforcement - PrepTask Commands", () => {
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/prep-tasks/commands/claim/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-tasks/commands/claim",
         {
           method: "POST",
@@ -489,13 +490,13 @@ describe("Manifest HTTP Constraint Enforcement - PrepTask Commands", () => {
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/prep-tasks/commands/start/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-tasks/commands/start",
         {
           method: "POST",
@@ -521,13 +522,13 @@ describe("Manifest HTTP Constraint Enforcement - PrepTask Commands", () => {
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/prep-tasks/commands/complete/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-tasks/commands/complete",
         {
           method: "POST",
@@ -560,13 +561,13 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/prep-lists/items/commands/update-quantity/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/update-quantity",
         {
           method: "POST",
@@ -627,7 +628,7 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         "@/app/api/kitchen/prep-lists/items/commands/update-quantity/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/update-quantity",
         {
           method: "POST",
@@ -695,7 +696,7 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         "@/app/api/kitchen/prep-lists/items/commands/update-quantity/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/update-quantity",
         {
           method: "POST",
@@ -731,13 +732,13 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
         {
           method: "POST",
@@ -794,7 +795,7 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
         {
           method: "POST",
@@ -858,7 +859,7 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
         {
           method: "POST",
@@ -898,13 +899,13 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/recipes/versions/commands/create/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/versions/commands/create",
         {
           method: "POST",
@@ -951,7 +952,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         "@/app/api/kitchen/recipes/versions/commands/create/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/versions/commands/create",
         {
           method: "POST",
@@ -1000,7 +1001,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         "@/app/api/kitchen/recipes/versions/commands/create/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/versions/commands/create",
         {
           method: "POST",
@@ -1070,7 +1071,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         "@/app/api/kitchen/recipes/versions/commands/create/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/versions/commands/create",
         {
           method: "POST",
@@ -1146,7 +1147,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         "@/app/api/kitchen/recipes/versions/commands/create/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/versions/commands/create",
         {
           method: "POST",
@@ -1222,7 +1223,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         "@/app/api/kitchen/recipes/versions/commands/create/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/versions/commands/create",
         {
           method: "POST",

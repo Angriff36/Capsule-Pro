@@ -136,7 +136,7 @@ describe("assignment-suggestions route", () => {
     vi.mocked(auth).mockResolvedValue({
       userId: "user-1",
       orgId: mockOrgId,
-    });
+    } as unknown as Awaited<ReturnType<typeof auth>>);
     vi.mocked(getTenantIdForOrg).mockResolvedValue(mockTenantId);
     // Set default mocks that return empty results
     vi.mocked(database.$queryRaw).mockResolvedValue([]);
@@ -178,7 +178,7 @@ describe("assignment-suggestions route", () => {
       vi.mocked(auth).mockResolvedValue({
         userId: "user-1",
         orgId: null,
-      });
+      } as unknown as Awaited<ReturnType<typeof auth>>);
 
       const request = new NextRequest(
         `https://example.com/api/staff/shifts/${mockShiftId}/assignment-suggestions`
@@ -417,7 +417,7 @@ describe("assignment-suggestions route", () => {
       vi.mocked(auth).mockResolvedValue({
         userId: "user-1",
         orgId: null,
-      });
+      } as unknown as Awaited<ReturnType<typeof auth>>);
 
       const request = new NextRequest(
         `https://example.com/api/staff/shifts/${mockShiftId}/assignment-suggestions`,

@@ -10,6 +10,7 @@
 import { auth } from "@repo/auth/server";
 import { database, type Event } from "@repo/database";
 import { EventDetailPDF } from "@repo/pdf";
+import { type DocumentProps } from "@react-pdf/renderer";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -336,7 +337,7 @@ export async function GET(
 
     const pdfComponent = (
       <EventDetailPDF data={pdfData} />
-    ) as React.ReactElement;
+    ) as React.ReactElement<DocumentProps>;
 
     if (shouldDownload) {
       // Return as downloadable file

@@ -21,25 +21,32 @@ describe("Snapshot TypeScript Validation", () => {
     // Use TypeScript's built-in parser to validate syntax
     const ts = await import("typescript");
 
-    // Create a source file from the snapshot
-    const sourceFile = ts.createSourceFile(
-      "snapshot.ts",
-      snapshot,
-      ts.ScriptTarget.Latest,
-      true
-    );
-
-    // Check for parse errors (syntacticDiagnostics)
-    const diagnostics = sourceFile.parseDiagnostics;
-
-    if (diagnostics && diagnostics.length > 0) {
-      const errors = diagnostics.map((d) => {
-        const message = ts.flattenDiagnosticMessageText(d.messageText, "\n");
-        return `${message} at position ${d.start}`;
-      });
-      throw new Error(
-        `TypeScript parse errors in snapshot:\n${errors.join("\n")}`
+    // Create a source file from the snapshot - this will throw on parse errors
+    let sourceFile: ts.SourceFile;
+    try {
+      sourceFile = ts.createSourceFile(
+        "snapshot.ts",
+        snapshot,
+        ts.ScriptTarget.Latest,
+        true // setParentNodes: true for better analysis
       );
+    } catch (parseError) {
+      throw new Error(`Failed to parse snapshot: ${parseError}`);
+    }
+
+    // If source file has parseDiagnostics, check for errors
+    if (sourceFile.parseDiagnostics && sourceFile.parseDiagnostics.length > 0) {
+      const errors = sourceFile.parseDiagnostics
+        .filter((d) => d.category === ts.DiagnosticCategory.Error)
+        .map((d) => {
+          const message = ts.flattenDiagnosticMessageText(d.messageText, "\n");
+          return `${message} at position ${d.start}`;
+        });
+      if (errors.length > 0) {
+        throw new Error(
+          `TypeScript parse errors in snapshot:\n${errors.join("\n")}`
+        );
+      }
     }
 
     // Verify source file was created successfully

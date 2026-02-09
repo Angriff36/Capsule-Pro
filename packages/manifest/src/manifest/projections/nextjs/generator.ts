@@ -522,14 +522,14 @@ export class NextJsProjection implements ProjectionTarget {
       "// Writes MUST flow through runtime.runCommand() to enforce guards, policies, and constraints"
     );
     lines.push("");
-    lines.push('import { NextRequest } from "next/server";');
-    lines.push(generateImport("{ createManifestRuntime }", runtimeImportPath));
+    lines.push('import type { NextRequest } from "next/server";');
     lines.push(
       generateImport(
-        "{ manifestSuccessResponse, manifestErrorResponse }",
+        "{ manifestErrorResponse, manifestSuccessResponse }",
         responseImportPath
       )
     );
+    lines.push(generateImport("{ createManifestRuntime }", runtimeImportPath));
     if (options.includeTenantFilter) {
       if (options.tenantProvider) {
         lines.push(

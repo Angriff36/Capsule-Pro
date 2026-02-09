@@ -154,7 +154,7 @@ function groupStockByItemAndLocation(
   stockRecords: Array<{
     itemId: string;
     storageLocationId: string;
-    quantity_on_hand: number | string;
+    quantity_on_hand: number | string | { toNumber: () => number };
     last_counted_at: Date | null;
   }>
 ) {
@@ -169,8 +169,14 @@ function groupStockByItemAndLocation(
       itemMap = new Map();
       stockByItemAndLocation.set(stock.itemId, itemMap);
     }
+    const quantity =
+      typeof stock.quantity_on_hand === "number"
+        ? stock.quantity_on_hand
+        : typeof stock.quantity_on_hand === "string"
+          ? Number(stock.quantity_on_hand)
+          : stock.quantity_on_hand.toNumber();
     itemMap.set(stock.storageLocationId, {
-      quantity: Number(stock.quantity_on_hand),
+      quantity,
       lastCountedAt: stock.last_counted_at,
     });
   }
@@ -209,9 +215,9 @@ function createStockLevel(
     item_number: string;
     name: string;
     category: string | null;
-    quantityOnHand: number | string;
-    reorder_level: number | null;
-    unitCost: number | string;
+    quantityOnHand: number | string | { toNumber: () => number };
+    reorder_level: number | null | { toNumber: () => number };
+    unitCost: number | string | { toNumber: () => number };
     createdAt: Date;
     updatedAt: Date;
   },
@@ -220,12 +226,20 @@ function createStockLevel(
   parLevel: number | null,
   totalValueItem: number,
   reorderStatus: StockReorderStatus,
-  parStatus: string,
+  parStatus: "below_par" | "at_par" | "above_par" | "no_par_set",
   stockOutRisk: boolean,
   locationFilter: string | null,
   locationStock?: { quantity: number; lastCountedAt: Date | null },
   storageLocation?: { id: string; name: string }
 ): StockLevelWithStatus {
+  const toNumber = (
+    value: number | string | { toNumber: () => number }
+  ): number => {
+    if (typeof value === "number") return value;
+    if (typeof value === "string") return Number(value);
+    return value.toNumber();
+  };
+
   return {
     tenantId: item.tenantId,
     id: item.id,
@@ -241,8 +255,8 @@ function createStockLevel(
       id: item.id,
       itemNumber: item.item_number,
       name: item.name,
-      category: item.category,
-      unitCost: Number(item.unitCost),
+      category: item.category ?? "Uncategorized",
+      unitCost: toNumber(item.unitCost),
       unit: null,
     },
     storageLocation: storageLocation

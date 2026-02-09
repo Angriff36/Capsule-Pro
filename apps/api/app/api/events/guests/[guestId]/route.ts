@@ -118,9 +118,11 @@ function setValidatedField<T>(
   if (error) {
     return { success: false, error };
   }
-  updateData[key] = transformer
+  // Use Object.assign to handle the assignment of union types in a type-safe way
+  const result = transformer
     ? transformer(value)
     : (value as UpdateGuestData[keyof UpdateGuestData]);
+  Object.assign(updateData, { [key]: result });
   return null;
 }
 
@@ -160,7 +162,7 @@ function buildUpdateData(body: UpdateGuestData): ValidationResult {
 
   // Validate and set required fields
   let error = setValidatedField(
-    body.guestName,
+    updateData,
     "guestName",
     body.guestName,
     validateGuestName,
@@ -171,7 +173,7 @@ function buildUpdateData(body: UpdateGuestData): ValidationResult {
   }
 
   error = setValidatedField(
-    body.guestEmail,
+    updateData,
     "guestEmail",
     body.guestEmail,
     validateGuestEmail,
@@ -182,7 +184,7 @@ function buildUpdateData(body: UpdateGuestData): ValidationResult {
   }
 
   error = setValidatedField(
-    body.guestPhone,
+    updateData,
     "guestPhone",
     body.guestPhone,
     validateGuestPhone,
@@ -193,7 +195,7 @@ function buildUpdateData(body: UpdateGuestData): ValidationResult {
   }
 
   error = setValidatedField(
-    body.dietaryRestrictions,
+    updateData,
     "dietaryRestrictions",
     body.dietaryRestrictions,
     validateDietaryRestrictions,
@@ -206,7 +208,7 @@ function buildUpdateData(body: UpdateGuestData): ValidationResult {
   }
 
   error = setValidatedField(
-    body.allergenRestrictions,
+    updateData,
     "allergenRestrictions",
     body.allergenRestrictions,
     validateAllergenRestrictions,

@@ -2,9 +2,9 @@
 // Generated from Manifest IR - DO NOT EDIT
 // Writes MUST flow through runtime.runCommand() to enforce guards, policies, and constraints
 
+import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
-import { getUser } from "@/lib/auth";
-import { database } from "@/lib/database";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -13,21 +13,16 @@ import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUser(request);
-    if (!user?.id) {
+    const { orgId, userId } = await auth();
+    if (!(userId && orgId)) {
       return manifestErrorResponse("Unauthorized", 401);
     }
-    const userId = user.id;
 
-    const userMapping = await database.userTenantMapping.findUnique({
-      where: { userId },
-    });
+    const tenantId = await getTenantIdForOrg(orgId);
 
-    if (!userMapping) {
-      return manifestErrorResponse("User not mapped to tenant", 400);
+    if (!tenantId) {
+      return manifestErrorResponse("Tenant not found", 400);
     }
-
-    const { tenantId } = userMapping;
 
     const body = await request.json();
 

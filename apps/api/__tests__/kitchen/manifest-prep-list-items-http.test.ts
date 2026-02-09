@@ -12,6 +12,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
 
 // Mock auth module
 vi.mock("@repo/auth/server", () => ({
@@ -70,13 +71,13 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/prep-lists/items/commands/mark-completed/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/mark-completed",
         {
           method: "POST",
@@ -103,7 +104,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         "@/app/api/kitchen/prep-lists/items/commands/mark-completed/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/mark-completed",
         {
           method: "POST",
@@ -161,7 +162,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         "@/app/api/kitchen/prep-lists/items/commands/mark-completed/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/mark-completed",
         {
           method: "POST",
@@ -204,13 +205,13 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/prep-lists/items/commands/mark-uncompleted/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/mark-uncompleted",
         {
           method: "POST",
@@ -236,7 +237,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         "@/app/api/kitchen/prep-lists/items/commands/mark-uncompleted/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/mark-uncompleted",
         {
           method: "POST",
@@ -293,7 +294,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         "@/app/api/kitchen/prep-lists/items/commands/mark-uncompleted/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/mark-uncompleted",
         {
           method: "POST",
@@ -335,13 +336,13 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/prep-lists/items/commands/update-prep-notes/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/update-prep-notes",
         {
           method: "POST",
@@ -369,7 +370,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         "@/app/api/kitchen/prep-lists/items/commands/update-prep-notes/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/update-prep-notes",
         {
           method: "POST",
@@ -427,7 +428,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         "@/app/api/kitchen/prep-lists/items/commands/update-prep-notes/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/update-prep-notes",
         {
           method: "POST",
@@ -471,13 +472,13 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/prep-lists/items/commands/update-quantity/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/update-quantity",
         {
           method: "POST",
@@ -507,7 +508,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         "@/app/api/kitchen/prep-lists/items/commands/update-quantity/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/update-quantity",
         {
           method: "POST",
@@ -569,7 +570,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         "@/app/api/kitchen/prep-lists/items/commands/update-quantity/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/update-quantity",
         {
           method: "POST",
@@ -615,13 +616,13 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
         {
           method: "POST",
@@ -649,7 +650,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
         {
           method: "POST",
@@ -706,7 +707,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
         {
           method: "POST",

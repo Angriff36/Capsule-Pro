@@ -3,6 +3,13 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
+interface MonthlyTrend {
+  month: string;
+  totalCost: number;
+  totalQuantity: number;
+  count: number;
+}
+
 /**
  * GET /api/kitchen/waste/reports
  * Generate waste reports with filtering options
@@ -138,12 +145,6 @@ export async function GET(request: Request) {
   });
 
   // Calculate trends by month
-  interface MonthlyTrend {
-    month: string;
-    totalCost: number;
-    totalQuantity: number;
-    count: number;
-  }
   const monthlyTrends: Record<string, MonthlyTrend> = {};
   for (const entry of entries) {
     const date = new Date(entry.loggedAt);

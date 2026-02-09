@@ -7,6 +7,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
 
 // Mock auth module
 vi.mock("@repo/auth/server", () => ({
@@ -66,13 +67,13 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
       vi.mocked(auth).mockResolvedValueOnce({
         orgId: null,
         userId: null,
-      });
+      } as never);
 
       const { POST } = await import(
         "@/app/api/kitchen/recipes/versions/commands/create/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/versions/commands/create",
         {
           method: "POST",
@@ -106,7 +107,7 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
         "@/app/api/kitchen/recipes/versions/commands/create/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/versions/commands/create",
         {
           method: "POST",
@@ -174,7 +175,7 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
         "@/app/api/kitchen/recipes/versions/commands/create/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/versions/commands/create",
         {
           method: "POST",
@@ -248,7 +249,7 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
         "@/app/api/kitchen/recipes/versions/commands/create/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/versions/commands/create",
         {
           method: "POST",
@@ -324,7 +325,7 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
         "@/app/api/kitchen/recipes/versions/commands/create/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/versions/commands/create",
         {
           method: "POST",
@@ -378,7 +379,7 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
         "@/app/api/kitchen/recipes/versions/commands/create/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/versions/commands/create",
         {
           method: "POST",
@@ -427,7 +428,7 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
         "@/app/api/kitchen/recipes/versions/commands/create/route"
       );
 
-      const request = new Request(
+      const request = new NextRequest(
         "http://localhost/api/kitchen/recipes/versions/commands/create",
         {
           method: "POST",

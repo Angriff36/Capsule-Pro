@@ -5,6 +5,7 @@
 import { database, Prisma } from "@repo/database";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "../../../app/api/kitchen/recipes/[recipeId]/ingredients/route";
+import { NextRequest } from "next/server";
 
 vi.mock("@repo/auth/server", () => ({
   auth: vi.fn().mockResolvedValue({ orgId: "org-1" }),
@@ -35,17 +36,20 @@ describe("recipe ingredients API query", () => {
         },
       })
     );
-    (Prisma as { sql: typeof sqlImpl }).sql = sqlImpl;
+    (Prisma as unknown as { sql: typeof sqlImpl }).sql = sqlImpl;
 
     const queryRawSpy = vi.spyOn(database, "$queryRaw");
     queryRawSpy.mockResolvedValueOnce([]);
 
-    await GET(new Request("http://localhost"), {
+    await GET(new NextRequest("http://localhost"), {
       params: Promise.resolve({ recipeId: "recipe-1" }),
     });
 
     const sql = queryRawSpy.mock.calls[0]?.[0];
-    const sqlText = sql?.strings?.join("") ?? "";
+    const sqlText =
+      sql && typeof sql === "object" && "sql" in sql
+        ? sql.sql
+        : (sql as { strings?: TemplateStringsArray })?.strings?.join("") ?? "";
 
     expect(sqlText).toContain("ri.preparation_notes");
     expect(sqlText).toContain("ri.sort_order");

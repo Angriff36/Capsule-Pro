@@ -4,14 +4,14 @@
  * Tests for event-driven prep list generation functionality.
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { database, type OutboxStatus } from "@repo/database";
 import {
   generatePrepListImmediately,
+  type PrepListAutoGenerationInput,
   processPendingPrepListGenerations,
   triggerPrepListAutoGeneration,
-  type PrepListAutoGenerationInput,
 } from "@repo/kitchen-ops";
-import { database } from "@repo/database";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the database
 vi.mock("@repo/database", () => ({
@@ -267,7 +267,7 @@ describe("Prep List Auto-Generation", () => {
         aggregateId: `event-${i}`,
         eventType: "event.prep-list.requested",
         payload: { eventId: `event-${i}` },
-        status: "pending",
+        status: "pending" as OutboxStatus,
         createdAt: new Date(),
         publishedAt: null,
         error: null,
@@ -341,9 +341,9 @@ describe("Prep List Auto-Generation", () => {
     });
 
     it("should handle generation errors", async () => {
-      const mockGenerateFn = vi.fn().mockRejectedValue(
-        new Error("Generation error")
-      );
+      const mockGenerateFn = vi
+        .fn()
+        .mockRejectedValue(new Error("Generation error"));
 
       const result = await generatePrepListImmediately(
         {

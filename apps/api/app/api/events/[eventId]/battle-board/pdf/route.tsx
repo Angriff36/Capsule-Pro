@@ -370,7 +370,6 @@ async function generateDownloadResponse(
   eventTitle: string
 ) {
   const { pdf } = await import("@react-pdf/renderer");
-  // @ts-expect-error React type mismatch between @types/react 19 and @react-pdf/renderer
   const doc = await pdf(pdfComponent);
   const blob = await doc.toBlob();
 
@@ -390,7 +389,6 @@ async function generateBase64Response(
   eventTitle: string
 ) {
   const { pdf } = await import("@react-pdf/renderer");
-  // @ts-expect-error React type mismatch between @types/react 19 and @react-pdf/renderer
   const doc = await pdf(pdfComponent);
   const blob = await doc.toBlob();
   const arrayBuffer = await blob.arrayBuffer();
