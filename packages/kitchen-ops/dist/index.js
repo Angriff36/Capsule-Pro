@@ -1635,3 +1635,5 @@ export function formatPolicyDenial(denial) {
 }
 // ============ Prisma Store Exports ============
 export { createPrismaStoreProvider, loadMenuDishFromPrisma, loadMenuFromPrisma, loadPrepListFromPrisma, loadPrepListItemFromPrisma, loadPrepTaskFromPrisma, MenuDishPrismaStore, MenuPrismaStore, PrepListItemPrismaStore, PrepListPrismaStore, PrepTaskPrismaStore, syncMenuDishToPrisma, syncMenuToPrisma, syncPrepListItemToPrisma, syncPrepListToPrisma, syncPrepTaskToPrisma, } from "./prisma-store.js";
+// ============ Prep List Auto-Generation Exports ============
+export { generatePrepListImmediately, processPendingPrepListGenerations, triggerPrepListAutoGeneration, } from "./prep-list-autogeneration.js";

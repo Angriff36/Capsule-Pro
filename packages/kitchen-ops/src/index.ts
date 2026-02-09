@@ -2675,3 +2675,13 @@ export {
   syncPrepListToPrisma,
   syncPrepTaskToPrisma,
 } from "./prisma-store.js";
+
+// ============ Prep List Auto-Generation Exports ============
+
+export {
+  generatePrepListImmediately,
+  processPendingPrepListGenerations,
+  triggerPrepListAutoGeneration,
+  type PrepListAutoGenerationInput,
+  type PrepListAutoGenerationResult,
+} from "./prep-list-autogeneration.js";

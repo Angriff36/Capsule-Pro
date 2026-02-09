@@ -620,4 +620,5 @@ export declare function formatPolicyDenial(denial: NonNullable<CommandResultWith
     }>;
 };
 export { createPrismaStoreProvider, loadMenuDishFromPrisma, loadMenuFromPrisma, loadPrepListFromPrisma, loadPrepListItemFromPrisma, loadPrepTaskFromPrisma, MenuDishPrismaStore, MenuPrismaStore, PrepListItemPrismaStore, PrepListPrismaStore, PrepTaskPrismaStore, syncMenuDishToPrisma, syncMenuToPrisma, syncPrepListItemToPrisma, syncPrepListToPrisma, syncPrepTaskToPrisma, } from "./prisma-store.js";
+export { generatePrepListImmediately, processPendingPrepListGenerations, triggerPrepListAutoGeneration, type PrepListAutoGenerationInput, type PrepListAutoGenerationResult, } from "./prep-list-autogeneration.js";
 //# sourceMappingURL=index.d.ts.map

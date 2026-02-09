@@ -22,6 +22,8 @@ import {
   buildInitialChecklist,
   processMultipleDocuments,
 } from "@repo/event-parser";
+import { createOutboxEvent } from "@repo/realtime";
+import { triggerPrepListAutoGeneration } from "@repo/kitchen-ops";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -326,7 +328,8 @@ async function createEventFromParsedData(
   mergedEvent: ParsedEvent,
   tenantId: string,
   files: File[],
-  missingFields: MissingField[]
+  missingFields: MissingField[],
+  userId?: string
 ): Promise<string> {
   const derivedTitle = deriveEventTitle(mergedEvent, files);
   const parsedDate = parseEventDate(mergedEvent.date);
@@ -353,6 +356,34 @@ async function createEventFromParsedData(
       tags: buildEventTags(["imported"], missingFields),
     },
   });
+
+  // Create outbox event for event creation
+  await createOutboxEvent(database, {
+    tenantId,
+    aggregateType: "Event",
+    aggregateId: newEvent.id,
+    eventType: "event.created",
+    payload: {
+      eventId: newEvent.id,
+      title: derivedTitle,
+      status: newEvent.status,
+      guestCount: mergedEvent.headcount > 0 ? mergedEvent.headcount : 0,
+      eventDate: eventDate.toISOString(),
+      createdBy: userId,
+    },
+  });
+
+  // Trigger prep list auto-generation for confirmed events
+  if (newEvent.status === "confirmed" && userId) {
+    await triggerPrepListAutoGeneration({
+      db: database,
+      tenantId,
+      eventId: newEvent.id,
+      eventTitle: derivedTitle,
+      guestCount: mergedEvent.headcount > 0 ? mergedEvent.headcount : 0,
+      userId,
+    });
+  }
 
   return newEvent.id;
 }
@@ -757,7 +788,8 @@ export async function POST(request: Request) {
         result.mergedEvent,
         tenantId,
         files,
-        missingFields
+        missingFields,
+        userId
       );
       await updateImportRecordsWithEvent(importRecords, resolvedEventId);
     }
