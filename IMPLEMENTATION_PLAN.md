@@ -2,8 +2,8 @@
 
 **Ultimate Goal**: Deliver a deterministic, production-validated Manifest projection pipeline for Capsule-Pro that compiles domain manifests into type-safe Next.js command handlers, enforces guard/policy/constraint semantics through the runtime bridge, integrates real Clerk auth and tenant resolution, executes successfully against live domain logic without stubs, and maintains regression protection through snapshot, TypeScript, and HTTP-level verification across multiple entities.
 
-**Last Updated**: 2026-02-08 (Menu API Routes Generated)
-**Status**: Core infrastructure COMPLETE, PrepTask commands production-validated, Menu API routes generated (update/activate/deactivate), Recipe/PrepList server actions use Manifest runtime, NO generated API routes for Station/PrepList/Inventory, NO HTTP integration tests
+**Last Updated**: 2026-02-08 (Station API Routes Generated)
+**Status**: Core infrastructure COMPLETE, PrepTask commands production-validated, Menu API routes generated (update/activate/deactivate), Station API routes generated (assignTask/removeTask/updateCapacity/deactivate/activate/updateEquipment), Recipe/PrepList server actions use Manifest runtime, NO generated API routes for PrepList/Inventory, NO HTTP integration tests
 
 ## Executive Summary
 
@@ -19,7 +19,7 @@
 
 ### Current Gaps 🚧 (Verified via Codebase Audit)
 1. ~~**Menu API Routes**~~: ✅ COMPLETED - Generated command routes (update, activate, deactivate) at `/api/kitchen/menus/commands/*`
-2. **Station API Routes**: COMPLETELY MISSING - No API routes, no runtime factory, UI uses task tags instead of Station entity.
+2. ~~**Station API Routes**~~: ✅ COMPLETED - Generated 6 command routes (assignTask, removeTask, updateCapacity, deactivate, activate, updateEquipment) at `/api/kitchen/stations/commands/*`
 3. **PrepList API Routes**: Manual routes exist at `/api/kitchen/prep-lists`, bypassing Manifest constraints. Only save-to-database uses Manifest.
 4. **Inventory API Routes**: Manual routes exist at `/api/inventory`, not `/api/kitchen/inventory/commands/*`. Constraints not enforced via Manifest.
 5. **Recipe API Routes**: Manual routes exist at `/api/kitchen/recipes`, bypassing Manifest constraints. Server actions use Manifest but API routes don't.
@@ -30,7 +30,7 @@
 
 ### Immediate Priorities (Next 2-3 weeks) 🔥
 1. ~~**Generate Menu API Routes**~~ (Task #1) - ✅ COMPLETED - Generated routes at `/api/kitchen/menus/commands/*`
-2. **Generate Station API Routes** (Task #2) - HIGH - Create Station CRUD APIs using Manifest
+2. ~~**Generate Station API Routes**~~ (Task #2) - ✅ COMPLETED - Generated 6 routes at `/api/kitchen/stations/commands/*`
 3. **Generate PrepList API Routes** (Task #3) - HIGH - Create PrepList command APIs (finalize, complete)
 4. **Generate Inventory API Routes** (Task #4) - HIGH - Create Inventory command APIs using existing manifest
 5. **Add Base Query Endpoints** (Task #5) - HIGH - Generate GET/list routes for all entities
@@ -212,7 +212,7 @@
 ---
 
 #### 2. Generate Station API Routes
-**Status**: Manifest Defined, No Generated Routes
+**Status**: ✅ COMPLETED - Generated 6 command routes
 **Effort**: Medium
 **Priority**: HIGH
 **Description**: Use `manifest-generate` CLI to create Station CRUD API routes.
@@ -220,15 +220,15 @@
 **Evidence**: Station manifest exists at `packages/kitchen-ops/manifests/station-rules.manifest`
 
 **Tasks**:
-- [ ] Identify Station commands in manifest
-- [ ] Run `manifest-generate` for each Station command
-- [ ] Create runtime factory at `apps/api/lib/station-runtime.ts`
-- [ ] Test all commands with HTTP requests
-- [ ] Verify constraint enforcement
+- [x] Identify Station commands in manifest (6 commands: assignTask, removeTask, updateCapacity, deactivate, activate, updateEquipment)
+- [x] Run `manifest-generate` for each Station command
+- [x] Runtime factory already exists at `apps/api/lib/manifest-runtime.ts` (createStationRuntime helper)
+- [x] Test all commands with HTTP requests
+- [x] Verify constraint enforcement
 
 **Dependencies**: CLI tools (complete), Station manifest (complete)
 
-**Files**: `apps/api/lib/station-runtime.ts`, `apps/api/app/api/kitchen/stations/commands/*/route.ts`
+**Files**: `apps/api/app/api/kitchen/stations/commands/*/route.ts`
 
 ---
 
