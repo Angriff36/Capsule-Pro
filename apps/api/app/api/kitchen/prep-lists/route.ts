@@ -1,104 +1,228 @@
+/**
+ * @module PrepListsAPI
+ * @intent List prep lists with pagination and filtering
+ * @responsibility Provide paginated list of prep lists for the current tenant
+ * @domain Kitchen
+ * @tags prep-lists, api, list
+ * @canonical true
+ */
+
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+
+interface PrepListListFilters {
+  eventId?: string;
+  status?: string;
+  station?: string;
+  search?: string;
+}
+
+interface PaginationParams {
+  page: number;
+  limit: number;
+}
+
+/**
+ * Parse and validate prep list filters from URL search params
+ */
+function parsePrepListFilters(
+  searchParams: URLSearchParams
+): PrepListListFilters {
+  const filters: PrepListListFilters = {};
+
+  const eventId = searchParams.get("eventId");
+  if (eventId) {
+    filters.eventId = eventId;
+  }
+
+  const status = searchParams.get("status");
+  if (status) {
+    filters.status = status;
+  }
+
+  const station = searchParams.get("station");
+  if (station) {
+    filters.station = station;
+  }
+
+  const search = searchParams.get("search");
+  if (search) {
+    filters.search = search;
+  }
+
+  return filters;
+}
+
+/**
+ * Parse pagination parameters from URL search params
+ */
+function parsePaginationParams(
+  searchParams: URLSearchParams
+): PaginationParams {
+  const page = Number.parseInt(searchParams.get("page") || "1", 10);
+  const limit = Math.min(
+    Math.max(Number.parseInt(searchParams.get("limit") || "20", 10), 1),
+    100
+  );
+
+  return { page, limit };
+}
 
 /**
  * GET /api/kitchen/prep-lists
- * List all prep lists for the current tenant
+ * List prep lists with pagination and filters
  */
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
     const { orgId } = await auth();
-
     if (!orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     const { searchParams } = new URL(request.url);
-    const eventId = searchParams.get("eventId");
-    const status = searchParams.get("status");
-    const station = searchParams.get("station");
 
-    // Build dynamic SQL for filters
-    const filters: string[] = [];
-    const values: (string | number)[] = [tenantId];
+    // Parse filters and pagination
+    const filters = parsePrepListFilters(searchParams);
+    const { page, limit } = parsePaginationParams(searchParams);
+    const offset = (page - 1) * limit;
 
-    if (eventId) {
-      filters.push(`AND pl.event_id = $${values.length + 1}`);
-      values.push(eventId);
-    }
-    if (status) {
-      filters.push(`AND pl.status = $${values.length + 1}`);
-      values.push(status);
-    }
+    // Build where clause
+    const whereClause: Record<string, unknown> = {
+      AND: [{ tenantId }, { deletedAt: null }],
+    };
 
-    const filterClause = filters.join(" ");
-    const sql = `
-      SELECT
-        pl.id,
-        pl.name,
-        pl.event_id,
-        e.title AS event_title,
-        e.event_date,
-        pl.batch_multiplier,
-        pl.dietary_restrictions,
-        pl.status,
-        pl.total_items,
-        pl.total_estimated_time,
-        pl.generated_at,
-        pl.finalized_at,
-        pl.created_at
-      FROM tenant_kitchen.prep_lists pl
-      JOIN tenant_events.events e
-        ON e.tenant_id = pl.tenant_id
-        AND e.id = pl.event_id
-        AND e.deleted_at IS NULL
-      WHERE pl.tenant_id = $1
-        AND pl.deleted_at IS NULL
-        ${filterClause}
-      ORDER BY pl.generated_at DESC
-    `;
-
-    const prepLists = await database.$queryRawUnsafe<
-      Array<{
-        id: string;
-        name: string;
-        eventId: string;
-        eventTitle: string;
-        eventDate: Date;
-        batchMultiplier: number;
-        dietaryRestrictions: string[];
-        status: string;
-        totalItems: number;
-        totalEstimatedTime: number;
-        generatedAt: Date;
-        finalizedAt: Date | null;
-        createdAt: Date;
-      }>
-    >(sql, values);
-
-    // If station filter is provided, we need to check if any items match
-    let filteredLists = prepLists;
-    if (station) {
-      const listIds = await database.$queryRaw<Array<{ prep_list_id: string }>>`
-        SELECT DISTINCT prep_list_id
-        FROM tenant_kitchen.prep_list_items
-        WHERE tenant_id = ${tenantId}
-          AND deleted_at IS NULL
-          AND station_id = ${station}
-      `;
-
-      const listIdSet = new Set(listIds.map((l) => l.prep_list_id.toString()));
-      filteredLists = prepLists.filter((pl) => listIdSet.has(pl.id));
+    // Add eventId filter
+    if (filters.eventId) {
+      whereClause.AND = [
+        ...(whereClause.AND as Record<string, unknown>[]),
+        { eventId: filters.eventId },
+      ];
     }
 
-    return NextResponse.json({ prepLists: filteredLists });
+    // Add status filter
+    if (filters.status) {
+      whereClause.AND = [
+        ...(whereClause.AND as Record<string, unknown>[]),
+        { status: filters.status },
+      ];
+    }
+
+    // Add search filter (searches in name)
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      whereClause.AND = [
+        ...(whereClause.AND as Record<string, unknown>[]),
+        { name: { contains: searchLower, mode: "insensitive" } },
+      ];
+    }
+
+    // If station filter is provided, we need to filter prep lists that have items at that station
+    let prepListIdsForStation: string[] | undefined;
+    if (filters.station) {
+      const stationItems = await database.prepListItem.findMany({
+        where: {
+          tenantId,
+          stationId: filters.station,
+          deletedAt: null,
+        },
+        select: { prepListId: true },
+        distinct: ["prepListId"],
+      });
+
+      prepListIdsForStation = stationItems.map((item) => item.prepListId);
+
+      // If no prep lists have items at this station, return empty result
+      if (prepListIdsForStation.length === 0) {
+        return NextResponse.json({
+          data: [],
+          pagination: {
+            page,
+            limit,
+            total: 0,
+            totalPages: 0,
+          },
+        });
+      }
+
+      // Add station filter via prep list IDs
+      whereClause.AND = [
+        ...(whereClause.AND as Record<string, unknown>[]),
+        { id: { in: prepListIdsForStation } },
+      ];
+    }
+
+    // Fetch prep lists
+    const prepLists = await database.prepList.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        eventId: true,
+        name: true,
+        batchMultiplier: true,
+        dietaryRestrictions: true,
+        status: true,
+        totalItems: true,
+        totalEstimatedTime: true,
+        notes: true,
+        generatedAt: true,
+        finalizedAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: [{ generatedAt: "desc" }],
+      take: limit,
+      skip: offset,
+    });
+
+    // Get total count for pagination
+    const totalCount = await database.prepList.count({
+      where: whereClause,
+    });
+
+    const totalPages = Math.ceil(totalCount / limit);
+
+    // Fetch event titles for the prep lists
+    const eventIds = [...new Set(prepLists.map((pl) => pl.eventId))];
+    const events = await database.event.findMany({
+      where: {
+        id: { in: eventIds },
+        tenantId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        title: true,
+        eventDate: true,
+      },
+    });
+
+    const eventMap = new Map(
+      events.map((e) => [e.id, { title: e.title, eventDate: e.eventDate }])
+    );
+
+    // Add event data to each prep list
+    const prepListsWithEvents = prepLists.map((prepList) => ({
+      ...prepList,
+      batchMultiplier: Number(prepList.batchMultiplier),
+      event: eventMap.get(prepList.eventId) || null,
+    }));
+
+    return NextResponse.json({
+      data: prepListsWithEvents,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        totalPages,
+      },
+    });
   } catch (error) {
     console.error("Error listing prep lists:", error);
     return NextResponse.json(
-      { error: "Failed to list prep lists" },
+      { message: "Internal server error" },
       { status: 500 }
     );
   }
@@ -108,7 +232,7 @@ export async function GET(request: NextRequest) {
  * POST /api/kitchen/prep-lists
  * Create a new prep list
  */
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const { orgId, userId } = await auth();
 
@@ -133,84 +257,50 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create the prep list
-    const prepListResult = await database.$queryRaw<
-      Array<{ id: string; generated_at: Date }>
-    >`
-      INSERT INTO tenant_kitchen.prep_lists (
-        tenant_id,
-        event_id,
+    // Create the prep list using Prisma
+    const prepList = await database.prepList.create({
+      data: {
+        tenantId,
+        eventId,
         name,
-        batch_multiplier,
-        dietary_restrictions,
-        status,
-        total_items,
-        total_estimated_time
-      ) VALUES (
-        ${tenantId},
-        ${eventId},
-        ${name},
-        ${batchMultiplier},
-        ${dietaryRestrictions},
-        'draft',
-        ${items.length},
-        0
-      )
-      RETURNING id, generated_at
-    `;
-
-    const prepListId = prepListResult[0].id;
+        batchMultiplier,
+        dietaryRestrictions,
+        status: "draft",
+        totalItems: items.length,
+        totalEstimatedTime: 0,
+      },
+    });
 
     // Create prep list items
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      await database.$executeRaw`
-        INSERT INTO tenant_kitchen.prep_list_items (
-          tenant_id,
-          prep_list_id,
-          station_id,
-          station_name,
-          ingredient_id,
-          ingredient_name,
-          category,
-          base_quantity,
-          base_unit,
-          scaled_quantity,
-          scaled_unit,
-          is_optional,
-          preparation_notes,
-          allergens,
-          dietary_substitutions,
-          dish_id,
-          dish_name,
-          recipe_version_id,
-          sort_order
-        ) VALUES (
-          ${tenantId},
-          ${prepListId},
-          ${item.stationId},
-          ${item.stationName},
-          ${item.ingredientId},
-          ${item.ingredientName},
-          ${item.category || null},
-          ${item.baseQuantity},
-          ${item.baseUnit},
-          ${item.scaledQuantity},
-          ${item.scaledUnit},
-          ${item.isOptional},
-          ${item.preparationNotes || null},
-          ${item.allergens || []},
-          ${item.dietarySubstitutions || []},
-          ${item.dishId || null},
-          ${item.dishName || null},
-          ${item.recipeVersionId || null},
-          ${i}
-        )
-      `;
+      await database.prepListItem.create({
+        data: {
+          tenantId,
+          prepListId: prepList.id,
+          stationId: item.stationId,
+          stationName: item.stationName,
+          ingredientId: item.ingredientId,
+          ingredientName: item.ingredientName,
+          category: item.category || null,
+          baseQuantity: item.baseQuantity,
+          baseUnit: item.baseUnit,
+          scaledQuantity: item.scaledQuantity,
+          scaledUnit: item.scaledUnit,
+          isOptional: item.isOptional,
+          preparationNotes: item.preparationNotes || null,
+          allergens: item.allergens || [],
+          dietarySubstitutions: item.dietarySubstitutions || [],
+          dishId: item.dishId || null,
+          dishName: item.dishName || null,
+          recipeVersionId: item.recipeVersionId || null,
+          sortOrder: i,
+        },
+      });
     }
 
     return NextResponse.json({
-      id: prepListId,
+      id: prepList.id,
       message: "Prep list created successfully",
     });
   } catch (error) {

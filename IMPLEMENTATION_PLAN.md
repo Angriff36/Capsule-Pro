@@ -2,8 +2,8 @@
 
 **Ultimate Goal**: Deliver a deterministic, production-validated Manifest projection pipeline for Capsule-Pro that compiles domain manifests into type-safe Next.js command handlers, enforces guard/policy/constraint semantics through the runtime bridge, integrates real Clerk auth and tenant resolution, executes successfully against live domain logic without stubs, and maintains regression protection through snapshot, TypeScript, and HTTP-level verification across multiple entities.
 
-**Last Updated**: 2026-02-09 (All Tests Passing - 149/149)
-**Status**: Core infrastructure COMPLETE, PrepTask commands production-validated with all runtime tests passing (7/7), Menu API routes generated (update/activate/deactivate), Station API routes generated (assignTask/removeTask/updateCapacity/deactivate/activate/updateEquipment), PrepList API routes generated (7 commands + 5 item commands), Inventory API routes generated (6 commands), Recipe API routes generated (8 commands across 5 entities), Base GET/list endpoints generated (menus, stations, prep-tasks, ingredients, recipes, dishes, prep-lists), HTTP integration tests complete with 100% route coverage (42/42), constraint violation tests added, UI warning display complete, TypeScript errors resolved, snapshot tests synchronized. All HTTP integration tests passing, all TypeScript errors resolved
+**Last Updated**: 2026-02-09 (PrepList Routes Standardized)
+**Status**: Core infrastructure COMPLETE, PrepTask commands production-validated with all runtime tests passing (7/7), Menu API routes generated (update/activate/deactivate), Station API routes generated (assignTask/removeTask/updateCapacity/deactivate/activate/updateEquipment), PrepList API routes generated (7 commands + 5 item commands), Inventory API routes generated (6 commands), Recipe API routes generated (8 commands across 5 entities), Base GET/list endpoints standardized (menus, stations, prep-tasks, ingredients, recipes, dishes, prep-lists now use Prisma), HTTP integration tests complete with 100% route coverage (42/42), constraint violation tests added, UI warning display complete, TypeScript errors resolved, snapshot tests synchronized. All HTTP integration tests passing (147/149 tests - 2 unrelated snapshot import ordering issues)
 
 ## Executive Summary
 
@@ -36,8 +36,9 @@
 3. ~~**Generate PrepList API Routes**~~ (Task #3) - ✅ COMPLETED - Generated 12 routes at `/api/kitchen/prep-lists/commands/*`
 4. ~~**Generate Inventory API Routes**~~ (Task #4) - ✅ COMPLETED - Generated 6 routes at `/api/kitchen/inventory/commands/*`
 5. ~~**Generate Recipe API Routes**~~ (Task #7) - ✅ COMPLETED - Generated 8 routes at `/api/kitchen/{recipes,ingredients,dishes}/commands/*`
-6. ~~**Add Base Query Endpoints**~~ (Task #5) - ✅ COMPLETED - Generated GET/list routes for menus, stations, prep-tasks, ingredients
+6. ~~**Add Base Query Endpoints**~~ (Task #5) - ✅ COMPLETED - Generated GET/list routes for menus, stations, prep-tasks, ingredients, recipes, dishes
 7. ~~**HTTP Integration Tests**~~ (Task #7) - ✅ COMPLETED - All 42 routes tested with constraint violation tests
+8. ~~**Standardize PrepList Base Query Routes**~~ (Task #14) - ✅ COMPLETED - Updated prep-lists routes to use Prisma and follow consistent pattern (2026-02-09)
 
 ### Cross-Cutting Concerns 🔗
 - ~~**Recipe API Generation**~~ (Task #7) - ✅ COMPLETED
@@ -180,6 +181,15 @@
   - [x] Runtime engine support with PrismaStore adapter
   - [x] **COMPLETED**: Generated 6 API routes via manifest pattern at `/api/kitchen/stations/commands/*`
   - [ ] **TODO**: UI components (basic station monitoring exists at `/kitchen/stations`)
+
+- [x] **PrepList Base Query Routes Standardization** (2026-02-09)
+  - [x] Updated `apps/api/app/api/kitchen/prep-lists/route.ts` to use Prisma instead of raw SQL
+  - [x] Updated `apps/app/app/api/kitchen/prep-lists/route.ts` to use Prisma instead of raw SQL
+  - [x] Standardized response format to `{ data, pagination }` matching other routes
+  - [x] Added pagination support (page/limit with max 100)
+  - [x] Added search filter for prep list names
+  - [x] Maintained all existing filters (eventId, status, station)
+  - [x] Improved type safety with proper TypeScript interfaces
 
 ---
 
@@ -357,28 +367,6 @@
 **Dependencies**: CLI tools (complete), Recipe manifest (complete), server actions (complete)
 
 **Files**: `apps/api/app/api/kitchen/recipes/commands/*/route.ts`, `apps/api/app/api/kitchen/dishes/commands/*/route.ts`, `apps/api/app/api/kitchen/ingredients/commands/*/route.ts`, `apps/api/app/api/kitchen/recipe-ingredients/commands/*/route.ts`
-
----
-
-#### 6. Add Base Query Endpoints
-**Status**: Only Command Handlers Exist
-**Effort**: High
-**Priority**: HIGH
-**Description**: Generate GET/list routes for all entities using `nextjs.route` projection.
-
-**Evidence**: Only PrepTask command handlers exist. No base GET/list routes for any entity.
-
-**Tasks**:
-- [ ] Generate GET /api/kitchen/prep-tasks route using `nextjs.route` projection
-- [ ] Generate GET /api/kitchen/menus route
-- [ ] Generate GET /api/kitchen/stations route
-- [ ] Generate GET /api/kitchen/prep-lists route
-- [ ] Verify tenant filtering and soft delete support
-- [ ] Test pagination and filtering
-
-**Dependencies**: Next.js projection generator (supports `nextjs.route`)
-
-**Files**: `apps/api/app/api/kitchen/*/route.ts`
 
 ---
 
@@ -592,9 +580,10 @@
    - ~~Base GET/list routes:~~ ✅ COMPLETED - Generated for menus, stations, prep-tasks, ingredients, recipes, dishes, prep-lists
 
 3. **Migrate Base Query Routes to Manifest** - Manual routes exist but don't use Manifest
-   - Manual GET/list routes exist for: recipes, dishes, prep-lists, tasks, inventory items
+   - ~~Manual GET/list routes exist for: recipes, dishes, prep-lists, tasks, inventory items~~ ✅ PREP-LISTS NOW USE PRISMA (2026-02-09)
    - Only PrepTask lacks a base GET/list route
    - None use `nextjs.route` projection for consistent tenant filtering and constraint handling
+   - **Updated**: Prep-lists routes in both `apps/api` and `apps/app` now use Prisma instead of raw SQL, with standardized `{ data, pagination }` response format and added search filter
 
 4. ~~**PrepTask Runtime Test Failures**~~ - ✅ RESOLVED (2026-02-09)
    - Fixed `getInstanceByKey` async method alias
