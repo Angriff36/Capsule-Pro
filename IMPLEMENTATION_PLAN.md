@@ -2,8 +2,8 @@
 
 **Ultimate Goal**: Deliver a deterministic, production-validated Manifest projection pipeline for Capsule-Pro that compiles domain manifests into type-safe Next.js command handlers, enforces guard/policy/constraint semantics through the runtime bridge, integrates real Clerk auth and tenant resolution, executes successfully against live domain logic without stubs, and maintains regression protection through snapshot, TypeScript, and HTTP-level verification across multiple entities.
 
-**Last Updated**: 2026-02-08 (PrepList API Routes Generated)
-**Status**: Core infrastructure COMPLETE, PrepTask commands production-validated, Menu API routes generated (update/activate/deactivate), Station API routes generated (assignTask/removeTask/updateCapacity/deactivate/activate/updateEquipment), PrepList API routes generated (7 commands + 5 item commands), Recipe server actions use Manifest runtime, NO generated API routes for Inventory/Recipe, NO HTTP integration tests
+**Last Updated**: 2026-02-08 (Inventory API Routes Generated)
+**Status**: Core infrastructure COMPLETE, PrepTask commands production-validated, Menu API routes generated (update/activate/deactivate), Station API routes generated (assignTask/removeTask/updateCapacity/deactivate/activate/updateEquipment), PrepList API routes generated (7 commands + 5 item commands), Inventory API routes generated (6 commands), Recipe server actions use Manifest runtime, NO generated API routes for Recipe, NO HTTP integration tests
 
 ## Executive Summary
 
@@ -21,7 +21,7 @@
 1. ~~**Menu API Routes**~~: ✅ COMPLETED - Generated command routes (update, activate, deactivate) at `/api/kitchen/menus/commands/*`
 2. ~~**Station API Routes**~~: ✅ COMPLETED - Generated 6 command routes (assignTask, removeTask, updateCapacity, deactivate, activate, updateEquipment) at `/api/kitchen/stations/commands/*`
 3. ~~**PrepList API Routes**~~: ✅ COMPLETED - Generated 12 command routes (finalize, mark-completed, update, update-batch-multiplier, activate, deactivate, cancel + 5 item commands) at `/api/kitchen/prep-lists/commands/*`
-4. **Inventory API Routes**: Manual routes exist at `/api/inventory`, not `/api/kitchen/inventory/commands/*`. Constraints not enforced via Manifest.
+4. ~~**Inventory API Routes**~~: ✅ COMPLETED - Generated 6 command routes (reserve, consume, waste, adjust, restock, release-reservation) at `/api/kitchen/inventory/commands/*`
 5. **Recipe API Routes**: Manual routes exist at `/api/kitchen/recipes`, bypassing Manifest constraints. Server actions use Manifest but API routes don't.
 6. **HTTP Integration Tests**: NO test infrastructure exists. Tests only use direct imports, no real HTTP requests.
 7. **PrepTask Base Route**: NO GET/list route for prep-tasks (only command handlers exist).
@@ -32,7 +32,7 @@
 1. ~~**Generate Menu API Routes**~~ (Task #1) - ✅ COMPLETED - Generated routes at `/api/kitchen/menus/commands/*`
 2. ~~**Generate Station API Routes**~~ (Task #2) - ✅ COMPLETED - Generated 6 routes at `/api/kitchen/stations/commands/*`
 3. ~~**Generate PrepList API Routes**~~ (Task #3) - ✅ COMPLETED - Generated 12 routes at `/api/kitchen/prep-lists/commands/*`
-4. **Generate Inventory API Routes** (Task #4) - HIGH - Create Inventory command APIs using existing manifest
+4. ~~**Generate Inventory API Routes**~~ (Task #4) - ✅ COMPLETED - Generated 6 routes at `/api/kitchen/inventory/commands/*`
 5. **Add Base Query Endpoints** (Task #5) - HIGH - Generate GET/list routes for all entities
 6. **HTTP Integration Tests** (Task #6) - HIGH - Real HTTP requests for verification (not direct imports)
 
@@ -137,7 +137,7 @@
   - [x] Manifest defined with 6 commands (reserve, consume, waste, adjust, restock, releaseReservation)
   - [x] Runtime engine support with PrismaStore adapter
   - [x] Manual API routes exist at `/api/inventory`
-  - [ ] **TODO**: Generate API routes via `manifest-generate`
+  - [x] **COMPLETED**: Generated 6 API routes via manifest pattern at `/api/kitchen/inventory/commands/*`
 
 - [x] **Station Manifest** (`packages/kitchen-ops/manifests/station-rules.manifest`)
   - [x] Manifest defined with entities and constraints
@@ -150,7 +150,7 @@
 ## In Progress / Partially Complete ⚠️
 
 ### Multi-Domain Expansion
-- [~] **Inventory Manifest** - Defined, runtime integration pending
+- [x] **Inventory Manifest** - ✅ COMPLETED - API routes generated
 - [x] **Station Manifest** - ✅ COMPLETED - API routes generated, UI pending
 - [x] **Menu Manifest** - ✅ COMPLETED - API routes generated, full UI pending
 - [~] **Recipe Manifest** - Runtime exists, API routes pending, full editing UI pending
@@ -254,23 +254,23 @@
 ---
 
 #### 4. Generate Inventory API Routes
-**Status**: Manifest Defined, Manual Routes Exist
+**Status**: ✅ COMPLETED - Generated 6 command routes
 **Effort**: High
 **Priority**: HIGH
 **Description**: Use `manifest-generate` CLI to create Inventory command API routes.
 
-**Evidence**: Inventory manifest exists with 6 commands (reserve, consume, waste, adjust, restock, releaseReservation). Manual routes exist at `/api/inventory`
+**Evidence**: Inventory manifest exists with 6 commands (reserve, consume, waste, adjust, restock, releaseReservation). Generated routes at `/api/kitchen/inventory/commands/*`
 
 **Tasks**:
-- [ ] Run `manifest-generate` for all 6 Inventory commands
-- [ ] Create runtime factory at `apps/api/lib/inventory-runtime.ts`
-- [ ] Test all commands with HTTP requests
+- [x] Generated 6 Inventory command routes (reserve, consume, waste, adjust, restock, release-reservation)
+- [x] Runtime factory already exists in `apps/api/lib/manifest-runtime.ts` (createInventoryRuntime)
+- [ ] Test all commands with HTTP requests (deferred to Task #6)
 - [ ] Verify constraint enforcement (stock levels, reorder points)
 - [ ] Plan migration from manual to generated routes
 
 **Dependencies**: CLI tools (complete), Inventory manifest (complete)
 
-**Files**: `apps/api/lib/inventory-runtime.ts`, `apps/api/app/api/kitchen/inventory/commands/*/route.ts`
+**Files**: `apps/api/app/api/kitchen/inventory/commands/*/route.ts`
 
 ---
 
@@ -581,11 +581,11 @@ A feature is considered complete when:
 - [x] Menu API route generation (3 commands: update, activate, deactivate)
 - [x] Station API route generation (6 commands: assignTask, removeTask, updateCapacity, deactivate, activate, updateEquipment)
 - [x] PrepList API route generation (12 routes: 7 PrepList + 5 PrepListItem commands)
+- [x] Inventory API route generation (6 commands: reserve, consume, waste, adjust, restock, release-reservation)
 - [x] Runtime factories for all entities exist
 - [x] Lib hooks audit complete (all 13 hooks used)
 
 **In Progress**:
-- [ ] Inventory API route generation (6 commands)
 - [ ] Recipe API route generation (update, createDish commands)
 - [ ] Base GET/list endpoints for all entities
 
@@ -595,10 +595,9 @@ A feature is considered complete when:
 - [ ] CI/CD automation
 
 **Next Actions**:
-1. Generate Inventory API routes (Task #4)
-2. Generate Recipe API routes (Task #7)
-3. Add base GET/list endpoints (Task #5)
-4. HTTP integration tests (Task #6)
+1. Generate Recipe API routes (Task #7)
+2. Add base GET/list endpoints (Task #5)
+3. HTTP integration tests (Task #6)
 
 ---
 
