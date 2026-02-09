@@ -1,0 +1,318 @@
+name: Manifest CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'packages/kitchen-ops/manifests/**'
+      - 'packages/manifest/**'
+      - 'apps/api/app/api/kitchen/**'
+      - '.github/workflows/manifest-ci.yml'
+  workflow_dispatch:
+    inputs:
+      snapcheck:
+        description: 'Run snapshot check mode (fail if snapshots out of date)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  manifest-validate:
+    name: Validate Manifest Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate all manifest files compile
+        run: |
+          echo "Validating manifest files..."
+          MANIFEST_DIR="packages/kitchen-ops/manifests"
+
+          if [ ! -d "$MANIFEST_DIR" ]; then
+            echo "No manifest directory found"
+            exit 1
+          fi
+
+          # Compile each manifest file to check for syntax errors
+          for manifest in "$MANIFEST_DIR"/*.manifest; do
+            if [ -f "$manifest" ]; then
+              echo "Checking $manifest..."
+              npx tsx packages/manifest/bin/compile.ts "$manifest" --output /tmp/manifest-check || {
+                echo "::error::Manifest compilation failed for $manifest"
+                exit 1
+              }
+            fi
+          done
+
+          echo "All manifest files validated successfully"
+
+      - name: Check manifest conformance tests
+        run: |
+          echo "Running manifest conformance tests..."
+          cd packages/manifest
+          pnpm test -- --run
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+
+  manifest-codegen-check:
+    name: Check Generated Code Is Up-to-Date
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate code (Prisma, etc.)
+        run: |
+          pnpm run analyze
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+
+      - name: Check if generated code differs
+        run: |
+          echo "Checking if generated code is up-to-date..."
+
+          # Store current git state
+          git diff --quiet
+          if [ $? -ne 0 ]; then
+            echo "::error::Generated code is out of date. Please run 'pnpm run analyze' locally and commit the changes."
+            echo ""
+            echo "The following files have uncommitted changes after code generation:"
+            git diff --name-only
+            echo ""
+            echo "Diff summary:"
+            git diff --stat
+            exit 1
+          fi
+
+          echo "Generated code is up-to-date"
+
+  manifest-typescript-check:
+    name: TypeScript Compilation Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate code (Prisma, etc.)
+        run: |
+          pnpm run analyze
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+
+      - name: Type check all packages
+        run: |
+          echo "Running TypeScript type check..."
+          pnpm run check
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+
+  manifest-tests:
+    name: Manifest Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate code (Prisma, etc.)
+        run: |
+          pnpm run analyze
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+
+      - name: Run manifest integration tests
+        run: |
+          echo "Running manifest integration tests..."
+          cd apps/api
+          pnpm test __tests__/kitchen/ -- --run
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: |
+            apps/api/coverage/
+            apps/api/.vitest/
+
+  snapshot-check:
+    name: Snapshot Check
+    runs-on: ubuntu-latest
+    if: github.event.inputs.snapcheck == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate code (Prisma, etc.)
+        run: |
+          pnpm run analyze
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+
+      - name: Check snapshot tests
+        run: |
+          echo "Running snapshot tests in check mode..."
+          cd apps/api
+          pnpm test __tests__/kitchen/manifest-projection-snapshot.test.ts -- --run
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+
+      - name: Verify no snapshot changes
+        run: |
+          if git diff --name-only | grep -q "__snapshots__\|\.snap"; then
+            echo "::error::Snapshot tests are out of date. Please update snapshots locally by running:"
+            echo "  cd apps/api && pnpm test __tests__/kitchen/manifest-projection-snapshot.test.ts -u"
+            echo ""
+            echo "Changed snapshot files:"
+            git diff --name-only
+            exit 1
+          fi
+
+          echo "All snapshots are up-to-date"

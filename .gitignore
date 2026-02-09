@@ -309,7 +309,9 @@ ui-design-images/Mangia Brand Guideline.pdf
 apps/web/new 2.txt
 tools/
 .automaker/
-scripts/
+# scripts/ directory is ignored, except for manifest validation
+scripts/*
+!scripts/validate-manifests.mjs
 
 # Local Netlify folder
 .netlify

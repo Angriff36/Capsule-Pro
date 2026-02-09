@@ -66,9 +66,9 @@ export async function GET(request: Request) {
   // 6. Execute operation
   try {
     // List all Recipe entities
-    const items = await runtime.query("Recipe");
+    const items = await runtime.getAllInstances("Recipe");
     return manifestSuccessResponse({ recipes: items });
   } catch (error) {
-    return manifestErrorResponse(error);
+    return manifestErrorResponse(error instanceof Error ? error : new Error(String(error)));
   }
 }

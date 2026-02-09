@@ -15,6 +15,87 @@ Closes #<issue_number>
 - [ ] I have added tests that prove my fix is effective or my feature works.
 - [ ] New and existing tests pass locally with my changes.
 
+## Manifest Changes (if applicable)
+
+If this PR modifies manifest files in `packages/kitchen-ops/manifests/`:
+
+### Manifest Validation Required
+
+Before submitting, ensure you have:
+
+1. **Validated manifest syntax** - All manifest files must compile without errors
+   ```bash
+   # Compile each manifest to check for syntax errors
+   npx tsx packages/manifest/bin/compile.ts packages/kitchen-ops/manifests/your-entity.manifest --output /tmp/check
+   ```
+
+2. **Run conformance tests** - Verify manifest language conformance
+   ```bash
+   cd packages/manifest
+   pnpm test -- --run
+   ```
+
+3. **Run integration tests** - Verify generated code works correctly
+   ```bash
+   cd apps/api
+   pnpm test __tests__/kitchen/ -- --run
+   ```
+
+4. **Regenerate code** - If you modified manifests, regenerate API routes
+   ```bash
+   # Run code generation
+   pnpm run analyze
+
+   # Commit the generated files
+   git add apps/api/app/api/kitchen/
+   git commit -m "feat: regenerate manifest-generated routes"
+   ```
+
+5. **Update snapshots** - If code generation changed, update snapshots
+   ```bash
+   cd apps/api
+   pnpm test __tests__/kitchen/manifest-projection-snapshot.test.ts -u
+   git add __tests__/kitchen/__snapshots__/
+   git commit -m "test: update manifest snapshots"
+   ```
+
+### CI Checks
+
+This PR will trigger the following CI checks:
+- **Manifest Validation** - Validates all manifest files compile without errors
+- **Code Generation Check** - Verifies generated code is up-to-date
+- **TypeScript Check** - Ensures generated code compiles without errors
+- **Integration Tests** - Runs all manifest integration tests (172 tests)
+- **Snapshot Check** (manual) - Optional snapshot validation when manually triggered
+
+### Common Issues
+
+**"Generated code is out of date"**
+- Run `pnpm run analyze` locally
+- Commit the generated files
+
+**"Snapshot tests are out of date"**
+- Run `cd apps/api && pnpm test __tests__/kitchen/manifest-projection-snapshot.test.ts -u`
+- Commit the updated snapshots
+
+**"Manifest compilation failed"**
+- Check manifest syntax errors
+- Review error messages for line/column information
+- Test compilation locally using `manifest-compile` CLI
+
+**"TypeScript compilation errors"**
+- Ensure generated routes have proper types
+- Check that runtime factories are exported correctly
+- Verify import paths match your app structure
+
+### Resources
+
+- **Manifest Docs**: `packages/manifest/README.md`
+- **Usage Guide**: `packages/manifest/USAGE.md`
+- **Integration Guide**: `packages/manifest/INTEGRATION.md`
+- **Test Notes**: `apps/api/__tests__/kitchen/MANIFEST_TESTING_NOTES.md`
+- **Implementation Plan**: `IMPLEMENTATION_PLAN.md` (Task #10)
+
 ## Screenshots (if applicable)
 
 <!-- Add screenshots to help explain your changes, especially if this is a UI-related PR. -->

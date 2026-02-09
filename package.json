@@ -94,6 +94,7 @@
     "browser-tools": "pnpm dlx @modelcontextprotocol/server-playwright",
     "build": "turbo build",
     "check": "turbo typecheck",
+    "manifest:validate": "node scripts/validate-manifests.mjs",
     "bump-deps": "pnpm dlx npm-check-updates --deep -u --reject recharts && pnpm install",
     "bump-ui": "cd packages/design-system && pnpm dlx shadcn@latest add --all --overwrite",
     "clean:hard": "git clean -xdf",

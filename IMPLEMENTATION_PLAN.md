@@ -2,8 +2,8 @@
 
 **Ultimate Goal**: Deliver a deterministic, production-validated Manifest projection pipeline for Capsule-Pro that compiles domain manifests into type-safe Next.js command handlers, enforces guard/policy/constraint semantics through the runtime bridge, integrates real Clerk auth and tenant resolution, executes successfully against live domain logic without stubs, and maintains regression protection through snapshot, TypeScript, and HTTP-level verification across multiple entities.
 
-**Last Updated**: 2026-02-09 (Command-Level Constraint Tests Complete)
-**Status**: Core infrastructure COMPLETE, PrepTask commands production-validated with all runtime tests passing (7/7), Menu API routes generated (update/activate/deactivate), Station API routes generated (assignTask/removeTask/updateCapacity/deactivate/activate/updateEquipment), PrepList API routes generated (7 commands + 5 item commands), Inventory API routes generated (6 commands), Recipe API routes generated (8 commands across 5 entities), Base GET/list endpoints standardized (menus, stations, prep-tasks, ingredients, recipes, dishes, prep-lists now use Prisma), HTTP integration tests complete with 100% route coverage (42/42), constraint violation tests added, UI warning display complete, TypeScript errors resolved, snapshot tests synchronized, command-level constraint tests complete. All tests passing (172/172)
+**Last Updated**: 2026-02-09 (CI/CD Pipeline Automation Complete)
+**Status**: Core infrastructure COMPLETE, PrepTask commands production-validated with all runtime tests passing (7/7), Menu API routes generated (update/activate/deactivate), Station API routes generated (assignTask/removeTask/updateCapacity/deactivate/activate/updateEquipment), PrepList API routes generated (7 commands + 5 item commands), Inventory API routes generated (6 commands), Recipe API routes generated (8 commands across 5 entities), Base GET/list endpoints standardized (menus, stations, prep-tasks, ingredients, recipes, dishes, prep-lists now use Prisma), HTTP integration tests complete with 100% route coverage (42/42), constraint violation tests added, UI warning display complete, TypeScript errors resolved, snapshot tests synchronized, command-level constraint tests complete, CI/CD pipeline automation complete. All tests passing (172/172)
 
 ## Executive Summary
 
@@ -44,7 +44,7 @@
 ### Cross-Cutting Concerns 🔗
 - ~~**Recipe API Generation**~~ (Task #7) - ✅ COMPLETED
 - ~~**UI Warning Display**~~ (Task #8) - ✅ COMPLETED - WARN constraints now displayed in UI
-- **CI/CD Automation** (Task #9) - Manifest validation and code generation checks
+- ~~**CI/CD Automation**~~ (Task #10) - ✅ COMPLETED - GitHub Actions workflow with manifest validation, code generation checks, TypeScript compilation, integration tests, and snapshot verification
 
 ---
 
@@ -516,21 +516,62 @@
 ---
 
 #### 10. CI/CD Pipeline Automation
-**Status**: Not Started
+**Status**: ✅ COMPLETED (2026-02-09)
 **Effort**: Medium
 **Priority**: MEDIUM
 **Description**: Automate manifest validation and code generation in CI.
 
-**Tasks**:
-- [ ] Add `manifest validate` step to GitHub Actions workflow
-- [ ] Add `manifest test` step to run conformance tests
-- [ ] Add `manifest generate --check` to verify generated code is up-to-date
-- [ ] Add snapshot regeneration workflow with manual approval
-- [ ] Add TypeScript compilation check for generated code
-- [ ] Document manual approval process for manifest changes
-- [ ] Add PR template guidance for manifest modifications
+**Evidence**: GitHub Actions workflow created at `.github/workflows/manifest-ci.yml` with 5 jobs for manifest validation, code generation checks, TypeScript compilation, integration tests, and snapshot verification.
 
-**Files**: `.github/workflows/manifest-ci.yml`, `.github/pull_request_template.md`
+**Completed Work (2026-02-09)**:
+
+**Created Files**:
+- `.github/workflows/manifest-ci.yml` - GitHub Actions workflow with 5 jobs:
+  * manifest-validate - Validates all manifest files compile without errors
+  * manifest-codegen-check - Verifies generated code is up-to-date
+  * manifest-typescript-check - Ensures generated code compiles without errors
+  * manifest-tests - Runs all manifest integration tests (172 tests)
+  * snapshot-check - Optional snapshot validation (manual trigger)
+- `.github/MANIFEST_CI.md` - Comprehensive CI/CD pipeline documentation
+- `.github/pull_request_template.md` - Updated PR template with manifest-specific guidance
+- `scripts/validate-manifests.mjs` - Local validation script matching CI checks
+- `scripts/README.md` - Documentation for validation script
+
+**Workflow Features**:
+- Triggers on PRs to main/develop branches when manifest files change
+- Validates all 6 manifest files (PrepTask, Recipe, Menu, PrepList, Inventory, Station)
+- Checks generated code is up-to-date (fails if developer needs to run generation)
+- Runs TypeScript compilation check for all packages
+- Executes 172 integration tests across 6 domains
+- Provides clear error messages for fixing issues
+- Includes manual snapshot approval workflow (separate from normal checks)
+
+**PR Template Enhancements**:
+- Pre-submission checklist for manifest changes
+- Step-by-step validation instructions
+- CI checks description
+- Common issues and solutions
+- Links to documentation resources
+
+**Local Validation Script**:
+- Mirrors all CI checks locally
+- Provides colored output with step-by-step progress
+- Exit codes for CI integration
+- Helpful error messages and fix suggestions
+- Available via `pnpm manifest:validate`
+
+**Tasks Completed**:
+- [x] Add `manifest validate` step to GitHub Actions workflow
+- [x] Add `manifest test` step to run conformance tests
+- [x] Add `manifest generate --check` to verify generated code is up-to-date
+- [x] Add snapshot regeneration workflow with manual approval
+- [x] Add TypeScript compilation check for generated code
+- [x] Document manual approval process for manifest changes
+- [x] Add PR template guidance for manifest modifications
+- [x] Create local validation script for pre-push checks
+- [x] Add npm script `pnpm manifest:validate`
+
+**Files**: `.github/workflows/manifest-ci.yml`, `.github/pull_request_template.md`, `.github/MANIFEST_CI.md`, `scripts/validate-manifests.mjs`, `scripts/README.md`
 
 ---
 
@@ -755,9 +796,9 @@ A feature is considered complete when:
 - [x] HTTP-level integration tests for all domains (Task #7) - 42/42 routes tested
 - [x] Command-level constraint test coverage (Task #8) - 23 tests added, all 172 tests passing
 - [x] UI warning display integration (Task #9) - WARN constraints displayed in UI
+- [x] CI/CD pipeline with manifest validation (Task #10) - GitHub Actions workflow with 5 jobs, local validation script, PR template guidance
 
 **Tasks**:
-- [ ] CI/CD pipeline with manifest validation (Task #10)
 - [ ] Performance testing for large datasets
 - [ ] Error handling standardization
 
