@@ -24,7 +24,7 @@ async function runCli(
   input: string,
   output: string
 ): Promise<{ stdout: string; stderr: string; exitCode: number }> {
-  const { spawn } = await import("child_process");
+  const { spawn } = await import("node:child_process");
 
   return new Promise((resolve) => {
     const proc = spawn(
