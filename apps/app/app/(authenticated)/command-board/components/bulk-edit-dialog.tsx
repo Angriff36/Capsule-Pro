@@ -40,7 +40,9 @@ function getCommonValue<T>(
   cards: CommandBoardCard[],
   accessor: (card: CommandBoardCard) => T
 ): PropertyState {
-  if (cards.length === 0) return null;
+  if (cards.length === 0) {
+    return null;
+  }
   const firstValue = accessor(cards[0]);
   const allSame = cards.every((card) => accessor(card) === firstValue);
   return allSame ? (firstValue as PropertyState) : "mixed";
@@ -142,18 +144,34 @@ export function BulkEditDialog({
   };
 
   const getStatusDisplay = (status: PropertyState): string => {
-    if (status === "mixed") return "Mixed";
-    if (status === "active") return "Active";
-    if (status === "completed") return "Completed";
-    if (status === "archived") return "Archived";
+    if (status === "mixed") {
+      return "Mixed";
+    }
+    if (status === "active") {
+      return "Active";
+    }
+    if (status === "completed") {
+      return "Completed";
+    }
+    if (status === "archived") {
+      return "Archived";
+    }
     return "None";
   };
 
   const getStatusColor = (status: PropertyState): string => {
-    if (status === "mixed") return "text-muted-foreground";
-    if (status === "active") return "text-green-600";
-    if (status === "completed") return "text-blue-600";
-    if (status === "archived") return "text-gray-500";
+    if (status === "mixed") {
+      return "text-muted-foreground";
+    }
+    if (status === "active") {
+      return "text-green-600";
+    }
+    if (status === "completed") {
+      return "text-blue-600";
+    }
+    if (status === "archived") {
+      return "text-gray-500";
+    }
     return "text-muted-foreground";
   };
 

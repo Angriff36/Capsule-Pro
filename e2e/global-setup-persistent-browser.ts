@@ -31,8 +31,8 @@ export default async function globalSetup(config: FullConfig) {
         : e instanceof Error
           ? e.message
           : String(e);
-    console.error("\n❌ App is not reachable at " + baseURL);
-    console.error("   Error: " + msg);
+    console.error(`\n❌ App is not reachable at ${baseURL}`);
+    console.error(`   Error: ${msg}`);
     console.error("   Start the app first in another terminal:");
     console.error("   pnpm dev:apps");
     console.error("");

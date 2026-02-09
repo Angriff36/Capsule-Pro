@@ -97,7 +97,9 @@ export function MenuFormWithConstraints({
       const preselected: SelectedDish[] = initialData.dishes
         .map((md) => {
           const dish = dishMap.get(md.dishId);
-          if (!dish) return null;
+          if (!dish) {
+            return null;
+          }
           return {
             dish,
             course: md.course,
@@ -155,7 +157,9 @@ export function MenuFormWithConstraints({
     reason: OverrideReasonCode,
     details: string
   ) => {
-    if (!formData) return;
+    if (!formData) {
+      return;
+    }
 
     startTransitionAction(async () => {
       try {

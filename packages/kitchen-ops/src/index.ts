@@ -2464,7 +2464,9 @@ export function isConstraintActionable(outcome: ConstraintOutcome): boolean {
 export function hasActionableConstraints(
   outcomes: ConstraintOutcome[] | undefined
 ): boolean {
-  if (!outcomes || outcomes.length === 0) return false;
+  if (!outcomes || outcomes.length === 0) {
+    return false;
+  }
   return outcomes.some(isConstraintActionable);
 }
 
@@ -2474,7 +2476,9 @@ export function hasActionableConstraints(
 export function getActionableConstraints(
   outcomes: ConstraintOutcome[] | undefined
 ): ConstraintOutcome[] {
-  if (!outcomes) return [];
+  if (!outcomes) {
+    return [];
+  }
   return outcomes.filter(isConstraintActionable);
 }
 
@@ -2484,7 +2488,9 @@ export function getActionableConstraints(
 export function getBlockingConstraints(
   outcomes: ConstraintOutcome[] | undefined
 ): ConstraintOutcome[] {
-  if (!outcomes) return [];
+  if (!outcomes) {
+    return [];
+  }
   return outcomes.filter((o) => !o.passed && o.severity === "block");
 }
 
@@ -2494,7 +2500,9 @@ export function getBlockingConstraints(
 export function getWarningConstraints(
   outcomes: ConstraintOutcome[] | undefined
 ): ConstraintOutcome[] {
-  if (!outcomes) return [];
+  if (!outcomes) {
+    return [];
+  }
   return outcomes.filter((o) => !o.passed && o.severity === "warn");
 }
 
@@ -2504,9 +2512,13 @@ export function getWarningConstraints(
 export function canProceedWithConstraints(
   outcomes: ConstraintOutcome[] | undefined
 ): boolean {
-  if (!outcomes || outcomes.length === 0) return true;
+  if (!outcomes || outcomes.length === 0) {
+    return true;
+  }
   const blocking = getBlockingConstraints(outcomes);
-  if (blocking.length === 0) return true;
+  if (blocking.length === 0) {
+    return true;
+  }
   // Check if all blocking constraints are overridden
   return blocking.every((o) => o.overridden);
 }

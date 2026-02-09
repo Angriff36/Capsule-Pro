@@ -3,9 +3,9 @@
  */
 
 import { database, Prisma } from "@repo/database";
+import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "../../../app/api/kitchen/recipes/[recipeId]/ingredients/route";
-import { NextRequest } from "next/server";
 
 vi.mock("@repo/auth/server", () => ({
   auth: vi.fn().mockResolvedValue({ orgId: "org-1" }),
@@ -49,7 +49,8 @@ describe("recipe ingredients API query", () => {
     const sqlText =
       sql && typeof sql === "object" && "sql" in sql
         ? sql.sql
-        : (sql as { strings?: TemplateStringsArray })?.strings?.join("") ?? "";
+        : ((sql as { strings?: TemplateStringsArray })?.strings?.join("") ??
+          "");
 
     expect(sqlText).toContain("ri.preparation_notes");
     expect(sqlText).toContain("ri.sort_order");

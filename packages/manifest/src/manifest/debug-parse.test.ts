@@ -1,5 +1,5 @@
-import { readFileSync } from "fs";
-import { join } from "path";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, it } from "vitest";
 import { compileToIR } from "./ir-compiler";
 import { Parser } from "./parser";

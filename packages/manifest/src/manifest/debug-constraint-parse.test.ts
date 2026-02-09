@@ -9,7 +9,7 @@ describe("Constraint Parse Debug", () => {
     const lexer = new Lexer(source);
     const tokens = lexer.tokenize();
 
-    console.log("=== Tokens for: " + source.substring(0, 60) + " ===");
+    console.log(`=== Tokens for: ${source.substring(0, 60)} ===`);
     tokens.forEach((t, i) => {
       console.log(
         `  ${i}: ${t.type.padEnd(12)} "${t.value}" at ${t.position.line}:${t.position.column}`
@@ -23,7 +23,7 @@ describe("Constraint Parse Debug", () => {
     const lexer = new Lexer(source);
     const tokens = lexer.tokenize();
 
-    console.log("=== Tokens for: " + source.substring(0, 60) + " ===");
+    console.log(`=== Tokens for: ${source.substring(0, 60)} ===`);
     tokens.forEach((t, i) => {
       console.log(
         `  ${i}: ${t.type.padEnd(12)} "${t.value}" at ${t.position.line}:${t.position.column}`

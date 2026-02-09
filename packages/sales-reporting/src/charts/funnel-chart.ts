@@ -16,7 +16,9 @@ export function drawFunnelChart(
     colors = CHART_PALETTE,
   } = options;
 
-  if (stages.length === 0) return y;
+  if (stages.length === 0) {
+    return y;
+  }
 
   doc.save();
 

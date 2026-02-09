@@ -97,7 +97,9 @@ export function BoardsListClient() {
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editBoard) return;
+    if (!editBoard) {
+      return;
+    }
 
     setIsUpdating(true);
     try {
@@ -126,7 +128,9 @@ export function BoardsListClient() {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!deleteBoard) return;
+    if (!deleteBoard) {
+      return;
+    }
 
     setIsDeleting(true);
     try {

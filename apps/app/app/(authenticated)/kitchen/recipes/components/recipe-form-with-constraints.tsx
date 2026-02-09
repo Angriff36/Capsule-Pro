@@ -110,7 +110,9 @@ export function RecipeFormWithConstraints({
     reason: OverrideReasonCode,
     details: string
   ) => {
-    if (!formData) return;
+    if (!formData) {
+      return;
+    }
 
     startTransitionAction(async () => {
       try {

@@ -156,7 +156,7 @@ export function isString(value: unknown): value is string {
  * Number field validator
  */
 export function isNumber(value: unknown): value is number {
-  return typeof value === "number" && !isNaN(value);
+  return typeof value === "number" && !Number.isNaN(value);
 }
 
 /**
@@ -180,7 +180,7 @@ export function isNonEmptyString(value: unknown): value is string {
  */
 export function checkEntityCreation<T>(
   entity: T | undefined,
-  constraintDiagnostics?: unknown
+  _constraintDiagnostics?: unknown
 ): T {
   if (!entity) {
     const error = new Error("Constraint validation failed");

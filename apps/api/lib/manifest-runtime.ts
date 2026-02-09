@@ -89,7 +89,7 @@ export async function createManifestRuntime(
 }
 
 /** Helper to create a runtime specifically for Menu operations */
-export async function createMenuRuntime(user: {
+export function createMenuRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
@@ -97,7 +97,7 @@ export async function createMenuRuntime(user: {
 }
 
 /** Helper to create a runtime specifically for PrepTask operations */
-export async function createPrepTaskRuntime(user: {
+export function createPrepTaskRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
@@ -105,7 +105,7 @@ export async function createPrepTaskRuntime(user: {
 }
 
 /** Helper to create a runtime specifically for Recipe operations */
-export async function createRecipeRuntime(user: {
+export function createRecipeRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
@@ -113,7 +113,7 @@ export async function createRecipeRuntime(user: {
 }
 
 /** Helper to create a runtime specifically for PrepList operations */
-export async function createPrepListRuntime(user: {
+export function createPrepListRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
@@ -121,7 +121,7 @@ export async function createPrepListRuntime(user: {
 }
 
 /** Helper to create a runtime specifically for Inventory operations */
-export async function createInventoryRuntime(user: {
+export function createInventoryRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
@@ -129,7 +129,7 @@ export async function createInventoryRuntime(user: {
 }
 
 /** Helper to create a runtime specifically for Station operations */
-export async function createStationRuntime(user: {
+export function createStationRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {

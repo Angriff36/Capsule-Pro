@@ -41,8 +41,8 @@ interface PrepTaskWithClaims extends PrepTask {
  */
 export class PrepTaskPrismaStore implements Store<EntityInstance> {
   constructor(
-    private prisma: PrismaClient,
-    private tenantId: string
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -82,7 +82,9 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
       where: { tenantId: this.tenantId, id, deletedAt: null },
     });
 
-    if (!task) return undefined;
+    if (!task) {
+      return undefined;
+    }
 
     // Fetch active claims
     const claims = await this.prisma.kitchenTaskClaim.findMany({
@@ -148,7 +150,9 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
       where: { tenantId: this.tenantId, id, deletedAt: null },
     });
 
-    if (!existing) return undefined;
+    if (!existing) {
+      return undefined;
+    }
 
     // Update the task
     const updated = await this.prisma.prepTask.update({
@@ -298,8 +302,8 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
  */
 export class RecipePrismaStore implements Store<EntityInstance> {
   constructor(
-    private prisma: PrismaClient,
-    private tenantId: string
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -399,8 +403,8 @@ export class RecipePrismaStore implements Store<EntityInstance> {
  */
 export class RecipeVersionPrismaStore implements Store<EntityInstance> {
   constructor(
-    private prisma: PrismaClient,
-    private tenantId: string
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -528,8 +532,8 @@ export class RecipeVersionPrismaStore implements Store<EntityInstance> {
  */
 export class IngredientPrismaStore implements Store<EntityInstance> {
   constructor(
-    private prisma: PrismaClient,
-    private tenantId: string
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -624,8 +628,8 @@ export class IngredientPrismaStore implements Store<EntityInstance> {
  */
 export class RecipeIngredientPrismaStore implements Store<EntityInstance> {
   constructor(
-    private prisma: PrismaClient,
-    private tenantId: string
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -723,8 +727,8 @@ export class RecipeIngredientPrismaStore implements Store<EntityInstance> {
  */
 export class DishPrismaStore implements Store<EntityInstance> {
   constructor(
-    private prisma: PrismaClient,
-    private tenantId: string
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -991,8 +995,8 @@ export async function syncDishToPrisma(
  */
 export class MenuPrismaStore implements Store<EntityInstance> {
   constructor(
-    private prisma: PrismaClient,
-    private tenantId: string
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -1112,8 +1116,8 @@ export class MenuPrismaStore implements Store<EntityInstance> {
  */
 export class MenuDishPrismaStore implements Store<EntityInstance> {
   constructor(
-    private prisma: PrismaClient,
-    private tenantId: string
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -1282,8 +1286,8 @@ export async function syncMenuDishToPrisma(
  */
 export class PrepListPrismaStore implements Store<EntityInstance> {
   constructor(
-    private prisma: PrismaClient,
-    private tenantId: string
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -1411,8 +1415,8 @@ export class PrepListPrismaStore implements Store<EntityInstance> {
  */
 export class PrepListItemPrismaStore implements Store<EntityInstance> {
   constructor(
-    private prisma: PrismaClient,
-    private tenantId: string
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {

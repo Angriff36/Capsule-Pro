@@ -8,7 +8,9 @@ export function drawLineChart(
 ): number {
   const { x, y, width, height, series, title, showCurrency = false } = options;
 
-  if (series.length === 0) return y;
+  if (series.length === 0) {
+    return y;
+  }
 
   doc.save();
 

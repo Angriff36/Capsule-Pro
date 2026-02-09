@@ -63,7 +63,9 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
     reason: OverrideReasonCode,
     details: string
   ) => {
-    if (!formData) return;
+    if (!formData) {
+      return;
+    }
 
     startTransitionAction(async () => {
       try {

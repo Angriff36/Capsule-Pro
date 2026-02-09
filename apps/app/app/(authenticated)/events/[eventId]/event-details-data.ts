@@ -199,7 +199,9 @@ interface RecipeVersionRow {
  */
 export const getRecipeVersions = cache(
   async (tenantId: string, recipeIds: string[]) => {
-    if (recipeIds.length === 0) return [];
+    if (recipeIds.length === 0) {
+      return [];
+    }
 
     return database.$queryRaw<RecipeVersionRow[]>(
       Prisma.sql`
@@ -234,7 +236,9 @@ export const getRecipeVersions = cache(
  */
 export const getRelatedGuestCounts = cache(
   async (tenantId: string, relatedEventIds: string[]) => {
-    if (relatedEventIds.length === 0) return [];
+    if (relatedEventIds.length === 0) {
+      return [];
+    }
 
     return database.eventGuest.groupBy({
       by: ["eventId"],
@@ -268,7 +272,9 @@ interface RecipeIngredientRow {
  */
 export const getRecipeIngredients = cache(
   async (tenantId: string, recipeVersionIds: string[]) => {
-    if (recipeVersionIds.length === 0) return [];
+    if (recipeVersionIds.length === 0) {
+      return [];
+    }
 
     return database.$queryRaw<RecipeIngredientRow[]>(
       Prisma.sql`
@@ -312,7 +318,9 @@ interface RecipeStepRow {
  */
 export const getRecipeSteps = cache(
   async (tenantId: string, recipeVersionIds: string[]) => {
-    if (recipeVersionIds.length === 0) return [];
+    if (recipeVersionIds.length === 0) {
+      return [];
+    }
 
     return database.$queryRaw<RecipeStepRow[]>(
       Prisma.sql`
@@ -352,7 +360,9 @@ interface InventoryItemRow {
  */
 export const getInventoryItems = cache(
   async (tenantId: string, ingredientIds: string[]) => {
-    if (ingredientIds.length === 0) return [];
+    if (ingredientIds.length === 0) {
+      return [];
+    }
 
     return database.$queryRaw<InventoryItemRow[]>(
       Prisma.sql`
@@ -390,7 +400,9 @@ interface InventoryStockRow {
  */
 export const getInventoryStock = cache(
   async (tenantId: string, inventoryItemIds: string[]) => {
-    if (inventoryItemIds.length === 0) return [];
+    if (inventoryItemIds.length === 0) {
+      return [];
+    }
 
     return database.$queryRaw<InventoryStockRow[]>(
       Prisma.sql`
@@ -501,7 +513,9 @@ export async function fetchAllEventDetailsData(
 
   for (const ingredient of recipeIngredients) {
     const recipe = recipeByVersionId.get(ingredient.recipeVersionId);
-    if (!recipe) continue;
+    if (!recipe) {
+      continue;
+    }
     recipe.ingredients.push({
       ingredientId: ingredient.ingredientId,
       ingredientName: ingredient.ingredientName,
@@ -514,7 +528,9 @@ export async function fetchAllEventDetailsData(
 
   for (const step of recipeSteps) {
     const recipe = recipeByVersionId.get(step.recipeVersionId);
-    if (!recipe) continue;
+    if (!recipe) {
+      continue;
+    }
     recipe.steps.push({
       stepNumber: step.stepNumber,
       instruction: step.instruction,

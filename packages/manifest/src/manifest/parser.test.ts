@@ -336,7 +336,7 @@ describe("Parser", () => {
 
       const cmd = program.commands[0];
       expect(cmd.guards).toHaveLength(1);
-      expect(cmd.guards![0].type).toBe("BinaryOp");
+      expect(cmd.guards?.[0].type).toBe("BinaryOp");
       expect(errors).toHaveLength(0);
     });
 
@@ -394,7 +394,7 @@ describe("Parser", () => {
 
       const cmd = program.commands[0];
       expect(cmd.returns).toBeDefined();
-      expect(cmd.returns!.name).toBe("string");
+      expect(cmd.returns?.name).toBe("string");
       expect(errors).toHaveLength(0);
     });
 
@@ -421,7 +421,7 @@ describe("Parser", () => {
 
       const cmd = program.commands[0];
       expect(cmd.constraints).toBeDefined();
-      expect(cmd.constraints!.length).toBeGreaterThan(0);
+      expect(cmd.constraints?.length).toBeGreaterThan(0);
       expect(errors).toHaveLength(0);
     });
   });
@@ -571,9 +571,9 @@ describe("Parser", () => {
         "Task '{taskName}' is overdue by {daysOverdue} day(s)"
       );
       expect(constraint.detailsMapping).toBeDefined();
-      expect(constraint.detailsMapping!["taskName"]).toBeDefined();
-      expect(constraint.detailsMapping!["dueDate"]).toBeDefined();
-      expect(constraint.detailsMapping!["daysOverdue"]).toBeDefined();
+      expect(constraint.detailsMapping?.taskName).toBeDefined();
+      expect(constraint.detailsMapping?.dueDate).toBeDefined();
+      expect(constraint.detailsMapping?.daysOverdue).toBeDefined();
       expect(errors).toHaveLength(0);
     });
 
@@ -785,8 +785,8 @@ describe("Parser", () => {
 
       const store = program.stores[0];
       expect(store.config).toBeDefined();
-      expect(store.config!.tableName).toBeDefined();
-      expect(store.config!.schema).toBeDefined();
+      expect(store.config?.tableName).toBeDefined();
+      expect(store.config?.schema).toBeDefined();
       expect(errors).toHaveLength(0);
     });
   });
@@ -1217,7 +1217,7 @@ describe("Parser", () => {
       const items = program.entities[0].properties[0].dataType;
       expect(items.name).toBe("list");
       expect(items.generic).toBeDefined();
-      expect(items.generic!.name).toBe("string");
+      expect(items.generic?.name).toBe("string");
       expect(errors).toHaveLength(0);
     });
 
@@ -1245,7 +1245,7 @@ describe("Parser", () => {
 
       const items = program.entities[0].properties[0].dataType;
       expect(items.nullable).toBe(true);
-      expect(items.generic!.name).toBe("string");
+      expect(items.generic?.name).toBe("string");
       expect(errors).toHaveLength(0);
     });
   });
@@ -1371,7 +1371,7 @@ describe("Parser", () => {
       for (const op of ops) {
         const source = `command test() { when 1 ${op} 2 }`;
         const { program, errors } = new Parser().parse(source);
-        const guard = program.commands[0].guards![0] as any;
+        const guard = program.commands[0].guards?.[0] as any;
         expect(guard.type).toBe("BinaryOp");
         expect(guard.operator).toBe(op);
         expect(errors).toHaveLength(0);
@@ -1383,7 +1383,7 @@ describe("Parser", () => {
       for (const op of ops) {
         const source = `command test() { when 1 ${op} 2 }`;
         const { program, errors } = new Parser().parse(source);
-        const guard = program.commands[0].guards![0] as any;
+        const guard = program.commands[0].guards?.[0] as any;
         expect(guard.type).toBe("BinaryOp");
         expect(guard.operator).toBe(op);
         expect(errors).toHaveLength(0);
@@ -1395,7 +1395,7 @@ describe("Parser", () => {
       for (const op of ops) {
         const source = `command test() { when true ${op} false }`;
         const { program, errors } = new Parser().parse(source);
-        const guard = program.commands[0].guards![0] as any;
+        const guard = program.commands[0].guards?.[0] as any;
         expect(guard.type).toBe("BinaryOp");
         expect(errors).toHaveLength(0);
       }
@@ -1406,7 +1406,7 @@ describe("Parser", () => {
       for (const op of ops) {
         const source = `command test() { when "a" ${op} "b" }`;
         const { program, errors } = new Parser().parse(source);
-        const guard = program.commands[0].guards![0] as any;
+        const guard = program.commands[0].guards?.[0] as any;
         expect(guard.type).toBe("BinaryOp");
         expect(guard.operator).toBe(op);
         expect(errors).toHaveLength(0);
@@ -1428,7 +1428,7 @@ describe("Parser", () => {
       const source = "command test() { when 1 < 2 && 3 > 4 }";
       const { program, errors } = new Parser().parse(source);
 
-      const guard = program.commands[0].guards![0] as any;
+      const guard = program.commands[0].guards?.[0] as any;
       // Should be: (&& (< 1 2) (> 3 4))
       expect(guard.operator).toBe("&&");
       expect(guard.left.operator).toBe("<");
@@ -1442,7 +1442,7 @@ describe("Parser", () => {
       const source = "command test() { when !true }";
       const { program, errors } = new Parser().parse(source);
 
-      const guard = program.commands[0].guards![0] as any;
+      const guard = program.commands[0].guards?.[0] as any;
       expect(guard.type).toBe("UnaryOp");
       expect(guard.operator).toBe("!");
       expect(errors).toHaveLength(0);
@@ -1452,7 +1452,7 @@ describe("Parser", () => {
       const source = "command test() { when not true }";
       const { program, errors } = new Parser().parse(source);
 
-      const guard = program.commands[0].guards![0] as any;
+      const guard = program.commands[0].guards?.[0] as any;
       expect(guard.operator).toBe("not");
       expect(errors).toHaveLength(0);
     });

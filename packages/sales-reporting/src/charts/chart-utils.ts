@@ -13,10 +13,15 @@ export function niceScale(
   const residual = roughStep / magnitude;
 
   let niceStep: number;
-  if (residual <= 1.5) niceStep = 1 * magnitude;
-  else if (residual <= 3) niceStep = 2 * magnitude;
-  else if (residual <= 7) niceStep = 5 * magnitude;
-  else niceStep = 10 * magnitude;
+  if (residual <= 1.5) {
+    niceStep = 1 * magnitude;
+  } else if (residual <= 3) {
+    niceStep = 2 * magnitude;
+  } else if (residual <= 7) {
+    niceStep = 5 * magnitude;
+  } else {
+    niceStep = 10 * magnitude;
+  }
 
   const niceMax = Math.ceil(maxValue / niceStep) * niceStep;
   const ticks: number[] = [];

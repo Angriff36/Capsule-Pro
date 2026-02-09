@@ -56,7 +56,7 @@ export function LayoutSwitcher({
     if (isOpen) {
       loadLayouts();
     }
-  }, [isOpen, boardId]);
+  }, [isOpen, loadLayouts]);
 
   const loadLayouts = async () => {
     setIsLoading(true);

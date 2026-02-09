@@ -99,7 +99,9 @@ export function PrepListSaveButton({
     reason: OverrideReasonCode,
     details: string
   ) => {
-    if (!inputData) return;
+    if (!inputData) {
+      return;
+    }
 
     startTransitionAction(async () => {
       try {

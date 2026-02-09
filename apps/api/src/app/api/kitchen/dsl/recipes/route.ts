@@ -31,7 +31,7 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
  * - Automatic persistence through PrismaStore
  */
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   // 1. Auth check
   const { orgId, userId } = await auth();
   if (!orgId) {

@@ -14,27 +14,35 @@ const STATUS_MAP: Record<string, SalesRecord["status"]> = {
 };
 
 function parseDate(value: string | undefined): Date | null {
-  if (!value || value.trim() === "") return null;
+  if (!value || value.trim() === "") {
+    return null;
+  }
   const trimmed = value.trim();
   const d = new Date(trimmed);
-  if (!isNaN(d.getTime())) return d;
+  if (!Number.isNaN(d.getTime())) {
+    return d;
+  }
 
   // Try Excel serial date format
   const num = Number.parseFloat(trimmed);
-  if (!isNaN(num) && num > 0) {
+  if (!Number.isNaN(num) && num > 0) {
     const epoch = Math.round((num - 25_569) * 86_400 * 1000);
     const excelDate = new Date(epoch);
-    if (!isNaN(excelDate.getTime())) return excelDate;
+    if (!Number.isNaN(excelDate.getTime())) {
+      return excelDate;
+    }
   }
 
   return null;
 }
 
 function parseNumber(value: string | undefined): number {
-  if (!value) return 0;
+  if (!value) {
+    return 0;
+  }
   const cleaned = value.replace(/[$,\s]/g, "");
   const num = Number.parseFloat(cleaned);
-  return isNaN(num) ? 0 : num;
+  return Number.isNaN(num) ? 0 : num;
 }
 
 function normalizeStatus(raw: string): SalesRecord["status"] {
@@ -52,12 +60,16 @@ function findColumn(
 ): string | undefined {
   for (const candidate of candidates) {
     // Direct match
-    if (row[candidate]) return candidate;
+    if (row[candidate]) {
+      return candidate;
+    }
 
     // Case-insensitive match
     const lowerKey = candidate.toLowerCase();
     for (const key of Object.keys(row)) {
-      if (key.toLowerCase() === lowerKey) return key;
+      if (key.toLowerCase() === lowerKey) {
+        return key;
+      }
     }
   }
   return undefined;
@@ -106,7 +118,9 @@ export function parseRowToRecord(
       "Start Date",
       "Start_Date",
     ]);
-    if (dateCol) dateStr = row[dateCol];
+    if (dateCol) {
+      dateStr = row[dateCol];
+    }
   }
 
   // Last resort: try to find any column with "date" in the name
@@ -123,7 +137,9 @@ export function parseRowToRecord(
   }
 
   const date = parseDate(dateStr);
-  if (!date) return null;
+  if (!date) {
+    return null;
+  }
 
   // Extract other fields with flexible matching
   const eventCol = findColumn(row, [

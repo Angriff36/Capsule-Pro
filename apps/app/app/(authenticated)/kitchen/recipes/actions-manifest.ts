@@ -65,7 +65,7 @@ const toDecimalNumber = (value: unknown, field: string): number => {
   invariant(false, `${field} must be a number or Decimal`);
 };
 
-const toDecimalNumberOrNull = (
+const _toDecimalNumberOrNull = (
   value: unknown,
   field: string
 ): number | null => {

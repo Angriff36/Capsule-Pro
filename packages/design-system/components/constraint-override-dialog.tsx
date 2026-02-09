@@ -125,30 +125,27 @@ export function ConstraintOverrideDialog({
             {warningsOnly ? "Action Completed with Warnings" : title}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            {description || (
-              <>
-                {warningsOnly ? (
-                  <>
-                    This {actionDescription} completed successfully, but there{" "}
-                    {actionableConstraints.length > 1 ? "are" : "is"}{" "}
-                    {actionableConstraints.length} warning
-                    {actionableConstraints.length > 1 ? "s" : ""} you should be
-                    aware of.
-                  </>
-                ) : (
-                  <>
-                    This {actionDescription} is blocked by{" "}
-                    {hasBlocking && hasWarnings
-                      ? "blocking constraints and warnings"
-                      : hasBlocking
-                        ? "blocking constraints"
-                        : "warnings"}
-                    . You can proceed with an override, or cancel to address the
-                    issues.
-                  </>
-                )}
-              </>
-            )}
+            {description ||
+              (warningsOnly ? (
+                <>
+                  This {actionDescription} completed successfully, but there{" "}
+                  {actionableConstraints.length > 1 ? "are" : "is"}{" "}
+                  {actionableConstraints.length} warning
+                  {actionableConstraints.length > 1 ? "s" : ""} you should be
+                  aware of.
+                </>
+              ) : (
+                <>
+                  This {actionDescription} is blocked by{" "}
+                  {hasBlocking && hasWarnings
+                    ? "blocking constraints and warnings"
+                    : hasBlocking
+                      ? "blocking constraints"
+                      : "warnings"}
+                  . You can proceed with an override, or cancel to address the
+                  issues.
+                </>
+              ))}
           </AlertDialogDescription>
         </AlertDialogHeader>
 

@@ -116,7 +116,9 @@ export const RecipeDetailEditButton = ({
     reason: OverrideReasonCode,
     details: string
   ) => {
-    if (!cachedFormData) return;
+    if (!cachedFormData) {
+      return;
+    }
 
     startTransitionAction(async () => {
       try {

@@ -861,7 +861,7 @@ export function BoardCanvas({
     });
     // Only run on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boardId]);
+  }, [boardId, connections]);
 
   // Group handlers
   const handleGroupPositionChange = useCallback(
@@ -1035,7 +1035,7 @@ export function BoardCanvas({
     handleRefreshConnections();
   }, [handleRefreshConnections]);
 
-  const handleConnectionDeleted = useCallback(async () => {
+  const _handleConnectionDeleted = useCallback(async () => {
     // Refresh connections after deletion
     await handleRefreshConnections();
     setSelectedConnectionId(null);
@@ -1206,7 +1206,7 @@ export function BoardCanvas({
             currentVisibleCards={state.cards.map((c) => c.id)}
             onLoadLayout={(
               viewport,
-              visibleCards,
+              _visibleCards,
               newGridSize,
               newShowGrid,
               newSnapToGrid
@@ -1525,7 +1525,9 @@ export function BoardCanvas({
           // Refresh cards from server after bulk update
           // This ensures we get the latest state including any server-side defaults
           const updatedIds = state.selectedCardIds;
-          if (updatedIds.length === 0) return;
+          if (updatedIds.length === 0) {
+            return;
+          }
 
           // Fetch updated cards
           try {

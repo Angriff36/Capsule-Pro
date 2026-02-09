@@ -16,8 +16,8 @@
  * @vitest-environment node
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock auth
 vi.mock("@repo/auth/server", () => ({

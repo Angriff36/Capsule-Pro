@@ -85,7 +85,7 @@ function generateRecommendations(
   const trends = metrics.pricingTrends;
   if (trends.length >= 2) {
     const first = trends[0].avgValue;
-    const last = trends[trends.length - 1].avgValue;
+    const last = trends.at(-1).avgValue;
     if (first > 0 && last > first) {
       const change = (((last - first) / first) * 100).toFixed(0);
       recommendations.push(
@@ -123,7 +123,7 @@ function computeGoals(
   const currentConversion = conversionRate(records);
   const conversionTarget = Math.min(currentConversion + 0.05, 0.95);
 
-  const wonRevenue = sumRevenue(filterByStatus(records, "won"));
+  const _wonRevenue = sumRevenue(filterByStatus(records, "won"));
   const avgDealSize = averageRevenue(filterByStatus(records, "won"));
   const dealsNeeded =
     avgDealSize > 0 ? Math.ceil(revenueTarget / avgDealSize) : 0;

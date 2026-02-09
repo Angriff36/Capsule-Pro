@@ -8,7 +8,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import type * as ts from "typescript";
 
 const SNAPSHOT_FILE = join(
   process.cwd(),
@@ -23,7 +22,7 @@ describe("Snapshot TypeScript Validation", () => {
     const ts = await import("typescript");
 
     // Create a source file from the snapshot - this will throw on parse errors
-    let sourceFile: ts.SourceFile;
+    let sourceFile: import("typescript").SourceFile;
     try {
       sourceFile = ts.createSourceFile(
         "snapshot.ts",

@@ -22,7 +22,7 @@ if (process.env.NODE_ENV !== "production" && typeof process !== "undefined") {
       "[db] Using Neon host:",
       u.hostname,
       "(pooler:",
-      u.hostname.includes("-pooler") + ")"
+      `${u.hostname.includes("-pooler")})`
     );
   } catch {
     // ignore

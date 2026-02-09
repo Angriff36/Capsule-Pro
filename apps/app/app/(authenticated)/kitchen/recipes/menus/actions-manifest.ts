@@ -188,7 +188,7 @@ export async function createMenuWithOverride(
 
   if (!initialResult.success && initialResult.constraintOutcomes) {
     // Create override requests from the blocking constraints
-    const overrideRequests = createOverrideRequests(
+    const _overrideRequests = createOverrideRequests(
       initialResult.constraintOutcomes.filter(
         (c) => !c.passed && c.severity === "block"
       ),
@@ -516,7 +516,7 @@ export async function activateMenuManifest(
  */
 export async function deactivateMenuManifest(
   menuId: string,
-  reason?: string
+  _reason?: string
 ): Promise<MenuManifestActionResult> {
   const tenantId = await requireTenantId();
 

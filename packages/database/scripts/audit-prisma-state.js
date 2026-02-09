@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import pg from "pg";
 
 const MIGRATIONS_DIR = path.resolve("prisma/migrations");
@@ -66,7 +66,9 @@ function getMigrationState() {
 
   for (const dir of fs.readdirSync(MIGRATIONS_DIR)) {
     const sqlPath = path.join(MIGRATIONS_DIR, dir, "migration.sql");
-    if (!fs.existsSync(sqlPath)) continue;
+    if (!fs.existsSync(sqlPath)) {
+      continue;
+    }
 
     const sql = fs.readFileSync(sqlPath, "utf8");
 

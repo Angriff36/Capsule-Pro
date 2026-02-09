@@ -25,7 +25,9 @@ const TSCONFIG_FILE = join(TSCONFIG_DIR, "tsconfig.projection-snapshot.json");
 
 describe("Projection proof: PrepTask.claim golden snapshot", () => {
   it("matches the checked-in snapshot byte-for-byte", async () => {
-    if (!existsSync(SNAP_DIR)) mkdirSync(SNAP_DIR, { recursive: true });
+    if (!existsSync(SNAP_DIR)) {
+      mkdirSync(SNAP_DIR, { recursive: true });
+    }
 
     // Use the EXACT same manifest loading path as existing PrepTask tests
     const manifestPath = join(
@@ -48,7 +50,7 @@ describe("Projection proof: PrepTask.claim golden snapshot", () => {
     // Generate nextjs.command surface for PrepTask.claim
     // Using authProvider: "none" for minimal test (no Clerk)
     // Using includeTenantFilter: false to avoid database tenant lookup
-    const result = projection!.generate(ir, {
+    const result = projection?.generate(ir, {
       surface: "nextjs.command",
       entity: "PrepTask",
       command: "claim",
@@ -59,6 +61,10 @@ describe("Projection proof: PrepTask.claim golden snapshot", () => {
         runtimeImportPath: "@/lib/manifest-runtime",
       },
     });
+
+    if (!result) {
+      throw new Error("Failed to generate projection");
+    }
 
     expect(result.diagnostics).toEqual([]);
     expect(result.artifacts).toHaveLength(1);
@@ -83,7 +89,9 @@ describe("Projection proof: PrepTask.claim golden snapshot", () => {
   it("typechecks against repo imports (tsc --noEmit)", () => {
     expect(existsSync(SNAP_FILE)).toBe(true);
 
-    if (!existsSync(TSCONFIG_DIR)) mkdirSync(TSCONFIG_DIR, { recursive: true });
+    if (!existsSync(TSCONFIG_DIR)) {
+      mkdirSync(TSCONFIG_DIR, { recursive: true });
+    }
 
     // Create a minimal tsconfig that includes only the snapshot file,
     // but inherits moduleResolution/paths from apps/api.

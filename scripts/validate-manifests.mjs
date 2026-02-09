@@ -18,6 +18,10 @@ import { execSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
+// Regex moved to top level for performance
+const CAMEL_CASE_REGEX = /([A-Z])/g;
+const FIRST_CHAR_REGEX = /^./;
+
 const MANIFEST_DIR = "packages/kitchen-ops/manifests";
 
 // ANSI color codes
@@ -87,7 +91,9 @@ function checkManifestDirectory() {
   }
 
   logSuccess(`Found ${files.length} manifest file(s)`);
-  files.forEach((f) => log(`    - ${f}`));
+  for (const f of files) {
+    log(`    - ${f}`);
+  }
   return true;
 }
 
@@ -184,10 +190,10 @@ function checkGeneratedCode() {
   }
   logWarning("Generated code has uncommitted changes");
   log("    Changed files:");
-  gitResult.output
-    .trim()
-    .split("\n")
-    .forEach((f) => log(`      - ${f}`));
+  const changedFiles = gitResult.output.trim().split("\n");
+  for (const f of changedFiles) {
+    log(`      - ${f}`);
+  }
   log("\n    Run the following to update:");
   log("      git add apps/api/app/api/kitchen/");
   log('      git commit -m "feat: regenerate manifest-generated routes"');
@@ -237,8 +243,8 @@ function main() {
 
   const allPassed = Object.entries(results).every(([key, value]) => {
     const label = key
-      .replace(/([A-Z])/g, " $1")
-      .replace(/^./, (str) => str.toUpperCase());
+      .replace(CAMEL_CASE_REGEX, " $1")
+      .replace(FIRST_CHAR_REGEX, (str) => str.toUpperCase());
     if (value) {
       logSuccess(label);
       return true;

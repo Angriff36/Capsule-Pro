@@ -25,10 +25,16 @@ function revenueChangeText(
   current: number,
   previous: number | null
 ): { text: string; trend: "up" | "down" | "neutral" } {
-  if (previous === null) return { text: "No prior data", trend: "neutral" };
-  if (previous === 0) return { text: "New period", trend: "neutral" };
+  if (previous === null) {
+    return { text: "No prior data", trend: "neutral" };
+  }
+  if (previous === 0) {
+    return { text: "New period", trend: "neutral" };
+  }
   const pct = (((current - previous) / previous) * 100).toFixed(1);
-  if (current >= previous) return { text: `+${pct}% vs prior`, trend: "up" };
+  if (current >= previous) {
+    return { text: `+${pct}% vs prior`, trend: "up" };
+  }
   return { text: `${pct}% vs prior`, trend: "down" };
 }
 

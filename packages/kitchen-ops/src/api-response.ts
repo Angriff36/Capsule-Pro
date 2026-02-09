@@ -402,9 +402,9 @@ export function getWarningConstraintOutcomes(
 /**
  * Type for Next.js Response constructor (avoiding direct import)
  */
-export type NextResponseConstructor = {
+export interface NextResponseConstructor {
   json: (body: unknown, init?: { status?: number }) => Response;
-};
+}
 
 export type ResponseLike = Response;
 

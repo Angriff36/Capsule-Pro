@@ -66,7 +66,7 @@ export function SaveLayoutDialog({
     if (result.success) {
       setName("");
       onOpenChange(false);
-      onSave?.(result.data!.id, result.data!.name);
+      onSave?.(result.data?.id, result.data?.name);
     } else {
       setError(result.error || "Failed to save layout");
     }

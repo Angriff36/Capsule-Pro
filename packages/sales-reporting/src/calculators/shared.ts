@@ -27,7 +27,9 @@ export function groupBy<K extends string>(
   const groups = {} as Record<K, SalesRecord[]>;
   for (const record of records) {
     const key = keyFn(record);
-    if (!groups[key]) groups[key] = [];
+    if (!groups[key]) {
+      groups[key] = [];
+    }
     groups[key].push(record);
   }
   return groups;
@@ -42,7 +44,9 @@ export function countByStatus(records: SalesRecord[]): Record<string, number> {
 }
 
 export function averageRevenue(records: SalesRecord[]): number {
-  if (records.length === 0) return 0;
+  if (records.length === 0) {
+    return 0;
+  }
   return sumRevenue(records) / records.length;
 }
 
@@ -50,7 +54,9 @@ export function conversionRate(records: SalesRecord[]): number {
   const decided = records.filter(
     (r) => r.status === "won" || r.status === "lost"
   );
-  if (decided.length === 0) return 0;
+  if (decided.length === 0) {
+    return 0;
+  }
   const won = decided.filter((r) => r.status === "won").length;
   return won / decided.length;
 }

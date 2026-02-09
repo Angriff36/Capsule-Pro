@@ -85,8 +85,10 @@ function formatConstraintCode(code: string): string {
  * Truncate text to a maximum length
  */
 function truncateText(text: string, maxLength = 50): string {
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + "...";
+  if (text.length <= maxLength) {
+    return text;
+  }
+  return `${text.slice(0, maxLength)}...`;
 }
 
 export const AuditLogsClient = () => {
@@ -112,8 +114,12 @@ export const AuditLogsClient = () => {
 
     try {
       const params = new URLSearchParams();
-      if (entityType) params.append("entityType", entityType);
-      if (entityId) params.append("entityId", entityId);
+      if (entityType) {
+        params.append("entityType", entityType);
+      }
+      if (entityId) {
+        params.append("entityId", entityId);
+      }
 
       // If no filters, show recent logs across all entities
       // The API requires entityType and entityId, so we'll fetch from multiple types
@@ -183,7 +189,7 @@ export const AuditLogsClient = () => {
 
   useEffect(() => {
     void fetchAuditLogs();
-  }, [entityType]);
+  }, [fetchAuditLogs]);
 
   /**
    * Handle form submission for filtering

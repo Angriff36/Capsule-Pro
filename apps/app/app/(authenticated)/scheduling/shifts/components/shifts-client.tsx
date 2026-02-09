@@ -121,7 +121,7 @@ export function ShiftsClient() {
     } finally {
       setLoading(false);
     }
-  }, [filters, pagination.page]);
+  }, [filters, pagination.page, pagination]);
 
   // Fetch filter options
   const fetchFilterOptions = useCallback(async () => {
@@ -147,7 +147,9 @@ export function ShiftsClient() {
   useEffect(() => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
-      if (value) params.set(key, value);
+      if (value) {
+        params.set(key, value);
+      }
     });
     const queryString = params.toString();
     router.push(`/scheduling/shifts${queryString ? `?${queryString}` : ""}`);

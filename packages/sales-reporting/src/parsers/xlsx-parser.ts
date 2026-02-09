@@ -26,7 +26,9 @@ export function parseXlsx(data: Buffer, dateColumn?: string): SalesRecord[] {
 
     for (const row of normalized) {
       const record = parseRowToRecord(row, dateColumn);
-      if (record) records.push(record);
+      if (record) {
+        records.push(record);
+      }
     }
   }
 

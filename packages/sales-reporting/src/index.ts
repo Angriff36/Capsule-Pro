@@ -34,7 +34,7 @@ export async function generateSalesReport(input: ReportInput): Promise<Buffer> {
   const end = new Date(config.dateRange.end);
   end.setHours(23, 59, 59, 999);
 
-  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
     throw new Error("Invalid date range provided");
   }
 

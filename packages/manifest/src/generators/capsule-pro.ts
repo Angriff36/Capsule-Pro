@@ -331,7 +331,7 @@ function generateCreateOperation(entityName: string): string {
 /**
  * Generate UPDATE operation logic with constraint checking
  */
-function generateUpdateOperation(entityName: string): string {
+function generateUpdateOperation(_entityName: string): string {
   const lines: string[] = [];
 
   lines.push("    // Get ID from URL");
@@ -389,7 +389,7 @@ function generateUpdateOperation(entityName: string): string {
 /**
  * Generate DELETE operation logic
  */
-function generateDeleteOperation(entityName: string): string {
+function generateDeleteOperation(_entityName: string): string {
   const lines: string[] = [];
 
   lines.push("    // Get ID from URL");
@@ -414,7 +414,7 @@ function generateDeleteOperation(entityName: string): string {
  * Generate COMMAND operation logic
  */
 function generateCommandOperation(
-  entityName: string,
+  _entityName: string,
   operation: RouteOperation
 ): string {
   const lines: string[] = [];
@@ -484,5 +484,5 @@ function camelCase(s: string): string {
  * Convert PascalCase to camelCase plural
  */
 function camelCasePlural(s: string): string {
-  return camelCase(s) + "s";
+  return `${camelCase(s)}s`;
 }

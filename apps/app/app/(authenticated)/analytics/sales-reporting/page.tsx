@@ -115,7 +115,9 @@ export default function SalesReportingPage() {
         const dateStr = cells[dateColIndex]?.replace(/"/g, "").trim();
         if (dateStr) {
           const d = new Date(dateStr);
-          if (!Number.isNaN(d.getTime())) dates.push(d);
+          if (!Number.isNaN(d.getTime())) {
+            dates.push(d);
+          }
         }
       }
 
@@ -188,15 +190,19 @@ export default function SalesReportingPage() {
       let score = 0;
 
       // Name-based scoring
-      if (normalized.includes("date")) score += 3;
+      if (normalized.includes("date")) {
+        score += 3;
+      }
       if (
         normalized.includes("created") ||
         normalized.includes("inquiry") ||
         normalized.includes("lead")
-      )
+      ) {
         score += 2;
-      if (normalized.includes("event") || normalized.includes("start"))
+      }
+      if (normalized.includes("event") || normalized.includes("start")) {
         score += 1;
+      }
 
       // Date coverage calculation
       const values = allRows
@@ -205,10 +211,14 @@ export default function SalesReportingPage() {
           (value): value is Date | string | number =>
             value !== null && value !== undefined
         );
-      if (values.length === 0) continue;
+      if (values.length === 0) {
+        continue;
+      }
 
       const allNumeric = values.every((value) => typeof value === "number");
-      if (allNumeric && score === 0) continue; // Skip numeric columns with no date hints
+      if (allNumeric && score === 0) {
+        continue; // Skip numeric columns with no date hints
+      }
 
       // Try to parse each value as a date
       let validDates = 0;
@@ -227,15 +237,21 @@ export default function SalesReportingPage() {
           date = Number.isNaN(d.getTime()) ? null : d;
         }
 
-        if (date) validDates++;
+        if (date) {
+          validDates++;
+        }
       }
 
       const coverage = values.length > 0 ? validDates / values.length : 0;
-      if (coverage === 0) continue;
+      if (coverage === 0) {
+        continue;
+      }
 
       // Bonus if all values are dates
       const allDates = values.every((value) => value instanceof Date);
-      if (allDates) score += 4;
+      if (allDates) {
+        score += 4;
+      }
 
       score += coverage * 2;
 
@@ -244,7 +260,9 @@ export default function SalesReportingPage() {
 
     // Sort by score (descending), then by coverage
     scoredColumns.sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
       return b.coverage - a.coverage;
     });
 
@@ -273,7 +291,9 @@ export default function SalesReportingPage() {
           date = Number.isNaN(d.getTime()) ? null : d;
         }
 
-        if (date) dates.push(date);
+        if (date) {
+          dates.push(date);
+        }
       }
 
       if (dates.length > 0) {

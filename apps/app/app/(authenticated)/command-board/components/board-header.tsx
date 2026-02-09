@@ -41,7 +41,7 @@ export function BoardHeader({
 }: BoardHeaderProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [_isDeleting, setIsDeleting] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [editName, setEditName] = useState(boardName);
   const [editDescription, setEditDescription] = useState(

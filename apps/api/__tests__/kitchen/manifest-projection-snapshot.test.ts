@@ -45,7 +45,7 @@ describe("Projection System Proof: PrepTask.claim Snapshot", () => {
 
     // Step 3: Generate nextjs.command surface for PrepTask.claim
     // Using minimal options to avoid Clerk/tenant dependencies
-    const result = projection!.generate(ir, {
+    const result = projection?.generate(ir, {
       surface: "nextjs.command",
       entity: "PrepTask",
       command: "claim",
@@ -56,6 +56,10 @@ describe("Projection System Proof: PrepTask.claim Snapshot", () => {
         runtimeImportPath: "@/lib/manifest-runtime",
       },
     });
+
+    if (!result) {
+      throw new Error("Failed to generate projection");
+    }
 
     // Verify generation succeeded
     expect(result.diagnostics).toEqual([]);
@@ -88,7 +92,7 @@ describe("Projection System Proof: PrepTask.claim Snapshot", () => {
     }
   });
 
-  it("should generate TypeScript-valid code", async () => {
+  it("should generate TypeScript-valid code", () => {
     // Load the snapshot and validate it's syntactically correct TypeScript
     expect(existsSync(SNAPSHOT_FILE)).toBe(true);
 

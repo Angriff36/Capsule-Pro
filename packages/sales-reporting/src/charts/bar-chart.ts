@@ -18,7 +18,9 @@ export function drawBarChart(
     showCurrency = true,
   } = options;
 
-  if (data.length === 0) return y;
+  if (data.length === 0) {
+    return y;
+  }
 
   doc.save();
 

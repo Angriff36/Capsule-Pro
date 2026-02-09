@@ -138,7 +138,9 @@ export function drawTable(
     colX = x;
     row.forEach((cell, cellIndex) => {
       const col = columns[cellIndex];
-      if (!col) return;
+      if (!col) {
+        return;
+      }
       doc
         .fontSize(8)
         .font("Helvetica")

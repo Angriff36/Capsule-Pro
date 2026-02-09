@@ -81,12 +81,24 @@ function SeverityBadge({ severity }: { severity: "ok" | "warn" | "block" }) {
  * Format a value for display
  */
 function formatValue(value: unknown): string {
-  if (value === null) return "null";
-  if (value === undefined) return "undefined";
-  if (typeof value === "string") return `"${value}"`;
-  if (typeof value === "boolean") return value.toString();
-  if (typeof value === "number") return value.toString();
-  if (Array.isArray(value)) return `[${value.map(formatValue).join(", ")}]`;
+  if (value === null) {
+    return "null";
+  }
+  if (value === undefined) {
+    return "undefined";
+  }
+  if (typeof value === "string") {
+    return `"${value}"`;
+  }
+  if (typeof value === "boolean") {
+    return value.toString();
+  }
+  if (typeof value === "number") {
+    return value.toString();
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map(formatValue).join(", ")}]`;
+  }
   if (typeof value === "object") {
     const obj = value as Record<string, unknown>;
     const entries = Object.entries(obj).slice(0, 5); // Limit for display
@@ -98,7 +110,7 @@ function formatValue(value: unknown): string {
 /**
  * Format a constraint code for display
  */
-function formatConstraintCode(code: string): string {
+function _formatConstraintCode(code: string): string {
   return code
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
@@ -144,7 +156,7 @@ function ResolvedValues({
                 copyToClipboard(
                   JSON.stringify(
                     resolved,
-                    (key, value) =>
+                    (_key, value) =>
                       typeof value === "bigint" ? value.toString() : value,
                     2
                   )
@@ -321,7 +333,7 @@ function ConstraintDiagnosticsCard({
                 <button
                   className="text-xs text-slate-500 hover:text-slate-300"
                   onClick={() =>
-                    copyToClipboard(result.guardFailure!.formatted)
+                    copyToClipboard(result.guardFailure?.formatted)
                   }
                   type="button"
                 >
@@ -347,7 +359,7 @@ function ConstraintDiagnosticsCard({
                 <button
                   className="text-xs text-slate-500 hover:text-slate-300"
                   onClick={() =>
-                    copyToClipboard(result.policyDenial!.formatted)
+                    copyToClipboard(result.policyDenial?.formatted)
                   }
                   type="button"
                 >

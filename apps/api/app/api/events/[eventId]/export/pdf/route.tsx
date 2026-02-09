@@ -7,10 +7,10 @@
  * @canonical true
  */
 
+import type { DocumentProps } from "@react-pdf/renderer";
 import { auth } from "@repo/auth/server";
 import { database, type Event } from "@repo/database";
 import { EventDetailPDF } from "@repo/pdf";
-import { type DocumentProps } from "@react-pdf/renderer";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 

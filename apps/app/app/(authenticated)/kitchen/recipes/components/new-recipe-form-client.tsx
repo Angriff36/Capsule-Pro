@@ -58,7 +58,9 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
     reason: OverrideReasonCode,
     details: string
   ) => {
-    if (!formData) return;
+    if (!formData) {
+      return;
+    }
 
     startTransitionAction(async () => {
       try {

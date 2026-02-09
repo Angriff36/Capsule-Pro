@@ -307,7 +307,7 @@ export async function getBatchEntityData(
   const result = new Map<string, EntityData>();
 
   // Group by entity type for batch queries
-  const byType = new Map<EntityType, Array<string>>();
+  const byType = new Map<EntityType, string[]>();
   for (const req of requests) {
     const ids = byType.get(req.entityType) ?? [];
     ids.push(req.entityId);

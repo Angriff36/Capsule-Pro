@@ -169,12 +169,14 @@ function groupStockByItemAndLocation(
       itemMap = new Map();
       stockByItemAndLocation.set(stock.itemId, itemMap);
     }
-    const quantity =
-      typeof stock.quantity_on_hand === "number"
-        ? stock.quantity_on_hand
-        : typeof stock.quantity_on_hand === "string"
-          ? Number(stock.quantity_on_hand)
-          : stock.quantity_on_hand.toNumber();
+    let quantity: number;
+    if (typeof stock.quantity_on_hand === "number") {
+      quantity = stock.quantity_on_hand;
+    } else if (typeof stock.quantity_on_hand === "string") {
+      quantity = Number(stock.quantity_on_hand);
+    } else {
+      quantity = stock.quantity_on_hand.toNumber();
+    }
     itemMap.set(stock.storageLocationId, {
       quantity,
       lastCountedAt: stock.last_counted_at,
@@ -235,8 +237,12 @@ function createStockLevel(
   const toNumber = (
     value: number | string | { toNumber: () => number }
   ): number => {
-    if (typeof value === "number") return value;
-    if (typeof value === "string") return Number(value);
+    if (typeof value === "number") {
+      return value;
+    }
+    if (typeof value === "string") {
+      return Number(value);
+    }
     return value.toNumber();
   };
 

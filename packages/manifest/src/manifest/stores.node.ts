@@ -34,9 +34,9 @@ export interface PostgresConfig {
 }
 
 export class PostgresStore<T extends EntityInstance> implements Store<T> {
-  private pool: Pool;
-  private tableName: string;
-  private generateId: () => string;
+  private readonly pool: Pool;
+  private readonly tableName: string;
+  private readonly generateId: () => string;
   private initialized = false;
 
   constructor(config: PostgresConfig, generateId?: () => string) {
@@ -57,7 +57,9 @@ export class PostgresStore<T extends EntityInstance> implements Store<T> {
   }
 
   private async ensureInitialized(): Promise<void> {
-    if (this.initialized) return;
+    if (this.initialized) {
+      return;
+    }
 
     const client = await this.pool.connect();
     try {
@@ -126,7 +128,9 @@ export class PostgresStore<T extends EntityInstance> implements Store<T> {
         `SELECT data FROM ${this.tableName} WHERE id = $1`,
         [id]
       );
-      if (selectResult.rows.length === 0) return undefined;
+      if (selectResult.rows.length === 0) {
+        return undefined;
+      }
 
       const existing = selectResult.rows[0].data as T;
       const updated = { ...existing, ...data, id };
@@ -168,9 +172,9 @@ export interface SupabaseConfig {
 }
 
 export class SupabaseStore<T extends EntityInstance> implements Store<T> {
-  private client: SupabaseClient;
-  private tableName: string;
-  private generateId: () => string;
+  private readonly client: SupabaseClient;
+  private readonly tableName: string;
+  private readonly generateId: () => string;
 
   constructor(config: SupabaseConfig, generateId?: () => string) {
     this.generateId = generateId || (() => crypto.randomUUID());
@@ -182,7 +186,9 @@ export class SupabaseStore<T extends EntityInstance> implements Store<T> {
     const { data, error } = await this.client
       .from(this.tableName)
       .select("data");
-    if (error) throw new Error(`Supabase getAll failed: ${error.message}`);
+    if (error) {
+      throw new Error(`Supabase getAll failed: ${error.message}`);
+    }
     return (data ?? []).map((row: { data: T }) => row.data);
   }
 
@@ -194,7 +200,9 @@ export class SupabaseStore<T extends EntityInstance> implements Store<T> {
       .single();
 
     if (error) {
-      if (error.code === "PGRST116") return undefined;
+      if (error.code === "PGRST116") {
+        return undefined;
+      }
       throw new Error(`Supabase getById failed: ${error.message}`);
     }
     return data?.data as T;
@@ -210,7 +218,9 @@ export class SupabaseStore<T extends EntityInstance> implements Store<T> {
       .select("data")
       .single();
 
-    if (error) throw new Error(`Supabase create failed: ${error.message}`);
+    if (error) {
+      throw new Error(`Supabase create failed: ${error.message}`);
+    }
     return (result?.data as T) ?? item;
   }
 
@@ -222,7 +232,9 @@ export class SupabaseStore<T extends EntityInstance> implements Store<T> {
       .single();
 
     if (fetchError) {
-      if (fetchError.code === "PGRST116") return undefined;
+      if (fetchError.code === "PGRST116") {
+        return undefined;
+      }
       throw new Error(`Supabase update fetch failed: ${fetchError.message}`);
     }
 
@@ -235,8 +247,9 @@ export class SupabaseStore<T extends EntityInstance> implements Store<T> {
       .select("data")
       .single();
 
-    if (updateError)
+    if (updateError) {
       throw new Error(`Supabase update failed: ${updateError.message}`);
+    }
     return result?.data as T;
   }
 
@@ -245,7 +258,9 @@ export class SupabaseStore<T extends EntityInstance> implements Store<T> {
       .from(this.tableName)
       .delete()
       .eq("id", id);
-    if (error) throw new Error(`Supabase delete failed: ${error.message}`);
+    if (error) {
+      throw new Error(`Supabase delete failed: ${error.message}`);
+    }
     return true;
   }
 
@@ -254,6 +269,8 @@ export class SupabaseStore<T extends EntityInstance> implements Store<T> {
       .from(this.tableName)
       .delete()
       .neq("id", null);
-    if (error) throw new Error(`Supabase clear failed: ${error.message}`);
+    if (error) {
+      throw new Error(`Supabase clear failed: ${error.message}`);
+    }
   }
 }

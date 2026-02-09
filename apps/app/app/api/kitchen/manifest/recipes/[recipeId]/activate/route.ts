@@ -22,7 +22,7 @@ interface RouteContext {
  * - Event emission (RecipeActivated)
  * - Audit logging
  */
-export async function POST(request: Request, context: RouteContext) {
+export async function POST(_request: Request, context: RouteContext) {
   const { orgId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });

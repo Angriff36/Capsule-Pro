@@ -280,7 +280,7 @@ export function PrepListClient({
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isSavingToDb, setIsSavingToDb] = useState(false);
+  const [_isSavingToDb, setIsSavingToDb] = useState(false);
   const [expandedStations, setExpandedStations] = useState<Set<string>>(
     new Set()
   );
@@ -378,7 +378,7 @@ export function PrepListClient({
     }
   }, [prepList]);
 
-  const handleSaveToDatabase = useCallback(async () => {
+  const _handleSaveToDatabase = useCallback(async () => {
     if (!prepList) {
       return;
     }

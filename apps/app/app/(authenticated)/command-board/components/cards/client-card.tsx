@@ -34,7 +34,7 @@ const clientTypeConfig = {
 export const ClientCard = memo(function ClientCard({ card }: ClientCardProps) {
   const router = useRouter();
   const [entityData, setEntityData] = useState<ClientEntityData | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
 
   // Fetch live entity data if card is linked to an entity
   useEffect(() => {

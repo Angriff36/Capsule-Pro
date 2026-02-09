@@ -176,7 +176,7 @@ export async function extractPdfText(
   try {
     type Pdf2JsonDataError = { parserError?: Error } | Error;
 
-    type Pdf2JsonParser = {
+    interface Pdf2JsonParser {
       on(
         event: "pdfParser_dataError",
         cb: (errData: Pdf2JsonDataError) => void
@@ -188,7 +188,7 @@ export async function extractPdfText(
 
       // destroy isn't documented in the README example, so keep it optional
       destroy?: () => void;
-    };
+    }
 
     type Pdf2JsonParserCtor = new (...args: any[]) => Pdf2JsonParser;
 
@@ -249,7 +249,9 @@ export async function extractPdfText(
 
         console.error("[extractPdfText] PDFParser error:", errData);
         errors.push(`Failed to load PDF: ${errMsg}`);
-        if (errStack) errors.push(`Stack: ${errStack}`);
+        if (errStack) {
+          errors.push(`Stack: ${errStack}`);
+        }
 
         resolve({ lines: [], pageCount: 0, errors });
       });
@@ -266,7 +268,9 @@ export async function extractPdfText(
                 for (const textItem of page.Texts) {
                   if (textItem.R) {
                     for (const run of textItem.R) {
-                      if (run.T) allPageLines.push(run.T);
+                      if (run.T) {
+                        allPageLines.push(run.T);
+                      }
                     }
                   }
                 }
