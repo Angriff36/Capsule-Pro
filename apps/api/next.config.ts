@@ -23,6 +23,7 @@ let nextConfig: NextConfig = withLogging({
     "@repo/observability",
     "@repo/security",
     "@repo/event-parser",
+    "@repo/manifest",
   ],
   experimental: {
     optimizePackageImports: ["date-fns"],
