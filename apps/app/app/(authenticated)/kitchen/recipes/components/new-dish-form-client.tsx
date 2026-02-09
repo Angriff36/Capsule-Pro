@@ -91,7 +91,8 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
     });
   };
 
-  const constraintState = useConstraintOverride(result ?? {}, {
+  const constraintState = useConstraintOverride({
+    result: result ?? {},
     onOverride: handleOverride,
   });
 

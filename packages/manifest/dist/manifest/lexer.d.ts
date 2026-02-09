@@ -14,11 +14,11 @@ import type { Token } from "./types.js";
  */
 export declare const KEYWORDS: Set<string>;
 export declare class Lexer {
-    private source;
+    private readonly source;
     private pos;
     private line;
     private col;
-    private tokens;
+    private readonly tokens;
     constructor(source: string);
     tokenize(): Token[];
     private skipWhitespace;

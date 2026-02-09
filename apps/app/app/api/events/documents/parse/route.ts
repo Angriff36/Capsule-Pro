@@ -1004,8 +1004,9 @@ async function processDocumentsAndGenerateResponse(
             checklistData: {
               checklist: checklistResult.checklist,
               warnings: checklistResult.warnings,
-            } as Prisma.InputJsonObject,
-            parsedEventData: result.mergedEvent as Prisma.InputJsonObject,
+            } as unknown as Prisma.InputJsonObject,
+            parsedEventData:
+              result.mergedEvent as unknown as Prisma.InputJsonObject,
           },
         });
 
@@ -1098,8 +1099,8 @@ async function _createChecklist(
       checklistData: {
         checklist: checklistResult.checklist,
         warnings: checklistResult.warnings,
-      } as Prisma.InputJsonObject,
-      parsedEventData: mergedEvent as Prisma.InputJsonObject,
+      } as unknown as Prisma.InputJsonObject,
+      parsedEventData: mergedEvent as unknown as Prisma.InputJsonObject,
     },
   });
 

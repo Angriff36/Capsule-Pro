@@ -11,14 +11,18 @@ function niceScale(maxValue, tickCount) {
     const magnitude = 10 ** Math.floor(Math.log10(roughStep));
     const residual = roughStep / magnitude;
     let niceStep;
-    if (residual <= 1.5)
+    if (residual <= 1.5) {
         niceStep = 1 * magnitude;
-    else if (residual <= 3)
+    }
+    else if (residual <= 3) {
         niceStep = 2 * magnitude;
-    else if (residual <= 7)
+    }
+    else if (residual <= 7) {
         niceStep = 5 * magnitude;
-    else
+    }
+    else {
         niceStep = 10 * magnitude;
+    }
     const niceMax = Math.ceil(maxValue / niceStep) * niceStep;
     const ticks = [];
     for (let v = 0; v <= niceMax; v += niceStep) {

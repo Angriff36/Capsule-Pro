@@ -90,10 +90,10 @@ export function ShiftsClient() {
 
   // Filters
   const [filters, setFilters] = useState({
-    startDate: searchParams.get("startDate") || "",
-    endDate: searchParams.get("endDate") || "",
-    employeeId: searchParams.get("employeeId") || "",
-    locationId: searchParams.get("locationId") || "",
+    startDate: searchParams?.get("startDate") || "",
+    endDate: searchParams?.get("endDate") || "",
+    employeeId: searchParams?.get("employeeId") || "",
+    locationId: searchParams?.get("locationId") || "",
   });
 
   // Modal state

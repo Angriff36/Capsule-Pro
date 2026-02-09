@@ -231,7 +231,7 @@ function generateCreateOperation(entityName) {
 /**
  * Generate UPDATE operation logic with constraint checking
  */
-function generateUpdateOperation(entityName) {
+function generateUpdateOperation(_entityName) {
     const lines = [];
     lines.push("    // Get ID from URL");
     lines.push("    const url = new URL(request.url);");
@@ -272,7 +272,7 @@ function generateUpdateOperation(entityName) {
 /**
  * Generate DELETE operation logic
  */
-function generateDeleteOperation(entityName) {
+function generateDeleteOperation(_entityName) {
     const lines = [];
     lines.push("    // Get ID from URL");
     lines.push("    const url = new URL(request.url);");
@@ -291,7 +291,7 @@ function generateDeleteOperation(entityName) {
 /**
  * Generate COMMAND operation logic
  */
-function generateCommandOperation(entityName, operation) {
+function generateCommandOperation(_entityName, operation) {
     const lines = [];
     const commandName = operation.path.split("/").pop() || "unknown";
     lines.push("    // Get ID from URL");
@@ -338,5 +338,5 @@ function camelCase(s) {
  * Convert PascalCase to camelCase plural
  */
 function camelCasePlural(s) {
-    return camelCase(s) + "s";
+    return `${camelCase(s)}s`;
 }

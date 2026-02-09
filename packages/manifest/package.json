@@ -40,6 +40,10 @@
     "./stores.node": {
       "types": "./src/manifest/stores.node.ts",
       "import": "./src/manifest/stores.node.ts"
+    },
+    "./prisma-store": {
+      "types": "./dist/manifest/prisma-store.d.ts",
+      "import": "./dist/manifest/prisma-store.js"
     }
   },
   "main": "./dist/index.js",

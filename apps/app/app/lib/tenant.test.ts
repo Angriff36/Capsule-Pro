@@ -19,7 +19,10 @@ import { requireTenantId } from "./tenant";
 describe("requireTenantId", () => {
   it("throws a descriptive invariant when orgId is missing", async () => {
     const mockAuth = vi.mocked(auth);
-    mockAuth.mockResolvedValueOnce({});
+    mockAuth.mockResolvedValueOnce({
+      orgId: undefined,
+      userId: undefined,
+    } as never);
 
     await expect(requireTenantId()).rejects.toThrow("auth.orgId must exist");
   });

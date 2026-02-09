@@ -649,7 +649,8 @@ export const createRecipe = async (formData: FormData) => {
   await enqueueOutboxEvent(tenantId, "recipe", recipeId, "recipe.created", {
     recipeId,
     imageUrl,
-    constraintOutcomes: versionResult.constraintOutcomes,
+    constraintOutcomes:
+      versionResult.constraintOutcomes as unknown as Prisma.InputJsonValue,
   });
   redirect("/kitchen/recipes");
 };
@@ -973,7 +974,8 @@ export const updateRecipe = async (recipeId: string, formData: FormData) => {
   await enqueueOutboxEvent(tenantId, "recipe", recipeId, "recipe.updated", {
     recipeId,
     versionNumber: nextVersionNumber,
-    constraintOutcomes: versionResult.constraintOutcomes,
+    constraintOutcomes:
+      versionResult.constraintOutcomes as unknown as Prisma.InputJsonValue,
   });
 
   revalidatePath("/kitchen/recipes");
@@ -1128,7 +1130,8 @@ export const createDish = async (formData: FormData) => {
     name,
     pricePerPerson,
     costPerPerson,
-    constraintOutcomes: result.constraintOutcomes,
+    constraintOutcomes:
+      result.constraintOutcomes as unknown as Prisma.InputJsonValue,
   });
   redirect("/kitchen/recipes?tab=dishes");
 };

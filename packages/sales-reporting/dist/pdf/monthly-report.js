@@ -8,13 +8,16 @@ const formatting_1 = require("../utils/formatting");
 const components_1 = require("./components");
 const document_1 = require("./document");
 function revenueChangeText(current, previous) {
-    if (previous === null)
+    if (previous === null) {
         return { text: "No prior data", trend: "neutral" };
-    if (previous === 0)
+    }
+    if (previous === 0) {
         return { text: "New period", trend: "neutral" };
+    }
     const pct = (((current - previous) / previous) * 100).toFixed(1);
-    if (current >= previous)
+    if (current >= previous) {
         return { text: `+${pct}% vs prior`, trend: "up" };
+    }
     return { text: `${pct}% vs prior`, trend: "down" };
 }
 async function generateMonthlyPdf(metrics, config) {

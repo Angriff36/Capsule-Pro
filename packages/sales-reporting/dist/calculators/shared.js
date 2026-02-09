@@ -21,8 +21,9 @@ function groupBy(records, keyFn) {
     const groups = {};
     for (const record of records) {
         const key = keyFn(record);
-        if (!groups[key])
+        if (!groups[key]) {
             groups[key] = [];
+        }
         groups[key].push(record);
     }
     return groups;
@@ -35,14 +36,16 @@ function countByStatus(records) {
     return counts;
 }
 function averageRevenue(records) {
-    if (records.length === 0)
+    if (records.length === 0) {
         return 0;
+    }
     return sumRevenue(records) / records.length;
 }
 function conversionRate(records) {
     const decided = records.filter((r) => r.status === "won" || r.status === "lost");
-    if (decided.length === 0)
+    if (decided.length === 0) {
         return 0;
+    }
     const won = decided.filter((r) => r.status === "won").length;
     return won / decided.length;
 }

@@ -24,8 +24,9 @@ function formatNumber(value) {
     return value.toLocaleString("en-US", { maximumFractionDigits: 0 });
 }
 function truncateText(text, maxLength) {
-    if (text.length <= maxLength)
+    if (text.length <= maxLength) {
         return text;
-    return text.substring(0, maxLength - 3) + "...";
+    }
+    return `${text.substring(0, maxLength - 3)}...`;
 }
 //# sourceMappingURL=formatting.js.map

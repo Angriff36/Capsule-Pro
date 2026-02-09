@@ -57,8 +57,9 @@ function parseXlsx(data, dateColumn) {
         });
         for (const row of normalized) {
             const record = (0, row_mapper_1.parseRowToRecord)(row, dateColumn);
-            if (record)
+            if (record) {
                 records.push(record);
+            }
         }
     }
     return records;

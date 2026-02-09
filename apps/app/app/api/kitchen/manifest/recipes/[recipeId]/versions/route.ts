@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { auth } from "@repo/auth/server";
+import type { Prisma } from "@repo/database";
 import { database } from "@repo/database";
 import {
   createRecipeRuntime,
@@ -192,9 +193,9 @@ export async function POST(request: Request, context: RouteContext) {
           versionId: recipeVersionId,
           recipeId,
           versionNumber: nextVersionNumber,
-          yieldQuantity,
+          yieldQuantity: Number(yieldQuantity),
           constraintOutcomes: result.constraintOutcomes,
-        },
+        } as Prisma.InputJsonValue,
         status: "pending" as const,
       },
     });

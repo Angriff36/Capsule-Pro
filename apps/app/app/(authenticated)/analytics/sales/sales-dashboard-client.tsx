@@ -53,7 +53,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { generateSalesReportPdf } from "./actions.tsx";
+import { generateSalesReportPdf } from "./actions";
 import {
   type AnnualMetrics,
   buildDateColumnOptionsForUI,
@@ -1077,10 +1077,10 @@ export function SalesDashboardClient() {
     if (showAllColumns) {
       return columns;
     }
-    return dateColumnOptions.detected.length
+    return dateColumnOptions?.detected.length
       ? dateColumnOptions.detected
       : columns;
-  }, [columns, dateColumnOptions.detected, showAllColumns]);
+  }, [columns, dateColumnOptions?.detected, showAllColumns]);
 
   useEffect(() => {
     if (!(salesData && columnOptions.length)) {
@@ -1199,10 +1199,10 @@ export function SalesDashboardClient() {
   );
 
   const createdRatio = createdChoice
-    ? (dateColumnOptions.ratios[createdChoice] ?? 0)
+    ? (dateColumnOptions?.ratios[createdChoice] ?? 0)
     : 0;
   const eventRatio = eventChoice
-    ? (dateColumnOptions.ratios[eventChoice] ?? 0)
+    ? (dateColumnOptions?.ratios[eventChoice] ?? 0)
     : 0;
 
   const createdRange = salesData
@@ -1476,7 +1476,8 @@ export function SalesDashboardClient() {
                         const statusValue = row._status;
                         if (statusValue !== undefined) {
                           next.status = statusValue;
-                          next._status = undefined;
+                          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                          delete next._status;
                         }
                         return next;
                       })}

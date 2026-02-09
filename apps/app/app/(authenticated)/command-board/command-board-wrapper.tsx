@@ -77,7 +77,8 @@ function CommandBoardRealtimeContent({
 
       if (result.success && result.cards) {
         // Add new cards to the local state
-        setCards((prev) => [...prev, ...result.cards!]);
+        const newCards = result.cards;
+        setCards((prev) => [...prev, ...newCards]);
         toast.success(
           suggestion.action.message ?? `Added ${result.created} cards to board`
         );

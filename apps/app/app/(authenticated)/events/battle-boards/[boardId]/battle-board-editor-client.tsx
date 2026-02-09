@@ -146,7 +146,7 @@ export function BattleBoardEditorClient({
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [boardData, setBoardData] = useState<BoardData>(
-    board.boardData as BoardData
+    board.boardData as unknown as BoardData
   );
   const [status, setStatus] = useState(board.status);
   const [boardName, setBoardName] = useState(board.boardName);

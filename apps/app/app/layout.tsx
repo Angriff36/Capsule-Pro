@@ -15,7 +15,7 @@ interface RootLayoutProperties {
 const RootLayout = async ({ children }: RootLayoutProperties) => {
   // Only load feature flags toolbar in development to reduce bundle size
   const Toolbar =
-    env.NODE_ENV === "development"
+    process.env.NODE_ENV === "development"
       ? (await import("@repo/feature-flags/components/toolbar")).Toolbar
       : null;
 

@@ -196,8 +196,9 @@ export class IRCompiler {
         if (s.config) {
             for (const [k, v] of Object.entries(s.config)) {
                 const val = this.transformExprToValue(v);
-                if (val)
+                if (val) {
                     config[k] = val;
+                }
             }
         }
         return {
@@ -371,20 +372,24 @@ export class IRCompiler {
             const properties = {};
             for (const p of obj.properties) {
                 const v = this.transformExprToValue(p.value);
-                if (v)
+                if (v) {
                     properties[p.key] = v;
+                }
             }
             return { kind: "object", properties };
         }
         return undefined;
     }
     literalToValue(value, dataType) {
-        if (dataType === "string")
+        if (dataType === "string") {
             return { kind: "string", value: value };
-        if (dataType === "number")
+        }
+        if (dataType === "number") {
             return { kind: "number", value: value };
-        if (dataType === "boolean")
+        }
+        if (dataType === "boolean") {
             return { kind: "boolean", value: value };
+        }
         return { kind: "null" };
     }
 }

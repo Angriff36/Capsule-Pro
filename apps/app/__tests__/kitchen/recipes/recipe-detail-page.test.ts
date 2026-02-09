@@ -18,6 +18,21 @@ vi.mock("../../../app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn().mockResolvedValue("tenant-1"),
 }));
 
+// Type guard for SQL template string mock
+interface SqlMock {
+  strings: TemplateStringsArray;
+  values: unknown[];
+}
+
+function isSqlMock(value: unknown): value is SqlMock {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "strings" in value &&
+    "values" in value
+  );
+}
+
 describe("RecipeDetailPage ingredient query", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -55,14 +70,19 @@ describe("RecipeDetailPage ingredient query", () => {
 
     const ingredientCall = queryRawSpy.mock.calls.find((call) => {
       const sql = call[0];
-      return sql?.strings
-        ?.join("")
+      if (!isSqlMock(sql)) {
+        return false;
+      }
+      return sql.strings
+        .join("")
         .includes("FROM tenant_kitchen.recipe_ingredients");
     });
 
     expect(ingredientCall).toBeDefined();
 
-    const ingredientSql = ingredientCall?.[0]?.strings?.join("") ?? "";
+    const ingredientSql = isSqlMock(ingredientCall?.[0])
+      ? ingredientCall[0].strings.join("")
+      : "";
     expect(ingredientSql).toContain("ri.preparation_notes");
     expect(ingredientSql).toContain("ri.sort_order");
     expect(ingredientSql).not.toContain("ri.notes");

@@ -63,7 +63,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     // Return the PDF as a downloadable file
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(Buffer.from(pdfBuffer), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",

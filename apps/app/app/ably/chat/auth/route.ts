@@ -84,7 +84,7 @@ export async function POST(request: Request) {
   try {
     tokenRequest = await ably.auth.createTokenRequest({
       clientId,
-      capability,
+      capability: capability as Ably.TokenParams["capability"],
     });
   } catch (error) {
     const code = (error as { code?: number } | null)?.code;

@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import type { Prisma } from "@repo/database";
 import { database } from "@repo/database";
 import {
   cancelPrepTask,
@@ -179,7 +180,6 @@ export async function PATCH(request: Request, context: RouteContext) {
               newStatus === "done"
                 ? "done"
                 : mapManifestStatusToPrisma(newStatus),
-            completedAt: newStatus === "done" ? new Date() : undefined,
           },
         });
 
@@ -209,9 +209,9 @@ export async function PATCH(request: Request, context: RouteContext) {
             }`,
             payload: {
               taskId: id,
-              status: newStatus,
+              status: newStatus as string,
               constraintOutcomes: result.constraintOutcomes,
-            },
+            } as Prisma.InputJsonValue,
             status: "pending" as const,
           },
         });
@@ -220,8 +220,6 @@ export async function PATCH(request: Request, context: RouteContext) {
           task: {
             ...existingTask,
             status: newStatus,
-            completedAt:
-              newStatus === "done" ? new Date() : existingTask.completedAt,
           },
           constraintOutcomes: result.constraintOutcomes,
           emittedEvents: result.emittedEvents,
@@ -247,7 +245,6 @@ export async function PATCH(request: Request, context: RouteContext) {
     complexity?: number;
     tags?: string[];
     dueDate?: Date | null;
-    completedAt?: Date;
   }
   const updateData: TaskUpdateData = {};
   if (body.status) {
@@ -267,9 +264,6 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
   if (body.dueDate !== undefined) {
     updateData.dueDate = body.dueDate ? new Date(body.dueDate) : null;
-  }
-  if (body.status === "completed") {
-    updateData.completedAt = new Date();
   }
 
   const task = await database.prepTask.update({

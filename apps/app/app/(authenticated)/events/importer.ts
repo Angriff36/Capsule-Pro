@@ -1376,7 +1376,7 @@ export const importEventFromPdf = async ({
         event: doc?.parsedEvent?.event ?? mergedEvent,
         warnings: doc?.warnings ?? [],
         missingFields,
-      } as Prisma.InputJsonObject,
+      } as unknown as Prisma.InputJsonObject,
       parsedAt: new Date(),
     },
   });

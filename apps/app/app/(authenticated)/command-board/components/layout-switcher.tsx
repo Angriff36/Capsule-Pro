@@ -52,12 +52,6 @@ export function LayoutSwitcher({
   const [isOpen, setIsOpen] = useState(false);
 
   // Load layouts when dropdown opens
-  useEffect(() => {
-    if (isOpen) {
-      loadLayouts();
-    }
-  }, [isOpen, loadLayouts]);
-
   const loadLayouts = async () => {
     setIsLoading(true);
     const result = await listLayouts(boardId);
@@ -66,6 +60,12 @@ export function LayoutSwitcher({
     }
     setIsLoading(false);
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      loadLayouts();
+    }
+  }, [isOpen, loadLayouts]);
 
   const handleLoadLayout = async (layoutId: string) => {
     const result = await getLayout(layoutId);

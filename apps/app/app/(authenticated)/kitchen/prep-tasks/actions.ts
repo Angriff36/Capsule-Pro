@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
 import {
   cancelPrepTask,
   claimPrepTask,
@@ -12,6 +13,7 @@ import {
   releasePrepTask,
   startPrepTask,
 } from "@repo/kitchen-ops";
+import type { OverrideReasonCode, OverrideRequest } from "@repo/manifest";
 import { revalidatePath } from "next/cache";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 
@@ -20,7 +22,7 @@ import { getTenantIdForOrg } from "../../../lib/tenant";
 // ============================================================================
 
 async function createRuntimeAndContext() {
-  const { orgId, userId, user } = await auth();
+  const { orgId, userId } = await auth();
 
   if (!orgId) {
     throw new Error("Unauthorized");
@@ -32,12 +34,19 @@ async function createRuntimeAndContext() {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
+  // Get current user from database to get role
+  const currentUser = await database.user.findFirst({
+    where: {
+      AND: [{ tenantId }, { authUserId: userId ?? "" }],
+    },
+  });
+
   const runtime = await createKitchenOpsRuntime({
     tenantId,
     userId,
     user: {
       id: userId,
-      role: user?.role || "kitchen_staff",
+      role: currentUser?.role || "kitchen_staff",
     },
   });
 
@@ -76,8 +85,7 @@ export async function createPrepTask(data: {
   return {
     success: true,
     taskId: data.id,
-    denied: false,
-    diagnostics: [],
+    deniedBy: undefined,
     emittedEvents: [],
   };
 }
@@ -241,7 +249,8 @@ export async function manifestAssignTaskToStation(
 ) {
   const { runtime } = await createRuntimeAndContext();
 
-  const result = await import("@repo/kitchen-ops").assignTaskToStation(
+  const kitchenOps = await import("@repo/kitchen-ops");
+  const result = await kitchenOps.assignTaskToStation(
     runtime,
     stationId,
     taskId,
@@ -259,7 +268,8 @@ export async function manifestRemoveTaskFromStation(
 ) {
   const { runtime } = await createRuntimeAndContext();
 
-  const result = await import("@repo/kitchen-ops").removeTaskFromStation(
+  const kitchenOps = await import("@repo/kitchen-ops");
+  const result = await kitchenOps.removeTaskFromStation(
     runtime,
     stationId,
     taskId
@@ -276,7 +286,8 @@ export async function manifestUpdateStationCapacity(
 ) {
   const { runtime, userId } = await createRuntimeAndContext();
 
-  const result = await import("@repo/kitchen-ops").updateStationCapacity(
+  const kitchenOps = await import("@repo/kitchen-ops");
+  const result = await kitchenOps.updateStationCapacity(
     runtime,
     stationId,
     newCapacity,
@@ -299,7 +310,8 @@ export async function manifestReserveInventory(
 ) {
   const { runtime, userId } = await createRuntimeAndContext();
 
-  const result = await import("@repo/kitchen-ops").reserveInventory(
+  const kitchenOps = await import("@repo/kitchen-ops");
+  const result = await kitchenOps.reserveInventory(
     runtime,
     itemId,
     quantity,
@@ -319,7 +331,8 @@ export async function manifestConsumeInventory(
 ) {
   const { runtime, userId } = await createRuntimeAndContext();
 
-  const result = await import("@repo/kitchen-ops").consumeInventory(
+  const kitchenOps = await import("@repo/kitchen-ops");
+  const result = await kitchenOps.consumeInventory(
     runtime,
     itemId,
     quantity,
@@ -339,7 +352,8 @@ export async function manifestRestockInventory(
 ) {
   const { runtime, userId } = await createRuntimeAndContext();
 
-  const result = await import("@repo/kitchen-ops").restockInventory(
+  const kitchenOps = await import("@repo/kitchen-ops");
+  const result = await kitchenOps.restockInventory(
     runtime,
     itemId,
     quantity,

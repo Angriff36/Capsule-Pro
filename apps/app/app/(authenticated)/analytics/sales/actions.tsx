@@ -13,14 +13,16 @@ export async function generateSalesReportPdf(summary: ReportSummary): Promise<{
 }> {
   try {
     // Lazy load PDF generation libraries and component only on the server
-    const [{ pdf }, { SalesReportDocument }] = await Promise.all([
+    const [{ renderToBuffer }, { SalesReportDocument }] = await Promise.all([
       import("@react-pdf/renderer"),
       import("./pdf-components"),
     ]);
 
     // Generate PDF as base64 for client-side download
-    const pdfBytes = await pdf(<SalesReportDocument summary={summary} />);
-    const base64 = Buffer.from(pdfBytes).toString("base64");
+    const pdfBuffer = await renderToBuffer(
+      <SalesReportDocument summary={summary} />
+    );
+    const base64 = pdfBuffer.toString("base64");
 
     return {
       success: true,

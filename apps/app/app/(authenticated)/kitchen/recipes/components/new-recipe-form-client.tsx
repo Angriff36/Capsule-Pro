@@ -86,7 +86,8 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
     });
   };
 
-  const constraintState = useConstraintOverride(result ?? {}, {
+  const constraintState = useConstraintOverride({
+    result: result ?? {},
     onOverride: handleOverride,
   });
 

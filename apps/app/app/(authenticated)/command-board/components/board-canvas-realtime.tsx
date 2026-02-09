@@ -1406,7 +1406,7 @@ export function BoardCanvas({
                 group={group}
                 isSelected={selectedGroupId === group.id}
                 key={group.id}
-                onClick={handleGroupClick}
+                onClick={(e) => handleGroupClick(e, group.id)}
                 onDelete={handleDeleteGroup}
                 onPositionChange={handleGroupPositionChange}
                 onSizeChange={handleGroupSizeChange}

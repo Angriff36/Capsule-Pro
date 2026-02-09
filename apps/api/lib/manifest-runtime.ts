@@ -1,17 +1,35 @@
 /**
  * Manifest runtime factory for generated command handlers.
  *
- * Supports multiple domain manifests (PrepTask, Menu, Recipe, etc.) by loading
- * the appropriate IR based on the entity name in context.
+ * This module creates Manifest runtime instances with Prisma-based storage
+ * and transactional outbox support for reliable event delivery.
  *
- * Loads manifests directly to avoid importing kitchen-ops index
- * (which pulls in server-only Prisma/Postgres/Supabase dependencies).
+ * Key features:
+ * - Prisma interactive transactions for atomic state + outbox writes
+ * - Optimistic concurrency control via version properties
+ * - Proper tenant isolation
+ * - Event emission to outbox for reliable Ably publishing
+ *
+ * @packageDocumentation
  */
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { compileToIR, type IR, RuntimeEngine } from "@repo/manifest";
+import { database } from "@repo/database";
+import {
+  compileToIR,
+  type IR,
+  RuntimeEngine,
+  type RuntimeOptions,
+} from "@repo/manifest";
+import {
+  createPrismaOutboxWriter,
+  type PrismaStoreConfig,
+} from "@repo/manifest/prisma-store";
 
+/**
+ * Context for creating a manifest runtime.
+ */
 interface GeneratedRuntimeContext {
   user: {
     id: string;
@@ -44,10 +62,16 @@ const ENTITY_TO_MANIFEST: Record<string, string> = {
   Station: "station-rules",
 };
 
+/**
+ * Get the manifest name for a given entity.
+ */
 function getManifestForEntity(entityName: string): string {
   return ENTITY_TO_MANIFEST[entityName] ?? "prep-task-rules";
 }
 
+/**
+ * Load and compile a manifest IR, with caching.
+ */
 async function getManifestIR(manifestName: string): Promise<ManifestIR> {
   const cached = manifestIRCache.get(manifestName);
   if (cached) {
@@ -65,7 +89,7 @@ async function getManifestIR(manifestName: string): Promise<ManifestIR> {
 
   if (!ir) {
     throw new Error(
-      `Failed to compile ${manifestName} manifest: ${diagnostics.map((d) => d.message).join(", ")}`
+      `Failed to compile ${manifestName} manifest: ${diagnostics.map((d: { message: string }) => d.message).join(", ")}`
     );
   }
 
@@ -73,6 +97,56 @@ async function getManifestIR(manifestName: string): Promise<ManifestIR> {
   return ir;
 }
 
+/**
+ * Create a Prisma-based store provider for the given tenant and entity.
+ *
+ * The store provider returns a PrismaStore configured with:
+ * - Transactional outbox event writes
+ * - Optimistic concurrency control
+ * - Proper tenant isolation
+ */
+function createPrismaStoreProvider(
+  tenantId: string,
+  entityName: string
+): RuntimeOptions["storeProvider"] {
+  return () => {
+    const { PrismaStore } = require("@repo/manifest/prisma-store");
+
+    const outboxWriter = createPrismaOutboxWriter(entityName, tenantId);
+
+    const config: PrismaStoreConfig = {
+      prisma: database,
+      entityName,
+      tenantId,
+      outboxWriter,
+    };
+
+    return new PrismaStore(config);
+  };
+}
+
+/**
+ * Create a manifest runtime with Prisma-based storage and transactional outbox.
+ *
+ * This factory creates a RuntimeEngine configured to:
+ * - Use PrismaStore for entity operations (within Prisma transactions)
+ * - Write outbox events transactionally with state mutations
+ * - Enforce optimistic concurrency control via version properties
+ * - Properly isolate data by tenant
+ *
+ * @example
+ * ```typescript
+ * const runtime = await createManifestRuntime({
+ *   user: { id: "user-123", tenantId: "tenant-456" },
+ *   entityName: "PrepTask",
+ * });
+ *
+ * const result = await runtime.runCommand("claim", { userId: "user-123" }, {
+ *   entityName: "PrepTask",
+ *   instanceId: "task-789",
+ * });
+ * ```
+ */
 export async function createManifestRuntime(
   ctx: GeneratedRuntimeContext
 ): Promise<RuntimeEngine> {
@@ -83,8 +157,31 @@ export async function createManifestRuntime(
 
   const ir = await getManifestIR(manifestName);
 
+  // Create a store provider for each entity in the manifest
+  // This allows different entities to use their own Prisma models
+  const storeProvider: RuntimeOptions["storeProvider"] = (
+    entityName: string
+  ) => {
+    const { PrismaStore } = require("@repo/manifest/prisma-store");
+
+    const outboxWriter = createPrismaOutboxWriter(
+      entityName,
+      ctx.user.tenantId
+    );
+
+    const config: PrismaStoreConfig = {
+      prisma: database,
+      entityName,
+      tenantId: ctx.user.tenantId,
+      outboxWriter,
+    };
+
+    return new PrismaStore(config);
+  };
+
   return new RuntimeEngine(ir, {
     user: ctx.user,
+    storeProvider,
   });
 }
 
@@ -135,3 +232,13 @@ export function createStationRuntime(user: {
 }): Promise<RuntimeEngine> {
   return createManifestRuntime({ user, manifestName: "station-rules" });
 }
+
+/**
+ * Re-export runtime types for convenience.
+ */
+export type {
+  CommandResult,
+  RuntimeContext,
+  RuntimeEngine,
+  RuntimeOptions,
+} from "@repo/manifest";

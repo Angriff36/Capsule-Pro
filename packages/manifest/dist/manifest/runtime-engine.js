@@ -35,8 +35,9 @@ class MemoryStore {
     }
     async update(id, data) {
         const existing = this.items.get(id);
-        if (!existing)
+        if (!existing) {
             return undefined;
+        }
         const updated = { ...existing, ...data, id };
         this.items.set(id, updated);
         return updated;
@@ -82,8 +83,9 @@ class LocalStorageStore {
     async update(id, data) {
         const items = this.load();
         const idx = items.findIndex((item) => item.id === id);
-        if (idx === -1)
+        if (idx === -1) {
             return undefined;
+        }
         const updated = { ...items[idx], ...data, id };
         items[idx] = updated;
         this.save(items);
@@ -92,8 +94,9 @@ class LocalStorageStore {
     async delete(id) {
         const items = this.load();
         const idx = items.findIndex((item) => item.id === id);
-        if (idx === -1)
+        if (idx === -1) {
             return false;
+        }
         items.splice(idx, 1);
         this.save(items);
         return true;
@@ -416,8 +419,9 @@ export class RuntimeEngine {
     getCommand(name, entityName) {
         if (entityName) {
             const entity = this.getEntity(entityName);
-            if (!(entity && entity.commands.includes(name)))
+            if (!entity?.commands.includes(name)) {
                 return undefined;
+            }
             return this.ir.commands.find((c) => c.name === name && c.entity === entityName);
         }
         return this.ir.commands.find((c) => c.name === name);
@@ -453,14 +457,16 @@ export class RuntimeEngine {
      */
     async checkConstraints(entityName, data) {
         const entity = this.getEntity(entityName);
-        if (!entity)
+        if (!entity) {
             return [];
+        }
         return await this.validateConstraints(entity, data);
     }
     async createInstance(entityName, data) {
         const entity = this.getEntity(entityName);
-        if (!entity)
+        if (!entity) {
             return undefined;
+        }
         const defaults = {};
         for (const prop of entity.properties) {
             if (prop.defaultValue) {
@@ -492,11 +498,13 @@ export class RuntimeEngine {
             console.info("[Manifest Runtime] Non-blocking constraint outcomes:", nonBlockingOutcomes);
         }
         const store = this.stores.get(entityName);
-        if (!store)
+        if (!store) {
             return undefined;
+        }
         const instance = await store.create(mergedData);
-        if (!instance)
+        if (!instance) {
             return undefined;
+        }
         // Compute all computed properties and add them to the instance
         if (entity.computedProperties.length > 0) {
             for (const computed of entity.computedProperties) {
@@ -511,11 +519,13 @@ export class RuntimeEngine {
     async updateInstance(entityName, id, data) {
         const entity = this.getEntity(entityName);
         const store = this.stores.get(entityName);
-        if (!(store && entity))
+        if (!(store && entity)) {
             return undefined;
+        }
         const existing = await store.getById(id);
-        if (!existing)
+        if (!existing) {
             return undefined;
+        }
         // Optimistic concurrency control: check version if entity has versionProperty
         if (entity.versionProperty) {
             const existingVersion = existing[entity.versionProperty];
@@ -691,10 +701,12 @@ export class RuntimeEngine {
     }
     async checkPolicies(command, evalContext) {
         const relevantPolicies = this.ir.policies.filter((p) => {
-            if (p.entity && command.entity && p.entity !== command.entity)
+            if (p.entity && command.entity && p.entity !== command.entity) {
                 return false;
-            if (p.action !== "all" && p.action !== "execute")
+            }
+            if (p.action !== "all" && p.action !== "execute") {
                 return false;
+            }
             return true;
         });
         for (const policy of relevantPolicies) {
@@ -856,8 +868,9 @@ export class RuntimeEngine {
         const seen = new Set();
         const addEntry = async (node) => {
             const formatted = this.formatExpression(node);
-            if (seen.has(formatted))
+            if (seen.has(formatted)) {
                 return;
+            }
             seen.add(formatted);
             let value;
             try {
@@ -953,7 +966,6 @@ export class RuntimeEngine {
                     });
                 }
                 return value;
-            case "effect":
             default:
                 return value;
         }
@@ -967,12 +979,15 @@ export class RuntimeEngine {
                 if (name in context) {
                     return context[name];
                 }
-                if (name === "true")
+                if (name === "true") {
                     return true;
-                if (name === "false")
+                }
+                if (name === "false") {
                     return false;
-                if (name === "null")
+                }
+                if (name === "null") {
                     return null;
+                }
                 return undefined;
             }
             case "member": {
@@ -1072,9 +1087,9 @@ export class RuntimeEngine {
                 return left % right;
             case "==":
             case "is":
-                return left == right; // Loose equality: undefined == null is true
+                return left === right; // Loose equality: undefined == null is true
             case "!=":
-                return left != right; // Loose inequality: undefined != null is false
+                return left !== right; // Loose inequality: undefined != null is false
             case "<":
                 return left < right;
             case ">":
@@ -1090,16 +1105,20 @@ export class RuntimeEngine {
             case "or":
                 return Boolean(left) || Boolean(right);
             case "in":
-                if (Array.isArray(right))
+                if (Array.isArray(right)) {
                     return right.includes(left);
-                if (typeof right === "string")
+                }
+                if (typeof right === "string") {
                     return right.includes(String(left));
+                }
                 return false;
             case "contains":
-                if (Array.isArray(left))
+                if (Array.isArray(left)) {
                     return left.includes(right);
-                if (typeof left === "string")
+                }
+                if (typeof left === "string") {
                     return left.includes(String(right));
+                }
                 return false;
             default:
                 return undefined;
@@ -1138,8 +1157,9 @@ export class RuntimeEngine {
         }
     }
     getDefaultForType(type) {
-        if (type.nullable)
+        if (type.nullable) {
             return null;
+        }
         switch (type.name) {
             case "string":
                 return "";
@@ -1157,23 +1177,28 @@ export class RuntimeEngine {
     }
     async evaluateComputed(entityName, instanceId, propertyName) {
         const entity = this.getEntity(entityName);
-        if (!entity)
+        if (!entity) {
             return undefined;
+        }
         const computed = entity.computedProperties.find((c) => c.name === propertyName);
-        if (!computed)
+        if (!computed) {
             return undefined;
+        }
         const instance = await this.getInstance(entityName, instanceId);
-        if (!instance)
+        if (!instance) {
             return undefined;
+        }
         return await this.evaluateComputedInternal(entity, instance, propertyName, new Set());
     }
     async evaluateComputedInternal(entity, instance, propertyName, visited) {
-        if (visited.has(propertyName))
+        if (visited.has(propertyName)) {
             return undefined;
+        }
         visited.add(propertyName);
         const computed = entity.computedProperties.find((c) => c.name === propertyName);
-        if (!computed)
+        if (!computed) {
             return undefined;
+        }
         const computedValues = {};
         if (computed.dependencies) {
             for (const dep of computed.dependencies) {
@@ -1300,7 +1325,7 @@ export class RuntimeEngine {
                         const authorized = Boolean(policyResult);
                         if (authorized) {
                             outcome.overridden = true;
-                            outcome.overriddenBy = "policy:" + policy.name;
+                            outcome.overriddenBy = `policy:${policy.name}`;
                         }
                     }
                 }
@@ -1390,8 +1415,9 @@ export class RuntimeEngine {
      */
     getProvenanceInfo() {
         const prov = this.ir.provenance;
-        if (!prov)
+        if (!prov) {
             return undefined;
+        }
         return {
             contentHash: prov.contentHash,
             compilerVersion: prov.compilerVersion,
@@ -1402,8 +1428,9 @@ export class RuntimeEngine {
         this.eventListeners.push(listener);
         return () => {
             const idx = this.eventListeners.indexOf(listener);
-            if (idx !== -1)
+            if (idx !== -1) {
                 this.eventListeners.splice(idx, 1);
+            }
         };
     }
     notifyListeners(event) {

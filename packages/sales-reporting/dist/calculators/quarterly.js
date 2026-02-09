@@ -73,7 +73,7 @@ function computeGoals(metrics, records) {
     const revenueTarget = Math.round(metrics.totalRevenue * growthFactor);
     const currentConversion = (0, shared_1.conversionRate)(records);
     const conversionTarget = Math.min(currentConversion + 0.05, 0.95);
-    const wonRevenue = (0, shared_1.sumRevenue)((0, shared_1.filterByStatus)(records, "won"));
+    const _wonRevenue = (0, shared_1.sumRevenue)((0, shared_1.filterByStatus)(records, "won"));
     const avgDealSize = (0, shared_1.averageRevenue)((0, shared_1.filterByStatus)(records, "won"));
     const dealsNeeded = avgDealSize > 0 ? Math.ceil(revenueTarget / avgDealSize) : 0;
     const leadTarget = conversionTarget > 0 ? Math.ceil(dealsNeeded / conversionTarget) : 0;

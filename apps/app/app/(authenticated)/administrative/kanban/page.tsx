@@ -57,7 +57,9 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 
 const AdministrativeKanbanPage = async () => {
   const tasks = await listAdminTasks();
-  const tasksByStatus = new Map(columns.map((column) => [column.status, []]));
+  const tasksByStatus: Map<string, typeof tasks> = new Map(
+    columns.map((column) => [column.status, []])
+  );
 
   for (const task of tasks) {
     const bucket = tasksByStatus.get(task.status) ?? [];

@@ -14,28 +14,32 @@ const STATUS_MAP = {
     proposed: "proposal_sent",
 };
 function parseDate(value) {
-    if (!value || value.trim() === "")
+    if (!value || value.trim() === "") {
         return null;
+    }
     const trimmed = value.trim();
     const d = new Date(trimmed);
-    if (!isNaN(d.getTime()))
+    if (!Number.isNaN(d.getTime())) {
         return d;
+    }
     // Try Excel serial date format
     const num = Number.parseFloat(trimmed);
-    if (!isNaN(num) && num > 0) {
+    if (!Number.isNaN(num) && num > 0) {
         const epoch = Math.round((num - 25569) * 86400 * 1000);
         const excelDate = new Date(epoch);
-        if (!isNaN(excelDate.getTime()))
+        if (!Number.isNaN(excelDate.getTime())) {
             return excelDate;
+        }
     }
     return null;
 }
 function parseNumber(value) {
-    if (!value)
+    if (!value) {
         return 0;
+    }
     const cleaned = value.replace(/[$,\s]/g, "");
     const num = Number.parseFloat(cleaned);
-    return isNaN(num) ? 0 : num;
+    return Number.isNaN(num) ? 0 : num;
 }
 function normalizeStatus(raw) {
     const normalized = raw
@@ -48,13 +52,15 @@ function normalizeStatus(raw) {
 function findColumn(row, candidates) {
     for (const candidate of candidates) {
         // Direct match
-        if (row[candidate])
+        if (row[candidate]) {
             return candidate;
+        }
         // Case-insensitive match
         const lowerKey = candidate.toLowerCase();
         for (const key of Object.keys(row)) {
-            if (key.toLowerCase() === lowerKey)
+            if (key.toLowerCase() === lowerKey) {
                 return key;
+            }
         }
     }
     return undefined;
@@ -97,8 +103,9 @@ function parseRowToRecord(row, dateColumn) {
             "Start Date",
             "Start_Date",
         ]);
-        if (dateCol)
+        if (dateCol) {
             dateStr = row[dateCol];
+        }
     }
     // Last resort: try to find any column with "date" in the name
     if (!dateStr) {
@@ -113,8 +120,9 @@ function parseRowToRecord(row, dateColumn) {
         }
     }
     const date = parseDate(dateStr);
-    if (!date)
+    if (!date) {
         return null;
+    }
     // Extract other fields with flexible matching
     const eventCol = findColumn(row, [
         "event_name",

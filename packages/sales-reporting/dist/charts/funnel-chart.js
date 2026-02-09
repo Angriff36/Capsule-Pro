@@ -5,8 +5,9 @@ const types_1 = require("../types");
 const formatting_1 = require("../utils/formatting");
 function drawFunnelChart(doc, options) {
     const { x, y, width, height, stages, title, colors = types_1.CHART_PALETTE, } = options;
-    if (stages.length === 0)
+    if (stages.length === 0) {
         return y;
+    }
     doc.save();
     if (title) {
         doc

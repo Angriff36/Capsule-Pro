@@ -1,9 +1,8 @@
 "use server";
 
-import { database } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { requireTenantId } from "../../../lib/tenant";
-import type { CardMetadata, CardType } from "../types";
-import type { CardResult } from "./cards";
+import type { CardMetadata, CardType, CommandBoardCard } from "../types";
 import type { CardToCreate } from "./suggestions-types";
 
 export interface BulkCreateCardsInput {
@@ -13,7 +12,7 @@ export interface BulkCreateCardsInput {
 export interface BulkCreateCardsResult {
   success: boolean;
   created: number;
-  cards?: CardResult["card"][];
+  cards?: CommandBoardCard[];
   error?: string;
 }
 
@@ -37,7 +36,7 @@ export async function bulkCreateCards(
       return { success: false, created: 0, error: "Board not found" };
     }
 
-    const createdCards: CardResult["card"][] = [];
+    const createdCards: CommandBoardCard[] = [];
 
     // Create cards in sequence (Prisma doesn't support createMany with relations)
     for (const cardInput of input.cards) {
@@ -100,7 +99,7 @@ export async function bulkCreateCards(
           entityId: cardInput.entityId ?? null,
           entityType:
             cardInput.entityType === "note" ? null : cardInput.entityType,
-          metadata: {} as CardMetadata,
+          metadata: {} as Prisma.InputJsonValue,
         },
       });
 

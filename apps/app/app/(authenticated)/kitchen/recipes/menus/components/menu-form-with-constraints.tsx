@@ -199,12 +199,12 @@ export function MenuFormWithConstraints({
     });
   };
 
-  const constraintState = useConstraintOverride(
-    result ? { constraintOutcomes: result.constraintOutcomes } : {},
-    {
-      onOverride: handleOverride,
-    }
-  );
+  const constraintState = useConstraintOverride({
+    result: result
+      ? { constraintOutcomes: result.constraintOutcomes }
+      : { success: true },
+    onOverride: handleOverride,
+  });
 
   const handleDishToggle = (dish: DishSummary) => {
     const isSelected = selectedDishes.some((sd) => sd.dish.id === dish.id);

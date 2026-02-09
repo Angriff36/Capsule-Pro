@@ -19,6 +19,7 @@
     "src/manifest/ir.ts",
     "src/manifest/lexer.ts",
     "src/manifest/parser.ts",
+    "src/manifest/prisma-store.ts",
     "src/manifest/types.ts",
     "src/generators/**/*.ts"
   ],

@@ -5,8 +5,9 @@ const types_1 = require("../types");
 const chart_utils_1 = require("./chart-utils");
 function drawLineChart(doc, options) {
     const { x, y, width, height, series, title, showCurrency = false } = options;
-    if (series.length === 0)
+    if (series.length === 0) {
         return y;
+    }
     doc.save();
     if (title) {
         doc

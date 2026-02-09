@@ -332,9 +332,12 @@ function ConstraintDiagnosticsCard({
                 </span>
                 <button
                   className="text-xs text-slate-500 hover:text-slate-300"
-                  onClick={() =>
-                    copyToClipboard(result.guardFailure?.formatted)
-                  }
+                  onClick={() => {
+                    const formatted = result.guardFailure?.formatted;
+                    if (formatted) {
+                      copyToClipboard(formatted);
+                    }
+                  }}
                   type="button"
                 >
                   <CopyIcon className="h-3 w-3" />
@@ -358,9 +361,12 @@ function ConstraintDiagnosticsCard({
                 </span>
                 <button
                   className="text-xs text-slate-500 hover:text-slate-300"
-                  onClick={() =>
-                    copyToClipboard(result.policyDenial?.formatted)
-                  }
+                  onClick={() => {
+                    const formatted = result.policyDenial?.formatted;
+                    if (formatted) {
+                      copyToClipboard(formatted);
+                    }
+                  }}
                   type="button"
                 >
                   <CopyIcon className="h-3 w-3" />

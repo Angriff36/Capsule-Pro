@@ -71,7 +71,7 @@ export function BoardSelector({ currentBoardId, trigger }: BoardSelectorProps) {
   };
 
   return (
-    <DropdownMenu onOpenChange={setOpen} open={isOpen}>
+    <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
       <DropdownMenuTrigger asChild>
         {trigger || (
           <Button className="justify-start" variant="outline">

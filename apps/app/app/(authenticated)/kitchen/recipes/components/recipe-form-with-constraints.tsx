@@ -162,7 +162,8 @@ export function RecipeFormWithConstraints({
     });
   };
 
-  const constraintState = useConstraintOverride(result ?? {}, {
+  const constraintState = useConstraintOverride({
+    result: result ?? {},
     onOverride: handleOverride,
   });
 
@@ -312,7 +313,8 @@ export function useManifestFormAction(
     await executeWithOverride(reason, details);
   };
 
-  const constraintState = useConstraintOverride(result ?? {}, {
+  const constraintState = useConstraintOverride({
+    result: result ?? {},
     onOverride: handleOverride,
   });
 

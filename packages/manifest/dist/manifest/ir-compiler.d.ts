@@ -2,7 +2,7 @@ import type { CompileToIRResult } from "./ir.js";
 import { type IRCache } from "./ir-cache.js";
 export declare class IRCompiler {
     private diagnostics;
-    private cache;
+    private readonly cache;
     constructor(cache?: IRCache);
     compileToIR(source: string, options?: {
         useCache?: boolean;

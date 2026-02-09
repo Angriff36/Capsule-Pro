@@ -2,6 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { auth } from "@repo/auth/server";
+import type { Prisma } from "@repo/database";
 import { database } from "@repo/database";
 import {
   activateMenu,
@@ -45,14 +46,23 @@ export interface MenuManifestActionResult {
  */
 async function createMenuRuntimeContext(): Promise<KitchenOpsContext> {
   const session = await auth();
-  invariant(session?.user, "User must be authenticated");
+  invariant(session?.userId, "User must be authenticated");
 
   const tenantId = await requireTenantId();
 
+  // Get current user from database to get role
+  const currentUser = await database.user.findFirst({
+    where: {
+      AND: [{ tenantId }, { authUserId: session.userId ?? "" }],
+    },
+  });
+
+  invariant(currentUser, "User not found in database");
+
   return {
     tenantId,
-    userId: session.user.id,
-    userRole: session.user.role ?? "kitchen_staff",
+    userId: currentUser.id,
+    userRole: currentUser.role ?? "kitchen_staff",
   };
 }
 
@@ -155,8 +165,9 @@ export async function createMenuManifest(
         tenantId,
         id: randomUUID(),
         eventType: event.name,
-        payload: event.payload as Record<string, unknown>,
-        status: "PENDING",
+        payload: event.payload as Prisma.InputJsonValue,
+        aggregateId: menuId,
+        aggregateType: "Menu",
       },
     });
   }
@@ -338,8 +349,9 @@ export async function updateMenuManifest(
         tenantId,
         id: randomUUID(),
         eventType: event.name,
-        payload: event.payload as Record<string, unknown>,
-        status: "PENDING",
+        payload: event.payload as Prisma.InputJsonValue,
+        aggregateId: menuId,
+        aggregateType: "Menu",
       },
     });
   }
@@ -493,8 +505,9 @@ export async function activateMenuManifest(
         tenantId,
         id: randomUUID(),
         eventType: event.name,
-        payload: event.payload as Record<string, unknown>,
-        status: "PENDING",
+        payload: event.payload as Prisma.InputJsonValue,
+        aggregateId: menuId,
+        aggregateType: "Menu",
       },
     });
   }
@@ -567,8 +580,9 @@ export async function deactivateMenuManifest(
         tenantId,
         id: randomUUID(),
         eventType: event.name,
-        payload: event.payload as Record<string, unknown>,
-        status: "PENDING",
+        payload: event.payload as Prisma.InputJsonValue,
+        aggregateId: menuId,
+        aggregateType: "Menu",
       },
     });
   }

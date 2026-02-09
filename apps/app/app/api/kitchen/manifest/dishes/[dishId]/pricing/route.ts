@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import type { Prisma } from "@repo/database";
 import { database } from "@repo/database";
 import {
   createRecipeRuntime,
@@ -165,11 +166,11 @@ export async function PATCH(request: Request, context: RouteContext) {
           eventType: "kitchen.dish.pricing.updated",
           payload: {
             dishId,
-            name: instance.name,
-            pricePerPerson: instance.pricePerPerson,
-            costPerPerson: instance.costPerPerson,
+            name: instance.name as string,
+            pricePerPerson: instance.pricePerPerson as number,
+            costPerPerson: instance.costPerPerson as number,
             constraintOutcomes: result.constraintOutcomes,
-          },
+          } as Prisma.InputJsonValue,
           status: "pending" as const,
         },
       });

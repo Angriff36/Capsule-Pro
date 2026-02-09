@@ -1,1 +1,1 @@
-{"version":3,"file":"xlsx-parser.d.ts","sourceRoot":"","sources":["../../src/parsers/xlsx-parser.ts"],"names":[],"mappings":"AACA,OAAO,KAAK,EAAE,WAAW,EAAE,MAAM,UAAU,CAAC;AAG5C,wBAAgB,SAAS,CAAC,IAAI,EAAE,MAAM,EAAE,UAAU,CAAC,EAAE,MAAM,GAAG,WAAW,EAAE,CA6B1E"}
+{"version":3,"file":"xlsx-parser.d.ts","sourceRoot":"","sources":["../../src/parsers/xlsx-parser.ts"],"names":[],"mappings":"AACA,OAAO,KAAK,EAAE,WAAW,EAAE,MAAM,UAAU,CAAC;AAG5C,wBAAgB,SAAS,CAAC,IAAI,EAAE,MAAM,EAAE,UAAU,CAAC,EAAE,MAAM,GAAG,WAAW,EAAE,CA+B1E"}

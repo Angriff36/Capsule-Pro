@@ -21,31 +21,43 @@ export class Parser {
         };
         while (!this.isEnd()) {
             this.skipNL();
-            if (this.isEnd())
+            if (this.isEnd()) {
                 break;
+            }
             try {
-                if (this.check("KEYWORD", "module"))
+                if (this.check("KEYWORD", "module")) {
                     program.modules.push(this.parseModule());
-                else if (this.check("KEYWORD", "entity"))
+                }
+                else if (this.check("KEYWORD", "entity")) {
                     program.entities.push(this.parseEntity());
-                else if (this.check("KEYWORD", "command"))
+                }
+                else if (this.check("KEYWORD", "command")) {
                     program.commands.push(this.parseCommand());
-                else if (this.check("KEYWORD", "flow"))
+                }
+                else if (this.check("KEYWORD", "flow")) {
                     program.flows.push(this.parseFlow());
-                else if (this.check("KEYWORD", "effect"))
+                }
+                else if (this.check("KEYWORD", "effect")) {
                     program.effects.push(this.parseEffect());
-                else if (this.check("KEYWORD", "expose"))
+                }
+                else if (this.check("KEYWORD", "expose")) {
                     program.exposures.push(this.parseExpose());
-                else if (this.check("KEYWORD", "compose"))
+                }
+                else if (this.check("KEYWORD", "compose")) {
                     program.compositions.push(this.parseComposition());
-                else if (this.check("KEYWORD", "policy"))
+                }
+                else if (this.check("KEYWORD", "policy")) {
                     program.policies.push(this.parsePolicy());
-                else if (this.check("KEYWORD", "store"))
+                }
+                else if (this.check("KEYWORD", "store")) {
                     program.stores.push(this.parseStore());
-                else if (this.check("KEYWORD", "event"))
+                }
+                else if (this.check("KEYWORD", "event")) {
                     program.events.push(this.parseOutboxEvent());
-                else
+                }
+                else {
                     this.advance();
+                }
             }
             catch (e) {
                 this.errors.push({
@@ -66,20 +78,27 @@ export class Parser {
         const entities = [], commands = [], policies = [], stores = [], events = [];
         while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
             this.skipNL();
-            if (this.check("PUNCTUATION", "}"))
+            if (this.check("PUNCTUATION", "}")) {
                 break;
-            if (this.check("KEYWORD", "entity"))
+            }
+            if (this.check("KEYWORD", "entity")) {
                 entities.push(this.parseEntity());
-            else if (this.check("KEYWORD", "command"))
+            }
+            else if (this.check("KEYWORD", "command")) {
                 commands.push(this.parseCommand());
-            else if (this.check("KEYWORD", "policy"))
+            }
+            else if (this.check("KEYWORD", "policy")) {
                 policies.push(this.parsePolicy());
-            else if (this.check("KEYWORD", "store"))
+            }
+            else if (this.check("KEYWORD", "store")) {
                 stores.push(this.parseStore());
-            else if (this.check("KEYWORD", "event"))
+            }
+            else if (this.check("KEYWORD", "event")) {
                 events.push(this.parseOutboxEvent());
-            else
+            }
+            else {
                 this.advance();
+            }
             this.skipNL();
         }
         this.consume("PUNCTUATION", "}");
@@ -103,32 +122,42 @@ export class Parser {
         let store;
         while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
             this.skipNL();
-            if (this.check("PUNCTUATION", "}"))
+            if (this.check("PUNCTUATION", "}")) {
                 break;
-            if (this.check("KEYWORD", "property"))
+            }
+            if (this.check("KEYWORD", "property")) {
                 properties.push(this.parseProperty());
+            }
             else if (this.check("KEYWORD", "computed") ||
-                this.check("KEYWORD", "derived"))
+                this.check("KEYWORD", "derived")) {
                 computedProperties.push(this.parseComputedProperty());
+            }
             else if (this.check("KEYWORD", "hasMany") ||
                 this.check("KEYWORD", "hasOne") ||
                 this.check("KEYWORD", "belongsTo") ||
-                this.check("KEYWORD", "ref"))
+                this.check("KEYWORD", "ref")) {
                 relationships.push(this.parseRelationship());
-            else if (this.check("KEYWORD", "behavior") || this.check("KEYWORD", "on"))
+            }
+            else if (this.check("KEYWORD", "behavior") ||
+                this.check("KEYWORD", "on")) {
                 behaviors.push(this.parseBehavior());
-            else if (this.check("KEYWORD", "command"))
+            }
+            else if (this.check("KEYWORD", "command")) {
                 commands.push(this.parseCommand());
-            else if (this.check("KEYWORD", "constraint"))
+            }
+            else if (this.check("KEYWORD", "constraint")) {
                 constraints.push(this.parseConstraint());
-            else if (this.check("KEYWORD", "policy"))
+            }
+            else if (this.check("KEYWORD", "policy")) {
                 policies.push(this.parsePolicy());
+            }
             else if (this.check("KEYWORD", "store")) {
                 this.advance();
                 store = this.advance().value;
             }
-            else
+            else {
                 this.advance();
+            }
             this.skipNL();
         }
         this.consume("PUNCTUATION", "}");
@@ -253,8 +282,9 @@ export class Parser {
         const parameters = [];
         while (!(this.check("PUNCTUATION", ")") || this.isEnd())) {
             const required = !this.check("KEYWORD", "optional");
-            if (!required)
+            if (!required) {
                 this.advance();
+            }
             const pname = this.consumeIdentifier().value;
             this.consume("OPERATOR", ":");
             const dataType = this.parseType();
@@ -270,8 +300,9 @@ export class Parser {
                 required,
                 defaultValue,
             });
-            if (this.check("PUNCTUATION", ","))
+            if (this.check("PUNCTUATION", ",")) {
                 this.advance();
+            }
         }
         this.consume("PUNCTUATION", ")");
         let returns;
@@ -285,8 +316,9 @@ export class Parser {
             this.skipNL();
             while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
                 this.skipNL();
-                if (this.check("PUNCTUATION", "}"))
+                if (this.check("PUNCTUATION", "}")) {
                     break;
+                }
                 if (this.check("KEYWORD", "guard") || this.check("KEYWORD", "when")) {
                     this.advance();
                     guards.push(this.parseExpr());
@@ -304,8 +336,9 @@ export class Parser {
                         expression: { type: "Identifier", name: eventName },
                     });
                 }
-                else
+                else {
                     actions.push(this.parseAction());
+                }
                 this.skipNL();
             }
             this.consume("PUNCTUATION", "}");
@@ -365,8 +398,9 @@ export class Parser {
             this.skipNL();
             while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
                 this.skipNL();
-                if (this.check("PUNCTUATION", "}"))
+                if (this.check("PUNCTUATION", "}")) {
                     break;
+                }
                 // Config keys are like object literal keys - allow keywords
                 const key = this.consumeIdentifierOrKeyword().value;
                 this.consume("OPERATOR", ":");
@@ -398,8 +432,9 @@ export class Parser {
             const fields = [];
             while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
                 this.skipNL();
-                if (this.check("PUNCTUATION", "}"))
+                if (this.check("PUNCTUATION", "}")) {
                     break;
+                }
                 const fname = this.consumeIdentifier().value;
                 this.consume("OPERATOR", ":");
                 const ftype = this.parseType();
@@ -433,8 +468,9 @@ export class Parser {
         return { type: "Type", name, generic, nullable };
     }
     parseBehavior() {
-        if (this.check("KEYWORD", "behavior"))
+        if (this.check("KEYWORD", "behavior")) {
             this.advance();
+        }
         this.consume("KEYWORD", "on");
         const trigger = this.parseTrigger();
         const guards = [];
@@ -448,8 +484,9 @@ export class Parser {
             this.skipNL();
             while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
                 this.skipNL();
-                if (this.check("PUNCTUATION", "}"))
+                if (this.check("PUNCTUATION", "}")) {
                     break;
+                }
                 actions.push(this.parseAction());
                 this.skipNL();
             }
@@ -475,8 +512,9 @@ export class Parser {
             parameters = [];
             while (!(this.check("PUNCTUATION", ")") || this.isEnd())) {
                 parameters.push(this.consumeIdentifier().value);
-                if (this.check("PUNCTUATION", ","))
+                if (this.check("PUNCTUATION", ",")) {
                     this.advance();
+                }
             }
             this.consume("PUNCTUATION", ")");
         }
@@ -558,8 +596,9 @@ export class Parser {
             let expression;
             while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
                 this.skipNL();
-                if (this.check("PUNCTUATION", "}"))
+                if (this.check("PUNCTUATION", "}")) {
                     break;
+                }
                 const field = this.consumeIdentifierOrKeyword().value;
                 this.consume("OPERATOR", ":");
                 switch (field) {
@@ -594,14 +633,16 @@ export class Parser {
                             this.skipNL();
                             while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
                                 this.skipNL();
-                                if (this.check("PUNCTUATION", "}"))
+                                if (this.check("PUNCTUATION", "}")) {
                                     break;
+                                }
                                 const key = this.consumeIdentifierOrKeyword().value;
                                 this.consume("OPERATOR", ":");
                                 detailsMapping[key] = this.parseExpr();
                                 this.skipNL();
-                                if (this.check("PUNCTUATION", ","))
+                                if (this.check("PUNCTUATION", ",")) {
                                     this.advance();
+                                }
                             }
                             this.consume("PUNCTUATION", "}");
                         }
@@ -611,8 +652,9 @@ export class Parser {
                         this.parseExpr();
                 }
                 this.skipNL();
-                if (this.check("PUNCTUATION", ","))
+                if (this.check("PUNCTUATION", ",")) {
                     this.advance();
+                }
             }
             this.consume("PUNCTUATION", "}");
             if (!expression) {
@@ -648,8 +690,9 @@ export class Parser {
             this.skipNL();
             while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
                 this.skipNL();
-                if (this.check("PUNCTUATION", "}"))
+                if (this.check("PUNCTUATION", "}")) {
                     break;
+                }
                 const field = this.consumeIdentifierOrKeyword().value;
                 this.consume("OPERATOR", ":");
                 switch (field) {
@@ -668,14 +711,16 @@ export class Parser {
                             this.skipNL();
                             while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
                                 this.skipNL();
-                                if (this.check("PUNCTUATION", "}"))
+                                if (this.check("PUNCTUATION", "}")) {
                                     break;
+                                }
                                 const key = this.consumeIdentifierOrKeyword().value;
                                 this.consume("OPERATOR", ":");
                                 detailsMapping[key] = this.parseExpr();
                                 this.skipNL();
-                                if (this.check("PUNCTUATION", ","))
+                                if (this.check("PUNCTUATION", ",")) {
                                     this.advance();
+                                }
                             }
                             this.consume("PUNCTUATION", "}");
                         }
@@ -685,8 +730,9 @@ export class Parser {
                         this.parseExpr();
                 }
                 this.skipNL();
-                if (this.check("PUNCTUATION", ","))
+                if (this.check("PUNCTUATION", ",")) {
                     this.advance();
+                }
             }
             this.consume("PUNCTUATION", "}");
         }
@@ -716,8 +762,9 @@ export class Parser {
         const steps = [];
         while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
             this.skipNL();
-            if (this.check("PUNCTUATION", "}"))
+            if (this.check("PUNCTUATION", "}")) {
                 break;
+            }
             steps.push(this.parseFlowStep());
             this.skipNL();
         }
@@ -750,8 +797,9 @@ export class Parser {
             this.skipNL();
             while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
                 this.skipNL();
-                if (this.check("PUNCTUATION", "}"))
+                if (this.check("PUNCTUATION", "}")) {
                     break;
+                }
                 // Config keys are like object literal keys - allow keywords
                 const key = this.consumeIdentifierOrKeyword().value;
                 this.consume("OPERATOR", ":");
@@ -773,25 +821,29 @@ export class Parser {
             this.advance();
             generateServer = true;
         }
-        if (this.check("STRING"))
+        if (this.check("STRING")) {
             name = this.advance().value;
+        }
         const operations = [], middleware = [];
         if (this.check("PUNCTUATION", "{")) {
             this.advance();
             this.skipNL();
             while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
                 this.skipNL();
-                if (this.check("PUNCTUATION", "}"))
+                if (this.check("PUNCTUATION", "}")) {
                     break;
+                }
                 const val = this.advance().value;
                 if (val === "middleware") {
                     this.consume("OPERATOR", ":");
                     middleware.push(this.consumeIdentifier().value);
                 }
-                else
+                else {
                     operations.push(val);
-                if (this.check("PUNCTUATION", ","))
+                }
+                if (this.check("PUNCTUATION", ",")) {
                     this.advance();
+                }
                 this.skipNL();
             }
             this.consume("PUNCTUATION", "}");
@@ -814,12 +866,15 @@ export class Parser {
         const components = [], connections = [];
         while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
             this.skipNL();
-            if (this.check("PUNCTUATION", "}"))
+            if (this.check("PUNCTUATION", "}")) {
                 break;
-            if (this.check("KEYWORD", "connect"))
+            }
+            if (this.check("KEYWORD", "connect")) {
                 connections.push(this.parseConnection());
-            else
+            }
+            else {
                 components.push(this.parseComponentRef());
+            }
             this.skipNL();
         }
         this.consume("PUNCTUATION", "}");
@@ -970,8 +1025,9 @@ export class Parser {
                 const args = [];
                 while (!(this.check("PUNCTUATION", ")") || this.isEnd())) {
                     args.push(this.parseExpr());
-                    if (this.check("PUNCTUATION", ","))
+                    if (this.check("PUNCTUATION", ",")) {
                         this.advance();
+                    }
                 }
                 this.consume("PUNCTUATION", ")");
                 expr = { type: "Call", callee: expr, arguments: args };
@@ -986,30 +1042,34 @@ export class Parser {
                     property: `[${"value" in idx ? idx.value : ""}]`,
                 };
             }
-            else
+            else {
                 break;
+            }
         }
         return expr;
     }
     parsePrimary() {
-        if (this.check("NUMBER"))
+        if (this.check("NUMBER")) {
             return {
                 type: "Literal",
                 value: Number.parseFloat(this.advance().value),
                 dataType: "number",
             };
-        if (this.check("STRING"))
+        }
+        if (this.check("STRING")) {
             return {
                 type: "Literal",
                 value: this.advance().value,
                 dataType: "string",
             };
-        if (this.check("KEYWORD", "true") || this.check("KEYWORD", "false"))
+        }
+        if (this.check("KEYWORD", "true") || this.check("KEYWORD", "false")) {
             return {
                 type: "Literal",
                 value: this.advance().value === "true",
                 dataType: "boolean",
             };
+        }
         if (this.check("KEYWORD", "null")) {
             this.advance();
             return { type: "Literal", value: null, dataType: "null" };
@@ -1019,8 +1079,9 @@ export class Parser {
             const els = [];
             while (!(this.check("PUNCTUATION", "]") || this.isEnd())) {
                 els.push(this.parseExpr());
-                if (this.check("PUNCTUATION", ","))
+                if (this.check("PUNCTUATION", ",")) {
                     this.advance();
+                }
             }
             this.consume("PUNCTUATION", "]");
             return { type: "Array", elements: els };
@@ -1032,15 +1093,17 @@ export class Parser {
             const props = [];
             while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
                 this.skipNL();
-                if (this.check("PUNCTUATION", "}"))
+                if (this.check("PUNCTUATION", "}")) {
                     break;
+                }
                 const key = this.check("STRING")
                     ? this.advance().value
                     : this.consumeIdentifierOrKeyword().value;
                 this.consume("OPERATOR", ":");
                 props.push({ key, value: this.parseExpr() });
-                if (this.check("PUNCTUATION", ","))
+                if (this.check("PUNCTUATION", ",")) {
                     this.advance();
+                }
                 this.skipNL();
             }
             this.consume("PUNCTUATION", "}");
@@ -1054,10 +1117,12 @@ export class Parser {
             // Try to parse lambda parameters (identifiers only - reserved words not allowed as parameter declarations)
             while (this.check("IDENTIFIER") && !this.isEnd()) {
                 params.push(this.advance().value);
-                if (this.check("PUNCTUATION", ","))
+                if (this.check("PUNCTUATION", ",")) {
                     this.advance();
-                else
+                }
+                else {
                     break;
+                }
             }
             // Check if this looks like a lambda: (params) =>
             if (this.check("PUNCTUATION", ")")) {
@@ -1076,8 +1141,9 @@ export class Parser {
         if (this.check("IDENTIFIER") ||
             this.check("KEYWORD", "user") ||
             this.check("KEYWORD", "self") ||
-            this.check("KEYWORD", "context"))
+            this.check("KEYWORD", "context")) {
             return { type: "Identifier", name: this.advance().value };
+        }
         throw new Error(`Unexpected: ${this.current()?.value || "EOF"}`);
     }
     check(type, value) {
@@ -1085,8 +1151,9 @@ export class Parser {
         return t && t.type === type && (value === undefined || t.value === value);
     }
     consume(type, value) {
-        if (this.check(type, value))
+        if (this.check(type, value)) {
             return this.advance();
+        }
         throw new Error(`Expected ${value || type}, got ${this.current()?.value || "EOF"}`);
     }
     /**
@@ -1123,8 +1190,9 @@ export class Parser {
         throw new Error(`Expected identifier, got ${token?.value || "EOF"}`);
     }
     advance() {
-        if (!this.isEnd())
+        if (!this.isEnd()) {
             this.pos++;
+        }
         return this.tokens[this.pos - 1];
     }
     current() {
@@ -1134,8 +1202,9 @@ export class Parser {
         return (this.pos >= this.tokens.length || this.tokens[this.pos]?.type === "EOF");
     }
     skipNL() {
-        while (this.check("NEWLINE", "\n"))
+        while (this.check("NEWLINE", "\n")) {
             this.advance();
+        }
     }
     sync() {
         this.advance();
@@ -1151,7 +1220,8 @@ export class Parser {
                 "policy",
                 "store",
                 "event",
-            ].includes(this.current()?.value || "")))
+            ].includes(this.current()?.value || ""))) {
             this.advance();
+        }
     }
 }

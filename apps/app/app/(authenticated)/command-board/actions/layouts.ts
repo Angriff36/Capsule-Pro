@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { db } from "@repo/database";
+import { db, type Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import type { ViewportState } from "../types";
 
@@ -45,7 +45,8 @@ export interface LayoutDetail extends LayoutListItem {
 export async function saveLayout(
   input: SaveLayoutInput
 ): Promise<LayoutResult> {
-  const { userId, tenantId } = await auth();
+  const { userId, sessionClaims } = await auth();
+  const tenantId = sessionClaims?.tenantId as string | undefined;
 
   if (!(userId && tenantId)) {
     return { success: false, error: "Unauthorized" };
@@ -73,7 +74,7 @@ export async function saveLayout(
           },
         },
         data: {
-          viewport: input.viewport as unknown as Record<string, unknown>,
+          viewport: input.viewport as unknown as Prisma.InputJsonValue,
           visibleCards: input.visibleCards,
           gridSize: input.gridSize,
           showGrid: input.showGrid,
@@ -94,7 +95,7 @@ export async function saveLayout(
         boardId: input.boardId,
         userId,
         name: input.name,
-        viewport: input.viewport as unknown as Record<string, unknown>,
+        viewport: input.viewport as unknown as Prisma.InputJsonValue,
         visibleCards: input.visibleCards,
         gridSize: input.gridSize,
         showGrid: input.showGrid,
@@ -123,7 +124,8 @@ export async function saveLayout(
 export async function listLayouts(
   boardId: string
 ): Promise<{ success: boolean; data?: LayoutListItem[]; error?: string }> {
-  const { userId, tenantId } = await auth();
+  const { userId, sessionClaims } = await auth();
+  const tenantId = sessionClaims?.tenantId as string | undefined;
 
   if (!(userId && tenantId)) {
     return { success: false, error: "Unauthorized" };
@@ -172,7 +174,8 @@ export async function listLayouts(
 export async function getLayout(
   layoutId: string
 ): Promise<{ success: boolean; data?: LayoutDetail; error?: string }> {
-  const { userId, tenantId } = await auth();
+  const { userId, sessionClaims } = await auth();
+  const tenantId = sessionClaims?.tenantId as string | undefined;
 
   if (!(userId && tenantId)) {
     return { success: false, error: "Unauthorized" };
@@ -221,7 +224,8 @@ export async function getLayout(
 export async function deleteLayout(
   layoutId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const { userId, tenantId } = await auth();
+  const { userId, sessionClaims } = await auth();
+  const tenantId = sessionClaims?.tenantId as string | undefined;
 
   if (!(userId && tenantId)) {
     return { success: false, error: "Unauthorized" };

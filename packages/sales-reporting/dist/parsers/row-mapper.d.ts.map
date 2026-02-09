@@ -1,1 +1,1 @@
-{"version":3,"file":"row-mapper.d.ts","sourceRoot":"","sources":["../../src/parsers/row-mapper.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,WAAW,EAAE,MAAM,UAAU,CAAC;AAiE5C,wBAAgB,gBAAgB,CAC9B,GAAG,EAAE,MAAM,CAAC,MAAM,EAAE,MAAM,CAAC,EAC3B,UAAU,CAAC,EAAE,MAAM,GAClB,WAAW,GAAG,IAAI,CA0MpB"}
+{"version":3,"file":"row-mapper.d.ts","sourceRoot":"","sources":["../../src/parsers/row-mapper.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,WAAW,EAAE,MAAM,UAAU,CAAC;AA6E5C,wBAAgB,gBAAgB,CAC9B,GAAG,EAAE,MAAM,CAAC,MAAM,EAAE,MAAM,CAAC,EAC3B,UAAU,CAAC,EAAE,MAAM,GAClB,WAAW,GAAG,IAAI,CA8MpB"}

@@ -89,26 +89,31 @@ export const RecipeDetailEditButton = ({
     setResult(null);
     setCachedFormData(formData);
 
-    startTransitionAction(async () => {
-      try {
-        const actionResult = await updateRecipe(recipeId, formData);
-        setResult(actionResult);
+    return new Promise<void>((resolve, reject) => {
+      startTransitionAction(async () => {
+        try {
+          const actionResult = await updateRecipe(recipeId, formData);
+          setResult(actionResult);
 
-        if (actionResult.success) {
-          setIsEditModalOpen(false);
-          setEditRecipeData(null);
-          if (actionResult.redirectUrl) {
-            router.push(actionResult.redirectUrl);
-          } else {
-            router.refresh();
+          if (actionResult.success) {
+            setIsEditModalOpen(false);
+            setEditRecipeData(null);
+            if (actionResult.redirectUrl) {
+              router.push(actionResult.redirectUrl);
+            } else {
+              router.refresh();
+            }
+            resolve();
+          } else if (actionResult.error) {
+            setError(actionResult.error);
+            reject(new Error(actionResult.error));
           }
-        } else if (actionResult.error) {
-          setError(actionResult.error);
+        } catch (err) {
+          console.error("Failed to update recipe:", err);
+          setError("Failed to update recipe. Please try again.");
+          reject(err);
         }
-      } catch (err) {
-        console.error("Failed to update recipe:", err);
-        setError("Failed to update recipe. Please try again.");
-      }
+      });
     });
   };
 
@@ -157,7 +162,8 @@ export const RecipeDetailEditButton = ({
     }
   };
 
-  const constraintState = useConstraintOverride(result ?? {}, {
+  const constraintState = useConstraintOverride({
+    result: result ?? {},
     onOverride: handleOverride,
   });
 

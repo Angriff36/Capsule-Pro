@@ -653,7 +653,7 @@ const formatGroupKey = (value: CellValue): string =>
     : String(value);
 
 const sumValues = (values: Array<number | null>): number =>
-  values.reduce((total, value) => total + (value ?? 0), 0);
+  values.reduce((total: number, value) => total + (value ?? 0), 0);
 
 const meanValues = (values: Array<number | null>): number => {
   const filtered = values.filter(
@@ -2104,27 +2104,29 @@ const extractFunnelTargets = (rows: DataRow[]): Record<string, number> => {
         return;
       }
       const value = numbers.at(-1);
-      if (text.includes("lead") && targets.leads_received === undefined) {
-        targets.leads_received = value;
-      }
-      if (
-        (text.includes("proposal") || text.includes("quote")) &&
-        targets.proposals_sent === undefined
-      ) {
-        targets.proposals_sent = value;
-      }
-      if (
-        text.includes("won") &&
-        !text.includes("lost") &&
-        targets.events_won === undefined
-      ) {
-        targets.events_won = value;
-      }
-      if (
-        (text.includes("closing") || text.includes("close")) &&
-        targets.closing_ratio === undefined
-      ) {
-        targets.closing_ratio = normalizeRatio(value);
+      if (value !== undefined) {
+        if (text.includes("lead") && targets.leads_received === undefined) {
+          targets.leads_received = value;
+        }
+        if (
+          (text.includes("proposal") || text.includes("quote")) &&
+          targets.proposals_sent === undefined
+        ) {
+          targets.proposals_sent = value;
+        }
+        if (
+          text.includes("won") &&
+          !text.includes("lost") &&
+          targets.events_won === undefined
+        ) {
+          targets.events_won = value;
+        }
+        if (
+          (text.includes("closing") || text.includes("close")) &&
+          targets.closing_ratio === undefined
+        ) {
+          targets.closing_ratio = normalizeRatio(value);
+        }
       }
     });
   }

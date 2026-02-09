@@ -27,7 +27,7 @@ interface OverrideAuthorizationRequest {
  * Authorize and record an override for a blocking constraint
  */
 export async function POST(request: Request) {
-  const { orgId, userId: clerkId, user } = await auth();
+  const { orgId, userId: clerkId } = await auth();
 
   if (!(orgId && clerkId)) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
   // Users can override if they are:
   // 1. Managers (role = "manager" or "admin")
   // 2. Have explicit override permission
-  const userRole = user?.role || currentUser.role || "kitchen_staff";
+  const userRole = currentUser.role || "kitchen_staff";
   const canOverride =
     userRole === "manager" ||
     userRole === "admin" ||

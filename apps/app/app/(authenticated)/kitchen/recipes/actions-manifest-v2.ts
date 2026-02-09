@@ -527,8 +527,7 @@ export const createRecipe = async (
     restTime ?? 0,
     difficulty ?? 1,
     instructionsText ?? "",
-    notes ?? "",
-    overrideRequests
+    notes ?? ""
   );
 
   // Check for blocking constraints
@@ -691,7 +690,8 @@ export const createRecipe = async (
   await enqueueOutboxEvent(tenantId, "recipe", recipeId, "recipe.created", {
     recipeId,
     imageUrl,
-    constraintOutcomes: versionResult.constraintOutcomes,
+    constraintOutcomes:
+      versionResult.constraintOutcomes as unknown as Prisma.InputJsonValue,
   });
 
   return {
@@ -921,8 +921,7 @@ export const updateRecipe = async (
     restTime ?? 0,
     difficulty ?? 1,
     instructionsText ?? "",
-    notes ?? "",
-    overrideRequests
+    notes ?? ""
   );
 
   // Check for blocking constraints on version creation
@@ -1065,7 +1064,8 @@ export const updateRecipe = async (
   await enqueueOutboxEvent(tenantId, "recipe", recipeId, "recipe.updated", {
     recipeId,
     versionNumber: nextVersionNumber,
-    constraintOutcomes: versionResult.constraintOutcomes,
+    constraintOutcomes:
+      versionResult.constraintOutcomes as unknown as Prisma.InputJsonValue,
   });
 
   revalidatePath("/kitchen/recipes");
@@ -1191,8 +1191,7 @@ export const createDish = async (
     costPerPerson ?? 0,
     minLead ?? 0,
     maxLead ?? 7,
-    portionSize ?? "",
-    overrideRequests
+    portionSize ?? ""
   );
 
   // Check for blocking constraints
@@ -1267,7 +1266,8 @@ export const createDish = async (
     name,
     pricePerPerson,
     costPerPerson,
-    constraintOutcomes: result.constraintOutcomes,
+    constraintOutcomes:
+      result.constraintOutcomes as unknown as Prisma.InputJsonValue,
   });
 
   return {

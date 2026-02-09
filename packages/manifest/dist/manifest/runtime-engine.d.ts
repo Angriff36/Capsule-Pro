@@ -158,16 +158,16 @@ export interface ProvenanceVerificationResult {
     error?: string;
 }
 export declare class RuntimeEngine {
-    private ir;
+    private readonly ir;
     private context;
-    private options;
-    private stores;
-    private eventListeners;
+    private readonly options;
+    private readonly stores;
+    private readonly eventListeners;
     private eventLog;
     /** Index of relationships for efficient lookup during expression evaluation */
-    private relationshipIndex;
+    private readonly relationshipIndex;
     /** Memoization cache for resolved relationships to avoid repeated store queries */
-    private relationshipMemoCache;
+    private readonly relationshipMemoCache;
     constructor(ir: IR, context?: RuntimeContext, options?: RuntimeOptions);
     private initializeStores;
     /**

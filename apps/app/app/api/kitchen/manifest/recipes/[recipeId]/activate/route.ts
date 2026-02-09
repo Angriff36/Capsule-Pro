@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import type { Prisma } from "@repo/database";
 import { database } from "@repo/database";
 import {
   activateRecipe,
@@ -133,10 +134,10 @@ export async function POST(_request: Request, context: RouteContext) {
           eventType: "kitchen.recipe.activated",
           payload: {
             recipeId,
-            name: instance.name,
-            isActive: instance.isActive,
+            name: instance.name as string,
+            isActive: instance.isActive as boolean,
             constraintOutcomes: result.constraintOutcomes,
-          },
+          } as Prisma.InputJsonValue,
           status: "pending" as const,
         },
       });

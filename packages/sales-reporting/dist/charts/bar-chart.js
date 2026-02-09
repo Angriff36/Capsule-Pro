@@ -6,8 +6,9 @@ const formatting_1 = require("../utils/formatting");
 const chart_utils_1 = require("./chart-utils");
 function drawBarChart(doc, options) {
     const { x, y, width, height, data, title, colors = types_1.CHART_PALETTE, showCurrency = true, } = options;
-    if (data.length === 0)
+    if (data.length === 0) {
         return y;
+    }
     doc.save();
     if (title) {
         doc

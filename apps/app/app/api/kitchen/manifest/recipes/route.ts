@@ -54,6 +54,8 @@ export async function GET(_request: Request) {
 
     return manifestSuccessResponse({ recipes });
   } catch (error) {
-    return manifestErrorResponse(error);
+    return manifestErrorResponse(
+      error instanceof Error ? error : new Error(String(error))
+    );
   }
 }

@@ -48,12 +48,27 @@ vi.mock("next/navigation", () => ({
 
 // Mock crypto for randomUUID
 vi.mock("crypto", async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = (await importOriginal()) as object;
   return {
     ...actual,
     randomUUID: vi.fn().mockReturnValue("test-uuid-123"),
   };
 });
+
+// Type guard for SQL template string mock
+interface SqlMock {
+  strings: TemplateStringsArray;
+  values: unknown[];
+}
+
+function isSqlMock(value: unknown): value is SqlMock {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "strings" in value &&
+    "values" in value
+  );
+}
 
 describe("menu actions", () => {
   const mockTenantId = "test-tenant-id";
@@ -85,8 +100,11 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuInsertCall = executeRawCalls.find((call) => {
         const sql = call[0];
-        return sql?.strings
-          ?.join("")
+        if (!isSqlMock(sql)) {
+          return false;
+        }
+        return sql.strings
+          .join("")
           .includes("INSERT INTO tenant_kitchen.menus");
       });
 
@@ -152,8 +170,11 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuInsertCall = executeRawCalls.find((call) => {
         const sql = call[0];
-        return sql?.strings
-          ?.join("")
+        if (!isSqlMock(sql)) {
+          return false;
+        }
+        return sql.strings
+          .join("")
           .includes("INSERT INTO tenant_kitchen.menus");
       });
 
@@ -192,7 +213,10 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuUpdateCall = executeRawCalls.find((call) => {
         const sql = call[0];
-        return sql?.strings?.join("").includes("UPDATE tenant_kitchen.menus");
+        if (!isSqlMock(sql)) {
+          return false;
+        }
+        return sql.strings.join("").includes("UPDATE tenant_kitchen.menus");
       });
 
       expect(menuUpdateCall).toBeDefined();
@@ -306,7 +330,10 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuUpdateCall = executeRawCalls.find((call) => {
         const sql = call[0];
-        return sql?.strings?.join("").includes("UPDATE tenant_kitchen.menus");
+        if (!isSqlMock(sql)) {
+          return false;
+        }
+        return sql.strings.join("").includes("UPDATE tenant_kitchen.menus");
       });
 
       expect(menuUpdateCall).toBeDefined();
@@ -342,9 +369,13 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuDeleteCall = executeRawCalls.find((call) => {
         const sql = call[0];
+        if (!isSqlMock(sql)) {
+          return false;
+        }
+        const sqlString = sql.strings.join("");
         return (
-          sql?.strings?.join("").includes("UPDATE tenant_kitchen.menus") &&
-          sql.strings.join("").includes("SET deleted_at = NOW()")
+          sqlString.includes("UPDATE tenant_kitchen.menus") &&
+          sqlString.includes("SET deleted_at = NOW()")
         );
       });
 
@@ -446,8 +477,11 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuDishInsertCall = executeRawCalls.find((call) => {
         const sql = call[0];
-        return sql?.strings
-          ?.join("")
+        if (!isSqlMock(sql)) {
+          return false;
+        }
+        return sql.strings
+          .join("")
           .includes("INSERT INTO tenant_kitchen.menu_dishes");
       });
 
@@ -579,8 +613,11 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuDishInsertCall = executeRawCalls.find((call) => {
         const sql = call[0];
-        return sql?.strings
-          ?.join("")
+        if (!isSqlMock(sql)) {
+          return false;
+        }
+        return sql.strings
+          .join("")
           .includes("INSERT INTO tenant_kitchen.menu_dishes");
       });
 
@@ -612,11 +649,13 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const menuDishDeleteCall = executeRawCalls.find((call) => {
         const sql = call[0];
+        if (!isSqlMock(sql)) {
+          return false;
+        }
+        const sqlString = sql.strings.join("");
         return (
-          sql?.strings
-            ?.join("")
-            .includes("UPDATE tenant_kitchen.menu_dishes") &&
-          sql.strings.join("").includes("SET deleted_at = NOW()")
+          sqlString.includes("UPDATE tenant_kitchen.menu_dishes") &&
+          sqlString.includes("SET deleted_at = NOW()")
         );
       });
 
@@ -697,11 +736,13 @@ describe("menu actions", () => {
       const executeRawCalls = executeRawSpy.mock.calls;
       const sortOrderUpdates = executeRawCalls.filter((call) => {
         const sql = call[0];
+        if (!isSqlMock(sql)) {
+          return false;
+        }
+        const sqlString = sql.strings.join("");
         return (
-          sql?.strings
-            ?.join("")
-            .includes("UPDATE tenant_kitchen.menu_dishes") &&
-          sql.strings.join("").includes("sort_order")
+          sqlString.includes("UPDATE tenant_kitchen.menu_dishes") &&
+          sqlString.includes("sort_order")
         );
       });
 

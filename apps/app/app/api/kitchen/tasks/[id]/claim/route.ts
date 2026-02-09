@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import type { Prisma } from "@repo/database";
 import { database } from "@repo/database";
 import {
   claimPrepTask,
@@ -199,9 +200,9 @@ export async function POST(request: Request, context: RouteContext) {
             taskId: id,
             claimId: claim.id,
             employeeId: currentUser.id,
-            status: "in_progress",
+            status: "in_progress" as const,
             constraintOutcomes: result.constraintOutcomes,
-          },
+          } as Prisma.InputJsonValue,
           status: "pending" as const,
         },
       });

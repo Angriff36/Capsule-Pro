@@ -157,8 +157,9 @@ export async function extractPdfText(pdfBuffer) {
                 }
                 console.error("[extractPdfText] PDFParser error:", errData);
                 errors.push(`Failed to load PDF: ${errMsg}`);
-                if (errStack)
+                if (errStack) {
                     errors.push(`Stack: ${errStack}`);
+                }
                 resolve({ lines: [], pageCount: 0, errors });
             });
             pdfParser.on("pdfParser_dataReady", (data) => {
@@ -171,8 +172,9 @@ export async function extractPdfText(pdfBuffer) {
                                 for (const textItem of page.Texts) {
                                     if (textItem.R) {
                                         for (const run of textItem.R) {
-                                            if (run.T)
+                                            if (run.T) {
                                                 allPageLines.push(run.T);
+                                            }
                                         }
                                     }
                                 }

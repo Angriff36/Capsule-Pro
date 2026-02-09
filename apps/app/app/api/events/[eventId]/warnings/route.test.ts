@@ -29,9 +29,9 @@ describe("warnings route", () => {
     const mockGetTenantId = vi.mocked(getTenantIdForOrg);
 
     mockAuth.mockResolvedValue({
-      user: { id: "user-1" },
+      userId: "user-1",
       orgId: "org-1",
-    });
+    } as never);
     mockGetTenantId.mockResolvedValue("tenant-1");
 
     const request = new NextRequest("https://example.com/api/events//warnings");
