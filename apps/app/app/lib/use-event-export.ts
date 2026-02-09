@@ -61,17 +61,17 @@ export async function exportEvent(
       response.headers
         .get("Content-Disposition")
         ?.split("filename=")[1]
-        ?.replace(/"/g, "") || `event-export.${format}`;
+        ?.replaceAll('"', "") || `event-export.${format}`;
 
     // Create download link
-    const url = window.URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
     link.download = filename;
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    link.remove();
+    URL.revokeObjectURL(url);
 
     return {
       filename,
@@ -106,18 +106,18 @@ export function downloadExportResult(
       `${defaultFilename}.${contentType.includes("pdf") ? "pdf" : "csv"}`;
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    link.remove();
   } else if (content) {
     // Raw content (for CSVs)
     const blob = new Blob([content], { type: contentType });
-    const url = window.URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
     link.download = filename || `${defaultFilename}.csv`;
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    link.remove();
+    URL.revokeObjectURL(url);
   }
 }
 

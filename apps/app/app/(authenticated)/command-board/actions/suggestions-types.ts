@@ -22,7 +22,13 @@ export interface CardToCreate {
   entityId?: string;
   title: string;
   content?: string;
-  position: { x: number; y: number; width: number; height: number; zIndex: number };
+  position: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    zIndex: number;
+  };
   color?: string;
 }
 

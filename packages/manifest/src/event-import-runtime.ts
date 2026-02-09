@@ -396,7 +396,9 @@ export function setupEventListeners(
         await handlers.onChecklistGenerated?.(event);
         break;
       default:
-        console.warn(`Unexpected event type: ${(event as { name: string }).name}`);
+        console.warn(
+          `Unexpected event type: ${(event as { name: string }).name}`
+        );
         break;
     }
   });

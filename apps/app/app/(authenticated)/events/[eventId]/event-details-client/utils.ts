@@ -144,10 +144,10 @@ export const buildCalendarUrl = (
   notes: string | null | undefined
 ): string => {
   const calendarDateFormatter = createCalendarDateFormatter();
-  const start = calendarDateFormatter.format(eventDate).replace(/-/g, "");
+  const start = calendarDateFormatter.format(eventDate).replaceAll("-", "");
   const end = calendarDateFormatter
     .format(addDays(eventDate, 1))
-    .replace(/-/g, "");
+    .replaceAll("-", "");
   const title = encodeURIComponent(eventTitle);
   const details = encodeURIComponent(
     [eventType ? `Event type: ${eventType}` : "", notes ?? ""]

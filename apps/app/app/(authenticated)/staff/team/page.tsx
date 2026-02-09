@@ -19,8 +19,8 @@ import {
 } from "@repo/design-system/components/ui/table";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
-import { AddStaffForm } from "./components/add-staff-form";
 import { AddEmployeeToBoardButton } from "./components/add-employee-to-board-button";
+import { AddStaffForm } from "./components/add-staff-form";
 
 interface EmployeeRow {
   id: string;

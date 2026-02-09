@@ -25,6 +25,10 @@
     "./route-helpers": {
       "types": "./dist/route-helpers.d.ts",
       "import": "./dist/route-helpers.js"
+    },
+    "./manifest-runtime": {
+      "types": "./src/manifest-runtime.ts",
+      "import": "./src/manifest-runtime.ts"
     }
   },
   "scripts": {

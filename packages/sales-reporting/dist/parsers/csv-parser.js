@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseCsv = parseCsv;
 const papaparse_1 = __importDefault(require("papaparse"));
 const row_mapper_1 = require("./row-mapper");
-function parseCsv(data) {
+function parseCsv(data, dateColumn) {
     const text = data.toString("utf-8");
     const result = papaparse_1.default.parse(text, {
         header: true,
@@ -20,7 +20,7 @@ function parseCsv(data) {
         }
     }
     return result.data
-        .map(row_mapper_1.parseRowToRecord)
+        .map((row) => (0, row_mapper_1.parseRowToRecord)(row, dateColumn))
         .filter((r) => r !== null);
 }
 //# sourceMappingURL=csv-parser.js.map

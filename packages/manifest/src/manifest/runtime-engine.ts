@@ -785,22 +785,33 @@ export class RuntimeEngine {
     }
 
     // Validate entity constraints
-    const constraintOutcomes = await this.validateConstraints(entity, mergedData);
+    const constraintOutcomes = await this.validateConstraints(
+      entity,
+      mergedData
+    );
 
     // Only block on severity='block' constraints that failed
     const blockingFailures = constraintOutcomes.filter(
-      o => !o.passed && o.severity === 'block'
+      (o) => !o.passed && o.severity === "block"
     );
 
     if (blockingFailures.length > 0) {
-      console.warn('[Manifest Runtime] Blocking constraint validation failed:', blockingFailures);
+      console.warn(
+        "[Manifest Runtime] Blocking constraint validation failed:",
+        blockingFailures
+      );
       return undefined;
     }
 
     // Log non-blocking outcomes (warn/ok) for diagnostics
-    const nonBlockingOutcomes = constraintOutcomes.filter(o => !o.passed && o.severity !== 'block');
+    const nonBlockingOutcomes = constraintOutcomes.filter(
+      (o) => !o.passed && o.severity !== "block"
+    );
     if (nonBlockingOutcomes.length > 0) {
-      console.info('[Manifest Runtime] Non-blocking constraint outcomes:', nonBlockingOutcomes);
+      console.info(
+        "[Manifest Runtime] Non-blocking constraint outcomes:",
+        nonBlockingOutcomes
+      );
     }
 
     const store = this.stores.get(entityName);
@@ -857,22 +868,33 @@ export class RuntimeEngine {
     const mergedData = { ...existing, ...data };
 
     // Validate entity constraints
-    const constraintOutcomes = await this.validateConstraints(entity, mergedData);
+    const constraintOutcomes = await this.validateConstraints(
+      entity,
+      mergedData
+    );
 
     // Only block on severity='block' constraints that failed
     const blockingFailures = constraintOutcomes.filter(
-      o => !o.passed && o.severity === 'block'
+      (o) => !o.passed && o.severity === "block"
     );
 
     if (blockingFailures.length > 0) {
-      console.warn('[Manifest Runtime] Blocking constraint validation failed:', blockingFailures);
+      console.warn(
+        "[Manifest Runtime] Blocking constraint validation failed:",
+        blockingFailures
+      );
       return undefined;
     }
 
     // Log non-blocking outcomes (warn/ok) for diagnostics
-    const nonBlockingOutcomes = constraintOutcomes.filter(o => !o.passed && o.severity !== 'block');
+    const nonBlockingOutcomes = constraintOutcomes.filter(
+      (o) => !o.passed && o.severity !== "block"
+    );
     if (nonBlockingOutcomes.length > 0) {
-      console.info('[Manifest Runtime] Non-blocking constraint outcomes:', nonBlockingOutcomes);
+      console.info(
+        "[Manifest Runtime] Non-blocking constraint outcomes:",
+        nonBlockingOutcomes
+      );
     }
 
     return await store.update(id, data);

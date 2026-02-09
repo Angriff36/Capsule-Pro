@@ -116,7 +116,6 @@ let nextConfig: NextConfig = withToolbar(
       "@repo/seo",
     ],
     experimental: {
-      instrumentationHook: true,
       optimizePackageImports: [
         "lucide-react",
         "date-fns",

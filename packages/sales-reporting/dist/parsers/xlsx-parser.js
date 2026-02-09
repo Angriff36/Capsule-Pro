@@ -36,7 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseXlsx = parseXlsx;
 const XLSX = __importStar(require("xlsx"));
 const row_mapper_1 = require("./row-mapper");
-function parseXlsx(data) {
+function parseXlsx(data, dateColumn) {
     const workbook = XLSX.read(data, { type: "buffer", cellDates: true });
     const records = [];
     for (const sheetName of workbook.SheetNames) {
@@ -56,7 +56,7 @@ function parseXlsx(data) {
             return mapped;
         });
         for (const row of normalized) {
-            const record = (0, row_mapper_1.parseRowToRecord)(row);
+            const record = (0, row_mapper_1.parseRowToRecord)(row, dateColumn);
             if (record)
                 records.push(record);
         }

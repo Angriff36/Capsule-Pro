@@ -177,10 +177,10 @@ export function EventDetailsClient({
 
   // Effects
   useEffect(() => {
-    const interval = window.setInterval(() => {
+    const interval = globalThis.setInterval(() => {
       setNow(new Date());
     }, 30_000);
-    return () => window.clearInterval(interval);
+    return () => globalThis.clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -188,10 +188,10 @@ export function EventDetailsClient({
   }, [initialRsvpCount]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (typeof globalThis === "undefined") {
       return;
     }
-    const stored = window.localStorage.getItem("saved-events");
+    const stored = globalThis.localStorage.getItem("saved-events");
     if (!stored) {
       setSaveReady(true);
       return;
@@ -477,7 +477,7 @@ export function EventDetailsClient({
       : [];
 
   const handleCopyLink = async () => {
-    const url = `${window.location.origin}/events/${event.id}`;
+    const url = `${globalThis.location.origin}/events/${event.id}`;
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Event link copied to clipboard");
@@ -487,7 +487,7 @@ export function EventDetailsClient({
   };
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/events/${event.id}`;
+    const url = `${globalThis.location.origin}/events/${event.id}`;
     if (navigator.share) {
       try {
         await navigator.share({
@@ -512,18 +512,18 @@ export function EventDetailsClient({
         year: "numeric",
       }).format(
         eventDate
-      )} (${timeZoneLabel})\nVenue: ${event.venueName ?? "TBD"}\nLink: ${window.location.origin}/events/${event.id}`
+      )} (${timeZoneLabel})\nVenue: ${event.venueName ?? "TBD"}\nLink: ${globalThis.location.origin}/events/${event.id}`
     );
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    globalThis.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
   const handleToggleSave = () => {
-    const stored = window.localStorage.getItem("saved-events");
+    const stored = globalThis.localStorage.getItem("saved-events");
     const parsed = stored ? (JSON.parse(stored) as string[]) : [];
     const next = parsed.includes(event.id)
       ? parsed.filter((id) => id !== event.id)
       : [...parsed, event.id];
-    window.localStorage.setItem("saved-events", JSON.stringify(next));
+    globalThis.localStorage.setItem("saved-events", JSON.stringify(next));
     setIsSaved(next.includes(event.id));
     toast.success(next.includes(event.id) ? "Event saved" : "Event removed");
   };

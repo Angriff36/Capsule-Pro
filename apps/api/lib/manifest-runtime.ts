@@ -10,7 +10,7 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { compileToIR, RuntimeEngine, type IR } from "@repo/manifest";
+import { compileToIR, type IR, RuntimeEngine } from "@repo/manifest";
 
 interface GeneratedRuntimeContext {
   user: {
@@ -78,7 +78,8 @@ export async function createManifestRuntime(
 ): Promise<RuntimeEngine> {
   // Determine which manifest to load
   const manifestName =
-    ctx.manifestName ?? (ctx.entityName ? getManifestForEntity(ctx.entityName) : "prep-task-rules");
+    ctx.manifestName ??
+    (ctx.entityName ? getManifestForEntity(ctx.entityName) : "prep-task-rules");
 
   const ir = await getManifestIR(manifestName);
 
@@ -89,31 +90,49 @@ export async function createManifestRuntime(
 }
 
 /** Helper to create a runtime specifically for Menu operations */
-export async function createMenuRuntime(user: { id: string; tenantId: string }): Promise<RuntimeEngine> {
+export async function createMenuRuntime(user: {
+  id: string;
+  tenantId: string;
+}): Promise<RuntimeEngine> {
   return createManifestRuntime({ user, manifestName: "menu-rules" });
 }
 
 /** Helper to create a runtime specifically for PrepTask operations */
-export async function createPrepTaskRuntime(user: { id: string; tenantId: string }): Promise<RuntimeEngine> {
+export async function createPrepTaskRuntime(user: {
+  id: string;
+  tenantId: string;
+}): Promise<RuntimeEngine> {
   return createManifestRuntime({ user, manifestName: "prep-task-rules" });
 }
 
 /** Helper to create a runtime specifically for Recipe operations */
-export async function createRecipeRuntime(user: { id: string; tenantId: string }): Promise<RuntimeEngine> {
+export async function createRecipeRuntime(user: {
+  id: string;
+  tenantId: string;
+}): Promise<RuntimeEngine> {
   return createManifestRuntime({ user, manifestName: "recipe-rules" });
 }
 
 /** Helper to create a runtime specifically for PrepList operations */
-export async function createPrepListRuntime(user: { id: string; tenantId: string }): Promise<RuntimeEngine> {
+export async function createPrepListRuntime(user: {
+  id: string;
+  tenantId: string;
+}): Promise<RuntimeEngine> {
   return createManifestRuntime({ user, manifestName: "prep-list-rules" });
 }
 
 /** Helper to create a runtime specifically for Inventory operations */
-export async function createInventoryRuntime(user: { id: string; tenantId: string }): Promise<RuntimeEngine> {
+export async function createInventoryRuntime(user: {
+  id: string;
+  tenantId: string;
+}): Promise<RuntimeEngine> {
   return createManifestRuntime({ user, manifestName: "inventory-rules" });
 }
 
 /** Helper to create a runtime specifically for Station operations */
-export async function createStationRuntime(user: { id: string; tenantId: string }): Promise<RuntimeEngine> {
+export async function createStationRuntime(user: {
+  id: string;
+  tenantId: string;
+}): Promise<RuntimeEngine> {
   return createManifestRuntime({ user, manifestName: "station-rules" });
 }

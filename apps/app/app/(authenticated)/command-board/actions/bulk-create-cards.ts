@@ -2,9 +2,9 @@
 
 import { database } from "@repo/database";
 import { requireTenantId } from "../../../lib/tenant";
-import type { CardToCreate } from "./suggestions-types";
-import type { CardResult } from "./cards";
 import type { CardMetadata, CardType } from "../types";
+import type { CardResult } from "./cards";
+import type { CardToCreate } from "./suggestions-types";
 
 export interface BulkCreateCardsInput {
   cards: CardToCreate[];
@@ -98,7 +98,8 @@ export async function bulkCreateCards(
           zIndex: cardInput.position.zIndex,
           color: cardInput.color ?? null,
           entityId: cardInput.entityId ?? null,
-          entityType: cardInput.entityType === "note" ? null : cardInput.entityType,
+          entityType:
+            cardInput.entityType === "note" ? null : cardInput.entityType,
           metadata: {} as CardMetadata,
         },
       });

@@ -1,4 +1,5 @@
 import { v as Ju } from "./defaultSettingsView-CJSZINFr.js";
+
 var vi = { exports: {} },
   Zu = vi.exports,
   pa;
@@ -4053,10 +4054,8 @@ b`.split(/\n/).length != 3
             var t = e.display,
               n = t.view;
             if (
-              !(
-                !t.alignWidgets &&
-                !(t.gutters.firstChild && e.options.fixedGutter)
-              )
+              t.alignWidgets ||
+              (t.gutters.firstChild && e.options.fixedGutter)
             ) {
               for (
                 var r = zi(t) - t.scroller.scrollLeft + e.doc.scrollLeft,
@@ -7074,8 +7073,8 @@ b`.split(/\n/).length != 3
               !(
                 (e.target && e.target != this.display.input.getField()) ||
                 tr(this.display, e) ||
-                  Qe(this, e) ||
-                  (e.ctrlKey && !e.altKey) ||
+                Qe(this, e) ||
+                (e.ctrlKey && !e.altKey) ||
                 (z && e.metaKey)
               )
             ) {
@@ -15212,10 +15211,13 @@ function nf() {
                     (d.indentationDiff =
                       Ce - d.listStack[d.listStack.length - 1]);
                 }
-                var ve =
-                    !(Te || xe || d.prevLine.header) &&
-                    !(Me && le) &&
-                    !d.prevLine.fencedCodeEnd,
+                var ve = !(
+                    Te ||
+                    xe ||
+                    d.prevLine.header ||
+                    (Me && le) ||
+                    d.prevLine.fencedCodeEnd
+                  ),
                   Oe =
                     (d.list === !1 || xe || Te) &&
                     d.indentation <= Fe &&
@@ -15286,8 +15288,7 @@ function nf() {
                   );
                 if (
                   d.setext ||
-                  (!(ve && Me) &&
-                    !d.quote &&
+                  (!((ve && Me) || d.quote) &&
                     d.list === !1 &&
                     !d.code &&
                     !Oe &&

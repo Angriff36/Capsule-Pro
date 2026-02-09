@@ -31,6 +31,7 @@ if (process.env.NODE_ENV !== "production" && typeof process !== "undefined") {
 const adapter = new PrismaNeon({ connectionString });
 
 export const database = globalForPrisma.prisma || new PrismaClient({ adapter });
+export const db = database;
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = database;

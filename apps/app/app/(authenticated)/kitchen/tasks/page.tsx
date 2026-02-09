@@ -23,8 +23,8 @@ import { Calendar, Clock, User } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
-import { AddTaskToBoardButton } from "./components/add-task-to-board-button";
 import { getKitchenTasks, getMyActiveClaims } from "./actions";
+import { AddTaskToBoardButton } from "./components/add-task-to-board-button";
 
 const priorityLabels: Record<number, string> = {
   1: "Urgent",
@@ -235,9 +235,9 @@ const KitchenTasksPage = async () => {
                           </TableCell>
                           <TableCell>
                             <AddTaskToBoardButton
+                              taskId={task.id}
                               taskSummary={task.summary}
                               taskTitle={task.title}
-                              taskId={task.id}
                             />
                           </TableCell>
                         </TableRow>

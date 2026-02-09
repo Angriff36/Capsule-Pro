@@ -24,7 +24,7 @@ export async function generateSalesReport(input: ReportInput): Promise<Buffer> {
     throw new Error("dateRange with start and end is required in config");
   }
 
-  const allRecords = parseFiles(files);
+  const allRecords = parseFiles(files, config.dateColumn);
 
   if (allRecords.length === 0) {
     throw new Error("No valid sales records found in the provided files");

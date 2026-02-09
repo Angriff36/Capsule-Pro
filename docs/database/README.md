@@ -1,240 +1,493 @@
 # Database Documentation
 
-**Living Documentation for Convoy Database Schema**
+**Canonical reference for Capsule Pro database architecture, patterns, and workflows**
 
-This directory contains comprehensive, auto-generated and manually maintained documentation for the Convoy catering management system database.
+Last updated: 2025-02-07
 
-## Documentation Statistics (as of 2025-01-30)
+---
 
-- **Total schemas documented**: 9 (all PostgreSQL schemas)
-- **Total tables documented**: 31 (across all schemas)
-- **Total migrations documented**: 17 (with detailed analysis)
-- **Total enums documented**: 12 (core and domain-specific)
-- **Total documentation files**: 64 markdown files
-- **Known issues tracked**: 10 critical/minor issues
-- **Migration TODOs tracked**: 23 action items
-- **Type safety fixes**: 1 `any` type replaced with proper types
+## Table of Contents
 
-### Coverage by Schema
+1. [Architecture Overview](#architecture-overview)
+2. [Core Decisions & Patterns](#core-decisions--patterns)
+3. [Database Workflow](#database-workflow)
+4. [Common Patterns](#common-patterns)
+5. [Commands Reference](#commands-reference)
+6. [Schema Structure](#schema-structure)
+7. [Additional Resources](#additional-resources)
 
-| Schema | Tables Documented | Status |
-|--------|-------------------|--------|
-| `platform` | 5 | ✅ Complete |
-| `core` | 7 | ✅ Complete |
-| `tenant` | 3 | ✅ Complete |
-| `tenant_admin` | 2 | ✅ Complete |
-| `tenant_crm` | 4 | ✅ Complete |
-| `tenant_events` | 4 | ✅ Complete |
-| `tenant_inventory` | 3 | ✅ Complete |
-| `tenant_kitchen` | 3 | ✅ Complete |
-| `tenant_staff` | 0 | ⏳ Future work |
+---
 
-## Overview
+## Architecture Overview
 
-The Convoy database is a multi-tenant PostgreSQL database managed by Prisma ORM. It uses multiple schemas to organize domain-specific functionality while maintaining data isolation through tenant_id columns.
-
-### Architecture
+### Technology Stack
 
 - **Database**: PostgreSQL (hosted on Neon)
-- **ORM**: Prisma
+- **ORM**: Prisma with `relationMode = "prisma"`
+- **Migration Tool**: Prisma Migrate (NOT `db push`)
 - **Multi-tenancy**: Shared database with `tenant_id` column isolation
-- **Schemas**: 9 PostgreSQL schemas for logical separation
-  - `core` - Shared types, enums, functions
-  - `platform` - Platform-level tables (Account, User)
-  - `tenant` - Core tenant tables (Location, Employee)
-  - `tenant_admin` - Admin and reporting
-  - `tenant_crm` - CRM operations
-  - `tenant_events` - Events and battle boards
-  - `tenant_inventory` - Inventory management
-  - `tenant_kitchen` - Kitchen tasks and prep
-  - `tenant_staff` - Staff scheduling and time tracking
+- **Authentication**: Clerk (handles user auth and session management)
+- **Realtime**: Ably (via outbox pattern for authoritative events)
 
-### Key Design Patterns
-
-1. **Soft Deletes**: All tenant tables include `deletedAt` for soft deletion
-2. **Audit Trail**: All tables include `createdAt` and `updatedAt` timestamps
-3. **Tenant Isolation**: Tenant tables include `tenantId` with indexes
-4. **Foreign Keys**: Referential integrity enforced at database level (Prisma uses `relationMode = "prisma"`, so FKs are not managed by Prisma)
-5. **Outbox Pattern**: Real-time events via `OutboxEvent` model
-
-## Documentation Structure
+### Multi-Tenant Architecture
 
 ```
-docs/database/
-├── README.md           # This file - overview and methodology
-├── SCHEMAS.md          # All schemas overview with relationships
-├── KNOWN_ISSUES.md     # Known issues and TODOs
-├── CONTRIBUTING.md     # How to update documentation
-├── schemas/            # Per-schema documentation (9 files)
-├── tables/             # Per-table detailed documentation (14 files)
-├── migrations/         # Migration documentation (17 files)
-├── enums/              # Enum documentation (13 files)
-├── hooks/              # Hook documentation
-└── _templates/         # Templates for new documentation
+┌─────────────────────────────────────────────────────────┐
+│                PostgreSQL Database (Neon)                │
+├─────────────────────────────────────────────────────────┤
+│  • Shared database for ALL tenants                       │
+│  • Tenant isolation via tenant_id column                 │
+│  • Composite primary keys: (tenant_id, id)               │
+│  • Foreign keys enforced at database level (108 total)   │
+│  • NO per-tenant databases                               │
+│  • NO Row Level Security (RLS) - Clerk handles auth      │
+└─────────────────────────────────────────────────────────┘
 ```
 
-## Methodology
+---
 
-### Living Documentation Philosophy
+## Core Decisions & Patterns
 
-This documentation follows the "living docs" approach:
+### 1. Multi-Tenancy Strategy
 
-1. **Auto-generated where possible** - Schema structure, types, and relationships extracted from Prisma schema
-2. **Manual annotations** - Business logic, usage patterns, and important constraints documented by humans
-3. **Always up-to-date** - Generated with migrations, not as an afterthought
-4. **Version controlled** - Documentation changes tracked with schema changes
+**Decision**: Shared database with `tenant_id` column isolation
 
-### Update Workflow (Enforced)
+- ✅ All tenant tables include `tenant_id` column
+- ✅ Composite primary keys: `(tenant_id, id)`
+- ✅ Application-level tenant isolation (Clerk middleware)
+- ❌ NO per-tenant databases
+- ❌ NO Row Level Security (RLS) policies
 
-```bash
-# 1) Validate DB alignment before changing schema
-pnpm db:check
+**Why**: Simpler infrastructure, easier schema migrations, lower cost, shared reporting/analytics.
 
-# 2) Update Prisma schema
-# packages/database/prisma/schema.prisma
+### 2. Foreign Keys
 
-# 3) Create/apply dev migration (includes db:check + generate)
-pnpm migrate
+**Decision**: Foreign keys ARE enforced at database level
 
-# 4) If db:check fails, generate a safe repair migration
-pnpm db:repair
+- ✅ 108 foreign key constraints added in migration `20260129120000_add_foreign_keys`
+- ✅ Referential integrity enforced by PostgreSQL
+- ✅ Composite foreign keys: `(tenant_id, parent_id)` → `(tenant_id, id)`
+- ⚠️ Prisma uses `relationMode = "prisma"` (doesn't auto-generate FK constraints)
+- ⚠️ FK constraints added manually in migrations
 
-# 5) Apply migrations to shared DB
-pnpm db:deploy
-
-# 6) Update docs (TODO: implement generator)
-pnpm docs:generate-db
+**Example**:
+```sql
+ALTER TABLE tenant_crm.client_contacts
+ADD CONSTRAINT fk_client_contacts_client
+FOREIGN KEY (tenant_id, client_id)
+REFERENCES tenant_crm.clients(tenant_id, id)
+ON DELETE CASCADE;
 ```
 
-### Drift Realignment (Dev Only)
+### 3. Authentication & Authorization
 
-Use this when your local DB has drift or after pulling new migrations.
+**Decision**: Clerk handles all auth, NO database-level RLS
 
-```bash
-# 1) Detect drift (additive drift + full diff)
-pnpm db:check
-pnpm --filter @repo/database exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma
+- ✅ Clerk middleware enforces tenant isolation
+- ✅ Session management via Clerk
+- ✅ User authentication via Clerk
+- ❌ NO Supabase RLS policies (leftover docs are outdated)
+- ❌ NO database-level row security
 
-# 2) If drift is additive, generate a safe repair migration
-pnpm db:repair
+**Why**: Clerk provides robust auth out-of-the-box. Database complexity reduced.
 
-# 3) Review the generated migration SQL (must be safe/additive)
-# packages/database/prisma/migrations/<timestamp>_repair_drift/migration.sql
+### 4. Realtime Events
 
-# 4) Apply repair migration to dev DB
-pnpm db:deploy
+**Decision**: Ably for authoritative events via outbox pattern
 
-# 5) Re-check drift
-pnpm db:check
-pnpm --filter @repo/database exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma
-```
+- ✅ Ably handles backend-to-client event propagation
+- ✅ Outbox pattern ensures reliable event delivery
+- ✅ Liveblocks for collaborative UI state (cursors, presence)
+- ❌ NO Supabase Realtime (not using Supabase)
 
-Notes:
-- Expect **drop-only** diffs for DB foreign keys because `relationMode = "prisma"` (Prisma does not manage FKs).
-- If the diff shows **unexpected column drops**, confirm whether the DB has extra columns not in schema.
-- Never edit existing migrations; add a new migration if cleanup is required.
+### 5. Prisma Configuration
 
-### Code Alignment After Drift
-
-After the DB is aligned to schema, fix code that still references old columns.
-
-```bash
-# 1) Find raw SQL usages
-rg -n "\\$queryRaw|\\$executeRaw|\\$queryRawUnsafe|\\$executeRawUnsafe|Prisma\\.sql" apps packages
-
-# 2) Compare selected columns against schema.prisma (or contract docs)
-# 3) Update SQL to use real DB column names (alias to UI-friendly names if needed)
-
-# 4) Add targeted tests that inspect SQL strings
-# 5) Re-run targeted tests for the affected package(s)
-```
-
-If `db push` was used (not recommended), baseline migration history before continuing:
-
-```bash
-pnpm --filter @repo/database exec prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script > packages/database/prisma/migrations/0_init/migration.sql
-pnpm --filter @repo/database exec prisma migrate resolve --applied 0_init
-```
-
-### What Gets Documented
-
-- **Every table**: Purpose, fields, indexes, constraints
-- **Every foreign key**: What it references and why
-- **Every index**: Rationale (query optimization, unique constraints, etc.)
-- **Every enum**: Valid values and usage context
-- **Relationships**: How tables relate to each other
-- **Business rules**: Constraints not captured by Prisma
-- **Migration history**: Why specific changes were made
-
-## Quick Reference
-
-### Schema Locations
-
-| Schema | Purpose | Tables |
-|--------|---------|--------|
-| `platform` | Platform-level | Account, User |
-| `tenant` | Core tenant | Location, Employee, CommandBoard |
-| `tenant_kitchen` | Kitchen ops | KitchenTask, PrepList, Recipe |
-| `tenant_events` | Events | Event, BattleBoard, EventImport |
-| `tenant_staff` | Staffing | Schedule, TimeEntry, Shift |
-| `tenant_crm` | CRM | Client, Lead, Proposal |
-| `tenant_inventory` | Inventory | InventoryItem, PurchaseOrder, WasteEntry |
-| `tenant_admin` | Admin | Report, Workflow, Notification |
-
-### Common Patterns
-
-All tenant tables follow these patterns:
+**Decision**: `relationMode = "prisma"`
 
 ```prisma
-model ExampleTable {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId  String   @map("tenant_id") @db.Uuid
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+datasource db {
+  provider     = "postgresql"
+  relationMode = "prisma"  // Prisma manages relations in app code
+  schemas      = ["core", "platform", "tenant", ...]
+}
+```
+
+**Implications**:
+- Prisma does NOT auto-generate foreign key constraints
+- Foreign keys must be added manually in migrations
+- Database still enforces referential integrity (good!)
+- Prisma client handles relation queries
+
+### 6. UUID Generation
+
+**Decision**: PostgreSQL `gen_random_uuid()` for all IDs
+
+```prisma
+model Example {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+}
+```
+
+**Why**: Database-generated UUIDs ensure uniqueness, no app-level coordination needed.
+
+### 7. Soft Deletes
+
+**Decision**: All tenant tables use `deletedAt` for soft deletion
+
+```prisma
+model Example {
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  @@map("example_tables")
-  @@schema("tenant_xxx")
   @@index([tenantId, deletedAt])
 }
 ```
 
+**Why**: Enables undo functionality, maintains audit trail, supports recovery.
+
+### 8. Timestamps
+
+**Decision**: All tables include `createdAt` and `updatedAt`
+
+```prisma
+model Example {
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+}
+```
+
+**Why**: Audit trail, debugging, data lifecycle tracking.
+
+### 9. Field Naming Convention
+
+**Decision**: Prisma uses camelCase, database uses snake_case
+
+```prisma
+model Example {
+  tenantId  String   @map("tenant_id") @db.Uuid
+  createdAt DateTime @map("created_at") @db.Timestamptz(6)
+}
+```
+
+**Critical Rules** (from CLAUDE.md):
+- ✅ Field names: camelCase with `@map("snake_case")`
+- ❌ NEVER: snake_case directly in Prisma schema
+- ✅ UUIDs: `gen_random_uuid()` only
+- ❌ NEVER: column refs in `@default()` (e.g., `@default(dbgenerated("col1 * col2"))`)
+- ✅ Relations: `references` uses Prisma field names
+- ❌ NEVER: DB column names in `references`
+
+---
+
+## Database Workflow
+
+**Complete workflow for schema changes** (authoritative source: `docs/workflows/database.md`)
+
+### Step-by-Step Process
+
+1. **Edit Prisma Schema**
+   ```bash
+   # Edit packages/database/prisma/schema.prisma
+   ```
+
+2. **Update Schema Registry**
+   ```bash
+   # Update packages/database/schema-registry-v2.txt BEFORE migration
+   ```
+
+3. **Generate Migration**
+   ```bash
+   pnpm migrate
+   # Runs: prisma format + prisma generate + prisma migrate dev
+   ```
+
+4. **Edit Generated Migration**
+   ```bash
+   # Add required SQL to packages/database/prisma/migrations/<timestamp>_<name>/migration.sql
+   # Examples: triggers, partial indexes, custom functions, backfills
+   ```
+
+5. **Add Checklist Entry**
+   ```bash
+   # Append entry to packages/database/DATABASE_PRE_MIGRATION_CHECKLIST.md
+   ```
+
+6. **Deploy Migration**
+   ```bash
+   pnpm db:deploy
+   # Must happen BEFORE db:check/dev to avoid drift
+   ```
+
+7. **Verify Clean State** (Optional)
+   ```bash
+   pnpm db:check
+   # Confirms no drift after deployment
+   ```
+
 ### Important Notes
 
-- **No per-tenant databases** - All tenants share database with `tenant_id` isolation
-- **No Supabase RLS** - Tenant isolation enforced at application layer
-- **Realtime via Ably** - Uses outbox pattern, not Supabase Realtime
-- **Migration authority** - Prisma Migrate is source of truth for schema
+- **NEVER** use `prisma db push` (disabled in this repo)
+- **ALWAYS** update `schema-registry-v2.txt` before generating migrations
+- **ALWAYS** add checklist entry before committing
+- **NEVER** edit existing migrations after deployment
+- If drift exists, run `pnpm db:repair` to generate a safe repair migration
 
-## Key Accomplishments (Feature 004)
+---
 
-This documentation was created as part of feature **004-database-docs-integrity** (2025-01-29 to 2025-01-30):
+## Common Patterns
 
-1. **Established documentation framework** - Created templates, structure, and methodology
-2. **Documented all schemas** - 9 PostgreSQL schemas with detailed explanations
-3. **Documented 31 tables** - Complete coverage with fields, indexes, constraints
-4. **Analyzed 17 migrations** - Detailed migration history with TODOs tracked
-5. **Documented 12 enums** - All core enums with business context
-6. **Fixed 1 type issue** - Replaced `any` with proper ProposalUpdateData type
-7. **Identified 10 issues** - Critical and minor database issues documented
-8. **Created 23 TODOs** - Actionable items for future improvements
+### 1. Composite Primary Keys
 
-## Critical Schema Fixes
+All tenant tables use composite primary keys:
 
-**⚠️ IMPORTANT**: Read `SCHEMA_FIXES.md` before making any schema changes. Contains critical patterns that MUST be followed.
+```prisma
+model Example {
+  tenantId String @map("tenant_id") @db.Uuid
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-## Getting Started
+  @@id([tenantId, id])  // Composite PK
+  @@map("examples")
+  @@schema("tenant_kitchen")
+}
+```
 
-1. **Read SCHEMA_FIXES.md** - ⚠️ CRITICAL patterns that MUST be followed
-2. **Read SCHEMAS.md** - Overview of all schemas and relationships
-3. **Check KNOWN_ISSUES.md** - Known problems before making changes
-4. **Browse schemas/** - Domain-specific schema documentation
-5. **Reference tables/** - Detailed table documentation with constraints
-6. **Follow CONTRIBUTING.md** - When making schema changes
+### 2. Composite Foreign Keys
 
-## See Also
+Foreign keys reference composite primary keys:
 
-- **Prisma Schema**: `packages/database/prisma/schema.prisma`
+```sql
+ALTER TABLE tenant_events.event_guests
+ADD CONSTRAINT fk_event_guests_event
+FOREIGN KEY (tenant_id, event_id)
+REFERENCES tenant_events.events(tenant_id, id)
+ON DELETE CASCADE;
+```
+
+### 3. ON DELETE Behaviors
+
+**CASCADE**: Child records deleted when parent deleted (composition relationships)
+```sql
+ON DELETE CASCADE  -- Line items, comments, assignments
+```
+
+**SET NULL**: Child records lose reference but survive (optional relationships)
+```sql
+ON DELETE SET NULL  -- Assignee references, event/location links
+```
+
+**RESTRICT**: Parent cannot be deleted if children exist (critical entities)
+```sql
+ON DELETE RESTRICT  -- Employee in time entries, inventory items in transactions
+```
+
+### 4. Cross-Schema References
+
+Many foreign keys span multiple schemas:
+
+```sql
+-- tenant_events → tenant_crm
+ALTER TABLE tenant_events.events
+ADD CONSTRAINT fk_events_client
+FOREIGN KEY (tenant_id, client_id)
+REFERENCES tenant_crm.clients(tenant_id, id);
+
+-- tenant_kitchen → tenant_inventory
+ALTER TABLE tenant_kitchen.containers
+ADD CONSTRAINT fk_containers_location
+FOREIGN KEY (tenant_id, location_id)
+REFERENCES tenant_inventory.storage_locations(tenant_id, id);
+```
+
+### 5. Standard Indexes
+
+All tenant tables have tenant isolation indexes:
+
+```prisma
+model Example {
+  @@index([tenantId, deletedAt])  // Tenant isolation + soft delete filtering
+}
+```
+
+### 6. Migration Safety Pattern
+
+All migrations use idempotent patterns:
+
+```sql
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = 'fk_name'
+        AND table_schema = 'schema_name'
+    ) THEN
+        ALTER TABLE schema_name.table
+        ADD CONSTRAINT fk_name
+        FOREIGN KEY (columns)
+        REFERENCES parent_table(columns)
+        ON DELETE behavior;
+    END IF;
+END $$;
+```
+
+**Benefits**:
+- Safe to re-run if migration fails partway
+- No errors if constraints already exist
+- Idempotent execution in CI/CD pipelines
+
+---
+
+## Commands Reference
+
+### Migration Commands
+
+```bash
+# Create new migration (includes db:check + generate)
+pnpm migrate
+
+# Check for drift (detects missing columns/tables/indexes)
+pnpm db:check
+
+# Generate safe repair migration for drift
+pnpm db:repair
+
+# Apply migrations to database
+pnpm db:deploy
+
+# Check migration status
+pnpm migrate:status
+
+# Regenerate Prisma client
+pnpm prisma:generate
+
+# Format Prisma schema
+pnpm --filter @repo/database exec prisma format
+```
+
+### Drift Resolution Workflow
+
+```bash
+# 1. Detect drift
+pnpm db:check
+
+# 2. Generate repair migration (safe, additive-only)
+pnpm db:repair
+
+# 3. Review generated SQL
+# Check packages/database/prisma/migrations/<timestamp>_repair_drift/migration.sql
+
+# 4. Apply repair migration
+pnpm db:deploy
+
+# 5. Re-check drift
+pnpm db:check
+```
+
+### Important Notes
+
+- `pnpm db:check` blocks additive drift (missing columns/tables/indexes)
+- `pnpm db:check` ignores drop-only diffs (like DB foreign keys, because `relationMode = "prisma"`)
+- `pnpm db:repair` generates safe, additive-only migrations
+- `pnpm db:repair` will drop/recreate indexes when fixing index drift (no data loss)
+
+---
+
+## Schema Structure
+
+The database uses **9 PostgreSQL schemas** for logical separation:
+
+### Core Schemas
+
+| Schema | Purpose | Tenant Scoped? |
+|--------|---------|----------------|
+| `core` | Types, enums, functions | No |
+| `platform` | Account, audit logs | No (Account IS the tenant) |
+
+### Tenant Schemas
+
+| Schema | Purpose | Example Tables |
+|--------|---------|----------------|
+| `tenant` | Core tenant data | Location, Employee, Settings |
+| `tenant_admin` | Admin & reporting | Report, Workflow, Notification |
+| `tenant_crm` | CRM operations | Client, Lead, Proposal |
+| `tenant_events` | Event management | Event, BattleBoard, EventImport |
+| `tenant_inventory` | Inventory ops | InventoryItem, PurchaseOrder, Shipment |
+| `tenant_kitchen` | Kitchen operations | Recipe, PrepTask, KitchenTask |
+| `tenant_staff` | Staff management | Schedule, TimeEntry, Shift |
+
+### Schema Pattern
+
+All tenant schemas follow this pattern:
+
+```prisma
+model ExampleTable {
+  tenantId  String   @map("tenant_id") @db.Uuid
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, deletedAt])
+  @@map("example_tables")
+  @@schema("tenant_xxx")
+}
+```
+
+---
+
+## Additional Resources
+
+### Key Files
+
+- **Schema**: `packages/database/prisma/schema.prisma`
 - **Migrations**: `packages/database/prisma/migrations/`
-- **Schema Contract**: `docs/legacy-contracts/schema-contract-v2.txt`
-- **Schema Registry**: `docs/legacy-contracts/schema-registry-v2.txt`
+- **Schema Registry**: `packages/database/schema-registry-v2.txt`
+- **Checklist**: `packages/database/DATABASE_PRE_MIGRATION_CHECKLIST.md`
+- **Known Issues**: `packages/database/KNOWN_ISSUES.md`
+
+### Documentation
+
+- **Workflow**: `docs/workflows/database.md`
+- **Migration Docs**: `docs/database/migrations/` (21 documented migrations)
+- **CLAUDE.md**: Critical Prisma schema rules (see "Database Changes" section)
+- **AGENTS.md**: Database workflow reference for AI agents
+
+### Migration Documentation
+
+All 21 migrations are documented in `docs/database/migrations/`:
+
+- `0000_init.md` - Schema initialization
+- `0001_enable_pgcrypto.md` - UUID generation
+- `0002_employee_seniority.md` - Employee ranks
+- ... (see `docs/database/migrations/README.md` for full list)
+
+### Getting Help
+
+- **Current Issues**: See `KNOWN_ISSUES.md` for active TODOs and critical issues
+- **Schema Questions**: Check `schema-registry-v2.txt` for table definitions
+- **Migration Questions**: See migration docs in `docs/database/migrations/`
+- **Workflow Questions**: See `docs/workflows/database.md`
+
+---
+
+## Summary
+
+**Key Takeaways**:
+
+1. ✅ PostgreSQL on Neon + Prisma ORM
+2. ✅ Multi-tenant via shared DB + `tenant_id` isolation
+3. ✅ Foreign keys enforced at database level (108 constraints)
+4. ✅ Clerk handles auth (NO RLS policies)
+5. ✅ Ably handles realtime (via outbox pattern)
+6. ✅ Prisma Migrate for all schema changes (NOT `db push`)
+7. ✅ Always update `schema-registry-v2.txt` before migrations
+8. ✅ Always add checklist entry before committing
+
+**Before making schema changes**:
+1. Read `schema-registry-v2.txt`
+2. Read CLAUDE.md "Database Changes" section
+3. Follow the workflow above
+4. Check `KNOWN_ISSUES.md` for current problems
+
+---
+
+Last updated: 2025-02-07

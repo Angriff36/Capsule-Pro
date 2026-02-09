@@ -24,9 +24,9 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { AddToBoardDialog } from "../../../../command-board/components/add-to-board-dialog";
 import { useState } from "react";
 import { toast } from "sonner";
+import { AddToBoardDialog } from "../../../../command-board/components/add-to-board-dialog";
 import { deleteClient } from "../../actions";
 import { CommunicationsTab } from "./tabs/communications-tab";
 import { ContactInfoTab } from "./tabs/contact-info-tab";
@@ -223,7 +223,11 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
               </Button>
             }
           />
-          <Button disabled={isDeleting} onClick={handleDelete} variant="outline">
+          <Button
+            disabled={isDeleting}
+            onClick={handleDelete}
+            variant="outline"
+          >
             <TrashIcon className="h-4 w-4 mr-2" />
             Delete
           </Button>

@@ -12,7 +12,7 @@ async function generateSalesReport(input) {
     if (!(config.dateRange?.start && config.dateRange?.end)) {
         throw new Error("dateRange with start and end is required in config");
     }
-    const allRecords = (0, parsers_1.parseFiles)(files);
+    const allRecords = (0, parsers_1.parseFiles)(files, config.dateColumn);
     if (allRecords.length === 0) {
         throw new Error("No valid sales records found in the provided files");
     }

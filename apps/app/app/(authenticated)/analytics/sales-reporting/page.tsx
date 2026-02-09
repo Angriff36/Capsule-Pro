@@ -382,9 +382,7 @@ export default function SalesReportingPage() {
           end: endDate,
         },
         companyName: companyName || undefined,
-        ...(showAdvanced && selectedDateColumn
-          ? { dateColumn: selectedDateColumn }
-          : {}),
+        ...(selectedDateColumn ? { dateColumn: selectedDateColumn } : {}),
       };
 
       formData.append("config", JSON.stringify(config));

@@ -19,6 +19,7 @@ export interface ReportConfig {
   };
   companyName?: string;
   accentColor?: string;
+  dateColumn?: string;
 }
 
 export interface FileInput {

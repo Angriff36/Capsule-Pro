@@ -25,22 +25,22 @@ describe("Manifest-Generated PrepTask.claim Handler", () => {
           const content = readFileSync(routePath, "utf-8");
 
           // Verify it has the expected imports
-          expect(content).toContain('createManifestRuntime');
-          expect(content).toContain('manifestSuccessResponse');
-          expect(content).toContain('manifestErrorResponse');
+          expect(content).toContain("createManifestRuntime");
+          expect(content).toContain("manifestSuccessResponse");
+          expect(content).toContain("manifestErrorResponse");
 
           // Verify it has the auth guard (checks both userId and orgId)
           expect(content).toMatch(/userId.*orgId/);
           expect(content).toContain('"Unauthorized"');
-          expect(content).toContain('401');
+          expect(content).toContain("401");
 
           // Verify it uses the runtime
-          expect(content).toContain('runtime.runCommand');
+          expect(content).toContain("runtime.runCommand");
           expect(content).toContain('"claim"');
 
           // Verify error handling
-          expect(content).toContain('policyDenial');
-          expect(content).toContain('guardFailure');
+          expect(content).toContain("policyDenial");
+          expect(content).toContain("guardFailure");
 
           console.info("✓ Generated claim handler structure verified");
         });
@@ -62,9 +62,9 @@ describe("Manifest-Generated PrepTask.claim Handler", () => {
         const content = readFileSync(responsePath, "utf-8");
 
         // Verify helper functions
-        expect(content).toContain('manifestSuccessResponse');
-        expect(content).toContain('manifestErrorResponse');
-        expect(content).toContain('NextResponse.json');
+        expect(content).toContain("manifestSuccessResponse");
+        expect(content).toContain("manifestErrorResponse");
+        expect(content).toContain("NextResponse.json");
 
         console.info("✓ Response helpers verified");
       })
@@ -85,17 +85,17 @@ describe("Manifest-Generated PrepTask.claim Handler", () => {
         const content = readFileSync(runtimePath, "utf-8");
 
         // Verify it imports from Manifest
-        expect(content).toContain('@repo/manifest');
-        expect(content).toContain('RuntimeEngine');
-        expect(content).toContain('compileToIR');
+        expect(content).toContain("@repo/manifest");
+        expect(content).toContain("RuntimeEngine");
+        expect(content).toContain("compileToIR");
 
         // Verify it creates runtime
-        expect(content).toContain('createManifestRuntime');
-        expect(content).toContain('new RuntimeEngine');
+        expect(content).toContain("createManifestRuntime");
+        expect(content).toContain("new RuntimeEngine");
 
         // Verify it loads the manifest file
-        expect(content).toContain('prep-task-rules');
-        expect(content).toContain('.manifest');
+        expect(content).toContain("prep-task-rules");
+        expect(content).toContain(".manifest");
 
         console.info("✓ Runtime factory verified");
       })
@@ -133,7 +133,9 @@ describe("Manifest-Generated PrepTask.claim Handler", () => {
           throw new Error(`Missing command handlers: ${missing.join(", ")}`);
         }
 
-        console.info(`✓ All ${commands.length} PrepTask command handlers generated`);
+        console.info(
+          `✓ All ${commands.length} PrepTask command handlers generated`
+        );
       })
       .catch((err) => {
         throw new Error(`Failed to verify command handlers: ${err.message}`);

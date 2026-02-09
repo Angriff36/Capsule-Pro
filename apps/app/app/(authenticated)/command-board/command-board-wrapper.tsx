@@ -6,13 +6,13 @@ import { RefreshCw, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { apiUrl } from "@/app/lib/api";
+import { bulkCreateCards } from "./actions/bulk-create-cards";
 import {
   type Conflict,
   type ConflictDetectionResult,
   detectConflicts,
 } from "./actions/conflicts";
 import type { SuggestedAction } from "./actions/suggestions-types";
-import { bulkCreateCards } from "./actions/bulk-create-cards";
 import { BoardCanvas } from "./components/board-canvas-realtime";
 import { BoardHeader } from "./components/board-header";
 import { ConflictWarningPanel } from "./components/conflict-warning-panel";

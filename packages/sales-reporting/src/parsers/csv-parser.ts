@@ -2,7 +2,7 @@ import Papa from "papaparse";
 import type { SalesRecord } from "../types";
 import { parseRowToRecord } from "./row-mapper";
 
-export function parseCsv(data: Buffer): SalesRecord[] {
+export function parseCsv(data: Buffer, dateColumn?: string): SalesRecord[] {
   const text = data.toString("utf-8");
   const result = Papa.parse(text, {
     header: true,
@@ -20,6 +20,6 @@ export function parseCsv(data: Buffer): SalesRecord[] {
   }
 
   return (result.data as Record<string, string>[])
-    .map(parseRowToRecord)
+    .map((row) => parseRowToRecord(row, dateColumn))
     .filter((r): r is SalesRecord => r !== null);
 }

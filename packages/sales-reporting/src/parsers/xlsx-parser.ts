@@ -2,7 +2,7 @@ import * as XLSX from "xlsx";
 import type { SalesRecord } from "../types";
 import { parseRowToRecord } from "./row-mapper";
 
-export function parseXlsx(data: Buffer): SalesRecord[] {
+export function parseXlsx(data: Buffer, dateColumn?: string): SalesRecord[] {
   const workbook = XLSX.read(data, { type: "buffer", cellDates: true });
   const records: SalesRecord[] = [];
 
@@ -25,7 +25,7 @@ export function parseXlsx(data: Buffer): SalesRecord[] {
     });
 
     for (const row of normalized) {
-      const record = parseRowToRecord(row);
+      const record = parseRowToRecord(row, dateColumn);
       if (record) records.push(record);
     }
   }

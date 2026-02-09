@@ -1,0 +1,19 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../../..",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "@repo/*": [
+        "../../packages/*"
+      ]
+    }
+  },
+  "include": [
+    "../__snapshots__/preptask-claim-command.snapshot.ts"
+  ]
+}
