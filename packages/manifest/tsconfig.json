@@ -13,6 +13,7 @@
   },
   "include": [
     "src/index.ts",
+    "src/event-import-runtime.ts",
     "src/manifest/runtime-engine.ts",
     "src/manifest/ir-compiler.ts",
     "src/manifest/ir.ts",

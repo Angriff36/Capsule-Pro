@@ -27,7 +27,9 @@ interface PaginationParams {
 /**
  * Parse and validate ingredient list filters from URL search params
  */
-function parseIngredientFilters(searchParams: URLSearchParams): IngredientListFilters {
+function parseIngredientFilters(
+  searchParams: URLSearchParams
+): IngredientListFilters {
   const filters: IngredientListFilters = {};
 
   const category = searchParams.get("category");

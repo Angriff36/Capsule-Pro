@@ -225,7 +225,9 @@ export function ConstraintOverrideDialog({
         )}
 
         <AlertDialogFooter>
-          {!warningsOnly && <AlertDialogCancel onClick={handleCancel}>Cancel</AlertDialogCancel>}
+          {!warningsOnly && (
+            <AlertDialogCancel onClick={handleCancel}>Cancel</AlertDialogCancel>
+          )}
           {warningsOnly ? (
             <AlertDialogAction onClick={handleCancel}>
               Acknowledge

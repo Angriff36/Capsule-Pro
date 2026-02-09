@@ -10,7 +10,7 @@
  * @see .specify/memory/CAPSULE_PRO_MANIFEST_PROJECTION.md for contract
  */
 
-import type { IR } from "../manifest/ir";
+import type { IR } from "../manifest/ir.js";
 
 const VERSION = "0.1.0";
 

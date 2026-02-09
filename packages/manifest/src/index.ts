@@ -16,13 +16,13 @@ export {
   generateChecklist,
   processDocumentImport,
   setupEventListeners,
-} from "./event-import-runtime";
+} from "./event-import-runtime.js";
 // Export Capsule-Pro projection generator
 export {
   type CapsuleProGeneratorOptions,
   generateCapsuleProRouteHandler,
   type RouteOperation,
-} from "./generators/capsule-pro";
+} from "./generators/capsule-pro.js";
 // CompileToIRResult is defined in ir.ts
 // Export types
 export type {
@@ -49,11 +49,11 @@ export type {
   OverrideReasonCode,
   OverrideRequest,
   PropertyModifier,
-} from "./manifest/ir";
+} from "./manifest/ir.js";
 // Export constants
-export { OVERRIDE_REASON_CODES } from "./manifest/ir";
+export { OVERRIDE_REASON_CODES } from "./manifest/ir.js";
 // Export compiler
-export { compileToIR } from "./manifest/ir-compiler";
+export { compileToIR } from "./manifest/ir-compiler.js";
 // Export runtime engine
 export {
   type CommandResult,
@@ -65,4 +65,4 @@ export {
   RuntimeEngine,
   type RuntimeOptions,
   type Store,
-} from "./manifest/runtime-engine";
+} from "./manifest/runtime-engine.js";

@@ -19,9 +19,9 @@ import type {
   IRType,
   IRValue,
   PropertyModifier,
-} from "./ir";
-import { globalIRCache, type IRCache } from "./ir-cache";
-import { Parser } from "./parser";
+} from "./ir.js";
+import { globalIRCache, type IRCache } from "./ir-cache.js";
+import { Parser } from "./parser.js";
 import type {
   ActionNode,
   CommandNode,
@@ -37,8 +37,8 @@ import type {
   RelationshipNode,
   StoreNode,
   TypeNode,
-} from "./types";
-import { COMPILER_VERSION, SCHEMA_VERSION } from "./version";
+} from "./types.js";
+import { COMPILER_VERSION, SCHEMA_VERSION } from "./version.js";
 
 /**
  * Compute SHA-256 hash of the source manifest

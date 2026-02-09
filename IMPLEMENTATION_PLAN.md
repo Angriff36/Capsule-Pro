@@ -2,8 +2,8 @@
 
 **Ultimate Goal**: Deliver a deterministic, production-validated Manifest projection pipeline for Capsule-Pro that compiles domain manifests into type-safe Next.js command handlers, enforces guard/policy/constraint semantics through the runtime bridge, integrates real Clerk auth and tenant resolution, executes successfully against live domain logic without stubs, and maintains regression protection through snapshot, TypeScript, and HTTP-level verification across multiple entities.
 
-**Last Updated**: 2026-02-09 (UI Warning Display Complete)
-**Status**: Core infrastructure COMPLETE, PrepTask commands production-validated, Menu API routes generated (update/activate/deactivate), Station API routes generated (assignTask/removeTask/updateCapacity/deactivate/activate/updateEquipment), PrepList API routes generated (7 commands + 5 item commands), Inventory API routes generated (6 commands), Recipe API routes generated (8 commands across 5 entities), Base GET/list endpoints generated (menus, stations, prep-tasks, ingredients, recipes, dishes, prep-lists), HTTP integration tests complete with 100% route coverage (42/42), constraint violation tests added, UI warning display complete
+**Last Updated**: 2026-02-09 (PrepTask Runtime Tests Fixed)
+**Status**: Core infrastructure COMPLETE, PrepTask commands production-validated with all runtime tests passing (7/7), Menu API routes generated (update/activate/deactivate), Station API routes generated (assignTask/removeTask/updateCapacity/deactivate/activate/updateEquipment), PrepList API routes generated (7 commands + 5 item commands), Inventory API routes generated (6 commands), Recipe API routes generated (8 commands across 5 entities), Base GET/list endpoints generated (menus, stations, prep-tasks, ingredients, recipes, dishes, prep-lists), HTTP integration tests complete with 100% route coverage (42/42), constraint violation tests added, UI warning display complete
 
 ## Executive Summary
 
@@ -26,7 +26,7 @@
 6. ~~**Base Query Endpoints**~~: ✅ COMPLETED - Generated GET/list routes for menus, stations, prep-tasks, ingredients, recipes, dishes, prep-lists at `/api/kitchen/*/route.ts`
 7. ~~**HTTP Integration Tests**~~: ✅ COMPLETED - 100% route coverage (42/42). Constraint violation tests added for key routes.
 8. ~~**UI Warning Display**~~: ✅ COMPLETED - WARN constraints now displayed in UI via ConstraintOverrideDialog
-9. **PrepTask Tests**: Some tests failing due to pre-existing bug (computed properties not returned from createInstance).
+9. ~~**PrepTask Tests**~~: ✅ RESOLVED - All tests passing (7/7)
 
 ### Immediate Priorities (Next 2-3 weeks) 🔥
 1. ~~**Generate Menu API Routes**~~ (Task #1) - ✅ COMPLETED - Generated routes at `/api/kitchen/menus/commands/*`
@@ -96,6 +96,15 @@
   - [x] `lib/manifest-response.ts` - Success/error response helpers
   - [x] Generated handlers in `app/api/kitchen/prep-tasks/commands/`
   - [x] All 7 command handlers generated and type-safe
+
+- [x] **PrepTask Runtime Tests** - Fixed all runtime engine bugs
+  - [x] Added `getInstanceByKey` method as async alias to `getInstance`
+  - [x] Fixed `createInstance` to compute and include computed properties
+  - [x] Fixed parser to support hybrid constraint syntax (inline + block)
+  - [x] Fixed runtime context structure (nested user object with role)
+  - [x] Fixed eval context merge to preserve input parameters
+  - [x] Updated tests to use correct `runCommand` API pattern
+  - [x] All 7 tests passing
 
 - [x] **Testing Infrastructure**
   - [x] Constraint severity tests (`manifest-constraint-severity.test.ts`)
@@ -549,20 +558,29 @@
    - Non-null assertions (`!`)
    - Missing dependency arrays in hooks
 
-2. **Complete Manifest API Route Generation** - Only PrepTask has generated routes
-   - Menu routes: No generated API routes (manifest exists, server actions use Manifest runtime)
-   - Station routes: COMPLETELY MISSING - no API routes, no runtime factory (UI uses task tags)
-   - PrepList routes: Manual only, bypassing Manifest constraints (manifest exists)
-   - Inventory routes: Manual only at `/api/inventory`, not under `/api/kitchen/inventory/commands/*`
-   - Recipe routes: Manual only, bypassing Manifest constraints (server actions use Manifest)
+2. **Complete Manifest API Route Generation** - All entities now have generated routes
+   - ~~Menu routes:~~ ✅ COMPLETED - Generated routes at `/api/kitchen/menus/commands/*`
+   - ~~Station routes:~~ ✅ COMPLETED - Generated routes at `/api/kitchen/stations/commands/*`
+   - ~~PrepList routes:~~ ✅ COMPLETED - Generated routes at `/api/kitchen/prep-lists/commands/*`
+   - ~~Inventory routes:~~ ✅ COMPLETED - Generated routes at `/api/kitchen/inventory/commands/*`
+   - ~~Recipe routes:~~ ✅ COMPLETED - Generated routes across multiple entities
+   - ~~Base GET/list routes:~~ ✅ COMPLETED - Generated for menus, stations, prep-tasks, ingredients, recipes, dishes, prep-lists
 
 3. **Migrate Base Query Routes to Manifest** - Manual routes exist but don't use Manifest
    - Manual GET/list routes exist for: recipes, dishes, prep-lists, tasks, inventory items
    - Only PrepTask lacks a base GET/list route
    - None use `nextjs.route` projection for consistent tenant filtering and constraint handling
 
-4. **Add error handling documentation** - Manifest error responses need standardization
-5. **Standardize error codes** - Inconsistent error responses across handlers
+4. ~~**PrepTask Runtime Test Failures**~~ - ✅ RESOLVED (2026-02-09)
+   - Fixed `getInstanceByKey` async method alias
+   - Fixed `createInstance` to include computed properties
+   - Fixed hybrid constraint syntax support in parser
+   - Fixed runtime context structure (nested user object)
+   - Fixed eval context merge to preserve input parameters
+   - All 7/7 tests now passing
+
+5. **Add error handling documentation** - Manifest error responses need standardization
+6. **Standardize error codes** - Inconsistent error responses across handlers
 
 ### Short-term
 1. **Performance optimization** - Large dataset handling in prep-lists and recipes

@@ -547,6 +547,78 @@ describe("Parser", () => {
       expect(constraint.severity).toBe("block"); // default
       expect(errors).toHaveLength(0);
     });
+
+    it("should parse hybrid constraint syntax with messageTemplate", () => {
+      const source = `
+        entity Task {
+          constraint warnOverdue:warn self.isOverdue and self.status != "done" {
+            messageTemplate: "Task '{taskName}' is overdue by {daysOverdue} day(s)"
+            details: {
+              taskName: self.name
+              dueDate: self.dueByDate
+              daysOverdue: (now() - self.dueByDate) / 86400000
+            }
+          }
+        }
+      `;
+      const { program, errors } = new Parser().parse(source);
+
+      const constraint = program.entities[0].constraints[0];
+      expect(constraint.name).toBe("warnOverdue");
+      expect(constraint.severity).toBe("warn");
+      expect(constraint.expression.type).toBe("BinaryOp");
+      expect(constraint.messageTemplate).toBe(
+        "Task '{taskName}' is overdue by {daysOverdue} day(s)"
+      );
+      expect(constraint.detailsMapping).toBeDefined();
+      expect(constraint.detailsMapping!["taskName"]).toBeDefined();
+      expect(constraint.detailsMapping!["dueDate"]).toBeDefined();
+      expect(constraint.detailsMapping!["daysOverdue"]).toBeDefined();
+      expect(errors).toHaveLength(0);
+    });
+
+    it("should parse hybrid constraint syntax with overridePolicy", () => {
+      const source = `
+        entity Order {
+          constraint limit:warn self.amount > 10000 {
+            messageTemplate: "Amount exceeds limit"
+            overridePolicy: adminOverride
+          }
+        }
+      `;
+      const { program, errors } = new Parser().parse(source);
+
+      const constraint = program.entities[0].constraints[0];
+      expect(constraint.name).toBe("limit");
+      expect(constraint.severity).toBe("warn");
+      expect(constraint.messageTemplate).toBe("Amount exceeds limit");
+      expect(constraint.overridePolicyRef).toBe("adminOverride");
+      expect(errors).toHaveLength(0);
+    });
+
+    it("should parse hybrid constraint syntax with all block fields", () => {
+      const source = `
+        entity Task {
+          constraint warnOverdue:warn self.isOverdue {
+            messageTemplate: "Task is overdue"
+            details: {
+              taskName: self.name
+              daysOverdue: 10
+            }
+            overridePolicy: managerOverride
+          }
+        }
+      `;
+      const { program, errors } = new Parser().parse(source);
+
+      const constraint = program.entities[0].constraints[0];
+      expect(constraint.name).toBe("warnOverdue");
+      expect(constraint.severity).toBe("warn");
+      expect(constraint.messageTemplate).toBe("Task is overdue");
+      expect(constraint.detailsMapping).toBeDefined();
+      expect(constraint.overridePolicyRef).toBe("managerOverride");
+      expect(errors).toHaveLength(0);
+    });
   });
 
   describe("Behaviors and Triggers", () => {

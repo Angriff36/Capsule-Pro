@@ -1,4 +1,4 @@
-import { Lexer } from "./lexer";
+import { Lexer } from "./lexer.js";
 export class Parser {
     tokens = [];
     pos = 0;
@@ -642,6 +642,54 @@ export class Parser {
         }
         const expression = this.parseExpr();
         message = this.check("STRING") ? this.advance().value : undefined;
+        // Check for hybrid syntax: if there's a { block after the inline expression/message
+        if (this.check("PUNCTUATION", "{")) {
+            this.advance();
+            this.skipNL();
+            while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
+                this.skipNL();
+                if (this.check("PUNCTUATION", "}"))
+                    break;
+                const field = this.consumeIdentifierOrKeyword().value;
+                this.consume("OPERATOR", ":");
+                switch (field) {
+                    case "messageTemplate":
+                        messageTemplate = this.check("STRING")
+                            ? this.advance().value
+                            : undefined;
+                        break;
+                    case "overridePolicy":
+                        overridePolicyRef = this.consumeIdentifier().value;
+                        break;
+                    case "details":
+                        detailsMapping = {};
+                        if (this.check("PUNCTUATION", "{")) {
+                            this.advance();
+                            this.skipNL();
+                            while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
+                                this.skipNL();
+                                if (this.check("PUNCTUATION", "}"))
+                                    break;
+                                const key = this.consumeIdentifierOrKeyword().value;
+                                this.consume("OPERATOR", ":");
+                                detailsMapping[key] = this.parseExpr();
+                                this.skipNL();
+                                if (this.check("PUNCTUATION", ","))
+                                    this.advance();
+                            }
+                            this.consume("PUNCTUATION", "}");
+                        }
+                        break;
+                    default:
+                        // Unknown field, skip the expression
+                        this.parseExpr();
+                }
+                this.skipNL();
+                if (this.check("PUNCTUATION", ","))
+                    this.advance();
+            }
+            this.consume("PUNCTUATION", "}");
+        }
         return {
             type: "Constraint",
             name,
@@ -649,7 +697,10 @@ export class Parser {
             expression,
             severity: severity || "block",
             message,
+            messageTemplate,
+            detailsMapping,
             overrideable,
+            overridePolicyRef,
         };
     }
     parseFlow() {

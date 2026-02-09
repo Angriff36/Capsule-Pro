@@ -28,8 +28,11 @@ async function getTestRuntime() {
   }
 
   return new RuntimeEngine(ir, {
-    userId: "test-user-123",
-    tenantId: "test-tenant-456",
+    user: {
+      id: "test-user-123",
+      tenantId: "test-tenant-456",
+      role: "admin",
+    },
   });
 }
 
@@ -54,11 +57,10 @@ describe("Manifest Runtime - PrepTask Commands", () => {
     const claimResult = await runtime.runCommand(
       "claim",
       {
-        id: "task-001",
         userId: "user-001",
         stationId: "station-a",
       },
-      { entityName: "PrepTask" }
+      { entityName: "PrepTask", instanceId: "task-001" }
     );
 
     // Verify success
@@ -68,7 +70,7 @@ describe("Manifest Runtime - PrepTask Commands", () => {
     expect(claimResult.policyDenial).toBeUndefined();
 
     // Verify state mutation
-    const instance = runtime.getInstanceByKey("PrepTask", "task-001");
+    const instance = await runtime.getInstanceByKey("PrepTask", "task-001");
     expect(instance?.status).toBe("in_progress");
     expect(instance?.claimedBy).toBe("user-001");
     expect(instance?.stationId).toBe("station-a");
@@ -76,7 +78,7 @@ describe("Manifest Runtime - PrepTask Commands", () => {
 
     // Verify event emission
     expect(claimResult.emittedEvents).toHaveLength(1);
-    expect(claimResult.emittedEvents?.[0]?.eventName).toBe("PrepTaskClaimed");
+    expect(claimResult.emittedEvents?.[0]?.name).toBe("PrepTaskClaimed");
   });
 
   it("should enforce guards - prevent claiming non-open task", async () => {
@@ -97,11 +99,10 @@ describe("Manifest Runtime - PrepTask Commands", () => {
     const claimResult = await runtime.runCommand(
       "claim",
       {
-        id: "task-002",
         userId: "new-user",
         stationId: "station-b",
       },
-      { entityName: "PrepTask" }
+      { entityName: "PrepTask", instanceId: "task-002" }
     );
 
     // Verify failure
@@ -111,7 +112,7 @@ describe("Manifest Runtime - PrepTask Commands", () => {
     expect(claimResult.guardFailure?.formatted).toContain("status");
 
     // Verify state was NOT mutated
-    const instance = runtime.getInstanceByKey("PrepTask", "task-002");
+    const instance = await runtime.getInstanceByKey("PrepTask", "task-002");
     expect(instance?.status).toBe("in_progress"); // Unchanged
     expect(instance?.claimedBy).toBe("existing-user"); // Unchanged
 
@@ -138,11 +139,10 @@ describe("Manifest Runtime - PrepTask Commands", () => {
     const completeResult = await runtime.runCommand(
       "complete",
       {
-        id: "task-003",
         quantityCompleted: 10,
         userId: "different-user",
       },
-      { entityName: "PrepTask" }
+      { entityName: "PrepTask", instanceId: "task-003" }
     );
 
     // Verify failure
@@ -151,7 +151,7 @@ describe("Manifest Runtime - PrepTask Commands", () => {
     expect(completeResult.guardFailure?.index).toBe(3); // Third guard fails
 
     // Verify state unchanged
-    const instance = runtime.getInstanceByKey("PrepTask", "task-003");
+    const instance = await runtime.getInstanceByKey("PrepTask", "task-003");
     expect(instance?.status).toBe("in_progress"); // Still in progress
     expect(instance?.quantityCompleted).toBe(0); // Not updated
   });
@@ -175,26 +175,23 @@ describe("Manifest Runtime - PrepTask Commands", () => {
     const completeResult = await runtime.runCommand(
       "complete",
       {
-        id: "task-004",
         quantityCompleted: 20,
         userId: "user-001",
       },
-      { entityName: "PrepTask" }
+      { entityName: "PrepTask", instanceId: "task-004" }
     );
 
     // Verify success
     expect(completeResult.success).toBe(true);
 
     // Verify state mutation
-    const instance = runtime.getInstanceByKey("PrepTask", "task-004");
+    const instance = await runtime.getInstanceByKey("PrepTask", "task-004");
     expect(instance?.status).toBe("done");
     expect(instance?.quantityCompleted).toBe(20);
 
     // Verify event emission
     expect(completeResult.emittedEvents).toHaveLength(1);
-    expect(completeResult.emittedEvents?.[0]?.eventName).toBe(
-      "PrepTaskCompleted"
-    );
+    expect(completeResult.emittedEvents?.[0]?.name).toBe("PrepTaskCompleted");
   });
 
   it("should handle release command correctly", async () => {
@@ -216,18 +213,17 @@ describe("Manifest Runtime - PrepTask Commands", () => {
     const releaseResult = await runtime.runCommand(
       "release",
       {
-        id: "task-005",
         userId: "user-001",
         reason: "Emergency - need to switch tasks",
       },
-      { entityName: "PrepTask" }
+      { entityName: "PrepTask", instanceId: "task-005" }
     );
 
     // Verify success
     expect(releaseResult.success).toBe(true);
 
     // Verify state reset
-    const instance = runtime.getInstanceByKey("PrepTask", "task-005");
+    const instance = await runtime.getInstanceByKey("PrepTask", "task-005");
     expect(instance?.status).toBe("open");
     expect(instance?.claimedBy).toBe("");
     expect(instance?.claimedAt).toBe(0);
@@ -235,9 +231,7 @@ describe("Manifest Runtime - PrepTask Commands", () => {
 
     // Verify event emission
     expect(releaseResult.emittedEvents).toHaveLength(1);
-    expect(releaseResult.emittedEvents?.[0]?.eventName).toBe(
-      "PrepTaskReleased"
-    );
+    expect(releaseResult.emittedEvents?.[0]?.name).toBe("PrepTaskReleased");
   });
 
   it("should compute properties correctly", async () => {

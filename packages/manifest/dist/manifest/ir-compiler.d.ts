@@ -1,5 +1,5 @@
-import type { CompileToIRResult } from "./ir";
-import { type IRCache } from "./ir-cache";
+import type { CompileToIRResult } from "./ir.js";
+import { type IRCache } from "./ir-cache.js";
 export declare class IRCompiler {
     private diagnostics;
     private cache;

@@ -31,7 +31,9 @@ interface PaginationParams {
 /**
  * Parse and validate prep task list filters from URL search params
  */
-function parsePrepTaskFilters(searchParams: URLSearchParams): PrepTaskListFilters {
+function parsePrepTaskFilters(
+  searchParams: URLSearchParams
+): PrepTaskListFilters {
   const filters: PrepTaskListFilters = {};
 
   const eventId = searchParams.get("eventId");

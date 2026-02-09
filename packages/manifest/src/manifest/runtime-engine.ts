@@ -12,7 +12,7 @@ import type {
   IRType,
   IRValue,
   OverrideRequest,
-} from "./ir";
+} from "./ir.js";
 
 // Note: PostgresStore and SupabaseStore are in stores.node.ts for server-side use only.
 // This file is browser-safe and only includes MemoryStore and LocalStorageStore.
@@ -744,6 +744,19 @@ export class RuntimeEngine {
   }
 
   /**
+   * Async alias for getInstance. Get a single instance by ID from the entity store.
+   * @param entityName - The entity name
+   * @param id - The instance ID
+   * @returns The instance or undefined if not found
+   */
+  async getInstanceByKey(
+    entityName: string,
+    id: string
+  ): Promise<EntityInstance | undefined> {
+    return await this.getInstance(entityName, id);
+  }
+
+  /**
    * Check entity constraints against instance data.
    * Returns array of constraint outcomes (includes severity information).
    * Useful for diagnostic purposes without mutating state.
@@ -817,7 +830,25 @@ export class RuntimeEngine {
     const store = this.stores.get(entityName);
     if (!store) return undefined;
 
-    return await store.create(mergedData);
+    const instance = await store.create(mergedData);
+    if (!instance) return undefined;
+
+    // Compute all computed properties and add them to the instance
+    if (entity.computedProperties.length > 0) {
+      for (const computed of entity.computedProperties) {
+        const computedValue = await this.evaluateComputedInternal(
+          entity,
+          instance,
+          computed.name,
+          new Set<string>()
+        );
+        if (computedValue !== undefined) {
+          (instance as Record<string, unknown>)[computed.name] = computedValue;
+        }
+      }
+    }
+
+    return instance;
   }
 
   async updateInstance(
@@ -1013,10 +1044,19 @@ export class RuntimeEngine {
           options.entityName,
           options.instanceId
         );
-        // Refresh both self/this bindings and spread instance properties into evalContext
-        evalContext.self = currentInstance;
-        evalContext.this = currentInstance;
-        Object.assign(evalContext, currentInstance);
+        if (currentInstance) {
+          // Refresh both self/this bindings and spread instance properties into evalContext
+          evalContext.self = currentInstance;
+          evalContext.this = currentInstance;
+          // Merge instance properties into context, but preserve input parameters
+          // Input parameters are those that were in the original input object
+          const inputKeys = new Set(Object.keys(input));
+          for (const [key, value] of Object.entries(currentInstance)) {
+            if (!inputKeys.has(key)) {
+              evalContext[key] = value;
+            }
+          }
+        }
       }
       result = actionResult;
     }
@@ -1406,7 +1446,9 @@ export class RuntimeEngine {
 
       case "identifier": {
         const name = expr.name;
-        if (name in context) return context[name];
+        if (name in context) {
+          return context[name];
+        }
         if (name === "true") return true;
         if (name === "false") return false;
         if (name === "null") return null;

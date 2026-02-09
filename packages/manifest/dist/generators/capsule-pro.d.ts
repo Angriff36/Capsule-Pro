@@ -9,7 +9,7 @@
  *
  * @see .specify/memory/CAPSULE_PRO_MANIFEST_PROJECTION.md for contract
  */
-import type { IR } from "../manifest/ir";
+import type { IR } from "../manifest/ir.js";
 /**
  * Route operation types supported by the generator
  */

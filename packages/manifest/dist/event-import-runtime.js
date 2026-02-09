@@ -4,7 +4,7 @@
  * This module integrates Manifest language runtime with the document parsing workflow.
  * It orchestrates the flow: Document Import -> Event Creation -> Battle Board/Checklist Generation
  */
-import { compileToIR, RuntimeEngine } from "./index";
+import { compileToIR, RuntimeEngine } from "./index.js";
 let cachedIR = null;
 /**
  * Load and compile the Manifest module

@@ -1,4 +1,4 @@
-import type { Position, Token } from "./types";
+import type { Position, Token } from "./types.js";
 
 /**
  * RESERVED WORDS

@@ -84,8 +84,7 @@ export async function createManifestRuntime(
   const ir = await getManifestIR(manifestName);
 
   return new RuntimeEngine(ir, {
-    userId: ctx.user.id,
-    tenantId: ctx.user.tenantId,
+    user: ctx.user,
   });
 }
 

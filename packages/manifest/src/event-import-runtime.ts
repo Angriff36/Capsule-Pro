@@ -5,8 +5,8 @@
  * It orchestrates the flow: Document Import -> Event Creation -> Battle Board/Checklist Generation
  */
 
-import type { EmittedEvent, IR } from "./index";
-import { compileToIR, RuntimeEngine } from "./index";
+import type { EmittedEvent, IR } from "./index.js";
+import { compileToIR, RuntimeEngine } from "./index.js";
 
 let cachedIR: IR | null = null;
 

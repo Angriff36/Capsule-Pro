@@ -78,15 +78,20 @@ describe("Manifest HTTP Constraint Enforcement - Recipe Commands", () => {
         userId: null,
       });
 
-      const { POST } = await import("@/app/api/kitchen/recipes/commands/update/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/recipes/commands/update/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/recipes/commands/update", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "recipe-001",
-          name: "Updated Recipe",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/recipes/commands/update",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "recipe-001",
+            name: "Updated Recipe",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -100,15 +105,20 @@ describe("Manifest HTTP Constraint Enforcement - Recipe Commands", () => {
       const { getTenantIdForOrg } = await import("@/app/lib/tenant");
       vi.mocked(getTenantIdForOrg).mockResolvedValueOnce(null as never);
 
-      const { POST } = await import("@/app/api/kitchen/recipes/commands/update/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/recipes/commands/update/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/recipes/commands/update", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "recipe-001",
-          name: "Updated Recipe",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/recipes/commands/update",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "recipe-001",
+            name: "Updated Recipe",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -142,18 +152,23 @@ describe("Manifest HTTP Constraint Enforcement - Recipe Commands", () => {
 
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
-      const { POST } = await import("@/app/api/kitchen/recipes/commands/update/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/recipes/commands/update/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/recipes/commands/update", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "recipe-001",
-          name: "Updated Recipe",
-          yieldQuantity: 10,
-          yieldUnitId: 1,
-          difficultyLevel: 2,
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/recipes/commands/update",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "recipe-001",
+            name: "Updated Recipe",
+            yieldQuantity: 10,
+            yieldUnitId: 1,
+            difficultyLevel: 2,
+          }),
+        }
+      );
 
       const response = await POST(request);
 
@@ -177,16 +192,21 @@ describe("Manifest HTTP Constraint Enforcement - Dish Commands", () => {
         userId: null,
       });
 
-      const { POST } = await import("@/app/api/kitchen/dishes/commands/update-pricing/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/dishes/commands/update-pricing/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/dishes/commands/update-pricing", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "dish-001",
-          costPerPortionCents: 500,
-          salesPriceCents: 1500,
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/dishes/commands/update-pricing",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "dish-001",
+            costPerPortionCents: 500,
+            salesPriceCents: 1500,
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -220,16 +240,21 @@ describe("Manifest HTTP Constraint Enforcement - Dish Commands", () => {
 
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
-      const { POST } = await import("@/app/api/kitchen/dishes/commands/update-pricing/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/dishes/commands/update-pricing/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/dishes/commands/update-pricing", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "dish-001",
-          costPerPortionCents: 500,
-          salesPriceCents: 1500,
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/dishes/commands/update-pricing",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "dish-001",
+            costPerPortionCents: 500,
+            salesPriceCents: 1500,
+          }),
+        }
+      );
 
       const response = await POST(request);
 
@@ -247,16 +272,21 @@ describe("Manifest HTTP Constraint Enforcement - Dish Commands", () => {
         userId: null,
       });
 
-      const { POST } = await import("@/app/api/kitchen/dishes/commands/update-lead-time/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/dishes/commands/update-lead-time/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/dishes/commands/update-lead-time", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "dish-001",
-          prepTimeMinutes: 45,
-          cookTimeMinutes: 30,
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/dishes/commands/update-lead-time",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "dish-001",
+            prepTimeMinutes: 45,
+            cookTimeMinutes: 30,
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -281,15 +311,20 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
         userId: null,
       });
 
-      const { POST } = await import("@/app/api/kitchen/menus/commands/update/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/menus/commands/update/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/menus/commands/update", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "menu-001",
-          name: "Updated Menu",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/menus/commands/update",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "menu-001",
+            name: "Updated Menu",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -322,17 +357,22 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
 
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
-      const { POST } = await import("@/app/api/kitchen/menus/commands/update/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/menus/commands/update/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/menus/commands/update", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "menu-001",
-          name: "Updated Menu",
-          minGuests: 10,
-          maxGuests: 100,
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/menus/commands/update",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "menu-001",
+            name: "Updated Menu",
+            minGuests: 10,
+            maxGuests: 100,
+          }),
+        }
+      );
 
       const response = await POST(request);
 
@@ -350,14 +390,19 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
         userId: null,
       });
 
-      const { POST } = await import("@/app/api/kitchen/menus/commands/activate/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/menus/commands/activate/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/menus/commands/activate", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "menu-001",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/menus/commands/activate",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "menu-001",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -376,14 +421,19 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
         userId: null,
       });
 
-      const { POST } = await import("@/app/api/kitchen/menus/commands/deactivate/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/menus/commands/deactivate/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/menus/commands/deactivate", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "menu-001",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/menus/commands/deactivate",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "menu-001",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -408,16 +458,21 @@ describe("Manifest HTTP Constraint Enforcement - PrepTask Commands", () => {
         userId: null,
       });
 
-      const { POST } = await import("@/app/api/kitchen/prep-tasks/commands/claim/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/prep-tasks/commands/claim/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/prep-tasks/commands/claim", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "task-001",
-          userId: "user-001",
-          stationId: "station-a",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/prep-tasks/commands/claim",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "task-001",
+            userId: "user-001",
+            stationId: "station-a",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -436,15 +491,20 @@ describe("Manifest HTTP Constraint Enforcement - PrepTask Commands", () => {
         userId: null,
       });
 
-      const { POST } = await import("@/app/api/kitchen/prep-tasks/commands/start/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/prep-tasks/commands/start/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/prep-tasks/commands/start", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "task-001",
-          userId: "user-001",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/prep-tasks/commands/start",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "task-001",
+            userId: "user-001",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -463,16 +523,21 @@ describe("Manifest HTTP Constraint Enforcement - PrepTask Commands", () => {
         userId: null,
       });
 
-      const { POST } = await import("@/app/api/kitchen/prep-tasks/commands/complete/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/prep-tasks/commands/complete/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/prep-tasks/commands/complete", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "task-001",
-          quantityCompleted: 10,
-          userId: "user-001",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/prep-tasks/commands/complete",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "task-001",
+            quantityCompleted: 10,
+            userId: "user-001",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -497,18 +562,23 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         userId: null,
       });
 
-      const { POST } = await import("@/app/api/kitchen/prep-lists/items/commands/update-quantity/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/prep-lists/items/commands/update-quantity/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/prep-lists/items/commands/update-quantity", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "item-001",
-          newBaseQuantity: 15,
-          newScaledQuantity: 30,
-          newBaseUnit: "kg",
-          newScaledUnit: "kg",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/prep-lists/items/commands/update-quantity",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "item-001",
+            newBaseQuantity: 15,
+            newScaledQuantity: 30,
+            newBaseUnit: "kg",
+            newScaledUnit: "kg",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -553,18 +623,23 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
 
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
-      const { POST } = await import("@/app/api/kitchen/prep-lists/items/commands/update-quantity/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/prep-lists/items/commands/update-quantity/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/prep-lists/items/commands/update-quantity", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "item-001",
-          newBaseQuantity: 15,
-          newScaledQuantity: 35, // 75% increase (> 50% threshold)
-          newBaseUnit: "kg",
-          newScaledUnit: "kg",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/prep-lists/items/commands/update-quantity",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "item-001",
+            newBaseQuantity: 15,
+            newScaledQuantity: 35, // 75% increase (> 50% threshold)
+            newBaseUnit: "kg",
+            newScaledUnit: "kg",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -616,18 +691,23 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
 
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
-      const { POST } = await import("@/app/api/kitchen/prep-lists/items/commands/update-quantity/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/prep-lists/items/commands/update-quantity/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/prep-lists/items/commands/update-quantity", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "item-001",
-          newBaseQuantity: 12,
-          newScaledQuantity: 24, // 20% increase (< 50% threshold)
-          newBaseUnit: "kg",
-          newScaledUnit: "kg",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/prep-lists/items/commands/update-quantity",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "item-001",
+            newBaseQuantity: 12,
+            newScaledQuantity: 24, // 20% increase (< 50% threshold)
+            newBaseUnit: "kg",
+            newScaledUnit: "kg",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -653,16 +733,21 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         userId: null,
       });
 
-      const { POST } = await import("@/app/api/kitchen/prep-lists/items/commands/update-station/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/prep-lists/items/commands/update-station", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "item-001",
-          newStationId: "station-002",
-          newStationName: "Cold Prep Station",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "item-001",
+            newStationId: "station-002",
+            newStationName: "Cold Prep Station",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -705,16 +790,21 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
 
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
-      const { POST } = await import("@/app/api/kitchen/prep-lists/items/commands/update-station/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/prep-lists/items/commands/update-station", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "item-001",
-          newStationId: "station-002", // Different from current station-001
-          newStationName: "Cold Prep Station",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "item-001",
+            newStationId: "station-002", // Different from current station-001
+            newStationName: "Cold Prep Station",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -764,16 +854,21 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
 
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
-      const { POST } = await import("@/app/api/kitchen/prep-lists/items/commands/update-station/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/prep-lists/items/commands/update-station", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "item-001",
-          newStationId: "station-001", // Same as current - should NOT trigger warn
-          newStationName: "Hot Prep Station",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "item-001",
+            newStationId: "station-001", // Same as current - should NOT trigger warn
+            newStationName: "Hot Prep Station",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -805,22 +900,27 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         userId: null,
       });
 
-      const { POST } = await import("@/app/api/kitchen/recipes/versions/commands/create/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/recipes/versions/commands/create/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/recipes/versions/commands/create", {
-        method: "POST",
-        body: JSON.stringify({
-          recipeId: "recipe-001",
-          yieldQty: 10,
-          yieldUnit: 1,
-          prepTime: 30,
-          cookTime: 60,
-          restTime: 10,
-          difficulty: 3,
-          instructionsText: "Mix ingredients and bake",
-          notesText: "Best served warm",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/recipes/versions/commands/create",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            recipeId: "recipe-001",
+            yieldQty: 10,
+            yieldUnit: 1,
+            prepTime: 30,
+            cookTime: 60,
+            restTime: 10,
+            difficulty: 3,
+            instructionsText: "Mix ingredients and bake",
+            notesText: "Best served warm",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -847,22 +947,27 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
       // Mock existing versions lookup
       vi.mocked(database.recipeVersion.findMany).mockResolvedValueOnce([]);
 
-      const { POST } = await import("@/app/api/kitchen/recipes/versions/commands/create/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/recipes/versions/commands/create/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/recipes/versions/commands/create", {
-        method: "POST",
-        body: JSON.stringify({
-          recipeId: "recipe-001",
-          yieldQty: 10,
-          yieldUnit: 1,
-          prepTime: 30,
-          cookTime: 60,
-          restTime: 10,
-          difficulty: 6, // Invalid - should be 1-5
-          instructionsText: "Test",
-          notesText: "Test",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/recipes/versions/commands/create",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            recipeId: "recipe-001",
+            yieldQty: 10,
+            yieldUnit: 1,
+            prepTime: 30,
+            cookTime: 60,
+            restTime: 10,
+            difficulty: 6, // Invalid - should be 1-5
+            instructionsText: "Test",
+            notesText: "Test",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -891,22 +996,27 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
       // Mock existing versions lookup
       vi.mocked(database.recipeVersion.findMany).mockResolvedValueOnce([]);
 
-      const { POST } = await import("@/app/api/kitchen/recipes/versions/commands/create/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/recipes/versions/commands/create/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/recipes/versions/commands/create", {
-        method: "POST",
-        body: JSON.stringify({
-          recipeId: "recipe-001",
-          yieldQty: 10,
-          yieldUnit: 1,
-          prepTime: -30, // Invalid - negative time
-          cookTime: 60,
-          restTime: 10,
-          difficulty: 3,
-          instructionsText: "Test",
-          notesText: "Test",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/recipes/versions/commands/create",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            recipeId: "recipe-001",
+            yieldQty: 10,
+            yieldUnit: 1,
+            prepTime: -30, // Invalid - negative time
+            cookTime: 60,
+            restTime: 10,
+            difficulty: 3,
+            instructionsText: "Test",
+            notesText: "Test",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -956,22 +1066,27 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
       // Mock outbox event creation
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
-      const { POST } = await import("@/app/api/kitchen/recipes/versions/commands/create/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/recipes/versions/commands/create/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/recipes/versions/commands/create", {
-        method: "POST",
-        body: JSON.stringify({
-          recipeId: "recipe-001",
-          yieldQty: 10,
-          yieldUnit: 1,
-          prepTime: 120,
-          cookTime: 180,
-          restTime: 30,
-          difficulty: 4, // High difficulty (>= 4)
-          instructionsText: "Complex multi-step process",
-          notesText: "Requires advanced techniques",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/recipes/versions/commands/create",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            recipeId: "recipe-001",
+            yieldQty: 10,
+            yieldUnit: 1,
+            prepTime: 120,
+            cookTime: 180,
+            restTime: 30,
+            difficulty: 4, // High difficulty (>= 4)
+            instructionsText: "Complex multi-step process",
+            notesText: "Requires advanced techniques",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -1027,23 +1142,28 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
       // Mock outbox event creation
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
-      const { POST } = await import("@/app/api/kitchen/recipes/versions/commands/create/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/recipes/versions/commands/create/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/recipes/versions/commands/create", {
-        method: "POST",
-        body: JSON.stringify({
-          recipeId: "recipe-001",
-          yieldQty: 10,
-          yieldUnit: 1,
-          prepTime: 180, // 3 hours
-          cookTime: 300, // 5 hours
-          restTime: 60, // 1 hour
-          // Total: 540 minutes (> 480 minute threshold)
-          difficulty: 2,
-          instructionsText: "Slow roast for hours",
-          notesText: "Plan ahead",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/recipes/versions/commands/create",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            recipeId: "recipe-001",
+            yieldQty: 10,
+            yieldUnit: 1,
+            prepTime: 180, // 3 hours
+            cookTime: 300, // 5 hours
+            restTime: 60, // 1 hour
+            // Total: 540 minutes (> 480 minute threshold)
+            difficulty: 2,
+            instructionsText: "Slow roast for hours",
+            notesText: "Plan ahead",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -1098,23 +1218,28 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
       // Mock outbox event creation
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
-      const { POST } = await import("@/app/api/kitchen/recipes/versions/commands/create/route");
+      const { POST } = await import(
+        "@/app/api/kitchen/recipes/versions/commands/create/route"
+      );
 
-      const request = new Request("http://localhost/api/kitchen/recipes/versions/commands/create", {
-        method: "POST",
-        body: JSON.stringify({
-          recipeId: "recipe-001",
-          yieldQty: 10,
-          yieldUnit: 1,
-          prepTime: 30,
-          cookTime: 60,
-          restTime: 10,
-          // Total: 100 minutes (< 480 minute threshold)
-          difficulty: 2, // Valid difficulty (1-5)
-          instructionsText: "Simple instructions",
-          notesText: "Simple notes",
-        }),
-      });
+      const request = new Request(
+        "http://localhost/api/kitchen/recipes/versions/commands/create",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            recipeId: "recipe-001",
+            yieldQty: 10,
+            yieldUnit: 1,
+            prepTime: 30,
+            cookTime: 60,
+            restTime: 10,
+            // Total: 100 minutes (< 480 minute threshold)
+            difficulty: 2, // Valid difficulty (1-5)
+            instructionsText: "Simple instructions",
+            notesText: "Simple notes",
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();

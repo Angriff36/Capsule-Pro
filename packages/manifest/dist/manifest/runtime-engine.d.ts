@@ -1,4 +1,4 @@
-import type { ConcurrencyConflict, ConstraintOutcome, IR, IRCommand, IRConstraint, IREntity, IRExpression, IRPolicy, IRProvenance, OverrideRequest } from "./ir";
+import type { ConcurrencyConflict, ConstraintOutcome, IR, IRCommand, IRConstraint, IREntity, IRExpression, IRPolicy, IRProvenance, OverrideRequest } from "./ir.js";
 export interface RuntimeContext {
     user?: {
         id: string;
@@ -225,6 +225,13 @@ export declare class RuntimeEngine {
     getStore(entityName: string): Store | undefined;
     getAllInstances(entityName: string): Promise<EntityInstance[]>;
     getInstance(entityName: string, id: string): Promise<EntityInstance | undefined>;
+    /**
+     * Async alias for getInstance. Get a single instance by ID from the entity store.
+     * @param entityName - The entity name
+     * @param id - The instance ID
+     * @returns The instance or undefined if not found
+     */
+    getInstanceByKey(entityName: string, id: string): Promise<EntityInstance | undefined>;
     /**
      * Check entity constraints against instance data.
      * Returns array of constraint outcomes (includes severity information).

@@ -27,7 +27,9 @@ interface PaginationParams {
 /**
  * Parse and validate station list filters from URL search params
  */
-function parseStationFilters(searchParams: URLSearchParams): StationListFilters {
+function parseStationFilters(
+  searchParams: URLSearchParams
+): StationListFilters {
   const filters: StationListFilters = {};
 
   const stationType = searchParams.get("stationType");
