@@ -182,6 +182,6 @@ event MenuDishUpdated: "kitchen.menu.dish_updated" {
 event MenuDishesReordered: "kitchen.menu.dishes_reordered" {
   menuId: string
   tenantId: string
-  dishIds: string[]
+  dishIdsJson: string
   reorderedAt: number
 }

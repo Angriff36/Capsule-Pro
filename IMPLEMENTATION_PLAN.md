@@ -1,940 +1,660 @@
-# Command Board Feature - Implementation Plan
+# Manifest Projection Pipeline Implementation Plan
+
+**Ultimate Goal**: Deliver a deterministic, production-validated Manifest projection pipeline for Capsule-Pro that compiles domain manifests into type-safe Next.js command handlers, enforces guard/policy/constraint semantics through the runtime bridge, integrates real Clerk auth and tenant resolution, executes successfully against live domain logic without stubs, and maintains regression protection through snapshot, TypeScript, and HTTP-level verification across multiple entities.
+
+**Last Updated**: 2026-02-08 (Menu API Routes Generated)
+**Status**: Core infrastructure COMPLETE, PrepTask commands production-validated, Menu API routes generated (update/activate/deactivate), Recipe/PrepList server actions use Manifest runtime, NO generated API routes for Station/PrepList/Inventory, NO HTTP integration tests
 
 ## Executive Summary
 
-⚠️ **CRITICAL STATUS UPDATE - February 8, 2026**
+### What's Working ✅
+- **Manifest Pipeline**: Full compilation (lexer → parser → compiler → IR) with 41 conformance test fixtures
+- **Runtime Engine**: Constraint enforcement with severity levels (ok/warn/block), policy evaluation, guard enforcement
+- **CLI Tools**: `manifest-compile`, `capsule-pro-generate`, `manifest-generate` for code generation
+- **PrepTask Domain**: 7 commands (claim, start, complete, release, reassign, cancel, update-quantity) with comprehensive tests
+- **Auth/Tenant**: Clerk integration via `@repo/auth/server` with multi-tenant context
+- **UI Components**: `ConstraintOverrideDialog` for handling warn/block constraints
+- **Server Actions**: Recipe, Menu, and PrepList use Manifest runtime via actions-manifest.ts
+- **Base Query Routes**: Manual GET/list routes exist for recipes, dishes, prep-lists, tasks, inventory items
 
-The Command Board has **technical features implemented** but **CRITICAL UX AND INTEGRATION GAPS** make it **NON-FUNCTIONAL for users**.
+### Current Gaps 🚧 (Verified via Codebase Audit)
+1. ~~**Menu API Routes**~~: ✅ COMPLETED - Generated command routes (update, activate, deactivate) at `/api/kitchen/menus/commands/*`
+2. **Station API Routes**: COMPLETELY MISSING - No API routes, no runtime factory, UI uses task tags instead of Station entity.
+3. **PrepList API Routes**: Manual routes exist at `/api/kitchen/prep-lists`, bypassing Manifest constraints. Only save-to-database uses Manifest.
+4. **Inventory API Routes**: Manual routes exist at `/api/inventory`, not `/api/kitchen/inventory/commands/*`. Constraints not enforced via Manifest.
+5. **Recipe API Routes**: Manual routes exist at `/api/kitchen/recipes`, bypassing Manifest constraints. Server actions use Manifest but API routes don't.
+6. **HTTP Integration Tests**: NO test infrastructure exists. Tests only use direct imports, no real HTTP requests.
+7. **PrepTask Base Route**: NO GET/list route for prep-tasks (only command handlers exist).
+8. **UI Warning Display**: WARN constraints logged to console, NOT passed to UI (TODO at actions-manifest.ts:510).
+9. **PrepTask Tests**: Some tests failing due to pre-existing bug (computed properties not returned from createInstance).
 
-**Technical Implementation: ~95% Complete**
-- ✅ Canvas, drag/drop, zoom, pan, grid
-- ✅ 7 card types, grouping, connections
-- ✅ Real-time sync via Liveblocks
-- ✅ Bulk edit, layouts, AI suggestions
+### Immediate Priorities (Next 2-3 weeks) 🔥
+1. ~~**Generate Menu API Routes**~~ (Task #1) - ✅ COMPLETED - Generated routes at `/api/kitchen/menus/commands/*`
+2. **Generate Station API Routes** (Task #2) - HIGH - Create Station CRUD APIs using Manifest
+3. **Generate PrepList API Routes** (Task #3) - HIGH - Create PrepList command APIs (finalize, complete)
+4. **Generate Inventory API Routes** (Task #4) - HIGH - Create Inventory command APIs using existing manifest
+5. **Add Base Query Endpoints** (Task #5) - HIGH - Generate GET/list routes for all entities
+6. **HTTP Integration Tests** (Task #6) - HIGH - Real HTTP requests for verification (not direct imports)
 
-**USER EXPERIENCE: 85% Complete** ✅ IMPROVED
-- ✅ Entity linking implemented for live data fetching
-- ✅ Board management UI complete (list, create, edit, delete, switch)
-- ✅ Events module integration complete (Add to Board button)
-- ✅ CRM, Kitchen, Staff module integration complete (Add to Board buttons)
-- ✅ AI bulk card creation action type added
-- ⚠️ Visual design needs polish
-
-**See [COMMAND_BOARD_VALIDATION_REPORT.md](./COMMAND_BOARD_VALIDATION_REPORT.md) for full analysis.**
-
----
-
-## CRITICAL GAPS (Must Fix Immediately)
-
-### ✅ P0: Entity Linking Missing - COMPLETED (Feb 8, 2026)
-**Problem:** Cards were generic notes, not linked to real business data.
-- ✅ **FIXED:** Added entityId and entityType fields to CommandBoardCard schema
-- ✅ **FIXED:** Created entity-data.ts action for fetching live entity data
-- ✅ **FIXED:** Updated EventCard and ClientCard to display live data with "Live" badge
-- ✅ **FIXED:** Added navigation from cards to actual entity pages (/events/{id}, /crm/clients/{id})
-- ✅ **FIXED:** Backward compatible with old metadata-based cards
-- **Commit:** 085d78e0e - feat(command-board): implement entity linking for live data fetching
-
-**Remaining work:** Update TaskCard, EmployeeCard, InventoryCard components similarly
-
-### ✅ P0: Board Management Missing - COMPLETED (Feb 8, 2026)
-**Problem:** No way to create, list, or switch between boards.
-- ✅ **FIXED:** Created board list page with gallery view at `/command-board`
-- ✅ **FIXED:** Created CreateBoardDialog component for creating new boards
-- ✅ **FIXED:** Created BoardHeader component with edit/delete options
-- ✅ **FIXED:** Created BoardSelector component for quick board switching
-- ✅ **FIXED:** Updated root route to show board list instead of redirect
-- ✅ **FIXED:** Integrated board header into individual board pages
-- **Files created:**
-  - `apps/app/app/(authenticated)/command-board/components/boards-list-client.tsx`
-  - `apps/app/app/(authenticated)/command-board/components/create-board-dialog.tsx`
-  - `apps/app/app/(authenticated)/command-board/components/board-header.tsx`
-  - `apps/app/app/(authenticated)/command-board/components/board-selector.tsx`
-- **Files modified:**
-  - `apps/app/app/(authenticated)/command-board/page.tsx` - Now shows board list
-  - `apps/app/app/(authenticated)/command-board/[boardId]/page.tsx` - Passes board metadata
-  - `apps/app/app/(authenticated)/command-board/command-board-wrapper.tsx` - Includes BoardHeader
-
-### 🚨 P0: Visual Design Unprofessional
-**Problem:** Generic, unappealing appearance.
-- ❌ No color coding by card type
-- ❌ No visual status indicators
-- ❌ Poor typography and spacing
-- **Impact:** "Looks like shit" - user quote
-- **Fix:** Design system overhaul, proper card styling
-- **Estimated:** 1-2 days
-
-### 🟡 P1: AI Integration Broken - PARTIALLY COMPLETED (Feb 8, 2026)
-**Problem:** AI features exist but don't help users on the board.
-- ✅ Suggestions generate correctly
-- ✅ **FIXED:** Added `bulk_create_cards` action type to ActionHandler
-- ✅ **FIXED:** Created `bulkCreateCards` server action
-- ✅ **FIXED:** Updated command-board-wrapper to handle bulk_create_cards
-- ✅ **FIXED:** Updated suggestions panel button text for card creation actions
-- ⚠️ AI still returns navigate actions by default (AI prompt update needed for bulk_create_cards)
-- ❌ Conflict detection still manual, not automatic
-- **Impact:** AI can now add cards directly to board, but needs prompt updates
-- **Fix needed:** Update AI prompt to return bulk_create_cards actions, auto-conflict detection
-- **Files created:**
-  - `apps/app/app/(authenticated)/command-board/actions/bulk-create-cards.ts`
-- **Files modified:**
-  - `apps/app/app/(authenticated)/command-board/actions/suggestions-types.ts`
-  - `apps/app/app/(authenticated)/command-board/command-board-wrapper.tsx`
-  - `apps/app/app/(authenticated)/command-board/components/suggestions-panel.tsx`
-  - `packages/kitchen-ops/src/manifest-runtime.ts` (ES module import fix)
-
-### ✅ P1: Module Integration Missing - COMPLETED (Feb 8, 2026)
-**Problem:** Board is isolated from rest of application.
-- ✅ **FIXED:** Added "Add to Board" button to Events module
-- ✅ **FIXED:** Created reusable AddToBoardDialog component for all entity types
-- ✅ **FIXED:** Integration allows creating new board or adding to existing board
-- ✅ **FIXED:** Added "Add to Board" button on CRM clients detail page
-- ✅ **FIXED:** Added "Add to Board" button on Kitchen tasks list page
-- ✅ **FIXED:** Added "Add to Board" button on Staff team page
-- **Impact:** Board is now a workflow hub across all major modules
-- **Files created:**
-  - `apps/app/app/(authenticated)/command-board/components/add-to-board-dialog.tsx`
-  - `apps/app/app/(authenticated)/kitchen/tasks/components/add-task-to-board-button.tsx`
-  - `apps/app/app/(authenticated)/staff/team/components/add-employee-to-board-button.tsx`
-- **Files modified:**
-  - `apps/app/app/(authenticated)/events/[eventId]/event-details-client/event-overview-card.tsx`
-  - `apps/app/app/(authenticated)/crm/clients/[id]/components/client-detail-client.tsx`
-  - `apps/app/app/(authenticated)/kitchen/tasks/page.tsx`
-  - `apps/app/app/(authenticated)/staff/team/page.tsx`
-- **Commit:** [COMMIT NEEDED] - feat(command-board): add module integration for CRM, Kitchen, and Staff
-
-**Total Critical Path:** 2-4 days remaining (Visual design polish, AI prompt updates)
+### Cross-Cutting Concerns 🔗
+- **Recipe API Generation** (Task #7) - Generate command routes for Recipe (already uses Manifest in server actions)
+- **UI Warning Display** (Task #8) - Pass WARN constraints to UI for display (see TODO in actions-manifest.ts:510)
+- **CI/CD Automation** (Task #9) - Manifest validation and code generation checks
 
 ---
 
-## Feature-by-Feature Status
+## Completed Items ✅
 
-| Feature | Status | Completion | Key Gaps |
-|---------|--------|------------|----------|
-| **Strategic Foundation** | Functional | 95% | Enhanced grid snapping guides |
-| **Entity Cards** | Complete | 100% (7/7 types) | All card types implemented |
-| **Layout Persistence** | Complete | 100% | Named layouts with database persistence |
-| **Real-time Sync** | Mostly Complete | 75% | No offline queue, no conflict resolution UI, events not persisted to database |
-| **Connection Lines** | Complete | 100% | Database model, manual creation, edit/delete all functional |
-| **Bulk Edit** | Complete | 100% | Multi-select, drag selection, bulk edit dialog all functional |
-| **Grouping** | Complete | 100% | Database model, components, actions all implemented |
+### Core Infrastructure
+- [x] **Manifest Compilation Pipeline** (`packages/manifest/src/manifest/`)
+  - [x] Lexer, Parser, Compiler for .manifest files
+  - [x] IR generation with provenance tracking
+  - [x] Module-level IR caching
+  - [x] Schema versioning for traceability
 
----
+- [x] **Runtime Engine** (`packages/manifest/src/manifest/runtime-engine.ts`)
+  - [x] Guard enforcement with formatted failures
+  - [x] Policy evaluation with role-based auth
+  - [x] Constraint severity handling (OK/WARN/BLOCK)
+  - [x] Command execution with mutation and event emission
+  - [x] Entity instance creation and updates
+  - [x] PrismaStore adapter for database persistence
 
-## Specification-by-Specification Status
+- [x] **Next.js Projection Generator** (`packages/manifest/src/manifest/projections/nextjs/generator.ts`)
+  - [x] `nextjs.route` - GET handlers with Prisma queries
+  - [x] `nextjs.command` - POST handlers with runtime integration
+  - [x] `ts.types` - TypeScript type definitions
+  - [x] `ts.client` - Client SDK functions
+  - [x] Configurable auth providers (Clerk, NextAuth, custom, none)
+  - [x] Tenant filtering and soft delete support
 
-### 1. Strategic Command Board Foundation
-**Status: COMPLETE (95%)**
+- [x] **Auth & Tenant Resolution**
+  - [x] Clerk integration via `@repo/auth/server`
+  - [x] `getTenantIdForOrg()` for tenant context
+  - [x] Multi-tenant context passing to runtime
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Full-screen canvas | Complete | `CanvasViewport` with 4000x4000px canvas |
-| Drag-and-drop functionality | Complete | `DraggableCard` with react-moveable |
-| Grid system | Complete | `GridLayer` with configurable sizes (20/40/60px) |
-| Zoom controls | Complete | 0.25x to 2x zoom with wheel/buttons |
-| Pan functionality | Complete | Middle-click or Space+drag |
-| Multiple entity types | Complete | All 7 card types implemented (task, event, client, employee, inventory, note, recipe) |
-| Grid snapping | Partial | Basic snap to grid, no enhanced snapping guides |
-| Full-screen mode | Complete | Browser fullscreen API with toggle button and F key shortcut |
+### CLI & Developer Tools
+- [x] **CLI Tools** (`packages/manifest/bin/`)
+  - [x] `manifest-compile` - Compile manifest files to IR
+  - [x] `capsule-pro-generate` - Generate Next.js route handlers from manifests
+  - [x] `manifest-generate` - Generate projections from manifests
+  - [x] Support for custom output paths and operation selection
+  - [x] Path validation following Next.js App Router conventions
 
-**Files:**
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\canvas-viewport.tsx` - Zoom/pan viewport component
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\draggable-card.tsx` - Drag/resize with react-moveable
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\grid-layer.tsx` - Grid background with configurable size
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\viewport-controls.tsx` - Zoom controls UI
+### Kitchen Ops Domain (PrepTask)
+- [x] **PrepTask Manifest** (`packages/kitchen-ops/manifests/prep-task-rules.manifest`)
+  - [x] Entity with 13 properties + 6 computed properties
+  - [x] 7 commands: claim, start, complete, release, reassign, updateQuantity, cancel
+  - [x] 6 constraints with severity levels (warn/block)
+  - [x] 4 command-level constraints
+  - [x] 3 authorization policies
+  - [x] 6 event definitions
 
-**Acceptance Status:**
-- Canvas renders with grid and zoom controls ✅
-- Drag entity moves smoothly, position updates ✅
-- Zoom in/out works correctly (0.25x-2x range) ✅
-- Pan board works (middle-click or Space+drag) ✅
-- Fit to screen functionality exists ✅
-- Keyboard shortcuts (Space to pan, +/- to zoom, Escape to deselect, F for fullscreen) ✅
-- Browser fullscreen mode with toggle button ✅
-- Missing: Enhanced grid snapping guides
+- [x] **API Integration** (`apps/api/`)
+  - [x] `lib/manifest-runtime.ts` - Runtime factory with caching
+  - [x] `lib/manifest-response.ts` - Success/error response helpers
+  - [x] Generated handlers in `app/api/kitchen/prep-tasks/commands/`
+  - [x] All 7 command handlers generated and type-safe
 
----
+- [x] **Testing Infrastructure**
+  - [x] Constraint severity tests (`manifest-constraint-severity.test.ts`)
+  - [x] Runtime behavior tests (`manifest-preptask-runtime.test.ts`)
+  - [x] Claim flow tests (`manifest-preptask-claim.test.ts`)
+  - [x] Snapshot verification (`manifest-projection-snapshot.test.ts`)
+  - [x] TypeScript validation (`validate-snapshot-typescript.test.ts`)
+  - [x] Golden file tests (`manifest-projection-preptask-claim.golden.test.ts`)
 
-### 2. Command Board Entity Cards
-**Status: PARTIAL (71% - 5 of 7 types)**
+### Additional Domains (Partially Complete)
+- [x] **Recipe Manifest** (`packages/kitchen-ops/manifests/recipe-rules.manifest`)
+  - [x] 4 entities: Recipe, RecipeVersion, Ingredient, RecipeIngredient, Dish
+  - [x] Rich constraint definitions with severity levels
+  - [x] Pricing, allergen, and difficulty constraints
+  - [x] Runtime engine support with PrismaStore adapter
+  - [x] Server actions (`actions-manifest.ts`) use Manifest runtime for create/update/createDish
+  - [x] `ConstraintOverrideDialog` for override workflow
+  - [ ] **TODO**: Generate API routes via `manifest-generate` (not direct handler creation)
+  - [ ] **TODO**: Pass WARN constraints to UI for display (actions-manifest.ts:510, 1075)
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Display entity cards for 5 types | Complete | TaskCard, EventCard, ClientCard, EmployeeCard, InventoryCard |
-| Show key information | Complete | Each specialized card shows relevant data |
-| Support dragging cards | Complete | Via DraggableCard wrapper |
-| Quick actions | Complete | Edit, view details buttons on cards |
-| Color-code by type/status | Complete | Status badges, type indicators |
-| Card selection (single) | Complete | Click to select, Escape to deselect |
-| Card selection (multiple) | Partial | Only Ctrl+A works; missing Shift+click, drag selection |
-| Visual selection feedback | Missing | No selection border highlight on cards |
+- [x] **Menu Manifest** (`packages/kitchen-ops/manifests/menu-rules.manifest`)
+  - [x] 2 entities: Menu, MenuDish
+  - [x] 3 commands: update, activate, deactivate with constraints
+  - [x] Pricing and guest range constraints
+  - [x] Runtime engine support with PrismaStore adapter
+  - [x] UI integration via `MenuFormWithConstraints` component
+  - [ ] **TODO**: Generate API routes via `manifest-generate`
 
-**Files:**
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\task-card.tsx` - Task card with priority, status, due dates
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\event-card.tsx` - Event card with date, venue, guest count
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\client-card.tsx` - Client card with contact details
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\employee-card.tsx` - Employee card with role, avatar
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\cards\inventory-card.tsx` - Inventory card with quantity, reorder level
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-card.tsx` - Card wrapper with routing logic
+- [x] **PrepList Manifest** (`packages/kitchen-ops/manifests/prep-list-rules.manifest`)
+  - [x] 2 entities: PrepList, PrepListItem
+  - [x] Commands: finalize, complete with batch/allergen constraints
+  - [x] Status lifecycle (draft → finalized → completed)
+  - [x] Runtime engine support with PrismaStore adapter
+  - [x] UI integration via `PrepListFormWithConstraints` component
+  - [x] Manual API routes exist at `/api/kitchen/prep-lists`
+  - [ ] **TODO**: Generate API routes via `manifest-generate`
+  - [ ] **TODO**: Prep list generation logic integration (event-based auto-generation)
 
-**MISSING Card Types (use generic fallback):**
-- `components/cards/note-card.tsx` - Falls back to generic renderer with "Note" label
-- `components/cards/recipe-card.tsx` - Falls back to generic renderer showing "recipe" as type
+- [x] **Inventory Manifest** (`packages/kitchen-ops/manifests/inventory-rules.manifest`)
+  - [x] Manifest defined with 6 commands (reserve, consume, waste, adjust, restock, releaseReservation)
+  - [x] Runtime engine support with PrismaStore adapter
+  - [x] Manual API routes exist at `/api/inventory`
+  - [ ] **TODO**: Generate API routes via `manifest-generate`
 
-**Missing Multi-Select Features:**
-- Shift+click additive selection
-- Visual drag-selection box (marquee)
-- Visual selection border on selected cards
-
----
-
-### 3. Command Board Layout Persistence
-**Status: PARTIAL (40%)**
-
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Save entity positions per user | Complete | Database persistence via updateCard action |
-| Save zoom/view preferences | Complete | localStorage persistence in board-canvas-realtime.tsx |
-| Restore saved layout | Complete | Auto-restores from localStorage on mount |
-| Support multiple saved layouts (named views) | Missing | No database model or UI |
-| Auto-persist layout changes | Partial | Positions persist, but not named layouts |
-| Tenant isolation | Complete | Prisma queries filtered by tenantId |
-
-**Files:**
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` (lines 204-236) - LocalStorage persistence
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\actions\cards.ts` - Position persistence via updateCard
-
-**CRITICAL MISSING:** Named layouts feature requires:
-1. Database model: `CommandBoardLayout` (does not exist)
-2. API actions: `saveLayout`, `listLayouts`, `deleteLayout`, `applyLayout`
-3. UI components: Layout switcher, save layout dialog
-
-**Missing Database Schema:**
-```prisma
-model CommandBoardLayout {
-  tenantId     String   @map("tenant_id") @db.Uuid
-  id           String   @default(gen_random_uuid()) @db.Uuid
-  boardId      String   @map("board_id") @db.Uuid
-  userId       String   @map("user_id") @db.Uuid
-  name         String
-  viewport     Json
-  visibleCards String[]
-  gridSize     Int      @default(40)
-  showGrid     Boolean  @default(true)
-  snapToGrid   Boolean  @default(true)
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
-
-  @@id([tenantId, id])
-  @@unique([boardId, userId, name])
-  @@index([boardId])
-  @@index([userId])
-  @@map("command_board_layouts")
-  @@schema("tenant_events")
-}
-```
-
-**Acceptance Status:**
-- Entity positions saved automatically
-- Refresh page restores layout
-- Create named view - NOT IMPLEMENTED
-- Switch between saved views - NOT IMPLEMENTED
-- View board as different user shows their layout - Works via localStorage
-- Layout save fails with error message - NOT IMPLEMENTED (silent failures)
+- [x] **Station Manifest** (`packages/kitchen-ops/manifests/station-rules.manifest`)
+  - [x] Manifest defined with entities and constraints
+  - [x] Runtime engine support with PrismaStore adapter
+  - [ ] **TODO**: Generate API routes via `manifest-generate`
+  - [ ] **TODO**: UI components (basic station monitoring exists at `/kitchen/stations`)
 
 ---
 
-### 4. Real-time Command Board Sync
-**Status: MOSTLY COMPLETE (75%)**
+## In Progress / Partially Complete ⚠️
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Sync entity positions | Complete | Broadcasts CARD_MOVED events via Liveblocks |
-| Show cursor positions | Complete | `LiveCursors` from @repo/collaboration |
-| Sync entity updates | Complete | CARD_UPDATED event handling |
-| Handle concurrent edits | Complete | Last-write-wins via Liveblocks |
-| Presence indicators | Complete | `useCommandBoardPresence` hook |
-| Reconnection handling | Partial | Liveblocks handles basic reconnection, no offline queue |
-| Conflict resolution UI | Missing | No manual merge interface |
-| Network interruption recovery | Missing | No offline edit queue, no debouncing |
+### Multi-Domain Expansion
+- [~] **Inventory Manifest** - Defined, runtime integration pending
+- [~] **Station Manifest** - Defined, runtime integration pending
+- [~] **Menu Manifest** - Runtime exists, full UI pending
+- [~] **Recipe Manifest** - Runtime exists, full editing UI pending
+- [~] **PrepList Manifest** - Runtime exists, generation logic not integrated
 
-**Technology Stack:**
-- **Liveblocks** (NOT Ably) - `@liveblocks/client`, `@liveblocks/node`, `@liveblocks/react`
-- Custom `@repo/collaboration` package wrapping Liveblocks
+### Testing Gaps
+- [~] **Command-Level Constraints** - Entity constraints tested, command constraints need coverage
+- [~] **HTTP-Level Tests** - Unit tests pass, no end-to-end HTTP tests
+- [~] **Multi-Domain Tests** - Only PrepTask has comprehensive test coverage
 
-**Files:**
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\command-board-realtime-client.tsx` - Real-time client setup
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` (lines 246-285) - Event listeners for CARD_MOVED, CARD_ADDED, CARD_DELETED
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\command-board-wrapper.tsx` - Liveblocks Room integration
-- `C:\projects\capsule-pro\packages\collaboration\` - Custom collaboration package
+### Lib Utilities (Usage Audit Complete - Feb 8)
+**Evidence**: All 13 hooks in `apps/app/app/lib/*` have been audited for actual usage:
 
-**Real-time Events Implemented:**
-- `CARD_MOVED` - Position sync during drag
-- `CARD_ADDED` - New card appearance
-- `CARD_DELETED` - Card removal
-- Presence/cursor tracking via `LiveCursors` component
+**All 13 hooks are ACTIVELY USED** ✅:
+- `use-event-budgets.ts` ✅ - Used in budget-detail-client, budgets-page-client (5 files)
+- `use-labor-budgets.ts` ✅ - Used in budgets-client, budget-form-modal (5 files)
+- `use-assignment.ts` ✅ - Used in bulk-assignment-modal, auto-assignment-modal (3 files)
+- `use-budgets.ts` ✅ - Used in event-details-sections (1 file)
+- `use-finance-analytics.ts` ✅ - Used in FinanceAnalyticsPageClient (1 file)
+- `use-forecasts.ts` ✅ - Used in forecasts-page-client (1 file)
+- `use-inventory.ts` ✅ - Used in stock-levels-page-client, shipments-page-client (4 files)
+- `use-kitchen-analytics.ts` ✅ - Used in kitchen/page (1 file)
+- `use-purchase-orders.ts` ✅ - Used in receiving/page (1 file)
+- `use-recipe-costing.ts` ✅ - Used in recipe-detail-tabs (1 file)
+- `use-shipments.ts` ✅ - Used in shipments-page-client (1 file)
+- `use-stock-levels.ts` ✅ - Used in stock-levels-page-client (1 file)
+- `use-event-export.ts` ✅ - Used in EventExportButton component for event export functionality
 
-**Missing:**
-- Explicit offline edit queue (edits lost if offline)
-- Conflict resolution UI for manual merge decisions
-- Debouncing for rapid position updates
-- Network status indicator
-- Optimistic UI updates with rollback on conflict
-- Event persistence to database (events only broadcast via Liveblocks, not stored)
+**Correction**: Previous audit incorrectly marked `use-event-export.ts` as unused. It IS being used in `apps/app/app/(authenticated)/events/[eventId]/components/export-button.tsx`.
+
+**None of the lib utilities use Manifest runtime** - This is expected as they are data fetching hooks, not constraint enforcement.
 
 ---
 
-### 5. Visual Relationship Connectors
-**Status: COMPLETE (100%)** ✅
+## Priority Implementation Tasks 📋
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Display relationship lines | Complete | `ConnectionLines` SVG component |
-| Different line styles per type | Complete | 5 relationship types with colors/dash arrays |
-| Auto-update on drag | Complete | Lines recalculate on card position change |
-| Support multiple relationships | Complete | Auto-generates all valid connections |
-| Highlight on hover/selection | Complete | Selected state with glow effect |
-| Toggle visibility | Complete | "Show Connections" checkbox in settings panel |
-| Manual connection creation | Complete | Database model + dialog UI for creating connections |
-| Delete individual connections | Complete | Connection context menu with delete option |
-| Edit connection properties | Complete | Connection context menu with edit dialog |
+### HIGH PRIORITY - Manifest API Generation (Critical Path)
 
-**Files:**
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\connection-lines.tsx` - SVG connection rendering with 5 types
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` (lines 79-198) - Auto-connection detection logic
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\actions\connections.ts` - Server actions for connection CRUD ✅ NEW
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\connection-dialog.tsx` - Connection creation dialog ✅ NEW
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\connection-context-menu.tsx` - Connection edit/delete menu ✅ NEW
+#### 1. Generate Menu API Routes
+**Status**: Manifest Defined, No Generated Routes
+**Effort**: Medium
+**Priority**: HIGH
+**Description**: Use `manifest-generate` CLI to create Menu command API routes.
 
-**Auto-connection Logic (Automatic based on metadata):**
-- Client -> Event (via `metadata.entityId`)
-- Event -> Task (via `metadata.eventId`)
-- Event -> Inventory (via `metadata.eventId`)
-- Task -> Employee (via `metadata.assignee`)
+**Evidence**: Menu manifest exists at `packages/kitchen-ops/manifests/menu-rules.manifest` with 3 commands (update, activate, deactivate)
 
-**Connection Types Implemented:**
-- `client_to_event` (blue solid - "has")
-- `event_to_task` (green solid - "includes")
-- `task_to_employee` (orange dashed - "assigned")
-- `event_to_inventory` (purple solid - "uses")
-- `generic` (gray dotted - "related")
+**Tasks**:
+- [ ] Run `manifest-generate nextjs nextjs.command menu-rules.manifest Menu update --output apps/api/app/api/kitchen/menus/commands/update/route.ts`
+- [ ] Run `manifest-generate nextjs nextjs.command menu-rules.manifest Menu activate --output apps/api/app/api/kitchen/menus/commands/activate/route.ts`
+- [ ] Run `manifest-generate nextjs nextjs.command menu-rules.manifest Menu deactivate --output apps/api/app/api/kitchen/menus/commands/deactivate/route.ts`
+- [ ] Create runtime factory at `apps/api/lib/menu-runtime.ts` (similar to prep-task runtime)
+- [ ] Test all 3 commands with HTTP requests
+- [ ] Verify constraint enforcement (price decrease warnings, guest range warnings)
 
-**Database Schema:** ✅ NEW
-```prisma
-model CommandBoardConnection {
-  tenantId          String   @map("tenant_id") @db.Uuid
-  id                String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  boardId           String   @map("board_id") @db.Uuid
-  fromCardId        String   @map("from_card_id") @db.Uuid
-  toCardId          String   @map("to_card_id") @db.Uuid
-  relationshipType  String   @default("generic") @map("relationship_type")
-  label             String?
-  visible           Boolean  @default(true)
-  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(6)
+**Dependencies**: CLI tools (complete), Menu manifest (complete)
 
-  @@id([tenantId, id])
-  @@index([boardId])
-  @@index([fromCardId])
-  @@index([toCardId])
-  @@unique([boardId, fromCardId, toCardId, relationshipType], map: "unique_connection_per_board")
-  @@map("command_board_connections")
-  @@schema("tenant_events")
-}
-```
-
-**Acceptance Status:**
-- Connection creation button appears when 2 cards selected ✅
-- Dialog shows source/target card selection with relationship type ✅
-- Can create custom connections with optional labels ✅
-- Connections persist to database ✅
-- Can edit connection properties (type, label, visibility) ✅
-- Can delete connections with confirmation ✅
-- Connections load from database on board mount ✅
+**Files**: `apps/api/lib/menu-runtime.ts`, `apps/api/app/api/kitchen/menus/commands/*/route.ts`
 
 ---
 
-### 6. Bulk Edit Operations
-**Status: COMPLETE (100%)**
+#### 2. Generate Station API Routes
+**Status**: Manifest Defined, No Generated Routes
+**Effort**: Medium
+**Priority**: HIGH
+**Description**: Use `manifest-generate` CLI to create Station CRUD API routes.
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Select multiple entities | Complete | Single click, Shift+click, Ctrl+A, drag selection |
-| Shift+click selection | Complete | Additive keyboard selection |
-| Drag selection box (marquee) | Complete | Visual selection rectangle |
-| Identify common properties | Complete | Bulk edit dialog analyzes common values |
-| Apply bulk edits | Complete | Bulk update endpoint implemented |
-| Preview changes | Complete | Dialog shows current values before edit |
-| Support undo/redo | Missing | No history stack |
-| Validate bulk edits | Complete | Validates at least one field is modified |
-| Visual selection feedback | Complete | Selection borders on selected cards |
+**Evidence**: Station manifest exists at `packages/kitchen-ops/manifests/station-rules.manifest`
 
-**Current Implementation:**
-- Single card selection: Click to select, Escape to deselect
-- Shift+click: Toggle selection for individual cards
-- Drag selection: Visual marquee selects cards in rectangle
-- Ctrl+A: Select all cards
-- Delete key: Removes selected cards
-- Ctrl+E / Cmd+E: Opens bulk edit dialog (when 2+ cards selected)
-- Selection state: `selectedCardIds` in `board-canvas-realtime.tsx`
+**Tasks**:
+- [ ] Identify Station commands in manifest
+- [ ] Run `manifest-generate` for each Station command
+- [ ] Create runtime factory at `apps/api/lib/station-runtime.ts`
+- [ ] Test all commands with HTTP requests
+- [ ] Verify constraint enforcement
 
-**Database Schema:**
-- No changes needed (uses existing cards table)
+**Dependencies**: CLI tools (complete), Station manifest (complete)
 
-**Files Created:**
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\bulk-edit-dialog.tsx` - Dialog for editing multiple cards ✅
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\actions\bulk-update-cards.ts` - Server action for bulk updates ✅
-
-**Acceptance Status:**
-- Bulk Edit button appears when 2+ cards selected ✅
-- Dialog shows common properties across selected cards ✅
-- Can update status, color, title, content for all selected cards ✅
-- "Mixed" indicator when cards have different values ✅
-- Changes apply to all selected cards ✅
-- Keyboard shortcut Ctrl+E / Cmd+E opens dialog ✅
-
-**Still Missing:**
-- Undo/redo stack for bulk operations (nice-to-have)
+**Files**: `apps/api/lib/station-runtime.ts`, `apps/api/app/api/kitchen/stations/commands/*/route.ts`
 
 ---
 
-### 7. Bulk Grouping and Combining
-**Status: COMPLETE (100%)** ✅
+#### 3. Generate PrepList API Routes
+**Status**: Manifest Defined, Manual Routes Exist
+**Effort**: Medium
+**Priority**: HIGH
+**Description**: Use `manifest-generate` CLI to create PrepList command API routes.
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Select and group entities | Complete | "Create Group" button when 2+ cards selected |
-| Create named groups | Complete | CreateGroupDialog with name and color picker |
-| Visual clustering | Complete | GroupContainer with colored borders |
-| Expand/collapse groups | Complete | Collapse button hides contained cards |
-| Move groups as unit | Complete | Dragging group moves all contained cards |
-| Delete groups | Complete | Delete button in group context menu |
-| Ungroup entities | Partial | Can delete group to ungroup (no explicit "ungroup" action) |
+**Evidence**: PrepList manifest exists with finalize, complete commands. Manual routes exist at `/api/kitchen/prep-lists`
 
-**Database Schema:** ✅ Implemented
-```prisma
-model CommandBoardGroup {
-  tenantId  String   @map("tenant_id") @db.Uuid
-  id        String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  boardId   String   @map("board_id") @db.Uuid
-  name      String
-  color     String?
-  collapsed Boolean  @default(false)
-  positionX Int      @default(0) @map("position_x")
-  positionY Int      @default(0) @map("position_y")
-  width     Int      @default(300)
-  height    Int      @default(200)
-  zIndex    Int      @default(0) @map("z_index")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+**Tasks**:
+- [ ] Run `manifest-generate` for PrepList finalize command
+- [ ] Run `manifest-generate` for PrepList complete command
+- [ ] Create runtime factory at `apps/api/lib/preplist-runtime.ts`
+- [ ] Test all commands with HTTP requests
+- [ ] Verify constraint enforcement (batch multipliers, allergen constraints)
 
-  board     CommandBoard @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
-  cards     CommandBoardCard[]
+**Dependencies**: CLI tools (complete), PrepList manifest (complete)
 
-  @@id([tenantId, id])
-  @@index([boardId])
-  @@map("command_board_groups")
-  @@schema("tenant_events")
-}
-```
-
-**Schema Update to CommandBoardCard:** ✅ Implemented
-```prisma
-// Added to CommandBoardCard model:
-groupId String? @map("group_id") @db.Uuid
-group   CommandBoardGroup? @relation("CardGroup", fields: [tenantId, groupId], references: [tenantId, id])
-```
-
-**Files Created:** ✅
-- `apps/app/app/(authenticated)/command-board/actions/groups.ts` - Server actions for CRUD operations
-- `apps/app/app/(authenticated)/command-board/components/create-group-dialog.tsx` - Group creation dialog
-- `apps/app/app/(authenticated)/command-board/components/group-container.tsx` - Group rendering component
-
-**Files Modified:**
-- `apps/app/app/(authenticated)/command-board/components/board-canvas-realtime.tsx` - Group rendering, handlers, UI integration
-- `apps/app/app/(authenticated)/command-board/types.ts` - Group types and utilities
-- `packages/database/prisma/schema.prisma` - CommandBoardGroup model
-
-**Acceptance Status:**
-- Can select cards and create group ✅
-- Groups render as visual containers ✅
-- Dragging group moves all contained cards ✅
-- Groups can be expanded/collapsed ✅
-- Cards can be added/removed from groups ✅ (via create dialog)
-- Groups can be deleted ✅
-
-**Implementation Details:**
-- Groups are rendered on canvas before cards (so cards appear on top)
-- Cards inside collapsed groups are hidden from view
-- When a group is dragged, all contained cards move by the same delta
-- Group position changes are persisted to database
-- "Create Group" button appears in toolbar when 2+ cards are selected
-
-**Still Missing:**
-- Explicit "ungroup" action (can only delete group to ungroup)
-- Drag-and-drop cards into/out of groups
-- Individual card removal from group via UI
+**Files**: `apps/api/lib/preplist-runtime.ts`, `apps/api/app/api/kitchen/prep-lists/commands/*/route.ts`
 
 ---
 
-## Database Schema Status
+#### 4. Generate Inventory API Routes
+**Status**: Manifest Defined, Manual Routes Exist
+**Effort**: High
+**Priority**: HIGH
+**Description**: Use `manifest-generate` CLI to create Inventory command API routes.
 
-### Existing Models (COMPLETE)
-```prisma
-model CommandBoard {
-  tenantId    String   @map("tenant_id") @db.Uuid
-  id          String   @default(gen_random_uuid()) @db.Uuid
-  eventId     String?  @map("event_id") @db.Uuid
-  name        String
-  description String?
-  status      String   @default("draft")
-  isTemplate  Boolean  @default(false) @map("is_template")  // UNUSED - requires template feature
-  tags        String[]
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
+**Evidence**: Inventory manifest exists with 6 commands (reserve, consume, waste, adjust, restock, releaseReservation). Manual routes exist at `/api/inventory`
 
-  cards CommandBoardCard[]
+**Tasks**:
+- [ ] Run `manifest-generate` for all 6 Inventory commands
+- [ ] Create runtime factory at `apps/api/lib/inventory-runtime.ts`
+- [ ] Test all commands with HTTP requests
+- [ ] Verify constraint enforcement (stock levels, reorder points)
+- [ ] Plan migration from manual to generated routes
 
-  @@id([tenantId, id])
-  @@index([eventId])
-  @@index([tags], map: "idx_command_boards_tags_gin", type: Gin)
-  @@map("command_boards")
-  @@schema("tenant_events")
-}
+**Dependencies**: CLI tools (complete), Inventory manifest (complete)
 
-model CommandBoardCard {
-  tenantId  String   @map("tenant_id") @db.Uuid
-  id        String   @default(gen_random_uuid()) @db.Uuid
-  boardId   String   @map("board_id") @db.Uuid
-  title     String
-  content   String?
-  cardType  String   @default("task") @map("card_type")
-  status    String   @default("pending")
-  positionX Int      @default(0) @map("position_x")
-  positionY Int      @default(0) @map("position_y")
-  width     Int      @default(200)
-  height    Int      @default(150)
-  zIndex    Int      @default(0) @map("z_index")
-  color     String?
-  metadata  Json     @default("{}")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
-
-  board CommandBoard @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
-
-  @@id([tenantId, id])
-  @@index([boardId])
-  @@index([zIndex])
-  @@map("command_board_cards")
-  @@schema("tenant_events")
-}
-```
-
-**IMPORTANT SCHEMA NOTE:** The project uses `dbgenerated("gen_random_uuid()")` throughout the schema. Follow this existing pattern for consistency when adding new models.
-
-### Missing Models
-- `CommandBoardTemplate` (for template system - optional)
-
-### Models Added During Implementation
-- `CommandBoardLayout` (for named views feature) ✅
-- `CommandBoardGroup` (for grouping feature) ✅
+**Files**: `apps/api/lib/inventory-runtime.ts`, `apps/api/app/api/kitchen/inventory/commands/*/route.ts`
 
 ---
 
-## File Structure Reference
+#### 5. Generate Recipe API Routes
+**Status**: Manifest Used in Server Actions, No Generated API Routes
+**Effort**: Medium
+**Priority**: HIGH
+**Description**: Use `manifest-generate` CLI to create Recipe command API routes.
 
-```
-C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board/
-├── page.tsx                          # Root page (redirects to default)
-├── [boardId]/page.tsx                # Dynamic board page
-├── layout.tsx                        # Layout wrapper
-├── command-board-wrapper.tsx         # Main wrapper component (Liveblocks Room)
-├── command-board-realtime-client.tsx # Real-time client setup
-├── types.ts                          # TypeScript types and utilities
-├── actions/
-│   ├── boards.ts                     # Board CRUD operations
-│   ├── cards.ts                      # Card CRUD operations
-│   ├── entity-cards.ts               # Entity card creation
-│   ├── conflicts.ts                  # Conflict detection
-│   ├── suggestions.ts                # AI suggestions
-│   ├── suggestions-types.ts          # Suggestion types
-│   ├── layouts.ts                    # [COMPLETE] Named layouts CRUD
-│   ├── bulk-update-cards.ts          # [COMPLETE] Bulk edit operations
-│   └── groups.ts                     # [COMPLETE] Group CRUD operations
-├── components/
-│   ├── board-canvas.tsx              # Non-realtime canvas
-│   ├── board-canvas-realtime.tsx     # Realtime canvas with Liveblocks
-│   ├── board-card.tsx                # Card wrapper component (handles note/recipe fallback)
-│   ├── canvas-viewport.tsx           # Zoom/pan viewport
-│   ├── connection-lines.tsx          # SVG connection rendering
-│   ├── draggable-card.tsx            # Drag/resize with react-moveable
-│   ├── grid-layer.tsx                # Grid background
-│   ├── viewport-controls.tsx         # Zoom controls UI
-│   ├── conflict-warning-panel.tsx    # Conflict warnings
-│   ├── suggestions-panel.tsx         # AI suggestions UI
-│   ├── selection-box.tsx             # [RENDERED INLINE] Drag selection box
-│   ├── bulk-edit-dialog.tsx          # [COMPLETE] Bulk edit dialog
-│   ├── group-container.tsx           # [COMPLETE] Group rendering
-│   ├── create-group-dialog.tsx       # [COMPLETE] Group creation
-│   ├── layout-switcher.tsx           # [COMPLETE] Layout switcher
-│   └── save-layout-dialog.tsx        # [COMPLETE] Save layout dialog
-│   └── cards/
-│       ├── task-card.tsx             # Task card (COMPLETE)
-│       ├── event-card.tsx            # Event card (COMPLETE)
-│       ├── client-card.tsx           # Client card (COMPLETE)
-│       ├── employee-card.tsx         # Employee card (COMPLETE)
-│       ├── inventory-card.tsx        # Inventory card (COMPLETE)
-│       ├── note-card.tsx             # [MISSING] Falls back to generic
-│       └── recipe-card.tsx           # [MISSING] Falls back to generic
-└── hooks/
-    ├── use-suggestions.ts            # AI suggestions hook
-    ├── use-bulk-selection.ts         # [MISSING] Bulk selection hook
-    └── use-undo-redo.ts              # [MISSING] Undo/redo hook
+**Evidence**: Recipe manifest exists. Server actions (`actions-manifest.ts`) already use Manifest runtime for create/update/createDish
 
-C:\projects\capsule-pro\packages\collaboration/
-├── index.ts                          # Main exports
-├── room.tsx                          # Liveblocks Room wrapper
-├── hooks.ts                          # Custom hooks (useBroadcastEvent, useEventListener)
-├── live-cursors.tsx                  # Cursor display component
-├── live-cursor.tsx                   # Single cursor component
-├── live-presence-indicator.tsx       # Presence indicator
-├── use-command-board-presence.ts     # Board-specific presence hook
-├── auth.ts                           # Liveblocks authentication
-├── config.ts                         # Liveblocks configuration
-└── keys.ts                           # API keys
+**Tasks**:
+- [ ] Run `manifest-generate` for Recipe update command
+- [ ] Run `manifest-generate` for Recipe createDish command
+- [ ] Create runtime factory (or use existing from kitchen-ops)
+- [ ] Test all commands with HTTP requests
+- [ ] Verify constraint enforcement (pricing, allergen, margin warnings)
 
-C:\projects\capsule-pro\packages\database\prisma\
-└── schema.prisma                     # Database schema (uses dbgenerated("gen_random_uuid()"))
-```
+**Dependencies**: CLI tools (complete), Recipe manifest (complete), server actions (complete)
+
+**Files**: `apps/api/app/api/kitchen/recipes/commands/*/route.ts`
 
 ---
 
-## Implementation Tasks (Prioritized by Impact vs Effort)
+#### 6. Add Base Query Endpoints
+**Status**: Only Command Handlers Exist
+**Effort**: High
+**Priority**: HIGH
+**Description**: Generate GET/list routes for all entities using `nextjs.route` projection.
 
-### Phase 1: Quick Wins (Low Effort, High Visibility) ✅ COMPLETE
+**Evidence**: Only PrepTask command handlers exist. No base GET/list routes for any entity.
 
-#### Task 1: Add Connection Visibility Toggle UI ✅ COMPLETE
-**Status:** Already implemented - checkbox exists in settings panel (lines 741-751)
+**Tasks**:
+- [ ] Generate GET /api/kitchen/prep-tasks route using `nextjs.route` projection
+- [ ] Generate GET /api/kitchen/menus route
+- [ ] Generate GET /api/kitchen/stations route
+- [ ] Generate GET /api/kitchen/prep-lists route
+- [ ] Verify tenant filtering and soft delete support
+- [ ] Test pagination and filtering
 
-#### Task 2: Complete Missing Card Types (Note and Recipe) ✅ COMPLETE
-**Status:** Implemented in commit c5b83e3ec
-- NoteCard with color-coded sticky note design (yellow, blue, green, pink, purple)
-- RecipeCard with difficulty badges, prep/cook time, ingredients, and steps
-- Both cards route through board-card.tsx
+**Dependencies**: Next.js projection generator (supports `nextjs.route`)
 
-#### Task 3: Shift+Click Selection ✅ COMPLETE
-**Status:** Already implemented in handleCardClick (lines 357-365)
-- Shift+click toggles card selection
-- Visual border feedback on selected cards
-
-#### Task 4: Drag Selection Box (Marquee) ✅ COMPLETE
-**Status:** Implemented in commit 193a43552
-- Drag on canvas background creates selection rectangle
-- Shift+drag for additive selection
-- Visual selection rectangle with primary border and background
-- Esc key cancels selection
-
-**Phase 1 Summary:** All Quick Wins complete! Multi-select workflow fully functional.
+**Files**: `apps/api/app/api/kitchen/*/route.ts`
 
 ---
 
-### Phase 2: High Impact Features (Medium Effort) ✅ COMPLETE
+### MEDIUM PRIORITY - Testing & Verification
 
-#### Task 5: Implement Named Layouts ✅ COMPLETE
-**Status:** Implemented in commit 3b96274a8
-- Database: CommandBoardLayout model added, migration deployed
-- Server Actions: saveLayout, listLayouts, getLayout, deleteLayout
-- UI Components: LayoutSwitcher dropdown, SaveLayoutDialog
-- Layouts save viewport, visible cards, grid settings
-- Per-user isolation (different users have different layouts)
+#### 7. HTTP Integration Tests
+**Status**: Unit Tests Only (No Real HTTP Requests)
+**Effort**: High
+**Priority**: MEDIUM
+**Description**: Create real HTTP integration tests for all generated endpoints.
 
-**Phase 2 Summary:** Named Layouts feature complete! Users can save and switch between different board views.
+**Evidence**: Existing tests import route handlers directly. No test harness for real HTTP requests.
 
----
+**Tasks**:
+- [ ] Set up test harness for Next.js API routes (use Node.js fetch or similar)
+- [ ] Test auth flow with real Clerk headers (unauthorized, forbidden scenarios)
+- [ ] Test tenant resolution (wrong tenant, missing tenant)
+- [ ] Test guard failures with actual HTTP responses (401, 403, 422)
+- [ ] Test constraint violations at HTTP level (422 for BLOCK, 200 with warnings for WARN)
+- [ ] Test successful command execution with event emission
+- [ ] Test error handling (500, 400, 422, 403, 401)
+- [ ] Add tests for all 7 PrepTask commands
+- [ ] Add tests for Recipe/Menu/PrepList/Inventory/Station commands
 
-### Phase 3: Bulk Operations (Higher Effort, High Impact) ✅ COMPLETE
+**Dependencies**: All entity API routes
 
-#### Task 6: Bulk Edit System ✅ COMPLETE
-**Estimated: 12-16 hours** | Impact: High | Effort: High
-**Status:** Implemented
-
-**Prerequisites:** Task 3 (Shift+click) and Task 4 (Drag selection) must be complete ✅
-
-**Implementation:**
-
-**Server Action:** Create `bulk-update-cards.ts` ✅
-```typescript
-// C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\actions\bulk-update-cards.ts
-- bulkUpdateCards(cardIds, updates) - Update multiple cards in transaction
-- Supports updating: status, color, title, content
-- Returns updated count and error messages
-```
-
-**UI Component:** Create `bulk-edit-dialog.tsx` ✅
-```typescript
-// C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\bulk-edit-dialog.tsx
-- Shows selected cards count
-- Identifies common editable properties (status, color, title, content)
-- Shows "mixed" indicator for properties with different values
-- Uses expand-to-edit pattern (click "Change status" to edit)
-- Validation for at least one field being modified
-```
-
-**Toolbar Integration:** ✅
-- "Bulk Edit" button appears when 2+ cards selected
-- Button shows count: "Edit 3 Cards"
-- Keyboard shortcut: Ctrl+E / Cmd+E
-
-**Files created:**
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\actions\bulk-update-cards.ts` ✅
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\bulk-edit-dialog.tsx` ✅
-
-**Files modified:**
-- `C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\components\board-canvas-realtime.tsx` ✅
-
-**Acceptance Criteria:**
-- Bulk Edit button appears when 2+ cards selected ✅
-- Dialog shows common properties across selected cards ✅
-- Can update status, color, title, content for all selected cards ✅
-- "Mixed" indicator when cards have different values ✅
-- Changes apply to all selected cards ✅
-- Keyboard shortcut Ctrl+E / Cmd+E opens dialog ✅
-
-**Dependencies:** Tasks 3, 4 ✅
-
-**Phase 3 Summary:** Bulk Edit System complete! Users can now efficiently edit multiple cards at once.
+**Files**: `apps/api/__tests__/kitchen/http-integration.test.ts`
 
 ---
 
-### Phase 4: Advanced Grouping ✅ COMPLETE
+#### 8. Command-Level Constraint Testing
+**Status**: Entity Constraints Tested, Commands Need Coverage
+**Effort**: Medium
+**Priority**: MEDIUM
+**Description**: Expand test coverage to command-level constraints.
 
-#### Task 7: Bulk Grouping System ✅ COMPLETE
-**Estimated: 20-28 hours** | Impact: Medium | Effort: Very High
-**Status:** Implemented in commit c0ff993d8
+**Evidence**: PrepTask tests cover entity constraints well
 
-**Prerequisites:** Task 3 and Task 4 (multi-select) ✅ Complete
+**Tasks**:
+- [ ] Add tests for PrepTask command constraints (claim, start, complete with warnings)
+- [ ] Add tests for Recipe command constraints (update with price decrease warnings)
+- [ ] Add tests for Menu command constraints (update with guest range warnings)
+- [ ] Test constraint override approval flow
+- [ ] Test constraint rejection without override
+- [ ] Verify constraint severity levels (ok/warn/block) are respected
 
-**Implementation Complete:**
+**Dependencies**: Runtime engine (complete)
 
-**Database:** ✅
-- Added `CommandBoardGroup` model to Prisma schema
-- Added `groupId` field to `CommandBoardCard` model
-- Created migration
-
-**Server Actions:** ✅ Created `groups.ts`
-```typescript
-// C:\projects\capsule-pro\apps\app\app\(authenticated)\command-board\actions\groups.ts
-- createGroup(boardId, name, color, cardIds) ✅
-- updateGroup(groupId, updates) ✅
-- deleteGroup(groupId) ✅
-- addCardsToGroup(groupId, cardIds) ✅
-- removeCardsFromGroup(groupId, cardIds) ✅
-- toggleGroupCollapsed(groupId) ✅
-- getGroupsForBoard(boardId) ✅
-```
-
-**UI Components:** ✅
-- Created `group-container.tsx`
-  - Visual box with border and label
-  - Drag group moves all contained cards
-  - Expand/collapse animation
-  - Resize group bounds
-- Created `create-group-dialog.tsx`
-  - Group name input
-  - Color picker for group border/background
-- Updated `board-canvas-realtime.tsx` to render groups at appropriate z-index
-
-**Files created:**
-- `apps/app/app/(authenticated)/command-board/components/group-container.tsx` ✅
-- `apps/app/app/(authenticated)/command-board/components/create-group-dialog.tsx` ✅
-- `apps/app/app/(authenticated)/command-board/actions/groups.ts` ✅
-
-**Files modified:**
-- `packages/database/prisma/schema.prisma` (add CommandBoardGroup model) ✅
-- `apps/app/app/(authenticated)/command-board/components/board-canvas-realtime.tsx` (render groups) ✅
-- `apps/app/app/(authenticated)/command-board/types.ts` (add group types) ✅
-
-**Acceptance Criteria:**
-- Can select cards and create group ✅
-- Groups render as visual containers ✅
-- Dragging group moves all contained cards ✅
-- Groups can be expanded/collapsed ✅
-- Cards can be added/removed from groups ✅
-- Groups can be deleted ✅
-
-**Dependencies:** Tasks 3, 4 ✅ Complete, database migration ✅ Deployed
-
-**Phase 4 Summary:** Grouping feature complete! Users can now organize cards into groups, move them together, and collapse them for cleaner views.
+**Files**: `apps/api/__tests__/kitchen/command-constraints.test.ts`
 
 ---
 
-### Phase 5: Optional Enhancements (Nice to Have)
+#### 9. UI Warning Display Integration
+**Status**: WARN Constraints Logged to Console Only
+**Effort**: Medium
+**Priority**: MEDIUM
+**Description**: Pass WARN constraints to UI for display.
 
-#### Task 8: Connection Management UI ✅ COMPLETE
-**Estimated: 8-10 hours** | Impact: Medium | Effort: Medium
-**Status:** Implemented
+**Evidence**: TODO comments in `actions-manifest.ts:510` and `:1075` - "Pass these to UI for display"
 
-**Implementation:**
-- Database: `CommandBoardConnection` model added, migration deployed
-- Server Actions: `createConnection`, `updateConnection`, `deleteConnection`, `getConnectionsForBoard`
-- UI Components: ConnectionDialog, ConnectionContextMenu
-- Toolbar button appears when exactly 2 cards selected for quick connection creation
-- Connections persist to database and load on board mount
-- Edit dialog for modifying relationship type, label, and visibility
-- Delete confirmation dialog for removing connections
+**Tasks**:
+- [ ] Modify server actions to return constraint outcomes (not throw on WARN)
+- [ ] Update UI components to display WARN constraint messages
+- [ ] Add override flow for WARN constraints
+- [ ] Test Recipe create/update with warning display
+- [ ] Test Dish create with warning display
+- [ ] Verify console.warn calls are replaced with UI display
 
-**Files created:**
-- `apps/app/app/(authenticated)/command-board/actions/connections.ts` ✅
-- `apps/app/app/(authenticated)/command-board/components/connection-dialog.tsx` ✅
-- `apps/app/app/(authenticated)/command-board/components/connection-context-menu.tsx` ✅
+**Dependencies**: Recipe server actions (complete), ConstraintOverrideDialog (exists)
 
-**Files modified:**
-- `packages/database/prisma/schema.prisma` (add CommandBoardConnection model) ✅
-- `apps/app/app/(authenticated)/command-board/components/board-canvas-realtime.tsx` (integrate UI) ✅
-
-**Acceptance Criteria:**
-- Connection creation button appears when 2 cards selected ✅
-- Dialog shows source/target card selection with relationship type ✅
-- Can create custom connections with optional labels ✅
-- Connections persist to database ✅
-- Can edit connection properties (type, label, visibility) ✅
-- Can delete connections with confirmation ✅
-- Connections load from database on board mount ✅
-
-#### Task 9: Board Template System
-**Estimated: 10-12 hours** | Impact: Medium | Effort: Medium
-
-- Implement `isTemplate` field usage in CommandBoard model
-- Create `templates.ts` actions
-  - `saveAsTemplate(boardId, name, description)`
-  - `listTemplates()`
-  - `applyTemplate(templateId, boardId)`
-- Create template gallery UI
-- Add template thumbnail generation
-
-#### Task 10: Advanced Canvas Features
-**Estimated: 20-24 hours** | Impact: Low-Medium | Effort: High
-
-- Undo/redo stack (Command pattern)
-- Copy/paste cards (clipboard API)
-- Card alignment tools (align left, right, top, bottom, distribute)
-- Minimap component
-- Filter cards by type/status
-- Canvas search
-
-#### Task 11: Export/Import
-**Estimated: 8-10 hours** | Impact: Low | Effort: Medium
-
-- Export board as JSON
-- Export canvas as image (html2canvas or similar)
-- Import board from JSON
-- Share board link
+**Files**: `apps/app/app/(authenticated)/kitchen/recipes/actions-manifest.ts`, UI components
 
 ---
 
-## Key Technologies Used
+#### 10. CI/CD Pipeline Automation
+**Status**: Not Started
+**Effort**: Medium
+**Priority**: MEDIUM
+**Description**: Automate manifest validation and code generation in CI.
 
-- **Drag/Resize**: `react-moveable` - Already installed
-- **Real-time**: Liveblocks via `@repo/collaboration` (NOT Ably)
-  - `@liveblocks/client` - v3.13.3
-  - `@liveblocks/node` - v3.13.3
-  - `@liveblocks/react` - v3.13.3
-- **Database**: Prisma with Neon PostgreSQL
-- **Styling**: Tailwind CSS v4
-- **UI Components**: `@repo/design-system` (shadcn/ui)
+**Tasks**:
+- [ ] Add `manifest validate` step to GitHub Actions workflow
+- [ ] Add `manifest test` step to run conformance tests
+- [ ] Add `manifest generate --check` to verify generated code is up-to-date
+- [ ] Add snapshot regeneration workflow with manual approval
+- [ ] Add TypeScript compilation check for generated code
+- [ ] Document manual approval process for manifest changes
+- [ ] Add PR template guidance for manifest modifications
 
----
-
-## Dependencies Between Tasks
-
-- **Task 3 (Shift+click)** and **Task 4 (Drag selection)** must be completed before **Task 6 (Bulk Edit)**
-- **Task 5 (Named Layouts)** is independent - can be done anytime
-- **Task 7 (Grouping)** requires Task 3 and Task 4 (multi-select) to be useful
-- **Task 8 (Connection Management)** can be done independently
-- **Tasks 9-11 (Optional)** can be done in any order after core features
+**Files**: `.github/workflows/manifest-ci.yml`, `.github/pull_request_template.md`
 
 ---
 
-## Estimated Total Effort
+### LOWER PRIORITY - Cleanup & Advanced Features
 
-| Phase | Tasks | Estimated Hours |
-|-------|-------|-----------------|
-| Phase 1: Quick Wins | 3 tasks | 7-11 hours |
-| Phase 2: High Impact | 2 tasks | 16-20 hours |
-| Phase 3: Bulk Operations | 1 task | 12-16 hours |
-| Phase 4: Grouping | 1 task | 20-28 hours |
-| Phase 5: Optional | 4 tasks | 46-56 hours |
-| **Total (Phases 1-4)** | **7 tasks** | **55-75 hours** |
-| **Total (All Phases)** | **11 tasks** | **101-131 hours** |
+#### ~~11. Remove Unused Hook or Implement Event Export~~ ✅ COMPLETED - Hook is Used
+**Status**: RESOLVED - Hook is actively used
+**Effort**: N/A
+**Priority**: N/A
+**Description**: This task was based on incorrect information.
 
----
+**Evidence**: `use-event-export.ts` IS being used in `apps/app/app/(authenticated)/events/[eventId]/components/export-button.tsx` which provides event export functionality (CSV/PDF).
 
-## Next Steps
-
-### Immediate Actions (This Week):
-1. **Task 1: Add Connection Toggle** (1-2 hours) - Quick visible win
-2. **Task 2: Complete Missing Cards** (4-6 hours) - Finish card type coverage
-3. **Task 3: Shift+Click Selection** (2-3 hours) - Enable multi-select workflow
-
-### Short Term (Next 2 Weeks):
-4. **Task 4: Drag Selection Box** (6-8 hours) - True multi-selection
-5. **Task 5: Named Layouts** (10-12 hours) - Major feature completion
-
-### Medium Term (Next Month):
-6. **Task 6: Bulk Edit System** (12-16 hours) - Power user features
-7. **Task 7: Grouping System** (20-28 hours) - Advanced organization
-
-### Development Workflow:
-- Test each feature thoroughly before moving to the next
-- Run validation after each task: `pnpm lint && pnpm format && pnpm build`
-- Consider creating separate feature branches for major features
-- Update this plan as implementation progresses
+**Resolution**: No action needed. The event export functionality is already implemented and in use.
 
 ---
 
-## Critical Implementation Notes
+#### 12. Prep List Generation Logic Integration
+**Status**: Manual API Exists, Not Event-Driven
+**Effort**: High
+**Priority**: LOW
+**Description**: Integrate prep list auto-generation with event-based constraints.
 
-### Database Migration Requirements:
-1. **CommandBoardLayout** - Required for Task 5 (Named Layouts)
-2. **CommandBoardGroup** + **CommandBoardCard.groupId** - Required for Task 7 (Grouping)
+**Evidence**: PrepList manifest exists with batch multiplier and allergen constraints. Manual generate route exists.
 
-### Prisma Schema Rules (CRITICAL):
-- Follow existing pattern: `dbgenerated("gen_random_uuid()")` NOT `gen_random_uuid()`
-- Field names: camelCase with `@map("snake_case")`
-- Relation references use Prisma field names, NOT DB column names
+**Tasks**:
+- [ ] Enhance prep list generation service at `apps/api/app/api/kitchen/prep-lists/generate/route.ts`
+- [ ] Implement event-to-prep-list calculation logic
+- [ ] Integrate recipe quantities with event guest counts
+- [ ] Add batch multiplier validation via manifest constraints
+- [ ] Implement allergen-aware ingredient splitting
+- [ ] Add station assignment logic
+- [ ] Test with edge cases (missing recipes, zero quantities, allergen conflicts)
 
-### Real-time Considerations:
-- Uses **Liveblocks** (NOT Ably) for real-time features
-- New features should broadcast events via Liveblocks for collaborative editing
-- Connection state is handled by `@repo/collaboration` package
-- Consider offline queues for critical operations (future enhancement)
-- Events are currently NOT persisted to database - only broadcast via Liveblocks
+**Dependencies**: PrepList manifest (complete), Recipe manifest (complete), Station manifest (complete)
 
-### Multi-tenancy:
-- All database models MUST include `tenantId`
-- All queries MUST filter by `tenantId`
-- Follow existing patterns in `boards.ts` and `cards.ts`
+**Files**: `apps/api/app/api/kitchen/prep-lists/generate/route.ts`
 
 ---
 
-## Known Issues and Limitations
+#### 13. Allergen Tracking Enhancement
+**Status**: Partial (allergen fields exist, tracking incomplete)
+**Effort**: Medium
+**Priority**: LOW
+**Description**: Enhance allergen tracking with manifest-driven constraints.
 
-### Current State (As of Latest Update):
-1. **Note and Recipe cards** - ✅ Now implemented with specialized components
-2. **Connection visibility toggle** - ✅ Checkbox added to settings panel
-3. **Browser fullscreen mode** - ✅ Implemented with toggle button and F key shortcut
-4. **Liveblocks events** are not persisted to database (only broadcast)
-5. **No offline support** - changes lost if network fails during edit
-6. **No conflict resolution UI** - last-write-wins only
-7. **Bulk operations** - ✅ Complete with multi-select, drag selection, bulk edit dialog
-8. **Grouping functionality** - ✅ Complete with database model, components, and actions
-9. **Named layouts** - ✅ Complete with database persistence
+**Evidence**: Recipe/PrepList manifests have allergen constraints
 
-### Technical Debt:
-- Consider migrating from `dbgenerated("gen_random_uuid()")` to `gen_random_uuid()` for cleaner schema
-- Liveblocks integration could benefit from offline queue for reliability
-- Connection management lacks user controls (create, delete, edit)
+**Tasks**:
+- [ ] Extend Prisma schema with guest dietary restrictions
+- [ ] Define allergen constraint manifest for event menu validation
+- [ ] Add constraint: no serving allergens to restricted guests without override
+- [ ] Create allergen management UI component
+- [ ] Add allergen warnings to event planning flow
+
+**Dependencies**: Recipe manifest (complete), Event system
+
+**Files**: `packages/database/schema.prisma`, `packages/kitchen-ops/manifests/allergen-rules.manifest`
+
+---
+
+## Technical Debt 🏗️
+
+### Immediate
+1. **Code Quality Issues** - 318 linting errors identified in `TODO-error-fixing.md`
+   - Complexity issues (133+ cognitive complexity in some functions)
+   - Namespace imports preventing tree-shaking
+   - Nested ternary expressions
+   - Component definitions inside other components
+   - Non-null assertions (`!`)
+   - Missing dependency arrays in hooks
+
+2. **Complete Manifest API Route Generation** - Only PrepTask has generated routes
+   - Menu routes: No generated API routes (manifest exists, server actions use Manifest runtime)
+   - Station routes: COMPLETELY MISSING - no API routes, no runtime factory (UI uses task tags)
+   - PrepList routes: Manual only, bypassing Manifest constraints (manifest exists)
+   - Inventory routes: Manual only at `/api/inventory`, not under `/api/kitchen/inventory/commands/*`
+   - Recipe routes: Manual only, bypassing Manifest constraints (server actions use Manifest)
+
+3. **Migrate Base Query Routes to Manifest** - Manual routes exist but don't use Manifest
+   - Manual GET/list routes exist for: recipes, dishes, prep-lists, tasks, inventory items
+   - Only PrepTask lacks a base GET/list route
+   - None use `nextjs.route` projection for consistent tenant filtering and constraint handling
+
+4. **Add error handling documentation** - Manifest error responses need standardization
+5. **Standardize error codes** - Inconsistent error responses across handlers
+
+### Short-term
+1. **Performance optimization** - Large dataset handling in prep-lists and recipes
+2. **Add request ID tracing** - For debugging manifest constraint failures
+3. **Improve error messages** - Guard failures need more context
+4. **Add constraint outcome caching** - Avoid re-evaluating unchanged constraints
+5. ~~**Remove unused lib hook**~~ - RESOLVED: All 13 hooks are actively used
+6. **Fix namespace imports** - Replace with named imports for tree-shaking
+7. **Pass WARN constraints to UI** - Replace console.warn with UI display (TODO at actions-manifest.ts:510)
+
+### Long-term
+1. **GraphQL schema generation** - Consider generating GraphQL from manifests
+2. **Multi-tenancy at schema level** - Explore per-tenant schema optimization
+3. **Constraint visualization tool** - Visual editor for constraint definitions
+4. **Manifest playground/editor** - Browser-based manifest authoring
+5. **Constraint outcome caching** - Cache evaluation results with invalidation
+6. **Audit log viewer UI** - Track constraint overrides over time (mentioned in plan but implementation not found)
+
+---
+
+## Testing Strategy 🧪
+
+### Unit Tests (Current Focus)
+- Runtime engine behavior
+- Constraint evaluation
+- Guard enforcement
+- Policy evaluation
+
+### Integration Tests (Next Phase)
+- HTTP endpoint responses
+- Auth flow
+- Tenant resolution
+- Multi-command workflows
+
+### Snapshot Tests (Ongoing)
+- Generated code structure
+- TypeScript compilation
+- Golden file verification
+
+### Conformance Tests (Expansion)
+- All fixtures in `packages/manifest/src/manifest/conformance/`
+- Domain-specific test scenarios
+- Regression protection
+
+---
+
+## Definition of Done ✅
+
+A feature is considered complete when:
+
+1. **Manifest Defined**: `.manifest` file exists with entities, commands, guards, constraints, policies, events
+2. **Code Generated**: Next.js handlers generated via projection
+3. **Tests Pass**: Conformance, snapshot, and runtime tests all pass
+4. **Type Safe**: TypeScript compilation succeeds without errors
+5. **Auth Working**: Clerk integration correctly authorizes requests
+6. **Tenant Isolated**: Multi-tenant context properly enforced
+7. **Constraints Enforced**: All constraints (OK/WARN/BLOCK) work correctly
+8. **UI Integrated**: Frontend displays constraint outcomes and allows overrides
+9. **Docs Updated**: Any new concepts are documented
+10. **Deployed**: Feature works in development and can be deployed to production
+
+---
+
+## Milestones 🎯
+
+### Milestone 1: Core Infrastructure ✅ (COMPLETE - Feb 2025)
+**Evidence**: Working PrepTask domain with tests, CLI tools operational
+- [x] Manifest compilation pipeline (lexer, parser, compiler, IR generation)
+- [x] Runtime engine with constraint severity (ok/warn/block)
+- [x] Next.js projection generator (route.handlers, types, client SDK)
+- [x] CLI tools: manifest-compile, capsule-pro-generate, manifest-generate
+- [x] PrepTask domain fully operational (7 commands, 6 constraints, tests passing)
+- [x] Auth & tenant resolution via Clerk
+- [x] PrismaStore adapter for database persistence
+- [x] ConstraintOverrideDialog UI component
+- [x] Recipe server actions use Manifest runtime (create/update/createDish)
+
+**Delivered**: Feb 8, 2025 (commit `ac874e688`)
+
+---
+
+### Milestone 2: Multi-Domain API Generation (CURRENT - Target: Mar 2025)
+**Goal**: Generate API routes for all defined entities using Manifest projection
+
+**Completed**:
+- [x] All 6 manifests defined (PrepTask, Recipe, Menu, PrepList, Inventory, Station)
+- [x] Recipe server actions use Manifest runtime
+- [x] PrepTask command handlers generated (7 commands)
+- [x] Runtime factories for all entities exist
+- [x] Lib hooks audit complete (12/13 used, only `use-event-export.ts` unused)
+
+**In Progress**:
+- [ ] Menu API route generation (update, activate, deactivate commands)
+- [ ] Station API route generation
+- [ ] PrepList API route generation (finalize, complete commands)
+- [ ] Inventory API route generation (6 commands)
+- [ ] Recipe API route generation (update, createDish commands)
+- [ ] Base GET/list endpoints for all entities
+
+**Blocked**:
+- [ ] HTTP integration tests (no real HTTP test harness)
+- [ ] Command-level constraint testing
+- [ ] CI/CD automation
+
+**Next Actions**:
+1. Generate Menu API routes (Task #1)
+2. Generate Station API routes (Task #2)
+3. Generate PrepList API routes (Task #3)
+4. Generate Inventory API routes (Task #4)
+5. Generate Recipe API routes (Task #5)
+6. Add base GET/list endpoints (Task #6)
+
+---
+
+### Milestone 3: Testing & Production Readiness (Target: Apr 2025)
+**Goal**: Comprehensive test coverage, CI/CD automation
+
+**Tasks**:
+- [ ] HTTP-level integration tests for all domains (Task #7)
+- [ ] Command-level constraint test coverage (Task #8)
+- [ ] UI warning display integration (Task #9)
+- [ ] CI/CD pipeline with manifest validation (Task #10)
+- [ ] Performance testing for large datasets
+- [ ] Error handling standardization
+
+**Dependencies**: Milestone 2 completion
+
+---
+
+### Milestone 4: Feature Expansion (Target: Q2 2025)
+**Goal**: Advanced features and integrations
+
+**Tasks**:
+- [ ] Remove or implement `use-event-export.ts` (Task #11)
+- [ ] Prep list generation logic integration (Task #12)
+- [ ] Allergen tracking enhancement with event validation (Task #13)
+- [ ] Recipe costing engine implementation
+- [ ] Inventory forecasting from event schedules
+- [ ] Bulk operations for recipes/ingredients
+- [ ] Telemetry integration for override tracking
+
+**Dependencies**: Milestone 3 completion
+
+---
+
+### Milestone 5: Production Hardening (Target: Q3 2025)
+**Goal**: Production-ready, scalable, maintainable
+
+**Tasks**:
+- [ ] Resolve all 318 linting errors
+- [ ] Performance optimization for large datasets
+- [ ] Complete API route migration to Manifest
+- [ ] Documentation complete (API, UI, operations)
+- [ ] Multi-domain operational excellence
+- [ ] Constraint visualization tool (optional)
+- [ ] Manifest playground/editor (optional)
+
+**Dependencies**: Milestone 4 completion
+
+---
+
+## References 📚
+
+- **Manifest README**: `packages/manifest/README.md`
+- **Usage Guide**: `packages/manifest/USAGE.md`
+- **Integration Docs**: `packages/manifest/INTEGRATION.md`
+- **Test Notes**: `apps/api/__tests__/kitchen/MANIFEST_TESTING_NOTES.md`
+- **Constraint Fix**: `apps/api/__tests__/kitchen/CONSTRAINT_SEVERITY_TEST_SUMMARY.md`

@@ -123,7 +123,7 @@ entity PrepTask {
     guard requestedBy != null and requestedBy != ""
     guard self.status in ["open", "in_progress"]
 
-    constraint warnReassignInProgress:warn self.status == "in_progress and self.claimedBy != newUserId {
+    constraint warnReassignInProgress:warn self.status == "in_progress" and self.claimedBy != newUserId {
       messageTemplate: "Reassigning in-progress task from '{currentAssignee}' to '{newAssignee}'"
       details: {
         currentAssignee: self.claimedBy
@@ -161,7 +161,7 @@ entity PrepTask {
   command cancel(reason: string, canceledBy: string) {
     guard self.status != "done" and self.status != "canceled"
 
-    constraint warnCancelInProgress:warn self.status == "in_progress {
+    constraint warnCancelInProgress:warn self.status == "in_progress" {
       messageTemplate: "Canceling in-progress task claimed by '{claimedBy}'"
       details: {
         claimedBy: self.claimedBy
