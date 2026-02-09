@@ -1,11 +1,24 @@
 # Manifest Integration Test Summary
 
 **Date**: 2026-02-08
-**Status**: ✅ **Integration Complete and Functional**
+**Status**: ⚠️ **PARTIALLY TESTED - NOT PRODUCTION READY**
 
 ## Executive Summary
 
-The Manifest v0.3.8 projection system has been successfully integrated into Capsule-Pro. All infrastructure components are in place and working correctly. The generated code follows best practices for Next.js App Router handlers with proper authentication, tenant resolution, and error handling.
+The Manifest v0.3.8 projection system has been integrated into Capsule-Pro and basic functionality works. Infrastructure components are in place and some tests pass. **However, test coverage is limited and insufficient for production use.**
+
+### What Works
+- ✅ Projection system generates TypeScript-valid code
+- ✅ Severity fix works for tested cases (3 unit tests)
+- ✅ Test infrastructure exists
+
+### Critical Gaps
+- ❌ Only 1 of 7 commands tested (claim)
+- ❌ Only 1 entity tested (PrepTask)
+- ❌ No end-to-end HTTP tests
+- ❌ No real auth integration (used `authProvider:"none"`)
+- ❌ No failure branch testing (403/422/400)
+- ❌ No database integration tests
 
 ## Test Results
 
@@ -195,12 +208,36 @@ pnpm exec tsx packages/manifest/bin/generate-projection.ts \
 
 ## Conclusion
 
-The Manifest integration is **production-ready**. All infrastructure components work correctly, generated handlers follow Next.js best practices, and the integration provides a solid foundation for declarative command generation across the Capsule-Pro codebase.
+The Manifest integration has **basic infrastructure working but is NOT production-ready**.
 
-The generated handlers will enforce guards, policies, and constraints defined in manifest files, eliminating manual validation code and providing consistent behavior across all commands.
+### What's Been Achieved
+- ✅ Projection system generates TypeScript-valid code
+- ✅ Severity enforcement works for tested cases
+- ✅ Test infrastructure in place
+- ✅ 10 tests passing across 3 test suites
+
+### What's Missing for Production
+- ❌ Comprehensive test coverage (1/7 commands, 1/many entities)
+- ❌ End-to-end verification with real HTTP requests
+- ❌ Real auth integration (actual Clerk)
+- ❌ Failure mode testing (policy denial, guard failures)
+- ❌ Database integration verification
+- ❌ Multiple entity/command scenarios
+
+### Recommendations
+
+**Before using in production, complete these:**
+1. Add end-to-end HTTP tests for all commands
+2. Test with real auth (Clerk) and real database
+3. Verify all failure branches return correct status codes
+4. Test at least 2-3 different entities
+5. Add CLI error handling tests
+6. Document snapshot update process
+
+**Current state**: Infrastructure exists, some tests pass, but insufficient coverage for production use.
 
 ---
 
 **Test Command**: `pnpm --filter api test manifest`
-**Documentation**: `specs/manifest-integration-infrastructure.md`
-**Implementation Notes**: `apps/api/__tests__/kitchen/MANIFEST_TESTING_NOTES.md`
+**Honest Assessment**: `proven-with-tests.md`
+**Critical Gaps**: `left-to-prove.md`

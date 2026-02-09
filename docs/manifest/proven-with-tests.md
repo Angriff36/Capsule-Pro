@@ -1,208 +1,164 @@
-# Manifest Integration - Proven with Tests
+# Manifest Integration - Test Results (Honest Assessment)
 
 **Last Updated**: 2026-02-08
-**Status**: ✅ **ALL CRITICAL FEATURES VERIFIED**
+**Status**: ⚠️ **PARTIALLY TESTED - NOT PRODUCTION READY**
 
-## What's Been Proven
+## What's Been Tested (Limited Scope)
 
-### 1. ✅ Constraint Severity Enforcement
+### 1. ✅ Constraint Severity Enforcement (3 test cases)
 
 **Tests**: `apps/api/__tests__/kitchen/manifest-constraint-severity.test.ts` (3/3 passing)
 
-The Manifest runtime correctly enforces constraint severity levels:
+**What was tested**:
+- Warn constraint does NOT block entity creation
+- Block constraint DOES block entity creation
+- Warn constraint does NOT block entity update
 
-- **`severity: ok`** → Informational only, never blocks
-- **`severity: warn`** → Produces diagnostic outcome, does NOT block execution
-- **`severity: block`** → Blocks execution when constraint fails
+**Scope**: Unit-level runtime tests with in-memory execution
 
-**Test Cases**:
-```typescript
-✓ should allow creation when warn constraint fails (warnOverdue)
-✓ should block creation when block constraint fails (validStatus)
-✓ should allow entity update when warn constraint fails (warnStationCapacity)
-```
-
-**Verification**:
-```bash
-$ pnpm --filter api test manifest-constraint-severity
-Test Files  1 passed (1)
-     Tests  3 passed (3)
-  Duration  997ms
-```
-
-**Runtime Logs**:
-```
-[Manifest Runtime] Non-blocking constraint outcomes: warnOverdue
-[Manifest Runtime] Blocking constraint validation failed: validStatus
-```
+**NOT tested**:
+- ❌ Multi-constraint scenarios (warn + block together)
+- ❌ Command execution paths (only entity create/update tested)
+- ❌ All severity combinations across different operations
 
 ---
 
-### 2. ✅ Projection System Code Generation
+### 2. ⚠️ Projection System Code Generation (1 command)
 
 **Tests**: `apps/api/__tests__/kitchen/manifest-projection-preptask-claim.golden.test.ts` (2/2 passing)
 
-The projection system generates valid, production-ready Next.js command handlers:
+**What was tested**:
+- Generated code is TypeScript-valid (passes `tsc --noEmit`)
+- Output is deterministic (golden snapshot comparison)
+- ONE command: PrepTask.claim
 
-- Compiles `.manifest` → IR using production compiler
-- Generates Next.js App Router POST handlers
-- Byte-for-byte reproducible output (golden snapshot test)
-- TypeScript-valid code (passes `tsc --noEmit`)
+**Scope**: Static analysis only - no runtime execution
 
-**Test Cases**:
-```typescript
-✓ Generated code matches golden snapshot (byte-for-byte)
-✓ Snapshot typechecks successfully with tsc --noEmit
-```
-
-**Generated Handler Includes**:
-- Auth handling (configurable: none, clerk, nextauth, custom)
-- Tenant resolution (database: `userTenantMapping.findUnique`)
-- Runtime instantiation (`createManifestRuntime`)
-- Command execution (`runtime.runCommand("claim", ...)`)
-- Error handling (policy denial → 403, guard failure → 422, errors → 400)
-- Response formatting (`manifestSuccessResponse`, `manifestErrorResponse`)
-- Event tracking and emission
-
-**Verification**:
-```bash
-$ pnpm --filter api test manifest-projection-preptask-claim.golden
-Test Files  1 passed (1)
-     Tests  2 passed (2)
-  Duration  3.46s
-```
+**NOT tested**:
+- ❌ End-to-end HTTP request/response in Next.js
+- ❌ All failure branches (policy denial, guard failure, etc.)
+- ❌ Real auth mode (used `authProvider:"none"`, not Clerk)
+- ❌ All commands (only `claim`, not start/complete/reassign/etc.)
+- ❌ All entities (only PrepTask, not Recipe/Station/Inventory)
+- ❌ DB transaction safety and RLS integration
+- ❌ Event shape stability and ordering
 
 ---
 
-### 3. ✅ Generator Smoke Tests
+### 3. ⚠️ Generator Output (1 entity)
 
 **Tests**: `packages/manifest/tests/generator-smoke.test.ts` (5/5 passing)
 
-The old generator (`capsule-pro-generate`) produces correct code:
+**What was tested**:
+- Old generator produces correct Prisma code
+- ONE entity: Recipe (for GET route)
+- Includes tenant filtering, soft-delete, ordering
 
-**Test Cases**:
-```typescript
-✓ generates route with direct Prisma query, not runtime.query()
-✓ includes tenant filtering (tenantId in where clause)
-✓ includes soft-delete filtering (deletedAt: null)
-✓ includes ordering (orderBy: { createdAt: "desc" })
-✓ no unnecessary runtime context for GET operations
-```
+**Scope**: String matching of generated code
 
-**Generated Code Pattern**:
-```typescript
-const recipes = await database.recipe.findMany({
-  where: {
-    tenantId,
-    deletedAt: null,
-  },
-  orderBy: {
-    createdAt: "desc",
-  },
-});
-```
+**NOT tested**:
+- ❌ POST/command handlers
+- ❌ Multiple entities
+- ❌ Real database operations
 
-**Verification**:
-```bash
-$ pnpm --filter manifest test generator-smoke
-Test Files  1 passed (1)
-     Tests  5 passed (5)
-  Duration  1.26s
-```
+---
+
+## What's NOT Proven (Critical Gaps)
+
+### Runtime Execution
+- ❌ **No end-to-end HTTP tests** - Never made real requests to Next.js
+- ❌ **No real auth** - Used `authProvider:"none"`, not actual Clerk
+- ❌ **No real database** - In-memory execution only
+- ❌ **No transaction testing** - DB safety unverified
+
+### Failure Branches
+- ❌ **Policy denial** - Never tested 403 response
+- ❌ **Guard failure** - Never tested 422 response
+- ❌ **Constraint failures** - Only tested at unit level
+- ❌ **Exception handling** - Never tested error recovery
+
+### Comprehensive Coverage
+- ❌ **Single command proven** (claim) - 6 others untested
+- ❌ **Single entity proven** (PrepTask) - others untested
+- ❌ **No multi-constraint scenarios** - Complex cases untested
+
+### Operational Safety
+- ❌ **No CLI error handling** - Bad inputs untested
+- ❌ **No snapshot update process** - No policy for handling changes
+- ❌ **No stability guarantees** - Tooling drift untested
 
 ---
 
 ## Test Summary
 
-| Feature | Test File | Tests | Status |
-|---------|-----------|-------|--------|
-| Constraint Severity | `manifest-constraint-severity.test.ts` | 3/3 | ✅ Passing |
-| Projection Generation | `manifest-projection-preptask-claim.golden.test.ts` | 2/2 | ✅ Passing |
-| Generator Output | `generator-smoke.test.ts` | 5/5 | ✅ Passing |
-| **TOTAL** | **3 test suites** | **10/10** | **✅ All Passing** |
+| Feature | Scope | Tests | Reality |
+|---------|-------|-------|---------|
+| Severity Enforcement | 3 test cases | 3/3 | ⚠️ Unit tests only |
+| Code Generation | 1 command | 2/2 | ⚠️ Static check only |
+| Generator Output | 1 entity | 5/5 | ⚠️ String matching |
+| **TOTAL** | **Very limited** | **10/10** | **❌ NOT PRODUCTION READY** |
 
 ---
 
-## Command Reference
+## What "Proven" Actually Means
 
-### Run All Manifest Integration Tests
+✅ **"Tested"** = Code compiles and tests pass in isolation
+❌ **"Production Ready"** = End-to-end reliability in real environment
 
-```bash
-# From repo root
-pnpm --filter api test manifest
-
-# Individual suites
-pnpm --filter api test manifest-constraint-severity
-pnpm --filter api test manifest-projection-preptask-claim.golden
-pnpm --filter manifest test generator-smoke
-```
-
-### Generate a Command Handler
-
-**Using New Projection System**:
-```bash
-pnpm exec tsx packages/manifest/bin/generate-projection.ts \
-  nextjs nextjs.command \
-  packages/kitchen-ops/manifests/prep-task-rules.manifest \
-  PrepTask claim \
-  --output apps/api/app/api/kitchen/prep-tasks/commands/claim/route.ts
-```
-
-**Using Old Generator**:
-```bash
-pnpm --filter manifest exec capsule-pro-generate \
-  Recipe recipe-rules.manifest \
-  --output apps/app/app/api/kitchen/manifest/recipes/route.ts
-```
+We have the first, not the second.
 
 ---
 
-## Implementation Notes
+## Required Before Production Use
 
-### Severity Fix
+### Must Have (Blockers)
+1. **End-to-end HTTP tests** - Real requests to Next.js
+2. **All commands tested** - start, complete, release, reassign, update-quantity, cancel
+3. **Real auth mode** - Actual Clerk integration
+4. **Failure branch testing** - 403/422/400 responses verified
+5. **Database integration** - Real DB operations with transactions
 
-**Commit**: `abd1a89d5` in `packages/manifest/src/manifest/runtime-engine.ts`
+### Should Have (Important)
+6. **Multiple entities** - At least 2-3 different entities
+7. **Event stability** - Event shape/ordering verified
+8. **CLI error handling** - Graceful failures for bad inputs
+9. **Snapshot process** - Policy for updating snapshots
 
-**Changes**:
-1. `validateConstraints()` returns `ConstraintOutcome[]` (with severity) instead of `ConstraintFailure[]`
-2. `createInstance()` and `updateInstance()` filter outcomes by `severity === 'block'`
-3. Non-blocking outcomes logged via `console.info()` for diagnostics
-
-**Backported From**: Standalone Manifest v0.3.8
-
-### Projection System
-
-**Commits**:
-- `624e1462d` - Add projection system from manifest v0.3.8
-- `8c309e18e` - Add projection exports and rebuild dist
-
-**Components**:
-- `packages/manifest/bin/generate-projection.ts` - CLI tool
-- `packages/manifest/src/manifest/projections/` - Registry and generators
-- `packages/manifest/src/manifest/projections/nextjs/generator.ts` - Next.js projection
-
-### Generator Fix
-
-**Commit**: `4dcd82a` in standalone manifest
-
-**Fix**: When `includeTenantFilter: false`, include `tenantId: "__no_tenant__"` placeholder instead of omitting tenantId entirely. This ensures consistent runtime context shape.
+### Nice to Have (Enhancements)
+10. **Multi-constraint scenarios** - Complex interactions
+11. **Performance testing** - Load handling
+12. **Security audit** - Input validation, injection risks
 
 ---
 
-## Next Steps
+## Current Status
 
-All critical features are proven and working. The integration is ready for:
+⚠️ **INFRASTRUCTURE EXISTS, BUT NOT VERIFIED FOR PRODUCTION**
 
-1. ✅ **Production use** - Severity enforcement working correctly
-2. ✅ **Code generation** - Both generators producing valid code
-3. ✅ **Type safety** - Generated code passes TypeScript validation
-4. ⏳ **Migration** - Replace manual routes with generated routes (incremental)
-5. ⏳ **Expansion** - Add more entities/commands to manifest definitions
+- ✅ Projection system generates TypeScript-valid code
+- ✅ Severity fix works for tested cases
+- ✅ Test infrastructure in place
+- ❌ **Insufficient coverage for production use**
+- ❌ **No end-to-end verification**
+- ❌ **Failure modes untested**
+
+---
+
+## Recommendations
+
+### Option 1: Continue Testing (Recommended)
+Add comprehensive end-to-end tests before declaring production-ready.
+
+### Option 2: Limited Beta
+Use only for non-critical paths with extensive monitoring.
+
+### Option 3: Hold for Now
+Don't use in production until properly tested.
 
 ---
 
 ## Documentation
 
-- **Integration Guide**: `manifest-guide.md`
-- **Full Test Results**: `MANIFEST_INTEGRATION_TEST_SUMMARY.md`
+- **Test Details**: `MANIFEST_INTEGRATION_TEST_SUMMARY.md`
 - **Projection Tests**: `PROJECTION_TEST_FINAL_RESULTS.md`
+- **Integration Guide**: `manifest-guide.md`

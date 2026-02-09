@@ -56,12 +56,19 @@
 
   Value Proposition
 
-  1. ✅ Eliminates boilerplate: One CLI command generates complete route handler with validation
-  2. ✅ Centralized rules: Business logic in declarative manifest files vs scattered TypeScript
-  3. ✅ Consistent enforcement: Runtime automatically applies guards/policies/constraints
-  4. ✅ Incremental migration: Can coexist with manual routes during gradual adoption
-  5. ✅ Type safety: Generated handlers have proper TypeScript types
+  1. ⚠️ Eliminates boilerplate: One CLI command generates complete route handler with validation (PARTIALLY TESTED)
+  2. ⚠️ Centralized rules: Business logic in declarative manifest files vs scattered TypeScript (LIMITED TESTING)
+  3. ⚠️ Consistent enforcement: Runtime automatically applies guards/policies/constraints (UNIT TESTS ONLY)
+  4. ⚠️ Incremental migration: Can coexist with manual routes during gradual adoption (NOT TESTED)
+  5. ✅ Type safety: Generated handlers have proper TypeScript types (VERIFIED)
 
-  **Verification Status**: All features proven with 10/10 integration tests passing
+  **Verification Status**: ⚠️ **10 tests passing but coverage insufficient for production**
 
-  See `proven-with-tests.md` for complete test results.
+  **Scope**:
+  - 1 of 7 commands tested (claim)
+  - 1 entity tested (PrepTask)
+  - No end-to-end HTTP tests
+  - No real auth mode tested
+  - No failure branches verified
+
+  See `proven-with-tests.md` for honest assessment and `left-to-prove.md` for critical gaps.
