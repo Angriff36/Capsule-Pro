@@ -371,7 +371,6 @@ async function generateDownloadResponse(
 ) {
   const { pdf } = await import("@react-pdf/renderer");
   // @ts-expect-error React type mismatch between @types/react 19 and @react-pdf/renderer
-  // biome-ignore lint: pdf() actually returns a Promise despite type definitions saying otherwise
   const doc = await pdf(pdfComponent);
   const blob = await doc.toBlob();
 
@@ -392,7 +391,6 @@ async function generateBase64Response(
 ) {
   const { pdf } = await import("@react-pdf/renderer");
   // @ts-expect-error React type mismatch between @types/react 19 and @react-pdf/renderer
-  // biome-ignore lint: pdf() actually returns a Promise despite type definitions saying otherwise
   const doc = await pdf(pdfComponent);
   const blob = await doc.toBlob();
   const arrayBuffer = await blob.arrayBuffer();

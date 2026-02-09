@@ -614,6 +614,14 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
       ...menuIR.entities,
       ...prepListIR.entities,
     ],
+    stores: [
+      ...(prepTaskIR.stores || []),
+      ...(stationIR.stores || []),
+      ...(inventoryIR.stores || []),
+      ...(recipeIR.stores || []),
+      ...(menuIR.stores || []),
+      ...(prepListIR.stores || []),
+    ],
     events: [
       ...prepTaskIR.events,
       ...stationIR.events,
@@ -1423,7 +1431,7 @@ export async function createDish(
   // Create the Dish entity instance
   await engine.createInstance("Dish", {
     id: dishId,
-    tenantId: engine.getContext<string>("tenantId"),
+    tenantId: engine.getContext().tenantId,
     name,
     recipeId,
     description,
@@ -1468,7 +1476,7 @@ export async function createRecipe(
   // Create the Recipe entity instance
   await engine.createInstance("Recipe", {
     id: recipeId,
-    tenantId: engine.getContext<string>("tenantId"),
+    tenantId: engine.getContext().tenantId,
     name,
     category,
     cuisineType,
@@ -1617,7 +1625,7 @@ export async function createMenu(
   // Create the Menu entity instance
   await engine.createInstance("Menu", {
     id: menuId,
-    tenantId: engine.getContext<string>("tenantId"),
+    tenantId: engine.getContext().tenantId,
     name,
     description,
     category,
@@ -1775,7 +1783,7 @@ export async function activatePrepList(
     ...result,
     prepListId,
     name: instance?.name as string | undefined,
-    isActive: true,
+    status: instance?.status as string | undefined,
   };
 }
 
@@ -1802,7 +1810,7 @@ export async function deactivatePrepList(
     ...result,
     prepListId,
     name: instance?.name as string | undefined,
-    isActive: false,
+    status: instance?.status as string | undefined,
   };
 }
 
@@ -1887,7 +1895,7 @@ export async function updatePrepListItemQuantity(
   return {
     ...result,
     itemId,
-    prepListId: instance?.prepListId as string | undefined,
+    prepListId: (instance?.prepListId as string | undefined) ?? "",
     ingredientName: instance?.ingredientName as string | undefined,
   };
 }
@@ -1916,7 +1924,7 @@ export async function updatePrepListItemStation(
   return {
     ...result,
     itemId,
-    prepListId: instance?.prepListId as string | undefined,
+    prepListId: (instance?.prepListId as string | undefined) ?? "",
     ingredientName: instance?.ingredientName as string | undefined,
   };
 }
@@ -1945,7 +1953,7 @@ export async function updatePrepListItemNotes(
   return {
     ...result,
     itemId,
-    prepListId: instance?.prepListId as string | undefined,
+    prepListId: (instance?.prepListId as string | undefined) ?? "",
     ingredientName: instance?.ingredientName as string | undefined,
   };
 }
@@ -1973,7 +1981,7 @@ export async function markPrepListItemCompleted(
   return {
     ...result,
     itemId,
-    prepListId: instance?.prepListId as string | undefined,
+    prepListId: (instance?.prepListId as string | undefined) ?? "",
     ingredientName: instance?.ingredientName as string | undefined,
     isCompleted: true,
   };
@@ -2001,7 +2009,7 @@ export async function markPrepListItemUncompleted(
   return {
     ...result,
     itemId,
-    prepListId: instance?.prepListId as string | undefined,
+    prepListId: (instance?.prepListId as string | undefined) ?? "",
     ingredientName: instance?.ingredientName as string | undefined,
     isCompleted: false,
   };
@@ -2025,7 +2033,7 @@ export async function createPrepList(
   // Create the PrepList entity instance
   await engine.createInstance("PrepList", {
     id: prepListId,
-    tenantId: engine.getContext<string>("tenantId"),
+    tenantId: engine.getContext().tenantId,
     eventId,
     name,
     batchMultiplier,
@@ -2047,13 +2055,6 @@ export async function createPrepList(
   });
 
   const instance = await engine.getInstance("PrepList", prepListId);
-
-  // Apply override requests if provided
-  if (overrideRequests && overrideRequests.length > 0) {
-    for (const override of overrideRequests) {
-      engine.executeCommand("overrideRequest", override);
-    }
-  }
 
   return {
     success: true,
