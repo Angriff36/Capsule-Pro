@@ -208,7 +208,11 @@ Generate comprehensive prep task lists for catering events based on menu items a
 ${JSON.stringify(context.dishes, null, 2)}
 
 **Existing Prep Tasks (avoid duplicating these):**
-${JSON.stringify(context.existingPrepTasks.map((t) => t.name), null, 2)}
+${JSON.stringify(
+  context.existingPrepTasks.map((t) => t.name),
+  null,
+  2
+)}
 
 **Generation Options:**
 - Include Kitchen Tasks: ${options.includeKitchenTasks ?? false}
@@ -234,7 +238,7 @@ Generate comprehensive prep tasks covering all menu items. Ensure:
     const aiResponse = JSON.parse(result.text.trim()) as AIGeneratedTasks;
 
     // Validate and sanitize AI response
-    if (!aiResponse.tasks || !Array.isArray(aiResponse.tasks)) {
+    if (!(aiResponse.tasks && Array.isArray(aiResponse.tasks))) {
       throw new Error("Invalid AI response: missing tasks array");
     }
 

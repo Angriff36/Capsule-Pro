@@ -5,12 +5,11 @@
  * Saves AI-generated prep tasks to the database
  */
 
-import { auth } from "@repo/auth/server";
+import { NextResponse } from "next/server";
 import { invariant } from "@/app/lib/invariant";
 import { requireTenantId } from "@/app/lib/tenant";
-import { NextResponse } from "next/server";
-import type { GeneratedPrepTask } from "../types";
 import { saveGeneratedTasks } from "../service";
+import type { GeneratedPrepTask } from "../types";
 
 interface SaveTasksRequest {
   eventId: string;
@@ -74,7 +73,11 @@ export async function POST(request: Request) {
     }));
 
     // Save tasks to database
-    const result = await saveGeneratedTasks(tenantId, body.eventId, normalizedTasks);
+    const result = await saveGeneratedTasks(
+      tenantId,
+      body.eventId,
+      normalizedTasks
+    );
 
     const response: SaveTasksResponse = {
       created: result.created,
@@ -89,10 +92,7 @@ export async function POST(request: Request) {
 
     // Handle invariant errors
     if (error instanceof Error && error.message.includes("Unauthorized")) {
-      return NextResponse.json(
-        { message: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     if (error instanceof Error && error.message.includes("Tenant not found")) {
@@ -107,10 +107,7 @@ export async function POST(request: Request) {
       (error.message.includes("is required") ||
         error.message.includes("must be a"))
     ) {
-      return NextResponse.json(
-        { message: error.message },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: error.message }, { status: 400 });
     }
 
     // Handle other errors

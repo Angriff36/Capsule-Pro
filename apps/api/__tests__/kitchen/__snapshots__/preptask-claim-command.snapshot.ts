@@ -3,8 +3,8 @@
 // Writes MUST flow through runtime to enforce guards, policies, and constraints
 
 import type { NextRequest } from "next/server";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { manifestSuccessResponse, manifestErrorResponse } from "@/lib/manifest-response";
 
 export async function POST(request: NextRequest) {
   try {

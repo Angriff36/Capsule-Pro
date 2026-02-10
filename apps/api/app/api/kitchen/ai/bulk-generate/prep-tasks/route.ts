@@ -5,18 +5,11 @@
  * Generates prep tasks for an event using AI analysis
  */
 
-import { auth } from "@repo/auth/server";
+import { NextResponse } from "next/server";
 import { invariant } from "@/app/lib/invariant";
 import { requireTenantId } from "@/app/lib/tenant";
-import { NextResponse } from "next/server";
-import type {
-  BulkGenerateRequest,
-  BulkGenerateResponse,
-} from "./types";
-import {
-  generateBulkPrepTasks,
-  saveGeneratedTasks,
-} from "./service";
+import { generateBulkPrepTasks } from "./service";
+import type { BulkGenerateRequest, BulkGenerateResponse } from "./types";
 
 export async function POST(request: Request) {
   try {
@@ -37,7 +30,9 @@ export async function POST(request: Request) {
 
     if (body.options?.priorityStrategy) {
       invariant(
-        ["due_date", "urgency", "manual"].includes(body.options.priorityStrategy),
+        ["due_date", "urgency", "manual"].includes(
+          body.options.priorityStrategy
+        ),
         "priorityStrategy must be one of: due_date, urgency, manual"
       );
     }
@@ -72,10 +67,7 @@ export async function POST(request: Request) {
 
     // Handle invariant errors
     if (error instanceof Error && error.message.includes("Unauthorized")) {
-      return NextResponse.json(
-        { message: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     if (error instanceof Error && error.message.includes("Tenant not found")) {
@@ -86,10 +78,7 @@ export async function POST(request: Request) {
     }
 
     if (error instanceof Error && error.message.includes("is required")) {
-      return NextResponse.json(
-        { message: error.message },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: error.message }, { status: 400 });
     }
 
     if (
@@ -97,10 +86,7 @@ export async function POST(request: Request) {
       (error.message.includes("must be between") ||
         error.message.includes("must be one of"))
     ) {
-      return NextResponse.json(
-        { message: error.message },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: error.message }, { status: 400 });
     }
 
     // Handle other errors

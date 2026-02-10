@@ -3,10 +3,9 @@ import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  type AutoAssignmentResult,
+  autoAssignShift,
   getAssignmentSuggestionsForMultipleShifts,
   type ShiftRequirement,
-  autoAssignShift,
 } from "@/lib/staff/auto-assignment";
 
 /**
@@ -37,7 +36,11 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { shifts, dryRun = false, onlyHighConfidence = true } = body as {
+    const {
+      shifts,
+      dryRun = false,
+      onlyHighConfidence = true,
+    } = body as {
       shifts: Array<{
         shiftId: string;
         employeeId?: string | null;
@@ -106,7 +109,11 @@ export async function POST(request: Request) {
       if (dryRun) {
         // In dry run mode, just validate the employee exists
         const employee = await database.$queryRaw<
-          Array<{ id: string; first_name: string | null; last_name: string | null }>
+          Array<{
+            id: string;
+            first_name: string | null;
+            last_name: string | null;
+          }>
         >(Prisma.sql`
           SELECT id, first_name, last_name
           FROM tenant_staff.employees
@@ -178,7 +185,9 @@ export async function POST(request: Request) {
 
       // Build requirements for auto-assignment
       const requirements: ShiftRequirement[] = shiftsFromDb.map((shift) => {
-        const requestShift = shiftsToAutoAssign.find((s) => s.shiftId === shift.id);
+        const requestShift = shiftsToAutoAssign.find(
+          (s) => s.shiftId === shift.id
+        );
         return {
           shiftId: shift.id,
           scheduleId: shift.schedule_id,
@@ -287,7 +296,7 @@ export async function POST(request: Request) {
       total: results.length,
       assigned: results.filter((r) => r.success && !r.skipped).length,
       skipped: results.filter((r) => r.skipped).length,
-      failed: results.filter((r) => !r.success && !r.skipped).length,
+      failed: results.filter((r) => !(r.success || r.skipped)).length,
       dryRun,
     };
 
