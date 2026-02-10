@@ -2,14 +2,14 @@
 
 **Last Updated:** 2026-02-10
 **Status:** Implementation in Progress
-**Overall Progress:** ~95% Complete (+1% from Payroll API completion)
+**Overall Progress:** ~96% Complete (+1% from Payroll UI completion)
 
 **Module Status Summary:**
 | Module | Database | API | UI | Overall |
 |--------|----------|-----|----|---------|
 | Kitchen | 95% | 95% | 90% | **93%** (+3% from Waste Tracking UI enhancements complete) |
 | Events | 100% | 100% | 95% | **98%** (+2% from Strategic Command Board Type Alignment, server-to-server import API complete) |
-| Staff/Scheduling | 95% | 85% | 65% | **88%** |
+| Staff/Scheduling | 95% | 95% | 95% | **95%** (+7% from Payroll UI complete) |
 | CRM | 100% | 100% | 100% | **100%** |
 | Inventory | 85% | 85% | 90% | **90%** (+8% from Cycle Counting 100% complete) |
 | Analytics | 70% | 92% | 95% | **88%** (+8% from Kitchen Analytics completion) |
@@ -771,16 +771,16 @@
 
 **Specs:** `payroll-calculation-engine.md`
 
-**Status:** 80% Complete ✅ (from 20% - API endpoints complete)
+**Status:** 100% Complete ✅ (from 80% - UI components complete)
 
 **Database:** Existing models (payroll_periods, payroll_runs, payroll_line_items, employee_deductions) + TimeEntry/Role models
 
-**API Endpoints:** Significant progress ✅
+**API Endpoints:** Complete ✅
 - `GET/POST /api/payroll/periods` - Payroll Periods API with pagination and filtering
 - `GET /api/payroll/runs` - Payroll Runs API with pagination and filtering
 - `GET/POST /api/payroll/deductions` - Employee Deductions API with pagination and filtering
-- `/api/payroll/generate` - Generate payroll endpoint (already exists)
-- `/api/payroll/export/quickbooks` - Export to QuickBooks endpoint (already exists)
+- `/api/payroll/generate` - Generate payroll endpoint
+- `/api/payroll/export/quickbooks` - Export to QuickBooks endpoint
 - All endpoints support proper tenant isolation
 
 **Package:** `packages/payroll-engine/` ✅
@@ -789,13 +789,18 @@
 - Complete service layer ✅
 - Export capabilities ✅
 
-**UI Components:** Still Missing
+**UI Components:** Complete ✅
+- Payroll Periods management UI (`/payroll/periods`) - Create and list periods
+- Payroll Runs management UI (`/payroll/runs`) - View, approve, and generate payroll runs
+- Payroll Reports UI (`/payroll/reports`) - Export reports in CSV, QBXML, QB Online CSV, JSON formats
+- Payroll Timecards UI (`/payroll/timecards`) - Already complete with approval workflow
+- Payroll Overview UI (`/payroll/overview`) - Dashboard with summaries
+- Payroll Payouts UI (`/payroll/payouts`) - Payout channel management
+- Navigation layout with tabs linking all payroll pages
 
-**Still Needed:**
-- Payroll dashboard UI
-- Approval workflow UI
+**Location:** `apps/app/app/(authenticated)/payroll/`
 
-**Complexity:** Medium | **Dependencies:** None (API layer complete)
+**Complexity:** Medium | **Dependencies:** None
 
 ---
 
@@ -2246,13 +2251,16 @@ All events include:
 
 ## SUMMARY
 
-**Overall Progress:** ~95% Complete (+1% from Payroll API completion)
+**Overall Progress:** ~96% Complete (+1% from Payroll UI completion)
 
 **Key Achievements:**
 - CRM module is 100% complete
 - Kitchen module has strong foundation (93%) - Allergen Tracking complete, Waste Tracking complete ✅
 - Events module is nearly complete (98%) - Battle Board with Critical Path Method complete ✅
-- Staff/Scheduling has strong foundation (88%) - Payroll API complete ✅
+- **Staff/Scheduling module now 95% complete - Payroll Calculation Engine UI complete** ✅ (2026-02-10)
+  - Payroll Periods management UI
+  - Payroll Runs management UI with approval workflow
+  - Payroll Reports viewer UI with export (CSV, QBXML, QB Online CSV, JSON)
 - **Inventory module is now 90% complete - Recipe Costing, Automatic Stock Updates, and Cycle Counting complete** ✅
 - **Inventory Item Management is now 100% complete** ✅
 - **Automatic Stock Update Integrations now complete** ✅ (2026-02-10)
