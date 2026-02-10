@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-02-10
 **Status:** Implementation in Progress
-**Overall Progress:** ~82% Complete (+2% from recent fixes and completions)
+**Overall Progress:** ~83% Complete (+1% from automatic stock update integrations)
 
 **Module Status Summary:**
 | Module | Database | API | UI | Overall |
@@ -11,7 +11,7 @@
 | Events | 100% | 100% | 95% | **98%** (+2% from Strategic Command Board Type Alignment, server-to-server import API complete) |
 | Staff/Scheduling | 95% | 85% | 65% | **82%** |
 | CRM | 100% | 100% | 100% | **100%** |
-| Inventory | 80% | 60% | 45% | **58%** |
+| Inventory | 80% | 65% | 50% | **65%** (+7% from Stock Level Management and automatic stock update integrations) |
 | Analytics | 70% | 85% | 80% | **80%** |
 | Integrations | 0% | 0% | 0% | **0%** |
 | Platform | 20% | 5% | 5% | **10%** |
@@ -195,15 +195,29 @@
 
 **Specs:** `kitchen-prep-list-generation.md`
 
-**Status:** 95% Complete
+**Status:** 98% Complete (+3% from ingredient consumption integration)
 
 **Database:** Complete (PrepList, PrepListItem)
 
 **API Endpoints:** Complete (auto-generation from event menu, station-based filtering, CRUD)
+**Location:** `apps/api/app/api/kitchen/tasks/[id]/route.ts`
+- PATCH /api/kitchen/tasks/[id] - Update prep task with automatic ingredient consumption
+- On task completion: consumes recipe ingredients from inventory
+- Fetches recipe ingredients and matches to inventory items
+- Calculates scaled quantities based on batch size and waste factor
+- Creates inventory transactions for each ingredient consumed
+- Emits outbox events for real-time updates
 
 **UI Components:** Complete (viewer grouped by station/date, editor for manual adjustments)
 
-**Complexity:** Complete | **Dependencies:** None
+**Features Implemented:**
+- Auto-generation from event menu
+- Station-based filtering
+- Automatic ingredient consumption on task completion
+- Real-time stock updates via Ably
+- Inventory transaction tracking
+
+**Complexity:** Complete | **Dependencies:** None (inventory integration complete)
 
 ---
 
@@ -249,21 +263,33 @@
 
 **Specs:** `kitchen-waste-tracking.md`
 
-**Status:** 40% Complete
+**Status:** 70% Complete (+30% from stock decrement integration)
 
 **Database:** Complete (WasteReason in core, WasteEntry in tenant_kitchen)
 
-**API Endpoints:** Basic CRUD exists but incomplete
+**API Endpoints:** Complete with stock integration
+**Location:** `apps/api/app/api/kitchen/waste/entries/route.ts`
+- POST /api/kitchen/waste/entries - Create waste entry with automatic stock decrement
+- GET /api/kitchen/waste/entries - List waste entries with filters
+- Manifest waste command integration for constraint validation
+- Automatic stock decrement on waste entry creation
+- Inventory transaction creation
+- Outbox events for real-time updates
 
 **UI Components:** Basic UI exists with TODOs
 
-**Still Needed:**
-- Dynamic inventory items/units fetching
-- Proper auth context for loggedBy
-- Real waste calculation logic
-- Integration with inventory system
+**Features Implemented:**
+- Waste entry creation with stock decrement
+- Manifest constraint validation
+- Integration with inventory system (automatic stock updates)
+- Real-time event emission via Ably
 
-**Complexity:** Medium | **Dependencies:** Inventory module
+**Still Needed:**
+- Dynamic inventory items/units fetching in UI
+- Waste analytics and reporting
+- Cost calculation improvements
+
+**Complexity:** Medium | **Dependencies:** None (inventory integration complete)
 
 ---
 
@@ -795,7 +821,7 @@
 
 ### PHASE 5: INVENTORY MODULE
 
-**Status: 58% Complete** (+8% from Inventory Item Management completion)
+**Status: 65% Complete** (+7% from Stock Level Management and automatic stock update integrations)
 
 #### 5.1 Inventory Item Management ✅ COMPLETE
 
@@ -836,26 +862,80 @@
 
 ---
 
-#### 5.2 Stock Levels Management
+#### 5.2 Stock Levels Management ✅ COMPLETE (Automatic Stock Updates)
 
 **Specs:** `inventory-stock-levels.md`
 
-**Status:** 30% Complete
+**Status:** 90% Complete (+60% from automatic stock update integrations)
 
-**Database:** Models exist (InventoryStock, InventoryTransaction) but minimal implementation
+**Database:** Complete ✅ (InventoryStock, InventoryTransaction models exist)
 
-**API Endpoints:** Partial
+**API Endpoints:** Complete ✅
+**Automatic Stock Update Integrations:**
+- **Waste Entries → Stock Decrement** ✅
+  - Location: `apps/api/app/api/kitchen/waste/entries/route.ts`
+  - Integrated with Manifest waste command
+  - Validates constraints via Manifest runtime
+  - Creates waste entry record
+  - Decrements inventory stock levels automatically
+  - Creates inventory transaction record
+  - Emits outbox events for real-time updates via Ably
+  - Event type: `kitchen.waste.entry.created`
 
-**UI Components:** Placeholder page exists
+- **Event Usage (Prep Tasks) → Stock Decrement** ✅
+  - Location: `apps/api/app/api/kitchen/tasks/[id]/route.ts`
+  - Consumes inventory items when prep tasks are completed
+  - Fetches recipe ingredients for the prep task
+  - Matches ingredients to inventory items by name
+  - Calculates scaled quantities based on task batch size and waste factor
+  - Creates inventory transactions for each ingredient consumed
+  - Updates inventory quantities atomically
+  - Emits outbox events for real-time updates via Ably
+  - Event type: `inventory.item.consumed`
+
+- **Receiving (Purchase Orders) → Stock Increment** ✅
+  - Location: `apps/api/app/api/inventory/purchase-orders/[id]/items/[itemId]/quantity/route.ts`
+  - PUT endpoint for updating quantity received on purchase order items
+  - Calculates incremental quantity received
+  - Updates inventory item quantity on hand automatically
+  - Creates inventory transaction record
+  - Emits outbox events for real-time updates via Ably
+  - Event type: `inventory.item.quantity_updated`
+
+**Real-time Events:** Complete ✅
+**Location:** `packages/realtime/src/events/stock.ts`
+Four new Ably real-time event types implemented:
+- `InventoryStockAdjustedEvent` - Manual stock adjustments
+- `InventoryStockConsumedEvent` - Stock consumption by prep tasks
+- `InventoryStockReceivedEvent` - Stock received from purchase orders
+- `InventoryStockWastedEvent` - Stock wasted
+
+All events include:
+- Stock item identifier
+- Quantity change (positive/negative)
+- Previous and new quantities
+- Employee who made the change
+- ISO 8601 timestamp
+- Additional context (reason, task ID, supplier, waste category)
+
+**UI Components:** Partial
 **Location:** `apps/app/app/(authenticated)/inventory/levels/page.tsx`
 
-**Still Needed:**
-- Stock levels dashboard
-- Real-time status indicators
-- Transaction history
-- Adjustment operations
+**Features Implemented:**
+- Automatic stock decrement on waste entries (via Manifest integration)
+- Automatic stock decrement on prep task completion (ingredient consumption)
+- Automatic stock increment on purchase order receiving
+- Real-time Ably events for all stock changes
+- Inventory transaction records for all stock movements
+- Atomic transactions ensuring data consistency
 
-**Complexity:** Medium | **Dependencies:** None
+**Still Needed:**
+- Stock levels dashboard UI
+- Transaction history viewer
+- Manual adjustment operations UI
+- Real-time status indicators in UI
+
+**Complexity:** Medium | **Dependencies:** None (core functionality complete, UI remaining)
 
 ---
 
@@ -908,16 +988,31 @@
 
 **Specs:** `warehouse-receiving-workflow.md`
 
-**Status:** 80% Complete
+**Status:** 95% Complete (+15% from stock increment integration)
 
 **Database:** Complete (PurchaseOrder, PurchaseOrderItem models exist)
 
-**API Endpoints:** Complete (full workflow operations)
+**API Endpoints:** Complete with stock integration
+**Location:** `apps/api/app/api/inventory/purchase-orders/[id]/items/[itemId]/quantity/route.ts`
+- PUT /api/inventory/purchase-orders/[id]/items/[itemId]/quantity - Update quantity received
+- Automatic stock increment on quantity received update
+- Calculates incremental quantity received
+- Updates inventory item quantity on hand automatically
+- Creates inventory transaction record
+- Emits outbox events for real-time updates via Ably
 
 **UI Components:** Exists but may need connection verification
 **Location:** `apps/app/app/(authenticated)/warehouse/inventory/page.tsx`
 
-**Complexity:** Low | **Dependencies:** None
+**Features Implemented:**
+- Full receiving workflow operations
+- Automatic stock increment on receiving
+- Inventory transaction tracking
+- Real-time event emission via Ably
+
+**Still Needed:** UI verification and potential improvements
+
+**Complexity:** Low | **Dependencies:** None (stock integration complete)
 
 ---
 
@@ -1280,7 +1375,7 @@
 
 ## CROSS-CUTTING CONCERNS
 
-### 1. Real-time Infrastructure ✅ 90% Complete
+### 1. Real-time Infrastructure ✅ 95% Complete
 
 **Package:** `packages/realtime/`
 
@@ -1297,6 +1392,11 @@
 - Event board updates - infrastructure ready
 - Scheduling changes - infrastructure ready
 - Command board collaboration - infrastructure ready
+- **Stock level updates** ✅ COMPLETE (4 new event types implemented)
+  - `InventoryStockAdjustedEvent` - Manual stock adjustments
+  - `InventoryStockConsumedEvent` - Stock consumption by prep tasks
+  - `InventoryStockReceivedEvent` - Stock received from purchase orders
+  - `InventoryStockWastedEvent` - Stock wasted
 
 **Remaining:**
 - Unit tests (T015-T016)
@@ -1460,10 +1560,16 @@
    - ~~Full tracking workflow~~ ✅ COMPLETE (Full CRUD APIs implemented)
    - **STILL NEEDED:** Packing list PDF generation, carrier integrations
 
-13. **Stock Level Management**
-   - Models exist, needs full implementation
-   - Dashboard and real-time status
-   - Estimated: 1-2 weeks
+13. **Stock Level Management UI** ~~✅ BACKEND COMPLETE~~
+   - ~~Models exist, needs full implementation~~ ✅ COMPLETE (Automatic stock updates functional)
+   - ~~Dashboard and real-time status~~ ✅ COMPLETE (Real-time events implemented)
+   - **STILL NEEDED:** Dashboard UI, transaction history viewer, manual adjustment UI
+   - **BACKEND COMPLETE:**
+     - Waste Entries → Stock Decrement (Manifest integration)
+     - Event Usage (Prep Tasks) → Stock Decrement (ingredient consumption)
+     - Receiving (Purchase Orders) → Stock Increment (individual quantity updates)
+     - Stock Level Events → Ably Realtime (4 event types)
+   - Estimated: 3-5 days (UI work only)
 
 ---
 
@@ -1900,14 +2006,22 @@
 
 ## SUMMARY
 
-**Overall Progress:** ~82% Complete (+2% from recent fixes and completions)
+**Overall Progress:** ~83% Complete (+1% from automatic stock update integrations)
 
 **Key Achievements:**
 - CRM module is 100% complete
 - Kitchen module has strong foundation (82%) - Allergen Tracking complete ✅
 - Events module is nearly complete (98%) - Battle Board with Critical Path Method complete ✅
 - Staff/Scheduling has strong foundation (82%) - Auto-Assignment API complete ✅
+- **Inventory module has solid foundation (65%) - Automatic Stock Updates complete** ✅
 - **Inventory Item Management is now 100% complete** ✅
+- **Automatic Stock Update Integrations now complete** ✅ (2026-02-10)
+  - Waste Entries → Stock Decrement (Manifest waste command integration)
+  - Event Usage (Prep Tasks) → Stock Decrement (ingredient consumption)
+  - Receiving (Purchase Orders) → Stock Increment (individual quantity updates)
+  - Stock Level Events → Ably Realtime (4 new event types: adjusted, consumed, received, wasted)
+  - All stock updates emit outbox events for real-time UI updates
+  - Atomic transactions ensure data consistency
 - **GPT-4o-mini integration is now complete** ✅
 - **Allergen Tracking is now 100% complete** ✅
 - **PDF generation implementation is now complete** ✅
@@ -2008,7 +2122,7 @@
 
 **Quick Wins (API complete, needs UI):**
 - Mobile Recipe Viewer
-- Stock Level Management
+- Stock Level Management UI (backend automatic updates complete, dashboard UI needed)
 - AI features (infrastructure ready, needs feature implementation)
 
 **Largest Remaining Efforts:**
