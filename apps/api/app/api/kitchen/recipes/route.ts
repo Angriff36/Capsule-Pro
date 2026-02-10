@@ -8,10 +8,31 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+
+type RecipeCategory =
+  | "appetizer"
+  | "soup"
+  | "salad"
+  | "entree"
+  | "side_dish"
+  | "dessert"
+  | "beverage"
+  | "sauce"
+  | "other";
+
+type CuisineType =
+  | "american"
+  | "italian"
+  | "french"
+  | "asian"
+  | "mexican"
+  | "mediterranean"
+  | "indian"
+  | "other";
 
 interface RecipeListFilters {
   category?: string;
@@ -94,85 +115,125 @@ export async function GET(request: Request) {
     const { page, limit } = parsePaginationParams(searchParams);
     const offset = (page - 1) * limit;
 
-    // Build where clause
-    const whereClause: Record<string, unknown> = {
-      AND: [{ tenantId }, { deletedAt: null }],
-    };
-
-    // Add category filter
-    if (filters.category) {
-      whereClause.AND = [
-        ...(whereClause.AND as Record<string, unknown>[]),
-        { category: filters.category },
-      ];
-    }
-
-    // Add cuisine type filter
-    if (filters.cuisineType) {
-      whereClause.AND = [
-        ...(whereClause.AND as Record<string, unknown>[]),
-        { cuisineType: filters.cuisineType },
-      ];
-    }
-
-    // Add search filter (searches in name and description)
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      whereClause.AND = [
-        ...(whereClause.AND as Record<string, unknown>[]),
-        {
-          OR: [
-            { name: { contains: searchLower, mode: "insensitive" } },
-            { description: { contains: searchLower, mode: "insensitive" } },
-          ],
-        },
-      ];
-    }
-
-    // Add tag filter
-    if (filters.tag) {
-      whereClause.AND = [
-        ...(whereClause.AND as Record<string, unknown>[]),
-        { tags: { has: filters.tag } },
-      ];
-    }
-
-    // Add active filter
-    if (filters.isActive !== undefined) {
-      whereClause.AND = [
-        ...(whereClause.AND as Record<string, unknown>[]),
-        { isActive: filters.isActive },
-      ];
-    }
-
-    // Fetch recipes
-    const recipes = await database.recipe.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        name: true,
-        category: true,
-        cuisineType: true,
-        description: true,
-        tags: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: [{ name: "asc" }],
-      take: limit,
-      skip: offset,
-    });
+    // Fetch recipes with their current version (latest by version number)
+    const recipes = await database.$queryRaw<
+      {
+        id: string;
+        tenant_id: string;
+        name: string;
+        category: string | null;
+        cuisine_type: string | null;
+        description: string | null;
+        tags: string[];
+        is_active: boolean;
+        created_at: Date;
+        updated_at: Date;
+        yield_quantity: number | null;
+        yield_unit_id: number | null;
+        current_version_id: string | null;
+        version_number: number | null;
+        total_cost: number | null;
+        cost_per_yield: number | null;
+        cost_calculated_at: Date | null;
+      }[]
+    >(
+      Prisma.sql`
+        SELECT
+          r.id,
+          r.tenant_id,
+          r.name,
+          r.category,
+          r.cuisine_type,
+          r.description,
+          r.tags,
+          r.is_active,
+          r.created_at,
+          r.updated_at,
+          rv.yield_quantity,
+          rv.yield_unit_id,
+          rv.id as current_version_id,
+          rv.version_number,
+          rv.total_cost,
+          rv.cost_per_yield,
+          rv.cost_calculated_at
+        FROM tenant_kitchen.recipes r
+        LEFT JOIN LATERAL (
+          SELECT
+            id,
+            recipe_id,
+            version_number,
+            yield_quantity,
+            yield_unit_id,
+            total_cost,
+            cost_per_yield,
+            cost_calculated_at
+          FROM tenant_kitchen.recipe_versions
+          WHERE tenant_id = ${tenantId}
+            AND recipe_id = r.id
+            AND deleted_at IS NULL
+          ORDER BY version_number DESC
+          LIMIT 1
+        ) rv ON true
+        WHERE r.tenant_id = ${tenantId}
+          AND r.deleted_at IS NULL
+          ${filters.category !== undefined ? Prisma.sql`AND r.category = ${filters.category}` : Prisma.empty}
+          ${filters.cuisineType !== undefined ? Prisma.sql`AND r.cuisine_type = ${filters.cuisineType}` : Prisma.empty}
+          ${filters.search !== undefined ? Prisma.sql`AND (r.name ILIKE ${`%${filters.search}%`} OR r.description ILIKE ${`%${filters.search}%`})` : Prisma.empty}
+          ${filters.tag !== undefined ? Prisma.sql`AND ${filters.tag} = ANY(r.tags)` : Prisma.empty}
+          ${filters.isActive !== undefined ? Prisma.sql`AND r.is_active = ${filters.isActive}` : Prisma.empty}
+        ORDER BY r.name ASC
+        LIMIT ${limit}
+        OFFSET ${offset}
+      `
+    );
 
     // Get total count for pagination
-    const totalCount = await database.recipe.count({
-      where: whereClause,
-    });
+    const totalCountResult = await database.$queryRaw<
+      { count: bigint }[]
+    >(
+      Prisma.sql`
+        SELECT COUNT(*) as count
+        FROM tenant_kitchen.recipes r
+        WHERE r.tenant_id = ${tenantId}
+          AND r.deleted_at IS NULL
+          ${filters.category !== undefined ? Prisma.sql`AND r.category = ${filters.category}` : Prisma.empty}
+          ${filters.cuisineType !== undefined ? Prisma.sql`AND r.cuisine_type = ${filters.cuisineType}` : Prisma.empty}
+          ${filters.search !== undefined ? Prisma.sql`AND (r.name ILIKE ${`%${filters.search}%`} OR r.description ILIKE ${`%${filters.search}%`})` : Prisma.empty}
+          ${filters.tag !== undefined ? Prisma.sql`AND ${filters.tag} = ANY(r.tags)` : Prisma.empty}
+          ${filters.isActive !== undefined ? Prisma.sql`AND r.is_active = ${filters.isActive}` : Prisma.empty}
+      `
+    );
 
+    const totalCount = Number(totalCountResult[0]?.count ?? 0);
     const totalPages = Math.ceil(totalCount / limit);
 
+    // Map snake_case DB results to camelCase API response
+    const data = recipes.map((r) => ({
+      id: r.id,
+      tenantId: r.tenant_id,
+      name: r.name,
+      category: r.category as RecipeCategory | null,
+      cuisineType: r.cuisine_type as CuisineType | null,
+      description: r.description,
+      tags: r.tags,
+      isActive: r.is_active,
+      yieldQuantity: r.yield_quantity ? Number(r.yield_quantity) : null,
+      yieldUnitId: r.yield_unit_id,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+      currentVersion: r.current_version_id
+        ? {
+            id: r.current_version_id,
+            versionNumber: r.version_number ?? 1,
+            totalCost: r.total_cost ? Number(r.total_cost) : null,
+            costPerYield: r.cost_per_yield ? Number(r.cost_per_yield) : null,
+            costCalculatedAt: r.cost_calculated_at,
+          }
+        : null,
+    }));
+
     return NextResponse.json({
-      data: recipes,
+      data,
       pagination: {
         page,
         limit,
