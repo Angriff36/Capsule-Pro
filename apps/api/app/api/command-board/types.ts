@@ -230,15 +230,54 @@ export interface RemoveCardsFromGroupRequest {
   cardIds: string[];
 }
 
-// Connection type values
+// Connection type values - semantic relationship types that match UI rendering
+// These types have visual meaning (colors, labels, dash patterns) in the UI
 export const CONNECTION_TYPES = [
+  "client_to_event",
+  "event_to_task",
+  "task_to_employee",
+  "event_to_inventory",
   "generic",
-  "dependency",
-  "blocks",
-  "related_to",
-  "part_of",
 ] as const;
 export type ConnectionType = (typeof CONNECTION_TYPES)[number];
+
+// Relationship configuration for visual rendering
+// Matches the UI's RelationshipConfig for consistency
+export const RelationshipConfig: Record<
+  ConnectionType,
+  { label: string; color: string; dashArray?: string; strokeWidth: number }
+> = {
+  client_to_event: {
+    label: "has",
+    color: "#3b82f6",
+    dashArray: undefined,
+    strokeWidth: 2,
+  },
+  event_to_task: {
+    label: "includes",
+    color: "#10b981",
+    dashArray: undefined,
+    strokeWidth: 2,
+  },
+  task_to_employee: {
+    label: "assigned",
+    color: "#f59e0b",
+    dashArray: "5,5",
+    strokeWidth: 2,
+  },
+  event_to_inventory: {
+    label: "uses",
+    color: "#8b5cf6",
+    dashArray: undefined,
+    strokeWidth: 2,
+  },
+  generic: {
+    label: "related",
+    color: "#6b7280",
+    dashArray: "4,4",
+    strokeWidth: 1.5,
+  },
+};
 
 /**
  * Command Board Connection shape

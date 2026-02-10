@@ -11,11 +11,11 @@ import type {
 } from "../../types";
 
 const VALID_CONNECTION_TYPES = [
+  "client_to_event",
+  "event_to_task",
+  "task_to_employee",
+  "event_to_inventory",
   "generic",
-  "dependency",
-  "blocks",
-  "related_to",
-  "part_of",
 ] as const;
 
 const UUID_REGEX =

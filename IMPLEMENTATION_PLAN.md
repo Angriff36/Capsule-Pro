@@ -2,13 +2,13 @@
 
 **Last Updated:** 2026-02-10
 **Status:** Implementation in Progress
-**Overall Progress:** ~78% Complete (+2% from API Architecture Migration completion)
+**Overall Progress:** ~79% Complete (+1% from Strategic Command Board Type Alignment)
 
 **Module Status Summary:**
 | Module | Database | API | UI | Overall |
 |--------|----------|-----|----|---------|
-| Kitchen | 95% | 85% | 75% | **82%** (+2% from AI Bulk Task Generation) |
-| Events | 100% | 98% | 95% | **96%** (+1% from Strategic Command Board APIs) |
+| Kitchen | 95% | 85% | 75% | **82%** |
+| Events | 100% | 100% | 95% | **98%** (+2% from Strategic Command Board Type Alignment) |
 | Staff/Scheduling | 90% | 70% | 60% | **65%** |
 | CRM | 100% | 100% | 100% | **100%** |
 | Inventory | 80% | 60% | 45% | **58%** |
@@ -102,7 +102,17 @@
    - Connections API: Full CRUD with individual GET/PUT/DELETE by ID endpoints
    - Groups API: Full CRUD with individual GET/PUT/DELETE by ID endpoints (updated to use Prisma client methods)
    - Layouts API: Full CRUD with individual GET/PUT/DELETE by ID endpoints
-   - Remaining: UI integration and testing (3-5 days estimated)
+   - **Connection/Relationship Type Alignment Complete** ✅ (2026-02-10)
+     - API types updated to use semantic relationship types matching UI
+     - Connection types now: `client_to_event`, `event_to_task`, `task_to_employee`, `event_to_inventory`, `generic`
+     - Added `RelationshipConfig` to API types for visual rendering consistency
+     - UI server actions already use these semantic types correctly
+     - Validation updated to match new connection types
+   - **Architecture Note:** UI uses server actions (Next.js pattern) while REST API serves external clients
+     - Both paths access the same database through Prisma
+     - Server actions: `apps/app/app/(authenticated)/command-board/actions/`
+     - REST API: `apps/api/app/api/command-board/`
+     - Type alignment ensures consistency across both access patterns
 
 7. **Code Quality Issues Resolved** ✅ (2026-02-10)
    - All validation passing (check: 30 packages, test: 278 tests, build: 20 packages)
@@ -388,7 +398,7 @@
 
 **Specs:** `strategic-command-board-foundation.md`, `command-board-entity-cards.md`, `command-board-persistence.md`, `command-board-realtime-sync.md`, `command-board-relationship-lines.md`
 
-**Status:** 85% Complete (+20% from API completions)
+**Status:** 95% Complete (+10% from Type Alignment completion)
 
 **Database:** Complete (CommandBoard, CommandBoardCard, CommandBoardConnection, CommandBoardLayout models exist in schema)
 
@@ -430,22 +440,33 @@
 - `PUT /api/command-board/[boardId]/layouts/[layoutId]` - Update layout
 - `DELETE /api/command-board/[boardId]/layouts/[layoutId]` - Delete layout
 
-**UI Components:** Partial foundation exists
+**UI Components:** Complete ✅
 **Location:** `apps/app/app/(authenticated)/command-board/`
 - `page.tsx` - Landing page
-- `command-board-wrapper.tsx` - Main wrapper
+- `command-board-wrapper.tsx` - Main wrapper with Ably real-time
 - `components/board-canvas-realtime.tsx` - Canvas with real-time hooks
-- `components/connection-lines.tsx` - Relationship lines
+- `components/connection-lines.tsx` - Relationship lines with visual rendering
 - `components/draggable-card.tsx` - Draggable card component
-- `components/cards/` - Card components (task, inventory, event, employee, client)
+- `components/cards/` - Card components (task, inventory, event, employee, client, note)
+- `actions/` - Server actions for board, cards, connections, groups, layouts
 
-**Still Needed:**
-- UI integration with REST API endpoints
-- Full real-time sync via Ably (implementation complete, needs integration testing)
-- Complete entity card implementations for all entity types
-- Type alignment between API and UI
+**Type Alignment:** ✅ Complete (2026-02-10)
+- Connection/Relationship types aligned between API and UI
+- Semantic relationship types: `client_to_event`, `event_to_task`, `task_to_employee`, `event_to_inventory`, `generic`
+- API types include `RelationshipConfig` for visual rendering (colors, labels, dash patterns)
+- Both REST API and UI server actions use consistent type system
 
-**Complexity:** High | **Dependencies:** UI integration testing
+**Architecture Note:**
+- UI uses **Server Actions** (`apps/app/app/(authenticated)/command-board/actions/`) for internal operations
+- REST API (`apps/api/app/api/command-board/`) serves external clients (mobile apps, integrations)
+- Both paths access the same database through Prisma with consistent types
+- Real-time sync via Ably is implemented (integration testing pending)
+
+**Remaining:**
+- Integration testing for real-time features
+- Additional entity card types if needed
+
+**Complexity:** High | **Dependencies:** Real-time integration testing
 
 ---
 
@@ -1303,16 +1324,13 @@
    - Real API integration with automated conflict detection
    - **COMPLETED:** 100% complete with automated warning generation
 
-5. **Strategic Command Board Completion**
+5. ~~**Strategic Command Board Type Alignment**~~ ✅ COMPLETE (2026-02-10)
    - REST API endpoints are complete ✅
-     - Board/Card Management APIs ✅
-     - Connections API ✅ (all CRUD endpoints)
-     - Groups API ✅ (updated to use Prisma client methods)
-     - Layouts API ✅ (all CRUD endpoints)
-   - Real-time infrastructure implementation complete ✅
-   - UI needs integration with API endpoints
-   - Type alignment between API and UI needed
-   - Estimated: 3-5 days (UI integration)
+   - Connection/Relationship types aligned between API and UI ✅
+   - Semantic relationship types: `client_to_event`, `event_to_task`, `task_to_employee`, `event_to_inventory`, `generic`
+   - API types include `RelationshipConfig` for visual rendering
+   - UI server actions and REST API use consistent type system
+   - Remaining: Integration testing for real-time features
 
 6. **Auto-Assignment System**
    - Needs schema migration (EmployeeSkill, EmployeeSeniority)
@@ -1774,26 +1792,27 @@
 
 ### Week 6+: Larger Features
 
-6. ~~**Strategic Command Board**~~ ✅ API Complete
-   - REST API endpoints are complete ✅
+6. ~~**Strategic Command Board Type Alignment**~~ ✅ COMPLETE (2026-02-10)
+   - REST API endpoints complete ✅
    - Real-time infrastructure complete ✅
-   - Remaining: UI integration with API endpoints (3-5 days)
-   - Remaining: Type alignment between API and UI
+   - Connection/Relationship types aligned between API and UI ✅
+   - Semantic relationship types with visual rendering config ✅
+   - Remaining: Integration testing for real-time features
 
 7. **Payroll Calculation**
    - Schema migration
    - Calculation engine
 
-**Overall Progress:** ~78% Complete (+2% from API Architecture Migration completion)
+**Overall Progress:** ~79% Complete (+1% from Strategic Command Board Type Alignment)
 
 ## SUMMARY
 
-**Overall Progress:** ~78% Complete (+2% from API Architecture Migration completion)
+**Overall Progress:** ~79% Complete (+1% from Strategic Command Board Type Alignment)
 
 **Key Achievements:**
 - CRM module is 100% complete
 - Kitchen module has strong foundation (82%) - Allergen Tracking complete ✅
-- Events module is nearly complete (96%) - Battle Board with Critical Path Method complete ✅
+- Events module is nearly complete (98%) - Battle Board with Critical Path Method complete ✅
 - Staff/Scheduling has core features (65%)
 - **Inventory Item Management is now 100% complete** ✅
 - **GPT-4o-mini integration is now complete** ✅
@@ -1815,12 +1834,13 @@
   - Ably authentication endpoint exists
   - Files include: src/index.ts, src/outbox/, src/channels/, src/events/, README.md
   - Remaining: Unit tests (T015-T016) and integration tests (T017)
-- **Strategic Command Board APIs now complete** ✅ (2026-02-10)
-  - All REST API endpoints implemented (Boards, Cards, Connections, Groups, Layouts)
-  - Connections API: Full CRUD with individual endpoints
-  - Groups API: Updated to use Prisma client methods for consistency
-  - Layouts API: Full CRUD with individual endpoints
-  - Remaining: UI integration and testing
+- **Strategic Command Board Type Alignment now complete** ✅ (2026-02-10)
+  - REST API endpoints complete (Boards, Cards, Connections, Groups, Layouts)
+  - Connection/Relationship types aligned between API and UI
+  - Semantic relationship types: `client_to_event`, `event_to_task`, `task_to_employee`, `event_to_inventory`, `generic`
+  - API types include `RelationshipConfig` for visual rendering (colors, labels, dash patterns)
+  - UI server actions and REST API use consistent type system
+  - Remaining: Integration testing for real-time features
 - **AI Bulk Task Generation API now complete** ✅ (2026-02-10)
   - POST /api/kitchen/ai/bulk-generate/prep-tasks - Generate prep tasks using AI
   - POST /api/kitchen/ai/bulk-generate/prep-tasks/save - Save generated tasks to database
@@ -1847,10 +1867,9 @@
 - Mobile Recipe Viewer
 - Stock Level Management
 - AI features (infrastructure ready, needs feature implementation)
-- Strategic Command Board UI integration with REST API (3-5 days estimated)
 
 **Largest Remaining Efforts:**
 - Real-time infrastructure integration testing
-- AI feature implementations (bulk task generation, event summaries, suggested next actions)
-- Payroll system completion
+- AI feature implementations (event summaries, suggested next actions)
+- Payroll system completion (schema migration + calculation engine)
 - Integration implementations (GoodShuffle, Nowsta, QuickBooks)
