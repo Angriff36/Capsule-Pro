@@ -307,6 +307,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       const response = await POST(request);
       const data = await response.json();
 
+      // Log error details for debugging 500 errors
+      if (response.status === 500) {
+        console.error("[mark-uncompleted test] 500 error response:", data);
+      }
+
       expect(response.status).toBeGreaterThanOrEqual(200);
       expect(response.status).toBeLessThan(500);
 

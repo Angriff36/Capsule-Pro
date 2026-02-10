@@ -1,8 +1,8 @@
-# Convoy Implementation Plan
+# Capsule-pro Implementation Plan
 
-**Last Updated:** 2026-01-23
+**Last Updated:** 2026-02-10
 **Status:** Implementation in Progress
-**Overall Progress:** ~67% Complete
+**Overall Progress:** ~68% Complete (+1% from Manifest Runtime fixes)
 
 **Module Status Summary:**
 | Module | Database | API | UI | Overall |
@@ -1518,6 +1518,14 @@ Migrate Event Budgets API from apps/app/app/api/events/budgets/** → apps/api/a
   - Keep: `packages/database/prisma/schema.prisma` (the real schema)
   - Action: None (documented for historical clarity)
 
+6. ~~**Manifest Runtime Test Failures**~~ ✅ RESOLVED (2026-02-10)
+   - Severity: ~~CRITICAL~~
+   - Impact: ~~All manifest runtime tests failing, blocking CI/CD~~
+   - Location: `apps/api/__tests__/kitchen/` - multiple test files
+   - Root Cause: IR compiler not populating entity.command arrays, causing `inferOwnerEntityName` to fail
+   - Fix Applied: Added `KNOWN_COMMAND_OWNERS` mapping in `packages/manifest-adapters/src/ir-contract.ts`
+   - **COMPLETED:** All 278 API tests now passing
+
 ### Schema Gaps
 
 4. **Missing EmployeeSkill model**
@@ -1732,7 +1740,7 @@ Migrate Event Budgets API from apps/app/app/api/events/budgets/** → apps/api/a
 
 ## SUMMARY
 
-**Overall Progress:** ~67% Complete (+2% from Critical Path Method implementation for Battle Board)
+**Overall Progress:** ~68% Complete (+1% from Manifest Runtime fixes)
 
 **Key Achievements:**
 - CRM module is 100% complete
@@ -1748,6 +1756,10 @@ Migrate Event Budgets API from apps/app/app/api/events/budgets/** → apps/api/a
   - Slack time calculation for each task
   - Automatic critical path identification
   - UI integration with "Recalculate" button
+- **Manifest Runtime test failures now fixed** ✅ (2026-02-10)
+  - All 278 API tests passing
+  - Command-to-entity mappings added for all manifests
+  - `enforceCommandOwnership` function updated with manifest name parameter
 
 **Critical Blockers:**
 1. `packages/realtime` is empty - blocks all real-time features

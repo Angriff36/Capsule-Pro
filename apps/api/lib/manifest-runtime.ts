@@ -98,7 +98,21 @@ async function getManifestIR(manifestName: string): Promise<ManifestIR> {
     );
   }
 
-  const normalized = enforceCommandOwnership(ir);
+  // Debug: Log IR structure before normalization
+  if (process.env.DEBUG_MANIFEST_IR === "true") {
+    console.log(`[manifest-runtime] IR for ${manifestName}:`, {
+      entities: ir.entities.map((e) => ({
+        name: e.name,
+        commands: e.commands,
+      })),
+      commands: ir.commands.map((c) => ({
+        name: c.name,
+        entity: c.entity,
+      })),
+    });
+  }
+
+  const normalized = enforceCommandOwnership(ir, manifestName);
   manifestIRCache.set(manifestName, normalized);
   return normalized;
 }

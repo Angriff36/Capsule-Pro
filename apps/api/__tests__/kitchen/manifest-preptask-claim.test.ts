@@ -91,7 +91,7 @@ describe("Manifest-Generated PrepTask.claim Handler", () => {
 
         // Verify it creates runtime
         expect(content).toContain("createManifestRuntime");
-        expect(content).toContain("new RuntimeEngine");
+        expect(content).toContain("new ManifestRuntimeEngine");
 
         // Verify it loads the manifest file
         expect(content).toContain("prep-task-rules");
