@@ -83,7 +83,7 @@ export async function POST(request: Request, context: RouteContext) {
     category: sourceVersion.category ?? "",
     cuisineType: sourceVersion.cuisine_type ?? "",
     description: sourceVersion.description ?? "",
-    tags: formatTagsForStorage(sourceVersion.tags),
+    tags: formatTagsForStorage(sourceVersion.tags ?? undefined),
     yieldQuantity: sourceVersion.yield_quantity,
     yieldUnitId: sourceVersion.yield_unit_id,
     yieldDescription: sourceVersion.yield_description ?? "",

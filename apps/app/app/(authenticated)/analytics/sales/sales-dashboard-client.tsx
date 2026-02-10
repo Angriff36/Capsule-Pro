@@ -1477,7 +1477,7 @@ export function SalesDashboardClient() {
                         if (statusValue !== undefined) {
                           next.status = statusValue;
                           // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                          next._status = undefined;
+                          delete next._status;
                         }
                         return next;
                       })}

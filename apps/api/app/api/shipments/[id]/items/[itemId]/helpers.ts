@@ -76,8 +76,8 @@ export async function fetchExistingShipmentItem(
 
   return {
     id: existing.id,
-    quantityShipped: existing.quantityShipped,
-    unitCost: existing.unitCost,
+    quantityShipped: existing.quantityShipped.toString(),
+    unitCost: existing.unitCost?.toString() ?? null,
   };
 }
 

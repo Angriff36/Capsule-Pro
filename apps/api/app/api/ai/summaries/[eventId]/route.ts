@@ -25,8 +25,9 @@ interface EventSummaryData {
   notes: string | null;
   tags: string[];
   client: {
-    name: string | null;
-    companyName: string | null;
+    first_name: string | null;
+    last_name: string | null;
+    company_name: string | null;
     email: string | null;
     phone: string | null;
   } | null;
@@ -39,13 +40,13 @@ interface EventSummaryData {
   }>;
   staffAssignments: Array<{
     role: string;
-    startTime: Date;
-    endTime: Date;
+    startTime: Date | null;
+    endTime: Date | null;
   }>;
   allergenWarnings: Array<{
     severity: string;
-    allergen: string;
-    description: string | null;
+    allergens: string[];
+    notes: string | null;
   }>;
 }
 
@@ -63,8 +64,9 @@ async function getEventDataForSummary(
     include: {
       client: {
         select: {
-          name: true,
-          companyName: true,
+          company_name: true,
+          first_name: true,
+          last_name: true,
           email: true,
           phone: true,
         },
@@ -156,8 +158,8 @@ async function getEventDataForSummary(
     },
     select: {
       severity: true,
-      allergen: true,
-      description: true,
+      allergens: true,
+      notes: true,
     },
   });
 
@@ -174,8 +176,9 @@ async function getEventDataForSummary(
     tags: event.tags ?? [],
     client: event.client
       ? {
-          name: event.client.name,
-          companyName: event.client.companyName,
+          first_name: event.client.first_name,
+          last_name: event.client.last_name,
+          company_name: event.client.company_name,
           email: event.client.email,
           phone: event.client.phone,
         }
@@ -188,8 +191,8 @@ async function getEventDataForSummary(
     })),
     allergenWarnings: allergenWarnings.map((w) => ({
       severity: w.severity,
-      allergen: w.allergen,
-      description: w.description,
+      allergens: w.allergens,
+      notes: w.notes,
     })),
   };
 }
@@ -271,7 +274,7 @@ ${eventData.venueName ? `- Venue: ${eventData.venueName}` : ""}
 ${eventData.venueAddress ? `- Address: ${eventData.venueAddress}` : ""}
 
 **Client:**
-${eventData.client ? eventData.client.companyName || eventData.client.name || "Client" : "No client information"}
+${eventData.client ? eventData.client.company_name || `${eventData.client.first_name ?? ""} ${eventData.client.last_name ?? ""}`.trim() || "Client" : "No client information"}
 
 **Menu (${eventData.dishes.length} dishes):**
 ${dishNames.length > 0 ? dishNames.join(", ") : "No menu items specified"}
@@ -280,7 +283,7 @@ ${dietaryTags.length > 0 ? `**Dietary Options:** ${dietaryTags.join(", ")}` : ""
 
 **Staffing:** ${staffCount} assignment${staffCount !== 1 ? "s" : ""}
 
-${eventData.allergenWarnings.length > 0 ? `**CRITICAL ALLERGEN WARNINGS:** ${eventData.allergenWarnings.map((w) => `${w.severity}: ${w.allergen}${w.description ? ` - ${w.description}` : ""}`).join("; ")}` : ""}
+${eventData.allergenWarnings.length > 0 ? `**CRITICAL ALLERGEN WARNINGS:** ${eventData.allergenWarnings.map((w) => `${w.severity}: ${w.allergens.join(", ")}${w.notes ? ` - ${w.notes}` : ""}`).join("; ")}` : ""}
 
 ${eventData.tags.length > 0 ? `**Tags:** ${eventData.tags.join(", ")}` : ""}
 

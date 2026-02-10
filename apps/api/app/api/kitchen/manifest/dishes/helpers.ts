@@ -149,7 +149,7 @@ export function validateDishCreateRequest(
 export function fetchDishById(
   tenantId: string,
   dishId: string
-): Promise<ReturnType<typeof database.dish.findFirst>> {
+): Promise<Awaited<ReturnType<typeof database.dish.findFirst>>> {
   return database.dish.findFirst({
     where: {
       AND: [{ tenantId }, { id: dishId }, { deletedAt: null }],
@@ -163,7 +163,7 @@ export function fetchDishById(
 export function fetchRecipeById(
   tenantId: string,
   recipeId: string
-): Promise<ReturnType<typeof database.recipe.findFirst>> {
+): Promise<Awaited<ReturnType<typeof database.recipe.findFirst>>> {
   return database.recipe.findFirst({
     where: {
       AND: [{ tenantId }, { id: recipeId }, { deletedAt: null }],
@@ -207,8 +207,8 @@ export async function loadDishInstance(
     presentationImageUrl: string | null;
     dietaryTags: string[];
     allergens: string[];
-    pricePerPerson: number | null;
-    costPerPerson: number | null;
+    pricePerPerson: Prisma.Decimal | null;
+    costPerPerson: Prisma.Decimal | null;
     minPrepLeadDays: number;
     maxPrepLeadDays: number | null;
     portionSizeDescription: string | null;
@@ -288,7 +288,7 @@ export function createDishInDatabase(
   tenantId: string,
   dishId: string,
   data: DishCreateRequest
-): Promise<ReturnType<typeof database.dish.create>> {
+): Promise<Awaited<ReturnType<typeof database.dish.create>>> {
   const dietaryTagsString = data.dietaryTags?.join(",") ?? "";
   const allergensString = data.allergens?.join(",") ?? "";
 

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import type { Prisma } from "@repo/database";
 import { auth } from "@repo/auth/server";
 import { createRecipeRuntime } from "@repo/manifest-adapters";
 import { NextResponse } from "next/server";
@@ -111,26 +112,42 @@ export async function POST(request: Request) {
       costPerPerson
     );
 
+    // Type assertion for the created dish
+    const createdDish = dish as {
+      id: string;
+      recipeId: string;
+      name: string;
+      description: string | null;
+      category: string | null;
+      serviceStyle: string | null;
+      presentationImageUrl: string | null;
+      dietaryTags: string[];
+      allergens: string[];
+      pricePerPerson: Prisma.Decimal;
+      costPerPerson: Prisma.Decimal;
+      minPrepLeadDays: number;
+      maxPrepLeadDays: number;
+      portionSizeDescription: string | null;
+      isActive: boolean;
+    };
+
     return NextResponse.json(
       {
-        dishId: (dish as { id: string }).id,
-        recipeId: (dish as { recipeId: string }).recipeId,
-        name: (dish as { name: string }).name,
-        description: (dish as { description: string | null }).description,
-        category: (dish as { category: string | null }).category,
-        serviceStyle: (dish as { serviceStyle: string | null }).serviceStyle,
-        presentationImageUrl: (dish as { presentationImageUrl: string | null })
-          .presentationImageUrl,
-        dietaryTags: (dish as { dietaryTags: string[] }).dietaryTags,
-        allergens: (dish as { allergens: string[] }).allergens,
-        pricePerPerson: (dish as { pricePerPerson: number }).pricePerPerson,
-        costPerPerson: (dish as { costPerPerson: number }).costPerPerson,
-        minPrepLeadDays: (dish as { minPrepLeadDays: number }).minPrepLeadDays,
-        maxPrepLeadDays: (dish as { maxPrepLeadDays: number }).maxPrepLeadDays,
-        portionSizeDescription: (
-          dish as { portionSizeDescription: string | null }
-        ).portionSizeDescription,
-        isActive: (dish as { isActive: boolean }).isActive,
+        dishId: createdDish.id,
+        recipeId: createdDish.recipeId,
+        name: createdDish.name,
+        description: createdDish.description,
+        category: createdDish.category,
+        serviceStyle: createdDish.serviceStyle,
+        presentationImageUrl: createdDish.presentationImageUrl,
+        dietaryTags: createdDish.dietaryTags,
+        allergens: createdDish.allergens,
+        pricePerPerson: Number(createdDish.pricePerPerson),
+        costPerPerson: Number(createdDish.costPerPerson),
+        minPrepLeadDays: createdDish.minPrepLeadDays,
+        maxPrepLeadDays: createdDish.maxPrepLeadDays,
+        portionSizeDescription: createdDish.portionSizeDescription,
+        isActive: createdDish.isActive,
       },
       { status: 201 }
     );

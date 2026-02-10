@@ -482,7 +482,7 @@ describe("Real-time Outbox - End-to-End Integration", () => {
   describe("Batch Operations", () => {
     it("should create multiple events in sequence", async () => {
       const eventCount = 5;
-      const events: unknown[] = [];
+      const events: Array<{ id: string; status: string }> = [];
 
       for (let i = 0; i < eventCount; i++) {
         const event = await createOutboxEvent(database, {
@@ -496,7 +496,7 @@ describe("Real-time Outbox - End-to-End Integration", () => {
             claimedAt: new Date().toISOString(),
           },
         });
-        events.push(event);
+        events.push(event as { id: string; status: string });
       }
 
       expect(events).toHaveLength(eventCount);

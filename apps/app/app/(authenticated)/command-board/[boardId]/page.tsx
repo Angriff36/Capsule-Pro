@@ -5,6 +5,9 @@ import { getTenantIdForOrg } from "../../../lib/tenant";
 import { getCommandBoard, listCommandBoards } from "../actions/boards";
 import { CommandBoardRealtimeContent } from "../command-board-wrapper";
 
+// UUID regex constant at top level for performance
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 interface CommandBoardPageProps {
   params: Promise<{ boardId: string }>;
 }
@@ -50,9 +53,7 @@ export default async function CommandBoardPage({
   }
 
   // Validate UUID format
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!uuidRegex.test(actualBoardId)) {
+  if (!UUID_REGEX.test(actualBoardId)) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-destructive text-sm">Invalid board ID format</div>

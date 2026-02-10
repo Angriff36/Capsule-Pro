@@ -384,7 +384,7 @@ async function handleInventoryOnDelivery(
       shipmentId,
       updated.shipmentNumber,
       updated.locationId,
-      updated.deliveredBy || updated.receivedBy
+      updated.deliveredBy ?? updated.receivedBy ?? null
     );
   } catch (inventoryError) {
     console.error(
@@ -402,7 +402,7 @@ export async function POST(
   try {
     // Authenticate and get tenant
     const { orgId } = await auth();
-    const authResult = await authenticateAndGetTenant(orgId);
+    const authResult = await authenticateAndGetTenant(orgId ?? undefined);
     if (authResult instanceof NextResponse) {
       return authResult;
     }
