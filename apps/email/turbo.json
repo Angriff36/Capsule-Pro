@@ -1,11 +1,4 @@
 {
-  "extends": [
-    "//"
-  ],
-  "tags": [
-    "layer:app",
-    "app:internal",
-    "runtime:server",
-    "scope:tooling"
-  ]
+  "extends": ["//"],
+  "tags": ["layer:app", "app:internal", "runtime:server", "scope:tooling"]
 }

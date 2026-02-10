@@ -1,9 +1,4 @@
 {
-  "extends": [
-    "//"
-  ],
-  "tags": [
-    "layer:package",
-    "scope:ui"
-  ]
+  "extends": ["//"],
+  "tags": ["layer:package", "scope:ui"]
 }

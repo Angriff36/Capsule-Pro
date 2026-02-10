@@ -19,8 +19,12 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { type EmittedEvent, RuntimeEngine } from "@manifest/runtime";
-import type { IR } from "@manifest/runtime/ir";
+import {
+  type CommandResult,
+  type EmittedEvent,
+  RuntimeEngine,
+} from "@manifest/runtime";
+import type { IR, IRCommand } from "@manifest/runtime/ir";
 import { compileToIR } from "@manifest/runtime/ir-compiler";
 import { database } from "@repo/database";
 import {
@@ -86,8 +90,8 @@ async function getTestRuntimeWithPrismaStore() {
   // Create telemetry callback to write events to outbox after command execution
   const telemetry = {
     onCommandExecuted: async (
-      command: Readonly<import("@manifest/runtime").IRCommand>,
-      result: Readonly<import("@manifest/runtime").CommandResult>,
+      command: Readonly<IRCommand>,
+      result: Readonly<CommandResult>,
       entityName?: string
     ) => {
       console.log(
@@ -134,7 +138,7 @@ async function getTestRuntimeWithPrismaStore() {
         // Write events in a transaction
         try {
           await database.$transaction(async (tx) => {
-            await outboxWriter(tx, eventsToWrite);
+            await outboxWriter(tx as typeof database, eventsToWrite);
           });
           console.log("[test-telemetry] Successfully wrote events to outbox");
         } catch (error) {
@@ -214,7 +218,7 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       expect(claimResult.success).toBe(true);
 
       // Verify the task was updated
-      const task = await runtime.getInstanceByKey("PrepTask", taskId);
+      const task = await runtime.getInstance("PrepTask", taskId);
       expect(task?.status).toBe("in_progress");
       expect(task?.claimedBy).toBe("user-claim-001");
 
@@ -302,16 +306,16 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       const runtime1 = new RuntimeEngine(
         normalizeIR(
           (
-          await compileToIR(
-            readFileSync(
-              join(
-                process.cwd(),
-                "../../packages/manifest-adapters/manifests/prep-task-rules.manifest"
-              ),
-              "utf-8"
+            await compileToIR(
+              readFileSync(
+                join(
+                  process.cwd(),
+                  "../../packages/manifest-adapters/manifests/prep-task-rules.manifest"
+                ),
+                "utf-8"
+              )
             )
-          )
-        ).ir!
+          ).ir!
         ),
         {
           user: {
@@ -340,16 +344,16 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       const runtime2 = new RuntimeEngine(
         normalizeIR(
           (
-          await compileToIR(
-            readFileSync(
-              join(
-                process.cwd(),
-                "../../packages/manifest-adapters/manifests/prep-task-rules.manifest"
-              ),
-              "utf-8"
+            await compileToIR(
+              readFileSync(
+                join(
+                  process.cwd(),
+                  "../../packages/manifest-adapters/manifests/prep-task-rules.manifest"
+                ),
+                "utf-8"
+              )
             )
-          )
-        ).ir!
+          ).ir!
         ),
         {
           user: {
@@ -392,12 +396,12 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       });
 
       // Verify tenant1 can see it
-      const task1 = await runtime1.getInstanceByKey("PrepTask", taskId);
+      const task1 = await runtime1.getInstance("PrepTask", taskId);
       expect(task1).toBeDefined();
       expect(task1?.tenantId).toBe(tenant1Id);
 
       // Verify tenant2 CANNOT see it
-      const task2 = await runtime2.getInstanceByKey("PrepTask", taskId);
+      const task2 = await runtime2.getInstance("PrepTask", taskId);
       expect(task2).toBeUndefined();
 
       // Verify outbox events are also tenant-isolated
@@ -462,7 +466,7 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       expect(claimResult.success).toBe(true);
 
       // Verify atomic write: state changed AND outbox events exist
-      const task = await runtime.getInstanceByKey("PrepTask", taskId);
+      const task = await runtime.getInstance("PrepTask", taskId);
       expect(task?.status).toBe("in_progress");
 
       const finalEventCount = await database.outboxEvent.count({
@@ -495,7 +499,7 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       });
 
       // Verify we can fetch by the composite key
-      const task = await runtime.getInstanceByKey("PrepTask", taskId);
+      const task = await runtime.getInstance("PrepTask", taskId);
       expect(task).toBeDefined();
       expect(task?.id).toBe(taskId);
       expect(task?.tenantId).toBe(TEST_TENANT_ID);
@@ -507,16 +511,16 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       const otherRuntime = new RuntimeEngine(
         normalizeIR(
           (
-          await compileToIR(
-            readFileSync(
-              join(
-                process.cwd(),
-                "../../packages/manifest-adapters/manifests/prep-task-rules.manifest"
-              ),
-              "utf-8"
+            await compileToIR(
+              readFileSync(
+                join(
+                  process.cwd(),
+                  "../../packages/manifest-adapters/manifests/prep-task-rules.manifest"
+                ),
+                "utf-8"
+              )
             )
-          )
-        ).ir!
+          ).ir!
         ),
         {
           user: {
@@ -557,8 +561,8 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       });
 
       // Both tasks should exist independently
-      const task1 = await runtime.getInstanceByKey("PrepTask", taskId);
-      const task2 = await otherRuntime.getInstanceByKey("PrepTask", taskId);
+      const task1 = await runtime.getInstance("PrepTask", taskId);
+      const task2 = await otherRuntime.getInstance("PrepTask", taskId);
 
       expect(task1?.id).toBe(taskId);
       expect(task1?.tenantId).toBe(TEST_TENANT_ID);
@@ -580,4 +584,3 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
 afterAll(async () => {
   await cleanupTestData();
 });
-

@@ -18,9 +18,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "tenantId",
@@ -28,9 +26,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "status",
@@ -47,9 +43,7 @@
       ],
       "computedProperties": [],
       "relationships": [],
-      "commands": [
-        "claim"
-      ],
+      "commands": ["claim"],
       "constraints": [],
       "policies": []
     }
@@ -187,9 +181,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepTaskClaimed"
-      ]
+      "emits": ["PrepTaskClaimed"]
     }
   ],
   "policies": []

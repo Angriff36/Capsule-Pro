@@ -366,4 +366,3 @@ export async function manifestRestockInventory(
 
   return result;
 }
-

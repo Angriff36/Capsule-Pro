@@ -2,6 +2,10 @@
 
 import type { ConstraintOutcome } from "@manifest/runtime/ir";
 import {
+  OVERRIDE_REASON_CODES,
+  type OverrideReasonCode,
+} from "@repo/design-system/components/override-reasons";
+import {
   Alert,
   AlertDescription,
   AlertTitle,
@@ -25,10 +29,6 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import {
-  OVERRIDE_REASON_CODES,
-  type OverrideReasonCode,
-} from "@repo/design-system/components/override-reasons";
 import { AlertCircle, Info, ShieldAlert, TriangleAlert } from "lucide-react";
 import * as React from "react";
 

@@ -1,6 +1,5 @@
 "use client";
 
-import type { DayOfWeek } from "@/app/lib/staff/availability/types";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import {
@@ -29,6 +28,7 @@ import { FilterIcon, Loader2Icon, PlusIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import type { DayOfWeek } from "@/app/lib/staff/availability/types";
 import { getLocations } from "../../shifts/actions";
 import { getAvailability, getEmployees } from "../actions";
 import { AvailabilityDetailModal } from "./availability-detail-modal";

@@ -15,6 +15,7 @@ import { database } from "@repo/database";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
+  serverErrorResponse,
 } from "@repo/manifest-adapters/route-helpers";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -54,7 +55,6 @@ export async function GET(request: Request) {
 
     return manifestSuccessResponse({ prepLists });
   } catch (error) {
-    return manifestErrorResponse(error);
+    return serverErrorResponse(error);
   }
 }
-

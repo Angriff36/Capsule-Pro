@@ -18,9 +18,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "tenantId",
@@ -28,9 +26,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "status",
@@ -47,9 +43,7 @@
       ],
       "computedProperties": [],
       "relationships": [],
-      "commands": [
-        "activate"
-      ],
+      "commands": ["activate"],
       "constraints": [],
       "policies": []
     }
@@ -135,9 +129,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepListActivated"
-      ]
+      "emits": ["PrepListActivated"]
     }
   ],
   "policies": []

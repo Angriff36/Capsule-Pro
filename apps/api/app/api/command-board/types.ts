@@ -7,14 +7,27 @@ export const BOARD_STATUSES = ["draft", "active", "archived"] as const;
 export type BoardStatus = (typeof BOARD_STATUSES)[number];
 
 // Card type values
-export const CARD_TYPES = ["task", "note", "alert", "info"] as const;
+export const CARD_TYPES = [
+  "generic",
+  "event",
+  "client",
+  "task",
+  "employee",
+  "inventory",
+  "recipe",
+  "note",
+  "alert",
+  "info",
+] as const;
 export type CardType = (typeof CARD_TYPES)[number];
 
 // Card status values
 export const CARD_STATUSES = [
+  "active",
+  "completed",
+  "archived",
   "pending",
   "in_progress",
-  "completed",
   "blocked",
 ] as const;
 export type CardStatus = (typeof CARD_STATUSES)[number];
@@ -153,4 +166,166 @@ export interface CommandBoardListResponse {
     total: number;
     totalPages: number;
   };
+}
+
+/**
+ * Command Board Group response shape
+ */
+export interface CommandBoardGroup {
+  id: string;
+  tenant_id: string;
+  board_id: string;
+  name: string;
+  color: string | null;
+  collapsed: boolean;
+  position_x: number;
+  position_y: number;
+  width: number;
+  height: number;
+  z_index: number;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+}
+
+/**
+ * Create group request
+ */
+export interface CreateGroupRequest {
+  name: string;
+  color?: string;
+  collapsed?: boolean;
+  positionX?: number;
+  positionY?: number;
+  width?: number;
+  height?: number;
+  zIndex?: number;
+}
+
+/**
+ * Update group request
+ */
+export interface UpdateGroupRequest {
+  name?: string;
+  color?: string | null;
+  collapsed?: boolean;
+  position_x?: number;
+  position_y?: number;
+  width?: number;
+  height?: number;
+  z_index?: number;
+}
+
+/**
+ * Add cards to group request
+ */
+export interface AddCardsToGroupRequest {
+  cardIds: string[];
+}
+
+/**
+ * Remove cards from group request
+ */
+export interface RemoveCardsFromGroupRequest {
+  cardIds: string[];
+}
+
+// Connection type values
+export const CONNECTION_TYPES = [
+  "generic",
+  "dependency",
+  "blocks",
+  "related_to",
+  "part_of",
+] as const;
+export type ConnectionType = (typeof CONNECTION_TYPES)[number];
+
+/**
+ * Command Board Connection shape
+ */
+export interface CommandBoardConnection {
+  id: string;
+  tenant_id: string;
+  board_id: string;
+  from_card_id: string;
+  to_card_id: string;
+  relationship_type: ConnectionType;
+  label: string | null;
+  visible: boolean;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+}
+
+/**
+ * Create connection request
+ */
+export interface CreateConnectionRequest {
+  fromCardId: string;
+  toCardId: string;
+  relationshipType?: ConnectionType;
+  label?: string;
+  visible?: boolean;
+}
+
+/**
+ * Update connection request
+ */
+export interface UpdateConnectionRequest {
+  relationshipType?: ConnectionType;
+  label?: string | null;
+  visible?: boolean;
+}
+
+/**
+ * Viewport state for command board layouts
+ */
+export interface ViewportState {
+  zoom: number;
+  panX: number;
+  panY: number;
+}
+
+/**
+ * Command Board Layout shape
+ */
+export interface CommandBoardLayout {
+  id: string;
+  tenant_id: string;
+  board_id: string;
+  user_id: string;
+  name: string;
+  viewport: ViewportState;
+  visible_cards: string[];
+  grid_size: number;
+  show_grid: boolean;
+  snap_to_grid: boolean;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+}
+
+/**
+ * Create layout request
+ */
+export interface CreateLayoutRequest {
+  boardId: string;
+  name: string;
+  viewport?: ViewportState;
+  visibleCards?: string[];
+  gridSize?: number;
+  showGrid?: boolean;
+  snapToGrid?: boolean;
+}
+
+/**
+ * Update layout request
+ */
+export interface UpdateLayoutRequest {
+  name?: string;
+  viewport?: ViewportState;
+  visibleCards?: string[];
+  gridSize?: number;
+  showGrid?: boolean;
+  snapToGrid?: boolean;
 }

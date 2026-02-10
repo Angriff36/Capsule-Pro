@@ -598,4 +598,3 @@ export async function deactivateMenuManifest(
     isActive: false,
   };
 }
-

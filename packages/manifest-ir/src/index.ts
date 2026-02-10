@@ -2,7 +2,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { IR } from "@manifest/runtime/ir";
 
-export const KITCHEN_IR_PATH = "packages/manifest-ir/ir/kitchen/kitchen.ir.json";
+export const KITCHEN_IR_PATH =
+  "packages/manifest-ir/ir/kitchen/kitchen.ir.json";
 export const KITCHEN_PROVENANCE_PATH =
   "packages/manifest-ir/ir/kitchen/kitchen.provenance.json";
 

@@ -17,4 +17,3 @@ export async function createRuntime(
     "createRuntime is not wired yet. Migrate callers from legacy @repo/manifest-adapters runtime paths into apps/api/lib/manifest/runtime.ts."
   );
 }
-

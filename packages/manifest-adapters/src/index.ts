@@ -43,8 +43,8 @@ import type {
   CommandResult,
   EmittedEvent,
   RuntimeContext,
+  RuntimeEngine,
 } from "@manifest/runtime";
-import type { RuntimeEngine } from "@manifest/runtime";
 import type { IR, IRDiagnostic, OverrideRequest } from "@manifest/runtime/ir";
 import { compileToIR } from "@manifest/runtime/ir-compiler";
 import { enforceCommandOwnership } from "./ir-contract.js";
@@ -2710,4 +2710,3 @@ export {
   processPendingPrepListGenerations,
   triggerPrepListAutoGeneration,
 } from "./prep-list-autogeneration.js";
-

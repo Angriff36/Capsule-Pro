@@ -1,9 +1,5 @@
 "use client";
 
-import type {
-  CreateTimeOffRequestInput,
-  TimeOffType,
-} from "@/app/lib/staff/time-off/types";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import { Input } from "@repo/design-system/components/ui/input";
@@ -20,6 +16,10 @@ import { AlertTriangle, Info, Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import type {
+  CreateTimeOffRequestInput,
+  TimeOffType,
+} from "@/app/lib/staff/time-off/types";
 import { createTimeOffRequest, getEmployees, timeOffTypes } from "../actions";
 
 interface TimeOffRequest {

@@ -5,8 +5,7 @@
  * It orchestrates the flow: Document Import -> Event Creation -> Battle Board/Checklist Generation
  */
 
-import type { EmittedEvent } from "@manifest/runtime";
-import type { RuntimeEngine } from "@manifest/runtime";
+import type { EmittedEvent, RuntimeEngine } from "@manifest/runtime";
 import type { IR } from "@manifest/runtime/ir";
 import { compileToIR } from "@manifest/runtime/ir-compiler";
 import { enforceCommandOwnership } from "./ir-contract.js";

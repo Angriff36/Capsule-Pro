@@ -17,7 +17,9 @@ config({ path: envPath });
 // Set test environment before any tests run
 beforeAll(() => {
   // Ensure we're using the test environment
-  process.env.NODE_ENV = "test";
+  // Use bracket notation to avoid TypeScript readonly error for NODE_ENV
+  // @ts-expect-error - NODE_ENV is readonly in newer Node.js types but is writable at runtime
+  process.env["NODE_ENV"] = "test";
 
   console.log("[integration] Setting up integration tests with real database");
   console.log(

@@ -18,11 +18,24 @@ interface UpdateFields {
 
 type Validator = (value: unknown) => ValidationError;
 
-const VALID_CARD_TYPES = ["task", "note", "alert", "info"] as const;
+const VALID_CARD_TYPES = [
+  "generic",
+  "event",
+  "client",
+  "task",
+  "employee",
+  "inventory",
+  "recipe",
+  "note",
+  "alert",
+  "info",
+] as const;
 const VALID_CARD_STATUSES = [
+  "active",
+  "completed",
+  "archived",
   "pending",
   "in_progress",
-  "completed",
   "blocked",
 ] as const;
 
@@ -290,8 +303,8 @@ export async function GET(_request: NextRequest, context: RouteContext) {
  * Supports partial updates of:
  * - title: Card title
  * - content: Card content/description
- * - card_type: Type of card (task, note, alert, info)
- * - status: Card status (pending, in_progress, completed, blocked)
+ * - card_type: Type of card (generic, event, client, task, employee, inventory, recipe, note, alert, info)
+ * - status: Card status (active, completed, archived, pending, in_progress, blocked)
  * - position_x, position_y: Card position on board
  * - width, height: Card dimensions
  * - z_index: Stacking order

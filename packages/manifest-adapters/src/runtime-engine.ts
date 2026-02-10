@@ -6,7 +6,10 @@ import type { IRCommand } from "@manifest/runtime/ir";
  * This keeps command lookup authoritative on IR root commands.
  */
 export class ManifestRuntimeEngine extends RuntimeEngine {
-  override getCommand(name: string, entityName?: string): IRCommand | undefined {
+  override getCommand(
+    name: string,
+    entityName?: string
+  ): IRCommand | undefined {
     const direct = super.getCommand(name, entityName);
     if (direct) {
       return direct;
@@ -17,7 +20,8 @@ export class ManifestRuntimeEngine extends RuntimeEngine {
     }
 
     const command = this.getCommands().find(
-      (item) => item.name === name && (item.entity === entityName || !item.entity)
+      (item) =>
+        item.name === name && (item.entity === entityName || !item.entity)
     );
     if (!command) {
       return undefined;

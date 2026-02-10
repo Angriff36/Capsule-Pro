@@ -18,9 +18,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "tenantId",
@@ -28,9 +26,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "name",
@@ -38,9 +34,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "itemType",
@@ -52,9 +46,7 @@
             "kind": "string",
             "value": "ingredient"
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "category",
@@ -1273,9 +1265,7 @@
           }
         }
       ],
-      "emits": [
-        "InventoryReserved"
-      ]
+      "emits": ["InventoryReserved"]
     },
     {
       "name": "consume",
@@ -1748,9 +1738,7 @@
           }
         }
       ],
-      "emits": [
-        "InventoryConsumed"
-      ]
+      "emits": ["InventoryConsumed"]
     },
     {
       "name": "waste",
@@ -2193,9 +2181,7 @@
           }
         }
       ],
-      "emits": [
-        "InventoryWasted"
-      ]
+      "emits": ["InventoryWasted"]
     },
     {
       "name": "adjust",
@@ -2433,9 +2419,7 @@
           }
         }
       ],
-      "emits": [
-        "InventoryAdjusted"
-      ]
+      "emits": ["InventoryAdjusted"]
     },
     {
       "name": "restock",
@@ -2675,9 +2659,7 @@
           }
         }
       ],
-      "emits": [
-        "InventoryRestocked"
-      ]
+      "emits": ["InventoryRestocked"]
     },
     {
       "name": "releaseReservation",
@@ -2925,9 +2907,7 @@
           }
         }
       ],
-      "emits": [
-        "InventoryReservationReleased"
-      ]
+      "emits": ["InventoryReservationReleased"]
     }
   ],
   "policies": [

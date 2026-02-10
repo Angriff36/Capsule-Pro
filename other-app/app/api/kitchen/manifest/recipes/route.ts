@@ -12,7 +12,10 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { createRecipeRuntime, type KitchenOpsContext } from "@repo/manifest-adapters";
+import {
+  createRecipeRuntime,
+  type KitchenOpsContext,
+} from "@repo/manifest-adapters";
 import { createPrismaStoreProvider } from "@repo/manifest-adapters/prisma-store";
 import {
   manifestErrorResponse,
@@ -72,4 +75,3 @@ export async function GET(_request: Request) {
     return manifestErrorResponse(error);
   }
 }
-

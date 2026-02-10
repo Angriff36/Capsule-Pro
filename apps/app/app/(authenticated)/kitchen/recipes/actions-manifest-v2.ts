@@ -1327,4 +1327,3 @@ export const updateRecipeImage = _updateRecipeImage;
 
 // Type export
 export type { RecipeForEdit } from "./actions";
-

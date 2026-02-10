@@ -1,6 +1,9 @@
 import { readFile } from "node:fs/promises";
 
-export const KITCHEN_IR_PATH = new URL("../ir/kitchen/kitchen.ir.json", import.meta.url);
+export const KITCHEN_IR_PATH = new URL(
+  "../ir/kitchen/kitchen.ir.json",
+  import.meta.url
+);
 export const KITCHEN_PROVENANCE_PATH = new URL(
   "../ir/kitchen/kitchen.provenance.json",
   import.meta.url

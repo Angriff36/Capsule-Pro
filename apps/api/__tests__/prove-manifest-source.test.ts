@@ -26,7 +26,10 @@ describe("Prove manifest runtime source", () => {
 
     console.log("Current directory:", __dirname);
     console.log("Packages directory:", packagesDir);
-    console.log("Checking for dist manifest-runtime.js at:", manifestDistRuntime);
+    console.log(
+      "Checking for dist manifest-runtime.js at:",
+      manifestDistRuntime
+    );
     console.log("Checking for src runtime-engine.ts at:", manifestSrcRuntime);
 
     // Check if dist file exists and has content

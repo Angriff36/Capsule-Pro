@@ -152,4 +152,3 @@ describe("Projection System Proof: PrepTask.claim Snapshot", () => {
     console.info("✓ Snapshot contains PrepTask.claim-specific logic");
   });
 });
-

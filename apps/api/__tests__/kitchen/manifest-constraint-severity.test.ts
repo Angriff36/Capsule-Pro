@@ -179,4 +179,3 @@ describe("Manifest Runtime - Constraint Severity Enforcement", () => {
     expect(updatedInstance?.claimedBy).toBe("user-001");
   });
 });
-

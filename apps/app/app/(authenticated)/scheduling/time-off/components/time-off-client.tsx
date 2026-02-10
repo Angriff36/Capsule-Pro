@@ -1,6 +1,5 @@
 "use client";
 
-import type { TimeOffRequest, TimeOffType } from "@/app/lib/staff/time-off/types";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
@@ -30,6 +29,10 @@ import { FilterIcon, Loader2Icon, PlusIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import type {
+  TimeOffRequest,
+  TimeOffType,
+} from "@/app/lib/staff/time-off/types";
 import { getLocations } from "../../shifts/actions";
 import { getEmployees, getTimeOffRequests } from "../actions";
 import { calculateDuration, formatDate } from "../utils";

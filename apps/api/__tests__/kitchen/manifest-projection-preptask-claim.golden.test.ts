@@ -131,6 +131,5 @@ describe("Projection proof: PrepTask.claim golden snapshot", () => {
     }
 
     console.info("✓ Snapshot typechecks successfully with tsc --noEmit");
-  }, 30000);
+  }, 30_000);
 });
-

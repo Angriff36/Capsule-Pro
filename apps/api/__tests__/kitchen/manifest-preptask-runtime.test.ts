@@ -256,12 +256,12 @@ describe("Manifest Runtime - PrepTask Commands", () => {
     });
 
     // Verify computed properties through runtime evaluation
-    expect(await runtime.evaluateComputed("PrepTask", "task-006", "isClaimed")).toBe(
-      true
-    );
-    expect(await runtime.evaluateComputed("PrepTask", "task-006", "isUrgent")).toBe(
-      true
-    );
+    expect(
+      await runtime.evaluateComputed("PrepTask", "task-006", "isClaimed")
+    ).toBe(true);
+    expect(
+      await runtime.evaluateComputed("PrepTask", "task-006", "isUrgent")
+    ).toBe(true);
     expect(
       await runtime.evaluateComputed("PrepTask", "task-006", "isHighPriority")
     ).toBe(true);
@@ -290,4 +290,3 @@ describe("Manifest Runtime - PrepTask Commands", () => {
     expect(createResult).toBeUndefined();
   });
 });
-

@@ -144,4 +144,3 @@ function getAllRouteFiles(dir: string, files: string[] = []): string[] {
 
   return files;
 }
-

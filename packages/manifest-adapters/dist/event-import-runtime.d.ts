@@ -4,8 +4,7 @@
  * This module integrates Manifest language runtime with the document parsing workflow.
  * It orchestrates the flow: Document Import -> Event Creation -> Battle Board/Checklist Generation
  */
-import type { EmittedEvent } from "@manifest/runtime";
-import type { RuntimeEngine } from "@manifest/runtime";
+import type { EmittedEvent, RuntimeEngine } from "@manifest/runtime";
 import { ManifestRuntimeEngine } from "./runtime-engine.js";
 /**
  * Create a runtime engine with tenant context

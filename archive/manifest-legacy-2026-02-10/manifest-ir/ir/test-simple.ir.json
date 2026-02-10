@@ -18,9 +18,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "name",
@@ -28,9 +26,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "count",
@@ -47,9 +43,7 @@
       ],
       "computedProperties": [],
       "relationships": [],
-      "commands": [
-        "updateName"
-      ],
+      "commands": ["updateName"],
       "constraints": [
         {
           "name": "positiveCount",
@@ -182,9 +176,7 @@
           }
         }
       ],
-      "emits": [
-        "TestEntityUpdated"
-      ]
+      "emits": ["TestEntityUpdated"]
     }
   ],
   "policies": []

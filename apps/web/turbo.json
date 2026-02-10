@@ -1,10 +1,4 @@
 {
-  "extends": [
-    "//"
-  ],
-  "tags": [
-    "layer:app",
-    "app:client",
-    "runtime:web"
-  ]
+  "extends": ["//"],
+  "tags": ["layer:app", "app:client", "runtime:web"]
 }

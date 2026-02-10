@@ -533,4 +533,3 @@ export function throwIfNotSuccessful(result: CommandResult): void {
   // Generic error
   throw new Error(result.error || "Unknown Manifest error");
 }
-

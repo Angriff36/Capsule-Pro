@@ -1,9 +1,4 @@
 {
-  "extends": [
-    "//"
-  ],
-  "tags": [
-    "layer:package",
-    "scope:platform"
-  ]
+  "extends": ["//"],
+  "tags": ["layer:package", "scope:platform"]
 }

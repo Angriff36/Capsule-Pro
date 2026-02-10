@@ -7,11 +7,24 @@
 import { invariant } from "@/app/lib/invariant";
 import type { CreateCardRequest } from "../../types";
 
-const VALID_CARD_TYPES = ["task", "note", "alert", "info"] as const;
+const VALID_CARD_TYPES = [
+  "generic",
+  "event",
+  "client",
+  "task",
+  "employee",
+  "inventory",
+  "recipe",
+  "note",
+  "alert",
+  "info",
+] as const;
 const VALID_CARD_STATUSES = [
+  "active",
+  "completed",
+  "archived",
   "pending",
   "in_progress",
-  "completed",
   "blocked",
 ] as const;
 
@@ -157,8 +170,19 @@ export function parseCardListFilters(searchParams: URLSearchParams): {
   const cardType = searchParams.get("cardType");
   if (cardType) {
     invariant(
-      ["task", "note", "alert", "info"].includes(cardType),
-      "cardType must be one of: task, note, alert, info"
+      [
+        "generic",
+        "event",
+        "client",
+        "task",
+        "employee",
+        "inventory",
+        "recipe",
+        "note",
+        "alert",
+        "info",
+      ].includes(cardType),
+      "cardType must be one of: generic, event, client, task, employee, inventory, recipe, note, alert, info"
     );
     filters.cardType = cardType;
   }
@@ -166,8 +190,15 @@ export function parseCardListFilters(searchParams: URLSearchParams): {
   const status = searchParams.get("status");
   if (status) {
     invariant(
-      ["pending", "in_progress", "completed", "blocked"].includes(status),
-      "status must be one of: pending, in_progress, completed, blocked"
+      [
+        "active",
+        "completed",
+        "archived",
+        "pending",
+        "in_progress",
+        "blocked",
+      ].includes(status),
+      "status must be one of: active, completed, archived, pending, in_progress, blocked"
     );
     filters.status = status;
   }

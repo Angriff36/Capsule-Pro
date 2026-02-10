@@ -1,11 +1,7 @@
 {
   "extends": "@repo/typescript-config/nextjs.json",
-  "include": [
-    "**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ],
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"],
   "compilerOptions": {
     "strictNullChecks": true
   }

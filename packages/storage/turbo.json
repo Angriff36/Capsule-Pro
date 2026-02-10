@@ -1,9 +1,4 @@
 {
-  "extends": [
-    "//"
-  ],
-  "tags": [
-    "layer:package",
-    "scope:data"
-  ]
+  "extends": ["//"],
+  "tags": ["layer:package", "scope:data"]
 }
