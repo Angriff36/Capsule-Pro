@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-02-10
 **Status:** Implementation in Progress
-**Overall Progress:** ~87% Complete (+1% from AI Event Summaries API implementation)
+**Overall Progress:** ~87% Complete (+1% from Depletion Forecasting improvements with historical usage analysis)
 
 **Module Status Summary:**
 | Module | Database | API | UI | Overall |
@@ -11,7 +11,7 @@
 | Events | 100% | 100% | 95% | **98%** (+2% from Strategic Command Board Type Alignment, server-to-server import API complete) |
 | Staff/Scheduling | 95% | 85% | 65% | **82%** |
 | CRM | 100% | 100% | 100% | **100%** |
-| Inventory | 80% | 65% | 60% | **68%** (+10% from Stock Level Management complete with UI and automatic stock update integrations) |
+| Inventory | 80% | 75% | 60% | **72%** (+10% from Stock Level Management and +4% from Depletion Forecasting improvements) |
 | Analytics | 70% | 85% | 80% | **80%** |
 | Integrations | 0% | 0% | 0% | **0%** |
 | Platform | 20% | 5% | 5% | **10%** |
@@ -854,7 +854,7 @@
 
 ### PHASE 5: INVENTORY MODULE
 
-**Status: 68% Complete** (+10% from Stock Level Management complete with UI and automatic stock update integrations)
+**Status: 72% Complete** (+10% from Stock Level Management and +4% from Depletion Forecasting improvements)
 
 #### 5.1 Inventory Item Management ✅ COMPLETE
 
@@ -1005,21 +1005,66 @@ All events include:
 
 **Specs:** `inventory-depletion-forecasting.md`
 
-**Status:** 30% Complete
+**Status:** 70% Complete (+40% from historical usage analysis implementation)
 
-**Database:** Models exist (InventoryForecast, ForecastInput, ReorderSuggestion, AlertsConfig)
+**Database:** Models exist (InventoryForecast, ForecastInput, ReorderSuggestion, AlertsConfig, InventoryTransaction)
 
-**API Endpoints:** Basic structure exists
+**API Endpoints:** ✅ Complete with historical usage analysis
+**Location:** `apps/api/app/lib/inventory-forecasting.ts`
 
-**UI Components:** Missing
+**Features Implemented:**
+- **Historical Usage Analysis** ✅ (2026-02-10)
+  - Queries inventory transactions for historical consumption data
+  - Transaction types: 'use', 'waste', 'adjust' for actual usage
+  - Groups by day and calculates daily averages
+  - Measures data points and variability (standard deviation)
+  - Returns daily average, data point count, and variability metrics
+- **Improved Forecast Calculation** ✅ (2026-02-10)
+  - Combines historical usage patterns with upcoming event projections
+  - Baseline usage from 30-day historical average
+  - Event-based spikes added to baseline
+  - Fallback to events-only projection when no historical data available
+- **Enhanced Confidence Calculation** ✅ (2026-02-10)
+  - High confidence: 20+ data points with coefficient of variation < 0.3
+  - Medium confidence: 10+ data points or CV < 0.5
+  - Low confidence: limited data or high variability
+  - Coefficient of variation = variability / dailyAverage
+- **Projected Usage Function** ✅ (2026-02-10)
+  - `getProjectedUsage()`: Combines historical data + events
+  - `getProjectedUsageFromEventsOnly()`: Fallback for missing itemId
+  - Returns daily usage projections with event associations
+- **Forecast Generation** ✅
+  - Depletion date calculation
+  - Days until depletion tracking
+  - Projected stock levels over time
+  - Event-based usage attribution
+- **Reorder Suggestions** ✅
+  - Critical/warning/info urgency levels
+  - Lead time and safety stock calculations
+  - Recommended order quantities with justification
+- **Database Persistence** ✅
+  - Save forecast results to InventoryForecast table
+  - Save reorder suggestions to ReorderSuggestion table
+  - Update existing records with new calculations
+- **Batch Operations** ✅
+  - Batch forecast calculation for multiple SKUs
+  - Error handling for individual SKU failures
+
+**UI Components:** ✅ Complete
+**Location:** `apps/app/app/(authenticated)/inventory/forecasts/page.tsx`
+- Forecast analysis dashboard with confidence levels
+- Reorder alerts with urgency indicators
+- Interactive filters (horizon, lead time, safety stock)
+- Detailed forecast tables with projections
 
 **Still Needed:**
-- Forecast calculation logic
-- Forecast dashboard
-- Reorder alerts
-- Event impact visualization
+- Real-time forecast updates on inventory changes
+- Historical forecast accuracy tracking
+- Seasonal adjustments (basic structure exists)
+- Promotional impact modeling
+- Advanced report generation
 
-**Complexity:** High | **Dependencies:** Historical consumption data
+**Complexity:** Medium | **Dependencies:** Historical consumption data (now integrated via InventoryTransaction)
 
 ---
 

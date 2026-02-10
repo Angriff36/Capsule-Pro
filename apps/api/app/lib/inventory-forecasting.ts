@@ -72,15 +72,13 @@ export async function calculateDepletionForecast(
     ? Number(stockLevel.quantityOnHand)
     : 0;
 
-  // Get upcoming events that use this inventory item
-  const events = await getUpcomingEventsUsingInventory(
-    tenantId,
-    sku,
-    horizonDays
-  );
+  // Get the inventory item ID for historical queries
+  const itemId = stockLevel?.id ?? "";
 
-  // Calculate daily usage pattern
-  const _dailyUsage = calculateDailyUsage(events, currentStock);
+  // Get projected usage combining historical data and upcoming events
+  const projectedUsage = itemId
+    ? await getProjectedUsage(tenantId, itemId, horizonDays)
+    : await getProjectedUsageFromEventsOnly(tenantId, sku, horizonDays);
 
   // Generate forecast points
   const forecast: Array<{
@@ -99,44 +97,35 @@ export async function calculateDepletionForecast(
   let depletionDate: Date | null = null;
   let daysUntilDepletion: number | null = null;
 
-  for (let day = 0; day <= horizonDays; day++) {
-    const forecastDate = new Date(currentDate);
-    forecastDate.setDate(forecastDate.getDate() + day);
-
-    // Find events on this day
-    const dayEvents = events.filter((event) => {
-      const eventDate = new Date(event.startDate);
-      eventDate.setHours(0, 0, 0, 0);
-      return eventDate.getTime() === forecastDate.getTime();
-    });
-
-    const dayUsage = dayEvents.reduce(
-      (sum, event) => sum + (event.usage || 0),
-      0
-    );
+  // Build forecast from projected usage data
+  for (const projection of projectedUsage) {
+    const dayUsage = projection.usage;
     projectedStock -= dayUsage;
 
     forecast.push({
-      date: forecastDate,
+      date: projection.date,
       projectedStock: Math.max(0, projectedStock),
       usage: dayUsage,
-      eventId: dayEvents[0]?.eventId,
-      eventName: dayEvents[0]?.eventName,
+      eventId: projection.eventId,
+      eventName: projection.eventName,
     });
 
     // Check if depleted
     if (depletionDate === null && projectedStock <= 0) {
-      depletionDate = forecastDate;
-      daysUntilDepletion = day;
+      depletionDate = projection.date;
+      const timeDiff =
+        projection.date.getTime() - currentDate.getTime();
+      daysUntilDepletion = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
       projectedStock = 0; // Don't go negative
     }
   }
 
-  // Determine confidence level
-  const confidence = calculateConfidenceLevel(
+  // Determine confidence level based on data availability
+  const confidence = await calculateConfidenceLevel(
+    tenantId,
+    itemId,
     currentStock,
-    events,
-    horizonDays
+    projectedUsage
   );
 
   return {
@@ -203,6 +192,73 @@ export async function generateReorderSuggestions(
 }
 
 /**
+ * Helper: Get historical usage for an inventory item from transactions
+ */
+async function getHistoricalUsage(
+  tenantId: string,
+  itemId: string,
+  daysToLookBack: number
+): Promise<{ dailyAverage: number; dataPoints: number; variability: number }> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - daysToLookBack);
+
+  // Query inventory transactions for historical usage
+  // Transaction types: 'use', 'waste', 'adjust' indicate consumption
+  const transactions = await database.inventoryTransaction.findMany({
+    where: {
+      tenantId,
+      itemId,
+      transactionType: {
+        in: ["use", "waste", "adjust"],
+      },
+      transaction_date: {
+        gte: startDate,
+        lte: today,
+      },
+    },
+    select: {
+      quantity: true,
+      transaction_date: true,
+    },
+    orderBy: {
+      transaction_date: "asc",
+    },
+  });
+
+  if (transactions.length === 0) {
+    return { dailyAverage: 0, dataPoints: 0, variability: 0 };
+  }
+
+  // Group by day and calculate daily usage
+  const dailyUsage = new Map<string, number>();
+  for (const t of transactions) {
+    const dateKey = t.transaction_date.toISOString().split("T")[0];
+    const currentUsage = dailyUsage.get(dateKey) ?? 0;
+    dailyUsage.set(dateKey, currentUsage + Math.abs(Number(t.quantity)));
+  }
+
+  const dailyValues = Array.from(dailyUsage.values());
+  const dataPoints = dailyValues.length;
+  const totalUsage = dailyValues.reduce((sum, val) => sum + val, 0);
+  const dailyAverage = totalUsage / daysToLookBack;
+
+  // Calculate variability (standard deviation)
+  let variability = 0;
+  if (dataPoints > 1) {
+    const mean = totalUsage / dataPoints;
+    const variance =
+      dailyValues.reduce((sum, val) => sum + (val - mean) ** 2, 0) /
+      dataPoints;
+    variability = Math.sqrt(variance);
+  }
+
+  return { dailyAverage, dataPoints, variability };
+}
+
+/**
  * Helper: Get upcoming events that use an inventory item
  */
 async function getUpcomingEventsUsingInventory(
@@ -259,49 +315,147 @@ async function getUpcomingEventsUsingInventory(
 }
 
 /**
- * Helper: Calculate daily usage pattern
+ * Helper: Get projected usage combining historical data and upcoming events
  */
-function calculateDailyUsage(
-  events: Array<{ startDate: Date; usage: number }>,
-  _currentStock: number
-): number {
-  if (events.length === 0) {
-    return 0;
+async function getProjectedUsage(
+  tenantId: string,
+  itemId: string,
+  horizonDays: number
+): Promise<
+  Array<{ date: Date; usage: number; eventId?: string; eventName?: string }>
+> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Get historical daily average usage
+  const historicalData = await getHistoricalUsage(
+    tenantId,
+    itemId,
+    30 // Look back 30 days for historical pattern
+  );
+
+  // Get upcoming events
+  const events = await getUpcomingEventsUsingInventory(
+    tenantId,
+    "",
+    horizonDays
+  );
+
+  // Build projection: baseline historical usage + event-based spikes
+  const projection: Array<{
+    date: Date;
+    usage: number;
+    eventId?: string;
+    eventName?: string;
+  }> = [];
+
+  for (let day = 0; day <= horizonDays; day++) {
+    const forecastDate = new Date(today);
+    forecastDate.setDate(forecastDate.getDate() + day);
+
+    // Find events on this day
+    const dayEvents = events.filter((event) => {
+      const eventDate = new Date(event.startDate);
+      eventDate.setHours(0, 0, 0, 0);
+      return eventDate.getTime() === forecastDate.getTime();
+    });
+
+    // Baseline usage from historical data
+    let dailyUsage = historicalData.dailyAverage;
+
+    // Add event-based usage
+    const eventUsage = dayEvents.reduce((sum, e) => sum + (e.usage || 0), 0);
+    dailyUsage += eventUsage;
+
+    projection.push({
+      date: forecastDate,
+      usage: Math.round(dailyUsage * 100) / 100, // Round to 2 decimal places
+      eventId: dayEvents[0]?.eventId,
+      eventName: dayEvents[0]?.eventName,
+    });
   }
 
-  const totalUsage = events.reduce((sum, event) => sum + event.usage, 0);
-  return totalUsage / Math.max(1, events.length);
+  return projection;
 }
 
 /**
- * Helper: Calculate confidence level for forecast
+ * Helper: Get projected usage from events only (fallback when no itemId)
  */
-function calculateConfidenceLevel(
+async function getProjectedUsageFromEventsOnly(
+  tenantId: string,
+  sku: string,
+  horizonDays: number
+): Promise<
+  Array<{ date: Date; usage: number; eventId?: string; eventName?: string }>
+> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Get upcoming events
+  const events = await getUpcomingEventsUsingInventory(
+    tenantId,
+    sku,
+    horizonDays
+  );
+
+  // Build projection from events only
+  const projection: Array<{
+    date: Date;
+    usage: number;
+    eventId?: string;
+    eventName?: string;
+  }> = [];
+
+  for (let day = 0; day <= horizonDays; day++) {
+    const forecastDate = new Date(today);
+    forecastDate.setDate(forecastDate.getDate() + day);
+
+    // Find events on this day
+    const dayEvents = events.filter((event) => {
+      const eventDate = new Date(event.startDate);
+      eventDate.setHours(0, 0, 0, 0);
+      return eventDate.getTime() === forecastDate.getTime();
+    });
+
+    const dayUsage = dayEvents.reduce((sum, e) => sum + (e.usage || 0), 0);
+
+    projection.push({
+      date: forecastDate,
+      usage: dayUsage,
+      eventId: dayEvents[0]?.eventId,
+      eventName: dayEvents[0]?.eventName,
+    });
+  }
+
+  return projection;
+}
+
+/**
+ * Helper: Calculate confidence level for forecast based on historical data
+ */
+async function calculateConfidenceLevel(
+  tenantId: string,
+  itemId: string,
   _currentStock: number,
-  events: Array<{ usage: number }>,
-  _horizonDays: number
-): "high" | "medium" | "low" {
-  // High confidence: lots of historical data, stable usage pattern
-  // Medium confidence: some data, some variability
-  // Low confidence: little data, high variability
+  projectedUsage: Array<{ usage: number }>
+): Promise<"high" | "medium" | "low"> {
+  // Get historical data for confidence calculation
+  const historicalData = await getHistoricalUsage(tenantId, itemId, 30);
 
-  const dataPoints = events.length;
-  const totalUsage = events.reduce((sum, e) => sum + e.usage, 0);
-  const avgUsage = dataPoints > 0 ? totalUsage / dataPoints : 0;
+  // High confidence: lots of historical data points and low variability
+  // Medium confidence: some data or moderate variability
+  // Low confidence: little data or high variability
 
-  // Calculate variability (standard deviation)
-  const variance =
-    dataPoints > 1
-      ? events.reduce((sum, e) => sum + (e.usage - avgUsage) ** 2, 0) /
-        dataPoints
-      : 0;
-  const variability = Math.sqrt(variance);
+  const { dataPoints, variability, dailyAverage } = historicalData;
 
-  // Confidence criteria
-  if (dataPoints >= 10 && variability < avgUsage * 0.2) {
+  // Calculate coefficient of variation (CV)
+  const cv = dailyAverage > 0 ? variability / dailyAverage : 1;
+
+  // Confidence criteria based on data quality
+  if (dataPoints >= 20 && cv < 0.3) {
     return "high";
   }
-  if (dataPoints >= 5 || variability < avgUsage * 0.5) {
+  if (dataPoints >= 10 || cv < 0.5) {
     return "medium";
   }
   return "low";
