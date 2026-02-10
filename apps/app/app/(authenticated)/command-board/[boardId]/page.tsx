@@ -6,7 +6,8 @@ import { getCommandBoard, listCommandBoards } from "../actions/boards";
 import { CommandBoardRealtimeContent } from "../command-board-wrapper";
 
 // UUID regex constant at top level for performance
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 interface CommandBoardPageProps {
   params: Promise<{ boardId: string }>;

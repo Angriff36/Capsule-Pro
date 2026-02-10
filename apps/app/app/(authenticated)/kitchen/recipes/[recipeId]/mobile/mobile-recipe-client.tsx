@@ -26,9 +26,9 @@ import {
   RefreshCw,
   RotateCcw,
   Timer,
-  Wrench,
   Wifi,
   WifiOff,
+  Wrench,
 } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
@@ -92,9 +92,18 @@ const saveRecipeToCache = (
 ): void => {
   try {
     const timestamp = Date.now();
-    localStorage.setItem(`${CACHE_TIMESTAMP_KEY}${recipeId}`, timestamp.toString());
-    localStorage.setItem(`${CACHE_STEPS_KEY}${recipeId}`, JSON.stringify(stepsData));
-    localStorage.setItem(`${CACHE_INGREDIENTS_KEY}${recipeId}`, JSON.stringify(ingredientsData));
+    localStorage.setItem(
+      `${CACHE_TIMESTAMP_KEY}${recipeId}`,
+      timestamp.toString()
+    );
+    localStorage.setItem(
+      `${CACHE_STEPS_KEY}${recipeId}`,
+      JSON.stringify(stepsData)
+    );
+    localStorage.setItem(
+      `${CACHE_INGREDIENTS_KEY}${recipeId}`,
+      JSON.stringify(ingredientsData)
+    );
   } catch {
     // Silently fail if localStorage is not available
   }
@@ -117,9 +126,11 @@ const loadRecipeFromCache = (
     }
 
     const stepsData = localStorage.getItem(`${CACHE_STEPS_KEY}${recipeId}`);
-    const ingredientsData = localStorage.getItem(`${CACHE_INGREDIENTS_KEY}${recipeId}`);
+    const ingredientsData = localStorage.getItem(
+      `${CACHE_INGREDIENTS_KEY}${recipeId}`
+    );
 
-    if (!stepsData || !ingredientsData) {
+    if (!(stepsData && ingredientsData)) {
       return null;
     }
 
@@ -241,7 +252,9 @@ export const MobileRecipeClient = ({
 
           const [stepsData, ingredientsData] = await Promise.all([
             stepsRes.json() as Promise<RecipeStepsResponse>,
-            ingredientsRes.json() as Promise<{ ingredients: RecipeIngredient[] }>,
+            ingredientsRes.json() as Promise<{
+              ingredients: RecipeIngredient[];
+            }>,
           ]);
 
           setRecipe(stepsData);
@@ -352,7 +365,9 @@ export const MobileRecipeClient = ({
     }
 
     try {
-      toast.info("Refreshing recipe...", { icon: <RefreshCw className="h-4 w-4 animate-spin" /> });
+      toast.info("Refreshing recipe...", {
+        icon: <RefreshCw className="h-4 w-4 animate-spin" />,
+      });
 
       const [stepsRes, ingredientsRes] = await Promise.all([
         apiFetch(`/api/kitchen/recipes/${recipeId}/steps`),
@@ -375,7 +390,9 @@ export const MobileRecipeClient = ({
       // Save to cache for offline use
       saveRecipeToCache(recipeId, stepsData, ingredientsData.ingredients);
 
-      toast.success("Recipe updated successfully", { icon: <Wifi className="h-4 w-4" /> });
+      toast.success("Recipe updated successfully", {
+        icon: <Wifi className="h-4 w-4" />,
+      });
     } catch (error) {
       console.error("Error refreshing recipe:", error);
       toast.error("Failed to refresh recipe");
@@ -432,13 +449,18 @@ export const MobileRecipeClient = ({
             <div className="flex items-center gap-2 text-sm">
               <WifiOff className="h-4 w-4" />
               <span className="font-medium">
-                {!isOnline ? "Offline Mode" : "Cached Data"}
+                {isOnline ? "Cached Data" : "Offline Mode"}
               </span>
             </div>
             {!isOnline && (
               <span className="text-xs text-amber-600 dark:text-amber-400">
-                Last synced {new Date(
-                  Number.parseInt(localStorage.getItem(`${CACHE_TIMESTAMP_KEY}${recipeId}`) || "0", 10)
+                Last synced{" "}
+                {new Date(
+                  Number.parseInt(
+                    localStorage.getItem(`${CACHE_TIMESTAMP_KEY}${recipeId}`) ||
+                      "0",
+                    10
+                  )
                 ).toLocaleDateString()}
               </span>
             )}
@@ -634,7 +656,8 @@ export const MobileRecipeClient = ({
                   {recipe.yieldQuantity && (
                     <p className="text-muted-foreground text-sm">
                       Scales {recipe.yieldQuantity} {recipe.yieldUnit || ""} →{" "}
-                      {scaleQuantity(recipe.yieldQuantity, scaleFactor)} {recipe.yieldUnit || ""}
+                      {scaleQuantity(recipe.yieldQuantity, scaleFactor)}{" "}
+                      {recipe.yieldUnit || ""}
                     </p>
                   )}
                 </div>
@@ -688,7 +711,8 @@ export const MobileRecipeClient = ({
                               {ingredient.quantity} {ingredient.unitCode}
                             </span>
                             <span className="text-primary">
-                              {scaleQuantity(ingredient.quantity, scaleFactor)} {ingredient.unitCode}
+                              {scaleQuantity(ingredient.quantity, scaleFactor)}{" "}
+                              {ingredient.unitCode}
                             </span>
                           </>
                         )}

@@ -31,6 +31,16 @@ export interface ReorderSuggestion {
   urgency: "critical" | "warning" | "info";
 }
 
+export interface ForecastAlert {
+  sku: string;
+  name: string;
+  currentStock: number;
+  depletionDate: Date;
+  daysUntilDepletion: number;
+  confidence: "high" | "medium" | "low";
+  urgency: "critical" | "warning" | "info";
+}
+
 export interface SavedForecast {
   id: string;
   tenantId: string;
@@ -181,6 +191,33 @@ export async function generateReorderSuggestions(
   }
 
   return response.json();
+}
+
+/**
+ * Get forecast alerts for items depleting within specified days
+ */
+export async function getForecastAlerts(
+  criticalThresholdDays = 7,
+  warningThresholdDays = 14
+): Promise<ForecastAlert[]> {
+  const params = new URLSearchParams({
+    criticalThreshold: criticalThresholdDays.toString(),
+    warningThreshold: warningThresholdDays.toString(),
+  });
+
+  const response = await apiFetch(`/api/inventory/forecasts/alerts?${params}`);
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.details || error.error || "Failed to fetch alerts");
+  }
+
+  const data = await response.json();
+  // Convert date strings to Date objects
+  return data.alerts.map((alert: ForecastAlert) => ({
+    ...alert,
+    depletionDate: new Date(alert.depletionDate),
+  }));
 }
 
 // Helper Functions

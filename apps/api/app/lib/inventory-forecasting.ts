@@ -435,7 +435,7 @@ async function calculateConfidenceLevel(
   tenantId: string,
   itemId: string,
   _currentStock: number,
-  projectedUsage: Array<{ usage: number }>
+  _projectedUsage: Array<{ usage: number }>
 ): Promise<"high" | "medium" | "low"> {
   // Get historical data for confidence calculation
   const historicalData = await getHistoricalUsage(tenantId, itemId, 30);
@@ -657,4 +657,258 @@ export async function saveReorderSuggestionToDatabase(
       justification: suggestion.justification,
     },
   });
+}
+
+/**
+ * Accuracy Tracking Types
+ */
+export interface ForecastAccuracyMetrics {
+  sku: string;
+  totalForecasts: number;
+  trackedForecasts: number;
+  averageErrorDays: number;
+  meanAbsolutePercentageError: number;
+  confidenceHighAccuracy: number;
+  confidenceMediumAccuracy: number;
+  confidenceLowAccuracy: number;
+}
+
+/**
+ * Track forecast accuracy by recording actual depletion date
+ */
+export async function trackForecastAccuracy(
+  tenantId: string,
+  forecastId: string,
+  actualDepletionDate: Date
+): Promise<void> {
+  // Find the forecast
+  const forecast = await database.inventoryForecast.findFirst({
+    where: {
+      tenantId,
+      id: forecastId,
+    },
+  });
+
+  if (!forecast) {
+    throw new Error(`Forecast with ID ${forecastId} not found`);
+  }
+
+  // Calculate error in days
+  const forecastDate = new Date(forecast.date);
+  const actualDate = new Date(actualDepletionDate);
+  const errorDays = Math.floor(
+    (actualDate.getTime() - forecastDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  // Update the forecast with actual data
+  await database.inventoryForecast.update({
+    where: {
+      tenantId_id: {
+        tenantId,
+        id: forecastId,
+      },
+    },
+    data: {
+      actual_depletion_date: actualDate,
+      error_days: errorDays,
+      accuracy_tracked: true,
+    },
+  });
+}
+
+/**
+ * Get forecast accuracy metrics for a specific SKU
+ */
+export async function getForecastAccuracyMetrics(
+  tenantId: string,
+  sku: string
+): Promise<ForecastAccuracyMetrics> {
+  // Get all tracked forecasts for this SKU
+  const forecasts = await database.inventoryForecast.findMany({
+    where: {
+      tenantId,
+      sku,
+      accuracy_tracked: true,
+      error_days: {
+        not: null,
+      },
+    },
+    select: {
+      error_days: true,
+      confidence: true,
+    },
+  });
+
+  const totalForecasts = await database.inventoryForecast.count({
+    where: {
+      tenantId,
+      sku,
+    },
+  });
+
+  const trackedForecasts = forecasts.length;
+
+  if (trackedForecasts === 0) {
+    return {
+      sku,
+      totalForecasts,
+      trackedForecasts: 0,
+      averageErrorDays: 0,
+      meanAbsolutePercentageError: 0,
+      confidenceHighAccuracy: 0,
+      confidenceMediumAccuracy: 0,
+      confidenceLowAccuracy: 0,
+    };
+  }
+
+  // Calculate average error in days
+  const totalError = forecasts.reduce((sum, f) => sum + (f.error_days ?? 0), 0);
+  const averageErrorDays = Math.abs(totalError / trackedForecasts);
+
+  // Calculate Mean Absolute Percentage Error (MAPE)
+  // MAPE = (|Actual - Forecast| / |Actual|) * 100
+  // Since we only have error_days, we'll use it as a proxy
+  const meanAbsolutePercentageError = (averageErrorDays / 30) * 100; // Assuming 30-day baseline
+
+  // Calculate accuracy by confidence level
+  let confidenceHighCount = 0;
+  let confidenceHighError = 0;
+  let confidenceMediumCount = 0;
+  let confidenceMediumError = 0;
+  let confidenceLowCount = 0;
+  let confidenceLowError = 0;
+
+  for (const forecast of forecasts) {
+    const confidenceValue = Number(forecast.confidence);
+    const error = Math.abs(forecast.error_days ?? 0);
+
+    if (confidenceValue >= 0.7) {
+      confidenceHighCount++;
+      confidenceHighError += error;
+    } else if (confidenceValue >= 0.4) {
+      confidenceMediumCount++;
+      confidenceMediumError += error;
+    } else {
+      confidenceLowCount++;
+      confidenceLowError += error;
+    }
+  }
+
+  const confidenceHighAccuracy =
+    confidenceHighCount > 0
+      ? Math.max(0, 100 - confidenceHighError / confidenceHighCount)
+      : 0;
+  const confidenceMediumAccuracy =
+    confidenceMediumCount > 0
+      ? Math.max(0, 100 - confidenceMediumError / confidenceMediumCount)
+      : 0;
+  const confidenceLowAccuracy =
+    confidenceLowCount > 0
+      ? Math.max(0, 100 - confidenceLowError / confidenceLowCount)
+      : 0;
+
+  return {
+    sku,
+    totalForecasts,
+    trackedForecasts,
+    averageErrorDays,
+    meanAbsolutePercentageError,
+    confidenceHighAccuracy,
+    confidenceMediumAccuracy,
+    confidenceLowAccuracy,
+  };
+}
+
+/**
+ * Update confidence calculation based on historical accuracy
+ * Returns adjusted confidence level based on past performance
+ */
+export async function updateConfidenceCalculation(
+  tenantId: string,
+  sku: string,
+  initialConfidence: "high" | "medium" | "low"
+): Promise<"high" | "medium" | "low"> {
+  // Get accuracy metrics
+  const metrics = await getForecastAccuracyMetrics(tenantId, sku);
+
+  // If we don't have enough tracked data, return initial confidence
+  if (metrics.trackedForecasts < 5) {
+    return initialConfidence;
+  }
+
+  // Calculate weighted confidence based on historical accuracy
+  const accuracyWeight = 0.3; // Weight for historical accuracy
+  const initialWeight = 0.7; // Weight for initial calculation
+
+  let confidenceScore: number;
+
+  switch (initialConfidence) {
+    case "high":
+      confidenceScore = 0.9;
+      break;
+    case "medium":
+      confidenceScore = 0.6;
+      break;
+    case "low":
+      confidenceScore = 0.3;
+      break;
+    default:
+      confidenceScore = 0.5;
+      break;
+  }
+
+  // Calculate average accuracy across all confidence levels
+  const avgAccuracy =
+    (metrics.confidenceHighAccuracy * 2 +
+      metrics.confidenceMediumAccuracy +
+      metrics.confidenceLowAccuracy * 0.5) /
+    3.5;
+
+  // Adjust confidence score based on historical accuracy
+  const adjustedScore =
+    confidenceScore * initialWeight + (avgAccuracy / 100) * accuracyWeight;
+
+  // Convert back to confidence level
+  if (adjustedScore >= 0.7) {
+    return "high";
+  }
+  if (adjustedScore >= 0.4) {
+    return "medium";
+  }
+  return "low";
+}
+
+/**
+ * Get forecast accuracy summary for all items
+ */
+export async function getAccuracySummary(
+  tenantId: string
+): Promise<ForecastAccuracyMetrics[]> {
+  // Get all SKUs with forecasts
+  const skus = await database.inventoryForecast.findMany({
+    where: {
+      tenantId,
+    },
+    select: {
+      sku: true,
+    },
+    distinct: ["sku"],
+  });
+
+  const metrics: ForecastAccuracyMetrics[] = [];
+
+  for (const { sku } of skus) {
+    const skuMetrics = await getForecastAccuracyMetrics(tenantId, sku);
+    metrics.push(skuMetrics);
+  }
+
+  // Sort by tracked forecasts descending, then by error ascending
+  metrics.sort((a, b) => {
+    if (a.trackedForecasts !== b.trackedForecasts) {
+      return b.trackedForecasts - a.trackedForecasts;
+    }
+    return a.averageErrorDays - b.averageErrorDays;
+  });
+
+  return metrics;
 }

@@ -1417,17 +1417,20 @@ model InventoryStock {
 }
 
 model InventoryForecast {
-  tenantId     String   @map("tenant_id") @db.Uuid
-  id           String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  sku          String
-  date         DateTime @db.Date
-  forecast     Decimal  @db.Decimal(10, 2)
-  lower_bound  Decimal  @db.Decimal(10, 2)
-  upper_bound  Decimal  @db.Decimal(10, 2)
-  confidence   Decimal  @db.Decimal(3, 2)
-  horizon_days Int
-  last_updated DateTime @default(now()) @db.Timestamptz(6)
-  tenant       Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenantId           String   @map("tenant_id") @db.Uuid
+  id                 String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sku                String
+  date               DateTime @db.Date
+  forecast           Decimal  @db.Decimal(10, 2)
+  lower_bound        Decimal  @db.Decimal(10, 2)
+  upper_bound        Decimal  @db.Decimal(10, 2)
+  confidence         Decimal  @db.Decimal(3, 2)
+  horizon_days       Int
+  last_updated       DateTime @default(now()) @db.Timestamptz(6)
+  actual_depletion_date DateTime? @map("actual_depletion_date") @db.Timestamptz(6)
+  error_days         Int?     @map("error_days")
+  accuracy_tracked   Boolean  @default(false) @map("accuracy_tracked")
+  tenant             Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
   @@index([tenantId, sku, date], map: "inventory_forecasts_tenant_sku_date_idx")

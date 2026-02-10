@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { Trash2, Search, AlertCircle, Package, DollarSign } from "lucide-react";
+import { AlertCircle, DollarSign, Package, Search, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
@@ -252,10 +252,10 @@ export function WasteEntriesClient() {
             <Input
               className="pl-10"
               id="itemSearch"
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by item number or name..."
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
             />
             {isSearching && (
               <div className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -269,8 +269,8 @@ export function WasteEntriesClient() {
             <div className="border rounded-md shadow-sm bg-background max-h-60 overflow-y-auto">
               {filteredItems.map((item) => (
                 <button
-                  key={item.id}
                   className="w-full text-left px-3 py-2 hover:bg-muted transition-colors border-b last:border-b-0"
+                  key={item.id}
                   onClick={() => handleItemSelect(item)}
                   type="button"
                 >
@@ -307,22 +307,23 @@ export function WasteEntriesClient() {
                     Category: {selectedItem.category} • Stock on hand:{" "}
                     {selectedItem.quantity_on_hand ?? 0}
                   </div>
-                  {selectedItem.unit_cost !== undefined && selectedItem.unit_cost > 0 && (
-                    <div className="text-xs text-green-600 mt-1">
-                      Unit cost: ${selectedItem.unit_cost.toFixed(2)}
-                    </div>
-                  )}
+                  {selectedItem.unit_cost !== undefined &&
+                    selectedItem.unit_cost > 0 && (
+                      <div className="text-xs text-green-600 mt-1">
+                        Unit cost: ${selectedItem.unit_cost.toFixed(2)}
+                      </div>
+                    )}
                 </div>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   onClick={() => {
                     setSelectedItem(null);
                     setSearchQuery("");
                     setFormData({ ...formData, inventoryItemId: "" });
                     setEstimatedCost(null);
                   }}
+                  size="sm"
                   type="button"
+                  variant="ghost"
                 >
                   Change
                 </Button>
@@ -352,7 +353,10 @@ export function WasteEntriesClient() {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <DollarSign className="h-4 w-4" />
               <span>
-                Estimated cost: <strong className="text-foreground">${estimatedCost.toFixed(2)}</strong>
+                Estimated cost:{" "}
+                <strong className="text-foreground">
+                  ${estimatedCost.toFixed(2)}
+                </strong>
               </span>
             </div>
           )}
@@ -393,7 +397,9 @@ export function WasteEntriesClient() {
           <Label htmlFor="unitId">Unit (optional)</Label>
           <Select
             disabled={units.length === 0}
-            onValueChange={(value) => setFormData({ ...formData, unitId: value })}
+            onValueChange={(value) =>
+              setFormData({ ...formData, unitId: value })
+            }
             value={formData.unitId}
           >
             <SelectTrigger>
@@ -419,7 +425,9 @@ export function WasteEntriesClient() {
           <Textarea
             disabled={submitting}
             id="notes"
-            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, notes: e.target.value })
+            }
             placeholder="Additional context about this waste entry..."
             rows={3}
             value={formData.notes}
@@ -440,7 +448,7 @@ export function WasteEntriesClient() {
       </form>
 
       {/* Confirmation Dialog */}
-      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+      <Dialog onOpenChange={setShowConfirmDialog} open={showConfirmDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -468,7 +476,10 @@ export function WasteEntriesClient() {
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Unit:</span>
                 <span className="font-medium">
-                  {units.find((u) => u.id.toString() === formData.unitId)?.name_plural}
+                  {
+                    units.find((u) => u.id.toString() === formData.unitId)
+                      ?.name_plural
+                  }
                 </span>
               </div>
             )}
@@ -476,7 +487,11 @@ export function WasteEntriesClient() {
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Reason:</span>
                 <span className="font-medium">
-                  {wasteReasons.find((r) => r.id.toString() === formData.reasonId)?.name}
+                  {
+                    wasteReasons.find(
+                      (r) => r.id.toString() === formData.reasonId
+                    )?.name
+                  }
                 </span>
               </div>
             )}
@@ -497,13 +512,13 @@ export function WasteEntriesClient() {
           </div>
           <DialogFooter>
             <Button
-              variant="outline"
               onClick={() => setShowConfirmDialog(false)}
               type="button"
+              variant="outline"
             >
               Cancel
             </Button>
-            <Button onClick={confirmSubmit} disabled={submitting}>
+            <Button disabled={submitting} onClick={confirmSubmit}>
               {submitting ? "Logging..." : "Confirm Waste Entry"}
             </Button>
           </DialogFooter>

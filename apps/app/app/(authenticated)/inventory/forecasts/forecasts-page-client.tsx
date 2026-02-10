@@ -9,6 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltipContent,
+} from "@repo/design-system/components/ui/chart";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -36,20 +40,35 @@ import {
 import {
   Activity,
   AlertTriangle,
+  ArrowDown,
+  ArrowRight,
   CheckCircle2,
   RefreshCw,
   Search,
+  TrendingDown,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ReferenceLine,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { toast } from "sonner";
 import {
   type DepletionForecast,
+  type ForecastAlert,
   type ForecastPoint,
   formatDate,
   generateReorderSuggestions,
   getConfidenceColor,
   getDepletionForecast,
   getDepletionText,
+  getForecastAlerts,
   getReorderSuggestions,
   getUrgencyColor,
   type ReorderSuggestion,
@@ -80,6 +99,7 @@ export const ForecastsPageClient = () => {
   const [forecast, setForecast] = useState<DepletionForecast | null>(null);
   const [suggestions, setSuggestions] = useState<ReorderSuggestion[]>([]);
   const [allSuggestions, setAllSuggestions] = useState<ReorderSuggestion[]>([]);
+  const [alerts, setAlerts] = useState<ForecastAlert[]>([]);
 
   // Loading state
   const [isLoading, setIsLoading] = useState(false);
@@ -140,6 +160,18 @@ export const ForecastsPageClient = () => {
     }
   }, [leadTimeDays, safetyStockDays]);
 
+  // Fetch forecast alerts
+  const fetchAlerts = useCallback(async () => {
+    try {
+      const data = await getForecastAlerts(7, 14);
+      setAlerts(data);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to fetch alerts";
+      toast.error(message);
+    }
+  }, []);
+
   // Generate new suggestions
   const handleGenerateSuggestions = useCallback(
     async (save = false) => {
@@ -173,10 +205,11 @@ export const ForecastsPageClient = () => {
     [selectedSku, leadTimeDays, safetyStockDays]
   );
 
-  // Load all suggestions on mount
+  // Load all suggestions and alerts on mount
   useEffect(() => {
     fetchAllSuggestions();
-  }, [fetchAllSuggestions]);
+    fetchAlerts();
+  }, [fetchAllSuggestions, fetchAlerts]);
 
   // Calculate summary stats
   const criticalCount = allSuggestions.filter(
@@ -452,6 +485,212 @@ export const ForecastsPageClient = () => {
                     </div>
                   </div>
 
+                  {/* Forecast Chart */}
+                  <div className="mb-6">
+                    <h3 className="mb-4 font-semibold">Depletion Trend</h3>
+                    {(() => {
+                      // Prepare chart data
+                      const chartData = forecast.forecast.map((point) => ({
+                        date: new Date(point.date).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        }),
+                        stock: Math.max(0, point.projectedStock),
+                        usage: point.usage,
+                        hasEvent: point.eventName ? true : false,
+                        eventName: point.eventName || "",
+                      }));
+
+                      // Find depletion date for reference line
+                      const depletionPoint = forecast.forecast.find(
+                        (p) => p.projectedStock <= 0
+                      );
+
+                      const chartConfig = {
+                        stock: {
+                          label: "Projected Stock",
+                          color: "hsl(var(--chart-1))",
+                        },
+                        usage: {
+                          label: "Daily Usage",
+                          color: "hsl(var(--chart-2))",
+                        },
+                      };
+
+                      return (
+                        <ChartContainer
+                          className="h-[300px] w-full"
+                          config={chartConfig}
+                        >
+                          <AreaChart data={chartData}>
+                            <CartesianGrid
+                              className="stroke-muted"
+                              strokeDasharray="3 3"
+                            />
+                            <XAxis
+                              axisLine={false}
+                              className="text-xs fill-muted-foreground"
+                              dataKey="date"
+                              tickLine={false}
+                            />
+                            <YAxis
+                              axisLine={false}
+                              className="text-xs fill-muted-foreground"
+                              tickLine={false}
+                            />
+                            <ChartTooltipContent
+                              formatter={(value: string | number, name: string) => {
+                                const numValue = typeof value === "number" ? value : parseFloat(value);
+                                if (name === "stock") {
+                                  return [
+                                    `${numValue.toFixed(0)} units`,
+                                    "Projected Stock",
+                                  ];
+                                }
+                                if (name === "usage") {
+                                  return [`${numValue.toFixed(1)}`, "Daily Usage"];
+                                }
+                                return [value, name];
+                              }}
+                              labelFormatter={(label) => {
+                                return `Date: ${label}`;
+                              }}
+                            />
+                            <Area
+                              dataKey="stock"
+                              dot={false}
+                              fill="var(--color-stock)"
+                              fillOpacity={0.2}
+                              stroke="var(--color-stock)"
+                              strokeWidth={2}
+                              type="monotone"
+                            />
+                            {depletionPoint && (
+                              <ReferenceLine
+                                label={{
+                                  value: "Depletion",
+                                  position: "insideBottomRight",
+                                }}
+                                stroke="hsl(var(--destructive))"
+                                strokeDasharray="5 5"
+                                x={new Date(
+                                  depletionPoint.date
+                                ).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                })}
+                              />
+                            )}
+                          </AreaChart>
+                        </ChartContainer>
+                      );
+                    })()}
+                    {forecast.depletionDate && (
+                      <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                        <AlertTriangle className="size-4 text-destructive" />
+                        <span>
+                          Predicted depletion:{" "}
+                          {formatDate(forecast.depletionDate)} (
+                          {forecast.daysUntilDepletion} days)
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Historical Usage Comparison */}
+                  {forecast.forecast.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="mb-4 font-semibold">Daily Usage Trend</h3>
+                      {(() => {
+                        const usageChartData = forecast.forecast.map(
+                          (point) => ({
+                            date: new Date(point.date).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                              }
+                            ),
+                            usage: point.usage,
+                            isEvent: point.eventName ? true : false,
+                          })
+                        );
+
+                        const chartConfig = {
+                          usage: {
+                            label: "Daily Usage",
+                            color: "hsl(var(--chart-3))",
+                          },
+                        };
+
+                        return (
+                          <ChartContainer
+                            className="h-[200px] w-full"
+                            config={chartConfig}
+                          >
+                            <LineChart data={usageChartData}>
+                              <CartesianGrid
+                                className="stroke-muted"
+                                strokeDasharray="3 3"
+                              />
+                              <XAxis
+                                axisLine={false}
+                                className="text-xs fill-muted-foreground"
+                                dataKey="date"
+                                tickLine={false}
+                              />
+                              <YAxis
+                                axisLine={false}
+                                className="text-xs fill-muted-foreground"
+                                tickLine={false}
+                              />
+                              <ChartTooltipContent
+                                formatter={(value: string | number) => {
+                                  const numValue = typeof value === "number" ? value : parseFloat(value);
+                                  return [`${numValue.toFixed(1)} units`, "Usage"];
+                                }}
+                                labelFormatter={(label) => `Date: ${label}`}
+                              />
+                              <Line
+                                dataKey="usage"
+                                dot={(props: {
+                                  payload: { isEvent: boolean };
+                                }) => {
+                                  const { payload } = props;
+                                  return (
+                                    <circle
+                                      cx={0}
+                                      cy={0}
+                                      fill={
+                                        payload.isEvent
+                                          ? "hsl(var(--destructive))"
+                                          : "hsl(var(--chart-3))"
+                                      }
+                                      r={payload.isEvent ? 5 : 3}
+                                    />
+                                  );
+                                }}
+                                stroke="var(--color-usage)"
+                                strokeWidth={2}
+                                type="monotone"
+                              />
+                            </LineChart>
+                          </ChartContainer>
+                        );
+                      })()}
+                      <div className="mt-2 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <div className="size-3 rounded-full bg-[hsl(var(--chart-3))]" />
+                          <span>Regular usage</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="size-3 rounded-full bg-[hsl(var(--destructive))]" />
+                          <span>Event spike</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Forecast Table */}
                   <div className="rounded-md border">
                     <Table>
@@ -569,10 +808,173 @@ export const ForecastsPageClient = () => {
 
           {/* Reorder Alerts Tab */}
           <TabsContent className="space-y-4" value="alerts">
+            {/* Forecast-Based Alerts */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  <span>Reorder Alerts</span>
+                  <span>Depletion Alerts</span>
+                  <Button
+                    disabled={isLoading}
+                    onClick={fetchAlerts}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <RefreshCw
+                      className={`mr-2 size-4 ${isLoading ? "animate-spin" : ""}`}
+                    />
+                    Refresh
+                  </Button>
+                </CardTitle>
+                <CardDescription>
+                  Items forecasted to run out within 14 days
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {alerts.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <CheckCircle2 className="mb-4 size-12 text-green-500" />
+                    <h3 className="text-lg font-semibold">All Clear!</h3>
+                    <p className="text-sm text-muted-foreground">
+                      No items are forecasted to deplete within 14 days.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Critical Alerts (7 days) */}
+                    {alerts.filter((a) => a.urgency === "critical").length >
+                      0 && (
+                      <div className="space-y-3">
+                        <h4 className="flex items-center gap-2 font-semibold text-destructive">
+                          <AlertTriangle className="size-4" />
+                          Critical (
+                          {
+                            alerts.filter((a) => a.urgency === "critical")
+                              .length
+                          }
+                          )
+                        </h4>
+                        <div className="space-y-2">
+                          {alerts
+                            .filter((a) => a.urgency === "critical")
+                            .map((alert, index) => (
+                              <div
+                                className="flex items-start gap-4 rounded-lg border border-destructive/50 bg-destructive/5 p-4"
+                                key={`critical-${index}`}
+                              >
+                                <Badge variant="destructive">
+                                  {alert.daysUntilDepletion} days
+                                </Badge>
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between">
+                                    <div className="font-semibold">
+                                      {alert.sku}
+                                    </div>
+                                    <Badge
+                                      className="capitalize"
+                                      variant={getConfidenceColor(
+                                        alert.confidence
+                                      )}
+                                    >
+                                      {alert.confidence}
+                                    </Badge>
+                                  </div>
+                                  <div className="mt-1 text-sm text-muted-foreground">
+                                    Current: {alert.currentStock} units |
+                                    Depletion: {formatDate(alert.depletionDate)}
+                                  </div>
+                                  <div className="mt-2 flex items-center gap-2">
+                                    <Button
+                                      onClick={() => {
+                                        toast.success(
+                                          `Reorder request created for ${alert.sku}`
+                                        );
+                                      }}
+                                      size="sm"
+                                      variant="destructive"
+                                    >
+                                      <ArrowDown className="mr-1 size-3" />
+                                      Request Reorder
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Warning Alerts (14 days) */}
+                    {alerts.filter((a) => a.urgency === "warning").length >
+                      0 && (
+                      <div className="space-y-3">
+                        <h4 className="flex items-center gap-2 font-semibold text-orange-500">
+                          <TrendingDown className="size-4" />
+                          Warning (
+                          {alerts.filter((a) => a.urgency === "warning").length}
+                          )
+                        </h4>
+                        <div className="space-y-2">
+                          {alerts
+                            .filter((a) => a.urgency === "warning")
+                            .map((alert, index) => (
+                              <div
+                                className="flex items-start gap-4 rounded-lg border border-orange-500/50 bg-orange-500/5 p-4"
+                                key={`warning-${index}`}
+                              >
+                                <Badge
+                                  className="bg-orange-500 text-white"
+                                  variant="secondary"
+                                >
+                                  {alert.daysUntilDepletion} days
+                                </Badge>
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between">
+                                    <div className="font-semibold">
+                                      {alert.sku}
+                                    </div>
+                                    <Badge
+                                      className="capitalize"
+                                      variant={getConfidenceColor(
+                                        alert.confidence
+                                      )}
+                                    >
+                                      {alert.confidence}
+                                    </Badge>
+                                  </div>
+                                  <div className="mt-1 text-sm text-muted-foreground">
+                                    Current: {alert.currentStock} units |
+                                    Depletion: {formatDate(alert.depletionDate)}
+                                  </div>
+                                  <div className="mt-2 flex items-center gap-2">
+                                    <Button
+                                      onClick={() => {
+                                        toast.success(
+                                          `Reorder request created for ${alert.sku}`
+                                        );
+                                      }}
+                                      size="sm"
+                                      variant="outline"
+                                    >
+                                      <ArrowRight className="mr-1 size-3" />
+                                      Request Reorder
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Reorder Suggestions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Reorder Suggestions</span>
                   <Button
                     disabled={isGenerating}
                     onClick={() => handleGenerateSuggestions(false)}
@@ -634,7 +1036,15 @@ export const ForecastsPageClient = () => {
                             </span>
                           </div>
                         </div>
-                        <Button size="sm" variant="outline">
+                        <Button
+                          onClick={() => {
+                            toast.success(
+                              `Purchase order created for ${suggestion.sku}`
+                            );
+                          }}
+                          size="sm"
+                          variant="outline"
+                        >
                           Create PO
                         </Button>
                       </div>

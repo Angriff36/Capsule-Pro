@@ -21,18 +21,15 @@ import {
   TrendingUp,
   User,
 } from "lucide-react";
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import type {
+  KitchenTrend,
+  KitchenTrendStation,
+} from "./lib/use-kitchen-analytics";
 import {
   getCompletionColor,
   useKitchenAnalytics,
 } from "./lib/use-kitchen-analytics";
-import type { KitchenTrend, KitchenTrendStation } from "./lib/use-kitchen-analytics";
 
 const AnalyticsKitchenPage = () => {
   const { data, isLoading, error } = useKitchenAnalytics({ period: "30d" });
@@ -399,7 +396,10 @@ const AnalyticsKitchenPage = () => {
               });
 
             // Build chart config
-            const chartConfig: Record<string, { label: string; color: string }> = {};
+            const chartConfig: Record<
+              string,
+              { label: string; color: string }
+            > = {};
             stationNames.forEach((name, index) => {
               chartConfig[name] = {
                 label: name,
@@ -416,9 +416,15 @@ const AnalyticsKitchenPage = () => {
                   </p>
                 </CardHeader>
                 <CardContent>
-                  <ChartContainer config={chartConfig} className="h-[300px] w-full">
+                  <ChartContainer
+                    className="h-[300px] w-full"
+                    config={chartConfig}
+                  >
                     <LineChart data={chartData}>
-                      <CartesianGrid className="stroke-muted" strokeDasharray="3 3" />
+                      <CartesianGrid
+                        className="stroke-muted"
+                        strokeDasharray="3 3"
+                      />
                       <XAxis
                         axisLine={false}
                         className="text-xs fill-muted-foreground"
@@ -438,9 +444,9 @@ const AnalyticsKitchenPage = () => {
                       />
                       {stationNames.map((stationName) => (
                         <Line
-                          key={stationName}
                           dataKey={stationName}
                           dot={false}
+                          key={stationName}
                           stroke={`var(--color-${stationName})`}
                           strokeWidth={2}
                           type="monotone"
