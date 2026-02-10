@@ -23,9 +23,12 @@ import {
   Info,
   Pause,
   Play,
+  RefreshCw,
   RotateCcw,
   Timer,
   Wrench,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
@@ -73,6 +76,86 @@ interface MobileRecipeClientProps {
   tenantId: string;
 }
 
+// Recipe cache storage keys
+const CACHE_PREFIX = "recipe_cache_";
+const CACHE_VERSION = "v1";
+const CACHE_TIMESTAMP_KEY = `${CACHE_PREFIX}${CACHE_VERSION}_timestamp_`;
+const CACHE_STEPS_KEY = `${CACHE_PREFIX}${CACHE_VERSION}_steps_`;
+const CACHE_INGREDIENTS_KEY = `${CACHE_PREFIX}${CACHE_VERSION}_ingredients_`;
+const CACHE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+// Cache storage functions
+const saveRecipeToCache = (
+  recipeId: string,
+  stepsData: RecipeStepsResponse,
+  ingredientsData: RecipeIngredient[]
+): void => {
+  try {
+    const timestamp = Date.now();
+    localStorage.setItem(`${CACHE_TIMESTAMP_KEY}${recipeId}`, timestamp.toString());
+    localStorage.setItem(`${CACHE_STEPS_KEY}${recipeId}`, JSON.stringify(stepsData));
+    localStorage.setItem(`${CACHE_INGREDIENTS_KEY}${recipeId}`, JSON.stringify(ingredientsData));
+  } catch {
+    // Silently fail if localStorage is not available
+  }
+};
+
+const loadRecipeFromCache = (
+  recipeId: string
+): { steps: RecipeStepsResponse; ingredients: RecipeIngredient[] } | null => {
+  try {
+    const timestamp = localStorage.getItem(`${CACHE_TIMESTAMP_KEY}${recipeId}`);
+    if (!timestamp) {
+      return null;
+    }
+
+    const age = Date.now() - Number.parseInt(timestamp, 10);
+    if (age > CACHE_EXPIRY_MS) {
+      // Cache expired
+      clearRecipeCache(recipeId);
+      return null;
+    }
+
+    const stepsData = localStorage.getItem(`${CACHE_STEPS_KEY}${recipeId}`);
+    const ingredientsData = localStorage.getItem(`${CACHE_INGREDIENTS_KEY}${recipeId}`);
+
+    if (!stepsData || !ingredientsData) {
+      return null;
+    }
+
+    return {
+      steps: JSON.parse(stepsData) as RecipeStepsResponse,
+      ingredients: JSON.parse(ingredientsData) as RecipeIngredient[],
+    };
+  } catch {
+    return null;
+  }
+};
+
+const clearRecipeCache = (recipeId: string): void => {
+  try {
+    localStorage.removeItem(`${CACHE_TIMESTAMP_KEY}${recipeId}`);
+    localStorage.removeItem(`${CACHE_STEPS_KEY}${recipeId}`);
+    localStorage.removeItem(`${CACHE_INGREDIENTS_KEY}${recipeId}`);
+  } catch {
+    // Silently fail
+  }
+};
+
+const isRecipeCached = (recipeId: string): boolean => {
+  try {
+    const timestamp = localStorage.getItem(`${CACHE_TIMESTAMP_KEY}${recipeId}`);
+    if (!timestamp) {
+      return false;
+    }
+
+    const age = Date.now() - Number.parseInt(timestamp, 10);
+    return age <= CACHE_EXPIRY_MS;
+  } catch {
+    return false;
+  }
+};
+
 const formatTime = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -86,6 +169,12 @@ const formatMinutes = (minutes?: number | null): string => {
   return `${minutes}m`;
 };
 
+const scaleQuantity = (quantity: number, scale: number): string => {
+  const scaled = quantity * scale;
+  // Format to 2 decimal places if needed, remove trailing zeros
+  return scaled.toFixed(2).replace(/\.?0+$/, "");
+};
+
 export const MobileRecipeClient = ({
   recipeId,
   tenantId,
@@ -93,35 +182,91 @@ export const MobileRecipeClient = ({
   const [recipe, setRecipe] = useState<RecipeStepsResponse | null>(null);
   const [ingredients, setIngredients] = useState<RecipeIngredient[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isOnline, setIsOnline] = useState(true);
+  const [isFromCache, setIsFromCache] = useState(false);
+  const [scaleFactor, setScaleFactor] = useState(1);
   const [currentStep, setCurrentStep] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [initialTime, setInitialTime] = useState(0);
 
-  // Fetch recipe data
+  // Track online/offline status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    setIsOnline(navigator.onLine);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  // Fetch recipe data with offline support
   useEffect(() => {
     const fetchRecipeData = async () => {
       try {
         setLoading(true);
-        const [stepsRes, ingredientsRes] = await Promise.all([
-          apiFetch(`/api/kitchen/recipes/${recipeId}/steps`),
-          apiFetch(`/api/kitchen/recipes/${recipeId}/ingredients`),
-        ]);
 
-        if (!(stepsRes.ok && ingredientsRes.ok)) {
-          throw new Error("Failed to fetch recipe data");
+        // First, try to load from cache for instant display
+        const cachedData = loadRecipeFromCache(recipeId);
+        if (cachedData) {
+          setRecipe(cachedData.steps);
+          setIngredients(cachedData.ingredients);
+          setIsFromCache(true);
+          setLoading(false);
+
+          // If offline, show a toast
+          if (!navigator.onLine) {
+            toast.info("Loaded from offline cache", {
+              icon: <WifiOff className="h-4 w-4" />,
+            });
+          }
         }
 
-        const [stepsData, ingredientsData] = await Promise.all([
-          stepsRes.json() as Promise<RecipeStepsResponse>,
-          ingredientsRes.json() as Promise<{ ingredients: RecipeIngredient[] }>,
-        ]);
+        // If online, fetch fresh data
+        if (navigator.onLine) {
+          const [stepsRes, ingredientsRes] = await Promise.all([
+            apiFetch(`/api/kitchen/recipes/${recipeId}/steps`),
+            apiFetch(`/api/kitchen/recipes/${recipeId}/ingredients`),
+          ]);
 
-        setRecipe(stepsData);
-        setIngredients(ingredientsData.ingredients);
+          if (!(stepsRes.ok && ingredientsRes.ok)) {
+            throw new Error("Failed to fetch recipe data");
+          }
+
+          const [stepsData, ingredientsData] = await Promise.all([
+            stepsRes.json() as Promise<RecipeStepsResponse>,
+            ingredientsRes.json() as Promise<{ ingredients: RecipeIngredient[] }>,
+          ]);
+
+          setRecipe(stepsData);
+          setIngredients(ingredientsData.ingredients);
+          setIsFromCache(false);
+
+          // Save to cache for offline use
+          saveRecipeToCache(recipeId, stepsData, ingredientsData.ingredients);
+
+          // Show toast if we updated from cache
+          if (cachedData) {
+            toast.success("Recipe updated", {
+              icon: <Wifi className="h-4 w-4" />,
+            });
+          }
+        } else if (!cachedData) {
+          // Offline and no cache available
+          toast.error("No internet connection and no cached data available");
+        }
       } catch (error) {
         console.error("Error fetching recipe:", error);
-        toast.error("Failed to load recipe");
+        // If we have cached data, keep it; otherwise show error
+        if (!recipe) {
+          toast.error("Failed to load recipe");
+        }
       } finally {
         setLoading(false);
       }
@@ -200,6 +345,43 @@ export const MobileRecipeClient = ({
     }
   }, [currentStep]);
 
+  const refreshRecipe = useCallback(async () => {
+    if (!isOnline) {
+      toast.error("Cannot refresh while offline");
+      return;
+    }
+
+    try {
+      toast.info("Refreshing recipe...", { icon: <RefreshCw className="h-4 w-4 animate-spin" /> });
+
+      const [stepsRes, ingredientsRes] = await Promise.all([
+        apiFetch(`/api/kitchen/recipes/${recipeId}/steps`),
+        apiFetch(`/api/kitchen/recipes/${recipeId}/ingredients`),
+      ]);
+
+      if (!(stepsRes.ok && ingredientsRes.ok)) {
+        throw new Error("Failed to fetch recipe data");
+      }
+
+      const [stepsData, ingredientsData] = await Promise.all([
+        stepsRes.json() as Promise<RecipeStepsResponse>,
+        ingredientsRes.json() as Promise<{ ingredients: RecipeIngredient[] }>,
+      ]);
+
+      setRecipe(stepsData);
+      setIngredients(ingredientsData.ingredients);
+      setIsFromCache(false);
+
+      // Save to cache for offline use
+      saveRecipeToCache(recipeId, stepsData, ingredientsData.ingredients);
+
+      toast.success("Recipe updated successfully", { icon: <Wifi className="h-4 w-4" /> });
+    } catch (error) {
+      console.error("Error refreshing recipe:", error);
+      toast.error("Failed to refresh recipe");
+    }
+  }, [isOnline, recipeId]);
+
   const handleKeyPress = useCallback(
     (e: KeyboardEvent) => {
       // Voice/hands-free navigation
@@ -243,6 +425,38 @@ export const MobileRecipeClient = ({
 
   return (
     <div className="flex min-h-screen flex-col pb-safe">
+      {/* Offline/Cache Status Indicator */}
+      {isFromCache && (
+        <div className="flex items-center justify-between border-b bg-amber-50 px-4 py-2 text-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-sm">
+              <WifiOff className="h-4 w-4" />
+              <span className="font-medium">
+                {!isOnline ? "Offline Mode" : "Cached Data"}
+              </span>
+            </div>
+            {!isOnline && (
+              <span className="text-xs text-amber-600 dark:text-amber-400">
+                Last synced {new Date(
+                  Number.parseInt(localStorage.getItem(`${CACHE_TIMESTAMP_KEY}${recipeId}`) || "0", 10)
+                ).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+          {isOnline && (
+            <Button
+              className="h-7 text-xs"
+              onClick={refreshRecipe}
+              size="sm"
+              variant="outline"
+            >
+              <RefreshCw className="mr-1 h-3 w-3" />
+              Refresh
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* Progress Bar */}
       <div className="border-b bg-background px-4 py-3">
         <div className="mb-2 flex items-center justify-between text-sm">
@@ -414,9 +628,40 @@ export const MobileRecipeClient = ({
         <TabsContent className="mt-0 px-4 py-6" value="ingredients">
           <Card>
             <CardHeader>
-              <CardTitle>Ingredients</CardTitle>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <CardTitle>Ingredients</CardTitle>
+                  {recipe.yieldQuantity && (
+                    <p className="text-muted-foreground text-sm">
+                      Scales {recipe.yieldQuantity} {recipe.yieldUnit || ""} →{" "}
+                      {scaleQuantity(recipe.yieldQuantity, scaleFactor)} {recipe.yieldUnit || ""}
+                    </p>
+                  )}
+                </div>
+                <Badge variant={scaleFactor === 1 ? "outline" : "default"}>
+                  {scaleFactor}x
+                </Badge>
+              </div>
             </CardHeader>
             <CardContent>
+              {/* Scaling Controls */}
+              <div className="mb-6 space-y-3">
+                <p className="text-muted-foreground text-sm">Scale Recipe:</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {[0.5, 1, 2, 3].map((scale) => (
+                    <Button
+                      className="h-10"
+                      key={scale}
+                      onClick={() => setScaleFactor(scale)}
+                      variant={scaleFactor === scale ? "default" : "outline"}
+                    >
+                      {scale}x
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Ingredients List */}
               <div className="space-y-3">
                 {ingredients.map((ingredient) => (
                   <div
@@ -433,7 +678,20 @@ export const MobileRecipeClient = ({
                     </div>
                     <div className="text-right">
                       <p className="font-medium tabular-nums">
-                        {ingredient.quantity} {ingredient.unitCode}
+                        {scaleFactor === 1 ? (
+                          <>
+                            {ingredient.quantity} {ingredient.unitCode}
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-muted-foreground line-through mr-1">
+                              {ingredient.quantity} {ingredient.unitCode}
+                            </span>
+                            <span className="text-primary">
+                              {scaleQuantity(ingredient.quantity, scaleFactor)} {ingredient.unitCode}
+                            </span>
+                          </>
+                        )}
                       </p>
                       {ingredient.isOptional && (
                         <Badge className="mt-1 text-xs" variant="secondary">
