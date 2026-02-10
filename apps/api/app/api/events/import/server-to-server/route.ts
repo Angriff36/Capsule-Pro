@@ -141,6 +141,25 @@ interface BatchImportResponse {
 }
 
 /**
+ * Import options type
+ */
+type ImportOptions = z.infer<typeof ImportOptionsSchema>;
+
+/**
+ * Event import schema type
+ */
+type EventImport = z.infer<typeof EventImportSchema>;
+
+/**
+ * Counter type for import statistics
+ */
+interface ImportCounters {
+  successCount: number;
+  skippedCount: number;
+  failedCount: number;
+}
+
+/**
  * Helper to ensure a location exists for the tenant
  */
 async function ensureLocationId(
@@ -297,6 +316,421 @@ async function findExistingEvent(
 }
 
 /**
+ * Create event in database
+ */
+async function createEvent(
+  tenantId: string,
+  event: EventImport,
+  venueId: string | undefined
+): Promise<string> {
+  const eventId = randomUUID();
+  const parsedDate = new Date(event.eventDate);
+
+  await database.$executeRaw(
+    Prisma.sql`
+      INSERT INTO tenant_events.events (
+        tenant_id,
+        id,
+        event_number,
+        title,
+        event_type,
+        event_date,
+        start_time,
+        end_time,
+        guest_count,
+        status,
+        venue_id,
+        venue_name,
+        venue_address,
+        notes,
+        budget,
+        ticket_price,
+        event_format,
+        tags,
+        contact_name,
+        contact_email,
+        contact_phone,
+        created_at,
+        updated_at
+      )
+      VALUES (
+        ${tenantId},
+        ${eventId},
+        ${randomUUID().slice(0, 8)},
+        ${event.title},
+        ${event.eventType},
+        ${parsedDate.toISOString().split("T")[0]},
+        ${event.startTime ? event.startTime : null},
+        ${event.endTime ? event.endTime : null},
+        ${event.guestCount},
+        ${event.status},
+        ${venueId},
+        ${event.venueName || null},
+        ${event.venueAddress || null},
+        ${event.notes || null},
+        ${event.budget ?? null},
+        ${event.ticketPrice ?? null},
+        ${event.eventFormat || null},
+        ${event.tags.length > 0 ? event.tags : null},
+        ${event.contactName || null},
+        ${event.contactEmail || null},
+        ${event.contactPhone || null},
+        NOW(),
+        NOW()
+      )
+    `
+  );
+
+  return eventId;
+}
+
+/**
+ * Import menu items for an event
+ */
+async function importMenuItems(
+  tenantId: string,
+  eventId: string,
+  menuItems: z.infer<typeof MenuItemSchema>[]
+): Promise<void> {
+  for (const menuItem of menuItems) {
+    const dishId = await findOrCreateDish(tenantId, menuItem);
+
+    if (dishId) {
+      await database.$executeRaw(
+        Prisma.sql`
+          INSERT INTO tenant_events.event_dishes (
+            tenant_id,
+            id,
+            event_id,
+            dish_id,
+            quantity,
+            unit,
+            servings,
+            special_instructions,
+            course,
+            created_at
+          )
+          VALUES (
+            ${tenantId},
+            ${randomUUID()},
+            ${eventId},
+            ${dishId},
+            ${menuItem.quantity ?? null},
+            ${menuItem.unit || null},
+            ${menuItem.servings ?? null},
+            ${menuItem.specialInstructions || null},
+            ${menuItem.course || null},
+            NOW()
+          )
+        `
+      );
+    }
+  }
+}
+
+/**
+ * Import guest list for an event
+ */
+async function importGuestList(
+  tenantId: string,
+  eventId: string,
+  guestList: z.infer<typeof GuestSchema>[]
+): Promise<void> {
+  for (const guest of guestList) {
+    await database.$executeRaw(
+      Prisma.sql`
+        INSERT INTO tenant_events.event_guests (
+          tenant_id,
+          id,
+          event_id,
+          name,
+          dietary_restrictions,
+          meal_choice,
+          table_number,
+          rsvp_status,
+          notes,
+          created_at
+        )
+        VALUES (
+          ${tenantId},
+          ${randomUUID()},
+          ${eventId},
+          ${guest.name},
+          ${guest.dietaryRestrictions || null},
+          ${guest.mealChoice || null},
+          ${guest.tableNumber || null},
+          ${guest.rsvpStatus || "pending"},
+          ${guest.notes || null},
+          NOW()
+        )
+      `
+    );
+  }
+}
+
+/**
+ * Import timeline tasks for an event
+ */
+async function importTimelineTasks(
+  tenantId: string,
+  eventId: string,
+  timelineTasks: z.infer<typeof TimelineTaskSchema>[]
+): Promise<void> {
+  for (const task of timelineTasks) {
+    let assigneeId: string | null = null;
+
+    if (task.assigneeEmail) {
+      assigneeId = await findEmployeeByEmail(tenantId, task.assigneeEmail);
+    }
+
+    await database.$executeRaw(
+      Prisma.sql`
+        INSERT INTO tenant_events.event_tasks (
+          tenant_id,
+          id,
+          event_id,
+          title,
+          description,
+          start_time,
+          end_time,
+          assignee_id,
+          status,
+          created_at
+        )
+        VALUES (
+          ${tenantId},
+          ${randomUUID()},
+          ${eventId},
+          ${task.title},
+          ${task.description || null},
+          ${task.startTime ? new Date(task.startTime).toISOString() : null},
+          ${task.endTime ? new Date(task.endTime).toISOString() : null},
+          ${assigneeId},
+          ${task.status || "pending"},
+          NOW()
+        )
+      `
+    );
+  }
+}
+
+/**
+ * Check for duplicate events and handle accordingly
+ */
+async function checkDuplicateAndSkip(
+  tenantId: string,
+  event: EventImport,
+  skipDuplicates: boolean,
+  results: EventImportResult[],
+  counters: ImportCounters,
+  isDryRun: boolean
+): Promise<boolean> {
+  const existingEvent = await findExistingEvent(
+    tenantId,
+    event.title,
+    event.eventDate
+  );
+
+  if (existingEvent && skipDuplicates) {
+    counters.skippedCount++;
+    results.push({
+      eventId: existingEvent,
+      externalId: event.externalId,
+      status: "skipped",
+      message: isDryRun
+        ? "Event already exists (dry run)"
+        : "Event already exists",
+    });
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Process events in dry run mode
+ */
+async function processDryRun(
+  tenantId: string,
+  events: EventImport[],
+  skipDuplicates: boolean,
+  results: EventImportResult[],
+  counters: ImportCounters
+): Promise<void> {
+  for (const event of events) {
+    const shouldSkip = await checkDuplicateAndSkip(
+      tenantId,
+      event,
+      skipDuplicates,
+      results,
+      counters,
+      true
+    );
+
+    if (shouldSkip) {
+      continue;
+    }
+
+    counters.successCount++;
+    results.push({
+      externalId: event.externalId,
+      status: "success",
+      message: "Event would be imported (dry run)",
+    });
+  }
+}
+
+/**
+ * Process a single event import
+ */
+async function processSingleEvent(
+  tenantId: string,
+  event: EventImport,
+  importOptions: ImportOptions,
+  results: EventImportResult[],
+  counters: ImportCounters
+): Promise<void> {
+  const eventErrors: string[] = [];
+  let eventId: string | undefined;
+
+  try {
+    // Check for duplicates
+    const shouldSkip = await checkDuplicateAndSkip(
+      tenantId,
+      event,
+      importOptions.skipDuplicates,
+      results,
+      counters,
+      false
+    );
+
+    if (shouldSkip) {
+      return;
+    }
+
+    // Validate event date
+    const parsedDate = new Date(event.eventDate);
+    if (Number.isNaN(parsedDate.getTime())) {
+      eventErrors.push("Invalid event date format");
+    }
+
+    // Ensure location exists
+    await ensureLocationId(tenantId, event.venueName);
+
+    // Find or create venue
+    let venueId: string | undefined;
+    if (event.venueId) {
+      venueId = event.venueId;
+    } else if (event.venueName) {
+      venueId =
+        (await findOrCreateVenue(
+          tenantId,
+          event.venueName,
+          event.venueAddress
+        )) ?? undefined;
+    }
+
+    // Create event
+    eventId = await createEvent(tenantId, event, venueId);
+
+    // Import menu items if enabled
+    if (importOptions.autoCreateEntities && event.menuItems.length > 0) {
+      await importMenuItems(tenantId, eventId, event.menuItems);
+    }
+
+    // Import guest list
+    if (event.guestList.length > 0) {
+      await importGuestList(tenantId, eventId, event.guestList);
+    }
+
+    // Import timeline tasks
+    if (event.timelineTasks.length > 0) {
+      await importTimelineTasks(tenantId, eventId, event.timelineTasks);
+    }
+
+    counters.successCount++;
+    results.push({
+      eventId,
+      externalId: event.externalId,
+      status: "success",
+      message: "Event imported successfully",
+    });
+  } catch (error) {
+    counters.failedCount++;
+    results.push({
+      externalId: event.externalId,
+      status: "failed",
+      message: "Failed to import event",
+      errors:
+        eventErrors.length > 0
+          ? eventErrors
+          : [error instanceof Error ? error.message : "Unknown error"],
+    });
+  }
+}
+
+/**
+ * Process all events in the import request
+ */
+async function processEvents(
+  tenantId: string,
+  events: EventImport[],
+  importOptions: ImportOptions,
+  results: EventImportResult[],
+  counters: ImportCounters
+): Promise<void> {
+  // Dry run mode - validate without importing
+  if (importOptions.dryRun) {
+    await processDryRun(
+      tenantId,
+      events,
+      importOptions.skipDuplicates,
+      results,
+      counters
+    );
+    return;
+  }
+
+  // Process each event
+  for (const event of events) {
+    await processSingleEvent(tenantId, event, importOptions, results, counters);
+  }
+}
+
+/**
+ * Build the batch import response
+ */
+function buildBatchImportResponse(
+  batchId: string,
+  totalEvents: number,
+  counters: ImportCounters,
+  results: EventImportResult[],
+  dryRun: boolean
+): BatchImportResponse {
+  const { successCount, skippedCount, failedCount } = counters;
+
+  let status: "completed" | "partial" | "failed";
+  if (failedCount === 0) {
+    status = "completed";
+  } else if (successCount > 0) {
+    status = "partial";
+  } else {
+    status = "failed";
+  }
+
+  return {
+    batchId,
+    status,
+    totalEvents,
+    successCount,
+    skippedCount,
+    failedCount,
+    results,
+    dryRun,
+  };
+}
+
+/**
  * POST /api/events/import/server-to-server
  *
  * Import events from external systems via direct API call.
@@ -329,312 +763,32 @@ export async function POST(request: Request) {
     }
 
     const { events, options: inputOptions } = validationResult.data;
-    const importOptions = inputOptions ?? {
+    const importOptions: ImportOptions = inputOptions ?? {
       dryRun: false,
       skipDuplicates: false,
       autoCreateEntities: true,
       notifyOnCompletion: false,
     };
+
     const batchId = randomUUID();
     const results: EventImportResult[] = [];
-    let successCount = 0;
-    let skippedCount = 0;
-    let failedCount = 0;
+    const counters: ImportCounters = {
+      successCount: 0,
+      skippedCount: 0,
+      failedCount: 0,
+    };
 
-    // Dry run mode - validate without importing
-    if (importOptions.dryRun) {
-      for (const event of events) {
-        const existingEvent = await findExistingEvent(
-          tenantId,
-          event.title,
-          event.eventDate
-        );
-
-        if (existingEvent && importOptions.skipDuplicates) {
-          skippedCount++;
-          results.push({
-            externalId: event.externalId,
-            status: "skipped",
-            message: "Event already exists (dry run)",
-          });
-        } else {
-          successCount++;
-          results.push({
-            externalId: event.externalId,
-            status: "success",
-            message: "Event would be imported (dry run)",
-          });
-        }
-      }
-
-      const response: BatchImportResponse = {
-        batchId,
-        status: successCount === events.length ? "completed" : "partial",
-        totalEvents: events.length,
-        successCount,
-        skippedCount,
-        failedCount,
-        results,
-        dryRun: true,
-      };
-
-      return NextResponse.json(response);
-    }
-
-    // Process each event
-    for (const event of events) {
-      const eventErrors: string[] = [];
-      let eventId: string | undefined;
-
-      try {
-        // Check for duplicates
-        const existingEvent = await findExistingEvent(
-          tenantId,
-          event.title,
-          event.eventDate
-        );
-
-        if (existingEvent) {
-          if (importOptions.skipDuplicates) {
-            skippedCount++;
-            results.push({
-              eventId: existingEvent,
-              externalId: event.externalId,
-              status: "skipped",
-              message: "Event already exists",
-            });
-            continue;
-          }
-          eventErrors.push("Event with same title and date already exists");
-        }
-
-        // Parse event date
-        const parsedDate = new Date(event.eventDate);
-        if (Number.isNaN(parsedDate.getTime())) {
-          eventErrors.push("Invalid event date format");
-        }
-
-        // Ensure location exists
-        const locationId = await ensureLocationId(tenantId, event.venueName);
-
-        // Find or create venue
-        const venueId = event.venueId
-          ? event.venueId
-          : event.venueName
-            ? ((await findOrCreateVenue(event.venueName, event.venueAddress)) ??
-              undefined)
-            : undefined;
-
-        // Create event
-        eventId = randomUUID();
-
-        await database.$executeRaw(
-          Prisma.sql`
-            INSERT INTO tenant_events.events (
-              tenant_id,
-              id,
-              event_number,
-              title,
-              event_type,
-              event_date,
-              start_time,
-              end_time,
-              guest_count,
-              status,
-              venue_id,
-              venue_name,
-              venue_address,
-              notes,
-              budget,
-              ticket_price,
-              event_format,
-              tags,
-              contact_name,
-              contact_email,
-              contact_phone,
-              created_at,
-              updated_at
-            )
-            VALUES (
-              ${tenantId},
-              ${eventId},
-              ${randomUUID().slice(0, 8)},
-              ${event.title},
-              ${event.eventType},
-              ${parsedDate.toISOString().split("T")[0]},
-              ${event.startTime ? event.startTime : null},
-              ${event.endTime ? event.endTime : null},
-              ${event.guestCount},
-              ${event.status},
-              ${venueId},
-              ${event.venueName || null},
-              ${event.venueAddress || null},
-              ${event.notes || null},
-              ${event.budget ?? null},
-              ${event.ticketPrice ?? null},
-              ${event.eventFormat || null},
-              ${event.tags.length > 0 ? event.tags : null},
-              ${event.contactName || null},
-              ${event.contactEmail || null},
-              ${event.contactPhone || null},
-              NOW(),
-              NOW()
-            )
-          `
-        );
-
-        // Import menu items if enabled
-        if (importOptions.autoCreateEntities && event.menuItems.length > 0) {
-          for (const menuItem of event.menuItems) {
-            const dishId = await findOrCreateDish(tenantId, menuItem);
-
-            if (dishId) {
-              await database.$executeRaw(
-                Prisma.sql`
-                  INSERT INTO tenant_events.event_dishes (
-                    tenant_id,
-                    id,
-                    event_id,
-                    dish_id,
-                    quantity,
-                    unit,
-                    servings,
-                    special_instructions,
-                    course,
-                    created_at
-                  )
-                  VALUES (
-                    ${tenantId},
-                    ${randomUUID()},
-                    ${eventId},
-                    ${dishId},
-                    ${menuItem.quantity ?? null},
-                    ${menuItem.unit || null},
-                    ${menuItem.servings ?? null},
-                    ${menuItem.specialInstructions || null},
-                    ${menuItem.course || null},
-                    NOW()
-                  )
-                `
-              );
-            }
-          }
-        }
-
-        // Import guest list
-        if (event.guestList.length > 0) {
-          for (const guest of event.guestList) {
-            await database.$executeRaw(
-              Prisma.sql`
-                INSERT INTO tenant_events.event_guests (
-                  tenant_id,
-                  id,
-                  event_id,
-                  name,
-                  dietary_restrictions,
-                  meal_choice,
-                  table_number,
-                  rsvp_status,
-                  notes,
-                  created_at
-                )
-                VALUES (
-                  ${tenantId},
-                  ${randomUUID()},
-                  ${eventId},
-                  ${guest.name},
-                  ${guest.dietaryRestrictions || null},
-                  ${guest.mealChoice || null},
-                  ${guest.tableNumber || null},
-                  ${guest.rsvpStatus || "pending"},
-                  ${guest.notes || null},
-                  NOW()
-                )
-              `
-            );
-          }
-        }
-
-        // Import timeline tasks
-        if (event.timelineTasks.length > 0) {
-          for (const task of event.timelineTasks) {
-            let assigneeId: string | null = null;
-
-            if (task.assigneeEmail) {
-              assigneeId = await findEmployeeByEmail(
-                tenantId,
-                task.assigneeEmail
-              );
-            }
-
-            await database.$executeRaw(
-              Prisma.sql`
-                INSERT INTO tenant_events.event_tasks (
-                  tenant_id,
-                  id,
-                  event_id,
-                  title,
-                  description,
-                  start_time,
-                  end_time,
-                  assignee_id,
-                  status,
-                  created_at
-                )
-                VALUES (
-                  ${tenantId},
-                  ${randomUUID()},
-                  ${eventId},
-                  ${task.title},
-                  ${task.description || null},
-                  ${task.startTime ? new Date(task.startTime).toISOString() : null},
-                  ${task.endTime ? new Date(task.endTime).toISOString() : null},
-                  ${assigneeId},
-                  ${task.status || "pending"},
-                  NOW()
-                )
-              `
-            );
-          }
-        }
-
-        successCount++;
-        results.push({
-          eventId,
-          externalId: event.externalId,
-          status: "success",
-          message: "Event imported successfully",
-        });
-      } catch (error) {
-        failedCount++;
-        results.push({
-          externalId: event.externalId,
-          status: "failed",
-          message: "Failed to import event",
-          errors:
-            eventErrors.length > 0
-              ? eventErrors
-              : [error instanceof Error ? error.message : "Unknown error"],
-        });
-      }
-    }
+    // Process events
+    await processEvents(tenantId, events, importOptions, results, counters);
 
     // Build response
-    const response: BatchImportResponse = {
+    const response = buildBatchImportResponse(
       batchId,
-      status:
-        failedCount === 0
-          ? "completed"
-          : successCount > 0
-            ? "partial"
-            : "failed",
-      totalEvents: events.length,
-      successCount,
-      skippedCount,
-      failedCount,
+      events.length,
+      counters,
       results,
-      dryRun: false,
-    };
+      importOptions.dryRun
+    );
 
     return NextResponse.json(response);
   } catch (error) {

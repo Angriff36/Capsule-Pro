@@ -6,11 +6,11 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { createOutboxEvent } from "@repo/realtime";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { validateUpdateQuantityReceivedRequest } from "../../../../validation";
-import { createOutboxEvent } from "@repo/realtime";
 
 interface RouteContext {
   params: Promise<{ id: string; itemId: string }>;
@@ -114,7 +114,7 @@ export async function PUT(request: Request, context: RouteContext) {
       // Only proceed with stock increment if there's a positive increment
       if (incrementalQuantity > 0) {
         // Get or create the inventory item
-        let inventoryItem = await tx.inventoryItem.findFirst({
+        const inventoryItem = await tx.inventoryItem.findFirst({
           where: {
             id: poItem.itemId,
             tenantId,
@@ -130,7 +130,7 @@ export async function PUT(request: Request, context: RouteContext) {
 
         const currentQuantity = Number(inventoryItem.quantityOnHand);
         const newQuantity = currentQuantity + incrementalQuantity;
-        const unitCost = Number(poItem.unitCost);
+        const _unitCost = Number(poItem.unitCost);
 
         // Update inventory item quantity on hand
         await tx.inventoryItem.update({
@@ -190,7 +190,7 @@ export async function PUT(request: Request, context: RouteContext) {
             purchaseOrderItemId: poItem.id,
             purchaseOrderId: purchaseOrder.id,
             purchaseOrderNumber: purchaseOrder.poNumber,
-            oldQuantityReceived: oldQuantityReceived,
+            oldQuantityReceived,
             newQuantityReceived,
             incrementalQuantity,
             userId: userId ?? null,

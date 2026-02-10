@@ -227,7 +227,7 @@ export async function extractPdfText(
 
     type Pdf2JsonParserCtor = new () => Pdf2JsonParser;
 
-    const isRecord = (value: unknown): value is Record<string, unknown> =>
+    const _isRecord = (value: unknown): value is Record<string, unknown> =>
       typeof value === "object" && value !== null;
 
     const isParserCtor = (value: unknown): value is Pdf2JsonParserCtor =>
@@ -249,7 +249,8 @@ export async function extractPdfText(
       (isParserCtor(pdf2jsonModule.PDFParser)
         ? pdf2jsonModule.PDFParser
         : undefined) ??
-      (hasPDFParserProperty(defaultExport) && isParserCtor(defaultExport.PDFParser)
+      (hasPDFParserProperty(defaultExport) &&
+      isParserCtor(defaultExport.PDFParser)
         ? defaultExport.PDFParser
         : undefined) ??
       (isParserCtor(defaultExport) ? defaultExport : undefined);

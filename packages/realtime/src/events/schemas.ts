@@ -229,20 +229,26 @@ export const CommandBoardCursorMovedEventSchema =
 /**
  * Full event schemas with discriminator - Stock/Inventory events.
  */
-export const InventoryStockAdjustedEventSchema = RealtimeEventBaseSchema.extend({
-  eventType: z.literal("inventory.stock.adjusted"),
-  payload: InventoryStockAdjustedPayloadSchema,
-});
+export const InventoryStockAdjustedEventSchema = RealtimeEventBaseSchema.extend(
+  {
+    eventType: z.literal("inventory.stock.adjusted"),
+    payload: InventoryStockAdjustedPayloadSchema,
+  }
+);
 
-export const InventoryStockConsumedEventSchema = RealtimeEventBaseSchema.extend({
-  eventType: z.literal("inventory.stock.consumed"),
-  payload: InventoryStockConsumedPayloadSchema,
-});
+export const InventoryStockConsumedEventSchema = RealtimeEventBaseSchema.extend(
+  {
+    eventType: z.literal("inventory.stock.consumed"),
+    payload: InventoryStockConsumedPayloadSchema,
+  }
+);
 
-export const InventoryStockReceivedEventSchema = RealtimeEventBaseSchema.extend({
-  eventType: z.literal("inventory.stock.received"),
-  payload: InventoryStockReceivedPayloadSchema,
-});
+export const InventoryStockReceivedEventSchema = RealtimeEventBaseSchema.extend(
+  {
+    eventType: z.literal("inventory.stock.received"),
+    payload: InventoryStockReceivedPayloadSchema,
+  }
+);
 
 export const InventoryStockWastedEventSchema = RealtimeEventBaseSchema.extend({
   eventType: z.literal("inventory.stock.wasted"),

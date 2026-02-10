@@ -6,8 +6,8 @@
 
 import { describe, expect, it } from "vitest";
 
-const WARN_PAYLOAD_SIZE = 32 * 1024; // 32 KiB
-const MAX_PAYLOAD_SIZE = 64 * 1024; // 64 KiB
+const _WARN_PAYLOAD_SIZE = 32 * 1024; // 32 KiB
+const _MAX_PAYLOAD_SIZE = 64 * 1024; // 64 KiB
 const MIN_LIMIT = 1;
 const MAX_LIMIT = 500;
 const DEFAULT_LIMIT = 100;
@@ -21,7 +21,10 @@ function parseLimit(payload: { limit?: number } | null): number {
   if (payload?.limit === undefined || payload?.limit === null) {
     return DEFAULT_LIMIT;
   }
-  return Math.max(MIN_LIMIT, Math.min(MAX_LIMIT, payload.limit ?? DEFAULT_LIMIT));
+  return Math.max(
+    MIN_LIMIT,
+    Math.min(MAX_LIMIT, payload.limit ?? DEFAULT_LIMIT)
+  );
 }
 
 /**
@@ -63,7 +66,7 @@ describe("Publisher - Limit Parsing", () => {
   it("clamps limit above maximum to MAX_LIMIT", () => {
     expect(parseLimit({ limit: 501 })).toBe(MAX_LIMIT);
     expect(parseLimit({ limit: 1000 })).toBe(MAX_LIMIT);
-    expect(parseLimit({ limit: 99999 })).toBe(MAX_LIMIT);
+    expect(parseLimit({ limit: 99_999 })).toBe(MAX_LIMIT);
   });
 
   it("accepts boundary values", () => {

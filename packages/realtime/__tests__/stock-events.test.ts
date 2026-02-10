@@ -9,8 +9,8 @@ import {
   InventoryStockConsumedEventSchema,
   InventoryStockReceivedEventSchema,
   InventoryStockWastedEventSchema,
-  parseRealtimeEvent,
   isInventoryStockEvent,
+  parseRealtimeEvent,
 } from "../src/events";
 
 const validStockAdjustedEvent = {

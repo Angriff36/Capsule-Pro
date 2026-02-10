@@ -1,13 +1,20 @@
 import { auth } from "@repo/auth/server";
-import type { Prisma } from "@repo/database";
-import { database } from "@repo/database";
 import {
   createRecipeRuntime,
-  type KitchenOpsContext,
   updateDishPricing,
 } from "@repo/manifest-adapters";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import {
+  checkBlockingConstraints,
+  createDishPricingOutboxEvent,
+  createRuntimeContext,
+  fetchDishById,
+  getCurrentUser,
+  loadDishInstance,
+  syncDishPricingToDatabase,
+  validatePricingUpdate,
+} from "../../helpers";
 
 interface RouteContext {
   params: Promise<{ dishId: string }>;
@@ -33,37 +40,19 @@ export async function PATCH(request: Request, context: RouteContext) {
   const { dishId } = await context.params;
   const body = await request.json();
 
-  // Validate request body
-  const pricePerPerson = body.pricePerPerson;
-  const costPerPerson = body.costPerPerson;
-
-  if (pricePerPerson === null || pricePerPerson === undefined) {
+  const pricingUpdate = validatePricingUpdate(body);
+  if (!pricingUpdate) {
     return NextResponse.json(
-      { message: "pricePerPerson is required" },
+      {
+        message:
+          "Invalid pricing data. Both pricePerPerson and costPerPerson are required and must be non-negative numbers.",
+      },
       { status: 400 }
     );
   }
 
-  if (costPerPerson === null || costPerPerson === undefined) {
-    return NextResponse.json(
-      { message: "costPerPerson is required" },
-      { status: 400 }
-    );
-  }
-
-  if (pricePerPerson < 0 || costPerPerson < 0) {
-    return NextResponse.json(
-      { message: "Price and cost must be non-negative" },
-      { status: 400 }
-    );
-  }
-
-  // Get current user
-  const currentUser = await database.user.findFirst({
-    where: {
-      AND: [{ tenantId }, { authUserId: (await auth()).userId ?? "" }],
-    },
-  });
+  const authUser = await auth();
+  const currentUser = await getCurrentUser(tenantId, authUser.userId ?? "");
 
   if (!currentUser) {
     return NextResponse.json(
@@ -72,108 +61,60 @@ export async function PATCH(request: Request, context: RouteContext) {
     );
   }
 
-  // Check if dish exists
-  const dish = await database.dish.findFirst({
-    where: {
-      AND: [{ tenantId }, { id: dishId }, { deletedAt: null }],
-    },
-  });
-
+  const dish = await fetchDishById(tenantId, dishId);
   if (!dish) {
     return NextResponse.json({ message: "Dish not found" }, { status: 404 });
   }
 
-  // Create the Manifest runtime context
-  const { createPrismaStoreProvider } = await import(
-    "@repo/manifest-adapters/prisma-store"
-  );
-
-  const runtimeContext: KitchenOpsContext = {
-    tenantId,
-    userId: currentUser.id,
-    userRole: currentUser.role,
-    storeProvider: createPrismaStoreProvider(database, tenantId),
-  };
-
   try {
-    // Create the runtime with Prisma backing
+    const runtimeContext = await createRuntimeContext(
+      tenantId,
+      currentUser.id,
+      currentUser.role
+    );
     const runtime = await createRecipeRuntime(runtimeContext);
 
-    // Load the dish entity into Manifest
-    await runtime.createInstance("Dish", {
-      id: dish.id,
-      tenantId: dish.tenantId,
-      name: dish.name,
-      recipeId: dish.recipeId ?? "",
-      description: dish.description ?? "",
-      category: dish.category ?? "",
-      serviceStyle: dish.serviceStyle ?? "",
-      presentationImageUrl: dish.presentationImageUrl ?? "",
-      dietaryTags: Array.isArray(dish.dietaryTags)
-        ? dish.dietaryTags.join(",")
-        : "",
-      allergens: Array.isArray(dish.allergens) ? dish.allergens.join(",") : "",
-      pricePerPerson: Number(dish.pricePerPerson ?? 0),
-      costPerPerson: Number(dish.costPerPerson ?? 0),
-      minPrepLeadDays: dish.minPrepLeadDays,
-      maxPrepLeadDays: dish.maxPrepLeadDays ?? dish.minPrepLeadDays,
-      portionSizeDescription: dish.portionSizeDescription ?? "",
-      isActive: dish.isActive,
-      createdAt: dish.createdAt.getTime(),
-      updatedAt: dish.updatedAt.getTime(),
-    });
+    await loadDishInstance(runtime, dish);
 
-    // Execute the updatePricing command via Manifest
     const result = await updateDishPricing(
       runtime,
       dishId,
-      pricePerPerson,
-      costPerPerson
+      pricingUpdate.pricePerPerson,
+      pricingUpdate.costPerPerson
     );
 
-    // Check for blocking constraints
-    const blockingConstraints = result.constraintOutcomes?.filter(
-      (o) => !o.passed && o.severity === "block"
+    const constraintValidation = checkBlockingConstraints(
+      result.constraintOutcomes
     );
 
-    if (blockingConstraints && blockingConstraints.length > 0) {
+    if (!constraintValidation.passed) {
       return NextResponse.json(
         {
           message: "Cannot update dish pricing due to constraint violations",
-          constraintOutcomes: blockingConstraints,
+          constraintOutcomes: constraintValidation.blockingConstraints,
         },
         { status: 400 }
       );
     }
 
-    // Sync the updated state back to Prisma
     const instance = await runtime.getInstance("Dish", dishId);
     if (instance) {
-      await database.dish.update({
-        where: { tenantId_id: { tenantId, id: dishId } },
-        data: {
-          pricePerPerson: instance.pricePerPerson as number,
-          costPerPerson: instance.costPerPerson as number,
-        },
-      });
+      await syncDishPricingToDatabase(
+        tenantId,
+        dishId,
+        instance.pricePerPerson as number,
+        instance.costPerPerson as number
+      );
 
-      // Create outbox event for downstream consumers
-      await database.outboxEvent.create({
-        data: {
-          tenantId,
-          aggregateType: "Dish",
-          aggregateId: dishId,
-          eventType: "kitchen.dish.pricing.updated",
-          payload: {
-            dishId,
-            name: instance.name as string,
-            pricePerPerson: instance.pricePerPerson as number,
-            costPerPerson: instance.costPerPerson as number,
-            constraintOutcomes: result.constraintOutcomes,
-          } as Prisma.InputJsonValue,
-          status: "pending" as const,
-        },
-      });
+      await createDishPricingOutboxEvent(
+        tenantId,
+        dishId,
+        instance.name as string,
+        instance.pricePerPerson as number,
+        instance.costPerPerson as number,
+        result.constraintOutcomes,
+        result.emittedEvents
+      );
 
       return NextResponse.json(
         {

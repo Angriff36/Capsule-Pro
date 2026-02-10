@@ -259,8 +259,8 @@ Generate comprehensive prep tasks covering all menu items. Ensure:
  */
 function convertTasksToDbFormat(
   aiTasks: AIGeneratedTasks["tasks"],
-  tenantId: string,
-  eventId: string,
+  _tenantId: string,
+  _eventId: string,
   context: GenerationContext,
   options: BulkGenerateRequest["options"] = {}
 ): GeneratedPrepTask[] {
@@ -283,7 +283,13 @@ function convertTasksToDbFormat(
         (new Date(task.dueByDate).getTime() - eventDate.getTime()) /
           (1000 * 60 * 60 * 24)
       );
-      priority = daysUntilDue <= 1 ? 3 : daysUntilDue <= 2 ? 5 : 7;
+      if (daysUntilDue <= 1) {
+        priority = 3;
+      } else if (daysUntilDue <= 2) {
+        priority = 5;
+      } else {
+        priority = 7;
+      }
     }
     if (options.priorityStrategy === "manual") {
       priority = basePriority;

@@ -8,7 +8,6 @@
 import { database, Prisma } from "@repo/database";
 import { checkBudgetForShift } from "./labor-budget";
 
-// Types for auto-assignment
 export interface ShiftRequirement {
   shiftId: string;
   scheduleId: string;
@@ -16,8 +15,8 @@ export interface ShiftRequirement {
   shiftStart: Date;
   shiftEnd: Date;
   roleDuringShift?: string;
-  requiredSkills?: string[]; // Array of skill IDs
-  eventId?: string; // Event ID for budget tracking
+  requiredSkills?: string[];
+  eventId?: string;
   notes?: string;
 }
 
@@ -38,12 +37,12 @@ export interface EmployeeCandidate {
     skillName: string;
     proficiencyLevel: number;
   }>;
-  availability?: {
+  availability?: Array<{
     dayOfWeek: number;
     startTime: string;
     endTime: string;
     isAvailable: boolean;
-  }[];
+  }>;
   hasConflictingShift: boolean;
   conflictingShifts: Array<{
     id: string;
@@ -77,6 +76,46 @@ export interface AutoAssignmentResult {
   laborBudgetWarning?: string;
 }
 
+interface DbEmployee {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
+  role: string;
+  is_active: boolean;
+  hourly_rate: number | null;
+  seniority_level: string | null;
+  seniority_rank: number | null;
+  skills: Array<{
+    skill_id: string;
+    skill_name: string;
+    proficiency_level: number;
+  }>;
+  availability: Array<{
+    day_of_week: number;
+    start_time: string;
+    end_time: string;
+    is_available: boolean;
+  }>;
+  has_conflicting_shift: boolean;
+  conflicting_shifts: Array<{
+    id: string;
+    shift_start: Date;
+    shift_end: Date;
+    location_name: string;
+  }>;
+}
+
+interface ScoreBreakdown {
+  totalScore: number;
+  skillsMatched: string[];
+  skillsMissing: string[];
+  skillsMatch: boolean;
+  seniorityScore: number;
+  availabilityMatch: boolean;
+  reasoning: string[];
+}
+
 /**
  * Get eligible employees for a shift with scoring
  */
@@ -87,38 +126,54 @@ export async function getEligibleEmployeesForShift(
   const { shiftId, locationId, shiftStart, shiftEnd, roleDuringShift } =
     requirement;
 
-  // Get employees with their seniority, skills, and conflict information
-  const employees = await database.$queryRaw<
-    Array<{
-      id: string;
-      first_name: string | null;
-      last_name: string | null;
-      email: string;
-      role: string;
-      is_active: boolean;
-      hourly_rate: number | null;
-      seniority_level: string | null;
-      seniority_rank: number | null;
-      skills: Array<{
-        skill_id: string;
-        skill_name: string;
-        proficiency_level: number;
-      }>;
-      availability: Array<{
-        day_of_week: number;
-        start_time: string;
-        end_time: string;
-        is_available: boolean;
-      }>;
-      has_conflicting_shift: boolean;
-      conflicting_shifts: Array<{
-        id: string;
-        shift_start: Date;
-        shift_end: Date;
-        location_name: string;
-      }>;
-    }>
-  >(
+  const employees = await fetchEmployeesForShift(
+    tenantId,
+    shiftId,
+    shiftStart,
+    shiftEnd,
+    roleDuringShift
+  );
+
+  const suggestions: AssignmentSuggestion[] = employees
+    .filter((e) => !e.has_conflicting_shift)
+    .map((employee) => scoreEmployeeForShift(employee, requirement));
+
+  suggestions.sort((a, b) => b.score - a.score);
+
+  const bestMatch = suggestions[0] || null;
+  const canAutoAssign =
+    bestMatch && bestMatch.confidence === "high" && suggestions.length > 0;
+
+  const budgetResult = await checkLaborBudget(
+    canAutoAssign,
+    bestMatch,
+    tenantId,
+    requirement,
+    locationId,
+    shiftStart,
+    shiftEnd
+  );
+
+  return {
+    shiftId,
+    suggestions,
+    bestMatch,
+    canAutoAssign: budgetResult.canAutoAssign,
+    laborBudgetWarning: budgetResult.laborBudgetWarning,
+  };
+}
+
+/**
+ * Fetches employees from database with seniority, skills, and conflict info
+ */
+async function fetchEmployeesForShift(
+  tenantId: string,
+  shiftId: string,
+  shiftStart: Date,
+  shiftEnd: Date,
+  roleDuringShift?: string
+): Promise<DbEmployee[]> {
+  return database.$queryRaw<DbEmployee[]>(
     Prisma.sql`
       WITH employee_seniority_current AS (
         SELECT DISTINCT ON (employee_id)
@@ -212,106 +267,68 @@ export async function getEligibleEmployeesForShift(
         e.first_name ASC
     `
   );
+}
 
-  // Score each employee
-  const suggestions: AssignmentSuggestion[] = employees
-    .filter((e) => !e.has_conflicting_shift)
-    .map((employee) => scoreEmployeeForShift(employee, requirement));
+/**
+ * Checks labor budget for auto-assignment
+ */
+async function checkLaborBudget(
+  canAutoAssign: boolean,
+  bestMatch: AssignmentSuggestion | null,
+  tenantId: string,
+  requirement: ShiftRequirement,
+  locationId: string,
+  shiftStart: Date,
+  shiftEnd: Date
+): Promise<{ canAutoAssign: boolean; laborBudgetWarning?: string }> {
+  if (!(canAutoAssign && bestMatch)) {
+    return { canAutoAssign };
+  }
 
-  // Sort by score descending
-  suggestions.sort((a, b) => b.score - a.score);
+  const budgetCheck = await checkBudgetForShift(tenantId, {
+    locationId,
+    eventId: requirement.eventId,
+    shiftStart,
+    shiftEnd,
+    hourlyRate: bestMatch.employee.hourlyRate || undefined,
+  });
 
-  // Determine if auto-assignment is appropriate
-  const bestMatch = suggestions[0] || null;
-  const canAutoAssign =
-    bestMatch && bestMatch.confidence === "high" && suggestions.length > 0;
-
-  // Check labor budget
-  let laborBudgetWarning: string | undefined;
-  if (canAutoAssign && bestMatch) {
-    const budgetCheck = await checkBudgetForShift(tenantId, {
-      locationId,
-      eventId: requirement.eventId,
-      shiftStart,
-      shiftEnd,
-      hourlyRate: bestMatch.employee.hourlyRate || undefined,
-    });
-
-    if (!budgetCheck.withinBudget) {
-      // Override canAutoAssign if over budget
-      return {
-        shiftId,
-        suggestions,
-        bestMatch,
-        canAutoAssign: false,
-        laborBudgetWarning: budgetCheck.budgetWarning,
-      };
-    }
-
-    laborBudgetWarning = budgetCheck.budgetWarning;
+  if (!budgetCheck.withinBudget) {
+    return {
+      canAutoAssign: false,
+      laborBudgetWarning: budgetCheck.budgetWarning,
+    };
   }
 
   return {
-    shiftId,
-    suggestions,
-    bestMatch,
     canAutoAssign,
-    laborBudgetWarning,
+    laborBudgetWarning: budgetCheck.budgetWarning,
   };
 }
 
 /**
- * Score an employee for a shift based on multiple factors
+ * Calculates skills score and returns match details
  */
-function scoreEmployeeForShift(
-  employee: {
-    id: string;
-    first_name: string | null;
-    last_name: string | null;
-    email: string;
-    role: string;
-    is_active: boolean;
-    hourly_rate: number | null;
-    seniority_level: string | null;
-    seniority_rank: number | null;
-    skills: Array<{
-      skill_id: string;
-      skill_name: string;
-      proficiency_level: number;
-    }>;
-    availability: Array<{
-      day_of_week: number;
-      start_time: string;
-      end_time: string;
-      is_available: boolean;
-    }>;
-    has_conflicting_shift: boolean;
-    conflicting_shifts: Array<{
-      id: string;
-      shift_start: Date;
-      shift_end: Date;
-      location_name: string;
-    }>;
-  },
-  requirement: ShiftRequirement
-): AssignmentSuggestion {
-  const { shiftStart, shiftEnd, requiredSkills = [] } = requirement;
-
-  const reasoning: string[] = [];
-  let score = 0;
-
-  // 1. Skills matching (40 points max)
-  const employeeSkillIds = new Set(employee.skills.map((s) => s.skill_id));
+function calculateSkillsScore(
+  employeeSkills: DbEmployee["skills"],
+  requiredSkills: string[]
+): Pick<
+  ScoreBreakdown,
+  "totalScore" | "skillsMatched" | "skillsMissing" | "skillsMatch" | "reasoning"
+> {
+  const employeeSkillIds = new Set(employeeSkills.map((s) => s.skill_id));
   const skillsMatched: string[] = [];
   const skillsMissing: string[] = [];
+  let score = 0;
+  const reasoning: string[] = [];
 
   if (requiredSkills.length > 0) {
     for (const skillId of requiredSkills) {
       if (employeeSkillIds.has(skillId)) {
-        const skill = employee.skills.find((s) => s.skill_id === skillId);
+        const skill = employeeSkills.find((s) => s.skill_id === skillId);
         if (skill) {
           skillsMatched.push(skill.skill_name);
-          score += 10 + skill.proficiency_level * 2; // 12-20 points per skill
+          score += 10 + skill.proficiency_level * 2;
         }
       } else {
         skillsMissing.push("Missing required skill");
@@ -326,21 +343,48 @@ function scoreEmployeeForShift(
     reasoning.push(`Missing ${skillsMissing.length} required skills`);
   }
 
-  // 2. Seniority scoring (20 points max)
-  const seniorityScore = employee.seniority_rank || 0;
-  score += Math.min(seniorityScore * 4, 20);
-  if (employee.seniority_level) {
+  return {
+    totalScore: score,
+    skillsMatched,
+    skillsMissing,
+    skillsMatch,
+    reasoning,
+  };
+}
+
+/**
+ * Calculates seniority score
+ */
+function calculateSeniorityScore(
+  seniorityLevel: string | null,
+  seniorityRank: number | null
+): Pick<ScoreBreakdown, "totalScore" | "seniorityScore" | "reasoning"> {
+  const seniorityScore = seniorityRank || 0;
+  const score = Math.min(seniorityScore * 4, 20);
+  const reasoning: string[] = [];
+
+  if (seniorityLevel) {
     reasoning.push(
-      `Seniority level: ${employee.seniority_level} (rank ${seniorityScore})`
+      `Seniority level: ${seniorityLevel} (rank ${seniorityScore})`
     );
   }
 
-  // 3. Availability checking (20 points max)
+  return { totalScore: score, seniorityScore, reasoning };
+}
+
+/**
+ * Checks availability and returns score
+ */
+function checkAvailabilityMatch(
+  availability: DbEmployee["availability"],
+  shiftStart: Date,
+  shiftEnd: Date
+): Pick<ScoreBreakdown, "totalScore" | "availabilityMatch" | "reasoning"> {
   const shiftDayOfWeek = shiftStart.getDay();
   const shiftStartTime = shiftStart.toTimeString().slice(0, 5);
   const shiftEndTime = shiftEnd.toTimeString().slice(0, 5);
 
-  const availabilityMatch = employee.availability.some((avail) => {
+  const availabilityMatch = availability.some((avail) => {
     return (
       avail.day_of_week === shiftDayOfWeek &&
       avail.is_available &&
@@ -349,94 +393,183 @@ function scoreEmployeeForShift(
     );
   });
 
+  const reasoning: string[] = [];
+  let score = 0;
+
   if (availabilityMatch) {
-    score += 20;
+    score = 20;
     reasoning.push("Available according to schedule preferences");
   } else {
     reasoning.push("No explicit availability set for this time");
   }
 
-  // 4. Cost consideration (10 points max) - prefer cost-effective but not too cheap
-  const hourlyRate = employee.hourly_rate || 0;
-  if (hourlyRate > 0) {
-    // Moderate rate is preferred (15-25/hr)
-    if (hourlyRate >= 15 && hourlyRate <= 25) {
-      score += 10;
-    } else if (hourlyRate >= 10 && hourlyRate < 30) {
-      score += 5;
+  return { totalScore: score, availabilityMatch, reasoning };
+}
+
+/**
+ * Calculates cost score
+ */
+function calculateCostScore(
+  hourlyRate: number | null
+): Pick<ScoreBreakdown, "totalScore" | "reasoning"> {
+  let score = 0;
+  const rate = hourlyRate || 0;
+
+  if (rate > 0) {
+    if (rate >= 15 && rate <= 25) {
+      score = 10;
+    } else if (rate >= 10 && rate < 30) {
+      score = 5;
     }
   }
 
-  // 5. Role matching (10 points)
-  if (
-    requirement.roleDuringShift &&
-    employee.role === requirement.roleDuringShift
-  ) {
-    score += 10;
-    reasoning.push(`Role matches: ${employee.role}`);
+  return { totalScore: score, reasoning: [] };
+}
+
+/**
+ * Calculates role match score
+ */
+function calculateRoleScore(
+  employeeRole: string,
+  requiredRole: string | undefined
+): Pick<ScoreBreakdown, "totalScore" | "reasoning"> {
+  let score = 0;
+  const reasoning: string[] = [];
+
+  if (requiredRole && employeeRole === requiredRole) {
+    score = 10;
+    reasoning.push(`Role matches: ${employeeRole}`);
   }
 
-  // Calculate confidence level
-  let confidence: "high" | "medium" | "low" = "low";
+  return { totalScore: score, reasoning };
+}
+
+/**
+ * Determines confidence level based on scoring
+ */
+function determineConfidence(
+  skillsMatch: boolean,
+  hasConflictingShift: boolean,
+  availabilityMatch: boolean,
+  totalScore: number
+): "high" | "medium" | "low" {
   if (
     skillsMatch &&
-    !employee.has_conflicting_shift &&
+    !hasConflictingShift &&
     availabilityMatch &&
-    score >= 50
+    totalScore >= 50
   ) {
-    confidence = "high";
-  } else if (!employee.has_conflicting_shift && score >= 30) {
-    confidence = "medium";
+    return "high";
   }
 
-  // Cost estimate for the shift
+  if (!hasConflictingShift && totalScore >= 30) {
+    return "medium";
+  }
+
+  return "low";
+}
+
+/**
+ * Converts database employee to employee candidate
+ */
+function toEmployeeCandidate(employee: DbEmployee): EmployeeCandidate {
+  return {
+    id: employee.id,
+    firstName: employee.first_name,
+    lastName: employee.last_name,
+    email: employee.email,
+    role: employee.role,
+    isActive: employee.is_active,
+    hourlyRate: employee.hourly_rate,
+    seniority: employee.seniority_level
+      ? {
+          level: employee.seniority_level,
+          rank: employee.seniority_rank || 0,
+        }
+      : undefined,
+    skills: employee.skills.map((s) => ({
+      skillId: s.skill_id,
+      skillName: s.skill_name,
+      proficiencyLevel: s.proficiency_level,
+    })),
+    availability: employee.availability.map((a) => ({
+      dayOfWeek: a.day_of_week,
+      startTime: a.start_time,
+      endTime: a.end_time,
+      isAvailable: a.is_available,
+    })),
+    hasConflictingShift: employee.has_conflicting_shift,
+    conflictingShifts: employee.conflicting_shifts.map((cs) => ({
+      id: cs.id,
+      shiftStart: cs.shift_start,
+      shiftEnd: cs.shift_end,
+      locationName: cs.location_name,
+    })),
+  };
+}
+
+/**
+ * Score an employee for a shift based on multiple factors
+ */
+function scoreEmployeeForShift(
+  employee: DbEmployee,
+  requirement: ShiftRequirement
+): AssignmentSuggestion {
+  const { shiftStart, shiftEnd, requiredSkills = [] } = requirement;
+
+  const skillsResult = calculateSkillsScore(employee.skills, requiredSkills);
+  const seniorityResult = calculateSeniorityScore(
+    employee.seniority_level,
+    employee.seniority_rank
+  );
+  const availabilityResult = checkAvailabilityMatch(
+    employee.availability,
+    shiftStart,
+    shiftEnd
+  );
+  const costResult = calculateCostScore(employee.hourly_rate);
+  const roleResult = calculateRoleScore(
+    employee.role,
+    requirement.roleDuringShift
+  );
+
+  const totalScore =
+    skillsResult.totalScore +
+    seniorityResult.totalScore +
+    availabilityResult.totalScore +
+    costResult.totalScore +
+    roleResult.totalScore;
+
+  const reasoning = [
+    ...skillsResult.reasoning,
+    ...seniorityResult.reasoning,
+    ...availabilityResult.reasoning,
+    ...roleResult.reasoning,
+  ];
+
+  const confidence = determineConfidence(
+    skillsResult.skillsMatch,
+    employee.has_conflicting_shift,
+    availabilityResult.availabilityMatch,
+    totalScore
+  );
+
+  const hourlyRate = employee.hourly_rate || 0;
   const shiftHours =
     (shiftEnd.getTime() - shiftStart.getTime()) / (1000 * 60 * 60);
   const costEstimate = hourlyRate * shiftHours;
 
   return {
-    employee: {
-      id: employee.id,
-      firstName: employee.first_name,
-      lastName: employee.last_name,
-      email: employee.email,
-      role: employee.role,
-      isActive: employee.is_active,
-      hourlyRate: employee.hourly_rate,
-      seniority: employee.seniority_level
-        ? {
-            level: employee.seniority_level,
-            rank: employee.seniority_rank || 0,
-          }
-        : undefined,
-      skills: employee.skills.map((s) => ({
-        skillId: s.skill_id,
-        skillName: s.skill_name,
-        proficiencyLevel: s.proficiency_level,
-      })),
-      availability: employee.availability.map((a) => ({
-        dayOfWeek: a.day_of_week,
-        startTime: a.start_time,
-        endTime: a.end_time,
-        isAvailable: a.is_available,
-      })),
-      hasConflictingShift: employee.has_conflicting_shift,
-      conflictingShifts: employee.conflicting_shifts.map((cs) => ({
-        id: cs.id,
-        shiftStart: cs.shift_start,
-        shiftEnd: cs.shift_end,
-        locationName: cs.location_name,
-      })),
-    },
-    score,
+    employee: toEmployeeCandidate(employee),
+    score: totalScore,
     reasoning,
     confidence,
     matchDetails: {
-      skillsMatch,
-      skillsMatched,
-      skillsMissing,
-      seniorityScore,
-      availabilityMatch,
+      skillsMatch: skillsResult.skillsMatch,
+      skillsMatched: skillsResult.skillsMatched,
+      skillsMissing: skillsResult.skillsMissing,
+      seniorityScore: seniorityResult.seniorityScore,
+      availabilityMatch: availabilityResult.availabilityMatch,
       hasConflicts: employee.has_conflicting_shift,
       costEstimate,
     },
@@ -457,7 +590,6 @@ export async function autoAssignShift(
   employeeId: string;
 }> {
   try {
-    // Get the shift details using raw SQL
     const shift = await database.$queryRaw<
       Array<{
         tenant_id: string;
@@ -481,7 +613,6 @@ export async function autoAssignShift(
       };
     }
 
-    // Check if employee exists and is active using raw SQL
     const employee = await database.$queryRaw<
       Array<{
         id: string;
@@ -506,7 +637,6 @@ export async function autoAssignShift(
       };
     }
 
-    // Update the shift with the employee using raw SQL
     await database.$queryRaw(Prisma.sql`
       UPDATE tenant_staff.schedule_shifts
       SET employee_id = ${employeeId}, updated_at = CURRENT_TIMESTAMP

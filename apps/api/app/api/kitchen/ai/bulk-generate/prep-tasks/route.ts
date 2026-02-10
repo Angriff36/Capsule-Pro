@@ -11,91 +11,106 @@ import { requireTenantId } from "@/app/lib/tenant";
 import { generateBulkPrepTasks } from "./service";
 import type { BulkGenerateRequest, BulkGenerateResponse } from "./types";
 
-export async function POST(request: Request) {
-  try {
-    // Auth check and get tenant ID
-    const tenantId = await requireTenantId();
+function validateBatchMultiplier(value: number): void {
+  invariant(
+    value > 0 && value <= 10,
+    "batchMultiplier must be between 1 and 10"
+  );
+}
 
-    // Parse request body
-    const body = (await request.json()) as BulkGenerateRequest;
-    invariant(body.eventId, "eventId is required");
+function validatePriorityStrategy(value: string): void {
+  invariant(
+    ["due_date", "urgency", "manual"].includes(value),
+    "priorityStrategy must be one of: due_date, urgency, manual"
+  );
+}
 
-    // Validate options
-    if (body.options?.batchMultiplier !== undefined) {
-      invariant(
-        body.options.batchMultiplier > 0 && body.options.batchMultiplier <= 10,
-        "batchMultiplier must be between 1 and 10"
-      );
-    }
+function validateBasePriority(value: number): void {
+  invariant(
+    value >= 1 && value <= 10,
+    "basePriority must be between 1 and 10"
+  );
+}
 
-    if (body.options?.priorityStrategy) {
-      invariant(
-        ["due_date", "urgency", "manual"].includes(
-          body.options.priorityStrategy
-        ),
-        "priorityStrategy must be one of: due_date, urgency, manual"
-      );
-    }
+function validateRequestOptions(body: BulkGenerateRequest): void {
+  if (body.options?.batchMultiplier !== undefined) {
+    validateBatchMultiplier(body.options.batchMultiplier);
+  }
 
-    if (body.options?.basePriority !== undefined) {
-      invariant(
-        body.options.basePriority >= 1 && body.options.basePriority <= 10,
-        "basePriority must be between 1 and 10"
-      );
-    }
+  if (body.options?.priorityStrategy) {
+    validatePriorityStrategy(body.options.priorityStrategy);
+  }
 
-    // Generate tasks
-    const result = await generateBulkPrepTasks(tenantId, body);
+  if (body.options?.basePriority !== undefined) {
+    validateBasePriority(body.options.basePriority);
+  }
+}
 
-    // Build response
-    const response: BulkGenerateResponse = {
-      batchId: result.batchId,
-      status: result.status,
-      generatedCount: result.generatedCount,
-      totalExpected: result.totalExpected,
-      tasks: result.tasks,
-      errors: result.errors,
-      warnings: result.warnings,
-      summary: result.summary,
-    };
-
-    // Return success response (tasks are generated but not yet saved)
-    // Client can choose to save by calling a separate endpoint
-    return NextResponse.json(response, { status: 200 });
-  } catch (error: unknown) {
-    console.error("Bulk task generation API error:", error);
-
-    // Handle invariant errors
-    if (error instanceof Error && error.message.includes("Unauthorized")) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    if (error instanceof Error && error.message.includes("Tenant not found")) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
-
-    if (error instanceof Error && error.message.includes("is required")) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-
-    if (
-      error instanceof Error &&
-      (error.message.includes("must be between") ||
-        error.message.includes("must be one of"))
-    ) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-
-    // Handle other errors
+function determineErrorResponse(error: unknown): NextResponse {
+  if (!(error instanceof Error)) {
     return NextResponse.json(
       {
         message: "Failed to generate tasks",
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: "Unknown error",
       },
       { status: 500 }
     );
+  }
+
+  const message = error.message;
+
+  if (message.includes("Unauthorized")) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  if (message.includes("Tenant not found")) {
+    return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+  }
+
+  if (message.includes("is required")) {
+    return NextResponse.json({ message }, { status: 400 });
+  }
+
+  if (message.includes("must be between") || message.includes("must be one of")) {
+    return NextResponse.json({ message }, { status: 400 });
+  }
+
+  return NextResponse.json(
+    {
+      message: "Failed to generate tasks",
+      error: message,
+    },
+    { status: 500 }
+  );
+}
+
+function buildResponse(result: Awaited<ReturnType<typeof generateBulkPrepTasks>>): BulkGenerateResponse {
+  return {
+    batchId: result.batchId,
+    status: result.status,
+    generatedCount: result.generatedCount,
+    totalExpected: result.totalExpected,
+    tasks: result.tasks,
+    errors: result.errors,
+    warnings: result.warnings,
+    summary: result.summary,
+  };
+}
+
+export async function POST(request: Request): Promise<NextResponse> {
+  try {
+    const tenantId = await requireTenantId();
+    const body = (await request.json()) as BulkGenerateRequest;
+    invariant(body.eventId, "eventId is required");
+
+    validateRequestOptions(body);
+
+    const result = await generateBulkPrepTasks(tenantId, body);
+    const response = buildResponse(result);
+
+    return NextResponse.json(response, { status: 200 });
+  } catch (error: unknown) {
+    console.error("Bulk task generation API error:", error);
+    return determineErrorResponse(error);
   }
 }

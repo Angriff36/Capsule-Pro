@@ -1,6 +1,6 @@
 import { auth } from "@repo/auth/server";
-import { database, type PrismaClient } from "@repo/database";
 import type { Prisma } from "@repo/database";
+import { database, type PrismaClient } from "@repo/database";
 import { wasteInventory } from "@repo/manifest-adapters";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -173,7 +173,10 @@ async function validateWasteRequest(
 }
 
 async function executeWasteTransaction(
-  tx: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends">,
+  tx: Omit<
+    PrismaClient,
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
+  >,
   tenantId: string,
   body: WasteRequestBody,
   validation: WasteValidationResult
@@ -214,14 +217,13 @@ async function executeWasteTransaction(
   });
 
   // Step 3: Decrement inventory stock levels
-  const { newQuantityOnHand } =
-    await updateInventoryStockLevels(
-      tx,
-      tenantId,
-      inventoryItem.id,
-      Number(inventoryItem.quantityOnHand ?? 0),
-      quantity
-    );
+  const { newQuantityOnHand } = await updateInventoryStockLevels(
+    tx,
+    tenantId,
+    inventoryItem.id,
+    Number(inventoryItem.quantityOnHand ?? 0),
+    quantity
+  );
 
   // Step 4: Create inventory transaction record
   await createInventoryTransactionRecord(
@@ -320,7 +322,10 @@ async function validateAndExecuteWasteCommand(
 }
 
 async function updateInventoryStockLevels(
-  tx: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends">,
+  tx: Omit<
+    PrismaClient,
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
+  >,
   tenantId: string,
   inventoryItemId: string,
   currentQuantityOnHand: number,
@@ -342,13 +347,16 @@ async function updateInventoryStockLevels(
 }
 
 async function createInventoryTransactionRecord(
-  tx: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends">,
+  tx: Omit<
+    PrismaClient,
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
+  >,
   tenantId: string,
   inventoryItemId: string,
   wasteEntryId: string,
   quantity: number,
-  quantityBefore: number,
-  quantityAfter: number,
+  _quantityBefore: number,
+  _quantityAfter: number,
   unitCost: number,
   totalCost: number,
   wasteReason: { id: number; name: string },
@@ -374,7 +382,10 @@ async function createInventoryTransactionRecord(
 }
 
 async function emitWasteOutboxEvents(
-  tx: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends">,
+  tx: Omit<
+    PrismaClient,
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
+  >,
   tenantId: string,
   wasteEntryId: string,
   inventoryItemId: string,
@@ -403,10 +414,18 @@ async function emitWasteOutboxEvents(
   });
 
   if (emittedEvents && emittedEvents.length > 0) {
-    for (const event of emittedEvents as Array<{ name: string; payload: unknown }>) {
-      const payload = typeof event.payload === "object" && event.payload !== null
-        ? { ...(event.payload as Record<string, unknown>), wasteEntryId, transactionId: wasteEntryId }
-        : { wasteEntryId, transactionId: wasteEntryId };
+    for (const event of emittedEvents as Array<{
+      name: string;
+      payload: unknown;
+    }>) {
+      const payload =
+        typeof event.payload === "object" && event.payload !== null
+          ? {
+              ...(event.payload as Record<string, unknown>),
+              wasteEntryId,
+              transactionId: wasteEntryId,
+            }
+          : { wasteEntryId, transactionId: wasteEntryId };
 
       await tx.outboxEvent.create({
         data: {

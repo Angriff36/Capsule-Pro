@@ -276,6 +276,311 @@ function createStockLevel(
 }
 
 /**
+ * Build Prisma where clause from filters
+ */
+function buildWhereClause(
+  tenantId: string,
+  filters: StockLevelFilters
+): Prisma.InventoryItemWhereInput {
+  const where: Prisma.InventoryItemWhereInput = {
+    tenantId,
+    deletedAt: null,
+  };
+
+  if (filters.search) {
+    where.OR = [
+      { item_number: { contains: filters.search, mode: "insensitive" } },
+      { name: { contains: filters.search, mode: "insensitive" } },
+    ];
+  }
+
+  if (filters.category) {
+    where.category = filters.category;
+  }
+
+  return where;
+}
+
+/**
+ * Fetch storage locations for a tenant
+ */
+function fetchStorageLocations(tenantId: string) {
+  return database.$queryRaw<Array<{ id: string; name: string }>>`
+    SELECT id, name
+    FROM tenant_inventory.storage_locations
+    WHERE tenant_id = ${tenantId}
+      AND deleted_at IS NULL
+      AND is_active = true
+    ORDER BY name ASC
+  `;
+}
+
+/**
+ * Resolve and validate location filter
+ */
+function resolveLocationFilter(
+  filters: StockLevelFilters,
+  storageLocations: Array<{ id: string; name: string }>
+): string | null {
+  if (!filters.locationId) {
+    return null;
+  }
+
+  return storageLocations.some((l) => l.id === filters.locationId)
+    ? filters.locationId
+    : null;
+}
+
+interface QueryContext {
+  items: Array<{
+    id: string;
+    tenantId: string;
+    item_number: string;
+    name: string;
+    category: string | null;
+    quantityOnHand: number | string | { toNumber: () => number };
+    reorder_level: number | null | { toNumber: () => number };
+    unitCost: number | string | { toNumber: () => number };
+    createdAt: Date;
+    updatedAt: Date;
+  }>;
+  stockByItemAndLocation: Map<
+    string,
+    Map<string, { quantity: number; lastCountedAt: Date | null }>
+  >;
+  storageLocations: Array<{ id: string; name: string }>;
+}
+
+interface ProcessedStockLevels {
+  stockLevels: StockLevelWithStatus[];
+  totalValue: number;
+  belowParCount: number;
+  outOfStockCount: number;
+}
+
+/**
+ * Process items into stock levels with calculated status
+ */
+function processStockLevels(
+  context: QueryContext,
+  filters: StockLevelFilters,
+  locationFilter: string | null
+): ProcessedStockLevels {
+  const stockLevels: StockLevelWithStatus[] = [];
+  let totalValue = 0;
+  let belowParCount = 0;
+  let outOfStockCount = 0;
+
+  for (const item of context.items) {
+    const quantityOnHand = Number(item.quantityOnHand);
+    const reorderLevel = Number(item.reorder_level);
+    const parLevel = item.reorder_level ? Number(item.reorder_level) : null;
+    const unitCost = Number(item.unitCost);
+
+    const reorderStatus = calculateReorderStatus(
+      quantityOnHand,
+      reorderLevel,
+      parLevel
+    );
+    const parStatus = calculateParStatus(
+      quantityOnHand,
+      parLevel,
+      reorderLevel
+    );
+    const stockOutRisk = calculateStockOutRisk(quantityOnHand, reorderLevel);
+    const totalValueItem = quantityOnHand * unitCost;
+
+    if (
+      !passesCalculatedFilters(
+        reorderStatus,
+        quantityOnHand,
+        reorderLevel,
+        filters
+      )
+    ) {
+      continue;
+    }
+
+    totalValue += totalValueItem;
+
+    if (parStatus === "below_par" || reorderStatus === "below_par") {
+      belowParCount++;
+    }
+
+    if (quantityOnHand <= 0) {
+      outOfStockCount++;
+    }
+
+    if (locationFilter) {
+      addItemStockLevelForLocation(
+        stockLevels,
+        item,
+        context.stockByItemAndLocation,
+        context.storageLocations,
+        locationFilter,
+        quantityOnHand,
+        reorderLevel,
+        parLevel,
+        totalValueItem,
+        reorderStatus,
+        parStatus,
+        stockOutRisk
+      );
+    } else {
+      stockLevels.push(
+        createStockLevel(
+          item,
+          quantityOnHand,
+          reorderLevel,
+          parLevel,
+          totalValueItem,
+          reorderStatus,
+          parStatus,
+          stockOutRisk,
+          null
+        )
+      );
+    }
+  }
+
+  return { stockLevels, totalValue, belowParCount, outOfStockCount };
+}
+
+/**
+ * Add stock level for a specific location
+ */
+function addItemStockLevelForLocation(
+  stockLevels: StockLevelWithStatus[],
+  item: {
+    tenantId: string;
+    id: string;
+    item_number: string;
+    name: string;
+    category: string | null;
+    quantityOnHand: number | string | { toNumber: () => number };
+    reorder_level: number | null | { toNumber: () => number };
+    unitCost: number | string | { toNumber: () => number };
+    createdAt: Date;
+    updatedAt: Date;
+  },
+  stockByItemAndLocation: Map<
+    string,
+    Map<string, { quantity: number; lastCountedAt: Date | null }>
+  >,
+  storageLocations: Array<{ id: string; name: string }>,
+  locationFilter: string,
+  quantityOnHand: number,
+  reorderLevel: number,
+  parLevel: number | null,
+  totalValueItem: number,
+  reorderStatus: StockReorderStatus,
+  parStatus: "below_par" | "at_par" | "above_par" | "no_par_set",
+  stockOutRisk: boolean
+): void {
+  const itemStockMap = stockByItemAndLocation.get(item.id);
+  const locationStock = itemStockMap?.get(locationFilter);
+
+  if (locationStock) {
+    const storageLocation = storageLocations.find(
+      (l) => l.id === locationFilter
+    );
+
+    stockLevels.push(
+      createStockLevel(
+        item,
+        quantityOnHand,
+        reorderLevel,
+        parLevel,
+        totalValueItem,
+        reorderStatus,
+        parStatus,
+        stockOutRisk,
+        locationFilter,
+        locationStock,
+        storageLocation
+      )
+    );
+  }
+}
+
+interface StockLevelQueryResult {
+  items: QueryContext["items"];
+  stockByItemAndLocation: QueryContext["stockByItemAndLocation"];
+  storageLocations: QueryContext["storageLocations"];
+  locationFilter: string | null;
+}
+
+/**
+ * Execute all database queries for stock levels
+ */
+async function executeStockLevelQueries(
+  tenantId: string,
+  filters: StockLevelFilters,
+  page: number,
+  limit: number
+): Promise<StockLevelQueryResult> {
+  const where = buildWhereClause(tenantId, filters);
+  const storageLocations = await fetchStorageLocations(tenantId);
+  const locationFilter = resolveLocationFilter(filters, storageLocations);
+
+  const items = await database.inventoryItem.findMany({
+    where,
+    skip: (page - 1) * limit,
+    take: limit,
+    orderBy: [{ category: "asc" }, { name: "asc" }],
+  });
+
+  const itemIds = items.map((item) => item.id);
+
+  const stockRecords = await database.inventoryStock.findMany({
+    where: {
+      tenantId,
+      itemId: { in: itemIds },
+      ...(locationFilter && { storageLocationId: locationFilter }),
+    },
+    include: {
+      tenant: {
+        select: { id: true },
+      },
+    },
+  });
+
+  const stockByItemAndLocation = groupStockByItemAndLocation(stockRecords);
+
+  return { items, stockByItemAndLocation, storageLocations, locationFilter };
+}
+
+/**
+ * Format successful response with stock levels data
+ */
+function formatStockLevelsResponse(
+  stockLevels: StockLevelWithStatus[],
+  page: number,
+  limit: number,
+  totalValue: number,
+  belowParCount: number,
+  outOfStockCount: number
+) {
+  const filteredTotal = stockLevels.length;
+
+  return NextResponse.json({
+    data: stockLevels,
+    pagination: {
+      page,
+      limit,
+      total: filteredTotal,
+      totalPages: Math.ceil(filteredTotal / limit),
+    },
+    summary: {
+      totalItems: filteredTotal,
+      totalValue,
+      belowParCount,
+      outOfStockCount,
+    },
+  });
+}
+
+/**
  * GET /api/inventory/stock-levels - List stock levels with pagination and filters
  */
 export async function GET(request: Request) {
@@ -297,186 +602,24 @@ export async function GET(request: Request) {
     const { page, limit } = parsePaginationParams(searchParams);
     const filters = parseStockLevelFilters(searchParams);
 
-    // Build where clause for inventory items
-    const where: Prisma.InventoryItemWhereInput = {
-      tenantId,
-      deletedAt: null,
-    };
+    const { items, stockByItemAndLocation, storageLocations, locationFilter } =
+      await executeStockLevelQueries(tenantId, filters, page, limit);
 
-    // Search filter (item_number or name)
-    if (filters.search) {
-      where.OR = [
-        { item_number: { contains: filters.search, mode: "insensitive" } },
-        { name: { contains: filters.search, mode: "insensitive" } },
-      ];
-    }
-
-    // Category filter
-    if (filters.category) {
-      where.category = filters.category;
-    }
-
-    // Get storage locations for this tenant
-    const storageLocations = await database.$queryRaw<
-      Array<{ id: string; name: string }>
-    >`
-      SELECT id, name
-      FROM tenant_inventory.storage_locations
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-        AND is_active = true
-      ORDER BY name ASC
-    `;
-
-    // Filter by location if specified
-    let locationFilter: string | null = null;
-    if (filters.locationId) {
-      locationFilter = storageLocations.some((l) => l.id === filters.locationId)
-        ? filters.locationId
-        : null;
-    }
-
-    // Get total count for pagination
-    const _total = await database.inventoryItem.count({ where });
-
-    // Get items with pagination
-    const items = await database.inventoryItem.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: [{ category: "asc" }, { name: "asc" }],
-    });
-
-    // Get stock levels for items
-    const itemIds = items.map((item) => item.id);
-
-    // Get stock records by location
-    const stockRecords = await database.inventoryStock.findMany({
-      where: {
-        tenantId,
-        itemId: { in: itemIds },
-        ...(locationFilter && { storageLocationId: locationFilter }),
-      },
-      include: {
-        tenant: {
-          select: { id: true },
-        },
-      },
-    });
-
-    // Group stock by item ID and location
-    const stockByItemAndLocation = groupStockByItemAndLocation(stockRecords);
-
-    // Build stock levels with status
-    const stockLevels: StockLevelWithStatus[] = [];
-
-    let totalValue = 0;
-    let belowParCount = 0;
-    let outOfStockCount = 0;
-
-    for (const item of items) {
-      const quantityOnHand = Number(item.quantityOnHand);
-      const reorderLevel = Number(item.reorder_level);
-      const parLevel = item.reorder_level ? Number(item.reorder_level) : null;
-      const unitCost = Number(item.unitCost);
-
-      const reorderStatus = calculateReorderStatus(
-        quantityOnHand,
-        reorderLevel,
-        parLevel
+    const { stockLevels, totalValue, belowParCount, outOfStockCount } =
+      processStockLevels(
+        { items, stockByItemAndLocation, storageLocations },
+        filters,
+        locationFilter
       );
-      const parStatus = calculateParStatus(
-        quantityOnHand,
-        parLevel,
-        reorderLevel
-      );
-      const stockOutRisk = calculateStockOutRisk(quantityOnHand, reorderLevel);
-      const totalValueItem = quantityOnHand * unitCost;
 
-      // Apply filters that require calculation
-      if (
-        !passesCalculatedFilters(
-          reorderStatus,
-          quantityOnHand,
-          reorderLevel,
-          filters
-        )
-      ) {
-        continue;
-      }
-
-      totalValue += totalValueItem;
-
-      if (parStatus === "below_par" || reorderStatus === "below_par") {
-        belowParCount++;
-      }
-
-      if (quantityOnHand <= 0) {
-        outOfStockCount++;
-      }
-
-      // If filtering by location, only show items with stock at that location
-      if (locationFilter) {
-        const itemStockMap = stockByItemAndLocation.get(item.id);
-        const locationStock = itemStockMap?.get(locationFilter);
-
-        if (locationStock) {
-          const storageLocation = storageLocations.find(
-            (l) => l.id === locationFilter
-          );
-
-          stockLevels.push(
-            createStockLevel(
-              item,
-              quantityOnHand,
-              reorderLevel,
-              parLevel,
-              totalValueItem,
-              reorderStatus,
-              parStatus,
-              stockOutRisk,
-              locationFilter,
-              locationStock,
-              storageLocation
-            )
-          );
-        }
-      } else {
-        // Show aggregated stock across all locations for the item
-        stockLevels.push(
-          createStockLevel(
-            item,
-            quantityOnHand,
-            reorderLevel,
-            parLevel,
-            totalValueItem,
-            reorderStatus,
-            parStatus,
-            stockOutRisk,
-            null
-          )
-        );
-      }
-    }
-
-    // Recalculate total after filtering
-    const filteredTotal = stockLevels.length;
-
-    return NextResponse.json({
-      data: stockLevels,
-      pagination: {
-        page,
-        limit,
-        total: filteredTotal,
-        totalPages: Math.ceil(filteredTotal / limit),
-      },
-      summary: {
-        totalItems: filteredTotal,
-        totalValue,
-        belowParCount,
-        outOfStockCount,
-      },
-    });
+    return formatStockLevelsResponse(
+      stockLevels,
+      page,
+      limit,
+      totalValue,
+      belowParCount,
+      outOfStockCount
+    );
   } catch (error) {
     console.error("Failed to list stock levels:", error);
     return NextResponse.json(

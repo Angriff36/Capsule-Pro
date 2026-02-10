@@ -5,11 +5,11 @@
 
 import { describe, expect, it } from "vitest";
 import {
-  parseRealtimeEvent,
-  RealtimeEventBaseSchema,
-  KitchenTaskClaimedEventSchema,
   CommandBoardCardCreatedEventSchema,
   InventoryStockAdjustedEventSchema,
+  KitchenTaskClaimedEventSchema,
+  parseRealtimeEvent,
+  RealtimeEventBaseSchema,
 } from "../src/events";
 
 const validClaimedEvent = {
@@ -160,7 +160,7 @@ describe("Error Handling - Type Coercion Edge Cases", () => {
   it("rejects occurredAt as number (timestamp)", () => {
     const event = {
       ...validClaimedEvent,
-      occurredAt: 1705980600000 as unknown as string,
+      occurredAt: 1_705_980_600_000 as unknown as string,
     };
     const result = RealtimeEventBaseSchema.safeParse(event);
     expect(result.success).toBe(false);
@@ -272,7 +272,7 @@ describe("Error Handling - Invalid Timestamp Formats", () => {
     "2026/01/23T10:30:00.000Z", // Wrong separator
     "2026-01-23 10:30:00", // Missing T and Z
     "", // Empty string
-    1234567890, // Unix timestamp as number
+    1_234_567_890, // Unix timestamp as number
     null, // Null value
     undefined, // Undefined
   ] as const;

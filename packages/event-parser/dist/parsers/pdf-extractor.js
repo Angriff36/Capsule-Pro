@@ -118,14 +118,18 @@ export async function extractPdfText(pdfBuffer) {
     }
     console.log("[extractPdfText] Final data type:", data.constructor.name, "length:", data.length);
     try {
-        const isRecord = (value) => typeof value === "object" && value !== null;
+        const _isRecord = (value) => typeof value === "object" && value !== null;
         const isParserCtor = (value) => typeof value === "function";
         const pdf2jsonModule = (await import("pdf2json"));
         const defaultExport = pdf2jsonModule.default;
+        const hasPDFParserProperty = (obj) => {
+            return typeof obj === "object" && obj !== null && "PDFParser" in obj;
+        };
         const PDFParserClass = (isParserCtor(pdf2jsonModule.PDFParser)
             ? pdf2jsonModule.PDFParser
             : undefined) ??
-            (isRecord(defaultExport) && isParserCtor(defaultExport.PDFParser)
+            (hasPDFParserProperty(defaultExport) &&
+                isParserCtor(defaultExport.PDFParser)
                 ? defaultExport.PDFParser
                 : undefined) ??
             (isParserCtor(defaultExport) ? defaultExport : undefined);

@@ -45,15 +45,38 @@ let nextConfig: NextConfig = withLogging({
       const existingExternals = webpackConfig.externals;
       const pdfjsExternal = "pdfjs-dist/legacy/build/pdf.worker.mjs";
 
+      // Build the externals array based on what already exists
+      const baseExternals: Array<
+        | string
+        | RegExp
+        | Record<string, unknown>
+        | ((
+            data: { context: string; request: string },
+            callback: (err?: Error | null, result?: string | boolean) => void
+          ) => void)
+      > = [];
+
+      if (Array.isArray(existingExternals)) {
+        baseExternals.push(...(existingExternals as typeof baseExternals));
+      } else if (existingExternals) {
+        baseExternals.push(
+          existingExternals as
+            | string
+            | RegExp
+            | Record<string, unknown>
+            | ((
+                data: { context: string; request: string },
+                callback: (
+                  err?: Error | null,
+                  result?: string | boolean
+                ) => void
+              ) => void)
+        );
+      }
+
       // Type cast to satisfy TypeScript - webpack handles this at runtime
       webpackConfig.externals = [
-        ...(Array.isArray(existingExternals)
-          ? (existingExternals as Array<
-              string | RegExp | Function | Record<string, unknown>
-            >)
-          : existingExternals
-            ? [existingExternals as string | RegExp | Function]
-            : []),
+        ...baseExternals,
         pdfjsExternal,
       ] as Configuration["externals"];
 

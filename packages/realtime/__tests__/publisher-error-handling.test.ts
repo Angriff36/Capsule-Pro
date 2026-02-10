@@ -166,7 +166,8 @@ describe("Publisher Error Handling - Ably Connection Failures", () => {
 
   it("documented: extracts message from Error objects", () => {
     const error = new Error("Ably connection timeout");
-    const message = error instanceof Error ? error.message : "Unknown publish error";
+    const message =
+      error instanceof Error ? error.message : "Unknown publish error";
     expect(message).toBe("Ably connection timeout");
   });
 
@@ -378,7 +379,7 @@ describe("Publisher Error Handling - Envelope Building Edge Cases", () => {
       payload: {
         taskId: "task-456",
         employeeId: "emp-789",
-        occurredAt: 1234567890, // Not a string
+        occurredAt: 1_234_567_890, // Not a string
       },
       createdAt: new Date("2026-01-23T10:25:00.000Z"),
     };

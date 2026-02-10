@@ -5,11 +5,11 @@
 
 import { describe, expect, it } from "vitest";
 import {
-  RealtimeEventBaseSchema,
   type KitchenTaskClaimedEvent,
   parseRealtimeEvent,
+  REALTIME_EVENT_VERSION,
+  RealtimeEventBaseSchema,
 } from "../src/events";
-import { REALTIME_EVENT_VERSION } from "../src/events";
 
 // Helper function to build envelope (mirrors publisher logic)
 function buildEventEnvelope(outboxEvent: {
@@ -140,7 +140,7 @@ describe("Event Envelope - occurredAt Precedence Rules", () => {
         taskId: "task-456",
         employeeId: "emp-789",
         claimedAt: "2026-01-23T10:35:00.000Z",
-        occurredAt: 1234567890, // Not a string, should fall back
+        occurredAt: 1_234_567_890, // Not a string, should fall back
       },
       createdAt: new Date("2026-01-23T10:25:00.000Z"),
     };

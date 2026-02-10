@@ -1,19 +1,27 @@
 import { auth } from "@repo/auth/server";
 import type { Prisma } from "@repo/database";
 import { database } from "@repo/database";
+import { claimPrepTask } from "@repo/manifest-adapters";
 import {
-  claimPrepTask,
-  createPrepTaskRuntime,
-  type KitchenOpsContext,
-} from "@repo/manifest-adapters";
-import {
-  type ApiErrorResponse,
-  type ApiSuccessResponse,
   createNextResponse,
   hasBlockingConstraints,
 } from "@repo/manifest-adapters/api-response";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+
+import {
+  type ApiSuccessResponse,
+  checkExistingClaim,
+  createErrorResponse,
+  createManifestRuntime,
+  createOutboxEvent,
+  createProgressEntry,
+  createTaskClaim,
+  fetchTask,
+  loadTaskIntoManifest,
+  mapManifestStatusToPrisma,
+  updateTaskStatus,
+} from "../../shared-task-helpers";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -36,6 +44,7 @@ interface RouteContext {
  * - Error: { success: false, message: "...", constraintOutcomes: [...] }
  */
 export async function POST(request: Request, context: RouteContext) {
+  // Step 1: Authenticate and extract context
   const { orgId, userId: clerkId } = await auth();
   if (!(orgId && clerkId)) {
     return NextResponse.json(
@@ -45,9 +54,6 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  const { id } = await context.params;
-  const body = await request.json();
-  const stationId = body.stationId || "";
 
   // Get current user by Clerk ID
   const currentUser = await database.user.findFirst({
@@ -63,208 +69,121 @@ export async function POST(request: Request, context: RouteContext) {
     );
   }
 
-  // Check for existing active claim before invoking Manifest
-  const existingClaim = await database.kitchenTaskClaim.findFirst({
-    where: {
-      AND: [{ tenantId }, { taskId: id }, { releasedAt: null }],
-    },
-  });
+  const userId = currentUser.id;
 
-  if (existingClaim) {
+  // Step 2: Extract request parameters
+  const { id } = await context.params;
+  const body = await request.json();
+  const stationId = body.stationId || "";
+
+  // Step 3: Check for existing active claim
+  const claimCheck = await checkExistingClaim(tenantId, id);
+  if (claimCheck.hasExistingClaim && claimCheck.error) {
     return NextResponse.json(
       {
         success: false,
-        message: "Task already claimed. Please release it first.",
+        message: claimCheck.error.message,
         errorCode: "TASK_ALREADY_CLAIMED",
       },
-      { status: 409 }
+      { status: claimCheck.error.status }
     );
   }
 
-  // Create the Manifest runtime context
-  const { createPrismaStoreProvider } = await import(
-    "@repo/manifest-adapters/prisma-store"
+  // Step 4: Fetch task
+  const taskFetch = await fetchTask(tenantId, id);
+  if (!(taskFetch.success && taskFetch.task)) {
+    return createErrorResponse(
+      taskFetch.error?.message ?? "Unknown error",
+      taskFetch.error?.status ?? 500
+    );
+  }
+
+  const task = taskFetch.task;
+
+  // Step 5: Create Manifest runtime
+  const runtimeResult = await createManifestRuntime({
+    tenantId,
+    userId,
+    userRole: currentUser.role,
+  });
+  if (!(runtimeResult.success && runtimeResult.runtime)) {
+    return createErrorResponse(
+      runtimeResult.error?.message ?? "Unknown error",
+      runtimeResult.error?.status ?? 500
+    );
+  }
+
+  const runtime = runtimeResult.runtime;
+
+  // Step 6: Load task into Manifest
+  await loadTaskIntoManifest(runtime, task);
+
+  // Step 7: Execute claim command
+  const result = await claimPrepTask(runtime, id, userId, stationId);
+
+  // Step 8: Check for blocking constraints
+  if (hasBlockingConstraints(result)) {
+    return createNextResponse(
+      NextResponse,
+      result,
+      { taskId: id },
+      { errorMessagePrefix: "Cannot claim task" }
+    );
+  }
+
+  // Step 9: Sync updated state back to Prisma
+  const instance = await runtime.getInstance("PrepTask", id);
+  if (!instance) {
+    return createErrorResponse("Failed to claim task", 500);
+  }
+
+  // Step 10: Update task status
+  await updateTaskStatus(
+    tenantId,
+    id,
+    mapManifestStatusToPrisma(instance.status as string)
   );
 
-  const runtimeContext: KitchenOpsContext = {
-    tenantId,
-    userId: currentUser.id,
-    userRole: currentUser.role,
-    storeProvider: createPrismaStoreProvider(database, tenantId),
-  };
+  // Step 11: Create claim record
+  const claim = await createTaskClaim(tenantId, id, userId);
 
-  try {
-    // Create the runtime with Prisma backing
-    const runtime = await createPrepTaskRuntime(runtimeContext);
-
-    // Load the task into Manifest from Prisma
-    const task = await database.prepTask.findFirst({
-      where: {
-        AND: [{ tenantId }, { id }, { deletedAt: null }],
-      },
-    });
-
-    if (!task) {
-      return NextResponse.json(
-        { success: false, message: "Task not found" },
-        { status: 404 }
-      );
-    }
-
-    // Load the task entity into Manifest
-    await runtime.createInstance("PrepTask", {
-      id: task.id,
-      tenantId: task.tenantId,
-      eventId: task.eventId,
-      name: task.name,
-      taskType: task.taskType,
-      status: mapPrismaStatusToManifest(task.status),
-      priority: task.priority,
-      quantityTotal: Number(task.quantityTotal),
-      quantityUnitId: task.quantityUnitId ?? "",
-      quantityCompleted: Number(task.quantityCompleted),
-      servingsTotal: task.servingsTotal ?? 0,
-      startByDate: task.startByDate ? task.startByDate.getTime() : 0,
-      dueByDate: task.dueByDate ? task.dueByDate.getTime() : 0,
-      locationId: task.locationId,
-      dishId: task.dishId ?? "",
-      recipeVersionId: task.recipeVersionId ?? "",
-      methodId: task.methodId ?? "",
-      containerId: task.containerId ?? "",
-      estimatedMinutes: task.estimatedMinutes ?? 0,
-      actualMinutes: task.actualMinutes ?? 0,
-      notes: task.notes ?? "",
-      stationId: "",
-      claimedBy: "",
-      claimedAt: 0,
-      createdAt: task.createdAt.getTime(),
-      updatedAt: task.updatedAt.getTime(),
-    });
-
-    // Execute the claim command via Manifest
-    const result = await claimPrepTask(runtime, id, currentUser.id, stationId);
-
-    // Check for blocking constraints using standardized helper
-    if (hasBlockingConstraints(result)) {
-      return createNextResponse(
-        NextResponse,
-        result,
-        { taskId: id },
-        { errorMessagePrefix: "Cannot claim task" }
-      );
-    }
-
-    // Sync the updated state back to Prisma
-    const instance = await runtime.getInstance("PrepTask", id);
-    if (instance) {
-      // Update task status
-      await database.prepTask.update({
-        where: { tenantId_id: { tenantId, id } },
-        data: {
-          status: mapManifestStatusToPrisma(instance.status as string),
-        },
-      });
-
-      // Create claim record
-      const claim = await database.kitchenTaskClaim.create({
-        data: {
-          tenantId,
-          taskId: id,
-          employeeId: currentUser.id,
-        },
-      });
-
-      // Create progress entry for status change
-      if (task.status !== "in_progress") {
-        await database.kitchenTaskProgress.create({
-          data: {
-            tenantId,
-            taskId: id,
-            employeeId: currentUser.id,
-            progressType: "status_change",
-            oldStatus: task.status,
-            newStatus: "in_progress",
-            notes: `Task claimed by ${currentUser.firstName || ""} ${currentUser.lastName || ""}`,
-          },
-        });
-      }
-
-      // Create outbox event for downstream consumers
-      await database.outboxEvent.create({
-        data: {
-          tenantId,
-          aggregateType: "KitchenTask",
-          aggregateId: id,
-          eventType: "kitchen.task.claimed",
-          payload: {
-            taskId: id,
-            claimId: claim.id,
-            employeeId: currentUser.id,
-            status: "in_progress" as const,
-            constraintOutcomes: result.constraintOutcomes,
-          } as Prisma.InputJsonValue,
-          status: "pending" as const,
-        },
-      });
-
-      // Return standardized success response
-      const successResponse: ApiSuccessResponse<{
-        claim: typeof claim;
-        taskId: string;
-        status: string;
-      }> = {
-        success: true,
-        data: {
-          claim,
-          taskId: id,
-          status: "in_progress",
-        },
-        emittedEvents: result.emittedEvents,
-      };
-
-      return NextResponse.json(successResponse, { status: 201 });
-    }
-
-    return NextResponse.json(
-      { success: false, message: "Failed to claim task" },
-      { status: 500 }
+  // Step 12: Create progress entry if status changed
+  if (task.status !== "in_progress") {
+    const fullName =
+      `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
+    await createProgressEntry(
+      tenantId,
+      id,
+      userId,
+      task.status,
+      "in_progress",
+      `Task claimed by ${fullName}`
     );
-  } catch (error) {
-    console.error("Error claiming task via Manifest:", error);
-
-    const errorResponse: ApiErrorResponse = {
-      success: false,
-      message: "Failed to claim task",
-      error: error instanceof Error ? error.message : String(error),
-    };
-
-    return NextResponse.json(errorResponse, { status: 500 });
   }
-}
 
-/**
- * Map Prisma status to Manifest status
- */
-function mapPrismaStatusToManifest(status: string): string {
-  const statusMap: Record<string, string> = {
-    pending: "open",
-    in_progress: "in_progress",
-    done: "done",
-    completed: "done",
-    canceled: "canceled",
-  };
-  return statusMap[status] ?? status;
-}
+  // Step 13: Create outbox event for real-time updates
+  await createOutboxEvent(tenantId, id, "kitchen.task.claimed", {
+    taskId: id,
+    claimId: claim.id,
+    employeeId: userId,
+    status: "in_progress" as const,
+    constraintOutcomes: result.constraintOutcomes,
+  } as Prisma.InputJsonValue);
 
-/**
- * Map Manifest status to Prisma status
- */
-function mapManifestStatusToPrisma(status: string): string {
-  const statusMap: Record<string, string> = {
-    open: "pending",
-    in_progress: "in_progress",
-    done: "done",
-    canceled: "canceled",
+  // Step 14: Return success response
+  const successResponse: ApiSuccessResponse<{
+    claim: typeof claim;
+    taskId: string;
+    status: string;
+  }> = {
+    success: true,
+    data: {
+      claim,
+      taskId: id,
+      status: "in_progress",
+    },
+    emittedEvents: result.emittedEvents,
   };
-  return statusMap[status] ?? status;
+
+  return NextResponse.json(successResponse, { status: 201 });
 }

@@ -1,12 +1,17 @@
 import { randomUUID } from "node:crypto";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
-import {
-  createRecipeRuntime,
-  type KitchenOpsContext,
-} from "@repo/manifest-adapters";
+import { createRecipeRuntime } from "@repo/manifest-adapters";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import {
+  createDishCreatedOutboxEvent,
+  createDishInDatabase,
+  createRuntimeContext,
+  fetchRecipeById,
+  getCurrentUser,
+  normalizeDishTags,
+  validateDishCreateRequest,
+} from "./helpers";
 
 /**
  * Create a new dish using Manifest runtime
@@ -28,29 +33,18 @@ export async function POST(request: Request) {
   const tenantId = await getTenantIdForOrg(orgId);
   const body = await request.json();
 
-  // Validate required fields
-  const name = body.name?.trim();
-  if (!name) {
+  const createRequest = validateDishCreateRequest(body);
+  if (!createRequest) {
     return NextResponse.json(
-      { message: "Dish name is required" },
+      {
+        message: "Invalid request data. Both name and recipeId are required.",
+      },
       { status: 400 }
     );
   }
 
-  const recipeId = body.recipeId?.trim();
-  if (!recipeId) {
-    return NextResponse.json(
-      { message: "Recipe ID is required" },
-      { status: 400 }
-    );
-  }
-
-  // Get current user
-  const currentUser = await database.user.findFirst({
-    where: {
-      AND: [{ tenantId }, { authUserId: (await auth()).userId ?? "" }],
-    },
-  });
+  const authUser = await auth();
+  const currentUser = await getCurrentUser(tenantId, authUser.userId ?? "");
 
   if (!currentUser) {
     return NextResponse.json(
@@ -59,59 +53,41 @@ export async function POST(request: Request) {
     );
   }
 
-  // Check if recipe exists
-  const recipe = await database.recipe.findFirst({
-    where: {
-      AND: [{ tenantId }, { id: recipeId }, { deletedAt: null }],
-    },
-  });
-
+  const recipe = await fetchRecipeById(tenantId, createRequest.recipeId);
   if (!recipe) {
     return NextResponse.json({ message: "Recipe not found" }, { status: 404 });
   }
 
-  // Create the Manifest runtime context
-  const { createPrismaStoreProvider } = await import(
-    "@repo/manifest-adapters/prisma-store"
-  );
-
-  const runtimeContext: KitchenOpsContext = {
-    tenantId,
-    userId: currentUser.id,
-    userRole: currentUser.role,
-    storeProvider: createPrismaStoreProvider(database, tenantId),
-  };
-
   try {
+    const runtimeContext = await createRuntimeContext(
+      tenantId,
+      currentUser.id,
+      currentUser.role
+    );
     const runtime = await createRecipeRuntime(runtimeContext);
 
-    // Extract dish properties
-    const description = body.description?.trim() ?? "";
-    const category = body.category?.trim() ?? "";
-    const serviceStyle = body.serviceStyle?.trim() ?? "";
-    const dietaryTags = Array.isArray(body.dietaryTags)
-      ? body.dietaryTags.join(",")
-      : "";
-    const allergens = Array.isArray(body.allergens)
-      ? body.allergens.join(",")
-      : "";
-    const pricePerPerson = body.pricePerPerson ?? 0;
-    const costPerPerson = body.costPerPerson ?? 0;
-    const minPrepLeadDays = body.minPrepLeadDays ?? 0;
-    const maxPrepLeadDays = body.maxPrepLeadDays ?? 7;
-    const portionSizeDescription = body.portionSizeDescription?.trim() ?? "";
-
-    // Create the Dish entity
     const dishId = randomUUID();
+    const { dietaryTags, allergens } = normalizeDishTags(createRequest);
+
+    const description = createRequest.description?.trim() ?? "";
+    const category = createRequest.category?.trim() ?? "";
+    const serviceStyle = createRequest.serviceStyle?.trim() ?? "";
+    const pricePerPerson = createRequest.pricePerPerson ?? 0;
+    const costPerPerson = createRequest.costPerPerson ?? 0;
+    const minPrepLeadDays = createRequest.minPrepLeadDays ?? 0;
+    const maxPrepLeadDays = createRequest.maxPrepLeadDays ?? 7;
+    const portionSizeDescription =
+      createRequest.portionSizeDescription?.trim() ?? "";
+
     await runtime.createInstance("Dish", {
       id: dishId,
       tenantId,
-      name,
-      recipeId,
+      name: createRequest.name,
+      recipeId: createRequest.recipeId,
       description,
       category,
       serviceStyle,
-      presentationImageUrl: body.presentationImageUrl ?? "",
+      presentationImageUrl: createRequest.presentationImageUrl ?? "",
       dietaryTags,
       allergens,
       pricePerPerson,
@@ -124,63 +100,37 @@ export async function POST(request: Request) {
       updatedAt: Date.now(),
     });
 
-    // Sync to Prisma
-    const dish = await database.dish.create({
-      data: {
-        tenantId,
-        id: dishId,
-        recipeId,
-        name,
-        description: description || null,
-        category: category || null,
-        serviceStyle: serviceStyle || null,
-        presentationImageUrl: body.presentationImageUrl || null,
-        dietaryTags: dietaryTags.split(",").filter(Boolean),
-        allergens: allergens.split(",").filter(Boolean),
-        pricePerPerson,
-        costPerPerson,
-        minPrepLeadDays,
-        maxPrepLeadDays,
-        portionSizeDescription: portionSizeDescription || null,
-        isActive: true,
-      },
-    });
+    const dish = await createDishInDatabase(tenantId, dishId, createRequest);
 
-    // Create outbox event for downstream consumers
-    await database.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "Dish",
-        aggregateId: dishId,
-        eventType: "kitchen.dish.created",
-        payload: {
-          dishId,
-          recipeId,
-          name,
-          pricePerPerson,
-          costPerPerson,
-        },
-        status: "pending" as const,
-      },
-    });
+    await createDishCreatedOutboxEvent(
+      tenantId,
+      dishId,
+      createRequest.recipeId,
+      createRequest.name,
+      pricePerPerson,
+      costPerPerson
+    );
 
     return NextResponse.json(
       {
-        dishId: dish.id,
-        recipeId: dish.recipeId,
-        name: dish.name,
-        description: dish.description,
-        category: dish.category,
-        serviceStyle: dish.serviceStyle,
-        presentationImageUrl: dish.presentationImageUrl,
-        dietaryTags: dish.dietaryTags,
-        allergens: dish.allergens,
-        pricePerPerson: dish.pricePerPerson,
-        costPerPerson: dish.costPerPerson,
-        minPrepLeadDays: dish.minPrepLeadDays,
-        maxPrepLeadDays: dish.maxPrepLeadDays,
-        portionSizeDescription: dish.portionSizeDescription,
-        isActive: dish.isActive,
+        dishId: (dish as { id: string }).id,
+        recipeId: (dish as { recipeId: string }).recipeId,
+        name: (dish as { name: string }).name,
+        description: (dish as { description: string | null }).description,
+        category: (dish as { category: string | null }).category,
+        serviceStyle: (dish as { serviceStyle: string | null }).serviceStyle,
+        presentationImageUrl: (dish as { presentationImageUrl: string | null })
+          .presentationImageUrl,
+        dietaryTags: (dish as { dietaryTags: string[] }).dietaryTags,
+        allergens: (dish as { allergens: string[] }).allergens,
+        pricePerPerson: (dish as { pricePerPerson: number }).pricePerPerson,
+        costPerPerson: (dish as { costPerPerson: number }).costPerPerson,
+        minPrepLeadDays: (dish as { minPrepLeadDays: number }).minPrepLeadDays,
+        maxPrepLeadDays: (dish as { maxPrepLeadDays: number }).maxPrepLeadDays,
+        portionSizeDescription: (
+          dish as { portionSizeDescription: string | null }
+        ).portionSizeDescription,
+        isActive: (dish as { isActive: boolean }).isActive,
       },
       { status: 201 }
     );

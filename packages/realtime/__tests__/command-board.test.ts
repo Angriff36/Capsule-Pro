@@ -6,15 +6,15 @@ import { describe, expect, it } from "vitest";
 import {
   type CommandBoardCardCreatedEvent,
   CommandBoardCardCreatedEventSchema,
-  CommandBoardCardUpdatedEventSchema,
-  CommandBoardCardMovedEventSchema,
   CommandBoardCardDeletedEventSchema,
+  CommandBoardCardMovedEventSchema,
+  CommandBoardCardUpdatedEventSchema,
+  CommandBoardCursorMovedEventSchema,
   CommandBoardUpdatedEventSchema,
   CommandBoardUserJoinedEventSchema,
   CommandBoardUserLeftEventSchema,
-  CommandBoardCursorMovedEventSchema,
-  parseRealtimeEvent,
   isCommandBoardEvent,
+  parseRealtimeEvent,
 } from "../src/events";
 
 const validCardCreatedEvent = {
@@ -745,7 +745,12 @@ describe("isCommandBoardEvent", () => {
       },
     ] as const;
 
-    for (const { eventType, aggregateType, aggregateId, payload } of commandBoardEvents) {
+    for (const {
+      eventType,
+      aggregateType,
+      aggregateId,
+      payload,
+    } of commandBoardEvents) {
       const event = {
         id: "clxyz123",
         version: 1 as const,

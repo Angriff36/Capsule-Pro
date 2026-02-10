@@ -113,7 +113,7 @@ describe("Real-time Outbox - End-to-End Integration", () => {
   describe("Multi-Tenant Isolation", () => {
     it("should maintain separate events per tenant", async () => {
       // Create events for two tenants
-      const event1 = await createOutboxEvent(database, {
+      const _event1 = await createOutboxEvent(database, {
         tenantId: TEST_TENANT_ID,
         aggregateType: "KitchenTask",
         aggregateId: "task-iso-001",
@@ -125,7 +125,7 @@ describe("Real-time Outbox - End-to-End Integration", () => {
         },
       });
 
-      const event2 = await createOutboxEvent(database, {
+      const _event2 = await createOutboxEvent(database, {
         tenantId: TEST_TENANT_2_ID,
         aggregateType: "KitchenTask",
         aggregateId: "task-iso-002",
@@ -151,12 +151,8 @@ describe("Real-time Outbox - End-to-End Integration", () => {
       expect(tenant2Events.length).toBeGreaterThanOrEqual(1);
 
       // Verify isolation - each tenant sees only their events
-      const tenant1EventIds = new Set(
-        tenant1Events.map((e) => e.id)
-      );
-      const tenant2EventIds = new Set(
-        tenant2Events.map((e) => e.id)
-      );
+      const tenant1EventIds = new Set(tenant1Events.map((e) => e.id));
+      const tenant2EventIds = new Set(tenant2Events.map((e) => e.id));
 
       // No overlap between tenant event sets
       const overlap = [...tenant1EventIds].filter((id) =>
@@ -200,9 +196,9 @@ describe("Real-time Outbox - End-to-End Integration", () => {
       });
 
       // All returned events should belong to tenant 1
-      tenant1Pending.forEach((event) => {
+      for (const event of tenant1Pending) {
         expect(event.tenantId).toBe(TEST_TENANT_ID);
-      });
+      }
     });
   });
 
@@ -390,7 +386,8 @@ describe("Real-time Outbox - End-to-End Integration", () => {
         );
 
         // Calculate age
-        const ageSeconds = (Date.now() - oldestPending.createdAt.getTime()) / 1000;
+        const ageSeconds =
+          (Date.now() - oldestPending.createdAt.getTime()) / 1000;
         expect(ageSeconds).toBeGreaterThan(0);
       }
     });
@@ -485,7 +482,7 @@ describe("Real-time Outbox - End-to-End Integration", () => {
   describe("Batch Operations", () => {
     it("should create multiple events in sequence", async () => {
       const eventCount = 5;
-      const events = [];
+      const events: unknown[] = [];
 
       for (let i = 0; i < eventCount; i++) {
         const event = await createOutboxEvent(database, {
@@ -509,9 +506,9 @@ describe("Real-time Outbox - End-to-End Integration", () => {
       expect(ids.size).toBe(eventCount);
 
       // Verify all have pending status
-      events.forEach((event) => {
+      for (const event of events) {
         expect(event.status).toBe("pending");
-      });
+      }
     });
 
     it("should query pending events with limit", async () => {

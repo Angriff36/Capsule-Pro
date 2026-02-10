@@ -28,6 +28,322 @@ interface CheckAllergensResponse {
   };
 }
 
+interface GuestDietaryInfo {
+  id: string;
+  guestName: string;
+  dietaryRestrictions: string[] | null;
+  allergenRestrictions: string[] | null;
+}
+
+interface DishDietaryInfo {
+  id: string;
+  name: string;
+  allergens: string[];
+  dietaryTags: string[];
+}
+
+interface ConflictCheckResult {
+  conflictingAllergens: string[];
+  conflictingDietaryTags: string[];
+}
+
+// ============ Helper Functions ============
+
+/**
+ * Extracts and normalizes guest dietary information
+ */
+function extractGuestDietaryInfo(guest: GuestDietaryInfo): {
+  allergenRestrictions: string[];
+  dietaryRestrictions: string[];
+} {
+  return {
+    allergenRestrictions: guest.allergenRestrictions ?? [],
+    dietaryRestrictions: guest.dietaryRestrictions ?? [],
+  };
+}
+
+/**
+ * Extracts and normalizes dish allergen and dietary information
+ */
+function extractDishDietaryInfo(dish: DishDietaryInfo): {
+  allergens: string[];
+  dietaryTags: string[];
+} {
+  return {
+    allergens: dish.allergens ?? [],
+    dietaryTags: dish.dietaryTags ?? [],
+  };
+}
+
+/**
+ * Checks if two strings match (case-insensitive, substring match)
+ */
+function stringsMatch(str1: string, str2: string): boolean {
+  const lower1 = str1.toLowerCase();
+  const lower2 = str2.toLowerCase();
+  return lower1.includes(lower2) || lower2.includes(lower1);
+}
+
+/**
+ * Finds matching allergens between guest restrictions and dish allergens
+ */
+function findMatchingAllergens(
+  guestAllergens: readonly string[],
+  dishAllergens: readonly string[]
+): string[] {
+  const matches: string[] = [];
+
+  for (const guestAllergen of guestAllergens) {
+    const hasMatch = dishAllergens.some((dishAllergen) =>
+      stringsMatch(guestAllergen, dishAllergen)
+    );
+
+    if (hasMatch) {
+      matches.push(guestAllergen);
+    }
+  }
+
+  return matches;
+}
+
+/**
+ * Finds conflicting dietary restrictions between guest and dish
+ */
+function findConflictingDietaryTags(
+  guestRestrictions: readonly string[],
+  dishDietaryTags: readonly string[]
+): string[] {
+  const conflicts: string[] = [];
+
+  for (const restriction of guestRestrictions) {
+    const hasConflict = dishDietaryTags.some((dietaryTag) =>
+      stringsMatch(restriction, dietaryTag)
+    );
+
+    if (hasConflict) {
+      conflicts.push(restriction);
+    }
+  }
+
+  return conflicts;
+}
+
+/**
+ * Detects conflicts between a guest's restrictions and a dish's attributes
+ */
+function detectConflicts(
+  guest: GuestDietaryInfo,
+  dish: DishDietaryInfo
+): ConflictCheckResult {
+  const guestInfo = extractGuestDietaryInfo(guest);
+  const dishInfo = extractDishDietaryInfo(dish);
+
+  const conflictingAllergens = findMatchingAllergens(
+    guestInfo.allergenRestrictions,
+    dishInfo.allergens
+  );
+
+  const conflictingDietaryTags = findConflictingDietaryTags(
+    guestInfo.dietaryRestrictions,
+    dishInfo.dietaryTags
+  );
+
+  return { conflictingAllergens, conflictingDietaryTags };
+}
+
+/**
+ * Generates conflict objects for allergen conflicts
+ */
+function generateAllergenConflicts(
+  guest: GuestDietaryInfo,
+  dish: DishDietaryInfo,
+  conflictingAllergens: readonly string[]
+): AllergenConflict[] {
+  if (conflictingAllergens.length === 0) {
+    return [];
+  }
+
+  return [
+    {
+      guestId: guest.id,
+      guestName: guest.guestName,
+      dishId: dish.id,
+      dishName: dish.name,
+      allergens: [...conflictingAllergens],
+      severity: "critical",
+      type: "allergen_conflict",
+    },
+  ];
+}
+
+/**
+ * Generates conflict objects for dietary restriction conflicts
+ */
+function generateDietaryConflicts(
+  guest: GuestDietaryInfo,
+  dish: DishDietaryInfo,
+  conflictingDietaryTags: readonly string[]
+): AllergenConflict[] {
+  if (conflictingDietaryTags.length === 0) {
+    return [];
+  }
+
+  return [
+    {
+      guestId: guest.id,
+      guestName: guest.guestName,
+      dishId: dish.id,
+      dishName: dish.name,
+      allergens: [...conflictingDietaryTags],
+      severity: "warning",
+      type: "dietary_conflict",
+    },
+  ];
+}
+
+/**
+ * Generates all conflict warnings for a guest-dish pair
+ */
+function generateWarnings(
+  guest: GuestDietaryInfo,
+  dish: DishDietaryInfo,
+  conflictResult: ConflictCheckResult
+): AllergenConflict[] {
+  const allergenConflicts = generateAllergenConflicts(
+    guest,
+    dish,
+    conflictResult.conflictingAllergens
+  );
+
+  const dietaryConflicts = generateDietaryConflicts(
+    guest,
+    dish,
+    conflictResult.conflictingDietaryTags
+  );
+
+  return [...allergenConflicts, ...dietaryConflicts];
+}
+
+/**
+ * Calculates summary statistics from conflicts
+ */
+function calculateSeveritySummary(conflicts: readonly AllergenConflict[]): {
+  total: number;
+  critical: number;
+  warning: number;
+} {
+  return {
+    total: conflicts.length,
+    critical: conflicts.filter((c) => c.severity === "critical").length,
+    warning: conflicts.filter((c) => c.severity === "warning").length,
+  };
+}
+
+// ============ Database Query Functions ============
+
+/**
+ * Retrieves all dishes for a specific event
+ */
+async function getEventDishes(
+  tenantId: string,
+  eventId: string
+): Promise<DishDietaryInfo[]> {
+  const linkedDishes = await database.$queryRaw<
+    Array<{
+      dish_id: string;
+      dish_name: string;
+      allergens: string[] | null;
+      dietary_tags: string[] | null;
+    }>
+  >(
+    Prisma.sql`
+      SELECT
+        d.id AS dish_id,
+        d.name AS dish_name,
+        d.allergens,
+        d.dietary_tags
+      FROM tenant_kitchen.dishes d
+      JOIN tenant_events.event_dishes ed
+        ON ed.tenant_id = d.tenant_id
+        AND ed.dish_id = d.id
+        AND ed.deleted_at IS NULL
+      WHERE ed.tenant_id = ${tenantId}
+        AND ed.event_id = ${eventId}
+        AND d.deleted_at IS NULL
+    `
+  );
+
+  return linkedDishes.map((d) => ({
+    id: d.dish_id,
+    name: d.dish_name,
+    allergens: d.allergens ?? [],
+    dietaryTags: d.dietary_tags ?? [],
+  }));
+}
+
+/**
+ * Retrieves specific dishes by their IDs
+ */
+async function getSpecificDishes(
+  tenantId: string,
+  dishIds: readonly string[]
+): Promise<{ dishes: DishDietaryInfo[]; missingIds: string[] }> {
+  const linkedDishes = await database.$queryRaw<
+    Array<{
+      dish_id: string;
+      dish_name: string;
+      allergens: string[] | null;
+      dietary_tags: string[] | null;
+    }>
+  >(
+    Prisma.sql`
+      SELECT
+        d.id AS dish_id,
+        d.name AS dish_name,
+        d.allergens,
+        d.dietary_tags
+      FROM tenant_kitchen.dishes d
+      WHERE d.tenant_id = ${tenantId}
+        AND d.id IN (SELECT UNNEST(ARRAY[${Prisma.raw(dishIds.map((id) => `'${id}'`).join(","))}]::uuid[]))
+        AND d.deleted_at IS NULL
+    `
+  );
+
+  const dishes = linkedDishes.map((d) => ({
+    id: d.dish_id,
+    name: d.dish_name,
+    allergens: d.allergens ?? [],
+    dietaryTags: d.dietary_tags ?? [],
+  }));
+
+  const foundDishIds = dishes.map((d) => d.id);
+  const missingIds = dishIds.filter((id) => !foundDishIds.includes(id));
+
+  return { dishes, missingIds };
+}
+
+/**
+ * Checks all guests against all dishes and returns conflicts
+ */
+function checkAllGuestsAgainstDishes(
+  guests: readonly GuestDietaryInfo[],
+  dishes: readonly DishDietaryInfo[]
+): AllergenConflict[] {
+  const conflicts: AllergenConflict[] = [];
+
+  for (const guest of guests) {
+    for (const dish of dishes) {
+      const conflictResult = detectConflicts(guest, dish);
+      const warnings = generateWarnings(guest, dish, conflictResult);
+      conflicts.push(...warnings);
+    }
+  }
+
+  return conflicts;
+}
+
+// ============ Main POST Handler ============
+
 export async function POST(request: Request) {
   try {
     // Parse request body
@@ -82,162 +398,32 @@ export async function POST(request: Request) {
     });
 
     // Get dishes for the event
-    let dishes: Array<{
-      id: string;
-      name: string;
-      allergens: string[];
-      dietaryTags: string[];
-    }>;
+    let dishes: DishDietaryInfo[];
     if (body.dishIds && body.dishIds.length > 0) {
-      // Check specific dish IDs through event_dishes junction table
-      const linkedDishes = await database.$queryRaw<
-        Array<{
-          dish_id: string;
-          dish_name: string;
-          allergens: string[] | null;
-          dietary_tags: string[] | null;
-        }>
-      >(
-        Prisma.sql`
-          SELECT
-            d.id AS dish_id,
-            d.name AS dish_name,
-            d.allergens,
-            d.dietary_tags
-          FROM tenant_kitchen.dishes d
-          WHERE d.tenant_id = ${tenantId}
-            AND d.id IN (SELECT UNNEST(ARRAY[${Prisma.raw(body.dishIds.map((id) => `'${id}'`).join(","))}]::uuid[]))
-            AND d.deleted_at IS NULL
-        `
+      const { dishes: foundDishes, missingIds } = await getSpecificDishes(
+        tenantId,
+        body.dishIds
       );
 
-      // Convert to expected format and verify all requested dishes exist
-      dishes = linkedDishes.map((d) => ({
-        id: d.dish_id,
-        name: d.dish_name,
-        allergens: d.allergens || [],
-        dietaryTags: d.dietary_tags || [],
-      }));
-
-      // Verify all requested dishes exist
-      const foundDishIds = dishes.map((d) => d.id);
-      const missingDishIds = body.dishIds?.filter((_id) => !foundDishIds);
-      if (missingDishIds && missingDishIds.length > 0) {
+      if (missingIds.length > 0) {
         return NextResponse.json(
           {
-            message: `The following dishes not found: ${missingDishIds.join(", ")}`,
+            message: `The following dishes not found: ${missingIds.join(", ")}`,
           },
           { status: 404 }
         );
       }
-    } else {
-      // Get all dishes associated with the event through event_dishes junction table
-      const linkedDishes = await database.$queryRaw<
-        Array<{
-          dish_id: string;
-          dish_name: string;
-          allergens: string[] | null;
-          dietary_tags: string[] | null;
-        }>
-      >(
-        Prisma.sql`
-          SELECT
-            d.id AS dish_id,
-            d.name AS dish_name,
-            d.allergens,
-            d.dietary_tags
-          FROM tenant_kitchen.dishes d
-          JOIN tenant_events.event_dishes ed
-            ON ed.tenant_id = d.tenant_id
-            AND ed.dish_id = d.id
-            AND ed.deleted_at IS NULL
-          WHERE ed.tenant_id = ${tenantId}
-            AND ed.event_id = ${body.eventId}
-            AND d.deleted_at IS NULL
-        `
-      );
 
-      dishes = linkedDishes.map((d) => ({
-        id: d.dish_id,
-        name: d.dish_name,
-        allergens: d.allergens || [],
-        dietaryTags: d.dietary_tags || [],
-      }));
+      dishes = foundDishes;
+    } else {
+      dishes = await getEventDishes(tenantId, body.eventId);
     }
 
     // Check for conflicts
-    const conflicts: AllergenConflict[] = [];
-
-    for (const guest of guests) {
-      for (const dish of dishes) {
-        const conflictingAllergens: string[] = [];
-        const conflictingDietaryTags: string[] = [];
-
-        // Check allergen conflicts (critical)
-        if (guest.allergenRestrictions && dish.allergens) {
-          for (const allergen of guest.allergenRestrictions) {
-            if (
-              dish.allergens.some(
-                (dishAllergen) =>
-                  dishAllergen.toLowerCase().includes(allergen.toLowerCase()) ||
-                  allergen.toLowerCase().includes(dishAllergen.toLowerCase())
-              )
-            ) {
-              conflictingAllergens.push(allergen);
-            }
-          }
-        }
-
-        // Check dietary restriction conflicts (warning)
-        if (guest.dietaryRestrictions && dish.dietaryTags) {
-          for (const restriction of guest.dietaryRestrictions) {
-            if (
-              dish.dietaryTags.some(
-                (dietaryTag) =>
-                  dietaryTag
-                    .toLowerCase()
-                    .includes(restriction.toLowerCase()) ||
-                  restriction.toLowerCase().includes(dietaryTag.toLowerCase())
-              )
-            ) {
-              conflictingDietaryTags.push(restriction);
-            }
-          }
-        }
-
-        // Add conflicts to results
-        if (conflictingAllergens.length > 0) {
-          conflicts.push({
-            guestId: guest.id,
-            guestName: guest.guestName,
-            dishId: dish.id,
-            dishName: dish.name,
-            allergens: conflictingAllergens,
-            severity: "critical",
-            type: "allergen_conflict",
-          });
-        }
-
-        if (conflictingDietaryTags.length > 0) {
-          conflicts.push({
-            guestId: guest.id,
-            guestName: guest.guestName,
-            dishId: dish.id,
-            dishName: dish.name,
-            allergens: conflictingDietaryTags,
-            severity: "warning",
-            type: "dietary_conflict",
-          });
-        }
-      }
-    }
+    const conflicts = checkAllGuestsAgainstDishes(guests, dishes);
 
     // Create summary
-    const summary = {
-      total: conflicts.length,
-      critical: conflicts.filter((c) => c.severity === "critical").length,
-      warning: conflicts.filter((c) => c.severity === "warning").length,
-    };
+    const summary = calculateSeveritySummary(conflicts);
 
     // Return response
     const response: CheckAllergensResponse = {

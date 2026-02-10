@@ -1,15 +1,15 @@
 import { auth } from "@repo/auth/server";
-import { Prisma, database } from "@repo/database";
-import {
-  cancelPrepTask,
-  completePrepTask,
-  createPrepTaskRuntime,
-  type KitchenOpsContext,
-  type PrepTaskCommandResult,
-  releasePrepTask,
-} from "@repo/manifest-adapters";
+import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+
+import {
+  fetchTask,
+  processStatusChange,
+  syncStatusUpdateResults,
+  updateTaskFields,
+  validatePriority,
+} from "../shared-task-helpers";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -262,6 +262,7 @@ async function consumeInventoryForPrepTask(
  * updates are used since Manifest doesn't have generic update commands.
  */
 export async function PATCH(request: Request, context: RouteContext) {
+  // Step 1: Authenticate
   const { orgId, userId: clerkId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -271,8 +272,55 @@ export async function PATCH(request: Request, context: RouteContext) {
   const { id } = await context.params;
   const body = await request.json();
 
-  // Get current user for progress tracking
+  // Step 2: Get current user for progress tracking
+  const { employeeId, userRole } = await getEmployeeInfo(tenantId, clerkId);
+
+  // Step 3: Verify task exists
+  const existingTaskResult = await fetchTask(tenantId, id);
+  if (!(existingTaskResult.success && existingTaskResult.task)) {
+    return NextResponse.json(
+      { message: existingTaskResult.error?.message ?? "Unknown error" },
+      { status: existingTaskResult.error?.status ?? 500 }
+    );
+  }
+
+  const existingTask = existingTaskResult.task;
+
+  // Step 4: Validate priority if provided
+  if (body.priority !== undefined) {
+    const priorityValidation = validatePriority(body.priority);
+    if (!priorityValidation.valid) {
+      return NextResponse.json(
+        { message: priorityValidation.error },
+        { status: 400 }
+      );
+    }
+  }
+
+  // Step 5: Handle status changes via Manifest commands
+  if (body.status) {
+    return handleStatusUpdate(
+      tenantId,
+      id,
+      existingTask,
+      body.status,
+      employeeId,
+      userRole,
+      body.notes
+    );
+  }
+
+  // Step 6: Handle non-status updates via direct Prisma
+  return handleFieldUpdates(tenantId, id, existingTask, employeeId, body);
+}
+
+/**
+ * Get employee information from Clerk ID
+ */
+async function getEmployeeInfo(tenantId: string, clerkId: string | null) {
   let employeeId: string | undefined;
+  let userRole: string | undefined;
+
   if (clerkId) {
     const user = await database.user.findFirst({
       where: {
@@ -280,255 +328,149 @@ export async function PATCH(request: Request, context: RouteContext) {
       },
     });
     employeeId = user?.id;
+    userRole = user?.role;
   }
 
-  // Verify task exists
-  const existingTask = await database.prepTask.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-  });
+  return { employeeId, userRole };
+}
 
-  if (!existingTask) {
-    return NextResponse.json({ message: "Task not found" }, { status: 404 });
-  }
+/**
+ * Handle status update via Manifest commands
+ */
+async function handleStatusUpdate(
+  tenantId: string,
+  taskId: string,
+  existingTask: Prisma.PrepTaskGetPayload<Record<string, never>>,
+  newStatus: string,
+  employeeId: string | undefined,
+  userRole: string | undefined,
+  notes?: string
+) {
+  const statusResult = await processStatusChange(
+    tenantId,
+    taskId,
+    existingTask,
+    newStatus,
+    employeeId,
+    userRole
+  );
 
-  // Validate priority if provided
-  if (
-    body.priority !== undefined &&
-    (typeof body.priority !== "number" ||
-      body.priority < 1 ||
-      body.priority > 10)
-  ) {
+  if (!statusResult.success) {
     return NextResponse.json(
-      { message: "Priority must be an integer between 1 and 10" },
+      {
+        message: statusResult.error.message,
+      },
+      { status: statusResult.error.status }
+    );
+  }
+
+  const { result } = statusResult;
+
+  // Check for blocking constraints
+  const blockingConstraints = result.constraintOutcomes?.filter(
+    (o) => !o.passed && o.severity === "block"
+  );
+
+  if (blockingConstraints && blockingConstraints.length > 0) {
+    return NextResponse.json(
+      {
+        message: "Cannot update task due to constraint violations",
+        constraintOutcomes: blockingConstraints,
+      },
       { status: 400 }
     );
   }
 
-  // Handle status changes via Manifest commands
-  if (body.status) {
-    // Create Prisma store provider for Manifest runtime
-    const { createPrismaStoreProvider } = await import(
-      "@repo/manifest-adapters/prisma-store"
+  // Sync status update to database
+  await syncStatusUpdateResults(
+    tenantId,
+    taskId,
+    existingTask,
+    newStatus,
+    employeeId,
+    result,
+    notes
+  );
+
+  // Consume inventory for completed prep tasks
+  const inventoryConsumptionResult =
+    await handleInventoryConsumptionForCompletedTask(
+      tenantId,
+      taskId,
+      existingTask,
+      newStatus,
+      employeeId
     );
 
-    const runtimeContext: KitchenOpsContext = {
-      tenantId,
-      userId: employeeId || "",
-      userRole: undefined, // TODO: get user role from auth
-      storeProvider: createPrismaStoreProvider(database, tenantId),
-    };
+  return NextResponse.json({
+    task: {
+      ...existingTask,
+      status: newStatus,
+    },
+    constraintOutcomes: result.constraintOutcomes,
+    emittedEvents: result.emittedEvents,
+    inventoryConsumption: inventoryConsumptionResult,
+  });
+}
 
-    try {
-      const runtime = await createPrepTaskRuntime(runtimeContext);
-
-      // Load the task entity into Manifest
-      await runtime.createInstance("PrepTask", {
-        id: existingTask.id,
-        tenantId: existingTask.tenantId,
-        eventId: existingTask.eventId,
-        name: existingTask.name,
-        taskType: existingTask.taskType,
-        status: mapPrismaStatusToManifest(existingTask.status),
-        priority: existingTask.priority,
-        quantityTotal: Number(existingTask.quantityTotal),
-        quantityUnitId: existingTask.quantityUnitId ?? "",
-        quantityCompleted: Number(existingTask.quantityCompleted),
-        servingsTotal: existingTask.servingsTotal ?? 0,
-        startByDate: existingTask.startByDate
-          ? existingTask.startByDate.getTime()
-          : 0,
-        dueByDate: existingTask.dueByDate
-          ? existingTask.dueByDate.getTime()
-          : 0,
-        locationId: existingTask.locationId,
-        dishId: existingTask.dishId ?? "",
-        recipeVersionId: existingTask.recipeVersionId ?? "",
-        methodId: existingTask.methodId ?? "",
-        containerId: existingTask.containerId ?? "",
-        estimatedMinutes: existingTask.estimatedMinutes ?? 0,
-        actualMinutes: existingTask.actualMinutes ?? 0,
-        notes: existingTask.notes ?? "",
-        stationId: "",
-        claimedBy: "",
-        claimedAt: 0,
-        createdAt: existingTask.createdAt.getTime(),
-        updatedAt: existingTask.updatedAt.getTime(),
-      });
-
-      let result: PrepTaskCommandResult | undefined;
-      const newStatus = body.status;
-
-      // Route status change to appropriate Manifest command
-      if (newStatus === "done" || newStatus === "completed") {
-        // Complete task
-        result = await completePrepTask(
-          runtime,
-          id,
-          Number(existingTask.quantityTotal),
-          employeeId || ""
-        );
-      } else if (newStatus === "canceled") {
-        // Cancel task
-        result = await cancelPrepTask(
-          runtime,
-          id,
-          body.reason || "Canceled via API",
-          employeeId || ""
-        );
-      } else if (
-        newStatus === "pending" &&
-        existingTask.status === "in_progress"
-      ) {
-        // Release task (change from in_progress back to pending)
-        result = await releasePrepTask(
-          runtime,
-          id,
-          employeeId || "",
-          body.reason || "Released via API"
-        );
-      }
-
-      // Check for blocking constraints
-      if (result) {
-        const blockingConstraints = result.constraintOutcomes?.filter(
-          (o) => !o.passed && o.severity === "block"
-        );
-
-        if (blockingConstraints && blockingConstraints.length > 0) {
-          return NextResponse.json(
-            {
-              message: "Cannot update task due to constraint violations",
-              constraintOutcomes: blockingConstraints,
-            },
-            { status: 400 }
-          );
-        }
-
-        // Sync status update to Prisma
-        await database.prepTask.update({
-          where: { tenantId_id: { tenantId, id } },
-          data: {
-            status:
-              newStatus === "done"
-                ? "done"
-                : mapManifestStatusToPrisma(newStatus),
-          },
-        });
-
-        // Create progress entry for status change
-        if (employeeId && newStatus !== existingTask.status) {
-          await database.kitchenTaskProgress.create({
-            data: {
-              tenantId,
-              taskId: id,
-              employeeId,
-              progressType: "status_change",
-              oldStatus: existingTask.status,
-              newStatus,
-              notes: body.notes,
-            },
-          });
-        }
-
-        // Create outbox event for task status change
-        await database.outboxEvent.create({
-          data: {
-            tenantId,
-            aggregateType: "KitchenTask",
-            aggregateId: id,
-            eventType: `kitchen.task.${
-              newStatus === "done" ? "completed" : newStatus
-            }`,
-            payload: {
-              taskId: id,
-              status: newStatus as string,
-              constraintOutcomes: result.constraintOutcomes,
-            } as Prisma.InputJsonValue,
-            status: "pending" as const,
-          },
-        });
-
-        // Consume inventory for completed prep tasks
-        let inventoryConsumptionResult: Awaited<
-          ReturnType<typeof consumeInventoryForPrepTask>
-        > | null = null;
-        if (
-          (newStatus === "done" || newStatus === "completed") &&
-          existingTask.recipeVersionId
-        ) {
-          inventoryConsumptionResult = await consumeInventoryForPrepTask(
-            tenantId,
-            id,
-            existingTask.recipeVersionId,
-            Number(existingTask.quantityTotal),
-            employeeId || ""
-          );
-
-          // Log warnings for inventory consumption issues
-          if (inventoryConsumptionResult.warnings.length > 0) {
-            console.warn(
-              `Inventory consumption warnings for task ${id}:`,
-              inventoryConsumptionResult.warnings
-            );
-          }
-        }
-
-        return NextResponse.json({
-          task: {
-            ...existingTask,
-            status: newStatus,
-          },
-          constraintOutcomes: result.constraintOutcomes,
-          emittedEvents: result.emittedEvents,
-          inventoryConsumption: inventoryConsumptionResult,
-        });
-      }
-    } catch (error) {
-      console.error("Error updating task via Manifest:", error);
-      return NextResponse.json(
-        {
-          message: "Failed to update task",
-          error: error instanceof Error ? error.message : String(error),
-        },
-        { status: 500 }
-      );
-    }
+/**
+ * Handle inventory consumption for completed tasks
+ */
+async function handleInventoryConsumptionForCompletedTask(
+  tenantId: string,
+  taskId: string,
+  existingTask: Prisma.PrepTaskGetPayload<Record<string, never>>,
+  newStatus: string,
+  employeeId: string | undefined
+): Promise<Awaited<ReturnType<typeof consumeInventoryForPrepTask>> | null> {
+  if (
+    (newStatus !== "done" && newStatus !== "completed") ||
+    !existingTask.recipeVersionId ||
+    !employeeId
+  ) {
+    return null;
   }
 
-  // Handle non-status updates (priority, summary, tags, dueDate) via direct Prisma
-  interface TaskUpdateData {
-    status?: string;
+  const result = await consumeInventoryForPrepTask(
+    tenantId,
+    taskId,
+    existingTask.recipeVersionId,
+    Number(existingTask.quantityTotal),
+    employeeId
+  );
+
+  // Log warnings for inventory consumption issues
+  if (result.warnings.length > 0) {
+    console.warn(
+      `Inventory consumption warnings for task ${taskId}:`,
+      result.warnings
+    );
+  }
+
+  return result;
+}
+
+/**
+ * Handle non-status field updates
+ */
+async function handleFieldUpdates(
+  tenantId: string,
+  taskId: string,
+  existingTask: Prisma.PrepTaskGetPayload<Record<string, never>>,
+  employeeId: string | undefined,
+  body: {
     priority?: number;
-    summary?: string;
-    complexity?: number;
-    tags?: string[];
-    dueDate?: Date | null;
+    notes?: string | null;
+    estimatedMinutes?: number | null;
+    actualMinutes?: number | null;
+    status?: string;
   }
-  const updateData: TaskUpdateData = {};
-  if (body.status) {
-    updateData.status = body.status;
-  }
-  if (body.priority !== undefined) {
-    updateData.priority = body.priority;
-  }
-  if (body.summary !== undefined && body.summary !== null) {
-    updateData.summary = body.summary;
-  }
-  if (body.complexity !== undefined && body.complexity !== null) {
-    updateData.complexity = body.complexity;
-  }
-  if (body.tags !== undefined) {
-    updateData.tags = body.tags;
-  }
-  if (body.dueDate !== undefined) {
-    updateData.dueDate = body.dueDate ? new Date(body.dueDate) : null;
-  }
-
-  const task = await database.prepTask.update({
-    where: { tenantId_id: { tenantId, id } },
-    data: updateData,
+) {
+  const updatedTask = await updateTaskFields(tenantId, taskId, {
+    priority: body.priority,
+    notes: body.notes,
+    estimatedMinutes: body.estimatedMinutes,
+    actualMinutes: body.actualMinutes,
   });
 
   // If status changed, create progress entry
@@ -536,12 +478,12 @@ export async function PATCH(request: Request, context: RouteContext) {
     await database.kitchenTaskProgress.create({
       data: {
         tenantId,
-        taskId: task.id,
+        taskId: updatedTask.id,
         employeeId,
         progressType: "status_change",
         oldStatus: existingTask.status,
         newStatus: body.status,
-        notes: body.notes,
+        notes: body.notes ?? undefined,
       },
     });
   }
@@ -551,43 +493,16 @@ export async function PATCH(request: Request, context: RouteContext) {
     data: {
       tenantId,
       aggregateType: "KitchenTask",
-      aggregateId: task.id,
+      aggregateId: updatedTask.id,
       eventType: "kitchen.task.updated",
       payload: {
-        taskId: task.id,
-        status: task.status,
-        priority: task.priority,
+        taskId: updatedTask.id,
+        status: updatedTask.status,
+        priority: updatedTask.priority,
       },
       status: "pending" as const,
     },
   });
 
-  return NextResponse.json({ task });
-}
-
-/**
- * Map Prisma status to Manifest status
- */
-function mapPrismaStatusToManifest(status: string): string {
-  const statusMap: Record<string, string> = {
-    pending: "open",
-    in_progress: "in_progress",
-    done: "done",
-    completed: "done",
-    canceled: "canceled",
-  };
-  return statusMap[status] ?? status;
-}
-
-/**
- * Map Manifest status to Prisma status
- */
-function mapManifestStatusToPrisma(status: string): string {
-  const statusMap: Record<string, string> = {
-    open: "pending",
-    in_progress: "in_progress",
-    done: "done",
-    canceled: "canceled",
-  };
-  return statusMap[status] ?? status;
+  return NextResponse.json({ task: updatedTask });
 }

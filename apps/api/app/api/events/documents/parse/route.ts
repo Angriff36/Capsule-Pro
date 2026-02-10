@@ -56,7 +56,14 @@ interface AggregatedMenuItem {
 
 const MISSING_FIELD_TAG_PREFIX = "needs:";
 
-const normalizeName = (value: string) => value.trim().replace(/\s+/g, " ");
+// Module-level regex constants for performance
+const FILE_EXTENSION_REGEX = /\.[^/.]+$/;
+const SEPARATOR_REGEX = /[-]+/g;
+const SERVING_UNIT_REGEX = /serv|pax|guest|portion/i;
+const WHITESPACE_REGEX = /\s+/g;
+
+const normalizeName = (value: string) =>
+  value.trim().replace(WHITESPACE_REGEX, " ");
 
 const normalizeList = (values: string[] | undefined) =>
   (values ?? [])
@@ -65,8 +72,8 @@ const normalizeList = (values: string[] | undefined) =>
 
 const getFileLabel = (fileName: string) =>
   fileName
-    .replace(/\.[^/.]+$/, "")
-    .replace(/[_-]+/g, " ")
+    .replace(FILE_EXTENSION_REGEX, "")
+    .replace(SEPARATOR_REGEX, " ")
     .trim();
 
 const getMissingFieldsFromParsedEvent = (
@@ -136,15 +143,20 @@ const mergeInstructions = (item: MenuItem) => {
   return instructions;
 };
 
-const deriveMenuQuantity = (item: MenuItem, fallbackHeadcount: number) => {
+const deriveMenuQuantity = (
+  item: MenuItem,
+  fallbackHeadcount: number
+): {
+  quantity: number;
+  source: "parsed" | "details" | "headcount" | "fallback";
+} => {
   if (item.qty?.value && item.qty.value > 0) {
     return { quantity: Math.round(item.qty.value), source: "parsed" as const };
   }
 
   const servingDetails =
     item.quantityDetails?.filter(
-      (detail) =>
-        detail.value > 0 && /serv|pax|guest|portion/i.test(detail.unit)
+      (detail) => detail.value > 0 && SERVING_UNIT_REGEX.test(detail.unit)
     ) ?? [];
   if (servingDetails.length > 0) {
     const maxDetail = servingDetails.reduce(
@@ -167,24 +179,17 @@ const deriveMenuQuantity = (item: MenuItem, fallbackHeadcount: number) => {
   return { quantity: 1, source: "fallback" as const };
 };
 
-const importMenuToEvent = async (
-  tenantId: string,
-  eventId: string,
-  event: ParsedEvent
-): Promise<MenuImportSummary> => {
-  const summary: MenuImportSummary = {
-    missingQuantities: [],
-    linkedDishes: 0,
-    createdDishes: 0,
-    createdRecipes: 0,
-    updatedLinks: 0,
-  };
+// ============================================================================
+// HELPER FUNCTIONS FOR MENU IMPORT (reduce complexity of importMenuToEvent)
+// ============================================================================
 
-  const menuItems = event.menuSections ?? [];
-  if (menuItems.length === 0) {
-    return summary;
-  }
-
+/**
+ * Aggregate menu items by name to combine duplicates
+ */
+function aggregateMenuItems(
+  menuItems: MenuItem[],
+  headcount: number
+): Map<string, AggregatedMenuItem> {
   const aggregated = new Map<string, AggregatedMenuItem>();
 
   for (const item of menuItems) {
@@ -194,11 +199,7 @@ const importMenuToEvent = async (
     }
 
     const key = name.toLowerCase();
-    const { quantity, source } = deriveMenuQuantity(item, event.headcount);
-
-    if (source === "fallback") {
-      summary.missingQuantities.push(name);
-    }
+    const { quantity, source } = deriveMenuQuantity(item, headcount);
 
     let entry = aggregated.get(key);
     if (!entry) {
@@ -231,131 +232,281 @@ const importMenuToEvent = async (
     }
   }
 
-  for (const entry of aggregated.values()) {
-    const existingDish = await database.dish.findFirst({
-      where: {
-        tenantId,
-        deletedAt: null,
-        name: {
-          equals: entry.name,
-          mode: "insensitive",
-        },
+  return aggregated;
+}
+
+/**
+ * Find or create a recipe for a dish
+ */
+async function findOrCreateRecipe(
+  tenantId: string,
+  dishName: string,
+  category: string | null
+): Promise<{ recipeId: string; created: boolean }> {
+  const existingRecipe = await database.recipe.findFirst({
+    where: {
+      tenantId,
+      deletedAt: null,
+      name: {
+        equals: dishName,
+        mode: "insensitive",
       },
-      select: {
-        id: true,
-        recipeId: true,
+    },
+    select: { id: true },
+  });
+
+  if (existingRecipe) {
+    return { recipeId: existingRecipe.id, created: false };
+  }
+
+  const createdRecipe = await database.recipe.create({
+    data: {
+      tenantId,
+      name: dishName,
+      category: category ?? undefined,
+      tags: ["imported"],
+      isActive: true,
+    },
+  });
+
+  return { recipeId: createdRecipe.id, created: true };
+}
+
+/**
+ * Find or create a dish
+ */
+async function findOrCreateDish(
+  tenantId: string,
+  entry: AggregatedMenuItem,
+  serviceStyle: string | undefined
+): Promise<{ dishId: string; created: boolean; recipeCreated: boolean }> {
+  const existingDish = await database.dish.findFirst({
+    where: {
+      tenantId,
+      deletedAt: null,
+      name: {
+        equals: entry.name,
+        mode: "insensitive",
       },
-    });
+    },
+    select: {
+      id: true,
+      recipeId: true,
+    },
+  });
 
-    let dishId = existingDish?.id;
+  if (existingDish) {
+    return { dishId: existingDish.id, created: false, recipeCreated: false };
+  }
 
-    if (!dishId) {
-      let recipeId: string | undefined;
-      const existingRecipe = await database.recipe.findFirst({
-        where: {
-          tenantId,
-          deletedAt: null,
-          name: {
-            equals: entry.name,
-            mode: "insensitive",
+  const { recipeId, created: recipeCreated } = await findOrCreateRecipe(
+    tenantId,
+    entry.name,
+    entry.category
+  );
+
+  const createdDish = await database.dish.create({
+    data: {
+      tenantId,
+      recipeId,
+      name: entry.name,
+      category: entry.category ?? undefined,
+      serviceStyle,
+      dietaryTags: Array.from(entry.dietaryTags),
+      allergens: Array.from(entry.allergens),
+      isActive: true,
+    },
+  });
+
+  return { dishId: createdDish.id, created: true, recipeCreated };
+}
+
+/**
+ * Check if an event-dish link already exists
+ */
+async function findExistingEventDishLink(
+  tenantId: string,
+  eventId: string,
+  dishId: string
+): Promise<string | undefined> {
+  const [existingLink] = await database.$queryRaw<Array<{ id: string }>>(
+    Prisma.sql`
+      SELECT id
+      FROM tenant_events.event_dishes
+      WHERE tenant_id = ${tenantId}
+        AND event_id = ${eventId}
+        AND dish_id = ${dishId}
+        AND deleted_at IS NULL
+      LIMIT 1
+    `
+  );
+
+  return existingLink?.id;
+}
+
+/**
+ * Update an existing event-dish link
+ */
+async function updateEventDishLink(
+  tenantId: string,
+  eventId: string,
+  linkId: string,
+  entry: AggregatedMenuItem,
+  serviceStyle: string | undefined
+): Promise<void> {
+  const specialInstructions = Array.from(entry.instructions).join("; ");
+
+  await database.$executeRaw(
+    Prisma.sql`
+      UPDATE tenant_events.event_dishes
+      SET quantity_servings = ${Math.max(1, Math.round(entry.quantity))},
+          service_style = ${entry.serviceLocation ?? serviceStyle ?? null},
+          course = ${entry.category ?? null},
+          special_instructions = ${
+            specialInstructions.length > 0 ? specialInstructions : null
           },
-        },
-        select: { id: true },
-      });
+          updated_at = ${new Date()}
+      WHERE tenant_id = ${tenantId}
+        AND id = ${linkId}
+        AND event_id = ${eventId}
+    `
+  );
+}
 
-      if (existingRecipe) {
-        recipeId = existingRecipe.id;
-      } else {
-        const createdRecipe = await database.recipe.create({
-          data: {
-            tenantId,
-            name: entry.name,
-            category: entry.category ?? undefined,
-            tags: ["imported"],
-            isActive: true,
-          },
-        });
-        recipeId = createdRecipe.id;
-        summary.createdRecipes += 1;
-      }
+/**
+ * Create a new event-dish link
+ */
+async function createEventDishLink(
+  tenantId: string,
+  eventId: string,
+  dishId: string,
+  entry: AggregatedMenuItem,
+  serviceStyle: string | undefined
+): Promise<void> {
+  const specialInstructions = Array.from(entry.instructions).join("; ");
 
-      const createdDish = await database.dish.create({
-        data: {
-          tenantId,
-          recipeId,
-          name: entry.name,
-          category: entry.category ?? undefined,
-          serviceStyle: event.serviceStyle?.trim() || undefined,
-          dietaryTags: Array.from(entry.dietaryTags),
-          allergens: Array.from(entry.allergens),
-          isActive: true,
-        },
-      });
-      dishId = createdDish.id;
-      summary.createdDishes += 1;
-    }
+  await database.$executeRaw(
+    Prisma.sql`
+      INSERT INTO tenant_events.event_dishes (
+        tenant_id,
+        id,
+        event_id,
+        dish_id,
+        course,
+        quantity_servings,
+        service_style,
+        special_instructions,
+        created_at,
+        updated_at
+      )
+      VALUES (
+        ${tenantId},
+        gen_random_uuid(),
+        ${eventId},
+        ${dishId},
+        ${entry.category ?? null},
+        ${Math.max(1, Math.round(entry.quantity))},
+        ${entry.serviceLocation ?? serviceStyle ?? null},
+        ${specialInstructions.length > 0 ? specialInstructions : null},
+        ${new Date()},
+        ${new Date()}
+      )
+    `
+  );
+}
 
-    const specialInstructions = Array.from(entry.instructions).join("; ");
-    const [existingLink] = await database.$queryRaw<Array<{ id: string }>>(
-      Prisma.sql`
-        SELECT id
-        FROM tenant_events.event_dishes
-        WHERE tenant_id = ${tenantId}
-          AND event_id = ${eventId}
-          AND dish_id = ${dishId}
-          AND deleted_at IS NULL
-        LIMIT 1
-      `
+/**
+ * Process a single aggregated menu item entry
+ */
+async function processMenuItemEntry(
+  tenantId: string,
+  eventId: string,
+  entry: AggregatedMenuItem,
+  serviceStyle: string | undefined,
+  summary: MenuImportSummary
+): Promise<void> {
+  const { dishId, created, recipeCreated } = await findOrCreateDish(
+    tenantId,
+    entry,
+    serviceStyle
+  );
+
+  if (created) {
+    summary.createdDishes += 1;
+  }
+  if (recipeCreated) {
+    summary.createdRecipes += 1;
+  }
+
+  const existingLinkId = await findExistingEventDishLink(
+    tenantId,
+    eventId,
+    dishId
+  );
+
+  if (existingLinkId) {
+    await updateEventDishLink(
+      tenantId,
+      eventId,
+      existingLinkId,
+      entry,
+      serviceStyle
     );
+    summary.updatedLinks += 1;
+  } else {
+    await createEventDishLink(tenantId, eventId, dishId, entry, serviceStyle);
+    summary.linkedDishes += 1;
+  }
+}
 
-    if (existingLink?.id) {
-      await database.$executeRaw(
-        Prisma.sql`
-          UPDATE tenant_events.event_dishes
-          SET quantity_servings = ${Math.max(1, Math.round(entry.quantity))},
-              service_style = ${entry.serviceLocation ?? event.serviceStyle ?? null},
-              course = ${entry.category ?? null},
-              special_instructions = ${
-                specialInstructions.length > 0 ? specialInstructions : null
-              },
-              updated_at = ${new Date()}
-          WHERE tenant_id = ${tenantId}
-            AND id = ${existingLink.id}
-            AND event_id = ${eventId}
-        `
-      );
-      summary.updatedLinks += 1;
-    } else {
-      await database.$executeRaw(
-        Prisma.sql`
-          INSERT INTO tenant_events.event_dishes (
-            tenant_id,
-            id,
-            event_id,
-            dish_id,
-            course,
-            quantity_servings,
-            service_style,
-            special_instructions,
-            created_at,
-            updated_at
-          )
-          VALUES (
-            ${tenantId},
-            gen_random_uuid(),
-            ${eventId},
-            ${dishId},
-            ${entry.category ?? null},
-            ${Math.max(1, Math.round(entry.quantity))},
-            ${entry.serviceLocation ?? event.serviceStyle ?? null},
-            ${specialInstructions.length > 0 ? specialInstructions : null},
-            ${new Date()},
-            ${new Date()}
-          )
-        `
-      );
-      summary.linkedDishes += 1;
+/**
+ * Build summary of missing quantities from aggregated items
+ */
+function buildMissingQuantitiesSummary(
+  aggregated: Map<string, AggregatedMenuItem>
+): string[] {
+  const missing: string[] = [];
+  for (const entry of aggregated.values()) {
+    if (entry.quantitySource === "fallback") {
+      missing.push(entry.name);
     }
+  }
+  return missing;
+}
+
+const importMenuToEvent = async (
+  tenantId: string,
+  eventId: string,
+  event: ParsedEvent
+): Promise<MenuImportSummary> => {
+  const summary: MenuImportSummary = {
+    missingQuantities: [],
+    linkedDishes: 0,
+    createdDishes: 0,
+    createdRecipes: 0,
+    updatedLinks: 0,
+  };
+
+  const menuItems = event.menuSections ?? [];
+  if (menuItems.length === 0) {
+    return summary;
+  }
+
+  // Aggregate menu items by name to combine duplicates
+  const aggregated = aggregateMenuItems(menuItems, event.headcount);
+
+  // Build missing quantities summary
+  summary.missingQuantities = buildMissingQuantitiesSummary(aggregated);
+
+  // Process each aggregated menu item entry
+  for (const entry of aggregated.values()) {
+    await processMenuItemEntry(
+      tenantId,
+      eventId,
+      entry,
+      event.serviceStyle?.trim(),
+      summary
+    );
   }
 
   return summary;
@@ -492,6 +643,234 @@ async function createImportRecords(
   );
 }
 
+// ============================================================================
+// HELPER FUNCTIONS FOR DOCUMENT PROCESSING (reduce complexity)
+// ============================================================================
+
+/**
+ * Build event notes from parsed event data and files
+ */
+function buildEventNotes(files: File[], event: ParsedEvent): string {
+  const notesParts: string[] = [
+    `Imported from ${files.map((file) => file.name).join(", ")}`,
+  ];
+  if (event.notes && event.notes.length > 0) {
+    notesParts.push(...event.notes);
+  }
+  if (event.flags && event.flags.length > 0) {
+    const flagMessages = event.flags.map((f) => f.message).filter(Boolean);
+    if (flagMessages.length > 0) {
+      notesParts.push(`Flags: ${flagMessages.join("; ")}`);
+    }
+  }
+  return notesParts.join("\n\n");
+}
+
+/**
+ * Create a new event from parsed data
+ */
+async function createEventFromParsedData(
+  tenantId: string,
+  event: ParsedEvent,
+  files: File[],
+  missingFields: MissingField[]
+): Promise<{ eventId: string; title: string }> {
+  const derivedTitle = deriveEventTitle(event, files);
+  const parsedDate = parseEventDate(event.date);
+  const resolvedEventDate = parsedDate ?? new Date();
+  const notes = buildEventNotes(files, event);
+
+  const newEvent = await database.event.create({
+    data: {
+      tenantId,
+      title: derivedTitle,
+      eventType: event.serviceStyle || "catering",
+      eventDate: resolvedEventDate,
+      guestCount: event.headcount > 0 ? event.headcount : 0,
+      status: missingFields.length > 0 ? "draft" : "confirmed",
+      eventNumber: event.number || undefined,
+      venueName: event.venue?.name || undefined,
+      venueAddress: event.venue?.address || undefined,
+      notes,
+      tags: buildEventTags(["imported", ...(event.kits || [])], missingFields),
+    },
+  });
+
+  return { eventId: newEvent.id, title: derivedTitle };
+}
+
+/**
+ * Link import records to an event
+ */
+async function linkImportRecordsToEvent(
+  importRecords: Array<{ importId: string; document: ProcessedDocument }>,
+  eventId: string
+): Promise<void> {
+  await Promise.all(
+    importRecords.map((record) =>
+      database.eventImport.update({
+        where: { id: record.importId },
+        data: { eventId },
+      })
+    )
+  );
+}
+
+/**
+ * Handle event creation from parsed data
+ */
+async function handleEventCreation(
+  tenantId: string,
+  event: ParsedEvent,
+  files: File[],
+  importRecords: Array<{ importId: string; document: ProcessedDocument }>
+): Promise<{ eventId: string; title: string }> {
+  console.log("[handleEventCreation] Creating new event from parsed data");
+  const missingFields = getMissingFieldsFromParsedEvent(event);
+  const result = await createEventFromParsedData(
+    tenantId,
+    event,
+    files,
+    missingFields
+  );
+  console.log("[handleEventCreation] Event created:", result.eventId);
+
+  await linkImportRecordsToEvent(importRecords, result.eventId);
+
+  return result;
+}
+
+/**
+ * Generate battle board from parsed event data
+ */
+async function generateBattleBoardForEvent(
+  tenantId: string,
+  eventId: string,
+  event: ParsedEvent,
+  response: ParseDocumentsResponse
+): Promise<void> {
+  try {
+    console.log("[generateBattleBoardForEvent] Creating battle board");
+
+    const { buildBattleBoardFromEvent } = await getEventParser();
+    const battleBoardResult = buildBattleBoardFromEvent(event);
+    const battleBoardId = crypto.randomUUID();
+
+    const savedBattleBoard = await database.battleBoard.create({
+      data: {
+        tenantId,
+        id: battleBoardId,
+        eventId,
+        board_name: event.client || event.number || eventId || "",
+        board_type: "event-specific",
+        schema_version: "mangia-battle-board@1",
+        boardData: battleBoardResult.battleBoard as object,
+        status: "draft",
+        is_template: false,
+        tags: ["imported"],
+      },
+    });
+
+    console.log(
+      "[generateBattleBoardForEvent] Battle board saved:",
+      savedBattleBoard.id
+    );
+    response.battleBoard = battleBoardResult.battleBoard;
+    response.battleBoardId = savedBattleBoard.id;
+  } catch (error) {
+    console.error("[generateBattleBoardForEvent] Generation failed:", error);
+    response.battleBoardError =
+      error instanceof Error ? error.message : "Unknown error";
+  }
+}
+
+/**
+ * Generate checklist from parsed event data
+ */
+async function generateChecklistForEvent(
+  tenantId: string,
+  eventId: string,
+  event: ParsedEvent,
+  eventTitle: string,
+  response: ParseDocumentsResponse
+): Promise<void> {
+  try {
+    console.log("[generateChecklistForEvent] Creating checklist");
+
+    const { buildInitialChecklist } = await getEventParser();
+    const checklistResult = buildInitialChecklist(event);
+
+    const completionPercent =
+      checklistResult.totalQuestions > 0
+        ? Math.round(
+            (checklistResult.autoFilledCount / checklistResult.totalQuestions) *
+              100
+          )
+        : 0;
+
+    const savedReport = await database.eventReport.create({
+      data: {
+        tenantId,
+        id: crypto.randomUUID(),
+        eventId,
+        name: eventTitle || eventId,
+        status: "draft",
+        completion: completionPercent,
+        autoFillScore: checklistResult.autoFilledCount,
+        checklistData: {
+          checklist: checklistResult.checklist,
+          warnings: checklistResult.warnings,
+        } as unknown as Prisma.InputJsonObject,
+        parsedEventData: event as unknown as Prisma.InputJsonObject,
+      },
+    });
+
+    console.log("[generateChecklistForEvent] Checklist saved:", savedReport.id);
+
+    response.checklist = checklistResult;
+    response.checklistId = savedReport.id;
+  } catch (error) {
+    console.error("[generateChecklistForEvent] Generation failed:", error);
+    response.checklistError =
+      error instanceof Error ? error.message : "Unknown error";
+  }
+}
+
+/**
+ * Process parsed event data - create event and import menu
+ */
+async function processParsedEventData(
+  tenantId: string,
+  eventId: string | undefined,
+  event: ParsedEvent,
+  files: File[],
+  importRecords: Array<{ importId: string; document: ProcessedDocument }>
+): Promise<{ actualEventId: string; derivedTitle: string }> {
+  let actualEventId = eventId ?? "";
+
+  if (!actualEventId) {
+    const result = await handleEventCreation(
+      tenantId,
+      event,
+      files,
+      importRecords
+    );
+    actualEventId = result.eventId;
+  }
+
+  // Import menu items to event
+  if (actualEventId) {
+    try {
+      await importMenuToEvent(tenantId, actualEventId, event);
+    } catch (menuError) {
+      console.error("[processParsedEventData] Menu import failed:", menuError);
+    }
+  }
+
+  const derivedTitle = deriveEventTitle(event, files);
+  return { actualEventId, derivedTitle };
+}
+
 /**
  * Helper function to handle the entire document processing flow
  * Now powered by Manifest language runtime for orchestration
@@ -608,15 +987,10 @@ async function processDocumentsAndGenerateResponse(
   const response = buildResponse(result, importRecords);
   console.log("[processDocumentsAndGenerateResponse] response built");
 
-  // Handle event creation/update - MUST happen before generating artifacts
+  // Process parsed event data - create event and import menu
   let actualEventId = eventId;
   let derivedTitle = "";
   if (result.mergedEvent) {
-    const missingFields = getMissingFieldsFromParsedEvent(result.mergedEvent);
-    derivedTitle = deriveEventTitle(result.mergedEvent, files);
-    const parsedDate = parseEventDate(result.mergedEvent.date);
-    const resolvedEventDate = parsedDate ?? new Date();
-
     console.log(
       "[processDocumentsAndGenerateResponse] Parsed event data:",
       JSON.stringify(
@@ -638,132 +1012,18 @@ async function processDocumentsAndGenerateResponse(
       )
     );
 
-    if (!actualEventId) {
-      console.log(
-        "[processDocumentsAndGenerateResponse] Creating new event from parsed data"
-      );
-      try {
-        // Build comprehensive notes from parsed data
-        const notesParts: string[] = [
-          `Imported from ${files.map((file) => file.name).join(", ")}`,
-        ];
-        if (result.mergedEvent.notes && result.mergedEvent.notes.length > 0) {
-          notesParts.push(...result.mergedEvent.notes);
-        }
-        if (result.mergedEvent.flags && result.mergedEvent.flags.length > 0) {
-          const flagMessages = result.mergedEvent.flags
-            .map((f) => f.message)
-            .filter(Boolean);
-          if (flagMessages.length > 0) {
-            notesParts.push(`Flags: ${flagMessages.join("; ")}`);
-          }
-        }
-
-        const newEvent = await database.event.create({
-          data: {
-            tenantId,
-            title: derivedTitle,
-            eventType: result.mergedEvent.serviceStyle || "catering",
-            eventDate: resolvedEventDate,
-            guestCount:
-              result.mergedEvent.headcount > 0
-                ? result.mergedEvent.headcount
-                : 0,
-            status: missingFields.length > 0 ? "draft" : "confirmed",
-            eventNumber: result.mergedEvent.number || undefined,
-            venueName: result.mergedEvent.venue?.name || undefined,
-            venueAddress: result.mergedEvent.venue?.address || undefined,
-            notes: notesParts.join("\n\n"),
-            tags: buildEventTags(
-              ["imported", ...(result.mergedEvent.kits || [])],
-              missingFields
-            ),
-          },
-        });
-        actualEventId = newEvent.id;
-        console.log(
-          "[processDocumentsAndGenerateResponse] Event created:",
-          actualEventId
-        );
-
-        for (const record of importRecords) {
-          await database.eventImport.update({
-            where: { id: record.importId },
-            data: { eventId: actualEventId },
-          });
-        }
-
-        // Also create in Manifest if available
-        // TODO: Re-enable after porting event import functions from manifest-backup to kitchen-ops
-        // if (engine && createUpdateEvent) {
-        //   try {
-        //     await engine.createInstance("Event", {
-        //       id: actualEventId,
-        //       tenantId,
-        //       eventType: result.mergedEvent.serviceStyle || "catering",
-        //       eventDate: result.mergedEvent.date || new Date().toISOString(),
-        //     });
-        //
-        //     await createUpdateEvent(
-        //       engine,
-        //       undefined,
-        //       tenantId,
-        //       result.mergedEvent
-        //     );
-        //   } catch (manifestError) {
-        //     console.error(
-        //       "[processDocumentsAndGenerateResponse] Manifest event creation failed (non-blocking):",
-        //       manifestError
-        //     );
-        //   }
-        // }
-      } catch (dbError) {
-        console.error(
-          "[processDocumentsAndGenerateResponse] Failed to create event in database:",
-          dbError
-        );
-        throw dbError; // Re-throw - we can't generate artifacts without an event
-      }
-    } else if (actualEventId) {
-      // Update existing event
-      // TODO: Re-enable after porting event import functions from manifest-backup to kitchen-ops
-      // if (engine && createUpdateEvent) {
-      //   try {
-      //     await engine.createInstance("Event", {
-      //       id: actualEventId,
-      //       tenantId,
-      //       eventType: result.mergedEvent.serviceStyle || "catering",
-      //       eventDate: result.mergedEvent.date || new Date().toISOString(),
-      //     });
-      //
-      //     await createUpdateEvent(
-      //       engine,
-      //       actualEventId,
-      //       tenantId,
-      //       result.mergedEvent
-      //     );
-      //   } catch (manifestError) {
-      //     console.error(
-      //       "[processDocumentsAndGenerateResponse] Manifest event update failed (non-blocking):",
-      //       manifestError
-      //     );
-      //   }
-      // }
-    }
-
-    if (actualEventId) {
-      try {
-        await importMenuToEvent(tenantId, actualEventId, result.mergedEvent);
-      } catch (menuError) {
-        console.error(
-          "[processDocumentsAndGenerateResponse] Menu import failed:",
-          menuError
-        );
-      }
-    }
+    const eventData = await processParsedEventData(
+      tenantId,
+      eventId,
+      result.mergedEvent,
+      files,
+      importRecords
+    );
+    actualEventId = eventData.actualEventId;
+    derivedTitle = eventData.derivedTitle;
   }
 
-  // Generate battle board via Manifest if requested
+  // Generate battle board if requested
   if (shouldGenerateBattleBoard) {
     if (!result.mergedEvent) {
       console.warn(
@@ -771,112 +1031,12 @@ async function processDocumentsAndGenerateResponse(
       );
       response.battleBoardError = "No event data extracted from documents";
     } else if (actualEventId) {
-      try {
-        console.log(
-          "[processDocumentsAndGenerateResponse] Creating battle board"
-        );
-        console.log(
-          "[processDocumentsAndGenerateResponse] Event data:",
-          JSON.stringify(
-            {
-              client: result.mergedEvent.client,
-              number: result.mergedEvent.number,
-              date: result.mergedEvent.date,
-              times: result.mergedEvent.times,
-              headcount: result.mergedEvent.headcount,
-              menuSections: result.mergedEvent.menuSections?.length || 0,
-            },
-            null,
-            2
-          )
-        );
-
-        const { buildBattleBoardFromEvent } = await getEventParser();
-        const battleBoardResult = buildBattleBoardFromEvent(result.mergedEvent);
-        console.log(
-          "[processDocumentsAndGenerateResponse] Battle board built successfully"
-        );
-        const battleBoardId = crypto.randomUUID();
-
-        // TODO: Re-enable after porting event import functions from manifest-backup to kitchen-ops
-        // if (engine && generateBattleBoardFn) {
-        //   try {
-        //     await engine.createInstance("BattleBoard", {
-        //       id: battleBoardId,
-        //       tenantId,
-        //       eventId: actualEventId,
-        //       boardName:
-        //         result.mergedEvent.client ||
-        //         result.mergedEvent.number ||
-        //         actualEventId ||
-        //         "",
-        //     });
-        //     await generateBattleBoardFn(
-        //       engine,
-        //       battleBoardId,
-        //       tenantId,
-        //       actualEventId,
-        //       {
-        //         ...result.mergedEvent,
-        //         battleBoard: battleBoardResult.battleBoard,
-        //       }
-        //     );
-        //   } catch (manifestError) {
-        //     console.error(
-        //       "[processDocumentsAndGenerateResponse] Manifest battle board generation failed, using fallback:",
-        //       manifestError
-        //     );
-        //     // Fall through to database save
-        //   }
-        // }
-
-        // Save to database
-        console.log(
-          "[processDocumentsAndGenerateResponse] Saving battle board to database:",
-          {
-            battleBoardId,
-            eventId: actualEventId,
-            boardName:
-              result.mergedEvent.client ||
-              result.mergedEvent.number ||
-              actualEventId ||
-              "",
-          }
-        );
-
-        const savedBattleBoard = await database.battleBoard.create({
-          data: {
-            tenantId,
-            id: battleBoardId,
-            eventId: actualEventId,
-            board_name:
-              result.mergedEvent.client ||
-              result.mergedEvent.number ||
-              actualEventId ||
-              "",
-            board_type: "event-specific",
-            schema_version: "mangia-battle-board@1",
-            boardData: battleBoardResult.battleBoard as object,
-            status: "draft",
-            is_template: false,
-            tags: ["imported"],
-          },
-        });
-
-        console.log(
-          "[processDocumentsAndGenerateResponse] Battle board saved:",
-          savedBattleBoard.id
-        );
-        response.battleBoard = battleBoardResult.battleBoard;
-        response.battleBoardId = savedBattleBoard.id;
-      } catch (error) {
-        console.error(
-          "[processDocumentsAndGenerateResponse] Battle board generation failed:",
-          error
-        );
-        response.battleBoardError =
-          error instanceof Error ? error.message : "Unknown error";
-      }
+      await generateBattleBoardForEvent(
+        tenantId,
+        actualEventId,
+        result.mergedEvent,
+        response
+      );
     } else {
       console.warn(
         "[processDocumentsAndGenerateResponse] Cannot generate battle board: no event ID"
@@ -886,7 +1046,7 @@ async function processDocumentsAndGenerateResponse(
     }
   }
 
-  // Generate checklist via Manifest if requested
+  // Generate checklist if requested
   if (shouldGenerateChecklist) {
     if (!result.mergedEvent) {
       console.warn(
@@ -894,114 +1054,13 @@ async function processDocumentsAndGenerateResponse(
       );
       response.checklistError = "No event data extracted from documents";
     } else if (actualEventId) {
-      try {
-        console.log("[processDocumentsAndGenerateResponse] Creating checklist");
-        console.log(
-          "[processDocumentsAndGenerateResponse] Event data for checklist:",
-          JSON.stringify(
-            {
-              client: result.mergedEvent.client,
-              number: result.mergedEvent.number,
-              date: result.mergedEvent.date,
-              times: result.mergedEvent.times,
-              headcount: result.mergedEvent.headcount,
-              menuSections: result.mergedEvent.menuSections?.length || 0,
-            },
-            null,
-            2
-          )
-        );
-
-        const { buildInitialChecklist } = await getEventParser();
-        const checklistResult = buildInitialChecklist(result.mergedEvent);
-        console.log(
-          "[processDocumentsAndGenerateResponse] Checklist built successfully, autoFillScore:",
-          checklistResult.autoFilledCount,
-          "totalQuestions:",
-          checklistResult.totalQuestions
-        );
-        const reportId = crypto.randomUUID();
-
-        // TODO: Re-enable after porting event import functions from manifest-backup to kitchen-ops
-        // if (engine && generateChecklistFn) {
-        //   try {
-        //     await engine.createInstance("EventReport", {
-        //       id: reportId,
-        //       tenantId,
-        //       eventId: actualEventId,
-        //     });
-        //     await generateChecklistFn(
-        //       engine,
-        //       reportId,
-        //       tenantId,
-        //       actualEventId,
-        //       result.mergedEvent,
-        //       checklistResult
-        //     );
-        //   } catch (manifestError) {
-        //     console.error(
-        //       "[processDocumentsAndGenerateResponse] Manifest checklist generation failed, using fallback:",
-        //       manifestError
-        //     );
-        //     // Fall through to database save
-        //   }
-        // }
-
-        // Save to database
-        const completionPercent =
-          checklistResult.totalQuestions > 0
-            ? Math.round(
-                (checklistResult.autoFilledCount /
-                  checklistResult.totalQuestions) *
-                  100
-              )
-            : 0;
-        const reportName = derivedTitle || actualEventId;
-
-        console.log(
-          "[processDocumentsAndGenerateResponse] Saving checklist to database:",
-          {
-            reportId,
-            eventId: actualEventId,
-            completion: completionPercent,
-            autoFillScore: checklistResult.autoFilledCount,
-            totalQuestions: checklistResult.totalQuestions,
-          }
-        );
-
-        const savedReport = await database.eventReport.create({
-          data: {
-            tenantId,
-            id: reportId,
-            eventId: actualEventId,
-            name: reportName,
-            status: "draft",
-            completion: completionPercent,
-            autoFillScore: checklistResult.autoFilledCount,
-            checklistData: {
-              checklist: checklistResult.checklist,
-              warnings: checklistResult.warnings,
-            } as unknown as Prisma.InputJsonObject,
-            parsedEventData:
-              result.mergedEvent as unknown as Prisma.InputJsonObject,
-          },
-        });
-
-        console.log(
-          "[processDocumentsAndGenerateResponse] Checklist saved:",
-          savedReport.id
-        );
-
-        response.checklist = checklistResult;
-        response.checklistId = savedReport.id;
-      } catch (error) {
-        console.error(
-          "[processDocumentsAndGenerateResponse] Checklist generation failed:",
-          error
-        );
-        response.checklistError =
-          error instanceof Error ? error.message : "Unknown error";
-      }
+      await generateChecklistForEvent(
+        tenantId,
+        actualEventId,
+        result.mergedEvent,
+        derivedTitle,
+        response
+      );
     } else {
       console.warn(
         "[processDocumentsAndGenerateResponse] Cannot generate checklist: no event ID"
