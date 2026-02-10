@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, type Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -14,18 +14,19 @@ export async function GET(
 
     // Authenticate the user
     const { userId, orgId } = await auth();
-
-    if (!(userId && orgId)) {
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    invariant(orgId, "auth.orgId must exist");
+    if (!orgId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     // Get tenant ID
     const tenantId = await getTenantIdForOrg(orgId);
     invariant(tenantId, `tenantId not found for orgId=${orgId}`);
 
     const { searchParams } = new URL(request.url);
-    const isAcknowledged = searchParams.get("is_acknowledged");
+    const isAcknowledged = searchParams.get("isAcknowledged");
 
     // Validate the event exists and belongs to the tenant
     const event = await database.event.findFirst({
@@ -41,7 +42,12 @@ export async function GET(
     }
 
     // Build query conditions
-    const where: Prisma.AllergenWarningWhereInput = {
+    const where: {
+      eventId: string;
+      tenantId: string;
+      deletedAt: null;
+      isAcknowledged?: boolean;
+    } = {
       eventId,
       tenantId,
       deletedAt: null,
@@ -53,15 +59,9 @@ export async function GET(
     }
 
     // Fetch warnings
-    // Note: Relations like dish, guest are not defined in Prisma schema yet
-    // TODO: Add relations to schema and include them here
     const warnings = await database.allergenWarning.findMany({
       where,
-      orderBy: [
-        { isAcknowledged: "asc" },
-        { severity: "desc" },
-        { createdAt: "desc" },
-      ],
+      orderBy: [{ createdAt: "desc" }],
     });
 
     return NextResponse.json(warnings);

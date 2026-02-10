@@ -20,11 +20,28 @@ interface User {
   lastName: string | null;
 }
 
+/**
+ * POST /api/kitchen/tasks/sync-claims
+ *
+ * Syncs offline claim operations from the client.
+ * Used when a user was offline and made claims that need to be synced.
+ *
+ * Expected body:
+ * {
+ *   claims: Array<{
+ *     taskId: string;
+ *     action: 'claim' | 'release';
+ *     timestamp: string; // ISO timestamp of when action occurred offline
+ *   }>
+ * }
+ */
+
 async function processClaimAction(
   tenantId: string,
   taskId: string,
   currentUser: User
 ): Promise<{ success: boolean; error?: string }> {
+  // Check if task exists
   const task = await database.kitchenTask.findFirst({
     where: {
       AND: [{ tenantId }, { id: taskId }, { deletedAt: null }],
@@ -35,6 +52,7 @@ async function processClaimAction(
     return { success: false, error: "Task not found" };
   }
 
+  // Check if there's already an active claim for this task
   const existingClaim = await database.kitchenTaskClaim.findFirst({
     where: {
       AND: [{ tenantId }, { taskId }, { releasedAt: null }],
@@ -42,12 +60,15 @@ async function processClaimAction(
   });
 
   if (existingClaim) {
+    // Check if it's already claimed by this user
     if (existingClaim.employeeId === currentUser.id) {
       return { success: true };
     }
+    // Someone else claimed it
     return { success: false, error: "Task already claimed by another user" };
   }
 
+  // Create claim
   await database.kitchenTaskClaim.create({
     data: {
       tenantId,
@@ -56,6 +77,7 @@ async function processClaimAction(
     },
   });
 
+  // Update task status if needed
   if (task.status === "pending") {
     await database.kitchenTask.update({
       where: { tenantId_id: { tenantId, id: taskId } },
@@ -70,16 +92,12 @@ async function processClaimAction(
         progressType: "status_change",
         oldStatus: "pending",
         newStatus: "in_progress",
-        notes:
-          "Task claimed by " +
-          (currentUser.firstName || "") +
-          " " +
-          (currentUser.lastName || "") +
-          " (offline sync)",
+        notes: `Task claimed by ${currentUser.firstName || ""} ${currentUser.lastName || ""} (offline sync)`,
       },
     });
   }
 
+  // Create outbox event
   await database.outboxEvent.create({
     data: {
       tenantId,
@@ -103,6 +121,7 @@ async function processReleaseAction(
   taskId: string,
   currentUser: User
 ): Promise<{ success: boolean; error?: string }> {
+  // Find active claim for this task by this user
   const existingClaim = await database.kitchenTaskClaim.findFirst({
     where: {
       AND: [
@@ -118,6 +137,7 @@ async function processReleaseAction(
     return { success: false, error: "No active claim found for this task" };
   }
 
+  // Release the claim
   await database.kitchenTaskClaim.update({
     where: { tenantId_id: { tenantId, id: existingClaim.id } },
     data: {
@@ -126,6 +146,7 @@ async function processReleaseAction(
     },
   });
 
+  // Check if there are other active claims
   const otherClaims = await database.kitchenTaskClaim.findMany({
     where: {
       AND: [
@@ -137,6 +158,7 @@ async function processReleaseAction(
     },
   });
 
+  // If no other claims, set task back to pending
   if (otherClaims.length === 0) {
     const task = await database.kitchenTask.findFirst({
       where: {
@@ -159,17 +181,13 @@ async function processReleaseAction(
           progressType: "status_change",
           oldStatus: "in_progress",
           newStatus: "pending",
-          notes:
-            "Task released by " +
-            (currentUser.firstName || "") +
-            " " +
-            (currentUser.lastName || "") +
-            " (offline sync)",
+          notes: `Task released by ${currentUser.firstName || ""} ${currentUser.lastName || ""} (offline sync)`,
         },
       });
     }
   }
 
+  // Create outbox event
   await database.outboxEvent.create({
     data: {
       tenantId,
@@ -234,6 +252,7 @@ export async function POST(request: Request) {
   const tenantId = await getTenantIdForOrg(orgId);
   const body = await request.json();
 
+  // Validate request body
   if (!(body.claims && Array.isArray(body.claims))) {
     return NextResponse.json(
       { message: "Invalid request: 'claims' array required" },
@@ -241,6 +260,7 @@ export async function POST(request: Request) {
     );
   }
 
+  // Get current user by Clerk ID
   const currentUser = await database.user.findFirst({
     where: {
       AND: [{ tenantId }, { authUserId: clerkId }],
@@ -264,6 +284,7 @@ export async function POST(request: Request) {
     failed: [],
   };
 
+  // Process each claim action
   for (const claimAction of body.claims) {
     try {
       const result = await processSingleAction(
@@ -274,8 +295,8 @@ export async function POST(request: Request) {
 
       if (result?.error) {
         results.failed.push({
-          taskId: claimAction.taskId || "unknown",
-          action: claimAction.action || "unknown",
+          taskId: result.taskId,
+          action: result.action,
           error: result.error,
         });
       } else if (result) {

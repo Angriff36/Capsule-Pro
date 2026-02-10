@@ -10,33 +10,22 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import type {
-  BattleBoardBuildResult,
-  ChecklistBuildResult,
   MenuItem,
   ParsedEvent,
   ProcessedDocument,
   StaffShift,
 } from "@repo/event-parser";
-import {
-  buildBattleBoardFromEvent,
-  buildInitialChecklist,
-  processMultipleDocuments,
-} from "@repo/event-parser";
-import { triggerPrepListAutoGeneration } from "@repo/manifest-adapters";
-import { createOutboxEvent } from "@repo/realtime";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-interface ParseParams {
-  eventId: string | null;
-  generateChecklist: boolean;
-  generateBattleBoard: boolean;
-}
+type EventParserModule = typeof import("@repo/event-parser");
 
-interface ImportRecord {
-  importId: string;
-  document: ProcessedDocument;
-}
+let eventParserPromise: Promise<EventParserModule> | null = null;
+
+const getEventParser = () => {
+  eventParserPromise ??= import("@repo/event-parser");
+  return eventParserPromise;
+};
 
 type MissingField =
   | "client"
@@ -46,14 +35,7 @@ type MissingField =
   | "headcount"
   | "menuItems";
 
-interface DishMatch {
-  name: string;
-  dishId: string;
-  eventDishId: string;
-}
-
 interface MenuImportSummary {
-  dishMatches: DishMatch[];
   missingQuantities: string[];
   linkedDishes: number;
   createdDishes: number;
@@ -74,19 +56,17 @@ interface AggregatedMenuItem {
 
 const MISSING_FIELD_TAG_PREFIX = "needs:";
 
-// Top-level regex for performance
-const WHITESPACE_REGEX = /\s+/g;
-const FILE_EXTENSION_REGEX = /\.[^/.]+$/;
-const HYPHEN_UNDERSCORE_REGEX = /[-_]+/g;
-const SERVING_UNIT_REGEX = /serv|pax|guest|portion/i;
+const normalizeName = (value: string) => value.trim().replace(/\s+/g, " ");
 
-const normalizeName = (value: string) =>
-  value.trim().replace(WHITESPACE_REGEX, " ");
+const normalizeList = (values: string[] | undefined) =>
+  (values ?? [])
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
 
 const getFileLabel = (fileName: string) =>
   fileName
-    .replace(FILE_EXTENSION_REGEX, "")
-    .replace(HYPHEN_UNDERSCORE_REGEX, " ")
+    .replace(/\.[^/.]+$/, "")
+    .replace(/[_-]+/g, " ")
     .trim();
 
 const getMissingFieldsFromParsedEvent = (
@@ -118,9 +98,7 @@ const buildMissingFieldTags = (missing: MissingField[]) =>
   missing.map((field) => `${MISSING_FIELD_TAG_PREFIX}${field}`);
 
 const buildEventTags = (baseTags: string[], missing: MissingField[]) => {
-  const tagSet = new Set<string>(
-    baseTags.filter((tag) => tag.trim().length > 0)
-  );
+  const tagSet = new Set<string>(baseTags.filter(Boolean));
   for (const tag of buildMissingFieldTags(missing)) {
     tagSet.add(tag);
   }
@@ -136,8 +114,7 @@ const deriveEventTitle = (event: ParsedEvent, files: File[]) => {
   if (number) {
     return number;
   }
-  const fallbackFile = files[0]?.name;
-  return fallbackFile ? getFileLabel(fallbackFile) : "";
+  return files[0]?.name ? getFileLabel(files[0].name) : "";
 };
 
 const parseEventDate = (dateValue: string | undefined) => {
@@ -147,11 +124,6 @@ const parseEventDate = (dateValue: string | undefined) => {
   const parsed = new Date(dateValue);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
-
-const normalizeList = (values: string[] | undefined) =>
-  (values ?? [])
-    .map((value) => value.trim())
-    .filter((value) => value.length > 0);
 
 const mergeInstructions = (item: MenuItem) => {
   const instructions = new Set<string>();
@@ -171,7 +143,8 @@ const deriveMenuQuantity = (item: MenuItem, fallbackHeadcount: number) => {
 
   const servingDetails =
     item.quantityDetails?.filter(
-      (detail) => detail.value > 0 && SERVING_UNIT_REGEX.test(detail.unit)
+      (detail) =>
+        detail.value > 0 && /serv|pax|guest|portion/i.test(detail.unit)
     ) ?? [];
   if (servingDetails.length > 0) {
     const maxDetail = servingDetails.reduce(
@@ -194,219 +167,12 @@ const deriveMenuQuantity = (item: MenuItem, fallbackHeadcount: number) => {
   return { quantity: 1, source: "fallback" as const };
 };
 
-function parseParams(searchParams: URLSearchParams): ParseParams {
-  return {
-    eventId: searchParams.get("eventId"),
-    generateChecklist: searchParams.get("generateChecklist") === "true",
-    generateBattleBoard: searchParams.get("generateBattleBoard") === "true",
-  };
-}
-
-function validateFileTypes(files: File[]): NextResponse | undefined {
-  if (files.length === 0) {
-    return NextResponse.json({ message: "No files uploaded" }, { status: 400 });
-  }
-
-  const allowedExtensions = [".pdf", ".csv"];
-
-  for (const file of files) {
-    const ext = `.${file.name.split(".").pop()?.toLowerCase()}`;
-    if (!allowedExtensions.includes(ext)) {
-      return NextResponse.json(
-        {
-          message: `Invalid file type: ${file.name}. Only PDF and CSV files are allowed.`,
-        },
-        { status: 400 }
-      );
-    }
-  }
-
-  return undefined;
-}
-
-function processFiles(
-  files: File[]
-): Promise<Array<{ content: ArrayBuffer; fileName: string }>> {
-  return Promise.all(
-    files.map((file) =>
-      file.arrayBuffer().then((content) => ({ content, fileName: file.name }))
-    )
-  );
-}
-
-function createImportRecords(
-  files: File[],
-  result: { documents: ProcessedDocument[] },
-  tenantId: string,
-  eventId: string | null
-): Promise<ImportRecord[]> {
-  return Promise.all(
-    files.map((file, index) => {
-      const doc = result.documents[index];
-
-      const ext = file.name.split(".").pop()?.toLowerCase();
-      let mimeType: string;
-      if (ext === "pdf") {
-        mimeType = "application/pdf";
-      } else if (ext === "csv") {
-        mimeType = "text/csv";
-      } else {
-        mimeType = "";
-      }
-
-      return database.eventImport
-        .create({
-          data: {
-            tenantId,
-            fileName: file.name,
-            mimeType,
-            fileSize: file.size,
-            fileType: doc.fileType,
-            detectedFormat: doc.detectedFormat,
-            parseStatus: doc.errors.length > 0 ? "failed" : "parsed",
-            parseErrors: doc.errors,
-            confidence: doc.confidence,
-            extractedData: JSON.parse(
-              JSON.stringify({
-                event: doc.parsedEvent?.event || null,
-                staff: doc.staffShifts
-                  ? Object.fromEntries(doc.staffShifts)
-                  : null,
-                warnings: doc.warnings,
-              })
-            ),
-            eventId: eventId || undefined,
-            parsedAt: new Date(),
-          },
-        })
-        .then((importRecord) => ({
-          importId: importRecord.id,
-          document: doc,
-        }));
-    })
-  );
-}
-
-async function _generateBattleBoard(
-  mergedEvent: ParsedEvent,
-  tenantId: string,
-  eventId: string | null,
-  importRecords: ImportRecord[]
-): Promise<{ battleBoard: BattleBoardBuildResult; battleBoardId: string }> {
-  const battleBoardResult = buildBattleBoardFromEvent(mergedEvent);
-
-  const boardName = mergedEvent.client || mergedEvent.number || eventId || "";
-
-  const savedBattleBoard = await database.battleBoard.create({
-    data: {
-      tenantId,
-      board_name: boardName,
-      board_type: "event-specific",
-      schema_version: "mangia-battle-board@1",
-      boardData: battleBoardResult.battleBoard as object,
-      status: "draft",
-      is_template: false,
-      tags: ["imported"],
-      eventId: eventId || undefined,
-    },
-  });
-
-  for (const record of importRecords) {
-    await database.eventImport.update({
-      where: { id: record.importId },
-      data: { battleBoardId: savedBattleBoard.id },
-    });
-  }
-
-  return {
-    battleBoard: battleBoardResult,
-    battleBoardId: savedBattleBoard.id,
-  };
-}
-
-async function createEventFromParsedData(
-  mergedEvent: ParsedEvent,
-  tenantId: string,
-  files: File[],
-  missingFields: MissingField[],
-  userId?: string
-): Promise<string> {
-  const derivedTitle = deriveEventTitle(mergedEvent, files);
-  const parsedDate = parseEventDate(mergedEvent.date);
-  const eventDate = parsedDate ?? new Date();
-  const notes = [
-    ...normalizeList(mergedEvent.notes),
-    `Imported from ${files.map((f) => f.name).join(", ")}`,
-  ]
-    .filter((value) => value.length > 0)
-    .join("\n");
-
-  const newEvent = await database.event.create({
-    data: {
-      tenantId,
-      title: derivedTitle,
-      eventType: mergedEvent.serviceStyle?.trim() || "catering",
-      eventDate,
-      guestCount: mergedEvent.headcount > 0 ? mergedEvent.headcount : 0,
-      status: missingFields.length > 0 ? "draft" : "confirmed",
-      eventNumber: mergedEvent.number || undefined,
-      venueName: mergedEvent.venue?.name || undefined,
-      venueAddress: mergedEvent.venue?.address || undefined,
-      notes: notes.length > 0 ? notes : undefined,
-      tags: buildEventTags(["imported"], missingFields),
-    },
-  });
-
-  // Create outbox event for event creation
-  await createOutboxEvent(database, {
-    tenantId,
-    aggregateType: "Event",
-    aggregateId: newEvent.id,
-    eventType: "event.created",
-    payload: {
-      eventId: newEvent.id,
-      title: derivedTitle,
-      status: newEvent.status,
-      guestCount: mergedEvent.headcount > 0 ? mergedEvent.headcount : 0,
-      eventDate: eventDate.toISOString(),
-      createdBy: userId,
-    },
-  });
-
-  // Trigger prep list auto-generation for confirmed events
-  if (newEvent.status === "confirmed" && userId) {
-    await triggerPrepListAutoGeneration({
-      db: database,
-      tenantId,
-      eventId: newEvent.id,
-      eventTitle: derivedTitle,
-      guestCount: mergedEvent.headcount > 0 ? mergedEvent.headcount : 0,
-      userId,
-    });
-  }
-
-  return newEvent.id;
-}
-
-async function updateImportRecordsWithEvent(
-  importRecords: ImportRecord[],
-  eventId: string
-): Promise<void> {
-  for (const record of importRecords) {
-    await database.eventImport.update({
-      where: { id: record.importId },
-      data: { eventId },
-    });
-  }
-}
-
-async function importMenuToEvent(
+const importMenuToEvent = async (
   tenantId: string,
   eventId: string,
   event: ParsedEvent
-): Promise<MenuImportSummary> {
+): Promise<MenuImportSummary> => {
   const summary: MenuImportSummary = {
-    dishMatches: [],
     missingQuantities: [],
     linkedDishes: 0,
     createdDishes: 0,
@@ -542,8 +308,6 @@ async function importMenuToEvent(
       `
     );
 
-    let eventDishId: string;
-
     if (existingLink?.id) {
       await database.$executeRaw(
         Prisma.sql`
@@ -560,10 +324,9 @@ async function importMenuToEvent(
             AND event_id = ${eventId}
         `
       );
-      eventDishId = existingLink.id;
       summary.updatedLinks += 1;
     } else {
-      const [inserted] = await database.$queryRaw<Array<{ id: string }>>(
+      await database.$executeRaw(
         Prisma.sql`
           INSERT INTO tenant_events.event_dishes (
             tenant_id,
@@ -589,155 +352,739 @@ async function importMenuToEvent(
             ${new Date()},
             ${new Date()}
           )
-          RETURNING id
         `
       );
-      eventDishId = inserted?.id ?? "";
       summary.linkedDishes += 1;
-    }
-
-    if (existingDish?.id && eventDishId) {
-      summary.dishMatches.push({
-        name: entry.name,
-        dishId,
-        eventDishId,
-      });
     }
   }
 
   return summary;
-}
+};
 
-async function _generateChecklist(
+/**
+ * Helper function to generate and save battle board
+ * Note: Event must be created before calling this function
+ */
+async function _createBattleBoard(
   mergedEvent: ParsedEvent,
   tenantId: string,
-  eventId: string | null,
-  importRecords: ImportRecord[],
-  battleBoardId?: string
-): Promise<{ checklist: ChecklistBuildResult; checklistId: string }> {
-  const checklistResult = buildInitialChecklist(mergedEvent);
-  if (!eventId) {
-    throw new Error("Event must exist before generating checklist.");
-  }
+  eventId: string
+) {
+  const { buildBattleBoardFromEvent } = await getEventParser();
+  const battleBoardResult = buildBattleBoardFromEvent(mergedEvent);
 
-  const reportName = deriveEventTitle(mergedEvent, []) || eventId;
+  // Save battle board to database
+  const boardName = mergedEvent.client || mergedEvent.number || eventId || "";
 
-  const savedReport = await database.eventReport.create({
+  const savedBattleBoard = await database.battleBoard.create({
     data: {
       tenantId,
       eventId,
-      name: reportName,
-      version: new Date().toISOString().slice(0, 10),
+      board_name: boardName,
+      board_type: "event-specific",
+      schema_version: "mangia-battle-board@1",
+      boardData: battleBoardResult.battleBoard as object,
       status: "draft",
-      completion: Math.round(
-        (checklistResult.autoFilledCount / checklistResult.totalQuestions) * 100
-      ),
-      checklistData: checklistResult.checklist as object,
-      parsedEventData: mergedEvent as object,
-      autoFillScore: checklistResult.autoFilledCount,
-      reviewNotes:
-        checklistResult.warnings.length > 0
-          ? `Auto-fill warnings: ${checklistResult.warnings.join("; ")}`
-          : undefined,
+      is_template: false,
+      tags: ["imported"],
     },
   });
 
-  for (const record of importRecords) {
-    await database.eventImport.update({
-      where: { id: record.importId },
-      data: { reportId: savedReport.id },
-    });
-  }
-
-  if (battleBoardId) {
-    await database.battleBoard.update({
-      where: { tenantId_id: { tenantId, id: battleBoardId } },
-      data: { eventId },
-    });
-  }
-
-  return {
-    checklist: checklistResult,
-    checklistId: savedReport.id,
-  };
+  return { battleBoard: battleBoardResult, battleBoardId: savedBattleBoard.id };
 }
 
 /**
- * Build final response with optional battle board and checklist
+ * Helper function to validate file extensions
  */
-async function buildResponse(
+function validateFileExtensions(
+  files: File[],
+  allowedExtensions: string[]
+): { valid: true; files: File[] } | { valid: false; error: string } {
+  const invalidFiles = files.filter((file) => {
+    const ext = `.${file.name.split(".").pop()?.toLowerCase()}`;
+    return !allowedExtensions.includes(ext);
+  });
+
+  if (invalidFiles.length > 0) {
+    return {
+      valid: false,
+      error: `Invalid file types: ${invalidFiles.map((f) => f.name).join(", ")}. Only PDF and CSV files are allowed.`,
+    };
+  }
+
+  return { valid: true, files };
+}
+
+/**
+ * Helper function to validate file extensions
+ */
+async function processFormData(request: Request) {
+  const formData = await request.formData();
+  const files = formData.getAll("files") as File[];
+
+  return { files, formData };
+}
+
+/**
+ * Helper function to parse documents
+ */
+async function parseDocuments(
+  fileContents: Array<{
+    content: ArrayBuffer | Uint8Array | Buffer;
+    fileName: string;
+  }>
+) {
+  const { processMultipleDocuments } = await getEventParser();
+  return await processMultipleDocuments(fileContents);
+}
+
+/**
+ * Helper function to create import records
+ */
+async function createImportRecords(
+  files: File[],
   result: {
     documents: ProcessedDocument[];
     mergedEvent?: ParsedEvent;
     mergedStaff?: StaffShift[];
     errors: string[];
   },
-  importRecords: ImportRecord[],
   tenantId: string,
-  eventId: string | null,
-  generateBattleBoard: boolean,
-  generateChecklist: boolean,
-  missingFields: MissingField[],
-  menuImport: MenuImportSummary | null
-): Promise<{
-  documents: ProcessedDocument[];
-  mergedEvent: typeof result.mergedEvent;
-  mergedStaff: typeof result.mergedStaff;
-  imports: typeof importRecords;
-  missingFields: MissingField[];
-  menuImport?: MenuImportSummary | null;
-  checklist?: ChecklistBuildResult;
-  checklistId?: string;
-  battleBoard?: BattleBoardBuildResult;
-  battleBoardId?: string;
-  errors: string[];
-}> {
-  const response: {
-    documents: ProcessedDocument[];
-    mergedEvent: typeof result.mergedEvent;
-    mergedStaff: typeof result.mergedStaff;
-    imports: typeof importRecords;
-    missingFields: MissingField[];
-    menuImport?: MenuImportSummary | null;
-    checklist?: ChecklistBuildResult;
-    checklistId?: string;
-    battleBoard?: BattleBoardBuildResult;
-    battleBoardId?: string;
-    errors: string[];
-  } = {
-    documents: result.documents,
-    mergedEvent: result.mergedEvent ?? undefined,
-    mergedStaff: result.mergedStaff ?? undefined,
-    imports: importRecords,
-    missingFields,
-    menuImport,
-    errors: result.errors,
-  };
+  eventId?: string
+) {
+  return await Promise.all(
+    files.map(async (file, index) => {
+      const doc = result.documents[index];
 
-  if (generateBattleBoard && result.mergedEvent) {
-    const battleBoardData = await _generateBattleBoard(
-      result.mergedEvent,
-      tenantId,
-      eventId,
-      importRecords
+      // Determine MIME type
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      let mimeType = "";
+      if (ext === "pdf") {
+        mimeType = "application/pdf";
+      } else if (ext === "csv") {
+        mimeType = "text/csv";
+      }
+
+      // Prisma Bytes in Node.js expects Buffer; doc may be missing if parser returned fewer items
+      const rawContent = await file.arrayBuffer();
+      const contentBuffer = Buffer.from(rawContent);
+
+      // Create import record matching EventImport schema (parseErrors is required)
+      const importRecord = await database.eventImport.create({
+        data: {
+          tenantId,
+          eventId: eventId || undefined,
+          fileName: file.name,
+          mimeType,
+          fileSize: file.size,
+          content: contentBuffer,
+          parseErrors: doc?.errors ?? [],
+          fileType: doc?.fileType ?? (ext === "csv" ? "csv" : "pdf"),
+          detectedFormat: doc?.detectedFormat ?? null,
+        },
+      });
+
+      return {
+        importId: importRecord.id,
+        document: doc,
+      };
+    })
+  );
+}
+
+/**
+ * Helper function to handle the entire document processing flow
+ * Now powered by Manifest language runtime for orchestration
+ */
+async function processDocumentsAndGenerateResponse(
+  files: File[],
+  tenantId: string,
+  _userId: string,
+  eventId: string | undefined,
+  shouldGenerateChecklist: boolean,
+  shouldGenerateBattleBoard: boolean
+) {
+  console.log(
+    "[processDocumentsAndGenerateResponse] Starting with",
+    files.length,
+    "files"
+  );
+  // Initialize Manifest runtime via dynamic import (avoids require() of ESM on Vercel)
+  // Note: Event import functions are capsule-pro specific and not in @manifest/runtime
+  // These need to be ported to kitchen-ops or a separate event-import module
+  const _engine = undefined;
+  const _processDoc = undefined;
+  const _createUpdateEvent = undefined;
+  const _generateBattleBoardFn = undefined;
+  const _generateChecklistFn = undefined;
+
+  // Process files
+  const fileContents = await Promise.all(
+    files.map(async (file) => {
+      const arrayBuffer = await file.arrayBuffer();
+      const base64 = Buffer.from(arrayBuffer).toString("base64");
+      const buffer = Buffer.from(base64, "base64");
+      return {
+        content: buffer,
+        fileName: file.name,
+      };
+    })
+  );
+
+  // Parse documents (existing parser logic)
+  const result = await parseDocuments(fileContents);
+  console.log("[processDocumentsAndGenerateResponse] parseDocuments result:", {
+    documentCount: result.documents.length,
+    hasEvent: !!result.mergedEvent,
+    staffCount: result.mergedStaff?.length || 0,
+    errors: result.errors,
+  });
+
+  // Create import records in database
+  const importRecords = await createImportRecords(
+    files,
+    result,
+    tenantId,
+    eventId
+  );
+
+  // Process each document import through Manifest (if available)
+  // TODO: Re-enable after porting event import functions from manifest-backup to kitchen-ops
+  // if (engine && processDoc) {
+  //   try {
+  //     const manifestImportIds: string[] = [];
+  //     for (const importRecord of importRecords) {
+  //       const importId = importRecord.importId;
+  //       const doc = importRecord.document;
+  //
+  //       // Create Manifest instance for DocumentImport
+  //       await engine.createInstance("DocumentImport", {
+  //         id: importId,
+  //         tenantId,
+  //         fileName: doc.fileName,
+  //         mimeType: doc.fileType === "pdf" ? "application/pdf" : "text/csv",
+  //         fileType: doc.fileType,
+  //         detectedFormat: doc.detectedFormat,
+  //         parseStatus: "pending",
+  //       });
+  //
+  //       manifestImportIds.push(importId);
+  //
+  //       // Process through Manifest
+  //       if (doc.errors && doc.errors.length > 0) {
+  //         await processDoc(
+  //           engine,
+  //           importId,
+  //           doc.fileName,
+  //           doc.parsedEvent || {},
+  //           0,
+  //           doc.errors
+  //         );
+  //       } else {
+  //         await processDoc(
+  //           engine,
+  //           importId,
+  //           doc.fileName,
+  //           doc.parsedEvent || {},
+  //           doc.confidence || 0
+  //         );
+  //       }
+  //     }
+  //     console.log(
+  //       "[processDocumentsAndGenerateResponse] Processed",
+  //       manifestImportIds.length,
+  //       "imports through Manifest"
+  //     );
+  //   } catch (manifestError) {
+  //     console.error(
+  //       "[processDocumentsAndGenerateResponse] Manifest processing failed, continuing:",
+  //       manifestError
+  //     );
+  //     // Continue without Manifest
+  //   }
+  // }
+
+  // Build response
+  const response = buildResponse(result, importRecords);
+  console.log("[processDocumentsAndGenerateResponse] response built");
+
+  // Handle event creation/update - MUST happen before generating artifacts
+  let actualEventId = eventId;
+  let derivedTitle = "";
+  if (result.mergedEvent) {
+    const missingFields = getMissingFieldsFromParsedEvent(result.mergedEvent);
+    derivedTitle = deriveEventTitle(result.mergedEvent, files);
+    const parsedDate = parseEventDate(result.mergedEvent.date);
+    const resolvedEventDate = parsedDate ?? new Date();
+
+    console.log(
+      "[processDocumentsAndGenerateResponse] Parsed event data:",
+      JSON.stringify(
+        {
+          client: result.mergedEvent.client,
+          number: result.mergedEvent.number,
+          date: result.mergedEvent.date,
+          serviceStyle: result.mergedEvent.serviceStyle,
+          headcount: result.mergedEvent.headcount,
+          venue: result.mergedEvent.venue,
+          status: result.mergedEvent.status,
+          kits: result.mergedEvent.kits,
+          menuSectionsCount: result.mergedEvent.menuSections?.length || 0,
+          timelineCount: result.mergedEvent.timeline?.length || 0,
+          staffingCount: result.mergedEvent.staffing?.length || 0,
+        },
+        null,
+        2
+      )
     );
-    response.battleBoard = battleBoardData.battleBoard;
-    response.battleBoardId = battleBoardData.battleBoardId;
+
+    if (!actualEventId) {
+      console.log(
+        "[processDocumentsAndGenerateResponse] Creating new event from parsed data"
+      );
+      try {
+        // Build comprehensive notes from parsed data
+        const notesParts: string[] = [
+          `Imported from ${files.map((file) => file.name).join(", ")}`,
+        ];
+        if (result.mergedEvent.notes && result.mergedEvent.notes.length > 0) {
+          notesParts.push(...result.mergedEvent.notes);
+        }
+        if (result.mergedEvent.flags && result.mergedEvent.flags.length > 0) {
+          const flagMessages = result.mergedEvent.flags
+            .map((f) => f.message)
+            .filter(Boolean);
+          if (flagMessages.length > 0) {
+            notesParts.push(`Flags: ${flagMessages.join("; ")}`);
+          }
+        }
+
+        const newEvent = await database.event.create({
+          data: {
+            tenantId,
+            title: derivedTitle,
+            eventType: result.mergedEvent.serviceStyle || "catering",
+            eventDate: resolvedEventDate,
+            guestCount:
+              result.mergedEvent.headcount > 0
+                ? result.mergedEvent.headcount
+                : 0,
+            status: missingFields.length > 0 ? "draft" : "confirmed",
+            eventNumber: result.mergedEvent.number || undefined,
+            venueName: result.mergedEvent.venue?.name || undefined,
+            venueAddress: result.mergedEvent.venue?.address || undefined,
+            notes: notesParts.join("\n\n"),
+            tags: buildEventTags(
+              ["imported", ...(result.mergedEvent.kits || [])],
+              missingFields
+            ),
+          },
+        });
+        actualEventId = newEvent.id;
+        console.log(
+          "[processDocumentsAndGenerateResponse] Event created:",
+          actualEventId
+        );
+
+        for (const record of importRecords) {
+          await database.eventImport.update({
+            where: { id: record.importId },
+            data: { eventId: actualEventId },
+          });
+        }
+
+        // Also create in Manifest if available
+        // TODO: Re-enable after porting event import functions from manifest-backup to kitchen-ops
+        // if (engine && createUpdateEvent) {
+        //   try {
+        //     await engine.createInstance("Event", {
+        //       id: actualEventId,
+        //       tenantId,
+        //       eventType: result.mergedEvent.serviceStyle || "catering",
+        //       eventDate: result.mergedEvent.date || new Date().toISOString(),
+        //     });
+        //
+        //     await createUpdateEvent(
+        //       engine,
+        //       undefined,
+        //       tenantId,
+        //       result.mergedEvent
+        //     );
+        //   } catch (manifestError) {
+        //     console.error(
+        //       "[processDocumentsAndGenerateResponse] Manifest event creation failed (non-blocking):",
+        //       manifestError
+        //     );
+        //   }
+        // }
+      } catch (dbError) {
+        console.error(
+          "[processDocumentsAndGenerateResponse] Failed to create event in database:",
+          dbError
+        );
+        throw dbError; // Re-throw - we can't generate artifacts without an event
+      }
+    } else if (actualEventId) {
+      // Update existing event
+      // TODO: Re-enable after porting event import functions from manifest-backup to kitchen-ops
+      // if (engine && createUpdateEvent) {
+      //   try {
+      //     await engine.createInstance("Event", {
+      //       id: actualEventId,
+      //       tenantId,
+      //       eventType: result.mergedEvent.serviceStyle || "catering",
+      //       eventDate: result.mergedEvent.date || new Date().toISOString(),
+      //     });
+      //
+      //     await createUpdateEvent(
+      //       engine,
+      //       actualEventId,
+      //       tenantId,
+      //       result.mergedEvent
+      //     );
+      //   } catch (manifestError) {
+      //     console.error(
+      //       "[processDocumentsAndGenerateResponse] Manifest event update failed (non-blocking):",
+      //       manifestError
+      //     );
+      //   }
+      // }
+    }
+
+    if (actualEventId) {
+      try {
+        await importMenuToEvent(tenantId, actualEventId, result.mergedEvent);
+      } catch (menuError) {
+        console.error(
+          "[processDocumentsAndGenerateResponse] Menu import failed:",
+          menuError
+        );
+      }
+    }
   }
 
-  if (generateChecklist && result.mergedEvent) {
-    const checklistData = await _generateChecklist(
-      result.mergedEvent,
-      tenantId,
-      eventId,
-      importRecords,
-      response.battleBoardId
-    );
-    response.checklist = checklistData.checklist;
-    response.checklistId = checklistData.checklistId;
+  // Generate battle board via Manifest if requested
+  if (shouldGenerateBattleBoard) {
+    if (!result.mergedEvent) {
+      console.warn(
+        "[processDocumentsAndGenerateResponse] Cannot generate battle board: no merged event data"
+      );
+      response.battleBoardError = "No event data extracted from documents";
+    } else if (actualEventId) {
+      try {
+        console.log(
+          "[processDocumentsAndGenerateResponse] Creating battle board"
+        );
+        console.log(
+          "[processDocumentsAndGenerateResponse] Event data:",
+          JSON.stringify(
+            {
+              client: result.mergedEvent.client,
+              number: result.mergedEvent.number,
+              date: result.mergedEvent.date,
+              times: result.mergedEvent.times,
+              headcount: result.mergedEvent.headcount,
+              menuSections: result.mergedEvent.menuSections?.length || 0,
+            },
+            null,
+            2
+          )
+        );
+
+        const { buildBattleBoardFromEvent } = await getEventParser();
+        const battleBoardResult = buildBattleBoardFromEvent(result.mergedEvent);
+        console.log(
+          "[processDocumentsAndGenerateResponse] Battle board built successfully"
+        );
+        const battleBoardId = crypto.randomUUID();
+
+        // TODO: Re-enable after porting event import functions from manifest-backup to kitchen-ops
+        // if (engine && generateBattleBoardFn) {
+        //   try {
+        //     await engine.createInstance("BattleBoard", {
+        //       id: battleBoardId,
+        //       tenantId,
+        //       eventId: actualEventId,
+        //       boardName:
+        //         result.mergedEvent.client ||
+        //         result.mergedEvent.number ||
+        //         actualEventId ||
+        //         "",
+        //     });
+        //     await generateBattleBoardFn(
+        //       engine,
+        //       battleBoardId,
+        //       tenantId,
+        //       actualEventId,
+        //       {
+        //         ...result.mergedEvent,
+        //         battleBoard: battleBoardResult.battleBoard,
+        //       }
+        //     );
+        //   } catch (manifestError) {
+        //     console.error(
+        //       "[processDocumentsAndGenerateResponse] Manifest battle board generation failed, using fallback:",
+        //       manifestError
+        //     );
+        //     // Fall through to database save
+        //   }
+        // }
+
+        // Save to database
+        console.log(
+          "[processDocumentsAndGenerateResponse] Saving battle board to database:",
+          {
+            battleBoardId,
+            eventId: actualEventId,
+            boardName:
+              result.mergedEvent.client ||
+              result.mergedEvent.number ||
+              actualEventId ||
+              "",
+          }
+        );
+
+        const savedBattleBoard = await database.battleBoard.create({
+          data: {
+            tenantId,
+            id: battleBoardId,
+            eventId: actualEventId,
+            board_name:
+              result.mergedEvent.client ||
+              result.mergedEvent.number ||
+              actualEventId ||
+              "",
+            board_type: "event-specific",
+            schema_version: "mangia-battle-board@1",
+            boardData: battleBoardResult.battleBoard as object,
+            status: "draft",
+            is_template: false,
+            tags: ["imported"],
+          },
+        });
+
+        console.log(
+          "[processDocumentsAndGenerateResponse] Battle board saved:",
+          savedBattleBoard.id
+        );
+        response.battleBoard = battleBoardResult.battleBoard;
+        response.battleBoardId = savedBattleBoard.id;
+      } catch (error) {
+        console.error(
+          "[processDocumentsAndGenerateResponse] Battle board generation failed:",
+          error
+        );
+        response.battleBoardError =
+          error instanceof Error ? error.message : "Unknown error";
+      }
+    } else {
+      console.warn(
+        "[processDocumentsAndGenerateResponse] Cannot generate battle board: no event ID"
+      );
+      response.battleBoardError =
+        "Event must be created before generating battle board";
+    }
+  }
+
+  // Generate checklist via Manifest if requested
+  if (shouldGenerateChecklist) {
+    if (!result.mergedEvent) {
+      console.warn(
+        "[processDocumentsAndGenerateResponse] Cannot generate checklist: no merged event data"
+      );
+      response.checklistError = "No event data extracted from documents";
+    } else if (actualEventId) {
+      try {
+        console.log("[processDocumentsAndGenerateResponse] Creating checklist");
+        console.log(
+          "[processDocumentsAndGenerateResponse] Event data for checklist:",
+          JSON.stringify(
+            {
+              client: result.mergedEvent.client,
+              number: result.mergedEvent.number,
+              date: result.mergedEvent.date,
+              times: result.mergedEvent.times,
+              headcount: result.mergedEvent.headcount,
+              menuSections: result.mergedEvent.menuSections?.length || 0,
+            },
+            null,
+            2
+          )
+        );
+
+        const { buildInitialChecklist } = await getEventParser();
+        const checklistResult = buildInitialChecklist(result.mergedEvent);
+        console.log(
+          "[processDocumentsAndGenerateResponse] Checklist built successfully, autoFillScore:",
+          checklistResult.autoFilledCount,
+          "totalQuestions:",
+          checklistResult.totalQuestions
+        );
+        const reportId = crypto.randomUUID();
+
+        // TODO: Re-enable after porting event import functions from manifest-backup to kitchen-ops
+        // if (engine && generateChecklistFn) {
+        //   try {
+        //     await engine.createInstance("EventReport", {
+        //       id: reportId,
+        //       tenantId,
+        //       eventId: actualEventId,
+        //     });
+        //     await generateChecklistFn(
+        //       engine,
+        //       reportId,
+        //       tenantId,
+        //       actualEventId,
+        //       result.mergedEvent,
+        //       checklistResult
+        //     );
+        //   } catch (manifestError) {
+        //     console.error(
+        //       "[processDocumentsAndGenerateResponse] Manifest checklist generation failed, using fallback:",
+        //       manifestError
+        //     );
+        //     // Fall through to database save
+        //   }
+        // }
+
+        // Save to database
+        const completionPercent =
+          checklistResult.totalQuestions > 0
+            ? Math.round(
+                (checklistResult.autoFilledCount /
+                  checklistResult.totalQuestions) *
+                  100
+              )
+            : 0;
+        const reportName = derivedTitle || actualEventId;
+
+        console.log(
+          "[processDocumentsAndGenerateResponse] Saving checklist to database:",
+          {
+            reportId,
+            eventId: actualEventId,
+            completion: completionPercent,
+            autoFillScore: checklistResult.autoFilledCount,
+            totalQuestions: checklistResult.totalQuestions,
+          }
+        );
+
+        const savedReport = await database.eventReport.create({
+          data: {
+            tenantId,
+            id: reportId,
+            eventId: actualEventId,
+            name: reportName,
+            status: "draft",
+            completion: completionPercent,
+            autoFillScore: checklistResult.autoFilledCount,
+            checklistData: {
+              checklist: checklistResult.checklist,
+              warnings: checklistResult.warnings,
+            } as unknown as Prisma.InputJsonObject,
+            parsedEventData:
+              result.mergedEvent as unknown as Prisma.InputJsonObject,
+          },
+        });
+
+        console.log(
+          "[processDocumentsAndGenerateResponse] Checklist saved:",
+          savedReport.id
+        );
+
+        response.checklist = checklistResult;
+        response.checklistId = savedReport.id;
+      } catch (error) {
+        console.error(
+          "[processDocumentsAndGenerateResponse] Checklist generation failed:",
+          error
+        );
+        response.checklistError =
+          error instanceof Error ? error.message : "Unknown error";
+      }
+    } else {
+      console.warn(
+        "[processDocumentsAndGenerateResponse] Cannot generate checklist: no event ID"
+      );
+      response.checklistError =
+        "Event must be created before generating checklist";
+    }
   }
 
   return response;
+}
+
+/**
+ * Helper function to build and return the response
+ */
+interface ParseDocumentsResponse {
+  documents: ProcessedDocument[];
+  mergedEvent?: ParsedEvent;
+  mergedStaff?: StaffShift[];
+  imports: Array<{ importId: string; document: ProcessedDocument }>;
+  errors: string[];
+  battleBoard?: unknown;
+  battleBoardId?: string;
+  battleBoardError?: string;
+  checklist?: unknown;
+  checklistId?: string;
+  checklistError?: string;
+}
+
+function buildResponse(
+  result: {
+    documents: ProcessedDocument[];
+    mergedEvent?: ParsedEvent;
+    mergedStaff?: StaffShift[];
+    errors: string[];
+  },
+  importRecords: Array<{ importId: string; document: ProcessedDocument }>
+): ParseDocumentsResponse {
+  return {
+    documents: result.documents,
+    mergedEvent: result.mergedEvent,
+    mergedStaff: result.mergedStaff,
+    imports: importRecords,
+    errors: result.errors,
+  };
+}
+
+/**
+ * Helper function to generate and save checklist
+ * Note: Event must be created before calling this function
+ */
+async function _createChecklist(
+  mergedEvent: ParsedEvent,
+  tenantId: string,
+  eventId: string
+) {
+  const { buildInitialChecklist } = await getEventParser();
+  const checklistResult = buildInitialChecklist(mergedEvent);
+  const reportName = deriveEventTitle(mergedEvent, []) || eventId;
+
+  // Save the checklist/report
+  const savedReport = await database.eventReport.create({
+    data: {
+      tenantId,
+      eventId,
+      name: reportName,
+      status: "draft",
+      completion: Math.round(
+        (checklistResult.autoFilledCount / checklistResult.totalQuestions) * 100
+      ),
+      autoFillScore: checklistResult.autoFilledCount,
+      checklistData: {
+        checklist: checklistResult.checklist,
+        warnings: checklistResult.warnings,
+      } as unknown as Prisma.InputJsonObject,
+      parsedEventData: mergedEvent as unknown as Prisma.InputJsonObject,
+    },
+  });
+
+  return {
+    checklist: checklistResult,
+    checklistId: savedReport.id,
+  };
 }
 
 /**
@@ -752,81 +1099,88 @@ async function buildResponse(
  */
 export async function POST(request: Request) {
   try {
+    console.log("[POST /api/events/documents/parse] Starting");
     const { orgId, userId } = await auth();
     if (!(orgId && userId)) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
+    console.log("[POST] tenantId:", tenantId);
     const { searchParams } = new URL(request.url);
-    const params = parseParams(searchParams);
 
-    const formData = await request.formData();
-    const files = formData.getAll("files") as File[];
-
-    const validationError = validateFileTypes(files);
-    if (validationError) {
-      return validationError;
-    }
-
-    const fileContents = await processFiles(files);
-    const result = await processMultipleDocuments(fileContents);
-    const importRecords = await createImportRecords(
-      files,
-      result,
-      tenantId,
-      params.eventId
+    const eventId = searchParams.get("eventId");
+    const generateChecklist = searchParams.get("generateChecklist") === "true";
+    const generateBattleBoard =
+      searchParams.get("generateBattleBoard") === "true";
+    console.log(
+      "[POST] eventId:",
+      eventId,
+      "generateChecklist:",
+      generateChecklist,
+      "generateBattleBoard:",
+      generateBattleBoard
     );
 
-    const missingFields = result.mergedEvent
-      ? getMissingFieldsFromParsedEvent(result.mergedEvent)
-      : [];
+    // Parse form data
+    const { files } = await processFormData(request);
+    console.log(
+      "[POST] Files received:",
+      files.length,
+      files.map((f) => f.name)
+    );
 
-    let resolvedEventId = params.eventId;
-    if (!resolvedEventId && result.mergedEvent) {
-      resolvedEventId = await createEventFromParsedData(
-        result.mergedEvent,
-        tenantId,
+    if (files.length === 0) {
+      return NextResponse.json(
+        { message: "No files uploaded" },
+        { status: 400 }
+      );
+    }
+
+    // Validate file types
+    const allowedExtensions = [".pdf", ".csv"];
+    const validation = validateFileExtensions(files, allowedExtensions);
+    if (!validation.valid) {
+      return NextResponse.json({ message: validation.error }, { status: 400 });
+    }
+
+    // Process documents and generate response (now powered by Manifest)
+    console.log("[POST] About to call processDocumentsAndGenerateResponse");
+    let response: ParseDocumentsResponse;
+    try {
+      response = await processDocumentsAndGenerateResponse(
         files,
-        missingFields,
-        userId
-      );
-      await updateImportRecordsWithEvent(importRecords, resolvedEventId);
-    }
-
-    let menuImport: MenuImportSummary | null = null;
-    if (resolvedEventId && result.mergedEvent) {
-      menuImport = await importMenuToEvent(
         tenantId,
-        resolvedEventId,
-        result.mergedEvent
+        userId,
+        eventId ?? undefined,
+        generateChecklist,
+        generateBattleBoard
       );
+      console.log("[POST] processDocumentsAndGenerateResponse completed");
+    } catch (innerError) {
+      console.error(
+        "[POST] Error in processDocumentsAndGenerateResponse:",
+        innerError
+      );
+      throw innerError;
     }
 
-    const response = await buildResponse(
-      result,
-      importRecords,
-      tenantId,
-      resolvedEventId,
-      params.generateBattleBoard,
-      params.generateChecklist,
-      missingFields,
-      menuImport
-    );
-
+    console.log("[POST] Response generated successfully");
     return NextResponse.json({ data: response });
   } catch (error) {
-    console.error("Error parsing documents:", error);
+    console.error("[POST] Error parsing documents:", error);
 
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     const errorStack = error instanceof Error ? error.stack : undefined;
 
+    console.error("[POST] Error details:", { errorMessage, errorStack });
+
+    // Always include details in response so client/Network tab can show the real error
     return NextResponse.json(
       {
         message: "Failed to parse documents",
-        details:
-          process.env.NODE_ENV === "development" ? errorMessage : undefined,
+        details: errorMessage,
         ...(process.env.NODE_ENV === "development" && errorStack
           ? { stack: errorStack }
           : {}),
