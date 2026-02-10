@@ -31,7 +31,9 @@ export interface WasteTrendsQueryParams {
   inventoryItemId?: string;
 }
 
-export function validateQueryParams(searchParams: URLSearchParams): WasteTrendsQueryParams {
+export function validateQueryParams(
+  searchParams: URLSearchParams
+): WasteTrendsQueryParams {
   const periodParam = searchParams.get("period") ?? "30d";
   const groupByParam = searchParams.get("groupBy") ?? "day";
 
@@ -116,7 +118,7 @@ export async function fetchWasteEntries(
     ],
   };
 
-  return database.wasteEntry.findMany({
+  return await database.wasteEntry.findMany({
     where: whereClause,
     include: {
       inventoryItem: {
@@ -232,7 +234,10 @@ export function calculatePeriodTotals(trends: TrendDataPoint[]) {
  * Analyzes waste reasons
  */
 export async function analyzeWasteReasons(
-  entries: Array<{ reasonId: number; totalCost: { toNumber: () => number } | null }>
+  entries: Array<{
+    reasonId: number;
+    totalCost: { toNumber: () => number } | null;
+  }>
 ) {
   const reasonCounts: Record<number, { count: number; cost: number }> = {};
 

@@ -85,7 +85,7 @@ function generateRecommendations(
   const trends = metrics.pricingTrends;
   if (trends.length >= 2) {
     const first = trends[0].avgValue;
-    const last = trends[trends.length - 1].avgValue;
+    const last = trends.at(-1).avgValue;
     if (first > 0 && last > first) {
       const change = (((last - first) / first) * 100).toFixed(0);
       recommendations.push(

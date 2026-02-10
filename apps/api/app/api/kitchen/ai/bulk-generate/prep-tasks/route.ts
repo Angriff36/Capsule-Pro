@@ -26,10 +26,7 @@ function validatePriorityStrategy(value: string): void {
 }
 
 function validateBasePriority(value: number): void {
-  invariant(
-    value >= 1 && value <= 10,
-    "basePriority must be between 1 and 10"
-  );
+  invariant(value >= 1 && value <= 10, "basePriority must be between 1 and 10");
 }
 
 function validateRequestOptions(body: BulkGenerateRequest): void {
@@ -71,7 +68,10 @@ function determineErrorResponse(error: unknown): NextResponse {
     return NextResponse.json({ message }, { status: 400 });
   }
 
-  if (message.includes("must be between") || message.includes("must be one of")) {
+  if (
+    message.includes("must be between") ||
+    message.includes("must be one of")
+  ) {
     return NextResponse.json({ message }, { status: 400 });
   }
 
@@ -84,7 +84,9 @@ function determineErrorResponse(error: unknown): NextResponse {
   );
 }
 
-function buildResponse(result: Awaited<ReturnType<typeof generateBulkPrepTasks>>): BulkGenerateResponse {
+function buildResponse(
+  result: Awaited<ReturnType<typeof generateBulkPrepTasks>>
+): BulkGenerateResponse {
   return {
     batchId: result.batchId,
     status: result.status,

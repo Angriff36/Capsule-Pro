@@ -10,6 +10,9 @@ const AI_MODEL = "gpt-4o-mini";
 const TEMPERATURE = 0.6;
 const TARGET_WORD_COUNT = 300; // Target 200-400 words
 
+// Regex for word count calculation (top-level for performance)
+const WORD_COUNT_REGEX = /\s+/;
+
 interface EventSummaryData {
   id: string;
   title: string;
@@ -191,9 +194,7 @@ async function getEventDataForSummary(
   };
 }
 
-async function generateEventSummary(
-  eventData: EventSummaryData
-): Promise<{
+async function generateEventSummary(eventData: EventSummaryData): Promise<{
   summary: string;
   wordCount: number;
   highlights: string[];
@@ -253,9 +254,7 @@ Your role is to generate concise, readable event summaries that highlight critic
   // Build dietary tags
   const dietaryTags = [
     ...new Set(
-      eventData.dishes.flatMap((d) =>
-        d.dietaryTags.map((t) => t.toLowerCase())
-      )
+      eventData.dishes.flatMap((d) => d.dietaryTags.map((t) => t.toLowerCase()))
     ),
   ].sort();
 
@@ -272,7 +271,7 @@ ${eventData.venueName ? `- Venue: ${eventData.venueName}` : ""}
 ${eventData.venueAddress ? `- Address: ${eventData.venueAddress}` : ""}
 
 **Client:**
-${eventData.client ? (eventData.client.companyName || eventData.client.name || "Client") : "No client information"}
+${eventData.client ? eventData.client.companyName || eventData.client.name || "Client" : "No client information"}
 
 **Menu (${eventData.dishes.length} dishes):**
 ${dishNames.length > 0 ? dishNames.join(", ") : "No menu items specified"}
@@ -302,7 +301,7 @@ Generate a concise summary (${TARGET_WORD_COUNT} words) that includes all critic
     const aiResponse = JSON.parse(result.text.trim());
 
     // Calculate word count
-    const wordCount = aiResponse.summary?.split(/\s+/).length ?? 0;
+    const wordCount = aiResponse.summary?.split(WORD_COUNT_REGEX).length ?? 0;
 
     return {
       summary: aiResponse.summary ?? "",
@@ -318,9 +317,7 @@ Generate a concise summary (${TARGET_WORD_COUNT} words) that includes all critic
   }
 }
 
-function generateFallbackSummary(
-  eventData: EventSummaryData
-): {
+function generateFallbackSummary(eventData: EventSummaryData): {
   summary: string;
   wordCount: number;
   highlights: string[];
@@ -343,9 +340,7 @@ function generateFallbackSummary(
 
   const dietaryTags = [
     ...new Set(
-      eventData.dishes.flatMap((d) =>
-        d.dietaryTags.map((t) => t.toLowerCase())
-      )
+      eventData.dishes.flatMap((d) => d.dietaryTags.map((t) => t.toLowerCase()))
     ),
   ].sort();
 
@@ -368,7 +363,7 @@ function generateFallbackSummary(
     summary += ` Dietary options available: ${dietaryTags.join(", ")}.`;
   }
 
-  const wordCount = summary.split(/\s+/).length;
+  const wordCount = summary.split(WORD_COUNT_REGEX).length;
 
   // Build highlights
   const highlights: string[] = [];
@@ -405,7 +400,7 @@ function generateFallbackSummary(
 }
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ eventId: string }> }
 ) {
   try {
@@ -449,10 +444,7 @@ export async function GET(
     console.error("Event summary generation error:", error);
 
     if (error instanceof Error && error.message === "Event not found") {
-      return NextResponse.json(
-        { message: "Event not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Event not found" }, { status: 404 });
     }
 
     return NextResponse.json(

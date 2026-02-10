@@ -113,8 +113,7 @@ export async function calculateDepletionForecast(
     // Check if depleted
     if (depletionDate === null && projectedStock <= 0) {
       depletionDate = projection.date;
-      const timeDiff =
-        projection.date.getTime() - currentDate.getTime();
+      const timeDiff = projection.date.getTime() - currentDate.getTime();
       daysUntilDepletion = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
       projectedStock = 0; // Don't go negative
     }
@@ -250,8 +249,7 @@ async function getHistoricalUsage(
   if (dataPoints > 1) {
     const mean = totalUsage / dataPoints;
     const variance =
-      dailyValues.reduce((sum, val) => sum + (val - mean) ** 2, 0) /
-      dataPoints;
+      dailyValues.reduce((sum, val) => sum + (val - mean) ** 2, 0) / dataPoints;
     variability = Math.sqrt(variance);
   }
 

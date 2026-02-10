@@ -102,9 +102,7 @@ function parseDateField(dateValue: string | null | undefined): Date | null {
   return dateValue ? new Date(dateValue) : null;
 }
 
-function parseNumericField(
-  numValue: number | null | undefined
-): string | null {
+function parseNumericField(numValue: number | null | undefined): string | null {
   return numValue !== null && numValue !== undefined
     ? numValue.toString()
     : null;
@@ -161,7 +159,11 @@ export function buildShipmentUpdateData(
   for (const field of stringFields) {
     if (body[field] !== undefined) {
       const targetKey = fieldMapping[field] || field;
-      setFieldIfDefined(updateData, targetKey as keyof ShipmentUpdateData, body[field]);
+      setFieldIfDefined(
+        updateData,
+        targetKey as keyof ShipmentUpdateData,
+        body[field]
+      );
     }
   }
 

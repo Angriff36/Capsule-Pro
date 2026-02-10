@@ -3,8 +3,8 @@
  */
 
 import { database, Prisma } from "@repo/database";
-import type { DayOfWeek, UpdateAvailabilityInput } from "../types";
 import { NextResponse } from "next/server";
+import type { DayOfWeek, UpdateAvailabilityInput } from "../types";
 import {
   checkOverlappingAvailability,
   validateDayOfWeek,
@@ -115,7 +115,9 @@ function buildOverlapCheckParams(
   body: UpdateAvailabilityInput,
   existingRecord: ExistingAvailabilityRecord
 ): OverlapCheckParams {
-  const existingStart = existingRecord.start_time.toISOString().substring(11, 16);
+  const existingStart = existingRecord.start_time
+    .toISOString()
+    .substring(11, 16);
   const existingEnd = existingRecord.end_time.toISOString().substring(11, 16);
 
   return {
