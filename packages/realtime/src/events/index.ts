@@ -25,6 +25,14 @@ export type {
   KitchenTaskProgressEvent,
   KitchenTaskReleasedEvent,
 } from "./kitchen";
+// Stock/Inventory event types
+export type {
+  InventoryStockAdjustedEvent,
+  InventoryStockConsumedEvent,
+  InventoryStockReceivedEvent,
+  InventoryStockWastedEvent,
+  StockEvent,
+} from "./stock";
 // Zod schemas - Kitchen
 // Zod schemas - Command Board
 // Core Zod schemas and utilities
@@ -46,7 +54,16 @@ export {
   CommandBoardUserLeftEventSchema,
   CommandBoardUserLeftPayloadSchema,
   isCommandBoardEvent,
+  isInventoryStockEvent,
   isKitchenEvent,
+  InventoryStockAdjustedEventSchema,
+  InventoryStockAdjustedPayloadSchema,
+  InventoryStockConsumedEventSchema,
+  InventoryStockConsumedPayloadSchema,
+  InventoryStockReceivedEventSchema,
+  InventoryStockReceivedPayloadSchema,
+  InventoryStockWastedEventSchema,
+  InventoryStockWastedPayloadSchema,
   KitchenTaskClaimedEventSchema,
   KitchenTaskClaimedPayloadSchema,
   KitchenTaskProgressEventSchema,

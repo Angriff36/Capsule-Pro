@@ -11,8 +11,8 @@ import { randomUUID } from "node:crypto";
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { z } from "zod";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
  * Schema for menu item in import request
@@ -48,7 +48,9 @@ const TimelineTaskSchema = z.object({
   startTime: z.string().optional(),
   endTime: z.string().optional(),
   assigneeEmail: z.string().email().optional(),
-  status: z.enum(["pending", "in-progress", "completed", "cancelled"]).optional(),
+  status: z
+    .enum(["pending", "in-progress", "completed", "cancelled"])
+    .optional(),
 });
 
 /**
@@ -58,10 +60,16 @@ const EventImportSchema = z.object({
   externalId: z.string().optional(),
   title: z.string().min(1, "Event title is required"),
   eventType: z.string().default("catering"),
-  eventDate: z.string().min(1, "Event date is required (YYYY-MM-DD or ISO 8601)"),
+  eventDate: z
+    .string()
+    .min(1, "Event date is required (YYYY-MM-DD or ISO 8601)"),
   startTime: z.string().optional(),
   endTime: z.string().optional(),
-  guestCount: z.number().int().positive("Guest count must be at least 1").default(1),
+  guestCount: z
+    .number()
+    .int()
+    .positive("Guest count must be at least 1")
+    .default(1),
   status: z
     .enum([
       "draft",
@@ -139,9 +147,7 @@ async function ensureLocationId(
   tenantId: string,
   venueName?: string
 ): Promise<string> {
-  const [location] = await database.$queryRaw<
-    Array<{ id: string }>
-  >(
+  const [location] = await database.$queryRaw<Array<{ id: string }>>(
     Prisma.sql`
       SELECT id
       FROM tenant.locations
@@ -180,9 +186,7 @@ async function findOrCreateVenue(
   }
 
   // Try to find existing venue by name
-  const [existing] = await database.$queryRaw<
-    Array<{ id: string }>
-  >(
+  const [existing] = await database.$queryRaw<Array<{ id: string }>>(
     Prisma.sql`
       SELECT id
       FROM tenant_events.venues
@@ -221,9 +225,7 @@ async function findOrCreateDish(
   }
 
   // Try to find existing dish
-  const [existing] = await database.$queryRaw<
-    Array<{ id: string }>
-  >(
+  const [existing] = await database.$queryRaw<Array<{ id: string }>>(
     Prisma.sql`
       SELECT id
       FROM tenant_kitchen.dishes
@@ -257,9 +259,7 @@ async function findEmployeeByEmail(
   tenantId: string,
   email: string
 ): Promise<string | null> {
-  const [employee] = await database.$queryRaw<
-    Array<{ id: string }>
-  >(
+  const [employee] = await database.$queryRaw<Array<{ id: string }>>(
     Prisma.sql`
       SELECT id
       FROM tenant_staff.employees
@@ -281,9 +281,7 @@ async function findExistingEvent(
   title: string,
   eventDate: string
 ): Promise<string | null> {
-  const [event] = await database.$queryRaw<
-    Array<{ id: string }>
-  >(
+  const [event] = await database.$queryRaw<Array<{ id: string }>>(
     Prisma.sql`
       SELECT id
       FROM tenant_events.events
@@ -310,10 +308,7 @@ export async function POST(request: Request) {
     const session = await auth();
 
     if (!session?.orgId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get tenant ID
@@ -409,9 +404,8 @@ export async function POST(request: Request) {
               message: "Event already exists",
             });
             continue;
-          } else {
-            eventErrors.push("Event with same title and date already exists");
           }
+          eventErrors.push("Event with same title and date already exists");
         }
 
         // Parse event date
@@ -427,7 +421,8 @@ export async function POST(request: Request) {
         const venueId = event.venueId
           ? event.venueId
           : event.venueName
-            ? (await findOrCreateVenue(event.venueName, event.venueAddress)) ?? undefined
+            ? ((await findOrCreateVenue(event.venueName, event.venueAddress)) ??
+              undefined)
             : undefined;
 
         // Create event
@@ -616,9 +611,10 @@ export async function POST(request: Request) {
           externalId: event.externalId,
           status: "failed",
           message: "Failed to import event",
-          errors: eventErrors.length > 0 ? eventErrors : [
-            error instanceof Error ? error.message : "Unknown error"
-          ],
+          errors:
+            eventErrors.length > 0
+              ? eventErrors
+              : [error instanceof Error ? error.message : "Unknown error"],
         });
       }
     }

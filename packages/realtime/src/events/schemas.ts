@@ -115,6 +115,51 @@ export const CommandBoardCursorMovedPayloadSchema = z.object({
 });
 
 /**
+ * Stock/Inventory event payload schemas.
+ */
+export const InventoryStockAdjustedPayloadSchema = z.object({
+  stockItemId: z.string().min(1),
+  quantity: z.number(),
+  reason: z.string(),
+  employeeId: z.string().min(1),
+  adjustedAt: z.string().datetime(),
+  previousQuantity: z.number(),
+  newQuantity: z.number(),
+});
+
+export const InventoryStockConsumedPayloadSchema = z.object({
+  stockItemId: z.string().min(1),
+  quantity: z.number(),
+  prepTaskId: z.string().min(1),
+  employeeId: z.string().min(1),
+  consumedAt: z.string().datetime(),
+  previousQuantity: z.number(),
+  newQuantity: z.number(),
+});
+
+export const InventoryStockReceivedPayloadSchema = z.object({
+  stockItemId: z.string().min(1),
+  quantity: z.number(),
+  purchaseOrderLineItemId: z.string().min(1),
+  employeeId: z.string().min(1),
+  receivedAt: z.string().datetime(),
+  previousQuantity: z.number(),
+  newQuantity: z.number(),
+  supplierId: z.string().optional(),
+});
+
+export const InventoryStockWastedPayloadSchema = z.object({
+  stockItemId: z.string().min(1),
+  quantity: z.number(),
+  reason: z.string(),
+  employeeId: z.string().min(1),
+  wastedAt: z.string().datetime(),
+  previousQuantity: z.number(),
+  newQuantity: z.number(),
+  wasteCategory: z.string().optional(),
+});
+
+/**
  * Full event schemas with discriminator - Kitchen events.
  */
 export const KitchenTaskClaimedEventSchema = RealtimeEventBaseSchema.extend({
@@ -182,6 +227,29 @@ export const CommandBoardCursorMovedEventSchema =
   });
 
 /**
+ * Full event schemas with discriminator - Stock/Inventory events.
+ */
+export const InventoryStockAdjustedEventSchema = RealtimeEventBaseSchema.extend({
+  eventType: z.literal("inventory.stock.adjusted"),
+  payload: InventoryStockAdjustedPayloadSchema,
+});
+
+export const InventoryStockConsumedEventSchema = RealtimeEventBaseSchema.extend({
+  eventType: z.literal("inventory.stock.consumed"),
+  payload: InventoryStockConsumedPayloadSchema,
+});
+
+export const InventoryStockReceivedEventSchema = RealtimeEventBaseSchema.extend({
+  eventType: z.literal("inventory.stock.received"),
+  payload: InventoryStockReceivedPayloadSchema,
+});
+
+export const InventoryStockWastedEventSchema = RealtimeEventBaseSchema.extend({
+  eventType: z.literal("inventory.stock.wasted"),
+  payload: InventoryStockWastedPayloadSchema,
+});
+
+/**
  * Discriminated union of all event schemas.
  * Use this for validating unknown realtime events.
  */
@@ -197,6 +265,10 @@ export const RealtimeEventSchema = z.discriminatedUnion("eventType", [
   CommandBoardUserJoinedEventSchema,
   CommandBoardUserLeftEventSchema,
   CommandBoardCursorMovedEventSchema,
+  InventoryStockAdjustedEventSchema,
+  InventoryStockConsumedEventSchema,
+  InventoryStockReceivedEventSchema,
+  InventoryStockWastedEventSchema,
 ]);
 
 /**
@@ -231,4 +303,18 @@ export function isCommandBoardEvent(
   }
   // Check if event type starts with "command.board."
   return result.data.eventType.startsWith("command.board.");
+}
+
+/**
+ * Type guard for stock/inventory events.
+ */
+export function isInventoryStockEvent(
+  data: unknown
+): data is z.infer<typeof RealtimeEventSchema> {
+  const result = parseRealtimeEvent(data);
+  if (!result.success) {
+    return false;
+  }
+  // Check if event type starts with "inventory.stock."
+  return result.data.eventType.startsWith("inventory.stock.");
 }

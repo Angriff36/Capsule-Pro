@@ -101,6 +101,47 @@ export declare const CommandBoardCursorMovedPayloadSchema: z.ZodObject<{
     movedAt: z.ZodString;
 }, z.core.$strip>;
 /**
+ * Stock/Inventory event payload schemas.
+ */
+export declare const InventoryStockAdjustedPayloadSchema: z.ZodObject<{
+    stockItemId: z.ZodString;
+    quantity: z.ZodNumber;
+    reason: z.ZodString;
+    employeeId: z.ZodString;
+    adjustedAt: z.ZodString;
+    previousQuantity: z.ZodNumber;
+    newQuantity: z.ZodNumber;
+}, z.core.$strip>;
+export declare const InventoryStockConsumedPayloadSchema: z.ZodObject<{
+    stockItemId: z.ZodString;
+    quantity: z.ZodNumber;
+    prepTaskId: z.ZodString;
+    employeeId: z.ZodString;
+    consumedAt: z.ZodString;
+    previousQuantity: z.ZodNumber;
+    newQuantity: z.ZodNumber;
+}, z.core.$strip>;
+export declare const InventoryStockReceivedPayloadSchema: z.ZodObject<{
+    stockItemId: z.ZodString;
+    quantity: z.ZodNumber;
+    purchaseOrderLineItemId: z.ZodString;
+    employeeId: z.ZodString;
+    receivedAt: z.ZodString;
+    previousQuantity: z.ZodNumber;
+    newQuantity: z.ZodNumber;
+    supplierId: z.ZodOptional<z.ZodString>;
+}, z.core.$strip>;
+export declare const InventoryStockWastedPayloadSchema: z.ZodObject<{
+    stockItemId: z.ZodString;
+    quantity: z.ZodNumber;
+    reason: z.ZodString;
+    employeeId: z.ZodString;
+    wastedAt: z.ZodString;
+    previousQuantity: z.ZodNumber;
+    newQuantity: z.ZodNumber;
+    wasteCategory: z.ZodOptional<z.ZodString>;
+}, z.core.$strip>;
+/**
  * Full event schemas with discriminator - Kitchen events.
  */
 export declare const KitchenTaskClaimedEventSchema: z.ZodObject<{
@@ -286,6 +327,83 @@ export declare const CommandBoardCursorMovedEventSchema: z.ZodObject<{
     }, z.core.$strip>;
 }, z.core.$strip>;
 /**
+ * Full event schemas with discriminator - Stock/Inventory events.
+ */
+export declare const InventoryStockAdjustedEventSchema: z.ZodObject<{
+    id: z.ZodString;
+    version: z.ZodLiteral<1>;
+    tenantId: z.ZodString;
+    aggregateType: z.ZodString;
+    aggregateId: z.ZodString;
+    occurredAt: z.ZodString;
+    eventType: z.ZodLiteral<"inventory.stock.adjusted">;
+    payload: z.ZodObject<{
+        stockItemId: z.ZodString;
+        quantity: z.ZodNumber;
+        reason: z.ZodString;
+        employeeId: z.ZodString;
+        adjustedAt: z.ZodString;
+        previousQuantity: z.ZodNumber;
+        newQuantity: z.ZodNumber;
+    }, z.core.$strip>;
+}, z.core.$strip>;
+export declare const InventoryStockConsumedEventSchema: z.ZodObject<{
+    id: z.ZodString;
+    version: z.ZodLiteral<1>;
+    tenantId: z.ZodString;
+    aggregateType: z.ZodString;
+    aggregateId: z.ZodString;
+    occurredAt: z.ZodString;
+    eventType: z.ZodLiteral<"inventory.stock.consumed">;
+    payload: z.ZodObject<{
+        stockItemId: z.ZodString;
+        quantity: z.ZodNumber;
+        prepTaskId: z.ZodString;
+        employeeId: z.ZodString;
+        consumedAt: z.ZodString;
+        previousQuantity: z.ZodNumber;
+        newQuantity: z.ZodNumber;
+    }, z.core.$strip>;
+}, z.core.$strip>;
+export declare const InventoryStockReceivedEventSchema: z.ZodObject<{
+    id: z.ZodString;
+    version: z.ZodLiteral<1>;
+    tenantId: z.ZodString;
+    aggregateType: z.ZodString;
+    aggregateId: z.ZodString;
+    occurredAt: z.ZodString;
+    eventType: z.ZodLiteral<"inventory.stock.received">;
+    payload: z.ZodObject<{
+        stockItemId: z.ZodString;
+        quantity: z.ZodNumber;
+        purchaseOrderLineItemId: z.ZodString;
+        employeeId: z.ZodString;
+        receivedAt: z.ZodString;
+        previousQuantity: z.ZodNumber;
+        newQuantity: z.ZodNumber;
+        supplierId: z.ZodOptional<z.ZodString>;
+    }, z.core.$strip>;
+}, z.core.$strip>;
+export declare const InventoryStockWastedEventSchema: z.ZodObject<{
+    id: z.ZodString;
+    version: z.ZodLiteral<1>;
+    tenantId: z.ZodString;
+    aggregateType: z.ZodString;
+    aggregateId: z.ZodString;
+    occurredAt: z.ZodString;
+    eventType: z.ZodLiteral<"inventory.stock.wasted">;
+    payload: z.ZodObject<{
+        stockItemId: z.ZodString;
+        quantity: z.ZodNumber;
+        reason: z.ZodString;
+        employeeId: z.ZodString;
+        wastedAt: z.ZodString;
+        previousQuantity: z.ZodNumber;
+        newQuantity: z.ZodNumber;
+        wasteCategory: z.ZodOptional<z.ZodString>;
+    }, z.core.$strip>;
+}, z.core.$strip>;
+/**
  * Discriminated union of all event schemas.
  * Use this for validating unknown realtime events.
  */
@@ -456,6 +574,76 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
             y: z.ZodNumber;
         }, z.core.$strip>;
         movedAt: z.ZodString;
+    }, z.core.$strip>;
+}, z.core.$strip>, z.ZodObject<{
+    id: z.ZodString;
+    version: z.ZodLiteral<1>;
+    tenantId: z.ZodString;
+    aggregateType: z.ZodString;
+    aggregateId: z.ZodString;
+    occurredAt: z.ZodString;
+    eventType: z.ZodLiteral<"inventory.stock.adjusted">;
+    payload: z.ZodObject<{
+        stockItemId: z.ZodString;
+        quantity: z.ZodNumber;
+        reason: z.ZodString;
+        employeeId: z.ZodString;
+        adjustedAt: z.ZodString;
+        previousQuantity: z.ZodNumber;
+        newQuantity: z.ZodNumber;
+    }, z.core.$strip>;
+}, z.core.$strip>, z.ZodObject<{
+    id: z.ZodString;
+    version: z.ZodLiteral<1>;
+    tenantId: z.ZodString;
+    aggregateType: z.ZodString;
+    aggregateId: z.ZodString;
+    occurredAt: z.ZodString;
+    eventType: z.ZodLiteral<"inventory.stock.consumed">;
+    payload: z.ZodObject<{
+        stockItemId: z.ZodString;
+        quantity: z.ZodNumber;
+        prepTaskId: z.ZodString;
+        employeeId: z.ZodString;
+        consumedAt: z.ZodString;
+        previousQuantity: z.ZodNumber;
+        newQuantity: z.ZodNumber;
+    }, z.core.$strip>;
+}, z.core.$strip>, z.ZodObject<{
+    id: z.ZodString;
+    version: z.ZodLiteral<1>;
+    tenantId: z.ZodString;
+    aggregateType: z.ZodString;
+    aggregateId: z.ZodString;
+    occurredAt: z.ZodString;
+    eventType: z.ZodLiteral<"inventory.stock.received">;
+    payload: z.ZodObject<{
+        stockItemId: z.ZodString;
+        quantity: z.ZodNumber;
+        purchaseOrderLineItemId: z.ZodString;
+        employeeId: z.ZodString;
+        receivedAt: z.ZodString;
+        previousQuantity: z.ZodNumber;
+        newQuantity: z.ZodNumber;
+        supplierId: z.ZodOptional<z.ZodString>;
+    }, z.core.$strip>;
+}, z.core.$strip>, z.ZodObject<{
+    id: z.ZodString;
+    version: z.ZodLiteral<1>;
+    tenantId: z.ZodString;
+    aggregateType: z.ZodString;
+    aggregateId: z.ZodString;
+    occurredAt: z.ZodString;
+    eventType: z.ZodLiteral<"inventory.stock.wasted">;
+    payload: z.ZodObject<{
+        stockItemId: z.ZodString;
+        quantity: z.ZodNumber;
+        reason: z.ZodString;
+        employeeId: z.ZodString;
+        wastedAt: z.ZodString;
+        previousQuantity: z.ZodNumber;
+        newQuantity: z.ZodNumber;
+        wasteCategory: z.ZodOptional<z.ZodString>;
     }, z.core.$strip>;
 }, z.core.$strip>], "eventType">;
 /**
@@ -632,6 +820,76 @@ export declare function parseRealtimeEvent(data: unknown): z.ZodSafeParseResult<
         };
         movedAt: string;
     };
+} | {
+    id: string;
+    version: 1;
+    tenantId: string;
+    aggregateType: string;
+    aggregateId: string;
+    occurredAt: string;
+    eventType: "inventory.stock.adjusted";
+    payload: {
+        stockItemId: string;
+        quantity: number;
+        reason: string;
+        employeeId: string;
+        adjustedAt: string;
+        previousQuantity: number;
+        newQuantity: number;
+    };
+} | {
+    id: string;
+    version: 1;
+    tenantId: string;
+    aggregateType: string;
+    aggregateId: string;
+    occurredAt: string;
+    eventType: "inventory.stock.consumed";
+    payload: {
+        stockItemId: string;
+        quantity: number;
+        prepTaskId: string;
+        employeeId: string;
+        consumedAt: string;
+        previousQuantity: number;
+        newQuantity: number;
+    };
+} | {
+    id: string;
+    version: 1;
+    tenantId: string;
+    aggregateType: string;
+    aggregateId: string;
+    occurredAt: string;
+    eventType: "inventory.stock.received";
+    payload: {
+        stockItemId: string;
+        quantity: number;
+        purchaseOrderLineItemId: string;
+        employeeId: string;
+        receivedAt: string;
+        previousQuantity: number;
+        newQuantity: number;
+        supplierId?: string | undefined;
+    };
+} | {
+    id: string;
+    version: 1;
+    tenantId: string;
+    aggregateType: string;
+    aggregateId: string;
+    occurredAt: string;
+    eventType: "inventory.stock.wasted";
+    payload: {
+        stockItemId: string;
+        quantity: number;
+        reason: string;
+        employeeId: string;
+        wastedAt: string;
+        previousQuantity: number;
+        newQuantity: number;
+        wasteCategory?: string | undefined;
+    };
 }>;
 /**
  * Type guard for kitchen events.
@@ -641,4 +899,8 @@ export declare function isKitchenEvent(data: unknown): data is z.infer<typeof Re
  * Type guard for command board events.
  */
 export declare function isCommandBoardEvent(data: unknown): data is z.infer<typeof RealtimeEventSchema>;
+/**
+ * Type guard for stock/inventory events.
+ */
+export declare function isInventoryStockEvent(data: unknown): data is z.infer<typeof RealtimeEventSchema>;
 //# sourceMappingURL=schemas.d.ts.map

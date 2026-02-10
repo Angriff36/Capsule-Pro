@@ -4,10 +4,11 @@
  * Provides runtime validation for event payloads.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RealtimeEventSchema = exports.CommandBoardCursorMovedEventSchema = exports.CommandBoardUserLeftEventSchema = exports.CommandBoardUserJoinedEventSchema = exports.CommandBoardUpdatedEventSchema = exports.CommandBoardCardDeletedEventSchema = exports.CommandBoardCardMovedEventSchema = exports.CommandBoardCardUpdatedEventSchema = exports.CommandBoardCardCreatedEventSchema = exports.KitchenTaskProgressEventSchema = exports.KitchenTaskReleasedEventSchema = exports.KitchenTaskClaimedEventSchema = exports.CommandBoardCursorMovedPayloadSchema = exports.CommandBoardUserLeftPayloadSchema = exports.CommandBoardUserJoinedPayloadSchema = exports.CommandBoardUpdatedPayloadSchema = exports.CommandBoardCardDeletedPayloadSchema = exports.CommandBoardCardMovedPayloadSchema = exports.CommandBoardCardUpdatedPayloadSchema = exports.CommandBoardCardCreatedPayloadSchema = exports.KitchenTaskProgressPayloadSchema = exports.KitchenTaskReleasedPayloadSchema = exports.KitchenTaskClaimedPayloadSchema = exports.RealtimeEventBaseSchema = void 0;
+exports.RealtimeEventSchema = exports.InventoryStockWastedEventSchema = exports.InventoryStockReceivedEventSchema = exports.InventoryStockConsumedEventSchema = exports.InventoryStockAdjustedEventSchema = exports.CommandBoardCursorMovedEventSchema = exports.CommandBoardUserLeftEventSchema = exports.CommandBoardUserJoinedEventSchema = exports.CommandBoardUpdatedEventSchema = exports.CommandBoardCardDeletedEventSchema = exports.CommandBoardCardMovedEventSchema = exports.CommandBoardCardUpdatedEventSchema = exports.CommandBoardCardCreatedEventSchema = exports.KitchenTaskProgressEventSchema = exports.KitchenTaskReleasedEventSchema = exports.KitchenTaskClaimedEventSchema = exports.InventoryStockWastedPayloadSchema = exports.InventoryStockReceivedPayloadSchema = exports.InventoryStockConsumedPayloadSchema = exports.InventoryStockAdjustedPayloadSchema = exports.CommandBoardCursorMovedPayloadSchema = exports.CommandBoardUserLeftPayloadSchema = exports.CommandBoardUserJoinedPayloadSchema = exports.CommandBoardUpdatedPayloadSchema = exports.CommandBoardCardDeletedPayloadSchema = exports.CommandBoardCardMovedPayloadSchema = exports.CommandBoardCardUpdatedPayloadSchema = exports.CommandBoardCardCreatedPayloadSchema = exports.KitchenTaskProgressPayloadSchema = exports.KitchenTaskReleasedPayloadSchema = exports.KitchenTaskClaimedPayloadSchema = exports.RealtimeEventBaseSchema = void 0;
 exports.parseRealtimeEvent = parseRealtimeEvent;
 exports.isKitchenEvent = isKitchenEvent;
 exports.isCommandBoardEvent = isCommandBoardEvent;
+exports.isInventoryStockEvent = isInventoryStockEvent;
 const zod_1 = require("zod");
 /**
  * Base schema for all realtime events.
@@ -107,6 +108,47 @@ exports.CommandBoardCursorMovedPayloadSchema = zod_1.z.object({
     movedAt: zod_1.z.string().datetime(),
 });
 /**
+ * Stock/Inventory event payload schemas.
+ */
+exports.InventoryStockAdjustedPayloadSchema = zod_1.z.object({
+    stockItemId: zod_1.z.string().min(1),
+    quantity: zod_1.z.number(),
+    reason: zod_1.z.string(),
+    employeeId: zod_1.z.string().min(1),
+    adjustedAt: zod_1.z.string().datetime(),
+    previousQuantity: zod_1.z.number(),
+    newQuantity: zod_1.z.number(),
+});
+exports.InventoryStockConsumedPayloadSchema = zod_1.z.object({
+    stockItemId: zod_1.z.string().min(1),
+    quantity: zod_1.z.number(),
+    prepTaskId: zod_1.z.string().min(1),
+    employeeId: zod_1.z.string().min(1),
+    consumedAt: zod_1.z.string().datetime(),
+    previousQuantity: zod_1.z.number(),
+    newQuantity: zod_1.z.number(),
+});
+exports.InventoryStockReceivedPayloadSchema = zod_1.z.object({
+    stockItemId: zod_1.z.string().min(1),
+    quantity: zod_1.z.number(),
+    purchaseOrderLineItemId: zod_1.z.string().min(1),
+    employeeId: zod_1.z.string().min(1),
+    receivedAt: zod_1.z.string().datetime(),
+    previousQuantity: zod_1.z.number(),
+    newQuantity: zod_1.z.number(),
+    supplierId: zod_1.z.string().optional(),
+});
+exports.InventoryStockWastedPayloadSchema = zod_1.z.object({
+    stockItemId: zod_1.z.string().min(1),
+    quantity: zod_1.z.number(),
+    reason: zod_1.z.string(),
+    employeeId: zod_1.z.string().min(1),
+    wastedAt: zod_1.z.string().datetime(),
+    previousQuantity: zod_1.z.number(),
+    newQuantity: zod_1.z.number(),
+    wasteCategory: zod_1.z.string().optional(),
+});
+/**
  * Full event schemas with discriminator - Kitchen events.
  */
 exports.KitchenTaskClaimedEventSchema = exports.RealtimeEventBaseSchema.extend({
@@ -157,6 +199,25 @@ exports.CommandBoardCursorMovedEventSchema = exports.RealtimeEventBaseSchema.ext
     payload: exports.CommandBoardCursorMovedPayloadSchema,
 });
 /**
+ * Full event schemas with discriminator - Stock/Inventory events.
+ */
+exports.InventoryStockAdjustedEventSchema = exports.RealtimeEventBaseSchema.extend({
+    eventType: zod_1.z.literal("inventory.stock.adjusted"),
+    payload: exports.InventoryStockAdjustedPayloadSchema,
+});
+exports.InventoryStockConsumedEventSchema = exports.RealtimeEventBaseSchema.extend({
+    eventType: zod_1.z.literal("inventory.stock.consumed"),
+    payload: exports.InventoryStockConsumedPayloadSchema,
+});
+exports.InventoryStockReceivedEventSchema = exports.RealtimeEventBaseSchema.extend({
+    eventType: zod_1.z.literal("inventory.stock.received"),
+    payload: exports.InventoryStockReceivedPayloadSchema,
+});
+exports.InventoryStockWastedEventSchema = exports.RealtimeEventBaseSchema.extend({
+    eventType: zod_1.z.literal("inventory.stock.wasted"),
+    payload: exports.InventoryStockWastedPayloadSchema,
+});
+/**
  * Discriminated union of all event schemas.
  * Use this for validating unknown realtime events.
  */
@@ -172,6 +233,10 @@ exports.RealtimeEventSchema = zod_1.z.discriminatedUnion("eventType", [
     exports.CommandBoardUserJoinedEventSchema,
     exports.CommandBoardUserLeftEventSchema,
     exports.CommandBoardCursorMovedEventSchema,
+    exports.InventoryStockAdjustedEventSchema,
+    exports.InventoryStockConsumedEventSchema,
+    exports.InventoryStockReceivedEventSchema,
+    exports.InventoryStockWastedEventSchema,
 ]);
 /**
  * Parse and validate a realtime event.
@@ -199,4 +264,15 @@ function isCommandBoardEvent(data) {
     }
     // Check if event type starts with "command.board."
     return result.data.eventType.startsWith("command.board.");
+}
+/**
+ * Type guard for stock/inventory events.
+ */
+function isInventoryStockEvent(data) {
+    const result = parseRealtimeEvent(data);
+    if (!result.success) {
+        return false;
+    }
+    // Check if event type starts with "inventory.stock."
+    return result.data.eventType.startsWith("inventory.stock.");
 }

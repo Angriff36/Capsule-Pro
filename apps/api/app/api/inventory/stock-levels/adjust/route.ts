@@ -6,6 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { createOutboxEvent } from "@repo/realtime";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -109,6 +110,23 @@ async function executeStockAdjustmentTransaction(
       )
       RETURNING id
     `;
+
+    // Create outbox event for real-time updates
+    await createOutboxEvent(tx, {
+      tenantId,
+      aggregateType: "InventoryStock",
+      aggregateId: inventoryItemId,
+      eventType: "inventory.stock.adjusted",
+      payload: {
+        stockItemId: inventoryItemId,
+        quantity: adjustmentAmount,
+        reason,
+        employeeId: userId,
+        adjustedAt: new Date().toISOString(),
+        previousQuantity,
+        newQuantity,
+      },
+    });
 
     return {
       transactionId: transactionResult[0]?.id,
