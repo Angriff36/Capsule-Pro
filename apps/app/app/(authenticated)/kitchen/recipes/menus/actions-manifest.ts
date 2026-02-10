@@ -1,6 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
+import type { ConstraintOutcome, OverrideRequest } from "@manifest/runtime/ir";
 import { auth } from "@repo/auth/server";
 import type { Prisma } from "@repo/database";
 import { database } from "@repo/database";
@@ -11,8 +12,7 @@ import {
   deactivateMenu,
   type KitchenOpsContext,
   updateMenu,
-} from "@repo/kitchen-ops";
-import type { ConstraintOutcome, OverrideRequest } from "@repo/manifest";
+} from "@repo/manifest-adapters";
 import { revalidatePath } from "next/cache";
 import { invariant } from "../../../../lib/invariant";
 import { requireTenantId } from "../../../../lib/tenant";
@@ -598,3 +598,4 @@ export async function deactivateMenuManifest(
     isActive: false,
   };
 }
+

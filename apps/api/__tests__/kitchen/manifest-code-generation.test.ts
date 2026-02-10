@@ -23,7 +23,7 @@ const __filename = fileURLToPath(import.meta.url);
 const PROJECT_ROOT = join(dirname(__filename), "../../../..");
 const MANUAL_INTEGRATION_DIR = join(
   PROJECT_ROOT,
-  "apps/api/src/app/api/kitchen/manifest"
+  "apps/api/app/api/kitchen/manifest"
 );
 
 describe("Manifest Code Generation Inventory", () => {
@@ -105,7 +105,7 @@ describe("Manifest Code Generation Inventory", () => {
     console.info("ℹ️  Code Generation Workflow (Preferred for New Features)");
     console.info("\n");
     console.info(
-      "  1. Edit the manifest spec (e.g., packages/kitchen-ops/manifests/recipe-rules.manifest)"
+      "  1. Edit the manifest spec (e.g., packages/manifest-adapters/manifests/recipe-rules.manifest)"
     );
     console.info(
       "  2. Run: npx tsx packages/manifest/bin/compile.ts <file>.manifest --output ./generated"
@@ -144,3 +144,4 @@ function getAllRouteFiles(dir: string, files: string[] = []): string[] {
 
   return files;
 }
+

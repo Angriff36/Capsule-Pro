@@ -22,7 +22,7 @@ import {
   buildInitialChecklist,
   processMultipleDocuments,
 } from "@repo/event-parser";
-import { triggerPrepListAutoGeneration } from "@repo/kitchen-ops";
+import { triggerPrepListAutoGeneration } from "@repo/manifest-adapters";
 import { createOutboxEvent } from "@repo/realtime";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -891,3 +891,4 @@ export async function GET(request: Request) {
     );
   }
 }
+

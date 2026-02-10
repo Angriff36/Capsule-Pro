@@ -1,5 +1,7 @@
 # Projection System Proof Test - Final Results ✅
 
+> Note: Historical projection test output. Treat this as archive material, not current structure guidance.
+
 ## Success Summary
 
 ✅ **All Tests Passing (2/2)**

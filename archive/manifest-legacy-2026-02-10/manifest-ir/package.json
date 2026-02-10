@@ -1,0 +1,17 @@
+{
+  "name": "@repo/manifest-ir",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "25.2.0",
+    "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  }
+}

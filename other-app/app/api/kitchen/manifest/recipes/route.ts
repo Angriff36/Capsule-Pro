@@ -12,12 +12,12 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { createRecipeRuntime, type KitchenOpsContext } from "@repo/kitchen-ops";
-import { createPrismaStoreProvider } from "@repo/kitchen-ops/prisma-store";
+import { createRecipeRuntime, type KitchenOpsContext } from "@repo/manifest-adapters";
+import { createPrismaStoreProvider } from "@repo/manifest-adapters/prisma-store";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
-} from "@repo/kitchen-ops/route-helpers";
+} from "@repo/manifest-adapters/route-helpers";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
@@ -72,3 +72,4 @@ export async function GET(_request: Request) {
     return manifestErrorResponse(error);
   }
 }
+

@@ -1,0 +1,196 @@
+{
+  "version": "1.0",
+  "provenance": {
+    "contentHash": "e3dae05d8be0edcf8b5ff6f7751e15272d2e9b3a7420aa5b739d01dad00e1360",
+    "irHash": "442193f08fcd67e185b6fdd3cb671c18208e2f37afe089c953f8c4f89c7c6796",
+    "compilerVersion": "0.3.8",
+    "schemaVersion": "1.0",
+    "compiledAt": "2026-02-10T10:39:44.984Z"
+  },
+  "modules": [],
+  "entities": [
+    {
+      "name": "PrepTask",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "status",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "open"
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [],
+      "commands": [
+        "claim"
+      ],
+      "constraints": [],
+      "policies": []
+    }
+  ],
+  "stores": [
+    {
+      "entity": "PrepTask",
+      "target": "memory",
+      "config": {}
+    }
+  ],
+  "events": [
+    {
+      "name": "PrepTaskClaimed",
+      "channel": "kitchen.prepTask.claimed",
+      "payload": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "name": "claim",
+      "entity": "PrepTask",
+      "parameters": [
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "userId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "userId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "open"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "userId is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Only open tasks can be claimed"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "claimed"
+            }
+          }
+        }
+      ],
+      "emits": [
+        "PrepTaskClaimed"
+      ]
+    }
+  ],
+  "policies": []
+}

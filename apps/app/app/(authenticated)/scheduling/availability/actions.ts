@@ -3,7 +3,7 @@
 import type {
   AvailabilityFilters,
   DayOfWeek,
-} from "@api/staff/availability/types";
+} from "@/app/lib/staff/availability/types";
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";

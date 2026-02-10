@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import type { OverrideReasonCode } from "@repo/manifest";
+import type { OverrideReasonCode } from "@repo/design-system/components/override-reasons";
 import { AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState, useTransition } from "react";

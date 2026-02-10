@@ -8,7 +8,7 @@ import {
   Alert,
   AlertDescription,
 } from "@repo/design-system/components/ui/alert";
-import type { OverrideReasonCode } from "@repo/manifest";
+import type { OverrideReasonCode } from "@repo/design-system/components/override-reasons";
 import { AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";

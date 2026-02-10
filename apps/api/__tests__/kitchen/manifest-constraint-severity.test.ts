@@ -11,13 +11,15 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { compileToIR, RuntimeEngine } from "@repo/manifest";
+import { compileToIR } from "@manifest/runtime/ir-compiler";
+import { enforceCommandOwnership } from "@repo/manifest-adapters/ir-contract";
+import { ManifestRuntimeEngine } from "@repo/manifest-adapters/runtime-engine";
 import { describe, expect, it } from "vitest";
 
 async function getTestRuntime() {
   const manifestPath = join(
     process.cwd(),
-    "../../packages/kitchen-ops/manifests/prep-task-rules.manifest"
+    "../../packages/manifest-adapters/manifests/prep-task-rules.manifest"
   );
   const source = readFileSync(manifestPath, "utf-8");
   const { ir, diagnostics } = await compileToIR(source);
@@ -28,7 +30,7 @@ async function getTestRuntime() {
     );
   }
 
-  return new RuntimeEngine(ir, {
+  return new ManifestRuntimeEngine(enforceCommandOwnership(ir), {
     userId: "test-user-123",
     tenantId: "test-tenant-456",
   });
@@ -177,3 +179,4 @@ describe("Manifest Runtime - Constraint Severity Enforcement", () => {
     expect(updatedInstance?.claimedBy).toBe("user-001");
   });
 });
+

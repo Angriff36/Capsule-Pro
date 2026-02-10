@@ -1,5 +1,7 @@
 # Left To Prove
 
+> Note: Historical gap list from pre-restructure testing. For active paths and workflow, use `docs/manifest/README.md`.
+
 **Status**: ⚠️ **MAJOR GAPS IN TEST COVERAGE**
 
 ## What We Have (Limited)

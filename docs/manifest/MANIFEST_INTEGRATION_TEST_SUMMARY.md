@@ -1,5 +1,7 @@
 # Manifest Integration Test Summary
 
+> Note: Historical integration summary. Some package paths in this report are no longer current.
+
 **Date**: 2026-02-08
 **Status**: ⚠️ **PARTIALLY TESTED - NOT PRODUCTION READY**
 

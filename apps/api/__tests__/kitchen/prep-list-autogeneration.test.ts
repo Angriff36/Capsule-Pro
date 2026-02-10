@@ -10,7 +10,7 @@ import {
   type PrepListAutoGenerationInput,
   processPendingPrepListGenerations,
   triggerPrepListAutoGeneration,
-} from "@repo/kitchen-ops";
+} from "@repo/manifest-adapters";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the database
@@ -361,3 +361,4 @@ describe("Prep List Auto-Generation", () => {
     });
   });
 });
+

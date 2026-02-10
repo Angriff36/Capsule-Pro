@@ -1,7 +1,9 @@
 "use server";
 
+import type { OverrideRequest } from "@manifest/runtime/ir";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import type { OverrideReasonCode } from "@repo/design-system/components/override-reasons";
 import {
   cancelPrepTask,
   claimPrepTask,
@@ -12,8 +14,7 @@ import {
   reassignPrepTask,
   releasePrepTask,
   startPrepTask,
-} from "@repo/kitchen-ops";
-import type { OverrideReasonCode, OverrideRequest } from "@repo/manifest";
+} from "@repo/manifest-adapters";
 import { revalidatePath } from "next/cache";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 
@@ -249,7 +250,7 @@ export async function manifestAssignTaskToStation(
 ) {
   const { runtime } = await createRuntimeAndContext();
 
-  const kitchenOps = await import("@repo/kitchen-ops");
+  const kitchenOps = await import("@repo/manifest-adapters");
   const result = await kitchenOps.assignTaskToStation(
     runtime,
     stationId,
@@ -268,7 +269,7 @@ export async function manifestRemoveTaskFromStation(
 ) {
   const { runtime } = await createRuntimeAndContext();
 
-  const kitchenOps = await import("@repo/kitchen-ops");
+  const kitchenOps = await import("@repo/manifest-adapters");
   const result = await kitchenOps.removeTaskFromStation(
     runtime,
     stationId,
@@ -286,7 +287,7 @@ export async function manifestUpdateStationCapacity(
 ) {
   const { runtime, userId } = await createRuntimeAndContext();
 
-  const kitchenOps = await import("@repo/kitchen-ops");
+  const kitchenOps = await import("@repo/manifest-adapters");
   const result = await kitchenOps.updateStationCapacity(
     runtime,
     stationId,
@@ -310,7 +311,7 @@ export async function manifestReserveInventory(
 ) {
   const { runtime, userId } = await createRuntimeAndContext();
 
-  const kitchenOps = await import("@repo/kitchen-ops");
+  const kitchenOps = await import("@repo/manifest-adapters");
   const result = await kitchenOps.reserveInventory(
     runtime,
     itemId,
@@ -331,7 +332,7 @@ export async function manifestConsumeInventory(
 ) {
   const { runtime, userId } = await createRuntimeAndContext();
 
-  const kitchenOps = await import("@repo/kitchen-ops");
+  const kitchenOps = await import("@repo/manifest-adapters");
   const result = await kitchenOps.consumeInventory(
     runtime,
     itemId,
@@ -352,7 +353,7 @@ export async function manifestRestockInventory(
 ) {
   const { runtime, userId } = await createRuntimeAndContext();
 
-  const kitchenOps = await import("@repo/kitchen-ops");
+  const kitchenOps = await import("@repo/manifest-adapters");
   const result = await kitchenOps.restockInventory(
     runtime,
     itemId,
@@ -365,3 +366,4 @@ export async function manifestRestockInventory(
 
   return result;
 }
+

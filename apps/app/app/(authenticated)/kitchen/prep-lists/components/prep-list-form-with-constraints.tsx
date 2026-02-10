@@ -1,8 +1,9 @@
 "use client";
 
+import type { ConstraintOutcome } from "@manifest/runtime/ir";
 import { ConstraintOverrideDialog } from "@repo/design-system/components/constraint-override-dialog";
 import { Button } from "@repo/design-system/components/ui/button";
-import type { ConstraintOutcome, OverrideReasonCode } from "@repo/manifest";
+import type { OverrideReasonCode } from "@repo/design-system/components/override-reasons";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type {

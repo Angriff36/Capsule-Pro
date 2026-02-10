@@ -1,6 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
+import type { ConstraintOutcome, OverrideRequest } from "@manifest/runtime/ir";
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import {
@@ -9,8 +10,7 @@ import {
   createRecipeVersion,
   type KitchenOpsContext,
   updateRecipe as updateRecipeManifest,
-} from "@repo/kitchen-ops";
-import type { ConstraintOutcome, OverrideRequest } from "@repo/manifest";
+} from "@repo/manifest-adapters";
 import { put } from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { invariant } from "../../../lib/invariant";
@@ -338,7 +338,7 @@ async function createRuntimeContext(): Promise<KitchenOpsContext> {
 
   // Dynamically import PrismaStore to avoid circular dependencies
   const { createPrismaStoreProvider } = await import(
-    "@repo/kitchen-ops/prisma-store"
+    "@repo/manifest-adapters/prisma-store"
   );
 
   return {
@@ -1327,3 +1327,4 @@ export const updateRecipeImage = _updateRecipeImage;
 
 // Type export
 export type { RecipeForEdit } from "./actions";
+

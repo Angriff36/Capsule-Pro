@@ -1,5 +1,7 @@
 # Manifest Integration - Test Results (Honest Assessment)
 
+> Note: Historical test report. For current structure and paths, use `docs/manifest/README.md` and its linked source-of-truth docs.
+
 **Last Updated**: 2026-02-08
 **Status**: ⚠️ **PARTIALLY TESTED - NOT PRODUCTION READY**
 

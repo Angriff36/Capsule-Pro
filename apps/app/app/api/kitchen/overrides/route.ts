@@ -1,6 +1,6 @@
+import type { OverrideRequest } from "@manifest/runtime/ir";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import type { OverrideRequest } from "@repo/manifest";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 

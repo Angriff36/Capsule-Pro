@@ -10,9 +10,7 @@
     "emitDeclarationOnly": false,
 
     "paths": {
-      "@/*": ["./*"],
-      "@repo/*": ["../../packages/*"],
-      "@api/staff/*": ["../api/app/api/staff/*"]
+      "@/*": ["./*"]
     },
     "strictNullChecks": true
   },

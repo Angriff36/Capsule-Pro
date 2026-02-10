@@ -7,12 +7,12 @@ import type {
   TimeOffStatus,
   TimeOffType,
   UpdateTimeOffStatusInput,
-} from "@api/staff/time-off/types";
+} from "@/app/lib/staff/time-off/types";
 import {
   checkOverlappingTimeOffRequests,
   validateTimeOffDates,
   verifyEmployee,
-} from "@api/staff/time-off/validation";
+} from "@/app/lib/staff/time-off/validation";
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";

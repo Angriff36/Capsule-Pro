@@ -1,6 +1,0 @@
-// Test: Malformed relationship without type should fail
-// This tests error detection for incomplete relationship syntax
-
-entity Test {
-  hasMany items
-}

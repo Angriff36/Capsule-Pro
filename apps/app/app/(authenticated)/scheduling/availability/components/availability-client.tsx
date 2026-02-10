@@ -1,6 +1,6 @@
 "use client";
 
-import type { DayOfWeek } from "@api/staff/availability/types";
+import type { DayOfWeek } from "@/app/lib/staff/availability/types";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import {

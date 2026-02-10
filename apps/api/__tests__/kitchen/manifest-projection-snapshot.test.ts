@@ -14,17 +14,38 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { compileToIR } from "@repo/manifest";
-import { getProjection } from "@repo/manifest/projections";
+import type { IR } from "@manifest/runtime/ir";
+import { compileToIR } from "@manifest/runtime/ir-compiler";
+import { NextJsProjection } from "@manifest/runtime/projections/nextjs";
 import { describe, expect, it } from "vitest";
 
 const MANIFEST_PATH = join(
   process.cwd(),
-  "../../packages/kitchen-ops/manifests/prep-task-rules.manifest"
+  "../../packages/manifest-adapters/manifests/prep-task-rules.manifest"
 );
 
 const SNAPSHOT_DIR = join(process.cwd(), "__tests__/kitchen/__snapshots__");
 const SNAPSHOT_FILE = join(SNAPSHOT_DIR, "preptask-claim-command.snapshot.ts");
+
+function normalizeIR(ir: IR): IR {
+  if (ir.entities.length !== 1) {
+    return ir;
+  }
+
+  const [entity] = ir.entities;
+  if (entity.commands.length > 0) {
+    return ir;
+  }
+
+  const commandNames = ir.commands.map((command) => command.name);
+  return {
+    ...ir,
+    entities: [{ ...entity, commands: commandNames }],
+    commands: ir.commands.map((command) =>
+      command.entity ? command : { ...command, entity: entity.name }
+    ),
+  };
+}
 
 describe("Projection System Proof: PrepTask.claim Snapshot", () => {
   it("should generate PrepTask.claim command handler matching golden snapshot", async () => {
@@ -39,13 +60,12 @@ describe("Projection System Proof: PrepTask.claim Snapshot", () => {
     }
 
     // Step 2: Get NextJsProjection from registry (auto-registers builtins)
-    const projection = getProjection("nextjs");
-    expect(projection).toBeDefined();
-    expect(projection?.name).toBe("nextjs");
+    const projection = new NextJsProjection();
+    expect(projection.name).toBe("nextjs");
 
     // Step 3: Generate nextjs.command surface for PrepTask.claim
     // Using minimal options to avoid Clerk/tenant dependencies
-    const result = projection?.generate(ir, {
+    const result = projection.generate(normalizeIR(ir), {
       surface: "nextjs.command",
       entity: "PrepTask",
       command: "claim",
@@ -56,10 +76,6 @@ describe("Projection System Proof: PrepTask.claim Snapshot", () => {
         runtimeImportPath: "@/lib/manifest-runtime",
       },
     });
-
-    if (!result) {
-      throw new Error("Failed to generate projection");
-    }
 
     // Verify generation succeeded
     expect(result.diagnostics).toEqual([]);
@@ -136,3 +152,4 @@ describe("Projection System Proof: PrepTask.claim Snapshot", () => {
     console.info("✓ Snapshot contains PrepTask.claim-specific logic");
   });
 });
+

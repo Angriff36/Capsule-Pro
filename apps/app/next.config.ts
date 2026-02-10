@@ -112,7 +112,7 @@ let nextConfig: NextConfig = withToolbar(
       "@repo/webhooks",
       "@repo/notifications",
       "@repo/collaboration",
-      "@repo/manifest",
+      "@manifest/runtime",
       "@repo/seo",
     ],
     experimental: {

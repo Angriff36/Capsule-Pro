@@ -1,5 +1,7 @@
 # Projection System Proof Test - Results Summary
 
+> Note: Historical snapshot report. Current structure is documented in `docs/manifest/structure.md`.
+
 ## Overview
 
 Successfully implemented a minimal projection-system proof test for PrepTask that demonstrates real generator value through golden-file snapshot testing.

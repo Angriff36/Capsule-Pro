@@ -9,7 +9,7 @@ import {
   createRecipeVersion,
   type KitchenOpsContext,
   updateRecipe as updateRecipeManifest,
-} from "@repo/kitchen-ops";
+} from "@repo/manifest-adapters";
 import { put } from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -338,7 +338,7 @@ async function createRuntimeContext(): Promise<KitchenOpsContext> {
 
   // Dynamically import PrismaStore to avoid circular dependencies
   const { createPrismaStoreProvider } = await import(
-    "@repo/kitchen-ops/prisma-store"
+    "@repo/manifest-adapters/prisma-store"
   );
 
   return {
@@ -1154,3 +1154,4 @@ export const updateRecipeImage = _updateRecipeImage;
 
 // Type export
 export type { RecipeForEdit } from "./actions";
+

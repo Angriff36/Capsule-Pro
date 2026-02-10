@@ -1,8 +1,0 @@
-entity Product {
-  property required name: string
-  property price: number = 0
-  property inStock: boolean = true
-  property description: string = ""
-}
-
-store Product in memory

@@ -15,17 +15,22 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { database } from "@repo/database";
 import {
-  compileToIR,
-  type IR,
-  RuntimeEngine,
+  type CommandResult,
+  type EmittedEvent,
+  type RuntimeEngine,
   type RuntimeOptions,
-} from "@repo/manifest";
+} from "@manifest/runtime";
+import type { IR, IRCommand } from "@manifest/runtime/ir";
+import { compileToIR } from "@manifest/runtime/ir-compiler";
+import { type PrismaClient, database } from "@repo/database";
+import { enforceCommandOwnership } from "@repo/manifest-adapters/ir-contract";
+import type { PrismaStoreConfig } from "@repo/manifest-adapters/prisma-store";
+import { ManifestRuntimeEngine } from "@repo/manifest-adapters/runtime-engine";
 import {
   createPrismaOutboxWriter,
-  type PrismaStoreConfig,
-} from "@repo/manifest/prisma-store";
+  PrismaStore,
+} from "@repo/manifest-adapters/prisma-store";
 
 /**
  * Context for creating a manifest runtime.
@@ -81,7 +86,7 @@ async function getManifestIR(manifestName: string): Promise<ManifestIR> {
   // Resolve from the monorepo packages directory
   const manifestPath = join(
     process.cwd(),
-    `../../packages/kitchen-ops/manifests/${manifestName}.manifest`
+    `../../packages/manifest-adapters/manifests/${manifestName}.manifest`
   );
 
   const source = readFileSync(manifestPath, "utf-8");
@@ -93,8 +98,9 @@ async function getManifestIR(manifestName: string): Promise<ManifestIR> {
     );
   }
 
-  manifestIRCache.set(manifestName, ir);
-  return ir;
+  const normalized = enforceCommandOwnership(ir);
+  manifestIRCache.set(manifestName, normalized);
+  return normalized;
 }
 
 /**
@@ -110,8 +116,6 @@ function createPrismaStoreProvider(
   entityName: string
 ): RuntimeOptions["storeProvider"] {
   return () => {
-    const { PrismaStore } = require("@repo/manifest/prisma-store");
-
     const outboxWriter = createPrismaOutboxWriter(entityName, tenantId);
 
     const config: PrismaStoreConfig = {
@@ -157,13 +161,16 @@ export async function createManifestRuntime(
 
   const ir = await getManifestIR(manifestName);
 
+  // Create a shared event collector for transactional outbox pattern
+  // This array will be populated with events during command execution
+  // and consumed by PrismaStore within the same transaction
+  const eventCollector: EmittedEvent[] = [];
+
   // Create a store provider for each entity in the manifest
   // This allows different entities to use their own Prisma models
   const storeProvider: RuntimeOptions["storeProvider"] = (
     entityName: string
   ) => {
-    const { PrismaStore } = require("@repo/manifest/prisma-store");
-
     const outboxWriter = createPrismaOutboxWriter(
       entityName,
       ctx.user.tenantId
@@ -174,14 +181,62 @@ export async function createManifestRuntime(
       entityName,
       tenantId: ctx.user.tenantId,
       outboxWriter,
+      eventCollector, // Share the event collector with the store
     };
 
     return new PrismaStore(config);
   };
 
-  return new RuntimeEngine(ir, {
+  // Create a telemetry callback to write events to outbox after command execution
+  // This ensures events are written even if they weren't written during store operations
+  const telemetry = {
+    onCommandExecuted: async (
+      command: Readonly<IRCommand>,
+      result: Readonly<CommandResult>,
+      entityName?: string
+    ) => {
+      // Only write events if the command succeeded
+      if (
+        result.success &&
+        result.emittedEvents &&
+        result.emittedEvents.length > 0
+      ) {
+        // Write events to outbox using a transaction
+        const outboxWriter = createPrismaOutboxWriter(
+          entityName || "unknown",
+          ctx.user.tenantId
+        );
+
+        // Extract aggregate ID from the result or options
+        const aggregateId = (result.result as { id?: string })?.id || "unknown";
+
+        const eventsToWrite = result.emittedEvents.map((event) => ({
+          eventType: event.name,
+          payload: event.payload,
+          aggregateId,
+        }));
+
+        // Write events in a transaction
+        try {
+          await database.$transaction(async (tx) => {
+            await outboxWriter(tx as PrismaClient, eventsToWrite);
+          });
+        } catch (error) {
+          console.error(
+            "[manifest-runtime] Failed to write events to outbox:",
+            error
+          );
+          throw error;
+        }
+      }
+    },
+  };
+
+  return new ManifestRuntimeEngine(ir, {
     user: ctx.user,
     storeProvider,
+    eventCollector, // Pass event collector to runtime
+    telemetry,
   });
 }
 
@@ -238,7 +293,9 @@ export function createStationRuntime(user: {
  */
 export type {
   CommandResult,
+  EmittedEvent,
   RuntimeContext,
   RuntimeEngine,
   RuntimeOptions,
-} from "@repo/manifest";
+} from "@manifest/runtime";
+

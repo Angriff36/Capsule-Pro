@@ -1,6 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
+import type { ConstraintOutcome, OverrideRequest } from "@manifest/runtime/ir";
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import {
@@ -19,8 +20,7 @@ import {
   updatePrepListItemNotes,
   updatePrepListItemQuantity,
   updatePrepListItemStation,
-} from "@repo/kitchen-ops";
-import type { ConstraintOutcome, OverrideRequest } from "@repo/manifest";
+} from "@repo/manifest-adapters";
 import { revalidatePath } from "next/cache";
 import { invariant } from "../../../lib/invariant";
 import { requireTenantId } from "../../../lib/tenant";
@@ -122,7 +122,7 @@ async function createRuntimeContext(): Promise<KitchenOpsContext> {
 
   // Dynamically import PrismaStore to avoid circular dependencies
   const { createPrismaStoreProvider } = await import(
-    "@repo/kitchen-ops/prisma-store"
+    "@repo/manifest-adapters/prisma-store"
   );
 
   return {
@@ -1505,3 +1505,4 @@ export type {
   PrepListGenerationResult,
   StationPrepList,
 } from "./actions";
+

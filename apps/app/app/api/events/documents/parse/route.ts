@@ -510,41 +510,13 @@ async function processDocumentsAndGenerateResponse(
     "files"
   );
   // Initialize Manifest runtime via dynamic import (avoids require() of ESM on Vercel)
-  let engine:
-    | Awaited<
-        ReturnType<typeof import("@repo/manifest").createEventImportRuntime>
-      >
-    | undefined;
-  let processDoc:
-    | typeof import("@repo/manifest").processDocumentImport
-    | undefined;
-  let createUpdateEvent:
-    | typeof import("@repo/manifest").createOrUpdateEvent
-    | undefined;
-  let generateBattleBoardFn:
-    | typeof import("@repo/manifest").generateBattleBoard
-    | undefined;
-  let generateChecklistFn:
-    | typeof import("@repo/manifest").generateChecklist
-    | undefined;
-
-  try {
-    const manifest = await import("@repo/manifest");
-    engine = await manifest.createEventImportRuntime(tenantId, userId);
-    processDoc = manifest.processDocumentImport;
-    createUpdateEvent = manifest.createOrUpdateEvent;
-    generateBattleBoardFn = manifest.generateBattleBoard;
-    generateChecklistFn = manifest.generateChecklist;
-    console.log(
-      "[processDocumentsAndGenerateResponse] Manifest runtime initialized"
-    );
-  } catch (manifestError) {
-    console.error(
-      "[processDocumentsAndGenerateResponse] Manifest runtime failed, continuing without it:",
-      manifestError
-    );
-    // Continue without Manifest - fallback to original behavior
-  }
+  // Note: Event import functions are capsule-pro specific and not in @manifest/runtime
+  // These need to be ported to kitchen-ops or a separate event-import module
+  const engine = undefined;
+  const processDoc = undefined;
+  const createUpdateEvent = undefined;
+  const generateBattleBoardFn = undefined;
+  const generateChecklistFn = undefined;
 
   // Process files
   const fileContents = await Promise.all(
@@ -577,59 +549,60 @@ async function processDocumentsAndGenerateResponse(
   );
 
   // Process each document import through Manifest (if available)
-  if (engine && processDoc) {
-    try {
-      const manifestImportIds: string[] = [];
-      for (const importRecord of importRecords) {
-        const importId = importRecord.importId;
-        const doc = importRecord.document;
-
-        // Create Manifest instance for DocumentImport
-        await engine.createInstance("DocumentImport", {
-          id: importId,
-          tenantId,
-          fileName: doc.fileName,
-          mimeType: doc.fileType === "pdf" ? "application/pdf" : "text/csv",
-          fileType: doc.fileType,
-          detectedFormat: doc.detectedFormat,
-          parseStatus: "pending",
-        });
-
-        manifestImportIds.push(importId);
-
-        // Process through Manifest
-        if (doc.errors && doc.errors.length > 0) {
-          await processDoc(
-            engine,
-            importId,
-            doc.fileName,
-            doc.parsedEvent || {},
-            0,
-            doc.errors
-          );
-        } else {
-          await processDoc(
-            engine,
-            importId,
-            doc.fileName,
-            doc.parsedEvent || {},
-            doc.confidence || 0
-          );
-        }
-      }
-      console.log(
-        "[processDocumentsAndGenerateResponse] Processed",
-        manifestImportIds.length,
-        "imports through Manifest"
-      );
-    } catch (manifestError) {
-      console.error(
-        "[processDocumentsAndGenerateResponse] Manifest processing failed, continuing:",
-        manifestError
-      );
-      // Continue without Manifest
-    }
-  }
+  // TODO: Re-enable after porting event import functions from manifest-backup to kitchen-ops
+  // if (engine && processDoc) {
+  //   try {
+  //     const manifestImportIds: string[] = [];
+  //     for (const importRecord of importRecords) {
+  //       const importId = importRecord.importId;
+  //       const doc = importRecord.document;
+  //
+  //       // Create Manifest instance for DocumentImport
+  //       await engine.createInstance("DocumentImport", {
+  //         id: importId,
+  //         tenantId,
+  //         fileName: doc.fileName,
+  //         mimeType: doc.fileType === "pdf" ? "application/pdf" : "text/csv",
+  //         fileType: doc.fileType,
+  //         detectedFormat: doc.detectedFormat,
+  //         parseStatus: "pending",
+  //       });
+  //
+  //       manifestImportIds.push(importId);
+  //
+  //       // Process through Manifest
+  //       if (doc.errors && doc.errors.length > 0) {
+  //         await processDoc(
+  //           engine,
+  //           importId,
+  //           doc.fileName,
+  //           doc.parsedEvent || {},
+  //           0,
+  //           doc.errors
+  //         );
+  //       } else {
+  //         await processDoc(
+  //           engine,
+  //           importId,
+  //           doc.fileName,
+  //           doc.parsedEvent || {},
+  //           doc.confidence || 0
+  //         );
+  //       }
+  //     }
+  //     console.log(
+  //       "[processDocumentsAndGenerateResponse] Processed",
+  //       manifestImportIds.length,
+  //       "imports through Manifest"
+  //     );
+  //   } catch (manifestError) {
+  //     console.error(
+  //       "[processDocumentsAndGenerateResponse] Manifest processing failed, continuing:",
+  //       manifestError
+  //     );
+  //     // Continue without Manifest
+  //   }
+  // }
 
   // Build response
   const response = buildResponse(result, importRecords);
@@ -721,28 +694,29 @@ async function processDocumentsAndGenerateResponse(
         }
 
         // Also create in Manifest if available
-        if (engine && createUpdateEvent) {
-          try {
-            await engine.createInstance("Event", {
-              id: actualEventId,
-              tenantId,
-              eventType: result.mergedEvent.serviceStyle || "catering",
-              eventDate: result.mergedEvent.date || new Date().toISOString(),
-            });
-
-            await createUpdateEvent(
-              engine,
-              undefined,
-              tenantId,
-              result.mergedEvent
-            );
-          } catch (manifestError) {
-            console.error(
-              "[processDocumentsAndGenerateResponse] Manifest event creation failed (non-blocking):",
-              manifestError
-            );
-          }
-        }
+        // TODO: Re-enable after porting event import functions from manifest-backup to kitchen-ops
+        // if (engine && createUpdateEvent) {
+        //   try {
+        //     await engine.createInstance("Event", {
+        //       id: actualEventId,
+        //       tenantId,
+        //       eventType: result.mergedEvent.serviceStyle || "catering",
+        //       eventDate: result.mergedEvent.date || new Date().toISOString(),
+        //     });
+        //
+        //     await createUpdateEvent(
+        //       engine,
+        //       undefined,
+        //       tenantId,
+        //       result.mergedEvent
+        //     );
+        //   } catch (manifestError) {
+        //     console.error(
+        //       "[processDocumentsAndGenerateResponse] Manifest event creation failed (non-blocking):",
+        //       manifestError
+        //     );
+        //   }
+        // }
       } catch (dbError) {
         console.error(
           "[processDocumentsAndGenerateResponse] Failed to create event in database:",
@@ -752,28 +726,29 @@ async function processDocumentsAndGenerateResponse(
       }
     } else if (actualEventId) {
       // Update existing event
-      if (engine && createUpdateEvent) {
-        try {
-          await engine.createInstance("Event", {
-            id: actualEventId,
-            tenantId,
-            eventType: result.mergedEvent.serviceStyle || "catering",
-            eventDate: result.mergedEvent.date || new Date().toISOString(),
-          });
-
-          await createUpdateEvent(
-            engine,
-            actualEventId,
-            tenantId,
-            result.mergedEvent
-          );
-        } catch (manifestError) {
-          console.error(
-            "[processDocumentsAndGenerateResponse] Manifest event update failed (non-blocking):",
-            manifestError
-          );
-        }
-      }
+      // TODO: Re-enable after porting event import functions from manifest-backup to kitchen-ops
+      // if (engine && createUpdateEvent) {
+      //   try {
+      //     await engine.createInstance("Event", {
+      //       id: actualEventId,
+      //       tenantId,
+      //       eventType: result.mergedEvent.serviceStyle || "catering",
+      //       eventDate: result.mergedEvent.date || new Date().toISOString(),
+      //     });
+      //
+      //     await createUpdateEvent(
+      //       engine,
+      //       actualEventId,
+      //       tenantId,
+      //       result.mergedEvent
+      //     );
+      //   } catch (manifestError) {
+      //     console.error(
+      //       "[processDocumentsAndGenerateResponse] Manifest event update failed (non-blocking):",
+      //       manifestError
+      //     );
+      //   }
+      // }
     }
 
     if (actualEventId) {
@@ -823,36 +798,37 @@ async function processDocumentsAndGenerateResponse(
         );
         const battleBoardId = crypto.randomUUID();
 
-        if (engine && generateBattleBoardFn) {
-          try {
-            await engine.createInstance("BattleBoard", {
-              id: battleBoardId,
-              tenantId,
-              eventId: actualEventId,
-              boardName:
-                result.mergedEvent.client ||
-                result.mergedEvent.number ||
-                actualEventId ||
-                "",
-            });
-            await generateBattleBoardFn(
-              engine,
-              battleBoardId,
-              tenantId,
-              actualEventId,
-              {
-                ...result.mergedEvent,
-                battleBoard: battleBoardResult.battleBoard,
-              }
-            );
-          } catch (manifestError) {
-            console.error(
-              "[processDocumentsAndGenerateResponse] Manifest battle board generation failed, using fallback:",
-              manifestError
-            );
-            // Fall through to database save
-          }
-        }
+        // TODO: Re-enable after porting event import functions from manifest-backup to kitchen-ops
+        // if (engine && generateBattleBoardFn) {
+        //   try {
+        //     await engine.createInstance("BattleBoard", {
+        //       id: battleBoardId,
+        //       tenantId,
+        //       eventId: actualEventId,
+        //       boardName:
+        //         result.mergedEvent.client ||
+        //         result.mergedEvent.number ||
+        //         actualEventId ||
+        //         "",
+        //     });
+        //     await generateBattleBoardFn(
+        //       engine,
+        //       battleBoardId,
+        //       tenantId,
+        //       actualEventId,
+        //       {
+        //         ...result.mergedEvent,
+        //         battleBoard: battleBoardResult.battleBoard,
+        //       }
+        //     );
+        //   } catch (manifestError) {
+        //     console.error(
+        //       "[processDocumentsAndGenerateResponse] Manifest battle board generation failed, using fallback:",
+        //       manifestError
+        //     );
+        //     // Fall through to database save
+        //   }
+        // }
 
         // Save to database
         console.log(
@@ -946,29 +922,30 @@ async function processDocumentsAndGenerateResponse(
         );
         const reportId = crypto.randomUUID();
 
-        if (engine && generateChecklistFn) {
-          try {
-            await engine.createInstance("EventReport", {
-              id: reportId,
-              tenantId,
-              eventId: actualEventId,
-            });
-            await generateChecklistFn(
-              engine,
-              reportId,
-              tenantId,
-              actualEventId,
-              result.mergedEvent,
-              checklistResult
-            );
-          } catch (manifestError) {
-            console.error(
-              "[processDocumentsAndGenerateResponse] Manifest checklist generation failed, using fallback:",
-              manifestError
-            );
-            // Fall through to database save
-          }
-        }
+        // TODO: Re-enable after porting event import functions from manifest-backup to kitchen-ops
+        // if (engine && generateChecklistFn) {
+        //   try {
+        //     await engine.createInstance("EventReport", {
+        //       id: reportId,
+        //       tenantId,
+        //       eventId: actualEventId,
+        //     });
+        //     await generateChecklistFn(
+        //       engine,
+        //       reportId,
+        //       tenantId,
+        //       actualEventId,
+        //       result.mergedEvent,
+        //       checklistResult
+        //     );
+        //   } catch (manifestError) {
+        //     console.error(
+        //       "[processDocumentsAndGenerateResponse] Manifest checklist generation failed, using fallback:",
+        //       manifestError
+        //     );
+        //     // Fall through to database save
+        //   }
+        // }
 
         // Save to database
         const completionPercent =

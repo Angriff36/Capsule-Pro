@@ -21,10 +21,6 @@ export default defineConfig({
         "test/stubs/jest-dom.ts"
       ),
       "@/app": resolve(__dirname, "apps/app/app"),
-      "@repo/manifest/prisma-store": resolve(
-        __dirname,
-        "packages/manifest/dist/manifest/prisma-store.js"
-      ),
     },
   },
   projects: [

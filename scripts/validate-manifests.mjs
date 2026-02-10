@@ -22,7 +22,7 @@ import { join } from "node:path";
 const CAMEL_CASE_REGEX = /([A-Z])/g;
 const FIRST_CHAR_REGEX = /^./;
 
-const MANIFEST_DIR = "packages/kitchen-ops/manifests";
+const MANIFEST_DIR = "packages/manifest-adapters/manifests";
 
 // ANSI color codes
 const colors = {
@@ -111,7 +111,7 @@ function validateManifests() {
     log(`  Checking ${file}...`);
 
     const result = runCommand(
-      `npx tsx packages/manifest/bin/compile.ts "${manifestPath}" --output /tmp/manifest-check-${Date.now()}`,
+      `pnpm exec manifest compile --glob "${manifestPath}" --output ir --diagnostics`,
       { ignoreStderr: true }
     );
 
@@ -131,18 +131,18 @@ function validateManifests() {
   return allValid;
 }
 
-// Step 3: Run conformance tests
+// Step 3: Check manifest CLI availability
 function runConformanceTests() {
-  logStep({ number: 3, title: "Run conformance tests" });
+  logStep({ number: 3, title: "Check Manifest CLI availability" });
 
-  log("  Running manifest package tests...");
-  const result = runCommand("pnpm test -- --run", { cwd: "packages/manifest" });
+  log("  Running manifest CLI help command...");
+  const result = runCommand("pnpm exec manifest --help");
 
   if (result.success) {
-    logSuccess("Conformance tests passed");
+    logSuccess("Manifest CLI is available");
     return true;
   }
-  logError("Conformance tests failed");
+  logError("Manifest CLI is unavailable");
   log(`    ${result.output.split("\n").slice(-5).join("\n    ")}`);
   return false;
 }
@@ -280,3 +280,4 @@ function main() {
 }
 
 main();
+

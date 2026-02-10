@@ -3,7 +3,7 @@
 import type {
   CreateTimeOffRequestInput,
   TimeOffType,
-} from "@api/staff/time-off/types";
+} from "@/app/lib/staff/time-off/types";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import { Input } from "@repo/design-system/components/ui/input";

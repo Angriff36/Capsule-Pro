@@ -1,0 +1,9 @@
+{
+  "extends": [
+    "//"
+  ],
+  "tags": [
+    "layer:package",
+    "scope:integration"
+  ]
+}

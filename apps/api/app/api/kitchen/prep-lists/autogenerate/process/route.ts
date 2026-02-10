@@ -9,7 +9,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { processPendingPrepListGenerations } from "@repo/kitchen-ops";
+import { processPendingPrepListGenerations } from "@repo/manifest-adapters";
 import { NextResponse } from "next/server";
 
 /**
@@ -91,3 +91,4 @@ export async function GET() {
     );
   }
 }
+

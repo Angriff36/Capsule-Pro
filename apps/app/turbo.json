@@ -1,0 +1,10 @@
+{
+  "extends": [
+    "//"
+  ],
+  "tags": [
+    "layer:app",
+    "app:client",
+    "runtime:mixed"
+  ]
+}

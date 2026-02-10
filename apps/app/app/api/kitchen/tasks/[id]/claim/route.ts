@@ -5,13 +5,13 @@ import {
   claimPrepTask,
   createPrepTaskRuntime,
   type KitchenOpsContext,
-} from "@repo/kitchen-ops";
+} from "@repo/manifest-adapters";
 import {
   type ApiErrorResponse,
   type ApiSuccessResponse,
   createNextResponse,
   hasBlockingConstraints,
-} from "@repo/kitchen-ops/api-response";
+} from "@repo/manifest-adapters/api-response";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -83,7 +83,7 @@ export async function POST(request: Request, context: RouteContext) {
 
   // Create the Manifest runtime context
   const { createPrismaStoreProvider } = await import(
-    "@repo/kitchen-ops/prisma-store"
+    "@repo/manifest-adapters/prisma-store"
   );
 
   const runtimeContext: KitchenOpsContext = {

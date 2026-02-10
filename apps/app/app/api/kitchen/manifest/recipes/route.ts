@@ -15,7 +15,7 @@ import { database } from "@repo/database";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
-} from "@repo/kitchen-ops/route-helpers";
+} from "@repo/manifest-adapters/route-helpers";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
@@ -59,3 +59,4 @@ export async function GET(_request: Request) {
     );
   }
 }
+

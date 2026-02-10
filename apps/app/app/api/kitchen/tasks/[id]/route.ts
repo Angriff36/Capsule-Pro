@@ -7,7 +7,7 @@ import {
   createPrepTaskRuntime,
   type KitchenOpsContext,
   releasePrepTask,
-} from "@repo/kitchen-ops";
+} from "@repo/manifest-adapters";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -76,7 +76,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   if (body.status) {
     // Create Prisma store provider for Manifest runtime
     const { createPrismaStoreProvider } = await import(
-      "@repo/kitchen-ops/prisma-store"
+      "@repo/manifest-adapters/prisma-store"
     );
 
     const runtimeContext: KitchenOpsContext = {

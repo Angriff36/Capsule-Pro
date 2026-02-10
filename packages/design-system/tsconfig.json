@@ -7,7 +7,6 @@
       }
     ],
     "paths": {
-      "@repo/*": ["../*"],
       "@repo/design-system/*": ["./*"]
     },
     "strictNullChecks": true

@@ -1,6 +1,6 @@
 "use client";
 
-import type { TimeOffRequest, TimeOffType } from "@api/staff/time-off/types";
+import type { TimeOffRequest, TimeOffType } from "@/app/lib/staff/time-off/types";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";

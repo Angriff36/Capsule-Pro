@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseEnvContents } from "../../../e2e/env";
+import { parseEnvContents } from "@/app/lib/testing/env";
 
 describe("parseEnvContents", () => {
   it("parses quoted values and ignores comments", () => {

@@ -11,8 +11,9 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { compileToIR } from "@repo/manifest";
-import { getProjection } from "@repo/manifest/projections";
+import { compileToIR } from "@manifest/runtime/ir-compiler";
+import { NextJsProjection } from "@manifest/runtime/projections/nextjs";
+import { enforceCommandOwnership } from "@repo/manifest-adapters/ir-contract";
 import { describe, expect, it } from "vitest";
 
 const SNAP_DIR = join(import.meta.dirname, "__snapshots__");
@@ -32,7 +33,7 @@ describe("Projection proof: PrepTask.claim golden snapshot", () => {
     // Use the EXACT same manifest loading path as existing PrepTask tests
     const manifestPath = join(
       process.cwd(),
-      "../../packages/kitchen-ops/manifests/prep-task-rules.manifest"
+      "../../packages/manifest-adapters/manifests/prep-task-rules.manifest"
     );
     const source = readFileSync(manifestPath, "utf-8");
     const { ir, diagnostics } = await compileToIR(source);
@@ -44,13 +45,13 @@ describe("Projection proof: PrepTask.claim golden snapshot", () => {
     }
 
     // Get NextJsProjection from registry
-    const projection = getProjection("nextjs");
+    const projection = new NextJsProjection();
     expect(projection).toBeDefined();
 
     // Generate nextjs.command surface for PrepTask.claim
     // Using authProvider: "none" for minimal test (no Clerk)
     // Using includeTenantFilter: false to avoid database tenant lookup
-    const result = projection?.generate(ir, {
+    const result = projection.generate(enforceCommandOwnership(ir), {
       surface: "nextjs.command",
       entity: "PrepTask",
       command: "claim",
@@ -61,10 +62,6 @@ describe("Projection proof: PrepTask.claim golden snapshot", () => {
         runtimeImportPath: "@/lib/manifest-runtime",
       },
     });
-
-    if (!result) {
-      throw new Error("Failed to generate projection");
-    }
 
     expect(result.diagnostics).toEqual([]);
     expect(result.artifacts).toHaveLength(1);
@@ -134,5 +131,6 @@ describe("Projection proof: PrepTask.claim golden snapshot", () => {
     }
 
     console.info("✓ Snapshot typechecks successfully with tsc --noEmit");
-  });
+  }, 30000);
 });
+

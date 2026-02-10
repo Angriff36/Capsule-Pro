@@ -4,6 +4,8 @@
   "files": {
     "ignoreUnknown": false,
     "includes": [
+      "!!nul",
+      "!!**/nul",
       "!!dist",
       "!!**/dist",
       "!!build",
