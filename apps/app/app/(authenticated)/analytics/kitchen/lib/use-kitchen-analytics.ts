@@ -34,14 +34,14 @@ interface KitchenHealth {
   avgMinutes?: number;
 }
 
-interface KitchenTrendStation {
+export interface KitchenTrendStation {
   stationName: string;
   total: number;
   completed: number;
   completionRate: number;
 }
 
-interface KitchenTrend {
+export interface KitchenTrend {
   date: string;
   stations: KitchenTrendStation[];
 }
