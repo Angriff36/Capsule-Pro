@@ -7,6 +7,37 @@ import * as React from "react";
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
 
+/**
+ * Recharts tooltip payload item structure
+ */
+interface ChartPayloadItem {
+  name?: string;
+  dataKey?: string;
+  value?: number | string;
+  color?: string;
+  type?: string;
+  payload?: {
+    fill?: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Recharts component types
+ */
+type RechartsTooltipProps = {
+  active?: boolean;
+  payload?: ChartPayloadItem[];
+  label?: string | number;
+  coordinate?: { x: number; y: number };
+  content?: React.ReactNode;
+  cursor?: boolean;
+};
+
+type RechartsLegendProps = {
+  payload?: ChartPayloadItem[];
+};
+
 export type ChartConfig = {
   [k in string]: {
     label?: React.ReactNode;
@@ -107,12 +138,12 @@ ${colorConfig
 
 // Lazy load recharts Tooltip
 const ChartTooltip = dynamic(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   () =>
-    import("recharts").then((mod) => mod.Tooltip as React.ComponentType<any>),
+    import("recharts").then(
+      (mod) => mod.Tooltip as React.ComponentType<RechartsTooltipProps>
+    ),
   { ssr: false }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-) as React.ComponentType<any>;
+) as React.ComponentType<RechartsTooltipProps>;
 
 function ChartTooltipContent({
   active,
@@ -130,20 +161,20 @@ function ChartTooltipContent({
   labelKey,
 }: {
   active?: boolean;
-  payload?: any[];
+  payload?: ChartPayloadItem[];
   className?: string;
   indicator?: "line" | "dot" | "dashed";
   hideLabel?: boolean;
   hideIndicator?: boolean;
   label?: string | number;
-  labelFormatter?: (label: any, payload: any[]) => React.ReactNode;
+  labelFormatter?: (label: string | number, payload: ChartPayloadItem[]) => React.ReactNode;
   labelClassName?: string;
   formatter?: (
-    value: any,
-    name: any,
-    item: any,
+    value: number | string,
+    name: string,
+    item: ChartPayloadItem,
     index: number,
-    payload: any
+    payload: ChartPayloadItem[]
   ) => React.ReactNode;
   color?: string;
   nameKey?: string;
@@ -165,9 +196,15 @@ function ChartTooltipContent({
         : itemConfig?.label;
 
     if (labelFormatter) {
+      const labelValue: string | number =
+        typeof value === "string" || typeof value === "number"
+          ? value
+          : value !== undefined
+            ? String(value)
+            : label ?? "";
       return (
         <div className={cn("font-medium", labelClassName)}>
-          {labelFormatter(value, payload)}
+          {labelFormatter(labelValue, payload)}
         </div>
       );
     }
@@ -207,7 +244,7 @@ function ChartTooltipContent({
           .map((item, index) => {
             const key = `${nameKey || item.name || item.dataKey || "value"}`;
             const itemConfig = getPayloadConfigFromPayload(config, item, key);
-            const indicatorColor = color || item.payload.fill || item.color;
+            const indicatorColor = color || (item.payload?.fill ?? item.color);
 
             return (
               <div
@@ -218,7 +255,7 @@ function ChartTooltipContent({
                 key={item.dataKey}
               >
                 {formatter && item?.value !== undefined && item.name ? (
-                  formatter(item.value, item.name, item, index, item.payload)
+                  formatter(item.value, item.name, item, index, payload)
                 ) : (
                   <>
                     {itemConfig?.icon ? (
@@ -275,12 +312,12 @@ function ChartTooltipContent({
 
 // Lazy load recharts Legend
 const ChartLegend = dynamic(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   () =>
-    import("recharts").then((mod) => mod.Legend as React.ComponentType<any>),
+    import("recharts").then(
+      (mod) => mod.Legend as React.ComponentType<RechartsLegendProps>
+    ),
   { ssr: false }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-) as React.ComponentType<any>;
+) as React.ComponentType<RechartsLegendProps>;
 
 function ChartLegendContent({
   className,
@@ -291,7 +328,7 @@ function ChartLegendContent({
 }: {
   className?: string;
   hideIcon?: boolean;
-  payload?: any[];
+  payload?: ChartPayloadItem[];
   verticalAlign?: "top" | "bottom";
   nameKey?: string;
 }) {

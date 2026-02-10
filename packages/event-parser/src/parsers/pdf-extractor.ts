@@ -69,9 +69,17 @@ function _extractMetadata(pdf: { getMetadata: () => Promise<unknown> }) {
 }
 
 /**
+ * Text item from PDF parser
+ */
+interface PdfTextItem {
+  str: string;
+  transform: number[];
+}
+
+/**
  * Collapse text items by Y position to preserve line structure
  */
-function _collapseTextItems(items: any[]): string[] {
+function _collapseTextItems(items: PdfTextItem[]): string[] {
   const rows: string[] = [];
   let currentLine = "";
   let lastY: number | null = null;
@@ -176,12 +184,39 @@ export async function extractPdfText(
   try {
     type Pdf2JsonDataError = { parserError?: Error } | Error;
 
+    /**
+     * PDF page structure from pdf2json
+     */
+    interface Pdf2JsonPage {
+      Texts?: Array<{
+        R?: Array<{ T: string }>;
+      }>;
+    }
+
+    /**
+     * PDF metadata structure from pdf2json
+     */
+    interface Pdf2JsonMeta {
+      Title?: string;
+      Author?: string;
+      Subject?: string;
+      Creator?: string;
+    }
+
+    /**
+     * PDF data structure from pdf2json
+     */
+    interface Pdf2JsonData {
+      Pages?: Pdf2JsonPage[];
+      Meta?: Pdf2JsonMeta;
+    }
+
     interface Pdf2JsonParser {
       on(
         event: "pdfParser_dataError",
         cb: (errData: Pdf2JsonDataError) => void
       ): void;
-      on(event: "pdfParser_dataReady", cb: (data: any) => void): void;
+      on(event: "pdfParser_dataReady", cb: (data: Pdf2JsonData) => void): void;
 
       // pdf2json docs: parseBuffer(pdfBuffer) after registering handlers
       parseBuffer(buffer: Buffer): void;
@@ -190,7 +225,7 @@ export async function extractPdfText(
       destroy?: () => void;
     }
 
-    type Pdf2JsonParserCtor = new (...args: any[]) => Pdf2JsonParser;
+    type Pdf2JsonParserCtor = new () => Pdf2JsonParser;
 
     const isRecord = (value: unknown): value is Record<string, unknown> =>
       typeof value === "object" && value !== null;
@@ -204,12 +239,18 @@ export async function extractPdfText(
     };
     const defaultExport = pdf2jsonModule.default;
 
+    const hasPDFParserProperty = (
+      obj: unknown
+    ): obj is { PDFParser: unknown } => {
+      return typeof obj === "object" && obj !== null && "PDFParser" in obj;
+    };
+
     const PDFParserClass: Pdf2JsonParserCtor | undefined =
       (isParserCtor(pdf2jsonModule.PDFParser)
         ? pdf2jsonModule.PDFParser
         : undefined) ??
-      (isRecord(defaultExport) && isParserCtor((defaultExport as any).PDFParser)
-        ? ((defaultExport as any).PDFParser as Pdf2JsonParserCtor)
+      (hasPDFParserProperty(defaultExport) && isParserCtor(defaultExport.PDFParser)
+        ? defaultExport.PDFParser
         : undefined) ??
       (isParserCtor(defaultExport) ? defaultExport : undefined);
 
@@ -225,7 +266,7 @@ export async function extractPdfText(
     return new Promise((resolve) => {
       const pdfParser: Pdf2JsonParser = new PDFParserClass();
 
-      let pdfData: any = null;
+      let pdfData: Pdf2JsonData | null = null;
 
       pdfParser.on("pdfParser_dataError", (errData) => {
         let errMsg: string;
@@ -239,7 +280,7 @@ export async function extractPdfText(
           typeof errData === "object" &&
           "parserError" in errData
         ) {
-          const parserError = (errData as any).parserError;
+          const parserError = (errData as { parserError?: Error }).parserError;
           errMsg = parserError?.message ?? JSON.stringify(errData);
           errStack = parserError?.stack;
         } else {
@@ -256,7 +297,7 @@ export async function extractPdfText(
         resolve({ lines: [], pageCount: 0, errors });
       });
 
-      pdfParser.on("pdfParser_dataReady", (data: any) => {
+      pdfParser.on("pdfParser_dataReady", (data: Pdf2JsonData) => {
         pdfData = data;
 
         try {
