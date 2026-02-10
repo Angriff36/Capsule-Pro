@@ -118,8 +118,12 @@
      - Type alignment ensures consistency across both access patterns
 
 7. **Code Quality Issues Resolved** ✅ (2026-02-10)
-   - All validation passing (check: 30 packages, test: 278 tests, build: 20 packages)
+   - All validation passing (check: 30 packages, test: 930 tests, build: 20 packages)
    - Fixed non-null assertions, unused variables, regex performance, TypeScript errors, import order, ES2020 compatibility
+   - **Fixed explicit `any` types (16 instances)** ✅ (2026-02-10)
+     - Added proper TypeScript interfaces for PDF parsing (PdfTextItem, Pdf2JsonPage, Pdf2JsonMeta, Pdf2JsonData, Pdf2JsonParser)
+     - Added proper Recharts library types (ChartPayloadItem, RechartsTooltipProps, RechartsLegendProps)
+     - All explicit `any` types in source code now properly typed (except DSL and auto-generated files)
    - Build and test suites now fully passing
 
 8. **API Architecture Migration Complete** ✅ (2026-02-10)
@@ -2058,11 +2062,14 @@ All events include:
   - Supports batch multiplier, priority strategies, dietary restrictions
   - Returns generated tasks for client review before saving
 - **Code Quality issues now resolved** ✅ (2026-02-10)
-  - All validation passing (check, test, build)
+  - All validation passing (check: 30 packages, test: 930 tests, build: 20 packages)
   - Fixed 7 categories of code quality issues
   - TypeScript compilation errors resolved
   - Linting and formatting issues corrected
   - ES2020 compatibility ensured
+  - **Fixed explicit `any` types (16 instances)** ✅ (2026-02-10)
+    - Added proper TypeScript interfaces for PDF parsing and Recharts components
+    - All source code `any` types now properly typed (DSL and auto-generated files exempted)
 - **API Architecture Migration now complete** ✅ (2026-02-10)
   - All 41 API routes migrated from `apps/app/app/api/` to `apps/api/app/api/`
   - Events: 11 routes (guests, allergens, contracts, imports, documents, warnings)
