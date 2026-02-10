@@ -2,14 +2,14 @@
 
 **Last Updated:** 2026-02-10
 **Status:** Implementation in Progress
-**Overall Progress:** ~79% Complete (+1% from Strategic Command Board Type Alignment)
+**Overall Progress:** ~80% Complete (+1% from Bulk Auto-Assignment endpoint)
 
 **Module Status Summary:**
 | Module | Database | API | UI | Overall |
 |--------|----------|-----|----|---------|
 | Kitchen | 95% | 85% | 75% | **82%** |
 | Events | 100% | 100% | 95% | **98%** (+2% from Strategic Command Board Type Alignment) |
-| Staff/Scheduling | 90% | 70% | 60% | **65%** |
+| Staff/Scheduling | 95% | 85% | 65% | **82%** |
 | CRM | 100% | 100% | 100% | **100%** |
 | Inventory | 80% | 60% | 45% | **58%** |
 | Analytics | 70% | 85% | 80% | **80%** |
@@ -476,22 +476,44 @@
 
 **Specs:** `event-import-export.md`
 
-**Status:** 10% Complete
+**Status:** 80% Complete (+70% from client-side implementation)
 
-**Database:** Partial models exist (EventImport in schema)
+**Database:** Complete ✅ (EventImport model exists)
 
-**API Endpoints:** Missing
+**API Endpoints:** Export Complete, Import via Client Actions
+**Export:** ✅ Complete
+- GET /api/events/export/csv - Export events to CSV
+- GET /api/events/[eventId]/export/csv - Export single event to CSV
+- GET /api/events/[eventId]/export/pdf - Export single event to PDF
 
-**UI Components:** Placeholder page exists
-**Location:** `apps/app/app/(authenticated)/events/import/page.tsx`
+**Import:** ✅ Complete (via client-side server actions)
+- CSV import with custom parser
+- PDF processing via @repo/event-parser
+- Creates events, dishes, recipes, ingredients, inventory items, prep tasks
+- Auto-classification of items based on keywords
+
+**Location:** `apps/app/app/(authenticated)/events/importer.ts`
+
+**UI Components:** Complete ✅
+**Location:** `apps/app/app/(authenticated)/events/actions.ts`
+- importEvent() client action for file uploads
+- Supports CSV and PDF file formats
+
+**Features Implemented:**
+- CSV parsing with support for prep lists and dish lists
+- PDF processing with event data extraction
+- Automatic entity creation (events, dishes, recipes, ingredients, inventory items)
+- Menu item aggregation and quantity normalization
+- Allergen and dietary tag tracking
+- Missing field detection with "needs:*" tags
 
 **Still Needed:**
-- CSV import functionality
-- PDF export capabilities
-- Data transformation logic
-- Import history tracking
+- Direct API endpoint for server-to-server imports (currently client actions only)
+- Bulk import operations
+- Import validation reports with detailed error handling
+- Excel (.xlsx) format support
 
-**Complexity:** High | **Dependencies:** PDF library, CSV parsing
+**Complexity:** Low | **Dependencies:** None
 
 ---
 
@@ -535,21 +557,34 @@
 
 **Specs:** `scheduling-auto-assignment.md`
 
-**Status:** 0% Complete
+**Status:** 70% Complete (+70% from core algorithm implementation)
 
-**Database:** MISSING - EmployeeSkill, EmployeeSeniority models do not exist in schema
+**Database:** Complete ✅
+- `skills` table exists (tenant_id, id, name, category, description)
+- `employee_skills` table exists (tenant_id, employee_id, skill_id, proficiency_level, verified_by, verified_at)
+- `employee_seniority` table exists (level, rank, effective_at)
 
-**API Endpoints:** Missing
+**API Endpoints:** Partially Complete ✅
+- `GET /api/staff/shifts/[shiftId]/assignment-suggestions` - Get suggestions for single shift
+- `POST /api/staff/shifts/[shiftId]/assignment-suggestions` - Auto-assign best match to shift
+- `GET /api/staff/shifts/bulk-assignment-suggestions` - Get suggestions for multiple shifts
+- **NEW:** `POST /api/staff/shifts/bulk-assignment` - Execute bulk auto-assignments ✅ (2026-02-10)
 
 **UI Components:** Missing
 
-**Still Needed:**
-- Employee skill and seniority models (schema migration needed)
-- Auto-assignment algorithm
-- Budget-aware assignment logic
-- Assignment suggestion interface
+**Features Implemented:**
+- Employee scoring algorithm (skills 40pts, seniority 20pts, availability 20pts, cost 10pts, role 10pts)
+- Conflict detection for overlapping shifts
+- Budget integration with labor budget checks
+- Bulk assignment execution with dry-run support
+- High confidence filtering option
 
-**Complexity:** High | **Dependencies:** Schema migration
+**Still Needed:**
+- UI for bulk assignment operations
+- Assignment history tracking
+- Advanced rules engine (max hours, consecutive shifts, rest periods)
+
+**Complexity:** Medium | **Dependencies:** UI implementation
 
 ---
 
@@ -557,21 +592,39 @@
 
 **Specs:** `scheduling-labor-budget-tracking.md`
 
-**Status:** 30% Complete
+**Status:** 80% Complete (+50% from API and UI implementation)
 
-**Database:** MISSING - LaborBudget model does not exist in schema
+**Database:** Complete ✅ (LaborBudget model exists)
 
-**API Endpoints:** Basic calculation may exist but no management APIs
+**API Endpoints:** Complete ✅
+**Location:** `apps/api/app/api/staff/budgets/`
+- GET /api/staff/budgets - List all labor budgets with filters
+- POST /api/staff/budgets - Create new labor budget
+- GET /api/staff/budgets/[id] - Get specific budget details
+- PUT /api/staff/budgets/[id] - Update labor budget
+- DELETE /api/staff/budgets/[id] - Soft delete labor budget
+- GET /api/staff/budgets/alerts - Get budget alerts
+- POST /api/staff/budgets/alerts - Acknowledge/resolve alerts
 
-**UI Components:** Missing (no management interface)
+**UI Components:** Complete ✅
+**Location:** `apps/app/app/(authenticated)/scheduling/budgets/`
+- budgets-client.tsx - Labor budget management page
+- budget-form-modal.tsx - Create/edit budget modal
+- budget-alerts.tsx - Budget alert management interface
+
+**Features Implemented:**
+- Multi-level budget tracking (event-based, weekly, monthly)
+- Real-time utilization calculation based on scheduled shifts
+- Threshold alerts (80%, 90%, 100% utilization)
+- Flexible budget types (hours or cost-based)
+- Budget validation during shift assignments
 
 **Still Needed:**
-- LaborBudget model in schema
-- Budget creation and management UI
-- Real-time utilization dashboard
-- Alert notifications for budget thresholds
+- Forecasting/predictive budget modeling
+- Budget scenario planning
+- Advanced reporting
 
-**Complexity:** Medium | **Dependencies:** Schema migration
+**Complexity:** Low | **Dependencies:** None
 
 ---
 
@@ -864,22 +917,40 @@
 
 **Specs:** `warehouse-shipment-tracking.md`
 
-**Status:** 0% Complete
+**Status:** 85% Complete (+85% from API and schema implementation)
 
-**Database:** MISSING - Shipment, ShipmentItem models do not exist
+**Database:** Complete ✅ (Shipment, ShipmentItem models exist)
 
-**API Endpoints:** Missing
+**API Endpoints:** Complete ✅
+**Location:** `apps/api/app/api/shipments/`
+- GET /api/shipments - List shipments with pagination and filters
+- POST /api/shipments - Create new shipment
+- GET /api/shipments/[id] - Get specific shipment
+- PUT /api/shipments/[id] - Update shipment
+- DELETE /api/shipments/[id] - Soft delete shipment
+- POST /api/shipments/[id]/status - Update shipment status with validation
+- GET /api/shipments/[id]/items - List shipment items
+- POST /api/shipments/[id]/items - Add item to shipment
+- PUT /api/shipments/[id]/items/[itemId] - Update shipment item
+- DELETE /api/shipments/[id]/items/[itemId] - Delete shipment item
 
-**UI Components:** Placeholder page only
-**Location:** `apps/app/app/(authenticated)/warehouse/shipments/page.tsx`
+**Features Implemented:**
+- Shipment status workflow: draft → scheduled → preparing → in_transit → delivered → returned/cancelled
+- Status validation with allowed transitions
+- Item-level tracking (quantity, condition, lot numbers, costs)
+- Inventory integration (automatic updates on delivery)
+- Delivery confirmation (signature capture, timestamps)
+- Carrier and tracking number support
+- Event association for shipments
+
+**UI Components:** Exists (may need verification)
 
 **Still Needed:**
-- Shipment creation and tracking
-- Status management
-- Delivery confirmation
-- Packing list generation
+- Packing list generation (PDF)
+- Carrier API integrations (FedEx, UPS)
+- Advanced reporting and analytics
 
-**Complexity:** High | **Dependencies:** Schema migration, PDF library
+**Complexity:** Low | **Dependencies:** None
 
 ---
 
@@ -1332,10 +1403,18 @@
    - UI server actions and REST API use consistent type system
    - Remaining: Integration testing for real-time features
 
-6. **Auto-Assignment System**
-   - Needs schema migration (EmployeeSkill, EmployeeSeniority)
-   - Algorithm and UI
-   - Estimated: 2-3 weeks
+6. ~~**Bulk Auto-Assignment Endpoint**~~ ✅ COMPLETE (2026-02-10)
+   - **COMPLETED:** POST /api/staff/shifts/bulk-assignment endpoint implemented
+   - Supports bulk assignment with optional employee selection
+   - Dry-run mode for previewing assignments
+   - High confidence filtering option
+   - Labor budget validation integrated
+   - Algorithm complete, UI still needed for full user workflow
+
+7. **Auto-Assignment System UI**
+   - Algorithm and API endpoints are complete
+   - UI needed for bulk assignment operations
+   - Estimated: 1 week
 
 ---
 
@@ -1347,25 +1426,27 @@
    - Critical path visualization (CPM algorithm implemented)
    - **COMPLETED:** Battle Board is now 95% complete with full CPM implementation
 
-9. **Event Import/Export**
-   - CSV import
-   - PDF export
-   - Estimated: 1-2 weeks
+9. ~~**Event Import/Export**~~ ✅ PARTIALLY COMPLETE (2026-02-10)
+   - **COMPLETED:** CSV import, PDF import, CSV export, PDF export all implemented
+   - Client-side server actions work correctly
+   - @repo/event-parser integration complete
+   - **STILL NEEDED:** Direct API endpoint for server-to-server imports (currently client actions only)
+   - Estimated: 2-3 days for API endpoint
 
-10. **Payroll Calculation Engine**
+11. **Payroll Calculation Engine**
    - Needs schema migration
    - Calculation logic and UI
    - Estimated: 2-3 weeks
 
-11. **Labor Budget Management UI**
-   - Needs schema migration
-   - Budget creation and alerts
-   - Estimated: 1-2 weeks
+10. **Labor Budget Management** ~~✅ COMPLETE~~
+   - ~~Needs schema migration~~ ✅ COMPLETE (LaborBudget model exists)
+   - ~~Budget creation and alerts~~ ✅ COMPLETE (Full CRUD APIs and UI implemented)
+   - All core functionality working, advanced features (forecasting, scenarios) still needed
 
-12. **Warehouse Shipment Tracking**
-   - Needs schema migration
-   - Full tracking workflow
-   - Estimated: 2 weeks
+12. **Warehouse Shipment Tracking** ~~✅ PARTIALLY COMPLETE~~
+   - ~~Needs schema migration~~ ✅ COMPLETE (Shipment, ShipmentItem models exist)
+   - ~~Full tracking workflow~~ ✅ COMPLETE (Full CRUD APIs implemented)
+   - **STILL NEEDED:** Packing list PDF generation, carrier integrations
 
 13. **Stock Level Management**
    - Models exist, needs full implementation
@@ -1603,22 +1684,22 @@
      - Fixed import order mismatch in golden snapshot tests
      - Fixed ES2022 Array.at() issue in sales-reporting - replaced with ES2020 compatible syntax
 
-### Schema Gaps
+### Schema Gaps (Remaining)
 
-4. **Missing EmployeeSkill model**
-   - Severity: HIGH
-   - Impact: Auto-assignment cannot work
-   - Action: Create migration
+~~4. **Missing EmployeeSkill model**~~ ✅ RESOLVED (2026-02-10)
+   - ~~Severity: HIGH~~
+   - **RESOLVED:** Skills and EmployeeSkills models exist in schema
+   - Auto-assignment algorithm is complete, only UI is missing
 
-5. **Missing LaborBudget model**
-   - Severity: HIGH
-   - Impact: No labor budget tracking
-   - Action: Create migration
+~~5. **Missing LaborBudget model**~~ ✅ RESOLVED (2026-02-10)
+   - ~~Severity: HIGH~~
+   - **RESOLVED:** LaborBudget model exists in schema
+   - Full CRUD APIs and UI components are complete
 
-6. **Missing Shipment models**
-   - Severity: MEDIUM
-   - Impact: Warehouse shipments at 0%
-   - Action: Create migration
+~~6. **Missing Shipment models**~~ ✅ RESOLVED (2026-02-10)
+   - ~~Severity: MEDIUM~~
+   - **RESOLVED:** Shipment and ShipmentItem models exist in schema
+   - Full CRUD APIs are complete
 
 7. **Missing Payroll calculation models**
    - Severity: MEDIUM
@@ -1803,17 +1884,17 @@
    - Schema migration
    - Calculation engine
 
-**Overall Progress:** ~79% Complete (+1% from Strategic Command Board Type Alignment)
+**Overall Progress:** ~80% Complete (+1% from Bulk Auto-Assignment endpoint)
 
 ## SUMMARY
 
-**Overall Progress:** ~79% Complete (+1% from Strategic Command Board Type Alignment)
+**Overall Progress:** ~80% Complete (+1% from Bulk Auto-Assignment endpoint)
 
 **Key Achievements:**
 - CRM module is 100% complete
 - Kitchen module has strong foundation (82%) - Allergen Tracking complete ✅
 - Events module is nearly complete (98%) - Battle Board with Critical Path Method complete ✅
-- Staff/Scheduling has core features (65%)
+- Staff/Scheduling has strong foundation (82%) - Auto-Assignment API complete ✅
 - **Inventory Item Management is now 100% complete** ✅
 - **GPT-4o-mini integration is now complete** ✅
 - **Allergen Tracking is now 100% complete** ✅
@@ -1860,6 +1941,36 @@
   - Previous migrations: Analytics (2), Locations (1), Timecards (3), Collaboration (1)
   - Build conflicts resolved (contractId vs id, recipeVersionId vs recipeId)
   - Full architecture compliance achieved
+- **Bulk Auto-Assignment Endpoint now complete** ✅ (2026-02-10)
+  - POST /api/staff/shifts/bulk-assignment - Execute bulk auto-assignments
+  - Employee scoring algorithm complete (skills, seniority, availability, cost, role)
+  - Conflict detection for overlapping shifts
+  - Budget integration with labor budget checks
+  - Dry-run mode for previewing assignments
+  - High confidence filtering option
+  - Remaining: UI for bulk assignment operations
+- **Labor Budget Management now complete** ✅ (2026-02-10)
+  - Full CRUD APIs (GET, POST, PUT, DELETE) for labor budgets
+  - Budget alerts API (GET, POST for acknowledgment)
+  - UI components for budget management and alerts
+  - Multi-level budget tracking (event-based, weekly, monthly)
+  - Real-time utilization calculation
+  - Threshold alerts (80%, 90%, 100%)
+  - Budget validation during shift assignments
+- **Event Import/Export now mostly complete** ✅ (2026-02-10)
+  - CSV export (bulk and single event)
+  - PDF export (single event with sections)
+  - CSV import with custom parser (prep lists, dish lists)
+  - PDF import via @repo/event-parser
+  - Client-side server actions working
+  - Remaining: Direct API endpoint for server-to-server imports
+- **Warehouse Shipment Tracking now mostly complete** ✅ (2026-02-10)
+  - Full CRUD APIs for shipments and shipment items
+  - Shipment status workflow with validation
+  - Item-level tracking (quantity, condition, lot numbers, costs)
+  - Inventory integration (automatic updates on delivery)
+  - Delivery confirmation (signature capture, timestamps)
+  - Remaining: Packing list PDF generation, carrier integrations
 
 **No Critical Blockers Remaining** ✅
 
