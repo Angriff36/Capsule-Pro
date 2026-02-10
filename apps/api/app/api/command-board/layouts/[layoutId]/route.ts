@@ -19,21 +19,6 @@ interface RouteContext {
   params: Promise<{ layoutId: string }>;
 }
 
-const LAYOUT_SELECT = {
-  id: true,
-  tenantId: true,
-  boardId: true,
-  userId: true,
-  name: true,
-  viewport: true,
-  visibleCards: true,
-  gridSize: true,
-  showGrid: true,
-  snapToGrid: true,
-  createdAt: true,
-  updatedAt: true,
-} as const;
-
 /**
  * GET /api/command-board/layouts/[layoutId]
  * Get a specific layout by ID

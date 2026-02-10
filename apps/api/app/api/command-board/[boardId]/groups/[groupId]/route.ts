@@ -3,13 +3,14 @@
  *
  * GET    /api/command-board/[boardId]/groups/[groupId]  - Get a single group
  * PUT    /api/command-board/[boardId]/groups/[groupId]  - Update a group
- * DELETE /api/command-board/[boardId]/groups/[groupId]  - Delete a group (soft delete)
+ * DELETE /api/command-board/[boardId]/groups/[groupId]  - Delete a group
  */
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { createOutboxEvent } from "@repo/realtime";
 import { type NextRequest, NextResponse } from "next/server";
+import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { UpdateGroupRequest } from "../../../types";
 import { validateUpdateGroupRequest } from "../validation";
@@ -18,167 +19,32 @@ interface RouteContext {
   params: Promise<{ boardId: string; groupId: string }>;
 }
 
-type ValidationError = NextResponse | null;
-
-interface UpdateFields {
-  fields: string[];
-  values: (string | number | boolean | Date | null)[];
-}
-
-type Validator = (value: unknown) => ValidationError;
-
-/**
- * Validate boolean field
- */
-function validateBooleanField(
-  value: unknown,
-  fieldName: string
-): ValidationError {
-  if (typeof value !== "boolean") {
-    return NextResponse.json(
-      { error: `${fieldName} must be a boolean` },
-      { status: 400 }
-    );
-  }
-  return null;
-}
+const GROUP_SELECT = {
+  id: true,
+  tenantId: true,
+  boardId: true,
+  name: true,
+  color: true,
+  collapsed: true,
+  positionX: true,
+  positionY: true,
+  width: true,
+  height: true,
+  zIndex: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
 
 /**
- * Validate position field
+ * Validate board ID and group ID parameters
  */
-function validatePosition(value: number, fieldName: string): ValidationError {
-  if (typeof value !== "number" || value < 0) {
-    return NextResponse.json(
-      { error: `${fieldName} must be a non-negative number` },
-      { status: 400 }
-    );
+function validateIds(boardId: string, groupId: string): void {
+  if (!boardId || typeof boardId !== "string") {
+    throw new InvariantError("Invalid board ID");
   }
-  return null;
-}
-
-/**
- * Validate dimension field
- */
-function validateDimension(value: number, fieldName: string): ValidationError {
-  if (typeof value !== "number" || value <= 0) {
-    return NextResponse.json(
-      { error: `${fieldName} must be a positive number` },
-      { status: 400 }
-    );
+  if (!groupId || typeof groupId !== "string") {
+    throw new InvariantError("Invalid group ID");
   }
-  return null;
-}
-
-/**
- * Build update fields from request body
- */
-function buildUpdateFields(body: UpdateGroupRequest): {
-  result: UpdateFields;
-  error: ValidationError;
-} {
-  const updateFields: UpdateFields = { fields: [], values: [] };
-
-  // Field configuration map
-  const fieldConfigs: Array<{
-    key: string;
-    field: string;
-    validator?: Validator;
-  }> = [
-    { key: "name", field: "name" },
-    {
-      key: "color",
-      field: "color",
-    },
-    {
-      key: "collapsed",
-      field: "collapsed",
-      validator: (v: unknown) =>
-        typeof v === "boolean"
-          ? null
-          : NextResponse.json(
-              { error: "collapsed must be a boolean" },
-              { status: 400 }
-            ),
-    },
-    {
-      key: "position_x",
-      field: "position_x",
-      validator: (v: unknown) =>
-        typeof v === "number"
-          ? validatePosition(v, "position_x")
-          : NextResponse.json(
-              { error: "position_x must be a number" },
-              { status: 400 }
-            ),
-    },
-    {
-      key: "position_y",
-      field: "position_y",
-      validator: (v: unknown) =>
-        typeof v === "number"
-          ? validatePosition(v, "position_y")
-          : NextResponse.json(
-              { error: "position_y must be a number" },
-              { status: 400 }
-            ),
-    },
-    {
-      key: "width",
-      field: "width",
-      validator: (v: unknown) =>
-        typeof v === "number"
-          ? validateDimension(v, "width")
-          : NextResponse.json(
-              { error: "width must be a number" },
-              { status: 400 }
-            ),
-    },
-    {
-      key: "height",
-      field: "height",
-      validator: (v: unknown) =>
-        typeof v === "number"
-          ? validateDimension(v, "height")
-          : NextResponse.json(
-              { error: "height must be a number" },
-              { status: 400 }
-            ),
-    },
-    {
-      key: "z_index",
-      field: "z_index",
-      validator: (v: unknown) =>
-        typeof v === "number"
-          ? validatePosition(v, "z_index")
-          : NextResponse.json(
-              { error: "z_index must be a number" },
-              { status: 400 }
-            ),
-    },
-  ];
-
-  // Process fields with configuration
-  for (const config of fieldConfigs) {
-    const value = (body as Record<string, unknown>)[config.key];
-    if (value === undefined) {
-      continue;
-    }
-
-    if (config.validator) {
-      const error = config.validator(value);
-      if (error) {
-        return { result: updateFields, error };
-      }
-    }
-
-    updateFields.fields.push(
-      `${config.field} = $${updateFields.values.length + 1}`
-    );
-    // Cast value to acceptable type for Prisma query
-    updateFields.values.push(value as string | number | boolean | Date | null);
-  }
-
-  return { result: updateFields, error: null };
 }
 
 /**
@@ -188,64 +54,37 @@ function buildUpdateFields(body: UpdateGroupRequest): {
 export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const { orgId } = await auth();
-
     if (!orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     const { boardId, groupId } = await context.params;
 
-    const group = await database.$queryRaw<
-      Array<{
-        id: string;
-        tenant_id: string;
-        board_id: string;
-        name: string;
-        color: string | null;
-        collapsed: boolean;
-        position_x: number;
-        position_y: number;
-        width: number;
-        height: number;
-        z_index: number;
-        created_at: Date;
-        updated_at: Date;
-        deleted_at: Date | null;
-      }>
-    >(
-      Prisma.sql`
-        SELECT
-          id,
-          tenant_id,
-          board_id,
-          name,
-          color,
-          collapsed,
-          position_x,
-          position_y,
-          width,
-          height,
-          z_index,
-          created_at,
-          updated_at,
-          deleted_at
-        FROM tenant_events.command_board_groups
-        WHERE tenant_id = ${tenantId}
-          AND board_id = ${boardId}
-          AND id = ${groupId}
-          AND deleted_at IS NULL
-      `
-    );
+    validateIds(boardId, groupId);
 
-    if (group.length === 0) {
-      return NextResponse.json({ error: "Group not found" }, { status: 404 });
+    const group = await database.commandBoardGroup.findFirst({
+      where: {
+        AND: [{ tenantId }, { boardId }, { id: groupId }, { deletedAt: null }],
+      },
+      select: GROUP_SELECT,
+    });
+
+    if (!group) {
+      return NextResponse.json({ message: "Group not found" }, { status: 404 });
     }
 
-    return NextResponse.json(group[0]);
-  } catch (error) {
+    return NextResponse.json({ data: group });
+  } catch (error: unknown) {
+    if (error instanceof InvariantError) {
+      const message = (error as InvariantError).message;
+      return NextResponse.json({ message }, { status: 400 });
+    }
     console.error("Error getting group:", error);
-    return NextResponse.json({ error: "Failed to get group" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -264,122 +103,70 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
     const { orgId, userId } = await auth();
-
     if (!(orgId && userId)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     const { boardId, groupId } = await context.params;
-    const body = (await request.json()) as UpdateGroupRequest;
+    const body = await request.json();
 
-    // Validate request body
+    validateIds(boardId, groupId);
     validateUpdateGroupRequest(body);
 
-    // Get current group state to detect position changes
-    const currentGroup = await database.$queryRaw<
-      Array<{
-        id: string;
-        board_id: string;
-        position_x: number;
-        position_y: number;
-      }>
-    >`
-      SELECT id, board_id, position_x, position_y
-      FROM tenant_events.command_board_groups
-      WHERE tenant_id = ${tenantId}
-        AND board_id = ${boardId}
-        AND id = ${groupId}
-        AND deleted_at IS NULL
-    `;
+    const data = body as UpdateGroupRequest;
 
-    if (currentGroup.length === 0) {
-      return NextResponse.json({ error: "Group not found" }, { status: 404 });
+    // Check if the group exists and belongs to the specified board
+    const existingGroup = await database.commandBoardGroup.findFirst({
+      where: {
+        AND: [{ tenantId }, { boardId }, { id: groupId }, { deletedAt: null }],
+      },
+      select: {
+        id: true,
+        name: true,
+        positionX: true,
+        positionY: true,
+      },
+    });
+
+    if (!existingGroup) {
+      return NextResponse.json({ message: "Group not found" }, { status: 404 });
     }
 
     // Track if position changed
     const previousPosition = {
-      x: currentGroup[0].position_x,
-      y: currentGroup[0].position_y,
+      x: existingGroup.positionX,
+      y: existingGroup.positionY,
     };
 
-    // Build update fields with validation
-    const { result: updateFields, error: validationError } =
-      buildUpdateFields(body);
-
-    if (validationError) {
-      return validationError;
-    }
-
-    // Check if there are fields to update
-    if (updateFields.fields.length === 0) {
-      return NextResponse.json(
-        { error: "No fields to update" },
-        { status: 400 }
-      );
-    }
-
     // Execute update and publish event in transaction
-    const result = await database.$transaction(async (tx) => {
-      updateFields.fields.push("updated_at = NOW()");
-      updateFields.values.push(groupId, tenantId, boardId);
-
-      const updatedGroups = await tx.$queryRaw<
-        Array<{
-          id: string;
-          tenant_id: string;
-          board_id: string;
-          name: string;
-          color: string | null;
-          collapsed: boolean;
-          position_x: number;
-          position_y: number;
-          width: number;
-          height: number;
-          z_index: number;
-          created_at: Date;
-          updated_at: Date;
-          deleted_at: Date | null;
-        }>
-      >(
-        Prisma.raw(
-          `UPDATE tenant_events.command_board_groups
-           SET ${updateFields.fields.join(", ")}
-           WHERE id = $${updateFields.values.length - 2}
-             AND tenant_id = $${updateFields.values.length - 1}
-             AND board_id = $${updateFields.values.length}
-             AND deleted_at IS NULL
-           RETURNING
-             id,
-             tenant_id,
-             board_id,
-             name,
-             color,
-             collapsed,
-             position_x,
-             position_y,
-             width,
-             height,
-             z_index,
-             created_at,
-             updated_at,
-             deleted_at`
-        ),
-        updateFields.values
-      );
-
-      if (updatedGroups.length === 0) {
-        throw new Error("Group not found after update");
-      }
-
-      const updatedGroup = updatedGroups[0];
+    const group = await database.$transaction(async (tx) => {
+      const updatedGroup = await tx.commandBoardGroup.update({
+        where: {
+          tenantId_id: {
+            tenantId,
+            id: groupId,
+          },
+        },
+        data: {
+          name: data.name,
+          color: data.color,
+          collapsed: data.collapsed,
+          positionX: data.position_x,
+          positionY: data.position_y,
+          width: data.width,
+          height: data.height,
+          zIndex: data.z_index,
+        },
+        select: GROUP_SELECT,
+      });
 
       // Determine if this is a position change or general update
       const positionChanged =
-        "position_x" in body ||
-        "position_y" in body ||
-        updatedGroup.position_x !== previousPosition.x ||
-        updatedGroup.position_y !== previousPosition.y;
+        data.position_x !== undefined ||
+        data.position_y !== undefined ||
+        updatedGroup.positionX !== previousPosition.x ||
+        updatedGroup.positionY !== previousPosition.y;
 
       // Publish appropriate event
       if (positionChanged) {
@@ -393,17 +180,17 @@ export async function PUT(request: NextRequest, context: RouteContext) {
             groupId,
             previousPosition,
             newPosition: {
-              x: updatedGroup.position_x,
-              y: updatedGroup.position_y,
+              x: updatedGroup.positionX,
+              y: updatedGroup.positionY,
             },
             movedBy: userId,
-            movedAt: updatedGroup.updated_at.toISOString(),
+            movedAt: updatedGroup.updatedAt.toISOString(),
           },
         });
       } else {
         // For non-position changes, track the actual changes
         const changes: Record<string, unknown> = {};
-        for (const [key, value] of Object.entries(body)) {
+        for (const [key, value] of Object.entries(data)) {
           changes[key] = value;
         }
 
@@ -417,7 +204,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
             groupId,
             changes,
             updatedBy: userId,
-            updatedAt: updatedGroup.updated_at.toISOString(),
+            updatedAt: updatedGroup.updatedAt.toISOString(),
           },
         });
       }
@@ -425,14 +212,15 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       return updatedGroup;
     });
 
-    return NextResponse.json(result);
-  } catch (error) {
-    if (error instanceof Error && error.message.includes("InvariantError")) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ data: group });
+  } catch (error: unknown) {
+    if (error instanceof InvariantError) {
+      const message = (error as InvariantError).message;
+      return NextResponse.json({ message }, { status: 400 });
     }
     console.error("Error updating group:", error);
     return NextResponse.json(
-      { error: "Failed to update group" },
+      { message: "Internal server error" },
       { status: 500 }
     );
   }
@@ -445,50 +233,54 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 export async function DELETE(_request: NextRequest, context: RouteContext) {
   try {
     const { orgId, userId } = await auth();
-
     if (!(orgId && userId)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     const { boardId, groupId } = await context.params;
 
-    // Check if the group exists and belongs to the specified board
-    const existingGroup = await database.$queryRaw<
-      Array<{ id: string; board_id: string }>
-    >`
-      SELECT id, board_id
-      FROM tenant_events.command_board_groups
-      WHERE tenant_id = ${tenantId}
-        AND board_id = ${boardId}
-        AND id = ${groupId}
-        AND deleted_at IS NULL
-    `;
+    validateIds(boardId, groupId);
 
-    if (existingGroup.length === 0) {
-      return NextResponse.json({ error: "Group not found" }, { status: 404 });
+    // Check if the group exists and belongs to the specified board
+    const existingGroup = await database.commandBoardGroup.findFirst({
+      where: {
+        AND: [{ tenantId }, { boardId }, { id: groupId }, { deletedAt: null }],
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    if (!existingGroup) {
+      return NextResponse.json({ message: "Group not found" }, { status: 404 });
     }
 
     // Soft delete the group, ungroup its cards, and publish event in transaction
     await database.$transaction(async (tx) => {
       // Remove the group association from all cards in this group
-      await tx.$executeRaw`
-        UPDATE tenant_events.command_board_cards
-        SET group_id = NULL
-        WHERE tenant_id = ${tenantId}
-          AND group_id = ${groupId}
-          AND deleted_at IS NULL
-      `;
+      await tx.commandBoardCard.updateMany({
+        where: {
+          AND: [{ tenantId }, { groupId }, { deletedAt: null }],
+        },
+        data: {
+          groupId: null,
+        },
+      });
 
       // Soft delete the group
-      await tx.$executeRaw`
-        UPDATE tenant_events.command_board_groups
-        SET deleted_at = NOW()
-        WHERE tenant_id = ${tenantId}
-          AND board_id = ${boardId}
-          AND id = ${groupId}
-          AND deleted_at IS NULL
-      `;
+      await tx.commandBoardGroup.update({
+        where: {
+          tenantId_id: {
+            tenantId,
+            id: groupId,
+          },
+        },
+        data: {
+          deletedAt: new Date(),
+        },
+      });
 
       // Publish outbox event for real-time sync
       await createOutboxEvent(tx, {
@@ -506,10 +298,14 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
     });
 
     return new NextResponse(null, { status: 204 });
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof InvariantError) {
+      const message = (error as InvariantError).message;
+      return NextResponse.json({ message }, { status: 400 });
+    }
     console.error("Error deleting group:", error);
     return NextResponse.json(
-      { error: "Failed to delete group" },
+      { message: "Internal server error" },
       { status: 500 }
     );
   }

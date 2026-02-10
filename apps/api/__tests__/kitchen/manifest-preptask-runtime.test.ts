@@ -242,7 +242,7 @@ describe("Manifest Runtime - PrepTask Commands", () => {
     const runtime = await getTestRuntime();
 
     // Create a task with high priority and claimed
-    const instance = await runtime.createInstance("PrepTask", {
+    await runtime.createInstance("PrepTask", {
       id: "task-006",
       tenantId: "test-tenant-456",
       eventId: "event-001",

@@ -18,6 +18,9 @@ const VALID_CONNECTION_TYPES = [
   "part_of",
 ] as const;
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
  * Validate a string field
  */
@@ -84,9 +87,7 @@ function validateUuidField(
   }
   invariant(typeof value === "string", `${field} must be a string`);
 
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  invariant(uuidRegex.test(value as string), `${field} must be a valid UUID`);
+  invariant(UUID_REGEX.test(value as string), `${field} must be a valid UUID`);
 
   return value as string;
 }

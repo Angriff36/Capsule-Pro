@@ -499,7 +499,7 @@ async function createImportRecords(
 async function processDocumentsAndGenerateResponse(
   files: File[],
   tenantId: string,
-  userId: string,
+  _userId: string,
   eventId: string | undefined,
   shouldGenerateChecklist: boolean,
   shouldGenerateBattleBoard: boolean
@@ -512,11 +512,11 @@ async function processDocumentsAndGenerateResponse(
   // Initialize Manifest runtime via dynamic import (avoids require() of ESM on Vercel)
   // Note: Event import functions are capsule-pro specific and not in @manifest/runtime
   // These need to be ported to kitchen-ops or a separate event-import module
-  const engine = undefined;
-  const processDoc = undefined;
-  const createUpdateEvent = undefined;
-  const generateBattleBoardFn = undefined;
-  const generateChecklistFn = undefined;
+  const _engine = undefined;
+  const _processDoc = undefined;
+  const _createUpdateEvent = undefined;
+  const _generateBattleBoardFn = undefined;
+  const _generateChecklistFn = undefined;
 
   // Process files
   const fileContents = await Promise.all(

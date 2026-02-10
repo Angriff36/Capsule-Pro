@@ -302,21 +302,33 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       const eventCollector1: EmittedEvent[] = [];
       const eventCollector2: EmittedEvent[] = [];
 
+      // Compile manifest for runtime1
+      const manifestPath = join(
+        process.cwd(),
+        "../../packages/manifest-adapters/manifests/prep-task-rules.manifest"
+      );
+      const source1 = readFileSync(manifestPath, "utf-8");
+      const { ir: ir1, diagnostics: diagnostics1 } = await compileToIR(source1);
+
+      if (!ir1) {
+        throw new Error(
+          `Failed to compile manifest for runtime1: ${diagnostics1.map((d: { message: string }) => d.message).join(", ")}`
+        );
+      }
+
+      // Compile manifest for runtime2
+      const source2 = readFileSync(manifestPath, "utf-8");
+      const { ir: ir2, diagnostics: diagnostics2 } = await compileToIR(source2);
+
+      if (!ir2) {
+        throw new Error(
+          `Failed to compile manifest for runtime2: ${diagnostics2.map((d: { message: string }) => d.message).join(", ")}`
+        );
+      }
+
       // Create runtimes for different tenants
       const runtime1 = new RuntimeEngine(
-        normalizeIR(
-          (
-            await compileToIR(
-              readFileSync(
-                join(
-                  process.cwd(),
-                  "../../packages/manifest-adapters/manifests/prep-task-rules.manifest"
-                ),
-                "utf-8"
-              )
-            )
-          ).ir!
-        ),
+        normalizeIR(ir1),
         {
           user: {
             id: "00000000-0000-0000-0000-000000000012",
@@ -342,19 +354,7 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       );
 
       const runtime2 = new RuntimeEngine(
-        normalizeIR(
-          (
-            await compileToIR(
-              readFileSync(
-                join(
-                  process.cwd(),
-                  "../../packages/manifest-adapters/manifests/prep-task-rules.manifest"
-                ),
-                "utf-8"
-              )
-            )
-          ).ir!
-        ),
+        normalizeIR(ir2),
         {
           user: {
             id: "00000000-0000-0000-0000-000000000013",
@@ -508,20 +508,24 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       // Two different tenants CAN have tasks with the same ID
       const otherTenantId = "00000000-0000-0000-0000-000000000020";
       const otherEventCollector: EmittedEvent[] = [];
+
+      // Compile manifest for otherRuntime
+      const otherManifestPath = join(
+        process.cwd(),
+        "../../packages/manifest-adapters/manifests/prep-task-rules.manifest"
+      );
+      const otherSource = readFileSync(otherManifestPath, "utf-8");
+      const { ir: otherIR, diagnostics: otherDiagnostics } =
+        await compileToIR(otherSource);
+
+      if (!otherIR) {
+        throw new Error(
+          `Failed to compile manifest for otherRuntime: ${otherDiagnostics.map((d: { message: string }) => d.message).join(", ")}`
+        );
+      }
+
       const otherRuntime = new RuntimeEngine(
-        normalizeIR(
-          (
-            await compileToIR(
-              readFileSync(
-                join(
-                  process.cwd(),
-                  "../../packages/manifest-adapters/manifests/prep-task-rules.manifest"
-                ),
-                "utf-8"
-              )
-            )
-          ).ir!
-        ),
+        normalizeIR(otherIR),
         {
           user: {
             id: "00000000-0000-0000-0000-000000000021",

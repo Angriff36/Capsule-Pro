@@ -88,7 +88,7 @@ function buildGroupWhereClause(tenantId: string, boardId: string) {
  * GET /api/command-board/[boardId]/groups
  * List groups for a specific board
  */
-export async function GET(request: Request, context: RouteContext) {
+export async function GET(_request: Request, context: RouteContext) {
   try {
     const { orgId } = await auth();
     if (!orgId) {

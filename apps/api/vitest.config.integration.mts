@@ -21,7 +21,7 @@ export default defineConfig({
     {
       name: "vitest-integration-setup",
       enforce: "pre",
-      resolveId(id, importer) {
+      resolveId(id, _importer) {
         // Mock server-only for Node environment tests
         if (id === "server-only") {
           return path.resolve(
@@ -33,7 +33,7 @@ export default defineConfig({
         // We want the real database connection
         return undefined;
       },
-      load(id) {
+      load(_id) {
         // DO NOT mock database loads
         return undefined;
       },

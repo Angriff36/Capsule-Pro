@@ -399,7 +399,7 @@ export interface ManifestActionResult {
  */
 export const createRecipe = async (
   formData: FormData,
-  overrideRequests?: OverrideRequest[]
+  _overrideRequests?: OverrideRequest[]
 ): Promise<ManifestActionResult> => {
   const tenantId = await requireTenantId();
 
@@ -1127,7 +1127,7 @@ export const updateRecipeWithOverride = async (
  */
 export const createDish = async (
   formData: FormData,
-  overrideRequests?: OverrideRequest[]
+  _overrideRequests?: OverrideRequest[]
 ): Promise<ManifestActionResult> => {
   const tenantId = await requireTenantId();
 

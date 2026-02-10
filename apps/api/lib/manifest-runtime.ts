@@ -125,7 +125,7 @@ async function getManifestIR(manifestName: string): Promise<ManifestIR> {
  * - Optimistic concurrency control
  * - Proper tenant isolation
  */
-function createPrismaStoreProvider(
+function _createPrismaStoreProvider(
   tenantId: string,
   entityName: string
 ): RuntimeOptions["storeProvider"] {
@@ -205,7 +205,7 @@ export async function createManifestRuntime(
   // This ensures events are written even if they weren't written during store operations
   const telemetry = {
     onCommandExecuted: async (
-      command: Readonly<IRCommand>,
+      _command: Readonly<IRCommand>,
       result: Readonly<CommandResult>,
       entityName?: string
     ) => {

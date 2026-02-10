@@ -9,6 +9,7 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { createOutboxEvent } from "@repo/realtime";
 import { NextResponse } from "next/server";
+import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
   AddCardsToGroupRequest,
@@ -21,6 +22,18 @@ import {
 
 interface RouteContext {
   params: Promise<{ boardId: string; groupId: string }>;
+}
+
+/**
+ * Validate board ID and group ID parameters
+ */
+function validateIds(boardId: string, groupId: string): void {
+  if (!boardId || typeof boardId !== "string") {
+    throw new InvariantError("Invalid board ID");
+  }
+  if (!groupId || typeof groupId !== "string") {
+    throw new InvariantError("Invalid group ID");
+  }
 }
 
 /**
@@ -54,7 +67,9 @@ export async function POST(request: Request, context: RouteContext) {
     const { boardId, groupId } = await context.params;
     const body = await request.json();
 
+    validateIds(boardId, groupId);
     validateAddCardsToGroupRequest(body);
+
     const data = body as AddCardsToGroupRequest;
 
     const groupExists = await verifyGroupAccess(tenantId, boardId, groupId);
@@ -124,8 +139,9 @@ export async function POST(request: Request, context: RouteContext) {
       count: result.count,
     });
   } catch (error: unknown) {
-    if (error instanceof Error && error.message.includes("InvariantError")) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
+    if (error instanceof InvariantError) {
+      const message = (error as InvariantError).message;
+      return NextResponse.json({ message }, { status: 400 });
     }
     console.error("Error adding cards to group:", error);
     return NextResponse.json(
@@ -150,7 +166,9 @@ export async function DELETE(request: Request, context: RouteContext) {
     const { boardId, groupId } = await context.params;
     const body = await request.json();
 
+    validateIds(boardId, groupId);
     validateRemoveCardsFromGroupRequest(body);
+
     const data = body as RemoveCardsFromGroupRequest;
 
     const groupExists = await verifyGroupAccess(tenantId, boardId, groupId);
@@ -221,8 +239,9 @@ export async function DELETE(request: Request, context: RouteContext) {
       count: result.count,
     });
   } catch (error: unknown) {
-    if (error instanceof Error && error.message.includes("InvariantError")) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
+    if (error instanceof InvariantError) {
+      const message = (error as InvariantError).message;
+      return NextResponse.json({ message }, { status: 400 });
     }
     console.error("Error removing cards from group:", error);
     return NextResponse.json(

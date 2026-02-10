@@ -9,11 +9,12 @@ interface PlasmicPageProps {
   params: Promise<{
     slug?: string[];
   }>;
-  searchParams?: Record<string, string | string[]>;
+  searchParams?: Promise<Record<string, string | string[]>>;
 }
 
 const PlasmicPage = async ({ params, searchParams }: PlasmicPageProps) => {
   const { slug } = await params;
+  const resolvedSearchParams = await searchParams;
   const pathname = `/plasmic${slug?.length ? `/${slug.join("/")}` : ""}`;
   const PLASMIC = getPlasmicLoader();
 
@@ -29,7 +30,7 @@ const PlasmicPage = async ({ params, searchParams }: PlasmicPageProps) => {
     <PlasmicRootProvider
       loader={PLASMIC}
       pageParams={pageMeta.params}
-      pageQuery={searchParams}
+      pageQuery={resolvedSearchParams}
       pageRoute={pageMeta.path}
       prefetchedData={prefetchedData}
     >
