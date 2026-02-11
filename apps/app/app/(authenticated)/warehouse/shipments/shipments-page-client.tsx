@@ -342,7 +342,9 @@ export const ShipmentsPageClient = () => {
     try {
       toast.loading("Generating packing list PDF...", { id: "pdf-loading" });
 
-      const response = await apiFetch(`/api/shipments/${shipment.id}/pdf?download=true`);
+      const response = await apiFetch(
+        `/api/shipments/${shipment.id}/pdf?download=true`
+      );
 
       if (response.ok) {
         const blob = await response.blob();
@@ -350,15 +352,18 @@ export const ShipmentsPageClient = () => {
         const a = document.createElement("a");
         a.href = url;
 
-        const sanitizedNumber = (shipment.shipment_number || `SHP-${shipment.id.slice(0, 8)}`)
-          .replace(/[^a-z0-9]+/gi, "-");
+        const sanitizedNumber = (
+          shipment.shipment_number || `SHP-${shipment.id.slice(0, 8)}`
+        ).replace(/[^a-z0-9]+/gi, "-");
         a.download = `packing-list-${sanitizedNumber}.pdf`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
-        toast.success("Packing list PDF downloaded successfully", { id: "pdf-loading" });
+        toast.success("Packing list PDF downloaded successfully", {
+          id: "pdf-loading",
+        });
       } else {
         const error = await response.json();
         throw new Error(error.message || "Failed to generate PDF");
@@ -366,7 +371,9 @@ export const ShipmentsPageClient = () => {
     } catch (error) {
       console.error("Failed to download packing list:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to download packing list",
+        error instanceof Error
+          ? error.message
+          : "Failed to download packing list",
         { id: "pdf-loading" }
       );
     }
@@ -563,7 +570,9 @@ export const ShipmentsPageClient = () => {
                               View
                             </Button>
                             <Button
-                              onClick={() => handleDownloadPackingList(shipment)}
+                              onClick={() =>
+                                handleDownloadPackingList(shipment)
+                              }
                               size="sm"
                               title="Download Packing List PDF"
                               variant="ghost"

@@ -23,7 +23,7 @@ import {
   type LedgerEntry,
   useFinanceAnalytics,
 } from "@/app/lib/use-finance-analytics";
-import { useLocations, type TenantLocation } from "@/app/lib/use-locations";
+import { type TenantLocation, useLocations } from "@/app/lib/use-locations";
 
 type Period = "7d" | "30d" | "90d" | "12m";
 

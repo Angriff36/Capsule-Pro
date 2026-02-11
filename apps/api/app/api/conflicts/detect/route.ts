@@ -305,7 +305,7 @@ async function detectVenueConflicts(
       resolutionOptions: [
         {
           type: "reschedule",
-          description: `Move one or more events to a different date`,
+          description: "Move one or more events to a different date",
           affectedEntities: conflict.event_ids.map((eventId, index) => ({
             type: "event" as const,
             id: eventId,

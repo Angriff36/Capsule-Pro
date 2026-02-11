@@ -1,11 +1,4 @@
-import {
-  Document,
-  Page,
-  StyleSheet,
-  Text,
-  View,
-  Font,
-} from "@react-pdf/renderer";
+import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type React from "react";
 import type { PackingListPDFData } from "../types";
 
@@ -286,11 +279,15 @@ export const PackingListPDF: React.FC<PackingListPDFProps> = ({ data }) => {
         <View style={styles.header}>
           <View style={styles.headerRow}>
             <Text style={styles.title}>Packing List</Text>
-            <Text style={[styles.statusBadge, getStatusBadgeStyle(shipment.status)]}>
+            <Text
+              style={[styles.statusBadge, getStatusBadgeStyle(shipment.status)]}
+            >
               {shipment.status.replace("_", " ").toUpperCase()}
             </Text>
           </View>
-          <Text style={styles.subtitle}>Shipment #{shipment.shipmentNumber}</Text>
+          <Text style={styles.subtitle}>
+            Shipment #{shipment.shipmentNumber}
+          </Text>
           <View style={styles.headerRow}>
             <Text style={styles.headerInfo}>
               Scheduled: {formatDate(shipment.scheduledDate)}
@@ -320,13 +317,17 @@ export const PackingListPDF: React.FC<PackingListPDFProps> = ({ data }) => {
             {shipment.trackingNumber && (
               <>
                 <Text style={styles.trackingLabel}>Tracking Number:</Text>
-                <Text style={styles.trackingNumber}>{shipment.trackingNumber}</Text>
+                <Text style={styles.trackingNumber}>
+                  {shipment.trackingNumber}
+                </Text>
               </>
             )}
             {shipment.shippingMethod && (
               <>
                 <Text style={styles.trackingLabel}>Service:</Text>
-                <Text style={styles.trackingNumber}>{shipment.shippingMethod}</Text>
+                <Text style={styles.trackingNumber}>
+                  {shipment.shippingMethod}
+                </Text>
               </>
             )}
           </View>
@@ -340,7 +341,9 @@ export const PackingListPDF: React.FC<PackingListPDFProps> = ({ data }) => {
                 <Text style={styles.locationLabel}>Ship From</Text>
                 <Text style={styles.locationName}>{fromLocation.name}</Text>
                 {fromLocation.address && (
-                  <Text style={styles.locationAddress}>{fromLocation.address}</Text>
+                  <Text style={styles.locationAddress}>
+                    {fromLocation.address}
+                  </Text>
                 )}
                 {fromLocation.city && fromLocation.state && (
                   <Text style={styles.locationAddress}>
@@ -355,11 +358,14 @@ export const PackingListPDF: React.FC<PackingListPDFProps> = ({ data }) => {
                 <Text style={styles.locationLabel}>Ship To</Text>
                 <Text style={styles.locationName}>{toLocation.name}</Text>
                 {toLocation.address && (
-                  <Text style={styles.locationAddress}>{toLocation.address}</Text>
+                  <Text style={styles.locationAddress}>
+                    {toLocation.address}
+                  </Text>
                 )}
                 {toLocation.city && toLocation.state && (
                   <Text style={styles.locationAddress}>
-                    {toLocation.city}, {toLocation.state} {toLocation.zipCode || ""}
+                    {toLocation.city}, {toLocation.state}{" "}
+                    {toLocation.zipCode || ""}
                   </Text>
                 )}
               </View>
@@ -411,7 +417,8 @@ export const PackingListPDF: React.FC<PackingListPDFProps> = ({ data }) => {
                 <View
                   style={[
                     styles.checkbox,
-                    ...(item.quantityReceived && item.quantityReceived >= item.quantityShipped
+                    ...(item.quantityReceived &&
+                    item.quantityReceived >= item.quantityShipped
                       ? [styles.receivedCheck]
                       : []),
                   ]}
@@ -423,7 +430,9 @@ export const PackingListPDF: React.FC<PackingListPDFProps> = ({ data }) => {
               <View style={styles.colItemName}>
                 <Text>{item.itemName}</Text>
                 {item.notes && (
-                  <Text style={{ fontSize: 7, color: "#666" }}>{item.notes}</Text>
+                  <Text style={{ fontSize: 7, color: "#666" }}>
+                    {item.notes}
+                  </Text>
                 )}
               </View>
               <View style={styles.colQuantity}>
@@ -436,13 +445,19 @@ export const PackingListPDF: React.FC<PackingListPDFProps> = ({ data }) => {
                 <Text>{item.lotNumber || "-"}</Text>
               </View>
               <View style={styles.colExpiration}>
-                <Text>{item.expirationDate ? formatDate(item.expirationDate) : "-"}</Text>
+                <Text>
+                  {item.expirationDate ? formatDate(item.expirationDate) : "-"}
+                </Text>
               </View>
               <View style={styles.colCondition}>
-                <Text>{item.condition ? item.condition.substring(0, 3) : "-"}</Text>
+                <Text>
+                  {item.condition ? item.condition.substring(0, 3) : "-"}
+                </Text>
               </View>
               <View style={styles.colCost}>
-                <Text>{item.totalCost ? formatCurrency(item.totalCost) : "-"}</Text>
+                <Text>
+                  {item.totalCost ? formatCurrency(item.totalCost) : "-"}
+                </Text>
               </View>
               <View style={styles.colReceived}>
                 <Text>{item.quantityReceived ?? "-"}</Text>
@@ -466,7 +481,9 @@ export const PackingListPDF: React.FC<PackingListPDFProps> = ({ data }) => {
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Total Value:</Text>
-              <Text style={styles.summaryValue}>{formatCurrency(summary.totalValue)}</Text>
+              <Text style={styles.summaryValue}>
+                {formatCurrency(summary.totalValue)}
+              </Text>
             </View>
           </View>
         </View>

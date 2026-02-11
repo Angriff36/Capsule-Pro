@@ -97,7 +97,7 @@ export async function GET(
     }
 
     // Fetch shipment data
-    const shipment = await fetchShipmentData(tenantId, id) as unknown as {
+    const shipment = (await fetchShipmentData(tenantId, id)) as unknown as {
       id: string;
       shipmentNumber: string;
       status: string;
@@ -147,7 +147,10 @@ export async function GET(
     };
 
     if (!shipment) {
-      return NextResponse.json({ error: "Shipment not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Shipment not found" },
+        { status: 404 }
+      );
     }
 
     // Build the from address - using supplier or location
@@ -187,8 +190,10 @@ export async function GET(
 
     // Calculate total value
     const totalValue =
-      shipment.items.reduce((sum: number, item) => sum + Number(item.totalCost || 0), 0) +
-      Number(shipment.shippingCost || 0);
+      shipment.items.reduce(
+        (sum: number, item) => sum + Number(item.totalCost || 0),
+        0
+      ) + Number(shipment.shippingCost || 0);
 
     // Fetch user info for metadata
     const user = await database.user.findFirst({
@@ -248,7 +253,9 @@ export async function GET(
         itemName: item.item?.name || "Unknown Item",
         itemNumber: item.item?.item_number || undefined,
         quantityShipped: Number(item.quantityShipped),
-        quantityReceived: item.quantityReceived ? Number(item.quantityReceived) : undefined,
+        quantityReceived: item.quantityReceived
+          ? Number(item.quantityReceived)
+          : undefined,
         unit: item.unitId || undefined,
         unitCost: item.unitCost || undefined,
         totalCost: Number(item.totalCost),
@@ -283,7 +290,10 @@ export async function GET(
       const doc = await pdf(pdfComponent);
       const blob = await doc.toBlob();
 
-      const sanitizedNumber = shipment.shipmentNumber.replace(/[^a-z0-9]+/gi, "-");
+      const sanitizedNumber = shipment.shipmentNumber.replace(
+        /[^a-z0-9]+/gi,
+        "-"
+      );
 
       return new NextResponse(blob, {
         headers: {
@@ -306,7 +316,10 @@ export async function GET(
     }
     const base64 = btoa(binary);
 
-    const sanitizedNumber = shipment.shipmentNumber.replace(/[^a-z0-9]+/gi, "-");
+    const sanitizedNumber = shipment.shipmentNumber.replace(
+      /[^a-z0-9]+/gi,
+      "-"
+    );
 
     return NextResponse.json({
       dataUrl: `data:application/pdf;base64,${base64}`,

@@ -128,7 +128,8 @@ Only report real conflicts, not potential issues. Provide actionable resolution 
       guestCount: (e as { guestCount: number }).guestCount,
       status: (e as { status: string }).status,
       venueId: (e as { venueId: string | null }).venueId,
-      venueName: (e as { venue: { name: string | null } | null }).venue?.name ?? null,
+      venueName:
+        (e as { venue: { name: string | null } | null }).venue?.name ?? null,
       locationId: (e as { locationId: string | null }).locationId,
     })),
     tasks: tasks.map((t: unknown) => ({
@@ -178,31 +179,56 @@ Only report real conflicts, not potential issues. Provide actionable resolution 
           severity: (c.severity as ConflictSeverity) ?? "medium",
           title: (c.title as string) ?? "Conflict detected",
           description: (c.description as string) ?? "",
-          affectedEntities: ((c.affectedEntities as unknown[]) ?? []).map((entity: unknown) => {
-            const e = entity as Record<string, unknown>;
-            return {
-              type: (e.type as "event" | "task" | "employee" | "inventory" | "venue") ?? "event",
-              id: (e.id as string) ?? "",
-              name: (e.name as string) ?? "Unknown",
-            };
-          }),
-          suggestedAction: (c.suggestedAction as string | undefined),
-          resolutionOptions: ((c.resolutionOptions as unknown[]) ?? []).map((option: unknown) => {
-            const o = option as Record<string, unknown>;
-            return {
-              type: (o.type as "reassign" | "reschedule" | "substitute" | "cancel" | "split") ?? "reschedule",
-              description: (o.description as string) ?? "",
-              affectedEntities: ((o.affectedEntities as unknown[]) ?? []).map((entity: unknown) => {
-                const e = entity as Record<string, unknown>;
-                return {
-                  type: (e.type as "event" | "task" | "employee" | "inventory" | "venue") ?? "event",
-                  id: (e.id as string) ?? "",
-                  name: (e.name as string) ?? "Unknown",
-                };
-              }),
-              estimatedImpact: (o.estimatedImpact as "low" | "medium" | "high") ?? "medium",
-            };
-          }),
+          affectedEntities: ((c.affectedEntities as unknown[]) ?? []).map(
+            (entity: unknown) => {
+              const e = entity as Record<string, unknown>;
+              return {
+                type:
+                  (e.type as
+                    | "event"
+                    | "task"
+                    | "employee"
+                    | "inventory"
+                    | "venue") ?? "event",
+                id: (e.id as string) ?? "",
+                name: (e.name as string) ?? "Unknown",
+              };
+            }
+          ),
+          suggestedAction: c.suggestedAction as string | undefined,
+          resolutionOptions: ((c.resolutionOptions as unknown[]) ?? []).map(
+            (option: unknown) => {
+              const o = option as Record<string, unknown>;
+              return {
+                type:
+                  (o.type as
+                    | "reassign"
+                    | "reschedule"
+                    | "substitute"
+                    | "cancel"
+                    | "split") ?? "reschedule",
+                description: (o.description as string) ?? "",
+                affectedEntities: ((o.affectedEntities as unknown[]) ?? []).map(
+                  (entity: unknown) => {
+                    const e = entity as Record<string, unknown>;
+                    return {
+                      type:
+                        (e.type as
+                          | "event"
+                          | "task"
+                          | "employee"
+                          | "inventory"
+                          | "venue") ?? "event",
+                      id: (e.id as string) ?? "",
+                      name: (e.name as string) ?? "Unknown",
+                    };
+                  }
+                ),
+                estimatedImpact:
+                  (o.estimatedImpact as "low" | "medium" | "high") ?? "medium",
+              };
+            }
+          ),
           createdAt: new Date(),
         } satisfies Conflict;
       });
@@ -226,7 +252,14 @@ Only report real conflicts, not potential issues. Provide actionable resolution 
         acc[conflict.type] = (acc[conflict.type] || 0) + 1;
         return acc;
       },
-      { scheduling: 0, resource: 0, staff: 0, inventory: 0, timeline: 0, venue: 0 }
+      {
+        scheduling: 0,
+        resource: 0,
+        staff: 0,
+        inventory: 0,
+        timeline: 0,
+        venue: 0,
+      }
     ),
   };
 

@@ -333,7 +333,112 @@ export async function DELETE(_request: Request, context: RouteContext) {
     }
 
     // Check for dependencies before deletion
-    // TODO: Add checks for recipe_ingredients, inventory_stock, etc.
+    // An item cannot be deleted if it has dependencies in:
+    // - WasteEntry (waste_entries table via inventory_item_id)
+    // - ShipmentItem (shipment_items table via item_id)
+    // - InventoryStock (inventory_stock table via item_id)
+    // - InventoryTransaction (inventory_transactions table via item_id)
+    // - InventoryAlert (inventory_alerts table via item_id)
+    // - CycleCountRecord (cycle_count_records table via item_id)
+    // - PurchaseOrderItem (purchase_order_items table via item_id)
+
+    const dependencies: string[] = [];
+
+    // Check for waste entries
+    const wasteEntryCount = await database.$queryRaw<{ count: bigint }[]>`
+      SELECT COUNT(*) as count
+      FROM "tenant_kitchen".waste_entries
+      WHERE tenant_id = ${tenantId}
+        AND inventory_item_id = ${id}
+        AND deleted_at IS NULL
+    `;
+    if (wasteEntryCount[0]?.count > 0) {
+      dependencies.push("waste entries");
+    }
+
+    // Check for shipment items
+    const shipmentItemCount = await database.$queryRaw<{ count: bigint }[]>`
+      SELECT COUNT(*) as count
+      FROM "tenant_inventory".shipment_items
+      WHERE tenant_id = ${tenantId}
+        AND item_id = ${id}
+    `;
+    if (shipmentItemCount[0]?.count > 0) {
+      dependencies.push("shipment items");
+    }
+
+    // Check for inventory stock records
+    const inventoryStockCount = await database.$queryRaw<{ count: bigint }[]>`
+      SELECT COUNT(*) as count
+      FROM "tenant_inventory".inventory_stock
+      WHERE tenant_id = ${tenantId}
+        AND item_id = ${id}
+    `;
+    if (inventoryStockCount[0]?.count > 0) {
+      dependencies.push("inventory stock records");
+    }
+
+    // Check for inventory transactions
+    const inventoryTransactionCount = await database.$queryRaw<
+      { count: bigint }[]
+    >`
+      SELECT COUNT(*) as count
+      FROM "tenant_inventory".inventory_transactions
+      WHERE tenant_id = ${tenantId}
+        AND item_id = ${id}
+    `;
+    if (inventoryTransactionCount[0]?.count > 0) {
+      dependencies.push("inventory transactions");
+    }
+
+    // Check for inventory alerts
+    const inventoryAlertCount = await database.$queryRaw<{ count: bigint }[]>`
+      SELECT COUNT(*) as count
+      FROM "tenant_inventory".inventory_alerts
+      WHERE tenant_id = ${tenantId}
+        AND item_id = ${id}
+        AND deleted_at IS NULL
+    `;
+    if (inventoryAlertCount[0]?.count > 0) {
+      dependencies.push("inventory alerts");
+    }
+
+    // Check for cycle count records
+    const cycleCountRecordCount = await database.$queryRaw<{ count: bigint }[]>`
+      SELECT COUNT(*) as count
+      FROM "tenant_inventory".cycle_count_records
+      WHERE tenant_id = ${tenantId}
+        AND item_id = ${id}
+    `;
+    if (cycleCountRecordCount[0]?.count > 0) {
+      dependencies.push("cycle count records");
+    }
+
+    // Check for purchase order items
+    const purchaseOrderItemCount = await database.$queryRaw<
+      { count: bigint }[]
+    >`
+      SELECT COUNT(*) as count
+      FROM "tenant_inventory".purchase_order_items
+      WHERE tenant_id = ${tenantId}
+        AND item_id = ${id}
+        AND deleted_at IS NULL
+    `;
+    if (purchaseOrderItemCount[0]?.count > 0) {
+      dependencies.push("purchase order items");
+    }
+
+    // If there are any dependencies, return an error
+    if (dependencies.length > 0) {
+      const dependencyList = dependencies.join(", ");
+      return NextResponse.json(
+        {
+          message: `Cannot delete inventory item. It is referenced by ${dependencyList}. Please remove these references before deleting.`,
+          dependencies,
+        },
+        { status: 409 }
+      );
+    }
 
     // Soft delete the item using raw SQL for composite key
     await database.$executeRaw`

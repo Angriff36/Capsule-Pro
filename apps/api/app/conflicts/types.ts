@@ -85,20 +85,28 @@ export const ConflictSchema = z.object({
     })
   ),
   suggestedAction: z.string().optional(),
-  resolutionOptions: z.array(
-    z.object({
-      type: z.enum(["reassign", "reschedule", "substitute", "cancel", "split"]),
-      description: z.string(),
-      affectedEntities: z.array(
-        z.object({
-          type: z.enum(["event", "task", "employee", "inventory", "venue"]),
-          id: z.string(),
-          name: z.string(),
-        })
-      ),
-      estimatedImpact: z.enum(["low", "medium", "high"]),
-    })
-  ).optional(),
+  resolutionOptions: z
+    .array(
+      z.object({
+        type: z.enum([
+          "reassign",
+          "reschedule",
+          "substitute",
+          "cancel",
+          "split",
+        ]),
+        description: z.string(),
+        affectedEntities: z.array(
+          z.object({
+            type: z.enum(["event", "task", "employee", "inventory", "venue"]),
+            id: z.string(),
+            name: z.string(),
+          })
+        ),
+        estimatedImpact: z.enum(["low", "medium", "high"]),
+      })
+    )
+    .optional(),
   createdAt: z.date(),
 });
 
