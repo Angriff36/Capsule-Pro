@@ -23,7 +23,7 @@ import {
   type LedgerEntry,
   useFinanceAnalytics,
 } from "@/app/lib/use-finance-analytics";
-import { useLocations } from "@/app/lib/use-locations";
+import { useLocations, type TenantLocation } from "@/app/lib/use-locations";
 
 type Period = "7d" | "30d" | "90d" | "12m";
 
@@ -93,7 +93,7 @@ export function FinanceAnalyticsPageClient() {
 
   const { financeHighlights, ledgerSummary, financeAlerts } = data;
 
-  const locations = locationsData?.locations ?? [];
+  const locations: TenantLocation[] = locationsData?.locations ?? [];
 
   return (
     <div className="space-y-6">

@@ -7,7 +7,6 @@ import type {
   ConflictDetectionResult,
   ConflictSeverity,
   ConflictType,
-  ResolutionOption,
 } from "./types";
 
 const AI_MODEL = "gpt-4o-mini";

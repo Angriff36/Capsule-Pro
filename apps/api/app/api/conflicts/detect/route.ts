@@ -271,8 +271,14 @@ async function detectVenueConflicts(
   `;
 
   for (const conflict of venueConflicts) {
-    const severity =
-      conflict.event_count > 2 ? "critical" : conflict.event_count > 1 ? "high" : "medium";
+    let severity: "critical" | "high" | "medium";
+    if (conflict.event_count > 2) {
+      severity = "critical";
+    } else if (conflict.event_count > 1) {
+      severity = "high";
+    } else {
+      severity = "medium";
+    }
 
     conflicts.push({
       id: `venue-conflict-${conflict.venue_id}-${conflict.event_date.toISOString()}`,

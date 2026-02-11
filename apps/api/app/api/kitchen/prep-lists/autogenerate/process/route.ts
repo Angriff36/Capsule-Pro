@@ -33,15 +33,15 @@ export async function POST() {
     // Note: Actual generation is handled by the prep-lists/generate endpoint
     const result = await processPendingPrepListGenerations(
       database,
-      async (_input) => {
+      (_input) => {
         // For now, just mark as processed with a note
         // In production, you would call the generate endpoint here
         // or implement the business logic directly
-        return {
+        return Promise.resolve({
           success: false,
           error:
             "Prep list generation should be triggered via /api/kitchen/prep-lists/generate endpoint",
-        };
+        });
       }
     );
 
