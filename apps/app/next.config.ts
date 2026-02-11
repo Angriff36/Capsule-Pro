@@ -12,6 +12,7 @@ const CRITICAL_DEPENDENCY_WARNING =
 const apiBaseUrl = (
   process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:2223"
 ).replace(/\/$/, "");
+const distDir = process.env.NEXT_DIST_DIR?.trim() || ".next";
 
 type WebpackConfig = Parameters<NonNullable<NextConfig["webpack"]>>[0];
 type WebpackContext = Parameters<NonNullable<NextConfig["webpack"]>>[1];
@@ -99,6 +100,7 @@ const rewrites: NextConfig["rewrites"] = async () => {
 let nextConfig: NextConfig = withToolbar(
   withLogging({
     ...config,
+    distDir,
     // Disable type checking during build to avoid React type conflicts
     typescript: {
       ignoreBuildErrors: true,

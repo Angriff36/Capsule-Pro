@@ -32,13 +32,26 @@ export { AIInsightsPanel };
  */
 function AIInsightsPanelSkeleton() {
   return (
-    <section>
-      <div className="mb-4 flex items-center gap-2">
-        <Skeleton className="h-4 w-24" />
+    <section className="space-y-4">
+      <div className="rounded-xl border p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-2">
+            <Skeleton className="h-3 w-28" />
+            <Skeleton className="h-6 w-44" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-12 w-44" />
+        </div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <Skeleton className="h-10 w-full rounded-lg" />
+          <Skeleton className="h-10 w-full rounded-lg" />
+          <Skeleton className="h-10 w-full rounded-lg" />
+          <Skeleton className="h-10 w-full rounded-lg" />
+        </div>
       </div>
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
         {/* Left column: Executive Summary + Task Breakdown */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Skeleton className="h-5 w-32" />
@@ -63,11 +76,12 @@ function AIInsightsPanelSkeleton() {
         </div>
 
         {/* Right column: Suggestions + Prep Tasks + Budget */}
-        <div className="space-y-6">
+        <div className="space-y-3">
+          <Skeleton className="h-14 w-full rounded-lg border" />
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Skeleton className="h-5 w-28" />
-              <Skeleton className="h-9 w-40" />
+              <Skeleton className="h-8 w-24" />
             </div>
             <div className="rounded-lg border p-4">
               <Skeleton className="h-16 w-full" />

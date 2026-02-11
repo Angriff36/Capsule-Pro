@@ -388,25 +388,35 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
 
   if (!summary) {
     return (
-      <Card className="border-dashed">
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <div className="rounded-full bg-muted p-4 mb-4">
-            <FileTextIcon className="size-8 text-muted-foreground" />
+      <Card className="border-dashed bg-background">
+        <CardContent className="py-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="rounded-full bg-muted p-2.5">
+                <FileTextIcon className="size-5 text-foreground/65" />
+              </div>
+              <div>
+                <h3 className="font-medium text-sm">No summary yet</h3>
+                <p className="text-foreground/70 text-sm">
+                  Generate a concise event summary with highlights, risks, and
+                  recommended actions.
+                </p>
+              </div>
+            </div>
+            {onGenerate && (
+              <Button
+                className="shrink-0"
+                disabled={isGenerating}
+                onClick={handleGenerate}
+                size="sm"
+              >
+                <SparklesIcon className="mr-2 size-4" />
+                Generate summary
+              </Button>
+            )}
           </div>
-          <h3 className="font-medium text-lg mb-2">No summary generated yet</h3>
-          <p className="text-muted-foreground text-sm text-center max-w-sm mb-4">
-            Generate an AI-powered executive summary to get insights about this
-            event&apos;s performance, highlights, and actionable
-            recommendations.
-          </p>
-          {onGenerate && (
-            <Button disabled={isGenerating} onClick={handleGenerate}>
-              <SparklesIcon className="mr-2 size-4" />
-              Generate Executive Summary
-            </Button>
-          )}
           {isGenerating && (
-            <div className="mt-4 flex items-center gap-2 text-sm">
+            <div className="mt-3 flex items-center gap-2 text-sm">
               <Spinner className="size-4" />
               <span>{generationProgress}</span>
             </div>

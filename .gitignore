@@ -12,6 +12,13 @@
 # Storybook build artifacts
 **/storybook-static/
 
+# Build artifacts
+.next
+**/.next
+.next-dev
+**/.next-dev
+
+
 ### macOS ###
 # General
 .DS_Store
@@ -374,3 +381,20 @@ skills/spec-prompt-template-generator/SKILL.md
 spec-prompt-template-generator.md
 # Auto-generated types\n**/basehub-types.d.ts
 # Test mocks\napps/*/test/mocks/**
+
+# Generic JS/TS build output (apps/tools, not just packages/*/dist)
+**/dist/
+**/build/
+**/.output/
+**/.vite/
+
+# Playwright artifacts (you have test-results/, add these too)
+playwright-report/
+blob-report/
+
+# Common test outputs
+junit.xml
+*.junit.xml
+
+# Common tool caches
+**/.jest-cache/

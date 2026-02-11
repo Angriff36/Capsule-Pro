@@ -8,12 +8,13 @@ interface AnalyticsProviderProps {
 }
 
 const { NEXT_PUBLIC_GA_MEASUREMENT_ID } = keys();
+const isProduction = process.env.NODE_ENV === "production";
 
 export const AnalyticsProvider = ({ children }: AnalyticsProviderProps) => (
   <>
     {/* TODO: Add a client-side PostHog tracker (page views + key events) once we define the event schema/consent rules. */}
     {children}
-    <VercelAnalytics />
+    {isProduction && <VercelAnalytics />}
     {NEXT_PUBLIC_GA_MEASUREMENT_ID && (
       <GoogleAnalytics gaId={NEXT_PUBLIC_GA_MEASUREMENT_ID} />
     )}

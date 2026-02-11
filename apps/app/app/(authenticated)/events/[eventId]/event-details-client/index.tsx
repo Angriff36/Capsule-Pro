@@ -45,8 +45,10 @@ import { EventOverviewCard } from "./event-overview-card";
 import { GuestManagementSection } from "./guest-management-section";
 // Lazy-loaded below-the-fold components for bundle optimization
 import { AIInsightsPanel } from "./lazy-ai-insights-panel";
+import { EventDetailTabs } from "./event-detail-tabs";
 import { EventExplorer } from "./lazy-event-explorer";
 import { MenuIntelligenceSection } from "./menu-intelligence-section";
+import { OperationsSection } from "./operations-section";
 import { RecipeDrawer } from "./recipe-drawer";
 import {
   endOfDay,
@@ -845,125 +847,140 @@ export function EventDetailsClient({
       <GridBackground className="pointer-events-none absolute inset-0 opacity-15" />
       <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pb-28 pt-10 sm:px-6 lg:px-8">
         <Separator />
-
-        <EventOverviewCard
-          aggregatedIngredientsCount={aggregatedIngredients.length}
-          availability={availability}
-          capacity={capacity}
-          displayedTags={displayedTags}
-          event={event}
-          eventDate={eventDate}
-          eventStart={eventStart}
-          eventStatusLabel={eventStatusLabel}
-          featuredMediaUrl={featuredMediaUrl}
-          inventoryStats={inventoryStats}
-          isLimited={limited}
-          isLive={isLive}
-          isPast={isPast}
-          isSaved={isSaved}
-          isSoldOut={soldOut}
-          isUpcoming={isUpcoming}
-          missingFields={missingFields}
-          now={now}
-          onEditEvent={() => setShowEditEvent(true)}
-          onInviteTeam={handleInviteTeam}
-          onQuickRsvp={() => setQuickRsvpOpen(true)}
-          onShare={handleShare}
-          onToggleSave={handleToggleSave}
-          onUpdateDetails={() => setShowEditEvent(true)}
-          prepTasks={initialPrepTasks}
-          rsvpCount={rsvpCount}
-          saveReady={saveReady}
-          taskSummary={taskSummary}
-          ticketPriceLabel={ticketPriceLabel}
-          timeStatusLabel={timeStatusLabel}
-          timeZoneLabel={timeZoneLabel}
-        />
-
-        <MenuIntelligenceSection
-          aggregatedIngredients={aggregatedIngredients}
-          availableDishes={availableDishes}
-          dishRows={dishRows}
-          inventoryByIngredient={inventoryByIngredient}
-          isLoadingDishes={isLoadingDishes}
-          menuDishRows={menuDishRows}
-          onAddDish={handleAddDish}
-          onOpenRecipeDrawer={openRecipeDrawer}
-          onOpenVariantDialog={openVariantDialog}
-          onRemoveDish={handleRemoveDish}
-          onSelectedCourseChange={setSelectedCourse}
-          onSelectedDishIdChange={setSelectedDishIdForAdd}
-          onShowAddDialogChange={setShowAddDishDialog}
-          selectedCourse={selectedCourse}
-          selectedDishIdForAdd={selectedDishIdForAdd}
-          showAddDishDialog={showAddDishDialog}
-        />
-
-        <AIInsightsPanel
-          breakdown={breakdown}
-          budget={budget}
-          eventId={event.id}
-          eventTitle={event.title}
-          generationProgress={generationProgress}
-          isGenerating={isGenerating}
-          isLoadingSummary={isLoadingSummary}
-          onCreateBudget={() => router.push("/events/budgets")}
-          onDeleteSummary={handleDeleteSummary}
-          onDismissSuggestion={dismissSuggestion}
-          onExportBreakdown={handleExportBreakdown}
-          onGenerateSummary={handleGenerateSummary}
-          onHandleSuggestionAction={handleAction}
-          onOpenBreakdownModal={() => setShowBreakdownModal(true)}
-          onOpenGenerateModal={() => setShowBreakdownModal(true)}
-          onOpenSummaryModal={() => setShowSummaryModal(true)}
-          onRefreshSuggestions={fetchSuggestions}
-          onRegenerateBreakdown={() => void handleGenerateBreakdown()}
-          onSaveBreakdown={handleSaveBreakdown}
-          onShowSuggestionsChange={setShowSuggestions}
-          onViewBudget={(budgetId: string) =>
-            router.push(`/events/budgets/${budgetId}`)
+        <EventDetailTabs
+          copilot={
+            <AIInsightsPanel
+              breakdown={breakdown}
+              budget={budget}
+              eventId={event.id}
+              eventTitle={event.title}
+              generationProgress={generationProgress}
+              isGenerating={isGenerating}
+              isLoadingSummary={isLoadingSummary}
+              onCreateBudget={() => router.push("/events/budgets")}
+              onDeleteSummary={handleDeleteSummary}
+              onDismissSuggestion={dismissSuggestion}
+              onExportBreakdown={handleExportBreakdown}
+              onGenerateSummary={handleGenerateSummary}
+              onHandleSuggestionAction={handleAction}
+              onOpenBreakdownModal={() => setShowBreakdownModal(true)}
+              onOpenGenerateModal={() => setShowBreakdownModal(true)}
+              onOpenSummaryModal={() => setShowSummaryModal(true)}
+              onRefreshSuggestions={fetchSuggestions}
+              onRegenerateBreakdown={() => void handleGenerateBreakdown()}
+              onSaveBreakdown={handleSaveBreakdown}
+              onShowSuggestionsChange={setShowSuggestions}
+              onViewBudget={(budgetId: string) =>
+                router.push(`/events/budgets/${budgetId}`)
+              }
+              prepTasks={sortedPrepTasks}
+              showSuggestions={showSuggestions}
+              suggestions={suggestions}
+              suggestionsLoading={suggestionsLoading}
+              summary={summary}
+            />
           }
-          prepTasks={sortedPrepTasks}
-          showSuggestions={showSuggestions}
-          suggestions={suggestions}
-          suggestionsLoading={suggestionsLoading}
-          summary={summary}
-        />
-
-        <GuestManagementSection
-          eventId={event.id}
-          eventTitle={event.title}
-          isSoldOut={soldOut}
-          onQuickRsvp={() => setQuickRsvpOpen(true)}
-        />
-
-        <EventExplorer
-          explorerView={explorerView}
-          now={now}
-          quickFilters={quickFilters}
-          relatedEvents={relatedEvents}
-          relatedGuestCounts={relatedGuestCounts}
-          resetFilters={resetFilters}
-          selectedAccessibility={selectedAccessibility}
-          selectedDateEnd={selectedDateEnd}
-          selectedDateStart={selectedDateStart}
-          selectedFormat={selectedFormat}
-          selectedLocation={selectedLocation}
-          selectedOrganizer={selectedOrganizer}
-          selectedPrice={selectedPrice}
-          selectedTags={selectedTags}
-          setExplorerView={setExplorerView}
-          setQuickFilters={setQuickFilters}
-          setSelectedAccessibility={setSelectedAccessibility}
-          setSelectedDateEnd={setSelectedDateEnd}
-          setSelectedDateStart={setSelectedDateStart}
-          setSelectedFormat={setSelectedFormat}
-          setSelectedLocation={setSelectedLocation}
-          setSelectedOrganizer={setSelectedOrganizer}
-          setSelectedPrice={setSelectedPrice}
-          setSelectedTags={setSelectedTags}
-          setSortBy={setSortBy}
-          sortBy={sortBy}
+          explore={
+            <EventExplorer
+              explorerView={explorerView}
+              now={now}
+              quickFilters={quickFilters}
+              relatedEvents={relatedEvents}
+              relatedGuestCounts={relatedGuestCounts}
+              resetFilters={resetFilters}
+              selectedAccessibility={selectedAccessibility}
+              selectedDateEnd={selectedDateEnd}
+              selectedDateStart={selectedDateStart}
+              selectedFormat={selectedFormat}
+              selectedLocation={selectedLocation}
+              selectedOrganizer={selectedOrganizer}
+              selectedPrice={selectedPrice}
+              selectedTags={selectedTags}
+              setExplorerView={setExplorerView}
+              setQuickFilters={setQuickFilters}
+              setSelectedAccessibility={setSelectedAccessibility}
+              setSelectedDateEnd={setSelectedDateEnd}
+              setSelectedDateStart={setSelectedDateStart}
+              setSelectedFormat={setSelectedFormat}
+              setSelectedLocation={setSelectedLocation}
+              setSelectedOrganizer={setSelectedOrganizer}
+              setSelectedPrice={setSelectedPrice}
+              setSelectedTags={setSelectedTags}
+              setSortBy={setSortBy}
+              sortBy={sortBy}
+            />
+          }
+          guests={
+            <GuestManagementSection
+              eventId={event.id}
+              eventTitle={event.title}
+              isSoldOut={soldOut}
+              onQuickRsvp={() => setQuickRsvpOpen(true)}
+            />
+          }
+          menu={
+            <MenuIntelligenceSection
+              aggregatedIngredients={aggregatedIngredients}
+              availableDishes={availableDishes}
+              dishRows={dishRows}
+              inventoryByIngredient={inventoryByIngredient}
+              isLoadingDishes={isLoadingDishes}
+              menuDishRows={menuDishRows}
+              onAddDish={handleAddDish}
+              onOpenRecipeDrawer={openRecipeDrawer}
+              onOpenVariantDialog={openVariantDialog}
+              onRemoveDish={handleRemoveDish}
+              onSelectedCourseChange={setSelectedCourse}
+              onSelectedDishIdChange={setSelectedDishIdForAdd}
+              onShowAddDialogChange={setShowAddDishDialog}
+              selectedCourse={selectedCourse}
+              selectedDishIdForAdd={selectedDishIdForAdd}
+              showAddDishDialog={showAddDishDialog}
+            />
+          }
+          operations={
+            <OperationsSection
+              eventId={event.id}
+              onOpenGenerateModal={() => setShowBreakdownModal(true)}
+              prepTasks={sortedPrepTasks}
+              taskSummary={taskSummary}
+            />
+          }
+          overview={
+            <EventOverviewCard
+              aggregatedIngredientsCount={aggregatedIngredients.length}
+              availability={availability}
+              capacity={capacity}
+              displayedTags={displayedTags}
+              event={event}
+              eventDate={eventDate}
+              eventStart={eventStart}
+              eventStatusLabel={eventStatusLabel}
+              featuredMediaUrl={featuredMediaUrl}
+              inventoryStats={inventoryStats}
+              isLimited={limited}
+              isLive={isLive}
+              isPast={isPast}
+              isSaved={isSaved}
+              isSoldOut={soldOut}
+              isUpcoming={isUpcoming}
+              missingFields={missingFields}
+              now={now}
+              onEditEvent={() => setShowEditEvent(true)}
+              onInviteTeam={handleInviteTeam}
+              onQuickRsvp={() => setQuickRsvpOpen(true)}
+              onShare={handleShare}
+              onToggleSave={handleToggleSave}
+              onUpdateDetails={() => setShowEditEvent(true)}
+              prepTasks={initialPrepTasks}
+              rsvpCount={rsvpCount}
+              saveReady={saveReady}
+              taskSummary={taskSummary}
+              ticketPriceLabel={ticketPriceLabel}
+              timeStatusLabel={timeStatusLabel}
+              timeZoneLabel={timeZoneLabel}
+            />
+          }
         />
       </div>
 

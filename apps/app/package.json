@@ -71,9 +71,9 @@
   "private": true,
   "scripts": {
     "analyze": "ANALYZE=true npm run build",
-    "build": "next build",
+    "build": "node -e \"require('node:fs').rmSync('.next', { recursive: true, force: true })\" && next build",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "dev": "next dev -p 2221",
+    "dev": "cross-env NEXT_DIST_DIR=.next-dev next dev -p 2221",
     "start": "next start",
     "test": "cross-env NODE_ENV=test vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"

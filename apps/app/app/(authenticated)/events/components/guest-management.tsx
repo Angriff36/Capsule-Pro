@@ -86,6 +86,35 @@ interface GuestsResponse {
   };
 }
 
+interface ApiErrorPayload {
+  error?: string;
+  message?: string;
+}
+
+const getResponseErrorMessage = async (
+  response: Response,
+  fallback: string
+): Promise<string> => {
+  const contentType = response.headers.get("content-type") ?? "";
+
+  if (contentType.includes("application/json")) {
+    const payload = (await response.json().catch(() => null)) as
+      | ApiErrorPayload
+      | null;
+    const message = payload?.message || payload?.error;
+    if (typeof message === "string" && message.trim().length > 0) {
+      return message.trim();
+    }
+  }
+
+  const text = (await response.text().catch(() => "")).trim();
+  if (text.length > 0) {
+    return text.slice(0, 180);
+  }
+
+  return fallback;
+};
+
 // Common dietary restrictions and allergens
 const COMMON_DIETARY_RESTRICTIONS = [
   "Vegetarian",
@@ -124,6 +153,7 @@ const MEAL_PREFERENCES = [
 export function GuestManagement({ eventId }: GuestManagementProps) {
   const [guests, setGuests] = useState<EventGuest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [guestFetchError, setGuestFetchError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -155,6 +185,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
   const fetchGuests = useCallback(
     async (query?: string) => {
       setIsLoading(true);
+      setGuestFetchError(null);
       try {
         const params = new URLSearchParams();
         if (query) {
@@ -166,14 +197,44 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
         );
 
         if (!response.ok) {
-          throw new Error("Failed to fetch guests");
+          const apiMessage = await getResponseErrorMessage(
+            response,
+            "Failed to fetch guests"
+          );
+          const detailedMessage = `Guest API returned ${response.status}: ${apiMessage}`;
+          setGuests([]);
+          setGuestFetchError(detailedMessage);
+          if (!query) {
+            toast.error(detailedMessage);
+          }
+          return;
         }
 
-        const data: GuestsResponse = await response.json();
+        const data = (await response.json()) as Partial<GuestsResponse>;
+        if (!Array.isArray(data.guests)) {
+          const invalidShapeError =
+            "Guest API returned an invalid payload (missing guests array).";
+          setGuests([]);
+          setGuestFetchError(invalidShapeError);
+          if (!query) {
+            toast.error(invalidShapeError);
+          }
+          return;
+        }
+
         setGuests(data.guests);
+        setGuestFetchError(null);
       } catch (error) {
         console.error("Error fetching guests:", error);
-        toast.error("Failed to load guests");
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to load guests. Check API server connectivity.";
+        setGuests([]);
+        setGuestFetchError(message);
+        if (!query) {
+          toast.error(message);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -892,6 +953,27 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
           value={searchQuery}
         />
       </div>
+
+      {guestFetchError ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-2.5">
+          <div className="min-w-0">
+            <p className="font-medium text-destructive text-sm">
+              Guest list could not be loaded
+            </p>
+            <p className="truncate text-foreground/80 text-xs">
+              {guestFetchError}
+            </p>
+          </div>
+          <Button
+            onClick={() => fetchGuests(searchQuery)}
+            size="sm"
+            type="button"
+            variant="outline"
+          >
+            Retry
+          </Button>
+        </div>
+      ) : null}
 
       {/* Guests Table */}
       <div className="rounded-lg border">

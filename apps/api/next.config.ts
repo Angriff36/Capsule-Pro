@@ -8,9 +8,11 @@ const OPENTELEMETRY_EXCLUDE = /@opentelemetry/;
 const SENTRY_EXCLUDE = /@sentry/;
 const CRITICAL_DEPENDENCY_WARNING =
   /Critical dependency: the request of a dependency is an expression/;
+const distDir = process.env.NEXT_DIST_DIR?.trim() || ".next";
 
 let nextConfig: NextConfig = withLogging({
   ...config,
+  distDir,
   // Disable type checking during build to avoid React type conflicts
   typescript: {
     ignoreBuildErrors: true,

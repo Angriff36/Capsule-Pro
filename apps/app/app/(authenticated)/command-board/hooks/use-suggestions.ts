@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import type { SuggestedAction } from "../actions/suggestions-types";
 
@@ -13,7 +13,7 @@ export function useSuggestions(
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSuggestions = async () => {
+  const fetchSuggestions = useCallback(async () => {
     if (!tenantId) {
       return;
     }
@@ -47,11 +47,11 @@ export function useSuggestions(
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [tenantId, boardId, eventId]);
 
-  const dismissSuggestion = async (suggestionId: string) => {
+  const dismissSuggestion = useCallback(async (suggestionId: string) => {
     setSuggestions((prev) => prev.filter((s) => s.id !== suggestionId));
-  };
+  }, []);
 
   return {
     suggestions,

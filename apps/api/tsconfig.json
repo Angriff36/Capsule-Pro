@@ -4,16 +4,24 @@
     "ignoreDeprecations": "5.0",
     "skipLibCheck": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     },
     "strictNullChecks": true
   },
   "include": [
-    "next-env.d.ts",
-    "next.config.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "next-env.d.ts",
+    "next.config.ts",
+    ".next-dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "test-scripts", ".next", "dist"]
+  "exclude": [
+    "node_modules",
+    "test-scripts",
+    ".next",
+    "dist"
+  ]
 }

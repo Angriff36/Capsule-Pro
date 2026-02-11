@@ -31,11 +31,11 @@ import {
 } from "@repo/design-system/components/ui/select";
 import {
   AlertTriangleIcon,
+  ClipboardListIcon,
   DollarSignIcon,
   FileTextIcon,
   Lightbulb,
   PlusIcon,
-  SparklesIcon,
   TrashIcon,
   UtensilsIcon,
 } from "lucide-react";
@@ -401,66 +401,75 @@ export function BudgetSection({
   onViewBudget,
   onCreateBudget,
 }: BudgetSectionProps) {
+  const currencyFormatter = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  });
+
   return (
-    <CollapsibleSectionBlock
-      defaultOpen
-      emptyState={{
-        icon: DollarSignIcon,
-        title: "No budget created for this event",
-        description: "Create a budget to track costs and manage event finances",
-        actionLabel: "Create Budget",
-        onAction: onCreateBudget,
-      }}
-      icon={DollarSignIcon}
-      iconColor="text-green-500"
-      showEmptyState={!budget}
-      subtitle={
-        budget?.status
-          ? `${getBudgetStatusLabel(budget.status)} - v${budget.version ?? 1}`
-          : "No budget created yet"
-      }
-      title="Event Budget"
-      triggerText={() => (budget ? "View budget" : "Create budget")}
-    >
-      {budget && (
-        <div className="grid gap-4 md:grid-cols-4">
-          <div className="rounded-lg border p-4">
-            <div className="text-muted-foreground text-xs">Total Budgeted</div>
-            <div className="text-lg font-semibold">
-              {new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "USD",
-              }).format(budget.total_budget_amount ?? 0)}
-            </div>
+    <Card className="border-border/70 shadow-sm">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <DollarSignIcon className="size-4 text-emerald-600" />
+              Budget
+            </CardTitle>
+            <p className="mt-1 text-foreground/75 text-xs">
+              {budget?.status
+                ? `${getBudgetStatusLabel(budget.status)} - v${budget.version ?? 1}`
+                : "No budget configured"}
+            </p>
           </div>
-          <div className="rounded-lg border p-4">
-            <div className="text-muted-foreground text-xs">Total Actual</div>
-            <div className="text-lg font-semibold">
-              {new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "USD",
-              }).format(budget.total_actual_amount ?? 0)}
-            </div>
-          </div>
-          <div className="rounded-lg border p-4">
-            <div className="text-muted-foreground text-xs">Variance</div>
-            <div
-              className={`text-lg font-semibold ${getVarianceColor(budget.variance_amount ?? 0)}`}
-            >
-              {new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "USD",
-              }).format(budget.variance_amount ?? 0)}
-            </div>
-          </div>
-          <div className="flex items-center">
-            <Button className="w-full" onClick={() => onViewBudget(budget.id)}>
-              View Full Budget
+          {budget ? (
+            <Button onClick={() => onViewBudget(budget.id)} size="sm" variant="outline">
+              View
+            </Button>
+          ) : null}
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        {!budget ? (
+          <div className="rounded-lg border border-dashed bg-muted/20 p-4">
+            <p className="font-medium text-sm">No budget configured yet</p>
+            <p className="mt-1 text-foreground/70 text-sm">
+              Create a budget to track planned vs actual event spend.
+            </p>
+            <Button className="mt-3" onClick={onCreateBudget} size="sm">
+              Create budget
             </Button>
           </div>
-        </div>
-      )}
-    </CollapsibleSectionBlock>
+        ) : (
+          <div className="grid gap-2">
+            <div className="grid gap-2 sm:grid-cols-3">
+              <div className="rounded-lg border p-3">
+                <div className="text-foreground/70 text-xs">Total budgeted</div>
+                <div className="font-semibold text-base">
+                  {currencyFormatter.format(budget.total_budget_amount ?? 0)}
+                </div>
+              </div>
+              <div className="rounded-lg border p-3">
+                <div className="text-foreground/70 text-xs">Total actual</div>
+                <div className="font-semibold text-base">
+                  {currencyFormatter.format(budget.total_actual_amount ?? 0)}
+                </div>
+              </div>
+              <div className="rounded-lg border p-3">
+                <div className="text-foreground/70 text-xs">Variance</div>
+                <div
+                  className={`font-semibold text-base ${getVarianceColor(budget.variance_amount ?? 0)}`}
+                >
+                  {currencyFormatter.format(budget.variance_amount ?? 0)}
+                </div>
+              </div>
+            </div>
+            <Button onClick={() => onViewBudget(budget.id)} size="sm" variant="outline">
+              Open budget workspace
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -484,20 +493,13 @@ export function TaskBreakdownSection({
   onSave,
 }: TaskBreakdownSectionProps) {
   const showEmptyState = breakdown === null && !isGenerating;
-  const generateButton = (
-    <Button onClick={onOpenGenerateModal}>
-      <SparklesIcon className="mr-2 size-4" />
-      Generate Task Breakdown
-    </Button>
-  );
 
   return (
     <>
       <SectionHeaderBlock
-        actions={generateButton}
-        icon={SparklesIcon}
-        iconColor="text-purple-500"
-        title="AI Task Assistant"
+        icon={ClipboardListIcon}
+        iconColor="text-sky-700"
+        title="Task Breakdown"
       />
 
       {breakdown && (
@@ -512,17 +514,19 @@ export function TaskBreakdownSection({
       )}
 
       {showEmptyState && (
-        <div className="rounded-xl border border-dashed p-8 text-center">
-          <SparklesIcon className="mx-auto mb-4 size-12 text-muted-foreground/50" />
-          <h3 className="mb-2 font-medium">No task breakdown generated yet</h3>
-          <p className="mb-4 text-muted-foreground text-sm">
-            Generate an AI-powered task breakdown with prep, setup, and cleanup
-            tasks based on your event details and historical data.
-          </p>
-          <Button onClick={onOpenGenerateModal}>
-            <SparklesIcon className="mr-2 size-4" />
-            Generate Task Breakdown
-          </Button>
+        <div className="rounded-xl border border-dashed bg-muted/15 p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="font-medium text-base">No task plan yet</h3>
+              <p className="text-foreground/70 text-sm">
+                Build a prep, setup, and cleanup plan from this event&apos;s
+                details and historical patterns.
+              </p>
+            </div>
+            <Button onClick={onOpenGenerateModal}>
+              Generate task breakdown
+            </Button>
+          </div>
         </div>
       )}
 
@@ -538,7 +542,6 @@ interface ExecutiveSummarySectionProps {
   isLoading: boolean;
   onGenerate: () => Promise<GeneratedEventSummary>;
   onDelete: () => Promise<void>;
-  onOpenGenerateModal: () => void;
 }
 
 export function ExecutiveSummarySection({
@@ -548,21 +551,12 @@ export function ExecutiveSummarySection({
   isLoading,
   onGenerate,
   onDelete,
-  onOpenGenerateModal,
 }: ExecutiveSummarySectionProps) {
-  const generateButton = (
-    <Button onClick={onOpenGenerateModal}>
-      <SparklesIcon className="mr-2 size-4" />
-      Generate Summary
-    </Button>
-  );
-
   return (
     <>
       <SectionHeaderBlock
-        actions={generateButton}
-        icon={SparklesIcon}
-        iconColor="text-primary"
+        icon={FileTextIcon}
+        iconColor="text-amber-700"
         title="Executive Summary"
       />
 
@@ -602,32 +596,39 @@ export function SuggestionsSection({
   onDismiss,
   onAction,
 }: SuggestionsSectionProps) {
-  const toggleButton = (
-    <Button
-      onClick={() => onShowSuggestionsChange(!showSuggestions)}
-      variant={showSuggestions ? "default" : "outline"}
-    >
-      <SparklesIcon className="mr-2 size-4" />
-      {showSuggestions ? "Hide Suggestions" : "Show Suggestions"}
-      {suggestions.length > 0 && (
-        <Badge className="ml-2" variant="secondary">
-          {suggestions.length}
-        </Badge>
-      )}
-    </Button>
-  );
+  const suggestionCount = suggestions.length;
+  const hasSuggestions = suggestionCount > 0;
+  const suggestionLabel = hasSuggestions
+    ? `${suggestionCount} recommendation${suggestionCount === 1 ? "" : "s"} ready`
+    : "No recommendations generated";
 
   return (
-    <>
-      <SectionHeaderBlock
-        actions={toggleButton}
-        icon={Lightbulb}
-        iconColor="text-amber-500"
-        title="AI Suggestions"
-      />
-
-      {showSuggestions && (
-        <Card className="border-slate-200 shadow-sm">
+    <Card className="border-border/70 shadow-sm">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Lightbulb className="size-4 text-amber-600" />
+              AI Recommendations
+            </CardTitle>
+            <p className="mt-1 text-foreground/75 text-xs">{suggestionLabel}</p>
+          </div>
+          <Button
+            onClick={() => onShowSuggestionsChange(!showSuggestions)}
+            size="sm"
+            variant={showSuggestions ? "default" : "outline"}
+          >
+            {showSuggestions ? "Hide" : "View"}
+            {hasSuggestions ? (
+              <Badge className="ml-2" variant="secondary">
+                {suggestionCount}
+              </Badge>
+            ) : null}
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        {showSuggestions ? (
           <SuggestionsPanel
             isLoading={isLoading}
             onAction={onAction}
@@ -636,38 +637,36 @@ export function SuggestionsSection({
             onRefresh={onRefresh}
             suggestions={suggestions}
           />
-        </Card>
-      )}
-      {!showSuggestions &&
-        suggestions.length > 0 &&
-        (() => {
-          const plural = suggestions.length === 1 ? "" : "s";
-          return (
-            <Card className="border-purple-200 bg-purple-50/50 shadow-sm">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 font-semibold text-sm text-purple-900">
-                  <Lightbulb className="size-4 text-purple-600" />
-                  AI Suggestions Available
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-purple-700 text-xs">
-                  You have {suggestions.length} suggestion{plural} that could
-                  help optimize this event.
-                </p>
-                <Button
-                  className="w-full bg-purple-600 text-white hover:bg-purple-700"
-                  onClick={() => onShowSuggestionsChange(true)}
-                  size="sm"
-                >
-                  <SparklesIcon className="mr-2 size-3" />
-                  View Suggestions
+        ) : (
+          <div className="rounded-lg border border-dashed bg-muted/20 p-4">
+            <p className="font-medium text-sm">
+              {hasSuggestions
+                ? "Recommendations are ready to review"
+                : "No recommendations available yet"}
+            </p>
+            <p className="mt-1 text-foreground/70 text-sm">
+              {hasSuggestions
+                ? "Open this panel to triage suggestions and apply actions."
+                : "Generate insights from event activity to populate recommendations."}
+            </p>
+            <div className="mt-3 flex gap-2">
+              <Button
+                onClick={() => onShowSuggestionsChange(true)}
+                size="sm"
+                variant={hasSuggestions ? "default" : "outline"}
+              >
+                {hasSuggestions ? "Review recommendations" : "Open panel"}
+              </Button>
+              {!hasSuggestions ? (
+                <Button onClick={onRefresh} size="sm" variant="ghost">
+                  Refresh
                 </Button>
-              </CardContent>
-            </Card>
-          );
-        })()}
-    </>
+              ) : null}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -720,54 +719,63 @@ export function PrepTasksSection({
   onOpenGenerateModal,
 }: PrepTasksSectionProps) {
   return (
-    <CollapsibleSectionBlock
-      defaultOpen
-      emptyState={{
-        title: "No prep tasks yet",
-        description: "Generate a task breakdown or add tasks manually",
-        actionLabel: "Generate with AI",
-        onAction: onOpenGenerateModal,
-      }}
-      icon={PlusIcon}
-      iconColor="text-purple-500"
-      showEmptyState={prepTasks.length === 0}
-      subtitle={`${prepTasks.length} tasks linked to this event`}
-      title="Prep tasks"
-      triggerText="View tasks"
-    >
-      <div className="grid gap-3">
-        {prepTasks.map((task) => (
-          <div
-            className="flex flex-wrap items-center justify-between gap-4 rounded-lg border px-4 py-3"
-            key={task.id}
-          >
-            <div className="flex flex-col">
-              <span className="font-medium">{task.name}</span>
-              <span className="text-muted-foreground text-xs">
-                Due{" "}
-                {new Date(task.dueByDate).toLocaleDateString("en-US", {
-                  dateStyle: "medium",
-                })}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {task.isEventFinish ? (
-                <span className="rounded bg-muted px-2 py-1 text-xs">
-                  Finish
-                </span>
-              ) : null}
-              <span className="rounded bg-muted px-2 py-1 text-xs capitalize">
-                {task.status}
-              </span>
-              <span className="text-muted-foreground text-xs">
-                {task.servingsTotal ?? Math.round(Number(task.quantityTotal))}
-                {task.servingsTotal ? " servings" : ""}
-              </span>
-            </div>
+    <Card className="border-border/70 shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <ClipboardListIcon className="size-4 text-sky-600" />
+          Prep Tasks
+        </CardTitle>
+        <p className="text-foreground/75 text-xs">
+          {prepTasks.length} tasks linked to this event
+        </p>
+      </CardHeader>
+      <CardContent className="pt-0">
+        {prepTasks.length === 0 ? (
+          <div className="rounded-lg border border-dashed bg-muted/20 p-4">
+            <p className="font-medium text-sm">No prep tasks yet</p>
+            <p className="mt-1 text-foreground/70 text-sm">
+              Generate a task breakdown or add tasks manually.
+            </p>
+            <Button className="mt-3" onClick={onOpenGenerateModal} size="sm">
+              Generate task breakdown
+            </Button>
           </div>
-        ))}
-      </div>
-    </CollapsibleSectionBlock>
+        ) : (
+          <div className="grid gap-2">
+            {prepTasks.map((task) => (
+              <div
+                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5"
+                key={task.id}
+              >
+                <div className="flex flex-col">
+                  <span className="font-medium text-sm">{task.name}</span>
+                  <span className="text-foreground/70 text-xs">
+                    Due{" "}
+                    {new Date(task.dueByDate).toLocaleDateString("en-US", {
+                      dateStyle: "medium",
+                    })}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {task.isEventFinish ? (
+                    <span className="rounded bg-muted px-2 py-1 text-xs">
+                      Finish
+                    </span>
+                  ) : null}
+                  <span className="rounded bg-muted px-2 py-1 text-xs capitalize">
+                    {task.status}
+                  </span>
+                  <span className="text-foreground/70 text-xs">
+                    {task.servingsTotal ?? Math.round(Number(task.quantityTotal))}
+                    {task.servingsTotal ? " servings" : ""}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
