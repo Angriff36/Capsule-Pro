@@ -9,6 +9,25 @@
 
 import { keys } from "./keys";
 
+const getSentryEnvironment = () => {
+  const explicit = keys().SENTRY_ENVIRONMENT?.trim();
+  if (explicit) {
+    return explicit;
+  }
+
+  const vercelEnv = process.env.VERCEL_ENV?.trim();
+  if (vercelEnv) {
+    return vercelEnv;
+  }
+
+  const nodeEnv = process.env.NODE_ENV?.trim();
+  if (nodeEnv) {
+    return nodeEnv;
+  }
+
+  return undefined;
+};
+
 export const initializeSentry = async (): Promise<void> => {
   // Import Sentry dynamically to reduce edge bundle size when not using Sentry
   const Sentry = await import("@sentry/nextjs");
@@ -22,6 +41,7 @@ export const initializeSentry = async (): Promise<void> => {
 
   Sentry.default.init({
     dsn,
+    environment: getSentryEnvironment(),
 
     // Enable logging
     enableLogs: true,

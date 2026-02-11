@@ -10,9 +10,29 @@
 import * as Sentry from "@sentry/nextjs";
 import { keys } from "./keys";
 
+const getSentryEnvironment = () => {
+  const explicit = keys().SENTRY_ENVIRONMENT?.trim();
+  if (explicit) {
+    return explicit;
+  }
+
+  const vercelEnv = process.env.VERCEL_ENV?.trim();
+  if (vercelEnv) {
+    return vercelEnv;
+  }
+
+  const nodeEnv = process.env.NODE_ENV?.trim();
+  if (nodeEnv) {
+    return nodeEnv;
+  }
+
+  return undefined;
+};
+
 export const initializeSentry = (): ReturnType<typeof Sentry.init> =>
   Sentry.init({
     dsn: keys().NEXT_PUBLIC_SENTRY_DSN,
+    environment: getSentryEnvironment(),
 
     // Enable logging
     enableLogs: true,
