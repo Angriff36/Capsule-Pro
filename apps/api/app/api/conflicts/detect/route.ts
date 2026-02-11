@@ -226,6 +226,96 @@ async function detectInventoryConflicts(
 }
 
 /**
+ * Detect venue conflicts (multiple events at same venue on same date)
+ */
+async function detectVenueConflicts(
+  tenantId: string,
+  timeRange?: { start: Date; end: Date }
+): Promise<Conflict[]> {
+  const conflicts: Conflict[] = [];
+  const now = new Date();
+  const startDate = timeRange?.start || now;
+  const endDate =
+    timeRange?.end || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  // Find multiple events at same venue on same date
+  const venueConflicts = await database.$queryRaw<
+    Array<{
+      venue_id: string;
+      venue_name: string;
+      event_date: Date;
+      event_count: number;
+      event_ids: string[];
+      event_titles: string[];
+    }>
+  >`
+    SELECT
+      v.id as venue_id,
+      v.name as venue_name,
+      e.event_date,
+      COUNT(*) as event_count,
+      ARRAY_AGG(e.id ORDER BY e.title) as event_ids,
+      ARRAY_AGG(e.title ORDER BY e.title) as event_titles
+    FROM tenant_events.events e
+    JOIN tenant.locations v ON e.venue_id = v.id
+    WHERE e.tenant_id = ${tenantId}::uuid
+      AND e.deleted_at IS NULL
+      AND v.deleted_at IS NULL
+      AND e.venue_id IS NOT NULL
+      AND e.event_date BETWEEN ${startDate}::date AND ${endDate}::date
+      AND e.status NOT IN ('cancelled', 'completed')
+    GROUP BY v.id, v.name, e.event_date
+    HAVING COUNT(*) > 1
+    ORDER BY e.event_date, event_count DESC
+    LIMIT 20
+  `;
+
+  for (const conflict of venueConflicts) {
+    const severity =
+      conflict.event_count > 2 ? "critical" : conflict.event_count > 1 ? "high" : "medium";
+
+    conflicts.push({
+      id: `venue-conflict-${conflict.venue_id}-${conflict.event_date.toISOString()}`,
+      type: "venue",
+      severity,
+      title: `Multiple events at ${conflict.venue_name} on ${conflict.event_date.toLocaleDateString()}`,
+      description: `${conflict.event_count} event(s) scheduled at ${conflict.venue_name} on ${conflict.event_date.toLocaleDateString()}: ${conflict.event_titles.join(", ")}`,
+      affectedEntities: [
+        {
+          type: "venue",
+          id: conflict.venue_id,
+          name: conflict.venue_name,
+        },
+        ...conflict.event_ids.map((eventId, index) => ({
+          type: "event" as const,
+          id: eventId,
+          name: conflict.event_titles[index] ?? "Unknown Event",
+        })),
+      ],
+      suggestedAction:
+        conflict.event_count > 2
+          ? "Critical: Review all events immediately - reschedule some to alternative venues"
+          : "Review event schedules and consider rescheduling to an alternative venue or date",
+      resolutionOptions: [
+        {
+          type: "reschedule",
+          description: `Move one or more events to a different date`,
+          affectedEntities: conflict.event_ids.map((eventId, index) => ({
+            type: "event" as const,
+            id: eventId,
+            name: conflict.event_titles[index] ?? "Unknown Event",
+          })),
+          estimatedImpact: conflict.event_count > 2 ? "high" : "medium",
+        },
+      ],
+      createdAt: new Date(),
+    });
+  }
+
+  return conflicts;
+}
+
+/**
  * Detect timeline conflicts (task dependency violations, deadline risks)
  */
 async function detectTimelineConflicts(
@@ -304,6 +394,7 @@ function buildConflictSummary(conflicts: Conflict[]) {
       staff: 0,
       inventory: 0,
       timeline: 0,
+      venue: 0,
     } as Record<ConflictType, number>,
   };
 
@@ -354,6 +445,10 @@ export async function POST(request: Request) {
 
     if (!entityTypes || entityTypes.includes("timeline")) {
       conflicts.push(...(await detectTimelineConflicts(tenantId, timeRange)));
+    }
+
+    if (!entityTypes || entityTypes.includes("venue")) {
+      conflicts.push(...(await detectVenueConflicts(tenantId, timeRange)));
     }
 
     // Sort by severity (critical first)

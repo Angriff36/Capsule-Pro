@@ -16,9 +16,21 @@ export const ConflictType = {
   staff: "staff",
   inventory: "inventory",
   timeline: "timeline",
+  venue: "venue",
 } as const;
 
 export type ConflictType = (typeof ConflictType)[keyof typeof ConflictType];
+
+export interface ResolutionOption {
+  type: "reassign" | "reschedule" | "substitute" | "cancel" | "split";
+  description: string;
+  affectedEntities: {
+    type: "event" | "task" | "employee" | "inventory" | "venue";
+    id: string;
+    name: string;
+  }[];
+  estimatedImpact: "low" | "medium" | "high";
+}
 
 export interface Conflict {
   id: string;
@@ -27,11 +39,12 @@ export interface Conflict {
   title: string;
   description: string;
   affectedEntities: {
-    type: "event" | "task" | "employee" | "inventory";
+    type: "event" | "task" | "employee" | "inventory" | "venue";
     id: string;
     name: string;
   }[];
   suggestedAction?: string;
+  resolutionOptions?: ResolutionOption[];
   createdAt: Date;
 }
 
@@ -66,12 +79,26 @@ export const ConflictSchema = z.object({
   description: z.string(),
   affectedEntities: z.array(
     z.object({
-      type: z.enum(["event", "task", "employee", "inventory"]),
+      type: z.enum(["event", "task", "employee", "inventory", "venue"]),
       id: z.string(),
       name: z.string(),
     })
   ),
   suggestedAction: z.string().optional(),
+  resolutionOptions: z.array(
+    z.object({
+      type: z.enum(["reassign", "reschedule", "substitute", "cancel", "split"]),
+      description: z.string(),
+      affectedEntities: z.array(
+        z.object({
+          type: z.enum(["event", "task", "employee", "inventory", "venue"]),
+          id: z.string(),
+          name: z.string(),
+        })
+      ),
+      estimatedImpact: z.enum(["low", "medium", "high"]),
+    })
+  ).optional(),
   createdAt: z.date(),
 });
 

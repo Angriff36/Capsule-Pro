@@ -14,6 +14,7 @@ export const ConflictType = {
   staff: "staff",
   inventory: "inventory",
   timeline: "timeline",
+  venue: "venue",
 } as const;
 
 export type ConflictType = (typeof ConflictType)[keyof typeof ConflictType];
@@ -25,12 +26,24 @@ export interface Conflict {
   title: string;
   description: string;
   affectedEntities: {
-    type: "event" | "task" | "employee" | "inventory";
+    type: "event" | "task" | "employee" | "inventory" | "venue";
     id: string;
     name: string;
   }[];
   suggestedAction?: string;
+  resolutionOptions?: ResolutionOption[];
   createdAt: Date;
+}
+
+export interface ResolutionOption {
+  type: "reassign" | "reschedule" | "substitute" | "cancel" | "split";
+  description: string;
+  affectedEntities: {
+    type: "event" | "task" | "employee" | "inventory" | "venue";
+    id: string;
+    name: string;
+  }[];
+  estimatedImpact: "low" | "medium" | "high";
 }
 
 export interface ConflictDetectionRequest {
