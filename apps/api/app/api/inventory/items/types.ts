@@ -28,6 +28,31 @@ export const ITEM_CATEGORIES = [
 ] as const;
 export type ItemCategory = (typeof ITEM_CATEGORIES)[number];
 
+// Units of measure for inventory items
+export const UNITS_OF_MEASURE = [
+  "each",
+  "lb",
+  "oz",
+  "kg",
+  "g",
+  "gal",
+  "qt",
+  "pt",
+  "cup",
+  "tbsp",
+  "tsp",
+  "ml",
+  "l",
+  "case",
+  "box",
+  "bag",
+  "can",
+  "bottle",
+  "jar",
+  "pack",
+] as const;
+export type UnitOfMeasure = (typeof UNITS_OF_MEASURE)[number];
+
 // Stock status based on quantity vs reorder level
 export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
 
@@ -39,10 +64,14 @@ export interface InventoryItem {
   tenant_id: string;
   item_number: string;
   name: string;
+  description: string | null;
   category: string;
+  unit_of_measure: string;
   unit_cost: number;
   quantity_on_hand: number;
+  par_level: number;
   reorder_level: number;
+  supplier_id: string | null;
   tags: string[];
   fsa_status: FSAStatus | null;
   fsa_temp_logged: boolean | null;
@@ -67,10 +96,14 @@ export interface InventoryItemWithStatus extends InventoryItem {
 export interface CreateInventoryItemRequest {
   item_number: string;
   name: string;
+  description?: string;
   category: string;
+  unit_of_measure?: string;
   unit_cost?: number;
   quantity_on_hand?: number;
+  par_level?: number;
   reorder_level?: number;
+  supplier_id?: string;
   tags?: string[];
   fsa_status?: FSAStatus;
   fsa_temp_logged?: boolean;
@@ -84,10 +117,14 @@ export interface CreateInventoryItemRequest {
 export interface UpdateInventoryItemRequest {
   item_number?: string;
   name?: string;
+  description?: string;
   category?: string;
+  unit_of_measure?: string;
   unit_cost?: number;
   quantity_on_hand?: number;
+  par_level?: number;
   reorder_level?: number;
+  supplier_id?: string;
   tags?: string[];
   fsa_status?: FSAStatus;
   fsa_temp_logged?: boolean;
@@ -101,6 +138,7 @@ export interface UpdateInventoryItemRequest {
 export interface InventoryItemListFilters {
   search?: string;
   category?: string;
+  supplier_id?: string;
   stock_status?: StockStatus;
   fsa_status?: FSAStatus;
   tags?: string[];

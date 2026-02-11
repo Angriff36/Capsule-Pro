@@ -43,10 +43,14 @@ function buildItemResponse(
     tenantId: string;
     item_number: string;
     name: string;
+    description: string | null;
     category: string;
+    unitOfMeasure: string;
     unitCost: { toString: () => string };
     quantityOnHand: { toNumber: () => number };
+    parLevel: { toNumber: () => number };
     reorder_level: { toNumber: () => number };
+    supplierId: string | null;
     tags: string[];
     fsa_status: string | null;
     fsa_temp_logged: boolean | null;
@@ -66,10 +70,14 @@ function buildItemResponse(
     tenant_id: item.tenantId,
     item_number: item.item_number,
     name: item.name,
+    description: item.description,
     category: item.category,
+    unit_of_measure: item.unitOfMeasure,
     unit_cost: unitCost,
     quantity_on_hand: quantityOnHand,
+    par_level: Number(item.parLevel),
     reorder_level: Number(item.reorder_level),
+    supplier_id: item.supplierId,
     tags: item.tags,
     fsa_status: (item.fsa_status ?? "unknown") as FSAStatus,
     fsa_temp_logged: item.fsa_temp_logged ?? false,
@@ -94,8 +102,14 @@ function _buildUpdateData(
   if (body.name !== undefined) {
     updateData.name = body.name;
   }
+  if (body.description !== undefined) {
+    updateData.description = body.description;
+  }
   if (body.category !== undefined) {
     updateData.category = body.category;
+  }
+  if (body.unit_of_measure !== undefined) {
+    updateData.unitOfMeasure = body.unit_of_measure;
   }
   if (body.unit_cost !== undefined) {
     updateData.unitCost = body.unit_cost;
@@ -103,8 +117,14 @@ function _buildUpdateData(
   if (body.quantity_on_hand !== undefined) {
     updateData.quantityOnHand = body.quantity_on_hand;
   }
+  if (body.par_level !== undefined) {
+    updateData.parLevel = body.par_level;
+  }
   if (body.reorder_level !== undefined) {
     updateData.reorder_level = body.reorder_level;
+  }
+  if (body.supplier_id !== undefined) {
+    updateData.supplierId = body.supplier_id;
   }
   if (body.tags !== undefined) {
     updateData.tags = body.tags;
@@ -245,10 +265,14 @@ export async function PUT(request: Request, context: RouteContext) {
       UPDATE "tenant_inventory".inventory_items
       SET
         name = COALESCE(${body.name}, name),
+        description = COALESCE(${body.description}, description),
         category = COALESCE(${body.category}, category),
+        unit_of_measure = COALESCE(${body.unit_of_measure}, unit_of_measure),
         unit_cost = COALESCE(${body.unit_cost?.toString() || null}, unit_cost::text)::decimal(10,2),
         quantity_on_hand = COALESCE(${body.quantity_on_hand?.toString() || null}, quantity_on_hand::text)::decimal(12,3),
+        par_level = COALESCE(${body.par_level?.toString() || null}, par_level::text)::decimal(12,3),
         reorder_level = COALESCE(${body.reorder_level?.toString() || null}, reorder_level::text)::decimal(12,3),
+        supplier_id = COALESCE(${body.supplier_id}::uuid, supplier_id),
         tags = COALESCE(${body.tags ? JSON.stringify(body.tags) : null}, tags::jsonb),
         fsa_status = COALESCE(${body.fsa_status}, fsa_status),
         fsa_temp_logged = COALESCE(${body.fsa_temp_logged}, fsa_temp_logged),

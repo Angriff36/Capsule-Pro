@@ -1294,28 +1294,34 @@ model CateringOrder {
 }
 
 model InventoryItem {
-  tenantId          String         @map("tenant_id") @db.Uuid
-  id                String         @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId          String             @map("tenant_id") @db.Uuid
+  id                String             @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   item_number       String
   name              String
+  description       String?
   category          String
-  unitCost          Decimal        @default(0.00) @map("unit_cost") @db.Decimal(10, 2)
-  quantityOnHand    Decimal        @default(0.000) @map("quantity_on_hand") @db.Decimal(12, 3)
-  reorder_level     Decimal        @default(0.000) @db.Decimal(12, 3)
-  tags              String[]       @default([])
-  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt         DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt         DateTime?      @map("deleted_at") @db.Timestamptz(6)
-  fsa_status        String?        @default("unknown")
-  fsa_temp_logged   Boolean?       @default(false)
-  fsa_allergen_info Boolean?       @default(false)
-  fsa_traceable     Boolean?       @default(false)
+  unitOfMeasure     String             @default("each") @map("unit_of_measure")
+  unitCost          Decimal            @default(0.00) @map("unit_cost") @db.Decimal(10, 2)
+  quantityOnHand    Decimal            @default(0.000) @map("quantity_on_hand") @db.Decimal(12, 3)
+  parLevel          Decimal            @default(0.000) @map("par_level") @db.Decimal(12, 3)
+  reorder_level     Decimal            @default(0.000) @db.Decimal(12, 3)
+  supplierId        String?            @map("supplier_id") @db.Uuid
+  tags              String[]           @default([])
+  createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt         DateTime?          @map("deleted_at") @db.Timestamptz(6)
+  fsa_status        String?            @default("unknown")
+  fsa_temp_logged   Boolean?           @default(false)
+  fsa_allergen_info Boolean?           @default(false)
+  fsa_traceable     Boolean?           @default(false)
   wasteEntries      WasteEntry[]
   shipmentItems     ShipmentItem[]
-  tenant            Account        @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenant            Account            @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  supplier          InventorySupplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
 
   @@id([tenantId, id])
   @@unique([tenantId, id])
+  @@index([supplierId])
   @@map("inventory_items")
   @@schema("tenant_inventory")
 }
@@ -1350,21 +1356,22 @@ model InventoryTransaction {
 }
 
 model InventorySupplier {
-  tenantId        String     @map("tenant_id") @db.Uuid
-  id              String     @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId        String          @map("tenant_id") @db.Uuid
+  id              String          @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   supplier_number String
   name            String
   contact_person  String?
   email           String?
   phone           String?
-  payment_terms   String     @default("NET_30")
+  payment_terms   String          @default("NET_30")
   notes           String?
-  tags            String[]   @default([])
-  createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt       DateTime?  @map("deleted_at") @db.Timestamptz(6)
-  tenant          Account    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  shipments       Shipment[] @relation("ShipmentSupplier")
+  tags            String[]        @default([])
+  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime?       @map("deleted_at") @db.Timestamptz(6)
+  tenant          Account         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  shipments       Shipment[]      @relation("ShipmentSupplier")
+  items           InventoryItem[]
 
   @@id([tenantId, id])
   @@unique([tenantId, id])

@@ -58,6 +58,11 @@ function parseInventoryItemFilters(
     filters.category = category;
   }
 
+  const supplierId = searchParams.get("supplier_id");
+  if (supplierId) {
+    filters.supplier_id = supplierId;
+  }
+
   const stockStatus = searchParams.get("stock_status");
   if (
     stockStatus &&
@@ -136,6 +141,11 @@ export async function GET(request: Request) {
       where.category = filters.category;
     }
 
+    // Supplier filter
+    if (filters.supplier_id) {
+      where.supplierId = filters.supplier_id;
+    }
+
     // FSA status filter
     if (filters.fsa_status) {
       where.fsa_status = filters.fsa_status;
@@ -194,10 +204,14 @@ export async function GET(request: Request) {
         tenant_id: item.tenantId,
         item_number: item.item_number,
         name: item.name,
+        description: item.description,
         category: item.category,
+        unit_of_measure: item.unitOfMeasure,
         unit_cost: Number(item.unitCost),
         quantity_on_hand: quantityOnHand,
+        par_level: Number(item.parLevel),
         reorder_level: reorderLevel,
+        supplier_id: item.supplierId,
         tags: item.tags,
         fsa_status: (item.fsa_status ?? "unknown") as FSAStatus,
         fsa_temp_logged: item.fsa_temp_logged ?? false,
@@ -280,10 +294,14 @@ export async function POST(request: Request) {
         tenantId,
         item_number: body.item_number,
         name: body.name,
+        description: body.description ?? null,
         category: body.category,
+        unitOfMeasure: body.unit_of_measure ?? "each",
         unitCost: body.unit_cost ?? 0,
         quantityOnHand: body.quantity_on_hand ?? 0,
+        parLevel: body.par_level ?? 0,
         reorder_level: body.reorder_level ?? 0,
+        supplierId: body.supplier_id ?? null,
         tags: body.tags ?? [],
         fsa_status: body.fsa_status ?? "unknown",
         fsa_temp_logged: body.fsa_temp_logged ?? false,
@@ -301,10 +319,14 @@ export async function POST(request: Request) {
       tenant_id: item.tenantId,
       item_number: item.item_number,
       name: item.name,
+      description: item.description,
       category: item.category,
+      unit_of_measure: item.unitOfMeasure,
       unit_cost: Number(item.unitCost),
       quantity_on_hand: quantityOnHand,
+      par_level: Number(item.parLevel),
       reorder_level: reorderLevel,
+      supplier_id: item.supplierId,
       tags: item.tags,
       fsa_status: (item.fsa_status ?? "unknown") as FSAStatus,
       fsa_temp_logged: item.fsa_temp_logged ?? false,
