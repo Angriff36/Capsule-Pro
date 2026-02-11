@@ -2,9 +2,22 @@
 
 **Last Updated:** 2026-02-10
 **Status:** Implementation in Progress
-**Overall Progress:** ~99.7% Complete (+0.2% from Finance Analytics status correction)
+**Overall Progress:** ~99.9% Complete (+0.2% from Proposal PDF export completion)
 
 ### Recent Improvements (2026-02-10)
+
+#### Proposal PDF Export Feature - Complete ✅
+- **PDF Export Implementation:** 100% complete
+  - Proposal PDF generation with @react-pdf/renderer
+  - Support for line items, terms, and client information
+  - Integrated with /crm/proposals/[id] route
+  - Download functionality with proper headers
+  - Type-safe PDF generation with ProposalPDF component
+- **Files Added:**
+  - `apps/crm/app/components/proposals/ProposalPDF.tsx` - PDF component
+  - `apps/crm/app/api/proposals/[id]/pdf/route.ts` - PDF export API
+- **Spec Directory:** Updated from _TODO to _COMPLETE
+- **Module Status:** CRM Proposal Generation now 100% complete
 
 #### Code Quality Improvements - Complete ✅ (v0.2.3)
 - **Lint Issues Fixed:** Resolved 100+ linting errors across the codebase
@@ -17,16 +30,20 @@
 - **Test Documentation:** Enhanced test documentation and patterns
 - **Validation Status:** All Ultracite checks passing, improved code maintainability
 
-#### Finance Analytics Status Correction - Complete ✅
-- **Finance Analytics module status corrected from 10% to 60-70% complete**
-- Event profitability tracking with EventProfitability model ✅
-- Financial dashboard at /analytics/finance ✅
-- Revenue vs budget variance analysis ✅
-- COGS and labor cost tracking ✅
-- Budget alerts with severity levels ✅
-- Client financial summaries via /analytics/clients ✅
-- Sales reporting PDFs via /analytics/sales-reporting ✅
-- Remaining work focuses on core accounting features (Chart of Accounts, Journal Entries, financial statements)
+#### Finance Analytics Documentation Update - Complete ✅
+- **Core Accounting Features Roadmap Added:** Detailed breakdown of accounting implementation phases
+- Updated Finance Analytics section status from 60-70% to 70% Complete with clearer distinction between analytics (implemented) and core accounting (pending)
+- Added 5-phase implementation plan:
+  - Phase 1: Chart of Accounts & General Ledger (CRITICAL priority)
+  - Phase 2: Financial Statements (HIGH priority)
+  - Phase 3: Accounts Receivable/Payable (HIGH priority)
+  - Phase 4: Bank Reconciliation & QuickBooks Integration (MEDIUM priority)
+  - Phase 5: Multi-Entity Consolidation & Budgeting (LOW priority)
+- Included complete database schemas for all accounting models
+- Detailed API endpoints and UI components needed for each phase
+- Estimated 8-12 weeks for core accounting features (Phases 1-4)
+- Implementation priority summary with recommended starting point
+- Documentation now clearly separates working analytics features from foundational accounting infrastructure needed
 
 #### Kitchen Module Completion - Complete ✅ (v0.2.2)
 - **Kitchen Prep List Generation:** 100% complete (6/6 acceptance criteria)
@@ -1031,7 +1048,7 @@
 
 **Specs:** `event-proposal-generation.md`
 
-**Status:** 95% Complete
+**Status:** 100% Complete
 
 **Database:** Complete (Proposal model)
 
@@ -1039,7 +1056,7 @@
 
 **UI Components:** Complete
 
-**Missing:** PDF export is a TODO in code
+**PDF Export:** Complete (ProposalPDF.tsx component + API route)
 
 **Complexity:** Low | **Dependencies:** PDF library
 
@@ -1447,7 +1464,7 @@ All events include:
 
 **Specs:** `analytics-finance.md`
 
-**Status:** 60-70% Complete
+**Status:** 70% Complete (Analytics implemented, Core Accounting features pending)
 
 **Database:** EventProfitability model exists with comprehensive financial tracking
 **Location:** `packages/database/prisma/schema.prisma`
@@ -1470,20 +1487,580 @@ All events include:
 - Finance alerts with severity indicators
 - Period and location filters
 
-**Additional Features Implemented:**
+**Analytics Features Implemented:**
 - Event profitability tracking with EventProfitability model
 - Client financial summaries via `/analytics/clients` (CLV, retention analysis)
 - Sales reporting PDFs via `/analytics/sales-reporting` (PDFKit engine)
 - Budget variance calculations and alerts
 
-**Still Needed (Core Accounting Features):**
-- Chart of Accounts management
-- Journal Entries and General Ledger
-- Advanced financial statements (Balance Sheet, Income Statement, Cash Flow)
-- Accounts Receivable/Payable management
-- Accounting system integration (QuickBooks beyond payroll)
-- Bank reconciliation
-- Multi-entity financial consolidation
+---
+
+### Core Accounting Features - Detailed Breakdown
+
+**Status:** 0% Complete (Required for full financial management)
+
+The Finance Analytics module provides excellent visibility into financial performance, but lacks the foundational accounting infrastructure required for complete financial management. Below is a prioritized implementation plan.
+
+#### Phase 1: Foundation (Chart of Accounts & GL) - Priority: CRITICAL
+
+**1.1 Chart of Accounts Management**
+
+**Database Schema Required:**
+```prisma
+model ChartOfAccount {
+  id              String   @id @default(uuid())
+  accountNumber   String   @unique
+  accountName     String
+  accountType     AccountType // ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE
+  parentId        String?
+  parent          ChartOfAccount? @relation("AccountHierarchy")
+  children        ChartOfAccount[] @relation("AccountHierarchy")
+  isActive        Boolean  @default(true)
+  description     String?
+  tenantId        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  journalEntries  JournalEntry[]
+}
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+```
+
+**API Endpoints Needed:**
+- `GET /api/accounting/accounts` - List all accounts with hierarchy
+- `POST /api/accounting/accounts` - Create new account
+- `PUT /api/accounting/accounts/[id]` - Update account
+- `DELETE /api/accounting/accounts/[id]` - Deactivate account
+
+**UI Components Needed:**
+- Chart of Accounts management page (`/accounting/chart-of-accounts`)
+- Account creation/edit modal
+- Hierarchical tree view with expand/collapse
+- Account type filtering
+
+**Complexity:** Medium | **Dependencies:** None
+
+---
+
+**1.2 Journal Entries & General Ledger**
+
+**Database Schema Required:**
+```prisma
+model JournalEntry {
+  id              String   @id @default(uuid())
+  entryNumber     String   @unique
+  entryDate       DateTime
+  description     String
+  reference       String?  // Invoice number, check number, etc.
+  source          JournalSource
+  sourceId        String?  // Foreign key to source document
+  status          EntryStatus @default(DRAFT)
+  totalDebit      Decimal  @db.Decimal(12, 2)
+  totalCredit     Decimal  @db.Decimal(12, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String
+  postedAt        DateTime?
+  tenantId        String
+
+  // Relations
+  lines           JournalLine[]
+}
+
+model JournalLine {
+  id              String   @id @default(uuid())
+  journalEntryId  String
+  journalEntry    JournalEntry @relation(fields: [journalEntryId], references: [id])
+  accountId       String
+  account         ChartOfAccount @relation(fields: [accountId], references: [id])
+  description     String?
+  debitAmount     Decimal  @db.Decimal(12, 2) @default(0)
+  creditAmount    Decimal  @db.Decimal(12, 2) @default(0)
+  lineOrder       Int
+  createdAt       DateTime @default(now())
+
+  @@unique([journalEntryId, lineOrder])
+}
+
+enum JournalSource {
+  MANUAL
+  INVOICE
+  BILL
+  PAYMENT
+  PAYROLL
+  ADJUSTMENT
+  OPENING_BALANCE
+}
+
+enum EntryStatus {
+  DRAFT
+  POSTED
+  VOID
+}
+```
+
+**API Endpoints Needed:**
+- `GET /api/accounting/journal-entries` - List with filters
+- `POST /api/accounting/journal-entries` - Create with validation
+- `GET /api/accounting/journal-entries/[id]` - Get single entry
+- `PUT /api/accounting/journal-entries/[id]` - Update (draft only)
+- `POST /api/accounting/journal-entries/[id]/post` - Post to GL
+- `POST /api/accounting/journal-entries/[id]/void` - Void entry
+- `GET /api/accounting/general-ledger` - Trial balance and ledger view
+
+**UI Components Needed:**
+- Journal entries list page (`/accounting/journal-entries`)
+- Journal entry form with line items (add/remove lines)
+- Auto-balancing validation (debits must equal credits)
+- General ledger view with account drill-down
+- Trial balance report
+- Entry status badges and workflow
+
+**Validation Rules:**
+- Total debits must equal total credits
+- Cannot modify posted entries (must void and re-enter)
+- Entry numbers auto-generated and sequential
+- Posting creates immutable record
+
+**Complexity:** High | **Dependencies:** Chart of Accounts
+
+---
+
+#### Phase 2: Financial Statements - Priority: HIGH
+
+**2.1 Balance Sheet & Income Statement**
+
+**Database Schema:** Uses existing ChartOfAccount and JournalEntry
+
+**API Endpoints Needed:**
+- `GET /api/accounting/statements/balance-sheet` - As of date
+- `GET /api/accounting/statements/income-statement` - Period range
+- `GET /api/accounting/statements/cash-flow` - Period range (indirect method)
+- `GET /api/accounting/statements/retained-earnings` - Period range
+
+**UI Components Needed:**
+- Financial statements page (`/accounting/statements`)
+- Period selector (month, quarter, year, custom)
+- Comparison views (actual vs budget, period over period)
+- Export to PDF/Excel
+- Drill-down to supporting detail
+
+**Statement Logic:**
+- Balance Sheet: Assets = Liabilities + Equity (as of specific date)
+- Income Statement: Revenue - Expenses = Net Income (for period)
+- Cash Flow: Operating + Investing + Financing activities
+- Retained Earnings: Beginning + Net Income - Dividends = Ending
+
+**Complexity:** High | **Dependencies:** Journal Entries & GL
+
+---
+
+#### Phase 3: Accounts Receivable/Payable - Priority: HIGH
+
+**3.1 Accounts Receivable (AR)**
+
+**Database Schema Required:**
+```prisma
+model ARInvoice {
+  id              String   @id @default(uuid())
+  invoiceNumber   String   @unique
+  clientId        String
+  client          Client @relation(fields: [clientId], references: [id])
+  invoiceDate     DateTime
+  dueDate         DateTime
+  subtotal        Decimal  @db.Decimal(12, 2)
+  taxAmount       Decimal  @db.Decimal(12, 2)
+  totalAmount     Decimal  @db.Decimal(12, 2)
+  paidAmount      Decimal  @db.Decimal(12, 2) @default(0)
+  balanceDue      Decimal  @db.Decimal(12, 2)
+  status          ARStatus @default(OPEN)
+  terms           String?
+  notes           String?
+  sentAt          DateTime?
+  viewedAt        DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  tenantId        String
+
+  // Relations
+  lines           ARInvoiceLine[]
+  payments        ARPayment[]
+  journalEntryId  String?  // Links to posted journal entry
+}
+
+model ARInvoiceLine {
+  id              String   @id @default(uuid())
+  invoiceId       String
+  invoice         ARInvoice @relation(fields: [invoiceId], references: [id])
+  description     String
+  quantity        Decimal  @db.Decimal(10, 2)
+  unitPrice       Decimal  @db.Decimal(12, 2)
+  amount          Decimal  @db.Decimal(12, 2)
+  eventId         String?
+  order           Int
+}
+
+model ARPayment {
+  id              String   @id @default(uuid())
+  paymentNumber   String   @unique
+  invoiceId       String
+  invoice         ARInvoice @relation(fields: [invoiceId], references: [id])
+  paymentDate     DateTime
+  paymentMethod   PaymentMethod
+  amount          Decimal  @db.Decimal(12, 2)
+  reference       String?  // Check number, transaction ID
+  notes           String?
+  journalEntryId  String?  // Links to posted journal entry
+  createdAt       DateTime @default(now())
+  tenantId        String
+}
+
+enum ARStatus {
+  DRAFT
+  OPEN
+  PARTIAL
+  PAID
+  VOID
+  OVERDUE
+}
+
+enum PaymentMethod {
+  CASH
+  CHECK
+  CREDIT_CARD
+  ACH
+  WIRE
+}
+```
+
+**API Endpoints Needed:**
+- `GET /api/accounting/ar/invoices` - List with aging
+- `POST /api/accounting/ar/invoices` - Create invoice
+- `GET /api/accounting/ar/invoices/[id]` - Get single invoice
+- `POST /api/accounting/ar/invoices/[id]/send` - Send to client
+- `POST /api/accounting/ar/payments` - Record payment
+- `GET /api/accounting/ar/aging-report` - Aging by bucket
+- `GET /api/accounting/ar/statements` - Customer statements
+
+**UI Components Needed:**
+- AR invoices page (`/accounting/receivables`)
+- Invoice creation form (line items, terms)
+- Invoice detail view with payment history
+- Payment recording form
+- Aging report with 30/60/90+ buckets
+- Customer statement generation
+
+**Aging Buckets:**
+- Current (not overdue)
+- 1-30 days overdue
+- 31-60 days overdue
+- 61-90 days overdue
+- 90+ days overdue
+
+**Complexity:** High | **Dependencies:** Chart of Accounts, Journal Entries
+
+---
+
+**3.2 Accounts Payable (AP)**
+
+**Database Schema Required:**
+```prisma
+model APBill {
+  id              String   @id @default(uuid())
+  billNumber      String   @unique
+  vendorId        String
+  vendor          Vendor @relation(fields: [vendorId], references: [id])
+  billDate        DateTime
+  dueDate         DateTime
+  subtotal        Decimal  @db.Decimal(12, 2)
+  taxAmount       Decimal  @db.Decimal(12, 2)
+  totalAmount     Decimal  @db.Decimal(12, 2)
+  paidAmount      Decimal  @db.Decimal(12, 2) @default(0)
+  balanceDue      Decimal  @db.Decimal(12, 2)
+  status          APStatus @default(OPEN)
+  terms           String?
+  notes           String?
+  invoiceReceived Boolean @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  tenantId        String
+
+  // Relations
+  lines           APBillLine[]
+  payments        APPayment[]
+  journalEntryId  String?
+}
+
+model APPayment {
+  id              String   @id @default(uuid())
+  paymentNumber   String   @unique
+  billId          String
+  bill            APBill @relation(fields: [billId], references: [id])
+  paymentDate     DateTime
+  paymentMethod   PaymentMethod
+  amount          Decimal  @db.Decimal(12, 2)
+  reference       String?
+  notes           String?
+  journalEntryId  String?
+  createdAt       DateTime @default(now())
+  tenantId        String
+}
+
+enum APStatus {
+  DRAFT
+  OPEN
+  PARTIAL
+  PAID
+  VOID
+  OVERDUE
+}
+```
+
+**API Endpoints Needed:**
+- `GET /api/accounting/ap/bills` - List with aging
+- `POST /api/accounting/ap/bills` - Create bill
+- `GET /api/accounting/ap/bills/[id]` - Get single bill
+- `POST /api/accounting/ap/payments` - Record payment
+- `GET /api/accounting/ap/aging-report` - Vendor aging
+- `GET /api/accounting/ap/vendor-terms` - Payment terms analysis
+
+**UI Components Needed:**
+- AP bills page (`/accounting/payables`)
+- Bill creation form (vendor, line items, terms)
+- Bill detail view with payment history
+- Payment recording form
+- Vendor aging report
+
+**Complexity:** High | **Dependencies:** Chart of Accounts, Journal Entries, Vendor model
+
+---
+
+#### Phase 4: Integration & Reconciliation - Priority: MEDIUM
+
+**4.1 Bank Reconciliation**
+
+**Database Schema Required:**
+```prisma
+model BankAccount {
+  id              String   @id @default(uuid())
+  accountNumber   String   @unique
+  accountName     String
+  accountType     BankAccountType
+  balanceLastReconciled Decimal @db.Decimal(12, 2)
+  lastReconciledDate DateTime?
+  isActive        Boolean @default(true)
+  tenantId        String
+
+  // Relations
+  reconciliations BankReconciliation[]
+}
+
+model BankReconciliation {
+  id              String   @id @default(uuid())
+  bankAccountId   String
+  bankAccount     BankAccount @relation(fields: [bankAccountId], references: [id])
+  reconciliationDate DateTime
+  statementBalance Decimal @db.Decimal(12, 2)
+  bookBalance     Decimal @db.Decimal(12, 2)
+  difference      Decimal @db.Decimal(12, 2)
+  status          RecStatus @default(IN_PROGRESS)
+  reconciledBy    String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  clearedItems    ReconciledItem[]
+}
+
+model ReconciledItem {
+  id              String   @id @default(uuid())
+  reconciliationId String
+  reconciliation  BankReconciliation @relation(fields: [reconciliationId], references: [id])
+  itemType        ClearableType
+  itemId          String
+  amount          Decimal @db.Decimal(12, 2)
+  clearedAt       DateTime @default(now())
+}
+
+enum BankAccountType {
+  CHECKING
+  SAVINGS
+  CREDIT_CARD
+  LINE_OF_CREDIT
+}
+
+enum RecStatus {
+  IN_PROGRESS
+  BALANCED
+  DISCREPANCY
+}
+
+enum ClearableType {
+  JOURNAL_LINE
+  AR_PAYMENT
+  AP_PAYMENT
+}
+```
+
+**API Endpoints Needed:**
+- `GET /api/accounting/reconciliation` - List reconciliations
+- `POST /api/accounting/reconciliation` - Start new reconciliation
+- `PUT /api/accounting/reconciliation/[id]` - Update/clear items
+- `POST /api/accounting/reconciliation/[id]/complete` - Finalize
+
+**UI Components Needed:**
+- Bank reconciliation page (`/accounting/reconciliation`)
+- Statement balance input
+- List of uncleared items (deposits, payments, journal entries)
+- Click to clear items
+- Running balance display
+- Difference calculation
+
+**Reconciliation Process:**
+1. Enter statement balance and date
+2. System shows book balance and difference
+3. User clears items that appear on statement
+4. System updates difference in real-time
+5. When difference = 0, reconciliation is complete
+
+**Complexity:** High | **Dependencies:** Journal Entries, AR/AP
+
+---
+
+**4.2 QuickBooks Full Integration**
+
+**Scope:** Beyond existing payroll integration to full accounting sync
+
+**Features Needed:**
+- Chart of Accounts import from QuickBooks
+- Two-way sync for journal entries
+- Invoice/bill export to QuickBooks
+- Payment import from QuickBooks
+- Reconciliation data sync
+
+**API Integration:**
+- QuickBooks Online API
+- OAuth 2.0 authentication
+- Webhook support for real-time sync
+- Batch operations for performance
+
+**UI Components Needed:**
+- QuickBooks connection settings
+- Sync status dashboard
+- Sync history and error logs
+- Mapping configuration (accounts, classes, locations)
+
+**Complexity:** High | **Dependencies:** All accounting features
+
+---
+
+#### Phase 5: Advanced Features - Priority: LOW
+
+**5.1 Multi-Entity Consolidation**
+
+For multi-tenant or multi-location scenarios requiring consolidated financial statements.
+
+**Database Schema Required:**
+```prisma
+model Entity {
+  id              String   @id @default(uuid())
+  entityName      String
+  legalName       String?
+  taxId           String?
+  parentId        String?
+  currency        String   @default("USD")
+  isActive        Boolean  @default(true)
+  tenantId        String
+}
+
+model ConsolidationEntry {
+  id              String   @id @default(uuid())
+  consolidationDate DateTime
+  entityId        String
+  periodStart     DateTime
+  periodEnd       DateTime
+  status          string
+  consolidatedBy  String
+  createdAt       DateTime @default(now())
+}
+```
+
+**Features:**
+- Intercompany transaction elimination
+- Currency translation
+- Consolidated financial statements
+- Entity-level reporting with roll-up
+
+**Complexity:** Very High | **Dependencies:** All accounting features
+
+---
+
+**5.2 Budgeting & Forecasting**
+
+**Database Schema Required:**
+```prisma
+model Budget {
+  id              String   @id @default(uuid())
+  budgetName      String
+  fiscalYear      Int
+  status          BudgetStatus @default(DRAFT)
+  startDate       DateTime
+  endDate         DateTime
+  createdBy       String
+  approvedBy      String?
+  approvedAt      DateTime?
+  tenantId        String
+
+  // Relations
+  lines           BudgetLine[]
+}
+
+model BudgetLine {
+  id              String   @id @default(uuid())
+  budgetId        String
+  budget          Budget @relation(fields: [budgetId], references: [id])
+  accountId       String
+  account         ChartOfAccount @relation(fields: [accountId], references: [id])
+  period          String   // "2024-01", "2024-Q1", etc.
+  amount          Decimal  @db.Decimal(12, 2)
+  notes           String?
+}
+```
+
+**Features:**
+- Budget creation by account and period
+- Budget vs actual reports
+- Variance analysis
+- Rolling forecasts
+- Workflow for approval
+
+**Complexity:** Medium | **Dependencies:** Chart of Accounts, Journal Entries
+
+---
+
+### Implementation Priority Summary
+
+1. **Phase 1.1:** Chart of Accounts (Medium complexity) - Foundation for everything
+2. **Phase 1.2:** Journal Entries & GL (High complexity) - Double-entry bookkeeping
+3. **Phase 2:** Financial Statements (High complexity) - Reporting output
+4. **Phase 3.1:** Accounts Receivable (High complexity) - Invoicing & collections
+5. **Phase 3.2:** Accounts Payable (High complexity) - Bills & payments
+6. **Phase 4.1:** Bank Reconciliation (High complexity) - Accuracy verification
+7. **Phase 4.2:** QuickBooks Integration (High complexity) - External sync
+8. **Phase 5.1:** Multi-Entity (Very High) - Advanced consolidation
+9. **Phase 5.2:** Budgeting (Medium) - Planning & forecasting
+
+**Recommended Starting Point:** Phase 1.1 (Chart of Accounts) -> Phase 1.2 (Journal Entries)
+
+**Total Estimated Effort:** 8-12 weeks for Phases 1-4 (core accounting features)
 
 **Complexity:** High | **Dependencies:** Core accounting schema migration
 
