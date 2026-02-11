@@ -7,7 +7,8 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "example": "npx tsx examples/generate-report.ts"
+    "example": "npx tsx examples/generate-report.ts",
+    "test": "vitest run"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -23,6 +24,7 @@
     "@types/papaparse": "^5.5.2",
     "@types/pdfkit": "^0.17.4",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^2.0.0"
   }
 }

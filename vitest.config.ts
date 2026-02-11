@@ -48,5 +48,9 @@ export default defineConfig({
       name: "realtime",
       root: "./packages/realtime",
     },
+    {
+      name: "sales-reporting",
+      root: "./packages/sales-reporting",
+    },
   ],
 });
