@@ -2771,6 +2771,54 @@ model payroll_runs {
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model TimecardApproval {
+  tenantId        String    @map("tenant_id") @db.Uuid
+  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  payrollRunId    String    @map("payroll_run_id") @db.Uuid
+  employeeId      String    @map("employee_id") @db.Uuid
+  submittedAt     DateTime  @default(now()) @map("submitted_at") @db.Timestamptz(6)
+  submittedBy     String    @map("submitted_by") @db.Uuid
+  approvedBy      String?   @map("approved_by") @db.Uuid
+  approvedAt      DateTime? @map("approved_at") @db.Timestamptz(6)
+  status          String    @default("pending") // pending, approved, rejected
+  rejectReason    String?   @map("reject_reason")
+  reviewedBy      String?   @map("reviewed_by") @db.Uuid
+  reviewedAt      DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([payrollRunId], map: "timecard_approvals_run_idx")
+  @@index([employeeId], map: "timecard_approvals_employee_idx")
+  @@index([status], map: "timecard_approvals_status_idx")
+  @@map("timecard_approvals")
+  @@schema("tenant_staff")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ApprovalHistory {
+  tenantId        String    @map("tenant_id") @db.Uuid
+  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  entityType      String    @map("entity_type") // "payroll_run" or "timecard_approval"
+  entityId        String    @map("entity_id") @db.Uuid
+  action          String    // "submitted", "approved", "rejected", "reviewed"
+  performedBy     String    @map("performed_by") @db.Uuid
+  performedAt     DateTime  @default(now()) @map("performed_at") @db.Timestamptz(6)
+  previousStatus  String?   @map("previous_status")
+  newStatus       String    @map("new_status")
+  notes           String?
+  metadata        Json?     @default("{}")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([entityType, entityId], map: "approval_history_entity_idx")
+  @@index([performedBy], map: "approval_history_performer_idx")
+  @@map("approval_history")
+  @@schema("tenant_staff")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model skills {
   tenant_id   String    @db.Uuid
   id          String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
