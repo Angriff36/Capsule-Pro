@@ -17,7 +17,7 @@ Closes #<issue_number>
 
 ## Manifest Changes (if applicable)
 
-If this PR modifies manifest files in `packages/kitchen-ops/manifests/`:
+If this PR modifies manifest files in `packages/manifest-adapters/manifests/`:
 
 ### Manifest Validation Required
 
@@ -25,23 +25,17 @@ Before submitting, ensure you have:
 
 1. **Validated manifest syntax** - All manifest files must compile without errors
    ```bash
-   # Compile each manifest to check for syntax errors
-   npx tsx packages/manifest/bin/compile.ts packages/kitchen-ops/manifests/your-entity.manifest --output /tmp/check
+   # Compile all manifests
+   pnpm manifest:compile
    ```
 
-2. **Run conformance tests** - Verify manifest language conformance
-   ```bash
-   cd packages/manifest
-   pnpm test -- --run
-   ```
-
-3. **Run integration tests** - Verify generated code works correctly
+2. **Run integration tests** - Verify generated code works correctly
    ```bash
    cd apps/api
    pnpm test __tests__/kitchen/ -- --run
    ```
 
-4. **Regenerate code** - If you modified manifests, regenerate API routes
+3. **Regenerate code** - If you modified manifests, regenerate API routes
    ```bash
    # Run code generation
    pnpm run analyze
@@ -81,7 +75,7 @@ This PR will trigger the following CI checks:
 **"Manifest compilation failed"**
 - Check manifest syntax errors
 - Review error messages for line/column information
-- Test compilation locally using `manifest-compile` CLI
+- Run `pnpm manifest:compile` locally to test compilation
 
 **"TypeScript compilation errors"**
 - Ensure generated routes have proper types

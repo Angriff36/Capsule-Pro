@@ -4,8 +4,7 @@ on:
   pull_request:
     branches: [main, develop]
     paths:
-      - 'packages/kitchen-ops/manifests/**'
-      - 'packages/manifest/**'
+      - 'packages/manifest-adapters/manifests/**'
       - 'apps/api/app/api/kitchen/**'
       - '.github/workflows/manifest-ci.yml'
   workflow_dispatch:
@@ -56,31 +55,15 @@ jobs:
       - name: Validate all manifest files compile
         run: |
           echo "Validating manifest files..."
-          MANIFEST_DIR="packages/kitchen-ops/manifests"
-
-          if [ ! -d "$MANIFEST_DIR" ]; then
-            echo "No manifest directory found"
-            exit 1
-          fi
-
-          # Compile each manifest file to check for syntax errors
-          for manifest in "$MANIFEST_DIR"/*.manifest; do
-            if [ -f "$manifest" ]; then
-              echo "Checking $manifest..."
-              npx tsx packages/manifest/bin/compile.ts "$manifest" --output /tmp/manifest-check || {
-                echo "::error::Manifest compilation failed for $manifest"
-                exit 1
-              }
-            fi
-          done
+          pnpm manifest:compile
 
           echo "All manifest files validated successfully"
 
       - name: Check manifest conformance tests
         run: |
           echo "Running manifest conformance tests..."
-          cd packages/manifest
-          pnpm test -- --run
+          cd apps/api
+          pnpm test __tests__/kitchen/ -- --run
         env:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 

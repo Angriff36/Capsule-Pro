@@ -37,12 +37,12 @@ Validates that all manifest files compile without syntax errors.
 
 **Local Testing:**
 ```bash
-# Validate a single manifest
-npx tsx packages/manifest/bin/compile.ts packages/kitchen-ops/manifests/recipe-rules.manifest --output /tmp/check
+# Validate all manifests
+pnpm manifest:compile
 
-# Run conformance tests
-cd packages/manifest
-pnpm test -- --run
+# Run kitchen tests
+cd apps/api
+pnpm test __tests__/kitchen/ -- --run
 ```
 
 ### 2. Code Generation Check (`manifest-codegen-check`)
@@ -143,7 +143,7 @@ When creating a PR that modifies manifest files, the `.github/pull_request_templ
 
 All manifest files are located in:
 ```
-packages/kitchen-ops/manifests/
+packages/manifest-adapters/manifests/
 ├── prep-task-rules.manifest
 ├── recipe-rules.manifest
 ├── menu-rules.manifest
@@ -233,25 +233,19 @@ Before pushing, run these commands locally:
 
 ```bash
 # 1. Validate manifests
-for manifest in packages/kitchen-ops/manifests/*.manifest; do
-  npx tsx packages/manifest/bin/compile.ts "$manifest" --output /tmp/check
-done
+pnpm manifest:compile
 
-# 2. Run conformance tests
-cd packages/manifest
-pnpm test -- --run
-
-# 3. Generate code
+# 2. Generate code
 pnpm run analyze
 
-# 4. Type check
+# 3. Type check
 pnpm run check
 
-# 5. Run integration tests
+# 4. Run integration tests
 cd apps/api
 pnpm test __tests__/kitchen/ -- --run
 
-# 6. Check git status (should be clean)
+# 5. Check git status (should be clean)
 git status
 ```
 
