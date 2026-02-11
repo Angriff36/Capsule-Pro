@@ -110,7 +110,7 @@ export async function POST(request: Request) {
   const pendingEvents = await database.$queryRaw<RawOutboxEvent[]>`
     SELECT "id", "tenantId", "aggregateType", "aggregateId", "eventType", "payload",
            "status", "error", "createdAt", "publishedAt"
-    FROM "OutboxEvent"
+    FROM "tenant"."OutboxEvent"
     WHERE "status" = 'pending'
     ORDER BY "createdAt" ASC
     LIMIT ${limit}
@@ -178,13 +178,17 @@ export async function POST(request: Request) {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unknown publish error";
-      await database.outboxEvent.update({
-        where: { id: event.id },
-        data: {
-          status: "failed",
-          error: `ABLY_ERROR: ${message}`,
-        },
-      });
+      try {
+        await database.outboxEvent.update({
+          where: { id: event.id },
+          data: {
+            status: "failed",
+            error: `ABLY_ERROR: ${message}`,
+          },
+        });
+      } catch {
+        // Event may have been deleted, ignore update error
+      }
       failed += 1;
     }
   }
