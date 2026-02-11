@@ -123,6 +123,9 @@ importers:
       '@ai-sdk/openai':
         specifier: ^3.0.25
         version: 3.0.25(zod@4.3.6)
+      '@capsule-pro/sales-reporting':
+        specifier: workspace:*
+        version: link:../../packages/sales-reporting
       '@manifest/runtime':
         specifier: file:../../../Manifest
         version: file:../Manifest(bufferutil@4.1.0)

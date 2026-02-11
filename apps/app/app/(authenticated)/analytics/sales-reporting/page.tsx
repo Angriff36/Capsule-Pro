@@ -47,6 +47,50 @@ interface ParsedData {
   rowCount: number;
 }
 
+const DATE_SIGNAL_REGEX =
+  /(date|day|month|year|time|created|updated|closed|event|start|end|inquiry|lead)/i;
+const MIN_PLAUSIBLE_DATE = new Date("2000-01-01T00:00:00.000Z");
+const MAX_PLAUSIBLE_DATE = (() => {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() + 2);
+  return date;
+})();
+
+const parseExcelSerialDate = (value: number): Date | null => {
+  // Excel serial day 1 is 1899-12-31 (with 25569 offset from unix epoch days)
+  const epoch = Math.round((value - 25_569) * 86_400 * 1000);
+  const parsed = new Date(epoch);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const isPlausibleDate = (date: Date) =>
+  date >= MIN_PLAUSIBLE_DATE && date <= MAX_PLAUSIBLE_DATE;
+
+const parseCandidateDate = (
+  value: Date | string | number,
+  allowNumericDate: boolean
+): Date | null => {
+  let parsed: Date | null = null;
+
+  if (value instanceof Date) {
+    parsed = Number.isNaN(value.getTime()) ? null : value;
+  } else if (typeof value === "number") {
+    if (!allowNumericDate) {
+      return null;
+    }
+    parsed = parseExcelSerialDate(value);
+  } else if (typeof value === "string") {
+    const date = new Date(value);
+    parsed = Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  if (!parsed) {
+    return null;
+  }
+
+  return isPlausibleDate(parsed) ? parsed : null;
+};
+
 export default function SalesReportingPage() {
   const [files, setFiles] = useState<FileList | null>(null);
   const [parsedData, setParsedData] = useState<ParsedData | null>(null);
@@ -183,11 +227,13 @@ export default function SalesReportingPage() {
       name: string;
       score: number;
       coverage: number;
+      hasDateSignal: boolean;
     }> = [];
 
     for (const column of allColumns) {
       const normalized = column.toLowerCase().replace(/[^a-z0-9]+/g, " ");
       let score = 0;
+      const hasDateSignal = DATE_SIGNAL_REGEX.test(normalized);
 
       // Name-based scoring
       if (normalized.includes("date")) {
@@ -216,26 +262,14 @@ export default function SalesReportingPage() {
       }
 
       const allNumeric = values.every((value) => typeof value === "number");
-      if (allNumeric && score === 0) {
-        continue; // Skip numeric columns with no date hints
+      if (allNumeric && !hasDateSignal) {
+        continue; // Numeric columns need explicit date-like naming
       }
 
       // Try to parse each value as a date
       let validDates = 0;
       for (const value of values) {
-        let date: Date | null = null;
-
-        if (value instanceof Date) {
-          date = Number.isNaN(value.getTime()) ? null : value;
-        } else if (typeof value === "number") {
-          // Excel serial date
-          const epoch = Math.round((value - 25_569) * 86_400 * 1000);
-          const d = new Date(epoch);
-          date = Number.isNaN(d.getTime()) ? null : d;
-        } else if (typeof value === "string") {
-          const d = new Date(value);
-          date = Number.isNaN(d.getTime()) ? null : d;
-        }
+        const date = parseCandidateDate(value, hasDateSignal);
 
         if (date) {
           validDates++;
@@ -255,7 +289,7 @@ export default function SalesReportingPage() {
 
       score += coverage * 2;
 
-      scoredColumns.push({ name: column, score, coverage });
+      scoredColumns.push({ name: column, score, coverage, hasDateSignal });
     }
 
     // Sort by score (descending), then by coverage
@@ -266,9 +300,9 @@ export default function SalesReportingPage() {
       return b.coverage - a.coverage;
     });
 
-    // Detect date column (score >= 2 or coverage >= 0.2)
+    // Detect date column with a stricter threshold to avoid false positives.
     const detected = scoredColumns.find(
-      (col) => col.score >= 2 || col.coverage >= 0.2
+      (col) => col.score >= 3 || (col.score >= 2 && col.coverage >= 0.6)
     );
     const detectedDateColumn = detected?.name ?? null;
 
@@ -278,18 +312,20 @@ export default function SalesReportingPage() {
       const dates: Date[] = [];
       for (const row of allRows) {
         const value = row[detectedDateColumn];
-        let date: Date | null = null;
-
-        if (value instanceof Date) {
-          date = Number.isNaN(value.getTime()) ? null : value;
-        } else if (typeof value === "number") {
-          const epoch = Math.round((value - 25_569) * 86_400 * 1000);
-          const d = new Date(epoch);
-          date = Number.isNaN(d.getTime()) ? null : d;
-        } else if (typeof value === "string") {
-          const d = new Date(value);
-          date = Number.isNaN(d.getTime()) ? null : d;
+        if (
+          !(
+            value instanceof Date ||
+            typeof value === "string" ||
+            typeof value === "number"
+          )
+        ) {
+          continue;
         }
+        const date = parseCandidateDate(
+          value,
+          detected?.hasDateSignal ??
+            DATE_SIGNAL_REGEX.test(detectedDateColumn)
+        );
 
         if (date) {
           dates.push(date);
@@ -308,7 +344,7 @@ export default function SalesReportingPage() {
     const columns: ColumnOption[] = scoredColumns.slice(0, 10).map((col) => ({
       name: col.name,
       coverage: col.coverage,
-      isDetected: col.score >= 2 || col.coverage >= 0.2,
+      isDetected: col.score >= 3 || (col.score >= 2 && col.coverage >= 0.6),
     }));
 
     return {
@@ -414,8 +450,25 @@ export default function SalesReportingPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to generate report");
+        const responseText = await response.text();
+        let errorMessage = `Failed to generate report (HTTP ${response.status})`;
+
+        try {
+          const errorData = JSON.parse(responseText) as {
+            error?: string;
+            message?: string;
+          };
+          errorMessage =
+            errorData.error ??
+            errorData.message ??
+            `Failed to generate report (HTTP ${response.status})`;
+        } catch {
+          if (responseText.trim().length > 0) {
+            errorMessage = `${errorMessage}: ${responseText.slice(0, 200)}`;
+          }
+        }
+
+        throw new Error(errorMessage);
       }
 
       // Download the PDF

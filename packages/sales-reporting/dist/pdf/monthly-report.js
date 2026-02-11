@@ -20,7 +20,7 @@ function revenueChangeText(current, previous) {
     }
     return { text: `${pct}% vs prior`, trend: "down" };
 }
-async function generateMonthlyPdf(metrics, config) {
+function generateMonthlyPdf(metrics, config) {
     const doc = (0, document_1.createDocument)();
     const companyName = config.companyName || "Sales Report";
     const dateRange = (0, date_1.formatMonthYear)(metrics.dateRange.start);

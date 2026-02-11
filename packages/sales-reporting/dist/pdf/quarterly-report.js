@@ -7,7 +7,7 @@ const date_1 = require("../utils/date");
 const formatting_1 = require("../utils/formatting");
 const components_1 = require("./components");
 const document_1 = require("./document");
-async function generateQuarterlyPdf(metrics, config) {
+function generateQuarterlyPdf(metrics, config) {
     const doc = (0, document_1.createDocument)();
     const companyName = config.companyName || "Sales Report";
     const dateRange = `${(0, date_1.getQuarterLabel)(metrics.dateRange.start)}  |  ${(0, date_1.formatDateShort)(metrics.dateRange.start)} — ${(0, date_1.formatDateShort)(metrics.dateRange.end)}`;

@@ -35,6 +35,8 @@ let nextConfig: NextConfig = withLogging({
     "got",
     "keyv",
     "cacheable-request",
+    "pdfkit",
+    "@capsule-pro/sales-reporting",
   ],
   webpack: (
     webpackConfig: Configuration,
