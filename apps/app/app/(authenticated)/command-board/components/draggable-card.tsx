@@ -6,6 +6,32 @@ import Moveable, { type OnDrag, type OnResize } from "react-moveable";
 import type { CommandBoardCard, Point } from "../types";
 import { snapToGrid as snapToGridUtil } from "../types";
 
+/**
+ * Card type accent colors - left border colors for visual card type identification
+ */
+const cardTypeAccentColors: Record<string, string> = {
+  task: "border-l-blue-500",
+  event: "border-l-purple-500",
+  client: "border-l-orange-500",
+  employee: "border-l-emerald-500",
+  inventory: "border-l-amber-500",
+  recipe: "border-l-rose-500",
+  note: "border-l-yellow-400",
+};
+
+/**
+ * Card type background tints - subtle background colors for card type identification
+ */
+const cardTypeBackgroundTints: Record<string, string> = {
+  task: "bg-blue-50/50",
+  event: "bg-purple-50/50",
+  client: "bg-orange-50/50",
+  employee: "bg-emerald-50/50",
+  inventory: "bg-amber-50/50",
+  recipe: "bg-rose-50/50",
+  note: "bg-yellow-50/50",
+};
+
 interface DraggableCardProps {
   /** The card to render */
   card: CommandBoardCard;
@@ -188,6 +214,11 @@ export const DraggableCard = memo(function DraggableCard({
         aria-label={`${card.title} - Position: ${card.position.x}, ${card.position.y}`}
         className={cn(
           "absolute rounded-lg border-2 bg-card transition-all duration-200",
+          // Card type accent - left border color based on card type
+          "border-l-4",
+          cardTypeAccentColors[card.cardType] || "border-l-slate-400",
+          // Card type background tint
+          cardTypeBackgroundTints[card.cardType] || "",
           // Default state
           !isSelected &&
             "border-border shadow-sm hover:shadow-md hover:border-border/80",

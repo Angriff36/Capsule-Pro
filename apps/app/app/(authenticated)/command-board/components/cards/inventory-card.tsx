@@ -59,17 +59,25 @@ export const InventoryCard = memo(function InventoryCard({
 
   return (
     <div className="flex h-full flex-col">
+      {/* Header with type icon and category */}
       <div className="mb-2 flex items-start justify-between gap-2">
-        <Badge className="text-xs" variant="outline">
-          {category}
-        </Badge>
+        <div className="flex items-center gap-1.5">
+          <Package className="h-4 w-4 text-amber-500" />
+          <Badge className="text-xs" variant="outline">
+            {category}
+          </Badge>
+        </div>
         <Badge className="text-xs" variant="secondary">
           #{itemNumber}
         </Badge>
       </div>
 
-      <h3 className="mb-3 line-clamp-2 font-semibold text-sm">{card.title}</h3>
+      {/* Title */}
+      <h3 className="mb-3 line-clamp-2 font-semibold text-sm leading-tight">
+        {card.title}
+      </h3>
 
+      {/* Stock status */}
       <div className="mb-3 flex items-center gap-2">
         <Badge className={`${config.color} gap-1`} variant="outline">
           <config.icon className="h-3 w-3" />

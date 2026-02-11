@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
 import { differenceInMinutes, format, isPast } from "date-fns";
-import { AlertCircle, Calendar, MoreVertical } from "lucide-react";
+import { AlertCircle, Calendar, CheckCircle2, MoreVertical } from "lucide-react";
 import { memo } from "react";
 import type { CommandBoardCard } from "../../types";
 
@@ -35,10 +35,26 @@ const priorityConfig = {
 };
 
 const statusConfig = {
-  pending: { label: "Pending", color: "bg-slate-100 text-slate-700" },
-  in_progress: { label: "In Progress", color: "bg-blue-100 text-blue-700" },
-  completed: { label: "Completed", color: "bg-emerald-100 text-emerald-700" },
-  canceled: { label: "Canceled", color: "bg-slate-100 text-slate-500" },
+  pending: {
+    label: "Pending",
+    color: "bg-slate-100 text-slate-700 border-slate-200",
+    icon: CheckCircle2,
+  },
+  in_progress: {
+    label: "In Progress",
+    color: "bg-blue-100 text-blue-700 border-blue-200",
+    icon: CheckCircle2,
+  },
+  completed: {
+    label: "Completed",
+    color: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    icon: CheckCircle2,
+  },
+  canceled: {
+    label: "Canceled",
+    color: "bg-slate-100 text-slate-500 border-slate-200",
+    icon: CheckCircle2,
+  },
 };
 
 function getDueStatus(
@@ -101,14 +117,20 @@ export const TaskCard = memo(function TaskCard({ card }: TaskCardProps) {
       .slice(0, 2);
   };
 
+  const StatusIcon = statusConfigItem.icon;
+
   return (
     <div className="flex h-full flex-col">
+      {/* Header with type icon and priority */}
       <div className="mb-2 flex items-center justify-between gap-2">
-        <Badge
-          className={`border-0 ${priorityConfigItem.color} font-medium text-xs`}
-        >
-          {priorityConfigItem.label}
-        </Badge>
+        <div className="flex items-center gap-1.5">
+          <CheckCircle2 className="h-4 w-4 text-blue-500" />
+          <Badge
+            className={`border-0 ${priorityConfigItem.color} font-medium text-xs`}
+          >
+            {priorityConfigItem.label}
+          </Badge>
+        </div>
         {dueStatus?.isOverdue && (
           <Badge className="gap-1 text-xs" variant="destructive">
             <AlertCircle className="h-3 w-3" />
@@ -117,16 +139,22 @@ export const TaskCard = memo(function TaskCard({ card }: TaskCardProps) {
         )}
       </div>
 
-      <h3 className="mb-2 line-clamp-2 font-semibold text-sm">{card.title}</h3>
+      {/* Title */}
+      <h3 className="mb-2 line-clamp-2 font-semibold text-sm leading-tight">
+        {card.title}
+      </h3>
 
+      {/* Description */}
       {card.content && (
         <p className="mb-3 line-clamp-2 text-muted-foreground text-xs">
           {card.content}
         </p>
       )}
 
-      <div className="mb-3 flex flex-wrap gap-2">
-        <Badge className={statusConfigItem.color} variant="outline">
+      {/* Status and due date row */}
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <Badge className={`${statusConfigItem.color} gap-1`} variant="outline">
+          <StatusIcon className="h-3 w-3" />
           {statusConfigItem.label}
         </Badge>
         {dueDate && !dueStatus?.isOverdue && (
@@ -137,6 +165,7 @@ export const TaskCard = memo(function TaskCard({ card }: TaskCardProps) {
         )}
       </div>
 
+      {/* Assignee */}
       {assignee && (
         <div className="mb-3 flex items-center gap-2">
           <Avatar className="h-6 w-6">
@@ -148,6 +177,7 @@ export const TaskCard = memo(function TaskCard({ card }: TaskCardProps) {
         </div>
       )}
 
+      {/* Quick Actions */}
       <div className="mt-auto">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
