@@ -182,8 +182,12 @@ function calculateTotalValue(shipment: ShipmentData): number {
 
 async function getGeneratedBy(
   tenantId: string,
-  userId: string
+  userId: string | null
 ): Promise<string> {
+  if (!userId) {
+    return "Unknown User";
+  }
+
   const user = await database.user.findFirst({
     where: {
       tenantId,
@@ -338,7 +342,7 @@ async function respondWithBase64(
 }
 
 async function validateRequestAndGetTenantId(
-  orgId: string | null,
+  orgId: string | null | undefined,
   userId: string | null
 ): Promise<{ tenantId: string } | NextResponse> {
   if (!(orgId && userId)) {

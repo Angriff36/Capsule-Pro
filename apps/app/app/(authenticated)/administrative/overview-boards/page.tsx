@@ -44,6 +44,7 @@ function getDateRanges(now: Date) {
     threeDaysFromNow,
     fourteenDaysAgo,
     sevenDaysAgo,
+    now,
   };
 }
 

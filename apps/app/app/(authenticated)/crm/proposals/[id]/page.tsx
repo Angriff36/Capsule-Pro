@@ -27,7 +27,6 @@ import {
   ArrowLeft,
   Building,
   Calendar,
-  Download,
   Edit,
   FileText,
   Mail,
@@ -40,6 +39,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { apiUrl } from "@/app/lib/api";
+import { ProposalExportButton } from "../components/proposal-export-button";
 import { getProposalById } from "../actions";
 
 interface ProposalPageProps {
@@ -238,10 +238,10 @@ export default async function ProposalDetailPage({
               Edit
             </Link>
           </Button>
-          <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Export PDF
-          </Button>
+          <ProposalExportButton
+            proposalId={proposal.id}
+            proposalNumber={proposal.proposalNumber}
+          />
         </div>
       </div>
 
