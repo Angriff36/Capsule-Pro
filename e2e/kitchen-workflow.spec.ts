@@ -32,9 +32,7 @@ const log = {
 const KITCHEN_ENTRY = "/kitchen";
 const E2E_APP_BASE = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:2221";
 const E2E_KITCHEN_URL = `${E2E_APP_BASE}${KITCHEN_ENTRY}`;
-const _NOT_FOUND_REGE;
-nst;
-RECIPE_REGEX = /recipe/i;
+const RECIPE_REGEX = /recipe/i;
 const RECIPES_REGEX = /recipes/i;
 const CREATE_NEW_ADD_REGEX = /create|new|add/i;
 const EDIT_UPDATE_REGEX = /edit|update/i;

@@ -55,7 +55,7 @@ describe("Projection System Proof: PrepTask.claim Snapshot", () => {
 
     if (!ir) {
       throw new Error(
-        `Failed to compile manifest: ${diagnostics.map((d) => d.message).join(", ")}`
+        `Failed to compile manifest: ${diagnostics.map((d: { message: string }) => d.message).join(", ")}`
       );
     }
 

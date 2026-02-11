@@ -313,7 +313,7 @@ const parseSheetRows = async (sheet: WorkSheet): Promise<DataRow[]> => {
     raw: true,
   }) as unknown;
   invariant(Array.isArray(rows), "Workbook sheet rows must be an array");
-  return rows.map((row) => {
+  return rows.map((row: unknown) => {
     invariant(isRecord(row), "Each row must be an object");
     const parsed: DataRow = {};
     for (const [key, value] of Object.entries(row)) {

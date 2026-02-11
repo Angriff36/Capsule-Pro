@@ -40,7 +40,7 @@ describe("Projection proof: PrepTask.claim golden snapshot", () => {
 
     if (!ir) {
       throw new Error(
-        `Failed to compile manifest: ${diagnostics.map((d) => d.message).join(", ")}`
+        `Failed to compile manifest: ${diagnostics.map((d: { message: string }) => d.message).join(", ")}`
       );
     }
 

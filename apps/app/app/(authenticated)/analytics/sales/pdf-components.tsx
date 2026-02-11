@@ -87,8 +87,8 @@ export function SalesReportDocument({
         {reportSummary.highlights && reportSummary.highlights.length > 0 ? (
           <View style={pdfStyles.section}>
             <Text style={pdfStyles.sectionTitle}>Highlights</Text>
-            {reportSummary.highlights.map((item, index) => (
-              <Text key={`${item}-${index}`} style={pdfStyles.listItem}>
+            {reportSummary.highlights.map((item) => (
+              <Text key={item} style={pdfStyles.listItem}>
                 - {item}
               </Text>
             ))}

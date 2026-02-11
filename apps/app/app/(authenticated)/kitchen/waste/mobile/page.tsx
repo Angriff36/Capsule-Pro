@@ -70,7 +70,9 @@ export default function WasteLoggingMobilePage() {
     notes: "",
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof WasteEntryFormData, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof WasteEntryFormData, string>>
+  >({});
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
@@ -176,7 +178,9 @@ export default function WasteLoggingMobilePage() {
     if (!isOnline) {
       // Queue for later sync
       setSyncQueue((prev) => [...prev, submitData]);
-      setSuccessMessage("Waste entry saved! Will sync when you're back online.");
+      setSuccessMessage(
+        "Waste entry saved! Will sync when you're back online."
+      );
       setIsLoading(false);
       resetForm();
       return;
@@ -215,8 +219,12 @@ export default function WasteLoggingMobilePage() {
     setErrors({});
   };
 
-  const selectedItem = inventoryItems.find((item) => item.id === formData.itemId);
-  const selectedReason = wasteReasons.find((reason) => reason.id === formData.reasonId);
+  const selectedItem = inventoryItems.find(
+    (item) => item.id === formData.itemId
+  );
+  const selectedReason = wasteReasons.find(
+    (reason) => reason.id === formData.reasonId
+  );
 
   return (
     <>
@@ -249,7 +257,7 @@ export default function WasteLoggingMobilePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form className="space-y-4" onSubmit={handleSubmit}>
               {/* Item Selection */}
               <div className="space-y-2">
                 <Label htmlFor="item">
@@ -385,8 +393,11 @@ export default function WasteLoggingMobilePage() {
               {selectedItem && selectedReason && formData.quantity > 0 && (
                 <div className="rounded-lg bg-slate-50 p-3">
                   <p className="text-slate-600 text-sm">
-                    Logging: <strong>{formData.quantity} {selectedItem.unit}</strong> of{" "}
-                    <strong>{selectedItem.name}</strong>
+                    Logging:{" "}
+                    <strong>
+                      {formData.quantity} {selectedItem.unit}
+                    </strong>{" "}
+                    of <strong>{selectedItem.name}</strong>
                   </p>
                   <p className="text-slate-600 text-sm">
                     Reason: <strong>{selectedReason.name}</strong>

@@ -55,8 +55,8 @@ interface PrepList {
 const stationColors: Record<string, string> = {
   "Hot Line": "bg-orange-100 text-orange-800 border-orange-200",
   "Cold Station": "bg-cyan-100 text-cyan-800 border-cyan-200",
-  "Pastry": "bg-amber-100 text-amber-800 border-amber-200",
-  "Prep": "bg-slate-100 text-slate-800 border-slate-200",
+  Pastry: "bg-amber-100 text-amber-800 border-amber-200",
+  Prep: "bg-slate-100 text-slate-800 border-slate-200",
   "Garde Manger": "bg-emerald-100 text-emerald-800 border-emerald-200",
 };
 
@@ -128,8 +128,8 @@ export default function PrepListsMobilePage() {
 
   // Sort items within each station by prep date
   Object.keys(itemsByStation).forEach((station) => {
-    itemsByStation[station].sort((a, b) =>
-      new Date(a.prepDate).getTime() - new Date(b.prepDate).getTime()
+    itemsByStation[station].sort(
+      (a, b) => new Date(a.prepDate).getTime() - new Date(b.prepDate).getTime()
     );
   });
 
@@ -199,7 +199,7 @@ export default function PrepListsMobilePage() {
         {prepLists.map((list) => {
           const eventDate = parseISO(list.event.eventDate);
           return (
-            <Card key={list.id} className="mb-3">
+            <Card className="mb-3" key={list.id}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">{list.event.name}</CardTitle>
                 <CardDescription className="flex items-center gap-3 text-sm">
@@ -223,11 +223,13 @@ export default function PrepListsMobilePage() {
         {Object.keys(itemsByStation).length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center py-12">
             <CheckCircle2 className="mb-4 h-16 w-16 text-emerald-500" />
-            <p className="text-center text-slate-600">No prep items right now!</p>
+            <p className="text-center text-slate-600">
+              No prep items right now!
+            </p>
           </div>
         ) : (
           Object.entries(itemsByStation).map(([station, items]) => (
-            <div key={station} className="mb-6">
+            <div className="mb-6" key={station}>
               <div className="mb-3 flex items-center gap-2">
                 <h3 className="text-lg font-bold text-slate-900">{station}</h3>
                 <Badge
@@ -246,12 +248,12 @@ export default function PrepListsMobilePage() {
 
                 return (
                   <Card
-                    key={item.id}
                     className={`mb-2 border-2 ${
                       prepDateLabel.isUrgent && !isCompleted
                         ? "border-rose-300"
                         : "border-slate-200"
                     } ${isCompleted ? "bg-slate-50" : "bg-white"}`}
+                    key={item.id}
                   >
                     <CardContent className="p-4">
                       <div className="mb-2 flex items-start justify-between">
@@ -280,12 +282,12 @@ export default function PrepListsMobilePage() {
                             {item.quantity} {item.unit}
                           </span>
                           <Badge
-                            variant="outline"
                             className={`text-xs ${
                               prepDateLabel.isUrgent && !isCompleted
                                 ? "bg-rose-100 text-rose-800 border-rose-300"
                                 : ""
                             }`}
+                            variant="outline"
                           >
                             {prepDateLabel.label}
                           </Badge>

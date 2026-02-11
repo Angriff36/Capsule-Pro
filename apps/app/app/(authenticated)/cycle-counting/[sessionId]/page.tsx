@@ -46,6 +46,7 @@ export default async function SessionPage({
         <button
           className="text-gray-600 hover:text-gray-900 mb-4"
           onClick={() => redirect("/cycle-counting")}
+          type="button"
         >
           ← Back to Sessions
         </button>

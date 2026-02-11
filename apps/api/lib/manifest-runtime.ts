@@ -101,11 +101,11 @@ async function getManifestIR(manifestName: string): Promise<ManifestIR> {
   // Debug: Log IR structure before normalization
   if (process.env.DEBUG_MANIFEST_IR === "true") {
     console.log(`[manifest-runtime] IR for ${manifestName}:`, {
-      entities: ir.entities.map((e) => ({
+      entities: ir.entities.map((e: { name: string; commands: unknown }) => ({
         name: e.name,
         commands: e.commands,
       })),
-      commands: ir.commands.map((c) => ({
+      commands: ir.commands.map((c: { name: string; entity?: string }) => ({
         name: c.name,
         entity: c.entity,
       })),

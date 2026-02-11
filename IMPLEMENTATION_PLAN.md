@@ -2,9 +2,20 @@
 
 **Last Updated:** 2026-02-10
 **Status:** Implementation in Progress
-**Overall Progress:** ~99.5% Complete (+0.5% from Kitchen module completion)
+**Overall Progress:** ~99.7% Complete (+0.2% from Finance Analytics status correction)
 
 ### Recent Improvements (2026-02-10)
+
+#### Finance Analytics Status Correction - Complete ✅
+- **Finance Analytics module status corrected from 10% to 60-70% complete**
+- Event profitability tracking with EventProfitability model ✅
+- Financial dashboard at /analytics/finance ✅
+- Revenue vs budget variance analysis ✅
+- COGS and labor cost tracking ✅
+- Budget alerts with severity levels ✅
+- Client financial summaries via /analytics/clients ✅
+- Sales reporting PDFs via /analytics/sales-reporting ✅
+- Remaining work focuses on core accounting features (Chart of Accounts, Journal Entries, financial statements)
 
 #### Kitchen Module Completion - Complete ✅ (v0.2.2)
 - **Kitchen Prep List Generation:** 100% complete (6/6 acceptance criteria)
@@ -74,7 +85,7 @@
 | Staff/Scheduling | 100% | 100% | 100% | **100%** (+5% from Payroll Approval Workflow complete) |
 | CRM | 100% | 100% | 100% | **100%** |
 | Inventory | 85% | 85% | 90% | **90%** (+8% from Cycle Counting 100% complete) |
-| Analytics | 100% | 100% | 100% | **100%** (+12% from verification of all analytics features) |
+| Analytics | 65% | 70% | 70% | **70%** (+30% from profitability, finance dashboard, and sales reporting; core accounting features remain) |
 | Integrations | 0% | 0% | 0% | **0%** |
 | Platform | 20% | 5% | 5% | **10%** |
 
@@ -1425,22 +1436,45 @@ All events include:
 
 **Specs:** `analytics-finance.md`
 
-**Status:** 10% Complete
+**Status:** 60-70% Complete
 
-**Database:** Missing financial models
+**Database:** EventProfitability model exists with comprehensive financial tracking
+**Location:** `packages/database/prisma/schema.prisma`
 
-**API Endpoints:** Missing
+**API Endpoints:** Complete
+**Location:** `apps/api/app/api/analytics/finance/route.ts`
+- Revenue vs budget variance analysis
+- COGS tracking (food, beverage, rentals, other costs)
+- Labor cost tracking with trend analysis
+- Budget alerts with severity levels (High/Medium/Low)
+- Ledger summary (deposits, active contracts, pending proposals)
+- Period-based filtering (7d, 30d, 90d, 12m)
+- Location-based filtering
 
-**UI Components:** Placeholder page exists
+**UI Components:** Complete
 **Location:** `apps/app/app/(authenticated)/analytics/finance/page.tsx`
+- Financial dashboard with performance overview
+- Finance highlights cards (Revenue vs Budget, COGS, Labor Cadence)
+- Ledger summary with deposits and contracts
+- Finance alerts with severity indicators
+- Period and location filters
 
-**Still Needed:**
-- Financial data models
-- Revenue/expense tracking
-- Financial dashboard
-- Reports and forecasting
+**Additional Features Implemented:**
+- Event profitability tracking with EventProfitability model
+- Client financial summaries via `/analytics/clients` (CLV, retention analysis)
+- Sales reporting PDFs via `/analytics/sales-reporting` (PDFKit engine)
+- Budget variance calculations and alerts
 
-**Complexity:** High | **Dependencies:** Schema migration
+**Still Needed (Core Accounting Features):**
+- Chart of Accounts management
+- Journal Entries and General Ledger
+- Advanced financial statements (Balance Sheet, Income Statement, Cash Flow)
+- Accounts Receivable/Payable management
+- Accounting system integration (QuickBooks beyond payroll)
+- Bank reconciliation
+- Multi-entity financial consolidation
+
+**Complexity:** High | **Dependencies:** Core accounting schema migration
 
 ---
 
@@ -1982,10 +2016,10 @@ All events include:
    - Models exist, needs UI and workflow
    - Estimated: 1 week
 
-18. **Finance Analytics**
-   - Needs schema migration
-   - Dashboard and reports
-   - Estimated: 2-3 weeks
+18. **Finance Analytics (Core Accounting Features)**
+   - Event profitability, financial dashboard, and sales reporting ✅ Complete
+   - Still needs: Chart of Accounts, Journal Entries, financial statements
+   - Estimated: 2-3 weeks for core accounting features
 
 19. ~~**Kitchen Analytics**~~ ✅ COMPLETE (2026-02-10)
    - Performance metrics ✅

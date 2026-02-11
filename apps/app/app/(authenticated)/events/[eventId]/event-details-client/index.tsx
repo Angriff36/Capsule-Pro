@@ -920,7 +920,7 @@ export function EventDetailsClient({
           onRegenerateBreakdown={() => void handleGenerateBreakdown()}
           onSaveBreakdown={handleSaveBreakdown}
           onShowSuggestionsChange={setShowSuggestions}
-          onViewBudget={(budgetId) =>
+          onViewBudget={(budgetId: string) =>
             router.push(`/events/budgets/${budgetId}`)
           }
           prepTasks={sortedPrepTasks}
