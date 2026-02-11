@@ -74,7 +74,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const unsupportedFile = files.find((file) => getFileType(file.name) === null);
+    const unsupportedFile = files.find(
+      (file) => getFileType(file.name) === null
+    );
     if (unsupportedFile) {
       return NextResponse.json(
         {

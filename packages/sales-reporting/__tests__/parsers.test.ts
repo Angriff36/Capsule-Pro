@@ -5,7 +5,6 @@
 import { describe, expect, it } from "vitest";
 import { parseCsv } from "../src/parsers/csv-parser";
 import { parseXlsx } from "../src/parsers/xlsx-parser";
-import type { SalesRecord } from "../src/types";
 
 describe("parseCsv", () => {
   it("parses valid CSV data with standard columns", () => {
@@ -27,7 +26,7 @@ describe("parseCsv", () => {
       status: "won",
       proposalDate: null,
       closeDate: null,
-      revenue: 15000,
+      revenue: 15_000,
       eventDate: null,
     });
   });
@@ -43,7 +42,7 @@ describe("parseCsv", () => {
     expect(records).toHaveLength(1);
     expect(records[0].clientName).toBe("Smith Corp");
     expect(records[0].status).toBe("won");
-    expect(records[0].revenue).toBe(15000);
+    expect(records[0].revenue).toBe(15_000);
   });
 
   it("filters out rows with invalid dates", () => {
@@ -71,8 +70,8 @@ describe("parseCsv", () => {
     const records = parseCsv(csvData);
 
     expect(records).toHaveLength(2);
-    expect(records[0].revenue).toBe(15000);
-    expect(records[1].revenue).toBe(20500);
+    expect(records[0].revenue).toBe(15_000);
+    expect(records[1].revenue).toBe(20_500);
   });
 
   it("uses custom date column when provided", () => {
@@ -242,11 +241,11 @@ describe("Date parsing", () => {
 describe("Revenue parsing", () => {
   it("parses various revenue formats", () => {
     const testCases = [
-      ["10000", 10000],
-      ['"10,000"', 10000],
-      ['"$10,000"', 10000],
-      ["10000.50", 10000.5],
-      ['"$10,000.50"', 10000.5],
+      ["10000", 10_000],
+      ['"10,000"', 10_000],
+      ['"$10,000"', 10_000],
+      ["10000.50", 10_000.5],
+      ['"$10,000.50"', 10_000.5],
       ["0", 0],
       ["", 0],
       ["invalid", 0],
@@ -277,9 +276,7 @@ describe("Edge cases", () => {
   });
 
   it("handles CSV with only headers", () => {
-    const csvData = Buffer.from(
-      "Date,Event Name,Client Name,Status,Revenue\n"
-    );
+    const csvData = Buffer.from("Date,Event Name,Client Name,Status,Revenue\n");
 
     const records = parseCsv(csvData);
 
@@ -288,7 +285,7 @@ describe("Edge cases", () => {
 
   it("handles special characters in field values", () => {
     const csvData = Buffer.from(
-      'Date,Event Name,Client Name,Status,Revenue\n' +
+      "Date,Event Name,Client Name,Status,Revenue\n" +
         '2024-01-15,"Event, with commas",Client,won,10000\n' +
         '2024-01-16,"Event ""with"" quotes",Client,won,20000'
     );

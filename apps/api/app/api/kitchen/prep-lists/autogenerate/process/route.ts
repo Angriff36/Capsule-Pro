@@ -31,16 +31,19 @@ export async function POST() {
 
     // Process pending generations
     // Note: Actual generation is handled by the prep-lists/generate endpoint
-    const result = await processPendingPrepListGenerations(database, async (_input) => {
-      // For now, just mark as processed with a note
-      // In production, you would call the generate endpoint here
-      // or implement the business logic directly
-      return {
-        success: false,
-        error:
-          "Prep list generation should be triggered via /api/kitchen/prep-lists/generate endpoint",
-      };
-    });
+    const result = await processPendingPrepListGenerations(
+      database,
+      async (_input) => {
+        // For now, just mark as processed with a note
+        // In production, you would call the generate endpoint here
+        // or implement the business logic directly
+        return {
+          success: false,
+          error:
+            "Prep list generation should be triggered via /api/kitchen/prep-lists/generate endpoint",
+        };
+      }
+    );
 
     return NextResponse.json({
       processed: result.processed,

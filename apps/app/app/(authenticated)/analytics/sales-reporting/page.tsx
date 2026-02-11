@@ -323,8 +323,7 @@ export default function SalesReportingPage() {
         }
         const date = parseCandidateDate(
           value,
-          detected?.hasDateSignal ??
-            DATE_SIGNAL_REGEX.test(detectedDateColumn)
+          detected?.hasDateSignal ?? DATE_SIGNAL_REGEX.test(detectedDateColumn)
         );
 
         if (date) {
