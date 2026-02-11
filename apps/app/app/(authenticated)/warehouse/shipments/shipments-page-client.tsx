@@ -39,6 +39,7 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   BoxIcon,
   DollarSignIcon,
+  DownloadIcon,
   PlusIcon,
   RefreshCwIcon,
   TruckIcon,
@@ -336,6 +337,41 @@ export const ShipmentsPageClient = () => {
     return getAllowedStatusTransitions(shipment.status);
   };
 
+  // Handle download packing list PDF
+  const handleDownloadPackingList = async (shipment: Shipment) => {
+    try {
+      toast.loading("Generating packing list PDF...", { id: "pdf-loading" });
+
+      const response = await apiFetch(`/api/shipments/${shipment.id}/pdf?download=true`);
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+
+        const sanitizedNumber = (shipment.shipment_number || `SHP-${shipment.id.slice(0, 8)}`)
+          .replace(/[^a-z0-9]+/gi, "-");
+        a.download = `packing-list-${sanitizedNumber}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        toast.success("Packing list PDF downloaded successfully", { id: "pdf-loading" });
+      } else {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to generate PDF");
+      }
+    } catch (error) {
+      console.error("Failed to download packing list:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to download packing list",
+        { id: "pdf-loading" }
+      );
+    }
+  };
+
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       {/* Page Header */}
@@ -526,6 +562,14 @@ export const ShipmentsPageClient = () => {
                             >
                               View
                             </Button>
+                            <Button
+                              onClick={() => handleDownloadPackingList(shipment)}
+                              size="sm"
+                              title="Download Packing List PDF"
+                              variant="ghost"
+                            >
+                              <DownloadIcon className="h-4 w-4" />
+                            </Button>
                             {getAllowedTransitions(shipment).length > 0 && (
                               <Button
                                 onClick={() => openStatusModal(shipment)}
@@ -593,12 +637,22 @@ export const ShipmentsPageClient = () => {
                   </Badge>
                 </div>
               </div>
-              <Button
-                onClick={() => setSelectedShipment(null)}
-                variant="outline"
-              >
-                Close
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => handleDownloadPackingList(selectedShipment)}
+                  title="Download Packing List PDF"
+                  variant="outline"
+                >
+                  <DownloadIcon className="mr-2 h-4 w-4" />
+                  Packing List
+                </Button>
+                <Button
+                  onClick={() => setSelectedShipment(null)}
+                  variant="outline"
+                >
+                  Close
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">

@@ -185,11 +185,65 @@ export interface EventDetailPDFData {
   };
 }
 
+export interface PackingListPDFData {
+  shipment: {
+    id: string;
+    shipmentNumber: string;
+    status: string;
+    scheduledDate: Date;
+    shippedDate?: Date;
+    estimatedDeliveryDate?: Date;
+    carrier?: string;
+    trackingNumber?: string;
+    shippingMethod?: string;
+    notes?: string;
+  };
+  fromLocation?: {
+    name: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+  };
+  toLocation?: {
+    name: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+  };
+  items: Array<{
+    id: string;
+    itemName: string;
+    itemNumber?: string;
+    quantityShipped: number;
+    quantityReceived?: number;
+    unit?: string;
+    unitCost?: number;
+    totalCost?: number;
+    condition?: string;
+    lotNumber?: string;
+    expirationDate?: Date;
+    notes?: string;
+  }>;
+  summary: {
+    totalItems: number;
+    totalValue: number;
+    weightTotal?: number;
+  };
+  metadata: {
+    generatedAt: Date;
+    generatedBy: string;
+    version: string;
+  };
+}
+
 export type PDFData =
   | BattleBoardPDFData
   | ProposalPDFData
   | ContractPDFData
-  | EventDetailPDFData;
+  | EventDetailPDFData
+  | PackingListPDFData;
 
 export interface PDFTemplateProps<T = PDFData> {
   data: T;

@@ -1255,7 +1255,7 @@ All events include:
 
 **Specs:** `warehouse-shipment-tracking.md`
 
-**Status:** 85% Complete (+85% from API and schema implementation)
+**Status:** 90% Complete (+90% from API, schema, and PDF implementation)
 
 **Database:** Complete ✅ (Shipment, ShipmentItem models exist)
 
@@ -1271,6 +1271,7 @@ All events include:
 - POST /api/shipments/[id]/items - Add item to shipment
 - PUT /api/shipments/[id]/items/[itemId] - Update shipment item
 - DELETE /api/shipments/[id]/items/[itemId] - Delete shipment item
+- GET /api/shipments/[id]/pdf - Generate packing list PDF ✅ NEW (2026-02-10)
 
 **Features Implemented:**
 - Shipment status workflow: draft → scheduled → preparing → in_transit → delivered → returned/cancelled
@@ -1280,11 +1281,15 @@ All events include:
 - Delivery confirmation (signature capture, timestamps)
 - Carrier and tracking number support
 - Event association for shipments
+- **Packing list PDF generation** ✅ COMPLETE (2026-02-10)
+  - Comprehensive PDF with status badge, tracking info, locations, items table with checkboxes, and summary
+  - Download buttons in shipments list and detail view
+  - Support for both base64 and direct download responses
 
-**UI Components:** Exists (may need verification)
+**UI Components:** Complete ✅
+**Location:** `apps/app/app/(authenticated)/warehouse/shipments/shipments-page-client.tsx`
 
 **Still Needed:**
-- Packing list generation (PDF)
 - Carrier API integrations (FedEx, UPS)
 - Advanced reporting and analytics
 
@@ -1892,7 +1897,12 @@ All events include:
 13. **Warehouse Shipment Tracking** ~~✅ PARTIALLY COMPLETE~~
    - ~~Needs schema migration~~ ✅ COMPLETE (Shipment, ShipmentItem models exist)
    - ~~Full tracking workflow~~ ✅ COMPLETE (Full CRUD APIs implemented)
-   - **STILL NEEDED:** Packing list PDF generation, carrier integrations
+   - ~~Packing list PDF generation~~ ✅ COMPLETE (2026-02-10)
+     - PDF template with shipment info, locations, items table, and summary
+     - API endpoint at GET /api/shipments/[id]/pdf
+     - Download buttons in shipments list and detail view
+     - Support for both base64 and direct download responses
+   - **STILL NEEDED:** Carrier integrations (FedEx, UPS)
 
 14. ~~**Stock Level Management UI**~~ ✅ COMPLETE (2026-02-10)
    - ~~Models exist, needs full implementation~~ ✅ COMPLETE (Automatic stock updates functional)
@@ -2473,7 +2483,10 @@ All events include:
     - POST /api/events/import/server-to-server
     - Accepts JSON payload with event data, dishes, recipes, ingredients
     - Returns created event with all related entities
-- **Warehouse Shipment Tracking now mostly complete** ✅ (2026-02-10)
+- **Warehouse Shipment Tracking PDF generation complete** ✅ (2026-02-10)
+  - Packing list PDF with shipment info, locations, items table, and summary
+  - API endpoint at GET /api/shipments/[id]/pdf
+  - Download buttons in shipments list and detail view
 - **Golden snapshot test failures fixed** ✅ (2026-02-10)
   - Fixed import order issues in manifest projection tests
   - All 599 API tests now passing
@@ -2496,7 +2509,8 @@ All events include:
   - Item-level tracking (quantity, condition, lot numbers, costs)
   - Inventory integration (automatic updates on delivery)
   - Delivery confirmation (signature capture, timestamps)
-  - Remaining: Packing list PDF generation, carrier integrations
+  - ~~Packing list PDF generation~~ ✅ COMPLETE (2026-02-10)
+  - Remaining: Carrier integrations (FedEx, UPS)
 
 **No Critical Blockers Remaining** ✅
 
@@ -2504,6 +2518,21 @@ All events include:
 - AI features (infrastructure ready, needs feature implementation)
 
 **Recently Completed (2026-02-10):**
+- **Packing List PDF Generation for Warehouse Shipments** ✅ (2026-02-10)
+  - Packing list PDF template with shipment info, locations, items table, and summary
+  - API endpoint for PDF generation at GET /api/shipments/[id]/pdf
+  - Download button in shipments list (icon button)
+  - Download button in shipment detail view (full button with icon)
+  - Support for both base64 and direct download responses
+  - Comprehensive PDF with status badge, tracking info, locations, items table with checkboxes, and summary
+  - Files created:
+    - `packages/pdf/src/templates/packing-list.tsx` (PDF template)
+    - `apps/api/app/api/shipments/[id]/pdf/route.tsx` (API endpoint)
+    - `packages/pdf/src/types.ts` (added PackingListPDFData interface)
+    - `packages/pdf/src/index.ts` (added PackingListPDF export)
+    - `apps/app/app/(authenticated)/warehouse/shipments/shipments-page-client.tsx` (download buttons)
+  - Test Status: 534 api tests, 107 app tests passing, build successful
+  - All validations passing (check: 30 packages, test: 641 tests, build: 20 packages)
 - **AI Conflict Detection Enhancements** ✅ (2026-02-10)
   - Venue conflict detection implementation with SQL-based conflict detection
   - Enhanced AI resolution suggestions with ResolutionOptions interface
