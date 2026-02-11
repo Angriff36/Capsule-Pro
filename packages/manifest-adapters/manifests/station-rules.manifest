@@ -159,7 +159,7 @@ entity Station {
     emit StationEquipmentUpdated
   }
 
-  store Station in memory
+  store Station in PrismaStationStore
 }
 
 policy ManagersCanModifyStation execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can modify station settings"
