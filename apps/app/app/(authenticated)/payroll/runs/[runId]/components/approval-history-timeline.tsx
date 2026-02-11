@@ -1,12 +1,6 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
-import {
-  CheckCircleIcon,
-  ClockIcon,
-  EditIcon,
-  UserIcon,
-} from "lucide-react";
+import { CheckCircleIcon, ClockIcon, EditIcon, UserIcon } from "lucide-react";
 
 interface ApprovalHistoryEntry {
   id: string;
@@ -120,7 +114,7 @@ function getPerformerName(
   performerFirstName: string | null,
   performerLastName: string | null
 ) {
-  if (!performerFirstName && !performerLastName) {
+  if (!(performerFirstName || performerLastName)) {
     return "System";
   }
   return [performerFirstName, performerLastName].filter(Boolean).join(" ");

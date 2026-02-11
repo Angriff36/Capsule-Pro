@@ -9,14 +9,21 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
-import { InvariantError } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { z } from "zod";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type PayrollRunStatus = "pending" | "processing" | "completed" | "approved" | "paid" | "failed";
+type PayrollRunStatus =
+  | "pending"
+  | "processing"
+  | "completed"
+  | "approved"
+  | "paid"
+  | "failed";
 
-const UpdatePayrollRunSchema = z.object({
-  status: z.enum(["pending", "processing", "completed", "approved", "paid", "failed"]).optional(),
+const _UpdatePayrollRunSchema = z.object({
+  status: z
+    .enum(["pending", "processing", "completed", "approved", "paid", "failed"])
+    .optional(),
 });
 
 interface PaginationParams {
@@ -62,9 +69,7 @@ export async function GET(request: Request) {
     const periodId = searchParams.get("periodId") || null;
 
     // Get total count for pagination
-    const total = await database.$queryRaw<
-      { count: bigint }[]
-    >(
+    const total = await database.$queryRaw<{ count: bigint }[]>(
       Prisma.sql`
         SELECT COUNT(*) as count
         FROM tenant_staff.payroll_runs

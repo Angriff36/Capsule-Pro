@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import type { ReactNode } from "react";
-import { usePathname } from "next/navigation";
 import { cn } from "@repo/design-system/lib/utils";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
 
 interface PayrollLayoutProperties {
   readonly children: ReactNode;
@@ -51,14 +51,14 @@ const PayrollLayout = ({ children }: PayrollLayoutProperties) => {
             (item.href !== "/payroll" && pathname?.startsWith(item.href));
           return (
             <Link
-              key={item.href}
-              href={item.href}
               className={cn(
                 "inline-flex items-center px-1 py-4 text-sm font-medium transition-colors",
                 isActive
                   ? "border-b-2 border-primary text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               )}
+              href={item.href}
+              key={item.href}
             >
               {item.label}
             </Link>

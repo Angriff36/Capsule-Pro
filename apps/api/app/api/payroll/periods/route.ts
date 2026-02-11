@@ -64,9 +64,7 @@ export async function GET(request: Request) {
     }
 
     // Get total count for pagination
-    const total = await database.$queryRaw<
-      { count: bigint }[]
-    >(
+    const total = await database.$queryRaw<{ count: bigint }[]>(
       Prisma.sql`
         SELECT COUNT(*) as count
         FROM tenant_staff.payroll_periods
@@ -144,7 +142,7 @@ export async function GET(request: Request) {
  */
 export async function POST(request: Request) {
   try {
-    const { orgId, userId } = await auth();
+    const { orgId } = await auth();
     if (!orgId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -159,7 +157,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    if (!body.periodStart || !body.periodEnd) {
+    if (!(body.periodStart && body.periodEnd)) {
       throw new InvariantError("periodStart and periodEnd are required");
     }
 
@@ -180,7 +178,15 @@ export async function POST(request: Request) {
 
     // Create payroll period
     const period = await database.$queryRaw<
-      { id: string; tenant_id: string; period_start: Date; period_end: Date; status: string; created_at: Date; updated_at: Date }[]
+      {
+        id: string;
+        tenant_id: string;
+        period_start: Date;
+        period_end: Date;
+        status: string;
+        created_at: Date;
+        updated_at: Date;
+      }[]
     >(
       Prisma.sql`
         INSERT INTO tenant_staff.payroll_periods (tenant_id, period_start, period_end, status)

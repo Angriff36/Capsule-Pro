@@ -11,7 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -19,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -36,7 +36,7 @@ import {
   Loader2Icon,
   PlayIcon,
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
@@ -46,7 +46,13 @@ interface PayrollRun {
   tenantId: string;
   payrollPeriodId: string;
   runDate: Date;
-  status: "pending" | "processing" | "completed" | "approved" | "paid" | "failed";
+  status:
+    | "pending"
+    | "processing"
+    | "completed"
+    | "approved"
+    | "paid"
+    | "failed";
   totalGross: number;
   totalDeductions: number;
   totalNet: number;
@@ -111,7 +117,7 @@ function getStatusBadge(status: PayrollRun["status"]) {
   };
 
   return (
-    <Badge variant={variants[status]} className="flex items-center gap-1">
+    <Badge className="flex items-center gap-1" variant={variants[status]}>
       {icons[status]}
       {labels[status]}
     </Badge>
@@ -283,7 +289,9 @@ export default function PayrollRunsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-semibold text-2xl text-foreground">Payroll Runs</h1>
+          <h1 className="font-semibold text-2xl text-foreground">
+            Payroll Runs
+          </h1>
           <p className="text-muted-foreground text-sm">
             Review, approve, and manage payroll runs
           </p>
@@ -452,7 +460,7 @@ export default function PayrollRunsPage() {
       )}
 
       {/* Approval Dialog */}
-      <Dialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
+      <Dialog onOpenChange={setApproveDialogOpen} open={approveDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Approve Payroll Run</DialogTitle>
@@ -484,9 +492,7 @@ export default function PayrollRunsPage() {
                 </div>
               </div>
               <div className="rounded-md bg-muted p-3">
-                <p className="text-muted-foreground text-sm mb-1">
-                  Run Date
-                </p>
+                <p className="text-muted-foreground text-sm mb-1">Run Date</p>
                 <p className="font-medium">{formatDate(selectedRun.runDate)}</p>
               </div>
             </div>

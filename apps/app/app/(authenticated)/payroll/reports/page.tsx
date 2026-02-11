@@ -10,10 +10,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -21,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -30,9 +29,9 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import {
-  FileTextIcon,
   DownloadIcon,
   FileSpreadsheetIcon,
+  FileTextIcon,
   Loader2Icon,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -62,10 +61,26 @@ function formatDate(date: Date) {
   }).format(date);
 }
 
-const formatOptions: Array<{ value: ReportFormat; label: string; icon: React.ReactNode }> = [
-  { value: "csv", label: "CSV", icon: <FileSpreadsheetIcon className="h-4 w-4" /> },
-  { value: "qbxml", label: "QuickBooks XML", icon: <FileTextIcon className="h-4 w-4" /> },
-  { value: "qbOnlineCsv", label: "QuickBooks Online CSV", icon: <FileSpreadsheetIcon className="h-4 w-4" /> },
+const formatOptions: Array<{
+  value: ReportFormat;
+  label: string;
+  icon: React.ReactNode;
+}> = [
+  {
+    value: "csv",
+    label: "CSV",
+    icon: <FileSpreadsheetIcon className="h-4 w-4" />,
+  },
+  {
+    value: "qbxml",
+    label: "QuickBooks XML",
+    icon: <FileTextIcon className="h-4 w-4" />,
+  },
+  {
+    value: "qbOnlineCsv",
+    label: "QuickBooks Online CSV",
+    icon: <FileSpreadsheetIcon className="h-4 w-4" />,
+  },
   { value: "json", label: "JSON", icon: <FileTextIcon className="h-4 w-4" /> },
 ];
 
@@ -147,7 +162,10 @@ export default function PayrollReportsPage() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        const extension = selectedFormat === "csv" || selectedFormat === "qbOnlineCsv" ? "csv" : "xml";
+        const extension =
+          selectedFormat === "csv" || selectedFormat === "qbOnlineCsv"
+            ? "csv"
+            : "xml";
         a.download = `payroll-report-${selectedPeriodId}.${extension}`;
         document.body.appendChild(a);
         a.click();
@@ -232,7 +250,9 @@ export default function PayrollReportsPage() {
                         </TableCell>
                         <TableCell>
                           <Badge
-                            variant={period.status === "open" ? "default" : "outline"}
+                            variant={
+                              period.status === "open" ? "default" : "outline"
+                            }
                           >
                             {period.status}
                           </Badge>
@@ -258,7 +278,7 @@ export default function PayrollReportsPage() {
       </section>
 
       {/* Export Dialog */}
-      <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
+      <Dialog onOpenChange={setExportDialogOpen} open={exportDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Export Payroll Report</DialogTitle>
@@ -270,7 +290,9 @@ export default function PayrollReportsPage() {
             <div className="space-y-2">
               <Label htmlFor="format">Format</Label>
               <Select
-                onValueChange={(value) => setSelectedFormat(value as ReportFormat)}
+                onValueChange={(value) =>
+                  setSelectedFormat(value as ReportFormat)
+                }
                 value={selectedFormat}
               >
                 <SelectTrigger id="format">
@@ -289,7 +311,8 @@ export default function PayrollReportsPage() {
               </Select>
             </div>
 
-            {(selectedFormat === "qbxml" || selectedFormat === "qbOnlineCsv") && (
+            {(selectedFormat === "qbxml" ||
+              selectedFormat === "qbOnlineCsv") && (
               <div className="flex items-center space-x-2">
                 <input
                   checked={aggregate}
@@ -298,10 +321,7 @@ export default function PayrollReportsPage() {
                   onChange={(e) => setAggregate(e.target.checked)}
                   type="checkbox"
                 />
-                <Label
-                  className="cursor-pointer text-sm"
-                  htmlFor="aggregate"
-                >
+                <Label className="cursor-pointer text-sm" htmlFor="aggregate">
                   Aggregate as single entry (for QuickBooks import)
                 </Label>
               </div>
@@ -349,8 +369,8 @@ export default function PayrollReportsPage() {
                 <div>
                   <h3 className="font-semibold mb-1">QuickBooks XML</h3>
                   <p className="text-muted-foreground text-sm">
-                    QBXML format for importing into QuickBooks Desktop.
-                    Supports aggregate import option.
+                    QBXML format for importing into QuickBooks Desktop. Supports
+                    aggregate import option.
                   </p>
                 </div>
               </div>

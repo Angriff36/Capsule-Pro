@@ -539,8 +539,14 @@ export const ForecastsPageClient = () => {
                               tickLine={false}
                             />
                             <ChartTooltipContent
-                              formatter={(value: string | number, name: string) => {
-                                const numValue = typeof value === "number" ? value : parseFloat(value);
+                              formatter={(
+                                value: string | number,
+                                name: string
+                              ) => {
+                                const numValue =
+                                  typeof value === "number"
+                                    ? value
+                                    : Number.parseFloat(value);
                                 if (name === "stock") {
                                   return [
                                     `${numValue.toFixed(0)} units`,
@@ -548,7 +554,10 @@ export const ForecastsPageClient = () => {
                                   ];
                                 }
                                 if (name === "usage") {
-                                  return [`${numValue.toFixed(1)}`, "Daily Usage"];
+                                  return [
+                                    `${numValue.toFixed(1)}`,
+                                    "Daily Usage",
+                                  ];
                                 }
                                 return [value, name];
                               }}
@@ -646,8 +655,14 @@ export const ForecastsPageClient = () => {
                               />
                               <ChartTooltipContent
                                 formatter={(value: string | number) => {
-                                  const numValue = typeof value === "number" ? value : parseFloat(value);
-                                  return [`${numValue.toFixed(1)} units`, "Usage"];
+                                  const numValue =
+                                    typeof value === "number"
+                                      ? value
+                                      : Number.parseFloat(value);
+                                  return [
+                                    `${numValue.toFixed(1)} units`,
+                                    "Usage",
+                                  ];
                                 }}
                                 labelFormatter={(label) => `Date: ${label}`}
                               />

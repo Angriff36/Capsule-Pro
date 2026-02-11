@@ -8,8 +8,8 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { z } from "zod";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 type PayrollRunStatus =
   | "pending"
@@ -311,12 +311,10 @@ export async function PUT(request: Request, context: RouteContext) {
       );
     }
 
-    const { status, rejectionReason } = validationResult.data;
+    const { status } = validationResult.data;
 
     // Get current run to check if update is valid
-    const currentRunResult = await database.$queryRaw<
-      { status: string }[]
-    >(
+    const currentRunResult = await database.$queryRaw<{ status: string }[]>(
       Prisma.sql`
         SELECT status
         FROM tenant_staff.payroll_runs

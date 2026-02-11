@@ -8,10 +8,9 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
-import { invariant } from "@/app/lib/invariant";
-import { InvariantError } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { z } from "zod";
+import { InvariantError, invariant } from "@/app/lib/invariant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 type PayrollRunStatus =
   | "pending"
@@ -225,7 +224,9 @@ export async function POST(request: Request) {
     invariant(payrollRunId, "payrollRunId is required");
 
     // Check if the payroll run exists
-    const runResult = await database.$queryRaw<{ id: string; status: string }[]>(
+    const runResult = await database.$queryRaw<
+      { id: string; status: string }[]
+    >(
       Prisma.sql`
         SELECT id, status
         FROM tenant_staff.payroll_runs
@@ -247,7 +248,10 @@ export async function POST(request: Request) {
     // Only allow creating approval requests for completed or pending runs
     if (run.status !== "completed" && run.status !== "pending") {
       return NextResponse.json(
-        { message: "Can only create approval requests for pending or completed payroll runs" },
+        {
+          message:
+            "Can only create approval requests for pending or completed payroll runs",
+        },
         { status: 400 }
       );
     }

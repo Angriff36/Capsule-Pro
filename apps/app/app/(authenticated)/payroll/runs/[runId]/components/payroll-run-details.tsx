@@ -6,11 +6,7 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import {
-  CalendarIcon,
-  DollarSignIcon,
-  UsersIcon,
-} from "lucide-react";
+import { CalendarIcon, DollarSignIcon, UsersIcon } from "lucide-react";
 
 type PayrollRunStatus =
   | "pending"
@@ -59,9 +55,7 @@ function formatDate(date: Date | null) {
   }).format(date);
 }
 
-export default function PayrollRunDetails({
-  run,
-}: PayrollRunDetailsProps) {
+export default function PayrollRunDetails({ run }: PayrollRunDetailsProps) {
   return (
     <section>
       <h2 className="font-medium text-sm text-muted-foreground mb-4">
@@ -77,9 +71,7 @@ export default function PayrollRunDetails({
           <CardContent className="space-y-4">
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground text-sm">
-                  Gross Pay
-                </span>
+                <span className="text-muted-foreground text-sm">Gross Pay</span>
                 <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
               </div>
               <p className="font-semibold text-2xl">
@@ -88,9 +80,7 @@ export default function PayrollRunDetails({
             </div>
             <Separator />
             <div className="space-y-1">
-              <span className="text-muted-foreground text-sm">
-                Deductions
-              </span>
+              <span className="text-muted-foreground text-sm">Deductions</span>
               <p className="font-medium text-lg">
                 {formatCurrency(run.totalDeductions)}
               </p>
@@ -134,9 +124,7 @@ export default function PayrollRunDetails({
                   Period End
                 </span>
               </div>
-              <p className="font-medium text-lg">
-                {formatDate(run.periodEnd)}
-              </p>
+              <p className="font-medium text-lg">{formatDate(run.periodEnd)}</p>
             </div>
             <Separator />
             <div className="space-y-1">
@@ -175,12 +163,8 @@ export default function PayrollRunDetails({
             </div>
             <Separator />
             <div className="space-y-1">
-              <span className="text-muted-foreground text-sm">
-                Created
-              </span>
-              <p className="font-medium text-sm">
-                {formatDate(run.createdAt)}
-              </p>
+              <span className="text-muted-foreground text-sm">Created</span>
+              <p className="font-medium text-sm">{formatDate(run.createdAt)}</p>
             </div>
           </CardContent>
         </Card>
@@ -199,9 +183,7 @@ export default function PayrollRunDetails({
                   <p className="text-muted-foreground text-sm mb-1">
                     Approved On
                   </p>
-                  <p className="font-medium">
-                    {formatDate(run.approvedAt)}
-                  </p>
+                  <p className="font-medium">{formatDate(run.approvedAt)}</p>
                 </div>
               )}
               {run.paidAt && (

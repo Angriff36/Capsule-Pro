@@ -15,7 +15,7 @@ import {
   PAGE,
 } from "./document";
 
-export async function generateWeeklyPdf(
+export function generateWeeklyPdf(
   metrics: WeeklyMetrics,
   config: ReportConfig
 ): Promise<Buffer> {

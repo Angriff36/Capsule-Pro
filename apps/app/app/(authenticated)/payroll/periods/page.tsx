@@ -14,7 +14,6 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -22,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -68,7 +68,10 @@ function formatDate(date: Date) {
 }
 
 function getStatusBadge(status: PayrollPeriod["status"]) {
-  const variants: Record<PayrollPeriod["status"], "default" | "secondary" | "outline"> = {
+  const variants: Record<
+    PayrollPeriod["status"],
+    "default" | "secondary" | "outline"
+  > = {
     open: "default",
     processing: "secondary",
     closed: "outline",
@@ -87,7 +90,7 @@ function getStatusBadge(status: PayrollPeriod["status"]) {
   };
 
   return (
-    <Badge variant={variants[status]} className="flex items-center gap-1">
+    <Badge className="flex items-center gap-1" variant={variants[status]}>
       {icons[status]}
       {labels[status]}
     </Badge>
@@ -125,7 +128,9 @@ export default function PayrollPeriodsPage() {
         params.set("status", statusFilter);
       }
 
-      const response = await apiFetch(`/api/payroll/periods?${params.toString()}`);
+      const response = await apiFetch(
+        `/api/payroll/periods?${params.toString()}`
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch payroll periods");
@@ -171,7 +176,9 @@ export default function PayrollPeriodsPage() {
     } catch (error) {
       console.error("Error creating payroll period:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to create payroll period"
+        error instanceof Error
+          ? error.message
+          : "Failed to create payroll period"
       );
     } finally {
       setActionLoading(false);
@@ -200,7 +207,7 @@ export default function PayrollPeriodsPage() {
             Manage pay periods for payroll processing
           </p>
         </div>
-        <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <Dialog onOpenChange={setCreateDialogOpen} open={createDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <PlusIcon className="mr-2 h-4 w-4" />
@@ -211,8 +218,8 @@ export default function PayrollPeriodsPage() {
             <DialogHeader>
               <DialogTitle>Create Payroll Period</DialogTitle>
               <DialogDescription>
-                Define the start and end dates for a new payroll period.
-                Periods cannot exceed 31 days.
+                Define the start and end dates for a new payroll period. Periods
+                cannot exceed 31 days.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -220,18 +227,18 @@ export default function PayrollPeriodsPage() {
                 <Label htmlFor="periodStart">Period Start Date</Label>
                 <Input
                   id="periodStart"
+                  onChange={(e) => setPeriodStart(e.target.value)}
                   type="date"
                   value={periodStart}
-                  onChange={(e) => setPeriodStart(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="periodEnd">Period End Date</Label>
                 <Input
                   id="periodEnd"
+                  onChange={(e) => setPeriodEnd(e.target.value)}
                   type="date"
                   value={periodEnd}
-                  onChange={(e) => setPeriodEnd(e.target.value)}
                 />
               </div>
             </div>

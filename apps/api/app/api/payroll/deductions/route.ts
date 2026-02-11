@@ -8,9 +8,9 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { z } from "zod";
 
 type DeductionType =
   | "benefits"
@@ -45,7 +45,10 @@ const CreateDeductionSchema = z.object({
   percentage: z.number().min(0).max(100).optional(),
   isPreTax: z.boolean().default(false),
   effectiveDate: z.string().transform((str) => new Date(str)),
-  endDate: z.string().transform((str) => new Date(str)).optional(),
+  endDate: z
+    .string()
+    .transform((str) => new Date(str))
+    .optional(),
   maxAnnualAmount: z.number().min(0).optional(),
 });
 
@@ -92,9 +95,7 @@ export async function GET(request: Request) {
     const type = searchParams.get("type") as DeductionType | null;
 
     // Get total count for pagination
-    const total = await database.$queryRaw<
-      { count: bigint }[]
-    >(
+    const total = await database.$queryRaw<{ count: bigint }[]>(
       Prisma.sql`
         SELECT COUNT(*) as count
         FROM tenant_staff.employee_deductions
@@ -162,7 +163,9 @@ export async function GET(request: Request) {
       isPreTax: deduction.is_pre_tax,
       effectiveDate: deduction.effective_date,
       endDate: deduction.end_date,
-      maxAnnualAmount: deduction.max_annual_amount ? Number(deduction.max_annual_amount) : null,
+      maxAnnualAmount: deduction.max_annual_amount
+        ? Number(deduction.max_annual_amount)
+        : null,
       createdAt: deduction.created_at,
       updatedAt: deduction.updated_at,
     }));
@@ -192,7 +195,7 @@ export async function GET(request: Request) {
  */
 export async function POST(request: Request) {
   try {
-    const { orgId, userId } = await auth();
+    const { orgId } = await auth();
     if (!orgId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -222,13 +225,20 @@ export async function POST(request: Request) {
     const data = parseResult.data;
 
     // Validate that either amount or percentage is provided
-    if (!data.amount && !data.percentage) {
+    if (!(data.amount || data.percentage)) {
       throw new InvariantError("Either amount or percentage must be provided");
     }
 
     // Create deduction
     const deduction = await database.$queryRaw<
-      { id: string; tenant_id: string; employee_id: string; type: string; name: string; created_at: Date }[]
+      {
+        id: string;
+        tenant_id: string;
+        employee_id: string;
+        type: string;
+        name: string;
+        created_at: Date;
+      }[]
     >(
       Prisma.sql`
         INSERT INTO tenant_staff.employee_deductions (
@@ -263,14 +273,17 @@ export async function POST(request: Request) {
       throw new Error("Failed to create deduction");
     }
 
-    return NextResponse.json({
-      id: deduction[0].id,
-      tenantId: deduction[0].tenant_id,
-      employeeId: deduction[0].employee_id,
-      type: deduction[0].type,
-      name: deduction[0].name,
-      createdAt: deduction[0].created_at,
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        id: deduction[0].id,
+        tenantId: deduction[0].tenant_id,
+        employeeId: deduction[0].employee_id,
+        type: deduction[0].type,
+        name: deduction[0].name,
+        createdAt: deduction[0].created_at,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });

@@ -166,7 +166,7 @@ export async function getEligibleEmployeesForShift(
 /**
  * Fetches employees from database with seniority, skills, and conflict info
  */
-async function fetchEmployeesForShift(
+function fetchEmployeesForShift(
   tenantId: string,
   shiftId: string,
   shiftStart: Date,

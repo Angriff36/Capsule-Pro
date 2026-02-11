@@ -7,16 +7,20 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
-import { invariant } from "@/app/lib/invariant";
+import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { InvariantError } from "@/app/lib/invariant";
+
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 interface PaginationParams {
   page: number;
   limit: number;
 }
 
-function parsePaginationParams(searchParams: URLSearchParams): PaginationParams {
+function parsePaginationParams(
+  searchParams: URLSearchParams
+): PaginationParams {
   const page = Number.parseInt(searchParams.get("page") || "1", 10);
   const limit = Math.min(
     Math.max(Number.parseInt(searchParams.get("limit") || "20", 10), 1),
@@ -58,26 +62,28 @@ export async function GET(request: Request) {
     const action = searchParams.get("action");
 
     // Validate that at least one filter is provided
-    if (!payrollRunId && !searchParams.get("entityId")) {
+    if (!(payrollRunId || searchParams.get("entityId"))) {
       return NextResponse.json(
-        { message: "At least one filter (payrollRunId or entityId) is required" },
+        {
+          message: "At least one filter (payrollRunId or entityId) is required",
+        },
         { status: 400 }
       );
     }
 
     // Build where conditions
-    const conditions: string[] = ["pah.tenant_id = " + tenantId];
+    const conditions: string[] = [`pah.tenant_id = ${tenantId}`];
 
     if (payrollRunId) {
       invariant(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(payrollRunId),
+        UUID_REGEX.test(payrollRunId),
         "payrollRunId must be a valid UUID"
       );
-      conditions.push("pah.payroll_run_id = '" + payrollRunId + "'::uuid");
+      conditions.push(`pah.payroll_run_id = '${payrollRunId}'::uuid`);
     }
 
     if (action) {
-      conditions.push("pah.action = '" + action + "'");
+      conditions.push(`pah.action = '${action}'`);
     }
 
     const whereClause = conditions.join(" AND ");

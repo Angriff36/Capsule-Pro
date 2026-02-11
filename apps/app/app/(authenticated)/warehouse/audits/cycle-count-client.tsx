@@ -1,15 +1,31 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@repo/design-system/components/ui/dropdown-menu";
 import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -25,33 +41,16 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@repo/design-system/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@repo/design-system/components/ui/alert-dialog";
-import { Label } from "@repo/design-system/components/ui/label";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
+  AlertTriangleIcon,
   CalendarIcon,
+  CheckCircleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  PlusIcon,
   MoreHorizontalIcon,
   PlayIcon,
-  CheckCircleIcon,
-  AlertTriangleIcon,
+  PlusIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -99,7 +98,10 @@ interface CycleCountSessionsResponse {
   };
 }
 
-const statusVariant: Record<CycleCountSessionStatus, "default" | "secondary" | "outline" | "destructive"> = {
+const statusVariant: Record<
+  CycleCountSessionStatus,
+  "default" | "secondary" | "outline" | "destructive"
+> = {
   draft: "secondary",
   in_progress: "default",
   completed: "outline",
@@ -135,7 +137,8 @@ export const CycleCountClient = () => {
   // Create session dialog state
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newSessionName, setNewSessionName] = useState("");
-  const [newSessionType, setNewSessionType] = useState<CycleCountSessionType>("ad_hoc");
+  const [newSessionType, setNewSessionType] =
+    useState<CycleCountSessionType>("ad_hoc");
   const [newSessionNotes, setNewSessionNotes] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
@@ -154,7 +157,9 @@ export const CycleCountClient = () => {
         params.set("countType", typeFilter);
       }
 
-      const response = await apiFetch(`/api/inventory/cycle-count/sessions?${params}`);
+      const response = await apiFetch(
+        `/api/inventory/cycle-count/sessions?${params}`
+      );
 
       if (!response.ok) {
         const error = await response.json();
@@ -345,7 +350,10 @@ export const CycleCountClient = () => {
   const inProgressSessions = sessions.filter(
     (s) => s.status === "in_progress"
   ).length;
-  const totalVariance = sessions.reduce((sum, s) => sum + Math.abs(s.total_variance), 0);
+  const totalVariance = sessions.reduce(
+    (sum, s) => sum + Math.abs(s.total_variance),
+    0
+  );
 
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
@@ -367,7 +375,9 @@ export const CycleCountClient = () => {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Sessions</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Sessions
+            </CardTitle>
             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -403,16 +413,16 @@ export const CycleCountClient = () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Variance</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Variance
+            </CardTitle>
             <AlertTriangleIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {formatCurrency(totalVariance)}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Across all sessions
-            </p>
+            <p className="text-xs text-muted-foreground">Across all sessions</p>
           </CardContent>
         </Card>
       </div>
@@ -502,7 +512,9 @@ export const CycleCountClient = () => {
                   <TableRow key={session.id}>
                     <TableCell className="font-medium">
                       <div>
-                        <div className="font-medium">{session.session_name}</div>
+                        <div className="font-medium">
+                          {session.session_name}
+                        </div>
                         {session.notes && (
                           <div className="text-sm text-muted-foreground truncate max-w-md">
                             {session.notes}
@@ -586,7 +598,9 @@ export const CycleCountClient = () => {
                                 Continue Counting
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => handleCompleteSession(session.id)}
+                                onClick={() =>
+                                  handleCompleteSession(session.id)
+                                }
                               >
                                 <CheckCircleIcon className="mr-2 h-4 w-4" />
                                 Complete Session
@@ -603,7 +617,9 @@ export const CycleCountClient = () => {
                                 View Details
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => handleFinalizeSession(session.id)}
+                                onClick={() =>
+                                  handleFinalizeSession(session.id)
+                                }
                               >
                                 <CheckCircleIcon className="mr-2 h-4 w-4" />
                                 Finalize Session
@@ -655,7 +671,9 @@ export const CycleCountClient = () => {
             <ChevronLeftIcon className="h-4 w-4" />
             Previous
           </Button>
-          <div className="text-sm">Page {page} of {totalPages}</div>
+          <div className="text-sm">
+            Page {page} of {totalPages}
+          </div>
           <Button
             disabled={page === totalPages}
             onClick={() => setPage(page + 1)}
@@ -670,8 +688,8 @@ export const CycleCountClient = () => {
 
       {/* Create Session Dialog */}
       <AlertDialog
-        open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
+        open={isCreateDialogOpen}
       >
         <AlertDialogContent>
           <AlertDialogHeader>

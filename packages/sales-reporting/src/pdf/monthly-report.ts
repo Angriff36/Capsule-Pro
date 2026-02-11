@@ -38,7 +38,7 @@ function revenueChangeText(
   return { text: `${pct}% vs prior`, trend: "down" };
 }
 
-export async function generateMonthlyPdf(
+export function generateMonthlyPdf(
   metrics: MonthlyMetrics,
   config: ReportConfig
 ): Promise<Buffer> {

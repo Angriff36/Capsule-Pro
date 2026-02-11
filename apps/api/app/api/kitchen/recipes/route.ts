@@ -188,9 +188,7 @@ export async function GET(request: Request) {
     );
 
     // Get total count for pagination
-    const totalCountResult = await database.$queryRaw<
-      { count: bigint }[]
-    >(
+    const totalCountResult = await database.$queryRaw<{ count: bigint }[]>(
       Prisma.sql`
         SELECT COUNT(*) as count
         FROM tenant_kitchen.recipes r

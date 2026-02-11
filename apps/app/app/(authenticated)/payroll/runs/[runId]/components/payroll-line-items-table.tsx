@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { SearchIcon, UserIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import { useState } from "react";
 
 interface PayrollLineItem {
@@ -109,14 +109,8 @@ export default function PayrollLineItemsTable({
       let comparison = 0;
 
       if (sortField === "name") {
-        const nameA = getEmployeeName(
-          a.employeeFirstName,
-          a.employeeLastName
-        );
-        const nameB = getEmployeeName(
-          b.employeeFirstName,
-          b.employeeLastName
-        );
+        const nameA = getEmployeeName(a.employeeFirstName, a.employeeLastName);
+        const nameB = getEmployeeName(b.employeeFirstName, b.employeeLastName);
         comparison = nameA.localeCompare(nameB);
       } else if (sortField === "netPay") {
         comparison = a.netPay - b.netPay;
@@ -152,10 +146,10 @@ export default function PayrollLineItemsTable({
             <div className="flex-1 min-w-[200px] relative">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
+                className="pl-9"
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search employees..."
                 value={searchQuery}
-                className="pl-9"
               />
             </div>
 
@@ -291,7 +285,10 @@ export default function PayrollLineItemsTable({
                   <span className="text-muted-foreground">Total Gross:</span>{" "}
                   <span className="font-medium">
                     {formatCurrency(
-                      filteredItems.reduce((sum, item) => sum + item.grossPay, 0)
+                      filteredItems.reduce(
+                        (sum, item) => sum + item.grossPay,
+                        0
+                      )
                     )}
                   </span>
                 </div>
@@ -302,7 +299,8 @@ export default function PayrollLineItemsTable({
                   <span className="font-medium">
                     {formatCurrency(
                       filteredItems.reduce(
-                        (sum, item) => sum + getTotalDeductions(item.deductions),
+                        (sum, item) =>
+                          sum + getTotalDeductions(item.deductions),
                         0
                       )
                     )}

@@ -143,7 +143,7 @@ export default function ApprovalWorkflowPanel({
       </h2>
 
       {/* Status Alert */}
-      <Alert variant={statusMessage.variant} className="mb-6">
+      <Alert className="mb-6" variant={statusMessage.variant}>
         {statusMessage.icon}
         <AlertTitle>{statusMessage.title}</AlertTitle>
         <AlertDescription>{statusMessage.description}</AlertDescription>
@@ -156,12 +156,10 @@ export default function ApprovalWorkflowPanel({
             {/* Current Status */}
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-lg">
-                  Payroll Run Actions
-                </h3>
+                <h3 className="font-medium text-lg">Payroll Run Actions</h3>
                 <p className="text-muted-foreground text-sm">
                   Current Status:{" "}
-                  <Badge variant="outline" className="ml-1">
+                  <Badge className="ml-1" variant="outline">
                     {run.status.toUpperCase()}
                   </Badge>
                 </p>
@@ -214,11 +212,11 @@ export default function ApprovalWorkflowPanel({
               {canApprove && (
                 <>
                   <Button
+                    className="flex-1 min-w-[200px]"
                     disabled={actionLoading}
                     onClick={onApprove}
                     size="lg"
                     variant="default"
-                    className="flex-1 min-w-[200px]"
                   >
                     {actionLoading ? (
                       <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
@@ -245,11 +243,11 @@ export default function ApprovalWorkflowPanel({
 
               {canFinalize && (
                 <Button
+                  className="flex-1 min-w-[200px]"
                   disabled={actionLoading}
                   onClick={onFinalize}
                   size="lg"
                   variant="default"
-                  className="flex-1 min-w-[200px]"
                 >
                   {actionLoading ? (
                     <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
@@ -293,8 +291,8 @@ export default function ApprovalWorkflowPanel({
               <Alert variant="default">
                 <AlertCircleIcon className="h-4 w-4" />
                 <AlertDescription className="text-sm">
-                  <strong>Note:</strong> Finalizing the payroll run will initiate
-                  payment processing. This action cannot be undone.
+                  <strong>Note:</strong> Finalizing the payroll run will
+                  initiate payment processing. This action cannot be undone.
                 </AlertDescription>
               </Alert>
             )}

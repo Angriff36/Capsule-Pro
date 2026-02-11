@@ -7,10 +7,12 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
-import { invariant } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { InvariantError } from "@/app/lib/invariant";
 import { z } from "zod";
+import { InvariantError, invariant } from "@/app/lib/invariant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type PayrollRunStatus =
   | "pending"
@@ -72,9 +74,7 @@ export async function PUT(request: Request, context: RouteContext) {
     const { status, approvedBy, rejectReason } = parseResult.data;
 
     // Validate UUID format
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    invariant(uuidRegex.test(approvalId), "approvalId must be a valid UUID");
+    invariant(UUID_REGEX.test(approvalId), "approvalId must be a valid UUID");
 
     // Check if the approval history entry exists
     const approvalResult = await database.$queryRaw<
@@ -108,13 +108,11 @@ export async function PUT(request: Request, context: RouteContext) {
     }
 
     // When approving, require approvedBy
-    if (status === "approved") {
-      if (!approvedBy && !userId) {
-        return NextResponse.json(
-          { message: "approvedBy is required when approving" },
-          { status: 400 }
-        );
-      }
+    if (status === "approved" && !(approvedBy || userId)) {
+      return NextResponse.json(
+        { message: "approvedBy is required when approving" },
+        { status: 400 }
+      );
     }
 
     // Update the payroll run status

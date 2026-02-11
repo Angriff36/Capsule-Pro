@@ -2,7 +2,7 @@
 
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { Card } from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -27,8 +27,8 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import ApprovalWorkflowPanel from "./components/approval-workflow-panel";
 import ApprovalHistoryTimeline from "./components/approval-history-timeline";
+import ApprovalWorkflowPanel from "./components/approval-workflow-panel";
 import PayrollLineItemsTable from "./components/payroll-line-items-table";
 import PayrollRunDetails from "./components/payroll-run-details";
 
@@ -131,7 +131,7 @@ function getStatusBadge(status: PayrollRunStatus) {
   };
 
   return (
-    <Badge variant={variants[status]} className="flex items-center gap-1">
+    <Badge className="flex items-center gap-1" variant={variants[status]}>
       {icons[status]}
       {labels[status]}
     </Badge>
@@ -184,7 +184,7 @@ export default function PayrollRunDetailClient({
     if (runData?.status === "processing") {
       const interval = setInterval(() => {
         fetchRunDetails();
-      }, 10000);
+      }, 10_000);
 
       return () => clearInterval(interval);
     }
@@ -361,11 +361,7 @@ export default function PayrollRunDetailClient({
         </div>
         <div className="flex items-center gap-2">
           {["completed", "approved", "paid"].includes(runData.status) && (
-            <Button
-              onClick={handleExportReport}
-              size="sm"
-              variant="outline"
-            >
+            <Button onClick={handleExportReport} size="sm" variant="outline">
               <DownloadIcon className="mr-2 h-4 w-4" />
               Export Report
             </Button>
@@ -399,7 +395,7 @@ export default function PayrollRunDetailClient({
       )}
 
       {/* Reject Dialog */}
-      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+      <Dialog onOpenChange={setRejectDialogOpen} open={rejectDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">

@@ -22,7 +22,7 @@ import {
   PAGE,
 } from "./document";
 
-export async function generateQuarterlyPdf(
+export function generateQuarterlyPdf(
   metrics: QuarterlyMetrics,
   config: ReportConfig
 ): Promise<Buffer> {
