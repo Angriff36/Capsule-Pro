@@ -1,6 +1,6 @@
 $schema: https://manifest.dev/config.schema.json
 # Canonical manifest sources and compiled IR artifact for kitchen domain.
-src: "packages/manifest-sources/kitchen/*.manifest"
+src: "packages/manifest-adapters/manifests/*.manifest"
 output: "packages/manifest-ir/ir/kitchen/kitchen.ir.json"
 projections:
   nextjs:

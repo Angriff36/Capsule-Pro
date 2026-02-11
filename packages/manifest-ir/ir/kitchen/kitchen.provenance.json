@@ -1,7 +1,15 @@
 {
-  "contentHash": "43927a7d6eab9d62feeb9157394708603661ba228edfc0e5d256ee925fc82a0b",
-  "irHash": "cc8e47bf76ed7c416d2743e037db9b981883de7bb9202c3be5001f2aa3c29b6d",
+  "contentHash": "",
+  "irHash": "",
   "compilerVersion": "0.3.8",
   "schemaVersion": "1.0",
-  "compiledAt": "2026-02-10T11:31:02.200Z"
+  "compiledAt": "2026-02-11T13:09:41.055Z",
+  "sources": [
+    "inventory-rules.manifest",
+    "menu-rules.manifest",
+    "prep-list-rules.manifest",
+    "prep-task-rules.manifest",
+    "recipe-rules.manifest",
+    "station-rules.manifest"
+  ]
 }

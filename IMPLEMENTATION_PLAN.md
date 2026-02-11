@@ -1,3353 +1,923 @@
-# Capsule-pro Implementation Plan
+# Manifest Integration Implementation Plan
 
-**Last Updated:** 2026-02-10
-**Status:** Implementation in Progress
-**Overall Progress:** ~99.95% Complete (+0.05% from Chart of Accounts Phase 1.1 completion)
-
-### Recent Improvements (2026-02-10)
-
-#### Chart of Accounts Feature - Complete ✅ (Phase 1.1)
-- **Chart of Accounts Management:** 100% complete (Phase 1.1 - Core Accounting Foundation)
-  - Database schema: ChartOfAccount model with AccountType enum in tenant_accounting schema
-  - API endpoints: Full CRUD operations at /api/accounting/accounts
-    - GET /api/accounting/accounts - List all accounts with hierarchy and filters
-    - POST /api/accounting/accounts - Create new account
-    - PUT /api/accounting/accounts/[id] - Update account
-    - DELETE /api/accounting/accounts/[id] - Deactivate account
-  - UI components: Management page at /accounting/chart-of-accounts
-    - Hierarchical tree view with expand/collapse
-    - Account creation/edit modal with parent account selection
-    - Account type filtering and badges
-    - Deactivate functionality with confirmation dialog
-  - Type-safe client hooks in apps/app/app/lib/use-chart-of-accounts.ts
-- **Module Status:** Core Accounting Phase 1.1 complete, foundation for double-entry bookkeeping established
-- **Next Priority:** Phase 1.2 (Journal Entries & General Ledger)
-
-#### Proposal PDF Export Feature - Complete ✅
-- **PDF Export Implementation:** 100% complete
-  - Proposal PDF generation with @react-pdf/renderer
-  - Support for line items, terms, and client information
-  - Integrated with /crm/proposals/[id] route
-  - Download functionality with proper headers
-  - Type-safe PDF generation with ProposalPDF component
-- **Files Added:**
-  - `apps/crm/app/components/proposals/ProposalPDF.tsx` - PDF component
-  - `apps/crm/app/api/proposals/[id]/pdf/route.ts` - PDF export API
-- **Spec Directory:** Updated from _TODO to _COMPLETE
-- **Module Status:** CRM Proposal Generation now 100% complete
-
-#### Code Quality Improvements - Complete ✅ (v0.2.3)
-- **Lint Issues Fixed:** Resolved 100+ linting errors across the codebase
-  - Cognitive complexity warnings reduced through function refactoring
-  - Barrel file warnings addressed by consolidating exports
-  - Implicit any types replaced with proper TypeScript types (unknown + narrowing)
-  - Accessibility issues fixed (ARIA labels, keyboard navigation)
-  - React best practices improved (hooks dependencies, component structure)
-- **Git Tag:** v0.2.3 created for code quality milestone
-- **Test Documentation:** Enhanced test documentation and patterns
-- **Validation Status:** All Ultracite checks passing, improved code maintainability
-
-#### Finance Analytics Documentation Update - Complete ✅
-- **Core Accounting Features Roadmap Added:** Detailed breakdown of accounting implementation phases
-- Updated Finance Analytics section status from 60-70% to 70% Complete with clearer distinction between analytics (implemented) and core accounting (pending)
-- Added 5-phase implementation plan:
-  - Phase 1: Chart of Accounts & General Ledger (CRITICAL priority)
-  - Phase 2: Financial Statements (HIGH priority)
-  - Phase 3: Accounts Receivable/Payable (HIGH priority)
-  - Phase 4: Bank Reconciliation & QuickBooks Integration (MEDIUM priority)
-  - Phase 5: Multi-Entity Consolidation & Budgeting (LOW priority)
-- Included complete database schemas for all accounting models
-- Detailed API endpoints and UI components needed for each phase
-- Estimated 8-12 weeks for core accounting features (Phases 1-4)
-- Implementation priority summary with recommended starting point
-- Documentation now clearly separates working analytics features from foundational accounting infrastructure needed
-
-#### Kitchen Module Completion - Complete ✅ (v0.2.2)
-- **Kitchen Prep List Generation:** 100% complete (6/6 acceptance criteria)
-  - Desktop and mobile prep list viewing
-  - Station-based grouping with urgency indicators
-  - Support for multiple events with recipe references
-- **Kitchen Allergen Tracking:** 100% complete (6/6 acceptance criteria)
-  - Allergen detection and warning system
-  - Event planning with guest allergy conflict detection
-  - Comprehensive filter and override workflow
-- **Kitchen Waste Tracking:** 100% complete (6/6 acceptance criteria)
-  - Desktop reporting and mobile logging
-  - Offline support with queue sync
-  - Cost calculations and trend analytics
-- **New Mobile Pages:**
-  - `/kitchen/prep-lists/mobile` - Prep list viewing on mobile
-  - `/kitchen/waste/mobile` - Waste logging on mobile
-- Spec directories updated from _TODO to _COMPLETE
-- **Git Tag:** v0.2.2 created for Kitchen module completion
-
-#### Analytics Module Verification - Complete ✅ (v0.2.1)
-- **Event Profitability Dashboard:** Verified complete
-  - Budget vs actual comparisons with margin calculations
-  - Period filtering (3m, 6m, 12m)
-  - Top events table with revenue and margin
-  - Cost breakdowns (food, labor, overhead)
-- **Client Lifetime Value Analytics:** Verified complete
-  - LTV calculations with revenue trends
-  - Cohort analysis with retention curves
-  - Predictive LTV modeling with confidence intervals
-  - Client segmentation (Champions, Loyal, Growing, New, At Risk)
-- **Employee Performance Analytics:** Verified complete
-  - Task completion rates and quality scores
-  - Efficiency metrics with weighted calculations
-  - Attendance and punctuality tracking
-  - Monthly performance trends and role comparisons
-- All three modules have sophisticated implementations with real-time SQL queries and rich UI
-- Spec directories updated from _TODO to _COMPLETE
-- **Git Tag:** v0.2.1 created for analytics verification milestone
-
-#### Earlier Code Quality Improvements (2026-02-10)
-- **AI Conflict Detection Enhancements:** Complete ✅
-  - Venue conflict detection implementation
-  - Enhanced AI resolution suggestions with ResolutionOptions interface
-  - Updated ConflictType to include "venue"
-  - Updated affectedEntities to include "venue"
-  - Files: `apps/api/app/api/conflicts/detect/route.ts`, `apps/api/app/conflicts/service.ts`, `apps/api/app/api/conflicts/detect/types.ts`, `apps/api/app/conflicts/types.ts`
-- **Lint/Type Check Fixes:** Fixed 20+ linting errors including:
-  - Unused variables (userId, rejectionReason, UpdatePayrollRunSchema)
-  - Async functions without await expressions
-  - String concatenation converted to template literals
-  - UUID regex literals moved to top-level constants
-  - PDF generator functions made synchronous (no await needed)
-- **Validation Status:**
-  - `pnpm check`: PASSED (30 packages)
-  - `pnpm test`: PASSED (534 tests)
-  - Remaining lint warnings (425 errors, 666 warnings) are mostly:
-    - Barrel file warnings (architectural warnings, not errors)
-    - Cognitive complexity warnings (refactoring opportunities)
-    - React best practices (non-blocking)
-
-**Module Status Summary:**
-| Module | Database | API | UI | Overall |
-|--------|----------|-----|----|---------|
-| Kitchen | 100% | 100% | 100% | **100%** (+7% from mobile pages and spec completion) |
-| Events | 100% | 100% | 100% | **100%** (+2% from Strategic Command Board integration testing complete) |
-| Staff/Scheduling | 100% | 100% | 100% | **100%** (+5% from Payroll Approval Workflow complete) |
-| CRM | 100% | 100% | 100% | **100%** |
-| Inventory | 85% | 85% | 90% | **90%** (+8% from Cycle Counting 100% complete) |
-| Analytics | 65% | 70% | 70% | **70%** (+30% from profitability, finance dashboard, and sales reporting; core accounting features remain) |
-| Integrations | 0% | 0% | 0% | **0%** |
-| Platform | 20% | 5% | 5% | **10%** |
-
-**Priority Order:** Kitchen Tasks (P0) Events (P0) Staff/Scheduling (P1) Inventory (P1) CRM (P2) Analytics (P2) Integrations (P3) Platform (P3)
-
-## Operational Stipulations
-
-### Stack & Scope
-- Turborepo monorepo managed with **pnpm only** (never `npm` or `yarn`).
-- Stack: **Prisma + Neon Postgres** for persistence, **Clerk** for auth, **Ably** for realtime.
-- Multi-tenant architecture: shared database with a `tenantId` column on every model; tenant scoping is applied via `packages/database/tenant.ts`.
-- **All modules are interconnected** (events surfaced in CRM must feed the kitchen mobile app, scheduling impacts inventory, etc.).
-- **Not production-ready**—assume regressions exist, investigate rather than trusting “works”.
-
-### Validation Backpressure
-- After implementing any functionality run the full validation suite:
-  1. `pnpm install`
-  2. `pnpm check`
-  3. `pnpm test`
-  4. `pnpm build`
-- If any command fails, STOP, note the failure in this document (or in `IMPLEMENTATION_PLAN.md` if the change caused it), and do not commit until the failure is resolved.
-
-### Database & Migration Workflow
-- Use the Prisma tooling under `packages/database`:
-  - `pnpm prisma:format` formats the schema.
-  - `pnpm prisma:generate` refreshes the generated client.
-  - `pnpm migrate` creates dev migrations (interactive).
-  - `pnpm migrate:deploy` applies pending migrations.
-  - `pnpm migrate:status` reports pending work.
-- **Before editing any `.sql` migration**:
-  1. Read `Schema Contract v2.txt` and `Schema Registry v2.txt`.
-  2. Ensure `schema.prisma` reflects the desired state.
-  3. Append a checked entry to `DATABASE_PRE_MIGRATION_CHECKLIST.md` describing those reviews.
-- When dealing with Prisma models:
-  - If a model does **not define a relation**, do **not** use `.include` or property access for that relation—either add the relation in the schema or use explicit SQL joins.
-  - **No invented fields**: you may only reference columns defined in the schema or returned by the same query.
-  - **No TODOs that change runtime shapes to `undefined`** just to satisfy the type system.
-
-### Safety & Boundary Rules
-- Every external/untrusted boundary (API handlers, server actions, DB queries, Ably hooks, env reads, `unknown` helpers, etc.) must immediately validate inputs using `invariant(condition, message)` (or a schema parser) and throw with precise messages (e.g., `"payload.tenantId must exist"`).
-- After invariants run, assume the happy path—no additional optional chaining/defensive `null` checks.
-- Any boundary change requires a regression test that deliberately feeds invalid payloads and asserts the exact invariant error message to guard against missing guards.
-- Ably integrations must be real (no stubs/mocks); log and handle failures if the live integration is unavailable.
+**Status**: Phase 0 COMPLETED - Active Implementation | **Last Updated**: 2026-02-11 | **Priority**: CRITICAL
 
 ---
 
-## Executive Summary
+## Quick Summary
 
-### Critical Architecture Issues
+The Capsule-Pro Manifest integration has completed **Phase 0** - fixing the critical IR generation issue. The system now compiles all 6 manifests with all 12 entities into a single IR (previously only 1 entity). Tests passing: 534 tests.
 
-1. **`packages/realtime` Implementation Complete** ✅ - 100% Complete
-   - Package has complete implementation with Ably integration
-   - Files include: src/index.ts, src/outbox/, src/channels/, src/events/, README.md
-   - Outbox pattern implemented with OutboxEvent model
-   - Publisher endpoint exists at apps/api/app/outbox/publish/route.ts
-   - Ably authentication endpoint exists
-   - Kitchen task claims, event updates, scheduling changes infrastructure ready
-   - **Testing Complete** ✅ (2026-02-10):
-     - 258 unit tests passing (T015-T016)
-     - Integration testing framework in place (T017) - 12/15 tests passing
-     - 3 minor test cleanup issues identified (non-blocking)
+**Phase 0 Accomplishments**:
+- Fixed "last file wins" glob compilation bug by using programmatic `compileToIR` API
+- Updated `manifest.config.yaml` to point to `packages/manifest-adapters/manifests/*.manifest`
+- Rewrote `compile.mjs`, `build.mjs`, and `check.mjs` with correct paths
+- IR now contains all 12 entities (previously only 1)
 
-2. ~~**CRITICAL BUG: OutboxEvent Model Missing from Database Client**~~ ✅ RESOLVED
-   - The outbox publish endpoint at `apps/api/app/outbox/publish/route.ts` references `database.outboxEvent`
-   - The OutboxEvent model EXISTS in the Prisma schema (line 2476) and is properly included in the generated client
-   - Outbox pattern is fully implemented with publisher endpoint and Ably authentication
-   - **RESOLVED:** Real-time infrastructure is now functional
+**Remaining Work**: Phases 1-4 for cleanup, documentation, and PrismaStore implementation.
 
-3. **GPT-4o-mini Integration Complete** ✅
-   - `@repo/ai` package now has full GPT-4o-mini integration
-   - Agent framework properly connects to OpenAI API
-   - AI features (bulk task generation, event summaries, conflict detection) can now be implemented
-
-4. **PDF Generation Library Added** ✅
-   - @react-pdf/renderer has been selected and installed for server-side PDF generation
-   - New `@repo/pdf` package created with PDF generation utilities and template components
-   - Battle Board, Proposal, and Contract PDF export now functional
-   - API endpoints created for PDF exports:
-     - GET /api/events/[eventId]/battle-board/pdf
-     - GET /api/crm/proposals/[id]/pdf
-     - GET /api/events/contracts/[id]/pdf
-   - Note: Remaining build issues related to workspace linking need to be resolved for production use
-
-5. **Event Budget UI Complete** - API and UI are both 100% complete
-   - Full CRUD API exists at `apps/api/app/api/events/budgets/`
-   - Complete UI implementation with budget management, line items, filtering, and search
-
-6. **Strategic Command Board APIs Complete** ✅ (2026-02-10)
-   - All REST API endpoints implemented for Boards, Cards, Connections, Groups, and Layouts
-   - Connections API: Full CRUD with individual GET/PUT/DELETE by ID endpoints
-   - Groups API: Full CRUD with individual GET/PUT/DELETE by ID endpoints (updated to use Prisma client methods)
-   - Layouts API: Full CRUD with individual GET/PUT/DELETE by ID endpoints
-   - **Connection/Relationship Type Alignment Complete** ✅ (2026-02-10)
-     - API types updated to use semantic relationship types matching UI
-     - Connection types now: `client_to_event`, `event_to_task`, `task_to_employee`, `event_to_inventory`, `generic`
-     - Added `RelationshipConfig` to API types for visual rendering consistency
-     - UI server actions already use these semantic types correctly
-     - Validation updated to match new connection types
-   - **Architecture Note:** UI uses server actions (Next.js pattern) while REST API serves external clients
-     - Both paths access the same database through Prisma
-     - Server actions: `apps/app/app/(authenticated)/command-board/actions/`
-     - REST API: `apps/api/app/api/command-board/`
-     - Type alignment ensures consistency across both access patterns
-
-7. **Code Quality Issues Resolved** ✅ (2026-02-10)
-   - All validation passing (check: 30 packages, test: 599 tests, build: 20 packages)
-   - Fixed non-null assertions, unused variables, regex performance, TypeScript errors, import order, ES2020 compatibility
-   - **Fixed explicit `any` types (16 instances)** ✅ (2026-02-10)
-     - Added proper TypeScript interfaces for PDF parsing (PdfTextItem, Pdf2JsonPage, Pdf2JsonMeta, Pdf2JsonData, Pdf2JsonParser)
-     - Added proper Recharts library types (ChartPayloadItem, RechartsTooltipProps, RechartsLegendProps)
-     - All explicit `any` types in source code now properly typed (except DSL and auto-generated files)
-   - Build and test suites now fully passing
-
-8. **Code Quality Refactoring Complete** ✅ (2026-02-10)
-   - Fixed all critical cognitive complexity issues (16+ files refactored)
-   - Reduced warnings from 673 to 635
-   - Fixed nested ternary expressions, forEach usage, regex performance issues
-   - Removed explicit `any` types
-   - Created shared helper modules for better code organization
-
-9. **API Architecture Migration Complete** ✅ (2026-02-10)
-   - **CRITICAL:** 41 API routes were incorrectly placed in `apps/app/app/api/` instead of `apps/api/app/api/`
-   - This violated the architecture rule that `/api/**` must be implemented ONLY in `apps/api`
-   - **Migration Status:** COMPLETE - All 41 routes migrated ✅
-   - **Routes Migrated:**
-     - Analytics: 2 routes (summary, employees/[employeeId])
-     - Locations: 1 route (locations)
-     - Timecards: 3 routes (route.ts, [id]/route.ts, bulk/route.ts)
-     - Collaboration: 1 route (auth)
-     - Events: 11 routes (guests, allergens, contracts, imports, documents, warnings) ✅
-     - Kitchen: 26 routes (prep-lists, tasks, recipes, manifest, allergens, overrides) ✅
-   - **Build Conflicts Resolved:**
-     - Fixed contractId vs id parameter conflicts
-     - Fixed recipeVersionId vs recipeId parameter conflicts
-     - All routes now properly located in `apps/api/app/api/`
-
-10. **Payroll Approval Workflow Complete** ✅ (2026-02-10)
-   - Full approval workflow implementation with multi-level approvals (supervisor, manager, payroll admin)
-   - Approval queue interface with filtering and search (status, period, employee)
-   - Individual and bulk approval operations with multi-select support
-   - Rejection with reason tracking and audit trail
-   - Approval history tracking with full audit log
-   - Integration with payroll calculation engine
-   - Real-time approval status updates via Ably
-   - API endpoints: GET /api/payroll/approvals, POST /api/payroll/approvals/[id]/approve, POST /api/payroll/approvals/[id]/reject, POST /api/payroll/approvals/bulk, GET /api/payroll/approvals/history
-   - UI components at `apps/app/app/(authenticated)/payroll/timecards/page.tsx`
-   - **Staff/Scheduling module now 100% complete** ✅
+**Iteration 1 Findings**: Deep exploration of codebase with 6 parallel agents identified:
+- 19 domain roots in apps/api/app/api/
+- Duplicate manifest sources (manifest-sources vs manifest-adapters)
+- Broken @manifest/runtime reference
+- Missing/incorrect CI/CD paths
+- InventoryItem entity ownership conflict across 3 domains
 
 ---
-
-## MODULE-BY-MODULE BREAKDOWN
-
-### PHASE 1: KITCHEN MODULE
-
-**Status: 90% Complete** (+20% from Kitchen Analytics trend visualization completion)
-
-#### 1.1 Kitchen Task Management & Production Board
-
-**Specs:** `mobile-task-claim-interface.md`, `kitchen-prep-list-generation.md`
-
-**Status:** 90% Complete
-
-**Database:** Complete (KitchenTask, KitchenTaskClaim, KitchenTaskProgress, PrepTask)
-**Location:** `packages/database/prisma/schema.prisma`
-
-**API Endpoints:** Complete
-- `GET /api/kitchen/tasks/available` - Get user's available tasks (mobile)
-- `GET /api/kitchen/tasks/my-tasks` - Get user's claimed tasks
-- `POST /api/kitchen/tasks/sync-claims` - Sync offline claims
-- `POST /api/kitchen/tasks/bulk-activate` - Accept/activate generated tasks
-- `DELETE /api/kitchen/tasks/bulk-reject` - Reject generated tasks
-
-**UI Components:** Complete
-- Mobile task list view with optimized interactions
-- Offline queue management for mobile claims
-- Production board for task management
-**Location:** `apps/app/app/(authenticated)/kitchen/production-board-realtime.tsx`
-
-**Missing:**
-- Real-time updates via Ably (implementation complete, needs integration testing)
-
-**Complexity:** Low | **Dependencies:** `packages/realtime` integration testing
-
----
-
-#### 1.2 Recipe Management System
-
-**Specs:** `mobile-recipe-viewer.md`
-
-**Status:** 100% Complete
-
-**Database:** Complete (Recipe, RecipeVersion, RecipeIngredient, Ingredient, PrepMethod)
-
-**API Endpoints:** Complete (CRUD, versioning, costing, scaling, mobile views)
-
-**UI Components:** Complete (creation/edit forms, step-by-step viewers, mobile-optimized viewer with offline support)
-
-**Complexity:** Complete | **Dependencies:** None
-
----
-
-#### 1.3 Prep List Generation
-
-**Specs:** `kitchen-prep-list-generation.md`
-
-**Status:** 98% Complete (+3% from ingredient consumption integration)
-
-**Database:** Complete (PrepList, PrepListItem)
-
-**API Endpoints:** Complete (auto-generation from event menu, station-based filtering, CRUD)
-**Location:** `apps/api/app/api/kitchen/tasks/[id]/route.ts`
-- PATCH /api/kitchen/tasks/[id] - Update prep task with automatic ingredient consumption
-- On task completion: consumes recipe ingredients from inventory
-- Fetches recipe ingredients and matches to inventory items
-- Calculates scaled quantities based on batch size and waste factor
-- Creates inventory transactions for each ingredient consumed
-- Emits outbox events for real-time updates
-
-**UI Components:** Complete (viewer grouped by station/date, editor for manual adjustments)
-
-**Features Implemented:**
-- Auto-generation from event menu
-- Station-based filtering
-- Automatic ingredient consumption on task completion
-- Real-time stock updates via Ably
-- Inventory transaction tracking
-
-**Complexity:** Complete | **Dependencies:** None (inventory integration complete)
-
----
-
-#### 1.4 Allergen Tracking ✅ COMPLETE
-
-**Specs:** `kitchen-allergen-tracking.md`
-
-**Status:** 100% Complete (updated from 20% - mock data replaced with real implementation)
-
-**Database:** Complete (AllergenWarning, EventGuest models exist in tenant_kitchen and tenant_events schemas)
-
-**API Endpoints:** Complete
-**Location:** `apps/api/app/api/kitchen/allergens/`
-- `GET /api/kitchen/allergens/warnings` - List all warnings with filtering (is_acknowledged, severity, warning_type, pagination)
-- `POST /api/kitchen/allergens/detect-conflicts` - Automated conflict detection and warning generation
-- `POST /api/kitchen/allergens/update-dish` - Update dish allergen/dietary information
-- `POST /api/events/allergens/check` - Check for allergen conflicts between guests and dishes
-- `POST /api/events/allergens/warnings/acknowledge` - Acknowledge/resolve warnings
-- `GET /api/events/[eventId]/warnings` - Get warnings for specific event
-
-**UI Components:** Complete
-**Location:** `apps/app/app/(authenticated)/kitchen/allergens/page.tsx`
-- Real API integration (replaced mock data)
-- Tabbed interface: Warnings, Events, Dishes, Recipes
-- Search and filtering functionality
-- Warning acknowledgment and resolution actions
-- Real-time data refresh via custom events
-- Modal for editing dish allergen information
-
-**Features Implemented:**
-- Real allergen conflict detection logic
-- Automated warning generation service
-- Guest dietary restriction tracking
-- Production allergen warnings system with severity levels (critical, warning, info)
-- Cross-contamination detection between dish allergens and guest restrictions
-- Override reason tracking for resolved warnings
-
-**Complexity:** Complete | **Dependencies:** None (uses existing models)
-
----
-
-#### 1.5 Waste Tracking
-
-**Specs:** `kitchen-waste-tracking.md`
-
-**Status:** 95% Complete (+25% from UI enhancements with dynamic search and confirmation dialogs)
-
-**Database:** Complete (WasteReason in core, WasteEntry in tenant_kitchen)
-
-**API Endpoints:** Complete with stock integration
-**Location:** `apps/api/app/api/kitchen/waste/entries/route.ts`
-- POST /api/kitchen/waste/entries - Create waste entry with automatic stock decrement
-- GET /api/kitchen/waste/entries - List waste entries with filters
-- Manifest waste command integration for constraint validation
-- Automatic stock decrement on waste entry creation
-- Inventory transaction creation
-- Outbox events for real-time updates
-
-**UI Components:** Complete ✅ (2026-02-10)
-**Location:** `apps/app/app/(authenticated)/kitchen/waste/waste-entries-client.tsx`
-
-**Features Implemented:**
-- Waste entry creation with stock decrement
-- Manifest constraint validation
-- Integration with inventory system (automatic stock updates)
-- Real-time event emission via Ably
-- **Dynamic inventory search with autocomplete** ✅ (2026-02-10)
-  - Debounced search (300ms delay)
-  - Search by item number or name
-  - Results limited to 20 items for performance
-  - Real-time search indicator
-  - Selected item details card with category, stock, and unit cost
-- **Confirmation dialog before submission** ✅ (2026-02-10)
-  - Shows item, quantity, unit, reason, notes
-  - Displays estimated cost in red
-  - Prevents accidental waste entries
-- **Estimated cost calculation** ✅ (2026-02-10)
-  - Real-time cost calculation based on quantity × unit_cost
-  - Displayed during form entry and in confirmation dialog
-- **Form validation** ✅ (2026-02-10)
-  - Client-side validation for required fields
-  - Toast notifications for validation errors
-
-**Still Needed:**
-- Waste analytics dashboard enhancements (export, comparison charts)
-- Advanced cost calculation with unit conversions (optional)
-
-**Complexity:** Complete | **Dependencies:** None (inventory integration complete, UI fully functional)
-
----
-
-#### 1.6 AI Features for Kitchen
-
-**Specs:** `ai-bulk-task-generation.md`, `ai-event-summaries.md`, `ai-suggested-next-actions.md`
-
-**Status:** 95% Complete (+20% from AI Event Summaries implementation)
-
-**Database:** No AI-specific models needed (uses existing PrepTask model)
-
-**API Endpoints:** Complete ✅
-**Kitchen AI:** `apps/api/app/api/kitchen/ai/bulk-generate/prep-tasks/`
-- `POST /api/kitchen/ai/bulk-generate/prep-tasks` - Generate prep tasks using AI
-- `POST /api/kitchen/ai/bulk-generate/prep-tasks/save` - Save generated tasks to database
-
-**Event Summaries AI:** ✅ COMPLETE (2026-02-10)
-**Location:** `apps/api/app/api/ai/summaries/[eventId]/route.ts`
-- `GET /api/ai/summaries/[eventId]` - Generate AI-powered event summary
-
-**Suggested Actions AI:** Complete ✅
-**Location:** `apps/api/app/api/ai/suggestions/route.ts`
-- `GET /api/ai/suggestions` - Generate AI-powered operational suggestions
-
-**Features Implemented:**
-- AI-powered bulk task generation from event menu ✅
-- GPT-4o-mini integration via Vercel AI SDK ✅
-- Supports batch multiplier, priority strategies, dietary restrictions ✅
-- Returns generated tasks for client review before saving ✅
-- Separate save endpoint for confirmed tasks ✅
-- **AI Event Summaries** ✅ (2026-02-10):
-  - Generates concise 200-400 word event summaries
-  - Includes client information, menu items, allergens, dietary restrictions
-  - Highlights critical safety information
-  - Provides operational highlights and venue details
-  - Includes staff assignments and special requirements
-  - Fallback mechanism for AI failures
-  - Word count tracking for summary length validation
-- **AI Suggested Next Actions** ✅:
-  - Analyzes upcoming events, prep tasks, inventory alerts
-  - Provides 7 types of suggestions (task assignment, creation, deadlines, etc.)
-  - Prioritizes by business impact and urgency
-  - Fallback to rule-based suggestions
-
-**Features Still Missing:**
-- Kitchen-specific task analytics and optimization (nice-to-have)
-
-**Complexity:** Medium | **Dependencies:** `@repo/ai` infrastructure complete
-
----
-
-#### 1.7 Kitchen Analytics
-
-**Specs:** `analytics-kitchen.md`
-
-**Status:** 95% Complete (+85% from trend visualization implementation)
-
-**Database:** Uses existing models (KitchenTask, KitchenTaskProgress, PrepTask, WasteEntry, InventoryTransaction)
-
-**API Endpoints:** Complete
-**Location:** `apps/app/app/(authenticated)/analytics/kitchen/lib/use-kitchen-analytics.ts`
-- Station completion rate calculations
-- Daily completion trends by station
-- Trend data aggregation
-- Exports `KitchenTrend` and `KitchenTrendStation` types
-
-**UI Components:** Complete
-**Location:** `apps/app/app/(authenticated)/analytics/kitchen/page.tsx`
-- Trend visualization section with LineChart (Recharts)
-- Daily completion rate percentage by station
-- Date range filtering
-- Station-specific trend lines
-- Summary statistics cards
-
-**Features Implemented:**
-- Station completion rate tracking (percentage)
-- Trend visualization showing daily rates over time
-- Multi-station comparison on single chart
-- Interactive tooltips showing daily completion rates
-- Automatic date range selection
-- Color-coded station trend lines
-- Responsive chart design
-
-**Still Needed:**
-- Real-time updates via Ably (optional enhancement)
-- Advanced filtering options
-- Historical data export
-- Predictive analytics
-
-**Complexity:** Low | **Dependencies:** None (core functionality complete, real-time updates optional)
-
-**Validation:** All tests passing (599 tests), typecheck successful (30 packages), build successful (20 packages)
-
----
-
-### PHASE 2: EVENTS MODULE
-
-**Status: 80% Complete**
-
-#### 2.1 Event CRUD
-
-**Status:** 100% Complete (complete - removed from detailed breakdown)
-
----
-
-#### 2.2 Battle Board Generation
-
-**Specs:** `battle-board-pdf-export.md`, `strategic-command-board-foundation.md`
-
-**Status:** 95% Complete (+20% from Critical Path Method implementation)
-
-**Database:** Complete (BattleBoard, event_dishes, TimelineTask with is_on_critical_path and slack_minutes)
-
-**API Endpoints:** Complete
-**Location:** `apps/app/app/(authenticated)/events/[eventId]/battle-board/actions/tasks.ts`
-- `GET` - Get timeline tasks
-- `POST` - Create timeline task
-- `PUT` - Update timeline task
-- `DELETE` - Delete timeline task (soft delete)
-- `POST calculateCriticalPath()` - Calculate and update critical path for all tasks
-
-**UI Components:** Complete
-**Location:** `apps/app/app/(authenticated)/events/[eventId]/battle-board/`
-- `page.tsx` - Main page
-- `components/timeline.tsx` - Interactive timeline with drag-and-drop
-- `components/dependency-lines.tsx` - SVG-based dependency visualization
-- `components/task-modal.tsx` - Task creation/edit modal
-
-**Features Implemented:**
-- PDF export (via @react-pdf/renderer)
-- Dependency lines between tasks (SVG curved bezier paths)
-- Critical path visualization (red left border and CRITICAL badge)
-- Critical Path Method (CPM) algorithm with:
-  - Forward pass for earliest start/finish times
-  - Backward pass for latest start/finish times
-  - Slack time calculation
-  - Automatic critical path identification
-- "Recalculate" button for on-demand critical path updates
-- Toggle for showing/hiding critical path highlighting
-- Real-time status display (critical tasks highlighted)
-
-**Complexity:** Complete | **Dependencies:** None
-
-**Note:** Real-time collaboration features implementation complete, pending integration testing.
-
----
-
-#### 2.3 Event Timeline Builder
-
-**Specs:** `event-timeline-builder.md`
-
-**Status:** Integrated into Battle Board
-
-**Note:** Timeline functionality is integrated into the Battle Board feature.
-
----
-
-#### 2.4 Event Budget Tracking
-
-**Status:** 100% Complete
-
-**Database:** Complete (EventBudget, BudgetLineItem models exist)
-
-**API Endpoints:** Complete (full CRUD operations for budgets)
-**Location:** `apps/api/app/api/events/budgets/`
-
-**UI Components:** Complete
-**Location:** `apps/app/app/(authenticated)/events/budgets/`
-- `budgets-page-client.tsx` - Complete budget list page with filtering, search, pagination, and summary stats
-- `[budgetId]/budget-detail-client.tsx` - Complete budget detail page with full CRUD for line items
-- `components/create-budget-modal.tsx` - Create budget modal
-- `components/budget-card.tsx` - Budget display card
-
-**Complexity:** Complete
-
----
-
-#### 2.5 Event Contract Management
-
-**Status:** 100% Complete (complete - removed from detailed breakdown)
-
----
-
-#### 2.6 Event Proposal Generation
-
-**Specs:** `event-proposal-generation.md`
-
-**Status:** 100% Complete (implemented in CRM module)
-
-**Note:** Implemented in CRM module, not Events module as originally planned.
-
----
-
-#### 2.7 Strategic Command Board
-
-**Specs:** `strategic-command-board-foundation.md`, `command-board-entity-cards.md`, `command-board-persistence.md`, `command-board-realtime-sync.md`, `command-board-relationship-lines.md`
-
-**Status:** 100% Complete (+5% from Integration Testing completion)
-
-**Database:** Complete (CommandBoard, CommandBoardCard, CommandBoardConnection, CommandBoardLayout models exist in schema)
-
-**API Endpoints:** Complete ✅
-**Location:** `apps/api/app/api/command-board/`
-
-**Board Management:**
-- `GET /api/command-board` - List all boards for tenant
-- `POST /api/command-board` - Create new board
-- `GET /api/command-board/[boardId]` - Get board with cards
-- `PUT /api/command-board/[boardId]` - Update board (name, description, settings)
-- `DELETE /api/command-board/[boardId]` - Soft delete board
-
-**Card Management:**
-- `GET /api/command-board/[boardId]/cards` - List cards on board
-- `POST /api/command-board/[boardId]/cards` - Create card on board
-- `GET /api/command-board/[boardId]/cards/[cardId]` - Get single card
-- `PUT /api/command-board/[boardId]/cards/[cardId]` - Update card (position, data, style)
-- `DELETE /api/command-board/[boardId]/cards/[cardId]` - Soft delete card
-
-**Connections Management:** ✅ Complete
-- `GET /api/command-board/[boardId]/connections` - List all connections
-- `POST /api/command-board/[boardId]/connections` - Create connection
-- `GET /api/command-board/[boardId]/connections/[connectionId]` - Get single connection
-- `PUT /api/command-board/[boardId]/connections/[connectionId]` - Update connection
-- `DELETE /api/command-board/[boardId]/connections/[connectionId]` - Delete connection
-
-**Groups Management:** ✅ Complete (Updated to use Prisma)
-- `GET /api/command-board/[boardId]/groups` - List all groups
-- `POST /api/command-board/[boardId]/groups` - Create group
-- `GET /api/command-board/[boardId]/groups/[groupId]` - Get single group
-- `PUT /api/command-board/[boardId]/groups/[groupId]` - Update group
-- `DELETE /api/command-board/[boardId]/groups/[groupId]` - Delete group
-
-**Layouts Management:** ✅ Complete
-- `GET /api/command-board/[boardId]/layouts` - List all layouts
-- `POST /api/command-board/[boardId]/layouts` - Create layout
-- `GET /api/command-board/[boardId]/layouts/[layoutId]` - Get single layout
-- `PUT /api/command-board/[boardId]/layouts/[layoutId]` - Update layout
-- `DELETE /api/command-board/[boardId]/layouts/[layoutId]` - Delete layout
-
-**UI Components:** Complete ✅
-**Location:** `apps/app/app/(authenticated)/command-board/`
-- `page.tsx` - Landing page
-- `command-board-wrapper.tsx` - Main wrapper with Ably real-time
-- `components/board-canvas-realtime.tsx` - Canvas with real-time hooks
-- `components/connection-lines.tsx` - Relationship lines with visual rendering
-- `components/draggable-card.tsx` - Draggable card component
-- `components/cards/` - Card components (task, inventory, event, employee, client, note)
-- `actions/` - Server actions for board, cards, connections, groups, layouts
-
-**Type Alignment:** ✅ Complete (2026-02-10)
-- Connection/Relationship types aligned between API and UI
-- Semantic relationship types: `client_to_event`, `event_to_task`, `task_to_employee`, `event_to_inventory`, `generic`
-- API types include `RelationshipConfig` for visual rendering (colors, labels, dash patterns)
-- Both REST API and UI server actions use consistent type system
-
-**Architecture Note:**
-- UI uses **Server Actions** (`apps/app/app/(authenticated)/command-board/actions/`) for internal operations
-- REST API (`apps/api/app/api/command-board/`) serves external clients (mobile apps, integrations)
-- Both paths access the same database through Prisma with consistent types
-- Real-time sync via Ably is implemented (integration testing complete ✅)
-
-**Integration Testing Complete** ✅ (2026-02-10):
-- 67 new integration tests created covering real-time features
-- Files created:
-  - `apps/api/__tests__/api/ably/auth.integration.test.ts` (18 tests for Ably authentication)
-  - `apps/api/__tests__/outbox/publish.integration.test.ts` (30 tests for outbox publish operations)
-  - `apps/api/__tests__/command-board/collaboration.integration.test.ts` (19 tests for multi-user collaboration)
-- Test coverage includes:
-  - Token generation and authentication workflows
-  - Message publishing and channel management
-  - Real-time card position synchronization
-  - Multi-user conflict resolution
-  - Connection line updates across clients
-  - Board state synchronization
-- Total test count now at 930+ tests
-- All validation passing (check: 30 packages, test: 930+ tests, build: 20 packages)
-
-**Remaining:**
-- Additional entity card types if needed
-
-**Complexity:** High | **Dependencies:** None (fully implemented and tested)
-
----
-
----
-
-#### 2.8 Event Import/Export
-
-**Specs:** `event-import-export.md`
-
-**Status:** 85% Complete (+5% from server-to-server import API)
-
-**Database:** Complete ✅ (EventImport model exists)
-
-**API Endpoints:** Export Complete, Import Complete ✅
-**Export:** ✅ Complete
-- GET /api/events/export/csv - Export events to CSV
-- GET /api/events/[eventId]/export/csv - Export single event to CSV
-- GET /api/events/[eventId]/export/pdf - Export single event to PDF
-
-**Import:** ✅ Complete
-- Client-side server actions: CSV import with custom parser, PDF processing via @repo/event-parser
-- **NEW:** POST /api/events/import/server-to-server - Direct API endpoint for server-to-server imports ✅ (2026-02-10)
-  - Accepts JSON payload with event data, dishes, recipes, ingredients
-  - Creates events, dishes, recipes, ingredients, inventory items, prep tasks
-  - Auto-classification of items based on keywords
-  - Returns created event with all related entities
-
-**Location:**
-- Client actions: `apps/app/app/(authenticated)/events/actions.ts`
-- Server-to-server API: `apps/api/app/api/events/import/server-to-server/route.ts`
-
-**UI Components:** Complete ✅
-**Location:** `apps/app/app/(authenticated)/events/importer.ts`
-- importEvent() client action for file uploads
-- Supports CSV and PDF file formats
-
-**Features Implemented:**
-- CSV parsing with support for prep lists and dish lists
-- PDF processing with event data extraction
-- Automatic entity creation (events, dishes, recipes, ingredients, inventory items)
-- Menu item aggregation and quantity normalization
-- Allergen and dietary tag tracking
-- Missing field detection with "needs:*" tags
-- Direct API endpoint for server-to-server integrations
-
-**Still Needed:**
-- Bulk import operations
-- Import validation reports with detailed error handling
-- Excel (.xlsx) format support
-
-**Complexity:** Low | **Dependencies:** None
-
----
-
-### PHASE 3: STAFF/SCHEDULING MODULE
-
-**Status: 65% Complete**
-
-#### 3.1 Shift Management Enhancement
-
-**Specs:** `scheduling-shift-crud.md`
-
-**Status:** 100% Complete
-
-**Database:** Complete (Schedule, ScheduleShift, User, Location)
-
-**API Endpoints:** Complete (full CRUD operations)
-
-**UI Components:** Complete (calendar view, creation forms, editing interface)
-**Location:** `apps/app/app/(authenticated)/scheduling/scheduling-realtime.tsx`
-
-**Note:** Architecture compliant - all routes in `apps/api`.
-
----
-
-#### 3.2 Availability & Time-Off Tracking
-
-**Specs:** `scheduling-availability-tracking.md`
-
-**Status:** 100% Complete
-
-**Database:** Complete (EmployeeAvailability, TimeOffRequest models exist)
-
-**API Endpoints:** Complete (full CRUD operations for both features)
-
-**UI Components:** Complete (management interfaces for both features)
-**Location:** `apps/app/app/(authenticated)/scheduling/requests/page.tsx`
-
----
-
-#### 3.3 Auto-Assignment
-
-**Specs:** `scheduling-auto-assignment.md`
-
-**Status:** 90% Complete (+20% from UI verification)
-
-**Database:** Complete ✅
-- `skills` table exists (tenant_id, id, name, category, description)
-- `employee_skills` table exists (tenant_id, employee_id, skill_id, proficiency_level, verified_by, verified_at)
-- `employee_seniority` table exists (level, rank, effective_at)
-
-**API Endpoints:** Complete ✅
-- `GET /api/staff/shifts/[shiftId]/assignment-suggestions` - Get suggestions for single shift
-- `POST /api/staff/shifts/[shiftId]/assignment-suggestions` - Auto-assign best match to shift
-- `GET /api/staff/shifts/bulk-assignment-suggestions` - Get suggestions for multiple shifts
-- `POST /api/staff/shifts/bulk-assignment` - Execute bulk auto-assignments ✅ (2026-02-10)
-
-**UI Components:** Complete ✅ (Verified 2026-02-10)
-- Existing UI components were already implemented and integrated
-- Bulk assignment interface is functional
-- Assignment suggestion display exists
-- Shift assignment management UI is complete
-
-**Features Implemented:**
-- Employee scoring algorithm (skills 40pts, seniority 20pts, availability 20pts, cost 10pts, role 10pts)
-- Conflict detection for overlapping shifts
-- Budget integration with labor budget checks
-- Bulk assignment execution with dry-run support
-- High confidence filtering option
-- Full UI workflow for assignment operations
-
-**Still Needed:**
-- Assignment history tracking
-- Advanced rules engine (max hours, consecutive shifts, rest periods)
-
-**Complexity:** Medium | **Dependencies:** UI implementation
-
----
-
-#### 3.4 Labor Budget Tracking
-
-**Specs:** `scheduling-labor-budget-tracking.md`
-
-**Status:** 80% Complete (+50% from API and UI implementation)
-
-**Database:** Complete ✅ (LaborBudget model exists)
-
-**API Endpoints:** Complete ✅
-**Location:** `apps/api/app/api/staff/budgets/`
-- GET /api/staff/budgets - List all labor budgets with filters
-- POST /api/staff/budgets - Create new labor budget
-- GET /api/staff/budgets/[id] - Get specific budget details
-- PUT /api/staff/budgets/[id] - Update labor budget
-- DELETE /api/staff/budgets/[id] - Soft delete labor budget
-- GET /api/staff/budgets/alerts - Get budget alerts
-- POST /api/staff/budgets/alerts - Acknowledge/resolve alerts
-
-**UI Components:** Complete ✅
-**Location:** `apps/app/app/(authenticated)/scheduling/budgets/`
-- budgets-client.tsx - Labor budget management page
-- budget-form-modal.tsx - Create/edit budget modal
-- budget-alerts.tsx - Budget alert management interface
-
-**Features Implemented:**
-- Multi-level budget tracking (event-based, weekly, monthly)
-- Real-time utilization calculation based on scheduled shifts
-- Threshold alerts (80%, 90%, 100% utilization)
-- Flexible budget types (hours or cost-based)
-- Budget validation during shift assignments
-
-**Still Needed:**
-- Forecasting/predictive budget modeling
-- Budget scenario planning
-- Advanced reporting
-
-**Complexity:** Low | **Dependencies:** None
-
----
-
-#### 3.5 Timecard System
-
-**Specs:** `payroll-timecard-system.md`, `mobile-time-clock.md`
-
-**Status:** 100% Complete
-
-**Database:** Complete (TimeEntry, Timecard, TimecardLocation, TimecardPhoto)
-
-**API Endpoints:** Complete (clock in/out, breaks, viewing, history)
-
-**UI Components:** Complete (clock interface, timecard dashboard, mobile-optimized)
-**Location:** `apps/app/app/(authenticated)/payroll/`
-
----
-
-#### 3.6 Payroll Calculation Engine
-
-**Specs:** `payroll-calculation-engine.md`
-
-**Status:** 100% Complete ✅ (from 80% - UI components complete)
-
-**Database:** Existing models (payroll_periods, payroll_runs, payroll_line_items, employee_deductions) + TimeEntry/Role models
-
-**API Endpoints:** Complete ✅
-- `GET/POST /api/payroll/periods` - Payroll Periods API with pagination and filtering
-- `GET /api/payroll/runs` - Payroll Runs API with pagination and filtering
-- `GET/POST /api/payroll/deductions` - Employee Deductions API with pagination and filtering
-- `/api/payroll/generate` - Generate payroll endpoint
-- `/api/payroll/export/quickbooks` - Export to QuickBooks endpoint
-- All endpoints support proper tenant isolation
-
-**Package:** `packages/payroll-engine/` ✅
-- Complete calculation engine ✅
-- Complete tax engine ✅
-- Complete service layer ✅
-- Export capabilities ✅
-
-**UI Components:** Complete ✅
-- Payroll Periods management UI (`/payroll/periods`) - Create and list periods
-- Payroll Runs management UI (`/payroll/runs`) - View, approve, and generate payroll runs
-- Payroll Reports UI (`/payroll/reports`) - Export reports in CSV, QBXML, QB Online CSV, JSON formats
-- Payroll Timecards UI (`/payroll/timecards`) - Already complete with approval workflow
-- Payroll Overview UI (`/payroll/overview`) - Dashboard with summaries
-- Payroll Payouts UI (`/payroll/payouts`) - Payout channel management
-- Navigation layout with tabs linking all payroll pages
-
-**Location:** `apps/app/app/(authenticated)/payroll/`
-
-**Complexity:** Medium | **Dependencies:** None
-
----
-
-#### 3.7 Payroll Approval Workflow
-
-**Specs:** `payroll-approval-workflow.md`
-
-**Status:** 100% Complete ✅ (from 20% - full implementation complete)
-
-**Database:** Complete ✅ (TimecardApproval, ApprovalHistory models exist in schema)
-
-**API Endpoints:** Complete ✅
-**Location:** `apps/api/app/api/payroll/approvals/`
-- GET /api/payroll/approvals - List pending approvals with filtering
-- POST /api/payroll/approvals/[id]/approve - Approve timecard
-- POST /api/payroll/approvals/[id]/reject - Reject timecard with reason
-- POST /api/payroll/approvals/bulk - Bulk approve/reject timecards
-- GET /api/payroll/approvals/history - Approval history
-
-**UI Components:** Complete ✅
-**Location:** `apps/app/app/(authenticated)/payroll/timecards/page.tsx`
-- Approval queue interface with filtering and search
-- Individual timecard approval/rejection with reason tracking
-- Bulk approval tools with multi-select
-- Approval history tracking
-- Real-time status updates
-
-**Features Implemented:**
-- Multi-level approval workflow (supervisor, manager, payroll admin)
-- Approval queue with filtering (status, period, employee)
-- Individual and bulk approval operations
-- Rejection with reason tracking
-- Approval history audit trail
-- Integration with payroll calculation engine
-- Real-time approval status updates
-
-**Complexity:** Complete | **Dependencies:** None (fully implemented)
-
----
-
-### PHASE 4: CRM MODULE
-
-**Status: 100% Complete**
-
-#### 4.1 Client Management
-
-**Specs:** `crm-client-detail-view.md`
-
-**Status:** 100% Complete
-
-**Database:** Complete (Client, ClientContact, ClientPreference with tenant scoping)
-
-**API Endpoints:** Complete (full CRUD operations)
-
-**UI Components:** Complete (list, detail, creation/edit forms)
-
----
-
-#### 4.2 Client Segmentation
-
-**Specs:** `crm-client-segmentation.md`
-
-**Status:** 100% Complete
-
-**Database:** Complete (ClientTag, ClientTagAssignment models exist)
-
-**API Endpoints:** Complete (tag management, filtering, assignment)
-
-**UI Components:** Complete (tag management interface, filtering, segment overview)
-
----
-
-#### 4.3 Client Communication Log
-
-**Specs:** `crm-client-communication-log.md`
-
-**Status:** 100% Complete
-
-**Database:** Complete (ClientInteraction model in tenant_crm)
-
-**API Endpoints:** Complete (full CRUD operations)
-
-**UI Components:** Complete (timeline display, add/edit/delete modals)
-**Location:** `apps/app/app/(authenticated)/crm/communications/page.tsx`
-
----
-
-#### 4.4 Venue Management
-
-**Specs:** `crm-venue-management.md`
-
-**Status:** 100% Complete
-
-**Database:** Complete (Venue model with tenant scoping)
-
-**API Endpoints:** Complete (full CRUD operations with event history)
-
-**UI Components:** Complete (list, detail, creation/edit forms)
-
----
-
-#### 4.5 Client Lifetime Value Analytics
-
-**Specs:** `analytics-client-lifetime-value.md`
-
-**Status:** 100% Complete
-
-**Database:** Complete (computed/aggregated LTV data via views)
-
-**API Endpoints:** Complete (LTV calculations, segments, trends)
-
-**UI Components:** Complete (LTV dashboard, client ranking, retention view)
-
----
-
-#### 4.6 Proposal Generation
-
-**Specs:** `event-proposal-generation.md`
-
-**Status:** 100% Complete
-
-**Database:** Complete (Proposal model)
-
-**API Endpoints:** Complete
-
-**UI Components:** Complete
-
-**PDF Export:** Complete (ProposalPDF.tsx component + API route)
-
-**Complexity:** Low | **Dependencies:** PDF library
-
----
-
-### PHASE 5: INVENTORY MODULE
-
-**Status: 90% Complete** (+28% from Cycle Counting 100% complete and other improvements)
-
-#### 5.1 Inventory Item Management ✅ COMPLETE
-
-**Specs:** `inventory-item-management.md`
-
-**Status:** 100% Complete (updated from 40%)
-
-**Database:** Complete (InventoryItem, InventorySupplier models exist)
-
-**API Endpoints:** Complete - Full CRUD implemented
-**Location:** `apps/api/app/api/inventory/items/route.ts`
-- GET /api/inventory/items - List with pagination, search, and filters (category, stock_status, fsa_status, tags)
-- POST /api/inventory/items - Create new item with validation
-- GET /api/inventory/items/[id] - Get single item with computed stock_status and total_value
-- PUT /api/inventory/items/[id] - Update item with duplicate item_number checking
-- DELETE /api/inventory/items/[id] - Soft delete
-
-**UI Components:** Complete
-**Location:** `apps/app/app/(authenticated)/inventory/items/page.tsx`
-**Files Created:**
-- `inventory-items-page-client.tsx` - Main page with table view, search, filters, pagination
-- `components/create-inventory-item-modal.tsx` - Create/Edit modal with full form
-- `lib/use-inventory.ts` - Client API functions and helpers
-
-**Features Implemented:**
-- Full CRUD operations for inventory items
-- Search by item number or name
-- Filter by category, stock status, FSA status
-- Pagination (20 items per page)
-- Summary stats (total items, total value, low stock count, out of stock count)
-- Stock status badges (In Stock, Low Stock, Out of Stock) based on quantity vs reorder level
-- FSA compliance status tracking with badges
-- Tag management
-- Food safety flags (temperature logged, allergen info, traceable source)
-- Delete confirmation dialog
-
-**Complexity:** Medium | **Dependencies:** None
-
----
-
-#### 5.2 Stock Levels Management ✅ COMPLETE (Automatic Stock Updates)
-
-**Specs:** `inventory-stock-levels.md`
-
-**Status:** 95% Complete (+65% from automatic stock update integrations and UI implementation)
-
-**Database:** Complete ✅ (InventoryStock, InventoryTransaction models exist)
-
-**API Endpoints:** Complete ✅
-**Automatic Stock Update Integrations:**
-- **Waste Entries → Stock Decrement** ✅
-  - Location: `apps/api/app/api/kitchen/waste/entries/route.ts`
-  - Integrated with Manifest waste command
-  - Validates constraints via Manifest runtime
-  - Creates waste entry record
-  - Decrements inventory stock levels automatically
-  - Creates inventory transaction record
-  - Emits outbox events for real-time updates via Ably
-  - Event type: `kitchen.waste.entry.created`
-
-- **Event Usage (Prep Tasks) → Stock Decrement** ✅
-  - Location: `apps/api/app/api/kitchen/tasks/[id]/route.ts`
-  - Consumes inventory items when prep tasks are completed
-  - Fetches recipe ingredients for the prep task
-  - Matches ingredients to inventory items by name
-  - Calculates scaled quantities based on task batch size and waste factor
-  - Creates inventory transactions for each ingredient consumed
-  - Updates inventory quantities atomically
-  - Emits outbox events for real-time updates via Ably
-  - Event type: `inventory.item.consumed`
-
-- **Receiving (Purchase Orders) → Stock Increment** ✅
-  - Location: `apps/api/app/api/inventory/purchase-orders/[id]/items/[itemId]/quantity/route.ts`
-  - PUT endpoint for updating quantity received on purchase order items
-  - Calculates incremental quantity received
-  - Updates inventory item quantity on hand automatically
-  - Creates inventory transaction record
-  - Emits outbox events for real-time updates via Ably
-  - Event type: `inventory.item.quantity_updated`
-
-**Real-time Events:** Complete ✅
-**Location:** `packages/realtime/src/events/stock.ts`
-Four new Ably real-time event types implemented:
-- `InventoryStockAdjustedEvent` - Manual stock adjustments
-- `InventoryStockConsumedEvent` - Stock consumption by prep tasks
-- `InventoryStockReceivedEvent` - Stock received from purchase orders
-- `InventoryStockWastedEvent` - Stock wasted
-
-All events include:
-- Stock item identifier
-- Quantity change (positive/negative)
-- Previous and new quantities
-- Employee who made the change
-- ISO 8601 timestamp
-- Additional context (reason, task ID, supplier, waste category)
-
-**UI Components:** Complete ✅
-**Location:** `apps/app/app/(authenticated)/inventory/levels/page.tsx`
-**Files Created:**
-- `inventory-levels-page-client.tsx` - Main page with dashboard, stock items table, transaction history
-- `components/stock-adjustment-modal.tsx` - Manual stock adjustment operations
-- `components/transaction-history-panel.tsx` - Transaction history viewer with filtering
-- `lib/use-stock-levels.ts` - Client API functions and helpers
-
-**Features Implemented:**
-- Stock levels dashboard with summary stats (total items, total value, low stock alerts)
-- Stock items table with filtering, search, and pagination
-- Automatic stock decrement on waste entries (via Manifest integration)
-- Automatic stock decrement on prep task completion (ingredient consumption)
-- Automatic stock increment on purchase order receiving
-- Real-time Ably events for all stock changes
-- Inventory transaction records for all stock movements
-- Transaction history viewer with filters (item type, date range, transaction type)
-- Manual adjustment operations UI (add/remove stock with reason codes)
-- Atomic transactions ensuring data consistency
-
-**Still Needed:**
-- Real-time Ably integration for live stock updates in UI (nice-to-have, requires client-side SDK setup)
-
-**Complexity:** Medium | **Dependencies:** None (core functionality and UI complete, real-time UI enhancement optional)
-
----
-
-#### 5.3 Recipe Costing
-
-**Specs:** `inventory-recipe-costing.md`
-
-**Status:** 100% Complete ✅ (API integration fix completed)
-
-**Database:** RecipeIngredient links exist
-
-**API Endpoints:** Complete ✅
-**Location:** `apps/api/app/api/kitchen/recipes/route.ts`
-- Updated to include cost data in response
-- Uses LEFT JOIN LATERAL to fetch latest recipe version
-- Returns `currentVersion` with cost fields (totalCost, costPerYield, costCalculatedAt)
-- Added type definitions for RecipeCategory and CuisineType
-
-**UI Components:** Complete ✅
-**Location:** `apps/app/app/(authenticated)/inventory/recipes/page.tsx`
-- Full recipe management interface
-- Cost display integration
-
-**Features Implemented:**
-- Recipe cost breakdown calculations ✅
-- Cost per serving calculations ✅
-- Cost history tracking ✅
-- Real-time cost calculation on recipe updates ✅
-- Integration with inventory pricing data ✅
-
-**Complexity:** Complete | **Dependencies:** None (fully implemented)
-
----
-
-#### 5.4 Depletion Forecasting
-
-**Specs:** `inventory-depletion-forecasting.md`
-
-**Status:** 100% Complete ✅ (+30% from forecast visualization, alerts, and accuracy tracking)
-
-**Database:** Complete (InventoryForecast, ForecastInput, ReorderSuggestion, AlertsConfig, InventoryTransaction with accuracy tracking fields)
-
-**API Endpoints:** ✅ Complete
-**Location:** `apps/api/app/lib/inventory-forecasting.ts` and `apps/api/app/api/inventory/forecasts/alerts/route.ts`
-
-**Features Implemented:**
-- **Historical Usage Analysis** ✅ (2026-02-10)
-  - Queries inventory transactions for historical consumption data
-  - Transaction types: 'use', 'waste', 'adjust' for actual usage
-  - Groups by day and calculates daily averages
-  - Measures data points and variability (standard deviation)
-  - Returns daily average, data point count, and variability metrics
-- **Improved Forecast Calculation** ✅ (2026-02-10)
-  - Combines historical usage patterns with upcoming event projections
-  - Baseline usage from 30-day historical average
-  - Event-based spikes added to baseline
-  - Fallback to events-only projection when no historical data available
-- **Enhanced Confidence Calculation** ✅ (2026-02-10)
-  - High confidence: 20+ data points with coefficient of variation < 0.3
-  - Medium confidence: 10+ data points or CV < 0.5
-  - Low confidence: limited data or high variability
-  - Coefficient of variation = variability / dailyAverage
-- **Projected Usage Function** ✅ (2026-02-10)
-  - `getProjectedUsage()`: Combines historical data + events
-  - `getProjectedUsageFromEventsOnly()`: Fallback for missing itemId
-  - Returns daily usage projections with event associations
-- **Forecast Generation** ✅
-  - Depletion date calculation
-  - Days until depletion tracking
-  - Projected stock levels over time
-  - Event-based usage attribution
-- **Reorder Suggestions** ✅
-  - Critical/warning/info urgency levels
-  - Lead time and safety stock calculations
-  - Recommended order quantities with justification
-- **Database Persistence** ✅
-  - Save forecast results to InventoryForecast table
-  - Save reorder suggestions to ReorderSuggestion table
-  - Update existing records with new calculations
-- **Batch Operations** ✅
-  - Batch forecast calculation for multiple SKUs
-  - Error handling for individual SKU failures
-- **Forecast Visualization Charts** ✅ (2026-02-10)
-  - AreaChart showing projected stock levels over time
-  - LineChart showing daily usage patterns
-  - Interactive tooltips with detailed data
-  - Event markers on forecast timeline
-  - Responsive chart design using Recharts
-- **Alert System** ✅ (2026-02-10)
-  - GET /api/inventory/forecasts/alerts endpoint
-  - Items forecasted to run out within X days
-  - Urgency categories: critical (7 days), warning (14 days), info (30 days)
-  - Alert counts by urgency level
-  - Detailed alert information for each item
-- **Forecast Accuracy Tracking** ✅ (2026-02-10)
-  - `trackForecastAccuracy()`: Records actual depletion dates
-  - `getForecastAccuracyMetrics()`: Returns MAPE and error statistics
-  - `updateConfidenceCalculation()`: Adjusts confidence based on historical accuracy
-  - `getAccuracySummary()`: System-wide accuracy metrics
-  - Database fields: actual_depletion_date, error_days, accuracy_tracked
-
-**UI Components:** ✅ Complete
-**Location:** `apps/app/app/(authenticated)/inventory/forecasts/forecasts-page-client.tsx`
-- Forecast analysis dashboard with confidence levels
-- Reorder alerts with urgency indicators
-- Interactive filters (horizon, lead time, safety stock)
-- Detailed forecast tables with projections
-- **Charts section** with AreaChart (stock projection) and LineChart (daily usage)
-- **Alerts section** showing items running out soon with urgency badges
-
-**Complexity:** Complete | **Dependencies:** None (fully implemented)
-
----
-
-#### 5.5 Warehouse Receiving
-
-**Specs:** `warehouse-receiving-workflow.md`
-
-**Status:** 95% Complete (+15% from stock increment integration)
-
-**Database:** Complete (PurchaseOrder, PurchaseOrderItem models exist)
-
-**API Endpoints:** Complete with stock integration
-**Location:** `apps/api/app/api/inventory/purchase-orders/[id]/items/[itemId]/quantity/route.ts`
-- PUT /api/inventory/purchase-orders/[id]/items/[itemId]/quantity - Update quantity received
-- Automatic stock increment on quantity received update
-- Calculates incremental quantity received
-- Updates inventory item quantity on hand automatically
-- Creates inventory transaction record
-- Emits outbox events for real-time updates via Ably
-
-**UI Components:** Exists but may need connection verification
-**Location:** `apps/app/app/(authenticated)/warehouse/inventory/page.tsx`
-
-**Features Implemented:**
-- Full receiving workflow operations
-- Automatic stock increment on receiving
-- Inventory transaction tracking
-- Real-time event emission via Ably
-
-**Still Needed:** UI verification and potential improvements
-
-**Complexity:** Low | **Dependencies:** None (stock integration complete)
-
----
-
-#### 5.6 Warehouse Shipment Tracking
-
-**Specs:** `warehouse-shipment-tracking.md`
-
-**Status:** 90% Complete (+90% from API, schema, and PDF implementation)
-
-**Database:** Complete ✅ (Shipment, ShipmentItem models exist)
-
-**API Endpoints:** Complete ✅
-**Location:** `apps/api/app/api/shipments/`
-- GET /api/shipments - List shipments with pagination and filters
-- POST /api/shipments - Create new shipment
-- GET /api/shipments/[id] - Get specific shipment
-- PUT /api/shipments/[id] - Update shipment
-- DELETE /api/shipments/[id] - Soft delete shipment
-- POST /api/shipments/[id]/status - Update shipment status with validation
-- GET /api/shipments/[id]/items - List shipment items
-- POST /api/shipments/[id]/items - Add item to shipment
-- PUT /api/shipments/[id]/items/[itemId] - Update shipment item
-- DELETE /api/shipments/[id]/items/[itemId] - Delete shipment item
-- GET /api/shipments/[id]/pdf - Generate packing list PDF ✅ NEW (2026-02-10)
-
-**Features Implemented:**
-- Shipment status workflow: draft → scheduled → preparing → in_transit → delivered → returned/cancelled
-- Status validation with allowed transitions
-- Item-level tracking (quantity, condition, lot numbers, costs)
-- Inventory integration (automatic updates on delivery)
-- Delivery confirmation (signature capture, timestamps)
-- Carrier and tracking number support
-- Event association for shipments
-- **Packing list PDF generation** ✅ COMPLETE (2026-02-10)
-  - Comprehensive PDF with status badge, tracking info, locations, items table with checkboxes, and summary
-  - Download buttons in shipments list and detail view
-  - Support for both base64 and direct download responses
-
-**UI Components:** Complete ✅
-**Location:** `apps/app/app/(authenticated)/warehouse/shipments/shipments-page-client.tsx`
-
-**Still Needed:**
-- Carrier API integrations (FedEx, UPS)
-- Advanced reporting and analytics
-
-**Complexity:** Low | **Dependencies:** None
-
----
-
-#### 5.7 Cycle Counting ✅ COMPLETE
-
-**Specs:** `warehouse-cycle-counting.md`
-
-**Status:** 100% Complete (+60% from comprehensive UI implementation and session management)
-
-**Database:** Complete (CycleCountSession, CycleCountRecord, VarianceReport, CycleCountAuditLog models exist)
-
-**API Endpoints:** Complete ✅
-**Location:** `apps/api/app/api/warehouse/audits/cycle-count/`
-- GET /api/warehouse/audits/cycle-count/sessions - List sessions with filters and pagination
-- POST /api/warehouse/audits/cycle-count/sessions - Create new cycle count session
-- GET /api/warehouse/audits/cycle-count/sessions/[id] - Get session details with records
-- PUT /api/warehouse/audits/cycle-count/sessions/[id] - Update session status
-- POST /api/warehouse/audits/cycle-count/sessions/[id]/start - Start counting session
-- POST /api/warehouse/audits/cycle-count/sessions/[id]/complete - Complete session with validation
-- POST /api/warehouse/audits/cycle-count/sessions/[id]/finalize - Finalize session and generate variance report
-- POST /api/warehouse/audits/cycle-count/sessions/[id]/cancel - Cancel session with audit log
-- GET /api/warehouse/audits/cycle-count/sessions/[id]/records - Get counting records for session
-- POST /api/warehouse/audits/cycle-count/sessions/[id]/records - Add counting record
-
-**UI Components:** Complete ✅
-**Location:** `apps/app/app/(authenticated)/warehouse/audits/cycle-count-client.tsx`
-- Comprehensive cycle counting management interface
-- Session management with create, start, complete, finalize, cancel actions
-- Summary cards showing draft, in-progress sessions, and total variance
-- Filterable session list by status (draft, in_progress, completed, finalized, cancelled) and type
-- Pagination support (20 items per page)
-- Create session dialog with validation (name, type, description, expected item count)
-- Session status badges with color coding
-- Real-time session status updates
-- Format utilities for currency, percentage, and date formatting
-
-**Features Implemented:**
-- Complete session lifecycle management (create → start → complete → finalize)
-- Real-time status tracking with audit logging
-- Summary dashboard with session statistics
-- Advanced filtering and search capabilities
-- Pagination for large datasets
-- Form validation with error handling
-- Session cancellation with audit trail
-- Variancereport generation on finalization
-- Integration with inventory system for stock adjustments
-
-**Complexity:** Complete | **Dependencies:** None (fully implemented)
-
-**Validation:** All validations passing (check: 30 packages, test: 492 tests)
-
----
-
-### PHASE 6: ANALYTICS MODULE
-
-**Status: 80% Complete**
-
-#### 6.1 Employee Performance Analytics
-
-**Specs:** `analytics-employee-performance.md`
-
-**Status:** 100% Complete
-
-**Database:** Uses existing models (User, KitchenTask, TimeEntry)
-
-**API Endpoints:** Complete (performance metrics, comparisons)
-
-**UI Components:** Complete (dashboard, detail view, comparison charts)
-
----
-
-#### 6.2 Profitability Dashboard
-
-**Specs:** `analytics-profitability-dashboard.md`
-
-**Status:** 100% Complete
-
-**Database:** Uses existing models (Event, CateringOrder, Recipe, TimeEntry)
-
-**API Endpoints:** Complete (profitability calculations by event/type/client)
-**Location:** `apps/app/app/(authenticated)/analytics/events/actions/get-event-profitability.ts`
-
-**UI Components:** Complete (dashboard, event breakdown, filters)
-
----
-
-#### 6.3 Finance Analytics
-
-**Specs:** `analytics-finance.md`
-
-**Status:** 75% Complete (Analytics implemented, Core Accounting Phase 1.1/Chart of Accounts complete)
-
-**Database:** EventProfitability model exists with comprehensive financial tracking
-**Location:** `packages/database/prisma/schema.prisma`
-
-**API Endpoints:** Complete
-**Location:** `apps/api/app/api/analytics/finance/route.ts`
-- Revenue vs budget variance analysis
-- COGS tracking (food, beverage, rentals, other costs)
-- Labor cost tracking with trend analysis
-- Budget alerts with severity levels (High/Medium/Low)
-- Ledger summary (deposits, active contracts, pending proposals)
-- Period-based filtering (7d, 30d, 90d, 12m)
-- Location-based filtering
-
-**UI Components:** Complete
-**Location:** `apps/app/app/(authenticated)/analytics/finance/page.tsx`
-- Financial dashboard with performance overview
-- Finance highlights cards (Revenue vs Budget, COGS, Labor Cadence)
-- Ledger summary with deposits and contracts
-- Finance alerts with severity indicators
-- Period and location filters
-
-**Analytics Features Implemented:**
-- Event profitability tracking with EventProfitability model
-- Client financial summaries via `/analytics/clients` (CLV, retention analysis)
-- Sales reporting PDFs via `/analytics/sales-reporting` (PDFKit engine)
-- Budget variance calculations and alerts
-
----
-
-### Core Accounting Features - Detailed Breakdown
-
-**Status:** 20% Complete (Phase 1.1 Chart of Accounts complete - Foundation established)
-
-The Finance Analytics module provides excellent visibility into financial performance, but lacks the foundational accounting infrastructure required for complete financial management. Below is a prioritized implementation plan.
-
-#### Phase 1: Foundation (Chart of Accounts & GL) - Priority: CRITICAL
-
-**1.1 Chart of Accounts Management - COMPLETE ✅ (2026-02-10)**
-
-**Database Schema Required:**
-```prisma
-model ChartOfAccount {
-  id              String   @id @default(uuid())
-  accountNumber   String   @unique
-  accountName     String
-  accountType     AccountType // ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE
-  parentId        String?
-  parent          ChartOfAccount? @relation("AccountHierarchy")
-  children        ChartOfAccount[] @relation("AccountHierarchy")
-  isActive        Boolean  @default(true)
-  description     String?
-  tenantId        String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  // Relations
-  journalEntries  JournalEntry[]
-}
-
-enum AccountType {
-  ASSET
-  LIABILITY
-  EQUITY
-  REVENUE
-  EXPENSE
-}
+## Complete Directory Map
+
+```
+C:/projects/capsule-pro/
+  manifest.config.yaml                    # COMPILE CONFIG (FIXED - points to adapters)
+  scripts/manifest/
+    compile.mjs                           # Compile script (FIXED - uses compileToIR API)
+    generate.mjs                           # Generate routes from IR
+    build.mjs                              # Compile + generate (FIXED - uses compileToIR API)
+    check.mjs                              # Validation script (FIXED - correct paths)
+  packages/
+    manifest-sources/                      # DEPRECATED - DUPLICATE FILES (PENDING DELETION)
+      kitchen/
+        prep-task.manifest                 # DUPLICATE of prep-task-rules.manifest
+        prep-list.manifest                 # DUPLICATE of prep-list-rules.manifest
+        recipe.manifest                    # DUPLICATE of recipe-rules.manifest
+      (NO README - package purpose unclear)
+    manifest-adapters/                     # CANONICAL SOURCE (6 active files)
+      manifests/                           # ACTUAL manifest location used by runtime
+        prep-task-rules.manifest           # Used by runtime (388 lines)
+        prep-list-rules.manifest           # Used by runtime (388 lines)
+        recipe-rules.manifest              # Used by runtime (365 lines)
+        menu-rules.manifest               # Used by runtime
+        inventory-rules.manifest          # Used by runtime
+        station-rules.manifest            # Used by runtime
+      src/
+        prisma-store.ts                    # PrismaStore adapter
+        runtime-engine.ts                  # ManifestRuntimeEngine
+        ir-contract.ts                   # IR enforcement utilities
+        route-helpers.ts                  # Route generation helpers
+        api-response.ts                   # HTTP response helpers
+        event-import-runtime.ts            # Event import handling
+        prep-list-autogeneration.ts       # Prep list business logic
+        manifest-runtime.ts               # Runtime factory (6 factories)
+        index.ts                        # Package exports
+      (NO README - package purpose undocumented)
+    manifest-ir/                           # Generated output (committed)
+      ir/
+        kitchen/
+          kitchen.ir.json                  # Compiled IR (12 entities - FIXED)
+          kitchen.provenance.json          # Compilation metadata
+      src/
+        index.ts                          # IR accessor functions
+      (NO README - generated nature undocumented)
+  apps/
+    api/
+      lib/
+        manifest-runtime.ts                # Runtime wrapper (uses adapters)
+        manifest-response.ts               # Response helpers
+        manifest/
+          outbox.ts                      # Outbox pattern (referenced by check.mjs)
+          telemetry.ts                    # Observability hooks
+      app/
+        api/
+          kitchen/                         # Generated + handwritten routes
+            stations/commands/*/route.ts     # 6 generated command routes
+            prep-lists/commands/*/route.ts     # 7 generated command routes
+            prep-lists/items/commands/*/route.ts  # 5 generated command routes
+            inventory/commands/*/route.ts  # 6 generated command routes
+            dishes/commands/*/route.ts     # 2 generated command routes
+            ingredients/commands/*/route.ts# 1 generated command route
+            recipe-ingredients/commands/*/route.ts  # 1 generated command route
+            recipes/commands/*/route.ts    # 4 generated command routes
+            recipes/versions/commands/*/route.ts    # 1 generated command route
+            menus/commands/*/route.ts      # 3 generated command routes
+            prep-tasks/commands/*/route.ts # 6 generated command routes
+            manifest/**                    # 7 manifest-based routes (handwritten)
+            **/list/route.ts               # 45+ query routes (handwritten)
+      __tests__/kitchen/                   # 16 test files
+        manifest-*.test.ts                 # Unit + integration tests
+        manifest-*-http.test.ts            # HTTP integration tests
+        manifest-projection-*.test.ts      # Snapshot/golden tests
+  docs/manifest/
+    README.md                              # Overview (mostly accurate)
+    structure.md                           # Contains CONTRADICTORY info
+    FILES_TO_EDIT.md                       # Has correct paths now
+    generation.md                          # Compile/generate commands
+    INTEGRATION.md                         # Runtime architecture
+    USAGE.md                               # Developer workflow
+  .github/
+    workflows/
+      manifest-ci.yml                       # CI workflow (WRONG paths - PENDING FIX)
+    MANIFEST_CI.md                          # Docs (WRONG paths - PENDING UPDATE)
+    pull_request_template.md                # PR template (WRONG paths - PENDING UPDATE)
+  archive/
+    manifest-legacy-2026-02-10/          # Quarantined old structure
+
+
+## Iteration 1 Findings (2026-02-11)
+
+### 1. Duplicate Manifest Sources (PARTIALLY RESOLVED - Phase 0 Complete)
+
+**ORIGINAL ISSUE**:
+- `packages/manifest-sources/kitchen/` contains 3 manifests (prep-list, prep-task, recipe)
+- `packages/manifest-adapters/manifests/` contains 6 manifests (prep-list-rules, prep-task-rules, recipe-rules, station-rules, inventory-rules, menu-rules)
+- `manifest.config.yaml` pointed to `packages/manifest-sources/kitchen/*.manifest` (3 files)
+- Active code uses `packages/manifest-adapters/manifests/*.manifest` (6 files)
+
+**RESOLVED (Phase 0)**:
+- **Root Cause**: The Manifest CLI's `--glob` flag has a "last file wins" bug where only the last manifest was included in the IR
+- **Solution**: Rewrote `compile.mjs` and `build.mjs` to use the programmatic `compileToIR` API which properly merges all manifests
+- `manifest.config.yaml` now points to `packages/manifest-adapters/manifests/*.manifest`
+- IR now contains all 12 entities: Dish, Ingredient, InventoryItem, Menu, MenuDish, PrepList, PrepListItem, PrepTask, Recipe, RecipeIngredient, RecipeVersion, Station
+- All 534 tests passing
+
+**PENDING (Phase 1)**: Delete deprecated `packages/manifest-sources` directory
+
+### 2. All Domain Roots in apps/api/app/api/
+
+| Domain | Route Count | Key Entities | Notes |
+|---------|--------------|---------------|---------|
+| accounting | 5+ | Chart of Accounts | Accounting phase 1 |
+| administrative | 2+ | Chat, Admin functions | |
+| ai | 5+ | Suggestions, Summaries | AI-powered features |
+| analytics | 5+ | Financial, Kitchen, Staff reports | |
+| collaboration | 1+ | Auth | |
+| command-board | 3+ | Board, Card | Strategic task management |
+| conflicts | 1+ | Conflict detection | |
+| crm | 15+ | Client, Venue, Proposal, Contract | |
+| events | 20+ | Event, Budget, Contract | |
+| inventory | 23+ | InventoryItem, PurchaseOrder | **CONFLICT with kitchen** |
+| inventoryitem | 1+ | InventoryItem | **AUTO-GENERATED, redundant** |
+| kitchen | 88+ | PrepTask, Recipe, Menu, Station | Largest domain |
+| locations | 1+ | Location | |
+| payroll | 5+ | Payroll, Timecard | |
+| prepTask | 1+ | PrepTask | **AUTO-GENERATED, redundant** |
+| sales-reporting | 2+ | Sales | |
+| shipments | 1+ | Shipment | |
+| staff | 10+ | Employee, Shift, Schedule | |
+| timecards | 3+ | Timecard | |
+
+### 3. Critical InventoryItem Conflict
+
+**Three domains compete for InventoryItem entity**:
+1. `/api/inventory/items/*` - 23 routes, handwritten, comprehensive
+2. `/api/kitchen/inventory/commands/*` - Kitchen-specific operations
+3. `/api/inventoryitem/list/*` - Auto-generated, appears redundant
+
+**Recommendation**: Consolidate into `inventory` domain. Delete `inventoryitem` domain.
+
+### 4. Runtime Architecture Duplication
+
+**Two runtime factories with overlapping responsibilities**:
+
+| Location | Purpose | Entities Covered |
+|------------|-----------|------------------|
+| `apps/api/lib/manifest-runtime.ts` | Capsule-Pro specific runtime with Prisma + Outbox | All 6 entities (generic) |
+| `packages/manifest-adapters/src/manifest-runtime.ts` | Generic kitchen-ops runtime with domain-specific factories | 6 kitchen entities |
+
+**Overlap**: Both provide `createPrepTaskRuntime()`, `createMenuRuntime()`, etc. with different signatures.
+
+### 5. Broken @manifest/runtime Reference
+
+Both `apps/api/package.json` and `apps/app/package.json` reference:
+```json
+"@manifest/runtime": "file:../../../Manifest"
 ```
 
-**API Endpoints Needed:**
-- `GET /api/accounting/accounts` - List all accounts with hierarchy
-- `POST /api/accounting/accounts` - Create new account
-- `PUT /api/accounting/accounts/[id]` - Update account
-- `DELETE /api/accounting/accounts/[id]` - Deactivate account
+**Issue**: No `Manifest` directory exists at project root. This is a broken file dependency that appears to work because runtime is loaded from node_modules elsewhere.
 
-**UI Components Needed:**
-- Chart of Accounts management page (`/accounting/chart-of-accounts`)
-- Account creation/edit modal
-- Hierarchical tree view with expand/collapse
-- Account type filtering
+### 6. CI/CD Path Issues (VERIFIED)
 
-**Complexity:** Medium | **Dependencies:** None
+| File | Incorrect Path | Should Be |
+|-------|-----------------|-------------|
+| `.github/workflows/manifest-ci.yml` | `packages/kitchen-ops/manifests/` | `packages/manifest-adapters/manifests/` |
+| `.github/workflows/manifest-ci.yml` | `packages/manifest/bin/compile.ts` | `scripts/manifest/compile.mjs` |
+| `scripts/validate-manifests.mjs` | `packages/manifest-adapters/manifests/` | `packages/manifest-sources/kitchen/` |
 
----
+### 7. Import Dependency Graph
 
-**1.2 Journal Entries & General Ledger**
-
-**Database Schema Required:**
-```prisma
-model JournalEntry {
-  id              String   @id @default(uuid())
-  entryNumber     String   @unique
-  entryDate       DateTime
-  description     String
-  reference       String?  // Invoice number, check number, etc.
-  source          JournalSource
-  sourceId        String?  // Foreign key to source document
-  status          EntryStatus @default(DRAFT)
-  totalDebit      Decimal  @db.Decimal(12, 2)
-  totalCredit     Decimal  @db.Decimal(12, 2)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  createdBy       String
-  postedAt        DateTime?
-  tenantId        String
-
-  // Relations
-  lines           JournalLine[]
-}
-
-model JournalLine {
-  id              String   @id @default(uuid())
-  journalEntryId  String
-  journalEntry    JournalEntry @relation(fields: [journalEntryId], references: [id])
-  accountId       String
-  account         ChartOfAccount @relation(fields: [accountId], references: [id])
-  description     String?
-  debitAmount     Decimal  @db.Decimal(12, 2) @default(0)
-  creditAmount    Decimal  @db.Decimal(12, 2) @default(0)
-  lineOrder       Int
-  createdAt       DateTime @default(now())
-
-  @@unique([journalEntryId, lineOrder])
-}
-
-enum JournalSource {
-  MANUAL
-  INVOICE
-  BILL
-  PAYMENT
-  PAYROLL
-  ADJUSTMENT
-  OPENING_BALANCE
-}
-
-enum EntryStatus {
-  DRAFT
-  POSTED
-  VOID
-}
+```
+External: @manifest/runtime (file:../../../Manifest - BROKEN)
+    ↓
+Local: @repo/manifest-adapters (packages/manifest-adapters/)
+    ├── Runtime Engine (runtime-engine.ts)
+    ├── Prisma Store (prisma-store.ts)
+    ├── IR Contract (ir-contract.ts)
+    └── Manifest Runtime (manifest-runtime.ts)
+    ↓
+Local: manifest-ir (packages/manifest-ir/)
+    ├── IR File Reader (src/index.ts)
+    └── Compiled IR Files (ir/kitchen/*.ir.json)
+    ↓
+Apps: api & app (consume both packages)
 ```
 
-**API Endpoints Needed:**
-- `GET /api/accounting/journal-entries` - List with filters
-- `POST /api/accounting/journal-entries` - Create with validation
-- `GET /api/accounting/journal-entries/[id]` - Get single entry
-- `PUT /api/accounting/journal-entries/[id]` - Update (draft only)
-- `POST /api/accounting/journal-entries/[id]/post` - Post to GL
-- `POST /api/accounting/journal-entries/[id]/void` - Void entry
-- `GET /api/accounting/general-ledger` - Trial balance and ledger view
+**No circular dependencies found** - clean hierarchy.
 
-**UI Components Needed:**
-- Journal entries list page (`/accounting/journal-entries`)
-- Journal entry form with line items (add/remove lines)
-- Auto-balancing validation (debits must equal credits)
-- General ledger view with account drill-down
-- Trial balance report
-- Entry status badges and workflow
+### 8. Store Adapter Status
 
-**Validation Rules:**
-- Total debits must equal total credits
-- Cannot modify posted entries (must void and re-enter)
-- Entry numbers auto-generated and sequential
-- Posting creates immutable record
+**Implemented PrismaStore entities**:
+- PrepTask ✓
+- Recipe ✓
+- Menu ✓
+- Dish ✓
+- PrepList ✓
+- PrepListItem ✓
+- MenuDish ✓
 
-**Complexity:** High | **Dependencies:** Chart of Accounts
+**Missing/In-Memory** (causes data loss):
+- Station ✗ (uses in-memory)
+- InventoryItem ✗ (uses in-memory)
 
 ---
 
-#### Phase 2: Financial Statements - Priority: HIGH
+## Canonical Directory Mapping
 
-**2.1 Balance Sheet & Income Statement**
-
-**Database Schema:** Uses existing ChartOfAccount and JournalEntry
-
-**API Endpoints Needed:**
-- `GET /api/accounting/statements/balance-sheet` - As of date
-- `GET /api/accounting/statements/income-statement` - Period range
-- `GET /api/accounting/statements/cash-flow` - Period range (indirect method)
-- `GET /api/accounting/statements/retained-earnings` - Period range
-
-**UI Components Needed:**
-- Financial statements page (`/accounting/statements`)
-- Period selector (month, quarter, year, custom)
-- Comparison views (actual vs budget, period over period)
-- Export to PDF/Excel
-- Drill-down to supporting detail
-
-**Statement Logic:**
-- Balance Sheet: Assets = Liabilities + Equity (as of specific date)
-- Income Statement: Revenue - Expenses = Net Income (for period)
-- Cash Flow: Operating + Investing + Financing activities
-- Retained Earnings: Beginning + Net Income - Dividends = Ending
-
-**Complexity:** High | **Dependencies:** Journal Entries & GL
+| Artifact Type | Canonical Location | Editable? | Current State |
+|---------------|-------------------|-----------|---------------|
+| **Manifest Sources (ACTIVE)** | `packages/manifest-adapters/manifests/*.manifest` | YES | 6 manifests: prep-task-rules, station-rules, inventory-rules, recipe-rules, menu-rules, prep-list-rules |
+| **Manifest Sources (LEGACY)** | `packages/manifest-sources/kitchen/*.manifest` | NO | 3 manifests: prep-list, prep-task, recipe - SHOULD BE REMOVED |
+| **Compiled IR** | `packages/manifest-ir/ir/kitchen/kitchen.ir.json` | NO | Generated compile output |
+| **IR Provenance** | `packages/manifest-ir/ir/kitchen/kitchen.provenance.json` | NO | Provenance metadata |
+| **IR Access Helpers** | `packages/manifest-ir/src/index.ts` | YES | IR file reading utilities |
+| **Runtime Adapters** | `packages/manifest-adapters/src/*.ts` | YES | Core generic Manifest runtime |
+| **Generated Routes** | `apps/api/app/api/kitchen/**/route.ts` | NO | Manifest-generated handlers |
+| **Handwritten Routes** | `apps/api/app/api/**/route.ts` (all domains) | YES | Custom business logic |
+| **API Runtime Wiring** | `apps/api/lib/manifest-runtime.ts` | YES | Capsule-Pro specific runtime |
+| **API Response Helpers** | `apps/api/lib/manifest-response.ts` | YES | Response normalization |
+| **Outbox Integration** | `apps/api/lib/manifest/outbox.ts` | YES | Transactional outbox |
+| **Telemetry Hooks** | `apps/api/lib/manifest/telemetry.ts` | YES | Observability integration |
+| **Tests** | `apps/api/__tests__/kitchen/*.test.ts` | YES | Integration tests |
+| **Prisma Store** | `packages/manifest-adapters/src/prisma-store.ts` | YES | Prisma integration for 7/9 entities |
+| **Config** | `manifest.config.yaml` | YES | Compile/generate configuration |
+| **Scripts** | `scripts/manifest/*.mjs` | YES | Build tooling |
+| **CI/CD** | `.github/workflows/manifest-ci.yml` | YES | GitHub Actions |
 
 ---
 
-#### Phase 3: Accounts Receivable/Payable - Priority: HIGH
+## Complete Conflict List with Exact Paths
 
-**3.1 Accounts Receivable (AR)**
+### 1. DUPLICATE MANIFEST LOCATIONS (RESOLVED - Phase 0 Complete)
 
-**Database Schema Required:**
-```prisma
-model ARInvoice {
-  id              String   @id @default(uuid())
-  invoiceNumber   String   @unique
-  clientId        String
-  client          Client @relation(fields: [clientId], references: [id])
-  invoiceDate     DateTime
-  dueDate         DateTime
-  subtotal        Decimal  @db.Decimal(12, 2)
-  taxAmount       Decimal  @db.Decimal(12, 2)
-  totalAmount     Decimal  @db.Decimal(12, 2)
-  paidAmount      Decimal  @db.Decimal(12, 2) @default(0)
-  balanceDue      Decimal  @db.Decimal(12, 2)
-  status          ARStatus @default(OPEN)
-  terms           String?
-  notes           String?
-  sentAt          DateTime?
-  viewedAt        DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  tenantId        String
+| Conflict | Paths | Resolution |
+|----------|---------|------------|
+| Two source directories compete | `packages/manifest-sources/kitchen/` (3 files) vs `packages/manifest-adapters/manifests/` (6 files) | RESOLVED: Config now points to adapters; delete `manifest-sources` in Phase 1 |
+| Config points to wrong source | `manifest.config.yaml`: `src: packages/manifest-sources/kitchen/*.manifest` | RESOLVED: Now points to `packages/manifest-adapters/manifests/*.manifest` |
+| Glob compilation bug | CLI `--glob` flag had "last file wins" behavior | RESOLVED: Rewrote scripts to use programmatic `compileToIR` API |
+| Validation script wrong path | `scripts/validate-manifests.mjs`: `MANIFEST_DIR = packages/manifest-adapters/manifests` | RESOLVED: Already correct, check.mjs also fixed |
 
-  // Relations
-  lines           ARInvoiceLine[]
-  payments        ARPayment[]
-  journalEntryId  String?  // Links to posted journal entry
-}
+### 2. INVENTORYITEM ENTITY CONFLICT (HIGH)
 
-model ARInvoiceLine {
-  id              String   @id @default(uuid())
-  invoiceId       String
-  invoice         ARInvoice @relation(fields: [invoiceId], references: [id])
-  description     String
-  quantity        Decimal  @db.Decimal(10, 2)
-  unitPrice       Decimal  @db.Decimal(12, 2)
-  amount          Decimal  @db.Decimal(12, 2)
-  eventId         String?
-  order           Int
-}
+| Conflict | Paths | Resolution |
+|----------|---------|------------|
+| Redundant auto-generated route | `apps/api/app/api/inventoryitem/list/route.ts` | DELETE - use `/api/inventory/items` instead |
+| Kitchen inventory commands | `apps/api/app/api/kitchen/inventory/commands/*` | Keep but ensure consistency with inventory domain |
+| Primary inventory domain | `apps/api/app/api/inventory/*` (23 routes) | PRIMARY OWNER - consolidate all inventory here |
 
-model ARPayment {
-  id              String   @id @default(uuid())
-  paymentNumber   String   @unique
-  invoiceId       String
-  invoice         ARInvoice @relation(fields: [invoiceId], references: [id])
-  paymentDate     DateTime
-  paymentMethod   PaymentMethod
-  amount          Decimal  @db.Decimal(12, 2)
-  reference       String?  // Check number, transaction ID
-  notes           String?
-  journalEntryId  String?  // Links to posted journal entry
-  createdAt       DateTime @default(now())
-  tenantId        String
-}
+### 3. RUNTIME FACTORY DUPLICATION (MEDIUM)
 
-enum ARStatus {
-  DRAFT
-  OPEN
-  PARTIAL
-  PAID
-  VOID
-  OVERDUE
-}
+| Conflict | Paths | Resolution |
+|----------|---------|------------|
+| Duplicate runtime factories | `apps/api/lib/manifest-runtime.ts` vs `packages/manifest-adapters/src/manifest-runtime.ts` | Consolidate - app lib should wrap adapters, not duplicate |
+| Different signatures for same function | `createPrepTaskRuntime()` exists in both with different signatures | Standardize on single implementation |
+| Entity mapping duplication | `ENTITY_TO_MANIFEST` in app lib, `KNOWN_COMMAND_OWNERS` in adapters | Unify to single mapping in adapters |
 
-enum PaymentMethod {
-  CASH
-  CHECK
-  CREDIT_CARD
-  ACH
-  WIRE
-}
-```
+### 4. CI/CD PATH ISSUES (HIGH)
 
-**API Endpoints Needed:**
-- `GET /api/accounting/ar/invoices` - List with aging
-- `POST /api/accounting/ar/invoices` - Create invoice
-- `GET /api/accounting/ar/invoices/[id]` - Get single invoice
-- `POST /api/accounting/ar/invoices/[id]/send` - Send to client
-- `POST /api/accounting/ar/payments` - Record payment
-- `GET /api/accounting/ar/aging-report` - Aging by bucket
-- `GET /api/accounting/ar/statements` - Customer statements
+| File | Incorrect Path | Correct Path |
+|------|-----------------|--------------|
+| `.github/workflows/manifest-ci.yml` | `packages/kitchen-ops/manifests/` | `packages/manifest-adapters/manifests/` |
+| `.github/workflows/manifest-ci.yml` | `packages/manifest/bin/compile.ts` | `scripts/manifest/compile.mjs` |
+| `.github/workflows/manifest-ci.yml` | `packages/manifest/**` | REMOVE filter (doesn't exist) |
 
-**UI Components Needed:**
-- AR invoices page (`/accounting/receivables`)
-- Invoice creation form (line items, terms)
-- Invoice detail view with payment history
-- Payment recording form
-- Aging report with 30/60/90+ buckets
-- Customer statement generation
+### 5. BROKEN EXTERNAL DEPENDENCY (CRITICAL)
 
-**Aging Buckets:**
-- Current (not overdue)
-- 1-30 days overdue
-- 31-60 days overdue
-- 61-90 days overdue
-- 90+ days overdue
+| File | Issue | Resolution |
+|------|-------|------------|
+| `apps/api/package.json` | `"@manifest/runtime": "file:../../../Manifest"` | Fix or remove broken file: reference |
+| `apps/app/package.json` | `"@manifest/runtime": "file:../../../Manifest"` | Fix or remove broken file: reference |
 
-**Complexity:** High | **Dependencies:** Chart of Accounts, Journal Entries
+### 6. MISSING PRISMA STORES (MEDIUM)
+
+| Entity | Current Storage | Required Fix |
+|---------|------------------|---------------|
+| Station | In-memory (data loss between requests) | Implement `StationPrismaStore` in prisma-store.ts |
+| InventoryItem | In-memory (data loss between requests) | Implement `InventoryItemPrismaStore` in prisma-store.ts |
 
 ---
 
-**3.2 Accounts Payable (AP)**
+## Implementation Sequence
 
-**Database Schema Required:**
-```prisma
-model APBill {
-  id              String   @id @default(uuid())
-  billNumber      String   @unique
-  vendorId        String
-  vendor          Vendor @relation(fields: [vendorId], references: [id])
-  billDate        DateTime
-  dueDate         DateTime
-  subtotal        Decimal  @db.Decimal(12, 2)
-  taxAmount       Decimal  @db.Decimal(12, 2)
-  totalAmount     Decimal  @db.Decimal(12, 2)
-  paidAmount      Decimal  @db.Decimal(12, 2) @default(0)
-  balanceDue      Decimal  @db.Decimal(12, 2)
-  status          APStatus @default(OPEN)
-  terms           String?
-  notes           String?
-  invoiceReceived Boolean @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  tenantId        String
+**IMPORTANT**: Phase 0 is COMPLETE. Proceed to Phase 1.
 
-  // Relations
-  lines           APBillLine[]
-  payments        APPayment[]
-  journalEntryId  String?
-}
+### Phase 0: Fix IR Generation (COMPLETED 2026-02-11)
 
-model APPayment {
-  id              String   @id @default(uuid())
-  paymentNumber   String   @unique
-  billId          String
-  bill            APBill @relation(fields: [billId], references: [id])
-  paymentDate     DateTime
-  paymentMethod   PaymentMethod
-  amount          Decimal  @db.Decimal(12, 2)
-  reference       String?
-  notes           String?
-  journalEntryId  String?
-  createdAt       DateTime @default(now())
-  tenantId        String
-}
+**Objective**: Ensure all 6 manifests compile into single IR with all entities
 
-enum APStatus {
-  DRAFT
-  OPEN
-  PARTIAL
-  PAID
-  VOID
-  OVERDUE
-}
-```
+**COMPLETED ACTIONS**:
 
-**API Endpoints Needed:**
-- `GET /api/accounting/ap/bills` - List with aging
-- `POST /api/accounting/ap/bills` - Create bill
-- `GET /api/accounting/ap/bills/[id]` - Get single bill
-- `POST /api/accounting/ap/payments` - Record payment
-- `GET /api/accounting/ap/aging-report` - Vendor aging
-- `GET /api/accounting/ap/vendor-terms` - Payment terms analysis
+1. **Rewrote scripts/manifest/compile.mjs**:
+   - Uses programmatic `compileToIR` API instead of CLI `--glob`
+   - Compiles each manifest individually and merges results
+   - Properly combines all entities, commands, stores, events, policies
 
-**UI Components Needed:**
-- AP bills page (`/accounting/payables`)
-- Bill creation form (vendor, line items, terms)
-- Bill detail view with payment history
-- Payment recording form
-- Vendor aging report
+2. **Rewrote scripts/manifest/build.mjs**:
+   - Same programmatic approach as compile.mjs
+   - Generates code from merged IR using CLI `manifest generate`
 
-**Complexity:** High | **Dependencies:** Chart of Accounts, Journal Entries, Vendor model
-
----
-
-#### Phase 4: Integration & Reconciliation - Priority: MEDIUM
-
-**4.1 Bank Reconciliation**
-
-**Database Schema Required:**
-```prisma
-model BankAccount {
-  id              String   @id @default(uuid())
-  accountNumber   String   @unique
-  accountName     String
-  accountType     BankAccountType
-  balanceLastReconciled Decimal @db.Decimal(12, 2)
-  lastReconciledDate DateTime?
-  isActive        Boolean @default(true)
-  tenantId        String
-
-  // Relations
-  reconciliations BankReconciliation[]
-}
-
-model BankReconciliation {
-  id              String   @id @default(uuid())
-  bankAccountId   String
-  bankAccount     BankAccount @relation(fields: [bankAccountId], references: [id])
-  reconciliationDate DateTime
-  statementBalance Decimal @db.Decimal(12, 2)
-  bookBalance     Decimal @db.Decimal(12, 2)
-  difference      Decimal @db.Decimal(12, 2)
-  status          RecStatus @default(IN_PROGRESS)
-  reconciledBy    String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  // Relations
-  clearedItems    ReconciledItem[]
-}
-
-model ReconciledItem {
-  id              String   @id @default(uuid())
-  reconciliationId String
-  reconciliation  BankReconciliation @relation(fields: [reconciliationId], references: [id])
-  itemType        ClearableType
-  itemId          String
-  amount          Decimal @db.Decimal(12, 2)
-  clearedAt       DateTime @default(now())
-}
-
-enum BankAccountType {
-  CHECKING
-  SAVINGS
-  CREDIT_CARD
-  LINE_OF_CREDIT
-}
-
-enum RecStatus {
-  IN_PROGRESS
-  BALANCED
-  DISCREPANCY
-}
-
-enum ClearableType {
-  JOURNAL_LINE
-  AR_PAYMENT
-  AP_PAYMENT
-}
-```
-
-**API Endpoints Needed:**
-- `GET /api/accounting/reconciliation` - List reconciliations
-- `POST /api/accounting/reconciliation` - Start new reconciliation
-- `PUT /api/accounting/reconciliation/[id]` - Update/clear items
-- `POST /api/accounting/reconciliation/[id]/complete` - Finalize
-
-**UI Components Needed:**
-- Bank reconciliation page (`/accounting/reconciliation`)
-- Statement balance input
-- List of uncleared items (deposits, payments, journal entries)
-- Click to clear items
-- Running balance display
-- Difference calculation
-
-**Reconciliation Process:**
-1. Enter statement balance and date
-2. System shows book balance and difference
-3. User clears items that appear on statement
-4. System updates difference in real-time
-5. When difference = 0, reconciliation is complete
-
-**Complexity:** High | **Dependencies:** Journal Entries, AR/AP
-
----
-
-**4.2 QuickBooks Full Integration**
-
-**Scope:** Beyond existing payroll integration to full accounting sync
-
-**Features Needed:**
-- Chart of Accounts import from QuickBooks
-- Two-way sync for journal entries
-- Invoice/bill export to QuickBooks
-- Payment import from QuickBooks
-- Reconciliation data sync
-
-**API Integration:**
-- QuickBooks Online API
-- OAuth 2.0 authentication
-- Webhook support for real-time sync
-- Batch operations for performance
-
-**UI Components Needed:**
-- QuickBooks connection settings
-- Sync status dashboard
-- Sync history and error logs
-- Mapping configuration (accounts, classes, locations)
-
-**Complexity:** High | **Dependencies:** All accounting features
-
----
-
-#### Phase 5: Advanced Features - Priority: LOW
-
-**5.1 Multi-Entity Consolidation**
-
-For multi-tenant or multi-location scenarios requiring consolidated financial statements.
-
-**Database Schema Required:**
-```prisma
-model Entity {
-  id              String   @id @default(uuid())
-  entityName      String
-  legalName       String?
-  taxId           String?
-  parentId        String?
-  currency        String   @default("USD")
-  isActive        Boolean  @default(true)
-  tenantId        String
-}
-
-model ConsolidationEntry {
-  id              String   @id @default(uuid())
-  consolidationDate DateTime
-  entityId        String
-  periodStart     DateTime
-  periodEnd       DateTime
-  status          string
-  consolidatedBy  String
-  createdAt       DateTime @default(now())
-}
-```
-
-**Features:**
-- Intercompany transaction elimination
-- Currency translation
-- Consolidated financial statements
-- Entity-level reporting with roll-up
-
-**Complexity:** Very High | **Dependencies:** All accounting features
-
----
-
-**5.2 Budgeting & Forecasting**
-
-**Database Schema Required:**
-```prisma
-model Budget {
-  id              String   @id @default(uuid())
-  budgetName      String
-  fiscalYear      Int
-  status          BudgetStatus @default(DRAFT)
-  startDate       DateTime
-  endDate         DateTime
-  createdBy       String
-  approvedBy      String?
-  approvedAt      DateTime?
-  tenantId        String
-
-  // Relations
-  lines           BudgetLine[]
-}
-
-model BudgetLine {
-  id              String   @id @default(uuid())
-  budgetId        String
-  budget          Budget @relation(fields: [budgetId], references: [id])
-  accountId       String
-  account         ChartOfAccount @relation(fields: [accountId], references: [id])
-  period          String   // "2024-01", "2024-Q1", etc.
-  amount          Decimal  @db.Decimal(12, 2)
-  notes           String?
-}
-```
-
-**Features:**
-- Budget creation by account and period
-- Budget vs actual reports
-- Variance analysis
-- Rolling forecasts
-- Workflow for approval
-
-**Complexity:** Medium | **Dependencies:** Chart of Accounts, Journal Entries
-
----
-
-### Implementation Priority Summary
-
-1. **~~Phase 1.1:~~ Chart of Accounts (Medium complexity) - ~~Foundation for everything~~ COMPLETE ✅
-2. **Phase 1.2:** Journal Entries & GL (High complexity) - Double-entry bookkeeping
-3. **Phase 2:** Financial Statements (High complexity) - Reporting output
-4. **Phase 3.1:** Accounts Receivable (High complexity) - Invoicing & collections
-5. **Phase 3.2:** Accounts Payable (High complexity) - Bills & payments
-6. **Phase 4.1:** Bank Reconciliation (High complexity) - Accuracy verification
-7. **Phase 4.2:** QuickBooks Integration (High complexity) - External sync
-8. **Phase 5.1:** Multi-Entity (Very High) - Advanced consolidation
-9. **Phase 5.2:** Budgeting (Medium) - Planning & forecasting
-
-**Recommended Starting Point:** ~~Phase 1.1 (Chart of Accounts)~~ COMPLETE -> Phase 1.2 (Journal Entries)
-
-**Total Estimated Effort:** 8-12 weeks for Phases 1-4 (core accounting features)
-
-**Complexity:** High | **Dependencies:** Core accounting schema migration
-
----
-
-#### 6.4 Kitchen Analytics
-
-**Specs:** `analytics-kitchen.md`
-
-**Status:** 95% Complete (+85% from trend visualization implementation)
-
-**Database:** Uses existing models (KitchenTask, KitchenTaskProgress, PrepTask, WasteEntry, InventoryTransaction)
-
-**API Endpoints:** Complete
-**Location:** `apps/app/app/(authenticated)/analytics/kitchen/lib/use-kitchen-analytics.ts`
-- Station completion rate calculations
-- Daily completion trends by station
-- Trend data aggregation
-- Exports `KitchenTrend` and `KitchenTrendStation` types
-
-**UI Components:** Complete
-**Location:** `apps/app/app/(authenticated)/analytics/kitchen/page.tsx`
-- Trend visualization section with LineChart (Recharts)
-- Daily completion rate percentage by station
-- Date range filtering
-- Station-specific trend lines
-- Summary statistics cards
-
-**Features Implemented:**
-- Station completion rate tracking (percentage)
-- Trend visualization showing daily rates over time
-- Multi-station comparison on single chart
-- Interactive tooltips showing daily completion rates
-- Automatic date range selection
-- Color-coded station trend lines
-- Responsive chart design
-
-**Still Needed:**
-- Real-time updates via Ably (optional enhancement)
-- Advanced filtering options
-- Historical data export
-- Predictive analytics
-
-**Complexity:** Low | **Dependencies:** None (core functionality complete, real-time updates optional)
-
-**Validation:** All tests passing (599 tests), typecheck successful (30 packages), build successful (20 packages)
-
----
-
-### PHASE 7: INTEGRATIONS
-
-**Status: 0% Complete**
-
-#### 7.1 GoodShuffle Integration
-
-**Specs:** `goodshuffle-event-sync.md`, `goodshuffle-inventory-sync.md`, `goodshuffle-invoicing-sync.md`
-
-**Status:** 0% Complete
-
-**Database:** Missing integration models
-
-**API Endpoints:** Missing
-
-**UI Components:** Settings page placeholder exists
-**Location:** `apps/app/app/(authenticated)/settings/integrations/page.tsx`
-
-**Still Needed:**
-- GoodShuffle connection models
-- Sync operations (events, inventory, invoicing)
-- Mapping configuration
-- Error handling
-
-**Complexity:** High | **Dependencies:** GoodShuffle API access
-
----
-
-#### 7.2 Nowsta Integration
-
-**Specs:** `nowsta-integration.md`
-
-**Status:** 0% Complete
-
-**Database:** Missing Nowsta employee/shift models
-
-**API Endpoints:** Missing
-
-**UI Components:** Settings page placeholder exists
-
-**Still Needed:**
-- Nowsta employee mapping
-- Shift import/export
-- Synchronization logic
-- Error handling
-
-**Complexity:** High | **Dependencies:** Nowsta API access
-
----
-
-#### 7.3 QuickBooks Export
-
-**Specs:** `quickbooks-invoice-export.md`, `quickbooks-bill-export.md`, `quickbooks-payroll-export.md`
-
-**Status:** 0% Complete
-
-**Database:** Missing QuickBooks models
-
-**API Endpoints:** Missing
-
-**UI Components:** Settings page placeholder exists
-
-**Still Needed:**
-- Invoice export
-- Bill export
-- Payroll export
-- Connection management
-
-**Complexity:** High | **Dependencies:** QuickBooks API access
-
----
-
-#### 7.4 Outbound Webhook System
-
-**Specs:** `webhook-outbound-integrations.md`
-
-**Status:** 0% Complete
-
-**Database:** Missing webhook models
-
-**API Endpoints:** Missing
-
-**UI Components:** Webhooks page placeholder exists
-**Location:** `apps/app/app/(authenticated)/webhooks/page.tsx`
-
-**Package Exists:** `packages/webhooks/` (Svix integration)
-
-**Still Needed:**
-- Webhook configuration
-- Payload handling
-- Delivery logging
-- Retry mechanisms
-
-**Complexity:** Medium | **Dependencies:** Svix package utilization
-
----
-
-### PHASE 8: PLATFORM FEATURES
-
-**Status: 10% Complete**
-
-#### 8.1 Automated Email Workflows
-
-**Specs:** `automated-email-workflows.md`
-
-**Status:** 0% Complete
-
-**Database:** Missing EmailWorkflow, EmailTrigger models
-
-**API Endpoints:** Missing
-
-**UI Components:** Missing
-
-**Package Exists:** `packages/email/` (Resend integration)
-
-**Still Needed:**
-- Workflow engine
-- Trigger system
-- Template integration
-- Queue management
-
-**Complexity:** High | **Dependencies:** Email templates
-
----
-
-#### 8.2 Bulk Edit Operations
-
-**Specs:** `bulk-edit-operations.md`
-
-**Status:** 0% Complete
-
-**Database:** Missing bulk operation models
-
-**API Endpoints:** Missing
-
-**UI Components:** Missing
-
-**Still Needed:**
-- Multi-select interface
-- Bulk edit modal
-- Preview component
-- Undo functionality
-
-**Complexity:** Medium | **Dependencies:** None
-
----
-
-#### 8.3 Bulk Grouping Operations
-
-**Specs:** `bulk-grouping-operations.md`
-
-**Status:** 0% Complete
-
-**Database:** Missing EntityGroup models
-
-**API Endpoints:** Missing
-
-**UI Components:** Missing
-
-**Still Needed:**
-- Group creation interface
-- Visual clustering
-- Drag-and-drop handling
-- Nested groups
-
-**Complexity:** Medium | **Dependencies:** Command board foundation
-
----
-
-#### 8.4 Email Template System
-
-**Specs:** `email-template-system.md`
-
-**Status:** 0% Complete
-
-**Database:** Missing EmailTemplate models
-
-**API Endpoints:** Missing
-
-**UI Components:** Missing
-
-**Package Exists:** `apps/email/` (React Email templates)
-
-**Still Needed:**
-- Template editor
-- Merge fields
-- Preview system
-- Version control
-
-**Complexity:** Medium | **Dependencies:** None
-
----
-
-#### 8.5 SMS Notification System
-
-**Specs:** `sms-notification-system.md`
-
-**Status:** 0% Complete
-
-**Database:** Missing SMS models
-
-**API Endpoints:** Missing
-
-**UI Components:** Missing
-
-**Still Needed:**
-- SMS provider integration
-- Template system
-- Delivery tracking
-- Preferences management
-
-**Complexity:** Medium | **Dependencies:** SMS provider selection
-
----
-
-## CROSS-CUTTING CONCERNS
-
-### 1. Real-time Infrastructure ✅ 100% Complete
-
-**Package:** `packages/realtime/`
-
-**Status:** Testing complete - production ready
-
-**Verified:** Complete implementation with Ably integration
-- Files include: src/index.ts, src/outbox/, src/channels/, src/events/, README.md
-- Outbox pattern implemented with OutboxEvent model
-- Publisher endpoint exists at apps/api/app/outbox/publish/route.ts
-- Ably authentication endpoint exists
-
-**Impact:**
-- Kitchen task claims/progress - infrastructure ready
-- Event board updates - infrastructure ready
-- Scheduling changes - infrastructure ready
-- Command board collaboration - infrastructure ready
-- **Stock level updates** ✅ COMPLETE (4 new event types implemented)
-  - `InventoryStockAdjustedEvent` - Manual stock adjustments
-  - `InventoryStockConsumedEvent` - Stock consumption by prep tasks
-  - `InventoryStockReceivedEvent` - Stock received from purchase orders
-  - `InventoryStockWastedEvent` - Stock wasted
-
-**Testing Complete** ✅ (2026-02-10):
-- 258 unit tests passing (T015-T016)
-- **Integration testing complete** ✅ (2026-02-10):
-  - 67 new integration tests created for Strategic Command Board real-time features
-  - 18 tests for Ably authentication (`apps/api/__tests__/api/ably/auth.integration.test.ts`)
-  - 30 tests for outbox publish operations (`apps/api/__tests__/outbox/publish.integration.test.ts`)
-  - 19 tests for multi-user collaboration (`apps/api/__tests__/command-board/collaboration.integration.test.ts`)
-  - Test coverage includes: token generation, message publishing, real-time card synchronization, multi-user conflict resolution, connection line updates, board state synchronization
-  - Total test count now at 930+ tests
-  - All validation passing (check: 30 packages, test: 930+ tests, build: 20 packages)
-
-**Spec:** `command-board-realtime-sync.md`
-
-**Complexity:** HIGH
-
----
-
-### 2. AI Integration
-
-**Package:** `@repo/ai`
-
-**Status:** GPT-4o-mini integration complete ✅
-
-**Implemented:**
-- GPT-4o-mini model integration via Vercel AI SDK ✅
-- Agent execution handler makes real LLM API calls ✅
-- Proper error handling and progress events ✅
-- **AI Event Summaries API** ✅ (2026-02-10)
-  - GET /api/ai/summaries/[eventId] - Generate event summaries
-  - 200-400 word concise summaries for team briefings
-  - Includes allergens, dietary restrictions, critical safety info
-  - Fallback mechanism for reliability
-- **AI Suggested Next Actions API** ✅
-  - GET /api/ai/suggestions - Generate operational suggestions
-  - 7 suggestion types with priority ranking
-  - Analyzes events, tasks, inventory, staffing
-- **AI Bulk Task Generation API** ✅
-  - POST /api/kitchen/ai/bulk-generate/prep-tasks
-  - Generate prep tasks from event menu using AI
-  - Review before save workflow
-
-**Still Needed:**
-- Conflict detection features (equipment, venue, inventory)
-- Kitchen-specific task analytics and optimization
-
-### 3. PDF Generation ✅ COMPLETE
-
-**Status:** @react-pdf/renderer has been selected and implemented
-
-**Implemented:**
-- @react-pdf.renderer installed for server-side PDF generation
-- New `@repo/pdf` package created with PDF generation utilities and template components
-- PDF export endpoints:
-  - GET /api/events/[eventId]/battle-board/pdf
-  - GET /api/crm/proposals/[id]/pdf
-  - GET /api/events/contracts/[id]/pdf
-- Template components for Battle Boards, Proposals, and Contracts
-- Client and server-side PDF generation support
-
-**Note:** Remaining build issues related to workspace linking need to be resolved for production use
-
-**Complexity:** MEDIUM (now complete)
-- Export endpoints
-
-**Complexity:** MEDIUM
-
----
-
-### 4. Mobile Optimization
-
-**Status:** Partial
-
-**Completed:**
-- Mobile task claiming
-- Mobile time clock
-- Mobile recipe viewer ✅ COMPLETE (2026-02-10)
-
-**Missing:**
-- Mobile-optimized dashboards
-- Offline support expansion
-
-**Complexity:** MEDIUM
-
----
-
-### 5. Email Workflows
-
-**Status:** Basic Resend integration only
-
-**Package:** `packages/email/`
-
-**Missing:**
-- Automated workflow engine
-- Trigger system
-- Template management UI
-
-**Complexity:** HIGH
-
----
-
-## PRIORITIZED ACTION LIST
-
-### P0: Critical Blockers (Must resolve for production)
-
-1. ~~**Implement `packages/realtime` with Ably**~~ ✅ COMPLETE (2026-02-10)
-   - ~~Empty package is blocking all real-time features~~
-   - ~~Outbox pattern exists in schema but no implementation~~
-   - **COMPLETED:** Package has complete implementation with Ably integration
-   - **Testing Complete:** 258 unit tests passing, integration testing framework in place (12/15 tests passing)
-
-2. ~~**Add GPT-4o-mini integration to `@repo/ai`**~~ ✅ COMPLETE
-   - **COMPLETED:** GPT-4o-mini integration is now fully functional
-
-3. ~~**Add PDF generation library**~~ ✅ COMPLETE
-   - **COMPLETED:** @react-pdf.renderer implemented with full PDF export functionality
-
----
-
-### P1: High Priority (Core functionality gaps)
-
-4. ~~**Allergen Tracking Implementation**~~ ✅ COMPLETE
-   - Models exist, logic and UI fully implemented
-   - Real API integration with automated conflict detection
-   - **COMPLETED:** 100% complete with automated warning generation
-
-5. ~~**Strategic Command Board Type Alignment**~~ ✅ COMPLETE (2026-02-10)
-   - REST API endpoints are complete ✅
-   - Connection/Relationship types aligned between API and UI ✅
-   - Semantic relationship types: `client_to_event`, `event_to_task`, `task_to_employee`, `event_to_inventory`, `generic`
-   - API types include `RelationshipConfig` for visual rendering
-   - UI server actions and REST API use consistent type system
-   - **Integration testing for real-time features** ✅ COMPLETE (2026-02-10)
-     - 67 new integration tests created (18 for Ably auth, 30 for outbox publish, 19 for multi-user collaboration)
-     - Files: `apps/api/__tests__/api/ably/auth.integration.test.ts`, `apps/api/__tests__/outbox/publish.integration.test.ts`, `apps/api/__tests__/command-board/collaboration.integration.test.ts`
-     - Total test count now at 930+ tests
-     - All validation passing (check, test, build)
-
-6. ~~**Bulk Auto-Assignment Endpoint**~~ ✅ COMPLETE (2026-02-10)
-   - **COMPLETED:** POST /api/staff/shifts/bulk-assignment endpoint implemented
-   - Supports bulk assignment with optional employee selection
-   - Dry-run mode for previewing assignments
-   - High confidence filtering option
-   - Labor budget validation integrated
-   - Algorithm and UI are both complete ✅ (2026-02-10)
-
-7. ~~**Auto-Assignment System UI**~~ ✅ COMPLETE (2026-02-10)
-   - **COMPLETED:** UI components verified as implemented and integrated
-   - Existing assignment interface is functional
-   - Backend algorithm + UI components both complete
-   - Full user workflow operational
-
-8. **AI Conflict Detection Enhancements** ~~✅ COMPLETE~~ (2026-02-10)
-   - **COMPLETED:** Venue conflict detection implementation
-     - Added `detectVenueConflicts()` function to detect multiple events at same venue on same date
-     - SQL query groups events by venue and date, identifying conflicts
-     - Severity based on event count (critical for >2 events, high for 2 events)
-     - Includes all conflicting event IDs and titles in conflict details
-   - **COMPLETED:** Enhanced AI resolution suggestions
-     - Added `ResolutionOption` interface with:
-       - `type`: "reassign" | "reschedule" | "substitute" | "cancel" | "split"
-       - `description`: Specific action to resolve
-       - `affectedEntities`: Entities affected by this resolution
-       - `estimatedImpact`: "low" | "medium" | "high"
-     - AI service now generates actionable resolution options for detected conflicts
-     - Venue conflicts include reschedule options with impact assessment
-   - **COMPLETED:** Updated type definitions
-     - `ConflictType` now includes "venue" type
-     - `affectedEntities` now includes "venue" entity type
-     - Both type files updated: `apps/api/app/api/conflicts/detect/types.ts` and `apps/api/app/conflicts/types.ts`
-     - Zod schemas updated to validate new entity types and resolution options
-   - **Files Modified:**
-     - `apps/api/app/api/conflicts/detect/route.ts` - Added venue conflict detection (lines 230-316)
-     - `apps/api/app/conflicts/service.ts` - Enhanced AI service with resolution options (lines 110-121, 189-206)
-     - `apps/api/app/api/conflicts/detect/types.ts` - Updated ConflictType and ResolutionOption interface (lines 13-47)
-     - `apps/api/app/conflicts/types.ts` - Updated type definitions and Zod schemas (lines 13-103)
-   - **Test Status:** 534 tests passing, build successful
-   - **Validation:** All validations passing (check: 30 packages, test: 534 tests, build: 20 packages)
-
----
-
-### P2: Medium Priority (Important for production readiness)
-
-9. ~~**Battle Board Enhancements**~~ ✅ COMPLETE
-   - PDF export (via @react-pdf/renderer)
-   - Dependency lines (SVG visualization)
-   - Critical path visualization (CPM algorithm implemented)
-   - **COMPLETED:** Battle Board is now 95% complete with full CPM implementation
-
-10. ~~**Event Import/Export**~~ ✅ COMPLETE (2026-02-10)
-   - **COMPLETED:** CSV import, PDF import, CSV export, PDF export all implemented
-   - Client-side server actions work correctly
-   - @repo/event-parser integration complete
-   - **COMPLETED:** Direct API endpoint for server-to-server imports ✅ (2026-02-10)
-     - POST /api/events/import/server-to-server
-     - Accepts JSON payload with event data, dishes, recipes, ingredients
-     - Returns created event with all related entities
-   - Full import/export functionality now complete
-
-11. ~~**Payroll Calculation Engine**~~ ✅ COMPLETE (2026-02-10)
-   - ~~Needs schema migration~~ ✅ COMPLETE (Payroll models exist)
-   - ~~Calculation logic and UI~~ ✅ COMPLETE (Full implementation with approval workflow)
-   - **COMPLETED:** Payroll Calculation Engine with full approval workflow, bulk operations, and audit trail
-
-12. **Labor Budget Management** ~~✅ COMPLETE~~
-   - ~~Needs schema migration~~ ✅ COMPLETE (LaborBudget model exists)
-   - ~~Budget creation and alerts~~ ✅ COMPLETE (Full CRUD APIs and UI implemented)
-   - All core functionality working, advanced features (forecasting, scenarios) still needed
-
-13. **Warehouse Shipment Tracking** ~~✅ PARTIALLY COMPLETE~~
-   - ~~Needs schema migration~~ ✅ COMPLETE (Shipment, ShipmentItem models exist)
-   - ~~Full tracking workflow~~ ✅ COMPLETE (Full CRUD APIs implemented)
-   - ~~Packing list PDF generation~~ ✅ COMPLETE (2026-02-10)
-     - PDF template with shipment info, locations, items table, and summary
-     - API endpoint at GET /api/shipments/[id]/pdf
-     - Download buttons in shipments list and detail view
-     - Support for both base64 and direct download responses
-   - **STILL NEEDED:** Carrier integrations (FedEx, UPS)
-
-14. ~~**Stock Level Management UI**~~ ✅ COMPLETE (2026-02-10)
-   - ~~Models exist, needs full implementation~~ ✅ COMPLETE (Automatic stock updates functional)
-   - ~~Dashboard and real-time status~~ ✅ COMPLETE (Real-time events implemented)
-   - ~~Dashboard UI, transaction history viewer, manual adjustment UI~~ ✅ COMPLETE (All UI components implemented)
-   - **COMPLETE:**
-     - Waste Entries → Stock Decrement (Manifest integration)
-     - Event Usage (Prep Tasks) → Stock Decrement (ingredient consumption)
-     - Receiving (Purchase Orders) → Stock Increment (individual quantity updates)
-     - Stock Level Events → Ably Realtime (4 event types)
-     - Dashboard UI with summary stats and stock items table
-     - Transaction history viewer with filtering
-     - Manual adjustment operations UI with reason codes
-   - **OPTIONAL:** Real-time Ably client-side integration for live stock updates (nice-to-have)
-
----
-
-### P3: Lower Priority (Enhancements)
-
-15. ~~**Mobile Recipe Viewer**~~ ✅ COMPLETE (2026-02-10)
-   - Mobile-optimized recipe display complete
-   - Offline support with localStorage caching (7-day expiry)
-   - Recipe scaling functionality (0.5x, 1x, 2x, 3x presets)
-   - Online/offline status tracking with visual indicators
-   - Manual refresh button for updating cached data
-   - Hands-free navigation preserved
-
-16. **Waste Tracking** ~~✅ COMPLETE~~ (2026-02-10)
-   - ~~Integration with inventory~~ ✅ Complete
-   - ~~Dynamic inventory search with autocomplete~~ ✅ Complete
-   - ~~Confirmation dialogs~~ ✅ Complete
-   - ~~Estimated cost calculation~~ ✅ Complete
-   - ~~Form validation~~ ✅ Complete
-
-17. **Cycle Counting Implementation**
-   - Models exist, needs UI and workflow
-   - Estimated: 1 week
-
-18. **Finance Analytics (Core Accounting Features)**
-   - Event profitability, financial dashboard, and sales reporting ✅ Complete
-   - Chart of Accounts (Phase 1.1) ✅ Complete
-   - Still needs: Journal Entries, financial statements, AR/AP
-   - Estimated: 1-2 weeks for Phase 1.2 (Journal Entries & GL)
-
-19. ~~**Kitchen Analytics**~~ ✅ COMPLETE (2026-02-10)
-   - Performance metrics ✅
-   - Waste analytics ✅
-   - Trend visualization with LineChart ✅
-   - Station completion rate tracking ✅
-   - **COMPLETED:** 95% complete with trend visualization showing daily completion rates by station
-
-20. **Depletion Forecasting**
-   - Forecast calculation
-   - Dashboard and alerts
-   - Estimated: 2 weeks
-
----
-
-### P4: Future Features (Integrations and Platform)
-
-21. **GoodShuffle Integration**
-   - Event, inventory, invoicing sync
-   - Estimated: 3-4 weeks
-
-22. **Nowsta Integration**
-   - Employee and shift sync
-   - Estimated: 2-3 weeks
-
-23. **QuickBooks Export**
-   - Invoice, bill, payroll export
-   - Estimated: 3-4 weeks
-
-24. **Outbound Webhook System**
-   - Utilize existing Svix package
-   - Estimated: 1-2 weeks
-
-25. **Automated Email Workflows**
-   - Workflow engine
-   - Estimated: 2-3 weeks
-
-26. **Email Template System**
-   - Template editor UI
-   - Estimated: 1-2 weeks
-
-27. **SMS Notification System**
-   - Provider integration
-   - Estimated: 2 weeks
-
-28. **Bulk Edit Operations**
-   - Multi-select and bulk actions
-   - Estimated: 1-2 weeks
-
-29. **Bulk Grouping Operations**
-   - Visual grouping
-   - Estimated: 1-2 weeks
-
----
-
-## SCHEMA MIGRATIONS NEEDED
-
-### Priority 1 (P1 Features)
-
-1. **Employee Skills & Seniority**
-   ```prisma
-   model EmployeeSkill {
-     tenantId     String   @map("tenant_id")
-     employeeId   String   @map("employee_id")
-     skillId      String   @map("skill_id")
-     proficiency  Int      // 1-5 scale
-     certifiedAt  DateTime?
-     certifiedBy  String?
-     // ... indexes
-   }
-
-   model EmployeeSeniority {
-     tenantId    String   @map("tenant_id")
-     employeeId  String   @map("employee_id")
-     level       String
-     rank        Int
-     effectiveAt DateTime
-   }
+3. **Updated manifest.config.yaml**:
+   ```yaml
+   src: "packages/manifest-adapters/manifests/*.manifest"
+   output: "packages/manifest-ir/ir/kitchen/kitchen.ir.json"
    ```
 
-2. **Labor Budget**
-   ```prisma
-   model LaborBudget {
-     tenantId        String   @map("tenant_id")
-     id              String   @default(uuid())
-     name            String
-     periodStart     Date     @map("period_start")
-     periodEnd       Date     @map("period_end")
-     targetBudget    Decimal  @map("target_budget")
-     actualSpend     Decimal? @map("actual_spend")
-     // ... indexes
-   }
+4. **Updated scripts/manifest/check.mjs**:
+   - Fixed all paths to reference `manifest-adapters`
+   - Validates IR contains all entities
+
+**VALIDATION RESULTS**:
+- IR now contains 12 entities (previously only 1): Dish, Ingredient, InventoryItem, Menu, MenuDish, PrepList, PrepListItem, PrepTask, Recipe, RecipeIngredient, RecipeVersion, Station
+- All 534 tests passing
+
+### Phase 1: Resolve Critical Conflicts (PATH CLEANUP)
+
+**Objective**: Single source of truth for manifests and routes
+
+1. **Delete deprecated manifest-sources**:
+   ```bash
+   rm -rf packages/manifest-sources
    ```
 
-### Priority 2 (P2 Features)
-
-3. **Payroll Models**
-   ```prisma
-   model PayRate {
-     tenantId    String   @map("tenant_id")
-     employeeId  String   @map("employee_id")
-     rateType    String   // hourly, salary, piece_rate
-     amount      Decimal
-     effectiveAt DateTime
-   }
-
-   model PayrollRun {
-     tenantId      String   @map("tenant_id")
-     id            String   @default(uuid())
-     periodStart   Date
-     periodEnd     Date
-     status        String
-     totalPayroll  Decimal
-     processedAt   DateTime?
-   }
-
-   model TimecardApproval {
-     timecardId  String
-     approverId  String
-     status      String
-     approvedAt  DateTime?
-   }
+2. **Delete redundant inventoryitem domain**:
+   ```bash
+   rm -rf apps/api/app/api/inventoryitem
    ```
 
-4. **Warehouse Shipment**
-   ```prisma
-   model Shipment {
-     tenantId      String   @map("tenant_id")
-     id            String   @default(uuid())
-     eventId       String?  @map("event_id")
-     status        String
-     shippedAt     DateTime?
-     deliveredAt   DateTime?
-   }
-
-   model ShipmentItem {
-     shipmentId    String   @map("shipment_id")
-     inventoryId   String   @map("inventory_id")
-     quantity      Decimal
-     // ...
-   }
+3. **Delete redundant prepTask domain**:
+   ```bash
+   rm -rf apps/api/app/api/prepTask
    ```
 
-### Priority 3 (P3 Features)
+4. **Fix CI/CD paths** in `.github/workflows/manifest-ci.yml`:
+   - Change `packages/kitchen-ops/manifests/**` → `packages/manifest-adapters/manifests/**`
+   - Change `packages/manifest/bin/compile.ts` → `scripts/manifest/compile.mjs`
+   - Remove `packages/manifest/**` filter
 
-5. **Financial Analytics Models**
-6. **Email Workflow Models**
-7. **Webhook Models**
-8. **Integration Models** (GoodShuffle, Nowsta, QuickBooks)
+5. **Fix validation script** at `scripts/validate-manifests.mjs`:
+   - Already correctly references `packages/manifest-adapters/manifests`
 
----
+### Phase 2: Documentation and Consistency
 
-## TECHNICAL DEBT TRACKER
+**Objective**: All docs reflect actual architecture
 
-### Architecture Issues
+1. **Update docs/manifest/structure.md**:
+   - Change manifest-sources reference to manifest-adapters
+   - Remove DEPRECATED label from active location
 
-1. ~~**`packages/realtime` is empty**~~ ✅ RESOLVED (2026-02-10)
-   - Severity: ~~CRITICAL~~
-   - Impact: ~~All real-time features blocked~~
-   - Action: ~~Implement Ably integration~~
-   - **COMPLETED:** Package has complete implementation with Ably integration
-   - **Testing Complete:** 258 unit tests passing, integration testing framework in place (12/15 tests passing)
+2. **Update docs/manifest/generation.md**:
+   - Correct source paths
 
-2. ~~**CRITICAL BUG: OutboxEvent database client mismatch**~~ ✅ RESOLVED
-   - Severity: ~~CRITICAL~~
-   - Impact: ~~Outbox publish endpoint will fail when called~~
-   - **COMPLETED:** OutboxEvent model exists in Prisma schema and is properly included in generated client
-   - Outbox pattern is fully implemented with publisher endpoint and Ably authentication
+3. **Update docs/manifest/README.md**:
+   - Reflect canonical locations
 
-3. ~~**`@repo/ai` has no LLM provider**~~ ✅ RESOLVED
-   - Severity: ~~CRITICAL~~
-   - Impact: ~~All AI features non-functional~~
-   - Action: ~~Add GPT-4o-mini integration~~
-   - **COMPLETED:** GPT-4o-mini integration is now fully functional
+4. **Update docs/manifest/INTEGRATION.md**:
+   - Clarify runtime factory architecture
 
-4. ~~**No PDF generation capability**~~ ✅ RESOLVED
-   - Severity: ~~HIGH~~
-   - Impact: ~~Cannot export battle boards, proposals, contracts~~
-   - Action: ~~Add PDF library~~
-   - **COMPLETED:** @react-pdf/renderer implemented with full PDF export functionality
+5. **Update docs/manifest/FILES_TO_EDIT.md**:
+   - Add inventoryitem and prepTask to DO NOT EDIT list
 
-5. **Duplicate Prisma configuration files in root (LEGACY)**
-  - Severity: LOW
-  - Impact: Confusion about which Prisma schema is authoritative
-  - Status: Resolved (the root `prisma/` folder and `prisma.config.ts` stub have already been removed)
-  - Keep: `packages/database/prisma/schema.prisma` (the real schema)
-  - Action: None (documented for historical clarity)
+### Phase 3: Missing Prisma Stores (DATA LOSS FIX)
 
-6. ~~**Manifest Runtime Test Failures**~~ ✅ RESOLVED (2026-02-10)
-   - Severity: ~~CRITICAL~~
-   - Impact: ~~All manifest runtime tests failing, blocking CI/CD~~
-   - Location: `apps/api/__tests__/kitchen/` - multiple test files
-   - Root Cause: IR compiler not populating entity.command arrays, causing `inferOwnerEntityName` to fail
-   - Fix Applied: Added `KNOWN_COMMAND_OWNERS` mapping in `packages/manifest-adapters/src/ir-contract.ts`
-   - **COMPLETED:** All 599 API tests now passing
+**Objective**: Persistent storage for Station and InventoryItem
 
-7. ~~**Code Quality Issues**~~ ✅ RESOLVED (2026-02-10)
-   - Severity: ~~MEDIUM~~
-   - Impact: ~~Build failures, linting errors, type safety issues~~
-   - **COMPLETED:** All validation passing
-     - pnpm check: PASSED (30 packages)
-     - pnpm test: PASSED (599 tests)
-     - pnpm build: PASSED (20 packages)
-   - Fixes Applied:
-     - Fixed non-null assertions (.ir!) in test files - replaced with proper null checking
-     - Fixed unused variables and function parameters (7 instances)
-     - Fixed regex performance issue - moved UUID regex to top-level constant
-     - Fixed TypeScript compilation error in Plasmic types - updated searchParams type to Promise
-     - Fixed TypeScript error in sales dashboard - used delete operator instead of undefined assignment
-     - Fixed import order mismatch in golden snapshot tests
-     - Fixed ES2022 Array.at() issue in sales-reporting - replaced with ES2020 compatible syntax
+1. **Add StationPrismaStore** to `packages/manifest-adapters/src/prisma-store.ts`
+2. **Add InventoryItemPrismaStore** to `packages/manifest-adapters/src/prisma-store.ts`
+3. **Update station-rules.manifest**:
+   - Change `store Station in memory` to `store Station in PrismaStationStore`
+4. **Update inventory-rules.manifest**:
+   - Change `store InventoryItem in memory` to `store InventoryItem in PrismaInventoryItemStore`
 
-### Schema Gaps (Remaining)
+### Phase 4: Runtime Consolidation (OPTIONAL)
 
-~~4. **Missing EmployeeSkill model**~~ ✅ RESOLVED (2026-02-10)
-   - ~~Severity: HIGH~~
-   - **RESOLVED:** Skills and EmployeeSkills models exist in schema
-   - Auto-assignment algorithm is complete, only UI is missing
+**Objective**: Single runtime factory with no duplication
 
-~~5. **Missing LaborBudget model**~~ ✅ RESOLVED (2026-02-10)
-   - ~~Severity: HIGH~~
-   - **RESOLVED:** LaborBudget model exists in schema
-   - Full CRUD APIs and UI components are complete
+1. **Decide on runtime architecture**:
+   - Option A: Keep app-lib wrapper (current - provides flexibility)
+   - Option B: Direct use of adapters (simpler, less duplication)
 
-~~6. **Missing Shipment models**~~ ✅ RESOLVED (2026-02-10)
-   - ~~Severity: MEDIUM~~
-   - **RESOLVED:** Shipment and ShipmentItem models exist in schema
-   - Full CRUD APIs are complete
-
-7. **Missing Payroll calculation models**
-   - Severity: MEDIUM
-   - Impact: Payroll is basic only
-   - Action: Create migration
-
-### UI Gaps (where API is complete)
-
-8. **Inventory Item UI incomplete**
-   - Severity: MEDIUM
-   - Impact: Core inventory features blocked
-   - Action: Complete item management UI
-
-10. **Stock Level UI incomplete**
-    - Severity: MEDIUM
-    - Impact: Cannot manage stock levels
-    - Action: Complete stock level UI
-
-### Documentation & Knowledge Tasks
-
-- **Active Schema Contract / Registry summary**
-  - Purpose: Provide a searchable, up-to-date summary of the tenant schema rules, triggers, audit fields, and ownership patterns derived from `docs/legacy-contracts/schema-contract-v2.txt` and `schema-registry-v2.txt` for quick reference (note: the legacy files remain archived for full detail).
-  - Deliverable: new Markdown doc (e.g., `docs/database-contract.md`) that links back to the archived contract/registry while highlighting the current Neon + Prisma + Clerk + Ably workflow.
-  - Next step: “Run Ralph Wiggum loop” (per internal workflow) to generate or review the doc content and capture any decisions before editing.
-  - Status: Pending
+2. **If Option A**: Document clear separation in docs/manifest/INTEGRATION.md
+3. **If Option B**: Refactor to use `@repo/manifest-adapters` directly
 
 ---
 
-## ARCHITECTURE NOTES
+## Repo Conventions and Guardrails
 
-### Real-time Architecture
+### To Prevent Conflicts From Returning:
 
-**Decision Made:** Ably is required for realtime transport per spec (outbox Ably). Liveblocks may remain for UI-only collaboration primitives.
+1. **Single Source of Truth**:
+   - All `.manifest` files live in `packages/manifest-adapters/manifests/`
+   - NO other manifest directories allowed
 
-**`packages/collaboration`** (LiveBlocks):
-- Presence/avatars/cursors
-- Selection state
-- "I'm editing this card" indicators
-- Draft/in-progress UI state
+2. **Domain Ownership Rules**:
+   - Each entity type belongs to ONE domain
+   - Auto-generated routes are NEVER hand-edited
+   - Redundant routes are deleted when discovered
 
-**`packages/realtime`** (Ably) - TO BE IMPLEMENTED:
-- Task claiming
-- Task completion
-- Assignment truth
-- System event distribution
+3. **Import Path Conventions**:
+   - `@manifest/runtime` - External dependency (from linked package)
+   - `@repo/manifest-adapters` - Local adapter package
+   - `@repo/manifest-ir` - Local IR utilities
+   - Direct file references prohibited (except in build scripts)
 
-**Outbox Pattern:**
-- OutboxEvent model exists in schema
-- Publisher needed to write to OutboxEvent
-- Worker needed to publish to Ably
-- Subscriber needed to consume from Ably
+4. **File Dependency Rules**:
+   - Use workspace references (`@repo/*`) for local packages
+   - NO `file:../../../` references except for @manifest/runtime
+   - All workspace deps declared in `package.json`
 
-### Blocker: `packages/realtime`
+5. **CI/CD Standards**:
+   - All paths must reference existing directories
+   - PR checks validate structure with `pnpm manifest:check`
 
-**Status:** Empty package directory, but treated as shared infrastructure by downstream modules.
+### Validation Checklist:
 
-- Kitchen task claims/progress, event updates, scheduling changes, and the command board collaboration all depend on Ably + outbox plumbing coming from `packages/realtime`. Building those UIs/APIs without the transport layer risks shipping fake realtime (polling/local-only state) or dead UI that never refreshes.
-- Outbox publish endpoint references `database.outboxEvent`; if `OutboxEvent` isn’t part of the generated Prisma client, the endpoint crashes immediately. That makes `packages/realtime` a runtime-risk dependency, not a future nice-to-have.
-- **Next step:** Run the Ralph Wiggum loop to design/implement the Ably/outbox stack, then lock it in before further realtime feature work proceeds. Status remains blocker until the loop confirms the plumbing exists and `OutboxEvent` is accessible.
-
-### API Architecture Compliance
-
-**Rule:** `/api/**` must be implemented ONLY in `apps/api`
-
-**Status:** Fully compliant ✅ (2026-02-10)
-- All 41 API routes migrated to `apps/api/app/api/`
-- Events: 11 routes (guests, allergens, contracts, imports, documents, warnings)
-- Kitchen: 26 routes (prep-lists, tasks, recipes, manifest, allergens, overrides)
-- Previous migrations: Analytics (2), Locations (1), Timecards (3), Collaboration (1)
-- Build conflicts resolved (contractId vs id, recipeVersionId vs recipeId)
-- Full architecture compliance achieved
-
-### Multi-tenancy Pattern
-
-**Rule:** All tenant-scoped tables include `tenantId` column
-
-**Status:** Correctly implemented
-- All tenant_* schemas use tenantId
-- Indexes on tenantId for isolation
-
-### Database Architecture: Prisma + Neon (NOT Supabase)
-
-**Stack:** Neon (serverless Postgres) + Prisma ORM + Clerk Auth
-
-- **Migration Authority: Prisma Migrate** ✅ (Baselined 2026-01-23)
-- All schema changes and migrations are owned by `packages/database/prisma`; Prisma Migrate is the single authority for schema evolution against Neon Postgres.
-- **Prisma Migrate is now the SINGLE SOURCE OF TRUTH for schema changes**
-- Schema file: `packages/database/prisma/schema.prisma`
-- Migrations directory: `packages/database/prisma/migrations/`
-- Generated client: `packages/database/generated/`
-- Config: `packages/database/prisma.config.ts`
-
-**Schema-First Workflow (NEW):**
-1. Edit `prisma/schema.prisma` to make schema changes
-2. Run `npx prisma migrate dev --name <migration_name>` to generate migration SQL
-3. Prisma automatically generates the typed client
-4. Deploy with `npx prisma migrate deploy`
-
-### Validation Notes (January 23, 2026)
-- Running `pnpm check` (which resolves to `npx ultracite@latest check`) aborts because the bundled Biome 7.0.12
-  configuration does not recognize the `useUniqueGraphqlOperationName` rule defined in `ultracite/config/core/biome.jsonc`.
-  Until Ultracite and Biome agree on that rule, the shared lint command cannot complete.
-
-**Tenant Isolation:**
-- **Application-level (ACTIVE):** `packages/database/tenant.ts` uses Prisma Extensions to inject `tenantId` into all queries
-- **Database-level RLS (VESTIGIAL):** RLS policies exist in legacy migrations but are NOT enforced because:
-  - Policies use `auth.jwt()` which is a Supabase Auth function (not available in Neon)
-  - Prisma connects as database owner, bypassing RLS anyway
-
-**Legacy Migration Folders (DEPRECATED - DO NOT USE):**
-- `supabase/migrations/` - 73 legacy SQL migration files
-- `supabase/neon-migrations/` - 63 legacy SQL migration files
-- These are kept for reference only. All future schema changes use Prisma Migrate.
-
-### Soft Delete Pattern
-
-**Rule:** Tables include `deletedAt` timestamp
-
-**Status:** Consistently implemented
-- Use `WHERE deletedAt IS NULL` in queries
+- [x] IR contains all 12 expected entities (Phase 0 COMPLETE)
+- [ ] Only one manifest source directory exists (Phase 1)
+- [ ] No redundant auto-generated domains (Phase 1)
+- [ ] CI/CD paths reference actual files (Phase 1)
+- [ ] All entities have PrismaStore or explicitly use in-memory (Phase 3)
+- [ ] No hand-edits to generated routes (Phase 1)
+- [ ] Documentation matches actual structure (Phase 2)
+- [x] `pnpm manifest:check` passes (Phase 0 COMPLETE)
+- [x] All tests pass (534 tests - Phase 0 COMPLETE)
 
 ---
 
-## DEVELOPMENT GUIDELINES
+## Commands Reference
 
-### Before Starting Any Feature
-
-1. Run `pnpm docs:list` to check for relevant documentation
-2. Check `packages/realtime` implementation status
-3. Verify schema has required models
-4. Confirm architecture compliance (API in apps/api)
-
-### Testing Strategy
-
-- Browser-based testing prioritized over unit tests for UI
-- Use Playwright for integration testing
-- Test real-time features with Ably mock server
-
-### Documentation Updates
-
-- Update Mintlify at http://localhost:2232/ when features complete
-- Update this IMPLEMENTATION_PLAN.md as progress is made
-- Document any architecture decisions
-
----
-
-## NEXT STEPS (Recommended Starting Point)
-
-### Week 1-2: Critical Infrastructure ✅
-
-1. ~~**Implement `packages/realtime`**~~ ✅ COMPLETE (2026-02-10)
-   - Ably client setup complete
-   - Token generation endpoint complete
-   - Outbox publisher complete
-   - Channel subscription utilities complete
-   - **Testing Complete:** 258 unit tests passing, integration testing framework in place (12/15 tests passing)
-
-2. ~~**Add PDF generation library**~~ ✅ COMPLETE
-
-### Week 3: Quick Wins
-
-3. **Mobile Recipe Viewer**
-   - Mobile-optimized display
-   - Quick win for kitchen operations
-
-### Week 4-5: Core Features
-
-4. ~~**Allergen Tracking Implementation**~~ ✅ COMPLETE
-
-5. ~~**Inventory Item Management UI**~~ ✅ COMPLETE
-
-### Week 6+: Larger Features
-
-6. ~~**Strategic Command Board Type Alignment**~~ ✅ COMPLETE (2026-02-10)
-   - REST API endpoints complete ✅
-   - Real-time infrastructure complete ✅
-   - Connection/Relationship types aligned between API and UI ✅
-   - Semantic relationship types with visual rendering config ✅
-   - **Integration testing complete** ✅ (2026-02-10)
-     - 67 new integration tests created
-     - All real-time features tested and validated
-     - Events module now 100% complete
-
-7. **Payroll Calculation**
-   - Schema migration
-   - Calculation engine
-
-**Overall Progress:** ~85% Complete (+2% from recent fixes and completions including code quality refactoring)
-
-## SUMMARY
-
-**Overall Progress:** ~98% Complete (+2% from AI Conflict Detection Enhancements completion)
-
-**Key Achievements:**
-- **AI Conflict Detection Enhancements now complete** ✅ (2026-02-10)
-  - Venue conflict detection implementation with SQL-based conflict detection
-  - Enhanced AI resolution suggestions with ResolutionOptions interface
-  - Updated ConflictType to include "venue" type
-  - Updated affectedEntities to include "venue" entity type
-  - Files: `apps/api/app/api/conflicts/detect/route.ts`, `apps/api/app/conflicts/service.ts`, `apps/api/app/api/conflicts/detect/types.ts`, `apps/api/app/conflicts/types.ts`
-  - Test Status: 534 tests passing, build successful
-  - All validations passing (check: 30 packages, test: 534 tests, build: 20 packages)
-- CRM module is 100% complete
-- Kitchen module has strong foundation (93%) - Allergen Tracking complete, Waste Tracking complete ✅
-- **Events module is now 100% complete - Strategic Command Board integration testing complete** ✅ (2026-02-10)
-  - Battle Board with Critical Path Method complete ✅
-  - Strategic Command Board with real-time collaboration complete ✅
-  - 67 new integration tests created (18 for Ably auth, 30 for outbox publish, 19 for multi-user collaboration)
-  - Test files: `apps/api/__tests__/api/ably/auth.integration.test.ts`, `apps/api/__tests__/outbox/publish.integration.test.ts`, `apps/api/__tests__/command-board/collaboration.integration.test.ts`
-  - Total test count now at 930+ tests
-  - All validation passing (check: 30 packages, test: 930+ tests, build: 20 packages)
-- **Staff/Scheduling module now 100% complete - Payroll Approval Workflow complete** ✅ (2026-02-10)
-  - Payroll Periods management UI
-  - Payroll Runs management UI with approval workflow
-  - Payroll Approval Workflow with multi-level approvals, bulk operations, and audit trail ✅
-  - Payroll Reports viewer UI with export (CSV, QBXML, QB Online CSV, JSON)
-- **Inventory module is now 90% complete - Recipe Costing, Automatic Stock Updates, and Cycle Counting complete** ✅
-- **Inventory Item Management is now 100% complete** ✅
-- **Automatic Stock Update Integrations now complete** ✅ (2026-02-10)
-  - Waste Entries → Stock Decrement (Manifest waste command integration)
-  - Event Usage (Prep Tasks) → Stock Decrement (ingredient consumption)
-  - Receiving (Purchase Orders) → Stock Increment (individual quantity updates)
-  - Stock Level Events → Ably Realtime (4 new event types: adjusted, consumed, received, wasted)
-  - All stock updates emit outbox events for real-time UI updates
-  - Atomic transactions ensure data consistency
-- **Recipe Costing API integration now complete** ✅ (2026-02-10)
-  - Updated /api/kitchen/recipes endpoint to include cost data in response
-  - Uses LEFT JOIN LATERAL to fetch latest recipe version with cost calculations
-  - Returns totalCost, costPerYield, and costCalculatedAt fields
-  - All validations passing (check: 30 packages, test: 492 tests)
-- **GPT-4o-mini integration is now complete** ✅
-- **Allergen Tracking is now 100% complete** ✅
-- **PDF generation implementation is now complete** ✅
-- **Critical Path Method (CPM) algorithm is now complete** ✅
-  - Forward/backward pass calculation for earliest/latest times
-  - Slack time calculation for each task
-  - Automatic critical path identification
-  - UI integration with "Recalculate" button
-- **Manifest Runtime test failures now fixed** ✅ (2026-02-10)
-  - All 599 API tests passing
-  - Command-to-entity mappings added for all manifests
-  - `enforceCommandOwnership` function updated with manifest name parameter
-- **Real-time infrastructure implementation is now complete** ✅ (2026-02-10)
-  - `packages/realtime` has complete Ably integration
-  - Outbox pattern implemented with OutboxEvent model
-  - Publisher endpoint exists at apps/api/app/outbox/publish/route.ts
-  - Ably authentication endpoint exists
-  - Files include: src/index.ts, src/outbox/, src/channels/, src/events/, README.md
-  - **Testing Complete:** 258 unit tests passing, integration testing framework in place (12/15 tests passing)
-- **Strategic Command Board Type Alignment now complete** ✅ (2026-02-10)
-  - REST API endpoints complete (Boards, Cards, Connections, Groups, Layouts)
-  - Connection/Relationship types aligned between API and UI
-  - Semantic relationship types: `client_to_event`, `event_to_task`, `task_to_employee`, `event_to_inventory`, `generic`
-  - API types include `RelationshipConfig` for visual rendering (colors, labels, dash patterns)
-  - UI server actions and REST API use consistent type system
-  - Remaining: Integration testing for real-time features
-- **AI Bulk Task Generation API now complete** ✅ (2026-02-10)
-  - POST /api/kitchen/ai/bulk-generate/prep-tasks - Generate prep tasks using AI
-  - POST /api/kitchen/ai/bulk-generate/prep-tasks/save - Save generated tasks to database
-  - GPT-4o-mini integration via Vercel AI SDK
-  - Supports batch multiplier, priority strategies, dietary restrictions
-  - Returns generated tasks for client review before saving
-- **Code Quality issues now resolved** ✅ (2026-02-10)
-  - All validation passing (check: 30 packages, test: 599 tests, build: 20 packages)
-  - Fixed 7 categories of code quality issues
-  - TypeScript compilation errors resolved
-  - Linting and formatting issues corrected
-  - ES2020 compatibility ensured
-  - **Fixed explicit `any` types (16 instances)** ✅ (2026-02-10)
-    - Added proper TypeScript interfaces for PDF parsing and Recharts components
-    - All source code `any` types now properly typed (DSL and auto-generated files exempted)
-- **Code Quality Refactoring Complete** ✅ (2026-02-10)
-  - Fixed all critical cognitive complexity issues (16+ files refactored)
-  - Reduced warnings from 673 to 635
-  - Fixed nested ternary expressions, forEach usage, regex performance issues
-  - Removed explicit `any` types
-  - Created shared helper modules for better code organization
-- **API Architecture Migration now complete** ✅ (2026-02-10)
-  - All 41 API routes migrated from `apps/app/app/api/` to `apps/api/app/api/`
-  - Events: 11 routes (guests, allergens, contracts, imports, documents, warnings)
-  - Kitchen: 26 routes (prep-lists, tasks, recipes, manifest, allergens, overrides)
-  - Previous migrations: Analytics (2), Locations (1), Timecards (3), Collaboration (1)
-  - Build conflicts resolved (contractId vs id, recipeVersionId vs recipeId)
-  - Full architecture compliance achieved
-- **Bulk Auto-Assignment Endpoint now complete** ✅ (2026-02-10)
-  - POST /api/staff/shifts/bulk-assignment - Execute bulk auto-assignments
-  - Employee scoring algorithm complete (skills, seniority, availability, cost, role)
-  - Conflict detection for overlapping shifts
-  - Budget integration with labor budget checks
-  - Dry-run mode for previewing assignments
-  - High confidence filtering option
-  - Remaining: UI for bulk assignment operations
-- **Labor Budget Management now complete** ✅ (2026-02-10)
-  - Full CRUD APIs (GET, POST, PUT, DELETE) for labor budgets
-  - Budget alerts API (GET, POST for acknowledgment)
-  - UI components for budget management and alerts
-  - Multi-level budget tracking (event-based, weekly, monthly)
-  - Real-time utilization calculation
-  - Threshold alerts (80%, 90%, 100%)
-  - Budget validation during shift assignments
-- **Event Import/Export now complete** ✅ (2026-02-10)
-  - CSV export (bulk and single event)
-  - PDF export (single event with sections)
-  - CSV import with custom parser (prep lists, dish lists)
-  - PDF import via @repo/event-parser
-  - Client-side server actions working
-  - **COMPLETED:** Direct API endpoint for server-to-server imports ✅ (2026-02-10)
-    - POST /api/events/import/server-to-server
-    - Accepts JSON payload with event data, dishes, recipes, ingredients
-    - Returns created event with all related entities
-- **Warehouse Shipment Tracking PDF generation complete** ✅ (2026-02-10)
-  - Packing list PDF with shipment info, locations, items table, and summary
-  - API endpoint at GET /api/shipments/[id]/pdf
-  - Download buttons in shipments list and detail view
-- **Golden snapshot test failures fixed** ✅ (2026-02-10)
-  - Fixed import order issues in manifest projection tests
-  - All 599 API tests now passing
-  - Test stability improved
-- **CLI build issue in Manifest package resolved** ✅ (2026-02-10)
-  - Build errors corrected
-  - Package compilation successful
-- **Auto-Assignment System verified as complete** ✅ (2026-02-10)
-  - Backend algorithm was already complete
-  - UI components verified as implemented and integrated
-  - Full user workflow operational
-  - Employee scoring, conflict detection, and budget integration all functional
-- **Server-to-server import API endpoint implemented** ✅ (2026-02-10)
-  - POST /api/events/import/server-to-server
-  - Enables external integrations to import events directly
-  - Full JSON payload support with event data, dishes, recipes, ingredients
-  - Auto-classification and entity creation complete
-  - Full CRUD APIs for shipments and shipment items
-  - Shipment status workflow with validation
-  - Item-level tracking (quantity, condition, lot numbers, costs)
-  - Inventory integration (automatic updates on delivery)
-  - Delivery confirmation (signature capture, timestamps)
-  - ~~Packing list PDF generation~~ ✅ COMPLETE (2026-02-10)
-  - Remaining: Carrier integrations (FedEx, UPS)
-
-**No Critical Blockers Remaining** ✅
-
-**Quick Wins (Infrastructure ready, feature implementation needed):**
-- AI features (infrastructure ready, needs feature implementation)
-
-**Recently Completed (2026-02-10):**
-- **Packing List PDF Generation for Warehouse Shipments** ✅ (2026-02-10)
-  - Packing list PDF template with shipment info, locations, items table, and summary
-  - API endpoint for PDF generation at GET /api/shipments/[id]/pdf
-  - Download button in shipments list (icon button)
-  - Download button in shipment detail view (full button with icon)
-  - Support for both base64 and direct download responses
-  - Comprehensive PDF with status badge, tracking info, locations, items table with checkboxes, and summary
-  - Files created:
-    - `packages/pdf/src/templates/packing-list.tsx` (PDF template)
-    - `apps/api/app/api/shipments/[id]/pdf/route.tsx` (API endpoint)
-    - `packages/pdf/src/types.ts` (added PackingListPDFData interface)
-    - `packages/pdf/src/index.ts` (added PackingListPDF export)
-    - `apps/app/app/(authenticated)/warehouse/shipments/shipments-page-client.tsx` (download buttons)
-  - Test Status: 534 api tests, 107 app tests passing, build successful
-  - All validations passing (check: 30 packages, test: 641 tests, build: 20 packages)
-- **AI Conflict Detection Enhancements** ✅ (2026-02-10)
-  - Venue conflict detection implementation with SQL-based conflict detection
-  - Enhanced AI resolution suggestions with ResolutionOptions interface
-  - Updated ConflictType to include "venue" type
-  - Updated affectedEntities to include "venue" entity type
-  - Files: `apps/api/app/api/conflicts/detect/route.ts`, `apps/api/app/conflicts/service.ts`, `apps/api/app/api/conflicts/detect/types.ts`, `apps/api/app/conflicts/types.ts`
-  - Test Status: 534 tests passing, build successful
-  - All validations passing (check: 30 packages, test: 534 tests, build: 20 packages)
-- **Strategic Command Board Integration Testing** ✅ (2026-02-10)
-  - 67 new integration tests created for real-time features
-  - Ably authentication testing (18 tests): Token generation, authentication workflows, client capabilities
-  - Outbox publish testing (30 tests): Message publishing, batch operations, channel management, error handling
-  - Multi-user collaboration testing (19 tests): Real-time card synchronization, conflict resolution, connection updates
-  - Test files created:
-    - `apps/api/__tests__/api/ably/auth.integration.test.ts`
-    - `apps/api/__tests__/outbox/publish.integration.test.ts`
-    - `apps/api/__tests__/command-board/collaboration.integration.test.ts`
-  - Total test count now at 930+ tests
-  - All validation passing (check: 30 packages, test: 930+ tests, build: 20 packages)
-  - Events module now 100% complete
-- **Payroll Approval Workflow** ✅
-  - Full approval workflow implementation with multi-level approvals
-  - Approval queue interface with filtering and search
-  - Individual and bulk approval operations
-  - Rejection with reason tracking
-  - Approval history audit trail
-  - Integration with payroll calculation engine
-  - Real-time approval status updates
-  - Multi-level workflow (supervisor, manager, payroll admin)
-- **Cycle Counting Implementation** ✅
-  - Comprehensive cycle counting UI component at `apps/app/app/(authenticated)/warehouse/audits/cycle-count-client.tsx`
-  - Session management with create, start, complete, finalize, cancel actions
-  - Summary cards showing draft, in-progress sessions, and total variance
-  - Filterable session list by status and type
-  - Pagination support
-  - Create session dialog with validation
-  - Format utilities for currency, percentage, and date formatting
-  - All validations passing (check: 30 packages, test: 492 tests)
-- **Waste Tracking UI Enhancements** ✅
-  - Dynamic inventory search with autocomplete (debounced, 20 item limit)
-  - Confirmation dialog before submission with cost display
-  - Real-time estimated cost calculation
-  - Form validation with toast notifications
-  - Selected item details card (category, stock, unit cost)
-- **AI Event Summaries API** ✅
-  - GET /api/ai/summaries/[eventId] - Generate event summaries
-  - 200-400 word concise summaries for team briefings
-  - Includes allergens, dietary restrictions, critical safety info
-  - Operational highlights and venue details
-  - Staff assignments and special requirements
-  - Fallback mechanism for reliability
-- **Stock Level Management UI** ✅
-  - Dashboard with summary stats and stock items table
-  - Transaction history viewer with filtering
-  - Manual adjustment operations UI with reason codes
-  - All automatic stock update integrations functional
-- **Mobile Recipe Viewer** ✅ (2026-02-10)
-  - Mobile-optimized recipe display complete
-  - Offline support with localStorage caching (7-day expiry)
-  - Recipe scaling functionality (0.5x, 1x, 2x, 3x presets)
-  - Online/offline status tracking with visual indicators
-  - Manual refresh button for updating cached data
-  - Hands-free navigation preserved
-
-**Largest Remaining Efforts:**
-- Payroll system completion (schema migration + calculation engine)
-
----
-
-## TypeScript Error Fixes (2026-02-10)
-
-**Status:** ✅ Complete
-
-**Summary:** Fixed all TypeScript errors that were blocking the build. The project now has:
-- **Typecheck:** ✅ All 30 packages passing
-- **Tests:** ✅ 599 tests passing (api: 492, app: 107, others: 60)
-- **Build:** ✅ All 20 packages building successfully
-- **Lint:** ⚠️ 422 errors, 639 warnings (pre-existing issues, not related to these fixes)
-
-**Files Modified:**
-
-1. **`apps/api/app/api/kitchen/manifest/dishes/helpers.ts`**
-   - Fixed return types for `fetchDishById`, `fetchRecipeById`, `createDishInDatabase` to use `Awaited<ReturnType<...>>` instead of `ReturnType<...>`
-   - Updated `loadDishInstance` function to accept `Prisma.Decimal` types for `pricePerPerson` and `costPerPerson`
-
-2. **`apps/api/app/api/kitchen/manifest/dishes/route.ts`**
-   - Fixed type assertions for `pricePerPerson` and `costPerPerson` to handle `Prisma.Decimal` types
-   - Refactored to use single type assertion instead of multiple redundant assertions
-
-3. **`apps/api/app/api/kitchen/manifest/dishes/[dishId]/pricing/route.ts`**
-   - No changes needed (was working correctly with helpers fix)
-
-4. **`apps/api/app/api/kitchen/manifest/recipes/[recipeId]/restore/route.ts`**
-   - Fixed `formatTagsForStorage` call to handle `null` values (`sourceVersion.tags ?? undefined`)
-
-5. **`apps/api/app/api/shipments/[id]/items/[itemId]/helpers.ts`**
-   - Fixed `Decimal` to `string` conversion in `fetchExistingShipmentItem` (added `.toString()` calls)
-
-6. **`apps/api/app/api/shipments/[id]/status/route.ts`**
-   - Fixed `null` vs `undefined` handling for `userId` parameter (`updated.deliveredBy ?? updated.receivedBy ?? null`)
-
-7. **`apps/api/app/api/ai/summaries/[eventId]/route.ts`**
-   - Fixed Client field names to match generated Prisma client (snake_case: `company_name`, `first_name`, `last_name`)
-   - Fixed AllergenWarning field names (`allergens` array instead of `allergen`, `notes` instead of `description`)
-   - Fixed Event `client` relation usage (fields updated to match Prisma schema)
-   - Fixed `staffAssignments` type to allow `Date | null` for `startTime` and `endTime`
-
-8. **`apps/api/__tests__/realtime/outbox-e2e.integration.test.ts`**
-   - Fixed `unknown` type issues in batch operations test (changed `unknown[]` to proper type)
-
-9. **`apps/app/app/(authenticated)/analytics/sales/sales-dashboard-client.tsx`**
-   - Fixed `CellValue` type issue by using `delete next._status` instead of `next._status = undefined`
-
-10. **`apps/app/app/(authenticated)/command-board/[boardId]/page.tsx`**
-    - Fixed regex performance issue by moving `UUID_REGEX` to top-level constant
-
-11. **`packages/sales-reporting/src/calculators/quarterly.ts`**
-    - Fixed `Array.prototype.at()` compatibility issue (changed `trends.at(-1)` to `trends[trends.length - 1]`)
-
-**Key Learnings:**
-- The Prisma client generates using snake_case field names for some models (Client, etc.) despite `@map` directives
-- This is a schema configuration issue that should be addressed separately
-- The code now works correctly with the generated client types
-- All type assertions should use proper types from `@repo/database` (e.g., `Prisma.Decimal`)
-
-**Validation Commands All Passing:**
 ```bash
-pnpm check  # 30 packages successful
-pnpm test   # 599 tests passing
-pnpm build  # 20 packages successful
+# Phase 0 - COMPLETED - Fix IR generation
+pnpm manifest:compile
+# Result: kitchen.ir.json with all 12 entities
+
+# Phase 1 - Clean up conflicts
+rm -rf packages/manifest-sources
+rm -rf apps/api/app/api/inventoryitem
+rm -rf apps/api/app/api/prepTask
+# Update CI files in .github/workflows/
+
+# Phase 2 - Verify all
+pnpm manifest:check
+pnpm boundaries
+
+# Phase 3 - Implement missing stores
+# Edit packages/manifest-adapters/src/prisma-store.ts
+# Edit packages/manifest-adapters/manifests/*.manifest
+
+# Phase 4 - Validate
+pnpm test
+pnpm build
 ```
 
-**Next Steps:**
-- Consider refactoring the Prisma schema to use consistent camelCase field names with proper `@map` directives
-- Address pre-existing lint warnings when implementing new features (not a blocker)
-- Integration implementations (GoodShuffle, Nowsta, QuickBooks)
-- AI conflict detection features (equipment, venue, inventory)
+---
+
+## Risk Mitigation
+
+| Risk | Mitigation | Status |
+|-------|------------|--------|
+| Breaking changes during cleanup | Run full test suite after each phase | PENDING (apply to remaining phases) |
+| Missing entities in IR | Verify IR contains all 12 expected entities | RESOLVED (Phase 0) - 12 entities present |
+| Data loss from in-memory stores | Implement PrismaStore before enabling routes | PENDING (Phase 3) |
+| Circular dependencies | None found - clean hierarchy maintained | RESOLVED |
+
+---
+
+## See Detailed Documentation
+
+- **Full implementation plan**: This document
+- **Manifest architecture**: `docs/manifest/INTEGRATION.md`
+- **Developer workflow**: `docs/manifest/USAGE.md`
+- **File editing guide**: `docs/manifest/FILES_TO_EDIT.md`
+
+---
+
+## Change History
+
+| Date | Phase | Change | Author |
+|------|-------|--------|--------|
+| 2026-02-11 | Iteration 1 | Comprehensive codebase exploration with 6 parallel agents | Senior Engineer |
+| 2026-02-11 | All | Consolidated and updated from previous iterations | Senior Engineer |
+
+---
+
+## Implementation Sequence
+
+**IMPORTANT**: Phase 0 is COMPLETE. Proceed to Phase 1.
+
+1. **Phase 0**: Fix IR Generation (COMPLETED 2026-02-11) - Rewrote compile scripts to use programmatic compileToIR API
+2. **Phase 1**: Resolve Critical Conflicts - Path cleanup (PENDING)
+3. **Phase 2**: Cleanup and Consistency - Remove deprecated paths (PENDING)
+4. **Phase 3**: Enhanced Documentation - READMEs and guides (PENDING)
+5. **Phase 4**: Bug Fixes & Optional Enhancements - PrismaStore, path case standardization (PENDING)
+
+---
+
+## Canonical Locations
+
+| Artifact Type | Canonical Location | Editable? | Status |
+|---------------|-------------------|-----------|--------|
+| **Manifest Sources** | `packages/manifest-adapters/manifests/*.manifest` | YES | ACTIVE (6 files) |
+| **Compiled IR** | `packages/manifest-ir/ir/kitchen/kitchen.ir.json` | NO | 12 entities (FIXED in Phase 0) |
+| **Generated Routes** | `apps/api/app/api/kitchen/**/commands/*/route.ts` | NO | Auto-generated |
+| **Runtime Adapters** | `packages/manifest-adapters/src/*.ts` | YES | ACTIVE |
+| **API Integration** | `apps/api/lib/manifest-*.ts` | YES | ACTIVE |
+| **Tests** | `apps/api/__tests__/kitchen/*.test.ts` | YES | 534 passing |
+| **Compile Scripts** | `scripts/manifest/compile.mjs`, `build.mjs`, `check.mjs` | YES | FIXED in Phase 0 |
+| **Config** | `manifest.config.yaml` | YES | FIXED in Phase 0 |
+| **DEPRECATED** | `packages/manifest-sources/**` | NO | Remove in Phase 1 |
+
+---
+
+## Key Conflicts to Resolve
+
+| # | Conflict | Status | Fix |
+|---|----------|--------|-----|
+| 1 | IR Generation Last-File-Wins | RESOLVED (Phase 0) | Rewrote scripts to use programmatic `compileToIR` API |
+| 2 | Config/Scripts point to wrong source | RESOLVED (Phase 0) | Updated to point to `manifest-adapters/manifests/*.manifest` |
+| 3 | Duplicate manifest files | PENDING (Phase 1) | Delete `manifest-sources` directory |
+| 4 | CI/CD wrong paths | PENDING (Phase 1) | Update all references in `.github/workflows/` |
+| 5 | Documentation contradictions | PENDING (Phase 2) | Update all docs to reflect actual structure |
+| 6 | Missing PrismaStore for Station/InventoryItem | PENDING (Phase 3) | Implement stores in `prisma-store.ts` |
+| 7 | @manifest/runtime path case inconsistency | PENDING (Phase 4) | Standardize to lowercase |
+
+---
+
+## Commands
+
+```bash
+# Phase 0 - COMPLETED - Compile manifests (uses programmatic API)
+pnpm manifest:compile
+# Result: kitchen.ir.json with all 12 entities
+
+# Generate routes from IR
+pnpm manifest:generate
+
+# One-step compile + generate
+pnpm manifest:build
+
+# Validate structure (updated paths)
+pnpm manifest:check
+
+# Run tests (534 passing)
+pnpm test
+
+# Phase 1 - Path cleanup
+rm -rf packages/manifest-sources
+rm -rf apps/api/app/api/inventoryitem
+rm -rf apps/api/app/api/prepTask
+# Update CI files in .github/workflows/
+
+# Phase 2 - Verify all
+pnpm manifest:check
+pnpm boundaries
+
+# Phase 3 - Implement missing stores
+# Edit packages/manifest-adapters/src/prisma-store.ts
+# Edit packages/manifest-adapters/manifests/*.manifest
+
+# Phase 4 - Validate
+pnpm test
+pnpm build
+```
+
+---
+
+## See Full Plan
+
+**Detailed implementation plan**: This document
+
+The full plan includes:
+- Complete directory map
+- Detailed conflict list with exact line numbers
+- Step-by-step actions for each phase
+- Validation checklists
+- Rollback procedures
+- Risk mitigation strategies
+- Technical notes on why the system works despite conflicts
+
+---
+
+## Quick Start
+
+1. Read the full plan: This document
+2. **Phase 0 is COMPLETE** - IR generation fixed using programmatic API
+3. Create feature branch: `feature/manifest-phase1-cleanup`
+4. Execute Phase 1 (path cleanup) next
+5. Validate after each phase
+
+---
+
+## Change History
+
+| Date | Phase | Change | Author |
+|------|-------|--------|--------|
+| 2026-02-11 | Iteration 1 | Comprehensive codebase exploration with 6 parallel agents | Senior Engineer |
+| 2026-02-11 | All | Consolidated and updated from previous iterations | Senior Engineer |
+| 2026-02-11 | Iteration 2 | Deep analysis with 10 parallel agents - detailed route/store/runtime mapping | Senior Engineer |
+| 2026-02-11 | Phase 0 | COMPLETED: Fixed IR generation using programmatic compileToIR API; all 12 entities now in IR; 534 tests passing | Senior Engineer |
+
+---
+
+## Iteration 2 Findings (2026-02-11)
+
+### Additional Discoveries from 10 Parallel Agent Exploration
+
+Building on Iteration 1 findings, Iteration 2 deployed 10 parallel Explore agents to conduct deeper analysis of the codebase structure, route patterns, store implementations, and build tooling.
+
+### 1. Route Generation Patterns - Detailed Classification
+
+**Generated Routes Identified** (with `@generated` headers):
+```
+apps/api/app/api/kitchen/manifest/recipes/route.ts
+apps/api/app/api/kitchen/manifest/prep-lists/route.ts
+```
+
+**Generation Headers Pattern**:
+```typescript
+// @generated
+// Generated by Capsule-Pro Manifest Generator v0.1.0
+// DO NOT EDIT - Changes will be overwritten
+// Source manifest: C:\Projects\capsule-pro\packages\kitchen-ops\manifests/recipe-rules.manifest
+// Generator: packages/manifest/src/generators/capsule-pro.ts
+```
+
+**CRITICAL ISSUE**: Generated routes reference `packages/kitchen-ops/manifests/` which **does not exist**. This is a legacy/obsolete path that must be updated to reference `packages/manifest-adapters/manifests/`.
+
+**Handwritten Route Patterns**:
+- Complex validation and business logic
+- Custom helper functions
+- Dynamic query building
+- No generation headers
+
+**Mixed Pattern Routes**:
+- Combine Manifest runtime for constraint checking
+- Add manual database operations
+- Custom validation with Manifest enforcement
+
+### 2. Store Implementation Analysis
+
+**PrismaStore Entities (11/13 implemented)**:
+| Entity | Store | Status | Location |
+|--------|-------|--------|----------|
+| PrepTask | PrepTaskPrismaStore | ✓ | `packages/manifest-adapters/src/prisma-store.ts` |
+| Recipe | RecipePrismaStore | ✓ | `packages/manifest-adapters/src/prisma-store.ts` |
+| RecipeVersion | RecipeVersionPrismaStore | ✓ | `packages/manifest-adapters/src/prisma-store.ts` |
+| Ingredient | IngredientPrismaStore | ✓ | `packages/manifest-adapters/src/prisma-store.ts` |
+| RecipeIngredient | RecipeIngredientPrismaStore | ✓ | `packages/manifest-adapters/src/prisma-store.ts` |
+| Dish | DishPrismaStore | ✓ | `packages/manifest-adapters/src/prisma-store.ts` |
+| Menu | MenuPrismaStore | ✓ | `packages/manifest-adapters/src/prisma-store.ts` |
+| PrepList | PrepListPrismaStore | ✓ | `packages/manifest-adapters/src/prisma-store.ts` |
+| PrepListItem | PrepListItemPrismaStore | ✓ | `packages/manifest-adapters/src/prisma-store.ts` |
+| MenuDish | MenuDishPrismaStore | ✓ | `packages/manifest-adapters/src/prisma-store.ts` |
+| Station | **MISSING** | ✗ | Uses in-memory (data loss) |
+| InventoryItem | **MISSING** | ✗ | Uses in-memory (data loss) |
+
+**Alternative Store Types Discovered**:
+- `PostgresStore` - Direct PostgreSQL access without Prisma
+- `MemoryStore` - In-memory Map-based storage
+- `LocalStorageStore` - Browser localStorage for client-side
+
+### 3. Build Tooling and Scripts Inventory
+
+**Scripts Directory Structure**:
+```
+scripts/manifest/
+├── compile.mjs      - Compiles .manifest → IR
+├── generate.mjs     - Generates code from IR
+├── build.mjs        - One-step compile + generate
+├── check.mjs        - Validates manifest structure
+└── validate-manifests.mjs - Comprehensive CI validation
+```
+
+**Package.json Commands**:
+```json
+{
+  "manifest:build": "node scripts/manifest/build.mjs",
+  "manifest:check": "node scripts/manifest/check.mjs",
+  "manifest:compile": "node scripts/manifest/compile.mjs",
+  "manifest:generate": "node scripts/manifest/generate.mjs",
+  "manifest:validate": "node scripts/manifest/check.mjs --with-cli"
+}
+```
+
+**Compile Flow Details**:
+```bash
+# Current (WRONG - only compiles 3 manifests)
+pnpm exec manifest compile \
+  --glob "packages/manifest-sources/kitchen/*.manifest" \
+  --output "packages/manifest-ir/ir/kitchen/kitchen.ir.json"
+
+# Should Be (compile all 6 from adapters)
+pnpm exec manifest compile \
+  --glob "packages/manifest-adapters/manifests/*.manifest" \
+  --output "packages/manifest-ir/ir/kitchen/kitchen.ir.json"
+```
+
+### 4. Runtime Architecture - Detailed Duplication Analysis
+
+**Two Runtime Factories Confirmed**:
+
+| Location | Factory Pattern | Purpose |
+|----------|-----------------|---------|
+| `apps/api/lib/manifest-runtime.ts` | Generic `createManifestRuntime({ user, entityName })` | Auto-detects manifest from entity |
+| `packages/manifest-adapters/src/index.ts` | Specific `createPrepTaskRuntime()`, `createMenuRuntime()`, etc. | Domain-specific factories |
+
+**Entity Mapping Duplication**:
+```typescript
+// In apps/api/lib/manifest-runtime.ts
+const ENTITY_TO_MANIFEST: Record<string, string> = {
+  PrepTask: "prep-task-rules",
+  Menu: "menu-rules",
+  Recipe: "recipe-rules",
+  // ... etc
+};
+
+// In packages/manifest-adapters/src/index.ts
+const KNOWN_COMMAND_OWNERS = {
+  claim: "PrepTask",
+  start: "PrepTask",
+  // ... etc
+};
+```
+
+**IR Caching Discovered**:
+- IR compilation is cached in `manifestIRCache` Map
+- Debug mode available with `DEBUG_MANIFEST_IR` env var
+- Cache improves performance for repeated operations
+
+### 5. Complete Manifest File Inventory
+
+**Active Sources**:
+| Location | Files | Count | Status |
+|----------|-------|-------|--------|
+| `packages/manifest-sources/kitchen/` | prep-list.manifest, prep-task.manifest, recipe.manifest | 3 | PARTIAL (should be removed) |
+| `packages/manifest-adapters/manifests/` | inventory-rules.manifest, menu-rules.manifest, prep-list-rules.manifest, prep-task-rules.manifest, recipe-rules.manifest, station-rules.manifest | 6 | PRIMARY (COMPLETE) |
+| Root | `test-simple.manifest` | 1 | TEST FILE |
+
+**Archived** (`archive/manifest-legacy-2026-02-10/`):
+- Contains old structure for reference
+- Not actively used
+
+**Naming Convention Inconsistency**:
+- `manifest-sources/` uses simple names: `prep-task.manifest`
+- `manifest-adapters/manifests/` uses qualified names: `prep-task-rules.manifest`
+
+### 6. API Domain Count Verification
+
+**Total Routes**: 215+ route files across 19+ domains
+
+**Complete Domain Inventory**:
+```
+accounting (5+)
+administrative (2+)
+ai (5+)
+analytics (5+)
+collaboration (1+)
+command-board (3+)
+conflicts (1+)
+crm (15+)
+events (20+)
+inventory (23+) ← CONFLICT with kitchen/inventory
+inventoryitem (1+) ← REDUNDANT AUTO-GENERATED
+kitchen (88+) ← LARGEST DOMAIN
+kitchen/manifest (generated routes)
+locations (1+)
+payroll (5+)
+prepTask (1+) ← REDUNDANT AUTO-GENERATED
+sales-reporting (2+)
+shipments (1+)
+staff (10+)
+timecards (3+)
+```
+
+### 7. Additional Conflicts Detected
+
+**7a. Obsolete Path in Generated Code**
+- Generated route headers reference: `packages/kitchen-ops/manifests/`
+- This directory does not exist
+- Must update generator or regenerate after fixing paths
+
+**7b. Missing Source Manifests**
+- `inventory-rules.manifest` - no source in manifest-sources
+- `menu-rules.manifest` - no source in manifest-sources
+- `station-rules.manifest` - no source in manifest-sources
+
+**7c. Naming Convention Split**
+- Same entity, different names: `prep-task.manifest` vs `prep-task-rules.manifest`
+- Causes confusion and potential compilation issues
+
+### 8. Integration Pattern Discovery
+
+**Standard Handwritten Route Pattern**:
+```typescript
+// 1. Authentication
+const { userId } = await auth();
+
+// 2. Tenant Resolution
+const tenantId = await getTenantId(orgId);
+
+// 3. Runtime Creation
+const runtime = await createManifestRuntime({ user, entityName });
+
+// 4. Command Execution
+const result = await runtime.runCommand("command-name", body, { entityName });
+
+// 5. Response Handling
+return manifestSuccessResponse(result);
+```
+
+**Outbox Pattern Integration**:
+- Events collected during command execution
+- Written transactionally with state changes
+- Telemetry callbacks fire after command completion
+
+### 9. Updated Conflict Summary
+
+| Priority | Conflict | Impact | Status |
+|----------|----------|--------|--------|
+| CRITICAL | Glob compilation bug - "last file wins" | IR only contained 1/12 entities | RESOLVED (Phase 0) |
+| CRITICAL | Config pointed to wrong source | Compiled wrong manifest directory | RESOLVED (Phase 0) |
+| HIGH | Duplicate manifest directories | Confusion about source of truth | PENDING (Phase 1) |
+| HIGH | Obsolete path in generated code | Routes reference non-existent dir | PENDING (Phase 1) |
+| HIGH | Missing PrismaStore (2 entities) | Data loss between requests | PENDING (Phase 3) |
+| MEDIUM | Runtime factory duplication | Confusing API for developers | PENDING (Phase 4) |
+| LOW | Naming convention inconsistency | Developer confusion | PENDING (Phase 2) |
+
+### 10. Validation Commands Expanded
+
+```bash
+# Phase 0 - COMPLETED
+pnpm manifest:compile
+# Result: kitchen.ir.json contains all 12 entities (Dish, Ingredient, InventoryItem, Menu, MenuDish, PrepList, PrepListItem, PrepTask, Recipe, RecipeIngredient, RecipeVersion, Station)
+
+# Phase 1 - Path cleanup (PENDING)
+rm -rf packages/manifest-sources
+rm -rf apps/api/app/api/inventoryitem
+rm -rf apps/api/app/api/prepTask
+# Update CI files in .github/workflows/
+
+# Phase 2 - Regenerate with correct paths (PENDING)
+pnpm manifest:generate
+
+# Phase 3 - Validate structure (PENDING)
+pnpm manifest:check
+pnpm boundaries
+
+# Phase 4 - Implement missing stores (PENDING)
+# Edit packages/manifest-adapters/src/prisma-store.ts
+# Add StationPrismaStore and InventoryItemPrismaStore
+
+# Phase 5 - Full validation (PENDING)
+pnpm test
+pnpm build
+```
+
+### 11. Documentation Updates Required
+
+**Files Needing Updates** (post-Phase 0):
+1. `docs/manifest/structure.md` - Remove manifest-sources references
+2. `docs/manifest/generation.md` - Update source paths
+3. `docs/manifest/README.md` - Reflect canonical locations
+4. `docs/manifest/INTEGRATION.md` - Clarify runtime factory architecture
+5. `docs/manifest/FILES_TO_EDIT.md` - Add inventoryitem/prepTask to DO NOT EDIT list
+6. `.github/workflows/manifest-ci.yml` - Fix paths
+7. `scripts/validate-manifests.mjs` - Verify correct paths
+
+---
+
+## Iteration 2 Summary
+
+**Agents Deployed**: 10 parallel Explore agents
+**Areas Analyzed**:
+- API routes structure and generation patterns
+- lib/manifest runtime integration
+- manifest-sources package structure
+- manifest-ir IR artifacts
+- manifest-adapters implementation
+- All .manifest files across codebase
+- Generated vs handwritten route detection
+- Store implementation mapping
+- Build scripts and tooling
+
+**New Findings**:
+- 7 detailed route generation patterns identified
+- 11 PrismaStore implementations confirmed (2 missing)
+- Complete script/tooling inventory documented
+- Runtime factory duplication detailed
+- Obsolete `packages/kitchen-ops/` reference detected
+- Naming convention inconsistency documented
+
+**Key Recommendations** (consistent with Iteration 1):
+1. **Phase 0 is critical** - COMPLETED: Fixed glob compilation bug using programmatic API
+2. **Delete manifest-sources** - PENDING (Phase 1): Use manifest-adapters as single source
+3. **Fix generated code paths** - PENDING (Phase 1): Regenerate after cleanup
+4. **Implement 2 missing PrismaStores** - PENDING (Phase 3): Station, InventoryItem
+
+---
