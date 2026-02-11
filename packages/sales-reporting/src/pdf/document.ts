@@ -77,8 +77,9 @@ export function drawPageFooter(doc: InstanceType<typeof PDFDocument>): void {
   for (let i = 0; i < pageCount; i++) {
     doc.switchToPage(i);
 
-    const savedBottom = (doc.page as any).margins.bottom;
-    (doc.page as any).margins.bottom = 0;
+    const pageMargins = doc.page.margins;
+    const savedBottom = pageMargins.bottom;
+    pageMargins.bottom = 0;
 
     doc
       .moveTo(PAGE.margin, PAGE.height - 40)
@@ -108,7 +109,7 @@ export function drawPageFooter(doc: InstanceType<typeof PDFDocument>): void {
         lineBreak: false,
       });
 
-    (doc.page as any).margins.bottom = savedBottom;
+    pageMargins.bottom = savedBottom;
     doc.y = PAGE.margin;
   }
 }

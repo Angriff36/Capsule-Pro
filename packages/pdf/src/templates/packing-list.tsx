@@ -268,7 +268,9 @@ export const PackingListPDF: React.FC<PackingListPDFProps> = ({ data }) => {
   };
 
   const formatDate = (date: Date | string | null | undefined): string => {
-    if (!date) return "N/A";
+    if (!date) {
+      return "N/A";
+    }
     return new Date(date).toLocaleDateString();
   };
 

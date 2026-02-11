@@ -85,13 +85,13 @@ function generateRecommendations(
   const trends = metrics.pricingTrends;
   if (trends.length >= 2) {
     const first = trends[0].avgValue;
-    const last = trends[trends.length - 1].avgValue;
-    if (first > 0 && last > first) {
+    const last = trends.at(-1)?.avgValue;
+    if (first > 0 && last !== undefined && last > first) {
       const change = (((last - first) / first) * 100).toFixed(0);
       recommendations.push(
         `Average deal value increased ${change}% over the quarter — current pricing strategy is effective.`
       );
-    } else if (first > 0 && last < first) {
+    } else if (first > 0 && last !== undefined && last < first) {
       const change = (((first - last) / first) * 100).toFixed(0);
       recommendations.push(
         `Average deal value decreased ${change}% over the quarter — review pricing strategy and upsell opportunities.`

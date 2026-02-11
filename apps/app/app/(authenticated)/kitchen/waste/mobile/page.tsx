@@ -75,32 +75,6 @@ export default function WasteLoggingMobilePage() {
   >({});
   const [successMessage, setSuccessMessage] = useState("");
 
-  useEffect(() => {
-    fetchInventoryItems();
-    fetchWasteReasons();
-  }, []);
-
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-    setIsOnline(navigator.onLine);
-
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
-  }, []);
-
-  // Sync offline queue when coming back online
-  useEffect(() => {
-    if (isOnline && syncQueue.length > 0) {
-      syncOfflineEntries();
-    }
-  }, [isOnline, syncQueue]);
-
   const fetchInventoryItems = async () => {
     try {
       const response = await apiFetch("/api/inventory/items?limit=100");
@@ -139,6 +113,32 @@ export default function WasteLoggingMobilePage() {
     }
     setSyncQueue([]);
   };
+
+  useEffect(() => {
+    fetchInventoryItems();
+    fetchWasteReasons();
+  }, [fetchInventoryItems, fetchWasteReasons]);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    setIsOnline(navigator.onLine);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  // Sync offline queue when coming back online
+  useEffect(() => {
+    if (isOnline && syncQueue.length > 0) {
+      syncOfflineEntries();
+    }
+  }, [isOnline, syncQueue, syncOfflineEntries]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof WasteEntryFormData, string>> = {};

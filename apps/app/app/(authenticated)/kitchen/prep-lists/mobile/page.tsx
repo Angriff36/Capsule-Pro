@@ -62,7 +62,7 @@ const stationColors: Record<string, string> = {
 
 function getPrepDateLabel(date: string): { label: string; isUrgent: boolean } {
   const prepDate = parseISO(date);
-  const today = new Date();
+  const _today = new Date();
 
   if (isToday(prepDate)) {
     return { label: "TODAY", isUrgent: true };
@@ -98,7 +98,7 @@ export default function PrepListsMobilePage() {
 
   useEffect(() => {
     fetchPrepLists();
-  }, []);
+  }, [fetchPrepLists]);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);

@@ -47,7 +47,9 @@ function formatCurrency(value: number) {
 }
 
 function formatDate(date: Date | null) {
-  if (!date) return "N/A";
+  if (!date) {
+    return "N/A";
+  }
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",

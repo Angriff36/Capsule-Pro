@@ -52,7 +52,9 @@ export function ProposalExportButton({
     } catch (error) {
       console.error("Failed to download proposal PDF:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to download proposal PDF",
+        error instanceof Error
+          ? error.message
+          : "Failed to download proposal PDF",
         { id: "pdf-loading" }
       );
     } finally {
@@ -61,11 +63,7 @@ export function ProposalExportButton({
   };
 
   return (
-    <Button
-      disabled={isExporting}
-      onClick={handleExport}
-      variant="outline"
-    >
+    <Button disabled={isExporting} onClick={handleExport} variant="outline">
       {isExporting ? (
         <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
       ) : (

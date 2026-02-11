@@ -70,8 +70,9 @@ function drawPageFooter(doc) {
     const pageCount = range.count;
     for (let i = 0; i < pageCount; i++) {
         doc.switchToPage(i);
-        const savedBottom = doc.page.margins.bottom;
-        doc.page.margins.bottom = 0;
+        const pageMargins = doc.page.margins;
+        const savedBottom = pageMargins.bottom;
+        pageMargins.bottom = 0;
         doc
             .moveTo(exports.PAGE.margin, exports.PAGE.height - 40)
             .lineTo(exports.PAGE.width - exports.PAGE.margin, exports.PAGE.height - 40)
@@ -92,7 +93,7 @@ function drawPageFooter(doc) {
             align: "right",
             lineBreak: false,
         });
-        doc.page.margins.bottom = savedBottom;
+        pageMargins.bottom = savedBottom;
         doc.y = exports.PAGE.margin;
     }
 }

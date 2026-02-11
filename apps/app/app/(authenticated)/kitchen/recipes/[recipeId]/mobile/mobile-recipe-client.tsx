@@ -153,7 +153,7 @@ const clearRecipeCache = (recipeId: string): void => {
   }
 };
 
-const isRecipeCached = (recipeId: string): boolean => {
+const _isRecipeCached = (recipeId: string): boolean => {
   try {
     const timestamp = localStorage.getItem(`${CACHE_TIMESTAMP_KEY}${recipeId}`);
     if (!timestamp) {
@@ -286,7 +286,7 @@ export const MobileRecipeClient = ({
     };
 
     fetchRecipeData();
-  }, [recipeId]);
+  }, [recipeId, recipe]);
 
   // Timer effect
   useEffect(() => {

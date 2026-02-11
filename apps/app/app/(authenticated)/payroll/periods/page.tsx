@@ -98,8 +98,8 @@ function getStatusBadge(status: PayrollPeriod["status"]) {
 }
 
 export default function PayrollPeriodsPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const _router = useRouter();
+  const _searchParams = useSearchParams();
   const [periods, setPeriods] = useState<PayrollPeriod[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
@@ -145,7 +145,7 @@ export default function PayrollPeriodsPage() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, pagination.page, pagination.limit]);
+  }, [statusFilter, pagination.page, pagination.limit, pagination]);
 
   useEffect(() => {
     fetchPeriods();

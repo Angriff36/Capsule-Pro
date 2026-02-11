@@ -39,8 +39,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { apiUrl } from "@/app/lib/api";
-import { ProposalExportButton } from "../components/proposal-export-button";
 import { getProposalById } from "../actions";
+import { ProposalExportButton } from "../components/proposal-export-button";
 
 interface ProposalPageProps {
   params: Promise<{ id: string }>;

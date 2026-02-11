@@ -110,35 +110,32 @@ export function WasteEntriesClient() {
   }, []);
 
   // Debounced search for inventory items
-  const debouncedSearch = useCallback(
-    async (query: string) => {
-      if (!query || query.length < 2) {
-        setFilteredItems([]);
-        setSelectedItem(null);
-        return;
-      }
+  const debouncedSearch = useCallback(async (query: string) => {
+    if (!query || query.length < 2) {
+      setFilteredItems([]);
+      setSelectedItem(null);
+      return;
+    }
 
-      setIsSearching(async () => {
-        try {
-          const response = await apiFetch(
-            `/api/inventory/items?search=${encodeURIComponent(query)}&limit=20`,
-            { credentials: "include" }
-          );
+    setIsSearching(async () => {
+      try {
+        const response = await apiFetch(
+          `/api/inventory/items?search=${encodeURIComponent(query)}&limit=20`,
+          { credentials: "include" }
+        );
 
-          if (response.ok) {
-            const data = await response.json();
-            setFilteredItems(data.data || []);
-          } else {
-            setFilteredItems([]);
-          }
-        } catch (error) {
-          console.error("Failed to search inventory items:", error);
+        if (response.ok) {
+          const data = await response.json();
+          setFilteredItems(data.data || []);
+        } else {
           setFilteredItems([]);
         }
-      });
-    },
-    [setIsSearching]
-  );
+      } catch (error) {
+        console.error("Failed to search inventory items:", error);
+        setFilteredItems([]);
+      }
+    });
+  }, []);
 
   // Search effect with debouncing
   useEffect(() => {

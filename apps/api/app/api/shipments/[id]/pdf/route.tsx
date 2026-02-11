@@ -70,7 +70,7 @@ async function fetchShipmentData(tenantId: string, shipmentId: string) {
   return shipment;
 }
 
-type ShipmentData = {
+interface ShipmentData {
   id: string;
   shipmentNumber: string;
   status: string;
@@ -117,7 +117,7 @@ type ShipmentData = {
     stateProvince: string | null;
     postalCode: string | null;
   } | null;
-};
+}
 
 function buildLocationAddress(
   parts: Array<string | null>,

@@ -184,7 +184,7 @@ describe("Status normalization", () => {
     const records = parseCsv(csvData);
 
     expect(records).toHaveLength(testCases.length);
-    testCases.forEach(([input, expected], index) => {
+    testCases.forEach(([_input, expected], index) => {
       expect(records[index].status).toBe(expected);
     });
   });

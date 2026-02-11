@@ -125,7 +125,7 @@ function getStatusBadge(status: PayrollRun["status"]) {
 }
 
 export default function PayrollRunsPage() {
-  const router = useRouter();
+  const _router = useRouter();
   const [runs, setRuns] = useState<PayrollRun[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
@@ -168,7 +168,7 @@ export default function PayrollRunsPage() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, pagination.page, pagination.limit]);
+  }, [statusFilter, pagination.page, pagination.limit, pagination]);
 
   useEffect(() => {
     fetchRuns();
@@ -203,7 +203,9 @@ export default function PayrollRunsPage() {
   };
 
   const handleApproveRun = async () => {
-    if (!selectedRun) return;
+    if (!selectedRun) {
+      return;
+    }
 
     setActionLoading(true);
     try {

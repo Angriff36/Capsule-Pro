@@ -6,99 +6,100 @@ generator client {
 datasource db {
   provider     = "postgresql"
   relationMode = "prisma"
-  schemas      = ["core", "platform", "tenant", "tenant_admin", "tenant_crm", "tenant_events", "tenant_inventory", "tenant_kitchen", "tenant_staff"]
+  schemas      = ["core", "platform", "tenant", "tenant_accounting", "tenant_admin", "tenant_crm", "tenant_events", "tenant_inventory", "tenant_kitchen", "tenant_staff"]
 }
 
 model Account {
-  id                    String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                  String
-  slug                  String                 @unique
-  defaultTimezone       String                 @default("UTC") @map("default_timezone")
-  weekStart             Int                    @default(1) @map("week_start") @db.SmallInt
-  subscriptionTier      String                 @default("trial") @map("subscription_tier")
-  subscriptionStatus    String                 @default("active") @map("subscription_status")
-  maxLocations          Int                    @default(1) @map("max_locations") @db.SmallInt
-  maxEmployees          Int                    @default(10) @map("max_employees") @db.SmallInt
-  createdAt             DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt             DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt             DateTime?              @map("deleted_at") @db.Timestamptz(6)
-  locations             Location[]
-  employees             User[]
-  kitchenTasks          KitchenTask[]
-  prepLists             PrepList[]
-  prepListItems         PrepListItem[]
-  prepTasks             PrepTask[]
-  stations              Station[]
-  taskClaims            KitchenTaskClaim[]
-  taskProgress          KitchenTaskProgress[]
-  events                Event[]
-  clients               Client[]
-  clientContacts        ClientContact[]
-  clientPreferences     ClientPreference[]
-  leads                 Lead[]
-  interactions          ClientInteraction[]
-  proposals             Proposal[]
-  proposalLineItems     ProposalLineItem[]
-  recipes               Recipe[]
-  recipeVersions        RecipeVersion[]
-  recipeIngredients     RecipeIngredient[]
-  ingredients           Ingredient[]
-  prepMethods           PrepMethod[]
-  containers            Container[]
-  dishes                Dish[]
-  menus                 Menu[]
-  menuDishes            MenuDish[]
-  prepComments          PrepComment[]
-  eventStaffAssignments EventStaffAssignment[]
-  eventTimelines        EventTimeline[]
-  eventImports          EventImport[]
-  battleBoards          BattleBoard[]
-  cateringOrders        CateringOrder[]
-  inventoryItems        InventoryItem[]
-  inventoryTransactions InventoryTransaction[]
-  inventorySuppliers    InventorySupplier[]
-  inventoryAlerts       InventoryAlert[]
-  inventoryStock        InventoryStock[]
-  inventoryForecasts    InventoryForecast[]
-  forecastInputs        ForecastInput[]
-  reorderSuggestions    ReorderSuggestion[]
-  alertsConfigs         AlertsConfig[]
-  cycleCountSessions    CycleCountSession[]
-  cycleCountRecords     CycleCountRecord[]
-  varianceReports       VarianceReport[]
-  cycleCountAuditLogs   CycleCountAuditLog[]
-  purchaseOrders        PurchaseOrder[]
-  purchaseOrderItems    PurchaseOrderItem[]
-  shipments             Shipment[]
-  shipmentItems         ShipmentItem[]
-  wasteEntries          WasteEntry[]
-  reports               Report[]
-  workflows             Workflow[]
-  notifications         Notification[]
-  schedules             Schedule[]
-  scheduleShifts        ScheduleShift[]
-  timeEntries           TimeEntry[]
-  employeeLocations      EmployeeLocation[]
-  commandBoards          CommandBoard[]
+  id                      String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                    String
+  slug                    String                   @unique
+  defaultTimezone         String                   @default("UTC") @map("default_timezone")
+  weekStart               Int                      @default(1) @map("week_start") @db.SmallInt
+  subscriptionTier        String                   @default("trial") @map("subscription_tier")
+  subscriptionStatus      String                   @default("active") @map("subscription_status")
+  maxLocations            Int                      @default(1) @map("max_locations") @db.SmallInt
+  maxEmployees            Int                      @default(10) @map("max_employees") @db.SmallInt
+  createdAt               DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime                 @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt               DateTime?                @map("deleted_at") @db.Timestamptz(6)
+  locations               Location[]
+  employees               User[]
+  kitchenTasks            KitchenTask[]
+  prepLists               PrepList[]
+  prepListItems           PrepListItem[]
+  prepTasks               PrepTask[]
+  stations                Station[]
+  taskClaims              KitchenTaskClaim[]
+  taskProgress            KitchenTaskProgress[]
+  events                  Event[]
+  clients                 Client[]
+  clientContacts          ClientContact[]
+  clientPreferences       ClientPreference[]
+  leads                   Lead[]
+  interactions            ClientInteraction[]
+  proposals               Proposal[]
+  proposalLineItems       ProposalLineItem[]
+  recipes                 Recipe[]
+  recipeVersions          RecipeVersion[]
+  recipeIngredients       RecipeIngredient[]
+  ingredients             Ingredient[]
+  prepMethods             PrepMethod[]
+  containers              Container[]
+  dishes                  Dish[]
+  menus                   Menu[]
+  menuDishes              MenuDish[]
+  prepComments            PrepComment[]
+  eventStaffAssignments   EventStaffAssignment[]
+  eventTimelines          EventTimeline[]
+  eventImports            EventImport[]
+  battleBoards            BattleBoard[]
+  cateringOrders          CateringOrder[]
+  inventoryItems          InventoryItem[]
+  inventoryTransactions   InventoryTransaction[]
+  inventorySuppliers      InventorySupplier[]
+  inventoryAlerts         InventoryAlert[]
+  inventoryStock          InventoryStock[]
+  inventoryForecasts      InventoryForecast[]
+  forecastInputs          ForecastInput[]
+  reorderSuggestions      ReorderSuggestion[]
+  alertsConfigs           AlertsConfig[]
+  cycleCountSessions      CycleCountSession[]
+  cycleCountRecords       CycleCountRecord[]
+  varianceReports         VarianceReport[]
+  cycleCountAuditLogs     CycleCountAuditLog[]
+  purchaseOrders          PurchaseOrder[]
+  purchaseOrderItems      PurchaseOrderItem[]
+  shipments               Shipment[]
+  shipmentItems           ShipmentItem[]
+  wasteEntries            WasteEntry[]
+  reports                 Report[]
+  workflows               Workflow[]
+  notifications           Notification[]
+  schedules               Schedule[]
+  scheduleShifts          ScheduleShift[]
+  timeEntries             TimeEntry[]
+  employeeLocations       EmployeeLocation[]
+  commandBoards           CommandBoard[]
   commandBoardCards       CommandBoardCard[]
   commandBoardLayouts     CommandBoardLayout[]
   commandBoardGroups      CommandBoardGroup[]
   commandBoardConnections CommandBoardConnection[]
   timelineTasks           TimelineTask[]
-  timecardEditRequests  TimecardEditRequest[]
-  allergenWarnings      AllergenWarning[]
-  eventGuests           EventGuest[]
-  eventContracts        EventContract[]
-  contractSignatures    ContractSignature[]
-  laborBudgets          LaborBudget[]
-  eventBudgets          EventBudget[]
-  eventReports          EventReport[]
-  budgetLineItems       BudgetLineItem[]
-  budgetAlerts          BudgetAlert[]
-  adminTasks            AdminTask[]
-  adminChatThreads      AdminChatThread[]
-  adminChatParticipants AdminChatParticipant[]
-  adminChatMessages     AdminChatMessage[]
+  timecardEditRequests    TimecardEditRequest[]
+  allergenWarnings        AllergenWarning[]
+  eventGuests             EventGuest[]
+  eventContracts          EventContract[]
+  contractSignatures      ContractSignature[]
+  laborBudgets            LaborBudget[]
+  eventBudgets            EventBudget[]
+  eventReports            EventReport[]
+  budgetLineItems         BudgetLineItem[]
+  budgetAlerts            BudgetAlert[]
+  adminTasks              AdminTask[]
+  adminChatThreads        AdminChatThread[]
+  adminChatParticipants   AdminChatParticipant[]
+  adminChatMessages       AdminChatMessage[]
+  chartOfAccounts         ChartOfAccount[]
 
   @@map("accounts")
   @@schema("platform")
@@ -132,28 +133,28 @@ model Location {
 }
 
 model User {
-  tenantId        String         @map("tenant_id") @db.Uuid
-  id              String         @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email           String
-  firstName       String         @default("Test") @map("first_name")
-  lastName        String         @default("User") @map("last_name")
-  role            String         @default("staff")
-  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt       DateTime?      @map("deleted_at") @db.Timestamptz(6)
-  authUserId      String?        @unique @map("auth_user_id")
-  employeeNumber  String?        @map("employee_number")
-  phone           String?
-  employmentType  EmploymentType @default(full_time) @map("employment_type")
-  hourlyRate      Decimal?       @map("hourly_rate") @db.Decimal(10, 2)
-  salaryAnnual    Decimal?       @map("salary_annual") @db.Decimal(12, 2)
-  hireDate        DateTime       @default(dbgenerated("CURRENT_DATE")) @map("hire_date") @db.Date
-  terminationDate DateTime?      @map("termination_date") @db.Date
-  isActive        Boolean        @default(true) @map("is_active")
-  avatarUrl       String?        @map("avatar_url")
-  roleId          String?        @map("role_id") @db.Uuid
-  tenant          Account        @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  payrollRole     Role?          @relation("EmployeeRole", fields: [roleId, tenantId], references: [id, tenantId])
+  tenantId              String                 @map("tenant_id") @db.Uuid
+  id                    String                 @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email                 String
+  firstName             String                 @default("Test") @map("first_name")
+  lastName              String                 @default("User") @map("last_name")
+  role                  String                 @default("staff")
+  createdAt             DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt             DateTime?              @map("deleted_at") @db.Timestamptz(6)
+  authUserId            String?                @unique @map("auth_user_id")
+  employeeNumber        String?                @map("employee_number")
+  phone                 String?
+  employmentType        EmploymentType         @default(full_time) @map("employment_type")
+  hourlyRate            Decimal?               @map("hourly_rate") @db.Decimal(10, 2)
+  salaryAnnual          Decimal?               @map("salary_annual") @db.Decimal(12, 2)
+  hireDate              DateTime               @default(dbgenerated("CURRENT_DATE")) @map("hire_date") @db.Date
+  terminationDate       DateTime?              @map("termination_date") @db.Date
+  isActive              Boolean                @default(true) @map("is_active")
+  avatarUrl             String?                @map("avatar_url")
+  roleId                String?                @map("role_id") @db.Uuid
+  tenant                Account                @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  payrollRole           Role?                  @relation("EmployeeRole", fields: [roleId, tenantId], references: [id, tenantId])
   adminChatParticipants AdminChatParticipant[]
   adminChatMessages     AdminChatMessage[]
 
@@ -332,23 +333,23 @@ model PrepListItem {
 }
 
 model Station {
-  tenantId                  String   @map("tenant_id") @db.Uuid
-  id                        String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @map("tenant_id") @db.Uuid
+  id       String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-  locationId                String   @map("location_id") @db.Uuid
+  locationId                String    @map("location_id") @db.Uuid
   name                      String
-  stationType               String   @map("station_type") // 'hot-line', 'cold-prep', 'bakery', 'garnish', 'prep-station'
-  capacitySimultaneousTasks Int      @default(1) @map("capacity_simultaneous_tasks")
+  stationType               String    @map("station_type") // 'hot-line', 'cold-prep', 'bakery', 'garnish', 'prep-station'
+  capacitySimultaneousTasks Int       @default(1) @map("capacity_simultaneous_tasks")
   equipmentList             String[]
-  isActive                  Boolean  @default(true) @map("is_active")
-  notes                     String?  @db.Text
-  createdAt                 DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt                 DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  isActive                  Boolean   @default(true) @map("is_active")
+  notes                     String?   @db.Text
+  createdAt                 DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                 DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt                 DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  prepListItems             PrepListItem[] @relation("PrepListStation")
+  prepListItems PrepListItem[] @relation("PrepListStation")
 
-  tenant                    Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@unique([tenantId, id])
   @@index([tenantId, locationId])
@@ -1086,18 +1087,18 @@ model BattleBoard {
 }
 
 model CommandBoard {
-  tenantId    String              @map("tenant_id") @db.Uuid
-  id          String              @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  eventId     String?             @map("event_id") @db.Uuid
+  tenantId    String                   @map("tenant_id") @db.Uuid
+  id          String                   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId     String?                  @map("event_id") @db.Uuid
   name        String
   description String?
-  status      String              @default("draft")
-  isTemplate  Boolean             @default(false) @map("is_template")
+  status      String                   @default("draft")
+  isTemplate  Boolean                  @default(false) @map("is_template")
   tags        String[]
-  createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt   DateTime?           @map("deleted_at") @db.Timestamptz(6)
-  tenant      Account             @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  createdAt   DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime                 @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime?                @map("deleted_at") @db.Timestamptz(6)
+  tenant      Account                  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   cards       CommandBoardCard[]
   groups      CommandBoardGroup[]
   connections CommandBoardConnection[]
@@ -1110,29 +1111,29 @@ model CommandBoard {
 }
 
 model CommandBoardCard {
-  tenantId   String               @map("tenant_id") @db.Uuid
-  id         String               @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  boardId    String               @map("board_id") @db.Uuid
+  tenantId   String             @map("tenant_id") @db.Uuid
+  id         String             @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  boardId    String             @map("board_id") @db.Uuid
   title      String
   content    String?
-  cardType   String               @default("task") @map("card_type")
-  status     String               @default("pending")
-  positionX  Int                  @default(0) @map("position_x")
-  positionY  Int                  @default(0) @map("position_y")
-  width      Int                  @default(200)
-  height     Int                  @default(150)
-  zIndex     Int                  @default(0) @map("z_index")
+  cardType   String             @default("task") @map("card_type")
+  status     String             @default("pending")
+  positionX  Int                @default(0) @map("position_x")
+  positionY  Int                @default(0) @map("position_y")
+  width      Int                @default(200)
+  height     Int                @default(150)
+  zIndex     Int                @default(0) @map("z_index")
   color      String?
-  metadata   Json                 @default("{}")
-  groupId    String?              @map("group_id") @db.Uuid
-  entityId   String?              @map("entity_id") @db.Uuid
-  entityType String?              @map("entity_type")
-  createdAt  DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt  DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt  DateTime?            @map("deleted_at") @db.Timestamptz(6)
-  tenant     Account              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  board      CommandBoard         @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
-  group      CommandBoardGroup?   @relation("CardGroup", fields: [tenantId, groupId], references: [tenantId, id])
+  metadata   Json               @default("{}")
+  groupId    String?            @map("group_id") @db.Uuid
+  entityId   String?            @map("entity_id") @db.Uuid
+  entityType String?            @map("entity_type")
+  createdAt  DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt  DateTime?          @map("deleted_at") @db.Timestamptz(6)
+  tenant     Account            @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  board      CommandBoard       @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
+  group      CommandBoardGroup? @relation("CardGroup", fields: [tenantId, groupId], references: [tenantId, id])
 
   @@id([tenantId, id])
   @@index([boardId])
@@ -1168,22 +1169,22 @@ model CommandBoardLayout {
 }
 
 model CommandBoardGroup {
-  tenantId  String   @map("tenant_id") @db.Uuid
-  id        String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  boardId   String   @map("board_id") @db.Uuid
+  tenantId  String             @map("tenant_id") @db.Uuid
+  id        String             @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  boardId   String             @map("board_id") @db.Uuid
   name      String
   color     String?
-  collapsed Boolean  @default(false)
-  positionX Int      @default(0) @map("position_x")
-  positionY Int      @default(0) @map("position_y")
-  width     Int      @default(300)
-  height    Int      @default(200)
-  zIndex    Int      @default(0) @map("z_index")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
-  tenant    Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  board     CommandBoard @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
+  collapsed Boolean            @default(false)
+  positionX Int                @default(0) @map("position_x")
+  positionY Int                @default(0) @map("position_y")
+  width     Int                @default(300)
+  height    Int                @default(200)
+  zIndex    Int                @default(0) @map("z_index")
+  createdAt DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime?          @map("deleted_at") @db.Timestamptz(6)
+  tenant    Account            @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  board     CommandBoard       @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
   cards     CommandBoardCard[] @relation("CardGroup")
 
   @@id([tenantId, id])
@@ -1193,25 +1194,25 @@ model CommandBoardGroup {
 }
 
 model CommandBoardConnection {
-  tenantId          String   @map("tenant_id") @db.Uuid
-  id                String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  boardId           String   @map("board_id") @db.Uuid
-  fromCardId        String   @map("from_card_id") @db.Uuid
-  toCardId          String   @map("to_card_id") @db.Uuid
-  relationshipType  String   @default("generic") @map("relationship_type")
-  label             String?
-  visible           Boolean  @default(true)
-  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(6)
-  tenant            Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  board             CommandBoard @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
+  tenantId         String       @map("tenant_id") @db.Uuid
+  id               String       @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  boardId          String       @map("board_id") @db.Uuid
+  fromCardId       String       @map("from_card_id") @db.Uuid
+  toCardId         String       @map("to_card_id") @db.Uuid
+  relationshipType String       @default("generic") @map("relationship_type")
+  label            String?
+  visible          Boolean      @default(true)
+  createdAt        DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt        DateTime?    @map("deleted_at") @db.Timestamptz(6)
+  tenant           Account      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  board            CommandBoard @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
 
   @@id([tenantId, id])
+  @@unique([boardId, fromCardId, toCardId, relationshipType], map: "unique_connection_per_board")
   @@index([boardId])
   @@index([fromCardId])
   @@index([toCardId])
-  @@unique([boardId, fromCardId, toCardId, relationshipType], map: "unique_connection_per_board")
   @@map("command_board_connections")
   @@schema("tenant_events")
 }
@@ -1417,20 +1418,20 @@ model InventoryStock {
 }
 
 model InventoryForecast {
-  tenantId           String   @map("tenant_id") @db.Uuid
-  id                 String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  sku                String
-  date               DateTime @db.Date
-  forecast           Decimal  @db.Decimal(10, 2)
-  lower_bound        Decimal  @db.Decimal(10, 2)
-  upper_bound        Decimal  @db.Decimal(10, 2)
-  confidence         Decimal  @db.Decimal(3, 2)
-  horizon_days       Int
-  last_updated       DateTime @default(now()) @db.Timestamptz(6)
+  tenantId              String    @map("tenant_id") @db.Uuid
+  id                    String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sku                   String
+  date                  DateTime  @db.Date
+  forecast              Decimal   @db.Decimal(10, 2)
+  lower_bound           Decimal   @db.Decimal(10, 2)
+  upper_bound           Decimal   @db.Decimal(10, 2)
+  confidence            Decimal   @db.Decimal(3, 2)
+  horizon_days          Int
+  last_updated          DateTime  @default(now()) @db.Timestamptz(6)
   actual_depletion_date DateTime? @map("actual_depletion_date") @db.Timestamptz(6)
-  error_days         Int?     @map("error_days")
-  accuracy_tracked   Boolean  @default(false) @map("accuracy_tracked")
-  tenant             Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  error_days            Int?      @map("error_days")
+  accuracy_tracked      Boolean   @default(false) @map("accuracy_tracked")
+  tenant                Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
   @@index([tenantId, sku, date], map: "inventory_forecasts_tenant_sku_date_idx")
@@ -1822,19 +1823,19 @@ model AdminTask {
 }
 
 model AdminChatThread {
-  tenantId       String                  @map("tenant_id") @db.Uuid
-  id             String                  @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  threadType     String                  @map("thread_type")
-  slug           String?
-  directKey      String?                 @map("direct_key")
-  createdBy      String?                 @map("created_by") @db.Uuid
-  lastMessageAt  DateTime?               @map("last_message_at") @db.Timestamptz(6)
-  createdAt      DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt      DateTime                @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt      DateTime?               @map("deleted_at") @db.Timestamptz(6)
-  tenant         Account                 @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  participants   AdminChatParticipant[]
-  messages       AdminChatMessage[]
+  tenantId      String                 @map("tenant_id") @db.Uuid
+  id            String                 @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  threadType    String                 @map("thread_type")
+  slug          String?
+  directKey     String?                @map("direct_key")
+  createdBy     String?                @map("created_by") @db.Uuid
+  lastMessageAt DateTime?              @map("last_message_at") @db.Timestamptz(6)
+  createdAt     DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt     DateTime?              @map("deleted_at") @db.Timestamptz(6)
+  tenant        Account                @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  participants  AdminChatParticipant[]
+  messages      AdminChatMessage[]
 
   @@id([tenantId, id])
   @@unique([tenantId, slug], map: "admin_chat_thread_slug_unique")
@@ -1846,19 +1847,19 @@ model AdminChatThread {
 }
 
 model AdminChatParticipant {
-  tenantId   String           @map("tenant_id") @db.Uuid
-  id         String           @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  threadId   String           @map("thread_id") @db.Uuid
-  userId     String           @map("user_id") @db.Uuid
-  archivedAt DateTime?        @map("archived_at") @db.Timestamptz(6)
-  clearedAt  DateTime?        @map("cleared_at") @db.Timestamptz(6)
-  lastReadAt DateTime?        @map("last_read_at") @db.Timestamptz(6)
-  createdAt  DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt  DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt  DateTime?        @map("deleted_at") @db.Timestamptz(6)
-  tenant     Account          @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  thread     AdminChatThread  @relation(fields: [tenantId, threadId], references: [tenantId, id], onDelete: Cascade)
-  user       User             @relation(fields: [tenantId, userId], references: [tenantId, id], onDelete: Restrict)
+  tenantId   String          @map("tenant_id") @db.Uuid
+  id         String          @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  threadId   String          @map("thread_id") @db.Uuid
+  userId     String          @map("user_id") @db.Uuid
+  archivedAt DateTime?       @map("archived_at") @db.Timestamptz(6)
+  clearedAt  DateTime?       @map("cleared_at") @db.Timestamptz(6)
+  lastReadAt DateTime?       @map("last_read_at") @db.Timestamptz(6)
+  createdAt  DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt  DateTime?       @map("deleted_at") @db.Timestamptz(6)
+  tenant     Account         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  thread     AdminChatThread @relation(fields: [tenantId, threadId], references: [tenantId, id], onDelete: Cascade)
+  user       User            @relation(fields: [tenantId, userId], references: [tenantId, id], onDelete: Restrict)
 
   @@id([tenantId, id])
   @@unique([tenantId, threadId, userId], map: "admin_chat_participant_unique")
@@ -2772,21 +2773,21 @@ model payroll_runs {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model TimecardApproval {
-  tenantId        String    @map("tenant_id") @db.Uuid
-  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  payrollRunId    String    @map("payroll_run_id") @db.Uuid
-  employeeId      String    @map("employee_id") @db.Uuid
-  submittedAt     DateTime  @default(now()) @map("submitted_at") @db.Timestamptz(6)
-  submittedBy     String    @map("submitted_by") @db.Uuid
-  approvedBy      String?   @map("approved_by") @db.Uuid
-  approvedAt      DateTime? @map("approved_at") @db.Timestamptz(6)
-  status          String    @default("pending") // pending, approved, rejected
-  rejectReason    String?   @map("reject_reason")
-  reviewedBy      String?   @map("reviewed_by") @db.Uuid
-  reviewedAt      DateTime? @map("reviewed_at") @db.Timestamptz(6)
-  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenantId     String    @map("tenant_id") @db.Uuid
+  id           String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  payrollRunId String    @map("payroll_run_id") @db.Uuid
+  employeeId   String    @map("employee_id") @db.Uuid
+  submittedAt  DateTime  @default(now()) @map("submitted_at") @db.Timestamptz(6)
+  submittedBy  String    @map("submitted_by") @db.Uuid
+  approvedBy   String?   @map("approved_by") @db.Uuid
+  approvedAt   DateTime? @map("approved_at") @db.Timestamptz(6)
+  status       String    @default("pending") // pending, approved, rejected
+  rejectReason String?   @map("reject_reason")
+  reviewedBy   String?   @map("reviewed_by") @db.Uuid
+  reviewedAt   DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([payrollRunId], map: "timecard_approvals_run_idx")
@@ -2798,18 +2799,18 @@ model TimecardApproval {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model ApprovalHistory {
-  tenantId        String    @map("tenant_id") @db.Uuid
-  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  entityType      String    @map("entity_type") // "payroll_run" or "timecard_approval"
-  entityId        String    @map("entity_id") @db.Uuid
-  action          String    // "submitted", "approved", "rejected", "reviewed"
-  performedBy     String    @map("performed_by") @db.Uuid
-  performedAt     DateTime  @default(now()) @map("performed_at") @db.Timestamptz(6)
-  previousStatus  String?   @map("previous_status")
-  newStatus       String    @map("new_status")
-  notes           String?
-  metadata        Json?     @default("{}")
-  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  tenantId       String   @map("tenant_id") @db.Uuid
+  id             String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  entityType     String   @map("entity_type") // "payroll_run" or "timecard_approval"
+  entityId       String   @map("entity_id") @db.Uuid
+  action         String // "submitted", "approved", "rejected", "reviewed"
+  performedBy    String   @map("performed_by") @db.Uuid
+  performedAt    DateTime @default(now()) @map("performed_at") @db.Timestamptz(6)
+  previousStatus String?  @map("previous_status")
+  newStatus      String   @map("new_status")
+  notes          String?
+  metadata       Json?    @default("{}")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([entityType, entityId], map: "approval_history_entity_idx")
@@ -2935,8 +2936,8 @@ model WasteEntry {
 
 /// Override audit trail for tracking constraint overrides
 model OverrideAudit {
-  tenantId        String    @map("tenant_id") @db.Uuid
-  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @map("tenant_id") @db.Uuid
+  id       String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
   entityType      String    @map("entity_type")
   entityId        String    @map("entity_id") @db.Uuid
@@ -2947,7 +2948,7 @@ model OverrideAudit {
   authorizedBy    String?   @map("authorized_by") @db.Uuid
   authorizedAt    DateTime? @map("authorized_at") @db.Timestamptz(6)
 
-  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@unique([tenantId, id])
   @@index([tenantId, entityType, entityId])
@@ -3183,4 +3184,36 @@ enum ShipmentStatus {
   cancelled
 
   @@schema("core")
+}
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+
+  @@schema("tenant_accounting")
+}
+
+model ChartOfAccount {
+  tenantId      String      @map("tenant_id") @db.Uuid
+  id            String      @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accountNumber String      @unique @map("account_number")
+  accountName   String      @map("account_name")
+  accountType   AccountType @map("account_type")
+  parentId      String?     @map("parent_id") @db.Uuid
+  isActive      Boolean     @default(true) @map("is_active")
+  description   String?     @db.Text
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@unique([id])
+  @@index([tenantId])
+  @@index([tenantId, accountNumber])
+  @@map("chart_of_accounts")
+  @@schema("tenant_accounting")
 }

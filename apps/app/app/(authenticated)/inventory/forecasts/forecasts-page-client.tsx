@@ -497,7 +497,7 @@ export const ForecastsPageClient = () => {
                         }),
                         stock: Math.max(0, point.projectedStock),
                         usage: point.usage,
-                        hasEvent: point.eventName ? true : false,
+                        hasEvent: !!point.eventName,
                         eventName: point.eventName || "",
                       }));
 
@@ -621,7 +621,7 @@ export const ForecastsPageClient = () => {
                               }
                             ),
                             usage: point.usage,
-                            isEvent: point.eventName ? true : false,
+                            isEvent: !!point.eventName,
                           })
                         );
 

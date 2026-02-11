@@ -25,7 +25,7 @@ function parseDate(value) {
     // Try Excel serial date format
     const num = Number.parseFloat(trimmed);
     if (!Number.isNaN(num) && num > 0) {
-        const epoch = Math.round((num - 25569) * 86400 * 1000);
+        const epoch = Math.round((num - 25_569) * 86_400 * 1000);
         const excelDate = new Date(epoch);
         if (!Number.isNaN(excelDate.getTime())) {
             return excelDate;
