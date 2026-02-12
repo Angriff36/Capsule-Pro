@@ -21,12 +21,14 @@ import {
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { bulkUpdateCards } from "../actions/bulk-update-cards";
+import type { BulkUpdateInput } from "../actions/bulk-update-cards";
 import type { CardStatus, CommandBoardCard } from "../types";
 
 interface BulkEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   selectedCards: CommandBoardCard[];
+  onBulkUpdate?: (updateData: Omit<BulkUpdateInput, "cardIds">) => Promise<void>;
   onUpdate?: () => void;
 }
 
@@ -52,6 +54,7 @@ export function BulkEditDialog({
   open,
   onOpenChange,
   selectedCards,
+  onBulkUpdate,
   onUpdate,
 }: BulkEditDialogProps) {
   const [isUpdating, setIsUpdating] = useState(false);
@@ -100,38 +103,48 @@ export function BulkEditDialog({
 
     const cardIds = selectedCards.map((c) => c.id);
 
-    const updateData: Parameters<typeof bulkUpdateCards>[0] = {
-      cardIds,
-    };
+    const updateData: Omit<BulkUpdateInput, "cardIds"> = {};
 
     // Only include fields that were explicitly edited
     if (editStatus && statusValue) {
-      updateData.status = statusValue as CardStatus;
+      (updateData as BulkUpdateInput).status = statusValue as CardStatus;
     }
     if (editColor) {
-      updateData.color = colorValue || null;
+      (updateData as BulkUpdateInput).color = colorValue || null;
     }
     if (editTitle && titleValue) {
-      updateData.title = titleValue;
+      (updateData as BulkUpdateInput).title = titleValue;
     }
     if (editContent) {
-      updateData.content = contentValue || null;
+      (updateData as BulkUpdateInput).content = contentValue || null;
     }
 
     // Check if at least one field is being updated
-    if (Object.keys(updateData).length <= 1) {
+    if (Object.keys(updateData).length === 0) {
       setError("Please select at least one property to update");
       setIsUpdating(false);
       return;
     }
 
-    const result = await bulkUpdateCards(updateData);
-
-    if (result.success) {
-      onOpenChange(false);
-      onUpdate?.();
+    // Use callback if provided (for undo/redo support), otherwise fallback to direct action
+    if (onBulkUpdate) {
+      try {
+        await onBulkUpdate(updateData);
+        onOpenChange(false);
+        onUpdate?.();
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "Failed to update cards");
+      }
     } else {
-      setError(result.error || "Failed to update cards");
+      // Fallback: Call action directly (for backward compatibility)
+      const result = await bulkUpdateCards({ cardIds, ...updateData });
+
+      if (result.success) {
+        onOpenChange(false);
+        onUpdate?.();
+      } else {
+        setError(result.error || "Failed to update cards");
+      }
     }
 
     setIsUpdating(false);

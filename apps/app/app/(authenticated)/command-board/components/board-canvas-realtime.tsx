@@ -36,6 +36,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { createCard, deleteCard, updateCard } from "../actions/cards";
+import { bulkUpdateCards } from "../actions/bulk-update-cards";
 import {
   deleteConnection,
   getConnectionsForBoard,
@@ -2417,10 +2418,37 @@ export function BoardCanvas({
 
       {/* Bulk Edit Dialog */}
       <BulkEditDialog
+        onBulkUpdate={async (updateData) => {
+          // Record action before execution for undo/redo support
+          recordAction("bulkEditCards", state, `Bulk update ${state.selectedCardIds.length} cards`);
+
+          // Execute the bulk update with card IDs
+          const result = await bulkUpdateCards({
+            cardIds: state.selectedCardIds,
+            ...updateData,
+          });
+
+          if (!result.success) {
+            throw new Error(result.error ?? "Failed to bulk update cards");
+          }
+
+          // Refresh cards from server to get latest state
+          const response = await fetch(`/api/command-board/${boardId}/cards`);
+          if (!response.ok) {
+            throw new Error("Failed to refresh cards after bulk update");
+          }
+          const data = await response.json();
+          if (data.cards) {
+            setState((prev) => ({
+              ...prev,
+              cards: data.cards,
+            }));
+          }
+        }}
         onOpenChange={setShowBulkEditDialog}
         onUpdate={async () => {
+          // Legacy update path for backward compatibility
           // Refresh cards from server after bulk update
-          // This ensures we get latest state including any server-side defaults
           const updatedIds = state.selectedCardIds;
           if (updatedIds.length === 0) {
             return;

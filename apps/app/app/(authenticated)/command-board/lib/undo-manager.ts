@@ -25,6 +25,7 @@ export type CommandType =
   | "deleteCard"
   | "batchUpdateCardPositions"
   | "bringCardToFront"
+  | "bulkEditCards"
   | "createConnection"
   | "updateConnection"
   | "deleteConnection"

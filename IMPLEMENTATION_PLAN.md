@@ -14,6 +14,7 @@
 | 2.3 | Conflict Resolution | COMPLETED |
 | 3.1 | Interactive Anchor Points | COMPLETED |
 | 4.1 | UserPreference Model | COMPLETED |
+| 4.2 | Bulk Edit Command | COMPLETED |
 
 ### Pending / Not Started
 
@@ -87,3 +88,10 @@
 - Server actions: `apps/app/app/(authenticated)/command-board/actions/preferences.ts`
 - API routes: `apps/api/app/api/user-preferences/route.ts`
 - Functions: `getUserPreferences`, `getUserPreference`, `saveUserPreference`, `deleteUserPreference`
+
+### 9. Bulk Edit Command (4.2) - COMPLETED
+- `apps/app/app/(authenticated)/command-board/lib/commands/bulk-edit-command.ts` - BulkEditCommand with undo/redo support
+- `apps/app/app/(authenticated)/command-board/lib/undo-manager.ts` - Added `bulkEditCards` to CommandType union
+- `apps/app/app/(authenticated)/command-board/components/bulk-edit-dialog.tsx` - Updated to use `onBulkUpdate` callback pattern
+- `apps/app/app/(authenticated)/command-board/components/board-canvas-realtime.tsx` - Integrated with `recordAction` for undo/redo support
+- Bulk edit operations now support undo/redo through the snapshot-based system
