@@ -3,8 +3,9 @@
  * Each command encapsulates a reversible action on the command board.
  */
 
-import type { UndoRedoCommand } from "../../types/undo-redo";
+import type { UndoRedoCommand } from "../../types-specific/undo-redo";
 
+export * from "./bulk-edit-command";
 export * from "./card-create-command";
 export * from "./card-delete-command";
 export * from "./card-move-command";
@@ -16,7 +17,6 @@ export * from "./group-collapse-command";
 export * from "./group-create-command";
 export * from "./group-delete-command";
 export * from "./group-update-command";
-export * from "./bulk-edit-command";
 
 /**
  * Type guard to check if a value is an UndoRedoCommand

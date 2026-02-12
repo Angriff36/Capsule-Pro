@@ -5,7 +5,7 @@
 
 import { updateConnection } from "../../actions/connections";
 import type { CardConnection } from "../../types";
-import type { UndoRedoCommand } from "../../types/undo-redo";
+import type { UndoRedoCommand } from "../../types-specific/undo-redo";
 
 /**
  * Input for ConnectionUpdateCommand

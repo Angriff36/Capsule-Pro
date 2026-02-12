@@ -87,7 +87,7 @@ export async function GET_KEY(req: NextRequest) {
     }
 
     const keyParts = req.url.split("/").filter(Boolean);
-    const preferenceKey = keyParts[keyParts.length - 1];
+    const preferenceKey = keyParts.at(-1);
 
     if (!preferenceKey) {
       return NextResponse.json(
@@ -243,7 +243,7 @@ export async function PUT_KEY(req: NextRequest) {
     }
 
     const keyParts = req.url.split("/").filter(Boolean);
-    const preferenceKey = keyParts[keyParts.length - 1];
+    const preferenceKey = keyParts.at(-1);
 
     if (!preferenceKey) {
       return NextResponse.json(
@@ -269,7 +269,7 @@ export async function PUT_KEY(req: NextRequest) {
       return NextResponse.json({ error: "User ID required" }, { status: 400 });
     }
 
-    const updateResult = await database.$executeRaw<
+    const updateResult = await database.$queryRaw<
       Array<{ id: string; preference_key: string }>
     >(
       Prisma.sql`
@@ -312,7 +312,7 @@ export async function DELETE_KEY(req: NextRequest) {
   try {
     const { orgId } = await auth();
     if (!orgId) {
-      return Next.json({ error: "Not authenticated" }, { status: 401 });
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
@@ -321,7 +321,7 @@ export async function DELETE_KEY(req: NextRequest) {
     }
 
     const keyParts = req.url.split("/").filter(Boolean);
-    const preferenceKey = keyParts[keyParts.length - 1];
+    const preferenceKey = keyParts.at(-1);
 
     if (!preferenceKey) {
       return NextResponse.json(
@@ -337,7 +337,7 @@ export async function DELETE_KEY(req: NextRequest) {
       return NextResponse.json({ error: "User ID required" }, { status: 400 });
     }
 
-    const deleteResult = await database.$executeRaw<Array<{ id: string }>>(
+    const deleteResult = await database.$queryRaw<Array<{ id: string }>>(
       Prisma.sql`
       UPDATE tenant_staff.user_preferences
       SET deleted_at = CURRENT_TIMESTAMP

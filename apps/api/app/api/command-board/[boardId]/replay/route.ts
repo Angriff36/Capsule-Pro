@@ -173,7 +173,7 @@ export async function GET(request: Request, context: RouteContext) {
       where: countWhereClause,
     });
 
-    const lastSequence = events.length > 0 ? events.at(-1).sequence : 0;
+    const lastSequence = events.length > 0 ? (events.at(-1)?.sequence ?? 0) : 0;
     const hasMore = events.length === limit;
 
     return NextResponse.json({

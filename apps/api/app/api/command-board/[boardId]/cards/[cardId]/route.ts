@@ -194,7 +194,7 @@ function buildUpdateFields(body: UpdateCommandBoardCardRequest): {
 
   // Process fields with configuration
   for (const config of fieldConfigs) {
-    const value = (body as Record<string, unknown>)[config.key];
+    const value = (body as unknown as Record<string, unknown>)[config.key];
     if (value === undefined) {
       continue;
     }

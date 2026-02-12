@@ -20,15 +20,17 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { useEffect, useState } from "react";
-import { bulkUpdateCards } from "../actions/bulk-update-cards";
 import type { BulkUpdateInput } from "../actions/bulk-update-cards";
+import { bulkUpdateCards } from "../actions/bulk-update-cards";
 import type { CardStatus, CommandBoardCard } from "../types";
 
 interface BulkEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   selectedCards: CommandBoardCard[];
-  onBulkUpdate?: (updateData: Omit<BulkUpdateInput, "cardIds">) => Promise<void>;
+  onBulkUpdate?: (
+    updateData: Omit<BulkUpdateInput, "cardIds">
+  ) => Promise<void>;
   onUpdate?: () => void;
 }
 
@@ -133,7 +135,9 @@ export function BulkEditDialog({
         onOpenChange(false);
         onUpdate?.();
       } catch (error) {
-        setError(error instanceof Error ? error.message : "Failed to update cards");
+        setError(
+          error instanceof Error ? error.message : "Failed to update cards"
+        );
       }
     } else {
       // Fallback: Call action directly (for backward compatibility)

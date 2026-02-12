@@ -22,11 +22,11 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import type {
-  CardVersion,
   CommandBoardCardContent,
   ConflictDetails,
   ConflictResolution,
 } from "../lib/conflict-resolver";
+import type { CardPosition } from "../types";
 
 interface ConflictResolutionDialogProps {
   open: boolean;
@@ -76,20 +76,22 @@ function formatTimestamp(date: Date): string {
   }).format(date);
 }
 
-function formatPosition(
-  position: typeof CardVersion.prototype.position
-): string {
+function formatPosition(position: CardPosition): string {
   return `x: ${position.x}, y: ${position.y}, w: ${position.width}, h: ${position.height}`;
 }
 
 function getPositionDiffs(
-  local: typeof CardVersion.prototype.position,
-  remote: typeof CardVersion.prototype.position
+  local: CardPosition,
+  remote: CardPosition
 ): readonly string[] {
   const diffs: string[] = [];
   for (const field of POSITION_FIELDS) {
-    if (local[field] !== remote[field]) {
-      diffs.push(`${field}: ${local[field]} → ${remote[field]}`);
+    if (
+      local[field as keyof CardPosition] !== remote[field as keyof CardPosition]
+    ) {
+      diffs.push(
+        `${field}: ${local[field as keyof CardPosition]} → ${remote[field as keyof CardPosition]}`
+      );
     }
   }
   return diffs;

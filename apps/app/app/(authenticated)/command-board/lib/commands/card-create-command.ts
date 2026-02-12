@@ -7,7 +7,7 @@
 
 import { createCard, deleteCard } from "../../actions/cards";
 import type { CreateCardInput } from "../../types";
-import type { UndoRedoCommand } from "../../types/undo-redo";
+import type { UndoRedoCommand } from "../../types-specific/undo-redo";
 
 /**
  * Command to create a new card

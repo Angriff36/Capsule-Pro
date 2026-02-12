@@ -35,8 +35,8 @@ import {
   useState,
 } from "react";
 import { toast } from "sonner";
-import { createCard, deleteCard, updateCard } from "../actions/cards";
 import { bulkUpdateCards } from "../actions/bulk-update-cards";
+import { createCard, deleteCard, updateCard } from "../actions/cards";
 import {
   deleteConnection,
   getConnectionsForBoard,
@@ -176,7 +176,7 @@ export function BoardCanvas({
   const [hoveredAnchorId, setHoveredAnchorId] = useState<string | null>(null);
   const [draggingConnection, setDraggingConnection] =
     useState<DraggingConnectionType | null>(null);
-  const [cursorPosition, setCursorPosition] = useState<Point>({ x: 0, y: 0 });
+  const [_cursorPosition, _setCursorPosition] = useState<Point>({ x: 0, y: 0 });
 
   const [showSettings, setShowSettings] = useState(false);
   const [showEmptyState, setShowEmptyState] = useState(
@@ -292,111 +292,118 @@ export function BoardCanvas({
     boardId,
     enabled: true,
     maxEvents: 100,
-    onApplyEvents: useCallback((events: ReplayEvent[]) => {
-      // Apply batch of replay events to state
-      setState((prev) => {
-        let updatedCards = [...prev.cards];
+    onApplyEvents: useCallback(
+      (events: ReplayEvent[]) => {
+        // Apply batch of replay events to state
+        setState((prev) => {
+          let updatedCards = [...prev.cards];
 
-        for (const event of events) {
-          const payload = event.payload as Record<string, unknown>;
+          for (const event of events) {
+            const payload = event.payload as Record<string, unknown>;
 
-          switch (event.eventType) {
-            case "command.board.card.created": {
-              // Check if card already exists (might be from initial load)
-              const exists = updatedCards.some((c) => c.id === payload.cardId);
-              if (!exists) {
-                updatedCards.push({
-                  id: payload.cardId as string,
-                  tenantId: (payload.tenantId as string) ?? "",
-                  boardId: (payload.boardId as string) ?? boardId,
-                  title: (payload.title as string) ?? "Untitled",
-                  content: (payload.content as string) ?? null,
-                  cardType: (payload.cardType as CardType) ?? CardType.generic,
-                  status: (payload.status as CardStatus) ?? "active",
-                  position: {
-                    x: (payload.positionX as number) ?? 0,
-                    y: (payload.positionY as number) ?? 0,
-                    width: (payload.width as number) ?? 200,
-                    height: (payload.height as number) ?? 150,
-                    zIndex: (payload.zIndex as number) ?? 0,
-                  },
-                  color: (payload.color as string) ?? null,
-                  metadata: (payload.metadata as Record<string, unknown>) ?? {},
-                  createdAt: (payload.createdAt as Date) ?? new Date(),
-                  updatedAt: (payload.updatedAt as Date) ?? new Date(),
-                  deletedAt: (payload.deletedAt as Date | null) ?? null,
-                });
+            switch (event.eventType) {
+              case "command.board.card.created": {
+                // Check if card already exists (might be from initial load)
+                const exists = updatedCards.some(
+                  (c) => c.id === payload.cardId
+                );
+                if (!exists) {
+                  updatedCards.push({
+                    id: payload.cardId as string,
+                    tenantId: (payload.tenantId as string) ?? "",
+                    boardId: (payload.boardId as string) ?? boardId,
+                    title: (payload.title as string) ?? "Untitled",
+                    content: (payload.content as string) ?? null,
+                    cardType:
+                      (payload.cardType as CardType) ?? CardType.generic,
+                    status: (payload.status as CardStatus) ?? "active",
+                    position: {
+                      x: (payload.positionX as number) ?? 0,
+                      y: (payload.positionY as number) ?? 0,
+                      width: (payload.width as number) ?? 200,
+                      height: (payload.height as number) ?? 150,
+                      zIndex: (payload.zIndex as number) ?? 0,
+                    },
+                    color: (payload.color as string) ?? null,
+                    metadata:
+                      (payload.metadata as Record<string, unknown>) ?? {},
+                    createdAt: (payload.createdAt as Date) ?? new Date(),
+                    updatedAt: (payload.updatedAt as Date) ?? new Date(),
+                    deletedAt: (payload.deletedAt as Date | null) ?? null,
+                  });
+                }
+                break;
               }
-              break;
-            }
 
-            case "command.board.card.moved": {
-              const positionPayload = payload.newPosition as {
-                x: number;
-                y: number;
-              };
-              updatedCards = updatedCards.map((c) =>
-                c.id === payload.cardId
-                  ? {
-                      ...c,
-                      position: {
-                        ...c.position,
-                        x: positionPayload.x,
-                        y: positionPayload.y,
-                      },
-                    }
-                  : c
-              );
-              break;
-            }
+              case "command.board.card.moved": {
+                const positionPayload = payload.newPosition as {
+                  x: number;
+                  y: number;
+                };
+                updatedCards = updatedCards.map((c) =>
+                  c.id === payload.cardId
+                    ? {
+                        ...c,
+                        position: {
+                          ...c.position,
+                          x: positionPayload.x,
+                          y: positionPayload.y,
+                        },
+                      }
+                    : c
+                );
+                break;
+              }
 
-            case "command.board.card.deleted": {
-              updatedCards = updatedCards.filter(
-                (c) => c.id !== payload.cardId
-              );
-              break;
-            }
+              case "command.board.card.deleted": {
+                updatedCards = updatedCards.filter(
+                  (c) => c.id !== payload.cardId
+                );
+                break;
+              }
 
-            case "command.board.card.updated": {
-              const changes = payload.changes as Record<string, unknown>;
-              updatedCards = updatedCards.map((c) =>
-                c.id === payload.cardId ? { ...c, ...changes } : c
-              );
-              break;
-            }
+              case "command.board.card.updated": {
+                const changes = payload.changes as Record<string, unknown>;
+                updatedCards = updatedCards.map((c) =>
+                  c.id === payload.cardId ? { ...c, ...changes } : c
+                );
+                break;
+              }
 
-            // Connection events
-            case "command.board.connection.created": {
-              const newConnection: CardConnection = {
-                id: payload.connectionId as string,
-                fromCardId: payload.fromCardId as string,
-                toCardId: payload.toCardId as string,
-                relationshipType:
-                  (payload.relationshipType as RelationshipType) ?? "generic",
-                visible: true,
-              };
-              setConnections((prev) => {
-                const exists = prev.some((c) => c.id === newConnection.id);
-                return exists ? prev : [...prev, newConnection];
-              });
-              break;
-            }
+              // Connection events
+              case "command.board.connection.created": {
+                const newConnection: CardConnection = {
+                  id: payload.connectionId as string,
+                  fromCardId: payload.fromCardId as string,
+                  toCardId: payload.toCardId as string,
+                  relationshipType:
+                    (payload.relationshipType as RelationshipType) ?? "generic",
+                  visible: true,
+                };
+                setConnections((prev) => {
+                  const exists = prev.some((c) => c.id === newConnection.id);
+                  return exists ? prev : [...prev, newConnection];
+                });
+                break;
+              }
 
-            case "command.board.connection.deleted": {
-              setConnections((prev) =>
-                prev.filter((c) => c.id !== payload.connectionId)
-              );
-              break;
-            }
+              case "command.board.connection.deleted": {
+                setConnections((prev) =>
+                  prev.filter((c) => c.id !== payload.connectionId)
+                );
+                break;
+              }
 
-            default:
-              break;
+              default:
+                break;
+            }
           }
-        }
 
-        return { ...prev, cards: updatedCards };
-      });
-    }, []),
+          return { ...prev, cards: updatedCards };
+        });
+      },
+      [boardId]
+    ),
     onReplayComplete: useCallback(() => {
       // Replay is done, enable live editing
       toast.info("Board activity loaded");
@@ -2420,7 +2427,11 @@ export function BoardCanvas({
       <BulkEditDialog
         onBulkUpdate={async (updateData) => {
           // Record action before execution for undo/redo support
-          recordAction("bulkEditCards", state, `Bulk update ${state.selectedCardIds.length} cards`);
+          recordAction(
+            "bulkEditCards",
+            state,
+            `Bulk update ${state.selectedCardIds.length} cards`
+          );
 
           // Execute the bulk update with card IDs
           const result = await bulkUpdateCards({

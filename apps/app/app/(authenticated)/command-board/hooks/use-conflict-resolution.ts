@@ -11,7 +11,6 @@
 import type { VectorClock } from "@repo/realtime";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import type { CommandBoardCard } from "../../types";
 import {
   type CommandBoardCardContent,
   type ConflictDetails,
@@ -22,6 +21,7 @@ import {
   getConflictSeverity,
   type MergeOptions,
 } from "../lib/conflict-resolver";
+import type { CommandBoardCard } from "../types";
 
 // =============================================================================
 // Types

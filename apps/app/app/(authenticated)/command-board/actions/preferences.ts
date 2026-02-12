@@ -190,7 +190,10 @@ export async function saveUserPreference(
       // Update existing preference
       const updated = await db.userPreference.update({
         where: {
-          id: existing.id,
+          tenantId_id: {
+            tenantId,
+            id: existing.id,
+          },
         },
         data: {
           preferenceValue: preferenceValue as Prisma.InputJsonValue,
@@ -267,7 +270,7 @@ export async function deleteUserPreference(
 
   try {
     // Soft delete by setting deletedAt
-    const updated = await db.userPreference.updateMany({
+    const _updated = await db.userPreference.updateMany({
       where: {
         tenantId,
         userId,

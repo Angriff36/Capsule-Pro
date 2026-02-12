@@ -5,7 +5,7 @@
 
 import { createGroup, deleteGroup } from "../../actions/groups";
 import type { CreateGroupInput } from "../../types";
-import type { UndoRedoCommand } from "../../types/undo-redo";
+import type { UndoRedoCommand } from "../../types-specific/undo-redo";
 
 /**
  * Input for GroupCreateCommand

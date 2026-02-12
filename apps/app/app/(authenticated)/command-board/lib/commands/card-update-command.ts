@@ -7,7 +7,7 @@
 
 import { updateCard } from "../../actions/cards";
 import type { UpdateCardInput } from "../../types";
-import type { UndoRedoCommand } from "../../types/undo-redo";
+import type { UndoRedoCommand } from "../../types-specific/undo-redo";
 
 /**
  * Stored card properties for undo/redo

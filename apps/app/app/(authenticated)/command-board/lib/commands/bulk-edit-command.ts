@@ -5,10 +5,10 @@
  * Can be undone by reverting each card to its old properties.
  */
 
-import { bulkUpdateCards } from "../../actions/bulk-update-cards";
 import type { BulkUpdateInput } from "../../actions/bulk-update-cards";
+import { bulkUpdateCards } from "../../actions/bulk-update-cards";
 import type { CommandBoardCard } from "../../types";
-import type { UndoRedoCommand } from "../../types/undo-redo";
+import type { UndoRedoCommand } from "../../types-specific/undo-redo";
 
 /**
  * Properties that can be bulk updated on cards (excludes cardIds)
@@ -16,9 +16,9 @@ import type { UndoRedoCommand } from "../../types/undo-redo";
 export type BulkUpdateFields = Omit<BulkUpdateInput, "cardIds">;
 
 /**
- * Stored card properties for undo/redo
+ * Stored card properties for undo/redo (bulk edit specific)
  */
-export interface StoredCardProperties {
+export interface BulkEditStoredProperties {
   title?: string;
   content?: string;
   status?: "active" | "completed" | "archived";
@@ -30,7 +30,7 @@ export interface StoredCardProperties {
  */
 export interface CardSnapshot {
   cardId: string;
-  oldProperties: StoredCardProperties;
+  oldProperties: BulkEditStoredProperties;
 }
 
 /**
@@ -122,7 +122,7 @@ export function createCardSnapshots(
   propertiesToUpdate: BulkUpdateFields
 ): CardSnapshot[] {
   return cards.map((card) => {
-    const oldProperties: StoredCardProperties = {};
+    const oldProperties: BulkEditStoredProperties = {};
 
     if (propertiesToUpdate.title !== undefined) {
       oldProperties.title = card.title;

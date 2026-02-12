@@ -4,7 +4,7 @@
  */
 
 import { toggleGroupCollapsed } from "../../actions/groups";
-import type { UndoRedoCommand } from "../../types/undo-redo";
+import type { UndoRedoCommand } from "../../types-specific/undo-redo";
 
 /**
  * Input for GroupCollapseCommand

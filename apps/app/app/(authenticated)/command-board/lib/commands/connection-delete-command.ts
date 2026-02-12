@@ -5,7 +5,7 @@
 
 import { deleteConnection } from "../../actions/connections";
 import type { CardConnection } from "../../types";
-import type { UndoRedoCommand } from "../../types/undo-redo";
+import type { UndoRedoCommand } from "../../types-specific/undo-redo";
 
 /**
  * Input for ConnectionDeleteCommand
@@ -21,6 +21,7 @@ export class ConnectionDeleteCommand implements UndoRedoCommand {
   description = "Delete connection";
   timestamp: Date;
   userId?: string;
+  deletedAt?: Date;
 
   private readonly connection: CardConnection;
   private readonly oldConnection: CardConnection;

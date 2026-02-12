@@ -6,7 +6,7 @@
 import { database } from "@repo/database";
 import { deleteGroup as deleteGroupAction } from "../../actions/groups";
 import type { CommandBoardGroup } from "../../types";
-import type { UndoRedoCommand } from "../../types/undo-redo";
+import type { UndoRedoCommand } from "../../types-specific/undo-redo";
 
 /**
  * Input for GroupDeleteCommand

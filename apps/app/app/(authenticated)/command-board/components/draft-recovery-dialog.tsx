@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import { AlertTriangle, Clock } from "lucide-react";
-import type { DraftRecoveryDialogProps } from "../types/draft-recovery-dialog-props";
+import type { DraftRecoveryDialogProps } from "../types-specific/draft-recovery-dialog-props";
 
 /**
  * Utility function to format timestamp in a human-readable way

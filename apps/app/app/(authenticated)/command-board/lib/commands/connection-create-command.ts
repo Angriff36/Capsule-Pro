@@ -5,7 +5,7 @@
 
 import type { CreateConnectionInput } from "../../actions/connections";
 import { createConnection, deleteConnection } from "../../actions/connections";
-import type { UndoRedoCommand } from "../../types/undo-redo";
+import type { UndoRedoCommand } from "../../types-specific/undo-redo";
 
 /**
  * Input for ConnectionCreateCommand

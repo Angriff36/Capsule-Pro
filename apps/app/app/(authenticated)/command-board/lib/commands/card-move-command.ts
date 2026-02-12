@@ -7,7 +7,7 @@
 
 import { updateCard } from "../../actions/cards";
 import type { CardPosition } from "../../types";
-import type { UndoRedoCommand } from "../../types/undo-redo";
+import type { UndoRedoCommand } from "../../types-specific/undo-redo";
 
 /**
  * Command to move a card

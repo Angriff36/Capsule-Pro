@@ -2,7 +2,7 @@
 // This route is intentionally separate from the production claim endpoint.
 
 import { auth } from "@repo/auth/server";
-import type { NextRequest, RouteContext } from "next/server";
+import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   manifestErrorResponse,
@@ -10,10 +10,11 @@ import {
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
-export async function POST(
-  request: NextRequest,
-  context: RouteContext<"/api/kitchen/tasks/[id]/claim-shadow-manifest">
-) {
+interface RouteContext {
+  params: Promise<{ id: string }>;
+}
+
+export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const { orgId, userId } = await auth();
     if (!(userId && orgId)) {

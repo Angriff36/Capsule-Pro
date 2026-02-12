@@ -4,7 +4,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import { differenceInSeconds, format } from "date-fns";
 import { Check, Clock, Loader2, Save } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface AutoSaveIndicatorProps {
   isSaving: boolean;
@@ -39,6 +39,23 @@ const timeFormats = {
   days: (date: Date) => `Saved on ${format(date, "MMM d, yyyy")}`,
 };
 
+const getFormattedTime = (date: Date): string => {
+  // Check formats in order from most recent to oldest
+  for (const [key, formatter] of Object.entries(timeFormats)) {
+    if (key === "justNow") {
+      continue; // Special case
+    }
+
+    const result = formatter(date);
+    if (result) {
+      return result;
+    }
+  }
+
+  // Fallback to days format
+  return timeFormats.days(date);
+};
+
 export function AutoSaveIndicator({
   isSaving,
   lastSavedAt,
@@ -60,24 +77,7 @@ export function AutoSaveIndicator({
     }, 30_000);
 
     return () => clearInterval(timer);
-  }, [lastSavedAt, getFormattedTime]);
-
-  const getFormattedTime = useCallback((date: Date): string => {
-    // Check formats in order from most recent to oldest
-    for (const [key, formatter] of Object.entries(timeFormats)) {
-      if (key === "justNow") {
-        continue; // Special case
-      }
-
-      const result = formatter(date);
-      if (result) {
-        return result;
-      }
-    }
-
-    // Fallback to days format
-    return timeFormats.days(date);
-  }, []);
+  }, [lastSavedAt]);
 
   const handleSaveNow = () => {
     onSaveNow?.();

@@ -9,7 +9,7 @@ import { database } from "@repo/database";
 import { requireTenantId } from "../../../../lib/tenant";
 import { deleteCard } from "../../actions/cards";
 import type { CommandBoardCard } from "../../types";
-import type { UndoRedoCommand } from "../../types/undo-redo";
+import type { UndoRedoCommand } from "../../types-specific/undo-redo";
 
 /**
  * Command to delete a card

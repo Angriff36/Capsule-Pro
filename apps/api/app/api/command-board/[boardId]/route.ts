@@ -7,7 +7,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -34,6 +34,27 @@ async function fetchBoardWithCards(boardId: string, tenantId: string) {
       cards: {
         where: {
           deletedAt: null,
+        },
+        select: {
+          id: true,
+          tenantId: true,
+          boardId: true,
+          title: true,
+          content: true,
+          cardType: true,
+          status: true,
+          positionX: true,
+          positionY: true,
+          width: true,
+          height: true,
+          zIndex: true,
+          color: true,
+          metadata: true,
+          vectorClock: true,
+          version: true,
+          createdAt: true,
+          updatedAt: true,
+          deletedAt: true,
         },
         orderBy: {
           zIndex: "asc",
@@ -70,6 +91,8 @@ function formatCommandBoardWithCards(board: {
     zIndex: number;
     color: string | null;
     metadata: unknown;
+    vectorClock: Prisma.JsonValue;
+    version: number;
     createdAt: Date;
     updatedAt: Date;
     deletedAt: Date | null;
@@ -102,6 +125,8 @@ function formatCommandBoardWithCards(board: {
       z_index: card.zIndex,
       color: card.color,
       metadata: (card.metadata as Record<string, unknown>) ?? null,
+      vector_clock: (card.vectorClock as Record<string, number> | null) ?? null,
+      version: card.version,
       created_at: card.createdAt,
       updated_at: card.updatedAt,
       deleted_at: card.deletedAt,

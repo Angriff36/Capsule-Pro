@@ -252,6 +252,78 @@ export async function GET(request: Request) {
 }
 
 /**
+ * Format inventory item with calculated status fields
+ */
+function formatInventoryItemWithStatus(item: {
+  id: string;
+  tenantId: string;
+  item_number: string;
+  name: string;
+  description: string | null;
+  category: string;
+  unitOfMeasure: string;
+  unitCost: unknown;
+  quantityOnHand: unknown;
+  parLevel: unknown;
+  reorder_level: unknown;
+  supplierId: string | null;
+  tags: string[];
+  fsa_status: string | null;
+  fsa_temp_logged: boolean | null;
+  fsa_allergen_info: boolean | null;
+  fsa_traceable: boolean | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}): InventoryItemWithStatus {
+  const quantityOnHand = Number(item.quantityOnHand);
+  const reorderLevel = Number(item.reorder_level);
+  const stockStatus = calculateStockStatus(quantityOnHand, reorderLevel);
+
+  return {
+    id: item.id,
+    tenant_id: item.tenantId,
+    item_number: item.item_number,
+    name: item.name,
+    description: item.description,
+    category: item.category,
+    unit_of_measure: item.unitOfMeasure,
+    unit_cost: Number(item.unitCost),
+    quantity_on_hand: quantityOnHand,
+    par_level: Number(item.parLevel),
+    reorder_level: reorderLevel,
+    supplier_id: item.supplierId,
+    tags: item.tags,
+    fsa_status: (item.fsa_status ?? "unknown") as FSAStatus,
+    fsa_temp_logged: item.fsa_temp_logged ?? false,
+    fsa_allergen_info: item.fsa_allergen_info ?? false,
+    fsa_traceable: item.fsa_traceable ?? false,
+    created_at: item.createdAt,
+    updated_at: item.updatedAt,
+    deleted_at: item.deletedAt,
+    stock_status: stockStatus,
+    total_value: quantityOnHand * Number(item.unitCost),
+  };
+}
+
+/**
+ * Check if item number already exists for tenant
+ */
+async function checkExistingItemNumber(
+  tenantId: string,
+  itemNumber: string
+): Promise<boolean> {
+  const existing = await database.inventoryItem.findFirst({
+    where: {
+      tenantId,
+      item_number: itemNumber,
+      deletedAt: null,
+    },
+  });
+  return existing !== null;
+}
+
+/**
  * POST /api/inventory/items - Create a new inventory item
  */
 export async function POST(request: Request) {
@@ -272,16 +344,11 @@ export async function POST(request: Request) {
     const body = await request.json();
     validateCreateInventoryItemRequest(body);
 
-    // Check if item_number already exists for this tenant
-    const existing = await database.inventoryItem.findFirst({
-      where: {
-        tenantId,
-        item_number: body.item_number,
-        deletedAt: null,
-      },
-    });
-
-    if (existing) {
+    const itemNumberExists = await checkExistingItemNumber(
+      tenantId,
+      body.item_number
+    );
+    if (itemNumberExists) {
       return NextResponse.json(
         { message: "Item number already exists" },
         { status: 409 }
@@ -310,35 +377,7 @@ export async function POST(request: Request) {
       },
     });
 
-    const quantityOnHand = Number(item.quantityOnHand);
-    const reorderLevel = Number(item.reorder_level);
-    const stockStatus = calculateStockStatus(quantityOnHand, reorderLevel);
-
-    const itemWithStatus: InventoryItemWithStatus = {
-      id: item.id,
-      tenant_id: item.tenantId,
-      item_number: item.item_number,
-      name: item.name,
-      description: item.description,
-      category: item.category,
-      unit_of_measure: item.unitOfMeasure,
-      unit_cost: Number(item.unitCost),
-      quantity_on_hand: quantityOnHand,
-      par_level: Number(item.parLevel),
-      reorder_level: reorderLevel,
-      supplier_id: item.supplierId,
-      tags: item.tags,
-      fsa_status: (item.fsa_status ?? "unknown") as FSAStatus,
-      fsa_temp_logged: item.fsa_temp_logged ?? false,
-      fsa_allergen_info: item.fsa_allergen_info ?? false,
-      fsa_traceable: item.fsa_traceable ?? false,
-      created_at: item.createdAt,
-      updated_at: item.updatedAt,
-      deleted_at: item.deletedAt,
-      stock_status: stockStatus,
-      total_value: quantityOnHand * Number(item.unitCost),
-    };
-
+    const itemWithStatus = formatInventoryItemWithStatus(item);
     return NextResponse.json(itemWithStatus, { status: 201 });
   } catch (error) {
     if (error instanceof InvariantError) {
