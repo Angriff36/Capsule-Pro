@@ -33,6 +33,8 @@ const CARD_SELECT = {
   zIndex: true,
   color: true,
   metadata: true,
+  vectorClock: true,
+  version: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -175,6 +177,11 @@ export async function POST(request: Request, context: RouteContext) {
     const positionX = data.positionX ?? 0;
     const positionY = data.positionY ?? 0;
 
+    // Initialize vector clock with the creating user
+    const initialVectorClock: Record<string, number> = {
+      [userId]: 1,
+    };
+
     const card = await database.$transaction(async (tx) => {
       const createdCard = await tx.commandBoardCard.create({
         data: {
@@ -191,11 +198,13 @@ export async function POST(request: Request, context: RouteContext) {
           zIndex: data.zIndex ?? defaultZIndex,
           color: data.color || null,
           metadata: (data.metadata || {}) as Prisma.InputJsonValue,
+          vectorClock: initialVectorClock as Prisma.InputJsonValue,
+          version: 0,
         },
         select: CARD_SELECT,
       });
 
-      // Publish outbox event for real-time sync
+      // Publish outbox event for real-time sync with version information
       await createOutboxEvent(tx, {
         tenantId,
         aggregateType: "CommandBoardCard",
@@ -210,6 +219,8 @@ export async function POST(request: Request, context: RouteContext) {
           positionY,
           createdBy: userId,
           createdAt: createdCard.createdAt.toISOString(),
+          version: 0,
+          vectorClock: initialVectorClock,
         },
       });
 

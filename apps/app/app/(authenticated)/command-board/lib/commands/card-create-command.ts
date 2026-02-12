@@ -5,9 +5,9 @@
  * Can be undone by deleting the card.
  */
 
-import type { UndoRedoCommand } from "../../types/undo-redo";
-import type { CreateCardInput } from "../../types";
 import { createCard, deleteCard } from "../../actions/cards";
+import type { CreateCardInput } from "../../types";
+import type { UndoRedoCommand } from "../../types/undo-redo";
 
 /**
  * Command to create a new card

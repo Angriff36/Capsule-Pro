@@ -42,14 +42,17 @@ describe("Generated PrepTask.claim route wiring", () => {
     );
 
     const response = await routeModule.POST(
-      new NextRequest("http://localhost/api/kitchen/prep-tasks/commands/claim", {
-        method: "POST",
-        body: JSON.stringify({
-          id: "task-123",
-          userId: "user-1",
-          stationId: "station-a",
-        }),
-      })
+      new NextRequest(
+        "http://localhost/api/kitchen/prep-tasks/commands/claim",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: "task-123",
+            userId: "user-1",
+            stationId: "station-a",
+          }),
+        }
+      )
     );
     const json = await response.json();
 

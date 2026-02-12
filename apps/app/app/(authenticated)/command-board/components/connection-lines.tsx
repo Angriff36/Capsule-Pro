@@ -145,8 +145,8 @@ export const ConnectionLines = memo(function ConnectionLines({
           }
         }}
         role="button"
-        tabIndex={0}
         style={{ cursor: "pointer" }}
+        tabIndex={0}
       >
         <title>
           Connection from {fromCard.title} to {toCard.title}: {config.label}

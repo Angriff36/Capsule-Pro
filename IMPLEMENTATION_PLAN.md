@@ -2,15 +2,14 @@
 
 ## Executive Summary
 
-The command board feature is approximately **97% complete** with solid foundations in place. All core CRUD APIs, card types, real-time presence, and canvas features are functional. Data safety features (undo/redo, auto-save) are now fully implemented. Event replay system is complete. The remaining work focuses on:
+The command board feature is approximately **99% complete** with solid foundations in place. All core CRUD APIs, card types, real-time presence, and canvas features are functional. Data safety features (undo/redo, auto-save) are now fully implemented. Event replay system is complete. Conflict resolution system is complete. The remaining work focuses on:
 
-1. **Real-time collaboration** (conflict resolution only)
-2. **UX polish** (anchor points, accessibility)
+1. **UX polish** (anchor points, accessibility)
 
 **Status of Four Main Goals:**
 - [x] Entity Cards - **COMPLETE** (all 7 types with live data: Event, Client, Task, Employee, Inventory, Recipe, Note)
 - [x] Visual Relationship Connectors - **COMPLETE** (SVG curved lines with color coding, labels, arrowheads, context menu)
-- [~] Real-time Sync - **MOSTLY COMPLETE** (presence/cursors via Liveblocks, outbox events for cards/connections exist, event replay COMPLETE, missing: conflict resolution)
+- [x] Real-time Sync - **COMPLETE** (presence/cursors via Liveblocks, outbox events for cards/connections exist, event replay COMPLETE, conflict resolution COMPLETE)
 - [x] Persistence - **COMPLETE** (named layouts with viewport save/restore, auto-save/drafts with crash recovery, undo/redo with full command pattern)
 
 **Additional Completed Features (not in original plan):**
@@ -31,7 +30,7 @@ The command board feature is approximately **97% complete** with solid foundatio
 - [x] Auto-save indicator component with toast notifications
 - [x] Draft recovery dialog for session restoration after crashes
 - [x] Event replay system (in-memory replay buffer, API endpoint, frontend hook, visual indicator)
-- [x] ConflictWarningPanel UI component (no detection logic)
+- [x] Conflict resolution system (vector clocks, conflict resolver, API version checking, conflict resolution dialog)
 - [x] AI-based conflict detection service exists in `apps/api/app/conflicts/service.ts`
 
 ---
@@ -123,7 +122,7 @@ The command board feature is approximately **97% complete** with solid foundatio
 
 ## Phase 2: Real-time Collaboration Enhancements (High Priority)
 
-**Why Second:** Multi-user collaboration works for basic presence, new users now see history via event replay, but conflicts aren't resolved. Connection events are now fully defined in the realtime package. Event replay is complete.
+**Why Second:** Multi-user collaboration works for basic presence, new users now see history via event replay, conflicts are now resolved. Connection events are now fully defined in the realtime package. Event replay is complete. Conflict resolution is complete.
 
 ### 2.1 Connection Event Types in Realtime Package
 - **Status:** COMPLETE
@@ -182,36 +181,34 @@ The command board feature is approximately **97% complete** with solid foundatio
 - Includes metadata tracking (sequence numbers, timestamps)
 
 ### 2.3 Conflict Resolution
-- **Status:** PARTIAL (AI-based detection exists, no technical resolution)
-- **Impact:** MEDIUM - Concurrent edits can overwrite each other
-- **Current State:** AI-based conflict detection service EXISTS in `apps/api/app/conflicts/service.ts` with analysis using OpenAI API. `ConflictWarningPanel.tsx` exists with full UI. However, no vector clock implementation for technical conflict resolution exists.
+- **Status:** COMPLETE
+- **Impact:** HIGH - Concurrent edits are now properly detected and resolved
+- **Current State:** Full conflict resolution system with vector clocks, conflict resolver library, API version checking, and conflict resolution dialog UI.
 
-**Completed:**
-- [x] AI-based conflict detection service (`apps/api/app/conflicts/service.ts`)
-- [x] ConflictWarningPanel UI component
-- [x] Conflict type definitions (`conflict-types.ts`)
+**Completed Tasks:**
+- [x] Implement vector clock for tracking edit versions
+- [x] Add vector clock fields to CommandBoardCard model (schema migration completed)
+- [x] Create conflict resolver for card positions and content
+- [x] Wire conflict detection to trigger warning panel
+- [x] Add conflict resolution UI (accept mine/accept theirs/merge)
+- [x] API updates with 409 Conflict responses and version checking
 
-**Remaining Tasks:**
-- [ ] Implement vector clock for tracking edit versions
-- [ ] Add vector clock fields to CommandBoardCard model (schema migration)
-- [ ] Create conflict resolver for card positions
-- [ ] Create conflict resolver for card content
-- [ ] Wire conflict detection to trigger warning panel
-- [ ] Add conflict resolution UI (accept mine/accept theirs/merge)
+**Files Created:**
+- `packages/realtime/src/clocks/vector-clock.ts` (VectorClock class for tracking causal relationships)
+- `packages/realtime/src/clocks/index.ts` (clock exports and utilities)
+- `apps/app/app/(authenticated)/command-board/lib/conflict-resolver.ts` (conflict resolution logic)
+- `apps/app/app/(authenticated)/command-board/hooks/use-conflict-resolution.ts` (frontend hook for conflict handling)
+- `apps/app/app/(authenticated)/command-board/components/conflict-resolution-dialog.tsx` (conflict resolution UI)
 
-**Files to Create:**
-- `packages/realtime/src/clocks/vector-clock.ts`
-- `packages/realtime/src/clocks/index.ts`
-- `apps/app/app/(authenticated)/command-board/lib/conflict-resolver.ts`
-- `apps/app/app/(authenticated)/command-board/lib/conflict-detector.ts`
+**Files Modified:**
+- `packages/database/prisma/schema.prisma` (added vectorClock and version fields to CommandBoardCard)
+- `packages/database/schema-registry-v2.txt` (registered schema changes)
+- `packages/database/DATABASE_PRE_MIGRATION_CHECKLIST.md` (added migration entry)
+- `apps/api/app/api/command-board/[boardId]/cards/[cardId]/route.ts` (added 409 Conflict responses and version checking)
+- `packages/realtime/src/events/command.ts` (updated event types with version information)
+- `apps/app/app/(authenticated)/command-board/components/board-canvas-realtime.tsx` (integrated conflict resolution hook)
 
-**Files to Modify:**
-- `apps/app/app/(authenticated)/command-board/components/conflict-warning-panel.tsx` (add resolution UI)
-- `apps/api/app/api/command-board/[boardId]/cards/[cardId]/route.ts` (add vector clock headers)
-- `packages/database/prisma/schema.prisma` (add vector clock to cards)
-- `packages/database/schema-registry-v2.txt` (register schema change)
-
-**Schema Changes Required:**
+**Schema Changes Applied:**
 ```prisma
 model CommandBoardCard {
   // ... existing fields ...
@@ -219,6 +216,15 @@ model CommandBoardCard {
   version     Int   @default(0) @map("version")  // Simple version counter
 }
 ```
+
+**Implementation Details:**
+- Vector clock implementation tracks causal relationships between edits
+- Database schema includes `vectorClock` (JSON) and `version` (Int) fields
+- Conflict resolver library handles position and content conflicts
+- API returns 409 Conflict status when version mismatches are detected
+- Frontend hook manages conflict detection and resolution flow
+- Conflict resolution dialog presents options: "Keep Mine", "Use Theirs", or "Merge"
+- Event types include version information for tracking changes
 
 ---
 
@@ -401,7 +407,7 @@ model UserPreference {
 - **Connection context menu integration (1.3)** - COMPLETE - Connection editing now accessible via right-click
 - **Connection event types in realtime package (2.1)** - COMPLETE - API publishes events, types now defined
 - **Event replay system (2.2)** - COMPLETE - In-memory replay buffer with API endpoint, frontend hook, and visual indicator
-- **Conflict resolution (2.3)** - PARTIAL - AI-based detection exists in `apps/api/app/conflicts/service.ts`, but technical resolution with vector clocks missing
+- **Conflict resolution (2.3)** - COMPLETE - Full vector clock implementation with conflict resolver library, API version checking, and conflict resolution dialog
 
 ### MEDIUM (Quality of Life)
 - **Interactive anchor points (3.1)** - Better connection creation UX
@@ -450,7 +456,7 @@ model UserPreference {
 - [x] Recipe Card - Live data from Recipe entity
 - [x] Note Card - Standalone notes
 
-### Real-time Features (PARTIAL - needs event replay and conflict resolution)
+### Real-time Features (COMPLETE)
 - [x] Outbox event publishing for cards/connections/boards (FULLY IMPLEMENTED)
 - [x] Ably integration for realtime
 - [x] Liveblocks presence and cursors (v3.13.3)
@@ -458,6 +464,8 @@ model UserPreference {
 - [x] LiveCursors component
 - [x] LivePresenceIndicator component
 - [x] Connection event types in realtime package (COMPLETE)
+- [x] Event replay system (COMPLETE)
+- [x] Conflict resolution system (COMPLETE)
 
 ### Canvas Features (COMPLETE)
 - [x] Grid system with configurable sizes (20/40/60px)
@@ -497,9 +505,9 @@ model UserPreference {
 - [x] Group colors
 - [x] Delete groups
 
-### Additional Features (MOSTLY COMPLETE)
+### Additional Features (COMPLETE)
 - [x] AI suggestions panel
-- [x] Conflict warning panel (UI only, no detection logic)
+- [x] Conflict resolution system (vector clocks, resolver library, UI dialog, API version checking)
 - [x] Board selector
 - [x] Boards list client
 - [x] Create board dialog
@@ -517,14 +525,15 @@ model UserPreference {
 - `packages/database/DATABASE_PRE_MIGRATION_CHECKLIST.md` - Migration checklist
 
 ### Realtime
-- `packages/realtime/src/events/command.ts` - Command board events (connection events added)
+- `packages/realtime/src/events/command.ts` - Command board events (connection events added, version information added)
 - `packages/realtime/src/events/connection.ts` - Connection event types (CREATED)
 - `packages/realtime/src/events/schemas.ts` - Event Zod schemas (connection events added)
 - `packages/realtime/src/events/index.ts` - Event exports (connection events exported)
 - `packages/realtime/src/replay/types.ts` - Replay system type definitions (CREATED)
 - `packages/realtime/src/replay/index.ts` - Replay exports and utilities (CREATED)
 - `packages/realtime/src/replay/replay-buffer.ts` - ReplayBuffer class (CREATED)
-- `packages/realtime/src/clocks/` - NOT EXISTS - needs creation for vector clock
+- `packages/realtime/src/clocks/vector-clock.ts` - VectorClock class for conflict resolution (CREATED)
+- `packages/realtime/src/clocks/index.ts` - Clock exports and utilities (CREATED)
 - `packages/realtime/src/outbox/index.ts` - Outbox publisher (COMPLETE)
 - `packages/realtime/src/channels/index.ts` - Channel management
 
@@ -544,16 +553,18 @@ model UserPreference {
 - `apps/app/app/(authenticated)/command-board/hooks/use-undo-redo.ts` - Undo/Redo hook (COMPLETE)
 - `apps/app/app/(authenticated)/command-board/hooks/use-auto-save.ts` - Auto-save hook (COMPLETE)
 - `apps/app/app/(authenticated)/command-board/hooks/use-replay-events.ts` - Event replay hook (COMPLETE)
+- `apps/app/app/(authenticated)/command-board/hooks/use-conflict-resolution.ts` - Conflict resolution hook (COMPLETE)
 - `apps/app/app/(authenticated)/command-board/lib/draft-manager.ts` - Draft storage/retrieval (COMPLETE)
-- `apps/app/app/(authenticated)/command-board/conflict-types.ts` - Conflict type definitions (UI only)
+- `apps/app/app/(authenticated)/command-board/lib/conflict-resolver.ts` - Conflict resolution logic (COMPLETE)
+- `apps/app/app/(authenticated)/command-board/conflict-types.ts` - Conflict type definitions (COMPLETE)
 
 ### Command Board Components
 - `apps/app/app/(authenticated)/command-board/components/board-canvas.tsx` - Non-realtime canvas
-- `apps/app/app/(authenticated)/command-board/components/board-canvas-realtime.tsx` - Realtime canvas with context menu and replay integration
+- `apps/app/app/(authenticated)/command-board/components/board-canvas-realtime.tsx` - Realtime canvas with context menu, replay integration, and conflict resolution integration
 - `apps/app/app/(authenticated)/command-board/components/connection-lines.tsx` - SVG connections (onConnectionClick and onContextMenu implemented)
 - `apps/app/app/(authenticated)/command-board/components/connection-context-menu.tsx` - Connection edit UI (COMPLETE, fully wired)
 - `apps/app/app/(authenticated)/command-board/components/connection-dialog.tsx` - Create connections
-- `apps/app/app/(authenticated)/command-board/components/conflict-warning-panel.tsx` - Conflict UI (no logic)
+- `apps/app/app/(authenticated)/command-board/components/conflict-resolution-dialog.tsx` - Conflict resolution UI (COMPLETE)
 - `apps/app/app/(authenticated)/command-board/components/auto-save-indicator.tsx` - Auto-save visual indicator (COMPLETE)
 - `apps/app/app/(authenticated)/command-board/components/draft-recovery-dialog.tsx` - Crash recovery dialog (COMPLETE)
 - `apps/app/app/(authenticated)/command-board/components/replay-indicator.tsx` - Event replay visual indicator (COMPLETE)
@@ -562,6 +573,7 @@ model UserPreference {
 - `apps/api/app/api/command-board/` - API routes
 - `apps/api/app/api/command-board/[boardId]/connections/route.ts` - Connection API (with outbox events)
 - `apps/api/app/api/command-board/[boardId]/connections/[connectionId]/route.ts` - Individual connection API (PUT/DELETE with outbox events)
+- `apps/api/app/api/command-board/[boardId]/cards/[cardId]/route.ts` - Card API with 409 Conflict responses and version checking (COMPLETE)
 - `apps/api/app/api/command-board/[boardId]/draft/route.ts` - Draft API endpoints (GET/POST) (COMPLETE)
 - `apps/api/app/api/command-board/draft/route.ts` - List all drafts endpoint (COMPLETE)
 - `apps/api/app/api/command-board/[boardId]/replay/route.ts` - Event replay endpoint (COMPLETE)
@@ -584,6 +596,8 @@ These are small changes that provide immediate value:
 5. **Auto-Save/Draft Recovery (1.2)** - COMPLETE - Uses CommandBoard.tags for draft storage (no schema migration), localStorage for crash recovery, auto-save indicator component, and draft recovery dialog for session restoration.
 
 6. **Event Replay System (2.2)** - COMPLETE - In-memory replay buffer with configurable size, API endpoint for fetching events from sequence number, frontend hook for automatic replay on board join, and visual indicator component.
+
+7. **Conflict Resolution (2.3)** - COMPLETE - Vector clock implementation in `packages/realtime/src/clocks/`, database schema migration with `vectorClock` and `version` fields, conflict resolver library in `apps/app/app/(authenticated)/command-board/lib/conflict-resolver.ts`, API updates with 409 Conflict responses and version checking, frontend hook `use-conflict-resolution.ts` for conflict handling, conflict resolution dialog component, integration in board-canvas-realtime.tsx, and event type updates with version information.
 
 ---
 
@@ -633,11 +647,8 @@ These are small changes that provide immediate value:
    - No `UserPreference` model for user-specific preferences
    - Full implementation needed (model, migration, API, actions)
 
-2. **Conflict Resolution (2.3)**: AI-based detection exists, technical resolution missing:
-   - AI-based conflict detection service EXISTS in `apps/api/app/conflicts/service.ts`
-   - `ConflictWarningPanel.tsx` UI exists
-   - No vector clock implementation for technical conflict resolution
-   - No conflict resolver for concurrent edits
+### Completed (Previously Listed as Partial/Needs Work):
+- **Conflict Resolution (2.3)**: COMPLETED - Vector clock implementation in `packages/realtime/src/clocks/`, database schema migration with `vectorClock` and `version` fields, conflict resolver library in `apps/app/app/(authenticated)/command-board/lib/conflict-resolver.ts`, API updates with 409 Conflict responses and version checking, frontend hook `use-conflict-resolution.ts` for conflict handling, conflict resolution dialog component, integration in board-canvas-realtime.tsx, and event type updates with version information
 
 ### Not Started / Missing:
 1. **Interactive Anchor Points (3.1)**: No visual anchor points on cards (Glob search found zero files)

@@ -50,6 +50,8 @@ export interface CommandBoardCard {
   z_index: number;
   color: string | null;
   metadata: Record<string, unknown>;
+  vector_clock: Record<string, number> | null;
+  version: number;
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
@@ -123,6 +125,11 @@ export interface UpdateCommandBoardCardRequest {
   z_index?: number;
   color?: string | null;
   metadata?: Record<string, unknown>;
+  /**
+   * Version for optimistic locking and conflict detection
+   * Must match the current version on the server for update to succeed
+   */
+  version: number;
 }
 
 /**

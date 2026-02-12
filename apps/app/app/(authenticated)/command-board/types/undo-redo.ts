@@ -3,8 +3,6 @@
  * Provides type-safe undo/redo command pattern.
  */
 
-import type { CommandBoardCard } from "../types";
-
 /**
  * Base undo/redo command interface
  */

@@ -5,8 +5,8 @@
  * This provides context for recent board activity.
  */
 
-import { type ReplayEvent, type ReplayState } from "@repo/realtime";
-import { useEffect, useState, useCallback, useRef } from "react";
+import type { ReplayEvent, ReplayState } from "@repo/realtime";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface UseReplayEventsOptions {
   /** Board ID to replay events for */

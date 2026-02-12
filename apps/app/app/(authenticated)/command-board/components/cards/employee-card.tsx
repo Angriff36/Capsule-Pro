@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
-import { Mail, MoreVertical, Phone, User } from "lucide-react";
+import { Mail, MoreVertical, Phone } from "lucide-react";
 import { memo } from "react";
 import type { CommandBoardCard } from "../../types";
 

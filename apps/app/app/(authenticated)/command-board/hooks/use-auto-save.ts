@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { BoardState } from "../types";
 
 // Auto-save configuration interface
@@ -30,7 +30,7 @@ export interface AutoSaveState {
 // Default configuration values
 const DEFAULT_CONFIG: Required<AutoSaveConfig> = {
   debounceMs: 2000,
-  intervalMs: 30000,
+  intervalMs: 30_000,
   storageKey: "",
 };
 
@@ -40,23 +40,35 @@ const generateStorageKey = (boardId: string): string =>
 
 // Helper to deep compare two objects
 const deepEqual = (obj1: unknown, obj2: unknown): boolean => {
-  if (obj1 === obj2) return true;
+  if (obj1 === obj2) {
+    return true;
+  }
 
-  if (obj1 == null || obj2 == null) return false;
+  if (obj1 == null || obj2 == null) {
+    return false;
+  }
 
-  if (typeof obj1 !== typeof obj2) return false;
+  if (typeof obj1 !== typeof obj2) {
+    return false;
+  }
 
-  if (typeof obj1 !== "object") return obj1 === obj2;
+  if (typeof obj1 !== "object") {
+    return obj1 === obj2;
+  }
 
   const obj1Keys = Object.keys(obj1 as object);
   const obj2Keys = Object.keys(obj2 as object);
 
-  if (obj1Keys.length !== obj2Keys.length) return false;
+  if (obj1Keys.length !== obj2Keys.length) {
+    return false;
+  }
 
-  return obj1Keys.every(key => deepEqual(
-    (obj1 as Record<string, unknown>)[key],
-    (obj2 as Record<string, unknown>)[key]
-  ));
+  return obj1Keys.every((key) =>
+    deepEqual(
+      (obj1 as Record<string, unknown>)[key],
+      (obj2 as Record<string, unknown>)[key]
+    )
+  );
 };
 
 /**
@@ -112,7 +124,9 @@ export function useAutoSave(
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to save board: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Failed to save board: ${response.status} ${response.statusText}`
+        );
       }
 
       setLastSavedAt(new Date());
@@ -128,23 +142,28 @@ export function useAutoSave(
   }, [boardId, state.cards, state.connections, state.viewport]);
 
   // Save to localStorage
-  const saveToLocalStorage = useCallback((draftState: BoardState): void => {
-    try {
-      const draft = {
-        state: draftState,
-        timestamp: new Date().toISOString(),
-      };
-      localStorage.setItem(storageKey, JSON.stringify(draft));
-    } catch (error) {
-      console.error("Error saving draft to localStorage:", error);
-    }
-  }, [storageKey]);
+  const saveToLocalStorage = useCallback(
+    (draftState: BoardState): void => {
+      try {
+        const draft = {
+          state: draftState,
+          timestamp: new Date().toISOString(),
+        };
+        localStorage.setItem(storageKey, JSON.stringify(draft));
+      } catch (error) {
+        console.error("Error saving draft to localStorage:", error);
+      }
+    },
+    [storageKey]
+  );
 
   // Load draft from localStorage
-  const loadDraft = useCallback((): BoardState | null => {
+  const _loadDraft = useCallback((): BoardState | null => {
     try {
       const draftStr = localStorage.getItem(storageKey);
-      if (!draftStr) return null;
+      if (!draftStr) {
+        return null;
+      }
 
       const draft = JSON.parse(draftStr);
       return {
@@ -159,7 +178,9 @@ export function useAutoSave(
 
   // Check for unsaved changes
   const checkUnsavedChanges = useCallback((): boolean => {
-    if (!lastSavedState) return true;
+    if (!lastSavedState) {
+      return true;
+    }
 
     // Compare only the parts that should trigger auto-save
     const comparableState = {
@@ -209,7 +230,9 @@ export function useAutoSave(
 
   // Effect to handle state changes and auto-save
   useEffect(() => {
-    if (!state) return;
+    if (!state) {
+      return;
+    }
 
     const hasChanges = checkUnsavedChanges();
     setHasUnsavedChanges(hasChanges);
@@ -234,13 +257,7 @@ export function useAutoSave(
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [
-    state,
-    checkUnsavedChanges,
-    saveToLocalStorage,
-    triggerSave,
-    setLastSavedState,
-  ]);
+  }, [state, checkUnsavedChanges, saveToLocalStorage, triggerSave]);
 
   // Effect for periodic saves
   useEffect(() => {

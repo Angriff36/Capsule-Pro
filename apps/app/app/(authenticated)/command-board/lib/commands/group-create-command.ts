@@ -3,9 +3,9 @@
  * Creates a group on the command board.
  */
 
-import type { UndoRedoCommand } from "../../types/undo-redo";
-import type { CreateGroupInput } from "../../types";
 import { createGroup, deleteGroup } from "../../actions/groups";
+import type { CreateGroupInput } from "../../types";
+import type { UndoRedoCommand } from "../../types/undo-redo";
 
 /**
  * Input for GroupCreateCommand

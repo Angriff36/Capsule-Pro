@@ -72,8 +72,14 @@ describe("Shadow Claim Route - Generated Backup", () => {
 
     expect(existingRes.status).toBe(401);
     expect(shadowRes.status).toBe(401);
-    expect(existingJson).toMatchObject({ success: false, message: "Unauthorized" });
-    expect(shadowJson).toMatchObject({ success: false, message: "Unauthorized" });
+    expect(existingJson).toMatchObject({
+      success: false,
+      message: "Unauthorized",
+    });
+    expect(shadowJson).toMatchObject({
+      success: false,
+      message: "Unauthorized",
+    });
   });
 
   it("executes generated manifest command path with id injected from URL", async () => {
@@ -224,7 +230,7 @@ describe("Shadow Claim Route - Generated Backup", () => {
       success: false,
       guardFailure: {
         index: 2,
-        formatted: "self.status == \"open\"",
+        formatted: 'self.status == "open"',
       },
       error: "Guard failed",
     });

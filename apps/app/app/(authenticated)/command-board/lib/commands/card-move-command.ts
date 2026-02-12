@@ -5,9 +5,9 @@
  * Can be undone by moving the card back to its original position.
  */
 
-import type { UndoRedoCommand } from "../../types/undo-redo";
-import type { CardPosition } from "../../types";
 import { updateCard } from "../../actions/cards";
+import type { CardPosition } from "../../types";
+import type { UndoRedoCommand } from "../../types/undo-redo";
 
 /**
  * Command to move a card

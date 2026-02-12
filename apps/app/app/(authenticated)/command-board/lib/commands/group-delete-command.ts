@@ -3,10 +3,10 @@
  * Deletes (soft deletes) a group from the command board.
  */
 
-import type { UndoRedoCommand } from "../../types/undo-redo";
-import type { CommandBoardGroup } from "../../types";
-import { deleteGroup as deleteGroupAction } from "../../actions/groups";
 import { database } from "@repo/database";
+import { deleteGroup as deleteGroupAction } from "../../actions/groups";
+import type { CommandBoardGroup } from "../../types";
+import type { UndoRedoCommand } from "../../types/undo-redo";
 
 /**
  * Input for GroupDeleteCommand

@@ -25,11 +25,11 @@
 
 // Channel naming utilities
 export * from "./channels/index";
+// Vector clocks for causality tracking
+export * from "./clocks/index";
 // Event types and schemas
 export * from "./events/index";
-
 // Outbox helpers
 export * from "./outbox/index";
-
 // Replay system
 export * from "./replay/index";

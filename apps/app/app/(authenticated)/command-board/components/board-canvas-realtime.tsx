@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { toast } from "@repo/design-system/components/ui/use-toast";
+import type { ReplayEvent } from "@repo/realtime";
 import {
   type KeyboardEvent,
   useCallback,
@@ -33,9 +34,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { useAutoSave } from "../hooks/use-auto-save";
-import { useReplayEvents } from "../hooks/use-replay-events";
-import { type ReplayEvent } from "@repo/realtime";
 import { createCard, deleteCard, updateCard } from "../actions/cards";
 import {
   deleteConnection,
@@ -48,6 +46,10 @@ import {
   toggleGroupCollapsed,
   updateGroup,
 } from "../actions/groups";
+import { useAutoSave } from "../hooks/use-auto-save";
+import { useConflictResolution } from "../hooks/use-conflict-resolution";
+import { useReplayEvents } from "../hooks/use-replay-events";
+import { useUndoRedo } from "../hooks/use-undo-redo";
 import {
   type BoardState,
   type CardConnection,
@@ -60,21 +62,21 @@ import {
   type ViewportPreferences,
   type ViewportState,
 } from "../types";
-import { BoardCard } from "./board-card";
 import { AutoSaveIndicator } from "./auto-save-indicator";
-import { ReplayIndicator } from "./replay-indicator";
+import { BoardCard } from "./board-card";
 import { BulkEditDialog } from "./bulk-edit-dialog";
-import { DraftRecoveryDialog } from "./draft-recovery-dialog";
 import { CanvasViewport } from "./canvas-viewport";
+import { ConflictResolutionDialog } from "./conflict-resolution-dialog";
 import { ConnectionDialog } from "./connection-dialog";
 import { ConnectionLines } from "./connection-lines";
 import { CreateGroupDialog } from "./create-group-dialog";
+import { DraftRecoveryDialog } from "./draft-recovery-dialog";
 import { GridLayer } from "./grid-layer";
 import { GroupContainer } from "./group-container";
 import { LayoutSwitcher } from "./layout-switcher";
+import { ReplayIndicator } from "./replay-indicator";
 import { SaveLayoutDialog } from "./save-layout-dialog";
 import { calculateFitToScreen } from "./viewport-controls";
-import { useUndoRedo } from "../hooks/use-undo-redo";
 
 const VIEWPORT_PREFERENCES_KEY = "command-board-viewport-preferences";
 
@@ -125,19 +127,26 @@ export function BoardCanvas({
         ...partialState,
       }));
     }, []),
-    onRedoExecute: useCallback(async (item: { command: string; description?: string }) => {
-      // For redo, we need to re-execute the original action
-      // This is handled by individual action handlers that track their state
-      toast.info(`Redo: ${item.description ?? item.command}`);
-    }, []),
+    onRedoExecute: useCallback(
+      async (item: { command: string; description?: string }) => {
+        // For redo, we need to re-execute the original action
+        // This is handled by individual action handlers that track their state
+        toast.info(`Redo: ${item.description ?? item.command}`);
+      },
+      []
+    ),
     enableShortcuts: !useExternalUndoRedo, // Only use shortcuts if not external
   });
 
   // Use external or internal undo/redo
-  const canUndo = useExternalUndoRedo ? (externalCanUndo ?? false) : internalUndoRedo.canUndo;
-  const canRedo = useExternalUndoRedo ? (externalCanRedo ?? false) : internalUndoRedo.canRedo;
-  const undo = useExternalUndoRedo ? externalOnUndo! : internalUndoRedo.undo;
-  const redo = useExternalUndoRedo ? externalOnRedo! : internalUndoRedo.redo;
+  const _canUndo = useExternalUndoRedo
+    ? (externalCanUndo ?? false)
+    : internalUndoRedo.canUndo;
+  const _canRedo = useExternalUndoRedo
+    ? (externalCanRedo ?? false)
+    : internalUndoRedo.canRedo;
+  const _undo = useExternalUndoRedo ? externalOnUndo! : internalUndoRedo.undo;
+  const _redo = useExternalUndoRedo ? externalOnRedo! : internalUndoRedo.redo;
   const recordAction = useExternalUndoRedo
     ? () => {
         // No-op when using external undo/redo - the parent manages the stack
@@ -219,10 +228,43 @@ export function BoardCanvas({
     timestamp: Date;
   } | null>(null);
 
+  // Conflict resolution state
+  const [selectedConflict, setSelectedConflict] = useState<
+    import("../lib/conflict-resolver").ConflictDetails | null
+  >(null);
+  const [showConflictDialog, setShowConflictDialog] = useState(false);
+
   // Initialize auto-save hook
   const autoSave = useAutoSave(boardId, state, {
     debounceMs: 2000,
-    intervalMs: 30000,
+    intervalMs: 30_000,
+  });
+
+  // Initialize conflict resolution hook
+  const conflictResolution = useConflictResolution({
+    boardId,
+    onConflictResolved: useCallback(
+      (_conflictId: string, resolvedCard: CommandBoardCard) => {
+        // Update local state with resolved card
+        setState((prev) => ({
+          ...prev,
+          cards: prev.cards.map((card) =>
+            card.id === resolvedCard.id ? resolvedCard : card
+          ),
+        }));
+        // Clear selected conflict
+        setShowConflictDialog(false);
+        setSelectedConflict(null);
+      },
+      []
+    ),
+    onConflictDetected: useCallback((conflict) => {
+      // Show dialog when conflict is detected
+      setSelectedConflict(conflict);
+      setShowConflictDialog(true);
+    }, []),
+    autoResolve: true,
+    showToasts: true,
   });
 
   // Initialize replay hook - fetches and replays historical events on mount
@@ -264,7 +306,10 @@ export function BoardCanvas({
             }
 
             case "command.board.card.moved": {
-              const positionPayload = payload.newPosition as { x: number; y: number };
+              const positionPayload = payload.newPosition as {
+                x: number;
+                y: number;
+              };
               updatedCards = updatedCards.map((c) =>
                 c.id === payload.cardId
                   ? {
@@ -281,7 +326,9 @@ export function BoardCanvas({
             }
 
             case "command.board.card.deleted": {
-              updatedCards = updatedCards.filter((c) => c.id !== payload.cardId);
+              updatedCards = updatedCards.filter(
+                (c) => c.id !== payload.cardId
+              );
               break;
             }
 
@@ -299,7 +346,8 @@ export function BoardCanvas({
                 id: payload.connectionId as string,
                 fromCardId: payload.fromCardId as string,
                 toCardId: payload.toCardId as string,
-                relationshipType: (payload.relationshipType as RelationshipType) ?? "generic",
+                relationshipType:
+                  (payload.relationshipType as RelationshipType) ?? "generic",
                 visible: true,
               };
               setConnections((prev) => {
@@ -552,24 +600,63 @@ export function BoardCanvas({
         break;
       }
       case "CARD_MOVED": {
-        setState((prev) => ({
-          ...prev,
-          cards: prev.cards.map((card) =>
-            card.id === eventData.cardId
-              ? {
-                  ...card,
-                  position: {
-                    ...card.position,
-                    x: eventData.x,
-                    y: eventData.y,
-                  },
-                }
-              : card
-          ),
-        }));
+        const currentCard = state.cards.find((c) => c.id === eventData.cardId);
+        if (currentCard) {
+          setState((prev) => ({
+            ...prev,
+            cards: prev.cards.map((card) =>
+              card.id === eventData.cardId
+                ? {
+                      ...card,
+                      position: {
+                        ...card.position,
+                        x: eventData.x,
+                        y: eventData.y,
+                      },
+                    }
+                : card
+            ),
+          }));
+        }
         break;
       }
       case "CARD_UPDATED": {
+        const currentCard = state.cards.find((c) => c.id === eventData.cardId);
+        if (currentCard && eventData.cardData) {
+          const remoteCard: CommandBoardCard = {
+            ...currentCard,
+            ...eventData.cardData,
+          };
+
+          // Check for conflicts using the conflict resolution hook
+          const resolved = conflictResolution.handleRemoteEvent({
+            cardId: eventData.cardId,
+            remoteCard,
+            vectorClock: eventData.vectorClock ?? { entries: [] },
+            timestamp: eventData.timestamp ?? new Date(),
+            userId: eventData.userId ?? "",
+          });
+
+          if (resolved) {
+            // Auto-resolved - apply the resolved card
+            setState((prev) => ({
+              ...prev,
+              cards: prev.cards.map((card) =>
+                card.id === resolved.id ? resolved : card
+              ),
+            }));
+          } else {
+            // No conflict - apply remote change normally
+            setState((prev) => ({
+              ...prev,
+              cards: prev.cards.map((card) =>
+                card.id === eventData.cardId
+                  ? { ...card, ...eventData.cardData }
+                  : card
+              ),
+            }));
+          }
+        }
         break;
       }
       default: {
@@ -634,7 +721,14 @@ export function BoardCanvas({
     } else {
       console.log(result.error ?? "Failed to add card");
     }
-  }, [boardId, selectedCardType, state.cards.length, broadcast, recordAction, state]);
+  }, [
+    boardId,
+    selectedCardType,
+    state.cards.length,
+    broadcast,
+    recordAction,
+    state,
+  ]);
 
   const handleCardClick = useCallback(
     (e: React.MouseEvent, cardId: string) => {
@@ -680,6 +774,15 @@ export function BoardCanvas({
       // Record action before execution
       recordAction("updateCard", state, `Move card ${cardId}`);
 
+      // Get current card state before the change
+      const currentCard = state.cards.find((c) => c.id === cardId);
+      if (!currentCard) {
+        return;
+      }
+
+      // Register pending change for conflict detection
+      conflictResolution.registerPendingChange(cardId, currentCard, "position");
+
       // Optimistic update
       setState((prev) => ({
         ...prev,
@@ -697,6 +800,9 @@ export function BoardCanvas({
       });
 
       if (result.success) {
+        // Mark change as synced - no conflict occurred
+        conflictResolution.markAsSynced(cardId);
+
         broadcast({
           type: "CARD_MOVED",
           cardId,
@@ -704,10 +810,21 @@ export function BoardCanvas({
           y: position.y,
         });
       } else {
-        console.log(result.error ?? "Failed to save card position");
+        // Check if error is a conflict (409 status)
+        if (
+          result.error?.includes("409") ||
+          result.error?.toLowerCase().includes("conflict")
+        ) {
+          toast.error("Conflict detected: Another user modified this card");
+          // Keep pending change registered so conflict dialog can be shown
+        } else {
+          console.log(result.error ?? "Failed to save card position");
+          // Clear pending change on other errors
+          conflictResolution.markAsSynced(cardId);
+        }
       }
     },
-    [canEdit, broadcast, recordAction, state]
+    [canEdit, broadcast, recordAction, state, conflictResolution]
   );
 
   const handleCardSizeChange = useCallback(
@@ -718,6 +835,15 @@ export function BoardCanvas({
 
       // Record action before execution
       recordAction("updateCard", state, `Resize card ${cardId}`);
+
+      // Get current card state before the change
+      const currentCard = state.cards.find((c) => c.id === cardId);
+      if (!currentCard) {
+        return;
+      }
+
+      // Register pending change for conflict detection
+      conflictResolution.registerPendingChange(cardId, currentCard, "position");
 
       // Optimistic update
       setState((prev) => ({
@@ -735,11 +861,23 @@ export function BoardCanvas({
         position: { width, height },
       });
 
-      if (!result.success) {
-        console.log(result.error ?? "Failed to save card size");
+      if (result.success) {
+        // Mark change as synced - no conflict occurred
+        conflictResolution.markAsSynced(cardId);
+      } else {
+        // Check if error is a conflict (409 status)
+        if (
+          result.error?.includes("409") ||
+          result.error?.toLowerCase().includes("conflict")
+        ) {
+          toast.error("Conflict detected: Another user modified this card");
+        } else {
+          console.log(result.error ?? "Failed to save card size");
+          conflictResolution.markAsSynced(cardId);
+        }
       }
     },
-    [canEdit, recordAction, state]
+    [canEdit, recordAction, state, conflictResolution]
   );
 
   const handleDeleteCard = useCallback(
@@ -840,7 +978,11 @@ export function BoardCanvas({
   const handleContextMenuDelete = useCallback(async () => {
     if (contextMenuConnection?.connection) {
       // Record action before execution
-      recordAction("deleteConnection", state, `Delete connection ${contextMenuConnection.connection.id}`);
+      recordAction(
+        "deleteConnection",
+        state,
+        `Delete connection ${contextMenuConnection.connection.id}`
+      );
 
       const result = await deleteConnection(
         contextMenuConnection.connection.id
@@ -865,7 +1007,11 @@ export function BoardCanvas({
     setErrorEditDialog(null);
 
     // Record action before execution
-    recordAction("updateConnection", state, `Update connection ${editingConnectionFromContext.id}`);
+    recordAction(
+      "updateConnection",
+      state,
+      `Update connection ${editingConnectionFromContext.id}`
+    );
 
     const result = await updateConnection({
       id: editingConnectionFromContext.id,
@@ -1317,18 +1463,21 @@ export function BoardCanvas({
     [groups, recordAction, state]
   );
 
-  const handleToggleGroupCollapse = useCallback(async (groupId: string) => {
-    // Record action before execution
-    recordAction("toggleGroupCollapsed", state, `Toggle group ${groupId}`);
+  const handleToggleGroupCollapse = useCallback(
+    async (groupId: string) => {
+      // Record action before execution
+      recordAction("toggleGroupCollapsed", state, `Toggle group ${groupId}`);
 
-    const result = await toggleGroupCollapsed(groupId);
-    if (result.success && result.group) {
-      const updatedGroup = result.group;
-      setGroups((prev) =>
-        prev.map((g) => (g.id === groupId ? updatedGroup : g))
-      );
-    }
-  }, [recordAction, state]);
+      const result = await toggleGroupCollapsed(groupId);
+      if (result.success && result.group) {
+        const updatedGroup = result.group;
+        setGroups((prev) =>
+          prev.map((g) => (g.id === groupId ? updatedGroup : g))
+        );
+      }
+    },
+    [recordAction, state]
+  );
 
   const handleDeleteGroup = useCallback(
     async (groupId: string) => {
@@ -1727,9 +1876,9 @@ export function BoardCanvas({
           </Button>
 
           <AutoSaveIndicator
+            hasUnsavedChanges={autoSave.hasUnsavedChanges}
             isSaving={autoSave.isSaving}
             lastSavedAt={autoSave.lastSavedAt}
-            hasUnsavedChanges={autoSave.hasUnsavedChanges}
             onSaveNow={autoSave.saveNow}
           />
         </div>
@@ -1737,13 +1886,13 @@ export function BoardCanvas({
 
       {/* Replay Progress Indicator */}
       <ReplayIndicator
-        state={replay.state}
-        processedCount={replay.processedCount}
-        totalCount={replay.totalCount}
         onDismiss={() => {
           // Allow dismissing the indicator but replay continues
         }}
         onSkip={replay.skipReplay}
+        processedCount={replay.processedCount}
+        state={replay.state}
+        totalCount={replay.totalCount}
       />
 
       {showSettings && (
@@ -2176,12 +2325,34 @@ export function BoardCanvas({
 
       {/* Draft Recovery Dialog */}
       <DraftRecoveryDialog
-        open={showDraftRecovery}
         draftTimestamp={pendingDraft?.timestamp ?? null}
-        onRestore={handleRestoreDraft}
-        onDiscard={handleDiscardDraft}
         onCancel={handleCancelDraftRecovery}
+        onDiscard={handleDiscardDraft}
+        onRestore={handleRestoreDraft}
+        open={showDraftRecovery}
       />
+
+      {/* Conflict Resolution Dialog */}
+      {selectedConflict && (
+        <ConflictResolutionDialog
+          conflict={selectedConflict}
+          onClose={() => {
+            setShowConflictDialog(false);
+            setSelectedConflict(null);
+          }}
+          onResolve={(resolution) => {
+            conflictResolution.resolveConflict(
+              selectedConflict.conflictId,
+              resolution.strategy,
+              resolution.strategy === "merge"
+                ? resolution.mergeOptions
+                : undefined
+            );
+            setShowConflictDialog(false);
+          }}
+          open={showConflictDialog}
+        />
+      )}
     </div>
   );
 }

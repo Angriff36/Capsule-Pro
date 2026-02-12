@@ -5,11 +5,11 @@
  * Can be undone by restoring the card.
  */
 
-import type { UndoRedoCommand } from "../../types/undo-redo";
-import type { CommandBoardCard } from "../../types";
-import { deleteCard } from "../../actions/cards";
 import { database } from "@repo/database";
 import { requireTenantId } from "../../../../lib/tenant";
+import { deleteCard } from "../../actions/cards";
+import type { CommandBoardCard } from "../../types";
+import type { UndoRedoCommand } from "../../types/undo-redo";
 
 /**
  * Command to delete a card
@@ -71,7 +71,15 @@ export function createCardDeleteCommand(
         boardId: card.boardId,
         title: card.title,
         content: card.content,
-        cardType: card.cardType as "generic" | "event" | "client" | "task" | "employee" | "inventory" | "recipe" | "note",
+        cardType: card.cardType as
+          | "generic"
+          | "event"
+          | "client"
+          | "task"
+          | "employee"
+          | "inventory"
+          | "recipe"
+          | "note",
         status: card.status as "active" | "completed" | "archived",
         position: {
           x: card.positionX,

@@ -3,6 +3,7 @@
  * These events represent state changes in the Strategic Command Board.
  */
 
+import type { VectorClockJSON } from "../clocks/index.js";
 import type { RealtimeEventBase } from "./envelope.js";
 
 /**
@@ -27,6 +28,10 @@ export interface CommandBoardCardCreatedEvent extends RealtimeEventBase {
     createdBy: string;
     /** ISO 8601 timestamp of creation */
     createdAt: string;
+    /** The card version after this change */
+    version: number;
+    /** The vector clock for conflict detection */
+    vectorClock: VectorClockJSON;
   };
 }
 
@@ -46,6 +51,12 @@ export interface CommandBoardCardUpdatedEvent extends RealtimeEventBase {
     updatedBy: string;
     /** ISO 8601 timestamp of update */
     updatedAt: string;
+    /** The card version after this change */
+    version: number;
+    /** The vector clock for conflict detection */
+    vectorClock: VectorClockJSON;
+    /** The version before this change */
+    previousVersion: number;
   };
 }
 
@@ -67,6 +78,12 @@ export interface CommandBoardCardMovedEvent extends RealtimeEventBase {
     movedBy: string;
     /** ISO 8601 timestamp of move */
     movedAt: string;
+    /** The card version after this change */
+    version: number;
+    /** The vector clock for conflict detection */
+    vectorClock: VectorClockJSON;
+    /** The version before this change */
+    previousVersion: number;
   };
 }
 
@@ -84,6 +101,12 @@ export interface CommandBoardCardDeletedEvent extends RealtimeEventBase {
     deletedBy: string;
     /** ISO 8601 timestamp of deletion */
     deletedAt: string;
+    /** The card version after this change */
+    version: number;
+    /** The vector clock for conflict detection */
+    vectorClock: VectorClockJSON;
+    /** The version before this change */
+    previousVersion: number;
   };
 }
 

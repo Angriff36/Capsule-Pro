@@ -54,13 +54,7 @@ function CommandBoardRealtimeContent({
   } = useSuggestions(tenantId, boardId);
 
   // Initialize undo/redo system
-  const {
-    canUndo,
-    canRedo,
-    undo,
-    redo,
-    recordAction,
-  } = useUndoRedo({
+  const { canUndo, canRedo, undo, redo, recordAction } = useUndoRedo({
     boardId,
     initialState: {
       cards: initialCards,
@@ -72,6 +66,7 @@ function CommandBoardRealtimeContent({
       error: null,
       isLoading: false,
       board: null,
+      conflicts: {},
     },
     onStateRestore: useCallback((partialState) => {
       if (partialState.cards !== undefined) {
@@ -140,10 +135,10 @@ function CommandBoardRealtimeContent({
           boardName={boardName}
           boardStatus={boardStatus}
           boardTags={boardTags}
-          canUndo={canUndo}
           canRedo={canRedo}
-          onUndo={undo}
+          canUndo={canUndo}
           onRedo={redo}
+          onUndo={undo}
         />
         <div className="relative flex-1">
           <LivePresenceIndicator className="absolute top-4 right-4 z-50" />
@@ -189,12 +184,12 @@ function CommandBoardRealtimeContent({
           <BoardCanvas
             boardId={boardId}
             canEdit={true}
+            canRedo={canRedo}
+            canUndo={canUndo}
             initialCards={cards}
             onCardsChange={setCards}
-            canUndo={canUndo}
-            canRedo={canRedo}
-            onUndo={undo}
             onRedo={redo}
+            onUndo={undo}
           />
         </div>
       </div>

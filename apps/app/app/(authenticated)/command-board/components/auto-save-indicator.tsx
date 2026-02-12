@@ -14,20 +14,26 @@ interface AutoSaveIndicatorProps {
 }
 
 const timeFormats = {
-  justNow: (date: Date) => "Saved just now",
+  justNow: (_date: Date) => "Saved just now",
   seconds: (date: Date) => {
     const seconds = Math.floor(differenceInSeconds(new Date(), date));
-    if (seconds < 60) return `Saved ${seconds}s ago`;
+    if (seconds < 60) {
+      return `Saved ${seconds}s ago`;
+    }
     return null;
   },
   minutes: (date: Date) => {
     const minutes = Math.floor(differenceInSeconds(new Date(), date) / 60);
-    if (minutes < 60) return `Saved ${minutes}m ago`;
+    if (minutes < 60) {
+      return `Saved ${minutes}m ago`;
+    }
     return null;
   },
   hours: (date: Date) => {
     const hours = Math.floor(differenceInSeconds(new Date(), date) / 3600);
-    if (hours < 24) return `Saved ${hours}h ago`;
+    if (hours < 24) {
+      return `Saved ${hours}h ago`;
+    }
     return null;
   },
   days: (date: Date) => `Saved on ${format(date, "MMM d, yyyy")}`,
@@ -45,22 +51,28 @@ export function AutoSaveIndicator({
 
   // Update time display every 30 seconds when showing relative time
   useEffect(() => {
-    if (!lastSavedAt) return;
+    if (!lastSavedAt) {
+      return;
+    }
 
     const timer = setInterval(() => {
       setTimeSinceSaved(getFormattedTime(lastSavedAt));
-    }, 30000);
+    }, 30_000);
 
     return () => clearInterval(timer);
-  }, [lastSavedAt]);
+  }, [lastSavedAt, getFormattedTime]);
 
   const getFormattedTime = useCallback((date: Date): string => {
     // Check formats in order from most recent to oldest
     for (const [key, formatter] of Object.entries(timeFormats)) {
-      if (key === "justNow") continue; // Special case
+      if (key === "justNow") {
+        continue; // Special case
+      }
 
       const result = formatter(date);
-      if (result) return result;
+      if (result) {
+        return result;
+      }
     }
 
     // Fallback to days format
@@ -107,9 +119,13 @@ export function AutoSaveIndicator({
     );
   };
 
-  const getStatusVariant = () => {
-    if (isSaving) return "secondary";
-    if (hasUnsavedChanges) return "destructive";
+  const _getStatusVariant = () => {
+    if (isSaving) {
+      return "secondary";
+    }
+    if (hasUnsavedChanges) {
+      return "destructive";
+    }
     return "secondary";
   };
 
@@ -121,8 +137,13 @@ export function AutoSaveIndicator({
           {
             "bg-blue-100 text-blue-700": isSaving,
             "bg-amber-100 text-amber-700": hasUnsavedChanges,
-            "bg-green-100 text-green-700": !isSaving && !hasUnsavedChanges && lastSavedAt,
-            "bg-slate-100 text-slate-600": !isSaving && !hasUnsavedChanges && !lastSavedAt,
+            "bg-green-100 text-green-700":
+              !(isSaving || hasUnsavedChanges) && lastSavedAt,
+            "bg-slate-100 text-slate-600": !(
+              isSaving ||
+              hasUnsavedChanges ||
+              lastSavedAt
+            ),
           }
         )}
       >
@@ -131,11 +152,11 @@ export function AutoSaveIndicator({
 
       {hasUnsavedChanges && onSaveNow && (
         <Button
+          className="h-6 w-6 p-0"
           onClick={handleSaveNow}
           size="sm"
-          variant="ghost"
-          className="h-6 w-6 p-0"
           title="Save now"
+          variant="ghost"
         >
           <Save className="h-3 w-3" />
         </Button>

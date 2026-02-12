@@ -46,3 +46,5 @@ __exportStar(require("./events/index"), exports);
 __exportStar(require("./outbox/index"), exports);
 // Replay system
 __exportStar(require("./replay/index"), exports);
+// Vector clocks for causality tracking
+__exportStar(require("./clocks/index"), exports);

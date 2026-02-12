@@ -250,6 +250,12 @@ export type CommandBoardCardMetadata = Record<string, unknown>;
 export type CardMetadata = CommandBoardCardMetadata;
 
 /**
+ * Vector clock type for conflict detection and resolution
+ * Maps client/user IDs to their logical timestamps
+ */
+export type VectorClock = Record<string, number>;
+
+/**
  * Entity type for linked entity cards
  */
 export type EntityType = "client" | "event" | "task" | "employee" | "inventory";
@@ -273,6 +279,10 @@ export interface CommandBoardCard {
   entityId?: string;
   /** Entity type if this card represents a real entity */
   entityType?: EntityType;
+  /** Version for optimistic concurrency control (defaults to 0) */
+  version?: number;
+  /** Vector clock for conflict detection and resolution */
+  vectorClock?: VectorClock;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -319,6 +329,8 @@ export function dbCardToCard(dbCard: DbCommandBoardCard): CommandBoardCard {
     metadata: (dbCard.metadata as CardMetadata) || {},
     entityId: dbCard.entityId ?? undefined,
     entityType: dbCard.entityType as EntityType | undefined,
+    version: dbCard.version ?? 0,
+    vectorClock: dbCard.vectorClock as VectorClock | undefined,
     createdAt: dbCard.createdAt,
     updatedAt: dbCard.updatedAt,
     deletedAt: dbCard.deletedAt,
@@ -349,6 +361,10 @@ export interface UpdateCardInput {
   position?: CardPositionUpdate;
   color?: string;
   metadata?: CardMetadata;
+  /** Current version for optimistic concurrency control */
+  version?: number;
+  /** Vector clock update for conflict detection (optional, server will merge) */
+  vectorClock?: VectorClock;
 }
 
 // =============================================================================
@@ -427,6 +443,23 @@ export interface UpdateBoardInput {
 // =============================================================================
 
 /**
+ * Conflict information for a card
+ * Tracks when optimistic updates have conflicts
+ */
+export interface CardConflict {
+  /** Card ID that has a conflict */
+  cardId: string;
+  /** Local version that was attempted */
+  localVersion: number;
+  /** Server version that was received */
+  serverVersion: number;
+  /** Local changes that were not applied */
+  localChanges: Partial<UpdateCardInput>;
+  /** Whether the conflict has been resolved */
+  resolved: boolean;
+}
+
+/**
  * Complete board state including viewport and cards
  * Used for client-side state management
  */
@@ -449,6 +482,8 @@ export interface BoardState {
   error: string | null;
   /** Whether there are unsaved changes */
   isDirty: boolean;
+  /** Map of card conflicts by card ID */
+  conflicts: Record<string, CardConflict>;
 }
 
 /**
@@ -468,6 +503,7 @@ export const INITIAL_BOARD_STATE: BoardState = {
   isLoading: false,
   error: null,
   isDirty: false,
+  conflicts: {},
 };
 
 // =============================================================================
@@ -497,6 +533,9 @@ export type BoardAction =
   | { type: "SET_LOADING"; payload: boolean }
   | { type: "SET_ERROR"; payload: string | null }
   | { type: "SET_DIRTY"; payload: boolean }
+  | { type: "ADD_CONFLICT"; payload: CardConflict }
+  | { type: "RESOLVE_CONFLICT"; payload: string }
+  | { type: "CLEAR_CONFLICTS" }
   | { type: "RESET" };
 
 // =============================================================================

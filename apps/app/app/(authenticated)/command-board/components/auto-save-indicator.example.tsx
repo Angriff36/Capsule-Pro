@@ -29,9 +29,9 @@ export function AutoSaveIndicatorExample() {
 
       {/* Main Auto Save Indicator */}
       <AutoSaveIndicator
+        hasUnsavedChanges={hasUnsavedChanges}
         isSaving={isSaving}
         lastSavedAt={lastSavedAt}
-        hasUnsavedChanges={hasUnsavedChanges}
         onSaveNow={handleSaveNow}
       />
 
@@ -39,21 +39,21 @@ export function AutoSaveIndicatorExample() {
       <div className="space-y-4">
         <div className="flex gap-2">
           <button
-            onClick={handleSimulateChanges}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            onClick={handleSimulateChanges}
           >
             Make unsaved changes
           </button>
           <button
-            onClick={() => setHasUnsavedChanges(false)}
             className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
             disabled={!hasUnsavedChanges}
+            onClick={() => setHasUnsavedChanges(false)}
           >
             Mark as saved
           </button>
           <button
-            onClick={() => setLastSavedAt(null)}
             className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            onClick={() => setLastSavedAt(null)}
           >
             Clear last saved time
           </button>
@@ -64,7 +64,9 @@ export function AutoSaveIndicatorExample() {
           <ul className="list-disc pl-5">
             <li>Saving: {isSaving ? "true" : "false"}</li>
             <li>Has unsaved changes: {hasUnsavedChanges ? "true" : "false"}</li>
-            <li>Last saved: {lastSavedAt ? lastSavedAt.toLocaleString() : "Never"}</li>
+            <li>
+              Last saved: {lastSavedAt ? lastSavedAt.toLocaleString() : "Never"}
+            </li>
           </ul>
         </div>
       </div>

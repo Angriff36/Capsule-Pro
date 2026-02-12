@@ -3,12 +3,9 @@
  * Deletes a connection between two cards on the command board.
  */
 
-import type { UndoRedoCommand } from "../../types/undo-redo";
-import type {
-  CardConnection,
-  RelationshipType,
-} from "../../types";
 import { deleteConnection } from "../../actions/connections";
+import type { CardConnection } from "../../types";
+import type { UndoRedoCommand } from "../../types/undo-redo";
 
 /**
  * Input for ConnectionDeleteCommand
@@ -27,7 +24,6 @@ export class ConnectionDeleteCommand implements UndoRedoCommand {
 
   private readonly connection: CardConnection;
   private readonly oldConnection: CardConnection;
-  private deletedAt?: Date;
 
   constructor(commandInput: ConnectionDeleteCommandInput) {
     this.connection = commandInput.connection;

@@ -5,8 +5,6 @@
  * enabling users to see board history when joining a session.
  */
 
-import type { RealtimeEventBase } from "../events";
-
 /**
  * Request parameters for fetching replay events
  */

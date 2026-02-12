@@ -2,8 +2,7 @@
 // This route is intentionally separate from the production claim endpoint.
 
 import { auth } from "@repo/auth/server";
-import type { NextRequest } from "next/server";
-import type { RouteContext } from "next/server";
+import type { NextRequest, RouteContext } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   manifestErrorResponse,

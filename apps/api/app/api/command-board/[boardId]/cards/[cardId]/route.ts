@@ -253,6 +253,8 @@ export async function GET(_request: NextRequest, context: RouteContext) {
         z_index: number;
         color: string | null;
         metadata: Record<string, unknown>;
+        vector_clock: Record<string, number> | null;
+        version: number;
         created_at: Date;
         updated_at: Date;
         deleted_at: Date | null;
@@ -274,6 +276,8 @@ export async function GET(_request: NextRequest, context: RouteContext) {
           z_index,
           color,
           metadata,
+          vector_clock,
+          version,
           created_at,
           updated_at,
           deleted_at
@@ -310,6 +314,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
  * - z_index: Stacking order
  * - color: Card color (hex code)
  * - metadata: Additional JSON metadata
+ * - version: Required for optimistic locking - must match current version on server
  */
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
@@ -323,16 +328,54 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     const { boardId, cardId } = await context.params;
     const body = (await request.json()) as UpdateCommandBoardCardRequest;
 
-    // Get current card state to detect position changes
+    // Validate that version is provided
+    if (body.version === undefined) {
+      return NextResponse.json(
+        {
+          error: "Version required",
+          message:
+            "The version field is required for updates to enable conflict detection",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Get current card state including version and vector clock
     const currentCard = await database.$queryRaw<
       Array<{
         id: string;
         board_id: string;
+        title: string;
+        content: string | null;
+        card_type: string;
+        status: string;
         position_x: number;
         position_y: number;
+        width: number;
+        height: number;
+        z_index: number;
+        color: string | null;
+        metadata: Record<string, unknown>;
+        vector_clock: Record<string, number> | null;
+        version: number;
       }>
     >`
-      SELECT id, board_id, position_x, position_y
+      SELECT
+        id,
+        board_id,
+        title,
+        content,
+        card_type,
+        status,
+        position_x,
+        position_y,
+        width,
+        height,
+        z_index,
+        color,
+        metadata,
+        vector_clock,
+        version
       FROM tenant_events.command_board_cards
       WHERE tenant_id = ${tenantId}
         AND board_id = ${boardId}
@@ -344,10 +387,41 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
 
-    // Track if position changed
+    const currentCardData = currentCard[0];
+
+    // Version conflict detection
+    if (currentCardData.version !== body.version) {
+      return NextResponse.json(
+        {
+          error: "Version conflict",
+          message:
+            "The card has been modified by another user. Please refresh and try again.",
+          currentVersion: currentCardData.version,
+          localVersion: body.version,
+          currentCard: {
+            id: currentCardData.id,
+            title: currentCardData.title,
+            content: currentCardData.content,
+            card_type: currentCardData.card_type,
+            status: currentCardData.status,
+            position_x: currentCardData.position_x,
+            position_y: currentCardData.position_y,
+            width: currentCardData.width,
+            height: currentCardData.height,
+            z_index: currentCardData.z_index,
+            color: currentCardData.color,
+            metadata: currentCardData.metadata,
+            version: currentCardData.version,
+          },
+        },
+        { status: 409 }
+      );
+    }
+
+    // Track previous position for event publishing
     const previousPosition = {
-      x: currentCard[0].position_x,
-      y: currentCard[0].position_y,
+      x: currentCardData.position_x,
+      y: currentCardData.position_y,
     };
 
     // Build update fields with validation
@@ -366,9 +440,23 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       );
     }
 
+    // Merge vector clocks: increment counter for current user and merge with existing
+    const existingVectorClock =
+      (currentCardData.vector_clock as Record<string, number>) || {};
+    const newVectorClock: Record<string, number> = {
+      ...existingVectorClock,
+      [userId]: (existingVectorClock[userId] || 0) + 1,
+    };
+
     // Execute update and publish event in transaction
     const result = await database.$transaction(async (tx) => {
       updateFields.fields.push("updated_at = NOW()");
+      updateFields.fields.push(
+        `vector_clock = $${updateFields.values.length + 1}`
+      );
+      updateFields.values.push(JSON.stringify(newVectorClock));
+      updateFields.fields.push(`version = $${updateFields.values.length + 1}`);
+      updateFields.values.push(currentCardData.version + 1);
       updateFields.values.push(cardId, tenantId, boardId);
 
       const updatedCards = await tx.$queryRaw<
@@ -387,6 +475,8 @@ export async function PUT(request: NextRequest, context: RouteContext) {
           z_index: number;
           color: string | null;
           metadata: Record<string, unknown>;
+          vector_clock: Record<string, number>;
+          version: number;
           created_at: Date;
           updated_at: Date;
           deleted_at: Date | null;
@@ -414,6 +504,8 @@ export async function PUT(request: NextRequest, context: RouteContext) {
              z_index,
              color,
              metadata,
+             vector_clock,
+             version,
              created_at,
              updated_at,
              deleted_at`
@@ -434,7 +526,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         updatedCard.position_x !== previousPosition.x ||
         updatedCard.position_y !== previousPosition.y;
 
-      // Publish appropriate event
+      // Publish appropriate event with version information
       if (positionChanged) {
         await createOutboxEvent(tx, {
           tenantId,
@@ -451,13 +543,17 @@ export async function PUT(request: NextRequest, context: RouteContext) {
             },
             movedBy: userId,
             movedAt: updatedCard.updated_at.toISOString(),
+            version: updatedCard.version,
+            vectorClock: updatedCard.vector_clock,
           },
         });
       } else {
         // For non-position changes, track the actual changes
         const changes: Record<string, unknown> = {};
         for (const [key, value] of Object.entries(body)) {
-          changes[key] = value;
+          if (key !== "version") {
+            changes[key] = value;
+          }
         }
 
         await createOutboxEvent(tx, {
@@ -471,6 +567,8 @@ export async function PUT(request: NextRequest, context: RouteContext) {
             changes,
             updatedBy: userId,
             updatedAt: updatedCard.updated_at.toISOString(),
+            version: updatedCard.version,
+            vectorClock: updatedCard.vector_clock,
           },
         });
       }

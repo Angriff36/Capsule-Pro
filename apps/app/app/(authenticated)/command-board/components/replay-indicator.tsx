@@ -7,7 +7,7 @@
 
 import { Button } from "@repo/design-system/components/ui/button";
 import { Progress } from "@repo/design-system/components/ui/progress";
-import { type ReplayState } from "@repo/realtime";
+import type { ReplayState } from "@repo/realtime";
 import { X } from "lucide-react";
 
 interface ReplayIndicatorProps {
@@ -55,7 +55,7 @@ export function ReplayIndicator({
     }
   };
 
-  const getStateVariant = (): "default" | "destructive" | "loading" => {
+  const _getStateVariant = (): "default" | "destructive" | "loading" => {
     switch (state) {
       case "fetching":
       case "replaying":
@@ -74,19 +74,12 @@ export function ReplayIndicator({
 
       {/* Progress bar */}
       {(state === "fetching" || state === "replaying") && (
-        <Progress
-          className="w-32"
-          value={progress}
-        />
+        <Progress className="w-32" value={progress} />
       )}
 
       {/* Skip button (only during replay) */}
       {state === "replaying" && onSkip && (
-        <Button
-          onClick={onSkip}
-          size="sm"
-          variant="ghost"
-        >
+        <Button onClick={onSkip} size="sm" variant="ghost">
           Skip
         </Button>
       )}

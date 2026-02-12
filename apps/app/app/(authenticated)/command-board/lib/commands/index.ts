@@ -5,17 +5,17 @@
 
 import type { UndoRedoCommand } from "../../types/undo-redo";
 
-export * from "./card-move-command";
 export * from "./card-create-command";
 export * from "./card-delete-command";
+export * from "./card-move-command";
 export * from "./card-update-command";
 export * from "./connection-create-command";
 export * from "./connection-delete-command";
 export * from "./connection-update-command";
+export * from "./group-collapse-command";
 export * from "./group-create-command";
 export * from "./group-delete-command";
 export * from "./group-update-command";
-export * from "./group-collapse-command";
 // export * from "./bulk-edit-command"; // TODO: Implement bulk edit command
 
 /**

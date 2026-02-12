@@ -3,10 +3,9 @@
  * Creates a connection between two cards on the command board.
  */
 
-import type { UndoRedoCommand } from "../../types/undo-redo";
-import type { CardConnection } from "../../types";
 import type { CreateConnectionInput } from "../../actions/connections";
 import { createConnection, deleteConnection } from "../../actions/connections";
+import type { UndoRedoCommand } from "../../types/undo-redo";
 
 /**
  * Input for ConnectionCreateCommand

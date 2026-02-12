@@ -11,9 +11,9 @@ import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
-  SaveDraftRequest,
   DraftResponse,
   LoadDraftResponse,
+  SaveDraftRequest,
 } from "../../draft/types";
 import type {
   CommandBoardCard,
@@ -238,7 +238,8 @@ export async function GET(_request: Request, context: RouteContext) {
       response.draft = {
         cards: (latestDraft.cards || []) as CommandBoardCard[],
         viewport: latestDraft.viewport as ViewportState,
-        connections: (latestDraft.connections || []) as CommandBoardConnection[],
+        connections: (latestDraft.connections ||
+          []) as CommandBoardConnection[],
         groups: (latestDraft.groups || []) as CommandBoardGroup[],
         updatedAt: latestDraft.timestamp,
       };

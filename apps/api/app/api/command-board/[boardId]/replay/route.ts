@@ -148,9 +148,8 @@ export async function GET(request: Request, context: RouteContext) {
           id: outboxEvent.id,
           eventType: outboxEvent.eventType,
           occurredAt: outboxEvent.createdAt.toISOString(),
-          userId: (payload.userId as string) ||
-            (payload.createdBy as string) ||
-            "",
+          userId:
+            (payload.userId as string) || (payload.createdBy as string) || "",
           payload,
           sequence: outboxEvent.createdAt.getTime(),
         };
@@ -174,7 +173,7 @@ export async function GET(request: Request, context: RouteContext) {
       where: countWhereClause,
     });
 
-    const lastSequence = events.length > 0 ? events[events.length - 1].sequence : 0;
+    const lastSequence = events.length > 0 ? events.at(-1).sequence : 0;
     const hasMore = events.length === limit;
 
     return NextResponse.json({

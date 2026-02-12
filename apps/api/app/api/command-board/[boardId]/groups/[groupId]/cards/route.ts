@@ -6,7 +6,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { createOutboxEvent } from "@repo/realtime";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
@@ -77,7 +77,7 @@ export async function POST(request: Request, context: RouteContext) {
       return NextResponse.json({ message: "Group not found" }, { status: 404 });
     }
 
-    // Verify all cards exist and belong to the board
+    // Verify all cards exist and belong to board
     const cards = await database.commandBoardCard.findMany({
       where: {
         AND: [
@@ -90,6 +90,8 @@ export async function POST(request: Request, context: RouteContext) {
       select: {
         id: true,
         groupId: true,
+        vectorClock: true,
+        version: true,
       },
     });
 
@@ -101,22 +103,31 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     const result = await database.$transaction(async (tx) => {
-      // Update cards to assign them to the group
-      const updatedCards = await tx.commandBoardCard.updateMany({
-        where: {
-          AND: [
-            { tenantId },
-            { boardId },
-            { id: { in: data.cardIds } },
-            { deletedAt: null },
-          ],
-        },
-        data: {
-          groupId,
-        },
-      });
+      // Update each card individually to increment version and update vector clock
+      for (const card of cards) {
+        const existingVectorClock =
+          (card.vectorClock as Record<string, number>) || {};
+        const newVectorClock: Record<string, number> = {
+          ...existingVectorClock,
+          [userId]: (existingVectorClock[userId] || 0) + 1,
+        };
 
-      // Publish outbox event for real-time sync
+        await tx.commandBoardCard.update({
+          where: {
+            tenantId_id: {
+              tenantId,
+              id: card.id,
+            },
+          },
+          data: {
+            groupId,
+            version: { increment: 1 },
+            vectorClock: newVectorClock as Prisma.InputJsonValue,
+          },
+        });
+      }
+
+      // Publish outbox event for real-time sync with version information
       await createOutboxEvent(tx, {
         tenantId,
         aggregateType: "CommandBoardGroup",
@@ -128,10 +139,11 @@ export async function POST(request: Request, context: RouteContext) {
           cardIds: data.cardIds,
           addedBy: userId,
           addedAt: new Date().toISOString(),
+          version: cards[0].version + 1,
         },
       });
 
-      return { count: updatedCards.count };
+      return { count: cards.length };
     });
 
     return NextResponse.json({
@@ -189,6 +201,8 @@ export async function DELETE(request: Request, context: RouteContext) {
       },
       select: {
         id: true,
+        vectorClock: true,
+        version: true,
       },
     });
 
@@ -200,23 +214,31 @@ export async function DELETE(request: Request, context: RouteContext) {
     }
 
     const result = await database.$transaction(async (tx) => {
-      // Update cards to remove them from the group
-      const updatedCards = await tx.commandBoardCard.updateMany({
-        where: {
-          AND: [
-            { tenantId },
-            { boardId },
-            { groupId },
-            { id: { in: data.cardIds } },
-            { deletedAt: null },
-          ],
-        },
-        data: {
-          groupId: null,
-        },
-      });
+      // Update each card individually to increment version and update vector clock
+      for (const card of cards) {
+        const existingVectorClock =
+          (card.vectorClock as Record<string, number>) || {};
+        const newVectorClock: Record<string, number> = {
+          ...existingVectorClock,
+          [userId]: (existingVectorClock[userId] || 0) + 1,
+        };
 
-      // Publish outbox event for real-time sync
+        await tx.commandBoardCard.update({
+          where: {
+            tenantId_id: {
+              tenantId,
+              id: card.id,
+            },
+          },
+          data: {
+            groupId: null,
+            version: { increment: 1 },
+            vectorClock: newVectorClock as Prisma.InputJsonValue,
+          },
+        });
+      }
+
+      // Publish outbox event for real-time sync with version information
       await createOutboxEvent(tx, {
         tenantId,
         aggregateType: "CommandBoardGroup",
@@ -228,10 +250,11 @@ export async function DELETE(request: Request, context: RouteContext) {
           cardIds: data.cardIds,
           removedBy: userId,
           removedAt: new Date().toISOString(),
+          version: cards[0].version + 1,
         },
       });
 
-      return { count: updatedCards.count };
+      return { count: cards.length };
     });
 
     return NextResponse.json({

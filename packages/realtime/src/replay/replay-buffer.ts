@@ -5,11 +5,7 @@
  * Uses the existing OutboxEvent table as the event store.
  */
 
-import type {
-  ReplayEvent,
-  ReplayFetchRequest,
-  ReplayFetchResponse,
-} from "./types";
+import type { ReplayEvent } from "./types";
 
 /**
  * Configuration for the replay buffer
@@ -34,7 +30,7 @@ const DEFAULT_CONFIG: ReplayBufferConfig = {
  * for replay events, filtered by board and time window.
  */
 export class ReplayBuffer {
-  private config: ReplayBufferConfig;
+  private readonly config: ReplayBufferConfig;
 
   constructor(config: Partial<ReplayBufferConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -84,7 +80,7 @@ export class ReplayBuffer {
         AND oe.aggregate_type = be.aggregate_type
       WHERE oe.tenant_id = $2
         AND oe.status = 'published'
-        ${since ? `AND oe.created_at >= $3` : ""}
+        ${since ? "AND oe.created_at >= $3" : ""}
       ORDER BY oe.created_at ASC
       LIMIT $${since ? 4 : 3}
     `;

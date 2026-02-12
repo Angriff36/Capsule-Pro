@@ -5,9 +5,9 @@
  * Can be undone by reverting to the old properties.
  */
 
-import type { UndoRedoCommand } from "../../types/undo-redo";
-import type { UpdateCardInput } from "../../types";
 import { updateCard } from "../../actions/cards";
+import type { UpdateCardInput } from "../../types";
+import type { UndoRedoCommand } from "../../types/undo-redo";
 
 /**
  * Stored card properties for undo/redo
@@ -15,7 +15,15 @@ import { updateCard } from "../../actions/cards";
 export interface StoredCardProperties {
   title?: string;
   content?: string;
-  cardType?: "generic" | "event" | "client" | "task" | "employee" | "inventory" | "recipe" | "note";
+  cardType?:
+    | "generic"
+    | "event"
+    | "client"
+    | "task"
+    | "employee"
+    | "inventory"
+    | "recipe"
+    | "note";
   status?: "active" | "completed" | "archived";
   color?: string;
   metadata?: Record<string, unknown>;

@@ -3,17 +3,18 @@
  * Updates a connection between two cards on the command board.
  */
 
-import type { UndoRedoCommand } from "../../types/undo-redo";
-import type { CardConnection, RelationshipType } from "../../types";
-import type { UpdateConnectionInput } from "../../actions/connections";
 import { updateConnection } from "../../actions/connections";
+import type { CardConnection } from "../../types";
+import type { UndoRedoCommand } from "../../types/undo-redo";
 
 /**
  * Input for ConnectionUpdateCommand
  */
 export interface ConnectionUpdateCommandInput {
   oldConnection: CardConnection;
-  newProperties: Partial<Pick<CardConnection, "relationshipType" | "label" | "visible">>;
+  newProperties: Partial<
+    Pick<CardConnection, "relationshipType" | "label" | "visible">
+  >;
 }
 
 /**

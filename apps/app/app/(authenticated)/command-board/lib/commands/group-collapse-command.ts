@@ -3,8 +3,8 @@
  * Toggles the collapsed state of a group on the command board.
  */
 
-import type { UndoRedoCommand } from "../../types/undo-redo";
 import { toggleGroupCollapsed } from "../../actions/groups";
+import type { UndoRedoCommand } from "../../types/undo-redo";
 
 /**
  * Input for GroupCollapseCommand

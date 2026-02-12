@@ -86,10 +86,15 @@ export async function listChartOfAccounts(
 ): Promise<ChartOfAccountsListResponse> {
   const searchParams = new URLSearchParams();
 
-  if (params.search) searchParams.set("search", params.search);
-  if (params.account_type)
+  if (params.search) {
+    searchParams.set("search", params.search);
+  }
+  if (params.account_type) {
     searchParams.set("account_type", params.account_type);
-  if (params.include_inactive) searchParams.set("include_inactive", "true");
+  }
+  if (params.include_inactive) {
+    searchParams.set("include_inactive", "true");
+  }
   searchParams.set("page", String(params.page ?? 1));
   searchParams.set("limit", String(params.limit ?? 50));
 
@@ -231,7 +236,7 @@ export function getAccountTypeColor(type: AccountType): string {
  * Get badge variant for account type
  */
 export function getAccountTypeVariant(
-  type: AccountType
+  _type: AccountType
 ): "default" | "secondary" | "outline" {
   return "outline";
 }

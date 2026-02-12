@@ -3,10 +3,10 @@
  * Updates properties of an existing group on the command board.
  */
 
-import type { UndoRedoCommand } from "../../types/undo-redo";
-import type { UpdateGroupInput, CommandBoardGroup } from "../../types";
-import { updateGroup } from "../../actions/groups";
 import { database } from "@repo/database";
+import { updateGroup } from "../../actions/groups";
+import type { CommandBoardGroup, UpdateGroupInput } from "../../types";
+import type { UndoRedoCommand } from "../../types/undo-redo";
 
 /**
  * Input for GroupUpdateCommand
