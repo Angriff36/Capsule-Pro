@@ -101,6 +101,33 @@ export declare const CommandBoardCursorMovedPayloadSchema: z.ZodObject<{
     movedAt: z.ZodString;
 }, z.core.$strip>;
 /**
+ * Command Board Connection event payload schemas.
+ */
+export declare const CommandBoardConnectionCreatedPayloadSchema: z.ZodObject<{
+    boardId: z.ZodString;
+    connectionId: z.ZodString;
+    fromCardId: z.ZodString;
+    toCardId: z.ZodString;
+    relationshipType: z.ZodString;
+    createdBy: z.ZodString;
+    createdAt: z.ZodString;
+}, z.core.$strip>;
+export declare const CommandBoardConnectionUpdatedPayloadSchema: z.ZodObject<{
+    boardId: z.ZodString;
+    connectionId: z.ZodString;
+    changes: z.ZodRecord<z.ZodString, z.ZodUnknown>;
+    updatedBy: z.ZodString;
+    updatedAt: z.ZodString;
+}, z.core.$strip>;
+export declare const CommandBoardConnectionDeletedPayloadSchema: z.ZodObject<{
+    boardId: z.ZodString;
+    connectionId: z.ZodString;
+    fromCardId: z.ZodString;
+    toCardId: z.ZodString;
+    deletedBy: z.ZodString;
+    deletedAt: z.ZodString;
+}, z.core.$strip>;
+/**
  * Stock/Inventory event payload schemas.
  */
 export declare const InventoryStockAdjustedPayloadSchema: z.ZodObject<{
@@ -324,6 +351,60 @@ export declare const CommandBoardCursorMovedEventSchema: z.ZodObject<{
             y: z.ZodNumber;
         }, z.core.$strip>;
         movedAt: z.ZodString;
+    }, z.core.$strip>;
+}, z.core.$strip>;
+/**
+ * Full event schemas with discriminator - Command Board Connection events.
+ */
+export declare const CommandBoardConnectionCreatedEventSchema: z.ZodObject<{
+    id: z.ZodString;
+    version: z.ZodLiteral<1>;
+    tenantId: z.ZodString;
+    aggregateType: z.ZodString;
+    aggregateId: z.ZodString;
+    occurredAt: z.ZodString;
+    eventType: z.ZodLiteral<"command.board.connection.created">;
+    payload: z.ZodObject<{
+        boardId: z.ZodString;
+        connectionId: z.ZodString;
+        fromCardId: z.ZodString;
+        toCardId: z.ZodString;
+        relationshipType: z.ZodString;
+        createdBy: z.ZodString;
+        createdAt: z.ZodString;
+    }, z.core.$strip>;
+}, z.core.$strip>;
+export declare const CommandBoardConnectionUpdatedEventSchema: z.ZodObject<{
+    id: z.ZodString;
+    version: z.ZodLiteral<1>;
+    tenantId: z.ZodString;
+    aggregateType: z.ZodString;
+    aggregateId: z.ZodString;
+    occurredAt: z.ZodString;
+    eventType: z.ZodLiteral<"command.board.connection.updated">;
+    payload: z.ZodObject<{
+        boardId: z.ZodString;
+        connectionId: z.ZodString;
+        changes: z.ZodRecord<z.ZodString, z.ZodUnknown>;
+        updatedBy: z.ZodString;
+        updatedAt: z.ZodString;
+    }, z.core.$strip>;
+}, z.core.$strip>;
+export declare const CommandBoardConnectionDeletedEventSchema: z.ZodObject<{
+    id: z.ZodString;
+    version: z.ZodLiteral<1>;
+    tenantId: z.ZodString;
+    aggregateType: z.ZodString;
+    aggregateId: z.ZodString;
+    occurredAt: z.ZodString;
+    eventType: z.ZodLiteral<"command.board.connection.deleted">;
+    payload: z.ZodObject<{
+        boardId: z.ZodString;
+        connectionId: z.ZodString;
+        fromCardId: z.ZodString;
+        toCardId: z.ZodString;
+        deletedBy: z.ZodString;
+        deletedAt: z.ZodString;
     }, z.core.$strip>;
 }, z.core.$strip>;
 /**
@@ -582,6 +663,54 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
     occurredAt: z.ZodString;
+    eventType: z.ZodLiteral<"command.board.connection.created">;
+    payload: z.ZodObject<{
+        boardId: z.ZodString;
+        connectionId: z.ZodString;
+        fromCardId: z.ZodString;
+        toCardId: z.ZodString;
+        relationshipType: z.ZodString;
+        createdBy: z.ZodString;
+        createdAt: z.ZodString;
+    }, z.core.$strip>;
+}, z.core.$strip>, z.ZodObject<{
+    id: z.ZodString;
+    version: z.ZodLiteral<1>;
+    tenantId: z.ZodString;
+    aggregateType: z.ZodString;
+    aggregateId: z.ZodString;
+    occurredAt: z.ZodString;
+    eventType: z.ZodLiteral<"command.board.connection.updated">;
+    payload: z.ZodObject<{
+        boardId: z.ZodString;
+        connectionId: z.ZodString;
+        changes: z.ZodRecord<z.ZodString, z.ZodUnknown>;
+        updatedBy: z.ZodString;
+        updatedAt: z.ZodString;
+    }, z.core.$strip>;
+}, z.core.$strip>, z.ZodObject<{
+    id: z.ZodString;
+    version: z.ZodLiteral<1>;
+    tenantId: z.ZodString;
+    aggregateType: z.ZodString;
+    aggregateId: z.ZodString;
+    occurredAt: z.ZodString;
+    eventType: z.ZodLiteral<"command.board.connection.deleted">;
+    payload: z.ZodObject<{
+        boardId: z.ZodString;
+        connectionId: z.ZodString;
+        fromCardId: z.ZodString;
+        toCardId: z.ZodString;
+        deletedBy: z.ZodString;
+        deletedAt: z.ZodString;
+    }, z.core.$strip>;
+}, z.core.$strip>, z.ZodObject<{
+    id: z.ZodString;
+    version: z.ZodLiteral<1>;
+    tenantId: z.ZodString;
+    aggregateType: z.ZodString;
+    aggregateId: z.ZodString;
+    occurredAt: z.ZodString;
     eventType: z.ZodLiteral<"inventory.stock.adjusted">;
     payload: z.ZodObject<{
         stockItemId: z.ZodString;
@@ -819,6 +948,54 @@ export declare function parseRealtimeEvent(data: unknown): z.ZodSafeParseResult<
             y: number;
         };
         movedAt: string;
+    };
+} | {
+    id: string;
+    version: 1;
+    tenantId: string;
+    aggregateType: string;
+    aggregateId: string;
+    occurredAt: string;
+    eventType: "command.board.connection.created";
+    payload: {
+        boardId: string;
+        connectionId: string;
+        fromCardId: string;
+        toCardId: string;
+        relationshipType: string;
+        createdBy: string;
+        createdAt: string;
+    };
+} | {
+    id: string;
+    version: 1;
+    tenantId: string;
+    aggregateType: string;
+    aggregateId: string;
+    occurredAt: string;
+    eventType: "command.board.connection.updated";
+    payload: {
+        boardId: string;
+        connectionId: string;
+        changes: Record<string, unknown>;
+        updatedBy: string;
+        updatedAt: string;
+    };
+} | {
+    id: string;
+    version: 1;
+    tenantId: string;
+    aggregateType: string;
+    aggregateId: string;
+    occurredAt: string;
+    eventType: "command.board.connection.deleted";
+    payload: {
+        boardId: string;
+        connectionId: string;
+        fromCardId: string;
+        toCardId: string;
+        deletedBy: string;
+        deletedAt: string;
     };
 } | {
     id: string;

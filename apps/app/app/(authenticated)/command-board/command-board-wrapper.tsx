@@ -3,7 +3,7 @@
 import { LivePresenceIndicator, Room } from "@repo/collaboration";
 import { Button } from "@repo/design-system/components/ui/button";
 import { RefreshCw, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { apiUrl } from "@/app/lib/api";
 import { bulkCreateCards } from "./actions/bulk-create-cards";
@@ -18,6 +18,7 @@ import { BoardHeader } from "./components/board-header";
 import { ConflictWarningPanel } from "./components/conflict-warning-panel";
 import { SuggestionsPanel } from "./components/suggestions-panel";
 import { useSuggestions } from "./hooks/use-suggestions";
+import { useUndoRedo } from "./hooks/use-undo-redo";
 import type { CommandBoardCard } from "./types";
 
 interface CommandBoardRealtimePageProps {
@@ -51,6 +52,34 @@ function CommandBoardRealtimeContent({
     fetchSuggestions,
     dismissSuggestion,
   } = useSuggestions(tenantId, boardId);
+
+  // Initialize undo/redo system
+  const {
+    canUndo,
+    canRedo,
+    undo,
+    redo,
+    recordAction,
+  } = useUndoRedo({
+    boardId,
+    initialState: {
+      cards: initialCards,
+      connections: [],
+      selectedCardIds: [],
+      selectedConnectionId: null,
+      viewport: { zoom: 1, panX: 0, panY: 0 },
+      isDirty: false,
+      error: null,
+      isLoading: false,
+      board: null,
+    },
+    onStateRestore: useCallback((partialState) => {
+      if (partialState.cards !== undefined) {
+        setCards(partialState.cards);
+      }
+    }, []),
+    enableShortcuts: true,
+  });
 
   const handleDetectConflicts = async () => {
     setIsDetectingConflicts(true);
@@ -111,6 +140,10 @@ function CommandBoardRealtimeContent({
           boardName={boardName}
           boardStatus={boardStatus}
           boardTags={boardTags}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={undo}
+          onRedo={redo}
         />
         <div className="relative flex-1">
           <LivePresenceIndicator className="absolute top-4 right-4 z-50" />
@@ -158,6 +191,10 @@ function CommandBoardRealtimeContent({
             canEdit={true}
             initialCards={cards}
             onCardsChange={setCards}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            onUndo={undo}
+            onRedo={redo}
           />
         </div>
       </div>

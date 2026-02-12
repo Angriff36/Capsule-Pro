@@ -68,6 +68,7 @@ import { GroupContainer } from "./group-container";
 import { LayoutSwitcher } from "./layout-switcher";
 import { SaveLayoutDialog } from "./save-layout-dialog";
 import { calculateFitToScreen } from "./viewport-controls";
+import { useUndoRedo } from "../hooks/use-undo-redo";
 
 const VIEWPORT_PREFERENCES_KEY = "command-board-viewport-preferences";
 
@@ -77,6 +78,11 @@ interface BoardCanvasProps {
   canEdit?: boolean;
   onCardsChange?: (cards: CommandBoardCard[]) => void;
   onViewportChange?: (viewport: ViewportState) => void;
+  // Undo/Redo state and handlers (optional - if not provided, hook will be used internally)
+  canUndo?: boolean;
+  canRedo?: boolean;
+  onUndo?: () => void;
+  onRedo?: () => void;
 }
 
 export function BoardCanvas({
@@ -85,6 +91,10 @@ export function BoardCanvas({
   canEdit = true,
   onCardsChange,
   onViewportChange,
+  canUndo: externalCanUndo,
+  canRedo: externalCanRedo,
+  onUndo: externalOnUndo,
+  onRedo: externalOnRedo,
 }: BoardCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -92,6 +102,41 @@ export function BoardCanvas({
     ...INITIAL_BOARD_STATE,
     cards: initialCards,
   });
+
+  // Determine if we should use internal undo/redo or external
+  const useExternalUndoRedo = externalOnUndo && externalOnRedo;
+
+  // Initialize undo/redo system only if not provided externally
+  const internalUndoRedo = useUndoRedo({
+    boardId,
+    initialState: {
+      ...INITIAL_BOARD_STATE,
+      cards: initialCards,
+    },
+    onStateRestore: useCallback((partialState) => {
+      setState((prev) => ({
+        ...prev,
+        ...partialState,
+      }));
+    }, []),
+    onRedoExecute: useCallback(async (item: { command: string; description?: string }) => {
+      // For redo, we need to re-execute the original action
+      // This is handled by individual action handlers that track their state
+      toast.info(`Redo: ${item.description ?? item.command}`);
+    }, []),
+    enableShortcuts: !useExternalUndoRedo, // Only use shortcuts if not external
+  });
+
+  // Use external or internal undo/redo
+  const canUndo = useExternalUndoRedo ? (externalCanUndo ?? false) : internalUndoRedo.canUndo;
+  const canRedo = useExternalUndoRedo ? (externalCanRedo ?? false) : internalUndoRedo.canRedo;
+  const undo = useExternalUndoRedo ? externalOnUndo! : internalUndoRedo.undo;
+  const redo = useExternalUndoRedo ? externalOnRedo! : internalUndoRedo.redo;
+  const recordAction = useExternalUndoRedo
+    ? () => {
+        // No-op when using external undo/redo - the parent manages the stack
+      }
+    : internalUndoRedo.recordAction;
 
   const [gridSize, setGridSize] = useState(40);
   const [showGrid, setShowGrid] = useState(true);
@@ -434,6 +479,9 @@ export function BoardCanvas({
   }, []);
 
   const handleAddCard = useCallback(async () => {
+    // Record action before execution
+    recordAction("createCard", state, `Create ${selectedCardType} card`);
+
     const result = await createCard(boardId, {
       title: `New ${selectedCardType.charAt(0).toUpperCase() + selectedCardType.slice(1)}`,
       cardType: selectedCardType,
@@ -459,7 +507,7 @@ export function BoardCanvas({
     } else {
       console.log(result.error ?? "Failed to add card");
     }
-  }, [boardId, selectedCardType, state.cards.length, broadcast]);
+  }, [boardId, selectedCardType, state.cards.length, broadcast, recordAction, state]);
 
   const handleCardClick = useCallback(
     (e: React.MouseEvent, cardId: string) => {
@@ -502,6 +550,9 @@ export function BoardCanvas({
         return;
       }
 
+      // Record action before execution
+      recordAction("updateCard", state, `Move card ${cardId}`);
+
       // Optimistic update
       setState((prev) => ({
         ...prev,
@@ -529,7 +580,7 @@ export function BoardCanvas({
         console.log(result.error ?? "Failed to save card position");
       }
     },
-    [canEdit, broadcast]
+    [canEdit, broadcast, recordAction, state]
   );
 
   const handleCardSizeChange = useCallback(
@@ -537,6 +588,9 @@ export function BoardCanvas({
       if (!canEdit) {
         return;
       }
+
+      // Record action before execution
+      recordAction("updateCard", state, `Resize card ${cardId}`);
 
       // Optimistic update
       setState((prev) => ({
@@ -558,7 +612,7 @@ export function BoardCanvas({
         console.log(result.error ?? "Failed to save card size");
       }
     },
-    [canEdit]
+    [canEdit, recordAction, state]
   );
 
   const handleDeleteCard = useCallback(
@@ -566,6 +620,9 @@ export function BoardCanvas({
       if (!canEdit) {
         return;
       }
+
+      // Record action before execution
+      recordAction("deleteCard", state, `Delete card ${cardId}`);
 
       const result = await deleteCard(cardId);
 
@@ -581,7 +638,7 @@ export function BoardCanvas({
         console.log(result.error ?? "Failed to delete card");
       }
     },
-    [canEdit, broadcast]
+    [canEdit, broadcast, recordAction, state]
   );
 
   const _handleFitToScreen = useCallback(() => {
@@ -655,6 +712,9 @@ export function BoardCanvas({
 
   const handleContextMenuDelete = useCallback(async () => {
     if (contextMenuConnection?.connection) {
+      // Record action before execution
+      recordAction("deleteConnection", state, `Delete connection ${contextMenuConnection.connection.id}`);
+
       const result = await deleteConnection(
         contextMenuConnection.connection.id
       );
@@ -668,7 +728,7 @@ export function BoardCanvas({
       }
       setContextMenuConnection(null);
     }
-  }, [contextMenuConnection]);
+  }, [contextMenuConnection, recordAction, state]);
 
   const handleEditConnectionUpdate = useCallback(async () => {
     if (!editingConnectionFromContext) {
@@ -676,6 +736,9 @@ export function BoardCanvas({
     }
     setIsUpdatingEditDialog(true);
     setErrorEditDialog(null);
+
+    // Record action before execution
+    recordAction("updateConnection", state, `Update connection ${editingConnectionFromContext.id}`);
 
     const result = await updateConnection({
       id: editingConnectionFromContext.id,
@@ -710,6 +773,8 @@ export function BoardCanvas({
     editRelationshipType,
     editLabel,
     editVisible,
+    recordAction,
+    state,
   ]);
 
   // Close context menu on click outside or Escape
@@ -846,6 +911,12 @@ export function BoardCanvas({
     (e: KeyboardEvent) => {
       if (!canEdit) {
         return;
+      }
+
+      // Skip undo/redo shortcuts - handled by useUndoRedo hook
+      const isCtrl = e.ctrlKey || e.metaKey;
+      if (isCtrl && (e.key === "z" || e.key === "y")) {
+        return; // Let the hook handle it
       }
 
       if (e.key === "Escape") {
@@ -1014,6 +1085,9 @@ export function BoardCanvas({
         return;
       }
 
+      // Record action before execution
+      recordAction("updateGroup", state, `Move group ${groupId}`);
+
       const deltaX =
         (position.x ?? currentGroup.position.x) - currentGroup.position.x;
       const deltaY =
@@ -1077,11 +1151,14 @@ export function BoardCanvas({
         console.log("Failed to update group position:", error);
       });
     },
-    [groups, state.cards]
+    [groups, state.cards, recordAction, state]
   );
 
   const handleGroupSizeChange = useCallback(
     (groupId: string, width: number, height: number) => {
+      // Record action before execution
+      recordAction("updateGroup", state, `Resize group ${groupId}`);
+
       setGroups((prev) =>
         prev.map((g) =>
           g.id === groupId
@@ -1110,10 +1187,13 @@ export function BoardCanvas({
         });
       }
     },
-    [groups]
+    [groups, recordAction, state]
   );
 
   const handleToggleGroupCollapse = useCallback(async (groupId: string) => {
+    // Record action before execution
+    recordAction("toggleGroupCollapsed", state, `Toggle group ${groupId}`);
+
     const result = await toggleGroupCollapsed(groupId);
     if (result.success && result.group) {
       const updatedGroup = result.group;
@@ -1121,10 +1201,13 @@ export function BoardCanvas({
         prev.map((g) => (g.id === groupId ? updatedGroup : g))
       );
     }
-  }, []);
+  }, [recordAction, state]);
 
   const handleDeleteGroup = useCallback(
     async (groupId: string) => {
+      // Record action before execution
+      recordAction("deleteGroup", state, `Delete group ${groupId}`);
+
       const result = await deleteGroup(groupId);
       if (result.success) {
         setGroups((prev) => prev.filter((g) => g.id !== groupId));
@@ -1133,7 +1216,7 @@ export function BoardCanvas({
         }
       }
     },
-    [selectedGroupId]
+    [selectedGroupId, recordAction, state]
   );
 
   const handleGroupClick = useCallback(

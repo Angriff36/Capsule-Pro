@@ -4,7 +4,7 @@
  * Provides runtime validation for event payloads.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RealtimeEventSchema = exports.InventoryStockWastedEventSchema = exports.InventoryStockReceivedEventSchema = exports.InventoryStockConsumedEventSchema = exports.InventoryStockAdjustedEventSchema = exports.CommandBoardCursorMovedEventSchema = exports.CommandBoardUserLeftEventSchema = exports.CommandBoardUserJoinedEventSchema = exports.CommandBoardUpdatedEventSchema = exports.CommandBoardCardDeletedEventSchema = exports.CommandBoardCardMovedEventSchema = exports.CommandBoardCardUpdatedEventSchema = exports.CommandBoardCardCreatedEventSchema = exports.KitchenTaskProgressEventSchema = exports.KitchenTaskReleasedEventSchema = exports.KitchenTaskClaimedEventSchema = exports.InventoryStockWastedPayloadSchema = exports.InventoryStockReceivedPayloadSchema = exports.InventoryStockConsumedPayloadSchema = exports.InventoryStockAdjustedPayloadSchema = exports.CommandBoardCursorMovedPayloadSchema = exports.CommandBoardUserLeftPayloadSchema = exports.CommandBoardUserJoinedPayloadSchema = exports.CommandBoardUpdatedPayloadSchema = exports.CommandBoardCardDeletedPayloadSchema = exports.CommandBoardCardMovedPayloadSchema = exports.CommandBoardCardUpdatedPayloadSchema = exports.CommandBoardCardCreatedPayloadSchema = exports.KitchenTaskProgressPayloadSchema = exports.KitchenTaskReleasedPayloadSchema = exports.KitchenTaskClaimedPayloadSchema = exports.RealtimeEventBaseSchema = void 0;
+exports.RealtimeEventSchema = exports.InventoryStockWastedEventSchema = exports.InventoryStockReceivedEventSchema = exports.InventoryStockConsumedEventSchema = exports.InventoryStockAdjustedEventSchema = exports.CommandBoardConnectionDeletedEventSchema = exports.CommandBoardConnectionUpdatedEventSchema = exports.CommandBoardConnectionCreatedEventSchema = exports.CommandBoardCursorMovedEventSchema = exports.CommandBoardUserLeftEventSchema = exports.CommandBoardUserJoinedEventSchema = exports.CommandBoardUpdatedEventSchema = exports.CommandBoardCardDeletedEventSchema = exports.CommandBoardCardMovedEventSchema = exports.CommandBoardCardUpdatedEventSchema = exports.CommandBoardCardCreatedEventSchema = exports.KitchenTaskProgressEventSchema = exports.KitchenTaskReleasedEventSchema = exports.KitchenTaskClaimedEventSchema = exports.InventoryStockWastedPayloadSchema = exports.InventoryStockReceivedPayloadSchema = exports.InventoryStockConsumedPayloadSchema = exports.InventoryStockAdjustedPayloadSchema = exports.CommandBoardConnectionDeletedPayloadSchema = exports.CommandBoardConnectionUpdatedPayloadSchema = exports.CommandBoardConnectionCreatedPayloadSchema = exports.CommandBoardCursorMovedPayloadSchema = exports.CommandBoardUserLeftPayloadSchema = exports.CommandBoardUserJoinedPayloadSchema = exports.CommandBoardUpdatedPayloadSchema = exports.CommandBoardCardDeletedPayloadSchema = exports.CommandBoardCardMovedPayloadSchema = exports.CommandBoardCardUpdatedPayloadSchema = exports.CommandBoardCardCreatedPayloadSchema = exports.KitchenTaskProgressPayloadSchema = exports.KitchenTaskReleasedPayloadSchema = exports.KitchenTaskClaimedPayloadSchema = exports.RealtimeEventBaseSchema = void 0;
 exports.parseRealtimeEvent = parseRealtimeEvent;
 exports.isKitchenEvent = isKitchenEvent;
 exports.isCommandBoardEvent = isCommandBoardEvent;
@@ -108,6 +108,33 @@ exports.CommandBoardCursorMovedPayloadSchema = zod_1.z.object({
     movedAt: zod_1.z.string().datetime(),
 });
 /**
+ * Command Board Connection event payload schemas.
+ */
+exports.CommandBoardConnectionCreatedPayloadSchema = zod_1.z.object({
+    boardId: zod_1.z.string().min(1),
+    connectionId: zod_1.z.string().min(1),
+    fromCardId: zod_1.z.string().min(1),
+    toCardId: zod_1.z.string().min(1),
+    relationshipType: zod_1.z.string().min(1),
+    createdBy: zod_1.z.string().min(1),
+    createdAt: zod_1.z.string().datetime(),
+});
+exports.CommandBoardConnectionUpdatedPayloadSchema = zod_1.z.object({
+    boardId: zod_1.z.string().min(1),
+    connectionId: zod_1.z.string().min(1),
+    changes: zod_1.z.record(zod_1.z.string(), zod_1.z.unknown()),
+    updatedBy: zod_1.z.string().min(1),
+    updatedAt: zod_1.z.string().datetime(),
+});
+exports.CommandBoardConnectionDeletedPayloadSchema = zod_1.z.object({
+    boardId: zod_1.z.string().min(1),
+    connectionId: zod_1.z.string().min(1),
+    fromCardId: zod_1.z.string().min(1),
+    toCardId: zod_1.z.string().min(1),
+    deletedBy: zod_1.z.string().min(1),
+    deletedAt: zod_1.z.string().datetime(),
+});
+/**
  * Stock/Inventory event payload schemas.
  */
 exports.InventoryStockAdjustedPayloadSchema = zod_1.z.object({
@@ -199,6 +226,21 @@ exports.CommandBoardCursorMovedEventSchema = exports.RealtimeEventBaseSchema.ext
     payload: exports.CommandBoardCursorMovedPayloadSchema,
 });
 /**
+ * Full event schemas with discriminator - Command Board Connection events.
+ */
+exports.CommandBoardConnectionCreatedEventSchema = exports.RealtimeEventBaseSchema.extend({
+    eventType: zod_1.z.literal("command.board.connection.created"),
+    payload: exports.CommandBoardConnectionCreatedPayloadSchema,
+});
+exports.CommandBoardConnectionUpdatedEventSchema = exports.RealtimeEventBaseSchema.extend({
+    eventType: zod_1.z.literal("command.board.connection.updated"),
+    payload: exports.CommandBoardConnectionUpdatedPayloadSchema,
+});
+exports.CommandBoardConnectionDeletedEventSchema = exports.RealtimeEventBaseSchema.extend({
+    eventType: zod_1.z.literal("command.board.connection.deleted"),
+    payload: exports.CommandBoardConnectionDeletedPayloadSchema,
+});
+/**
  * Full event schemas with discriminator - Stock/Inventory events.
  */
 exports.InventoryStockAdjustedEventSchema = exports.RealtimeEventBaseSchema.extend({
@@ -233,6 +275,9 @@ exports.RealtimeEventSchema = zod_1.z.discriminatedUnion("eventType", [
     exports.CommandBoardUserJoinedEventSchema,
     exports.CommandBoardUserLeftEventSchema,
     exports.CommandBoardCursorMovedEventSchema,
+    exports.CommandBoardConnectionCreatedEventSchema,
+    exports.CommandBoardConnectionUpdatedEventSchema,
+    exports.CommandBoardConnectionDeletedEventSchema,
     exports.InventoryStockAdjustedEventSchema,
     exports.InventoryStockConsumedEventSchema,
     exports.InventoryStockReceivedEventSchema,

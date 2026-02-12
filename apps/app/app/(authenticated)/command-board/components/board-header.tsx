@@ -14,7 +14,9 @@ import {
   Loader2Icon,
   PencilIcon,
   PlusIcon,
+  Redo2Icon,
   TrashIcon,
+  Undo2Icon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -29,6 +31,11 @@ interface BoardHeaderProps {
   boardDescription?: string | null;
   boardTags?: string[];
   onBoardUpdated?: (board: CommandBoard) => void;
+  // Undo/Redo props
+  canUndo?: boolean;
+  canRedo?: boolean;
+  onUndo?: () => void;
+  onRedo?: () => void;
 }
 
 export function BoardHeader({
@@ -38,6 +45,10 @@ export function BoardHeader({
   boardDescription,
   boardTags,
   onBoardUpdated,
+  canUndo = false,
+  canRedo = false,
+  onUndo,
+  onRedo,
 }: BoardHeaderProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -204,6 +215,29 @@ export function BoardHeader({
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          {/* Undo/Redo buttons */}
+          {(onUndo || onRedo) && (
+            <>
+              <Button
+                disabled={!canUndo}
+                onClick={onUndo}
+                size="sm"
+                title="Undo (Ctrl+Z)"
+                variant="outline"
+              >
+                <Undo2Icon className="h-4 w-4" />
+              </Button>
+              <Button
+                disabled={!canRedo}
+                onClick={onRedo}
+                size="sm"
+                title="Redo (Ctrl+Shift+Z)"
+                variant="outline"
+              >
+                <Redo2Icon className="h-4 w-4" />
+              </Button>
+            </>
+          )}
           <Button
             className="hidden sm:flex"
             onClick={handleSwitchBoard}
