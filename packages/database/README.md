@@ -12,9 +12,10 @@ Last updated: 2025-02-07
 2. [Core Decisions & Patterns](#core-decisions--patterns)
 3. [Database Workflow](#database-workflow)
 4. [Common Patterns](#common-patterns)
-5. [Commands Reference](#commands-reference)
-6. [Schema Structure](#schema-structure)
-7. [Additional Resources](#additional-resources)
+5. [Prisma Invariants](#prisma-invariants)
+6. [Commands Reference](#commands-reference)
+7. [Schema Structure](#schema-structure)
+8. [Additional Resources](#additional-resources)
 
 ---
 
@@ -335,6 +336,54 @@ END $$;
 
 ---
 
+## Prisma Invariants
+
+These are explicit workspace invariants and should not drift.
+
+### Canonical Prisma Schema Path
+
+```text
+C:\Projects\capsule-pro\packages\database\prisma\schema.prisma
+```
+
+### Canonical Validation Command (repo root)
+
+```bash
+pnpm exec prisma generate --schema=./packages/database/prisma/schema.prisma
+```
+
+This command is wired to root `package.json` as:
+
+```json
+"prisma:check": "pnpm exec prisma generate --schema=./packages/database/prisma/schema.prisma"
+```
+
+### Build/CI Enforcement
+
+Root `build` runs `prisma:check` first:
+
+```json
+"build": "pnpm prisma:check && turbo build"
+```
+
+This guarantees CI fails early if Prisma schema validation fails.
+
+### Filtered Command Note
+
+If you run Prisma inside `@repo/database` via `--filter`, the command executes with `packages/database` as CWD. In that context, use:
+
+```bash
+pnpm --filter @repo/database exec prisma generate --schema=./prisma/schema.prisma
+```
+
+Using `--filter` with a root-relative schema path can fail due to path resolution.
+
+### Error Behavior
+
+Prisma schema relation issues surface as validation errors such as `P1012` (for example, missing back-relations).
+
+---
+
 ## Commands Reference
 
 ### Migration Commands
@@ -357,6 +406,9 @@ pnpm migrate:status
 
 # Regenerate Prisma client
 pnpm prisma:generate
+
+# Validate schema/client generation invariant
+pnpm prisma:check
 
 # Format Prisma schema
 pnpm --filter @repo/database exec prisma format
