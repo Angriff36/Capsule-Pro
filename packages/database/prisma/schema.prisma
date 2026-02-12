@@ -24,6 +24,7 @@ model Account {
   deletedAt               DateTime?                @map("deleted_at") @db.Timestamptz(6)
   locations               Location[]
   employees               User[]
+  userPreferences         UserPreference[]
   kitchenTasks            KitchenTask[]
   prepLists               PrepList[]
   prepListItems           PrepListItem[]
@@ -157,6 +158,7 @@ model User {
   payrollRole           Role?                  @relation("EmployeeRole", fields: [roleId, tenantId], references: [id, tenantId])
   adminChatParticipants AdminChatParticipant[]
   adminChatMessages     AdminChatMessage[]
+  preferences           UserPreference[]
 
   @@id([tenantId, id])
   @@unique([tenantId, id], map: "employees_tenant_id_unique_idx")
@@ -624,6 +626,27 @@ model ClientPreference {
   @@id([tenantId, id])
   @@map("client_preferences")
   @@schema("tenant_crm")
+}
+
+model UserPreference {
+  tenantId        String    @map("tenant_id") @db.Uuid
+  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  preferenceKey   String    @map("preference_key")
+  preferenceValue Json      @map("preference_value")
+  category        String?
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant          Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user            User    @relation(fields: [tenantId, userId], references: [tenantId, id], onDelete: Cascade)
+
+  @@unique([tenantId, userId, preferenceKey, category])
+  @@index([tenantId, category])
+  @@id([tenantId, id])
+  @@map("user_preferences")
+  @@schema("tenant_staff")
 }
 
 model Lead {

@@ -40,11 +40,11 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 // Channel naming utilities
 __exportStar(require("./channels/index"), exports);
+// Vector clocks for causality tracking
+__exportStar(require("./clocks/index"), exports);
 // Event types and schemas
 __exportStar(require("./events/index"), exports);
 // Outbox helpers
 __exportStar(require("./outbox/index"), exports);
 // Replay system
 __exportStar(require("./replay/index"), exports);
-// Vector clocks for causality tracking
-__exportStar(require("./clocks/index"), exports);

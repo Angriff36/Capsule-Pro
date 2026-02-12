@@ -2,8 +2,8 @@
  * Command Board domain realtime events.
  * These events represent state changes in the Strategic Command Board.
  */
-import type { RealtimeEventBase } from "./envelope.js";
 import type { VectorClockJSON } from "../clocks/index.js";
+import type { RealtimeEventBase } from "./envelope.js";
 /**
  * Emitted when a new card is created on the command board.
  */
