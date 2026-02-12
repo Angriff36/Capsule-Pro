@@ -12,7 +12,13 @@ import { apiFetch } from "@/app/lib/api";
  */
 
 // Account type constants
-export const ACCOUNT_TYPES = ["ASSET", "LIABILITY", "EQUITY", "REVENUE", "EXPENSE"] as const;
+export const ACCOUNT_TYPES = [
+  "ASSET",
+  "LIABILITY",
+  "EQUITY",
+  "REVENUE",
+  "EXPENSE",
+] as const;
 export type AccountType = (typeof ACCOUNT_TYPES)[number];
 
 // Chart of Account types matching the Prisma schema
@@ -81,12 +87,15 @@ export async function listChartOfAccounts(
   const searchParams = new URLSearchParams();
 
   if (params.search) searchParams.set("search", params.search);
-  if (params.account_type) searchParams.set("account_type", params.account_type);
+  if (params.account_type)
+    searchParams.set("account_type", params.account_type);
   if (params.include_inactive) searchParams.set("include_inactive", "true");
   searchParams.set("page", String(params.page ?? 1));
   searchParams.set("limit", String(params.limit ?? 50));
 
-  const response = await apiFetch(`/api/accounting/accounts?${searchParams.toString()}`);
+  const response = await apiFetch(
+    `/api/accounting/accounts?${searchParams.toString()}`
+  );
 
   if (!response.ok) {
     const error = await response.json();
@@ -99,7 +108,9 @@ export async function listChartOfAccounts(
 /**
  * Get a single chart of account by ID
  */
-export async function getChartOfAccount(id: string): Promise<ChartOfAccountWithParent> {
+export async function getChartOfAccount(
+  id: string
+): Promise<ChartOfAccountWithParent> {
   const response = await apiFetch(`/api/accounting/accounts/${id}`);
 
   if (!response.ok) {
@@ -172,7 +183,9 @@ export async function deleteChartOfAccount(id: string): Promise<void> {
 /**
  * Deactivate a chart of account
  */
-export async function deactivateChartOfAccount(id: string): Promise<ChartOfAccount> {
+export async function deactivateChartOfAccount(
+  id: string
+): Promise<ChartOfAccount> {
   return updateChartOfAccount(id, { is_active: false });
 }
 
@@ -201,16 +214,24 @@ export function getAccountTypeColor(type: AccountType): string {
   const colors: Record<AccountType, string> = {
     ASSET: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
     LIABILITY: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-    EQUITY: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-    REVENUE: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    EXPENSE: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+    EQUITY:
+      "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+    REVENUE:
+      "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+    EXPENSE:
+      "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
   };
-  return colors[type] ?? "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+  return (
+    colors[type] ??
+    "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+  );
 }
 
 /**
  * Get badge variant for account type
  */
-export function getAccountTypeVariant(type: AccountType): "default" | "secondary" | "outline" {
+export function getAccountTypeVariant(
+  type: AccountType
+): "default" | "secondary" | "outline" {
   return "outline";
 }

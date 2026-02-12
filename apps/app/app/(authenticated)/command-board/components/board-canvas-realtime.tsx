@@ -8,6 +8,24 @@ import {
 } from "@repo/collaboration";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
+import { toast } from "@repo/design-system/components/ui/use-toast";
+import {
   type KeyboardEvent,
   useCallback,
   useEffect,
@@ -16,7 +34,11 @@ import {
   useState,
 } from "react";
 import { createCard, deleteCard, updateCard } from "../actions/cards";
-import { getConnectionsForBoard } from "../actions/connections";
+import {
+  deleteConnection,
+  getConnectionsForBoard,
+  updateConnection,
+} from "../actions/connections";
 import {
   deleteGroup,
   getGroupsForBoard,
@@ -31,6 +53,7 @@ import {
   type CommandBoardGroup,
   INITIAL_BOARD_STATE,
   type Point,
+  type RelationshipType,
   type ViewportPreferences,
   type ViewportState,
 } from "../types";
@@ -88,6 +111,13 @@ export function BoardCanvas({
     string | null
   >(null);
 
+  // Connection context menu state
+  const [contextMenuConnection, setContextMenuConnection] = useState<{
+    connection: CardConnection;
+    x: number;
+    y: number;
+  } | null>(null);
+
   // Drag selection state
   const [isDraggingSelection, setIsDraggingSelection] = useState(false);
   const [selectionStart, setSelectionStart] = useState<{
@@ -113,6 +143,16 @@ export function BoardCanvas({
   const [connectionTargetCardId, setConnectionTargetCardId] = useState<
     string | null
   >(null);
+  const [editingConnectionFromContext, setEditingConnectionFromContext] =
+    useState<CardConnection | null>(null);
+  const [showEditConnectionDialog, setShowEditConnectionDialog] =
+    useState(false);
+  const [editRelationshipType, setEditRelationshipType] =
+    useState<RelationshipType>("generic");
+  const [editLabel, setEditLabel] = useState<string>("");
+  const [editVisible, setEditVisible] = useState<boolean>(true);
+  const [isUpdatingEditDialog, setIsUpdatingEditDialog] = useState(false);
+  const [errorEditDialog, setErrorEditDialog] = useState<string | null>(null);
 
   // Groups state
   const [groups, setGroups] = useState<CommandBoardGroup[]>([]);
@@ -585,6 +625,108 @@ export function BoardCanvas({
     },
     [canEdit, updateSelectedCard]
   );
+
+  const handleConnectionContextMenu = useCallback(
+    (connectionId: string, x: number, y: number) => {
+      if (!canEdit) {
+        return;
+      }
+      const connection = connections.find((c) => c.id === connectionId);
+      if (connection) {
+        setContextMenuConnection({ connection, x, y });
+        setSelectedConnectionId(connectionId);
+      }
+    },
+    [canEdit, connections]
+  );
+
+  const handleContextMenuEdit = useCallback(() => {
+    if (contextMenuConnection?.connection) {
+      const connection = contextMenuConnection.connection;
+      setEditingConnectionFromContext(connection);
+      setEditRelationshipType(connection.relationshipType);
+      setEditLabel(connection.label ?? "");
+      setEditVisible(connection.visible);
+      setErrorEditDialog(null);
+      setShowEditConnectionDialog(true);
+      setContextMenuConnection(null);
+    }
+  }, [contextMenuConnection]);
+
+  const handleContextMenuDelete = useCallback(async () => {
+    if (contextMenuConnection?.connection) {
+      const result = await deleteConnection(
+        contextMenuConnection.connection.id
+      );
+      if (result.success) {
+        setConnections((prev) =>
+          prev.filter((c) => c.id !== contextMenuConnection?.connection.id)
+        );
+        toast.success("Connection deleted");
+      } else {
+        toast.error(result.error || "Failed to delete connection");
+      }
+      setContextMenuConnection(null);
+    }
+  }, [contextMenuConnection]);
+
+  const handleEditConnectionUpdate = useCallback(async () => {
+    if (!editingConnectionFromContext) {
+      return;
+    }
+    setIsUpdatingEditDialog(true);
+    setErrorEditDialog(null);
+
+    const result = await updateConnection({
+      id: editingConnectionFromContext.id,
+      relationshipType: editRelationshipType,
+      label: editLabel || undefined,
+      visible: editVisible,
+    });
+
+    if (result.success) {
+      setConnections((prev) =>
+        prev.map((c) =>
+          c.id === editingConnectionFromContext.id
+            ? {
+                ...c,
+                relationshipType: editRelationshipType,
+                label: editLabel,
+                visible: editVisible,
+              }
+            : c
+        )
+      );
+      setShowEditConnectionDialog(false);
+      setEditingConnectionFromContext(null);
+      toast.success("Connection updated");
+    } else {
+      setErrorEditDialog(result.error || "Failed to update connection");
+    }
+
+    setIsUpdatingEditDialog(false);
+  }, [
+    editingConnectionFromContext,
+    editRelationshipType,
+    editLabel,
+    editVisible,
+  ]);
+
+  // Close context menu on click outside or Escape
+  useEffect(() => {
+    const handleClick = () => setContextMenuConnection(null);
+    const handleEscape = (e: globalThis.KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setContextMenuConnection(null);
+      }
+    };
+    document.addEventListener("click", handleClick);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("click", handleClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
 
   // Helper to check if a card intersects with the selection rectangle
   const cardIntersectsSelection = useCallback(
@@ -1375,6 +1517,7 @@ export function BoardCanvas({
               cards={state.cards}
               connections={connections}
               onConnectionClick={handleConnectionClick}
+              onContextMenu={handleConnectionContextMenu}
               selectedConnectionId={selectedConnectionId ?? undefined}
             />
           )}
@@ -1573,6 +1716,140 @@ export function BoardCanvas({
         sourceCardId={connectionSourceCardId}
         targetCardId={connectionTargetCardId}
       />
+
+      {/* Connection Context Menu (Right-click on connections) */}
+      {contextMenuConnection && (
+        <div
+          className="fixed z-[99999] rounded-md border bg-popover p-1 shadow-lg"
+          style={{
+            left: `${contextMenuConnection.x}px`,
+            top: `${contextMenuConnection.y}px`,
+          }}
+        >
+          <button
+            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent"
+            onClick={handleContextMenuEdit}
+            type="button"
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+              <path d="m15 5 4 4" />
+            </svg>
+            Edit Connection
+          </button>
+          <button
+            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-destructive hover:bg-destructive/10"
+            onClick={handleContextMenuDelete}
+            type="button"
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M3 6h18" />
+              <path d="M19 6v14c0 1-1 2-2H7c-1 0-2-1-2V6" />
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+            </svg>
+            Delete Connection
+          </button>
+        </div>
+      )}
+
+      {/* Edit Connection Dialog */}
+      <Dialog
+        onOpenChange={setShowEditConnectionDialog}
+        open={showEditConnectionDialog}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Connection</DialogTitle>
+            <DialogDescription>
+              Update the connection properties between cards.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="relationshipType">Relationship Type</Label>
+              <Select
+                onValueChange={(value) =>
+                  setEditRelationshipType(value as RelationshipType)
+                }
+                value={editRelationshipType}
+              >
+                <SelectTrigger id="relationshipType">
+                  <SelectValue placeholder="Select relationship type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="generic">Generic</SelectItem>
+                  <SelectItem value="client_to_event">
+                    Client to Event
+                  </SelectItem>
+                  <SelectItem value="event_to_task">Event to Task</SelectItem>
+                  <SelectItem value="task_to_employee">
+                    Task to Employee
+                  </SelectItem>
+                  <SelectItem value="event_to_inventory">
+                    Event to Inventory
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="label">Label (optional)</Label>
+              <Input
+                id="label"
+                onChange={(e) => setEditLabel(e.target.value)}
+                placeholder="Custom label for the connection"
+                value={editLabel}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                checked={editVisible}
+                className="h-4 w-4 rounded border-primary text-primary focus:ring-primary focus:ring-2 focus:ring-offset-0"
+                id="visible"
+                onChange={(e) => setEditVisible(e.target.checked)}
+                type="checkbox"
+              />
+              <Label className="cursor-pointer" htmlFor="visible">
+                Visible
+              </Label>
+            </div>
+            {errorEditDialog && (
+              <div className="text-sm text-destructive">{errorEditDialog}</div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setShowEditConnectionDialog(false)}
+              type="button"
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={isUpdatingEditDialog}
+              onClick={handleEditConnectionUpdate}
+              type="button"
+            >
+              {isUpdatingEditDialog ? "Updating..." : "Update Connection"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

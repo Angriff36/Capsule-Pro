@@ -14,6 +14,7 @@ interface ConnectionLinesProps {
   connections: CardConnection[];
   className?: string;
   onConnectionClick?: (connectionId: string) => void;
+  onContextMenu?: (connectionId: string, x: number, y: number) => void;
   selectedConnectionId?: string;
 }
 
@@ -28,6 +29,7 @@ export const ConnectionLines = memo(function ConnectionLines({
   connections,
   className,
   onConnectionClick,
+  onContextMenu,
   selectedConnectionId,
 }: ConnectionLinesProps) {
   const cardMap = useMemo(() => {
@@ -129,6 +131,11 @@ export const ConnectionLines = memo(function ConnectionLines({
     return (
       <g
         onClick={() => onConnectionClick?.(connection.id)}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onContextMenu?.(connection.id, e.clientX, e.clientY);
+        }}
         onKeyDown={(e) => {
           const isEnter = e.key === "Enter";
           const isSpace = e.key === " ";
@@ -139,6 +146,7 @@ export const ConnectionLines = memo(function ConnectionLines({
         }}
         role="button"
         tabIndex={0}
+        style={{ cursor: "pointer" }}
       >
         <title>
           Connection from {fromCard.title} to {toCard.title}: {config.label}

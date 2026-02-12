@@ -5,7 +5,7 @@
     "irHash": "",
     "compilerVersion": "0.3.8",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-02-11T13:09:41.055Z",
+    "compiledAt": "2026-02-11T23:50:41.151Z",
     "sources": [
       "inventory-rules.manifest",
       "menu-rules.manifest",
@@ -5339,7 +5339,7 @@
   "stores": [
     {
       "entity": "InventoryItem",
-      "target": "memory",
+      "target": "PrismaInventoryItemStore",
       "config": {}
     },
     {
@@ -5394,7 +5394,7 @@
     },
     {
       "entity": "Station",
-      "target": "memory",
+      "target": "PrismaStationStore",
       "config": {}
     }
   ],

@@ -98,9 +98,9 @@ const getResponseErrorMessage = async (
   const contentType = response.headers.get("content-type") ?? "";
 
   if (contentType.includes("application/json")) {
-    const payload = (await response.json().catch(() => null)) as
-      | ApiErrorPayload
-      | null;
+    const payload = (await response
+      .json()
+      .catch(() => null)) as ApiErrorPayload | null;
     const message = payload?.message || payload?.error;
     if (typeof message === "string" && message.trim().length > 0) {
       return message.trim();

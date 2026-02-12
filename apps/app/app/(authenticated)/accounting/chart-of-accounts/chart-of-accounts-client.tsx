@@ -42,23 +42,17 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import {
-  AlertTriangle,
-  FileText,
-  PlusIcon,
-  Search,
-} from "lucide-react";
+import { AlertTriangle, FileText, PlusIcon, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   ACCOUNT_TYPES,
   type AccountType,
+  type ChartOfAccountsFilters,
+  type ChartOfAccountWithParent,
   deactivateChartOfAccount,
-  deleteChartOfAccount,
   getAccountTypeLabel,
   listChartOfAccounts,
-  type ChartOfAccountWithParent,
-  type ChartOfAccountsFilters,
 } from "@/app/lib/use-chart-of-accounts";
 import { AccountModal } from "./components/account-modal";
 import { AccountTypeBadge } from "./components/account-type-badge";
@@ -137,9 +131,7 @@ export const ChartOfAccountsClient = () => {
     } catch (error) {
       console.error("Failed to deactivate account:", error);
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to deactivate account"
+        error instanceof Error ? error.message : "Failed to deactivate account"
       );
     }
   }, [accountToDeactivate, loadAccounts]);
@@ -161,16 +153,17 @@ export const ChartOfAccountsClient = () => {
 
   // Calculate summary stats
   const activeAccountsCount = accounts.filter((acc) => acc.is_active).length;
-  const inactiveAccountsCount = accounts.filter(
-    (acc) => !acc.is_active
-  ).length;
+  const inactiveAccountsCount = accounts.filter((acc) => !acc.is_active).length;
 
-  const accountsByType = ACCOUNT_TYPES.reduce((acc, type) => {
-    acc[type] = accounts.filter(
-      (account) => account.account_type === type && account.is_active
-    ).length;
-    return acc;
-  }, {} as Record<AccountType, number>);
+  const accountsByType = ACCOUNT_TYPES.reduce(
+    (acc, type) => {
+      acc[type] = accounts.filter(
+        (account) => account.account_type === type && account.is_active
+      ).length;
+      return acc;
+    },
+    {} as Record<AccountType, number>
+  );
 
   return (
     <>
@@ -221,11 +214,7 @@ export const ChartOfAccountsClient = () => {
                 <CardDescription>Account Types</CardDescription>
                 <div className="flex gap-1 flex-wrap mt-1">
                   {ACCOUNT_TYPES.map((type) => (
-                    <Badge
-                      className="text-xs"
-                      key={type}
-                      variant="outline"
-                    >
+                    <Badge className="text-xs" key={type} variant="outline">
                       {getAccountTypeLabel(type)}: {accountsByType[type]}
                     </Badge>
                   ))}
@@ -454,7 +443,10 @@ export const ChartOfAccountsClient = () => {
       />
 
       {/* Deactivate Confirmation Dialog */}
-      <Dialog onOpenChange={setDeactivateDialogOpen} open={deactivateDialogOpen}>
+      <Dialog
+        onOpenChange={setDeactivateDialogOpen}
+        open={deactivateDialogOpen}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">

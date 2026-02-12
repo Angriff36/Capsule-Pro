@@ -115,6 +115,36 @@ export const CommandBoardCursorMovedPayloadSchema = z.object({
 });
 
 /**
+ * Command Board Connection event payload schemas.
+ */
+export const CommandBoardConnectionCreatedPayloadSchema = z.object({
+  boardId: z.string().min(1),
+  connectionId: z.string().min(1),
+  fromCardId: z.string().min(1),
+  toCardId: z.string().min(1),
+  relationshipType: z.string().min(1),
+  createdBy: z.string().min(1),
+  createdAt: z.string().datetime(),
+});
+
+export const CommandBoardConnectionUpdatedPayloadSchema = z.object({
+  boardId: z.string().min(1),
+  connectionId: z.string().min(1),
+  changes: z.record(z.string(), z.unknown()),
+  updatedBy: z.string().min(1),
+  updatedAt: z.string().datetime(),
+});
+
+export const CommandBoardConnectionDeletedPayloadSchema = z.object({
+  boardId: z.string().min(1),
+  connectionId: z.string().min(1),
+  fromCardId: z.string().min(1),
+  toCardId: z.string().min(1),
+  deletedBy: z.string().min(1),
+  deletedAt: z.string().datetime(),
+});
+
+/**
  * Stock/Inventory event payload schemas.
  */
 export const InventoryStockAdjustedPayloadSchema = z.object({
@@ -227,6 +257,27 @@ export const CommandBoardCursorMovedEventSchema =
   });
 
 /**
+ * Full event schemas with discriminator - Command Board Connection events.
+ */
+export const CommandBoardConnectionCreatedEventSchema =
+  RealtimeEventBaseSchema.extend({
+    eventType: z.literal("command.board.connection.created"),
+    payload: CommandBoardConnectionCreatedPayloadSchema,
+  });
+
+export const CommandBoardConnectionUpdatedEventSchema =
+  RealtimeEventBaseSchema.extend({
+    eventType: z.literal("command.board.connection.updated"),
+    payload: CommandBoardConnectionUpdatedPayloadSchema,
+  });
+
+export const CommandBoardConnectionDeletedEventSchema =
+  RealtimeEventBaseSchema.extend({
+    eventType: z.literal("command.board.connection.deleted"),
+    payload: CommandBoardConnectionDeletedPayloadSchema,
+  });
+
+/**
  * Full event schemas with discriminator - Stock/Inventory events.
  */
 export const InventoryStockAdjustedEventSchema = RealtimeEventBaseSchema.extend(
@@ -271,6 +322,9 @@ export const RealtimeEventSchema = z.discriminatedUnion("eventType", [
   CommandBoardUserJoinedEventSchema,
   CommandBoardUserLeftEventSchema,
   CommandBoardCursorMovedEventSchema,
+  CommandBoardConnectionCreatedEventSchema,
+  CommandBoardConnectionUpdatedEventSchema,
+  CommandBoardConnectionDeletedEventSchema,
   InventoryStockAdjustedEventSchema,
   InventoryStockConsumedEventSchema,
   InventoryStockReceivedEventSchema,

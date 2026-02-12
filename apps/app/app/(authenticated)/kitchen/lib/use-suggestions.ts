@@ -57,17 +57,20 @@ export function useSuggestions(tenantId?: string | null) {
     setSuggestions((prev) => prev.filter((s) => s.id !== suggestionId));
   }, []);
 
-  const handleAction = useCallback((suggestion: SuggestedAction) => {
-    // Handle the action based on type
-    if (suggestion.action.type === "navigate") {
-      router.push(suggestion.action.path);
-    } else if (suggestion.action.type === "api_call") {
-      // API call actions would be handled differently
-      console.log("API call action:", suggestion.action);
-    } else if (suggestion.action.type === "external") {
-      window.open(suggestion.action.url, "_blank");
-    }
-  }, [router]);
+  const handleAction = useCallback(
+    (suggestion: SuggestedAction) => {
+      // Handle the action based on type
+      if (suggestion.action.type === "navigate") {
+        router.push(suggestion.action.path);
+      } else if (suggestion.action.type === "api_call") {
+        // API call actions would be handled differently
+        console.log("API call action:", suggestion.action);
+      } else if (suggestion.action.type === "external") {
+        window.open(suggestion.action.url, "_blank");
+      }
+    },
+    [router]
+  );
 
   return {
     suggestions,

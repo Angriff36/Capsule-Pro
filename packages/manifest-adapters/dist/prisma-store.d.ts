@@ -282,6 +282,64 @@ export declare function loadPrepListItemFromPrisma(prisma: PrismaClient, tenantI
  */
 export declare function syncPrepListItemToPrisma(prisma: PrismaClient, tenantId: string, entity: EntityInstance): Promise<void>;
 /**
+ * Prisma-backed store for Station entities
+ *
+ * Maps Manifest Station entities to the Prisma Station table.
+ */
+export declare class StationPrismaStore implements Store<EntityInstance> {
+    private readonly prisma;
+    private readonly tenantId;
+    constructor(prisma: PrismaClient, tenantId: string);
+    getAll(): Promise<EntityInstance[]>;
+    getById(id: string): Promise<EntityInstance | undefined>;
+    create(data: Partial<EntityInstance>): Promise<EntityInstance>;
+    update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
+    delete(id: string): Promise<boolean>;
+    clear(): Promise<void>;
+    private mapToManifestEntity;
+}
+/**
+ * Prisma-backed store for InventoryItem entities
+ *
+ * Maps Manifest InventoryItem entities to the Prisma InventoryItem table.
+ */
+export declare class InventoryItemPrismaStore implements Store<EntityInstance> {
+    private readonly prisma;
+    private readonly tenantId;
+    constructor(prisma: PrismaClient, tenantId: string);
+    getAll(): Promise<EntityInstance[]>;
+    getById(id: string): Promise<EntityInstance | undefined>;
+    create(data: Partial<EntityInstance>): Promise<EntityInstance>;
+    update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
+    delete(id: string): Promise<boolean>;
+    clear(): Promise<void>;
+    private mapToManifestEntity;
+}
+/**
+ * Load a Station from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export declare function loadStationFromPrisma(prisma: PrismaClient, tenantId: string, stationId: string): Promise<EntityInstance | undefined>;
+/**
+ * Sync a Station from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export declare function syncStationToPrisma(prisma: PrismaClient, tenantId: string, entity: EntityInstance): Promise<void>;
+/**
+ * Load an InventoryItem from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export declare function loadInventoryItemFromPrisma(prisma: PrismaClient, tenantId: string, itemId: string): Promise<EntityInstance | undefined>;
+/**
+ * Sync an InventoryItem from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export declare function syncInventoryItemToPrisma(prisma: PrismaClient, tenantId: string, entity: EntityInstance): Promise<void>;
+/**
  * Configuration for PrismaStore
  */
 export interface PrismaStoreConfig {

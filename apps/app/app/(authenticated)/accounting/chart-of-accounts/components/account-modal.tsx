@@ -35,9 +35,9 @@ import {
   ACCOUNT_TYPES,
   type ChartOfAccountWithParent,
   type CreateChartOfAccountRequest,
-  type UpdateChartOfAccountRequest,
   createChartOfAccount,
   getAccountTypeLabel,
+  type UpdateChartOfAccountRequest,
   updateChartOfAccount,
 } from "@/app/lib/use-chart-of-accounts";
 
@@ -107,22 +107,21 @@ export function AccountModal({
         return;
       }
 
-      const request: CreateChartOfAccountRequest | UpdateChartOfAccountRequest = {
-        account_number: formData.account_number.trim(),
-        account_name: formData.account_name.trim(),
-        account_type: formData.account_type,
-        parent_id: formData.parent_id || undefined,
-        description: formData.description.trim() || undefined,
-        is_active: formData.is_active,
-      };
+      const request: CreateChartOfAccountRequest | UpdateChartOfAccountRequest =
+        {
+          account_number: formData.account_number.trim(),
+          account_name: formData.account_name.trim(),
+          account_type: formData.account_type,
+          parent_id: formData.parent_id || undefined,
+          description: formData.description.trim() || undefined,
+          is_active: formData.is_active,
+        };
 
       if (editAccount) {
         await updateChartOfAccount(editAccount.id, request);
         toast.success("Account updated successfully");
       } else {
-        await createChartOfAccount(
-          request as CreateChartOfAccountRequest
-        );
+        await createChartOfAccount(request as CreateChartOfAccountRequest);
         toast.success("Account created successfully");
       }
 
@@ -279,10 +278,7 @@ export function AccountModal({
                   })
                 }
               />
-              <Label
-                className="cursor-pointer font-normal"
-                htmlFor="is_active"
-              >
+              <Label className="cursor-pointer font-normal" htmlFor="is_active">
                 Active
               </Label>
             </div>

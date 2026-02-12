@@ -422,24 +422,18 @@ export function BudgetSection({
             </p>
           </div>
           {budget ? (
-            <Button onClick={() => onViewBudget(budget.id)} size="sm" variant="outline">
+            <Button
+              onClick={() => onViewBudget(budget.id)}
+              size="sm"
+              variant="outline"
+            >
               View
             </Button>
           ) : null}
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        {!budget ? (
-          <div className="rounded-lg border border-dashed bg-muted/20 p-4">
-            <p className="font-medium text-sm">No budget configured yet</p>
-            <p className="mt-1 text-foreground/70 text-sm">
-              Create a budget to track planned vs actual event spend.
-            </p>
-            <Button className="mt-3" onClick={onCreateBudget} size="sm">
-              Create budget
-            </Button>
-          </div>
-        ) : (
+        {budget ? (
           <div className="grid gap-2">
             <div className="grid gap-2 sm:grid-cols-3">
               <div className="rounded-lg border p-3">
@@ -463,8 +457,22 @@ export function BudgetSection({
                 </div>
               </div>
             </div>
-            <Button onClick={() => onViewBudget(budget.id)} size="sm" variant="outline">
+            <Button
+              onClick={() => onViewBudget(budget.id)}
+              size="sm"
+              variant="outline"
+            >
               Open budget workspace
+            </Button>
+          </div>
+        ) : (
+          <div className="rounded-lg border border-dashed bg-muted/20 p-4">
+            <p className="font-medium text-sm">No budget configured yet</p>
+            <p className="mt-1 text-foreground/70 text-sm">
+              Create a budget to track planned vs actual event spend.
+            </p>
+            <Button className="mt-3" onClick={onCreateBudget} size="sm">
+              Create budget
             </Button>
           </div>
         )}
@@ -657,11 +665,11 @@ export function SuggestionsSection({
               >
                 {hasSuggestions ? "Review recommendations" : "Open panel"}
               </Button>
-              {!hasSuggestions ? (
+              {hasSuggestions ? null : (
                 <Button onClick={onRefresh} size="sm" variant="ghost">
                   Refresh
                 </Button>
-              ) : null}
+              )}
             </div>
           </div>
         )}
@@ -766,7 +774,8 @@ export function PrepTasksSection({
                     {task.status}
                   </span>
                   <span className="text-foreground/70 text-xs">
-                    {task.servingsTotal ?? Math.round(Number(task.quantityTotal))}
+                    {task.servingsTotal ??
+                      Math.round(Number(task.quantityTotal))}
                     {task.servingsTotal ? " servings" : ""}
                   </span>
                 </div>

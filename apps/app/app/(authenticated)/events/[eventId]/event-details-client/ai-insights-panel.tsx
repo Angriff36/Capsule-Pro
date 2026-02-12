@@ -8,7 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { ArrowRightIcon, CheckCircle2Icon, CircleDashedIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  CheckCircle2Icon,
+  CircleDashedIcon,
+} from "lucide-react";
 import type { SuggestedAction } from "../../../kitchen/lib/suggestions-types";
 import type {
   EventBudgetForDisplay,
@@ -128,7 +132,9 @@ export function AIInsightsPanel({
               <p className="font-medium text-foreground/80 text-xs uppercase tracking-[0.18em]">
                 Event Copilot
               </p>
-              <CardTitle className="mt-1 text-lg">Operations workflow</CardTitle>
+              <CardTitle className="mt-1 text-lg">
+                Operations workflow
+              </CardTitle>
               <p className="mt-1 text-foreground/75 text-sm">
                 One sequence for planning, briefing, and budget control.
               </p>
@@ -175,7 +181,8 @@ export function AIInsightsPanel({
           {nextAction ? (
             <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed border-border/70 bg-muted/10 px-3 py-2">
               <p className="text-foreground/80 text-sm">
-                Next action: <span className="font-medium">{nextAction.label}</span>
+                Next action:{" "}
+                <span className="font-medium">{nextAction.label}</span>
               </p>
               <Button onClick={nextAction.onAction} size="sm" variant="outline">
                 Open step

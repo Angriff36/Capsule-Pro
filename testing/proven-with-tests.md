@@ -2,8 +2,57 @@
 
 > Note: Historical test report. For current structure and paths, use `docs/manifest/README.md` and its linked source-of-truth docs.
 
-**Last Updated**: 2026-02-08
+**Last Updated**: 2026-02-11
 **Status**: ⚠️ **PARTIALLY TESTED - NOT PRODUCTION READY**
+
+## Canonical Proof Tracking Structure
+
+Use this file as a ledger only. Detailed proof artifacts now live in:
+
+- `testing/README.md`
+- `testing/proof-backlog.md`
+- `testing/claims/<id>/testclaim.md`
+- `testing/claims/<id>/testreport.md`
+- `testing/claims/<id>/actualtest.md`
+
+Current linked claim artifacts:
+- `testing/claims/001-docs-authority-integrity/testclaim.md`
+- `testing/claims/001-docs-authority-integrity/testreport.md`
+- `testing/claims/001-docs-authority-integrity/actualtest.md`
+
+## Proof Log (Append-Only)
+
+Use this section to record only verifiable outcomes with command evidence.
+Each entry should include:
+- Date
+- Claim proven
+- Exact command(s)
+- Result summary
+- Scope and limits
+
+### 2026-02-11 - Documentation Authority and Integrity Hardening (Manifest repo)
+
+**Claim proven**
+- Canonical authority model and documentation integrity checks are in place and executable.
+
+**Commands run**
+- `npm run docs:check`
+- `npm run verify:docs:quick`
+- `npm test`
+
+**Results**
+- `docs:check` passed:
+  - metadata check passed for all Tier-A spec markdown files
+  - docs link check passed for all files under `docs/**`
+- `verify:docs:quick` passed
+- `npm test` passed (`467/467`)
+
+**Scope**
+- Proven for documentation integrity + conformance/runtime tests in `C:\Projects\Manifest`.
+
+**Limits**
+- Does not prove production readiness of generated routes or end-to-end Capsule Pro HTTP paths.
+- `npm run typecheck` and `npm run lint` remain failing in baseline repository areas not changed by this documentation work.
 
 ## What's Been Tested (Limited Scope)
 # Manifest Route Generator - Session Summary

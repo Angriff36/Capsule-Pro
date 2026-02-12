@@ -767,7 +767,10 @@ export function createPrismaStoreProvider(prisma, tenantId) {
                 return new PrepListPrismaStore(prisma, tenantId);
             case "PrepListItem":
                 return new PrepListItemPrismaStore(prisma, tenantId);
-            // TODO: Add StationPrismaStore and InventoryItemPrismaStore as needed
+            case "Station":
+                return new StationPrismaStore(prisma, tenantId);
+            case "InventoryItem":
+                return new InventoryItemPrismaStore(prisma, tenantId);
             default:
                 return undefined;
         }
@@ -1411,6 +1414,294 @@ export async function syncPrepListItemToPrisma(prisma, tenantId, entity) {
     const store = new PrepListItemPrismaStore(prisma, tenantId);
     // Check if prep list item exists
     const existing = await prisma.prepListItem.findFirst({
+        where: { tenantId, id: entity.id, deletedAt: null },
+    });
+    if (existing) {
+        await store.update(entity.id, entity);
+    }
+    else {
+        await store.create(entity);
+    }
+}
+/**
+ * Prisma-backed store for Station entities
+ *
+ * Maps Manifest Station entities to the Prisma Station table.
+ */
+export class StationPrismaStore {
+    prisma;
+    tenantId;
+    constructor(prisma, tenantId) {
+        this.prisma = prisma;
+        this.tenantId = tenantId;
+    }
+    async getAll() {
+        const stations = await this.prisma.station.findMany({
+            where: { tenantId: this.tenantId, deletedAt: null },
+        });
+        return stations.map((station) => this.mapToManifestEntity(station));
+    }
+    async getById(id) {
+        const station = await this.prisma.station.findFirst({
+            where: { tenantId: this.tenantId, id, deletedAt: null },
+        });
+        return station ? this.mapToManifestEntity(station) : undefined;
+    }
+    async create(data) {
+        const station = await this.prisma.station.create({
+            data: {
+                tenantId: this.tenantId,
+                id: data.id,
+                locationId: data.locationId,
+                name: data.name,
+                stationType: data.stationType || "prep-station",
+                capacitySimultaneousTasks: data.capacitySimultaneousTasks || 1,
+                equipmentList: typeof data.equipmentList === "string"
+                    ? data.equipmentList.split(",").filter(Boolean)
+                    : [],
+                isActive: data.isActive ?? true,
+                notes: data.notes || null,
+            },
+        });
+        return this.mapToManifestEntity(station);
+    }
+    async update(id, data) {
+        try {
+            const updated = await this.prisma.station.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
+                data: {
+                    name: data.name,
+                    stationType: data.stationType,
+                    capacitySimultaneousTasks: data.capacitySimultaneousTasks,
+                    equipmentList: data.equipmentList !== undefined
+                        ? typeof data.equipmentList === "string"
+                            ? data.equipmentList.split(",").filter(Boolean)
+                            : []
+                        : undefined,
+                    isActive: data.isActive,
+                    notes: data.notes,
+                    updatedAt: new Date(),
+                },
+            });
+            return this.mapToManifestEntity(updated);
+        }
+        catch {
+            return undefined;
+        }
+    }
+    async delete(id) {
+        try {
+            await this.prisma.station.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
+                data: { deletedAt: new Date() },
+            });
+            return true;
+        }
+        catch {
+            return false;
+        }
+    }
+    async clear() {
+        await this.prisma.station.updateMany({
+            where: { tenantId: this.tenantId },
+            data: { deletedAt: new Date() },
+        });
+    }
+    mapToManifestEntity(station) {
+        return {
+            id: station.id,
+            tenantId: station.tenantId,
+            locationId: station.locationId,
+            name: station.name,
+            stationType: station.stationType ?? "prep-station",
+            capacitySimultaneousTasks: station.capacitySimultaneousTasks ?? 1,
+            equipmentList: Array.isArray(station.equipmentList)
+                ? station.equipmentList.join(",")
+                : "",
+            isActive: station.isActive ?? true,
+            currentTaskCount: 0, // Not persisted in Prisma - computed at runtime
+            notes: station.notes ?? "",
+            createdAt: station.createdAt.getTime(),
+            updatedAt: station.updatedAt.getTime(),
+        };
+    }
+}
+/**
+ * Prisma-backed store for InventoryItem entities
+ *
+ * Maps Manifest InventoryItem entities to the Prisma InventoryItem table.
+ */
+export class InventoryItemPrismaStore {
+    prisma;
+    tenantId;
+    constructor(prisma, tenantId) {
+        this.prisma = prisma;
+        this.tenantId = tenantId;
+    }
+    async getAll() {
+        const items = await this.prisma.inventoryItem.findMany({
+            where: { tenantId: this.tenantId, deletedAt: null },
+        });
+        return items.map((item) => this.mapToManifestEntity(item));
+    }
+    async getById(id) {
+        const item = await this.prisma.inventoryItem.findFirst({
+            where: { tenantId: this.tenantId, id, deletedAt: null },
+        });
+        return item ? this.mapToManifestEntity(item) : undefined;
+    }
+    async create(data) {
+        const item = await this.prisma.inventoryItem.create({
+            data: {
+                tenantId: this.tenantId,
+                id: data.id,
+                item_number: data.itemNumber,
+                name: data.name,
+                category: data.category || "",
+                unitCost: data.costPerUnit
+                    ? new Prisma.Decimal(data.costPerUnit)
+                    : new Prisma.Decimal(0),
+                quantityOnHand: data.quantityOnHand
+                    ? new Prisma.Decimal(data.quantityOnHand)
+                    : new Prisma.Decimal(0),
+                reorder_level: data.reorderPoint
+                    ? new Prisma.Decimal(data.reorderPoint)
+                    : new Prisma.Decimal(0),
+                tags: typeof data.allergens === "string"
+                    ? data.allergens.split(",").filter(Boolean)
+                    : [],
+                fsa_status: null,
+                fsa_temp_logged: null,
+                fsa_allergen_info: null,
+                fsa_traceable: null,
+            },
+        });
+        return this.mapToManifestEntity(item);
+    }
+    async update(id, data) {
+        try {
+            const updated = await this.prisma.inventoryItem.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
+                data: {
+                    name: data.name,
+                    category: data.category,
+                    unitCost: data.costPerUnit
+                        ? new Prisma.Decimal(data.costPerUnit)
+                        : undefined,
+                    quantityOnHand: data.quantityOnHand
+                        ? new Prisma.Decimal(data.quantityOnHand)
+                        : undefined,
+                    reorder_level: data.reorderPoint
+                        ? new Prisma.Decimal(data.reorderPoint)
+                        : undefined,
+                    tags: data.allergens !== undefined
+                        ? typeof data.allergens === "string"
+                            ? data.allergens.split(",").filter(Boolean)
+                            : []
+                        : undefined,
+                    updatedAt: new Date(),
+                },
+            });
+            return this.mapToManifestEntity(updated);
+        }
+        catch {
+            return undefined;
+        }
+    }
+    async delete(id) {
+        try {
+            await this.prisma.inventoryItem.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
+                data: { deletedAt: new Date() },
+            });
+            return true;
+        }
+        catch {
+            return false;
+        }
+    }
+    async clear() {
+        await this.prisma.inventoryItem.updateMany({
+            where: { tenantId: this.tenantId },
+            data: { deletedAt: new Date() },
+        });
+    }
+    mapToManifestEntity(item) {
+        const quantityOnHand = Number(item.quantityOnHand ?? 0);
+        return {
+            id: item.id,
+            tenantId: item.tenantId,
+            name: item.name,
+            itemType: "ingredient",
+            itemNumber: item.item_number,
+            category: item.category ?? "",
+            baseUnit: "each",
+            quantityOnHand,
+            quantityReserved: 0, // Not tracked in Prisma
+            quantityAvailable: quantityOnHand, // Computed field
+            parLevel: 0, // Not tracked in Prisma
+            reorderPoint: Number(item.reorder_level ?? 0),
+            reorderQuantity: 0, // Not tracked in Prisma
+            costPerUnit: Number(item.unitCost ?? 0),
+            supplierId: "", // Not tracked in Prisma
+            locationId: "", // Not tracked in Prisma
+            allergens: Array.isArray(item.tags) ? item.tags.join(",") : "",
+            isActive: item.deletedAt === null,
+            lastCountedAt: 0, // Not tracked in Prisma
+            fsaStatus: item.fsa_status ?? "unknown",
+            fsaTempLogged: item.fsa_temp_logged ?? false,
+            fsaAllergenInfo: item.fsa_allergen_info ?? false,
+            fsaTraceable: item.fsa_traceable ?? false,
+            createdAt: item.createdAt.getTime(),
+            updatedAt: item.updatedAt.getTime(),
+        };
+    }
+}
+/**
+ * Load a Station from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export async function loadStationFromPrisma(prisma, tenantId, stationId) {
+    const store = new StationPrismaStore(prisma, tenantId);
+    return store.getById(stationId);
+}
+/**
+ * Sync a Station from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export async function syncStationToPrisma(prisma, tenantId, entity) {
+    const store = new StationPrismaStore(prisma, tenantId);
+    // Check if station exists
+    const existing = await prisma.station.findFirst({
+        where: { tenantId, id: entity.id, deletedAt: null },
+    });
+    if (existing) {
+        await store.update(entity.id, entity);
+    }
+    else {
+        await store.create(entity);
+    }
+}
+/**
+ * Load an InventoryItem from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export async function loadInventoryItemFromPrisma(prisma, tenantId, itemId) {
+    const store = new InventoryItemPrismaStore(prisma, tenantId);
+    return store.getById(itemId);
+}
+/**
+ * Sync an InventoryItem from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export async function syncInventoryItemToPrisma(prisma, tenantId, entity) {
+    const store = new InventoryItemPrismaStore(prisma, tenantId);
+    // Check if inventory item exists
+    const existing = await prisma.inventoryItem.findFirst({
         where: { tenantId, id: entity.id, deletedAt: null },
     });
     if (existing) {

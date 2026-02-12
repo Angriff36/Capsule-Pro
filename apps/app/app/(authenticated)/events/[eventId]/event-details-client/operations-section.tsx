@@ -52,7 +52,9 @@ export function OperationsSection({
             <Card>
               <CardContent className="pt-5">
                 <p className="text-foreground/70 text-xs">In Progress</p>
-                <p className="font-semibold text-lg">{taskSummary.in_progress}</p>
+                <p className="font-semibold text-lg">
+                  {taskSummary.in_progress}
+                </p>
               </CardContent>
             </Card>
             <Card>

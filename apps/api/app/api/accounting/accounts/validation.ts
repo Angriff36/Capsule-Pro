@@ -4,8 +4,8 @@
  * Validation functions using invariant() for account operations
  */
 
-import { invariant } from "@/app/lib/invariant";
 import type { AccountType } from "@repo/database";
+import { invariant } from "@/app/lib/invariant";
 import type {
   AccountListFilters,
   CreateAccountRequest,

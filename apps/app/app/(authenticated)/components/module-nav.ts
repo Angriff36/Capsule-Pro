@@ -7,7 +7,8 @@ export type ModuleKey =
   | "payroll"
   | "administrative"
   | "crm"
-  | "analytics";
+  | "analytics"
+  | "command-board";
 
 interface ModuleSidebarItem {
   title: string;
@@ -199,6 +200,20 @@ export const modules: ModuleDefinition[] = [
           { title: "Events", href: "/analytics/events" },
           { title: "Sales", href: "/analytics/sales" },
           { title: "Finance", href: "/analytics/finance" },
+        ],
+      },
+    ],
+  },
+  {
+    key: "command-board",
+    label: "Command Board",
+    href: "/command-board",
+    sidebar: [
+      {
+        label: "Command Board",
+        items: [
+          { title: "All Boards", href: "/command-board" },
+          { title: "Create Board", href: "/command-board?create=true" },
         ],
       },
     ],

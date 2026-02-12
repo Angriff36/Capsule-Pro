@@ -8,9 +8,7 @@
     "declarationMap": false,
     "emitDeclarationOnly": false,
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     },
     "strictNullChecks": true
   },
@@ -22,7 +20,5 @@
     "next.config.ts",
     ".next-dev/types/**/*.ts"
   ],
-  "exclude": [
-    "prisma"
-  ]
+  "exclude": ["prisma"]
 }
