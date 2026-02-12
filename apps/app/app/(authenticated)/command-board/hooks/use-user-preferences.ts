@@ -1,9 +1,8 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
-
-import type { ViewportPreferences } from "../types";
+import { useCallback, useEffect, useState } from "react";
 import { getUserPreferences, saveUserPreference } from "../actions/preferences";
+import type { ViewportPreferences } from "../types";
 
 /**
  * Default viewport preferences
@@ -15,6 +14,7 @@ const DEFAULT_VIEWPORT_PREFERENCES: ViewportPreferences = {
   gridSize: 40,
   showGrid: true,
   gridSnapEnabled: true,
+  showConnections: true,
 };
 
 const VIEWPORT_PREFERENCES_CATEGORY = "viewport";
@@ -23,7 +23,9 @@ const VIEWPORT_PREFERENCES_CATEGORY = "viewport";
  * Hook for user preferences from database instead of localStorage
  */
 export function useUserPreferences() {
-  const [preferences, setPreferences] = useState<ViewportPreferences>(DEFAULT_VIEWPORT_PREFERENCES);
+  const [preferences, setPreferences] = useState<ViewportPreferences>(
+    DEFAULT_VIEWPORT_PREFERENCES
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   // Load preferences on mount
@@ -40,12 +42,27 @@ export function useUserPreferences() {
 
         if (viewportPrefs) {
           const prefs: ViewportPreferences = {
-            zoom: (viewportPrefs.preferenceValue as any)?.zoom ?? DEFAULT_VIEWPORT_PREFERENCES.zoom,
-            panX: (viewportPrefs.preferenceValue as any)?.panX ?? DEFAULT_VIEWPORT_PREFERENCES.panX,
-            panY: (viewportPrefs.preferenceValue as any)?.panY ?? DEFAULT_VIEWPORT_PREFERENCES.panY,
-            gridSize: (viewportPrefs.preferenceValue as any)?.gridSize ?? DEFAULT_VIEWPORT_PREFERENCES.gridSize,
-            showGrid: (viewportPrefs.preferenceValue as any)?.showGrid ?? DEFAULT_VIEWPORT_PREFERENCES.showGrid,
-            gridSnapEnabled: (viewportPrefs.preferenceValue as any)?.gridSnapEnabled ?? DEFAULT_VIEWPORT_PREFERENCES.gridSnapEnabled,
+            zoom:
+              (viewportPrefs.preferenceValue as any)?.zoom ??
+              DEFAULT_VIEWPORT_PREFERENCES.zoom,
+            panX:
+              (viewportPrefs.preferenceValue as any)?.panX ??
+              DEFAULT_VIEWPORT_PREFERENCES.panX,
+            panY:
+              (viewportPrefs.preferenceValue as any)?.panY ??
+              DEFAULT_VIEWPORT_PREFERENCES.panY,
+            gridSize:
+              (viewportPrefs.preferenceValue as any)?.gridSize ??
+              DEFAULT_VIEWPORT_PREFERENCES.gridSize,
+            showGrid:
+              (viewportPrefs.preferenceValue as any)?.showGrid ??
+              DEFAULT_VIEWPORT_PREFERENCES.showGrid,
+            gridSnapEnabled:
+              (viewportPrefs.preferenceValue as any)?.gridSnapEnabled ??
+              DEFAULT_VIEWPORT_PREFERENCES.gridSnapEnabled,
+            showConnections:
+              (viewportPrefs.preferenceValue as any)?.showConnections ??
+              DEFAULT_VIEWPORT_PREFERENCES.showConnections,
           };
           setPreferences(prefs);
         }

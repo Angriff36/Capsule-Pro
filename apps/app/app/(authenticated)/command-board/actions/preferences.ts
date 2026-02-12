@@ -57,10 +57,7 @@ export async function getUserPreferences(
         deletedAt: null,
         ...(category ? { category } : {}),
       },
-      orderBy: [
-        { category: "asc" },
-        { preferenceKey: "asc" },
-      ],
+      orderBy: [{ category: "asc" }, { preferenceKey: "asc" }],
       select: {
         id: true,
         preferenceKey: true,
@@ -88,7 +85,10 @@ export async function getUserPreferences(
     console.error("Failed to fetch user preferences:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to fetch user preferences",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch user preferences",
     };
   }
 }
@@ -145,7 +145,10 @@ export async function getUserPreference(
     console.error("Failed to fetch user preference:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to fetch user preference",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch user preference",
     };
   }
 }
@@ -166,7 +169,10 @@ export async function saveUserPreference(
   const { preferenceKey, preferenceValue, category, notes } = input;
 
   if (!preferenceKey || preferenceValue === undefined) {
-    return { success: false, error: "preferenceKey and preferenceValue are required" };
+    return {
+      success: false,
+      error: "preferenceKey and preferenceValue are required",
+    };
   }
 
   try {
@@ -207,39 +213,41 @@ export async function saveUserPreference(
           updatedAt: updated.updatedAt,
         },
       };
-    } else {
-      // Create new preference
-      const created = await db.userPreference.create({
-        data: {
-          tenantId,
-          userId,
-          preferenceKey,
-          preferenceValue: preferenceValue as Prisma.InputJsonValue,
-          category: category || null,
-          notes: notes || null,
-        },
-      });
-
-      revalidatePath("/command-board");
-
-      return {
-        success: true,
-        data: {
-          id: created.id,
-          preferenceKey: created.preferenceKey,
-          preferenceValue: created.preferenceValue,
-          category: created.category,
-          notes: created.notes,
-          createdAt: created.createdAt,
-          updatedAt: created.updatedAt,
-        },
-      };
     }
+    // Create new preference
+    const created = await db.userPreference.create({
+      data: {
+        tenantId,
+        userId,
+        preferenceKey,
+        preferenceValue: preferenceValue as Prisma.InputJsonValue,
+        category: category || null,
+        notes: notes || null,
+      },
+    });
+
+    revalidatePath("/command-board");
+
+    return {
+      success: true,
+      data: {
+        id: created.id,
+        preferenceKey: created.preferenceKey,
+        preferenceValue: created.preferenceValue,
+        category: created.category,
+        notes: created.notes,
+        createdAt: created.createdAt,
+        updatedAt: created.updatedAt,
+      },
+    };
   } catch (error) {
     console.error("Failed to save user preference:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to save user preference",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to save user preference",
     };
   }
 }
@@ -278,7 +286,10 @@ export async function deleteUserPreference(
     console.error("Failed to delete user preference:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to delete user preference",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to delete user preference",
     };
   }
 }

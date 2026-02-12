@@ -484,6 +484,14 @@ export interface BoardState {
   isDirty: boolean;
   /** Map of card conflicts by card ID */
   conflicts: Record<string, CardConflict>;
+  /** Map of card ID to its anchor points */
+  cardAnchors: Record<string, AnchorPoint[]>;
+  /** Currently dragging connection state */
+  draggingConnection: DraggingConnection | null;
+  /** Hovered anchor ID for visual feedback */
+  hoveredAnchorId: string | null;
+  /** Whether anchor points are visible on cards */
+  showAnchors: boolean;
 }
 
 /**
@@ -504,6 +512,10 @@ export const INITIAL_BOARD_STATE: BoardState = {
   error: null,
   isDirty: false,
   conflicts: {},
+  cardAnchors: {},
+  draggingConnection: null,
+  hoveredAnchorId: null,
+  showAnchors: false,
 };
 
 // =============================================================================
@@ -536,6 +548,14 @@ export type BoardAction =
   | { type: "ADD_CONFLICT"; payload: CardConflict }
   | { type: "RESOLVE_CONFLICT"; payload: string }
   | { type: "CLEAR_CONFLICTS" }
+  | {
+      type: "SET_CARD_ANCHORS";
+      payload: { cardId: string; anchors: AnchorPoint[] };
+    }
+  | { type: "REMOVE_CARD_ANCHORS"; payload: string }
+  | { type: "SET_DRAGGING_CONNECTION"; payload: DraggingConnection | null }
+  | { type: "SET_HOVERED_ANCHOR"; payload: string | null }
+  | { type: "SET_SHOW_ANCHORS"; payload: boolean }
   | { type: "RESET" };
 
 // =============================================================================
@@ -689,6 +709,200 @@ export function pointInBox(point: Point, box: BoundingBox): boolean {
     point.y >= box.y &&
     point.y <= box.y + box.height
   );
+}
+
+// =============================================================================
+// Interactive Anchor Point Types
+// =============================================================================
+
+/**
+ * Cardinal directions for anchor point positioning
+ */
+export type AnchorEdge = "top" | "right" | "bottom" | "left";
+
+/**
+ * Anchor point type defining its interaction behavior
+ */
+export type AnchorType = "input" | "output" | "bidirectional";
+
+/**
+ * Interactive anchor point on a card edge for connection creation
+ */
+export interface AnchorPoint {
+  /** Unique identifier for this anchor */
+  id: string;
+  /** Card ID this anchor belongs to */
+  cardId: string;
+  /** Edge position on the card */
+  edge: AnchorEdge;
+  /** Normalized position along the edge (0-1, where 0.5 is center) */
+  offset: number;
+  /** Type of anchor (input/output/bidirectional) */
+  type: AnchorType;
+  /** Whether this anchor is currently visible */
+  visible: boolean;
+}
+
+/**
+ * State for tracking connection creation via drag from anchor point
+ */
+export interface DraggingConnection {
+  /** Source anchor ID where drag started */
+  fromAnchorId: string;
+  /** Source card ID */
+  fromCardId: string;
+  /** Current cursor position during drag (canvas coordinates) */
+  currentPoint: Point;
+  /** Source anchor position in canvas coordinates */
+  fromPosition: Point;
+}
+
+/**
+ * Result of hit-testing for anchor points
+ */
+export interface AnchorHitResult {
+  /** Whether an anchor was hit */
+  hit: boolean;
+  /** The anchor that was hit (if any) */
+  anchor?: AnchorPoint;
+  /** Canvas position of the hit anchor */
+  position?: Point;
+}
+
+/**
+ * Default anchor configuration
+ */
+export const ANCHOR_DEFAULTS = {
+  /** Size of anchor point in pixels */
+  SIZE: 12,
+  /** Hover size in pixels */
+  HOVER_SIZE: 16,
+  /** Hit test radius in pixels (larger than visual size for ease of use) */
+  HIT_RADIUS: 20,
+  /** Number of anchor points per edge */
+  ANCHORS_PER_EDGE: 3,
+  /** Default anchor offset from edge */
+  EDGE_OFFSET: 0,
+} as const;
+
+/**
+ * Generate default anchor points for a card
+ * Creates anchors on all four edges
+ */
+export function generateDefaultAnchors(cardId: string): AnchorPoint[] {
+  const anchors: Omit<AnchorPoint, "cardId">[] = [];
+
+  // Top edge anchors
+  for (let i = 0; i < ANCHOR_DEFAULTS.ANCHORS_PER_EDGE; i++) {
+    const offset = i / (ANCHOR_DEFAULTS.ANCHORS_PER_EDGE - 1);
+    anchors.push({
+      id: `${cardId}-top-${i}`,
+      edge: "top",
+      offset,
+      type: "bidirectional",
+      visible: false,
+    });
+  }
+
+  // Right edge anchors
+  for (let i = 0; i < ANCHOR_DEFAULTS.ANCHORS_PER_EDGE; i++) {
+    const offset = i / (ANCHOR_DEFAULTS.ANCHORS_PER_EDGE - 1);
+    anchors.push({
+      id: `${cardId}-right-${i}`,
+      edge: "right",
+      offset,
+      type: "bidirectional",
+      visible: false,
+    });
+  }
+
+  // Bottom edge anchors
+  for (let i = 0; i < ANCHOR_DEFAULTS.ANCHORS_PER_EDGE; i++) {
+    const offset = i / (ANCHOR_DEFAULTS.ANCHORS_PER_EDGE - 1);
+    anchors.push({
+      id: `${cardId}-bottom-${i}`,
+      edge: "bottom",
+      offset,
+      type: "bidirectional",
+      visible: false,
+    });
+  }
+
+  // Left edge anchors
+  for (let i = 0; i < ANCHOR_DEFAULTS.ANCHORS_PER_EDGE; i++) {
+    const offset = i / (ANCHOR_DEFAULTS.ANCHORS_PER_EDGE - 1);
+    anchors.push({
+      id: `${cardId}-left-${i}`,
+      edge: "left",
+      offset,
+      type: "bidirectional",
+      visible: false,
+    });
+  }
+
+  return anchors.map((a) => ({ ...a, cardId }));
+}
+
+/**
+ * Calculate the canvas position of an anchor point on a card
+ */
+export function calculateAnchorPosition(
+  cardBox: BoundingBox,
+  anchor: AnchorPoint
+): Point {
+  switch (anchor.edge) {
+    case "top":
+      return {
+        x: cardBox.x + cardBox.width * anchor.offset,
+        y: cardBox.y,
+      };
+    case "right":
+      return {
+        x: cardBox.x + cardBox.width,
+        y: cardBox.y + cardBox.height * anchor.offset,
+      };
+    case "bottom":
+      return {
+        x: cardBox.x + cardBox.width * anchor.offset,
+        y: cardBox.y + cardBox.height,
+      };
+    case "left":
+      return {
+        x: cardBox.x,
+        y: cardBox.y + cardBox.height * anchor.offset,
+      };
+  }
+}
+
+/**
+ * Find the closest anchor to a point on a card
+ */
+export function findClosestAnchor(
+  anchors: AnchorPoint[],
+  point: Point,
+  cardBox: BoundingBox,
+  maxDistance: number = ANCHOR_DEFAULTS.HIT_RADIUS
+): AnchorHitResult {
+  let closest: AnchorPoint | null = null;
+  let closestDist = maxDistance;
+  let closestPos: Point | undefined;
+
+  for (const anchor of anchors) {
+    const anchorPos = calculateAnchorPosition(cardBox, anchor);
+    const dist = Math.sqrt(
+      (point.x - anchorPos.x) ** 2 + (point.y - anchorPos.y) ** 2
+    );
+
+    if (dist < closestDist) {
+      closest = anchor;
+      closestDist = dist;
+      closestPos = anchorPos;
+    }
+  }
+
+  return closest
+    ? { hit: true, anchor: closest, position: closestPos }
+    : { hit: false };
 }
 
 // =============================================================================

@@ -67,6 +67,10 @@ function CommandBoardRealtimeContent({
       isLoading: false,
       board: null,
       conflicts: {},
+      cardAnchors: {},
+      draggingConnection: null,
+      hoveredAnchorId: null,
+      showAnchors: false,
     },
     onStateRestore: useCallback((partialState) => {
       if (partialState.cards !== undefined) {

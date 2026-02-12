@@ -26,9 +26,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "tenantId",
@@ -36,9 +34,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "name",
@@ -46,9 +42,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "itemType",
@@ -60,9 +54,7 @@
             "kind": "string",
             "value": "ingredient"
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "category",
@@ -562,9 +554,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "tenantId",
@@ -572,9 +562,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "name",
@@ -582,9 +570,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "description",
@@ -991,9 +977,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "tenantId",
@@ -1001,9 +985,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "menuId",
@@ -1011,9 +993,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "dishId",
@@ -1021,9 +1001,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "course",
@@ -1064,9 +1042,7 @@
       ],
       "computedProperties": [],
       "relationships": [],
-      "commands": [
-        "updateCourse"
-      ],
+      "commands": ["updateCourse"],
       "constraints": [
         {
           "name": "validMenuId",
@@ -1202,9 +1178,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "tenantId",
@@ -1212,9 +1186,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "eventId",
@@ -1222,9 +1194,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "name",
@@ -1232,9 +1202,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "batchMultiplier",
@@ -1778,9 +1746,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "tenantId",
@@ -1788,9 +1754,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "prepListId",
@@ -1798,9 +1762,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "stationId",
@@ -1808,9 +1770,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "stationName",
@@ -1818,9 +1778,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "ingredientId",
@@ -1828,9 +1786,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "ingredientName",
@@ -1838,9 +1794,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "category",
@@ -2560,9 +2514,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "tenantId",
@@ -2570,9 +2522,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "eventId",
@@ -2580,9 +2530,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "name",
@@ -2590,9 +2538,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "taskType",
@@ -2604,9 +2550,7 @@
             "kind": "string",
             "value": "prep"
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "status",
@@ -2618,9 +2562,7 @@
             "kind": "string",
             "value": "open"
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "stationId",
@@ -2891,9 +2833,7 @@
               }
             }
           },
-          "dependencies": [
-            "now"
-          ]
+          "dependencies": ["now"]
         },
         {
           "name": "isCompleted",
@@ -3224,9 +3164,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "tenantId",
@@ -3234,9 +3172,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "name",
@@ -3244,9 +3180,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "category",
@@ -3364,18 +3298,11 @@
               }
             ]
           },
-          "dependencies": [
-            "length",
-            "split"
-          ]
+          "dependencies": ["length", "split"]
         }
       ],
       "relationships": [],
-      "commands": [
-        "update",
-        "deactivate",
-        "activate"
-      ],
+      "commands": ["update", "deactivate", "activate"],
       "constraints": [
         {
           "name": "validName",
@@ -3533,9 +3460,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "recipeId",
@@ -3543,9 +3468,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "tenantId",
@@ -3553,9 +3476,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "name",
@@ -3563,9 +3484,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "versionNumber",
@@ -3573,9 +3492,7 @@
             "name": "number",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "category",
@@ -4079,9 +3996,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "tenantId",
@@ -4089,9 +4004,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "name",
@@ -4099,9 +4012,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "defaultUnitId",
@@ -4109,9 +4020,7 @@
             "name": "number",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "category",
@@ -4307,9 +4216,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "tenantId",
@@ -4317,9 +4224,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "recipeVersionId",
@@ -4327,9 +4232,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "ingredientId",
@@ -4337,9 +4240,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "quantity",
@@ -4347,9 +4248,7 @@
             "name": "number",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "unitId",
@@ -4357,9 +4256,7 @@
             "name": "number",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "sortOrder",
@@ -4367,9 +4264,7 @@
             "name": "number",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "preparationNotes",
@@ -4398,9 +4293,7 @@
       ],
       "computedProperties": [],
       "relationships": [],
-      "commands": [
-        "updateQuantity"
-      ],
+      "commands": ["updateQuantity"],
       "constraints": [
         {
           "name": "positiveQuantity",
@@ -4466,9 +4359,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "tenantId",
@@ -4476,9 +4367,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "name",
@@ -4486,9 +4375,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "recipeId",
@@ -4897,9 +4784,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "tenantId",
@@ -4907,9 +4792,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "locationId",
@@ -4917,9 +4800,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "name",
@@ -4927,9 +4808,7 @@
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "stationType",
@@ -4941,9 +4820,7 @@
             "kind": "string",
             "value": "prep-station"
           },
-          "modifiers": [
-            "required"
-          ]
+          "modifiers": ["required"]
         },
         {
           "name": "capacitySimultaneousTasks",
@@ -8306,9 +8183,7 @@
           }
         }
       ],
-      "emits": [
-        "InventoryReserved"
-      ]
+      "emits": ["InventoryReserved"]
     },
     {
       "name": "consume",
@@ -8781,9 +8656,7 @@
           }
         }
       ],
-      "emits": [
-        "InventoryConsumed"
-      ]
+      "emits": ["InventoryConsumed"]
     },
     {
       "name": "waste",
@@ -9226,9 +9099,7 @@
           }
         }
       ],
-      "emits": [
-        "InventoryWasted"
-      ]
+      "emits": ["InventoryWasted"]
     },
     {
       "name": "adjust",
@@ -9466,9 +9337,7 @@
           }
         }
       ],
-      "emits": [
-        "InventoryAdjusted"
-      ]
+      "emits": ["InventoryAdjusted"]
     },
     {
       "name": "restock",
@@ -9708,9 +9577,7 @@
           }
         }
       ],
-      "emits": [
-        "InventoryRestocked"
-      ]
+      "emits": ["InventoryRestocked"]
     },
     {
       "name": "releaseReservation",
@@ -9958,9 +9825,7 @@
           }
         }
       ],
-      "emits": [
-        "InventoryReservationReleased"
-      ]
+      "emits": ["InventoryReservationReleased"]
     },
     {
       "name": "update",
@@ -10385,9 +10250,7 @@
           }
         }
       ],
-      "emits": [
-        "MenuUpdated"
-      ]
+      "emits": ["MenuUpdated"]
     },
     {
       "name": "activate",
@@ -10437,9 +10300,7 @@
           }
         }
       ],
-      "emits": [
-        "MenuActivated"
-      ]
+      "emits": ["MenuActivated"]
     },
     {
       "name": "deactivate",
@@ -10489,9 +10350,7 @@
           }
         }
       ],
-      "emits": [
-        "MenuDeactivated"
-      ]
+      "emits": ["MenuDeactivated"]
     },
     {
       "name": "updateCourse",
@@ -10550,9 +10409,7 @@
           }
         }
       ],
-      "emits": [
-        "MenuDishUpdated"
-      ]
+      "emits": ["MenuDishUpdated"]
     },
     {
       "name": "update",
@@ -10750,9 +10607,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepListUpdated"
-      ]
+      "emits": ["PrepListUpdated"]
     },
     {
       "name": "updateBatchMultiplier",
@@ -10929,9 +10784,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepListBatchMultiplierUpdated"
-      ]
+      "emits": ["PrepListBatchMultiplierUpdated"]
     },
     {
       "name": "finalize",
@@ -11022,9 +10875,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepListFinalized"
-      ]
+      "emits": ["PrepListFinalized"]
     },
     {
       "name": "activate",
@@ -11074,9 +10925,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepListActivated"
-      ]
+      "emits": ["PrepListActivated"]
     },
     {
       "name": "deactivate",
@@ -11126,9 +10975,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepListDeactivated"
-      ]
+      "emits": ["PrepListDeactivated"]
     },
     {
       "name": "markCompleted",
@@ -11178,9 +11025,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepListCompleted"
-      ]
+      "emits": ["PrepListCompleted"]
     },
     {
       "name": "cancel",
@@ -11239,9 +11084,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepListCancelled"
-      ]
+      "emits": ["PrepListCancelled"]
     },
     {
       "name": "updateQuantity",
@@ -11522,9 +11365,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepListItemUpdated"
-      ]
+      "emits": ["PrepListItemUpdated"]
     },
     {
       "name": "updateStation",
@@ -11720,9 +11561,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepListItemStationChanged"
-      ]
+      "emits": ["PrepListItemStationChanged"]
     },
     {
       "name": "updatePrepNotes",
@@ -11764,9 +11603,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepListItemNotesUpdated"
-      ]
+      "emits": ["PrepListItemNotesUpdated"]
     },
     {
       "name": "markCompleted",
@@ -11888,9 +11725,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepListItemCompleted"
-      ]
+      "emits": ["PrepListItemCompleted"]
     },
     {
       "name": "markUncompleted",
@@ -11962,9 +11797,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepListItemUncompleted"
-      ]
+      "emits": ["PrepListItemUncompleted"]
     },
     {
       "name": "claim",
@@ -12168,9 +12001,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepTaskClaimed"
-      ]
+      "emits": ["PrepTaskClaimed"]
     },
     {
       "name": "start",
@@ -12334,9 +12165,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepTaskStarted"
-      ]
+      "emits": ["PrepTaskStarted"]
     },
     {
       "name": "complete",
@@ -12601,9 +12430,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepTaskCompleted"
-      ]
+      "emits": ["PrepTaskCompleted"]
     },
     {
       "name": "release",
@@ -12738,9 +12565,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepTaskReleased"
-      ]
+      "emits": ["PrepTaskReleased"]
     },
     {
       "name": "reassign",
@@ -12986,9 +12811,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepTaskReassigned"
-      ]
+      "emits": ["PrepTaskReassigned"]
     },
     {
       "name": "updateQuantity",
@@ -13188,9 +13011,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepTaskQuantityUpdated"
-      ]
+      "emits": ["PrepTaskQuantityUpdated"]
     },
     {
       "name": "cancel",
@@ -13352,9 +13173,7 @@
           }
         }
       ],
-      "emits": [
-        "PrepTaskCanceled"
-      ]
+      "emits": ["PrepTaskCanceled"]
     },
     {
       "name": "create",
@@ -13591,9 +13410,7 @@
           }
         }
       ],
-      "emits": [
-        "RecipeVersionCreated"
-      ]
+      "emits": ["RecipeVersionCreated"]
     },
     {
       "name": "updateAllergens",
@@ -13619,9 +13436,7 @@
           }
         }
       ],
-      "emits": [
-        "IngredientAllergensUpdated"
-      ]
+      "emits": ["IngredientAllergensUpdated"]
     },
     {
       "name": "updatePricing",
@@ -13931,9 +13746,7 @@
           }
         }
       ],
-      "emits": [
-        "DishPricingUpdated"
-      ]
+      "emits": ["DishPricingUpdated"]
     },
     {
       "name": "updateLeadTime",
@@ -14059,9 +13872,7 @@
           }
         }
       ],
-      "emits": [
-        "DishLeadTimeUpdated"
-      ]
+      "emits": ["DishLeadTimeUpdated"]
     },
     {
       "name": "update",
@@ -14263,9 +14074,7 @@
           }
         }
       ],
-      "emits": [
-        "RecipeUpdated"
-      ]
+      "emits": ["RecipeUpdated"]
     },
     {
       "name": "deactivate",
@@ -14325,9 +14134,7 @@
           }
         }
       ],
-      "emits": [
-        "RecipeDeactivated"
-      ]
+      "emits": ["RecipeDeactivated"]
     },
     {
       "name": "activate",
@@ -14378,9 +14185,7 @@
           }
         }
       ],
-      "emits": [
-        "RecipeActivated"
-      ]
+      "emits": ["RecipeActivated"]
     },
     {
       "name": "updateQuantity",
@@ -14587,9 +14392,7 @@
           }
         }
       ],
-      "emits": [
-        "RecipeIngredientUpdated"
-      ]
+      "emits": ["RecipeIngredientUpdated"]
     },
     {
       "name": "assignTask",
@@ -14882,9 +14685,7 @@
           }
         }
       ],
-      "emits": [
-        "StationTaskAssigned"
-      ]
+      "emits": ["StationTaskAssigned"]
     },
     {
       "name": "removeTask",
@@ -15071,9 +14872,7 @@
           }
         }
       ],
-      "emits": [
-        "StationTaskRemoved"
-      ]
+      "emits": ["StationTaskRemoved"]
     },
     {
       "name": "updateCapacity",
@@ -15262,9 +15061,7 @@
           }
         }
       ],
-      "emits": [
-        "StationCapacityUpdated"
-      ]
+      "emits": ["StationCapacityUpdated"]
     },
     {
       "name": "deactivate",
@@ -15403,9 +15200,7 @@
           }
         }
       ],
-      "emits": [
-        "StationDeactivated"
-      ]
+      "emits": ["StationDeactivated"]
     },
     {
       "name": "activate",
@@ -15459,9 +15254,7 @@
           }
         }
       ],
-      "emits": [
-        "StationActivated"
-      ]
+      "emits": ["StationActivated"]
     },
     {
       "name": "updateEquipment",
@@ -15522,9 +15315,7 @@
           }
         }
       ],
-      "emits": [
-        "StationEquipmentUpdated"
-      ]
+      "emits": ["StationEquipmentUpdated"]
     }
   ],
   "policies": [

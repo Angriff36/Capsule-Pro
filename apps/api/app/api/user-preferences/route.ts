@@ -90,7 +90,10 @@ export async function GET_KEY(req: NextRequest) {
     const preferenceKey = keyParts[keyParts.length - 1];
 
     if (!preferenceKey) {
-      return NextResponse.json({ error: "Preference key is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Preference key is required" },
+        { status: 400 }
+      );
     }
 
     const { searchParams } = new URL(req.url);
@@ -130,7 +133,10 @@ export async function GET_KEY(req: NextRequest) {
     );
 
     if (preferenceResult.length === 0) {
-      return NextResponse.json({ error: "Preference not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Preference not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({ preference: preferenceResult[0] });
@@ -240,7 +246,10 @@ export async function PUT_KEY(req: NextRequest) {
     const preferenceKey = keyParts[keyParts.length - 1];
 
     if (!preferenceKey) {
-      return NextResponse.json({ error: "Preference key is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Preference key is required" },
+        { status: 400 }
+      );
     }
 
     const body = await req.json();
@@ -279,7 +288,10 @@ export async function PUT_KEY(req: NextRequest) {
     );
 
     if (updateResult.length === 0) {
-      return NextResponse.json({ error: "Preference not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Preference not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({ success: true });
@@ -312,7 +324,10 @@ export async function DELETE_KEY(req: NextRequest) {
     const preferenceKey = keyParts[keyParts.length - 1];
 
     if (!preferenceKey) {
-      return NextResponse.json({ error: "Preference key is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Preference key is required" },
+        { status: 400 }
+      );
     }
 
     const { searchParams } = new URL(req.url);
@@ -322,9 +337,7 @@ export async function DELETE_KEY(req: NextRequest) {
       return NextResponse.json({ error: "User ID required" }, { status: 400 });
     }
 
-    const deleteResult = await database.$executeRaw<
-      Array<{ id: string }>
-    >(
+    const deleteResult = await database.$executeRaw<Array<{ id: string }>>(
       Prisma.sql`
       UPDATE tenant_staff.user_preferences
       SET deleted_at = CURRENT_TIMESTAMP
@@ -337,7 +350,10 @@ export async function DELETE_KEY(req: NextRequest) {
     );
 
     if (deleteResult.length === 0) {
-      return NextResponse.json({ error: "Preference not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Preference not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({ success: true });
