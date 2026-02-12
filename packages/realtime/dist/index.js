@@ -44,3 +44,5 @@ __exportStar(require("./channels/index"), exports);
 __exportStar(require("./events/index"), exports);
 // Outbox helpers
 __exportStar(require("./outbox/index"), exports);
+// Replay system
+__exportStar(require("./replay/index"), exports);

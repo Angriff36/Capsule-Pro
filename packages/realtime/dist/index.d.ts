@@ -25,4 +25,5 @@
 export * from "./channels/index";
 export * from "./events/index";
 export * from "./outbox/index";
+export * from "./replay/index";
 //# sourceMappingURL=index.d.ts.map

@@ -33,6 +33,9 @@ import {
   useRef,
   useState,
 } from "react";
+import { useAutoSave } from "../hooks/use-auto-save";
+import { useReplayEvents } from "../hooks/use-replay-events";
+import { type ReplayEvent } from "@repo/realtime";
 import { createCard, deleteCard, updateCard } from "../actions/cards";
 import {
   deleteConnection,
@@ -58,7 +61,10 @@ import {
   type ViewportState,
 } from "../types";
 import { BoardCard } from "./board-card";
+import { AutoSaveIndicator } from "./auto-save-indicator";
+import { ReplayIndicator } from "./replay-indicator";
 import { BulkEditDialog } from "./bulk-edit-dialog";
+import { DraftRecoveryDialog } from "./draft-recovery-dialog";
 import { CanvasViewport } from "./canvas-viewport";
 import { ConnectionDialog } from "./connection-dialog";
 import { ConnectionLines } from "./connection-lines";
@@ -202,6 +208,127 @@ export function BoardCanvas({
   // Groups state
   const [groups, setGroups] = useState<CommandBoardGroup[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+
+  // Auto-save state
+  const [showDraftRecovery, setShowDraftRecovery] = useState(false);
+  const [pendingDraft, setPendingDraft] = useState<{
+    cards: typeof state.cards;
+    connections: typeof connections;
+    groups: typeof groups;
+    viewport: typeof state.viewport;
+    timestamp: Date;
+  } | null>(null);
+
+  // Initialize auto-save hook
+  const autoSave = useAutoSave(boardId, state, {
+    debounceMs: 2000,
+    intervalMs: 30000,
+  });
+
+  // Initialize replay hook - fetches and replays historical events on mount
+  const replay = useReplayEvents({
+    boardId,
+    enabled: true,
+    maxEvents: 100,
+    onApplyEvents: useCallback((events: ReplayEvent[]) => {
+      // Apply batch of replay events to state
+      setState((prev) => {
+        let updatedCards = [...prev.cards];
+
+        for (const event of events) {
+          const payload = event.payload as Record<string, unknown>;
+
+          switch (event.eventType) {
+            case "command.board.card.created": {
+              // Check if card already exists (might be from initial load)
+              const exists = updatedCards.some((c) => c.id === payload.cardId);
+              if (!exists) {
+                updatedCards.push({
+                  id: payload.cardId as string,
+                  title: (payload.title as string) ?? "Untitled",
+                  content: (payload.content as string) ?? null,
+                  cardType: (payload.cardType as CardType) ?? CardType.generic,
+                  status: (payload.status as CardStatus) ?? "active",
+                  position: {
+                    x: (payload.positionX as number) ?? 0,
+                    y: (payload.positionY as number) ?? 0,
+                    width: (payload.width as number) ?? 200,
+                    height: (payload.height as number) ?? 150,
+                    zIndex: (payload.zIndex as number) ?? 0,
+                  },
+                  color: (payload.color as string) ?? null,
+                  metadata: (payload.metadata as Record<string, unknown>) ?? {},
+                });
+              }
+              break;
+            }
+
+            case "command.board.card.moved": {
+              const positionPayload = payload.newPosition as { x: number; y: number };
+              updatedCards = updatedCards.map((c) =>
+                c.id === payload.cardId
+                  ? {
+                      ...c,
+                      position: {
+                        ...c.position,
+                        x: positionPayload.x,
+                        y: positionPayload.y,
+                      },
+                    }
+                  : c
+              );
+              break;
+            }
+
+            case "command.board.card.deleted": {
+              updatedCards = updatedCards.filter((c) => c.id !== payload.cardId);
+              break;
+            }
+
+            case "command.board.card.updated": {
+              const changes = payload.changes as Record<string, unknown>;
+              updatedCards = updatedCards.map((c) =>
+                c.id === payload.cardId ? { ...c, ...changes } : c
+              );
+              break;
+            }
+
+            // Connection events
+            case "command.board.connection.created": {
+              const newConnection: CardConnection = {
+                id: payload.connectionId as string,
+                fromCardId: payload.fromCardId as string,
+                toCardId: payload.toCardId as string,
+                relationshipType: (payload.relationshipType as RelationshipType) ?? "generic",
+                visible: true,
+              };
+              setConnections((prev) => {
+                const exists = prev.some((c) => c.id === newConnection.id);
+                return exists ? prev : [...prev, newConnection];
+              });
+              break;
+            }
+
+            case "command.board.connection.deleted": {
+              setConnections((prev) =>
+                prev.filter((c) => c.id !== payload.connectionId)
+              );
+              break;
+            }
+
+            default:
+              break;
+          }
+        }
+
+        return { ...prev, cards: updatedCards };
+      });
+    }, []),
+    onReplayComplete: useCallback(() => {
+      // Replay is done, enable live editing
+      toast.info("Board activity loaded");
+    }, []),
+  });
 
   const { updateCursor, updateSelectedCard, clearPresence } =
     useCommandBoardPresence();
@@ -1270,6 +1397,101 @@ export function BoardCanvas({
     }));
   }, [handleRefreshConnections]);
 
+  // Check for drafts on mount
+  useEffect(() => {
+    const checkForDrafts = async () => {
+      try {
+        // Check localStorage for crash recovery draft
+        const storageKey = `command-board-draft-${boardId}`;
+        const localDraft = localStorage.getItem(storageKey);
+
+        // Check server for draft
+        const response = await fetch(`/api/command-board/${boardId}/draft`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.draft) {
+            // Found server draft
+            setPendingDraft({
+              cards: data.draft.cards,
+              connections: data.draft.connections ?? [],
+              groups: data.draft.groups ?? [],
+              viewport: data.draft.viewport,
+              timestamp: new Date(data.draft.updatedAt),
+            });
+            setShowDraftRecovery(true);
+          } else if (localDraft) {
+            // Fall back to localStorage draft
+            const parsedDraft = JSON.parse(localDraft) as {
+              cards: typeof state.cards;
+              connections: typeof connections;
+              groups: typeof groups;
+              viewport: typeof state.viewport;
+              timestamp: string;
+            };
+            setPendingDraft({
+              ...parsedDraft,
+              timestamp: new Date(parsedDraft.timestamp),
+            });
+            setShowDraftRecovery(true);
+          }
+        } else if (localDraft) {
+          // Server failed but localStorage has draft
+          const parsedDraft = JSON.parse(localDraft) as {
+            cards: typeof state.cards;
+            connections: typeof connections;
+            groups: typeof groups;
+            viewport: typeof state.viewport;
+            timestamp: string;
+          };
+          setPendingDraft({
+            ...parsedDraft,
+            timestamp: new Date(parsedDraft.timestamp),
+          });
+          setShowDraftRecovery(true);
+        }
+      } catch {
+        // Silently fail - no draft recovery
+      }
+    };
+
+    checkForDrafts();
+    // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boardId]);
+
+  // Draft recovery handlers
+  const handleRestoreDraft = useCallback(() => {
+    if (!pendingDraft) {
+      return;
+    }
+
+    setState((prev) => ({
+      ...prev,
+      cards: pendingDraft.cards,
+      viewport: pendingDraft.viewport,
+    }));
+    setConnections(pendingDraft.connections);
+    setGroups(pendingDraft.groups);
+
+    setShowDraftRecovery(false);
+    setPendingDraft(null);
+    toast.success("Draft restored successfully");
+  }, [pendingDraft]);
+
+  const handleDiscardDraft = useCallback(() => {
+    // Clear draft from both storage locations
+    autoSave.clearDraft();
+
+    setShowDraftRecovery(false);
+    setPendingDraft(null);
+    toast.info("Draft discarded");
+  }, [autoSave]);
+
+  const handleCancelDraftRecovery = useCallback(() => {
+    setShowDraftRecovery(false);
+    setPendingDraft(null);
+  }, []);
+
   return (
     <div
       aria-label="Command board canvas"
@@ -1503,8 +1725,26 @@ export function BoardCanvas({
               <path d="M4.22 19.78l4.24-4.24m6.36-6.36l4.24-4.24" />
             </svg>
           </Button>
+
+          <AutoSaveIndicator
+            isSaving={autoSave.isSaving}
+            lastSavedAt={autoSave.lastSavedAt}
+            hasUnsavedChanges={autoSave.hasUnsavedChanges}
+            onSaveNow={autoSave.saveNow}
+          />
         </div>
       </div>
+
+      {/* Replay Progress Indicator */}
+      <ReplayIndicator
+        state={replay.state}
+        processedCount={replay.processedCount}
+        totalCount={replay.totalCount}
+        onDismiss={() => {
+          // Allow dismissing the indicator but replay continues
+        }}
+        onSkip={replay.skipReplay}
+      />
 
       {showSettings && (
         <div className="border-b bg-muted/30 px-4 py-3 backdrop-blur-sm">
@@ -1933,6 +2173,15 @@ export function BoardCanvas({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Draft Recovery Dialog */}
+      <DraftRecoveryDialog
+        open={showDraftRecovery}
+        draftTimestamp={pendingDraft?.timestamp ?? null}
+        onRestore={handleRestoreDraft}
+        onDiscard={handleDiscardDraft}
+        onCancel={handleCancelDraftRecovery}
+      />
     </div>
   );
 }

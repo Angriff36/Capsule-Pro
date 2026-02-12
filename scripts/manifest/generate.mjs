@@ -5,6 +5,7 @@ import {
   copyFileSync,
   existsSync,
   mkdirSync,
+  readFileSync,
   readdirSync,
   rmSync,
 } from "node:fs";
@@ -78,8 +79,26 @@ const stripKnownPrefixes = (relativePath) => {
   return normalized;
 };
 
+const GENERATED_MARKERS = [
+  "Generated from Manifest IR - DO NOT EDIT",
+  "@generated",
+  "DO NOT EDIT - Changes will be overwritten",
+];
+
+const hasGeneratedMarker = (fileContents) =>
+  GENERATED_MARKERS.some((marker) => fileContents.includes(marker));
+
 const materializeNormalizedOutput = (stagingDir, outputDir) => {
-  for (const stagedFile of collectFiles(stagingDir)) {
+  const copiedFiles = [];
+  let skippedOverwriteCount = 0;
+  for (const stagedFile of collectFiles(stagingDir).filter((filePath) =>
+    filePath.endsWith("route.ts")
+  )) {
+    const stagedContent = readFileSync(stagedFile, "utf8");
+    if (!hasGeneratedMarker(stagedContent)) {
+      continue;
+    }
+
     const stagedRelativePath = relative(stagingDir, stagedFile);
     const normalizedRelativePath = stripKnownPrefixes(stagedRelativePath);
     const safeRelativePath = normalizedRelativePath
@@ -97,9 +116,22 @@ const materializeNormalizedOutput = (stagingDir, outputDir) => {
     }
 
     const destinationPath = join(outputDir, safeRelativePath);
+    if (existsSync(destinationPath)) {
+      const destinationContent = readFileSync(destinationPath, "utf8");
+      if (!hasGeneratedMarker(destinationContent)) {
+        console.warn(
+          `[manifest/generate] Skipping overwrite of non-generated route: ${destinationPath.replace(/\\/g, "/")}`
+        );
+        skippedOverwriteCount += 1;
+        continue;
+      }
+    }
+
     mkdirSync(resolve(destinationPath, ".."), { recursive: true });
     copyFileSync(stagedFile, destinationPath);
+    copiedFiles.push(destinationPath.replace(/\\/g, "/"));
   }
+  return { copiedFiles, skippedOverwriteCount };
 };
 
 const hasDuplicatedApiSegment = (absolutePath, outputRoot) => {
@@ -126,6 +158,8 @@ const result = spawnSync(bin, invocationArgs, {
 
 let guardFailure = false;
 let duplicatedRoutes = [];
+let copiedFiles = [];
+let skippedOverwriteCount = 0;
 
 if (result.status === 0) {
   try {
@@ -133,7 +167,9 @@ if (result.status === 0) {
     if (existsSync(nestedAppsDir)) {
       rmSync(nestedAppsDir, { recursive: true, force: true });
     }
-    materializeNormalizedOutput(stagingDir, outputDir);
+    const materializeResult = materializeNormalizedOutput(stagingDir, outputDir);
+    copiedFiles = materializeResult.copiedFiles;
+    skippedOverwriteCount = materializeResult.skippedOverwriteCount;
     const generatedRoutes = collectFiles(outputDir).filter((filePath) =>
       filePath.endsWith("route.ts")
     );
@@ -165,6 +201,21 @@ if (duplicatedRoutes.length > 0) {
 
 if (existsSync(stagingDir)) {
   rmSync(stagingDir, { recursive: true, force: true });
+}
+
+if (copiedFiles.length > 0) {
+  console.log(`[manifest/generate] Copied files (${copiedFiles.length}):`);
+  for (const copiedFile of copiedFiles) {
+    console.log(`  - ${copiedFile}`);
+  }
+} else {
+  console.log("[manifest/generate] Copied files (0):");
+}
+
+if (skippedOverwriteCount > 0) {
+  console.log(
+    `[manifest/generate] Skipped non-generated overwrites: ${skippedOverwriteCount}`
+  );
 }
 
 if (result.status !== 0) {

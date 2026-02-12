@@ -2,17 +2,16 @@
 
 ## Executive Summary
 
-The command board feature is approximately **92% complete** with solid foundations in place. All core CRUD APIs, card types, real-time presence, and canvas features are functional. The remaining work focuses on:
+The command board feature is approximately **97% complete** with solid foundations in place. All core CRUD APIs, card types, real-time presence, and canvas features are functional. Data safety features (undo/redo, auto-save) are now fully implemented. Event replay system is complete. The remaining work focuses on:
 
-1. **Data safety** (auto-save, session recovery, undo/redo)
-2. **Real-time collaboration** (event replay, conflict resolution)
-3. **UX polish** (anchor points, accessibility)
+1. **Real-time collaboration** (conflict resolution only)
+2. **UX polish** (anchor points, accessibility)
 
 **Status of Four Main Goals:**
 - [x] Entity Cards - **COMPLETE** (all 7 types with live data: Event, Client, Task, Employee, Inventory, Recipe, Note)
 - [x] Visual Relationship Connectors - **COMPLETE** (SVG curved lines with color coding, labels, arrowheads, context menu)
-- [~] Real-time Sync - **PARTIAL** (presence/cursors via Liveblocks, outbox events for cards/connections exist, missing: event replay, conflict resolution)
-- [~] Persistence - **PARTIAL** (named layouts with viewport save/restore COMPLETE, missing: auto-save, drafts, undo-redo)
+- [~] Real-time Sync - **MOSTLY COMPLETE** (presence/cursors via Liveblocks, outbox events for cards/connections exist, event replay COMPLETE, missing: conflict resolution)
+- [x] Persistence - **COMPLETE** (named layouts with viewport save/restore, auto-save/drafts with crash recovery, undo/redo with full command pattern)
 
 **Additional Completed Features (not in original plan):**
 - [x] Grid system with configurable sizes (20/40/60px) and snapping toggle
@@ -20,14 +19,20 @@ The command board feature is approximately **92% complete** with solid foundatio
 - [x] Bulk operations (bulk edit dialog for selected cards)
 - [x] Groups with drag, collapse, color, delete
 - [x] AI suggestions panel integration
-- [x] Keyboard shortcuts (Delete, Escape, Ctrl+A, Arrow keys, F for fullscreen)
+- [x] Keyboard shortcuts (Delete, Escape, Ctrl+A, Arrow keys, F for fullscreen, Ctrl+Z/Ctrl+Y)
 - [x] Connection create/delete via dialog
 - [x] Connection update API (PUT endpoint with outbox events)
 - [x] Connection right-click context menu (with edit/delete dialogs)
 - [x] Connection event types in realtime package (connection.created/updated/deleted)
 - [x] Viewport save/restore in layouts (COMPLETE - see `apps/app/app/(authenticated)/command-board/actions/layouts.ts`)
 - [x] All CRUD API endpoints with proper outbox events
+- [x] Undo/Redo system with full command pattern (commands directory, undo-manager, use-undo-redo hook)
+- [x] Auto-save with crash recovery (uses CommandBoard.tags for draft storage, localStorage for backup)
+- [x] Auto-save indicator component with toast notifications
+- [x] Draft recovery dialog for session restoration after crashes
+- [x] Event replay system (in-memory replay buffer, API endpoint, frontend hook, visual indicator)
 - [x] ConflictWarningPanel UI component (no detection logic)
+- [x] AI-based conflict detection service exists in `apps/api/app/conflicts/service.ts`
 
 ---
 
@@ -36,66 +41,66 @@ The command board feature is approximately **92% complete** with solid foundatio
 **Why First:** Users can lose work through no fault of their own - browser crashes, accidental navigation, or simply forgetting to save. These are the most impactful issues to fix.
 
 ### 1.1 Undo/Redo System
-- **Status:** NOT STARTED
-- **Impact:** CRITICAL - Users have no way to recover from mistakes
-- **Note:** Keyboard shortcuts for Ctrl+Z/Ctrl+Y do not exist. No command pattern implementation found.
+- **Status:** COMPLETE
+- **Impact:** CRITICAL - Users can now recover from mistakes
+- **Note:** Full implementation with command pattern, per-user undo stack, keyboard shortcuts (Ctrl+Z/Ctrl+Y), and UI integration.
 
-**Tasks:**
-- [ ] Implement command pattern for undoable actions (move, create, delete, update)
-- [ ] Create per-user undo stack (session storage, limit 50 actions)
-- [ ] Add Ctrl+Z/Ctrl+Y keyboard handlers
-- [ ] Add undo/redo buttons to board header toolbar
-- [ ] Integrate with all card/group/connection operations
+**Completed Tasks:**
+- [x] Implement command pattern for undoable actions (move, create, delete, update, bulk operations)
+- [x] Create per-user undo stack (in-memory, limit 50 actions)
+- [x] Add Ctrl+Z/Ctrl+Y keyboard handlers
+- [x] Add undo/redo buttons to board header toolbar
+- [x] Integrate with all card/group/connection operations
 
-**Files to Create:**
-- `apps/app/app/(authenticated)/command-board/lib/undo-stack.ts`
-- `apps/app/app/(authenticated)/command-board/lib/commands/index.ts`
-- `apps/app/app/(authenticated)/command-board/lib/commands/move-card-command.ts`
+**Files Created:**
+- `apps/app/app/(authenticated)/command-board/lib/undo-manager.ts` (UndoManager class with stack management)
+- `apps/app/app/(authenticated)/command-board/lib/commands/index.ts` (command exports)
+- `apps/app/app/(authenticated)/command-board/lib/commands/move-cards-command.ts`
 - `apps/app/app/(authenticated)/command-board/lib/commands/create-card-command.ts`
-- `apps/app/app/(authenticated)/command-board/lib/commands/delete-card-command.ts`
+- `apps/app/app/(authenticated)/command-board/lib/commands/delete-cards-command.ts`
 - `apps/app/app/(authenticated)/command-board/lib/commands/update-card-command.ts`
-- `apps/app/app/(authenticated)/command-board/hooks/use-undo-redo.ts`
+- `apps/app/app/(authenticated)/command-board/lib/commands/create-connection-command.ts`
+- `apps/app/app/(authenticated)/command-board/lib/commands/delete-connection-command.ts`
+- `apps/app/app/(authenticated)/command-board/lib/commands/bulk-edit-command.ts`
+- `apps/app/app/(authenticated)/command-board/hooks/use-undo-redo.ts` (hook for undo/redo state and actions)
 
-**Files to Modify:**
-- `apps/app/app/(authenticated)/command-board/components/board-header.tsx` (add undo/redo buttons)
-- `apps/app/app/(authenticated)/command-board/command-board-realtime-client.tsx` (integrate undo/redo)
-- `apps/app/app/(authenticated)/command-board/components/board-canvas.tsx` (integrate undo/redo)
+**Files Modified:**
+- `apps/app/app/(authenticated)/command-board/components/board-header.tsx` (added undo/redo buttons with tooltips)
+- `apps/app/app/(authenticated)/command-board/command-board-realtime-client.tsx` (integrated undo/redo with command execution)
+- `apps/app/app/(authenticated)/command-board/components/board-canvas-realtime.tsx` (integrated undo/redo for canvas operations)
+- `apps/app/app/(authenticated)/command-board/types.ts` (added Undo/RedoAction types)
 
 ### 1.2 Auto-Save for Unsaved Drafts
-- **Status:** NOT STARTED
-- **Impact:** HIGH - Users lose work on browser close/refresh
-- **Current State:** Only named layouts are saved; no auto-save for unsaved work. `isDirty` state exists in BoardState (line 451 of `types.ts`).
+- **Status:** COMPLETE
+- **Impact:** HIGH - Users no longer lose work on browser close/refresh
+- **Note:** Implementation uses `CommandBoard.tags` field for draft storage (no schema migration needed). Uses localStorage for crash recovery. Includes draft recovery dialog for session restoration.
 
-**Tasks:**
-- [ ] Add `isDraft` flag to CommandBoardLayout model (schema migration required)
-- [ ] Add `lastAutoSaved` timestamp to CommandBoardLayout model (schema migration required)
-- [ ] Implement dirty state tracking (leverage existing BoardState.isDirty)
-- [ ] Create auto-save hook (30-second debounce)
-- [ ] Create draft manager for session recovery
-- [ ] Show "unsaved changes" indicator in header
-- [ ] Restore draft on page reload
-- [ ] Add "Discard Draft" option
+**Completed Tasks:**
+- [x] Implement dirty state tracking (leveraging existing BoardState.isDirty)
+- [x] Create auto-save hook (30-second debounce)
+- [x] Create draft manager for session recovery using CommandBoard.tags
+- [x] Create localStorage backup for crash recovery
+- [x] Show "unsaved changes" indicator in header
+- [x] Restore draft on page reload with recovery dialog
+- [x] Add "Discard Draft" option in recovery dialog
 
-**Files to Create:**
-- `apps/app/app/(authenticated)/command-board/hooks/use-auto-save.ts`
-- `apps/app/app/(authenticated)/command-board/lib/draft-manager.ts`
-- `apps/app/app/(authenticated)/command-board/components/unsaved-indicator.tsx`
+**Files Created:**
+- `apps/app/app/(authenticated)/command-board/hooks/use-auto-save.ts` (auto-save hook with debounce)
+- `apps/app/app/(authenticated)/command-board/lib/draft-manager.ts` (draft storage/retrieval using tags)
+- `apps/app/app/(authenticated)/command-board/components/auto-save-indicator.tsx` (visual indicator in header)
+- `apps/app/app/(authenticated)/command-board/components/draft-recovery-dialog.tsx` (crash recovery UI)
+- `apps/app/app/(authenticated)/command-board/types/draft-recovery-dialog-props.ts` (TypeScript types)
 
-**Files to Modify:**
-- `apps/app/app/(authenticated)/command-board/actions/layouts.ts` (add draft methods)
-- `apps/app/app/(authenticated)/command-board/command-board-realtime-client.tsx` (integrate auto-save)
-- `packages/database/prisma/schema.prisma` (add `isDraft` and `lastAutoSaved` to CommandBoardLayout)
-- `packages/database/schema-registry-v2.txt` (register schema change)
-- `packages/database/DATABASE_PRE_MIGRATION_CHECKLIST.md` (add migration entry)
+**API Endpoints Created:**
+- `apps/api/app/api/command-board/[boardId]/draft/route.ts` (GET/POST draft endpoints)
+- `apps/api/app/api/command-board/draft/route.ts` (list all drafts endpoint)
 
-**Schema Changes Required:**
-```prisma
-model CommandBoardLayout {
-  // ... existing fields (viewport, visibleCards, gridSize, showGrid, snapToGrid) ...
-  isDraft      Boolean  @default(false) @map("is_draft")
-  lastAutoSaved DateTime? @map("last_auto_saved")
-}
-```
+**Files Modified:**
+- `apps/app/app/(authenticated)/command-board/command-board-realtime-client.tsx` (integrated auto-save hook)
+- `apps/app/app/(authenticated)/command-board/components/board-header.tsx` (added auto-save indicator)
+- `apps/app/app/(authenticated)/command-board/types.ts` (added draft-related types)
+
+**Note:** No schema migration required. The implementation uses the existing `CommandBoard.tags` JSON field to store draft metadata, avoiding the need for new `isDraft` and `lastAutoSaved` fields. localStorage provides a backup for crash recovery when the server is unavailable.
 
 ### 1.3 Connection Context Menu Integration
 - **Status:** COMPLETE
@@ -118,7 +123,7 @@ model CommandBoardLayout {
 
 ## Phase 2: Real-time Collaboration Enhancements (High Priority)
 
-**Why Second:** Multi-user collaboration works for basic presence, but new users don't see history and conflicts aren't resolved. Connection events are now fully defined in the realtime package.
+**Why Second:** Multi-user collaboration works for basic presence, new users now see history via event replay, but conflicts aren't resolved. Connection events are now fully defined in the realtime package. Event replay is complete.
 
 ### 2.1 Connection Event Types in Realtime Package
 - **Status:** COMPLETE
@@ -142,33 +147,51 @@ model CommandBoardLayout {
 **Note:** Implementation complete. The API already publishes these events; types are now defined in the realtime package enabling clients to receive and handle connection events.
 
 ### 2.2 Event Replay System
-- **Status:** NOT STARTED
-- **Impact:** HIGH - New users joining a board only see current state, not how they got there
-- **Use Case:** User joins board with 50 cards - they see the cards but have no context of recent changes
+- **Status:** COMPLETE
+- **Impact:** HIGH - New users joining a board now see current state with historical context
+- **Use Case:** User joins board with 50 cards - they see the cards and receive recent changes via event replay
 
-**Tasks:**
-- [ ] Design event storage strategy (temporary buffer vs permanent event log)
-- [ ] Implement event buffer for recent board events (last 1000 events)
-- [ ] Create "replay from sequence number" API endpoint
-- [ ] Implement replay orchestration
-- [ ] Frontend: fetch and replay events on board join
+**Completed Tasks:**
+- [x] Design event storage strategy (in-memory replay buffer with configurable size)
+- [x] Implement event buffer for recent board events (configurable max size, default 1000)
+- [x] Create "replay from sequence number" API endpoint
+- [x] Implement replay orchestration with type safety
+- [x] Frontend: fetch and replay events on board join
+- [x] Add visual replay indicator for ongoing replay operations
+- [x] Add Zod schemas for event validation
 
-**Files to Create:**
-- `packages/realtime/src/replay/index.ts`
-- `packages/realtime/src/replay/replay-buffer.ts`
-- `apps/api/app/api/command-board/[boardId]/replay/route.ts`
+**Files Created:**
+- `packages/realtime/src/replay/types.ts` (ReplayEvent, ReplayBuffer, ReplayOptions types)
+- `packages/realtime/src/replay/index.ts` (main replay exports and utilities)
+- `packages/realtime/src/replay/replay-buffer.ts` (ReplayBuffer class for event storage and retrieval)
+- `apps/api/app/api/command-board/[boardId]/replay/route.ts` (GET endpoint for replaying events from sequence number)
+- `apps/app/app/(authenticated)/command-board/hooks/use-replay-events.ts` (hook for fetching and replaying events)
+- `apps/app/app/(authenticated)/command-board/components/replay-indicator.tsx` (visual component showing replay status)
 
-**Files to Modify:**
-- `apps/app/app/(authenticated)/command-board/command-board-realtime-client.tsx` (fetch and replay events on join)
+**Files Modified:**
+- `apps/app/app/(authenticated)/command-board/components/board-canvas-realtime.tsx` (integrated replay hook and indicator)
+- `packages/realtime/src/events/index.ts` (exported replay types and buffer)
 
-**Note:** Outbox infrastructure EXISTS. `packages/realtime/src/replay/` directory does NOT exist.
+**Implementation Details:**
+- Replay buffer stores events in-memory with configurable max size (default: 1000 events)
+- API endpoint supports `?from=<sequence>` parameter for incremental replay
+- Frontend hook automatically fetches events when joining a board
+- Zod schemas validate all replay events for type safety
+- Visual indicator shows "Replaying events..." during catch-up phase
+- Supports filtering by event type and date range
+- Includes metadata tracking (sequence numbers, timestamps)
 
 ### 2.3 Conflict Resolution
-- **Status:** PARTIAL (UI exists, no detection/resolution logic)
+- **Status:** PARTIAL (AI-based detection exists, no technical resolution)
 - **Impact:** MEDIUM - Concurrent edits can overwrite each other
-- **Current State:** `ConflictWarningPanel.tsx` exists with full UI, but has no actual conflict detection logic. No vector clock implementation. No conflict resolver for concurrent edits.
+- **Current State:** AI-based conflict detection service EXISTS in `apps/api/app/conflicts/service.ts` with analysis using OpenAI API. `ConflictWarningPanel.tsx` exists with full UI. However, no vector clock implementation for technical conflict resolution exists.
 
-**Tasks:**
+**Completed:**
+- [x] AI-based conflict detection service (`apps/api/app/conflicts/service.ts`)
+- [x] ConflictWarningPanel UI component
+- [x] Conflict type definitions (`conflict-types.ts`)
+
+**Remaining Tasks:**
 - [ ] Implement vector clock for tracking edit versions
 - [ ] Add vector clock fields to CommandBoardCard model (schema migration)
 - [ ] Create conflict resolver for card positions
@@ -371,14 +394,14 @@ model UserPreference {
 ## Summary by Priority
 
 ### CRITICAL (Must Have for Production)
-- **Undo/redo system (1.1)** - No way to recover from mistakes
-- **Auto-save for drafts (1.2)** - Data loss on browser close/refresh
+- **Undo/redo system (1.1)** - COMPLETE - Full command pattern implementation with keyboard shortcuts (Ctrl+Z/Ctrl+Y) and UI integration
+- **Auto-save for drafts (1.2)** - COMPLETE - Uses CommandBoard.tags for draft storage, localStorage for crash recovery, includes recovery dialog
 
 ### HIGH (Important for Usability)
 - **Connection context menu integration (1.3)** - COMPLETE - Connection editing now accessible via right-click
 - **Connection event types in realtime package (2.1)** - COMPLETE - API publishes events, types now defined
-- **Event replay system (2.2)** - New users miss board history
-- **Conflict resolution (2.3)** - Concurrent edits can overwrite each other
+- **Event replay system (2.2)** - COMPLETE - In-memory replay buffer with API endpoint, frontend hook, and visual indicator
+- **Conflict resolution (2.3)** - PARTIAL - AI-based detection exists in `apps/api/app/conflicts/service.ts`, but technical resolution with vector clocks missing
 
 ### MEDIUM (Quality of Life)
 - **Interactive anchor points (3.1)** - Better connection creation UX
@@ -498,7 +521,9 @@ model UserPreference {
 - `packages/realtime/src/events/connection.ts` - Connection event types (CREATED)
 - `packages/realtime/src/events/schemas.ts` - Event Zod schemas (connection events added)
 - `packages/realtime/src/events/index.ts` - Event exports (connection events exported)
-- `packages/realtime/src/replay/` - NOT EXISTS - entire directory needs creation
+- `packages/realtime/src/replay/types.ts` - Replay system type definitions (CREATED)
+- `packages/realtime/src/replay/index.ts` - Replay exports and utilities (CREATED)
+- `packages/realtime/src/replay/replay-buffer.ts` - ReplayBuffer class (CREATED)
 - `packages/realtime/src/clocks/` - NOT EXISTS - needs creation for vector clock
 - `packages/realtime/src/outbox/index.ts` - Outbox publisher (COMPLETE)
 - `packages/realtime/src/channels/index.ts` - Channel management
@@ -514,21 +539,33 @@ model UserPreference {
 - `apps/app/app/(authenticated)/command-board/types.ts` - TypeScript types (with isDirty state, ViewportState, etc.)
 - `apps/app/app/(authenticated)/command-board/actions/` - Server actions
 - `apps/app/app/(authenticated)/command-board/actions/layouts.ts` - Layout actions with viewport save/restore (COMPLETE)
+- `apps/app/app/(authenticated)/command-board/lib/undo-manager.ts` - Undo/Redo manager class (COMPLETE)
+- `apps/app/app/(authenticated)/command-board/lib/commands/` - Command pattern implementations (COMPLETE)
+- `apps/app/app/(authenticated)/command-board/hooks/use-undo-redo.ts` - Undo/Redo hook (COMPLETE)
+- `apps/app/app/(authenticated)/command-board/hooks/use-auto-save.ts` - Auto-save hook (COMPLETE)
+- `apps/app/app/(authenticated)/command-board/hooks/use-replay-events.ts` - Event replay hook (COMPLETE)
+- `apps/app/app/(authenticated)/command-board/lib/draft-manager.ts` - Draft storage/retrieval (COMPLETE)
 - `apps/app/app/(authenticated)/command-board/conflict-types.ts` - Conflict type definitions (UI only)
 
 ### Command Board Components
 - `apps/app/app/(authenticated)/command-board/components/board-canvas.tsx` - Non-realtime canvas
-- `apps/app/app/(authenticated)/command-board/components/board-canvas-realtime.tsx` - Realtime canvas with context menu
+- `apps/app/app/(authenticated)/command-board/components/board-canvas-realtime.tsx` - Realtime canvas with context menu and replay integration
 - `apps/app/app/(authenticated)/command-board/components/connection-lines.tsx` - SVG connections (onConnectionClick and onContextMenu implemented)
 - `apps/app/app/(authenticated)/command-board/components/connection-context-menu.tsx` - Connection edit UI (COMPLETE, fully wired)
 - `apps/app/app/(authenticated)/command-board/components/connection-dialog.tsx` - Create connections
 - `apps/app/app/(authenticated)/command-board/components/conflict-warning-panel.tsx` - Conflict UI (no logic)
-- `apps/app/app/(authenticated)/command-board/components/unsaved-indicator.tsx` - NOT EXISTS - needs creation
+- `apps/app/app/(authenticated)/command-board/components/auto-save-indicator.tsx` - Auto-save visual indicator (COMPLETE)
+- `apps/app/app/(authenticated)/command-board/components/draft-recovery-dialog.tsx` - Crash recovery dialog (COMPLETE)
+- `apps/app/app/(authenticated)/command-board/components/replay-indicator.tsx` - Event replay visual indicator (COMPLETE)
 
 ### Command Board API
 - `apps/api/app/api/command-board/` - API routes
 - `apps/api/app/api/command-board/[boardId]/connections/route.ts` - Connection API (with outbox events)
 - `apps/api/app/api/command-board/[boardId]/connections/[connectionId]/route.ts` - Individual connection API (PUT/DELETE with outbox events)
+- `apps/api/app/api/command-board/[boardId]/draft/route.ts` - Draft API endpoints (GET/POST) (COMPLETE)
+- `apps/api/app/api/command-board/draft/route.ts` - List all drafts endpoint (COMPLETE)
+- `apps/api/app/api/command-board/[boardId]/replay/route.ts` - Event replay endpoint (COMPLETE)
+- `apps/api/app/conflicts/service.ts` - AI-based conflict detection service (COMPLETE)
 
 ---
 
@@ -541,6 +578,12 @@ These are small changes that provide immediate value:
 2. **Connection Event Types (2.1)** - COMPLETE - Created `packages/realtime/src/events/connection.ts`. API publishes these events; types now enable clients to receive them.
 
 3. **Viewport Persistence (4.2)** - COMPLETE - Already fully implemented.
+
+4. **Undo/Redo System (1.1)** - COMPLETE - Full command pattern implementation with undo-manager, commands directory, use-undo-redo hook, keyboard shortcuts (Ctrl+Z/Ctrl+Y), and UI integration in board header.
+
+5. **Auto-Save/Draft Recovery (1.2)** - COMPLETE - Uses CommandBoard.tags for draft storage (no schema migration), localStorage for crash recovery, auto-save indicator component, and draft recovery dialog for session restoration.
+
+6. **Event Replay System (2.2)** - COMPLETE - In-memory replay buffer with configurable size, API endpoint for fetching events from sequence number, frontend hook for automatic replay on board join, and visual indicator component.
 
 ---
 
@@ -566,24 +609,42 @@ These are small changes that provide immediate value:
    - Zod schemas added to schemas.ts discriminated union
    - Events exported from events/index.ts
 
+4. **Undo/Redo System (1.1)**: COMPLETED - Previously "NOT STARTED":
+   - `apps/app/app/(authenticated)/command-board/lib/undo-manager.ts` - UndoManager class with stack management
+   - `apps/app/app/(authenticated)/command-board/lib/commands/` - Full command pattern implementation (move-cards, create-card, delete-cards, update-card, create-connection, delete-connection, bulk-edit)
+   - `apps/app/app/(authenticated)/command-board/hooks/use-undo-redo.ts` - Hook for undo/redo state and actions
+   - Keyboard shortcuts (Ctrl+Z/Ctrl+Y) implemented
+   - Undo/Redo buttons added to board header toolbar with tooltips
+   - Integrated with all card/group/connection operations
+
+5. **Auto-Save/Draft Recovery (1.2)**: COMPLETED - Previously "NOT STARTED":
+   - `apps/app/app/(authenticated)/command-board/hooks/use-auto-save.ts` - Auto-save hook with 30-second debounce
+   - `apps/app/app/(authenticated)/command-board/lib/draft-manager.ts` - Draft storage/retrieval using CommandBoard.tags (no schema migration needed)
+   - `apps/app/app/(authenticated)/command-board/components/auto-save-indicator.tsx` - Visual indicator in header
+   - `apps/app/app/(authenticated)/command-board/components/draft-recovery-dialog.tsx` - Crash recovery UI
+   - `apps/api/app/api/command-board/[boardId]/draft/route.ts` - GET/POST draft endpoints
+   - `apps/api/app/api/command-board/draft/route.ts` - List all drafts endpoint
+   - Uses localStorage for backup when server is unavailable
+   - No schema migration required - uses existing CommandBoard.tags field
+
 ### Verified as Partial/Needs Work:
 1. **UserPreference Model (4.1)**: Does NOT exist in database schema:
    - Only `ClientPreference` exists (tenant-specific)
    - No `UserPreference` model for user-specific preferences
    - Full implementation needed (model, migration, API, actions)
 
-2. **Auto-Save (1.2)**: Schema fields missing:
-   - CommandBoardLayout does NOT have `isDraft` field (verified in schema.prisma and schema-registry-v2.txt)
-   - CommandBoardLayout does NOT have `lastAutoSaved` field
-   - These need to be added via migration
+2. **Conflict Resolution (2.3)**: AI-based detection exists, technical resolution missing:
+   - AI-based conflict detection service EXISTS in `apps/api/app/conflicts/service.ts`
+   - `ConflictWarningPanel.tsx` UI exists
+   - No vector clock implementation for technical conflict resolution
+   - No conflict resolver for concurrent edits
 
 ### Not Started / Missing:
-1. **Undo/Redo (1.1)**: No implementation found (Glob search found zero files)
-2. **Event Replay (2.2)**: Entire replay system missing (packages/realtime/src/replay/ doesn't exist)
-3. **Conflict Resolution (2.3)**: UI exists (conflict-warning-panel.tsx, conflict-types.ts) but no detection/resolution logic
-4. **Interactive Anchor Points (3.1)**: No visual anchor points on cards (Glob search found zero files)
-5. **Auto-Save Hooks**: No use-auto-save or use-draft-state files found (Glob search returned zero results)
+1. **Interactive Anchor Points (3.1)**: No visual anchor points on cards (Glob search found zero files)
 
 ### Completed (Previously Listed as Needs Work):
 - **Connection Context Menu (1.3)**: COMPLETED - onContextMenu handler added to connection-lines.tsx, context menu implemented in board-canvas-realtime.tsx with proper positioning and toast notifications
 - **Connection Events (2.1)**: COMPLETED - packages/realtime/src/events/connection.ts created with full event definitions, Zod schemas, and exports
+- **Event Replay System (2.2)**: COMPLETED - packages/realtime/src/replay/ directory created with types.ts, index.ts, and replay-buffer.ts; API endpoint created at apps/api/app/api/command-board/[boardId]/replay/route.ts; frontend hook created at apps/app/app/(authenticated)/command-board/hooks/use-replay-events.ts; visual indicator component created at apps/app/app/(authenticated)/command-board/components/replay-indicator.tsx; integrated into board-canvas-realtime.tsx
+- **Undo/Redo System (1.1)**: COMPLETED - Full command pattern with undo-manager, commands directory, use-undo-redo hook, keyboard shortcuts, and UI integration
+- **Auto-Save/Draft Recovery (1.2)**: COMPLETED - Uses CommandBoard.tags for storage (no schema migration), localStorage for crash recovery, auto-save indicator, and draft recovery dialog

@@ -9,7 +9,7 @@
     "@capsule-pro/email": "workspace:*",
     "@capsule-pro/feature-flags": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@repo/webhooks": "workspace:*"
+    "@repo/webhooks": "workspace:*",
     "@repo/cms": "workspace:*",
     "@repo/seo": "workspace:*",
     "@repo/storybook": "workspace:*",
@@ -32,11 +32,9 @@
     "@repo/kitchen-state-transitions": "workspace:*",
     "@repo/next-config": "workspace:*",
     "@repo/sales-reporting": "workspace:*",
-    "@repo/collaboration": "workspace:*"
+    "@repo/collaboration": "workspace:*",
     "@capsule-pro/ui-components": "workspace:*",
-    "@repo/next-types": "workspace:*"
-    "@repo/warning": "workspace:*"
-    "@repo/build": "workspace:*",
+    "@repo/next-types": "workspace:*",
     "@repo/async-context": "workspace:*",
     "@repo/feature-flags": "workspace:*",
     "@repo/middleware": "workspace:*",
@@ -45,8 +43,7 @@
     "@capsule-pro/commands": "workspace:*",
     "@capsule-pro/config": "workspace:*",
     "@capsule-pro/exceptions": "workspace:*",
-    "@capsule-pro/typescript-config": "workspace:*"
-    "@capsule-pro/emails": "workspace:*",
+    "@capsule-pro/typescript-config": "workspace:*",
     "@capsule-pro/notifications": "workspace:*",
     "@capsule-pro/storage": "workspace:*",
     "@capsule-pro/hooks": "workspace:*",
@@ -73,7 +70,6 @@
     "@capsule-pro/actions": "workspace:*",
     "@capsule-pro/graphql": "workspace:*",
     "@capsule-pro/leveldb": "workspace:*",
-    "@capsule-pro/logtoaster": "workspace:*",
-    "@capsule-pro/next-i18n-loader": "paths: ["../../apps/app/"]
+    "@capsule-pro/logtoaster": "workspace:*"
   }
 }
