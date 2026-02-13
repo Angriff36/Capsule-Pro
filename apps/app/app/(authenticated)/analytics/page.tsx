@@ -38,7 +38,18 @@ const AnalyticsPage = async () => {
     notFound();
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  let tenantId: string;
+  try {
+    tenantId = await getTenantIdForOrg(orgId);
+  } catch {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
+        <h1 className="text-2xl font-bold">Analytics Unavailable</h1>
+        <p className="text-muted-foreground">Unable to load analytics data. Please try again later.</p>
+      </div>
+    );
+  }
+
   const now = new Date();
   const weekStart = new Date(now);
   weekStart.setDate(weekStart.getDate() - 7);
@@ -58,7 +69,19 @@ const AnalyticsPage = async () => {
   const sixtyDaysAgo = new Date(now);
   sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
 
-  const [
+  let currentRevenueRows: Array<{ total_revenue: string | null }>;
+  let previousRevenueRows: Array<{ total_revenue: string | null }>;
+  let currentLaborRows: Array<{ budgeted_labor: string | null; actual_labor: string | null }>;
+  let previousLaborRows: Array<{ budgeted_labor: string | null; actual_labor: string | null }>;
+  let currentWasteRows: Array<{ waste_cost: string | null }>;
+  let previousWasteRows: Array<{ waste_cost: string | null }>;
+  let marginRows: Array<{ avg_margin: string | null }>;
+  let completionRows: Array<{ total_events: bigint; completed_events: bigint }>;
+  let followUpRows: Array<{ total_followups: bigint; completed_followups: bigint }>;
+  let topEvents: Array<{ id: string; title: string; status: string; revenue: string | null; margin_pct: string | null }>;
+
+  try {
+  [
     currentRevenueRows,
     previousRevenueRows,
     currentLaborRows,
@@ -204,6 +227,14 @@ const AnalyticsPage = async () => {
       `
     ),
   ]);
+  } catch {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
+        <h1 className="text-2xl font-bold">Analytics Unavailable</h1>
+        <p className="text-muted-foreground">Unable to load analytics data. Please try again later.</p>
+      </div>
+    );
+  }
 
   const currentRevenue = Number(currentRevenueRows[0]?.total_revenue ?? 0);
   const previousRevenue = Number(previousRevenueRows[0]?.total_revenue ?? 0);

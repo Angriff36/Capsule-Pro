@@ -2,13 +2,27 @@ import { withLogtail } from "@logtail/next";
 import { withSentryConfig } from "@sentry/nextjs";
 import { keys } from "./keys";
 
+const sentryKeys = keys();
+const hasSentryUploadConfig =
+  sentryKeys.SENTRY_ORG &&
+  sentryKeys.SENTRY_PROJECT &&
+  sentryKeys.SENTRY_AUTH_TOKEN;
+
 export const sentryConfig: Parameters<typeof withSentryConfig>[1] = {
-  org: keys().SENTRY_ORG,
-  project: keys().SENTRY_PROJECT,
-  authToken: keys().SENTRY_AUTH_TOKEN,
+  org: sentryKeys.SENTRY_ORG,
+  project: sentryKeys.SENTRY_PROJECT,
+  authToken: sentryKeys.SENTRY_AUTH_TOKEN,
 
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
+
+  // Disable source map uploads when Sentry env vars are missing/misconfigured
+  sourcemaps: {
+    disable: !hasSentryUploadConfig,
+  },
+  release: {
+    create: Boolean(hasSentryUploadConfig),
+  },
 
   /*
    * For all available options, see:

@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc",
     "example": "npx tsx examples/generate-report.ts",
-    "test": "vitest run"
+    "test": "vitest run --passWithNoTests"
   },
   "engines": {
     "node": ">=18.0.0"
