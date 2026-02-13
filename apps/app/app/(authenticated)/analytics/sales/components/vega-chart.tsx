@@ -11,6 +11,7 @@ import {
 import { Copy, Download, ImageIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { TopLevelSpec } from "vega-lite";
+import { isFacetedSpec } from "../lib/chart-catalog";
 
 /* ------------------------------------------------------------------ */
 /*  Minimal type surface for the vega-embed result                    */
@@ -106,12 +107,21 @@ export function VegaChart({
         // Build the final spec — use a fixed pixel width derived from the
         // container so vega never has to measure a hidden/zero-width element.
         const containerWidth = el.offsetWidth || el.clientWidth || 500;
+        const faceted = isFacetedSpec(
+          parsedSpec as unknown as Record<string, unknown>
+        );
 
+        // Faceted / concatenated specs manage their own sub-view sizes and
+        // must NOT have top-level width/height/autosize.
         const finalSpec: TopLevelSpec = {
           ...parsedSpec,
-          width: containerWidth - 40, // leave padding for axes
-          height,
-          autosize: { type: "fit", contains: "padding" },
+          ...(faceted
+            ? {}
+            : {
+                width: containerWidth - 40,
+                height,
+                autosize: { type: "fit", contains: "padding" },
+              }),
           ...(parsedData ? { data: { values: parsedData } } : {}),
         } as TopLevelSpec;
 

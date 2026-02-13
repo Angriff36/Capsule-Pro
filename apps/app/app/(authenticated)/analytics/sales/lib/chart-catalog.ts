@@ -514,7 +514,7 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     tags: ["dot", "strip", "distribution"],
     encodings: [
       { ...X_SLOT, label: "Value", acceptedTypes: ["quantitative"] },
-      { ...Y_SLOT, label: "Category", acceptedTypes: ["nominal", "ordinal"], placeholder: "FIELD_X" },
+      { ...Y_SLOT, label: "Category", acceptedTypes: ["nominal", "ordinal"], placeholder: "FIELD_Y" },
     ],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1553,18 +1553,21 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     ],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
-      mark: { type: "bar" },
-      encoding: {
-        x: { field: "FIELD_X", type: "nominal" },
-        y: { field: "FIELD_Y", type: "quantitative" },
-        facet: { field: "FIELD_FACET", type: "nominal", columns: 3 },
-        tooltip: [
-          { field: "FIELD_X", type: "nominal" },
-          { field: "FIELD_Y", type: "quantitative", format: ",.0f" },
-          { field: "FIELD_FACET", type: "nominal" },
-        ],
+      facet: { field: "FIELD_FACET", type: "nominal", columns: 3 },
+      spec: {
+        mark: { type: "bar" },
+        width: 200,
+        height: 150,
+        encoding: {
+          x: { field: "FIELD_X", type: "nominal" },
+          y: { field: "FIELD_Y", type: "quantitative" },
+          tooltip: [
+            { field: "FIELD_X", type: "nominal" },
+            { field: "FIELD_Y", type: "quantitative", format: ",.0f" },
+          ],
+        },
       },
-    } as TopLevelSpec,
+    } as unknown as TopLevelSpec,
   },
   {
     id: "trellis-line",
@@ -1579,18 +1582,21 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     ],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
-      mark: { type: "line", point: true },
-      encoding: {
-        x: { field: "FIELD_X", type: "temporal" },
-        y: { field: "FIELD_Y", type: "quantitative" },
-        facet: { field: "FIELD_FACET", type: "nominal", columns: 3 },
-        tooltip: [
-          { field: "FIELD_X", type: "temporal" },
-          { field: "FIELD_Y", type: "quantitative", format: ",.0f" },
-          { field: "FIELD_FACET", type: "nominal" },
-        ],
+      facet: { field: "FIELD_FACET", type: "nominal", columns: 3 },
+      spec: {
+        mark: { type: "line", point: true },
+        width: 200,
+        height: 150,
+        encoding: {
+          x: { field: "FIELD_X", type: "temporal" },
+          y: { field: "FIELD_Y", type: "quantitative" },
+          tooltip: [
+            { field: "FIELD_X", type: "temporal" },
+            { field: "FIELD_Y", type: "quantitative", format: ",.0f" },
+          ],
+        },
       },
-    } as TopLevelSpec,
+    } as unknown as TopLevelSpec,
   },
   {
     id: "trellis-scatter",
@@ -1605,18 +1611,21 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     ],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
-      mark: { type: "circle", opacity: 0.7 },
-      encoding: {
-        x: { field: "FIELD_X", type: "quantitative" },
-        y: { field: "FIELD_Y", type: "quantitative" },
-        facet: { field: "FIELD_FACET", type: "nominal", columns: 3 },
-        tooltip: [
-          { field: "FIELD_X", type: "quantitative" },
-          { field: "FIELD_Y", type: "quantitative" },
-          { field: "FIELD_FACET", type: "nominal" },
-        ],
+      facet: { field: "FIELD_FACET", type: "nominal", columns: 3 },
+      spec: {
+        mark: { type: "circle", opacity: 0.7 },
+        width: 200,
+        height: 150,
+        encoding: {
+          x: { field: "FIELD_X", type: "quantitative" },
+          y: { field: "FIELD_Y", type: "quantitative" },
+          tooltip: [
+            { field: "FIELD_X", type: "quantitative" },
+            { field: "FIELD_Y", type: "quantitative" },
+          ],
+        },
       },
-    } as TopLevelSpec,
+    } as unknown as TopLevelSpec,
   },
   {
     id: "trellis-area",
@@ -1631,18 +1640,21 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     ],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
-      mark: { type: "area", opacity: 0.6, line: true },
-      encoding: {
-        x: { field: "FIELD_X", type: "temporal" },
-        y: { field: "FIELD_Y", type: "quantitative" },
-        facet: { field: "FIELD_FACET", type: "nominal", columns: 3 },
-        tooltip: [
-          { field: "FIELD_X", type: "temporal" },
-          { field: "FIELD_Y", type: "quantitative", format: ",.0f" },
-          { field: "FIELD_FACET", type: "nominal" },
-        ],
+      facet: { field: "FIELD_FACET", type: "nominal", columns: 3 },
+      spec: {
+        mark: { type: "area", opacity: 0.6, line: true },
+        width: 200,
+        height: 150,
+        encoding: {
+          x: { field: "FIELD_X", type: "temporal" },
+          y: { field: "FIELD_Y", type: "quantitative" },
+          tooltip: [
+            { field: "FIELD_X", type: "temporal" },
+            { field: "FIELD_Y", type: "quantitative", format: ",.0f" },
+          ],
+        },
       },
-    } as TopLevelSpec,
+    } as unknown as TopLevelSpec,
   },
 ];
 
@@ -1671,6 +1683,14 @@ function replaceFields(
 }
 
 /**
+ * Detect whether a spec is a faceted (multi-view) spec.
+ * Faceted specs cannot have top-level width/height/autosize.
+ */
+function isFacetedSpec(spec: Record<string, unknown>): boolean {
+  return "facet" in spec || "hconcat" in spec || "vconcat" in spec || "concat" in spec;
+}
+
+/**
  * Build a ready-to-render Vega-Lite spec from a chart type and column mappings.
  */
 function buildSpec(
@@ -1686,5 +1706,7 @@ function buildSpec(
     data: { values: data },
   } as TopLevelSpec;
 }
+
+export { isFacetedSpec };
 
 export { buildSpec, replaceFields };
