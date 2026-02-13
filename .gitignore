@@ -382,6 +382,9 @@ spec-prompt-template-generator.md
 
 # Generic JS/TS build output (apps/tools, not just packages/*/dist)
 **/dist/
+# Vendored manifest-runtime has no build step; its dist must be committed
+!packages/manifest-runtime/dist/
+!packages/manifest-runtime/dist/**
 **/build/
 **/.output/
 **/.vite/
