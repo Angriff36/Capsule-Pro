@@ -22,6 +22,7 @@ import { differenceInMinutes, format, isPast } from "date-fns";
 import { ChevronRight, Clock, MoreVertical, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 
 type UserSelect = Pick<
@@ -219,7 +220,7 @@ export function TaskCard({
       }
       router.refresh();
     } catch (error) {
-      console.error("Error claiming task:", error);
+      Sentry.captureException(error);
       alert("Failed to claim task. Please try again.");
     } finally {
       setIsLoading(false);
@@ -242,7 +243,7 @@ export function TaskCard({
       }
       router.refresh();
     } catch (error) {
-      console.error("Error releasing task:", error);
+      Sentry.captureException(error);
       alert("Failed to release task. Please try again.");
     } finally {
       setIsLoading(false);
@@ -259,16 +260,19 @@ export function TaskCard({
       });
       if (!response.ok) {
         // Get actual error details from API
-        const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
-        console.error("Task status update failed:", {
-          status: response.status,
-          error: errorData,
-        });
-        throw new Error(`Failed to update task status: ${JSON.stringify(errorData)}`);
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Unknown error" }));
+        Sentry.captureException(
+          new Error(`Task status update failed: ${JSON.stringify(errorData)}`)
+        );
+        throw new Error(
+          `Failed to update task status: ${JSON.stringify(errorData)}`
+        );
       }
       router.refresh();
     } catch (error) {
-      console.error("Error updating task status:", error);
+      Sentry.captureException(error);
       alert("Failed to update task. Please try again.");
     } finally {
       setIsLoading(false);

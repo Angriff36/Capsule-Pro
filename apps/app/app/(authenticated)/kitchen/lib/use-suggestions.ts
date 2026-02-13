@@ -2,8 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import type { SuggestedAction, SuggestionsResponse } from "./suggestions-types";
+
+const { logger } = Sentry;
 
 export function useSuggestions(tenantId?: string | null) {
   const router = useRouter();
@@ -17,7 +20,7 @@ export function useSuggestions(tenantId?: string | null) {
       timeframe?: "today" | "week" | "month";
     }) => {
       if (!tenantId) {
-        console.warn("No tenantId provided to useSuggestions");
+        logger.warn("No tenantId provided to useSuggestions");
         return;
       }
 
@@ -45,7 +48,7 @@ export function useSuggestions(tenantId?: string | null) {
         const errorMessage =
           err instanceof Error ? err.message : "Unknown error";
         setError(errorMessage);
-        console.error("Error fetching suggestions:", err);
+        Sentry.captureException(err);
       } finally {
         setIsLoading(false);
       }
@@ -64,7 +67,7 @@ export function useSuggestions(tenantId?: string | null) {
         router.push(suggestion.action.path);
       } else if (suggestion.action.type === "api_call") {
         // API call actions would be handled differently
-        console.log("API call action:", suggestion.action);
+        // (console.log removed as per migration requirements)
       } else if (suggestion.action.type === "external") {
         window.open(suggestion.action.url, "_blank");
       }

@@ -10,6 +10,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface IngredientListFilters {
@@ -165,7 +166,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error listing ingredients:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

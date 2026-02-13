@@ -47,6 +47,32 @@ export interface KitchenOpsContext extends RuntimeContext {
     userId: string;
     userRole?: string;
     /**
+     * Optional workflow metadata for event correlation and tracing.
+     * @example
+     * ```typescript
+     * {
+     *   correlationId: 'evt-123', // Groups all operations in this event workflow
+     *   causationId: 'schedule-evt-123' // Links to triggering event
+     * }
+     * ```
+     */
+    correlationId?: string;
+    causationId?: string;
+    /**
+     * Optional evaluation limits to protect against runaway expressions.
+     * @default { maxExpressionDepth: 64, maxEvaluationSteps: 10_000 }
+     */
+    evaluationLimits?: {
+        maxExpressionDepth?: number;
+        maxEvaluationSteps?: number;
+    };
+    /**
+     * Optional deterministic mode to block adapter side effects (for testing/replay).
+     * When true, persist/publish/effect actions throw ManifestEffectBoundaryError.
+     * @default false
+     */
+    deterministicMode?: boolean;
+    /**
      * Optional store provider for entity persistence.
      * If provided, entities will be persisted using this store.
      * Use `createPrismaStoreProvider(prisma, tenantId)` for Prisma-backed storage.
@@ -170,6 +196,31 @@ export interface DishCommandResult extends CommandResult {
     costPerPerson?: number;
 }
 /**
+ * Workflow metadata options for runCommand calls.
+ * These are passed through to enable event correlation and tracing.
+ */
+export interface WorkflowMetadataOptions {
+    correlationId?: string;
+    causationId?: string;
+    idempotencyKey?: string;
+}
+/**
+ * Helper to extract workflow metadata from context for runCommand options.
+ * @example
+ * ```typescript
+ * const runtime = await createPrepTaskRuntime({
+ *   tenantId,
+ *   userId,
+ *   correlationId: 'evt-123',
+ *   causationId: 'schedule-evt-123'
+ * });
+ *
+ * const options = getWorkflowOptions(runtime);
+ * await engine.runCommand("claim", {...}, {...options});
+ * ```
+ */
+export declare function getWorkflowOptions(context: KitchenOpsContext): WorkflowMetadataOptions;
+/**
  * Create a PostgresStore provider for persistent entity storage.
  *
  * @param databaseUrl - PostgreSQL connection string
@@ -208,7 +259,7 @@ export declare function createKitchenOpsRuntime(context: KitchenOpsContext): Pro
 /**
  * Claim a prep task
  */
-export declare function claimPrepTask(engine: RuntimeEngine, taskId: string, userId: string, stationId: string, overrideRequests?: OverrideRequest[]): Promise<PrepTaskCommandResult>;
+export declare function claimPrepTask(engine: RuntimeEngine, taskId: string, userId: string, stationId: string, overrideRequests?: OverrideRequest[], correlationId?: string, causationId?: string, idempotencyKey?: string): Promise<PrepTaskCommandResult>;
 /**
  * Start a prep task
  */

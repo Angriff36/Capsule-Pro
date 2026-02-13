@@ -4,6 +4,7 @@ import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+import * as Sentry from "@sentry/nextjs";
 import {
   createRecipe,
   getRecipeForEdit,
@@ -62,7 +63,7 @@ export const RecipesPageClient = () => {
       await createRecipe(formData);
       toast.success("Recipe added successfully");
     } catch (error) {
-      console.error("Failed to save recipe:", error);
+      Sentry.captureException(error);
       toast.error("Failed to save recipe. Please try again.");
       throw error;
     }
@@ -77,7 +78,7 @@ export const RecipesPageClient = () => {
       toast.success("Recipe updated successfully");
       router.refresh();
     } catch (error) {
-      console.error("Failed to update recipe:", error);
+      Sentry.captureException(error);
       toast.error("Failed to update recipe. Please try again.");
       throw error;
     }

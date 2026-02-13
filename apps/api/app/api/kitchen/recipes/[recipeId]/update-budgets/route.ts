@@ -1,6 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 const updateEventBudgetsForRecipe = async (
@@ -79,7 +80,7 @@ export async function POST(
       message: "Event budgets updated",
     });
   } catch (error) {
-    console.error("Error updating event budgets:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: "Failed to update event budgets" },
       { status: 500 }

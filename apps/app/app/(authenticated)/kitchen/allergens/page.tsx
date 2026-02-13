@@ -28,8 +28,11 @@ import {
 import { AlertTriangle, CheckCircle2, Loader2, SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import * as Sentry from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import { AllergenManagementModal } from "./allergen-management-modal";
+
+const { logger } = Sentry;
 
 // Types matching database schema
 interface AllergenWarning {
@@ -100,7 +103,7 @@ export default function AllergenManagementPage() {
       const response = await apiFetch("/api/kitchen/allergens/warnings");
       if (!response.ok) {
         // Don't throw - handle gracefully and return empty array
-        console.warn("Failed to fetch warnings, server may be unavailable");
+        logger.warn("Failed to fetch warnings, server may be unavailable");
         setWarnings([]);
         return;
       }
@@ -108,7 +111,7 @@ export default function AllergenManagementPage() {
       setWarnings(data.warnings || []);
     } catch (error) {
       // Network errors or other issues - handle gracefully
-      console.warn("Error fetching warnings:", error);
+      logger.warn(logger.fmt`Error fetching warnings: ${String(error)}`);
       setWarnings([]);
     }
   };
@@ -117,14 +120,14 @@ export default function AllergenManagementPage() {
     try {
       const response = await apiFetch("/api/events?limit=50");
       if (!response.ok) {
-        console.warn("Failed to fetch events, server may be unavailable");
+        logger.warn("Failed to fetch events, server may be unavailable");
         setEvents([]);
         return;
       }
       const data = await response.json();
       setEvents(data.data || []);
     } catch (error) {
-      console.warn("Error fetching events:", error);
+      logger.warn(logger.fmt`Error fetching events: ${String(error)}`);
       setEvents([]);
     }
   };
@@ -133,14 +136,14 @@ export default function AllergenManagementPage() {
     try {
       const response = await apiFetch("/api/kitchen/dishes?limit=100");
       if (!response.ok) {
-        console.warn("Failed to fetch dishes, server may be unavailable");
+        logger.warn("Failed to fetch dishes, server may be unavailable");
         setDishes([]);
         return;
       }
       const data = await response.json();
       setDishes(data.data || []);
     } catch (error) {
-      console.warn("Error fetching dishes:", error);
+      logger.warn(logger.fmt`Error fetching dishes: ${String(error)}`);
       setDishes([]);
     }
   };
@@ -149,14 +152,14 @@ export default function AllergenManagementPage() {
     try {
       const response = await apiFetch("/api/kitchen/recipes?limit=100");
       if (!response.ok) {
-        console.warn("Failed to fetch recipes, server may be unavailable");
+        logger.warn("Failed to fetch recipes, server may be unavailable");
         setRecipes([]);
         return;
       }
       const data = await response.json();
       setRecipes(data.data || []);
     } catch (error) {
-      console.warn("Error fetching recipes:", error);
+      logger.warn(logger.fmt`Error fetching recipes: ${String(error)}`);
       setRecipes([]);
     }
   };
@@ -242,7 +245,7 @@ export default function AllergenManagementPage() {
       // Refresh warnings
       await fetchWarnings();
     } catch (error) {
-      console.error("Error acknowledging warning:", error);
+      Sentry.captureException(error);
       toast.error("Failed to acknowledge warning");
     } finally {
       setActionLoading(false);
@@ -278,7 +281,7 @@ export default function AllergenManagementPage() {
       // Refresh warnings
       await fetchWarnings();
     } catch (error) {
-      console.error("Error resolving warning:", error);
+      Sentry.captureException(error);
       toast.error("Failed to resolve warning");
     } finally {
       setActionLoading(false);

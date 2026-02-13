@@ -1,6 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 // Top-level regex for performance
@@ -183,7 +184,7 @@ export async function GET(
       stations,
     });
   } catch (error) {
-    console.error("Error getting prep list:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: "Failed to get prep list" },
       { status: 500 }
@@ -254,7 +255,7 @@ export async function PATCH(
 
     return NextResponse.json({ message: "Prep list updated successfully" });
   } catch (error) {
-    console.error("Error updating prep list:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: "Failed to update prep list" },
       { status: 500 }
@@ -300,7 +301,7 @@ export async function DELETE(
 
     return NextResponse.json({ message: "Prep list deleted successfully" });
   } catch (error) {
-    console.error("Error deleting prep list:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: "Failed to delete prep list" },
       { status: 500 }

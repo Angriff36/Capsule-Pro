@@ -1,6 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface RouteContext {
@@ -17,8 +18,8 @@ interface RouteContext {
  */
 export async function PATCH(request: Request, context: RouteContext) {
   // Step 1: Authenticate
-  const { orgId } = await auth();
-  if (!orgId) {
+  const { orgId, userId } = await auth();
+  if (!orgId || !userId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
@@ -78,6 +79,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         data: {
           tenantId,
           taskId: id,
+          employeeId: userId,
           progressType: "status_change",
           oldStatus: currentStatus,
           newStatus: newStatus as string,
@@ -99,12 +101,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     return NextResponse.json({ task: updatedTask });
   } catch (error) {
-    console.error("Error updating kitchen task:", {
-      taskId: id,
-      newStatus: body.status,
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
+    Sentry.captureException(error);
     return NextResponse.json(
       {
         message: error instanceof Error ? error.message : "Unknown error",

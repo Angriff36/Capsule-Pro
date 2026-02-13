@@ -25,6 +25,7 @@ import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import { EditIcon, LoaderIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import * as Sentry from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 
 const COMMON_ALLERGENS = [
@@ -157,7 +158,7 @@ export function AllergenManagementModal({
       // Trigger a custom event for parent component to refresh
       window.dispatchEvent(new CustomEvent("allergen-updated"));
     } catch (error) {
-      console.error("Error updating allergens:", error);
+      Sentry.captureException(error);
       toast.error(
         error instanceof Error
           ? error.message

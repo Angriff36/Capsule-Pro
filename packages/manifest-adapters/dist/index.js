@@ -179,6 +179,31 @@ async function loadPrepListManifestIR() {
     return cachedPrepListIR;
 }
 /**
+ * Helper to extract workflow metadata from context for runCommand options.
+ * @example
+ * ```typescript
+ * const runtime = await createPrepTaskRuntime({
+ *   tenantId,
+ *   userId,
+ *   correlationId: 'evt-123',
+ *   causationId: 'schedule-evt-123'
+ * });
+ *
+ * const options = getWorkflowOptions(runtime);
+ * await engine.runCommand("claim", {...}, {...options});
+ * ```
+ */
+export function getWorkflowOptions(context) {
+    const options = {};
+    if (context.correlationId !== undefined) {
+        options.correlationId = context.correlationId;
+    }
+    if (context.causationId !== undefined) {
+        options.causationId = context.causationId;
+    }
+    return options;
+}
+/**
  * Create a PostgresStore provider for persistent entity storage.
  *
  * @param databaseUrl - PostgreSQL connection string
@@ -226,7 +251,11 @@ export function createPostgresStoreProvider(databaseUrl, tenantId) {
  */
 export async function createPrepTaskRuntime(context) {
     const ir = await loadPrepTaskManifestIR();
-    const options = context.storeProvider || context.databaseUrl || context.telemetry
+    const options = context.storeProvider ||
+        context.databaseUrl ||
+        context.telemetry ||
+        context.evaluationLimits ||
+        context.deterministicMode
         ? {
             ...(context.storeProvider && {
                 storeProvider: context.storeProvider,
@@ -236,6 +265,12 @@ export async function createPrepTaskRuntime(context) {
                 storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
             }),
             ...(context.telemetry && { telemetry: context.telemetry }),
+            ...(context.evaluationLimits && {
+                evaluationLimits: context.evaluationLimits,
+            }),
+            ...(context.deterministicMode !== undefined && {
+                deterministicMode: context.deterministicMode,
+            }),
         }
         : undefined;
     const engine = new ManifestRuntimeEngine(ir, context, options);
@@ -246,7 +281,11 @@ export async function createPrepTaskRuntime(context) {
  */
 export async function createStationRuntime(context) {
     const ir = await loadStationManifestIR();
-    const options = context.storeProvider || context.databaseUrl || context.telemetry
+    const options = context.storeProvider ||
+        context.databaseUrl ||
+        context.telemetry ||
+        context.evaluationLimits ||
+        context.deterministicMode
         ? {
             ...(context.storeProvider && {
                 storeProvider: context.storeProvider,
@@ -256,6 +295,12 @@ export async function createStationRuntime(context) {
                 storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
             }),
             ...(context.telemetry && { telemetry: context.telemetry }),
+            ...(context.evaluationLimits && {
+                evaluationLimits: context.evaluationLimits,
+            }),
+            ...(context.deterministicMode !== undefined && {
+                deterministicMode: context.deterministicMode,
+            }),
         }
         : undefined;
     const engine = new ManifestRuntimeEngine(ir, context, options);
@@ -266,7 +311,11 @@ export async function createStationRuntime(context) {
  */
 export async function createInventoryRuntime(context) {
     const ir = await loadInventoryManifestIR();
-    const options = context.storeProvider || context.databaseUrl || context.telemetry
+    const options = context.storeProvider ||
+        context.databaseUrl ||
+        context.telemetry ||
+        context.evaluationLimits ||
+        context.deterministicMode
         ? {
             ...(context.storeProvider && {
                 storeProvider: context.storeProvider,
@@ -276,6 +325,12 @@ export async function createInventoryRuntime(context) {
                 storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
             }),
             ...(context.telemetry && { telemetry: context.telemetry }),
+            ...(context.evaluationLimits && {
+                evaluationLimits: context.evaluationLimits,
+            }),
+            ...(context.deterministicMode !== undefined && {
+                deterministicMode: context.deterministicMode,
+            }),
         }
         : undefined;
     const engine = new ManifestRuntimeEngine(ir, context, options);
@@ -286,7 +341,11 @@ export async function createInventoryRuntime(context) {
  */
 export async function createRecipeRuntime(context) {
     const ir = await loadRecipeManifestIR();
-    const options = context.storeProvider || context.databaseUrl || context.telemetry
+    const options = context.storeProvider ||
+        context.databaseUrl ||
+        context.telemetry ||
+        context.evaluationLimits ||
+        context.deterministicMode
         ? {
             ...(context.storeProvider && {
                 storeProvider: context.storeProvider,
@@ -296,6 +355,12 @@ export async function createRecipeRuntime(context) {
                 storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
             }),
             ...(context.telemetry && { telemetry: context.telemetry }),
+            ...(context.evaluationLimits && {
+                evaluationLimits: context.evaluationLimits,
+            }),
+            ...(context.deterministicMode !== undefined && {
+                deterministicMode: context.deterministicMode,
+            }),
         }
         : undefined;
     const engine = new ManifestRuntimeEngine(ir, context, options);
@@ -306,7 +371,11 @@ export async function createRecipeRuntime(context) {
  */
 export async function createMenuRuntime(context) {
     const ir = await loadMenuManifestIR();
-    const options = context.storeProvider || context.databaseUrl || context.telemetry
+    const options = context.storeProvider ||
+        context.databaseUrl ||
+        context.telemetry ||
+        context.evaluationLimits ||
+        context.deterministicMode
         ? {
             ...(context.storeProvider && {
                 storeProvider: context.storeProvider,
@@ -316,6 +385,12 @@ export async function createMenuRuntime(context) {
                 storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
             }),
             ...(context.telemetry && { telemetry: context.telemetry }),
+            ...(context.evaluationLimits && {
+                evaluationLimits: context.evaluationLimits,
+            }),
+            ...(context.deterministicMode !== undefined && {
+                deterministicMode: context.deterministicMode,
+            }),
         }
         : undefined;
     const engine = new ManifestRuntimeEngine(ir, context, options);
@@ -326,7 +401,11 @@ export async function createMenuRuntime(context) {
  */
 export async function createPrepListRuntime(context) {
     const ir = await loadPrepListManifestIR();
-    const options = context.storeProvider || context.databaseUrl || context.telemetry
+    const options = context.storeProvider ||
+        context.databaseUrl ||
+        context.telemetry ||
+        context.evaluationLimits ||
+        context.deterministicMode
         ? {
             ...(context.storeProvider && {
                 storeProvider: context.storeProvider,
@@ -336,6 +415,12 @@ export async function createPrepListRuntime(context) {
                 storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
             }),
             ...(context.telemetry && { telemetry: context.telemetry }),
+            ...(context.evaluationLimits && {
+                evaluationLimits: context.evaluationLimits,
+            }),
+            ...(context.deterministicMode !== undefined && {
+                deterministicMode: context.deterministicMode,
+            }),
         }
         : undefined;
     const engine = new ManifestRuntimeEngine(ir, context, options);
@@ -404,7 +489,11 @@ export async function createKitchenOpsRuntime(context) {
             ...prepListIR.policies,
         ],
     };
-    const options = context.storeProvider || context.databaseUrl || context.telemetry
+    const options = context.storeProvider ||
+        context.databaseUrl ||
+        context.telemetry ||
+        context.evaluationLimits ||
+        context.deterministicMode
         ? {
             ...(context.storeProvider && {
                 storeProvider: context.storeProvider,
@@ -414,6 +503,12 @@ export async function createKitchenOpsRuntime(context) {
                 storeProvider: createPostgresStoreProvider(context.databaseUrl, context.tenantId),
             }),
             ...(context.telemetry && { telemetry: context.telemetry }),
+            ...(context.evaluationLimits && {
+                evaluationLimits: context.evaluationLimits,
+            }),
+            ...(context.deterministicMode !== undefined && {
+                deterministicMode: context.deterministicMode,
+            }),
         }
         : undefined;
     const engine = new ManifestRuntimeEngine(combinedIR, context, options);
@@ -423,11 +518,14 @@ export async function createKitchenOpsRuntime(context) {
 /**
  * Claim a prep task
  */
-export async function claimPrepTask(engine, taskId, userId, stationId, overrideRequests) {
+export async function claimPrepTask(engine, taskId, userId, stationId, overrideRequests, correlationId, causationId, idempotencyKey) {
     const result = await engine.runCommand("claim", { userId, stationId }, {
         entityName: "PrepTask",
         instanceId: taskId,
         overrideRequests,
+        ...(correlationId !== undefined && { correlationId }),
+        ...(causationId !== undefined && { causationId }),
+        ...(idempotencyKey !== undefined && { idempotencyKey }),
     });
     const instance = await engine.getInstance("PrepTask", taskId);
     return {

@@ -1,5 +1,8 @@
+import * as Sentry from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import { invariant } from "@/app/lib/invariant";
+
+const { logger } = Sentry;
 
 interface WasteTrendsSummary {
   totalCost: number;
@@ -231,7 +234,7 @@ export async function fetchWasteTrends(): Promise<WasteTrendsData> {
   );
 
   if (!response.ok) {
-    console.warn("Failed to fetch waste trends, server may be unavailable");
+    logger.warn("Failed to fetch waste trends, server may be unavailable");
     return {
       summary: {
         totalCost: 0,
@@ -255,7 +258,7 @@ export async function fetchWasteReports(): Promise<WasteReportData> {
   const response = await apiFetch("/api/kitchen/waste/reports?groupBy=reason");
 
   if (!response.ok) {
-    console.warn("Failed to fetch waste reports, server may be unavailable");
+    logger.warn("Failed to fetch waste reports, server may be unavailable");
     return {
       summary: {
         totalCost: 0,

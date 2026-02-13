@@ -8,6 +8,7 @@ import type { OverrideReasonCode } from "@repo/design-system/components/override
 import { Button } from "@repo/design-system/components/ui/button";
 import { useRouter } from "next/navigation";
 import { startTransition, useState, useTransition } from "react";
+import * as Sentry from "@sentry/nextjs";
 import type { ManifestActionResult } from "../../actions-manifest-v2";
 import {
   getRecipeForEdit,
@@ -76,7 +77,7 @@ export const RecipeDetailEditButton = ({
         setEditRecipeData(data);
         setIsEditModalOpen(true);
       } catch (err) {
-        console.error("Failed to load recipe for edit:", err);
+        Sentry.captureException(err);
         setError("Failed to load recipe. Please try again.");
       } finally {
         setIsLoading(false);
@@ -109,7 +110,7 @@ export const RecipeDetailEditButton = ({
             reject(new Error(actionResult.error));
           }
         } catch (err) {
-          console.error("Failed to update recipe:", err);
+          Sentry.captureException(err);
           setError("Failed to update recipe. Please try again.");
           reject(err);
         }
@@ -147,7 +148,7 @@ export const RecipeDetailEditButton = ({
           setError(actionResult.error);
         }
       } catch (err) {
-        console.error("Failed to update recipe with override:", err);
+        Sentry.captureException(err);
         setError("Failed to update recipe. Please try again.");
       }
     });

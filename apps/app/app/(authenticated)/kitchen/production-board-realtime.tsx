@@ -3,6 +3,9 @@
 import Ably from "ably";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
+import * as Sentry from "@sentry/nextjs";
+
+const { logger } = Sentry;
 
 interface ProductionBoardRealtimeProps {
   tenantId: string;
@@ -43,7 +46,7 @@ export function ProductionBoardRealtime({
         if (!testResponse?.ok) {
           // Auth endpoint not available, skip real-time connection
           if (process.env.NODE_ENV === "development") {
-            console.warn(
+            logger.warn(
               "[ProductionBoardRealtime] Auth endpoint not available, skipping real-time connection"
             );
           }
@@ -73,7 +76,9 @@ export function ProductionBoardRealtime({
                 error instanceof Error ? error.message : "Ably auth failed.";
               // Log error but don't break the app
               if (process.env.NODE_ENV === "development") {
-                console.warn("[ProductionBoardRealtime] Auth error:", message);
+                logger.warn(
+                  logger.fmt`[ProductionBoardRealtime] Auth error: ${message}`
+                );
               }
               callback(message, null);
             }
@@ -129,18 +134,16 @@ export function ProductionBoardRealtime({
           channel.subscribe(handleMessage);
         } catch (error) {
           if (process.env.NODE_ENV === "development") {
-            console.warn(
-              "[ProductionBoardRealtime] Subscription error:",
-              error
+            logger.warn(
+              logger.fmt`[ProductionBoardRealtime] Subscription error: ${String(error)}`
             );
           }
         }
       } catch (error) {
         // If Ably initialization fails, fail silently
         if (process.env.NODE_ENV === "development") {
-          console.warn(
-            "[ProductionBoardRealtime] Initialization error:",
-            error
+          logger.warn(
+            logger.fmt`[ProductionBoardRealtime] Initialization error: ${String(error)}`
           );
         }
       }
@@ -149,9 +152,8 @@ export function ProductionBoardRealtime({
     // Initialize connection asynchronously
     initializeConnection().catch((error) => {
       if (process.env.NODE_ENV === "development") {
-        console.warn(
-          "[ProductionBoardRealtime] Connection initialization failed:",
-          error
+        logger.warn(
+          logger.fmt`[ProductionBoardRealtime] Connection initialization failed: ${String(error)}`
         );
       }
     });
@@ -169,7 +171,9 @@ export function ProductionBoardRealtime({
       } catch (error) {
         // Ignore cleanup errors
         if (process.env.NODE_ENV === "development") {
-          console.warn("[ProductionBoardRealtime] Cleanup error:", error);
+          logger.warn(
+            logger.fmt`[ProductionBoardRealtime] Cleanup error: ${String(error)}`
+          );
         }
       }
     };

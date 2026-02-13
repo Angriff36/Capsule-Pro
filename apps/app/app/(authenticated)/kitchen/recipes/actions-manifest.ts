@@ -1,6 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
+import * as Sentry from "@sentry/nextjs";
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import {
@@ -508,9 +509,9 @@ export const createRecipe = async (formData: FormData) => {
     (o) => !o.passed && o.severity === "warn"
   );
   if (warningConstraints && warningConstraints.length > 0) {
-    console.warn(
-      "[Manifest] Recipe creation warnings:",
-      warningConstraints.map((c) => `${c.code}: ${c.formatted}`)
+    const { logger } = Sentry;
+    logger.warn(
+      logger.fmt`[Manifest] Recipe creation warnings: ${warningConstraints.map((c) => `${c.code}: ${c.formatted}`).join(", ")}`
     );
   }
 
@@ -1075,9 +1076,9 @@ export const createDish = async (formData: FormData) => {
     (o) => !o.passed && o.severity === "warn"
   );
   if (warningConstraints && warningConstraints.length > 0) {
-    console.warn(
-      "[Manifest] Dish creation warnings:",
-      warningConstraints.map((c) => `${c.code}: ${c.formatted}`)
+    const { logger } = Sentry;
+    logger.warn(
+      logger.fmt`[Manifest] Dish creation warnings: ${warningConstraints.map((c) => `${c.code}: ${c.formatted}`).join(", ")}`
     );
   }
 

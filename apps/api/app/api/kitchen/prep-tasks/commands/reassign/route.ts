@@ -10,6 +10,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import * as Sentry from "@sentry/nextjs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("Error executing PrepTask.reassign:", error);
+    Sentry.captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

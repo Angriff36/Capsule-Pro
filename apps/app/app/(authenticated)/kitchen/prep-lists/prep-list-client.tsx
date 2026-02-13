@@ -42,6 +42,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import * as Sentry from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import type {
   IngredientItem,
@@ -316,7 +317,7 @@ export function PrepListClient({
         description: `${result.totalIngredients} ingredients across ${result.stationLists.length} stations`,
       });
     } catch (error) {
-      console.error("Error generating prep list:", error);
+      Sentry.captureException(error);
       toast.error("Generation failed", {
         description: "Failed to generate prep list. Please try again.",
       });
@@ -369,7 +370,7 @@ export function PrepListClient({
         description: "Tasks created in Production Board",
       });
     } catch (error) {
-      console.error("Error saving prep list:", error);
+      Sentry.captureException(error);
       toast.error("Save failed", {
         description: "Failed to save prep list to Production Board",
       });
@@ -409,7 +410,7 @@ export function PrepListClient({
         },
       });
     } catch (error) {
-      console.error("Error saving prep list to database:", error);
+      Sentry.captureException(error);
       toast.error("Save to database failed", {
         description: "Failed to save prep list to database",
       });

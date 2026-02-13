@@ -1,6 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
+import * as Sentry from "@sentry/nextjs";
 import type { ConstraintOutcome, OverrideRequest } from "@manifest/runtime/ir";
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
@@ -259,9 +260,9 @@ export const createPrepListManifest = async (
     (o) => !o.passed && o.severity === "warn"
   );
   if (warningConstraints && warningConstraints.length > 0) {
-    console.warn(
-      "[Manifest] PrepList creation warnings:",
-      warningConstraints.map((c) => `${c.code}: ${c.formatted}`)
+    const { logger } = Sentry;
+    logger.warn(
+      logger.fmt`[Manifest] PrepList creation warnings: ${warningConstraints.map((c) => `${c.code}: ${c.formatted}`).join(", ")}`
     );
   }
 

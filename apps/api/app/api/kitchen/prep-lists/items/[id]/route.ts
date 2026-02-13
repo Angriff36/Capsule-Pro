@@ -1,6 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 // Top-level regex for performance
@@ -75,7 +76,7 @@ export async function PATCH(
       message: "Prep list item updated successfully",
     });
   } catch (error) {
-    console.error("Error updating prep list item:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: "Failed to update prep list item" },
       { status: 500 }
@@ -113,7 +114,7 @@ export async function DELETE(
       message: "Prep list item deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting prep list item:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: "Failed to delete prep list item" },
       { status: 500 }

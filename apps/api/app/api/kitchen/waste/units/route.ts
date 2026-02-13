@@ -1,6 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 
 /**
  * GET /api/kitchen/waste/units
@@ -31,7 +32,7 @@ export async function GET() {
 
     return NextResponse.json({ data: units });
   } catch (error) {
-    console.error("Failed to fetch units:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

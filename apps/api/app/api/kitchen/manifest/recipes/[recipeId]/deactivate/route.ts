@@ -7,6 +7,7 @@ import {
   type KitchenOpsContext,
 } from "@repo/manifest-adapters";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface RouteContext {
@@ -163,7 +164,7 @@ export async function POST(request: Request, context: RouteContext) {
       { status: 500 }
     );
   } catch (error) {
-    console.error("Error deactivating recipe via Manifest:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       {
         message: "Failed to deactivate recipe",

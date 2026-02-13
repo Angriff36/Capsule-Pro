@@ -10,6 +10,7 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export interface RecipeIngredient {
@@ -99,7 +100,7 @@ export async function GET(
       })),
     });
   } catch (error) {
-    console.error("Error fetching recipe ingredients:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: "Failed to fetch recipe ingredients" },
       { status: 500 }

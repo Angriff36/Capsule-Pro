@@ -9,6 +9,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import * as Sentry from "@sentry/nextjs";
 
 export async function GET(_request: NextRequest) {
   try {
@@ -35,7 +36,7 @@ export async function GET(_request: NextRequest) {
 
     return manifestSuccessResponse({ prepLists });
   } catch (error) {
-    console.error("Error fetching prepLists:", error);
+    Sentry.captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import { Header } from "../../components/header";
 
@@ -130,7 +131,7 @@ export default function KitchenMobilePage() {
         setCurrentUserId(data.userId || null);
       }
     } catch (error) {
-      console.error("Error fetching available tasks:", error);
+      Sentry.captureException(error);
     }
   };
 
@@ -144,7 +145,7 @@ export default function KitchenMobilePage() {
         setCurrentUserId(data.userId || null);
       }
     } catch (error) {
-      console.error("Error fetching my tasks:", error);
+      Sentry.captureException(error);
     }
   };
 
@@ -188,7 +189,7 @@ export default function KitchenMobilePage() {
         fetchMyTasks();
       }
     } catch (error) {
-      console.error("Error syncing claims:", error);
+      Sentry.captureException(error);
     }
   };
 
@@ -231,7 +232,7 @@ export default function KitchenMobilePage() {
         alert(error.message || "Failed to claim task");
       }
     } catch (error) {
-      console.error("Error claiming task:", error);
+      Sentry.captureException(error);
       alert("Failed to claim task. Please try again.");
     } finally {
       setIsLoading(false);
@@ -269,7 +270,7 @@ export default function KitchenMobilePage() {
         alert(error.message || "Failed to release task");
       }
     } catch (error) {
-      console.error("Error releasing task:", error);
+      Sentry.captureException(error);
       alert("Failed to release task. Please try again.");
     } finally {
       setIsLoading(false);
@@ -292,7 +293,7 @@ export default function KitchenMobilePage() {
         alert("Failed to complete task");
       }
     } catch (error) {
-      console.error("Error completing task:", error);
+      Sentry.captureException(error);
       alert("Failed to complete task. Please try again.");
     } finally {
       setIsLoading(false);

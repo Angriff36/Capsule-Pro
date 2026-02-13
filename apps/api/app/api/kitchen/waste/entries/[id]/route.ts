@@ -1,6 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface WasteEntryDetail {
@@ -65,7 +66,7 @@ export async function GET(
 
     return NextResponse.json(wasteEntry[0]);
   } catch (error) {
-    console.error("Error getting waste entry:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: "Failed to get waste entry" },
       { status: 500 }
@@ -133,7 +134,7 @@ export async function PUT(
       message: "Waste entry updated successfully",
     });
   } catch (error) {
-    console.error("Error updating waste entry:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: "Failed to update waste entry" },
       { status: 500 }
@@ -171,7 +172,7 @@ export async function DELETE(
       message: "Waste entry deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting waste entry:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: "Failed to delete waste entry" },
       { status: 500 }

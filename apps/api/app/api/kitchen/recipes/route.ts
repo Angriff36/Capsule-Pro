@@ -10,6 +10,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -174,7 +175,7 @@ export async function GET(request: Request) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Error listing recipes:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

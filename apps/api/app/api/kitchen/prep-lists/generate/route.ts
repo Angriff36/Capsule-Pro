@@ -1,6 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface StationMapping {
@@ -774,7 +775,7 @@ export async function savePrepListToProductionBoard(
 
     return { success: true };
   } catch (error) {
-    console.error("Error saving prep list to production board:", error);
+    Sentry.captureException(error);
     return { success: false, error: "Failed to save prep list" };
   }
 }
@@ -878,7 +879,7 @@ export async function savePrepListToDatabase(
 
     return { success: true, prepListId };
   } catch (error) {
-    console.error("Error saving prep list to database:", error);
+    Sentry.captureException(error);
     return { success: false, error: "Failed to save prep list to database" };
   }
 }
@@ -903,7 +904,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(prepList);
   } catch (error) {
-    console.error("Error generating prep list:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: "Failed to generate prep list" },
       { status: 500 }

@@ -1,6 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export interface PortionScaleRequest {
@@ -104,7 +105,7 @@ export async function POST(
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Error scaling recipe cost:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: "Failed to scale recipe cost" },
       { status: 500 }
@@ -143,7 +144,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error updating waste factor:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: "Failed to update waste factor" },
       { status: 500 }

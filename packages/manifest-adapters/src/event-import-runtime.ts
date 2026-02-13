@@ -5,11 +5,14 @@
  * It orchestrates the flow: Document Import -> Event Creation -> Battle Board/Checklist Generation
  */
 
+import * as Sentry from "@sentry/nextjs";
 import type { EmittedEvent, RuntimeEngine } from "@manifest/runtime";
 import type { IR } from "@manifest/runtime/ir";
 import { compileToIR } from "@manifest/runtime/ir-compiler";
 import { enforceCommandOwnership } from "./ir-contract.js";
 import { ManifestRuntimeEngine } from "./runtime-engine.js";
+
+const { logger } = Sentry;
 
 let cachedIR: IR | null = null;
 
@@ -401,7 +404,7 @@ export function setupEventListeners(
         await handlers.onChecklistGenerated?.(event);
         break;
       default:
-        console.warn(
+        logger.warn(
           `Unexpected event type: ${(event as { name: string }).name}`
         );
         break;

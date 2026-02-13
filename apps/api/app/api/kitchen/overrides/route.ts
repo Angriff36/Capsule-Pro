@@ -2,7 +2,10 @@ import type { OverrideRequest } from "@manifest/runtime/ir";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+
+const { logger } = Sentry;
 
 /**
  * Override authorization request body
@@ -107,7 +110,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     // If the table doesn't exist yet, just log and continue
-    console.warn("Override audit table not available:", error);
+    logger.warn("Override audit table not available", { error: String(error) });
   }
 
   // Create outbox event for the override
@@ -131,7 +134,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.warn("Outbox event creation failed:", error);
+    logger.warn("Outbox event creation failed", { error: String(error) });
   }
 
   return NextResponse.json({
@@ -184,7 +187,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ overrides });
   } catch (error) {
     // If the table doesn't exist yet, return empty array
-    console.warn("Override audit table not available:", error);
+    logger.warn("Override audit table not available", { error: String(error) });
     return NextResponse.json({ overrides: [] });
   }
 }

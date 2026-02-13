@@ -4,6 +4,7 @@ import {
   updateDishPricing,
 } from "@repo/manifest-adapters";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   checkBlockingConstraints,
@@ -134,7 +135,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       { status: 500 }
     );
   } catch (error) {
-    console.error("Error updating dish pricing via Manifest:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       {
         message: "Failed to update dish pricing",

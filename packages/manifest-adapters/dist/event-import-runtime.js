@@ -4,9 +4,11 @@
  * This module integrates Manifest language runtime with the document parsing workflow.
  * It orchestrates the flow: Document Import -> Event Creation -> Battle Board/Checklist Generation
  */
+import * as Sentry from "@sentry/nextjs";
 import { compileToIR } from "@manifest/runtime/ir-compiler";
 import { enforceCommandOwnership } from "./ir-contract.js";
 import { ManifestRuntimeEngine } from "./runtime-engine.js";
+const { logger } = Sentry;
 let cachedIR = null;
 /**
  * Load and compile the Manifest module
@@ -310,7 +312,7 @@ export function setupEventListeners(engine, handlers) {
                 await handlers.onChecklistGenerated?.(event);
                 break;
             default:
-                console.warn(`Unexpected event type: ${event.name}`);
+                logger.warn(`Unexpected event type: ${event.name}`);
                 break;
         }
     });

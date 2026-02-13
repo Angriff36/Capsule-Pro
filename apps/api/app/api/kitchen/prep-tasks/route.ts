@@ -11,6 +11,7 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import * as Sentry from "@sentry/nextjs";
 
 interface PrepTaskListFilters {
   eventId?: string;
@@ -243,7 +244,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error listing prep tasks:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

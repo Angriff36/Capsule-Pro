@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { AspectRatio } from "@repo/design-system/components/ui/aspect-ratio";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
@@ -275,7 +276,7 @@ export const MobileRecipeClient = ({
           toast.error("No internet connection and no cached data available");
         }
       } catch (error) {
-        console.error("Error fetching recipe:", error);
+        Sentry.captureException(error);
         // If we have cached data, keep it; otherwise show error
         if (!recipe) {
           toast.error("Failed to load recipe");
@@ -394,7 +395,7 @@ export const MobileRecipeClient = ({
         icon: <Wifi className="h-4 w-4" />,
       });
     } catch (error) {
-      console.error("Error refreshing recipe:", error);
+      Sentry.captureException(error);
       toast.error("Failed to refresh recipe");
     }
   }, [isOnline, recipeId]);

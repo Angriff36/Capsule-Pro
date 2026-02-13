@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -408,7 +409,7 @@ function HistoryTabContent({
           setVersions(data);
         }
       } catch (error) {
-        console.error("Failed to fetch recipe versions:", error);
+        Sentry.captureException(error);
       } finally {
         setLoading(false);
       }
@@ -989,7 +990,7 @@ export function RecipeDetailTabs({
         const data = await getRecipeCost(recipeVersionId);
         setCostData(data);
       } catch (error) {
-        console.error("Failed to fetch cost data:", error);
+        Sentry.captureException(error);
         setCostData(null);
       } finally {
         setLoading(false);

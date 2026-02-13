@@ -22,7 +22,10 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { AlertCircle, DollarSign, Package, Search, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+import * as Sentry from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
+
+const { logger } = Sentry;
 
 interface InventoryItem {
   id: string;
@@ -88,18 +91,18 @@ export function WasteEntriesClient() {
           const reasonsData = await reasonsRes.json();
           setWasteReasons(reasonsData.data || []);
         } else {
-          console.warn("Failed to fetch waste reasons");
+          logger.warn("Failed to fetch waste reasons");
           setWasteReasons([]);
         }
         if (unitsRes.ok) {
           const unitsData = await unitsRes.json();
           setUnits(unitsData.data || []);
         } else {
-          console.warn("Failed to fetch units");
+          logger.warn("Failed to fetch units");
           setUnits([]);
         }
       } catch (error) {
-        console.error("Failed to fetch dropdown data:", error);
+        Sentry.captureException(error);
         toast.error("Failed to load form data");
       } finally {
         setLoading(false);
@@ -131,7 +134,7 @@ export function WasteEntriesClient() {
           setFilteredItems([]);
         }
       } catch (error) {
-        console.error("Failed to search inventory items:", error);
+        Sentry.captureException(error);
         setFilteredItems([]);
       }
     });

@@ -10,6 +10,7 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export interface RecipeStep {
@@ -169,7 +170,7 @@ export async function GET(
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Error fetching recipe steps:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: "Failed to fetch recipe steps" },
       { status: 500 }

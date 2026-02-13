@@ -1,6 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export interface UnitConversion {
@@ -205,7 +206,7 @@ export async function GET(
 
     return NextResponse.json(costSummary);
   } catch (error) {
-    console.error("Error fetching recipe cost:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: "Failed to fetch recipe cost" },
       { status: 500 }
@@ -240,7 +241,7 @@ export async function POST(
 
     return NextResponse.json(costSummary);
   } catch (error) {
-    console.error("Error recalculating recipe cost:", error);
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: "Failed to recalculate recipe cost" },
       { status: 500 }

@@ -242,6 +242,32 @@ export interface KitchenOpsContext extends RuntimeContext {
   userId: string;
   userRole?: string;
   /**
+   * Optional workflow metadata for event correlation and tracing.
+   * @example
+   * ```typescript
+   * {
+   *   correlationId: 'evt-123', // Groups all operations in this event workflow
+   *   causationId: 'schedule-evt-123' // Links to triggering event
+   * }
+   * ```
+   */
+  correlationId?: string;
+  causationId?: string;
+  /**
+   * Optional evaluation limits to protect against runaway expressions.
+   * @default { maxExpressionDepth: 64, maxEvaluationSteps: 10_000 }
+   */
+  evaluationLimits?: {
+    maxExpressionDepth?: number;
+    maxEvaluationSteps?: number;
+  };
+  /**
+   * Optional deterministic mode to block adapter side effects (for testing/replay).
+   * When true, persist/publish/effect actions throw ManifestEffectBoundaryError.
+   * @default false
+   */
+  deterministicMode?: boolean;
+  /**
    * Optional store provider for entity persistence.
    * If provided, entities will be persisted using this store.
    * Use `createPrismaStoreProvider(prisma, tenantId)` for Prisma-backed storage.
@@ -384,6 +410,44 @@ export interface DishCommandResult extends CommandResult {
 }
 
 /**
+ * Workflow metadata options for runCommand calls.
+ * These are passed through to enable event correlation and tracing.
+ */
+export interface WorkflowMetadataOptions {
+  correlationId?: string;
+  causationId?: string;
+  idempotencyKey?: string;
+}
+
+/**
+ * Helper to extract workflow metadata from context for runCommand options.
+ * @example
+ * ```typescript
+ * const runtime = await createPrepTaskRuntime({
+ *   tenantId,
+ *   userId,
+ *   correlationId: 'evt-123',
+ *   causationId: 'schedule-evt-123'
+ * });
+ *
+ * const options = getWorkflowOptions(runtime);
+ * await engine.runCommand("claim", {...}, {...options});
+ * ```
+ */
+export function getWorkflowOptions(
+  context: KitchenOpsContext
+): WorkflowMetadataOptions {
+  const options: WorkflowMetadataOptions = {};
+  if (context.correlationId !== undefined) {
+    options.correlationId = context.correlationId;
+  }
+  if (context.causationId !== undefined) {
+    options.causationId = context.causationId;
+  }
+  return options;
+}
+
+/**
  * Create a PostgresStore provider for persistent entity storage.
  *
  * @param databaseUrl - PostgreSQL connection string
@@ -440,7 +504,11 @@ export function createPostgresStoreProvider(
 export async function createPrepTaskRuntime(context: KitchenOpsContext) {
   const ir = await loadPrepTaskManifestIR();
   const options =
-    context.storeProvider || context.databaseUrl || context.telemetry
+    context.storeProvider ||
+    context.databaseUrl ||
+    context.telemetry ||
+    context.evaluationLimits ||
+    context.deterministicMode
       ? {
           ...(context.storeProvider && {
             storeProvider: context.storeProvider,
@@ -453,6 +521,12 @@ export async function createPrepTaskRuntime(context: KitchenOpsContext) {
               ),
             }),
           ...(context.telemetry && { telemetry: context.telemetry }),
+          ...(context.evaluationLimits && {
+            evaluationLimits: context.evaluationLimits,
+          }),
+          ...(context.deterministicMode !== undefined && {
+            deterministicMode: context.deterministicMode,
+          }),
         }
       : undefined;
   const engine = new ManifestRuntimeEngine(ir, context, options);
@@ -465,7 +539,11 @@ export async function createPrepTaskRuntime(context: KitchenOpsContext) {
 export async function createStationRuntime(context: KitchenOpsContext) {
   const ir = await loadStationManifestIR();
   const options =
-    context.storeProvider || context.databaseUrl || context.telemetry
+    context.storeProvider ||
+    context.databaseUrl ||
+    context.telemetry ||
+    context.evaluationLimits ||
+    context.deterministicMode
       ? {
           ...(context.storeProvider && {
             storeProvider: context.storeProvider,
@@ -478,6 +556,12 @@ export async function createStationRuntime(context: KitchenOpsContext) {
               ),
             }),
           ...(context.telemetry && { telemetry: context.telemetry }),
+          ...(context.evaluationLimits && {
+            evaluationLimits: context.evaluationLimits,
+          }),
+          ...(context.deterministicMode !== undefined && {
+            deterministicMode: context.deterministicMode,
+          }),
         }
       : undefined;
   const engine = new ManifestRuntimeEngine(ir, context, options);
@@ -490,7 +574,11 @@ export async function createStationRuntime(context: KitchenOpsContext) {
 export async function createInventoryRuntime(context: KitchenOpsContext) {
   const ir = await loadInventoryManifestIR();
   const options =
-    context.storeProvider || context.databaseUrl || context.telemetry
+    context.storeProvider ||
+    context.databaseUrl ||
+    context.telemetry ||
+    context.evaluationLimits ||
+    context.deterministicMode
       ? {
           ...(context.storeProvider && {
             storeProvider: context.storeProvider,
@@ -503,6 +591,12 @@ export async function createInventoryRuntime(context: KitchenOpsContext) {
               ),
             }),
           ...(context.telemetry && { telemetry: context.telemetry }),
+          ...(context.evaluationLimits && {
+            evaluationLimits: context.evaluationLimits,
+          }),
+          ...(context.deterministicMode !== undefined && {
+            deterministicMode: context.deterministicMode,
+          }),
         }
       : undefined;
   const engine = new ManifestRuntimeEngine(ir, context, options);
@@ -515,7 +609,11 @@ export async function createInventoryRuntime(context: KitchenOpsContext) {
 export async function createRecipeRuntime(context: KitchenOpsContext) {
   const ir = await loadRecipeManifestIR();
   const options =
-    context.storeProvider || context.databaseUrl || context.telemetry
+    context.storeProvider ||
+    context.databaseUrl ||
+    context.telemetry ||
+    context.evaluationLimits ||
+    context.deterministicMode
       ? {
           ...(context.storeProvider && {
             storeProvider: context.storeProvider,
@@ -528,6 +626,12 @@ export async function createRecipeRuntime(context: KitchenOpsContext) {
               ),
             }),
           ...(context.telemetry && { telemetry: context.telemetry }),
+          ...(context.evaluationLimits && {
+            evaluationLimits: context.evaluationLimits,
+          }),
+          ...(context.deterministicMode !== undefined && {
+            deterministicMode: context.deterministicMode,
+          }),
         }
       : undefined;
   const engine = new ManifestRuntimeEngine(ir, context, options);
@@ -540,7 +644,11 @@ export async function createRecipeRuntime(context: KitchenOpsContext) {
 export async function createMenuRuntime(context: KitchenOpsContext) {
   const ir = await loadMenuManifestIR();
   const options =
-    context.storeProvider || context.databaseUrl || context.telemetry
+    context.storeProvider ||
+    context.databaseUrl ||
+    context.telemetry ||
+    context.evaluationLimits ||
+    context.deterministicMode
       ? {
           ...(context.storeProvider && {
             storeProvider: context.storeProvider,
@@ -553,6 +661,12 @@ export async function createMenuRuntime(context: KitchenOpsContext) {
               ),
             }),
           ...(context.telemetry && { telemetry: context.telemetry }),
+          ...(context.evaluationLimits && {
+            evaluationLimits: context.evaluationLimits,
+          }),
+          ...(context.deterministicMode !== undefined && {
+            deterministicMode: context.deterministicMode,
+          }),
         }
       : undefined;
   const engine = new ManifestRuntimeEngine(ir, context, options);
@@ -565,7 +679,11 @@ export async function createMenuRuntime(context: KitchenOpsContext) {
 export async function createPrepListRuntime(context: KitchenOpsContext) {
   const ir = await loadPrepListManifestIR();
   const options =
-    context.storeProvider || context.databaseUrl || context.telemetry
+    context.storeProvider ||
+    context.databaseUrl ||
+    context.telemetry ||
+    context.evaluationLimits ||
+    context.deterministicMode
       ? {
           ...(context.storeProvider && {
             storeProvider: context.storeProvider,
@@ -578,6 +696,12 @@ export async function createPrepListRuntime(context: KitchenOpsContext) {
               ),
             }),
           ...(context.telemetry && { telemetry: context.telemetry }),
+          ...(context.evaluationLimits && {
+            evaluationLimits: context.evaluationLimits,
+          }),
+          ...(context.deterministicMode !== undefined && {
+            deterministicMode: context.deterministicMode,
+          }),
         }
       : undefined;
   const engine = new ManifestRuntimeEngine(ir, context, options);
@@ -650,7 +774,11 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
   };
 
   const options =
-    context.storeProvider || context.databaseUrl || context.telemetry
+    context.storeProvider ||
+    context.databaseUrl ||
+    context.telemetry ||
+    context.evaluationLimits ||
+    context.deterministicMode
       ? {
           ...(context.storeProvider && {
             storeProvider: context.storeProvider,
@@ -663,6 +791,12 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
               ),
             }),
           ...(context.telemetry && { telemetry: context.telemetry }),
+          ...(context.evaluationLimits && {
+            evaluationLimits: context.evaluationLimits,
+          }),
+          ...(context.deterministicMode !== undefined && {
+            deterministicMode: context.deterministicMode,
+          }),
         }
       : undefined;
   const engine = new ManifestRuntimeEngine(combinedIR, context, options);
@@ -679,7 +813,10 @@ export async function claimPrepTask(
   taskId: string,
   userId: string,
   stationId: string,
-  overrideRequests?: OverrideRequest[]
+  overrideRequests?: OverrideRequest[],
+  correlationId?: string,
+  causationId?: string,
+  idempotencyKey?: string
 ): Promise<PrepTaskCommandResult> {
   const result = await engine.runCommand(
     "claim",
@@ -688,6 +825,9 @@ export async function claimPrepTask(
       entityName: "PrepTask",
       instanceId: taskId,
       overrideRequests,
+      ...(correlationId !== undefined && { correlationId }),
+      ...(causationId !== undefined && { causationId }),
+      ...(idempotencyKey !== undefined && { idempotencyKey }),
     }
   );
 

@@ -3,6 +3,7 @@
 
 import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   manifestErrorResponse,
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("Error executing shadow PrepTask.claim:", error);
+    Sentry.captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
