@@ -397,4 +397,17 @@ junit.xml
 # Common tool caches
 **/.jest-cache/
 /.opencode
-sentry-error-CAPSULE-PRO-6-raw.json
+# Sentry error dumps
+sentry-error-*.json
+sentry-errors-*.json
+sentry-errors-*.md
+
+# Spec working files (loop artifacts, not source code)
+specs/**/*_TODO/
+specs/**/*_COMPLETE/
+specs/**/*_INPROGRESS/
+specs/spec-template.md
+specs/manifest-structure/
+
+# Root-level scratch files
+spec.md

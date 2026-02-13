@@ -46,7 +46,7 @@
   "dependencies": {
     "@repo/database": "workspace:*",
     "@repo/realtime": "workspace:*",
-    "@manifest/runtime": "file:../../../manifest",
+    "@manifest/runtime": "workspace:*",
     "hono": "^4.10.5"
   },
   "devDependencies": {

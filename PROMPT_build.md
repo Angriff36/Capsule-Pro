@@ -1,28 +1,3 @@
-<!--PROMPTS
-<!--The instruction set for each loop iteration. Swap between PLANNING and BUILDING versions as needed.
-<!--
-<!--Prompt Structure:
-<!--
-<!--Section	Purpose
-<!--Phase 0 (0a, 0b, 0c)	Orient: study specs, source location, current plan
-<!--Phase 1-4	Main instructions: task, validation, commit
-<!--999... numbering	Guardrails/invariants (higher number = more critical)
-<!--Key Language Patterns (Geoff's specific phrasing):
-<!--
-<!--"study" (not "read" or "look at")
-<!--"don't assume not implemented" (critical - Achilles' heel)
-<!--"using parallel subagents" / "up to N subagents"
-<!--"only 1 subagent for build/tests" (backpressure control)
-<!--"Think extra hard" (now "Ultrathink)
-<!--"capture the why"
-<!--"keep it up to date"
-<!--"if functionality is missing then it's your job to add it"
-<!--"resolve them or document them"
-<!--PROMPT_plan.md Template
-<!--Notes:
-<!--
-<!--Update [project-specific goal] placeholder below.
-<!--Current subagents names presume using Claude. -->
 
 0a. Study `specs/*` with up to 500 parallel Sonnet subagents to learn to application specifications. 0b. Study @IMPLEMENTATION_PLAN.md. 0c. For reference, application source code is in `packages/manifest-adapters/*`, `packages/kitchen-ops/*`, `apps/api/app/api/kitchen/*`, and `packages/database/prisma/*`.
 
