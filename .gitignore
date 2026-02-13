@@ -399,3 +399,4 @@ junit.xml
 
 # Common tool caches
 **/.jest-cache/
+/.opencode
