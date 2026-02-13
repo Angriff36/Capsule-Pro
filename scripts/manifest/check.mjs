@@ -53,7 +53,18 @@ if (!existsSync(irPath)) {
   try {
     const raw = readFileSync(irPath, "utf-8");
     const ir = JSON.parse(raw);
-    console.log(`[manifest/check] IR contains ${ir.entities.length} entities: ${ir.entities.map((e) => e.name).join(", ")}`);
+
+    // Check for duplicate names
+    const duplicates = checkForDuplicates(ir);
+    if (duplicates.length > 0) {
+      console.error("[manifest/check] Duplicate names found in IR:");
+      for (const dup of duplicates) {
+        console.error(`  ${dup}`);
+      }
+      ok = false;
+    } else {
+      console.log(`[manifest/check] IR contains ${ir.entities.length} entities: ${ir.entities.map((e) => e.name).join(", ")}`);
+    }
   } catch {
     console.error(`[manifest/check] ${irPath} is not valid JSON.`);
     ok = false;
@@ -77,6 +88,79 @@ if (ok) {
 }
 
 process.exit(ok ? 0 : 1);
+
+function checkForDuplicates(ir) {
+  const duplicates = [];
+
+  // Identity rules:
+  // - Entities: globally unique by name
+  // - Commands: unique by (entity, name) tuple
+  // - Events: unique by channel (not name)
+  // - Policies: globally unique by name
+
+  // Check entities (globally unique by name)
+  const entityNames = new Map();
+  for (const entity of (ir.entities || [])) {
+    if (!entityNames.has(entity.name)) {
+      entityNames.set(entity.name, 0);
+    }
+    entityNames.set(entity.name, entityNames.get(entity.name) + 1);
+  }
+
+  for (const [name, count] of entityNames) {
+    if (count > 1) {
+      duplicates.push(`Duplicate entity: "${name}" (${count} occurrences)`);
+    }
+  }
+
+  // Check commands (unique by (entity, name) tuple)
+  const commandKeys = new Map();
+  for (const command of (ir.commands || [])) {
+    const key = `${command.entity}.${command.name}`;
+    if (!commandKeys.has(key)) {
+      commandKeys.set(key, 0);
+    }
+    commandKeys.set(key, commandKeys.get(key) + 1);
+  }
+
+  for (const [key, count] of commandKeys) {
+    if (count > 1) {
+      duplicates.push(`Duplicate command: "${key}" (${count} occurrences)`);
+    }
+  }
+
+  // Check events (unique by channel, not name)
+  const eventChannels = new Map();
+  for (const event of (ir.events || [])) {
+    if (!eventChannels.has(event.channel)) {
+      eventChannels.set(event.channel, 0);
+    }
+    eventChannels.set(event.channel, eventChannels.get(event.channel) + 1);
+  }
+
+  for (const [channel, count] of eventChannels) {
+    if (count > 1) {
+      duplicates.push(`Duplicate event channel: "${channel}" (${count} occurrences)`);
+    }
+  }
+
+  // Check policies (globally unique by name)
+  const policyNames = new Map();
+  for (const policy of (ir.policies || [])) {
+    if (!policyNames.has(policy.name)) {
+      policyNames.set(policy.name, 0);
+    }
+    policyNames.set(policy.name, policyNames.get(policy.name) + 1);
+  }
+
+  for (const [name, count] of policyNames) {
+    if (count > 1) {
+      duplicates.push(`Duplicate policy: "${name}" (${count} occurrences)`);
+    }
+  }
+
+  return duplicates;
+}
 
 function listFiles(root) {
   const out = [];

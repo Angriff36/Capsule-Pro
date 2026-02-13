@@ -155,7 +155,7 @@ None required.
 - [x] **YES** - Application code updates needed
   1. Update TypeScript types: `id: string` → `id: string` (still string in runtime)
   2. Update Prisma schema: `id String @id` → `id String @id @db.Uuid`
-  3. Regenerate Prisma client: `pnpm prisma:generate`
+  3. Regenerate Prisma client: `pnpm prisma:check`
   4. Update validation logic to ensure UUID format
   5. Test all menu CRUD operations
 
@@ -201,3 +201,4 @@ None required.
 - [PostgreSQL UUID Type](https://www.postgresql.org/docs/current/datatype-uuid.html)
 - [PostgreSQL Type Casting](https://www.postgresql.org/docs/current/sql-expressions.html#SQL-SYNTAX-TYPE-CASTS)
 - Schema Contract: `docs/legacy-contracts/schema-contract-v2.txt`
+

@@ -171,7 +171,7 @@ None required.
 - [x] **YES** - Code changes required
   1. Update Prisma schema with schema prefixes
   2. Update raw SQL queries with schema prefixes
-  3. Regenerate Prisma client: `pnpm prisma:generate`
+  3. Regenerate Prisma client: `pnpm prisma:check`
   4. Update type annotations in application code
 
 ## Notes
@@ -216,3 +216,4 @@ enum KitchenTaskStatus {
 - [PostgreSQL ALTER TABLE](https://www.postgresql.org/docs/current/sql-altertable.html)
 - [PostgreSQL Schemas](https://www.postgresql.org/docs/current/ddl-schemas.html)
 - Schema Contract: `docs/legacy-contracts/schema-contract-v2.txt`
+

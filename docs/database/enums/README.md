@@ -288,7 +288,7 @@ When adding a new enum:
    - Include frontmatter metadata
 
 4. **Update type checking**:
-   - Regenerate Prisma client: `pnpm prisma:generate`
+   - Regenerate Prisma client: `pnpm prisma:check`
    - Update TypeScript types if needed
 
 ## Modifying Existing Enums
@@ -323,3 +323,4 @@ See [KNOWN_ISSUES.md](../KNOWN_ISSUES.md) for enum-specific issues:
 - [Schema Documentation](../schemas/) - Domain-specific schema docs
 - [Prisma Schema](../../../packages/database/prisma/schema.prisma) - Source of truth
 - [Migration Documentation](../migrations/) - Enum change history
+

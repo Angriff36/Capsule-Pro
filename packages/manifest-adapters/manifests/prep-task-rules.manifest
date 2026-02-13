@@ -30,7 +30,13 @@ entity PrepTask {
   computed isUrgent: boolean = self.priority <= 2
   computed isHighPriority: boolean = self.priority <= 3
 
-  constraint validStatus: self.status in ["open", "in_progress", "done", "canceled"] "Invalid task status"
+  // State transitions enforce valid status flows at runtime
+  transition status from "open" to ["in_progress", "canceled"]
+  transition status from "pending" to ["in_progress", "canceled"]
+  transition status from "in_progress" to ["done", "open", "canceled"]
+  // "done" and "canceled" are terminal states - no outgoing transitions
+
+  constraint validStatus: self.status in ["open", "pending", "in_progress", "done", "canceled"] "Invalid task status"
   constraint positiveQuantity: self.quantityTotal >= 0 "Total quantity must be non-negative"
   constraint validPriority: self.priority >= 1 and self.priority <= 5 "Priority must be between 1 (critical) and 5 (low)"
 

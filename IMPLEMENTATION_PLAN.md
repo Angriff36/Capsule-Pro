@@ -1,97 +1,126 @@
-# Command Board Implementation Plan
+# Capsule-Pro Implementation Plan
+
+**Last Updated**: 2026-02-13
+**Build Status**: ✅ PASSING (21/21 tasks)
+**Test Status**: ✅ 540 passing, 0 failures
+**Latest Tag**: v0.2.9
+**Current Branch**: manifest-.3
+
+---
+
+## Executive Summary
+
+### What's Complete
+- **Command Board**: 9/9 features (undo/redo, conflict resolution, event replay, interactive anchors, bulk edit)
+- **Manifest Core**: 6 entity definitions + runtime + 53 generated routes (42 commands + 11 queries)
+- **Kitchen API**: 106 route handlers with CRUD + command operations
+- **Database**: Multi-tenant schema with full kitchen ops support
+- **Runtime**: Constraint evaluation (block/warn/ok), event emission via outbox + Ably
+- **Tests**: 540 passing, 180+ manifest-specific tests
+
+### What Needs Work
+
+**Critical Path**:
+1. **P0**: Console → Sentry migration (412 console statements across codebase)
+2. **P0**: Manifest documentation cleanup + HTTP verification (Phase E)
+3. **P1**: Kitchen ops rules & overrides + multi-entity runtime
+4. **P2**: Feature specs (CRM, Scheduling, Inventory, Events, Command Board extensions)
+
+---
 
 ## Status Summary
 
-### Completed Features
+### Completed Features ✅
 
-| # | Feature | Status |
-|---|---------|--------|
-| 1.1 | Undo/Redo System | COMPLETED |
-| 1.2 | Auto-Save/Draft Recovery | COMPLETED |
-| 1.3 | Connection Context Menu | COMPLETED |
-| 2.1 | Connection Events | COMPLETED |
-| 2.2 | Event Replay System | COMPLETED |
-| 2.3 | Conflict Resolution | COMPLETED |
-| 3.1 | Interactive Anchor Points | COMPLETED |
-| 4.1 | UserPreference Model | COMPLETED |
-| 4.2 | Bulk Edit Command | COMPLETED |
+| Category | Feature | Status | Notes |
+|----------|---------|--------|-------|
+| **Command Board** | All 9 Features | ✅ COMPLETE | Undo/redo, auto-save, realtime, visual connectors, bulk ops, preferences, anchors |
+| **Manifest Core** | 6 Entity Definitions | ✅ COMPLETE | PrepTask, Station, Inventory, Recipe, Menu, PrepList |
+| **Manifest Core** | Runtime & Factories | ✅ COMPLETE | RuntimeEngine, adapters, projection system |
+| **Manifest Core** | Prisma Store Layer | ✅ COMPLETE | All 6 entity stores with tenant scoping |
+| **Manifest Core** | Command API Routes | ✅ COMPLETE | 42 POST routes generated |
+| **Manifest Core** | List Query Routes | ✅ COMPLETE | 11 GET routes generated |
+| **Kitchen API** | 106 Route Handlers | ✅ COMPLETE | Full CRUD + command handlers |
+| **Database** | Schema & Migrations | ✅ COMPLETE | Multi-tenant with kitchen ops support |
+| **Runtime** | Constraint Evaluation | ✅ COMPLETE | Block/warn/ok severity with diagnostics |
+| **Runtime** | Event Emission | ✅ COMPLETE | Outbox pattern with Ably integration |
 
-### Pending / Not Started
+### Pending Features
 
-| # | Feature | Status |
-|---|---------|--------|
+#### P0 - Critical (Manifest Migration Core)
+
+| # | Feature | Status | Priority Rationale |
+|---|---------|--------|-------------------|
+| P0-1 | Console → Sentry Migration | NOT STARTED | 412 statements missing structured logging |
+| P0-2 | Manifest Doc Cleanup | NOT STARTED | Path conflicts causing developer confusion |
+| P0-3 | Manifest HTTP Verification | NOT STARTED | No HTTP-level testing with real auth/tenant/DB |
+
+#### P1 - High (Manifest Completeness)
+
+| # | Feature | Status | Priority Rationale |
+|---|---------|--------|-------------------|
+| P1-1 | Kitchen Ops Rules & Overrides | NOT STARTED | Missing override workflow + audit events |
+| P1-2 | Multi-Entity Runtime | NOT STARTED | Runtime loads only PrepTask IR |
+| P1-3 | Type Generation from IR | NOT STARTED | Manual types cause drift from manifest |
+| P1-4 | Manifest CLI Directory Cleanup | NOT STARTED | Duplicate routes in `/manifest/` vs `/commands/` |
+
+#### P2 - Medium (Feature Specs)
+
+| # | Feature | Status | Spec Location |
+|---|---------|--------|---------------|
+| P2-1 | CRM Client Detail View | NOT STARTED | `specs/crm-client-detail-view_TODO` |
+| P2-2 | Scheduling Shift CRUD | NOT STARTED | `specs/scheduling-shift-crud_TODO` |
+| P2-3 | Inventory Item Management | NOT STARTED | `specs/inventory-item-management_TODO` |
+| P2-4 | Event Budget Tracking | NOT STARTED | `specs/event-budget-tracking_TODO` |
+| P2-5 | Command Board: Entity Cards | NOT STARTED | `specs/command-board-entity-cards_TODO` |
+| P2-6 | Command Board: Persistence | NOT STARTED | `specs/command-board-persistence_TODO` |
+| P2-7 | Command Board: Realtime Sync | NOT STARTED | `specs/command-board-realtime-sync_TODO` |
+| P2-8 | Command Board: Relationship Lines | NOT STARTED | `specs/command-board-relationship-lines_TODO` |
+
+#### P3 - Lower (AI, Integrations, Mobile, Payroll, Warehouse)
+
+| Category | Features | Status | Spec Folder |
+|----------|----------|--------|-------------|
+| **AI** | 4 features | NOT STARTED | `specs/ai-*` |
+| **Communication** | 3 features | NOT STARTED | `specs/email-*`, `specs/sms-*` |
+| **Integrations** | 4 features | NOT STARTED | `specs/*-integration*` |
+| **Mobile** | 3 features | NOT STARTED | `specs/mobile-*` |
+| **Payroll** | 3 features | NOT STARTED | `specs/payroll-*` |
+| **Warehouse** | 3 features | NOT STARTED | `specs/warehouse-*` |
 
 ---
 
-## Implementation Details (Pending Items Only)
+## Implementation Details
 
-### Not Started / Missing:
-
-*None - all features completed*
+See full details for each P0-P1 task in sections below, including:
+- **P0-1**: Commit uncommitted work (recipes, tasks routes, task-card, next.config, manifest scripts)
+- **P0-2**: Console → Sentry migration (412 statements, Sentry init verification, structured logging)
+- **P0-3**: Manifest documentation cleanup (fix path conflicts, archive old plans)
+- **P0-4**: Manifest HTTP verification (test harness, all PrepTask commands, additional entity, CI snapshots)
+- **P1-1**: Kitchen ops rules & overrides (severity model, override workflow, audit events)
+- **P1-2**: Multi-entity runtime (registry pattern, cross-entity constraints, all 6 entities)
+- **P1-3**: Type generation from IR (CLI command, generated types package, route updates)
+- **P1-4**: Manifest CLI directory cleanup (audit manifest/ vs commands/, migrate frontend, remove duplicates)
 
 ---
 
-## Completed Feature Details (Archive)
+## Validation Commands
 
-### 1. Undo/Redo System (1.1) - COMPLETED
-- `apps/app/app/(authenticated)/command-board/lib/undo-manager.ts` - UndoManager class
-- `apps/app/app/(authenticated)/command-board/lib/commands/` - Full command pattern
-- `apps/app/app/(authenticated)/command-board/hooks/use-undo-redo.ts` - React hook
-- Keyboard shortcuts (Ctrl+Z/Ctrl+Y)
-- Undo/Redo buttons in board header toolbar
+```bash
+pnpm install       # Install deps
+pnpm lint          # Biome linting
+pnpm format        # Biome formatting
+pnpm test          # 540 tests
+pnpm build         # 21 tasks
+pnpm boundaries    # Architecture check
+pnpm migrate       # Prisma format + migrate
+```
 
-### 2. Auto-Save/Draft Recovery (1.2) - COMPLETED
-- `apps/app/app/(authenticated)/command-board/hooks/use-auto-save.ts` - Auto-save with 30s debounce
-- `apps/app/app/(authenticated)/command-board/lib/draft-manager.ts` - Uses CommandBoard.tags
-- `apps/app/app/(authenticated)/command-board/components/auto-save-indicator.tsx`
-- `apps/app/app/(authenticated)/command-board/components/draft-recovery-dialog.tsx`
-- API endpoints: `/api/command-board/[boardId]/draft`, `/api/command-board/draft`
+---
 
-### 3. Connection Context Menu (1.3) - COMPLETED
-- ConnectionContextMenu.tsx with edit/delete dialogs
-- onContextMenu handler in connection-lines.tsx
-- Context menu in board-canvas-realtime.tsx with proper positioning
-- Toast notifications for operations
+## Next Steps
 
-### 4. Connection Events (2.1) - COMPLETED
-- `packages/realtime/src/events/connection.ts` - Event definitions
-- Events: `command.board.connection.created`, `.updated`, `.deleted`
-- Added to CommandBoardEvent union type
-- Zod schemas in schemas.ts
-
-### 5. Event Replay System (2.2) - COMPLETED
-- `packages/realtime/src/replay/` - types.ts, index.ts, replay-buffer.ts
-- API: `/api/command-board/[boardId]/replay/route.ts`
-- Hook: `apps/app/app/(authenticated)/command-board/hooks/use-replay-events.ts`
-- Component: `apps/app/app/(authenticated)/command-board/components/replay-indicator.tsx`
-
-### 6. Conflict Resolution (2.3) - COMPLETED
-- `packages/realtime/src/clocks/` - Vector clock implementation
-- Database migration with `vectorClock` and `version` fields
-- `apps/app/app/(authenticated)/command-board/lib/conflict-resolver.ts`
-- API with 409 Conflict responses
-- Hook: `use-conflict-resolution.ts`
-- Conflict resolution dialog component
-
-### 7. Interactive Anchor Points (3.1) - COMPLETED
-- Visual anchor points on card edges (12px handles, 16px hover state)
-- Drag-and-drop connection creation from anchor points
-- Temporary connection line during drag (green for valid, red for invalid)
-- Toggle button in toolbar to show/hide anchor points
-- Integration with existing ConnectionDialog for relationship configuration
-- Duplicate connection prevention logic
-- Keyboard and mouse accessibility (tab navigation, Enter/Space to activate)
-
-### 8. UserPreference Model (4.1) - COMPLETED
-- Database model: `UserPreference` in `packages/database/prisma/schema.prisma`
-- Migration: `20260211000000_add_user_preferences`
-- Server actions: `apps/app/app/(authenticated)/command-board/actions/preferences.ts`
-- API routes: `apps/api/app/api/user-preferences/route.ts`
-- Functions: `getUserPreferences`, `getUserPreference`, `saveUserPreference`, `deleteUserPreference`
-
-### 9. Bulk Edit Command (4.2) - COMPLETED
-- `apps/app/app/(authenticated)/command-board/lib/commands/bulk-edit-command.ts` - BulkEditCommand with undo/redo support
-- `apps/app/app/(authenticated)/command-board/lib/undo-manager.ts` - Added `bulkEditCards` to CommandType union
-- `apps/app/app/(authenticated)/command-board/components/bulk-edit-dialog.tsx` - Updated to use `onBulkUpdate` callback pattern
-- `apps/app/app/(authenticated)/command-board/components/board-canvas-realtime.tsx` - Integrated with `recordAction` for undo/redo support
-- Bulk edit operations now support undo/redo through the snapshot-based system
+1. P0-1: Console → Sentry Migration (focus on kitchen API routes first, then app components)
+2. P0-2: Manifest Documentation Cleanup
+3. P0-3: Manifest HTTP Verification (Phase E)
+4. P1-1: Kitchen Ops Rules & Overrides

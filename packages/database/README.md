@@ -404,10 +404,7 @@ pnpm db:deploy
 # Check migration status
 pnpm migrate:status
 
-# Regenerate Prisma client
-pnpm prisma:generate
-
-# Validate schema/client generation invariant
+# Generate Prisma client and validate schema/client invariant
 pnpm prisma:check
 
 # Format Prisma schema
@@ -543,3 +540,4 @@ All 21 migrations are documented in `docs/database/migrations/`:
 ---
 
 Last updated: 2025-02-07
+

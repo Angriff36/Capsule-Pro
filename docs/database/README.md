@@ -356,7 +356,7 @@ pnpm db:deploy
 pnpm migrate:status
 
 # Regenerate Prisma client
-pnpm prisma:generate
+pnpm prisma:check
 
 # Format Prisma schema
 pnpm --filter @repo/database exec prisma format
@@ -491,3 +491,4 @@ All 21 migrations are documented in `docs/database/migrations/`:
 ---
 
 Last updated: 2025-02-07
+

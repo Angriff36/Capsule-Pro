@@ -45,7 +45,7 @@ pnpm db:deploy
 pnpm migrate:status
 
 # Regenerate Prisma client after migrations
-pnpm prisma:generate
+pnpm prisma:check
 ```
 
 ### Rollback Strategy
@@ -204,7 +204,7 @@ After running a migration, verify:
 
 - [ ] Migration applied successfully (check `pnpm migrate:status`)
 - [ ] `pnpm db:check` passes (no drift)
-- [ ] Prisma client regenerated (`pnpm prisma:generate`)
+- [ ] Prisma client regenerated (`pnpm prisma:check`)
 - [ ] Application starts without errors
 - [ ] Database queries work correctly
 - [ ] RLS policies are active
@@ -260,3 +260,4 @@ After migration, if performance is poor:
 ## Template for New Migrations
 
 Use the template in `../_templates/migration-doc-template.md` when documenting new migrations.
+

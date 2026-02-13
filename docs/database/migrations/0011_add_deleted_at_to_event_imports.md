@@ -175,7 +175,7 @@ WHERE deleted_at IS NULL;
   3. Add restore function (set deleted_at = NULL)
   4. Prevent hard deletes in application code
   5. Update Prisma schema to include deleted_at
-  6. Regenerate Prisma client: `pnpm prisma:generate`
+  6. Regenerate Prisma client: `pnpm prisma:check`
 
 ## Notes
 
@@ -244,3 +244,4 @@ WHERE deleted_at IS NOT NULL;
 - [PostgreSQL Soft Deletes](https://www.postgresql.org/docs/current/ddl-constraints.html)
 - [Partial Indexes](https://www.postgresql.org/docs/current/indexes-partial.html)
 - [Schema Contract: Soft Delete Pattern](docs/legacy-contracts/schema-contract-v2.txt)
+

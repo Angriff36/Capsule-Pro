@@ -258,7 +258,13 @@ export function TaskCard({
         body: JSON.stringify({ status: newStatus }),
       });
       if (!response.ok) {
-        throw new Error("Failed to update task status");
+        // Get actual error details from API
+        const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
+        console.error("Task status update failed:", {
+          status: response.status,
+          error: errorData,
+        });
+        throw new Error(`Failed to update task status: ${JSON.stringify(errorData)}`);
       }
       router.refresh();
     } catch (error) {
