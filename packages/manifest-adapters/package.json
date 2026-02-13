@@ -47,6 +47,7 @@
     "@repo/database": "workspace:*",
     "@repo/realtime": "workspace:*",
     "@manifest/runtime": "workspace:*",
+    "@sentry/nextjs": "^10.38.0",
     "hono": "^4.10.5"
   },
   "devDependencies": {
