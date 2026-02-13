@@ -87,10 +87,6 @@ const rewrites: NextConfig["rewrites"] = async () => {
       destination: `${apiBaseUrl}/api/command-board/:path*`,
     },
     {
-      source: "/api/sales-reporting/:path*",
-      destination: `${apiBaseUrl}/api/sales-reporting/:path*`,
-    },
-    {
       source: "/api/conflicts/:path*",
       destination: `${apiBaseUrl}/api/conflicts/:path*`,
     },
