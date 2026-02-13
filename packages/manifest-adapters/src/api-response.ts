@@ -85,6 +85,10 @@ export interface ApiErrorResponse {
   constraintOutcomes?: ApiConstraintOutcome[];
   /** Additional error context */
   details?: Record<string, unknown>;
+  /** Workflow correlation ID for event grouping */
+  correlationId?: string;
+  /** Workflow causation ID linking to trigger event */
+  causationId?: string;
 }
 
 /**
@@ -98,6 +102,10 @@ export interface ApiSuccessResponse<T = unknown> {
   constraintOutcomes?: ApiConstraintOutcome[];
   /** Emitted events for reactive updates */
   emittedEvents?: EmittedEvent[];
+  /** Workflow correlation ID for event grouping */
+  correlationId?: string;
+  /** Workflow causation ID linking to trigger event */
+  causationId?: string;
 }
 
 /**
@@ -202,6 +210,14 @@ export function apiSuccess<T>(
     response.emittedEvents = result.emittedEvents;
   }
 
+  // Include workflow metadata if present
+  if (result?.correlationId !== undefined) {
+    response.correlationId = result.correlationId;
+  }
+  if (result?.causationId !== undefined) {
+    response.causationId = result.causationId;
+  }
+
   return response;
 }
 
@@ -278,6 +294,14 @@ export function apiError(
         resolved: result.policyDenial.resolved,
       },
     };
+  }
+
+  // Include workflow metadata if present
+  if (result?.correlationId !== undefined) {
+    response.correlationId = result.correlationId;
+  }
+  if (result?.causationId !== undefined) {
+    response.causationId = result.causationId;
   }
 
   return response;

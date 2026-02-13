@@ -95,6 +95,13 @@ export function apiSuccess(data, result) {
     if (result?.emittedEvents && result.emittedEvents.length > 0) {
         response.emittedEvents = result.emittedEvents;
     }
+    // Include workflow metadata if present
+    if (result?.correlationId !== undefined) {
+        response.correlationId = result.correlationId;
+    }
+    if (result?.causationId !== undefined) {
+        response.causationId = result.causationId;
+    }
     return response;
 }
 /**
@@ -162,6 +169,13 @@ export function apiError(message, result, additionalContext) {
                 resolved: result.policyDenial.resolved,
             },
         };
+    }
+    // Include workflow metadata if present
+    if (result?.correlationId !== undefined) {
+        response.correlationId = result.correlationId;
+    }
+    if (result?.causationId !== undefined) {
+        response.causationId = result.causationId;
     }
     return response;
 }

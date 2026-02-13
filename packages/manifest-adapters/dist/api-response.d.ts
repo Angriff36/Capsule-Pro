@@ -58,6 +58,10 @@ export interface ApiErrorResponse {
     constraintOutcomes?: ApiConstraintOutcome[];
     /** Additional error context */
     details?: Record<string, unknown>;
+    /** Workflow correlation ID for event grouping */
+    correlationId?: string;
+    /** Workflow causation ID linking to trigger event */
+    causationId?: string;
 }
 /**
  * Standard success response format
@@ -70,6 +74,10 @@ export interface ApiSuccessResponse<T = unknown> {
     constraintOutcomes?: ApiConstraintOutcome[];
     /** Emitted events for reactive updates */
     emittedEvents?: EmittedEvent[];
+    /** Workflow correlation ID for event grouping */
+    correlationId?: string;
+    /** Workflow causation ID linking to trigger event */
+    causationId?: string;
 }
 /**
  * Union type for all API responses

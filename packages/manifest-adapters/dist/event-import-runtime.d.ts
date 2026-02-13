@@ -28,6 +28,8 @@ export declare function createOrUpdateEvent(engine: RuntimeEngine, eventId: stri
     constraintOutcomes?: ConstraintOutcome[];
     overrideRequests?: OverrideRequest[];
     concurrencyConflict?: ConcurrencyConflict;
+    correlationId?: string;
+    causationId?: string;
     emittedEvents: EmittedEvent[];
 }>;
 /**
