@@ -124,7 +124,13 @@ let nextConfig: NextConfig = withToolbar(
         "recharts",
         "@repo/design-system",
       ],
+      // Reduce server action bundle size
+      serverActions: {
+        bodySizeLimit: "2mb",
+      },
     },
+    // Optimize production builds
+    productionBrowserSourceMaps: false,
     rewrites,
     // Externalize pdfjs-dist, ably, and pdfkit to avoid bundling issues
     // ably: Turbopack + Ably causes keyv dynamic require failures in SSR
@@ -134,9 +140,20 @@ let nextConfig: NextConfig = withToolbar(
       "ably",
       "pdfkit",
       "@capsule-pro/sales-reporting",
+      "@clerk/backend",
     ],
     webpack: (webpackConfig: WebpackConfig, context: WebpackContext) => {
-      if (context.isServer) {
+      // Production optimizations to reduce bundle size and build time
+      if (context.isServer && context.nextRuntime === "nodejs") {
+        // Increase memory limit for production builds
+        if (process.env.NODE_ENV === "production") {
+          webpackConfig.optimization = {
+            ...webpackConfig.optimization,
+            moduleIds: "deterministic",
+            minimize: true,
+          };
+        }
+
         // Externalize pdfjs-dist - use function to catch all nested imports
         const existingExternals = webpackConfig.externals || [];
         const pdfjsExternals = [
