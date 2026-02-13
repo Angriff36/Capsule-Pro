@@ -397,3 +397,4 @@ junit.xml
 # Common tool caches
 **/.jest-cache/
 /.opencode
+sentry-error-CAPSULE-PRO-6-raw.json
