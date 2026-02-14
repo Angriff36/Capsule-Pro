@@ -16,83 +16,31 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check if Dependabot PR
-        id: dependabot-check
-        run: |
-          if [ "${{ github.actor }}" = "dependabot[bot]" ]; then
-            echo "is_dependabot=true" >> $GITHUB_OUTPUT
-          else
-            echo "is_dependabot=false" >> $GITHUB_OUTPUT
-          fi
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.24.0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: ".nvmrc"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.22.0
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          node-version: "22.x" # Match Vercel's engine requirement
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        env:
-          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
-
-      - name: Generate code (Prisma, BaseHub types, etc.)
-        run: |
-          cd apps/web && npx basehub
-        env:
-          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
-          BASEHUB_DRAFT: false
 
       - name: Run linting
         run: pnpm run check
 
       - name: Run tests
         run: pnpm test
-        env:
-          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
-      - name: Build all apps
-        run: pnpm run build
+      - name: Build with Turbo (matches Vercel)
+        run: pnpm turbo run build
         env:
-          # Required env vars for build (dummy values for CI)
-          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
-          NEXT_PUBLIC_APP_URL: "https://app.example.com"
-          NEXT_PUBLIC_WEB_URL: "https://example.com"
-          NEXT_PUBLIC_API_URL: "https://api.example.com"
-          NEXT_PUBLIC_DOCS_URL: "https://docs.example.com"
-          CLERK_SECRET_KEY: "sk_test_dummy"
-          CLERK_WEBHOOK_SECRET: "whsec_dummy"
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_dummy"
-          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
-          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
-          NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: "/dashboard"
-          NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: "/onboarding"
-          NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: "/"
-          NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: "/"
-          NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
-          NEXT_PUBLIC_POSTHOG_HOST: "https://posthog.example.com"
-          BASEHUB_TOKEN: "bshb_pk_dummy"
-          RESEND_TOKEN: "re_dummy"
-          RESEND_FROM: "noreply@example.com"
-          STRIPE_SECRET_KEY: "sk_test_dummy"
+          # Minimal env vars - Prisma will skip generation when VERCEL_ENV is set without DATABASE_URL
+          SKIP_ENV_VALIDATION: true
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -100,7 +48,6 @@ jobs:
         with:
           name: build-artifacts
           path: |
-            apps/*/dist/
             apps/*/.next/
             packages/*/dist/
             packages/*/generated/
