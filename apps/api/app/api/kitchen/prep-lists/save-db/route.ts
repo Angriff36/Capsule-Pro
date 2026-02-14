@@ -1,12 +1,15 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
-import { type NextRequest, NextResponse } from "next/server";
+import { database, Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
  * POST /api/kitchen/prep-lists/save-db
- * Save a generated prep list to the database
+ * Save a generated prep list to the database.
+ *
+ * Migrated from raw SQL INSERT to Prisma ORM with transactional consistency.
+ * Uses a single transaction to create the prep list and all items atomically.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -28,85 +31,56 @@ export async function POST(request: NextRequest) {
     const tenantId = await getTenantIdForOrg(orgId);
 
     try {
-      // Calculate total estimated time
-      const totalEstimatedTime = Math.round(prepList.totalEstimatedTime * 60); // Convert to minutes
+      // Convert hours to minutes
+      const totalEstimatedTime = Math.round(prepList.totalEstimatedTime * 60);
 
-      // Create the prep list
-      const result = await database.$queryRaw<Array<{ id: string }>>`
-        INSERT INTO tenant_kitchen.prep_lists (
-          tenant_id,
-          event_id,
-          name,
-          batch_multiplier,
-          dietary_restrictions,
-          status,
-          total_items,
-          total_estimated_time
-        ) VALUES (
-          ${tenantId},
-          ${eventId},
-          ${name || `${prepList.eventTitle} - Prep List`},
-          ${prepList.batchMultiplier},
-          ${prepList.dietaryRestrictions || []},
-          'draft',
-          ${prepList.totalIngredients},
-          ${totalEstimatedTime}
-        )
-        RETURNING id
-      `;
+      const prepListId = await database.$transaction(async (tx) => {
+        // Create the prep list
+        const created = await tx.prepList.create({
+          data: {
+            tenantId,
+            eventId,
+            name: name || `${prepList.eventTitle} - Prep List`,
+            batchMultiplier: new Prisma.Decimal(prepList.batchMultiplier ?? 1),
+            dietaryRestrictions: prepList.dietaryRestrictions || [],
+            status: "draft",
+            totalItems: prepList.totalIngredients ?? 0,
+            totalEstimatedTime,
+          },
+        });
 
-      const prepListId = result[0].id;
-
-      // Create all prep list items
-      let sortOrder = 0;
-      for (const station of prepList.stationLists) {
-        for (const ingredient of station.ingredients) {
-          await database.$executeRaw`
-            INSERT INTO tenant_kitchen.prep_list_items (
-              tenant_id,
-              prep_list_id,
-              station_id,
-              station_name,
-              ingredient_id,
-              ingredient_name,
-              category,
-              base_quantity,
-              base_unit,
-              scaled_quantity,
-              scaled_unit,
-              is_optional,
-              preparation_notes,
-              allergens,
-              dietary_substitutions,
-              dish_id,
-              dish_name,
-              recipe_version_id,
-              sort_order
-            ) VALUES (
-              ${tenantId},
-              ${prepListId},
-              ${station.stationId},
-              ${station.stationName},
-              ${ingredient.ingredientId},
-              ${ingredient.ingredientName},
-              ${ingredient.category},
-              ${ingredient.baseQuantity},
-              ${ingredient.baseUnit},
-              ${ingredient.scaledQuantity},
-              ${ingredient.scaledUnit},
-              ${ingredient.isOptional},
-              ${ingredient.preparationNotes},
-              ${ingredient.allergens},
-              ${ingredient.dietarySubstitutions},
-              NULL,
-              NULL,
-              NULL,
-              ${sortOrder}
-            )
-          `;
-          sortOrder++;
+        // Create all prep list items in bulk
+        let sortOrder = 0;
+        for (const station of prepList.stationLists) {
+          for (const ingredient of station.ingredients) {
+            await tx.prepListItem.create({
+              data: {
+                tenantId,
+                prepListId: created.id,
+                stationId: station.stationId,
+                stationName: station.stationName,
+                ingredientId: ingredient.ingredientId,
+                ingredientName: ingredient.ingredientName,
+                category: ingredient.category,
+                baseQuantity: new Prisma.Decimal(ingredient.baseQuantity ?? 0),
+                baseUnit: ingredient.baseUnit,
+                scaledQuantity: new Prisma.Decimal(
+                  ingredient.scaledQuantity ?? 0
+                ),
+                scaledUnit: ingredient.scaledUnit,
+                isOptional: ingredient.isOptional ?? false,
+                preparationNotes: ingredient.preparationNotes,
+                allergens: ingredient.allergens ?? [],
+                dietarySubstitutions: ingredient.dietarySubstitutions ?? [],
+                sortOrder,
+              },
+            });
+            sortOrder++;
+          }
         }
-      }
+
+        return created.id;
+      });
 
       return NextResponse.json({
         message: "Prep list saved successfully",
@@ -127,4 +101,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

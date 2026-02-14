@@ -1,15 +1,16 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-
-// Top-level regex for performance
-const PARAM_PLACEHOLDER_REGEX = /\$\d+/;
 
 /**
  * PATCH /api/kitchen/prep-lists/items/[id]
  * Update a prep list item (quantities, completion, etc.)
+ *
+ * Migrated from $queryRawUnsafe (SQL injection risk) to Prisma ORM.
+ * For command-level operations with constraint/guard validation,
+ * use the /commands/* endpoints instead.
  */
 export async function PATCH(
   request: NextRequest,
@@ -27,50 +28,52 @@ export async function PATCH(
     const body = await request.json();
     const { scaledQuantity, isCompleted, preparationNotes, isOptional } = body;
 
-    const updates: string[] = [];
-    const values: (number | boolean | string | Date)[] = [];
+    // Build type-safe update data
+    const data: Prisma.PrepListItemUpdateInput = {};
 
     if (scaledQuantity !== undefined) {
-      updates.push(`scaled_quantity = $${values.length + 1}`);
-      values.push(scaledQuantity);
+      data.scaledQuantity = new Prisma.Decimal(scaledQuantity);
     }
     if (isCompleted !== undefined) {
-      updates.push(`is_completed = $${values.length + 1}`);
-      values.push(isCompleted);
+      data.isCompleted = isCompleted;
       if (isCompleted) {
-        updates.push(`completed_at = $${values.length + 1}`);
-        values.push(new Date());
-        updates.push(`completed_by = $${values.length + 1}`);
-        values.push(userId);
+        data.completedAt = new Date();
+        data.completedBy = userId;
       } else {
-        updates.push("completed_at = NULL");
-        updates.push("completed_by = NULL");
+        data.completedAt = null;
+        data.completedBy = null;
       }
     }
     if (preparationNotes !== undefined) {
-      updates.push(`preparation_notes = $${values.length + 1}`);
-      values.push(preparationNotes);
+      data.preparationNotes = preparationNotes;
     }
     if (isOptional !== undefined) {
-      updates.push(`is_optional = $${values.length + 1}`);
-      values.push(isOptional);
+      data.isOptional = isOptional;
     }
 
-    if (updates.length === 0) {
+    if (Object.keys(data).length === 0) {
       return NextResponse.json(
         { error: "No fields to update" },
         { status: 400 }
       );
     }
 
-    // Build dynamic SQL for updates
-    const updateClause = updates
-      .map((u, i) => u.replace(PARAM_PLACEHOLDER_REGEX, `$${i + 1}`))
-      .join(", ");
-    const valuesArray = [...values, tenantId, id];
-    const sql = `UPDATE tenant_kitchen.prep_list_items SET ${updateClause} WHERE tenant_id = $${updates.length + 1} AND id = $${updates.length + 2} AND deleted_at IS NULL`;
+    // Verify the item exists and belongs to this tenant
+    const existing = await database.prepListItem.findFirst({
+      where: { tenantId, id, deletedAt: null },
+    });
 
-    await database.$queryRawUnsafe(sql, valuesArray);
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Prep list item not found" },
+        { status: 404 }
+      );
+    }
+
+    await database.prepListItem.update({
+      where: { tenantId_id: { tenantId, id } },
+      data,
+    });
 
     return NextResponse.json({
       message: "Prep list item updated successfully",
@@ -86,7 +89,9 @@ export async function PATCH(
 
 /**
  * DELETE /api/kitchen/prep-lists/items/[id]
- * Delete a prep list item (soft delete)
+ * Soft-delete a prep list item.
+ *
+ * Migrated from raw $executeRaw to Prisma ORM.
  */
 export async function DELETE(
   _request: NextRequest,
@@ -102,13 +107,10 @@ export async function DELETE(
     const tenantId = await getTenantIdForOrg(orgId);
     const { id } = await params;
 
-    await database.$executeRaw`
-      UPDATE tenant_kitchen.prep_list_items
-      SET deleted_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${id}
-        AND deleted_at IS NULL
-    `;
+    await database.prepListItem.updateMany({
+      where: { tenantId, id, deletedAt: null },
+      data: { deletedAt: new Date() },
+    });
 
     return NextResponse.json({
       message: "Prep list item deleted successfully",

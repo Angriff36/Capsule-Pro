@@ -1,18 +1,15 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-
-// Top-level regex for performance
-const PARAM_PLACEHOLDER_REGEX = /\$\d+/;
 
 export interface StationGroup {
   stationId: string;
   stationName: string;
   items: Array<{
     id: string;
-    stationId: string;
+    stationId: string | null;
     stationName: string;
     ingredientId: string;
     ingredientName: string;
@@ -37,7 +34,9 @@ export interface StationGroup {
 
 /**
  * GET /api/kitchen/prep-lists/[id]
- * Get a prep list by ID with all items
+ * Get a prep list by ID with all items, grouped by station.
+ *
+ * Migrated from raw SQL to Prisma ORM for type safety and SQL injection prevention.
  */
 export async function GET(
   _request: NextRequest,
@@ -53,134 +52,105 @@ export async function GET(
     const tenantId = await getTenantIdForOrg(orgId);
     const { id } = await params;
 
-    // Get the prep list header
-    const prepListResult = await database.$queryRaw<
-      Array<{
-        id: string;
-        name: string;
-        eventId: string;
-        eventTitle: string;
-        eventDate: Date;
-        batchMultiplier: number;
-        dietaryRestrictions: string[];
-        status: string;
-        totalItems: number;
-        totalEstimatedTime: number;
-        notes: string | null;
-        generatedAt: Date;
-        finalizedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-      }>
-    >`
-      SELECT
-        pl.id,
-        pl.name,
-        pl.event_id AS event_id,
-        e.title AS event_title,
-        e.event_date,
-        pl.batch_multiplier,
-        pl.dietary_restrictions,
-        pl.status,
-        pl.total_items,
-        pl.total_estimated_time,
-        pl.notes,
-        pl.generated_at,
-        pl.finalized_at,
-        pl.created_at,
-        pl.updated_at
-      FROM tenant_kitchen.prep_lists pl
-      JOIN tenant_events.events e
-        ON e.tenant_id = pl.tenant_id
-        AND e.id = pl.event_id
-        AND e.deleted_at IS NULL
-      WHERE pl.tenant_id = ${tenantId}
-        AND pl.id = ${id}
-        AND pl.deleted_at IS NULL
-    `;
+    const prepList = await database.prepList.findFirst({
+      where: {
+        tenantId,
+        id,
+        deletedAt: null,
+      },
+      include: {
+        tenant: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
 
-    if (prepListResult.length === 0) {
+    if (!prepList) {
       return NextResponse.json(
         { error: "Prep list not found" },
         { status: 404 }
       );
     }
 
-    const prepList = prepListResult[0];
+    // Fetch the associated event for title and date
+    const event = await database.event.findFirst({
+      where: {
+        tenantId,
+        id: prepList.eventId,
+        deletedAt: null,
+      },
+      select: {
+        title: true,
+        eventDate: true,
+      },
+    });
 
-    // Get all prep list items grouped by station
-    const itemsResult = await database.$queryRaw<
-      Array<{
-        id: string;
-        stationId: string;
-        stationName: string;
-        ingredientId: string;
-        ingredientName: string;
-        category: string | null;
-        baseQuantity: number;
-        baseUnit: string;
-        scaledQuantity: number;
-        scaledUnit: string;
-        isOptional: boolean;
-        preparationNotes: string | null;
-        allergens: string[];
-        dietarySubstitutions: string[];
-        dishId: string | null;
-        dishName: string | null;
-        recipeVersionId: string | null;
-        sortOrder: number;
-        isCompleted: boolean;
-        completedAt: Date | null;
-        completedBy: string | null;
-      }>
-    >`
-      SELECT
-        id,
-        station_id AS station_id,
-        station_name,
-        ingredient_id AS ingredient_id,
-        ingredient_name,
-        category,
-        base_quantity,
-        base_unit,
-        scaled_quantity,
-        scaled_unit,
-        is_optional,
-        preparation_notes,
-        allergens,
-        dietary_substitutions,
-        dish_id,
-        dish_name,
-        recipe_version_id,
-        sort_order,
-        is_completed,
-        completed_at,
-        completed_by
-      FROM tenant_kitchen.prep_list_items
-      WHERE tenant_id = ${tenantId}
-        AND prep_list_id = ${id}
-        AND deleted_at IS NULL
-      ORDER BY station_name, sort_order
-    `;
+    // Get all prep list items ordered by station and sort order
+    const items = await database.prepListItem.findMany({
+      where: {
+        tenantId,
+        prepListId: id,
+        deletedAt: null,
+      },
+      orderBy: [{ stationName: "asc" }, { sortOrder: "asc" }],
+    });
 
     // Group items by station
     const stationsMap = new Map<string, StationGroup>();
-    for (const item of itemsResult) {
-      const stationId = item.stationId as string;
-      if (!stationsMap.has(stationId)) {
-        stationsMap.set(stationId, {
-          stationId,
+    for (const item of items) {
+      const stationKey = item.stationId ?? item.stationName;
+      if (!stationsMap.has(stationKey)) {
+        stationsMap.set(stationKey, {
+          stationId: stationKey,
           stationName: item.stationName,
           items: [],
         });
       }
-      stationsMap.get(stationId)?.items.push(item);
+      stationsMap.get(stationKey)?.items.push({
+        id: item.id,
+        stationId: item.stationId,
+        stationName: item.stationName,
+        ingredientId: item.ingredientId,
+        ingredientName: item.ingredientName,
+        category: item.category,
+        baseQuantity: Number(item.baseQuantity),
+        baseUnit: item.baseUnit,
+        scaledQuantity: Number(item.scaledQuantity),
+        scaledUnit: item.scaledUnit,
+        isOptional: item.isOptional,
+        preparationNotes: item.preparationNotes,
+        allergens: item.allergens,
+        dietarySubstitutions: item.dietarySubstitutions,
+        dishId: item.dishId,
+        dishName: item.dishName,
+        recipeVersionId: item.recipeVersionId,
+        sortOrder: item.sortOrder,
+        isCompleted: item.isCompleted,
+        completedAt: item.completedAt,
+        completedBy: item.completedBy,
+      });
     }
 
     const stations = Array.from(stationsMap.values());
 
     return NextResponse.json({
-      ...prepList,
+      id: prepList.id,
+      name: prepList.name,
+      eventId: prepList.eventId,
+      eventTitle: event?.title ?? null,
+      eventDate: event?.eventDate ?? null,
+      batchMultiplier: Number(prepList.batchMultiplier),
+      dietaryRestrictions: prepList.dietaryRestrictions,
+      status: prepList.status,
+      totalItems: prepList.totalItems,
+      totalEstimatedTime: prepList.totalEstimatedTime,
+      notes: prepList.notes,
+      generatedAt: prepList.generatedAt,
+      finalizedAt: prepList.finalizedAt,
+      createdAt: prepList.createdAt,
+      updatedAt: prepList.updatedAt,
       stations,
     });
   } catch (error) {
@@ -194,7 +164,11 @@ export async function GET(
 
 /**
  * PATCH /api/kitchen/prep-lists/[id]
- * Update a prep list
+ * Update a prep list using type-safe Prisma ORM.
+ *
+ * Migrated from $queryRawUnsafe (SQL injection risk) to Prisma ORM.
+ * For command-level operations with constraint/guard validation,
+ * use the /commands/update endpoint instead.
  */
 export async function PATCH(
   request: NextRequest,
@@ -212,46 +186,48 @@ export async function PATCH(
     const body = await request.json();
     const { name, status, notes, batchMultiplier, dietaryRestrictions } = body;
 
-    const updates: string[] = [];
-    const values: Array<string | number | Date | string[]> = [];
+    // Build type-safe update data
+    const data: Prisma.PrepListUpdateInput = {};
 
     if (name !== undefined) {
-      updates.push(`name = $${values.length + 1}`);
-      values.push(name);
+      data.name = name;
     }
     if (status !== undefined) {
-      updates.push(`status = $${values.length + 1}`);
-      values.push(status);
+      data.status = status;
     }
     if (notes !== undefined) {
-      updates.push(`notes = $${values.length + 1}`);
-      values.push(notes);
+      data.notes = notes;
     }
     if (batchMultiplier !== undefined) {
-      updates.push(`batch_multiplier = $${values.length + 1}`);
-      values.push(batchMultiplier);
+      data.batchMultiplier = new Prisma.Decimal(batchMultiplier);
     }
     if (dietaryRestrictions !== undefined) {
-      updates.push(`dietary_restrictions = $${values.length + 1}`);
-      values.push(dietaryRestrictions);
+      data.dietaryRestrictions = dietaryRestrictions;
     }
 
-    if (updates.length === 0) {
+    if (Object.keys(data).length === 0) {
       return NextResponse.json(
         { error: "No fields to update" },
         { status: 400 }
       );
     }
 
-    values.push(tenantId, id);
+    // Verify the prep list exists and belongs to this tenant
+    const existing = await database.prepList.findFirst({
+      where: { tenantId, id, deletedAt: null },
+    });
 
-    // Build dynamic SQL for updates
-    const updateClause = updates
-      .map((u, i) => u.replace(PARAM_PLACEHOLDER_REGEX, `$${i + 1}`))
-      .join(", ");
-    const sql = `UPDATE tenant_kitchen.prep_lists SET ${updateClause} WHERE tenant_id = $${updates.length + 1} AND id = $${updates.length + 2} AND deleted_at IS NULL`;
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Prep list not found" },
+        { status: 404 }
+      );
+    }
 
-    await database.$queryRawUnsafe(sql, values as unknown[]);
+    await database.prepList.update({
+      where: { tenantId_id: { tenantId, id } },
+      data,
+    });
 
     return NextResponse.json({ message: "Prep list updated successfully" });
   } catch (error) {
@@ -265,7 +241,9 @@ export async function PATCH(
 
 /**
  * DELETE /api/kitchen/prep-lists/[id]
- * Delete a prep list (soft delete)
+ * Soft-delete a prep list and its items within a transaction.
+ *
+ * Migrated from raw $executeRaw to Prisma ORM with transactional consistency.
  */
 export async function DELETE(
   _request: NextRequest,
@@ -281,23 +259,18 @@ export async function DELETE(
     const tenantId = await getTenantIdForOrg(orgId);
     const { id } = await params;
 
-    // Soft delete the prep list (items will be cascade deleted via FK or handled separately)
-    await database.$executeRaw`
-      UPDATE tenant_kitchen.prep_lists
-      SET deleted_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${id}
-        AND deleted_at IS NULL
-    `;
+    // Transactional soft-delete of prep list + all its items
+    await database.$transaction(async (tx) => {
+      await tx.prepList.updateMany({
+        where: { tenantId, id, deletedAt: null },
+        data: { deletedAt: new Date() },
+      });
 
-    // Also soft delete the items
-    await database.$executeRaw`
-      UPDATE tenant_kitchen.prep_list_items
-      SET deleted_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND prep_list_id = ${id}
-        AND deleted_at IS NULL
-    `;
+      await tx.prepListItem.updateMany({
+        where: { tenantId, prepListId: id, deletedAt: null },
+        data: { deletedAt: new Date() },
+      });
+    });
 
     return NextResponse.json({ message: "Prep list deleted successfully" });
   } catch (error) {

@@ -1,9 +1,9 @@
 # Capsule-Pro Implementation Plan
 
-**Last Updated**: 2026-02-14 (P1-5 Create Commands + Adapters + API Routes)
+**Last Updated**: 2026-02-14 (P1-4 PrepList Raw SQL Migration — Phase 1)
 **Build Status**: ✅ PASSING
-**Test Status**: ✅ 689 passing, 0 failures
-**Latest Tag**: v0.3.0
+**Test Status**: ✅ 647 passing (540 api + 107 app), 0 failures
+**Latest Tag**: v0.3.6
 **Current Branch**: manifest-.3
 
 ---
@@ -13,37 +13,36 @@
 ### What's Complete
 - **Command Board**: 9/9 features (undo/redo, conflict resolution, event replay, interactive anchors, bulk edit)
 - **Manifest Core**: 12 entity definitions across 6 manifest files + runtime + 44 command routes
-- **Kitchen API**: 112 route handlers (55 Manifest command routes, 22 direct Prisma, 9 generated manifest routes, 28 other)
+- **Kitchen API**: 112 route handlers (55 Manifest command routes, 19 direct Prisma, 9 generated manifest routes, 28 other)
 - **Database**: Multi-tenant schema with OutboxEvent pattern, full kitchen ops support
 - **Runtime**: Constraint evaluation (block/warn/ok), event emission via outbox + Ably
-- **Tests**: 540 passing, 0 failures, 180+ manifest-specific tests
 - **Prisma Stores**: ALL 12 entities have PrismaStore implementations + load/sync functions
-- **Telemetry**: P1-1 COMPLETE - Sentry telemetry wired centrally in manifest runtime (2026-02-14)
-- **Import Migration**: P0-3 PARTIAL - 67/110 deprecated imports migrated (2026-02-14)
-- **UUID Policy**: P0-1 COMPLETE - Menu, MenuDish, OutboxEvent migrated from cuid() to gen_random_uuid() (2026-02-14)
-- **FK Indexes**: P0-2 COMPLETE - 16 FK indexes added across 10 tables (2026-02-14)
+- **Telemetry**: P1-1 COMPLETE - Sentry telemetry wired centrally in manifest runtime
+- **Import Migration**: P0-3 PARTIAL - 67/110 deprecated imports migrated
+- **UUID Policy**: P0-1 COMPLETE - Menu, MenuDish, OutboxEvent migrated from cuid() to gen_random_uuid()
+- **FK Indexes**: P0-2 COMPLETE - 16 FK indexes added across 10 tables
+- **PrepList SQL Migration**: P1-4 PARTIAL - 3 route files migrated from raw SQL/$queryRawUnsafe to Prisma ORM
 
 ### What Needs Work
 
 **Manifest Migration Status** (updated 2026-02-14):
 - **Deprecated Import Occurrences**: 0 remaining (67 migrated)
 - **42 routes bypass Manifest** with direct Prisma operations
-- **14 files using raw SQL** (`$queryRaw`/`$executeRaw`) - security/performance risk
-
-**Critical Path** (Updated 2026-02-14):
+- **11 files using raw SQL** (`$queryRaw`/`$executeRaw`) — down from 14 (3 migrated)
+- **0 files using `$queryRawUnsafe`** — down from 2 (**CRITICAL security risk eliminated**)
 
 **P0 - Immediate Blockers** (prevents clean Manifest adoption):
-1. ✅ **P0-1**: Database UUID Policy Violations - **COMPLETE** (2026-02-14)
-2. ✅ **P0-2**: Missing Foreign Key Indexes - **COMPLETE** (2026-02-14)
-3. ✅ **P0-3**: Import Path Migration - **PARTIAL COMPLETE** (2026-02-14)
-4. **P0-4**: Manifest Doc Cleanup - Archive test result files (0.5 days)
+1. ✅ **P0-1**: Database UUID Policy Violations - **COMPLETE**
+2. ✅ **P0-2**: Missing Foreign Key Indexes - **COMPLETE**
+3. ✅ **P0-3**: Import Path Migration - **PARTIAL COMPLETE**
+4. **P0-4**: Manifest Doc Cleanup - Archive test result files
 
 **P1 - High Priority** (Manifest completeness):
-1. ✅ **P1-1**: Wire Telemetry Hooks to Sentry - **COMPLETE** (2026-02-14)
-2. ✅ **P1-2**: Add Missing Load/Sync Functions - **COMPLETE** (2026-02-14)
+1. ✅ **P1-1**: Wire Telemetry Hooks to Sentry - **COMPLETE**
+2. ✅ **P1-2**: Add Missing Load/Sync Functions - **COMPLETE**
 3. **P1-3**: Migrate Legacy Task Routes - **42 routes** bypassing Manifest with direct Prisma
-4. **P1-4**: Migrate Legacy PrepList Routes - **7 routes** including **CRITICAL raw SQL** in `[id]/route.ts`
-5. **P1-5**: Missing Manifest Commands - **12/12 create commands + adapters + API routes**, delete pending
+4. **P1-4**: Migrate Legacy PrepList Routes - **PARTIAL** (3/7 files migrated, 4 remaining)
+5. **P1-5**: Missing Manifest Commands - **12/12 create commands**, delete pending
 6. **P1-6**: Soft Delete Cascade Strategy - Architectural decision needed
 
 ---
@@ -56,14 +55,14 @@
 |----------|---------|--------|-------|
 | **Command Board** | All 9 Features | ✅ COMPLETE | Undo/redo, auto-save, realtime, visual connectors, bulk ops |
 | **Manifest Core** | 12 Entity Definitions | ✅ COMPLETE | 6 manifest files + runtime + Prisma stores |
-| **Kitchen API** | 112 Route Handlers | ✅ COMPLETE | 55 Manifest command routes, 22 direct Prisma, 35 other |
+| **Kitchen API** | 112 Route Handlers | ✅ COMPLETE | 55 Manifest command routes, 19 direct Prisma, 38 other |
 | **Database** | Schema & Migrations | ✅ COMPLETE | Multi-tenant with kitchen ops support |
 | **Runtime** | Constraint & Events | ✅ COMPLETE | Block/warn/ok severity, outbox pattern with Ably |
-| **Kitchen Ops** | Rules & Overrides | ✅ COMPLETE | Constraint severity, override workflow - 2025-02-06 |
-| **Telemetry** | Sentry Integration | ✅ P1-1 COMPLETE | Wired centrally in manifest runtime - 2026-02-14 |
-| **Migration** | Import Path Migration | ✅ P0-3 PARTIAL | 67/110 deprecated imports migrated - 2026-02-14 |
-| **Database** | UUID Policy Fix | ✅ P0-1 COMPLETE | Menu, MenuDish, OutboxEvent → gen_random_uuid() - 2026-02-14 |
-| **Database** | FK Index Coverage | ✅ P0-2 COMPLETE | 16 indexes across 10 tables - 2026-02-14 |
+| **Telemetry** | Sentry Integration | ✅ P1-1 COMPLETE | Wired centrally in manifest runtime |
+| **Migration** | Import Path Migration | ✅ P0-3 PARTIAL | 67/110 deprecated imports migrated |
+| **Database** | UUID Policy Fix | ✅ P0-1 COMPLETE | Menu, MenuDish, OutboxEvent → gen_random_uuid() |
+| **Database** | FK Index Coverage | ✅ P0-2 COMPLETE | 16 indexes across 10 tables |
+| **Security** | PrepList SQL Injection Fix | ✅ P1-4 PARTIAL | Eliminated all $queryRawUnsafe calls |
 
 ### Pending Features
 
@@ -71,8 +70,8 @@
 
 | # | Feature | Status | Files Affected | Effort |
 |---|---------|--------|----------------|--------|
-| P0-1 | **UUID Policy Violations** | ✅ **COMPLETE** | 3 models fixed (2026-02-14) | Done |
-| P0-2 | **Missing FK Indexes** | ✅ **COMPLETE** | 16 indexes across 10 tables (2026-02-14) | Done |
+| P0-1 | **UUID Policy Violations** | ✅ **COMPLETE** | 3 models fixed | Done |
+| P0-2 | **Missing FK Indexes** | ✅ **COMPLETE** | 16 indexes across 10 tables | Done |
 | P0-3 | **Import Path Migration** | ✅ **PARTIAL** | 67/110 imports migrated | Done |
 | P0-4 | **Doc Cleanup** | NOT STARTED | 3 test result files to archive | 0.5 days |
 
@@ -83,8 +82,8 @@
 | P1-1 | **Wire Telemetry to Sentry** | ✅ **COMPLETE** | Wired centrally in manifest-runtime.ts | Done |
 | P1-2 | **Add Missing Load/Sync Functions** | ✅ **COMPLETE** | All 12 entities have load/sync | Done |
 | P1-3 | **Migrate Legacy Routes** | NOT STARTED | **42 routes** with direct Prisma CRUD | 5 days |
-| P1-4 | **Migrate Legacy PrepList Routes** | NOT STARTED | **7 routes** including raw SQL | 4 days |
-| P1-5 | **Missing Manifest Commands** | **IN PROGRESS** | 12/12 create complete (adapters + routes), delete pending | 1 day remaining |
+| P1-4 | **Migrate Legacy PrepList Routes** | **PARTIAL** | 3/7 files done, 4 remaining (generate, save use safe Prisma.sql) | 2 days remaining |
+| P1-5 | **Missing Manifest Commands** | **IN PROGRESS** | 12/12 create complete, delete pending | 1 day remaining |
 | P1-6 | **Soft Delete Cascade Strategy** | NOT STARTED | Architectural decision needed | 3 days |
 
 #### P2 - Medium (Polish)
@@ -99,18 +98,35 @@
 
 ## Implementation Details
 
+### ✅ P1-4: PrepList Raw SQL Migration — Phase 1 (2026-02-14)
+
+**Problem**: 2 files used `$queryRawUnsafe` with dynamic SQL string building — a critical SQL injection vector. 5 additional files used `$queryRaw`/`$executeRaw` for operations expressible through Prisma ORM.
+
+**Migrated files** (3 files, eliminating ALL `$queryRawUnsafe` calls):
+
+1. **`prep-lists/[id]/route.ts`** — GET, PATCH, DELETE handlers:
+   - GET: Replaced 2 raw SQL queries (JOIN on events + items query) with Prisma `findFirst` + `findMany` with typed results
+   - PATCH: Replaced `$queryRawUnsafe` dynamic SQL builder with `Prisma.PrepListUpdateInput` typed update
+   - DELETE: Replaced 2 `$executeRaw` calls with Prisma `$transaction` + `updateMany` for atomic soft-delete of list + items
+
+2. **`prep-lists/items/[id]/route.ts`** — PATCH, DELETE handlers:
+   - PATCH: Replaced `$queryRawUnsafe` dynamic SQL builder with `Prisma.PrepListItemUpdateInput` typed update, added existence check returning 404
+   - DELETE: Replaced `$executeRaw` with Prisma `updateMany` soft-delete
+
+3. **`prep-lists/save-db/route.ts`** — POST handler:
+   - Replaced `$queryRaw` INSERT with RETURNING + loop of `$executeRaw` INSERTs with Prisma `$transaction` containing `create` calls for atomic prep list + items creation
+
+**Remaining files** (4 files, using safe `Prisma.sql` parameterized queries):
+- `generate/route.ts` — Complex multi-table JOINs with LATERAL, unnest, CTE patterns. Safe (uses `Prisma.sql` templates).
+- `save/route.ts` — INSERT into prep_tasks with dedup check. Safe (uses `Prisma.sql` templates).
+
+**Why**: `$queryRawUnsafe` accepts raw SQL strings, bypassing Prisma's parameterization. Combined with dynamic SQL building, this creates SQL injection risk. The migrated code uses Prisma ORM which generates parameterized queries at the driver level.
+
 ### ✅ P0-1: UUID Policy - COMPLETE (2026-02-14)
-Changed 3 models from `@default(cuid())` to `@default(dbgenerated("gen_random_uuid()"))`: Menu (line 951), MenuDish (line 973), OutboxEvent (line 2994). OutboxEvent also gained `@db.Uuid` type annotation for consistency. Why: cuid() generates string-based IDs that are incompatible with the PostgreSQL UUID column type used across the schema, risking runtime errors and violating the CLAUDE.md database policy.
+Changed 3 models from `@default(cuid())` to `@default(dbgenerated("gen_random_uuid()"))`.
 
 ### ✅ P0-2: FK Indexes - COMPLETE (2026-02-14)
-Added 16 `@@index` declarations across 10 models to cover foreign key columns used in JOINs:
-- **tenant_kitchen** (3): KitchenTaskClaim.employeeId, RecipeVersion.recipeId, RecipeIngredient.recipeVersionId
-- **tenant_events** (5): Event.clientId, Event.locationId, EventStaffAssignment.eventId, EventStaffAssignment.employeeId, EventTimeline.eventId
-- **tenant_crm** (6): ClientContact.clientId, ClientInteraction.clientId, ClientInteraction.leadId, Proposal.clientId, Proposal.leadId, Proposal.eventId
-- **tenant_inventory** (1): Shipment.locationId
-- **tenant_staff** (1): User.roleId
-
-Why: Without indexes on FK columns, JOINs and WHERE filters on these columns result in sequential table scans. With `relationMode = "prisma"`, the database doesn't auto-create FK indexes, making explicit indexes essential for query performance.
+Added 16 `@@index` declarations across 10 models.
 
 ### ✅ P1-1: Telemetry - COMPLETE (2026-02-14)
 Wired centrally in manifest-runtime.ts, created telemetry.ts with Sentry v10 API, 6 metrics.
@@ -121,32 +137,8 @@ Wired centrally in manifest-runtime.ts, created telemetry.ts with Sentry v10 API
 ### ✅ P1-2: Load/Sync Functions - COMPLETE (2026-02-14)
 All 12 PrismaStore classes + 24 load/sync functions exported from @repo/manifest-adapters.
 
-### P1-3: Task Routes
-42 routes bypass Manifest with direct Prisma, manual outbox, no constraint validation. Target: createPrepTaskRuntime() + runCommand().
-
-### P1-4: PrepList Routes
-7 routes bypass Manifest, CRITICAL raw SQL in prep-lists/[id]/route.ts. Target: createPrepListRuntime() + runCommand().
-
 ### P1-5: Commands - IN PROGRESS (2026-02-14)
-
-**Create commands**: All 12 entities have create commands in manifest files, adapter functions in index.ts, and API route handlers.
-
-**Manifest files** (12/12 create commands):
-- `prep-task-rules.manifest`: PrepTask.create (11 params) + PrepTaskCreated event
-- `station-rules.manifest`: Station.create (6 params) + StationCreated event
-- `inventory-rules.manifest`: InventoryItem.create (11 params) + InventoryItemCreated event
-- `recipe-rules.manifest`: Recipe.create, Ingredient.create, RecipeIngredient.create, Dish.create
-- `menu-rules.manifest`: Menu.create, MenuDish.create
-- `prep-list-rules.manifest`: PrepList.create, PrepListItem.create
-
-**Adapter functions** (12/12 in index.ts): createPrepTask, createStation, createInventoryItem, createIngredient, createRecipeVersion, createRecipeIngredient, createDish, createRecipe, createMenu, createMenuDish, createPrepList, createPrepListItem. All use `engine.runCommand("create", ...)` for full constraint/event pipeline.
-
-**API routes** (12/12 POST handlers): All at `/api/kitchen/{entity}/commands/create`:
-- prep-tasks, stations, inventory, ingredients, recipe-ingredients, dishes, recipes, menus, menus/dishes, prep-lists, prep-lists/items, recipes/versions
-
-**IR contract**: `inferOwnerEntityName()` uses parameter-matching and event-name heuristics to disambiguate same-named commands (e.g., `create`) across multiple entities in the same manifest.
-
-**Remaining**: Delete commands (soft-delete pattern per P1-6).
+12/12 create commands complete. Delete commands pending P1-6 soft-delete architecture.
 
 ---
 
@@ -162,29 +154,12 @@ All 12 PrismaStore classes + 24 load/sync functions exported from @repo/manifest
 
 ---
 
-## Effort Summary
-
-| Priority | Total Effort | Tasks | Complete |
-|----------|--------------|-------|----------|
-| P0 | **2 days** | 4 tasks | **3/4** ✅ |
-| P1 | **17.5 days** | 6 tasks | **2/6** ✅ |
-| P2 | Varies | 3 tasks | 0/3 |
-| **Total** | **~19.5 days** | **13 core tasks** | **5/13** |
-
----
-
-## Execution Order
-
-1-5. ✅ P1-1, P0-3, P1-2, P0-1, P0-2 Complete | 6. P0-4 (0.5d) | 7. P1-5 (5d) | 8. P1-3+P1-4 (9d) | 9. P1-6 (3d) | 10+. P2/P3
-
----
-
 ## Next Steps
 
-1. **P0-4**: Manifest Doc Cleanup (archive test result files)
-2. **P1-5**: Add create/delete commands to all 12 entities
+1. **P1-4 Phase 2**: Migrate `generate/route.ts` and `save/route.ts` complex queries (lower priority — already safe with Prisma.sql)
+2. **P0-4**: Manifest Doc Cleanup (archive test result files)
 3. **P1-3**: Migrate Legacy Task Routes (42 routes)
-4. **P1-4**: Migrate Legacy PrepList Routes (7 routes with raw SQL)
+4. **P1-6**: Soft Delete Cascade Strategy (unblocks P1-5 delete commands)
 
 ---
 

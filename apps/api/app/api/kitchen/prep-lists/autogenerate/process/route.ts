@@ -10,8 +10,8 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { processPendingPrepListGenerations } from "@repo/manifest-adapters";
-import { NextResponse } from "next/server";
 import { captureException } from "@sentry/nextjs";
+import { NextResponse } from "next/server";
 
 /**
  * Process pending prep list generation requests
@@ -92,4 +92,3 @@ export async function GET() {
     );
   }
 }
-
