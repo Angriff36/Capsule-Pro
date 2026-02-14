@@ -4,14 +4,24 @@ declare global {
   interface Liveblocks {
     // Each user's Presence, for useMyPresence, useOthers, etc.
     Presence: {
-      // Example, real-time cursor coordinates
       cursor: { x: number; y: number } | null;
+      selectedCardId: string | null;
+      isDragging: boolean;
     };
 
     // The Storage tree for the room, for useMutation, useStorage, etc.
     Storage: {
-      // Example, a conflict-free list
-      // animals: LiveList<string>;
+      cards: import("@liveblocks/client").LiveMap<
+        string,
+        {
+          id: string;
+          x: number;
+          y: number;
+          width: number;
+          height: number;
+          zIndex: number;
+        }
+      >;
     };
 
     // Custom user info set when authenticating with a secret key
@@ -25,23 +35,32 @@ declare global {
     };
 
     // Custom events, for useBroadcastEvent, useEventListener
-    RoomEvent: {};
-    // Example has two events, using a union
-    // | { type: "PLAY" }
-    // | { type: "REACTION"; emoji: "🔥" };
+    RoomEvent:
+      | {
+          type: "CARD_ADDED";
+          cardId: string;
+        }
+      | {
+          type: "CARD_DELETED";
+          cardId: string;
+        }
+      | {
+          type: "CARD_UPDATED";
+          cardId: string;
+        }
+      | {
+          type: "CARD_MOVED";
+          cardId: string;
+          x: number;
+          y: number;
+        };
 
     // Custom metadata set on threads, for useThreads, useCreateThread, etc.
-    ThreadMetadata: {
-      // Example, attaching coordinates to a thread
-      // x: number;
-      // y: number;
-    };
+    ThreadMetadata: {};
 
     // Custom room info set with resolveRoomsInfo, for useRoomInfo
     RoomInfo: {
-      // Example, rooms with a title and url
-      // title: string;
-      // url: string;
+      title?: string;
     };
   }
 }

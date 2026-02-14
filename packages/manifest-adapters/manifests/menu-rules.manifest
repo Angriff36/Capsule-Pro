@@ -1,0 +1,187 @@
+// Kitchen Ops - Menu Rules
+// Manifest spec for menu operations with constraints, guards, and events
+
+entity Menu {
+  property required id: string
+  property required tenantId: string
+  property required name: string
+  property description: string = ""
+  property category: string = ""
+  property isActive: boolean = true
+  property basePrice: number = 0
+  property pricePerPerson: number = 0
+  property minGuests: number = 0
+  property maxGuests: number = 0
+
+  computed hasPricePerPerson: boolean = self.pricePerPerson > 0
+  computed hasGuestConstraints: boolean = self.minGuests > 0 or self.maxGuests > 0
+  computed guestRangeValid: boolean = self.maxGuests >= self.minGuests
+
+  constraint validName: self.name != null and self.name != "" "Menu name is required"
+  constraint validGuestRange: self.maxGuests >= self.minGuests "Maximum guests must be >= minimum guests"
+  constraint positiveMinGuests: self.minGuests >= 0 "Minimum guests must be non-negative"
+  constraint positivePrices: self.basePrice >= 0 and self.pricePerPerson >= 0 "Prices must be non-negative"
+
+  constraint warnZeroPrice:warn self.pricePerPerson == 0 and self.basePrice == 0 {
+    messageTemplate: "Menu has no pricing set (base price and price per person are both 0)"
+    details: {
+      basePrice: self.basePrice
+      pricePerPerson: self.pricePerPerson
+    }
+  }
+
+  constraint warnSmallGuestRange:warn self.maxGuests > 0 and (self.maxGuests - self.minGuests) < 10 {
+    messageTemplate: "Menu has narrow guest range ({minGuests} to {maxGuests} guests)"
+    details: {
+      minGuests: self.minGuests
+      maxGuests: self.maxGuests
+      rangeSize: self.maxGuests - self.minGuests
+    }
+  }
+
+  command update(newName: string, newDescription: string, newCategory: string, newBasePrice: number, newPricePerPerson: number, newMinGuests: number, newMaxGuests: number, newIsActive: boolean) {
+    guard newName != null and newName != "" "Menu name is required"
+
+    constraint warnPriceDecrease:warn newPricePerPerson > 0 and newPricePerPerson < self.pricePerPerson {
+      messageTemplate: "Menu price per person decreased from {oldPrice} to {newPrice}"
+      details: {
+        oldPrice: self.pricePerPerson
+        newPrice: newPricePerPerson
+        decreaseAmount: self.pricePerPerson - newPricePerPerson
+      }
+    }
+
+    constraint warnGuestRangeIncrease:warn newMaxGuests > 0 and newMaxGuests > self.maxGuests * 1.5 {
+      messageTemplate: "Maximum guest count increased by 50% or more"
+      details: {
+        oldMaxGuests: self.maxGuests
+        newMaxGuests: newMaxGuests
+        increasePercent: ((newMaxGuests - self.maxGuests) / self.maxGuests) * 100
+      }
+    }
+
+    mutate name = newName
+    mutate description = newDescription
+    mutate category = newCategory
+    mutate basePrice = newBasePrice
+    mutate pricePerPerson = newPricePerPerson
+    mutate minGuests = newMinGuests
+    mutate maxGuests = newMaxGuests
+    mutate isActive = newIsActive
+
+    emit MenuUpdated
+  }
+
+  command activate() {
+    guard self.isActive == false "Menu is already active"
+
+    mutate isActive = true
+
+    emit MenuActivated
+  }
+
+  command deactivate() {
+    guard self.isActive == true "Menu is already inactive"
+
+    mutate isActive = false
+
+    emit MenuDeactivated
+  }
+
+  store Menu in memory
+}
+
+entity MenuDish {
+  property required id: string
+  property required tenantId: string
+  property required menuId: string
+  property required dishId: string
+  property course: string = ""
+  property sortOrder: number = 0
+  property isOptional: boolean = false
+
+  constraint validMenuId: self.menuId != null and self.menuId != "" "Menu ID is required"
+  constraint validDishId: self.dishId != null and self.dishId != "" "Dish ID is required"
+  constraint positiveSortOrder: self.sortOrder >= 0 "Sort order must be non-negative"
+
+  command updateCourse(newCourse: string, newSortOrder: number, newIsOptional: boolean) {
+    mutate course = newCourse
+    mutate sortOrder = newSortOrder
+    mutate isOptional = newIsOptional
+
+    emit MenuDishUpdated
+  }
+
+  store MenuDish in memory
+}
+
+// Policy definitions
+policy MenuManagement execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage menus"
+policy MenuDelete execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and above can delete menus"
+policy MenuPricing execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and above can update pricing"
+
+// Event definitions
+event MenuCreated: "kitchen.menu.created" {
+  menuId: string
+  tenantId: string
+  name: string
+  category: string
+  createdAt: number
+}
+
+event MenuUpdated: "kitchen.menu.updated" {
+  menuId: string
+  tenantId: string
+  oldName: string
+  newName: string
+  updatedAt: number
+}
+
+event MenuDeactivated: "kitchen.menu.deactivated" {
+  menuId: string
+  tenantId: string
+  name: string
+  deactivatedAt: number
+}
+
+event MenuActivated: "kitchen.menu.activated" {
+  menuId: string
+  tenantId: string
+  name: string
+  activatedAt: number
+}
+
+event MenuDishAdded: "kitchen.menu.dish_added" {
+  menuId: string
+  tenantId: string
+  dishId: string
+  menuDishId: string
+  course: string
+  addedAt: number
+}
+
+event MenuDishRemoved: "kitchen.menu.dish_removed" {
+  menuId: string
+  tenantId: string
+  dishId: string
+  menuDishId: string
+  removedAt: number
+}
+
+event MenuDishUpdated: "kitchen.menu.dish_updated" {
+  menuId: string
+  tenantId: string
+  dishId: string
+  menuDishId: string
+  course: string
+  sortOrder: number
+  isOptional: boolean
+  updatedAt: number
+}
+
+event MenuDishesReordered: "kitchen.menu.dishes_reordered" {
+  menuId: string
+  tenantId: string
+  dishIdsJson: string
+  reorderedAt: number
+}

@@ -8,11 +8,12 @@ import {
   navigationMenuTriggerStyle,
 } from "@repo/design-system/components/ui/navigation-menu";
 import type { Meta, StoryObj } from "@storybook/react";
+import type { ComponentProps } from "react";
 
 /**
  * A collection of links for navigating websites.
  */
-const meta = {
+const meta: Meta<ComponentProps<typeof NavigationMenu>> = {
   title: "ui/NavigationMenu",
   component: NavigationMenu,
   tags: ["autodocs"],

@@ -1,0 +1,317 @@
+/**
+ * Inventory Rules Manifest
+ * Kitchen ops manifest spec for inventory operations
+ */
+
+export const inventoryRulesManifest = `
+// Kitchen Ops - Inventory Rules
+// Manifest spec for inventory operations with constraints, guards, and events
+
+entity InventoryItem {
+  property required id: string
+  property required tenantId: string
+  property required name: string
+  property required itemType: string = "ingredient"
+  property category: string = ""
+  property baseUnit: string = "each"
+  property quantityOnHand: number = 0
+  property quantityReserved: number = 0
+  property quantityAvailable: number = 0
+  property parLevel: number = 0
+  property reorderPoint: number = 0
+  property reorderQuantity: number = 0
+  property costPerUnit: number = 0
+  property supplierId: string = ""
+  property locationId: string = ""
+  property allergens: string = ""
+  property isActive: boolean = true
+  property lastCountedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  computed isBelowPar: boolean = self.parLevel > 0 and self.quantityOnHand < self.parLevel
+  computed isBelowReorderPoint: boolean = self.reorderPoint > 0 and self.quantityOnHand < self.reorderPoint
+  computed totalValue: number = self.quantityOnHand * self.costPerUnit
+  computed reservedValue: number = self.quantityReserved * self.costPerUnit
+  computed stockoutRisk: boolean = self.quantityAvailable <= 0
+  computed lowStockRisk: boolean = self.quantityAvailable < (self.parLevel * 0.25)
+  computed needsReorder: boolean = self.isBelowReorderPoint
+
+  constraint positiveQuantities: self.quantityOnHand >= 0 and self.quantityReserved >= 0 {
+    messageTemplate: "Inventory quantities cannot be negative (onHand: {onHand}, reserved: {reserved})"
+    details: {
+      onHand: self.quantityOnHand
+      reserved: self.quantityReserved
+    }
+  }
+
+  constraint reserveDoesNotExceedOnHand: self.quantityReserved <= self.quantityOnHand {
+    messageTemplate: "Reserved quantity ({reserved}) cannot exceed on-hand quantity ({onHand})"
+    details: {
+      onHand: self.quantityOnHand
+      reserved: self.quantityReserved
+    }
+  }
+
+  constraint warnBelowPar:warn self.isBelowPar {
+    messageTemplate: "Item '{itemName}' is below par level ({onHand} < {parLevel})"
+    details: {
+      itemName: self.name
+      onHand: self.quantityOnHand
+      parLevel: self.parLevel
+      shortfall: self.parLevel - self.quantityOnHand
+    }
+  }
+
+  constraint warnLowStock:warn self.lowStockRisk {
+    messageTemplate: "Item '{itemName}' has low stock risk (only {available} available)"
+    details: {
+      itemName: self.name
+      available: self.quantityAvailable
+      parLevel: self.parLevel
+    }
+  }
+
+  constraint blockStockout:block self.stockoutRisk {
+    messageTemplate: "Item '{itemName}' is out of stock (onHand: {onHand}, reserved: {reserved})"
+    details: {
+      itemName: self.name
+      onHand: self.quantityOnHand
+      reserved: self.quantityReserved
+      available: self.quantityAvailable
+    }
+  }
+
+  command reserve(quantity: number, eventId: string, userId: string) {
+    guard quantity != null and quantity > 0
+    guard eventId != null and eventId != ""
+
+    constraint warnStockoutRisk:warn (self.quantityAvailable - quantity) < 0 {
+      messageTemplate: "Reserving {quantity} {unit} - only {available} available"
+      details: {
+        itemName: self.name
+        requested: quantity
+        available: self.quantityAvailable
+        shortfall: quantity - self.quantityAvailable
+        unit: self.baseUnit
+      }
+    }
+
+    constraint warnBelowParAfterReserve:warn (self.quantityOnHand - quantity) < self.parLevel and self.parLevel > 0 {
+      messageTemplate: "After reservation, '{itemName}' will be below par level"
+      details: {
+        itemName: self.name
+        currentOnHand: self.quantityOnHand
+        parLevel: self.parLevel
+        newOnHand: self.quantityOnHand - quantity
+      }
+    }
+
+    mutate quantityReserved = self.quantityReserved + quantity
+    mutate updatedAt = now()
+
+    emit InventoryReserved
+  }
+
+  command consume(quantity: number, lotId: string, userId: string) {
+    guard quantity != null and quantity > 0
+
+    constraint blockInsufficientStock:block self.quantityOnHand < quantity {
+      messageTemplate: "Cannot consume {quantity} {unit} - only {onHand} on hand"
+      details: {
+        itemName: self.name
+        requested: quantity
+        onHand: self.quantityOnHand
+        shortfall: quantity - self.quantityOnHand
+        unit: self.baseUnit
+      }
+    }
+
+    constraint warnBelowParAfterConsume:warn (self.quantityOnHand - quantity) < self.parLevel and self.parLevel > 0 {
+      messageTemplate: "After consumption, '{itemName}' will be below par - recommend reorder"
+      details: {
+        itemName: self.name
+        currentOnHand: self.quantityOnHand
+        parLevel: self.parLevel
+        newOnHand: self.quantityOnHand - quantity
+      }
+    }
+
+    constraint infoConsumed:ok self.quantityOnHand >= quantity {
+      messageTemplate: "Consuming {quantity} {unit} of '{itemName}'"
+      details: {
+        itemName: self.name
+        quantity: quantity
+        unit: self.baseUnit
+        lotId: lotId
+      }
+    }
+
+    mutate quantityOnHand = self.quantityOnHand - quantity
+    mutate quantityReserved = self.quantityReserved > quantity ? self.quantityReserved - quantity : 0
+    mutate updatedAt = now()
+
+    emit InventoryConsumed
+  }
+
+  command waste(quantity: number, reason: string, lotId: string, userId: string) {
+    guard quantity != null and quantity > 0
+    guard reason != null and reason != ""
+
+    constraint blockInsufficientForWaste:block self.quantityOnHand < quantity {
+      messageTemplate: "Cannot record waste of {quantity} {unit} - only {onHand} on hand"
+      details: {
+        itemName: self.name
+        requested: quantity
+        onHand: self.quantityOnHand
+        shortfall: quantity - self.quantityOnHand
+        unit: self.baseUnit
+      }
+    }
+
+    constraint warnHighWaste:warn quantity > (self.quantityOnHand * 0.1) and self.quantityOnHand > 0 {
+      messageTemplate: "High waste amount ({percentage}% of on-hand) for '{itemName}'"
+      details: {
+        itemName: self.name
+        quantity: quantity
+        onHand: self.quantityOnHand
+        percentage: (quantity / self.quantityOnHand) * 100
+        reason: reason
+      }
+    }
+
+    mutate quantityOnHand = self.quantityOnHand - quantity
+    mutate quantityReserved = self.quantityReserved > quantity ? self.quantityReserved - quantity : 0
+    mutate updatedAt = now()
+
+    emit InventoryWasted
+  }
+
+  command adjust(quantity: number, reason: string, userId: string) {
+    guard reason != null and reason != ""
+
+    constraint warnLargeNegativeAdjustment:warn quantity < 0 and quantity < (self.quantityOnHand * -0.5) {
+      messageTemplate: "Large negative adjustment ({adjustment}) for '{itemName}' - requires verification"
+      details: {
+        itemName: self.name
+        adjustment: quantity
+        currentOnHand: self.quantityOnHand
+        newOnHand: self.quantityOnHand + quantity
+        reason: reason
+      }
+    }
+
+    mutate quantityOnHand = self.quantityOnHand + quantity
+    mutate updatedAt = now()
+
+    emit InventoryAdjusted
+  }
+
+  command restock(quantity: number, costPerUnit: number, userId: string) {
+    guard quantity != null and quantity > 0
+    guard costPerUnit != null and costPerUnit >= 0
+
+    constraint infoRestocked:ok quantity > 0 {
+      messageTemplate: "Restocked {quantity} {unit} of '{itemName}' at ${costPerUnit} per {unit}"
+      details: {
+        itemName: self.name
+        quantity: quantity
+        unit: self.baseUnit
+        costPerUnit: costPerUnit
+        totalCost: quantity * costPerUnit
+      }
+    }
+
+    mutate quantityOnHand = self.quantityOnHand + quantity
+    mutate costPerUnit = costPerUnit
+    mutate updatedAt = now()
+
+    emit InventoryRestocked
+  }
+
+  command releaseReservation(quantity: number, eventId: string, userId: string) {
+    guard quantity != null and quantity > 0
+    guard eventId != null and eventId != ""
+
+    constraint warnReleaseExceedsReserved:warn quantity > self.quantityReserved {
+      messageTemplate: "Releasing more ({quantity}) than reserved ({reserved}) - adjusting to reserved amount"
+      details: {
+        itemName: self.name
+        requestedRelease: quantity
+        reserved: self.quantityReserved
+        adjusted: self.quantityReserved
+      }
+    }
+
+    mutate quantityReserved = self.quantityReserved > quantity ? self.quantityReserved - quantity : 0
+    mutate updatedAt = now()
+
+    emit InventoryReservationReleased
+  }
+
+  store InventoryItem in memory
+}
+
+policy InventoryStaffCanReserve execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can reserve inventory"
+policy InventoryStaffCanConsume execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can consume inventory"
+policy ManagersCanAdjust execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can adjust inventory"
+policy ManagersCanRestock execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can restock inventory"
+
+event InventoryReserved: "kitchen.inventory.reserved" {
+  itemId: string
+  itemName: string
+  quantity: number
+  eventId: string
+  userId: string
+  reservedAt: number
+}
+
+event InventoryConsumed: "kitchen.inventory.consumed" {
+  itemId: string
+  itemName: string
+  quantity: number
+  lotId: string
+  userId: string
+  consumedAt: number
+}
+
+event InventoryWasted: "kitchen.inventory.wasted" {
+  itemId: string
+  itemName: string
+  quantity: number
+  reason: string
+  lotId: string
+  userId: string
+  wastedAt: number
+}
+
+event InventoryAdjusted: "kitchen.inventory.adjusted" {
+  itemId: string
+  itemName: string
+  quantity: number
+  reason: string
+  userId: string
+  adjustedAt: number
+}
+
+event InventoryRestocked: "kitchen.inventory.restocked" {
+  itemId: string
+  itemName: string
+  quantity: number
+  costPerUnit: number
+  userId: string
+  restockedAt: number
+}
+
+event InventoryReservationReleased: "kitchen.inventory.reservation.released" {
+  itemId: string
+  itemName: string
+  quantity: number
+  eventId: string
+  userId: string
+  releasedAt: number
+}
+`;
+
+export const INVENTORY_RULES_IR_VERSION = "1.0";
+export const INVENTORY_RULES_SCHEMA_HASH = "sha256-inventory-rules";

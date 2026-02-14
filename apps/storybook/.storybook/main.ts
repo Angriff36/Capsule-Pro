@@ -1,8 +1,22 @@
 import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { StorybookConfig } from "@storybook/nextjs";
 
 const require = createRequire(import.meta.url);
+const storybookDir = dirname(fileURLToPath(import.meta.url));
+const repoRoot = resolve(storybookDir, "..", "..", "..");
+const toPosixPath = (value: string) => value.replace(/\\/g, "/");
+const blocksStories = toPosixPath(
+  join(
+    repoRoot,
+    "packages",
+    "design-system",
+    "components",
+    "blocks",
+    "**/*.stories.@(js|jsx|mjs|ts|tsx)"
+  )
+);
 
 /**
  * This function is used to resolve the absolute path of a package.
@@ -15,6 +29,7 @@ const config: StorybookConfig = {
   stories: [
     "../stories/**/*.mdx",
     "../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+    blocksStories,
   ],
   addons: [
     getAbsolutePath("@chromatic-com/storybook"),

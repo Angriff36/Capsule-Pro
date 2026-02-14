@@ -1,11 +1,22 @@
 import "server-only";
 
-import { randomUUID } from "crypto";
-import { Prisma, database } from "@repo/database";
+import { randomUUID } from "node:crypto";
+import { database, Prisma } from "@repo/database";
+import type { MenuItem, ParsedEvent } from "@repo/event-parser";
+import { createEventSchema } from "./validation";
+
+type EventParserModule = typeof import("@repo/event-parser");
+
+let eventParserPromise: Promise<EventParserModule> | null = null;
+
+const getEventParser = () => {
+  eventParserPromise ??= import("@repo/event-parser");
+  return eventParserPromise;
+};
 
 type CsvRow = Record<string, string>;
 
-type ImportContext = {
+interface ImportContext {
   tenantId: string;
   locationId: string;
   unitIds: {
@@ -15,10 +26,14 @@ type ImportContext = {
     gram?: number;
     kilogram?: number;
   };
-};
+}
 
 const normalizeHeader = (value: string) =>
-  value.replace(/\uFEFF/g, "").trim().replace(/\s+/g, " ").toLowerCase();
+  value
+    .replace(/\uFEFF/g, "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
 
 const parseCsv = (input: string): CsvRow[] => {
   const rows: string[][] = [];
@@ -126,11 +141,11 @@ const ensureLocationId = async (tenantId: string): Promise<string> => {
     Prisma.sql`
       SELECT id
       FROM tenant.locations
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-      ORDER BY is_primary DESC, created_at ASC
+      WHERE tenantId = ${tenantId}
+        AND deletedAt IS NULL
+      ORDER BY is_primary DESC, createdAt ASC
       LIMIT 1
-    `,
+    `
   );
 
   if (location?.id) {
@@ -140,9 +155,9 @@ const ensureLocationId = async (tenantId: string): Promise<string> => {
   const createdId = randomUUID();
   await database.$executeRaw(
     Prisma.sql`
-      INSERT INTO tenant.locations (tenant_id, id, name, is_primary, is_active)
+      INSERT INTO tenant.locations (tenantId, id, name, is_primary, is_active)
       VALUES (${tenantId}, ${createdId}, ${"Main Kitchen"}, true, true)
-    `,
+    `
   );
 
   return createdId;
@@ -155,7 +170,7 @@ const getFallbackUnitId = async () => {
       FROM core.units
       ORDER BY id ASC
       LIMIT 1
-    `,
+    `
   );
   return row?.id;
 };
@@ -166,7 +181,7 @@ const getUnitIds = async () => {
       SELECT id, code
       FROM core.units
       WHERE code IN ('lb', 'ea', 'oz', 'g', 'kg')
-    `,
+    `
   );
 
   const unitIds: ImportContext["unitIds"] = {};
@@ -196,11 +211,11 @@ const findRecipeId = async (tenantId: string, name: string) => {
     Prisma.sql`
       SELECT id
       FROM tenant_kitchen.recipes
-      WHERE tenant_id = ${tenantId}
+      WHERE tenantId = ${tenantId}
         AND name = ${name}
-        AND deleted_at IS NULL
+        AND deletedAt IS NULL
       LIMIT 1
-    `,
+    `
   );
   return row?.id;
 };
@@ -208,10 +223,7 @@ const findRecipeId = async (tenantId: string, name: string) => {
 const insertRecipe = async (
   tenantId: string,
   name: string,
-  {
-    category,
-    tags,
-  }: { category?: string | null; tags?: string[] } = {},
+  { category, tags }: { category?: string | null; tags?: string[] } = {}
 ) => {
   const existingId = await findRecipeId(tenantId, name);
   if (existingId) {
@@ -221,11 +233,11 @@ const insertRecipe = async (
   const id = randomUUID();
   await database.$executeRaw(
     Prisma.sql`
-      INSERT INTO tenant_kitchen.recipes (tenant_id, id, name, category, tags, is_active)
+      INSERT INTO tenant_kitchen.recipes (tenantId, id, name, category, tags, is_active)
       VALUES (${tenantId}, ${id}, ${name}, ${category ?? null}, ${
         tags && tags.length > 0 ? tags : null
       }, true)
-    `,
+    `
   );
   return id;
 };
@@ -235,11 +247,11 @@ const findDishId = async (tenantId: string, name: string) => {
     Prisma.sql`
       SELECT id
       FROM tenant_kitchen.dishes
-      WHERE tenant_id = ${tenantId}
+      WHERE tenantId = ${tenantId}
         AND name = ${name}
-        AND deleted_at IS NULL
+        AND deletedAt IS NULL
       LIMIT 1
-    `,
+    `
   );
   return row?.id;
 };
@@ -248,7 +260,7 @@ const insertDish = async (
   tenantId: string,
   name: string,
   recipeId: string,
-  category?: string | null,
+  category?: string | null
 ) => {
   const existingId = await findDishId(tenantId, name);
   if (existingId) {
@@ -258,9 +270,9 @@ const insertDish = async (
   const id = randomUUID();
   await database.$executeRaw(
     Prisma.sql`
-      INSERT INTO tenant_kitchen.dishes (tenant_id, id, recipe_id, name, category, is_active)
+      INSERT INTO tenant_kitchen.dishes (tenantId, id, recipeId, name, category, is_active)
       VALUES (${tenantId}, ${id}, ${recipeId}, ${name}, ${category ?? null}, true)
-    `,
+    `
   );
   return id;
 };
@@ -270,11 +282,11 @@ const findIngredientId = async (tenantId: string, name: string) => {
     Prisma.sql`
       SELECT id
       FROM tenant_kitchen.ingredients
-      WHERE tenant_id = ${tenantId}
+      WHERE tenantId = ${tenantId}
         AND name = ${name}
-        AND deleted_at IS NULL
+        AND deletedAt IS NULL
       LIMIT 1
-    `,
+    `
   );
   return row?.id;
 };
@@ -283,7 +295,7 @@ const insertIngredient = async (
   tenantId: string,
   name: string,
   defaultUnitId: number,
-  category?: string | null,
+  category?: string | null
 ) => {
   const existingId = await findIngredientId(tenantId, name);
   if (existingId) {
@@ -294,7 +306,7 @@ const insertIngredient = async (
   await database.$executeRaw(
     Prisma.sql`
       INSERT INTO tenant_kitchen.ingredients (
-        tenant_id,
+        tenantId,
         id,
         name,
         category,
@@ -302,7 +314,7 @@ const insertIngredient = async (
         is_active
       )
       VALUES (${tenantId}, ${id}, ${name}, ${category ?? null}, ${defaultUnitId}, true)
-    `,
+    `
   );
   return id;
 };
@@ -312,11 +324,11 @@ const findInventoryItemId = async (tenantId: string, name: string) => {
     Prisma.sql`
       SELECT id
       FROM tenant_inventory.inventory_items
-      WHERE tenant_id = ${tenantId}
+      WHERE tenantId = ${tenantId}
         AND name = ${name}
-        AND deleted_at IS NULL
+        AND deletedAt IS NULL
       LIMIT 1
-    `,
+    `
   );
   return row?.id;
 };
@@ -325,7 +337,7 @@ const insertInventoryItem = async (
   tenantId: string,
   name: string,
   category: string,
-  tags: string[],
+  tags: string[]
 ) => {
   const existingId = await findInventoryItemId(tenantId, name);
   if (existingId) {
@@ -337,7 +349,7 @@ const insertInventoryItem = async (
   await database.$executeRaw(
     Prisma.sql`
       INSERT INTO tenant_inventory.inventory_items (
-        tenant_id,
+        tenantId,
         id,
         item_number,
         name,
@@ -358,16 +370,16 @@ const insertInventoryItem = async (
         ${0},
         ${tags}
       )
-    `,
+    `
   );
   return id;
 };
 
-type ItemClassification = {
+interface ItemClassification {
   kind: "dish" | "recipe" | "ingredient" | "supply";
   category?: string;
   tags: string[];
-};
+}
 
 const SUPPLY_KEYWORDS = [
   "chafing",
@@ -444,7 +456,7 @@ const classifyItem = (name: string, unit: string): ItemClassification => {
   }
 
   const isBeverage = BEVERAGE_KEYWORDS.some((keyword) =>
-    normalized.includes(keyword),
+    normalized.includes(keyword)
   );
   if (isBeverage) {
     const isPackaged =
@@ -489,18 +501,32 @@ const insertEvent = async (
     eventType: string;
     guestCount: number;
     notes?: string;
-  },
+  }
 ) => {
+  // Validate event data against schema
+  const eventData = {
+    title,
+    eventType,
+    eventDate: formatDate(eventDate),
+    guestCount,
+    notes,
+  };
+
+  const validationResult = createEventSchema.safeParse(eventData);
+  if (!validationResult.success) {
+    throw new Error(`Invalid event data: ${validationResult.error.message}`);
+  }
+
   const eventId = randomUUID();
   await database.$executeRaw(
     Prisma.sql`
       INSERT INTO tenant_events.events (
-        tenant_id,
+        tenantId,
         id,
         title,
-        event_type,
-        event_date,
-        guest_count,
+        eventType,
+        eventDate,
+        guestCount,
         status,
         notes
       )
@@ -514,7 +540,7 @@ const insertEvent = async (
         ${"confirmed"},
         ${notes ?? null}
       )
-    `,
+    `
   );
   return eventId;
 };
@@ -531,15 +557,15 @@ const insertEventDish = async (
     dishId: string;
     quantityServings: number;
     specialInstructions?: string;
-  },
+  }
 ) => {
   await database.$executeRaw(
     Prisma.sql`
       INSERT INTO tenant_events.event_dishes (
-        tenant_id,
+        tenantId,
         id,
         event_id,
-        dish_id,
+        dishId,
         quantity_servings,
         special_instructions
       )
@@ -551,7 +577,7 @@ const insertEventDish = async (
         ${quantityServings},
         ${specialInstructions ?? null}
       )
-    `,
+    `
   );
 };
 
@@ -579,18 +605,18 @@ const insertPrepTask = async (
     dueByDate: Date;
     isEventFinish: boolean;
     notes?: string;
-  },
+  }
 ) => {
   const unitId = unit.includes("pound") ? context.unitIds.pound : undefined;
 
   await database.$executeRaw(
     Prisma.sql`
       INSERT INTO tenant_kitchen.prep_tasks (
-        tenant_id,
+        tenantId,
         id,
         event_id,
-        dish_id,
-        location_id,
+        dishId,
+        locationId,
         task_type,
         name,
         quantity_total,
@@ -621,12 +647,343 @@ const insertPrepTask = async (
         ${5},
         ${notes ?? null}
       )
-    `,
+    `
   );
 };
 
 const getFileLabel = (fileName: string) =>
-  fileName.replace(/\.[^/.]+$/, "").replace(/[_-]+/g, " ").trim();
+  fileName
+    .replace(/\.[^/.]+$/, "")
+    .replace(/[_-]+/g, " ")
+    .trim();
+
+type MissingField =
+  | "client"
+  | "eventDate"
+  | "venueName"
+  | "eventType"
+  | "headcount"
+  | "menuItems";
+
+interface MenuImportSummary {
+  missingQuantities: string[];
+  linkedDishes: number;
+  createdDishes: number;
+  createdRecipes: number;
+  updatedLinks: number;
+}
+
+interface AggregatedMenuItem {
+  name: string;
+  category: string | null;
+  serviceLocation: string | null;
+  quantity: number;
+  quantitySource: "parsed" | "details" | "headcount" | "fallback";
+  allergens: Set<string>;
+  dietaryTags: Set<string>;
+  instructions: Set<string>;
+}
+
+const MISSING_FIELD_TAG_PREFIX = "needs:";
+
+const normalizeName = (value: string) => value.trim().replace(/\s+/g, " ");
+
+const normalizeList = (values: string[] | undefined) =>
+  (values ?? [])
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+
+const getMissingFieldsFromParsedEvent = (
+  event: ParsedEvent
+): MissingField[] => {
+  const missing: MissingField[] = [];
+  if (!event.client?.trim()) {
+    missing.push("client");
+  }
+  if (!event.date?.trim()) {
+    missing.push("eventDate");
+  }
+  if (!event.venue?.name?.trim()) {
+    missing.push("venueName");
+  }
+  if (!event.serviceStyle?.trim()) {
+    missing.push("eventType");
+  }
+  if (!event.headcount || event.headcount <= 0) {
+    missing.push("headcount");
+  }
+  if (!event.menuSections || event.menuSections.length === 0) {
+    missing.push("menuItems");
+  }
+  return missing;
+};
+
+const buildMissingFieldTags = (missing: MissingField[]) =>
+  missing.map((field) => `${MISSING_FIELD_TAG_PREFIX}${field}`);
+
+const buildEventTags = (baseTags: string[], missing: MissingField[]) => {
+  const tagSet = new Set<string>(baseTags.filter(Boolean));
+  for (const tag of buildMissingFieldTags(missing)) {
+    tagSet.add(tag);
+  }
+  return Array.from(tagSet);
+};
+
+const deriveEventTitle = (event: ParsedEvent, fileName: string) => {
+  const client = event.client?.trim();
+  if (client) {
+    return client;
+  }
+  const number = event.number?.trim();
+  if (number) {
+    return number;
+  }
+  return getFileLabel(fileName);
+};
+
+const parseEventDate = (dateValue: string | undefined) => {
+  if (!dateValue) {
+    return null;
+  }
+  const parsed = new Date(dateValue);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const mergeInstructions = (item: MenuItem) => {
+  const instructions = new Set<string>();
+  if (item.preparationNotes?.trim()) {
+    instructions.add(item.preparationNotes.trim());
+  }
+  for (const note of normalizeList(item.specials)) {
+    instructions.add(note);
+  }
+  return instructions;
+};
+
+const deriveMenuQuantity = (item: MenuItem, fallbackHeadcount: number) => {
+  if (item.qty?.value && item.qty.value > 0) {
+    return { quantity: Math.round(item.qty.value), source: "parsed" as const };
+  }
+
+  const servingDetails =
+    item.quantityDetails?.filter(
+      (detail) =>
+        detail.value > 0 && /serv|pax|guest|portion/i.test(detail.unit)
+    ) ?? [];
+  if (servingDetails.length > 0) {
+    const maxDetail = servingDetails.reduce(
+      (max, detail) => (detail.value > max ? detail.value : max),
+      0
+    );
+    return {
+      quantity: Math.round(maxDetail),
+      source: "details" as const,
+    };
+  }
+
+  if (fallbackHeadcount > 0) {
+    return {
+      quantity: Math.round(fallbackHeadcount),
+      source: "headcount" as const,
+    };
+  }
+
+  return { quantity: 1, source: "fallback" as const };
+};
+
+const importMenuToEvent = async (
+  tenantId: string,
+  eventId: string,
+  event: ParsedEvent
+): Promise<MenuImportSummary> => {
+  const summary: MenuImportSummary = {
+    missingQuantities: [],
+    linkedDishes: 0,
+    createdDishes: 0,
+    createdRecipes: 0,
+    updatedLinks: 0,
+  };
+
+  const menuItems = event.menuSections ?? [];
+  if (menuItems.length === 0) {
+    return summary;
+  }
+
+  const aggregated = new Map<string, AggregatedMenuItem>();
+
+  for (const item of menuItems) {
+    const name = normalizeName(item.name);
+    if (!name) {
+      continue;
+    }
+
+    const key = name.toLowerCase();
+    const { quantity, source } = deriveMenuQuantity(item, event.headcount);
+
+    if (source === "fallback") {
+      summary.missingQuantities.push(name);
+    }
+
+    let entry = aggregated.get(key);
+    if (!entry) {
+      entry = {
+        name,
+        category: item.category?.trim() || null,
+        serviceLocation: item.serviceLocation ?? null,
+        quantity: 0,
+        quantitySource: source,
+        allergens: new Set<string>(),
+        dietaryTags: new Set<string>(),
+        instructions: new Set<string>(),
+      };
+      aggregated.set(key, entry);
+    }
+
+    entry.quantity += quantity;
+    if (entry.quantitySource === "fallback" && source !== "fallback") {
+      entry.quantitySource = source;
+    }
+
+    for (const allergen of normalizeList(item.allergens)) {
+      entry.allergens.add(allergen);
+    }
+    for (const tag of normalizeList(item.badges)) {
+      entry.dietaryTags.add(tag);
+    }
+    for (const instruction of mergeInstructions(item)) {
+      entry.instructions.add(instruction);
+    }
+  }
+
+  for (const entry of aggregated.values()) {
+    const existingDish = await database.dish.findFirst({
+      where: {
+        tenantId,
+        deletedAt: null,
+        name: {
+          equals: entry.name,
+          mode: "insensitive",
+        },
+      },
+      select: {
+        id: true,
+        recipeId: true,
+      },
+    });
+
+    let dishId = existingDish?.id;
+
+    if (!dishId) {
+      let recipeId: string | undefined;
+      const existingRecipe = await database.recipe.findFirst({
+        where: {
+          tenantId,
+          deletedAt: null,
+          name: {
+            equals: entry.name,
+            mode: "insensitive",
+          },
+        },
+        select: { id: true },
+      });
+
+      if (existingRecipe) {
+        recipeId = existingRecipe.id;
+      } else {
+        const createdRecipe = await database.recipe.create({
+          data: {
+            tenantId,
+            name: entry.name,
+            category: entry.category ?? undefined,
+            tags: ["imported"],
+            isActive: true,
+          },
+        });
+        recipeId = createdRecipe.id;
+        summary.createdRecipes += 1;
+      }
+
+      const createdDish = await database.dish.create({
+        data: {
+          tenantId,
+          recipeId,
+          name: entry.name,
+          category: entry.category ?? undefined,
+          serviceStyle: event.serviceStyle?.trim() || undefined,
+          dietaryTags: Array.from(entry.dietaryTags),
+          allergens: Array.from(entry.allergens),
+          isActive: true,
+        },
+      });
+      dishId = createdDish.id;
+      summary.createdDishes += 1;
+    }
+
+    const specialInstructions = Array.from(entry.instructions).join("; ");
+    const [existingLink] = await database.$queryRaw<Array<{ id: string }>>(
+      Prisma.sql`
+        SELECT id
+        FROM tenant_events.event_dishes
+        WHERE tenant_id = ${tenantId}
+          AND event_id = ${eventId}
+          AND dish_id = ${dishId}
+          AND deleted_at IS NULL
+        LIMIT 1
+      `
+    );
+
+    if (existingLink?.id) {
+      await database.$executeRaw(
+        Prisma.sql`
+          UPDATE tenant_events.event_dishes
+          SET quantity_servings = ${Math.max(1, Math.round(entry.quantity))},
+              service_style = ${entry.serviceLocation ?? event.serviceStyle ?? null},
+              course = ${entry.category ?? null},
+              special_instructions = ${
+                specialInstructions.length > 0 ? specialInstructions : null
+              },
+              updated_at = ${new Date()}
+          WHERE tenant_id = ${tenantId}
+            AND id = ${existingLink.id}
+            AND event_id = ${eventId}
+        `
+      );
+      summary.updatedLinks += 1;
+    } else {
+      await database.$executeRaw(
+        Prisma.sql`
+          INSERT INTO tenant_events.event_dishes (
+            tenant_id,
+            id,
+            event_id,
+            dish_id,
+            course,
+            quantity_servings,
+            service_style,
+            special_instructions,
+            created_at,
+            updated_at
+          )
+          VALUES (
+            ${tenantId},
+            gen_random_uuid(),
+            ${eventId},
+            ${dishId},
+            ${entry.category ?? null},
+            ${Math.max(1, Math.round(entry.quantity))},
+            ${entry.serviceLocation ?? event.serviceStyle ?? null},
+            ${specialInstructions.length > 0 ? specialInstructions : null},
+            ${new Date()},
+            ${new Date()}
+          )
+        `
+      );
+      summary.linkedDishes += 1;
+    }
+  }
+
+  return summary;
+};
 
 const importRows = async (
   rows: CsvRow[],
@@ -650,7 +1007,7 @@ const importRows = async (
       instructions?: string;
       isEventFinish: boolean;
     };
-  },
+  }
 ) => {
   const eventId = await insertEvent(context.tenantId, {
     title,
@@ -683,7 +1040,7 @@ const importRows = async (
           context.tenantId,
           itemName,
           classification.category ?? "supplies",
-          classification.tags,
+          classification.tags
         ));
       inventoryCache.set(itemKey, existingId);
       continue;
@@ -702,7 +1059,7 @@ const importRows = async (
             context.unitIds.pound ??
             context.unitIds.ounce ??
             fallbackUnitId,
-          classification.category,
+          classification.category
         ));
       ingredientCache.set(itemKey, ingredientId);
 
@@ -752,7 +1109,7 @@ const importRows = async (
         context.tenantId,
         itemName,
         recipeId,
-        classification.category,
+        classification.category
       ));
     dishCache.set(itemKey, dishId);
 
@@ -834,9 +1191,9 @@ export const importEventFromCsvText = async ({
             const unit = getValue(row, ["unit"]).toLowerCase();
             return unit.includes("serv") ? Number(row.quantity ?? 0) : 0;
           }),
-          1,
-        ),
-      ),
+          1
+        )
+      )
     );
 
     const eventId = await importRows(firstGroup, context, {
@@ -846,13 +1203,10 @@ export const importEventFromCsvText = async ({
       notes: `Imported from ${fileName}`,
       mapRow: (row) => {
         const itemName =
-          getValue(row, ["item_name"]) ||
-          getValue(row, ["recipe_name"]) ||
-          "Imported item";
+          getValue(row, ["item_name"]) || getValue(row, ["recipe_name"]) || "";
         const quantity = Number(row.quantity ?? 0) || 1;
         const unit = getValue(row, ["unit"]).toLowerCase();
-        const servings =
-          unit.includes("serv") && quantity > 0 ? quantity : 1;
+        const servings = unit.includes("serv") && quantity > 0 ? quantity : 1;
         const instructions = getValue(row, ["notes"]);
         const isEventFinish = getValue(row, ["finish_location"])
           .toLowerCase()
@@ -872,7 +1226,7 @@ export const importEventFromCsvText = async ({
     await database.$executeRaw(
       Prisma.sql`
         INSERT INTO tenant_events.event_imports (
-          tenant_id,
+          tenantId,
           id,
           event_id,
           file_name,
@@ -889,7 +1243,7 @@ export const importEventFromCsvText = async ({
           ${Buffer.byteLength(content)},
           ${Buffer.from(content)}
         )
-      `,
+      `
     );
 
     return eventId;
@@ -902,7 +1256,7 @@ export const importEventFromCsvText = async ({
       const value = getValue(row, ["servings/batch", "servings batch"]);
       return parseNumber(value) ?? 0;
     }),
-    1,
+    1
   );
 
   const eventId = await importRows(rows, context, {
@@ -911,10 +1265,10 @@ export const importEventFromCsvText = async ({
     guestCount: Math.max(1, Math.round(servings)),
     notes: `Imported from ${fileName}`,
     mapRow: (row) => {
-      const itemName = getValue(row, ["dish name"]) || "Imported dish";
+      const itemName = getValue(row, ["dish name"]) || "";
       const servingsRaw = getValue(row, ["servings/batch", "servings batch"]);
       const { amount, unit } = parseQuantityUnit(
-        getValue(row, ["quantity/unit", "quantity unit"]),
+        getValue(row, ["quantity/unit", "quantity unit"])
       );
       const instructions = getValue(row, ["special instructions"]);
       const finishedAt = getValue(row, ["finished at"]).toLowerCase();
@@ -934,7 +1288,7 @@ export const importEventFromCsvText = async ({
   await database.$executeRaw(
     Prisma.sql`
       INSERT INTO tenant_events.event_imports (
-        tenant_id,
+        tenantId,
         id,
         event_id,
         file_name,
@@ -951,7 +1305,7 @@ export const importEventFromCsvText = async ({
         ${Buffer.byteLength(content)},
         ${Buffer.from(content)}
       )
-    `,
+    `
   );
 
   return eventId;
@@ -966,38 +1320,66 @@ export const importEventFromPdf = async ({
   fileName: string;
   content: Buffer;
 }) => {
-  const title = getFileLabel(fileName);
-  const eventDate = addDays(new Date(), 7);
-  const eventId = await insertEvent(tenantId, {
-    title,
-    eventDate,
-    eventType: "imported",
-    guestCount: 1,
-    notes: `PDF import placeholder for ${fileName}.`,
+  const { processMultipleDocuments } = await getEventParser();
+  const result = await processMultipleDocuments([{ content, fileName }]);
+
+  const mergedEvent = result.mergedEvent;
+  if (!mergedEvent) {
+    throw new Error("No event data could be extracted from the PDF.");
+  }
+
+  const missingFields = getMissingFieldsFromParsedEvent(mergedEvent);
+  const title = deriveEventTitle(mergedEvent, fileName);
+  const parsedDate = parseEventDate(mergedEvent.date);
+  const eventDate = parsedDate ?? new Date();
+  const notes = [
+    ...normalizeList(mergedEvent.notes),
+    `Imported from ${fileName}`,
+  ]
+    .filter((value) => value.length > 0)
+    .join("\n");
+
+  const event = await database.event.create({
+    data: {
+      tenantId,
+      title,
+      eventType: mergedEvent.serviceStyle?.trim() || "catering",
+      eventDate,
+      guestCount: mergedEvent.headcount > 0 ? mergedEvent.headcount : 0,
+      status: missingFields.length > 0 ? "draft" : "confirmed",
+      eventNumber: mergedEvent.number || undefined,
+      venueName: mergedEvent.venue?.name || undefined,
+      venueAddress: mergedEvent.venue?.address || undefined,
+      notes: notes.length > 0 ? notes : undefined,
+      tags: buildEventTags(["imported"], missingFields),
+    },
   });
 
-  await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant_events.event_imports (
-        tenant_id,
-        id,
-        event_id,
-        file_name,
-        mime_type,
-        file_size,
-        content
-      )
-      VALUES (
-        ${tenantId},
-        ${randomUUID()},
-        ${eventId},
-        ${fileName},
-        ${"application/pdf"},
-        ${content.byteLength},
-        ${content}
-      )
-    `,
-  );
+  await importMenuToEvent(tenantId, event.id, mergedEvent);
 
-  return eventId;
+  const doc = result.documents[0];
+
+  await database.eventImport.create({
+    data: {
+      tenantId,
+      eventId: event.id,
+      fileName,
+      mimeType: "application/pdf",
+      fileSize: content.byteLength,
+      content: new Uint8Array(content),
+      fileType: doc?.fileType ?? "pdf",
+      detectedFormat: doc?.detectedFormat,
+      parseStatus: doc?.errors?.length ? "failed" : "parsed",
+      parseErrors: doc?.errors ?? [],
+      confidence: doc?.confidence ?? undefined,
+      extractedData: {
+        event: doc?.parsedEvent?.event ?? mergedEvent,
+        warnings: doc?.warnings ?? [],
+        missingFields,
+      } as unknown as Prisma.InputJsonObject,
+      parsedAt: new Date(),
+    },
+  });
+
+  return event.id;
 };

@@ -1,0 +1,3101 @@
+{
+  "version": "1.0",
+  "provenance": {
+    "contentHash": "43927a7d6eab9d62feeb9157394708603661ba228edfc0e5d256ee925fc82a0b",
+    "irHash": "cc8e47bf76ed7c416d2743e037db9b981883de7bb9202c3be5001f2aa3c29b6d",
+    "compilerVersion": "0.3.8",
+    "schemaVersion": "1.0",
+    "compiledAt": "2026-02-11T13:06:23.162Z"
+  },
+  "modules": [],
+  "entities": [
+    {
+      "name": "InventoryItem",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "itemType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "ingredient"
+          },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "category",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "baseUnit",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "each"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "quantityOnHand",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "quantityReserved",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "quantityAvailable",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "parLevel",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "reorderPoint",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "reorderQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "costPerUnit",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "supplierId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "locationId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "allergens",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": true
+          },
+          "modifiers": []
+        },
+        {
+          "name": "lastCountedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isBelowPar",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "parLevel"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "<",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "quantityOnHand"
+              },
+              "right": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "parLevel"
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isBelowReorderPoint",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "reorderPoint"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "<",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "quantityOnHand"
+              },
+              "right": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "reorderPoint"
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "totalValue",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "*",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "quantityOnHand"
+            },
+            "right": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "costPerUnit"
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "reservedValue",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "*",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "quantityReserved"
+            },
+            "right": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "costPerUnit"
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "stockoutRisk",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "<=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "quantityAvailable"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "lowStockRisk",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "<",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "quantityAvailable"
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "*",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "parLevel"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0.25
+                }
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "needsReorder",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isBelowReorderPoint"
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [],
+      "commands": [],
+      "constraints": [
+        {
+          "name": "positiveQuantities",
+          "code": "positiveQuantities",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": ">=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "quantityOnHand"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": ">=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "quantityReserved"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
+              }
+            }
+          },
+          "severity": "block",
+          "overrideable": false
+        }
+      ],
+      "policies": []
+    }
+  ],
+  "stores": [
+    {
+      "entity": "InventoryItem",
+      "target": "memory",
+      "config": {}
+    }
+  ],
+  "events": [
+    {
+      "name": "InventoryReserved",
+      "channel": "kitchen.inventory.reserved",
+      "payload": [
+        {
+          "name": "itemId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "itemName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "quantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "eventId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reservedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "InventoryConsumed",
+      "channel": "kitchen.inventory.consumed",
+      "payload": [
+        {
+          "name": "itemId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "itemName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "quantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "lotId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "consumedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "InventoryWasted",
+      "channel": "kitchen.inventory.wasted",
+      "payload": [
+        {
+          "name": "itemId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "itemName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "quantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "lotId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "wastedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "InventoryAdjusted",
+      "channel": "kitchen.inventory.adjusted",
+      "payload": [
+        {
+          "name": "itemId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "itemName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "quantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "adjustedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "InventoryRestocked",
+      "channel": "kitchen.inventory.restocked",
+      "payload": [
+        {
+          "name": "itemId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "itemName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "quantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "costPerUnit",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "restockedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "InventoryReservationReleased",
+      "channel": "kitchen.inventory.reservation.released",
+      "payload": [
+        {
+          "name": "itemId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "itemName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "quantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "eventId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "releasedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "name": "reserve",
+      "parameters": [
+        {
+          "name": "quantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "eventId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "quantity"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "identifier",
+              "name": "quantity"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "eventId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "eventId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "warnStockoutRisk",
+          "code": "warnStockoutRisk",
+          "expression": {
+            "kind": "binary",
+            "operator": "<",
+            "left": {
+              "kind": "binary",
+              "operator": "-",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "quantityAvailable"
+              },
+              "right": {
+                "kind": "identifier",
+                "name": "quantity"
+              }
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "severity": "warn",
+          "overrideable": false
+        },
+        {
+          "name": "warnBelowParAfterReserve",
+          "code": "warnBelowParAfterReserve",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "<",
+              "left": {
+                "kind": "binary",
+                "operator": "-",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "quantityOnHand"
+                },
+                "right": {
+                  "kind": "identifier",
+                  "name": "quantity"
+                }
+              },
+              "right": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "parLevel"
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "parLevel"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
+              }
+            }
+          },
+          "severity": "warn",
+          "overrideable": false
+        }
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "Reserving {quantity} {unit} - only {available} available"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "itemName",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "name"
+                      }
+                    },
+                    {
+                      "key": "requested",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "quantity"
+                      }
+                    },
+                    {
+                      "key": "available",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "quantityAvailable"
+                      }
+                    },
+                    {
+                      "key": "shortfall",
+                      "value": {
+                        "kind": "binary",
+                        "operator": "-",
+                        "left": {
+                          "kind": "identifier",
+                          "name": "quantity"
+                        },
+                        "right": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "identifier",
+                            "name": "self"
+                          },
+                          "property": "quantityAvailable"
+                        }
+                      }
+                    },
+                    {
+                      "key": "unit",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "baseUnit"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "After reservation, '{itemName}' will be below par level"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "itemName",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "name"
+                      }
+                    },
+                    {
+                      "key": "currentOnHand",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "quantityOnHand"
+                      }
+                    },
+                    {
+                      "key": "parLevel",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "parLevel"
+                      }
+                    },
+                    {
+                      "key": "newOnHand",
+                      "value": {
+                        "kind": "binary",
+                        "operator": "-",
+                        "left": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "identifier",
+                            "name": "self"
+                          },
+                          "property": "quantityOnHand"
+                        },
+                        "right": {
+                          "kind": "identifier",
+                          "name": "quantity"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "quantityReserved",
+          "expression": {
+            "kind": "binary",
+            "operator": "+",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "quantityReserved"
+            },
+            "right": {
+              "kind": "identifier",
+              "name": "quantity"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": ["InventoryReserved"]
+    },
+    {
+      "name": "consume",
+      "parameters": [
+        {
+          "name": "quantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "lotId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "quantity"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "identifier",
+              "name": "quantity"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "blockInsufficientStock",
+          "code": "blockInsufficientStock",
+          "expression": {
+            "kind": "binary",
+            "operator": "<",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "quantityOnHand"
+            },
+            "right": {
+              "kind": "identifier",
+              "name": "quantity"
+            }
+          },
+          "severity": "block",
+          "overrideable": false
+        },
+        {
+          "name": "warnBelowParAfterConsume",
+          "code": "warnBelowParAfterConsume",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "<",
+              "left": {
+                "kind": "binary",
+                "operator": "-",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "quantityOnHand"
+                },
+                "right": {
+                  "kind": "identifier",
+                  "name": "quantity"
+                }
+              },
+              "right": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "parLevel"
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "parLevel"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
+              }
+            }
+          },
+          "severity": "warn",
+          "overrideable": false
+        },
+        {
+          "name": "infoConsumed",
+          "code": "infoConsumed",
+          "expression": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "quantityOnHand"
+            },
+            "right": {
+              "kind": "identifier",
+              "name": "quantity"
+            }
+          },
+          "severity": "ok",
+          "overrideable": false
+        }
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "Cannot consume {quantity} {unit} - only {onHand} on hand"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "itemName",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "name"
+                      }
+                    },
+                    {
+                      "key": "requested",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "quantity"
+                      }
+                    },
+                    {
+                      "key": "onHand",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "quantityOnHand"
+                      }
+                    },
+                    {
+                      "key": "shortfall",
+                      "value": {
+                        "kind": "binary",
+                        "operator": "-",
+                        "left": {
+                          "kind": "identifier",
+                          "name": "quantity"
+                        },
+                        "right": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "identifier",
+                            "name": "self"
+                          },
+                          "property": "quantityOnHand"
+                        }
+                      }
+                    },
+                    {
+                      "key": "unit",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "baseUnit"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "After consumption, '{itemName}' will be below par - recommend reorder"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "itemName",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "name"
+                      }
+                    },
+                    {
+                      "key": "currentOnHand",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "quantityOnHand"
+                      }
+                    },
+                    {
+                      "key": "parLevel",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "parLevel"
+                      }
+                    },
+                    {
+                      "key": "newOnHand",
+                      "value": {
+                        "kind": "binary",
+                        "operator": "-",
+                        "left": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "identifier",
+                            "name": "self"
+                          },
+                          "property": "quantityOnHand"
+                        },
+                        "right": {
+                          "kind": "identifier",
+                          "name": "quantity"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "Consuming {quantity} {unit} of '{itemName}'"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "itemName",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "name"
+                      }
+                    },
+                    {
+                      "key": "quantity",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "quantity"
+                      }
+                    },
+                    {
+                      "key": "unit",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "baseUnit"
+                      }
+                    },
+                    {
+                      "key": "lotId",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "lotId"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "quantityOnHand",
+          "expression": {
+            "kind": "binary",
+            "operator": "-",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "quantityOnHand"
+            },
+            "right": {
+              "kind": "identifier",
+              "name": "quantity"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "quantityReserved",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "quantityReserved"
+              },
+              "right": {
+                "kind": "identifier",
+                "name": "quantity"
+              }
+            },
+            "consequent": {
+              "kind": "binary",
+              "operator": "-",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "quantityReserved"
+              },
+              "right": {
+                "kind": "identifier",
+                "name": "quantity"
+              }
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": ["InventoryConsumed"]
+    },
+    {
+      "name": "waste",
+      "parameters": [
+        {
+          "name": "quantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "lotId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "quantity"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "identifier",
+              "name": "quantity"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "reason"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "reason"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "blockInsufficientForWaste",
+          "code": "blockInsufficientForWaste",
+          "expression": {
+            "kind": "binary",
+            "operator": "<",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "quantityOnHand"
+            },
+            "right": {
+              "kind": "identifier",
+              "name": "quantity"
+            }
+          },
+          "severity": "block",
+          "overrideable": false
+        },
+        {
+          "name": "warnHighWaste",
+          "code": "warnHighWaste",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "identifier",
+                "name": "quantity"
+              },
+              "right": {
+                "kind": "binary",
+                "operator": "*",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "quantityOnHand"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 0.1
+                  }
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "quantityOnHand"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
+              }
+            }
+          },
+          "severity": "warn",
+          "overrideable": false
+        }
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "Cannot record waste of {quantity} {unit} - only {onHand} on hand"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "itemName",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "name"
+                      }
+                    },
+                    {
+                      "key": "requested",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "quantity"
+                      }
+                    },
+                    {
+                      "key": "onHand",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "quantityOnHand"
+                      }
+                    },
+                    {
+                      "key": "shortfall",
+                      "value": {
+                        "kind": "binary",
+                        "operator": "-",
+                        "left": {
+                          "kind": "identifier",
+                          "name": "quantity"
+                        },
+                        "right": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "identifier",
+                            "name": "self"
+                          },
+                          "property": "quantityOnHand"
+                        }
+                      }
+                    },
+                    {
+                      "key": "unit",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "baseUnit"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "High waste amount ({percentage}% of on-hand) for '{itemName}'"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "itemName",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "name"
+                      }
+                    },
+                    {
+                      "key": "quantity",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "quantity"
+                      }
+                    },
+                    {
+                      "key": "onHand",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "quantityOnHand"
+                      }
+                    },
+                    {
+                      "key": "percentage",
+                      "value": {
+                        "kind": "binary",
+                        "operator": "*",
+                        "left": {
+                          "kind": "binary",
+                          "operator": "/",
+                          "left": {
+                            "kind": "identifier",
+                            "name": "quantity"
+                          },
+                          "right": {
+                            "kind": "member",
+                            "object": {
+                              "kind": "identifier",
+                              "name": "self"
+                            },
+                            "property": "quantityOnHand"
+                          }
+                        },
+                        "right": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "number",
+                            "value": 100
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "key": "reason",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "reason"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "quantityOnHand",
+          "expression": {
+            "kind": "binary",
+            "operator": "-",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "quantityOnHand"
+            },
+            "right": {
+              "kind": "identifier",
+              "name": "quantity"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "quantityReserved",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "quantityReserved"
+              },
+              "right": {
+                "kind": "identifier",
+                "name": "quantity"
+              }
+            },
+            "consequent": {
+              "kind": "binary",
+              "operator": "-",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "quantityReserved"
+              },
+              "right": {
+                "kind": "identifier",
+                "name": "quantity"
+              }
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": ["InventoryWasted"]
+    },
+    {
+      "name": "adjust",
+      "parameters": [
+        {
+          "name": "quantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "reason"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "reason"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "warnLargeNegativeAdjustment",
+          "code": "warnLargeNegativeAdjustment",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "<",
+              "left": {
+                "kind": "identifier",
+                "name": "quantity"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "<",
+              "left": {
+                "kind": "identifier",
+                "name": "quantity"
+              },
+              "right": {
+                "kind": "binary",
+                "operator": "*",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "quantityOnHand"
+                },
+                "right": {
+                  "kind": "unary",
+                  "operator": "-",
+                  "operand": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "number",
+                      "value": 0.5
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "severity": "warn",
+          "overrideable": false
+        }
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "Large negative adjustment ({adjustment}) for '{itemName}' - requires verification"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "itemName",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "name"
+                      }
+                    },
+                    {
+                      "key": "adjustment",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "quantity"
+                      }
+                    },
+                    {
+                      "key": "currentOnHand",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "quantityOnHand"
+                      }
+                    },
+                    {
+                      "key": "newOnHand",
+                      "value": {
+                        "kind": "binary",
+                        "operator": "+",
+                        "left": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "identifier",
+                            "name": "self"
+                          },
+                          "property": "quantityOnHand"
+                        },
+                        "right": {
+                          "kind": "identifier",
+                          "name": "quantity"
+                        }
+                      }
+                    },
+                    {
+                      "key": "reason",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "reason"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "quantityOnHand",
+          "expression": {
+            "kind": "binary",
+            "operator": "+",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "quantityOnHand"
+            },
+            "right": {
+              "kind": "identifier",
+              "name": "quantity"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": ["InventoryAdjusted"]
+    },
+    {
+      "name": "restock",
+      "parameters": [
+        {
+          "name": "quantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "costPerUnit",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "quantity"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "identifier",
+              "name": "quantity"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "costPerUnit"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "identifier",
+              "name": "costPerUnit"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "infoRestocked",
+          "code": "infoRestocked",
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "identifier",
+              "name": "quantity"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "severity": "ok",
+          "overrideable": false
+        }
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "Restocked {quantity} {unit} of '{itemName}' at ${unitCost} per {unit}"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "itemName",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "name"
+                      }
+                    },
+                    {
+                      "key": "quantity",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "quantity"
+                      }
+                    },
+                    {
+                      "key": "unit",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "baseUnit"
+                      }
+                    },
+                    {
+                      "key": "unitCost",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "costPerUnit"
+                      }
+                    },
+                    {
+                      "key": "totalCost",
+                      "value": {
+                        "kind": "binary",
+                        "operator": "*",
+                        "left": {
+                          "kind": "identifier",
+                          "name": "quantity"
+                        },
+                        "right": {
+                          "kind": "identifier",
+                          "name": "costPerUnit"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "quantityOnHand",
+          "expression": {
+            "kind": "binary",
+            "operator": "+",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "quantityOnHand"
+            },
+            "right": {
+              "kind": "identifier",
+              "name": "quantity"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "costPerUnit",
+          "expression": {
+            "kind": "identifier",
+            "name": "costPerUnit"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": ["InventoryRestocked"]
+    },
+    {
+      "name": "releaseReservation",
+      "parameters": [
+        {
+          "name": "quantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "eventId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "quantity"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "identifier",
+              "name": "quantity"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "eventId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "eventId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "warnReleaseExceedsReserved",
+          "code": "warnReleaseExceedsReserved",
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "identifier",
+              "name": "quantity"
+            },
+            "right": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "quantityReserved"
+            }
+          },
+          "severity": "warn",
+          "overrideable": false
+        }
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "Releasing more ({quantity}) than reserved ({reserved}) - adjusting to reserved amount"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "itemName",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "name"
+                      }
+                    },
+                    {
+                      "key": "requestedRelease",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "quantity"
+                      }
+                    },
+                    {
+                      "key": "reserved",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "quantityReserved"
+                      }
+                    },
+                    {
+                      "key": "adjusted",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "quantityReserved"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "quantityReserved",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "quantityReserved"
+              },
+              "right": {
+                "kind": "identifier",
+                "name": "quantity"
+              }
+            },
+            "consequent": {
+              "kind": "binary",
+              "operator": "-",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "quantityReserved"
+              },
+              "right": {
+                "kind": "identifier",
+                "name": "quantity"
+              }
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": ["InventoryReservationReleased"]
+    }
+  ],
+  "policies": [
+    {
+      "name": "InventoryStaffCanReserve",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "kitchen_staff"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "kitchen_lead"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Kitchen staff can reserve inventory"
+    },
+    {
+      "name": "InventoryStaffCanConsume",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "kitchen_staff"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "kitchen_lead"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Kitchen staff can consume inventory"
+    },
+    {
+      "name": "ManagersCanAdjust",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "kitchen_lead"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Only managers can adjust inventory"
+    },
+    {
+      "name": "ManagersCanRestock",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "kitchen_lead"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Only managers can restock inventory"
+    }
+  ]
+}

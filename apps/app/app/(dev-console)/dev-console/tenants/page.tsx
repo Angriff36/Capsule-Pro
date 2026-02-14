@@ -14,11 +14,17 @@ const DevConsoleTenantsPage = () => (
         </div>
       </div>
       <div className="dev-console-header-actions">
-        <button className="dev-console-button dev-console-button-ghost" type="button">
+        <button
+          className="dev-console-button dev-console-button-ghost"
+          type="button"
+        >
           <RotateCcwIcon className="h-4 w-4" />
           Reset Keys
         </button>
-        <button className="dev-console-button dev-console-button-primary" type="button">
+        <button
+          className="dev-console-button dev-console-button-primary"
+          type="button"
+        >
           <KeyRoundIcon className="h-4 w-4" />
           Impersonate
         </button>
@@ -69,19 +75,31 @@ const DevConsoleTenantsPage = () => (
         <div className="dev-console-form-grid">
           <label>
             Company name
-            <input className="dev-console-input" placeholder="e.g. Acme Corporation" />
+            <input
+              className="dev-console-input"
+              placeholder="e.g. Acme Corporation"
+            />
           </label>
           <label>
             Owner email
-            <input className="dev-console-input" placeholder="owner@company.com" />
+            <input
+              className="dev-console-input"
+              placeholder="owner@company.com"
+            />
           </label>
           <label>
             Temp password
-            <input className="dev-console-input" placeholder="Generate strong password" />
+            <input
+              className="dev-console-input"
+              placeholder="Generate strong password"
+            />
           </label>
           <label>
             Owner role
-            <input className="dev-console-input" placeholder="Tenant Owner (default)" />
+            <input
+              className="dev-console-input"
+              placeholder="Tenant Owner (default)"
+            />
           </label>
           <label>
             Owner first name
@@ -97,10 +115,16 @@ const DevConsoleTenantsPage = () => (
             Result will return tenantId and owner credentials.
           </span>
           <div>
-            <button className="dev-console-button dev-console-button-ghost" type="button">
+            <button
+              className="dev-console-button dev-console-button-ghost"
+              type="button"
+            >
               Clear
             </button>
-            <button className="dev-console-button dev-console-button-primary" type="button">
+            <button
+              className="dev-console-button dev-console-button-primary"
+              type="button"
+            >
               Create tenant &amp; owner
             </button>
           </div>
@@ -108,7 +132,9 @@ const DevConsoleTenantsPage = () => (
         <div className="dev-console-tenant-result">
           <div>
             <div className="dev-console-tenant-name">Created tenant id</div>
-            <span className="dev-console-muted">ten_92afc3b1 · region: us-east-1</span>
+            <span className="dev-console-muted">
+              ten_92afc3b1 · region: us-east-1
+            </span>
           </div>
           <span className="dev-console-status-pill">Owner can sign in</span>
         </div>

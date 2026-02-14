@@ -9,11 +9,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 
-type LegalPageProperties = {
+// ISR: Revalidate daily - legal content rarely changes
+export const revalidate = 86_400;
+
+interface LegalPageProperties {
   readonly params: Promise<{
     slug: string;
   }>;
-};
+}
 
 export const generateMetadata = async ({
   params,
@@ -32,9 +35,13 @@ export const generateMetadata = async ({
 };
 
 export const generateStaticParams = async (): Promise<{ slug: string }[]> => {
-  const posts = await legal.getPosts();
-
-  return posts.map(({ _slug }) => ({ slug: _slug }));
+  try {
+    const posts = await legal.getPosts();
+    return posts.map(({ _slug }) => ({ slug: _slug }));
+  } catch (error) {
+    console.error("Failed to fetch legal posts for static generation:", error);
+    return [];
+  }
 };
 
 const LegalPage = async ({ params }: LegalPageProperties) => {
@@ -42,7 +49,6 @@ const LegalPage = async ({ params }: LegalPageProperties) => {
 
   return (
     <Feed queries={[legal.postQuery(slug)]}>
-      {/* biome-ignore lint/suspicious/useAwait: "Server Actions must be async" */}
       {async ([data]) => {
         "use server";
 
@@ -77,10 +83,14 @@ const LegalPage = async ({ params }: LegalPageProperties) => {
                 <Sidebar
                   date={new Date()}
                   readingTime={
-                    page.body ? `${page.body.readingTime} min read` : "0 min read"
+                    page.body
+                      ? `${page.body.readingTime} min read`
+                      : "0 min read"
                   }
                   toc={
-                    page.body ? <TableOfContents data={page.body.json.toc} /> : null
+                    page.body ? (
+                      <TableOfContents data={page.body.json.toc} />
+                    ) : null
                   }
                 />
               </div>

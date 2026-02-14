@@ -11,39 +11,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
-    name: Build ${{ matrix.app }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        app: [api, app, docs]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        # version is optional when packageManager is set in package.json
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.12.0'
-          cache: 'pnpm'
-
-      - name: Show toolchain
-        run: node -v && pnpm -v
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build apps/${{ matrix.app }} (next build)
-        run: pnpm --filter ${{ matrix.app }} build
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-  web-build:
-    name: Build Web
+    name: Vercel-Compatible Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -55,20 +23,22 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.12.0'
-          cache: 'pnpm'
+          node-version: "22.x" # Match Vercel's engine requirement
+          cache: "pnpm"
 
       - name: Show toolchain
         run: node -v && pnpm -v
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Build apps/web (basehub && next build)
-        run: |
-          pnpm --filter web exec basehub
-          pnpm --filter web build
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
-          BASEHUB_DRAFT: false
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+
+      - name: Build with Turbo (exactly like Vercel)
+        run: pnpm turbo run build
+        env:
+          # Match Vercel's minimal env approach
+          SKIP_ENV_VALIDATION: true
+          # Turbo remote caching (optional - requires Vercel token)
+          # TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          # TURBO_TEAM: ${{ secrets.TURBO_TEAM }}

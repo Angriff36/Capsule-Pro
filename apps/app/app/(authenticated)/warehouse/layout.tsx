@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
-type WarehouseLayoutProperties = {
+
+interface WarehouseLayoutProperties {
   readonly children: ReactNode;
-};
+}
 
 const WarehouseLayout = ({ children }: WarehouseLayoutProperties) => (
   <>{children}</>

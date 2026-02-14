@@ -1,0 +1,20 @@
+// Bootstrap manifest source for prep-task domain.
+entity PrepTask {
+  property required id: string
+  property required tenantId: string
+  property status: string = "open"
+
+  command claim(userId: string) {
+    guard userId != null and userId != "" "userId is required"
+    guard self.status == "open" "Only open tasks can be claimed"
+    mutate status = "claimed"
+    emit PrepTaskClaimed
+  }
+
+  store PrepTask in memory
+}
+
+event PrepTaskClaimed: "kitchen.prepTask.claimed" {
+  id: string
+  tenantId: string
+}

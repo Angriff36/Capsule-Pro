@@ -5,11 +5,12 @@ import {
 } from "@repo/design-system/components/ui/collapsible";
 import type { Meta, StoryObj } from "@storybook/react";
 import { Info } from "lucide-react";
+import type { ComponentProps } from "react";
 
 /**
  * An interactive component which expands/collapses a panel.
  */
-const meta = {
+const meta: Meta<ComponentProps<typeof Collapsible>> = {
   title: "ui/Collapsible",
   component: Collapsible,
   tags: ["autodocs"],

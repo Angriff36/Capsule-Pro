@@ -10,34 +10,59 @@ import { Separator } from "@repo/design-system/components/ui/separator";
 import { SidebarTrigger } from "@repo/design-system/components/ui/sidebar";
 import { Fragment, type ReactNode } from "react";
 
-type HeaderProps = {
-  pages: string[];
+interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
+interface HeaderProps {
+  pages: string[] | BreadcrumbItem[];
   page: string;
   children?: ReactNode;
-};
+}
 
-export const Header = ({ pages, page, children }: HeaderProps) => (
-  <header className="flex h-16 shrink-0 items-center justify-between gap-2">
-    <div className="flex items-center gap-2 px-4">
-      <SidebarTrigger className="-ml-1" />
-      <Separator className="mr-2 h-4" orientation="vertical" />
-      <Breadcrumb>
-        <BreadcrumbList className="text-sm text-muted-foreground/70">
-          {pages.map((page, index) => (
-            <Fragment key={page}>
-              {index > 0 && <BreadcrumbSeparator className="hidden md:block" />}
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="#">{page}</BreadcrumbLink>
-              </BreadcrumbItem>
-            </Fragment>
-          ))}
-          <BreadcrumbSeparator className="hidden md:block" />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{page}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-    </div>
-    {children}
-  </header>
-);
+function isBreadcrumbItem(
+  item: string | BreadcrumbItem
+): item is BreadcrumbItem {
+  return typeof item === "object" && "label" in item;
+}
+
+export const Header = ({ pages, page, children }: HeaderProps) => {
+  const breadcrumbItems: BreadcrumbItem[] = pages.map((item) =>
+    isBreadcrumbItem(item) ? item : { label: item, href: undefined }
+  );
+
+  return (
+    <header className="flex h-16 shrink-0 items-center justify-between gap-2">
+      <div className="flex items-center gap-2 px-4">
+        <SidebarTrigger className="-ml-1" />
+        <Separator className="mr-2 h-4" orientation="vertical" />
+        <Breadcrumb>
+          <BreadcrumbList className="text-muted-foreground/70 text-sm">
+            {breadcrumbItems.map((item, index) => (
+              <Fragment key={item.label}>
+                {index > 0 && (
+                  <BreadcrumbSeparator className="hidden md:block" />
+                )}
+                <BreadcrumbItem className="hidden md:block">
+                  {item.href ? (
+                    <BreadcrumbLink href={item.href}>
+                      {item.label}
+                    </BreadcrumbLink>
+                  ) : (
+                    <BreadcrumbLink href="#">{item.label}</BreadcrumbLink>
+                  )}
+                </BreadcrumbItem>
+              </Fragment>
+            ))}
+            <BreadcrumbSeparator className="hidden md:block" />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{page}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+      {children}
+    </header>
+  );
+};

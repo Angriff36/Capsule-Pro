@@ -14,12 +14,13 @@ import {
   ContextMenuTrigger,
 } from "@repo/design-system/components/ui/context-menu";
 import type { Meta, StoryObj } from "@storybook/react";
+import type { ComponentProps } from "react";
 
 /**
  * Displays a menu to the user — such as a set of actions or functions —
  * triggered by a button.
  */
-const meta = {
+const meta: Meta<ComponentProps<typeof ContextMenu>> = {
   title: "ui/ContextMenu",
   component: ContextMenu,
   tags: ["autodocs"],

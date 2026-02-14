@@ -1,10 +1,10 @@
-import { ModuleSection } from "../../components/module-section";
+import { ClientsClient } from "./components/clients-client";
 
-const CrmClientsPage = () => (
-  <ModuleSection
-    title="Clients"
-    summary="Track organizations, contacts, and engagement history."
-  />
-);
+export default function CrmClientsPage() {
+  return <ClientsClient />;
+}
 
-export default CrmClientsPage;
+export const metadata = {
+  title: "Clients",
+  description: "Manage your client relationships and contact information.",
+};

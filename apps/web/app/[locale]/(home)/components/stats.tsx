@@ -1,11 +1,12 @@
 import type { Dictionary } from "@repo/internationalization";
 import { MoveDownLeft, MoveUpRight } from "lucide-react";
 
-type StatsProps = {
+interface StatsProps {
   dictionary: Dictionary;
-};
+  locale?: string;
+}
 
-export const Stats = ({ dictionary }: StatsProps) => (
+export const Stats = ({ dictionary, locale = "en-US" }: StatsProps) => (
   <div className="w-full py-20 lg:py-40">
     <div className="container mx-auto">
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
@@ -21,10 +22,10 @@ export const Stats = ({ dictionary }: StatsProps) => (
         </div>
         <div className="flex items-center justify-center">
           <div className="grid w-full grid-cols-1 gap-2 text-left sm:grid-cols-2 lg:grid-cols-2">
-            {dictionary.web.home.stats.items.map((item, index) => (
+            {dictionary.web.home.stats.items.map((item) => (
               <div
                 className="flex flex-col justify-between gap-0 rounded-md border p-6"
-                key={index}
+                key={item.title}
               >
                 {Number.parseFloat(item.delta) > 0 ? (
                   <MoveUpRight className="mb-10 h-4 w-4 text-primary" />
@@ -33,7 +34,7 @@ export const Stats = ({ dictionary }: StatsProps) => (
                 )}
                 <h2 className="flex max-w-xl flex-row items-end gap-4 text-left font-regular text-4xl tracking-tighter">
                   {item.type === "currency" && "$"}
-                  {new Intl.NumberFormat().format(
+                  {new Intl.NumberFormat(locale).format(
                     Number.parseFloat(item.metric)
                   )}
                   <span className="text-muted-foreground text-sm tracking-normal">

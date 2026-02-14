@@ -16,12 +16,13 @@ import {
   MenubarTrigger,
 } from "@repo/design-system/components/ui/menubar";
 import type { Meta, StoryObj } from "@storybook/react";
+import type { ComponentProps } from "react";
 
 /**
  * A visually persistent menu common in desktop applications that provides
  * quick access to a consistent set of commands.
  */
-const meta = {
+const meta: Meta<ComponentProps<typeof Menubar>> = {
   title: "ui/Menubar",
   component: Menubar,
   tags: ["autodocs"],

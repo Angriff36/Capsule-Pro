@@ -1,0 +1,13 @@
+{
+  "featureId": "002",
+  "featureName": "recipes-menu-overhaul",
+  "basePath": ".specify/specs/recipes-menu-overhaul",
+  "phase": "execution",
+  "taskIndex": 30,
+  "totalTasks": 34,
+  "taskIteration": 1,
+  "maxTaskIterations": 5,
+  "globalIteration": 31,
+  "maxGlobalIterations": 100,
+  "awaitingApproval": false
+}

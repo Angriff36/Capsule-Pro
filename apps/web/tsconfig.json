@@ -5,16 +5,19 @@
   ],
   "compilerOptions": {
     "ignoreDeprecations": "5.0",
+    "skipLibCheck": true,
     "paths": {
-      "@/*": ["./*"],
-      "@repo/*": ["../../packages/*"]
-    }
+      "@/*": ["./*"]
+    },
+    "strictNullChecks": true
   },
   "include": [
     "next-env.d.ts",
     "next.config.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
-  , "basehub-types.d.ts", "basehub.config.ts"]
+    ".next/types/**/*.ts",
+    "basehub-types.d.ts",
+    "basehub.config.ts"
+  ]
 }

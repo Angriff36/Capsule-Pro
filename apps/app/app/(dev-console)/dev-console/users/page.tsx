@@ -6,7 +6,7 @@ const DevConsoleUsersPage = () => (
         <p>Account directory and access controls.</p>
       </div>
     </div>
-    <p className="text-sm text-slate-400">
+    <p className="text-slate-400 text-sm">
       Placeholder screen. We can wire this to the actual user directory next.
     </p>
   </div>

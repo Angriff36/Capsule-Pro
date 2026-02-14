@@ -1,17 +1,24 @@
 import type {
+  KitchenTaskStatus as KitchenTaskStatusType,
   TaskTransitionInput,
   TransitionResult,
-} from './types';
-import { TransitionErrorCode, KitchenTaskStatus } from './types';
-import type { KitchenTaskStatus as KitchenTaskStatusType } from './types';
+} from "./types";
+import { KitchenTaskStatus, TransitionErrorCode } from "./types";
 
 /**
  * Valid state transitions for kitchen tasks
  * Maps from current status to allowed target statuses
  */
 export const VALID_TRANSITIONS: Record<string, KitchenTaskStatusType[]> = {
-  [KitchenTaskStatus.open]: [KitchenTaskStatus.in_progress, KitchenTaskStatus.canceled],
-  [KitchenTaskStatus.in_progress]: [KitchenTaskStatus.done, KitchenTaskStatus.canceled, KitchenTaskStatus.open],
+  [KitchenTaskStatus.open]: [
+    KitchenTaskStatus.in_progress,
+    KitchenTaskStatus.canceled,
+  ],
+  [KitchenTaskStatus.in_progress]: [
+    KitchenTaskStatus.done,
+    KitchenTaskStatus.canceled,
+    KitchenTaskStatus.open,
+  ],
   [KitchenTaskStatus.done]: [],
   [KitchenTaskStatus.canceled]: [],
 } as const;
@@ -48,12 +55,12 @@ export function validateTransition(
   const { currentStatus, targetStatus, note } = input;
 
   // Validate that both statuses are strings
-  if (typeof currentStatus !== 'string' || typeof targetStatus !== 'string') {
+  if (typeof currentStatus !== "string" || typeof targetStatus !== "string") {
     return {
       success: false,
       error: {
         code: TransitionErrorCode.INVALID_TRANSITION,
-        message: 'Status values must be strings',
+        message: "Status values must be strings",
       },
     };
   }
@@ -65,7 +72,7 @@ export function validateTransition(
       success: false,
       error: {
         code: TransitionErrorCode.INVALID_TRANSITION,
-        message: `Cannot transition from '${currentStatus}' to '${targetStatus}'. Valid transitions: ${validTargets.join(', ') || 'none'}`,
+        message: `Cannot transition from '${currentStatus}' to '${targetStatus}'. Valid transitions: ${validTargets.join(", ") || "none"}`,
       },
     };
   }

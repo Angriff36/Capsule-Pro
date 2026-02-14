@@ -20,11 +20,13 @@ export const env = createEnv({
   ],
   server: {
     ABLY_API_KEY: z.string().min(1),
+    ABLY_AUTH_CORS_ORIGINS: z.string().optional(),
     OUTBOX_PUBLISH_TOKEN: z.string().min(1),
   },
   client: {},
   runtimeEnv: {
     ABLY_API_KEY: process.env.ABLY_API_KEY,
+    ABLY_AUTH_CORS_ORIGINS: process.env.ABLY_AUTH_CORS_ORIGINS,
     OUTBOX_PUBLISH_TOKEN: process.env.OUTBOX_PUBLISH_TOKEN,
   },
 });
