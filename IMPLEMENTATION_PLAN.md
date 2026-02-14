@@ -3,7 +3,7 @@
 **Last Updated**: 2026-02-14 (Steps/Ingredients SQL Migration + Waste Entry Type Fix)
 **Build Status**: ✅ PASSING
 **Test Status**: ✅ 649 passing (542 api + 107 app), 0 failures
-**Latest Tag**: v0.3.8
+**Latest Tag**: v0.3.9
 **Current Branch**: manifest-.3
 
 ---
