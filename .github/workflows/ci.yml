@@ -42,6 +42,7 @@ jobs:
           # Minimal env vars - Prisma will skip generation when VERCEL_ENV is set without DATABASE_URL
           SKIP_ENV_VALIDATION: true
           BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
