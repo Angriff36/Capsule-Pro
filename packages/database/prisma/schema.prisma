@@ -162,6 +162,7 @@ model User {
 
   @@id([tenantId, id])
   @@unique([tenantId, id], map: "employees_tenant_id_unique_idx")
+  @@index([roleId])
   @@map("employees")
   @@schema("tenant_staff")
 }
@@ -244,6 +245,7 @@ model KitchenTaskClaim {
 
   @@id([tenantId, id])
   @@index([taskId])
+  @@index([employeeId])
   @@map("task_claims")
   @@schema("tenant_kitchen")
 }
@@ -399,6 +401,8 @@ model Event {
   @@id([tenantId, id])
   @@unique([tenantId, id])
   @@index([tenantId, venueId], map: "idx_events_venue_id")
+  @@index([clientId])
+  @@index([locationId])
   @@map("events")
   @@schema("tenant_events")
 }
@@ -606,6 +610,7 @@ model ClientContact {
   tenant           Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
+  @@index([clientId])
   @@map("client_contacts")
   @@schema("tenant_crm")
 }
@@ -697,6 +702,8 @@ model ClientInteraction {
   tenant            Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
+  @@index([clientId])
+  @@index([leadId])
   @@index([employeeId], map: "client_interactions_employee_idx")
   @@map("client_interactions")
   @@schema("tenant_crm")
@@ -739,6 +746,9 @@ model Proposal {
 
   @@id([tenantId, id])
   @@unique([tenantId, id])
+  @@index([clientId])
+  @@index([leadId])
+  @@index([eventId])
   @@map("proposals")
   @@schema("tenant_crm")
 }
@@ -821,6 +831,7 @@ model RecipeVersion {
 
   @@id([tenantId, id])
   @@unique([tenantId, recipeId, versionNumber])
+  @@index([recipeId])
   @@index([lockedBy])
   @@map("recipe_versions")
   @@schema("tenant_kitchen")
@@ -846,6 +857,7 @@ model RecipeIngredient {
   tenant           Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
+  @@index([recipeVersionId])
   @@index([ingredientId])
   @@map("recipe_ingredients")
   @@schema("tenant_kitchen")
@@ -948,7 +960,7 @@ model Dish {
 
 model Menu {
   tenantId       String     @map("tenant_id") @db.Uuid
-  id             String     @default(cuid()) @db.Uuid
+  id             String     @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name           String
   description    String?
   category       String?
@@ -970,7 +982,7 @@ model Menu {
 
 model MenuDish {
   tenantId   String    @map("tenant_id") @db.Uuid
-  id         String    @default(cuid()) @db.Uuid
+  id         String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   menuId     String    @map("menu_id") @db.Uuid
   dishId     String    @map("dish_id") @db.Uuid
   course     String?
@@ -1025,6 +1037,8 @@ model EventStaffAssignment {
   tenant     Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
+  @@index([eventId])
+  @@index([employeeId])
   @@map("event_staff_assignments")
   @@schema("tenant_events")
 }
@@ -1046,6 +1060,7 @@ model EventTimeline {
   tenant          Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
+  @@index([eventId])
   @@map("event_timeline")
   @@schema("tenant_events")
 }
@@ -1756,6 +1771,7 @@ model Shipment {
   @@index([tenantId, status])
   @@index([tenantId, eventId])
   @@index([tenantId, supplierId])
+  @@index([locationId])
   @@index([trackingNumber])
   @@map("shipments")
   @@schema("tenant_inventory")
@@ -2991,7 +3007,7 @@ model OverrideAudit {
 }
 
 model OutboxEvent {
-  id            String       @id @default(cuid())
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   tenantId      String
   eventType     String
   payload       Json
