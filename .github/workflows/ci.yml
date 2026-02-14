@@ -27,15 +27,15 @@ jobs:
 
       - name: Setup PostgreSQL (skip for Dependabot)
         if: steps.dependabot-check.outputs.is_dependabot != 'true'
-        uses: harmon758/postgresql-action@v1
+        uses: ikalnytskyi/action-setup-postgres@v6
         with:
-          postgresql version: '15'
-          postgresql password: postgres
+          postgres-version: "15"
+          password: postgres
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
 
       - name: Enforce DB migration guardrails
         run: |
@@ -86,7 +86,7 @@ jobs:
         if: steps.dependabot-check.outputs.is_dependabot == 'true'
         run: pnpm test -- --run --reporter=verbose
         env:
-          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"  # Dummy URL for tests that don't need DB
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy" # Dummy URL for tests that don't need DB
 
       - name: Build all apps
         run: pnpm run build
