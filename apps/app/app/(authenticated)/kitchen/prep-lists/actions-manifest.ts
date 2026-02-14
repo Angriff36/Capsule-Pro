@@ -1,7 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import type { ConstraintOutcome, OverrideRequest } from "@manifest/runtime/ir";
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
@@ -1506,3 +1506,4 @@ export type {
   PrepListGenerationResult,
   StationPrepList,
 } from "./actions";
+

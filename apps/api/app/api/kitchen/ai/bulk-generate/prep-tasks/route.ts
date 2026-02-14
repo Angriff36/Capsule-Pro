@@ -6,7 +6,7 @@
  */
 
 import { NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { invariant } from "@/app/lib/invariant";
 import { requireTenantId } from "@/app/lib/tenant";
 import { generateBulkPrepTasks } from "./service";
@@ -113,7 +113,8 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     return NextResponse.json(response, { status: 200 });
   } catch (error: unknown) {
-    Sentry.captureException(error);
+    captureException(error);
     return determineErrorResponse(error);
   }
 }
+

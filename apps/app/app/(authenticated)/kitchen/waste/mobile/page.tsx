@@ -19,7 +19,7 @@ import {
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Trash2, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useState } from "react";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import { Header } from "../../../components/header";
 
@@ -84,7 +84,7 @@ export default function WasteLoggingMobilePage() {
         setInventoryItems(data.items || []);
       }
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
     }
   };
 
@@ -96,7 +96,7 @@ export default function WasteLoggingMobilePage() {
         setWasteReasons(data.reasons || []);
       }
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
     }
   };
 
@@ -109,7 +109,7 @@ export default function WasteLoggingMobilePage() {
           body: JSON.stringify(entry),
         });
       } catch (error) {
-        Sentry.captureException(error);
+        captureException(error);
       }
     }
     setSyncQueue([]);
@@ -202,7 +202,7 @@ export default function WasteLoggingMobilePage() {
         setErrors({ itemId: error.message || "Failed to log waste entry" });
       }
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
       setErrors({ itemId: "Failed to connect. Please try again." });
     } finally {
       setIsLoading(false);
@@ -430,3 +430,4 @@ export default function WasteLoggingMobilePage() {
     </>
   );
 }
+

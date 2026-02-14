@@ -409,7 +409,7 @@ function HistoryTabContent({
           setVersions(data);
         }
       } catch (error) {
-        Sentry.captureException(error);
+        captureException(error);
       } finally {
         setLoading(false);
       }
@@ -990,7 +990,7 @@ export function RecipeDetailTabs({
         const data = await getRecipeCost(recipeVersionId);
         setCostData(data);
       } catch (error) {
-        Sentry.captureException(error);
+        captureException(error);
         setCostData(null);
       } finally {
         setLoading(false);

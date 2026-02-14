@@ -66,7 +66,7 @@ export async function GET(
 
     return NextResponse.json(wasteEntry[0]);
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to get waste entry" },
       { status: 500 }
@@ -134,7 +134,7 @@ export async function PUT(
       message: "Waste entry updated successfully",
     });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to update waste entry" },
       { status: 500 }
@@ -172,7 +172,7 @@ export async function DELETE(
       message: "Waste entry deleted successfully",
     });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to delete waste entry" },
       { status: 500 }

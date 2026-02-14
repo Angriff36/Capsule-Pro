@@ -1,6 +1,6 @@
 "use client";
 
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import { Input } from "@repo/design-system/components/ui/input";
@@ -103,7 +103,7 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
 
       router.push("/kitchen/recipes/menus");
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
       alert("Error saving menu. Please try again.");
     }
   };
@@ -271,7 +271,7 @@ function DishesSelector({
         const result = await getDishes();
         setDishes(result);
       } catch (error) {
-        Sentry.captureException(error);
+        captureException(error);
       } finally {
         setIsLoading(false);
       }
@@ -379,3 +379,4 @@ function DishesSelector({
     </div>
   );
 }
+

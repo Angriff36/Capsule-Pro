@@ -28,7 +28,7 @@ import {
 import { AlertTriangle, CheckCircle2, Loader2, SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import { AllergenManagementModal } from "./allergen-management-modal";
 
@@ -245,7 +245,7 @@ export default function AllergenManagementPage() {
       // Refresh warnings
       await fetchWarnings();
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
       toast.error("Failed to acknowledge warning");
     } finally {
       setActionLoading(false);
@@ -281,7 +281,7 @@ export default function AllergenManagementPage() {
       // Refresh warnings
       await fetchWarnings();
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
       toast.error("Failed to resolve warning");
     } finally {
       setActionLoading(false);
@@ -653,3 +653,4 @@ export default function AllergenManagementPage() {
     </div>
   );
 }
+

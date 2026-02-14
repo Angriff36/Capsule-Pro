@@ -206,7 +206,7 @@ export async function GET(
 
     return NextResponse.json(costSummary);
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to fetch recipe cost" },
       { status: 500 }
@@ -241,7 +241,7 @@ export async function POST(
 
     return NextResponse.json(costSummary);
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to recalculate recipe cost" },
       { status: 500 }

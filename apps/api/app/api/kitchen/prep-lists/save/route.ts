@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface PrepListIngredient {
@@ -103,17 +103,18 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({ success: true });
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
       return NextResponse.json(
         { error: "Failed to save prep list" },
         { status: 500 }
       );
     }
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to save prep list" },
       { status: 500 }
     );
   }
 }
+

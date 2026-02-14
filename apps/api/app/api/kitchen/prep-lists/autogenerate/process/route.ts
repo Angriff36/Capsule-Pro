@@ -11,7 +11,7 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { processPendingPrepListGenerations } from "@repo/manifest-adapters";
 import { NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 
 /**
  * Process pending prep list generation requests
@@ -53,7 +53,7 @@ export async function POST() {
       note: "Use POST /api/kitchen/prep-lists/generate to generate prep lists",
     });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to process prep list generations" },
       { status: 500 }
@@ -85,10 +85,11 @@ export async function GET() {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to check pending generations" },
       { status: 500 }
     );
   }
 }
+

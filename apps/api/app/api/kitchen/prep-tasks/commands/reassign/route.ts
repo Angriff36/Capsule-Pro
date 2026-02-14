@@ -10,7 +10,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,7 +55,8 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
+

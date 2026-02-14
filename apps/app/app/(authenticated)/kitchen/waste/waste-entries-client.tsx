@@ -22,7 +22,7 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { AlertCircle, DollarSign, Package, Search, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 
 const { logger } = Sentry;
@@ -102,7 +102,7 @@ export function WasteEntriesClient() {
           setUnits([]);
         }
       } catch (error) {
-        Sentry.captureException(error);
+        captureException(error);
         toast.error("Failed to load form data");
       } finally {
         setLoading(false);
@@ -134,7 +134,7 @@ export function WasteEntriesClient() {
           setFilteredItems([]);
         }
       } catch (error) {
-        Sentry.captureException(error);
+        captureException(error);
         setFilteredItems([]);
       }
     });
@@ -527,3 +527,4 @@ export function WasteEntriesClient() {
     </>
   );
 }
+

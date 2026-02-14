@@ -105,7 +105,7 @@ export async function POST(
 
     return NextResponse.json(result);
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to scale recipe cost" },
       { status: 500 }
@@ -144,7 +144,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to update waste factor" },
       { status: 500 }

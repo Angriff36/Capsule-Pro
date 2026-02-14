@@ -184,7 +184,7 @@ export async function GET(
       stations,
     });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to get prep list" },
       { status: 500 }
@@ -255,7 +255,7 @@ export async function PATCH(
 
     return NextResponse.json({ message: "Prep list updated successfully" });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to update prep list" },
       { status: 500 }
@@ -301,7 +301,7 @@ export async function DELETE(
 
     return NextResponse.json({ message: "Prep list deleted successfully" });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to delete prep list" },
       { status: 500 }

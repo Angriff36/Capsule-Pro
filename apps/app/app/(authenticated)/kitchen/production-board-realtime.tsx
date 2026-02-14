@@ -3,7 +3,7 @@
 import Ably from "ably";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 
 const { logger } = Sentry;
 
@@ -181,3 +181,4 @@ export function ProductionBoardRealtime({
 
   return null;
 }
+

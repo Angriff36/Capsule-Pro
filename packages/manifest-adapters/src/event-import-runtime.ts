@@ -5,7 +5,7 @@
  * It orchestrates the flow: Document Import -> Event Creation -> Battle Board/Checklist Generation
  */
 
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import type { EmittedEvent, RuntimeEngine } from "@manifest/runtime";
 import type { IR } from "@manifest/runtime/ir";
 import { compileToIR } from "@manifest/runtime/ir-compiler";
@@ -413,3 +413,4 @@ export function setupEventListeners(
 
   return unsubscribe;
 }
+

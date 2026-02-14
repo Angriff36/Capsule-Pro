@@ -1,7 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import type { ConstraintOutcome, OverrideRequest } from "@manifest/runtime/ir";
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
@@ -1328,3 +1328,4 @@ export const updateRecipeImage = _updateRecipeImage;
 
 // Type export
 export type { RecipeForEdit } from "./actions";
+

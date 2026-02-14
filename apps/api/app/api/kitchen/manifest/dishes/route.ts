@@ -3,7 +3,7 @@ import { auth } from "@repo/auth/server";
 import type { Prisma } from "@repo/database";
 import { createRecipeRuntime } from "@repo/manifest-adapters";
 import { NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   createDishCreatedOutboxEvent,
@@ -153,7 +153,7 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       {
         message: "Failed to create dish",
@@ -163,3 +163,4 @@ export async function POST(request: Request) {
     );
   }
 }
+

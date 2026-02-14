@@ -101,7 +101,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     return NextResponse.json({ task: updatedTask });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       {
         message: error instanceof Error ? error.message : "Unknown error",

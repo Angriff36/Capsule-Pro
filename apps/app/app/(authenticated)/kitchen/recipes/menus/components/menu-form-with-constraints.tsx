@@ -1,6 +1,6 @@
 "use client";
 
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import {
   ConstraintOverrideDialog,
   useConstraintOverride,
@@ -83,7 +83,7 @@ export function MenuFormWithConstraints({
         const result = await getDishes();
         setDishes(result);
       } catch (err) {
-        Sentry.captureException(err);
+        captureException(err);
       } finally {
         setIsLoadingDishes(false);
       }
@@ -352,3 +352,4 @@ export function MenuFormWithConstraints({
     </>
   );
 }
+

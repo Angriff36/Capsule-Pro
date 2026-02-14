@@ -135,7 +135,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       { status: 500 }
     );
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       {
         message: "Failed to update dish pricing",

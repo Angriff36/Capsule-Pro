@@ -80,7 +80,7 @@ export async function POST(
       message: "Event budgets updated",
     });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to update event budgets" },
       { status: 500 }

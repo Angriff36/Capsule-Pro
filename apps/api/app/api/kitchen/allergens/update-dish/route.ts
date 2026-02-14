@@ -10,7 +10,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
 
     // Handle specific Prisma errors
     if (error && typeof error === "object" && "code" in error) {
@@ -107,3 +107,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

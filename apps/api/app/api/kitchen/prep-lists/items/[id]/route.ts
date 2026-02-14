@@ -76,7 +76,7 @@ export async function PATCH(
       message: "Prep list item updated successfully",
     });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to update prep list item" },
       { status: 500 }
@@ -114,7 +114,7 @@ export async function DELETE(
       message: "Prep list item deleted successfully",
     });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to delete prep list item" },
       { status: 500 }

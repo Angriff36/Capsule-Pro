@@ -3,7 +3,7 @@ import type { Prisma } from "@repo/database";
 import { database, type PrismaClient } from "@repo/database";
 import { wasteInventory } from "@repo/manifest-adapters";
 import { NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface WasteRequestBody {
@@ -558,7 +558,7 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
 
     // Check if this is a constraint violation
     if (
@@ -583,3 +583,4 @@ export async function POST(request: Request) {
     );
   }
 }
+

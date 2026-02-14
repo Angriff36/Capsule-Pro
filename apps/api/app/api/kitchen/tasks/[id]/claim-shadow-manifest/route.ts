@@ -68,7 +68,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

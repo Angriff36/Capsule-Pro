@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import type { SuggestedAction, SuggestionsResponse } from "./suggestions-types";
 
@@ -48,7 +48,7 @@ export function useSuggestions(tenantId?: string | null) {
         const errorMessage =
           err instanceof Error ? err.message : "Unknown error";
         setError(errorMessage);
-        Sentry.captureException(err);
+        captureException(err);
       } finally {
         setIsLoading(false);
       }
@@ -84,3 +84,4 @@ export function useSuggestions(tenantId?: string | null) {
     handleAction,
   };
 }
+

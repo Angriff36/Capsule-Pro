@@ -7,7 +7,7 @@
  * @module kitchen-ops/prep-list-autogeneration
  */
 
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import type { Prisma, PrismaClient } from "@repo/database";
 import { createOutboxEvent } from "@repo/realtime";
 
@@ -102,7 +102,7 @@ export async function triggerPrepListAutoGeneration(
       generatedAt: new Date(),
     };
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -195,7 +195,7 @@ export async function processPendingPrepListGenerations(
         errors++;
       }
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
       await db.outboxEvent.update({
         where: { id: event.id },
         data: {
@@ -250,7 +250,7 @@ export async function generatePrepListImmediately(
       generatedAt: new Date(),
     };
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -258,3 +258,4 @@ export async function generatePrepListImmediately(
     };
   }
 }
+

@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { getTenantIdForOrg } from "../../../lib/tenant";
@@ -50,7 +50,7 @@ const KitchenPrepListsPage = async ({ searchParams }: PrepListPageProps) => {
     try {
       initialPrepList = await generatePrepList({ eventId });
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
     }
   }
 
@@ -72,3 +72,4 @@ const KitchenPrepListsPage = async ({ searchParams }: PrepListPageProps) => {
 };
 
 export default KitchenPrepListsPage;
+

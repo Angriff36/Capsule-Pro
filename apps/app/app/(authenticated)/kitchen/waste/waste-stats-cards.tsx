@@ -3,7 +3,7 @@
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { DollarSign, Scale, Trash2, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { fetchWasteTrends, type WasteTrendsData } from "./lib/waste-analytics";
 
 type WasteStats = WasteTrendsData["summary"];
@@ -18,7 +18,7 @@ export function WasteStatsCards() {
         const trends = await fetchWasteTrends();
         setStats(trends.summary);
       } catch (error) {
-        Sentry.captureException(error);
+        captureException(error);
       } finally {
         setLoading(false);
       }
@@ -92,3 +92,4 @@ export function WasteStatsCards() {
     </div>
   );
 }
+

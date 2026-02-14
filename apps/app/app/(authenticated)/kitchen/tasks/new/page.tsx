@@ -19,7 +19,7 @@ import {
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { createKitchenTask } from "../actions";
 
 const PRIORITIES = [
@@ -41,7 +41,7 @@ export default function NewKitchenTaskPage() {
         router.push("/kitchen");
         router.refresh();
       } catch (error) {
-        Sentry.captureException(error);
+        captureException(error);
         alert(
           error instanceof Error
             ? error.message
@@ -129,3 +129,4 @@ export default function NewKitchenTaskPage() {
     </div>
   );
 }
+

@@ -77,7 +77,7 @@ export const RecipeDetailEditButton = ({
         setEditRecipeData(data);
         setIsEditModalOpen(true);
       } catch (err) {
-        Sentry.captureException(err);
+        captureException(err);
         setError("Failed to load recipe. Please try again.");
       } finally {
         setIsLoading(false);
@@ -110,7 +110,7 @@ export const RecipeDetailEditButton = ({
             reject(new Error(actionResult.error));
           }
         } catch (err) {
-          Sentry.captureException(err);
+          captureException(err);
           setError("Failed to update recipe. Please try again.");
           reject(err);
         }
@@ -148,7 +148,7 @@ export const RecipeDetailEditButton = ({
           setError(actionResult.error);
         }
       } catch (err) {
-        Sentry.captureException(err);
+        captureException(err);
         setError("Failed to update recipe. Please try again.");
       }
     });

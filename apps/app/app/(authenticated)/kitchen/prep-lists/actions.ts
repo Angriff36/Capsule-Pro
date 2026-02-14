@@ -1,6 +1,6 @@
 "use server";
 
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { getTenantIdForOrg } from "../../../lib/tenant";
@@ -774,7 +774,7 @@ export async function savePrepListToProductionBoard(
 
     return { success: true };
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return { success: false, error: "Failed to save prep list" };
   }
 }
@@ -878,7 +878,8 @@ export async function savePrepListToDatabase(
 
     return { success: true, prepListId };
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return { success: false, error: "Failed to save prep list to database" };
   }
 }
+

@@ -7,7 +7,7 @@ import { openai } from "@ai-sdk/openai";
 import { database } from "@repo/database";
 import { generateText } from "ai";
 import { v4 as uuidv4 } from "uuid";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import type {
   AIGeneratedTasks,
   BulkGenerateRequest,
@@ -248,7 +248,7 @@ Generate comprehensive prep tasks covering all menu items. Ensure:
       warnings: aiResponse.warnings || [],
     };
   } catch (error: unknown) {
-    Sentry.captureException(error);
+    captureException(error);
     throw new Error(
       `Failed to generate tasks with AI: ${error instanceof Error ? error.message : "Unknown error"}`
     );
@@ -378,7 +378,7 @@ export async function generateBulkPrepTasks(
       summary: `Generated ${generatedTasks.length} prep tasks for ${context.eventName} (${context.guestCount} guests).`,
     };
   } catch (error: unknown) {
-    Sentry.captureException(error);
+    captureException(error);
     return {
       batchId,
       status: "failed",
@@ -465,3 +465,4 @@ export async function saveGeneratedTasks(
 
   return { created, errors };
 }
+

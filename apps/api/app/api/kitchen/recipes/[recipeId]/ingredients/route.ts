@@ -100,7 +100,7 @@ export async function GET(
       })),
     });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to fetch recipe ingredients" },
       { status: 500 }

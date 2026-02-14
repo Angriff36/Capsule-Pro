@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import { Header } from "../../components/header";
 
@@ -131,7 +131,7 @@ export default function KitchenMobilePage() {
         setCurrentUserId(data.userId || null);
       }
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
     }
   };
 
@@ -145,7 +145,7 @@ export default function KitchenMobilePage() {
         setCurrentUserId(data.userId || null);
       }
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
     }
   };
 
@@ -189,7 +189,7 @@ export default function KitchenMobilePage() {
         fetchMyTasks();
       }
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
     }
   };
 
@@ -232,7 +232,7 @@ export default function KitchenMobilePage() {
         alert(error.message || "Failed to claim task");
       }
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
       alert("Failed to claim task. Please try again.");
     } finally {
       setIsLoading(false);
@@ -270,7 +270,7 @@ export default function KitchenMobilePage() {
         alert(error.message || "Failed to release task");
       }
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
       alert("Failed to release task. Please try again.");
     } finally {
       setIsLoading(false);
@@ -293,7 +293,7 @@ export default function KitchenMobilePage() {
         alert("Failed to complete task");
       }
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
       alert("Failed to complete task. Please try again.");
     } finally {
       setIsLoading(false);
@@ -551,3 +551,4 @@ export default function KitchenMobilePage() {
     </>
   );
 }
+

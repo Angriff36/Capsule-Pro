@@ -20,7 +20,7 @@ import {
   WifiOff,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import { Header } from "../../../components/header";
 
@@ -91,7 +91,7 @@ export default function PrepListsMobilePage() {
         setPrepLists(data.prepLists || []);
       }
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
     } finally {
       setIsLoading(false);
     }
@@ -311,3 +311,4 @@ export default function PrepListsMobilePage() {
     </>
   );
 }
+

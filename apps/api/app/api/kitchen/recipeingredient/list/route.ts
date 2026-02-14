@@ -9,7 +9,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 
 export async function GET(_request: NextRequest) {
   try {
@@ -36,7 +36,8 @@ export async function GET(_request: NextRequest) {
 
     return manifestSuccessResponse({ recipeIngredients });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
+

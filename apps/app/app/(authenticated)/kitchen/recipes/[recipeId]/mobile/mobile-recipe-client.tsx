@@ -276,7 +276,7 @@ export const MobileRecipeClient = ({
           toast.error("No internet connection and no cached data available");
         }
       } catch (error) {
-        Sentry.captureException(error);
+        captureException(error);
         // If we have cached data, keep it; otherwise show error
         if (!recipe) {
           toast.error("Failed to load recipe");
@@ -395,7 +395,7 @@ export const MobileRecipeClient = ({
         icon: <Wifi className="h-4 w-4" />,
       });
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
       toast.error("Failed to refresh recipe");
     }
   }, [isOnline, recipeId]);

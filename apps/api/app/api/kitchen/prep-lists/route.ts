@@ -10,7 +10,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface PrepListListFilters {
@@ -221,7 +221,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -305,10 +305,11 @@ export async function POST(request: Request) {
       message: "Prep list created successfully",
     });
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to create prep list" },
       { status: 500 }
     );
   }
 }
+

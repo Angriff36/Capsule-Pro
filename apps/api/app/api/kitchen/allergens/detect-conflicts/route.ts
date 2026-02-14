@@ -10,7 +10,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -278,10 +278,11 @@ export async function POST(request: Request) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
     );
   }
 }
+

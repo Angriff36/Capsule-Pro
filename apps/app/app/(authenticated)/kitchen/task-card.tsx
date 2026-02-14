@@ -22,7 +22,7 @@ import { differenceInMinutes, format, isPast } from "date-fns";
 import { ChevronRight, Clock, MoreVertical, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 
 type UserSelect = Pick<
@@ -220,7 +220,7 @@ export function TaskCard({
       }
       router.refresh();
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
       alert("Failed to claim task. Please try again.");
     } finally {
       setIsLoading(false);
@@ -243,7 +243,7 @@ export function TaskCard({
       }
       router.refresh();
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
       alert("Failed to release task. Please try again.");
     } finally {
       setIsLoading(false);
@@ -263,7 +263,7 @@ export function TaskCard({
         const errorData = await response
           .json()
           .catch(() => ({ message: "Unknown error" }));
-        Sentry.captureException(
+        captureException(
           new Error(`Task status update failed: ${JSON.stringify(errorData)}`)
         );
         throw new Error(
@@ -272,7 +272,7 @@ export function TaskCard({
       }
       router.refresh();
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
       alert("Failed to update task. Please try again.");
     } finally {
       setIsLoading(false);
@@ -471,3 +471,4 @@ export function TaskCard({
     </div>
   );
 }
+

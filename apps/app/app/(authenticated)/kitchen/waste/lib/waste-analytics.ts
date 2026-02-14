@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import { invariant } from "@/app/lib/invariant";
 
@@ -273,3 +273,4 @@ export async function fetchWasteReports(): Promise<WasteReportData> {
   const payload = await response.json();
   return parseWasteReportResponse(payload);
 }
+

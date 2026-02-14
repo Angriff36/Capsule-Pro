@@ -170,7 +170,7 @@ export async function GET(
 
     return NextResponse.json(response);
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to fetch recipe steps" },
       { status: 500 }

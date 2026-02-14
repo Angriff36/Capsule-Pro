@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
@@ -113,17 +113,18 @@ export async function POST(request: NextRequest) {
         prepListId,
       });
     } catch (error) {
-      Sentry.captureException(error);
+      captureException(error);
       return NextResponse.json(
         { error: "Failed to save prep list to database" },
         { status: 500 }
       );
     }
   } catch (error) {
-    Sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(
       { error: "Failed to save prep list to database" },
       { status: 500 }
     );
   }
 }
+
