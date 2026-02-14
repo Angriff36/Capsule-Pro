@@ -7,9 +7,9 @@
  * @module kitchen-ops/prep-list-autogeneration
  */
 
-import { captureException } from "@sentry/nextjs";
 import type { Prisma, PrismaClient } from "@repo/database";
 import { createOutboxEvent } from "@repo/realtime";
+import { captureException } from "@sentry/nextjs";
 
 /**
  * Input for triggering prep list auto-generation
@@ -258,4 +258,3 @@ export async function generatePrepListImmediately(
     };
   }
 }
-

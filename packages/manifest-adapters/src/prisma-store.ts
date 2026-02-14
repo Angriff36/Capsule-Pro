@@ -1970,6 +1970,120 @@ export async function syncInventoryItemToPrisma(
 }
 
 /**
+ * Load a RecipeVersion from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export async function loadRecipeVersionFromPrisma(
+  prisma: PrismaClient,
+  tenantId: string,
+  versionId: string
+): Promise<EntityInstance | undefined> {
+  const store = new RecipeVersionPrismaStore(prisma, tenantId);
+  return store.getById(versionId);
+}
+
+/**
+ * Sync a RecipeVersion from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export async function syncRecipeVersionToPrisma(
+  prisma: PrismaClient,
+  tenantId: string,
+  entity: EntityInstance
+): Promise<void> {
+  const store = new RecipeVersionPrismaStore(prisma, tenantId);
+
+  // Check if recipe version exists
+  const existing = await prisma.recipeVersion.findFirst({
+    where: { tenantId, id: entity.id, deletedAt: null },
+  });
+
+  if (existing) {
+    await store.update(entity.id, entity);
+  } else {
+    await store.create(entity);
+  }
+}
+
+/**
+ * Load an Ingredient from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export async function loadIngredientFromPrisma(
+  prisma: PrismaClient,
+  tenantId: string,
+  ingredientId: string
+): Promise<EntityInstance | undefined> {
+  const store = new IngredientPrismaStore(prisma, tenantId);
+  return store.getById(ingredientId);
+}
+
+/**
+ * Sync an Ingredient from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export async function syncIngredientToPrisma(
+  prisma: PrismaClient,
+  tenantId: string,
+  entity: EntityInstance
+): Promise<void> {
+  const store = new IngredientPrismaStore(prisma, tenantId);
+
+  // Check if ingredient exists
+  const existing = await prisma.ingredient.findFirst({
+    where: { tenantId, id: entity.id, deletedAt: null },
+  });
+
+  if (existing) {
+    await store.update(entity.id, entity);
+  } else {
+    await store.create(entity);
+  }
+}
+
+/**
+ * Load a RecipeIngredient from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export async function loadRecipeIngredientFromPrisma(
+  prisma: PrismaClient,
+  tenantId: string,
+  recipeIngredientId: string
+): Promise<EntityInstance | undefined> {
+  const store = new RecipeIngredientPrismaStore(prisma, tenantId);
+  return store.getById(recipeIngredientId);
+}
+
+/**
+ * Sync a RecipeIngredient from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export async function syncRecipeIngredientToPrisma(
+  prisma: PrismaClient,
+  tenantId: string,
+  entity: EntityInstance
+): Promise<void> {
+  const store = new RecipeIngredientPrismaStore(prisma, tenantId);
+
+  // Check if recipe ingredient exists
+  const existing = await prisma.recipeIngredient.findFirst({
+    where: { tenantId, id: entity.id, deletedAt: null },
+  });
+
+  if (existing) {
+    await store.update(entity.id, entity);
+  } else {
+    await store.create(entity);
+  }
+}
+
+/**
  * Configuration for PrismaStore
  */
 export interface PrismaStoreConfig {

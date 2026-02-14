@@ -4,9 +4,9 @@
  * This module integrates Manifest language runtime with the document parsing workflow.
  * It orchestrates the flow: Document Import -> Event Creation -> Battle Board/Checklist Generation
  */
+import { compileToIR } from "@manifest/runtime/ir-compiler";
 // biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
 import * as Sentry from "@sentry/nextjs";
-import { compileToIR } from "@manifest/runtime/ir-compiler";
 import { enforceCommandOwnership } from "./ir-contract.js";
 import { ManifestRuntimeEngine } from "./runtime-engine.js";
 const { logger } = Sentry;

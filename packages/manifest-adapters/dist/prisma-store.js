@@ -1712,6 +1712,87 @@ export async function syncInventoryItemToPrisma(prisma, tenantId, entity) {
     }
 }
 /**
+ * Load a RecipeVersion from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export async function loadRecipeVersionFromPrisma(prisma, tenantId, versionId) {
+    const store = new RecipeVersionPrismaStore(prisma, tenantId);
+    return store.getById(versionId);
+}
+/**
+ * Sync a RecipeVersion from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export async function syncRecipeVersionToPrisma(prisma, tenantId, entity) {
+    const store = new RecipeVersionPrismaStore(prisma, tenantId);
+    // Check if recipe version exists
+    const existing = await prisma.recipeVersion.findFirst({
+        where: { tenantId, id: entity.id, deletedAt: null },
+    });
+    if (existing) {
+        await store.update(entity.id, entity);
+    }
+    else {
+        await store.create(entity);
+    }
+}
+/**
+ * Load an Ingredient from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export async function loadIngredientFromPrisma(prisma, tenantId, ingredientId) {
+    const store = new IngredientPrismaStore(prisma, tenantId);
+    return store.getById(ingredientId);
+}
+/**
+ * Sync an Ingredient from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export async function syncIngredientToPrisma(prisma, tenantId, entity) {
+    const store = new IngredientPrismaStore(prisma, tenantId);
+    // Check if ingredient exists
+    const existing = await prisma.ingredient.findFirst({
+        where: { tenantId, id: entity.id, deletedAt: null },
+    });
+    if (existing) {
+        await store.update(entity.id, entity);
+    }
+    else {
+        await store.create(entity);
+    }
+}
+/**
+ * Load a RecipeIngredient from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export async function loadRecipeIngredientFromPrisma(prisma, tenantId, recipeIngredientId) {
+    const store = new RecipeIngredientPrismaStore(prisma, tenantId);
+    return store.getById(recipeIngredientId);
+}
+/**
+ * Sync a RecipeIngredient from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export async function syncRecipeIngredientToPrisma(prisma, tenantId, entity) {
+    const store = new RecipeIngredientPrismaStore(prisma, tenantId);
+    // Check if recipe ingredient exists
+    const existing = await prisma.recipeIngredient.findFirst({
+        where: { tenantId, id: entity.id, deletedAt: null },
+    });
+    if (existing) {
+        await store.update(entity.id, entity);
+    }
+    else {
+        await store.create(entity);
+    }
+}
+/**
  * Generic PrismaStore class that wraps entity-specific stores
  *
  * This class provides a unified interface for working with different entity types

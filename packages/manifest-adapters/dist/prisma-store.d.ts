@@ -340,6 +340,42 @@ export declare function loadInventoryItemFromPrisma(prisma: PrismaClient, tenant
  */
 export declare function syncInventoryItemToPrisma(prisma: PrismaClient, tenantId: string, entity: EntityInstance): Promise<void>;
 /**
+ * Load a RecipeVersion from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export declare function loadRecipeVersionFromPrisma(prisma: PrismaClient, tenantId: string, versionId: string): Promise<EntityInstance | undefined>;
+/**
+ * Sync a RecipeVersion from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export declare function syncRecipeVersionToPrisma(prisma: PrismaClient, tenantId: string, entity: EntityInstance): Promise<void>;
+/**
+ * Load an Ingredient from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export declare function loadIngredientFromPrisma(prisma: PrismaClient, tenantId: string, ingredientId: string): Promise<EntityInstance | undefined>;
+/**
+ * Sync an Ingredient from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export declare function syncIngredientToPrisma(prisma: PrismaClient, tenantId: string, entity: EntityInstance): Promise<void>;
+/**
+ * Load a RecipeIngredient from Prisma into the Manifest runtime
+ *
+ * This ensures the Manifest runtime has the current state before executing commands.
+ */
+export declare function loadRecipeIngredientFromPrisma(prisma: PrismaClient, tenantId: string, recipeIngredientId: string): Promise<EntityInstance | undefined>;
+/**
+ * Sync a RecipeIngredient from Manifest state to Prisma
+ *
+ * Called after Manifest commands execute to persist the updated state.
+ */
+export declare function syncRecipeIngredientToPrisma(prisma: PrismaClient, tenantId: string, entity: EntityInstance): Promise<void>;
+/**
  * Configuration for PrismaStore
  */
 export interface PrismaStoreConfig {

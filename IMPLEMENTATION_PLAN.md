@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan
 
-**Last Updated**: 2026-02-14 (P0-3 Import Path Migration Partial Complete)
+**Last Updated**: 2026-02-14 (P1-2 Load/Sync Functions Complete)
 **Build Status**: ✅ PASSING (21/21 tasks)
 **Test Status**: ✅ 540 passing, 0 failures
 **Latest Tag**: v0.3.0
@@ -18,6 +18,7 @@
 - **Runtime**: Constraint evaluation (block/warn/ok), event emission via outbox + Ably
 - **Tests**: 540 passing, 0 failures, 180+ manifest-specific tests
 - **Prisma Stores**: ALL 12 entities have PrismaStore implementations (9 with sync functions, 3 missing load/sync)
+- **Load/Sync Functions**: P1-2 COMPLETE - All 12 entities now have load/sync functions (2026-02-14)
 - **Telemetry**: P1-1 COMPLETE - Sentry telemetry wired centrally in manifest runtime (2026-02-14)
 - **Import Migration**: P0-3 PARTIAL - 67/110 deprecated imports migrated (2026-02-14)
 
@@ -43,7 +44,7 @@
 
 **P1 - High Priority** (Manifest completeness):
 1. ✅ **P1-1**: Wire Telemetry Hooks to Sentry - **COMPLETE** (2026-02-14)
-2. **P1-2**: Add Missing Load/Sync Functions - RecipeVersion, Ingredient, RecipeIngredient (0.5 days)
+2. ✅ **P1-2**: Add Missing Load/Sync Functions - **COMPLETE** (2026-02-14)
 3. **P1-3**: Migrate Legacy Task Routes - **42 routes** bypassing Manifest with direct Prisma (5 days)
 4. **P1-4**: Migrate Legacy PrepList Routes - **7 routes** including **CRITICAL raw SQL** in `[id]/route.ts` (4 days)
 5. **P1-5**: Missing Manifest Commands - create/delete for all 12 entities + MenuDish operations (5 days)
@@ -84,7 +85,7 @@
 | # | Feature | Status | Files Affected | Effort |
 |---|---------|--------|----------------|--------|
 | P1-1 | **Wire Telemetry to Sentry** | ✅ **COMPLETE** | Wired centrally in manifest-runtime.ts | 1 day |
-| P1-2 | **Add Missing Load/Sync Functions** | NOT STARTED | 3 entities (RecipeVersion, Ingredient, RecipeIngredient) | 0.5 days |
+| P1-2 | **Add Missing Load/Sync Functions** | ✅ **COMPLETE** | 3 entities (RecipeVersion, Ingredient, RecipeIngredient) | 0.5 days |
 | P1-3 | **Migrate Legacy Routes** | NOT STARTED | **42 routes** with direct Prisma CRUD | 5 days |
 | P1-4 | **Migrate Legacy PrepList Routes** | NOT STARTED | **7 routes** including raw SQL | 4 days |
 | P1-5 | **Missing Manifest Commands** | NOT STARTED | All 12 entities need create/delete | 5 days |
@@ -108,14 +109,17 @@ Wired centrally in manifest-runtime.ts, created telemetry.ts with Sentry v10 API
 ### ✅ P0-3: Import Migration - PARTIAL (2026-02-14)
 67/110 deprecated imports migrated: manifest-response→@repo/manifest-adapters/route-helpers (55 files), database→@repo/database (12 files). Response format changed: manifestSuccessResponse now wraps data in {success: true, data: T}. 3 test assertions updated. @/lib/manifest-runtime stays (310-line local factory with IR compilation, Sentry, outbox - NOT deprecated shim).
 
+### ✅ P1-2: Load/Sync Functions - COMPLETE (2026-02-14)
+Added load/sync functions for RecipeVersion, Ingredient, RecipeIngredient in prisma-store.ts. Also exported all 12 PrismaStore classes and all 12 load/sync function pairs from index.ts (previously only 9 were exported). Pattern: loadXFromPrisma delegates to Store.getById(), syncXToPrisma uses upsert (findFirst + create/update).
+
 ### P0-1: UUID Policy (0.5d)
 Menu, MenuDish, OutboxEvent use cuid() instead of gen_random_uuid() - violates CLAUDE.md policy.
 
 ### P0-2: FK Indexes (1d)
 17 FK columns across 10 tables missing indexes: Kitchen (prep_list_items, prep_comments), Events (4 tables), CRM (3 tables).
 
-### P1-2: Load/Sync (0.5d)
-RecipeVersion, Ingredient, RecipeIngredient missing load/sync functions.
+### ✅ P1-2: Load/Sync - COMPLETE (2026-02-14)
+Added 6 functions (3 load + 3 sync) for RecipeVersion, Ingredient, RecipeIngredient. All 12 PrismaStore classes + 24 load/sync functions now exported from @repo/manifest-adapters.
 
 ### P1-3: Task Routes (5d)
 42 routes bypass Manifest with direct Prisma, manual outbox, no constraint validation. Target: createPrepTaskRuntime() + runCommand().
@@ -145,15 +149,15 @@ Missing create/delete for all 12 entities, MenuDish operations, PrepListItem ope
 | Priority | Total Effort | Tasks | Complete |
 |----------|--------------|-------|----------|
 | P0 | **2 days** | 4 tasks | **1/4** ✅ |
-| P1 | **17.5 days** | 6 tasks | **1/6** ✅ |
+| P1 | **17.5 days** | 6 tasks | **2/6** ✅ |
 | P2 | Varies | 3 tasks | 0/3 |
-| **Total** | **~19.5 days** | **13 core tasks** | **2/13** |
+| **Total** | **~19.5 days** | **13 core tasks** | **3/13** |
 
 ---
 
 ## Execution Order
 
-1-2. ✅ P1-1, P0-3 Complete | 3. P1-2 (0.5d) | 4. P0-1+P0-2 (1.5d) | 5. P0-4 (0.5d) | 6. P1-5 (5d) | 7. P1-3+P1-4 (9d) | 8. P1-6 (3d) | 9+. P2/P3
+1-3. ✅ P1-1, P0-3, P1-2 Complete | 4. P0-1+P0-2 (1.5d) | 5. P0-4 (0.5d) | 6. P1-5 (5d) | 7. P1-3+P1-4 (9d) | 8. P1-6 (3d) | 9+. P2/P3
 
 ---
 
@@ -161,7 +165,7 @@ Missing create/delete for all 12 entities, MenuDish operations, PrepListItem ope
 
 1. ✅ **P1-1**: Wire Telemetry to Sentry - **COMPLETE 2026-02-14**
 2. ✅ **P0-3**: Import Path Migration - **PARTIAL COMPLETE 2026-02-14** (67/110 deprecated imports migrated)
-3. **P1-2**: Add Missing Load/Sync Functions (RecipeVersion, Ingredient, RecipeIngredient)
+3. ✅ **P1-2**: Add Missing Load/Sync Functions - **COMPLETE 2026-02-14**
 4. **P0-1**: UUID Policy Violations (fix 3 models)
 5. **P0-2**: Database FK Indexes (add 17 indexes across 10 tables)
 6. **P1-5**: Add create/delete commands to all 12 entities
@@ -170,4 +174,4 @@ Missing create/delete for all 12 entities, MenuDish operations, PrepListItem ope
 
 ## Manifest Statistics
 
-6 manifest files, 12 entities, 34 commands, 64 constraints, 55 events, 18 policies, 12 PrismaStore implementations
+6 manifest files, 12 entities, 34 commands, 64 constraints, 55 events, 18 policies, 12 PrismaStore implementations, 24 load/sync functions (all exported from @repo/manifest-adapters)
