@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan
 
-**Last Updated**: 2026-02-14 (P0-1 UUID Fix + P0-2 FK Indexes Complete)
+**Last Updated**: 2026-02-14 (P1-5 Create Commands + IR Contract Fixes)
 **Build Status**: ✅ PASSING
 **Test Status**: ✅ 540 passing, 0 failures
 **Latest Tag**: v0.3.0
@@ -43,7 +43,7 @@
 2. ✅ **P1-2**: Add Missing Load/Sync Functions - **COMPLETE** (2026-02-14)
 3. **P1-3**: Migrate Legacy Task Routes - **42 routes** bypassing Manifest with direct Prisma
 4. **P1-4**: Migrate Legacy PrepList Routes - **7 routes** including **CRITICAL raw SQL** in `[id]/route.ts`
-5. **P1-5**: Missing Manifest Commands - create/delete for all 12 entities + MenuDish operations
+5. **P1-5**: Missing Manifest Commands - **12/12 create commands added**, delete + routes pending
 6. **P1-6**: Soft Delete Cascade Strategy - Architectural decision needed
 
 ---
@@ -84,7 +84,7 @@
 | P1-2 | **Add Missing Load/Sync Functions** | ✅ **COMPLETE** | All 12 entities have load/sync | Done |
 | P1-3 | **Migrate Legacy Routes** | NOT STARTED | **42 routes** with direct Prisma CRUD | 5 days |
 | P1-4 | **Migrate Legacy PrepList Routes** | NOT STARTED | **7 routes** including raw SQL | 4 days |
-| P1-5 | **Missing Manifest Commands** | NOT STARTED | All 12 entities need create/delete | 5 days |
+| P1-5 | **Missing Manifest Commands** | **IN PROGRESS** | 12/12 create commands added, delete pending | 3 days remaining |
 | P1-6 | **Soft Delete Cascade Strategy** | NOT STARTED | Architectural decision needed | 3 days |
 
 #### P2 - Medium (Polish)
@@ -127,8 +127,21 @@ All 12 PrismaStore classes + 24 load/sync functions exported from @repo/manifest
 ### P1-4: PrepList Routes
 7 routes bypass Manifest, CRITICAL raw SQL in prep-lists/[id]/route.ts. Target: createPrepListRuntime() + runCommand().
 
-### P1-5: Commands
-Missing create/delete for all 12 entities, MenuDish operations, PrepListItem operations. 11 orphan events defined but not emitted.
+### P1-5: Commands - IN PROGRESS (2026-02-14)
+
+**Create commands**: Added to all 12 entities across 6 manifest files:
+- `prep-task-rules.manifest`: PrepTask.create (11 params) + PrepTaskCreated event
+- `station-rules.manifest`: Station.create (6 params) + StationCreated event
+- `inventory-rules.manifest`: InventoryItem.create (11 params) + InventoryItemCreated event
+- `recipe-rules.manifest`: Recipe.create, Ingredient.create, RecipeIngredient.create, Dish.create + 2 new events
+- `menu-rules.manifest`: Menu.create, MenuDish.create
+- `prep-list-rules.manifest`: PrepList.create, PrepListItem.create
+
+**Adapter updates**: 4 create functions (createDish, createRecipe, createMenu, createPrepList) migrated from `engine.createInstance()` to `engine.runCommand("create", ...)` for full constraint/event pipeline.
+
+**IR contract fix**: Enhanced `ir-contract.ts` `inferOwnerEntityName()` with parameter-matching and event-name heuristics to disambiguate same-named commands (e.g., `create`) across multiple entities in the same manifest. Previously, only a hardcoded `KNOWN_COMMAND_OWNERS` map was used, which failed for duplicate command names.
+
+**Remaining**: Delete commands (soft-delete pattern per P1-6), API route handlers for create endpoints.
 
 ---
 
@@ -172,4 +185,4 @@ Missing create/delete for all 12 entities, MenuDish operations, PrepListItem ope
 
 ## Manifest Statistics
 
-6 manifest files, 12 entities, 34 commands, 64 constraints, 55 events, 18 policies, 12 PrismaStore implementations, 24 load/sync functions (all exported from @repo/manifest-adapters)
+6 manifest files, 12 entities, 46 commands (+12 create), 64 constraints, 58 events (+3 new), 18 policies, 12 PrismaStore implementations, 24 load/sync functions (all exported from @repo/manifest-adapters)

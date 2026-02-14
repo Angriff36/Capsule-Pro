@@ -357,13 +357,13 @@ export declare function updateDishPricing(engine: RuntimeEngine, dishId: string,
  */
 export declare function updateDishLeadTime(engine: RuntimeEngine, dishId: string, minDays: number, maxDays: number, overrideRequests?: OverrideRequest[]): Promise<DishCommandResult>;
 /**
- * Create a dish
+ * Create a dish via Manifest runtime with constraint validation and event emission
  */
-export declare function createDish(engine: RuntimeEngine, dishId: string, name: string, recipeId: string, description: string, category: string, serviceStyle: string, dietaryTags: string, allergens: string, pricePerPerson: number, costPerPerson: number, minPrepLeadDays: number, maxPrepLeadDays: number, portionSizeDescription: string): Promise<DishCommandResult>;
+export declare function createDish(engine: RuntimeEngine, dishId: string, name: string, recipeId: string, description: string, category: string, serviceStyle: string, dietaryTags: string, allergens: string, pricePerPerson: number, costPerPerson: number, minPrepLeadDays: number, maxPrepLeadDays: number, portionSizeDescription: string, overrideRequests?: OverrideRequest[]): Promise<DishCommandResult>;
 /**
- * Create a recipe
+ * Create a recipe via Manifest runtime with constraint validation and event emission
  */
-export declare function createRecipe(engine: RuntimeEngine, recipeId: string, name: string, category: string, cuisineType: string, description: string, tags: string): Promise<RecipeCommandResult>;
+export declare function createRecipe(engine: RuntimeEngine, recipeId: string, name: string, category: string, cuisineType: string, description: string, tags: string, overrideRequests?: OverrideRequest[]): Promise<RecipeCommandResult>;
 /**
  * Result of a menu command
  */
@@ -385,9 +385,9 @@ export declare function activateMenu(engine: RuntimeEngine, menuId: string, over
  */
 export declare function deactivateMenu(engine: RuntimeEngine, menuId: string, overrideRequests?: OverrideRequest[]): Promise<MenuCommandResult>;
 /**
- * Create a menu
+ * Create a menu via Manifest runtime with constraint validation and event emission
  */
-export declare function createMenu(engine: RuntimeEngine, menuId: string, name: string, description: string, category: string, basePrice: number, pricePerPerson: number, minGuests: number, maxGuests: number): Promise<MenuCommandResult>;
+export declare function createMenu(engine: RuntimeEngine, menuId: string, name: string, description: string, category: string, basePrice: number, pricePerPerson: number, minGuests: number, maxGuests: number, overrideRequests?: OverrideRequest[]): Promise<MenuCommandResult>;
 /**
  * Result of a prep list command
  */
@@ -456,7 +456,7 @@ export declare function markPrepListItemCompleted(engine: RuntimeEngine, itemId:
  */
 export declare function markPrepListItemUncompleted(engine: RuntimeEngine, itemId: string, overrideRequests?: OverrideRequest[]): Promise<PrepListItemCommandResult>;
 /**
- * Create a prep list
+ * Create a prep list via Manifest runtime with constraint validation and event emission
  */
 export declare function createPrepList(engine: RuntimeEngine, prepListId: string, eventId: string, name: string, batchMultiplier: number, dietaryRestrictions: string, totalItems: number, totalEstimatedTime: number, notes: string, overrideRequests?: OverrideRequest[]): Promise<PrepListCommandResult>;
 /**

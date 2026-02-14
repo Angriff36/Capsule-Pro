@@ -1551,7 +1551,7 @@ export async function updateDishLeadTime(
 }
 
 /**
- * Create a dish
+ * Create a dish via Manifest runtime with constraint validation and event emission
  */
 export async function createDish(
   engine: RuntimeEngine,
@@ -1567,43 +1567,44 @@ export async function createDish(
   costPerPerson: number,
   minPrepLeadDays: number,
   maxPrepLeadDays: number,
-  portionSizeDescription: string
+  portionSizeDescription: string,
+  overrideRequests?: OverrideRequest[]
 ): Promise<DishCommandResult> {
-  // Create the Dish entity instance
-  await engine.createInstance("Dish", {
-    id: dishId,
-    tenantId: engine.getContext().tenantId,
-    name,
-    recipeId,
-    description,
-    category,
-    serviceStyle,
-    presentationImageUrl: "",
-    dietaryTags,
-    allergens,
-    pricePerPerson,
-    costPerPerson,
-    minPrepLeadDays,
-    maxPrepLeadDays,
-    portionSizeDescription,
-    isActive: true,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  });
+  const result = await engine.runCommand(
+    "create",
+    {
+      name,
+      recipeId,
+      description,
+      category,
+      serviceStyle,
+      dietaryTags,
+      allergens,
+      pricePerPerson,
+      costPerPerson,
+      minPrepLeadDays,
+      maxPrepLeadDays,
+      portionSizeDescription,
+    },
+    {
+      entityName: "Dish",
+      instanceId: dishId,
+      overrideRequests,
+    }
+  );
 
   const instance = await engine.getInstance("Dish", dishId);
   return {
-    success: true,
-    emittedEvents: [],
+    ...result,
     dishId,
     name: instance?.name as string | undefined,
     pricePerPerson: instance?.pricePerPerson as number | undefined,
     costPerPerson: instance?.costPerPerson as number | undefined,
-  } as DishCommandResult;
+  };
 }
 
 /**
- * Create a recipe
+ * Create a recipe via Manifest runtime with constraint validation and event emission
  */
 export async function createRecipe(
   engine: RuntimeEngine,
@@ -1612,32 +1613,26 @@ export async function createRecipe(
   category: string,
   cuisineType: string,
   description: string,
-  tags: string
+  tags: string,
+  overrideRequests?: OverrideRequest[]
 ): Promise<RecipeCommandResult> {
-  // Create the Recipe entity instance
-  await engine.createInstance("Recipe", {
-    id: recipeId,
-    tenantId: engine.getContext().tenantId,
-    name,
-    category,
-    cuisineType,
-    description,
-    tags,
-    isActive: true,
-    hasVersion: true,
-    tagCount: tags ? tags.split(",").length : 0,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  });
+  const result = await engine.runCommand(
+    "create",
+    { name, category, cuisineType, description, tags },
+    {
+      entityName: "Recipe",
+      instanceId: recipeId,
+      overrideRequests,
+    }
+  );
 
   const instance = await engine.getInstance("Recipe", recipeId);
   return {
-    success: true,
-    emittedEvents: [],
+    ...result,
     recipeId,
     name: instance?.name as string | undefined,
     isActive: true,
-  } as RecipeCommandResult;
+  };
 }
 
 // ============ Menu Commands ============
@@ -1750,7 +1745,7 @@ export async function deactivateMenu(
 }
 
 /**
- * Create a menu
+ * Create a menu via Manifest runtime with constraint validation and event emission
  */
 export async function createMenu(
   engine: RuntimeEngine,
@@ -1761,35 +1756,34 @@ export async function createMenu(
   basePrice: number,
   pricePerPerson: number,
   minGuests: number,
-  maxGuests: number
+  maxGuests: number,
+  overrideRequests?: OverrideRequest[]
 ): Promise<MenuCommandResult> {
-  // Create the Menu entity instance
-  await engine.createInstance("Menu", {
-    id: menuId,
-    tenantId: engine.getContext().tenantId,
-    name,
-    description,
-    category,
-    isActive: true,
-    basePrice,
-    pricePerPerson,
-    minGuests,
-    maxGuests,
-    hasPricePerPerson: pricePerPerson > 0,
-    hasGuestConstraints: minGuests > 0 || maxGuests > 0,
-    guestRangeValid: maxGuests >= minGuests,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  });
+  const result = await engine.runCommand(
+    "create",
+    {
+      name,
+      description,
+      category,
+      basePrice,
+      pricePerPerson,
+      minGuests,
+      maxGuests,
+    },
+    {
+      entityName: "Menu",
+      instanceId: menuId,
+      overrideRequests,
+    }
+  );
 
   const instance = await engine.getInstance("Menu", menuId);
   return {
-    success: true,
-    emittedEvents: [],
+    ...result,
     menuId,
     name: instance?.name as string | undefined,
     isActive: true,
-  } as MenuCommandResult;
+  };
 }
 
 // ============ Prep List Commands ============
@@ -2157,7 +2151,7 @@ export async function markPrepListItemUncompleted(
 }
 
 /**
- * Create a prep list
+ * Create a prep list via Manifest runtime with constraint validation and event emission
  */
 export async function createPrepList(
   engine: RuntimeEngine,
@@ -2171,43 +2165,33 @@ export async function createPrepList(
   notes: string,
   overrideRequests?: OverrideRequest[]
 ): Promise<PrepListCommandResult> {
-  // Create the PrepList entity instance
-  await engine.createInstance("PrepList", {
-    id: prepListId,
-    tenantId: engine.getContext().tenantId,
-    eventId,
-    name,
-    batchMultiplier,
-    dietaryRestrictions,
-    status: "draft",
-    totalItems,
-    totalEstimatedTime,
-    notes,
-    generatedAt: Date.now(),
-    finalizedAt: 0,
-    isActive: true,
-    isDraft: true,
-    isFinalized: false,
-    isCompleted: false,
-    hasItems: totalItems > 0,
-    avgTimePerItem: totalItems > 0 ? totalEstimatedTime / totalItems : 0,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  });
+  const result = await engine.runCommand(
+    "create",
+    {
+      eventId,
+      name,
+      batchMultiplier,
+      dietaryRestrictions,
+      totalItems,
+      totalEstimatedTime,
+      notes,
+    },
+    {
+      entityName: "PrepList",
+      instanceId: prepListId,
+      overrideRequests,
+    }
+  );
 
   const instance = await engine.getInstance("PrepList", prepListId);
-
   return {
-    success: true,
-    emittedEvents: [],
-    constraintOutcomes: [],
-    overrideRequests: overrideRequests ?? [],
+    ...result,
     prepListId,
     name: instance?.name as string | undefined,
     status: instance?.status as string | undefined,
     totalItems: instance?.totalItems as number | undefined,
     totalEstimatedTime: instance?.totalEstimatedTime as number | undefined,
-  } as PrepListCommandResult;
+  };
 }
 
 // ============ Event Handling ============

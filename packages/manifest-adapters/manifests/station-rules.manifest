@@ -159,6 +159,25 @@ entity Station {
     emit StationEquipmentUpdated
   }
 
+  command create(locationId: string, name: string, stationType: string, capacitySimultaneousTasks: number, equipmentList: string, notes: string) {
+    guard name != null and name != "" "Station name is required"
+    guard locationId != null and locationId != "" "Location ID is required"
+    guard capacitySimultaneousTasks > 0 "Capacity must be positive"
+
+    mutate locationId = locationId
+    mutate name = name
+    mutate stationType = stationType
+    mutate capacitySimultaneousTasks = capacitySimultaneousTasks
+    mutate equipmentList = equipmentList
+    mutate notes = notes
+    mutate isActive = true
+    mutate currentTaskCount = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit StationCreated
+  }
+
   store Station in PrismaStationStore
 }
 
@@ -206,6 +225,16 @@ event StationActivated: "kitchen.station.activated" {
   stationName: string
   userId: string
   activatedAt: number
+}
+
+event StationCreated: "kitchen.station.created" {
+  stationId: string
+  tenantId: string
+  locationId: string
+  name: string
+  stationType: string
+  capacity: number
+  createdAt: number
 }
 
 event StationEquipmentUpdated: "kitchen.station.equipment.updated" {

@@ -88,6 +88,25 @@ entity Menu {
     emit MenuDeactivated
   }
 
+  command create(name: string, description: string, category: string, basePrice: number, pricePerPerson: number, minGuests: number, maxGuests: number) {
+    guard name != null and name != "" "Menu name is required"
+    guard basePrice >= 0 "Base price must be non-negative"
+    guard pricePerPerson >= 0 "Price per person must be non-negative"
+    guard minGuests >= 0 "Minimum guests must be non-negative"
+    guard maxGuests >= minGuests "Maximum guests must be >= minimum"
+
+    mutate name = name
+    mutate description = description
+    mutate category = category
+    mutate basePrice = basePrice
+    mutate pricePerPerson = pricePerPerson
+    mutate minGuests = minGuests
+    mutate maxGuests = maxGuests
+    mutate isActive = true
+
+    emit MenuCreated
+  }
+
   store Menu in memory
 }
 
@@ -110,6 +129,19 @@ entity MenuDish {
     mutate isOptional = newIsOptional
 
     emit MenuDishUpdated
+  }
+
+  command create(menuId: string, dishId: string, course: string, sortOrder: number, isOptional: boolean) {
+    guard menuId != null and menuId != "" "Menu ID is required"
+    guard dishId != null and dishId != "" "Dish ID is required"
+
+    mutate menuId = menuId
+    mutate dishId = dishId
+    mutate course = course
+    mutate sortOrder = sortOrder
+    mutate isOptional = isOptional
+
+    emit MenuDishAdded
   }
 
   store MenuDish in memory

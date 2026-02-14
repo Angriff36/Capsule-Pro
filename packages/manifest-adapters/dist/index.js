@@ -952,19 +952,15 @@ export async function updateDishLeadTime(engine, dishId, minDays, maxDays, overr
     };
 }
 /**
- * Create a dish
+ * Create a dish via Manifest runtime with constraint validation and event emission
  */
-export async function createDish(engine, dishId, name, recipeId, description, category, serviceStyle, dietaryTags, allergens, pricePerPerson, costPerPerson, minPrepLeadDays, maxPrepLeadDays, portionSizeDescription) {
-    // Create the Dish entity instance
-    await engine.createInstance("Dish", {
-        id: dishId,
-        tenantId: engine.getContext().tenantId,
+export async function createDish(engine, dishId, name, recipeId, description, category, serviceStyle, dietaryTags, allergens, pricePerPerson, costPerPerson, minPrepLeadDays, maxPrepLeadDays, portionSizeDescription, overrideRequests) {
+    const result = await engine.runCommand("create", {
         name,
         recipeId,
         description,
         category,
         serviceStyle,
-        presentationImageUrl: "",
         dietaryTags,
         allergens,
         pricePerPerson,
@@ -972,14 +968,14 @@ export async function createDish(engine, dishId, name, recipeId, description, ca
         minPrepLeadDays,
         maxPrepLeadDays,
         portionSizeDescription,
-        isActive: true,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+    }, {
+        entityName: "Dish",
+        instanceId: dishId,
+        overrideRequests,
     });
     const instance = await engine.getInstance("Dish", dishId);
     return {
-        success: true,
-        emittedEvents: [],
+        ...result,
         dishId,
         name: instance?.name,
         pricePerPerson: instance?.pricePerPerson,
@@ -987,28 +983,17 @@ export async function createDish(engine, dishId, name, recipeId, description, ca
     };
 }
 /**
- * Create a recipe
+ * Create a recipe via Manifest runtime with constraint validation and event emission
  */
-export async function createRecipe(engine, recipeId, name, category, cuisineType, description, tags) {
-    // Create the Recipe entity instance
-    await engine.createInstance("Recipe", {
-        id: recipeId,
-        tenantId: engine.getContext().tenantId,
-        name,
-        category,
-        cuisineType,
-        description,
-        tags,
-        isActive: true,
-        hasVersion: true,
-        tagCount: tags ? tags.split(",").length : 0,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+export async function createRecipe(engine, recipeId, name, category, cuisineType, description, tags, overrideRequests) {
+    const result = await engine.runCommand("create", { name, category, cuisineType, description, tags }, {
+        entityName: "Recipe",
+        instanceId: recipeId,
+        overrideRequests,
     });
     const instance = await engine.getInstance("Recipe", recipeId);
     return {
-        success: true,
-        emittedEvents: [],
+        ...result,
         recipeId,
         name: instance?.name,
         isActive: true,
@@ -1075,31 +1060,25 @@ export async function deactivateMenu(engine, menuId, overrideRequests) {
     };
 }
 /**
- * Create a menu
+ * Create a menu via Manifest runtime with constraint validation and event emission
  */
-export async function createMenu(engine, menuId, name, description, category, basePrice, pricePerPerson, minGuests, maxGuests) {
-    // Create the Menu entity instance
-    await engine.createInstance("Menu", {
-        id: menuId,
-        tenantId: engine.getContext().tenantId,
+export async function createMenu(engine, menuId, name, description, category, basePrice, pricePerPerson, minGuests, maxGuests, overrideRequests) {
+    const result = await engine.runCommand("create", {
         name,
         description,
         category,
-        isActive: true,
         basePrice,
         pricePerPerson,
         minGuests,
         maxGuests,
-        hasPricePerPerson: pricePerPerson > 0,
-        hasGuestConstraints: minGuests > 0 || maxGuests > 0,
-        guestRangeValid: maxGuests >= minGuests,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+    }, {
+        entityName: "Menu",
+        instanceId: menuId,
+        overrideRequests,
     });
     const instance = await engine.getInstance("Menu", menuId);
     return {
-        success: true,
-        emittedEvents: [],
+        ...result,
         menuId,
         name: instance?.name,
         isActive: true,
@@ -1313,38 +1292,25 @@ export async function markPrepListItemUncompleted(engine, itemId, overrideReques
     };
 }
 /**
- * Create a prep list
+ * Create a prep list via Manifest runtime with constraint validation and event emission
  */
 export async function createPrepList(engine, prepListId, eventId, name, batchMultiplier, dietaryRestrictions, totalItems, totalEstimatedTime, notes, overrideRequests) {
-    // Create the PrepList entity instance
-    await engine.createInstance("PrepList", {
-        id: prepListId,
-        tenantId: engine.getContext().tenantId,
+    const result = await engine.runCommand("create", {
         eventId,
         name,
         batchMultiplier,
         dietaryRestrictions,
-        status: "draft",
         totalItems,
         totalEstimatedTime,
         notes,
-        generatedAt: Date.now(),
-        finalizedAt: 0,
-        isActive: true,
-        isDraft: true,
-        isFinalized: false,
-        isCompleted: false,
-        hasItems: totalItems > 0,
-        avgTimePerItem: totalItems > 0 ? totalEstimatedTime / totalItems : 0,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+    }, {
+        entityName: "PrepList",
+        instanceId: prepListId,
+        overrideRequests,
     });
     const instance = await engine.getInstance("PrepList", prepListId);
     return {
-        success: true,
-        emittedEvents: [],
-        constraintOutcomes: [],
-        overrideRequests: overrideRequests ?? [],
+        ...result,
         prepListId,
         name: instance?.name,
         status: instance?.status,

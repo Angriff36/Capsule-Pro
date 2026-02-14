@@ -137,6 +137,25 @@ entity PrepList {
     emit PrepListCancelled
   }
 
+  command create(eventId: string, name: string, batchMultiplier: number, dietaryRestrictions: string, totalItems: number, totalEstimatedTime: number, notes: string) {
+    guard name != null and name != "" "Prep list name is required"
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard batchMultiplier > 0 "Batch multiplier must be positive"
+
+    mutate eventId = eventId
+    mutate name = name
+    mutate batchMultiplier = batchMultiplier
+    mutate dietaryRestrictions = dietaryRestrictions
+    mutate totalItems = totalItems
+    mutate totalEstimatedTime = totalEstimatedTime
+    mutate notes = notes
+    mutate status = "draft"
+    mutate generatedAt = now()
+    mutate isActive = true
+
+    emit PrepListCreated
+  }
+
   store PrepList in memory
 }
 
@@ -257,6 +276,36 @@ entity PrepListItem {
     mutate completedBy = ""
 
     emit PrepListItemUncompleted
+  }
+
+  command create(prepListId: string, stationId: string, stationName: string, ingredientId: string, ingredientName: string, category: string, baseQuantity: number, baseUnit: string, scaledQuantity: number, scaledUnit: string, isOptional: boolean, preparationNotes: string, allergens: string, dietarySubstitutions: string, dishId: string, dishName: string, recipeVersionId: string, sortOrder: number) {
+    guard prepListId != null and prepListId != "" "Prep list ID is required"
+    guard ingredientId != null and ingredientId != "" "Ingredient ID is required"
+    guard ingredientName != null and ingredientName != "" "Ingredient name is required"
+
+    mutate prepListId = prepListId
+    mutate stationId = stationId
+    mutate stationName = stationName
+    mutate ingredientId = ingredientId
+    mutate ingredientName = ingredientName
+    mutate category = category
+    mutate baseQuantity = baseQuantity
+    mutate baseUnit = baseUnit
+    mutate scaledQuantity = scaledQuantity
+    mutate scaledUnit = scaledUnit
+    mutate isOptional = isOptional
+    mutate preparationNotes = preparationNotes
+    mutate allergens = allergens
+    mutate dietarySubstitutions = dietarySubstitutions
+    mutate dishId = dishId
+    mutate dishName = dishName
+    mutate recipeVersionId = recipeVersionId
+    mutate sortOrder = sortOrder
+    mutate isCompleted = false
+    mutate completedAt = 0
+    mutate completedBy = ""
+
+    emit PrepListItemCreated
   }
 
   store PrepListItem in memory

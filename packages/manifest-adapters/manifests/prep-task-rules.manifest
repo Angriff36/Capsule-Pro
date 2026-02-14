@@ -181,6 +181,29 @@ entity PrepTask {
     emit PrepTaskCanceled
   }
 
+  command create(name: string, eventId: string, taskType: string, priority: number, quantityTotal: number, quantityUnitId: string, servingsTotal: number, startByDate: number, dueByDate: number, notes: string, ingredients: string) {
+    guard name != null and name != "" "Task name is required"
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard priority >= 1 and priority <= 5 "Priority must be between 1 and 5"
+
+    mutate name = name
+    mutate eventId = eventId
+    mutate taskType = taskType
+    mutate status = "open"
+    mutate priority = priority
+    mutate quantityTotal = quantityTotal
+    mutate quantityUnitId = quantityUnitId
+    mutate servingsTotal = servingsTotal
+    mutate startByDate = startByDate
+    mutate dueByDate = dueByDate
+    mutate notes = notes
+    mutate ingredients = ingredients
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit PrepTaskCreated
+  }
+
   store PrepTask in memory
 }
 
@@ -229,6 +252,16 @@ event PrepTaskQuantityUpdated: "kitchen.preptask.quantity.updated" {
   newQuantityTotal: number
   quantityCompleted: number
   updatedAt: number
+}
+
+event PrepTaskCreated: "kitchen.preptask.created" {
+  taskId: string
+  tenantId: string
+  eventId: string
+  name: string
+  taskType: string
+  priority: number
+  createdAt: number
 }
 
 event PrepTaskCanceled: "kitchen.preptask.canceled" {

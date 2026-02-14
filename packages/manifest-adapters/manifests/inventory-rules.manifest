@@ -243,6 +243,30 @@ entity InventoryItem {
     emit InventoryReservationReleased
   }
 
+  command create(name: string, itemType: string, category: string, baseUnit: string, parLevel: number, reorderPoint: number, reorderQuantity: number, costPerUnit: number, supplierId: string, locationId: string, allergens: string) {
+    guard name != null and name != "" "Item name is required"
+
+    mutate name = name
+    mutate itemType = itemType
+    mutate category = category
+    mutate baseUnit = baseUnit
+    mutate quantityOnHand = 0
+    mutate quantityReserved = 0
+    mutate quantityAvailable = 0
+    mutate parLevel = parLevel
+    mutate reorderPoint = reorderPoint
+    mutate reorderQuantity = reorderQuantity
+    mutate costPerUnit = costPerUnit
+    mutate supplierId = supplierId
+    mutate locationId = locationId
+    mutate allergens = allergens
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit InventoryItemCreated
+  }
+
   store InventoryItem in PrismaInventoryItemStore
 }
 
@@ -295,6 +319,15 @@ event InventoryRestocked: "kitchen.inventory.restocked" {
   costPerUnit: number
   userId: string
   restockedAt: number
+}
+
+event InventoryItemCreated: "kitchen.inventory.created" {
+  itemId: string
+  tenantId: string
+  name: string
+  itemType: string
+  category: string
+  createdAt: number
 }
 
 event InventoryReservationReleased: "kitchen.inventory.reservation.released" {

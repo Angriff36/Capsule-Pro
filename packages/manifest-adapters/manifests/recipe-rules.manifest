@@ -53,6 +53,19 @@ entity Recipe {
     emit RecipeActivated
   }
 
+  command create(name: string, category: string, cuisineType: string, description: string, tags: string) {
+    guard name != null and name != "" "Recipe name is required"
+
+    mutate name = name
+    mutate category = category
+    mutate cuisineType = cuisineType
+    mutate description = description
+    mutate tags = tags
+    mutate isActive = true
+
+    emit RecipeCreated
+  }
+
   store Recipe in memory
 }
 
@@ -147,6 +160,19 @@ entity Ingredient {
     emit IngredientAllergensUpdated
   }
 
+  command create(name: string, defaultUnitId: number, category: string, allergens: string) {
+    guard name != null and name != "" "Ingredient name is required"
+    guard defaultUnitId > 0 "Default unit is required"
+
+    mutate name = name
+    mutate defaultUnitId = defaultUnitId
+    mutate category = category
+    mutate allergens = allergens
+    mutate isActive = true
+
+    emit IngredientCreated
+  }
+
   store Ingredient in memory
 }
 
@@ -180,6 +206,23 @@ entity RecipeIngredient {
     mutate unitId = newUnit
 
     emit RecipeIngredientUpdated
+  }
+
+  command create(recipeVersionId: string, ingredientId: string, quantity: number, unitId: number, sortOrder: number, preparationNotes: string, isOptional: boolean) {
+    guard recipeVersionId != null and recipeVersionId != "" "Recipe version ID is required"
+    guard ingredientId != null and ingredientId != "" "Ingredient ID is required"
+    guard quantity > 0 "Quantity must be positive"
+    guard unitId > 0 "Unit is required"
+
+    mutate recipeVersionId = recipeVersionId
+    mutate ingredientId = ingredientId
+    mutate quantity = quantity
+    mutate unitId = unitId
+    mutate sortOrder = sortOrder
+    mutate preparationNotes = preparationNotes
+    mutate isOptional = isOptional
+
+    emit RecipeIngredientCreated
   }
 
   store RecipeIngredient in memory
@@ -261,6 +304,30 @@ entity Dish {
     emit DishLeadTimeUpdated
   }
 
+  command create(name: string, recipeId: string, description: string, category: string, serviceStyle: string, dietaryTags: string, allergens: string, pricePerPerson: number, costPerPerson: number, minPrepLeadDays: number, maxPrepLeadDays: number, portionSizeDescription: string) {
+    guard name != null and name != "" "Dish name is required"
+    guard minPrepLeadDays >= 0 "Minimum lead days must be non-negative"
+    guard maxPrepLeadDays >= minPrepLeadDays "Maximum lead days must be >= minimum"
+    guard pricePerPerson >= 0 "Price must be non-negative"
+    guard costPerPerson >= 0 "Cost must be non-negative"
+
+    mutate name = name
+    mutate recipeId = recipeId
+    mutate description = description
+    mutate category = category
+    mutate serviceStyle = serviceStyle
+    mutate dietaryTags = dietaryTags
+    mutate allergens = allergens
+    mutate pricePerPerson = pricePerPerson
+    mutate costPerPerson = costPerPerson
+    mutate minPrepLeadDays = minPrepLeadDays
+    mutate maxPrepLeadDays = maxPrepLeadDays
+    mutate portionSizeDescription = portionSizeDescription
+    mutate isActive = true
+
+    emit DishCreated
+  }
+
   store Dish in memory
 }
 
@@ -324,6 +391,24 @@ event IngredientAllergensUpdated: "kitchen.ingredient.allergens.updated" {
   oldAllergens: string
   newAllergens: string
   updatedAt: number
+}
+
+event IngredientCreated: "kitchen.ingredient.created" {
+  ingredientId: string
+  tenantId: string
+  name: string
+  category: string
+  allergens: string
+  createdAt: number
+}
+
+event RecipeIngredientCreated: "kitchen.recipe.ingredient.created" {
+  recipeIngredientId: string
+  recipeVersionId: string
+  ingredientId: string
+  tenantId: string
+  quantity: number
+  createdAt: number
 }
 
 event RecipeIngredientUpdated: "kitchen.recipe.ingredient.updated" {
