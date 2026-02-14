@@ -4,11 +4,11 @@
 import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@/lib/database";
+import { database } from "@repo/database";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@repo/manifest-adapters/route-helpers";
 import { captureException } from "@sentry/nextjs";
 
 export async function GET(_request: NextRequest) {

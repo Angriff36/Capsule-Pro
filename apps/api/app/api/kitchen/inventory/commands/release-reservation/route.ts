@@ -8,7 +8,7 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@repo/manifest-adapters/route-helpers";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { captureException } from "@sentry/nextjs";
 

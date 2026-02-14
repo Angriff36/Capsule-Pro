@@ -125,7 +125,9 @@ describe("Shadow Claim Route - Generated Backup", () => {
     expect(response.status).toBe(200);
     expect(json).toMatchObject({
       success: true,
-      result: { id: "task-123", status: "in_progress" },
+      data: {
+        result: { id: "task-123", status: "in_progress" },
+      },
     });
   });
 
@@ -221,7 +223,9 @@ describe("Shadow Claim Route - Generated Backup", () => {
     expect(response.status).toBe(200);
     expect(json).toMatchObject({
       success: true,
-      result: { id: "task-123", status: "in_progress" },
+      data: {
+        result: { id: "task-123", status: "in_progress" },
+      },
     });
   });
 
