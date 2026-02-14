@@ -91,6 +91,8 @@ export const database: Record<string, unknown> = {
   prepListItem: createMockModel(),
   inventoryItem: createMockModel(),
   station: createMockModel(),
+  units: createMockModel(),
+  recipe_steps: createMockModel(),
 };
 
 // Mock tenantDatabase function

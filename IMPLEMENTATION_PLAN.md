@@ -1,8 +1,8 @@
 # Capsule-Pro Implementation Plan
 
-**Last Updated**: 2026-02-14 (Recipe SQL Migration + Sentry Fix)
+**Last Updated**: 2026-02-14 (Steps/Ingredients SQL Migration + Waste Entry Type Fix)
 **Build Status**: ✅ PASSING
-**Test Status**: ✅ 647 passing (540 api + 107 app), 0 failures
+**Test Status**: ✅ 649 passing (542 api + 107 app), 0 failures
 **Latest Tag**: v0.3.8
 **Current Branch**: manifest-.3
 
@@ -21,15 +21,16 @@
 - **Import Migration**: P0-3 PARTIAL - 67/110 deprecated imports migrated
 - **UUID Policy**: P0-1 COMPLETE - Menu, MenuDish, OutboxEvent migrated from cuid() to gen_random_uuid()
 - **FK Indexes**: P0-2 COMPLETE - 16 FK indexes added across 10 tables
-- **PrepList SQL Migration**: P1-4 PARTIAL - 6 route files migrated from raw SQL to Prisma ORM
+- **PrepList SQL Migration**: P1-4 PARTIAL - 8 route files migrated from raw SQL to Prisma ORM
 - **Sentry Error Reporting**: 12 broken captureException imports fixed
+- **Waste Entry Type Fix**: Fixed WasteEntry update route field mapping (ingredientId→inventoryItemId)
 
 ### What Needs Work
 
 **Manifest Migration Status** (updated 2026-02-14):
 - **Deprecated Import Occurrences**: 0 remaining (67 migrated)
 - **42 routes bypass Manifest** with direct Prisma operations
-- **8 files using raw SQL** (`$queryRaw`/`$executeRaw`) — down from 14 (6 migrated)
+- **6 files using raw SQL** (`$queryRaw`/`$executeRaw`) — down from 14 (8 migrated)
 - **0 files using `$queryRawUnsafe`** — down from 2 (**CRITICAL security risk eliminated**)
 - **0 files with broken `captureException` import** — down from 11 (all fixed)
 
@@ -43,7 +44,7 @@
 1. ✅ **P1-1**: Wire Telemetry Hooks to Sentry - **COMPLETE**
 2. ✅ **P1-2**: Add Missing Load/Sync Functions - **COMPLETE**
 3. **P1-3**: Migrate Legacy Task Routes - **42 routes** bypassing Manifest with direct Prisma. **Finding**: `tasks/` routes operate on KitchenTask model (not PrepTask). These are a separate entity from the Manifest system. Migration requires either deprecating KitchenTask or creating a Manifest definition for it. Architectural decision needed.
-4. **P1-4**: Migrate Legacy PrepList/Recipe Routes - **PARTIAL** (6/10 raw SQL files migrated, 4 remaining: steps, ingredients use LATERAL JOINs; update-budgets uses CTE; generate uses complex JOINs)
+4. **P1-4**: Migrate Legacy PrepList/Recipe Routes - **PARTIAL** (8/10 raw SQL files migrated, 2 remaining: update-budgets uses CTE; generate uses complex JOINs)
 5. **P1-5**: Missing Manifest Commands - **12/12 create commands**, delete pending
 6. **P1-6**: Soft Delete Cascade Strategy - Architectural decision needed
 
@@ -66,6 +67,8 @@
 | **Database** | FK Index Coverage | ✅ P0-2 COMPLETE | 16 indexes across 10 tables |
 | **Security** | PrepList SQL Injection Fix | ✅ P1-4 PARTIAL | Eliminated all $queryRawUnsafe calls |
 | **Bug Fix** | Sentry Error Reporting | ✅ COMPLETE | 12 broken captureException imports fixed across kitchen routes |
+| **Migration** | Recipe Steps/Ingredients SQL | ✅ P1-4 Phase 3 | Migrated LATERAL JOIN queries to Prisma ORM |
+| **Bug Fix** | Waste Entry Update Type Error | ✅ COMPLETE | Fixed field mapping: ingredientId→inventoryItemId, unit→unitId, reason→reasonId |
 
 ### Pending Features
 
@@ -85,7 +88,7 @@
 | P1-1 | **Wire Telemetry to Sentry** | ✅ **COMPLETE** | Wired centrally in manifest-runtime.ts | Done |
 | P1-2 | **Add Missing Load/Sync Functions** | ✅ **COMPLETE** | All 12 entities have load/sync | Done |
 | P1-3 | **Migrate Legacy Routes** | NOT STARTED | **42 routes** with direct Prisma CRUD | 5 days |
-| P1-4 | **Migrate Legacy PrepList/Recipe Routes** | **PARTIAL** | 6/10 raw SQL files migrated, 4 remaining (steps, ingredients use LATERAL JOINs; update-budgets uses CTE; generate uses complex JOINs) | 1 day remaining |
+| P1-4 | **Migrate Legacy PrepList/Recipe Routes** | **PARTIAL** | 8/10 raw SQL files migrated, 2 remaining (update-budgets uses CTE; generate uses complex JOINs) | 0.5 days remaining |
 | P1-5 | **Missing Manifest Commands** | **IN PROGRESS** | 12/12 create complete, delete pending | 1 day remaining |
 | P1-6 | **Soft Delete Cascade Strategy** | NOT STARTED | Architectural decision needed | 3 days |
 
@@ -100,6 +103,35 @@
 ---
 
 ## Implementation Details
+
+### ✅ P1-4: Recipe Steps/Ingredients SQL Migration — Phase 3 (2026-02-14)
+
+**Problem**: 2 recipe route files used LATERAL JOIN queries to fetch the latest recipe version. These can be expressed as multi-step Prisma ORM queries. Also fixed a pre-existing type error in `waste/entries/[id]/route.ts` where Prisma update fields didn't match the schema.
+
+**Migrated files** (2 files fully migrated from raw SQL to Prisma ORM):
+
+1. **`recipes/[recipeId]/steps/route.ts`** — GET handler:
+   - Replaced LATERAL JOIN query with 3 sequential Prisma calls: `recipe.findFirst` → `recipeVersion.findFirst` (orderBy versionNumber desc) → `recipe_steps.findMany`
+   - Replaced `units` JOIN with separate `units.findUnique` lookup for yield unit code
+   - Removed `Prisma` import (no longer needed)
+
+2. **`recipes/[recipeId]/ingredients/route.ts`** — GET handler:
+   - Replaced LATERAL JOIN + multi-table JOIN with 4 sequential Prisma calls: `recipe.findFirst` → `recipeVersion.findFirst` → `recipeIngredient.findMany` → batch `ingredient.findMany` + `units.findMany`
+   - Used Map lookups for ingredient names and unit codes (same pattern as cost/route.ts migration)
+   - Added proper 404 handling for missing recipe
+   - Removed `Prisma` import (no longer needed)
+
+**Additionally fixed**:
+
+3. **`waste/entries/[id]/route.ts`** — PUT handler type error:
+   - Fixed `ingredientId` → `inventoryItemId` (correct WasteEntry schema field)
+   - Fixed `unit` → `unitId` with type guard
+   - Fixed `reason` → `reasonId` with type guard
+   - Removed `updatedBy` (not in WasteEntry model)
+
+**Test updates**:
+- Updated `recipe-ingredients-query.test.ts`: Replaced `$queryRaw` SQL assertion tests with Prisma ORM mock tests (3 tests: mapped ingredients, 404, empty results)
+- Added `units` and `recipe_steps` mock models to `apps/api/test/mocks/@repo/database.ts`
 
 ### ✅ P1-4: Recipe Raw SQL Migration — Phase 2 (2026-02-14)
 
@@ -140,9 +172,7 @@
 
 All 12 files changed from `import * as Sentry from "@sentry/nextjs"` (calling bare `captureException`) to `import { captureException } from "@sentry/nextjs"`, restoring error reporting.
 
-**Remaining raw SQL files** (4 files, using safe `Prisma.sql` parameterized queries or LATERAL JOINs):
-- `recipes/[recipeId]/steps/route.ts` — LATERAL JOIN for latest version + recipe_steps query
-- `recipes/[recipeId]/ingredients/route.ts` — LATERAL JOIN for latest version + ingredient JOINs
+**Remaining raw SQL files** (2 files, using safe `Prisma.sql` parameterized queries):
 - `recipes/[recipeId]/update-budgets/route.ts` — Complex CTE with cross-schema UPDATE (cannot express in Prisma)
 - `prep-lists/generate/route.ts` — Complex multi-table JOINs with LATERAL, unnest, CTE patterns
 
@@ -186,10 +216,10 @@ All 12 files changed from `import * as Sentry from "@sentry/nextjs"` (calling ba
 
 ## Next Steps
 
-1. **P1-4 Phase 3**: Migrate `steps/route.ts` and `ingredients/route.ts` LATERAL JOIN queries (requires breaking into multi-step Prisma queries)
-2. **P0-4**: Manifest Doc Cleanup (archive test result files)
-3. **P1-3**: Migrate Legacy Task Routes (42 routes)
-4. **P1-6**: Soft Delete Cascade Strategy (unblocks P1-5 delete commands)
+1. **P0-4**: Manifest Doc Cleanup (archive test result files)
+2. **P1-3**: Migrate Legacy Task Routes (42 routes)
+3. **P1-6**: Soft Delete Cascade Strategy (unblocks P1-5 delete commands)
+4. **P1-4 Remaining**: `update-budgets/route.ts` (CTE) and `generate/route.ts` (LATERAL+unnest) — both use safe parameterized queries, low priority
 
 ---
 

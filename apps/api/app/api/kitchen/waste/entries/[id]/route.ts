@@ -119,14 +119,13 @@ export async function PUT(
     await database.wasteEntry.update({
       where: { tenantId_id: { tenantId, id } },
       data: {
-        ingredientId,
+        inventoryItemId: ingredientId,
         quantity,
-        unit,
-        reason,
+        unitId: typeof unit === "number" ? unit : undefined,
+        reasonId: typeof reason === "number" ? reason : undefined,
         notes: notes || null,
         eventId: eventId || null,
         updatedAt: new Date(),
-        updatedBy: userId,
       },
     });
 

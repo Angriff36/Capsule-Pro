@@ -2,7 +2,7 @@
  * @vitest-environment node
  */
 
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "../../../app/api/kitchen/recipes/[recipeId]/ingredients/route";
@@ -20,41 +20,73 @@ describe("recipe ingredients API query", () => {
     vi.clearAllMocks();
   });
 
-  it("uses preparation_notes and sort_order columns", async () => {
-    const sqlImpl = vi.fn(
-      (strings: TemplateStringsArray, ...values: unknown[]) => ({
-        strings,
-        values,
-        get sql() {
-          return strings.reduce(
-            (acc, str, index) =>
-              acc +
-              str +
-              (values[index] !== undefined ? String(values[index]) : ""),
-            ""
-          );
-        },
-      })
-    );
-    (Prisma as unknown as { sql: typeof sqlImpl }).sql = sqlImpl;
+  it("returns mapped ingredients with preparationNotes and sortOrder", async () => {
+    const recipeSpy = vi.spyOn(database.recipe, "findFirst");
+    recipeSpy.mockResolvedValueOnce({ id: "recipe-1" } as never);
 
-    const queryRawSpy = vi.spyOn(database, "$queryRaw");
-    queryRawSpy.mockResolvedValueOnce([]);
+    const versionSpy = vi.spyOn(database.recipeVersion, "findFirst");
+    versionSpy.mockResolvedValueOnce({ id: "version-1" } as never);
 
-    await GET(new NextRequest("http://localhost"), {
+    const ingredientsSpy = vi.spyOn(database.recipeIngredient, "findMany");
+    ingredientsSpy.mockResolvedValueOnce([
+      {
+        ingredientId: "ing-1",
+        quantity: 2.5,
+        unitId: 1,
+        preparationNotes: "diced",
+        isOptional: false,
+        sortOrder: 0,
+      },
+    ] as never);
+
+    const ingredientLookupSpy = vi.spyOn(database.ingredient, "findMany");
+    ingredientLookupSpy.mockResolvedValueOnce([
+      { id: "ing-1", name: "Onion" },
+    ] as never);
+
+    const unitsSpy = vi.spyOn(database.units, "findMany");
+    unitsSpy.mockResolvedValueOnce([{ id: 1, code: "kg" }] as never);
+
+    const response = await GET(new NextRequest("http://localhost"), {
       params: Promise.resolve({ recipeId: "recipe-1" }),
     });
 
-    const sql = queryRawSpy.mock.calls[0]?.[0];
-    const sqlText =
-      sql && typeof sql === "object" && "sql" in sql
-        ? sql.sql
-        : ((sql as { strings?: TemplateStringsArray })?.strings?.join("") ??
-          "");
+    const body = await response.json();
+    expect(body.ingredients).toHaveLength(1);
+    expect(body.ingredients[0]).toEqual({
+      id: "ing-1",
+      name: "Onion",
+      quantity: 2.5,
+      unitCode: "kg",
+      notes: "diced",
+      isOptional: false,
+      orderIndex: 0,
+    });
+  });
 
-    expect(sqlText).toContain("ri.preparation_notes");
-    expect(sqlText).toContain("ri.sort_order");
-    expect(sqlText).not.toContain("ri.notes");
-    expect(sqlText).not.toContain("ri.order_index");
+  it("returns 404 when recipe not found", async () => {
+    const recipeSpy = vi.spyOn(database.recipe, "findFirst");
+    recipeSpy.mockResolvedValueOnce(null);
+
+    const response = await GET(new NextRequest("http://localhost"), {
+      params: Promise.resolve({ recipeId: "nonexistent" }),
+    });
+
+    expect(response.status).toBe(404);
+  });
+
+  it("returns empty ingredients when no version exists", async () => {
+    const recipeSpy = vi.spyOn(database.recipe, "findFirst");
+    recipeSpy.mockResolvedValueOnce({ id: "recipe-1" } as never);
+
+    const versionSpy = vi.spyOn(database.recipeVersion, "findFirst");
+    versionSpy.mockResolvedValueOnce(null);
+
+    const response = await GET(new NextRequest("http://localhost"), {
+      params: Promise.resolve({ recipeId: "recipe-1" }),
+    });
+
+    const body = await response.json();
+    expect(body.ingredients).toEqual([]);
   });
 });

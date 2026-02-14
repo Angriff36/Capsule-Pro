@@ -8,7 +8,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -41,63 +41,90 @@ export async function GET(
 
     const tenantId = await getTenantIdForOrg(orgId);
 
-    // Fetch ingredients for the recipe's latest version
-    const ingredients = await database.$queryRaw<
-      {
-        id: string;
-        name: string;
-        quantity: number;
-        unit_code: string;
-        notes: string | null;
-        is_optional: boolean;
-        order_index: number;
-      }[]
-    >(
-      Prisma.sql`
-        SELECT
-          i.id,
-          i.name,
-          ri.quantity,
-          u.code AS unit_code,
-          ri.preparation_notes AS notes,
-          ri.is_optional,
-          ri.sort_order AS order_index
-        FROM tenant_kitchen.recipes r
-        LEFT JOIN LATERAL (
-          SELECT rv.id
-          FROM tenant_kitchen.recipe_versions rv
-          WHERE rv.tenant_id = r.tenant_id
-            AND rv.recipe_id = r.id
-            AND rv.deleted_at IS NULL
-          ORDER BY rv.version_number DESC
-          LIMIT 1
-        ) rv ON true
-        JOIN tenant_kitchen.recipe_ingredients ri
-          ON ri.tenant_id = r.tenant_id
-          AND ri.recipe_version_id = rv.id
-          AND ri.deleted_at IS NULL
-        JOIN tenant_kitchen.ingredients i
-          ON i.tenant_id = ri.tenant_id
-          AND i.id = ri.ingredient_id
-          AND i.deleted_at IS NULL
-        LEFT JOIN core.units u ON u.id = ri.unit_id
-        WHERE r.tenant_id = ${tenantId}
-          AND r.id = ${recipeId}
-          AND r.deleted_at IS NULL
-        ORDER BY ri.sort_order ASC
-      `
-    );
+    // Verify recipe exists
+    const recipe = await database.recipe.findFirst({
+      where: { tenantId, id: recipeId, deletedAt: null },
+      select: { id: true },
+    });
+
+    if (!recipe) {
+      return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
+    }
+
+    // Fetch latest recipe version (replaces LATERAL JOIN)
+    const latestVersion = await database.recipeVersion.findFirst({
+      where: { tenantId, recipeId, deletedAt: null },
+      orderBy: { versionNumber: "desc" },
+      select: { id: true },
+    });
+
+    if (!latestVersion) {
+      return NextResponse.json({ ingredients: [] });
+    }
+
+    // Fetch recipe ingredients for this version
+    const recipeIngredients = await database.recipeIngredient.findMany({
+      where: {
+        tenantId,
+        recipeVersionId: latestVersion.id,
+        deletedAt: null,
+      },
+      orderBy: { sortOrder: "asc" },
+      select: {
+        ingredientId: true,
+        quantity: true,
+        unitId: true,
+        preparationNotes: true,
+        isOptional: true,
+        sortOrder: true,
+      },
+    });
+
+    if (recipeIngredients.length === 0) {
+      return NextResponse.json({ ingredients: [] });
+    }
+
+    // Batch fetch ingredient names via Map lookup
+    const ingredientIds = recipeIngredients.map((ri) => ri.ingredientId);
+    const ingredientRows = await database.ingredient.findMany({
+      where: {
+        tenantId,
+        id: { in: ingredientIds },
+        deletedAt: null,
+      },
+      select: { id: true, name: true },
+    });
+    const ingredientMap = new Map(ingredientRows.map((i) => [i.id, i.name]));
+
+    // Batch fetch unit codes via Map lookup
+    const unitIds = [
+      ...new Set(
+        recipeIngredients
+          .map((ri) => ri.unitId)
+          .filter((id): id is number => id !== null)
+      ),
+    ];
+    const unitRows =
+      unitIds.length > 0
+        ? await database.units.findMany({
+            where: { id: { in: unitIds } },
+            select: { id: true, code: true },
+          })
+        : [];
+    const unitMap = new Map(unitRows.map((u) => [u.id, u.code]));
 
     return NextResponse.json({
-      ingredients: ingredients.map((ing) => ({
-        id: ing.id,
-        name: ing.name,
-        quantity: Number(ing.quantity),
-        unitCode: ing.unit_code,
-        notes: ing.notes,
-        isOptional: ing.is_optional,
-        orderIndex: ing.order_index,
-      })),
+      ingredients: recipeIngredients
+        .filter((ri) => ingredientMap.has(ri.ingredientId))
+        .map((ri) => ({
+          id: ri.ingredientId,
+          name: ingredientMap.get(ri.ingredientId) ?? "",
+          quantity: Number(ri.quantity),
+          unitCode: unitMap.get(ri.unitId) ?? "",
+          notes: ri.preparationNotes,
+          isOptional: ri.isOptional,
+          orderIndex: ri.sortOrder,
+        })),
     });
   } catch (error) {
     captureException(error);
