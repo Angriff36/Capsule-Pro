@@ -39,12 +39,40 @@ jobs:
       - name: Build with Turbo (matches Vercel)
         run: pnpm turbo run build
         env:
-          # Minimal env vars - Prisma will skip generation when VERCEL_ENV is set without DATABASE_URL
+          # All required env vars for build-time validation (dummy values for CI)
           SKIP_ENV_VALIDATION: true
-          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
+          # Server env vars
+          CLERK_SECRET_KEY: "sk_test_dummy"
+          CLERK_WEBHOOK_SECRET: "whsec_dummy"
+          RESEND_FROM: "noreply@ci-build.local"
+          RESEND_TOKEN: "re_dummy"
+          STRIPE_SECRET_KEY: "sk_test_dummy"
+          STRIPE_WEBHOOK_SECRET: "whsec_dummy"
+          BETTERSTACK_API_KEY: "dummy"
+          BETTERSTACK_URL: "https://dummy.betterstack.com"
+          FLAGS_SECRET: "dummy"
+          ARCJET_KEY: "ajkey_dummy"
+          SVIX_TOKEN: "sk_dummy"
+          LIVEBLOCKS_SECRET: "sk_dummy"
+          VERCEL_PROJECT_PRODUCTION_URL: "https://capsule-pro-app.vercel.app"
+          KNOCK_API_KEY: "dummy"
+          KNOCK_FEED_CHANNEL_ID: "dummy"
+          # Client env vars
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_dummy"
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
+          NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: "/"
+          NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: "/"
+          NEXT_PUBLIC_GA_MEASUREMENT_ID: "G-DUMMY"
+          NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
+          NEXT_PUBLIC_POSTHOG_HOST: "https://app.posthog.com"
           NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
           NEXT_PUBLIC_WEB_URL: "https://capsule-pro-web.vercel.app"
+          NEXT_PUBLIC_API_URL: "https://capsule-pro-api.vercel.app"
+          NEXT_PUBLIC_DOCS_URL: "https://capsule-pro-docs.vercel.app"
+          NEXT_PUBLIC_ABLY_AUTH_URL: "https://capsule-pro-api.vercel.app/ably/auth"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
