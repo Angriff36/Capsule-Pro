@@ -25,13 +25,6 @@ jobs:
             echo "is_dependabot=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Setup PostgreSQL (skip for Dependabot)
-        if: steps.dependabot-check.outputs.is_dependabot != 'true'
-        uses: ikalnytskyi/action-setup-postgres@v6
-        with:
-          postgres-version: "15"
-          password: postgres
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -69,24 +62,17 @@ jobs:
           pnpm run analyze
           cd apps/web && npx basehub
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
           BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
           BASEHUB_DRAFT: false
 
       - name: Run linting
         run: pnpm run check
 
-      - name: Run tests (with DB for non-Dependabot)
-        if: steps.dependabot-check.outputs.is_dependabot != 'true'
+      - name: Run tests
         run: pnpm test
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
-
-      - name: Run tests (no DB for Dependabot)
-        if: steps.dependabot-check.outputs.is_dependabot == 'true'
-        run: pnpm test -- --run --reporter=verbose
-        env:
-          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy" # Dummy URL for tests that don't need DB
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
       - name: Build all apps
         run: pnpm run build
