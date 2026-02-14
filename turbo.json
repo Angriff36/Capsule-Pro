@@ -82,7 +82,7 @@
       "dependsOn": ["^test"]
     },
     "typecheck": {
-      "dependsOn": ["^build", "^typecheck"],
+      "dependsOn": ["^typecheck"],
       "cache": false
     },
     "analyze": {
