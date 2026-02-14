@@ -22,10 +22,10 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Label } from "@repo/design-system/components/ui/label";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
+import { captureException } from "@sentry/nextjs";
 import { EditIcon, LoaderIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { captureException } from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 
 const COMMON_ALLERGENS = [
@@ -313,4 +313,3 @@ export function AllergenManagementModal({
     </Dialog>
   );
 }
-

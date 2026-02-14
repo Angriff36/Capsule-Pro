@@ -22,7 +22,11 @@ import {
   type ChartCategory,
   type ChartTypeDefinition,
 } from "../lib/chart-catalog";
-import { buildColumnInfo, ColumnMapper, type ColumnInfo } from "./column-mapper";
+import {
+  buildColumnInfo,
+  type ColumnInfo,
+  ColumnMapper,
+} from "./column-mapper";
 import { VegaChart } from "./vega-chart";
 
 interface ChartBuilderProps {
@@ -101,7 +105,8 @@ function ChartBuilder({ data }: ChartBuilderProps) {
   );
 
   // Check if all required encodings are mapped
-  const requiredSlots = selectedChart?.encodings.filter((e) => e.required) ?? [];
+  const requiredSlots =
+    selectedChart?.encodings.filter((e) => e.required) ?? [];
   const allRequiredMapped = requiredSlots.every(
     (slot) => mappings[slot.placeholder]
   );
@@ -238,11 +243,7 @@ function ChartBuilder({ data }: ChartBuilderProps) {
             <CardContent className="py-0 pb-3">
               <div className="flex flex-wrap gap-1.5">
                 {columns.slice(0, 20).map((col) => (
-                  <Badge
-                    className="text-xs"
-                    key={col.name}
-                    variant="secondary"
-                  >
+                  <Badge className="text-xs" key={col.name} variant="secondary">
                     {col.name}
                     <span className="ml-1 opacity-60">
                       ({col.detectedType.slice(0, 4)})

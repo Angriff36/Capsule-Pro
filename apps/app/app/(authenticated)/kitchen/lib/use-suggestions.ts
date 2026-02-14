@@ -1,9 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
 // biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
 import * as Sentry from "@sentry/nextjs";
+import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import type { SuggestedAction, SuggestionsResponse } from "./suggestions-types";
 
@@ -85,4 +85,3 @@ export function useSuggestions(tenantId?: string | null) {
     handleAction,
   };
 }
-

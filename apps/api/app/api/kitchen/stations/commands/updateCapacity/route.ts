@@ -3,14 +3,14 @@
 // Writes MUST flow through runtime.runCommand() to enforce guards, policies, and constraints
 
 import { auth } from "@repo/auth/server";
-import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@repo/manifest-adapters/route-helpers";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { captureException } from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export async function POST(request: NextRequest) {
   try {
@@ -60,4 +60,3 @@ export async function POST(request: NextRequest) {
     return manifestErrorResponse("Internal server error", 500);
   }
 }
-

@@ -18,11 +18,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
+import { captureException } from "@sentry/nextjs";
 import { differenceInMinutes, format, isPast } from "date-fns";
 import { ChevronRight, Clock, MoreVertical, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { captureException } from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 
 type UserSelect = Pick<
@@ -471,4 +471,3 @@ export function TaskCard({
     </div>
   );
 }
-

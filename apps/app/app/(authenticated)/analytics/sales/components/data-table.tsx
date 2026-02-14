@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import type { CellValue, DataRow } from "../lib/sales-analytics";
+import type { DataRow } from "../lib/sales-analytics";
 
 const formatNumber = (value: number) =>
   new Intl.NumberFormat("en-US").format(value);

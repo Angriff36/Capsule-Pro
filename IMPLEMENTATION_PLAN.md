@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan
 
-**Last Updated**: 2026-02-14 (P1-4 PrepList Raw SQL Migration — Phase 1)
+**Last Updated**: 2026-02-14 (Recipe SQL Migration + Sentry Fix)
 **Build Status**: ✅ PASSING
 **Test Status**: ✅ 647 passing (540 api + 107 app), 0 failures
 **Latest Tag**: v0.3.6
@@ -21,15 +21,17 @@
 - **Import Migration**: P0-3 PARTIAL - 67/110 deprecated imports migrated
 - **UUID Policy**: P0-1 COMPLETE - Menu, MenuDish, OutboxEvent migrated from cuid() to gen_random_uuid()
 - **FK Indexes**: P0-2 COMPLETE - 16 FK indexes added across 10 tables
-- **PrepList SQL Migration**: P1-4 PARTIAL - 3 route files migrated from raw SQL/$queryRawUnsafe to Prisma ORM
+- **PrepList SQL Migration**: P1-4 PARTIAL - 6 route files migrated from raw SQL to Prisma ORM
+- **Sentry Error Reporting**: 12 broken captureException imports fixed
 
 ### What Needs Work
 
 **Manifest Migration Status** (updated 2026-02-14):
 - **Deprecated Import Occurrences**: 0 remaining (67 migrated)
 - **42 routes bypass Manifest** with direct Prisma operations
-- **11 files using raw SQL** (`$queryRaw`/`$executeRaw`) — down from 14 (3 migrated)
+- **8 files using raw SQL** (`$queryRaw`/`$executeRaw`) — down from 14 (6 migrated)
 - **0 files using `$queryRawUnsafe`** — down from 2 (**CRITICAL security risk eliminated**)
+- **0 files with broken `captureException` import** — down from 11 (all fixed)
 
 **P0 - Immediate Blockers** (prevents clean Manifest adoption):
 1. ✅ **P0-1**: Database UUID Policy Violations - **COMPLETE**
@@ -40,8 +42,8 @@
 **P1 - High Priority** (Manifest completeness):
 1. ✅ **P1-1**: Wire Telemetry Hooks to Sentry - **COMPLETE**
 2. ✅ **P1-2**: Add Missing Load/Sync Functions - **COMPLETE**
-3. **P1-3**: Migrate Legacy Task Routes - **42 routes** bypassing Manifest with direct Prisma
-4. **P1-4**: Migrate Legacy PrepList Routes - **PARTIAL** (3/7 files migrated, 4 remaining)
+3. **P1-3**: Migrate Legacy Task Routes - **42 routes** bypassing Manifest with direct Prisma. **Finding**: `tasks/` routes operate on KitchenTask model (not PrepTask). These are a separate entity from the Manifest system. Migration requires either deprecating KitchenTask or creating a Manifest definition for it. Architectural decision needed.
+4. **P1-4**: Migrate Legacy PrepList/Recipe Routes - **PARTIAL** (6/10 raw SQL files migrated, 4 remaining: steps, ingredients use LATERAL JOINs; update-budgets uses CTE; generate uses complex JOINs)
 5. **P1-5**: Missing Manifest Commands - **12/12 create commands**, delete pending
 6. **P1-6**: Soft Delete Cascade Strategy - Architectural decision needed
 
@@ -63,6 +65,7 @@
 | **Database** | UUID Policy Fix | ✅ P0-1 COMPLETE | Menu, MenuDish, OutboxEvent → gen_random_uuid() |
 | **Database** | FK Index Coverage | ✅ P0-2 COMPLETE | 16 indexes across 10 tables |
 | **Security** | PrepList SQL Injection Fix | ✅ P1-4 PARTIAL | Eliminated all $queryRawUnsafe calls |
+| **Bug Fix** | Sentry Error Reporting | ✅ COMPLETE | 12 broken captureException imports fixed across kitchen routes |
 
 ### Pending Features
 
@@ -82,7 +85,7 @@
 | P1-1 | **Wire Telemetry to Sentry** | ✅ **COMPLETE** | Wired centrally in manifest-runtime.ts | Done |
 | P1-2 | **Add Missing Load/Sync Functions** | ✅ **COMPLETE** | All 12 entities have load/sync | Done |
 | P1-3 | **Migrate Legacy Routes** | NOT STARTED | **42 routes** with direct Prisma CRUD | 5 days |
-| P1-4 | **Migrate Legacy PrepList Routes** | **PARTIAL** | 3/7 files done, 4 remaining (generate, save use safe Prisma.sql) | 2 days remaining |
+| P1-4 | **Migrate Legacy PrepList/Recipe Routes** | **PARTIAL** | 6/10 raw SQL files migrated, 4 remaining (steps, ingredients use LATERAL JOINs; update-budgets uses CTE; generate uses complex JOINs) | 1 day remaining |
 | P1-5 | **Missing Manifest Commands** | **IN PROGRESS** | 12/12 create complete, delete pending | 1 day remaining |
 | P1-6 | **Soft Delete Cascade Strategy** | NOT STARTED | Architectural decision needed | 3 days |
 
@@ -97,6 +100,51 @@
 ---
 
 ## Implementation Details
+
+### ✅ P1-4: Recipe Raw SQL Migration — Phase 2 (2026-02-14)
+
+**Problem**: 5 recipe route files used `$queryRaw`/`$executeRaw` for operations expressible through Prisma ORM. All 5 also had a broken `captureException` import (`import * as Sentry` but calling bare `captureException`), silently dropping all error reports to Sentry.
+
+**Migrated files** (2 files fully migrated from raw SQL to Prisma ORM):
+
+1. **`recipes/[recipeId]/scale/route.ts`** — POST, PATCH handlers:
+   - POST: Replaced `$queryRaw` SELECT with Prisma `findFirst` + `select` for recipe version cost data
+   - PATCH: Replaced `$executeRaw` UPDATE with Prisma `recipeIngredient.update()` for waste factor
+
+2. **`recipes/[recipeId]/cost/route.ts`** — GET, POST handlers:
+   - GET: Replaced 2 `$queryRaw` queries (recipe version + ingredients JOIN) with Prisma `findFirst` + `findMany` + batch ingredient name lookup via Map
+   - GET: Replaced `$executeRaw` UPDATE with Prisma `recipeVersion.update()` for cost persistence
+   - POST: **Fixed N+1 query** — replaced loop of individual `$executeRaw` UPDATEs with single Prisma `updateMany()` for ingredient cost timestamps
+   - POST: **Fixed division-by-zero vulnerability** — added guard for `adjustedQuantity > 0` before dividing
+
+**Additionally migrated** (1 file, partial):
+
+3. **`waste/entries/[id]/route.ts`** — PUT, DELETE handlers:
+   - PUT: Replaced 2 `$queryRaw` calls (existence check + UPDATE) with Prisma `findFirst` + `update`
+   - DELETE: Replaced `$executeRaw` with Prisma `updateMany` for soft-delete
+   - GET still uses raw SQL (complex 4-schema JOIN across tenant_kitchen, tenant_inventory, platform, tenant_events)
+
+**Sentry import fix** (12 files fixed):
+- `recipes/[recipeId]/scale/route.ts`
+- `recipes/[recipeId]/cost/route.ts`
+- `recipes/[recipeId]/steps/route.ts`
+- `recipes/[recipeId]/ingredients/route.ts`
+- `recipes/[recipeId]/update-budgets/route.ts`
+- `manifest/recipes/[recipeId]/metadata/route.ts`
+- `manifest/recipes/[recipeId]/activate/route.ts`
+- `manifest/recipes/[recipeId]/deactivate/route.ts`
+- `manifest/dishes/[dishId]/pricing/route.ts`
+- `tasks/[id]/route.ts`
+- `tasks/[id]/claim-shadow-manifest/route.ts`
+- `waste/entries/[id]/route.ts`
+
+All 12 files changed from `import * as Sentry from "@sentry/nextjs"` (calling bare `captureException`) to `import { captureException } from "@sentry/nextjs"`, restoring error reporting.
+
+**Remaining raw SQL files** (4 files, using safe `Prisma.sql` parameterized queries or LATERAL JOINs):
+- `recipes/[recipeId]/steps/route.ts` — LATERAL JOIN for latest version + recipe_steps query
+- `recipes/[recipeId]/ingredients/route.ts` — LATERAL JOIN for latest version + ingredient JOINs
+- `recipes/[recipeId]/update-budgets/route.ts` — Complex CTE with cross-schema UPDATE (cannot express in Prisma)
+- `prep-lists/generate/route.ts` — Complex multi-table JOINs with LATERAL, unnest, CTE patterns
 
 ### ✅ P1-4: PrepList Raw SQL Migration — Phase 1 (2026-02-14)
 
@@ -116,29 +164,11 @@
 3. **`prep-lists/save-db/route.ts`** — POST handler:
    - Replaced `$queryRaw` INSERT with RETURNING + loop of `$executeRaw` INSERTs with Prisma `$transaction` containing `create` calls for atomic prep list + items creation
 
-**Remaining files** (4 files, using safe `Prisma.sql` parameterized queries):
+**Remaining files** (2 files, using safe `Prisma.sql` parameterized queries):
 - `generate/route.ts` — Complex multi-table JOINs with LATERAL, unnest, CTE patterns. Safe (uses `Prisma.sql` templates).
 - `save/route.ts` — INSERT into prep_tasks with dedup check. Safe (uses `Prisma.sql` templates).
 
 **Why**: `$queryRawUnsafe` accepts raw SQL strings, bypassing Prisma's parameterization. Combined with dynamic SQL building, this creates SQL injection risk. The migrated code uses Prisma ORM which generates parameterized queries at the driver level.
-
-### ✅ P0-1: UUID Policy - COMPLETE (2026-02-14)
-Changed 3 models from `@default(cuid())` to `@default(dbgenerated("gen_random_uuid()"))`.
-
-### ✅ P0-2: FK Indexes - COMPLETE (2026-02-14)
-Added 16 `@@index` declarations across 10 models.
-
-### ✅ P1-1: Telemetry - COMPLETE (2026-02-14)
-Wired centrally in manifest-runtime.ts, created telemetry.ts with Sentry v10 API, 6 metrics.
-
-### ✅ P0-3: Import Migration - PARTIAL (2026-02-14)
-67/110 deprecated imports migrated. @/lib/manifest-runtime stays (NOT deprecated shim).
-
-### ✅ P1-2: Load/Sync Functions - COMPLETE (2026-02-14)
-All 12 PrismaStore classes + 24 load/sync functions exported from @repo/manifest-adapters.
-
-### P1-5: Commands - IN PROGRESS (2026-02-14)
-12/12 create commands complete. Delete commands pending P1-6 soft-delete architecture.
 
 ---
 
@@ -156,7 +186,7 @@ All 12 PrismaStore classes + 24 load/sync functions exported from @repo/manifest
 
 ## Next Steps
 
-1. **P1-4 Phase 2**: Migrate `generate/route.ts` and `save/route.ts` complex queries (lower priority — already safe with Prisma.sql)
+1. **P1-4 Phase 3**: Migrate `steps/route.ts` and `ingredients/route.ts` LATERAL JOIN queries (requires breaking into multi-step Prisma queries)
 2. **P0-4**: Manifest Doc Cleanup (archive test result files)
 3. **P1-3**: Migrate Legacy Task Routes (42 routes)
 4. **P1-6**: Soft Delete Cascade Strategy (unblocks P1-5 delete commands)

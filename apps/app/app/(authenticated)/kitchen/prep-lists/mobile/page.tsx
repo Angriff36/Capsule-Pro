@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { captureException } from "@sentry/nextjs";
 import { format, isPast, isToday, isTomorrow, parseISO } from "date-fns";
 import {
   CheckCircle2,
@@ -20,7 +21,6 @@ import {
   WifiOff,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { captureException } from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import { Header } from "../../../components/header";
 
@@ -311,4 +311,3 @@ export default function PrepListsMobilePage() {
     </>
   );
 }
-

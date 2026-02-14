@@ -16,10 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { captureException } from "@sentry/nextjs";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { captureException } from "@sentry/nextjs";
 import { createKitchenTask } from "../actions";
 
 const PRIORITIES = [
@@ -129,4 +129,3 @@ export default function NewKitchenTaskPage() {
     </div>
   );
 }
-

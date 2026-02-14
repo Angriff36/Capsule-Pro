@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface WasteEntryDetail {
@@ -103,12 +103,12 @@ export async function PUT(
     }
 
     // Check if the entry exists and belongs to the tenant
-    const existingEntry = await database.$queryRaw<{ id: string }[]>`
-      SELECT id FROM tenant_kitchen.waste_entries
-      WHERE tenant_id = ${tenantId} AND id = ${id} AND deleted_at IS NULL
-    `;
+    const existingEntry = await database.wasteEntry.findFirst({
+      where: { tenantId, id, deletedAt: null },
+      select: { id: true },
+    });
 
-    if (existingEntry.length === 0) {
+    if (!existingEntry) {
       return NextResponse.json(
         { error: "Waste entry not found" },
         { status: 404 }
@@ -116,19 +116,19 @@ export async function PUT(
     }
 
     // Update the waste entry
-    await database.$queryRaw`
-      UPDATE tenant_kitchen.waste_entries
-      SET
-        ingredient_id = ${ingredientId},
-        quantity = ${quantity},
-        unit = ${unit},
-        reason = ${reason},
-        notes = ${notes || null},
-        event_id = ${eventId || null},
-        updated_at = NOW(),
-        updated_by = ${userId}
-      WHERE tenant_id = ${tenantId} AND id = ${id}
-    `;
+    await database.wasteEntry.update({
+      where: { tenantId_id: { tenantId, id } },
+      data: {
+        ingredientId,
+        quantity,
+        unit,
+        reason,
+        notes: notes || null,
+        eventId: eventId || null,
+        updatedAt: new Date(),
+        updatedBy: userId,
+      },
+    });
 
     return NextResponse.json({
       message: "Waste entry updated successfully",
@@ -160,13 +160,10 @@ export async function DELETE(
     const tenantId = await getTenantIdForOrg(orgId);
     const { id } = await params;
 
-    await database.$executeRaw`
-      UPDATE tenant_kitchen.waste_entries
-      SET deleted_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${id}
-        AND deleted_at IS NULL
-    `;
+    await database.wasteEntry.updateMany({
+      where: { tenantId, id, deletedAt: null },
+      data: { deletedAt: new Date() },
+    });
 
     return NextResponse.json({
       message: "Waste entry deleted successfully",

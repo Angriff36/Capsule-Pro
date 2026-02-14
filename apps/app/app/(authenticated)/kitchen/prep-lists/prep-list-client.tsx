@@ -23,6 +23,7 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import { captureException } from "@sentry/nextjs";
 import { format } from "date-fns";
 import {
   AlertTriangle,
@@ -42,7 +43,6 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { captureException } from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import type {
   IngredientItem,
@@ -674,4 +674,3 @@ function generateCSV(prepList: PrepListGenerationResult): string {
 
   return rows.join("\n");
 }
-

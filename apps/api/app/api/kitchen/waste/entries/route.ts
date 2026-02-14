@@ -2,8 +2,8 @@ import { auth } from "@repo/auth/server";
 import type { Prisma } from "@repo/database";
 import { database, type PrismaClient } from "@repo/database";
 import { wasteInventory } from "@repo/manifest-adapters";
-import { NextResponse } from "next/server";
 import { captureException } from "@sentry/nextjs";
+import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface WasteRequestBody {
@@ -583,4 +583,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

@@ -25,11 +25,11 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
+// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
+import * as Sentry from "@sentry/nextjs";
 import { AlertTriangle, CheckCircle2, Loader2, SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
-import * as Sentry from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import { AllergenManagementModal } from "./allergen-management-modal";
 
@@ -654,4 +654,3 @@ export default function AllergenManagementPage() {
     </div>
   );
 }
-

@@ -80,10 +80,7 @@ export function VegaChart({
   // Stabilise the spec identity so the effect only re-runs when the spec
   // actually changes (not on every parent render).
   const specJson = useMemo(() => JSON.stringify(spec), [spec]);
-  const dataJson = useMemo(
-    () => (data ? JSON.stringify(data) : null),
-    [data]
-  );
+  const dataJson = useMemo(() => (data ? JSON.stringify(data) : null), [data]);
 
   useEffect(() => {
     let cancelled = false;
@@ -274,7 +271,7 @@ export function VegaChart({
             <span className="text-sm text-destructive">{error}</span>
           </div>
         )}
-        <div ref={containerRef} className="w-full" />
+        <div className="w-full" ref={containerRef} />
       </div>
 
       {showActions && !isLoading && !error && (

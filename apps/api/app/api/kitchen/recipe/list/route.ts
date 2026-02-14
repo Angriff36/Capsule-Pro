@@ -2,14 +2,14 @@
 // Generated from Manifest IR - DO NOT EDIT
 
 import { auth } from "@repo/auth/server";
-import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@repo/database";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@repo/manifest-adapters/route-helpers";
 import { captureException } from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export async function GET(_request: NextRequest) {
   try {
@@ -40,4 +40,3 @@ export async function GET(_request: NextRequest) {
     return manifestErrorResponse("Internal server error", 500);
   }
 }
-

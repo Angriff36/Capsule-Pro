@@ -274,4 +274,3 @@ export async function fetchWasteReports(): Promise<WasteReportData> {
   const payload = await response.json();
   return parseWasteReportResponse(payload);
 }
-

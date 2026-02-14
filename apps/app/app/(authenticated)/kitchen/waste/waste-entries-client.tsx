@@ -19,11 +19,11 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
+import * as Sentry from "@sentry/nextjs";
 import { AlertCircle, DollarSign, Package, Search, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
-// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
-import * as Sentry from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 
 const { logger, captureException } = Sentry;
@@ -528,4 +528,3 @@ export function WasteEntriesClient() {
     </>
   );
 }
-

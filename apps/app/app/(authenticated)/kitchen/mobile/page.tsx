@@ -8,6 +8,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
+import { captureException } from "@sentry/nextjs";
 import { differenceInMinutes, format, isPast } from "date-fns";
 import {
   AlertCircle,
@@ -19,7 +20,6 @@ import {
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { captureException } from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import { Header } from "../../components/header";
 
@@ -551,4 +551,3 @@ export default function KitchenMobilePage() {
     </>
   );
 }
-

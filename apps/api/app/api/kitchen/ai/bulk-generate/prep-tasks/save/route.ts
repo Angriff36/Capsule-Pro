@@ -5,8 +5,8 @@
  * Saves AI-generated prep tasks to the database
  */
 
-import { NextResponse } from "next/server";
 import { captureException } from "@sentry/nextjs";
+import { NextResponse } from "next/server";
 import { invariant } from "@/app/lib/invariant";
 import { requireTenantId } from "@/app/lib/tenant";
 import { saveGeneratedTasks } from "../service";
@@ -121,4 +121,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

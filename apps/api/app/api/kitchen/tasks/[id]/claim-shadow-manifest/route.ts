@@ -2,13 +2,13 @@
 // This route is intentionally separate from the production claim endpoint.
 
 import { auth } from "@repo/auth/server";
-import type { NextRequest } from "next/server";
-import * as Sentry from "@sentry/nextjs";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@repo/manifest-adapters/route-helpers";
+import { captureException } from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 interface RouteContext {

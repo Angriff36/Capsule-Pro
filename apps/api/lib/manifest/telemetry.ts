@@ -1,4 +1,3 @@
-import * as Sentry from "@sentry/nextjs";
 import type { CommandResult } from "@manifest/runtime";
 import type {
   ConstraintOutcome,
@@ -6,6 +5,7 @@ import type {
   IRConstraint,
   OverrideRequest,
 } from "@manifest/runtime/ir";
+import * as Sentry from "@sentry/nextjs";
 
 /**
  * Telemetry hooks for Manifest runtime observability.
@@ -110,7 +110,7 @@ export function createSentryTelemetry(): ManifestTelemetryHooks {
       // Count blocking and warning constraints from the result
       if (result.constraintOutcomes && result.constraintOutcomes.length > 0) {
         const blocked = result.constraintOutcomes.filter(
-          (o) => !o.passed && !o.overridden && o.severity === "block"
+          (o) => !(o.passed || o.overridden) && o.severity === "block"
         ).length;
         const warned = result.constraintOutcomes.filter(
           (o) => !o.passed && o.severity === "warn"

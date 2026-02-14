@@ -5,8 +5,8 @@
  * Generates prep tasks for an event using AI analysis
  */
 
-import { NextResponse } from "next/server";
 import { captureException } from "@sentry/nextjs";
+import { NextResponse } from "next/server";
 import { invariant } from "@/app/lib/invariant";
 import { requireTenantId } from "@/app/lib/tenant";
 import { generateBulkPrepTasks } from "./service";
@@ -117,4 +117,3 @@ export async function POST(request: Request): Promise<NextResponse> {
     return determineErrorResponse(error);
   }
 }
-

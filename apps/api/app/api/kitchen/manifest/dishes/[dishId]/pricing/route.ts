@@ -3,8 +3,8 @@ import {
   createRecipeRuntime,
   updateDishPricing,
 } from "@repo/manifest-adapters";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   checkBlockingConstraints,

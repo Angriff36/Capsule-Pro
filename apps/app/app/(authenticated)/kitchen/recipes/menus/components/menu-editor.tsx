@@ -1,6 +1,5 @@
 "use client";
 
-import { captureException } from "@sentry/nextjs";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import { Input } from "@repo/design-system/components/ui/input";
@@ -12,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { captureException } from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
 import React, { useState, useTransition } from "react";
 import {
@@ -379,4 +379,3 @@ function DishesSelector({
     </div>
   );
 }
-

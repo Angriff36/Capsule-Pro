@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { NextResponse } from "next/server";
 import { captureException } from "@sentry/nextjs";
+import { NextResponse } from "next/server";
 
 /**
  * GET /api/kitchen/waste/units
@@ -39,4 +39,3 @@ export async function GET() {
     );
   }
 }
-

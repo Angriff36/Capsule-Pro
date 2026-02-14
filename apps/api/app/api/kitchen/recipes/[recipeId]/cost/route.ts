@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export interface UnitConversion {
@@ -29,123 +29,79 @@ export interface IngredientCostBreakdown {
   hasInventoryItem: boolean;
 }
 
-const _loadUnitConversions = async () => {
-  const rows = await database.$queryRaw<UnitConversion[]>(
-    Prisma.sql`
-      SELECT from_unit_id, to_unit_id, multiplier
-      FROM core.unit_conversions
-    `
-  );
-  return new Map(
-    rows.map((row) => [`${row.fromUnitId}-${row.toUnitId}`, row.multiplier])
-  );
-};
-
-const _convertQuantity = (
-  quantity: number,
-  fromUnitId: number,
-  toUnitId: number,
-  conversions: Map<string, number>
-): number => {
-  if (fromUnitId === toUnitId) {
-    return quantity;
-  }
-
-  const key = `${fromUnitId}-${toUnitId}`;
-  const multiplier = conversions.get(key);
-
-  if (!multiplier) {
-    throw new Error(
-      `Cannot convert from unit ${fromUnitId} to unit ${toUnitId}`
-    );
-  }
-
-  return quantity * multiplier;
-};
-
 const calculateRecipeCost = async (
   tenantId: string,
   recipeVersionId: string
 ): Promise<RecipeCostBreakdown | null> => {
-  const recipeVersion = await database.$queryRaw<
-    {
-      id: string;
-      yield_quantity: number;
-    }[]
-  >(
-    Prisma.sql`
-      SELECT id, yield_quantity
-      FROM tenant_kitchen.recipe_versions
-      WHERE tenant_id = ${tenantId} AND id = ${recipeVersionId}
-    `
-  );
+  const recipeVersion = await database.recipeVersion.findFirst({
+    where: { tenantId, id: recipeVersionId, deletedAt: null },
+    select: { id: true, yieldQuantity: true },
+  });
 
-  if (!recipeVersion[0]) {
+  if (!recipeVersion) {
     return null;
   }
 
-  const ingredients = await database.$queryRaw<
-    {
-      id: string;
-      ingredient_name: string;
-      quantity: number;
-      unit_id: number;
-      waste_factor: number;
-      ingredient_cost: number;
-    }[]
-  >(
-    Prisma.sql`
-      SELECT
-        ri.id,
-        i.name as ingredient_name,
-        ri.quantity,
-        ri.unit_id,
-        COALESCE(ri.waste_factor, 1.0) as waste_factor,
-        ri.ingredient_cost
-      FROM tenant_kitchen.recipe_ingredients ri
-      JOIN tenant_kitchen.ingredients i ON i.id = ri.ingredient_id
-      WHERE ri.tenant_id = ${tenantId}
-        AND ri.recipe_version_id = ${recipeVersionId}
-        AND ri.deleted_at IS NULL
-      ORDER BY ri.sort_order
-    `
-  );
+  const recipeIngredients = await database.recipeIngredient.findMany({
+    where: {
+      tenantId,
+      recipeVersionId,
+      deletedAt: null,
+    },
+    orderBy: { sortOrder: "asc" },
+    select: {
+      id: true,
+      ingredientId: true,
+      quantity: true,
+      unitId: true,
+      wasteFactor: true,
+      ingredientCost: true,
+    },
+  });
+
+  // Fetch ingredient names in a single query to avoid N+1
+  const ingredientIds = recipeIngredients.map((ri) => ri.ingredientId);
+  const ingredients = await database.ingredient.findMany({
+    where: { tenantId, id: { in: ingredientIds }, deletedAt: null },
+    select: { id: true, name: true },
+  });
+  const ingredientNameMap = new Map(ingredients.map((i) => [i.id, i.name]));
 
   let totalCost = 0;
   const costBreakdowns: IngredientCostBreakdown[] = [];
 
-  for (const ing of ingredients) {
-    const cost = Number(ing.ingredient_cost) || 0;
+  for (const ri of recipeIngredients) {
+    const cost = Number(ri.ingredientCost) || 0;
     totalCost += cost;
 
+    const quantity = Number(ri.quantity);
+    const wasteFactor = Number(ri.wasteFactor);
+    const adjustedQuantity = quantity * wasteFactor;
+
     costBreakdowns.push({
-      id: ing.id,
-      name: ing.ingredient_name,
-      quantity: Number(ing.quantity),
-      unit: ing.unit_id.toString(),
-      wasteFactor: Number(ing.waste_factor),
-      adjustedQuantity: Number(ing.quantity) * Number(ing.waste_factor),
-      unitCost: ing.ingredient_cost
-        ? cost / (Number(ing.quantity) * Number(ing.waste_factor))
-        : 0,
+      id: ri.id,
+      name: ingredientNameMap.get(ri.ingredientId) ?? "Unknown",
+      quantity,
+      unit: ri.unitId.toString(),
+      wasteFactor,
+      adjustedQuantity,
+      unitCost: adjustedQuantity > 0 ? cost / adjustedQuantity : 0,
       cost,
-      hasInventoryItem: ing.ingredient_cost !== null,
+      hasInventoryItem: ri.ingredientCost !== null,
     });
   }
 
-  const yieldQuantity = Number(recipeVersion[0].yield_quantity);
+  const yieldQuantity = Number(recipeVersion.yieldQuantity);
   const costPerYield = yieldQuantity > 0 ? totalCost / yieldQuantity : 0;
 
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.recipe_versions
-      SET
-        total_cost = ${totalCost},
-        cost_per_yield = ${costPerYield},
-        cost_calculated_at = NOW()
-      WHERE tenant_id = ${tenantId} AND id = ${recipeVersionId}
-    `
-  );
+  await database.recipeVersion.update({
+    where: { tenantId_id: { tenantId, id: recipeVersionId } },
+    data: {
+      totalCost,
+      costPerYield,
+      costCalculatedAt: new Date(),
+    },
+  });
 
   return {
     totalCost,
@@ -158,25 +114,15 @@ const calculateAllRecipeCosts = async (
   tenantId: string,
   recipeVersionId: string
 ): Promise<RecipeCostBreakdown | null> => {
-  const ingredients = await database.$queryRaw<{ id: string }[]>(
-    Prisma.sql`
-      SELECT id
-      FROM tenant_kitchen.recipe_ingredients
-      WHERE tenant_id = ${tenantId}
-        AND recipe_version_id = ${recipeVersionId}
-        AND deleted_at IS NULL
-    `
-  );
-
-  for (const ing of ingredients) {
-    await database.$executeRaw(
-      Prisma.sql`
-        UPDATE tenant_kitchen.recipe_ingredients
-        SET cost_calculated_at = NOW()
-        WHERE tenant_id = ${tenantId} AND id = ${ing.id}
-      `
-    );
-  }
+  // Batch update all ingredient cost timestamps in one query (fixes N+1)
+  await database.recipeIngredient.updateMany({
+    where: {
+      tenantId,
+      recipeVersionId,
+      deletedAt: null,
+    },
+    data: { costCalculatedAt: new Date() },
+  });
 
   return await calculateRecipeCost(tenantId, recipeVersionId);
 };

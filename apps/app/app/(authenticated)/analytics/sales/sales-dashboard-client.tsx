@@ -6,7 +6,6 @@ import {
   AlertTitle,
 } from "@repo/design-system/components/ui/alert";
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -40,18 +39,20 @@ import { KpiCard, type KpiCardProps } from "./components/kpi-card";
 import { PricingSummaryTable } from "./components/pricing-summary-table";
 import { SegmentSummaryTable } from "./components/segment-summary-table";
 import { ValidationTable } from "./components/validation-table";
-import { barChartSpec, lineChartSpec, VegaChart } from "./components/vega-chart";
+import {
+  barChartSpec,
+  lineChartSpec,
+  VegaChart,
+} from "./components/vega-chart";
 import {
   type AnnualMetrics,
   buildDateColumnOptionsForUI,
   type CellValue,
   type DataRow,
-  type FunnelValidationResult,
   getCreatedDateCol,
   getEventDateCol,
   loadSalesData,
   type MonthlyMetrics,
-  type PeriodSummary,
   prepareSalesMetrics,
   type QuarterlyMetrics,
   type SalesData,
@@ -132,7 +133,10 @@ const getDateRange = (rows: DataRow[], column: string | null) => {
     .filter((value): value is Date => Boolean(value));
   if (!dates.length) return null;
   const times = dates.map((date) => date.getTime());
-  return { min: new Date(Math.min(...times)), max: new Date(Math.max(...times)) };
+  return {
+    min: new Date(Math.min(...times)),
+    max: new Date(Math.max(...times)),
+  };
 };
 
 const mapRowsWithDates = (
@@ -173,7 +177,10 @@ const getTopItem = <T extends Record<string, CellValue>>(
     if (!Number.isFinite(numeric)) continue;
     if (!top || numeric > top.value) {
       const labelValue = item[labelKey];
-      top = { label: labelValue ? String(labelValue) : "Unknown", value: numeric };
+      top = {
+        label: labelValue ? String(labelValue) : "Unknown",
+        value: numeric,
+      };
     }
   }
   return top;
@@ -181,14 +188,24 @@ const getTopItem = <T extends Record<string, CellValue>>(
 
 const findRowLabel = (row: DataRow): string | null => {
   const candidates = [
-    "event", "event name", "client", "venue", "account",
-    "company", "organization", "name",
+    "event",
+    "event name",
+    "client",
+    "venue",
+    "account",
+    "company",
+    "organization",
+    "name",
   ];
   const entries = Object.entries(row);
   for (const candidate of candidates) {
     const match = entries.find(
       ([key, value]) =>
-        key.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().includes(candidate) && value
+        key
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, " ")
+          .trim()
+          .includes(candidate) && value
     );
     if (match) return String(match[1]);
   }
@@ -211,15 +228,25 @@ interface ReportSummary {
 
 const buildWeeklySummary = (weekly: WeeklyMetrics): ReportSummary => {
   const highlights: string[] = [];
-  const topRevenue = getTopItem(weekly.revenueByEventType, "event_type", "revenue");
+  const topRevenue = getTopItem(
+    weekly.revenueByEventType,
+    "event_type",
+    "revenue"
+  );
   if (topRevenue) {
-    highlights.push(`Top revenue event type: ${topRevenue.label} (${formatCurrency(topRevenue.value)})`);
+    highlights.push(
+      `Top revenue event type: ${topRevenue.label} (${formatCurrency(topRevenue.value)})`
+    );
   }
   const topLost = getTopItem(weekly.trendingLost, "lost_reason", "count");
   if (topLost) {
-    highlights.push(`Most common lost reason: ${topLost.label} (${formatNumber(topLost.value)})`);
+    highlights.push(
+      `Most common lost reason: ${topLost.label} (${formatNumber(topLost.value)})`
+    );
   }
-  const pendingLabel = weekly.topPending.length ? findRowLabel(weekly.topPending[0]) : null;
+  const pendingLabel = weekly.topPending.length
+    ? findRowLabel(weekly.topPending[0])
+    : null;
   if (pendingLabel) {
     highlights.push(`Top pending item: ${pendingLabel}`);
   }
@@ -238,13 +265,21 @@ const buildWeeklySummary = (weekly: WeeklyMetrics): ReportSummary => {
 
 const buildMonthlySummary = (monthly: MonthlyMetrics): ReportSummary => {
   const highlights: string[] = [];
-  const topLead = getTopItem(monthly.leadSourceBreakdown, "lead_source", "count");
+  const topLead = getTopItem(
+    monthly.leadSourceBreakdown,
+    "lead_source",
+    "count"
+  );
   if (topLead) {
-    highlights.push(`Top lead source: ${topLead.label} (${formatNumber(topLead.value)})`);
+    highlights.push(
+      `Top lead source: ${topLead.label} (${formatNumber(topLead.value)})`
+    );
   }
   const topPackage = getTopItem(monthly.topPackages, "package", "revenue");
   if (topPackage) {
-    highlights.push(`Top package: ${topPackage.label} (${formatCurrency(topPackage.value)})`);
+    highlights.push(
+      `Top package: ${topPackage.label} (${formatCurrency(topPackage.value)})`
+    );
   }
   const revenueSubtext =
     `MoM ${formatSignedCurrency(monthly.revenueMomDelta)} ` +
@@ -255,10 +290,24 @@ const buildMonthlySummary = (monthly: MonthlyMetrics): ReportSummary => {
     title: "Monthly Sales Summary",
     windowLabel: formatDateRange(monthly.window.start, monthly.window.end),
     kpis: [
-      { label: "Total Revenue", value: formatCurrency(monthly.totalRevenueBooked), subtext: revenueSubtext },
-      { label: "Events Closed", value: formatNumber(monthly.totalEventsClosed) },
-      { label: "Average Event", value: formatCurrency(monthly.averageEventValue) },
-      { label: "Pipeline Forecast", value: formatCurrency(monthly.pipelineForecast90), subtext: `Next 60 days ${formatCurrency(monthly.pipelineForecast60)}` },
+      {
+        label: "Total Revenue",
+        value: formatCurrency(monthly.totalRevenueBooked),
+        subtext: revenueSubtext,
+      },
+      {
+        label: "Events Closed",
+        value: formatNumber(monthly.totalEventsClosed),
+      },
+      {
+        label: "Average Event",
+        value: formatCurrency(monthly.averageEventValue),
+      },
+      {
+        label: "Pipeline Forecast",
+        value: formatCurrency(monthly.pipelineForecast90),
+        subtext: `Next 60 days ${formatCurrency(monthly.pipelineForecast60)}`,
+      },
     ],
     highlights,
   };
@@ -266,15 +315,27 @@ const buildMonthlySummary = (monthly: MonthlyMetrics): ReportSummary => {
 
 const buildQuarterlySummary = (quarterly: QuarterlyMetrics): ReportSummary => {
   const highlights: string[] = [];
-  const topVenue = getTopItem(quarterly.venuePerformance, "venue_source", "revenue");
+  const topVenue = getTopItem(
+    quarterly.venuePerformance,
+    "venue_source",
+    "revenue"
+  );
   if (topVenue) {
-    highlights.push(`Top venue partner: ${topVenue.label} (${formatCurrency(topVenue.value)})`);
+    highlights.push(
+      `Top venue partner: ${topVenue.label} (${formatCurrency(topVenue.value)})`
+    );
   }
   if (quarterly.segmentSummary.length) {
-    const topSegment = quarterly.segmentSummary.slice().sort((a, b) => b.revenue - a.revenue)[0];
-    highlights.push(`Top segment: ${topSegment.event_type} / ${topSegment.size_bucket} / ${topSegment.budget_tier}`);
+    const topSegment = quarterly.segmentSummary
+      .slice()
+      .sort((a, b) => b.revenue - a.revenue)[0];
+    highlights.push(
+      `Top segment: ${topSegment.event_type} / ${topSegment.size_bucket} / ${topSegment.budget_tier}`
+    );
   }
-  highlights.push(`Next quarter forecast: ${formatCurrency(quarterly.nextQuarterForecast)}`);
+  highlights.push(
+    `Next quarter forecast: ${formatCurrency(quarterly.nextQuarterForecast)}`
+  );
   if (quarterly.recommendations[0]) {
     highlights.push(`Recommendation: ${quarterly.recommendations[0]}`);
   }
@@ -282,10 +343,22 @@ const buildQuarterlySummary = (quarterly: QuarterlyMetrics): ReportSummary => {
     title: "Quarterly Sales Summary",
     windowLabel: formatDateRange(quarterly.window.start, quarterly.window.end),
     kpis: [
-      { label: "Total Revenue", value: formatCurrency(quarterly.totalRevenueBooked) },
-      { label: "Events Closed", value: formatNumber(quarterly.totalEventsClosed) },
-      { label: "Average Event", value: formatCurrency(quarterly.averageEventValue) },
-      { label: "Sales Cycle (days)", value: formatNumber(Math.round(quarterly.avgSalesCycleDays)) },
+      {
+        label: "Total Revenue",
+        value: formatCurrency(quarterly.totalRevenueBooked),
+      },
+      {
+        label: "Events Closed",
+        value: formatNumber(quarterly.totalEventsClosed),
+      },
+      {
+        label: "Average Event",
+        value: formatCurrency(quarterly.averageEventValue),
+      },
+      {
+        label: "Sales Cycle (days)",
+        value: formatNumber(Math.round(quarterly.avgSalesCycleDays)),
+      },
     ],
     highlights,
   };
@@ -293,22 +366,45 @@ const buildQuarterlySummary = (quarterly: QuarterlyMetrics): ReportSummary => {
 
 const buildAnnualSummary = (annual: AnnualMetrics): ReportSummary => {
   const highlights: string[] = [];
-  const topEventType = getTopItem(annual.revenueByEventType, "event_type", "revenue");
+  const topEventType = getTopItem(
+    annual.revenueByEventType,
+    "event_type",
+    "revenue"
+  );
   if (topEventType) {
-    highlights.push(`Top event type: ${topEventType.label} (${formatCurrency(topEventType.value)})`);
+    highlights.push(
+      `Top event type: ${topEventType.label} (${formatCurrency(topEventType.value)})`
+    );
   }
-  const topLead = getTopItem(annual.leadSourceBreakdown, "lead_source", "count");
+  const topLead = getTopItem(
+    annual.leadSourceBreakdown,
+    "lead_source",
+    "count"
+  );
   if (topLead) {
-    highlights.push(`Top lead source: ${topLead.label} (${formatNumber(topLead.value)})`);
+    highlights.push(
+      `Top lead source: ${topLead.label} (${formatNumber(topLead.value)})`
+    );
   }
   return {
     title: "Annual Sales Summary",
     windowLabel: formatDateRange(annual.window.start, annual.window.end),
     kpis: [
-      { label: "Total Revenue", value: formatCurrency(annual.totalRevenueBooked), subtext: `YoY ${formatSignedCurrency(annual.revenueYoyDelta)} (${formatSignedPercent(annual.revenueYoyPct)})` },
+      {
+        label: "Total Revenue",
+        value: formatCurrency(annual.totalRevenueBooked),
+        subtext: `YoY ${formatSignedCurrency(annual.revenueYoyDelta)} (${formatSignedPercent(annual.revenueYoyPct)})`,
+      },
       { label: "Events Closed", value: formatNumber(annual.totalEventsClosed) },
-      { label: "Average Event", value: formatCurrency(annual.averageEventValue) },
-      { label: "Pipeline Forecast", value: formatCurrency(annual.pipelineForecast90), subtext: "Next 90 days" },
+      {
+        label: "Average Event",
+        value: formatCurrency(annual.averageEventValue),
+      },
+      {
+        label: "Pipeline Forecast",
+        value: formatCurrency(annual.pipelineForecast90),
+        subtext: "Next 90 days",
+      },
     ],
     highlights,
   };
@@ -392,10 +488,14 @@ export function SalesDashboardClient() {
   useEffect(() => {
     if (!(salesData && columnOptions.length)) return;
     if (!createdChoice) {
-      setCreatedChoice(getCreatedDateCol(salesData.masterEvents) ?? columnOptions[0]);
+      setCreatedChoice(
+        getCreatedDateCol(salesData.masterEvents) ?? columnOptions[0]
+      );
     }
     if (!eventChoice) {
-      setEventChoice(getEventDateCol(salesData.masterEvents) ?? columnOptions[0]);
+      setEventChoice(
+        getEventDateCol(salesData.masterEvents) ?? columnOptions[0]
+      );
     }
   }, [salesData, columnOptions, createdChoice, eventChoice]);
 
@@ -405,15 +505,25 @@ export function SalesDashboardClient() {
     const eventColumn = eventChoice ?? createdChoice;
     if (!(createdColumn || eventColumn)) return;
 
-    const createdRange = getDateRange(salesData.masterEvents, createdColumn ?? null);
-    const eventRange = getDateRange(salesData.masterEvents, eventColumn ?? null);
+    const createdRange = getDateRange(
+      salesData.masterEvents,
+      createdColumn ?? null
+    );
+    const eventRange = getDateRange(
+      salesData.masterEvents,
+      eventColumn ?? null
+    );
     if (!(createdRange || eventRange)) return;
 
     const anchor = eventRange?.max ?? createdRange?.max ?? new Date();
     setWeekAnchor(formatDateForInput(anchor));
-    setMonthAnchor(formatDateForInput(new Date(anchor.getFullYear(), anchor.getMonth(), 1)));
+    setMonthAnchor(
+      formatDateForInput(new Date(anchor.getFullYear(), anchor.getMonth(), 1))
+    );
     const quarterStartMonth = Math.floor(anchor.getMonth() / 3) * 3;
-    setQuarterAnchor(formatDateForInput(new Date(anchor.getFullYear(), quarterStartMonth, 1)));
+    setQuarterAnchor(
+      formatDateForInput(new Date(anchor.getFullYear(), quarterStartMonth, 1))
+    );
     setDateDefaultsSet(true);
   }, [salesData, createdChoice, eventChoice, dateDefaultsSet]);
 
@@ -431,14 +541,25 @@ export function SalesDashboardClient() {
       monthAnchor: monthAnchor ? parseInputDate(monthAnchor) : new Date(),
       quarterAnchor: quarterAnchor ? parseInputDate(quarterAnchor) : new Date(),
     });
-  }, [salesData, createdChoice, eventChoice, weekAnchor, monthAnchor, quarterAnchor]);
+  }, [
+    salesData,
+    createdChoice,
+    eventChoice,
+    weekAnchor,
+    monthAnchor,
+    quarterAnchor,
+  ]);
 
   const validation = useMemo(() => {
     if (!salesData) return null;
     const created = createdChoice ?? eventChoice;
     const event = eventChoice ?? createdChoice;
     if (!(created && event)) return null;
-    const mappedMaster = mapRowsWithDates(salesData.masterEvents, created, event);
+    const mappedMaster = mapRowsWithDates(
+      salesData.masterEvents,
+      created,
+      event
+    );
     return validateFunnel(mappedMaster, salesData.calcsFunnel);
   }, [salesData, createdChoice, eventChoice]);
 
@@ -448,17 +569,26 @@ export function SalesDashboardClient() {
     return salesData.masterEvents as Record<string, unknown>[];
   }, [salesData]);
 
-  const createdRatio = createdChoice ? (dateColumnOptions?.ratios[createdChoice] ?? 0) : 0;
-  const eventRatio = eventChoice ? (dateColumnOptions?.ratios[eventChoice] ?? 0) : 0;
-  const createdRange = salesData ? getDateRange(salesData.masterEvents, createdChoice ?? eventChoice) : null;
-  const eventRange = salesData ? getDateRange(salesData.masterEvents, eventChoice ?? createdChoice) : null;
+  const createdRatio = createdChoice
+    ? (dateColumnOptions?.ratios[createdChoice] ?? 0)
+    : 0;
+  const eventRatio = eventChoice
+    ? (dateColumnOptions?.ratios[eventChoice] ?? 0)
+    : 0;
+  const createdRange = salesData
+    ? getDateRange(salesData.masterEvents, createdChoice ?? eventChoice)
+    : null;
+  const eventRange = salesData
+    ? getDateRange(salesData.masterEvents, eventChoice ?? createdChoice)
+    : null;
 
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       <div className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight">Sales Analytics</h1>
         <p className="text-muted-foreground">
-          Upload a workbook to explore sales performance and build custom charts.
+          Upload a workbook to explore sales performance and build custom
+          charts.
         </p>
       </div>
 
@@ -469,7 +599,8 @@ export function SalesDashboardClient() {
         <CardHeader>
           <CardTitle>Upload Data</CardTitle>
           <CardDescription>
-            Upload an Excel workbook (.xlsx/.xls) or CSV file with your sales data.
+            Upload an Excel workbook (.xlsx/.xls) or CSV file with your sales
+            data.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -482,7 +613,9 @@ export function SalesDashboardClient() {
               type="file"
             />
             {fileName ? (
-              <p className="text-xs text-muted-foreground">Loaded: {fileName}</p>
+              <p className="text-xs text-muted-foreground">
+                Loaded: {fileName}
+              </p>
             ) : null}
           </div>
           {isLoading ? (
@@ -504,37 +637,56 @@ export function SalesDashboardClient() {
             <CardHeader>
               <CardTitle>Column Mapping</CardTitle>
               <CardDescription>
-                Confirm the columns that represent created dates and event dates for analysis.
+                Confirm the columns that represent created dates and event dates
+                for analysis.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Created Date column (funnel)</Label>
-                  <Select onValueChange={setCreatedChoice} value={createdChoice ?? ""}>
-                    <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
+                  <Select
+                    onValueChange={setCreatedChoice}
+                    value={createdChoice ?? ""}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select column" />
+                    </SelectTrigger>
                     <SelectContent>
                       {columnOptions.map((column) => (
-                        <SelectItem key={`created-${column}`} value={column}>{column}</SelectItem>
+                        <SelectItem key={`created-${column}`} value={column}>
+                          {column}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   {createdRatio < 0.5 ? (
-                    <p className="text-xs text-amber-600">Created Date column has low date coverage.</p>
+                    <p className="text-xs text-amber-600">
+                      Created Date column has low date coverage.
+                    </p>
                   ) : null}
                 </div>
                 <div className="space-y-2">
                   <Label>Event Date column (revenue/pipeline)</Label>
-                  <Select onValueChange={setEventChoice} value={eventChoice ?? ""}>
-                    <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
+                  <Select
+                    onValueChange={setEventChoice}
+                    value={eventChoice ?? ""}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select column" />
+                    </SelectTrigger>
                     <SelectContent>
                       {columnOptions.map((column) => (
-                        <SelectItem key={`event-${column}`} value={column}>{column}</SelectItem>
+                        <SelectItem key={`event-${column}`} value={column}>
+                          {column}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   {eventRatio < 0.5 ? (
-                    <p className="text-xs text-amber-600">Event Date column has low date coverage.</p>
+                    <p className="text-xs text-amber-600">
+                      Event Date column has low date coverage.
+                    </p>
                   ) : null}
                 </div>
               </div>
@@ -542,22 +694,36 @@ export function SalesDashboardClient() {
                 <Checkbox
                   checked={showAllColumns}
                   id="show-all-columns"
-                  onCheckedChange={(checked) => setShowAllColumns(checked === true)}
+                  onCheckedChange={(checked) =>
+                    setShowAllColumns(checked === true)
+                  }
                 />
                 <Label htmlFor="show-all-columns">Show all columns</Label>
               </div>
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label>Week anchor</Label>
-                  <Input onChange={(e) => setWeekAnchor(e.target.value)} type="date" value={weekAnchor} />
+                  <Input
+                    onChange={(e) => setWeekAnchor(e.target.value)}
+                    type="date"
+                    value={weekAnchor}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Month anchor</Label>
-                  <Input onChange={(e) => setMonthAnchor(e.target.value)} type="date" value={monthAnchor} />
+                  <Input
+                    onChange={(e) => setMonthAnchor(e.target.value)}
+                    type="date"
+                    value={monthAnchor}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Quarter anchor</Label>
-                  <Input onChange={(e) => setQuarterAnchor(e.target.value)} type="date" value={quarterAnchor} />
+                  <Input
+                    onChange={(e) => setQuarterAnchor(e.target.value)}
+                    type="date"
+                    value={quarterAnchor}
+                  />
                 </div>
               </div>
             </CardContent>
@@ -568,20 +734,31 @@ export function SalesDashboardClient() {
             <CardHeader>
               <CardTitle>Data Snapshot</CardTitle>
               <CardDescription>
-                Master Events: {formatNumber(salesData.masterEvents.length)} &middot;
-                Deals Lost: {formatNumber(salesData.dealsLost.length)} &middot;
-                Lead Source: {formatNumber(salesData.leadSource.length)}
+                Master Events: {formatNumber(salesData.masterEvents.length)}{" "}
+                &middot; Deals Lost: {formatNumber(salesData.dealsLost.length)}{" "}
+                &middot; Lead Source:{" "}
+                {formatNumber(salesData.leadSource.length)}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <p>RAW sheets loaded: {formatNumber(Object.keys(salesData.rawSheets).length)}</p>
               <p>
-                Created Date coverage: {createdRatio ? formatPercent(createdRatio) : "N/A"} &middot; Range:{" "}
-                {createdRange ? `${createdRange.min.toLocaleDateString()} to ${createdRange.max.toLocaleDateString()}` : "N/A"}
+                RAW sheets loaded:{" "}
+                {formatNumber(Object.keys(salesData.rawSheets).length)}
               </p>
               <p>
-                Event Date coverage: {eventRatio ? formatPercent(eventRatio) : "N/A"} &middot; Range:{" "}
-                {eventRange ? `${eventRange.min.toLocaleDateString()} to ${eventRange.max.toLocaleDateString()}` : "N/A"}
+                Created Date coverage:{" "}
+                {createdRatio ? formatPercent(createdRatio) : "N/A"} &middot;
+                Range:{" "}
+                {createdRange
+                  ? `${createdRange.min.toLocaleDateString()} to ${createdRange.max.toLocaleDateString()}`
+                  : "N/A"}
+              </p>
+              <p>
+                Event Date coverage:{" "}
+                {eventRatio ? formatPercent(eventRatio) : "N/A"} &middot; Range:{" "}
+                {eventRange
+                  ? `${eventRange.min.toLocaleDateString()} to ${eventRange.max.toLocaleDateString()}`
+                  : "N/A"}
               </p>
             </CardContent>
           </Card>
@@ -605,15 +782,30 @@ export function SalesDashboardClient() {
                   <CardHeader>
                     <CardTitle>Weekly Metrics</CardTitle>
                     <CardDescription>
-                      {formatDateRange(metrics.weekly.window.start, metrics.weekly.window.end)}
+                      {formatDateRange(
+                        metrics.weekly.window.start,
+                        metrics.weekly.window.end
+                      )}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                      <KpiCard label="Leads" value={formatNumber(metrics.weekly.leadsReceived)} />
-                      <KpiCard label="Proposals" value={formatNumber(metrics.weekly.proposalsSent)} />
-                      <KpiCard label="Won" value={formatNumber(metrics.weekly.eventsWon)} />
-                      <KpiCard label="Closing Ratio" value={formatPercent(metrics.weekly.closingRatio)} />
+                      <KpiCard
+                        label="Leads"
+                        value={formatNumber(metrics.weekly.leadsReceived)}
+                      />
+                      <KpiCard
+                        label="Proposals"
+                        value={formatNumber(metrics.weekly.proposalsSent)}
+                      />
+                      <KpiCard
+                        label="Won"
+                        value={formatNumber(metrics.weekly.eventsWon)}
+                      />
+                      <KpiCard
+                        label="Closing Ratio"
+                        value={formatPercent(metrics.weekly.closingRatio)}
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -631,7 +823,9 @@ export function SalesDashboardClient() {
                   <Card>
                     <CardHeader>
                       <CardTitle>Trending Lost Reasons</CardTitle>
-                      <CardDescription>Top loss reasons in the selected week.</CardDescription>
+                      <CardDescription>
+                        Top loss reasons in the selected week.
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <DataTable
@@ -647,7 +841,9 @@ export function SalesDashboardClient() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Top Upcoming / Pending</CardTitle>
-                    <CardDescription>Top pending events with the highest value.</CardDescription>
+                    <CardDescription>
+                      Top pending events with the highest value.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <DataTable
@@ -672,7 +868,10 @@ export function SalesDashboardClient() {
                   <CardHeader>
                     <CardTitle>Monthly Metrics</CardTitle>
                     <CardDescription>
-                      {formatDateRange(metrics.monthly.window.start, metrics.monthly.window.end)}
+                      {formatDateRange(
+                        metrics.monthly.window.start,
+                        metrics.monthly.window.end
+                      )}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -685,14 +884,26 @@ export function SalesDashboardClient() {
                           `YoY ${formatSignedCurrency(metrics.monthly.revenueYoyDelta)} ` +
                           `(${formatSignedPercent(metrics.monthly.revenueYoyPct)})`
                         }
-                        value={formatCurrency(metrics.monthly.totalRevenueBooked)}
+                        value={formatCurrency(
+                          metrics.monthly.totalRevenueBooked
+                        )}
                       />
-                      <KpiCard label="Events Closed" value={formatNumber(metrics.monthly.totalEventsClosed)} />
-                      <KpiCard label="Average Event" value={formatCurrency(metrics.monthly.averageEventValue)} />
+                      <KpiCard
+                        label="Events Closed"
+                        value={formatNumber(metrics.monthly.totalEventsClosed)}
+                      />
+                      <KpiCard
+                        label="Average Event"
+                        value={formatCurrency(
+                          metrics.monthly.averageEventValue
+                        )}
+                      />
                       <KpiCard
                         label="Pipeline Forecast"
                         subtext={`Next 60 days ${formatCurrency(metrics.monthly.pipelineForecast60)}`}
-                        value={formatCurrency(metrics.monthly.pipelineForecast90)}
+                        value={formatCurrency(
+                          metrics.monthly.pipelineForecast90
+                        )}
                       />
                     </div>
                   </CardContent>
@@ -700,12 +911,18 @@ export function SalesDashboardClient() {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <VegaChart
-                    data={metrics.monthly.leadSourceBreakdown.map((item) => ({ label: item.lead_source, value: item.count }))}
+                    data={metrics.monthly.leadSourceBreakdown.map((item) => ({
+                      label: item.lead_source,
+                      value: item.count,
+                    }))}
                     spec={barChartSpec()}
                     title="Lead Source Breakdown"
                   />
                   <VegaChart
-                    data={metrics.monthly.salesFunnel.map((item) => ({ label: item.stage, value: item.count }))}
+                    data={metrics.monthly.salesFunnel.map((item) => ({
+                      label: item.stage,
+                      value: item.count,
+                    }))}
                     spec={barChartSpec()}
                     title="Sales Funnel"
                   />
@@ -713,13 +930,19 @@ export function SalesDashboardClient() {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <VegaChart
-                    data={metrics.monthly.closingBySalesperson.map((item) => ({ label: item.salesperson, value: item.win_rate }))}
+                    data={metrics.monthly.closingBySalesperson.map((item) => ({
+                      label: item.salesperson,
+                      value: item.win_rate,
+                    }))}
                     description="Win rate by salesperson."
                     spec={barChartSpec()}
                     title="Closing by Salesperson"
                   />
                   <VegaChart
-                    data={metrics.monthly.topPackages.map((item) => ({ label: item.package, value: item.revenue }))}
+                    data={metrics.monthly.topPackages.map((item) => ({
+                      label: item.package,
+                      value: item.revenue,
+                    }))}
                     spec={barChartSpec({ showCurrency: true })}
                     title="Top Packages"
                   />
@@ -729,27 +952,37 @@ export function SalesDashboardClient() {
                   <Card>
                     <CardHeader>
                       <CardTitle>Win/Loss Trends</CardTitle>
-                      <CardDescription>Top loss reasons this month.</CardDescription>
+                      <CardDescription>
+                        Top loss reasons this month.
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <DataTable columns={["lost_reason", "count"]} maxRows={8} rows={metrics.monthly.winLossTrends as DataRow[]} />
+                      <DataTable
+                        columns={["lost_reason", "count"]}
+                        maxRows={8}
+                        rows={metrics.monthly.winLossTrends as DataRow[]}
+                      />
                     </CardContent>
                   </Card>
                   <Card>
                     <CardHeader>
                       <CardTitle>Closing Performance</CardTitle>
-                      <CardDescription>Win/loss counts by salesperson.</CardDescription>
+                      <CardDescription>
+                        Win/loss counts by salesperson.
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <DataTable
                         columns={["salesperson", "won", "lost", "win_rate"]}
                         maxRows={8}
-                        rows={metrics.monthly.closingBySalesperson.map((row) => ({
-                          salesperson: row.salesperson,
-                          won: row.won,
-                          lost: row.lost,
-                          win_rate: formatPercent(row.win_rate),
-                        }))}
+                        rows={metrics.monthly.closingBySalesperson.map(
+                          (row) => ({
+                            salesperson: row.salesperson,
+                            won: row.won,
+                            lost: row.lost,
+                            win_rate: formatPercent(row.win_rate),
+                          })
+                        )}
                       />
                     </CardContent>
                   </Card>
@@ -762,27 +995,56 @@ export function SalesDashboardClient() {
                   <CardHeader>
                     <CardTitle>Quarterly Metrics</CardTitle>
                     <CardDescription>
-                      {formatDateRange(metrics.quarterly.window.start, metrics.quarterly.window.end)}
+                      {formatDateRange(
+                        metrics.quarterly.window.start,
+                        metrics.quarterly.window.end
+                      )}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                      <KpiCard label="Total Revenue" value={formatCurrency(metrics.quarterly.totalRevenueBooked)} />
-                      <KpiCard label="Events Closed" value={formatNumber(metrics.quarterly.totalEventsClosed)} />
-                      <KpiCard label="Average Event" value={formatCurrency(metrics.quarterly.averageEventValue)} />
-                      <KpiCard label="Sales Cycle (days)" value={formatNumber(Math.round(metrics.quarterly.avgSalesCycleDays))} />
+                      <KpiCard
+                        label="Total Revenue"
+                        value={formatCurrency(
+                          metrics.quarterly.totalRevenueBooked
+                        )}
+                      />
+                      <KpiCard
+                        label="Events Closed"
+                        value={formatNumber(
+                          metrics.quarterly.totalEventsClosed
+                        )}
+                      />
+                      <KpiCard
+                        label="Average Event"
+                        value={formatCurrency(
+                          metrics.quarterly.averageEventValue
+                        )}
+                      />
+                      <KpiCard
+                        label="Sales Cycle (days)"
+                        value={formatNumber(
+                          Math.round(metrics.quarterly.avgSalesCycleDays)
+                        )}
+                      />
                     </div>
                   </CardContent>
                 </Card>
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <VegaChart
-                    data={metrics.quarterly.funnelBySource.map((item) => ({ label: item.lead_source, value: item.Inquiries }))}
+                    data={metrics.quarterly.funnelBySource.map((item) => ({
+                      label: item.lead_source,
+                      value: item.Inquiries,
+                    }))}
                     spec={barChartSpec()}
                     title="Funnel by Source (Inquiries)"
                   />
                   <VegaChart
-                    data={metrics.quarterly.funnelBySource.map((item) => ({ label: item.lead_source, value: item.win_rate }))}
+                    data={metrics.quarterly.funnelBySource.map((item) => ({
+                      label: item.lead_source,
+                      value: item.win_rate,
+                    }))}
                     spec={barChartSpec()}
                     title="Funnel Win Rate"
                   />
@@ -790,13 +1052,19 @@ export function SalesDashboardClient() {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <VegaChart
-                    data={metrics.quarterly.venuePerformance.map((item) => ({ label: item.venue_source, value: item.revenue }))}
+                    data={metrics.quarterly.venuePerformance.map((item) => ({
+                      label: item.venue_source,
+                      value: item.revenue,
+                    }))}
                     description="Revenue by venue partner."
                     spec={barChartSpec({ showCurrency: true })}
                     title="Venue Partner Performance"
                   />
                   <VegaChart
-                    data={metrics.quarterly.pricingTrends.map((item) => ({ label: formatDateLabel(item.month), value: item.avg_discount_rate }))}
+                    data={metrics.quarterly.pricingTrends.map((item) => ({
+                      label: formatDateLabel(item.month),
+                      value: item.avg_discount_rate,
+                    }))}
                     description="Average discount rate for won events."
                     spec={lineChartSpec()}
                     title="Avg Discount Rate"
@@ -807,19 +1075,27 @@ export function SalesDashboardClient() {
                   <Card>
                     <CardHeader>
                       <CardTitle>Customer Segment Analysis</CardTitle>
-                      <CardDescription>Top 12 segments by revenue.</CardDescription>
+                      <CardDescription>
+                        Top 12 segments by revenue.
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <SegmentSummaryTable rows={metrics.quarterly.segmentSummary} />
+                      <SegmentSummaryTable
+                        rows={metrics.quarterly.segmentSummary}
+                      />
                     </CardContent>
                   </Card>
                   <Card>
                     <CardHeader>
                       <CardTitle>Pricing Summary</CardTitle>
-                      <CardDescription>Budget vs actual performance.</CardDescription>
+                      <CardDescription>
+                        Budget vs actual performance.
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <PricingSummaryTable rows={metrics.quarterly.pricingSummary} />
+                      <PricingSummaryTable
+                        rows={metrics.quarterly.pricingSummary}
+                      />
                     </CardContent>
                   </Card>
                 </div>
@@ -828,19 +1104,29 @@ export function SalesDashboardClient() {
                   <Card>
                     <CardHeader>
                       <CardTitle>Funnel by Source Details</CardTitle>
-                      <CardDescription>Inquiry-to-win pipeline breakdown.</CardDescription>
+                      <CardDescription>
+                        Inquiry-to-win pipeline breakdown.
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <FunnelBySourceTable rows={metrics.quarterly.funnelBySource} />
+                      <FunnelBySourceTable
+                        rows={metrics.quarterly.funnelBySource}
+                      />
                     </CardContent>
                   </Card>
                   <Card>
                     <CardHeader>
                       <CardTitle>Win/Loss Review</CardTitle>
-                      <CardDescription>Top loss reasons this quarter.</CardDescription>
+                      <CardDescription>
+                        Top loss reasons this quarter.
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <DataTable columns={["lost_reason", "count"]} maxRows={6} rows={metrics.quarterly.winLossTrends as DataRow[]} />
+                      <DataTable
+                        columns={["lost_reason", "count"]}
+                        maxRows={6}
+                        rows={metrics.quarterly.winLossTrends as DataRow[]}
+                      />
                     </CardContent>
                   </Card>
                 </div>
@@ -848,41 +1134,57 @@ export function SalesDashboardClient() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Next Quarter Forecast</CardTitle>
-                    <CardDescription>Projected revenue based on current pipeline.</CardDescription>
+                    <CardDescription>
+                      Projected revenue based on current pipeline.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-2xl font-semibold">{formatCurrency(metrics.quarterly.nextQuarterForecast)}</p>
+                    <p className="text-2xl font-semibold">
+                      {formatCurrency(metrics.quarterly.nextQuarterForecast)}
+                    </p>
                   </CardContent>
                 </Card>
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <Card>
-                    <CardHeader><CardTitle>Recommendations</CardTitle></CardHeader>
+                    <CardHeader>
+                      <CardTitle>Recommendations</CardTitle>
+                    </CardHeader>
                     <CardContent className="space-y-2">
                       {metrics.quarterly.recommendations.length ? (
                         metrics.quarterly.recommendations.map((item) => (
                           <div className="flex items-start gap-2" key={item}>
                             <Badge variant="secondary">Action</Badge>
-                            <p className="text-sm text-muted-foreground">{item}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {item}
+                            </p>
                           </div>
                         ))
                       ) : (
-                        <p className="text-sm text-muted-foreground">No recommendations this quarter.</p>
+                        <p className="text-sm text-muted-foreground">
+                          No recommendations this quarter.
+                        </p>
                       )}
                     </CardContent>
                   </Card>
                   <Card>
-                    <CardHeader><CardTitle>Opportunities</CardTitle></CardHeader>
+                    <CardHeader>
+                      <CardTitle>Opportunities</CardTitle>
+                    </CardHeader>
                     <CardContent className="space-y-2">
                       {metrics.quarterly.opportunities.length ? (
                         metrics.quarterly.opportunities.map((item) => (
                           <div className="flex items-start gap-2" key={item}>
                             <Badge variant="outline">Opportunity</Badge>
-                            <p className="text-sm text-muted-foreground">{item}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {item}
+                            </p>
                           </div>
                         ))
                       ) : (
-                        <p className="text-sm text-muted-foreground">No opportunities flagged.</p>
+                        <p className="text-sm text-muted-foreground">
+                          No opportunities flagged.
+                        </p>
                       )}
                     </CardContent>
                   </Card>
@@ -895,7 +1197,10 @@ export function SalesDashboardClient() {
                   <CardHeader>
                     <CardTitle>Annual Metrics</CardTitle>
                     <CardDescription>
-                      {formatDateRange(metrics.annual.window.start, metrics.annual.window.end)}
+                      {formatDateRange(
+                        metrics.annual.window.start,
+                        metrics.annual.window.end
+                      )}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -903,23 +1208,43 @@ export function SalesDashboardClient() {
                       <KpiCard
                         label="Total Revenue"
                         subtext={`YoY ${formatSignedCurrency(metrics.annual.revenueYoyDelta)} (${formatSignedPercent(metrics.annual.revenueYoyPct)})`}
-                        value={formatCurrency(metrics.annual.totalRevenueBooked)}
+                        value={formatCurrency(
+                          metrics.annual.totalRevenueBooked
+                        )}
                       />
-                      <KpiCard label="Events Closed" value={formatNumber(metrics.annual.totalEventsClosed)} />
-                      <KpiCard label="Average Event" value={formatCurrency(metrics.annual.averageEventValue)} />
-                      <KpiCard label="Pipeline Forecast" subtext="Next 90 days" value={formatCurrency(metrics.annual.pipelineForecast90)} />
+                      <KpiCard
+                        label="Events Closed"
+                        value={formatNumber(metrics.annual.totalEventsClosed)}
+                      />
+                      <KpiCard
+                        label="Average Event"
+                        value={formatCurrency(metrics.annual.averageEventValue)}
+                      />
+                      <KpiCard
+                        label="Pipeline Forecast"
+                        subtext="Next 90 days"
+                        value={formatCurrency(
+                          metrics.annual.pipelineForecast90
+                        )}
+                      />
                     </div>
                   </CardContent>
                 </Card>
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <VegaChart
-                    data={metrics.annual.revenueByMonth.map((item) => ({ label: formatDateLabel(item.month), value: item.revenue }))}
+                    data={metrics.annual.revenueByMonth.map((item) => ({
+                      label: formatDateLabel(item.month),
+                      value: item.revenue,
+                    }))}
                     spec={lineChartSpec({ showCurrency: true })}
                     title="Revenue by Month"
                   />
                   <VegaChart
-                    data={metrics.annual.revenueByEventType.map((item) => ({ label: item.event_type, value: item.revenue }))}
+                    data={metrics.annual.revenueByEventType.map((item) => ({
+                      label: item.event_type,
+                      value: item.revenue,
+                    }))}
                     spec={barChartSpec({ showCurrency: true })}
                     title="Revenue by Event Type"
                   />
@@ -927,12 +1252,18 @@ export function SalesDashboardClient() {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <VegaChart
-                    data={metrics.annual.leadSourceBreakdown.map((item) => ({ label: item.lead_source, value: item.count }))}
+                    data={metrics.annual.leadSourceBreakdown.map((item) => ({
+                      label: item.lead_source,
+                      value: item.count,
+                    }))}
                     spec={barChartSpec()}
                     title="Lead Source Breakdown"
                   />
                   <VegaChart
-                    data={metrics.annual.salesFunnel.map((item) => ({ label: item.stage, value: item.count }))}
+                    data={metrics.annual.salesFunnel.map((item) => ({
+                      label: item.stage,
+                      value: item.count,
+                    }))}
                     spec={barChartSpec()}
                     title="Sales Funnel"
                   />
@@ -940,21 +1271,33 @@ export function SalesDashboardClient() {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <VegaChart
-                    data={metrics.annual.closingBySalesperson.map((item) => ({ label: item.salesperson, value: item.win_rate }))}
+                    data={metrics.annual.closingBySalesperson.map((item) => ({
+                      label: item.salesperson,
+                      value: item.win_rate,
+                    }))}
                     spec={barChartSpec()}
                     title="Closing by Salesperson"
                   />
                   <VegaChart
-                    data={metrics.annual.topPackages.map((item) => ({ label: item.package, value: item.revenue }))}
+                    data={metrics.annual.topPackages.map((item) => ({
+                      label: item.package,
+                      value: item.revenue,
+                    }))}
                     spec={barChartSpec({ showCurrency: true })}
                     title="Top Packages"
                   />
                 </div>
 
                 <Card>
-                  <CardHeader><CardTitle>Win/Loss Trends</CardTitle></CardHeader>
+                  <CardHeader>
+                    <CardTitle>Win/Loss Trends</CardTitle>
+                  </CardHeader>
                   <CardContent>
-                    <DataTable columns={["lost_reason", "count"]} maxRows={8} rows={metrics.annual.winLossTrends as DataRow[]} />
+                    <DataTable
+                      columns={["lost_reason", "count"]}
+                      maxRows={8}
+                      rows={metrics.annual.winLossTrends as DataRow[]}
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -965,18 +1308,25 @@ export function SalesDashboardClient() {
                   <CardHeader>
                     <CardTitle>Comparative View</CardTitle>
                     <CardDescription>
-                      Week, month, quarter, YTD, and annual side-by-side performance.
+                      Week, month, quarter, YTD, and annual side-by-side
+                      performance.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid gap-4 lg:grid-cols-2">
                       <VegaChart
-                        data={metrics.summaries.map((s) => ({ label: s.label, value: s.revenue }))}
+                        data={metrics.summaries.map((s) => ({
+                          label: s.label,
+                          value: s.revenue,
+                        }))}
                         spec={barChartSpec({ showCurrency: true })}
                         title="Revenue by Period"
                       />
                       <VegaChart
-                        data={metrics.summaries.map((s) => ({ label: s.label, value: s.closingRatio }))}
+                        data={metrics.summaries.map((s) => ({
+                          label: s.label,
+                          value: s.closingRatio,
+                        }))}
                         spec={barChartSpec()}
                         title="Closing Ratio by Period"
                       />
@@ -984,7 +1334,9 @@ export function SalesDashboardClient() {
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardHeader><CardTitle>Period Summary</CardTitle></CardHeader>
+                  <CardHeader>
+                    <CardTitle>Period Summary</CardTitle>
+                  </CardHeader>
                   <CardContent>
                     <ComparisonTable summaries={metrics.summaries} />
                   </CardContent>
@@ -997,28 +1349,40 @@ export function SalesDashboardClient() {
                   <CardHeader>
                     <CardTitle>Funnel Validation</CardTitle>
                     <CardDescription>
-                      Compare calculated funnel metrics against the CALCS_Funnel sheet.
+                      Compare calculated funnel metrics against the CALCS_Funnel
+                      sheet.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {salesData.calcsFunnel.length === 0 ? (
                       <Alert>
                         <AlertTitle>CALCS_Funnel sheet not found</AlertTitle>
-                        <AlertDescription>Add the CALCS_Funnel sheet to enable validation checks.</AlertDescription>
+                        <AlertDescription>
+                          Add the CALCS_Funnel sheet to enable validation
+                          checks.
+                        </AlertDescription>
                       </Alert>
                     ) : null}
                     {validation ? (
                       <div className="space-y-4">
                         <div className="flex items-center gap-2">
-                          <Badge variant={validation.passed ? "secondary" : "destructive"}>
+                          <Badge
+                            variant={
+                              validation.passed ? "secondary" : "destructive"
+                            }
+                          >
                             {validation.passed ? "Pass" : "Fail"}
                           </Badge>
-                          <span className="text-sm text-muted-foreground">Tolerance: 1%</span>
+                          <span className="text-sm text-muted-foreground">
+                            Tolerance: 1%
+                          </span>
                         </div>
                         <ValidationTable results={validation.results} />
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">Select columns to run validation.</p>
+                      <p className="text-sm text-muted-foreground">
+                        Select columns to run validation.
+                      </p>
                     )}
                   </CardContent>
                 </Card>
@@ -1030,8 +1394,9 @@ export function SalesDashboardClient() {
                   <CardHeader>
                     <CardTitle>Chart Builder</CardTitle>
                     <CardDescription>
-                      Build custom visualizations from your data. Choose from 50+ chart types,
-                      map your columns, and export as PNG or SVG.
+                      Build custom visualizations from your data. Choose from
+                      50+ chart types, map your columns, and export as PNG or
+                      SVG.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -1043,7 +1408,9 @@ export function SalesDashboardClient() {
           ) : (
             <Alert>
               <AlertTitle>Waiting for selections</AlertTitle>
-              <AlertDescription>Select columns to generate metrics.</AlertDescription>
+              <AlertDescription>
+                Select columns to generate metrics.
+              </AlertDescription>
             </Alert>
           )}
         </>
@@ -1051,7 +1418,8 @@ export function SalesDashboardClient() {
         <Alert>
           <AlertTitle>Load a file to begin</AlertTitle>
           <AlertDescription>
-            The dashboard will appear after you upload an Excel workbook or CSV file.
+            The dashboard will appear after you upload an Excel workbook or CSV
+            file.
           </AlertDescription>
         </Alert>
       )}

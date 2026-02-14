@@ -1,6 +1,6 @@
-import { captureException } from "@sentry/nextjs";
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 import { generatePrepList, type PrepListGenerationResult } from "./actions";
@@ -72,4 +72,3 @@ const KitchenPrepListsPage = async ({ searchParams }: PrepListPageProps) => {
 };
 
 export default KitchenPrepListsPage;
-

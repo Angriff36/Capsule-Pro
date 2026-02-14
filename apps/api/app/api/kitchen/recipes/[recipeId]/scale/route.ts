@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export interface PortionScaleRequest {
@@ -26,13 +26,10 @@ const updateRecipeIngredientWasteFactor = async (
     throw new Error("Waste factor must be greater than 0");
   }
 
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.recipe_ingredients
-      SET waste_factor = ${wasteFactor}, updated_at = NOW()
-      WHERE tenant_id = ${tenantId} AND id = ${recipeIngredientId}
-    `
-  );
+  await database.recipeIngredient.update({
+    where: { tenantId_id: { tenantId, id: recipeIngredientId } },
+    data: { wasteFactor, updatedAt: new Date() },
+  });
 };
 
 const scaleRecipeCost = async (
@@ -41,29 +38,19 @@ const scaleRecipeCost = async (
   currentYield: number,
   tenantId: string
 ): Promise<ScaledRecipeCost> => {
-  const recipeVersion = await database.$queryRaw<
-    {
-      total_cost: number;
-      cost_per_yield: number;
-      yield_quantity: number;
-    }[]
-  >(
-    Prisma.sql`
-      SELECT total_cost, cost_per_yield, yield_quantity
-      FROM tenant_kitchen.recipe_versions
-      WHERE tenant_id = ${tenantId} AND id = ${recipeVersionId}
-    `
-  );
+  const recipeVersion = await database.recipeVersion.findFirst({
+    where: { tenantId, id: recipeVersionId, deletedAt: null },
+    select: { totalCost: true, costPerYield: true, yieldQuantity: true },
+  });
 
-  if (!recipeVersion[0]) {
+  if (!recipeVersion) {
     throw new Error("Recipe version not found");
   }
 
-  const originalCost = Number(recipeVersion[0].total_cost);
+  const originalCost = Number(recipeVersion.totalCost);
   const scaleFactor = targetPortions / currentYield;
   const scaledTotalCost = originalCost * scaleFactor;
-  const scaledCostPerYield =
-    Number(recipeVersion[0].cost_per_yield) * scaleFactor;
+  const scaledCostPerYield = Number(recipeVersion.costPerYield) * scaleFactor;
 
   return {
     scaledTotalCost,

@@ -8,7 +8,6 @@ import type { OverrideReasonCode } from "@repo/design-system/components/override
 import { Button } from "@repo/design-system/components/ui/button";
 import { useRouter } from "next/navigation";
 import { startTransition, useState, useTransition } from "react";
-import * as Sentry from "@sentry/nextjs";
 import type { ManifestActionResult } from "../../actions-manifest-v2";
 import {
   getRecipeForEdit,

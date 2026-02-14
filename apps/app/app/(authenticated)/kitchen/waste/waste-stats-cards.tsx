@@ -1,9 +1,9 @@
 "use client";
 
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { captureException } from "@sentry/nextjs";
 import { DollarSign, Scale, Trash2, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
-import { captureException } from "@sentry/nextjs";
 import { fetchWasteTrends, type WasteTrendsData } from "./lib/waste-analytics";
 
 type WasteStats = WasteTrendsData["summary"];
@@ -92,4 +92,3 @@ export function WasteStatsCards() {
     </div>
   );
 }
-

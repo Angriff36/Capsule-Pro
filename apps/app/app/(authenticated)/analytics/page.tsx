@@ -45,7 +45,9 @@ const AnalyticsPage = async () => {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
         <h1 className="text-2xl font-bold">Analytics Unavailable</h1>
-        <p className="text-muted-foreground">Unable to load analytics data. Please try again later.</p>
+        <p className="text-muted-foreground">
+          Unable to load analytics data. Please try again later.
+        </p>
       </div>
     );
   }
@@ -71,30 +73,45 @@ const AnalyticsPage = async () => {
 
   let currentRevenueRows: Array<{ total_revenue: string | null }>;
   let previousRevenueRows: Array<{ total_revenue: string | null }>;
-  let currentLaborRows: Array<{ budgeted_labor: string | null; actual_labor: string | null }>;
-  let previousLaborRows: Array<{ budgeted_labor: string | null; actual_labor: string | null }>;
+  let currentLaborRows: Array<{
+    budgeted_labor: string | null;
+    actual_labor: string | null;
+  }>;
+  let previousLaborRows: Array<{
+    budgeted_labor: string | null;
+    actual_labor: string | null;
+  }>;
   let currentWasteRows: Array<{ waste_cost: string | null }>;
   let previousWasteRows: Array<{ waste_cost: string | null }>;
   let marginRows: Array<{ avg_margin: string | null }>;
   let completionRows: Array<{ total_events: bigint; completed_events: bigint }>;
-  let followUpRows: Array<{ total_followups: bigint; completed_followups: bigint }>;
-  let topEvents: Array<{ id: string; title: string; status: string; revenue: string | null; margin_pct: string | null }>;
+  let followUpRows: Array<{
+    total_followups: bigint;
+    completed_followups: bigint;
+  }>;
+  let topEvents: Array<{
+    id: string;
+    title: string;
+    status: string;
+    revenue: string | null;
+    margin_pct: string | null;
+  }>;
 
   try {
-  [
-    currentRevenueRows,
-    previousRevenueRows,
-    currentLaborRows,
-    previousLaborRows,
-    currentWasteRows,
-    previousWasteRows,
-    marginRows,
-    completionRows,
-    followUpRows,
-    topEvents,
-  ] = await Promise.all([
-    database.$queryRaw<Array<{ total_revenue: string | null }>>(
-      Prisma.sql`
+    [
+      currentRevenueRows,
+      previousRevenueRows,
+      currentLaborRows,
+      previousLaborRows,
+      currentWasteRows,
+      previousWasteRows,
+      marginRows,
+      completionRows,
+      followUpRows,
+      topEvents,
+    ] = await Promise.all([
+      database.$queryRaw<Array<{ total_revenue: string | null }>>(
+        Prisma.sql`
         SELECT COALESCE(SUM(total_amount), 0)::numeric AS total_revenue
         FROM tenant_events.catering_orders
         WHERE tenant_id = ${tenantId}::uuid
@@ -102,9 +119,9 @@ const AnalyticsPage = async () => {
           AND order_date >= ${weekStart}
           AND order_date < ${now}
       `
-    ),
-    database.$queryRaw<Array<{ total_revenue: string | null }>>(
-      Prisma.sql`
+      ),
+      database.$queryRaw<Array<{ total_revenue: string | null }>>(
+        Prisma.sql`
         SELECT COALESCE(SUM(total_amount), 0)::numeric AS total_revenue
         FROM tenant_events.catering_orders
         WHERE tenant_id = ${tenantId}::uuid
@@ -112,11 +129,11 @@ const AnalyticsPage = async () => {
           AND order_date >= ${previousWeekStart}
           AND order_date < ${weekStart}
       `
-    ),
-    database.$queryRaw<
-      Array<{ budgeted_labor: string | null; actual_labor: string | null }>
-    >(
-      Prisma.sql`
+      ),
+      database.$queryRaw<
+        Array<{ budgeted_labor: string | null; actual_labor: string | null }>
+      >(
+        Prisma.sql`
         SELECT
           COALESCE(SUM(budgeted_labor_cost), 0)::numeric AS budgeted_labor,
           COALESCE(SUM(actual_labor_cost), 0)::numeric AS actual_labor
@@ -126,11 +143,11 @@ const AnalyticsPage = async () => {
           AND calculated_at >= ${thirtyDaysAgo}
           AND calculated_at < ${now}
       `
-    ),
-    database.$queryRaw<
-      Array<{ budgeted_labor: string | null; actual_labor: string | null }>
-    >(
-      Prisma.sql`
+      ),
+      database.$queryRaw<
+        Array<{ budgeted_labor: string | null; actual_labor: string | null }>
+      >(
+        Prisma.sql`
         SELECT
           COALESCE(SUM(budgeted_labor_cost), 0)::numeric AS budgeted_labor,
           COALESCE(SUM(actual_labor_cost), 0)::numeric AS actual_labor
@@ -140,9 +157,9 @@ const AnalyticsPage = async () => {
           AND calculated_at >= ${sixtyDaysAgo}
           AND calculated_at < ${thirtyDaysAgo}
       `
-    ),
-    database.$queryRaw<Array<{ waste_cost: string | null }>>(
-      Prisma.sql`
+      ),
+      database.$queryRaw<Array<{ waste_cost: string | null }>>(
+        Prisma.sql`
         SELECT COALESCE(SUM("totalCost"), 0)::numeric AS waste_cost
         FROM tenant_kitchen.waste_entries
         WHERE tenant_id = ${tenantId}::uuid
@@ -150,9 +167,9 @@ const AnalyticsPage = async () => {
           AND logged_at >= ${thirtyDaysAgo}
           AND logged_at < ${now}
       `
-    ),
-    database.$queryRaw<Array<{ waste_cost: string | null }>>(
-      Prisma.sql`
+      ),
+      database.$queryRaw<Array<{ waste_cost: string | null }>>(
+        Prisma.sql`
         SELECT COALESCE(SUM("totalCost"), 0)::numeric AS waste_cost
         FROM tenant_kitchen.waste_entries
         WHERE tenant_id = ${tenantId}::uuid
@@ -160,9 +177,9 @@ const AnalyticsPage = async () => {
           AND logged_at >= ${sixtyDaysAgo}
           AND logged_at < ${thirtyDaysAgo}
       `
-    ),
-    database.$queryRaw<Array<{ avg_margin: string | null }>>(
-      Prisma.sql`
+      ),
+      database.$queryRaw<Array<{ avg_margin: string | null }>>(
+        Prisma.sql`
         SELECT COALESCE(AVG(actual_gross_margin_pct), 0)::numeric AS avg_margin
         FROM tenant_events.event_profitability
         WHERE tenant_id = ${tenantId}::uuid
@@ -170,11 +187,11 @@ const AnalyticsPage = async () => {
           AND calculated_at >= ${thirtyDaysAgo}
           AND calculated_at < ${now}
       `
-    ),
-    database.$queryRaw<
-      Array<{ total_events: bigint; completed_events: bigint }>
-    >(
-      Prisma.sql`
+      ),
+      database.$queryRaw<
+        Array<{ total_events: bigint; completed_events: bigint }>
+      >(
+        Prisma.sql`
         SELECT
           COUNT(*)::bigint AS total_events,
           SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END)::bigint AS completed_events
@@ -184,11 +201,11 @@ const AnalyticsPage = async () => {
           AND event_date >= ${thirtyDaysAgo}
           AND event_date <= ${now}
       `
-    ),
-    database.$queryRaw<
-      Array<{ total_followups: bigint; completed_followups: bigint }>
-    >(
-      Prisma.sql`
+      ),
+      database.$queryRaw<
+        Array<{ total_followups: bigint; completed_followups: bigint }>
+      >(
+        Prisma.sql`
         SELECT
           COUNT(*)::bigint AS total_followups,
           SUM(CASE WHEN follow_up_completed THEN 1 ELSE 0 END)::bigint AS completed_followups
@@ -198,17 +215,17 @@ const AnalyticsPage = async () => {
           AND interaction_date >= ${thirtyDaysAgo}
           AND interaction_date < ${now}
       `
-    ),
-    database.$queryRaw<
-      Array<{
-        id: string;
-        title: string;
-        status: string;
-        revenue: string | null;
-        margin_pct: string | null;
-      }>
-    >(
-      Prisma.sql`
+      ),
+      database.$queryRaw<
+        Array<{
+          id: string;
+          title: string;
+          status: string;
+          revenue: string | null;
+          margin_pct: string | null;
+        }>
+      >(
+        Prisma.sql`
         SELECT
           e.id,
           e.title,
@@ -225,13 +242,15 @@ const AnalyticsPage = async () => {
         ORDER BY revenue DESC, e.event_date ASC
         LIMIT 5
       `
-    ),
-  ]);
+      ),
+    ]);
   } catch {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
         <h1 className="text-2xl font-bold">Analytics Unavailable</h1>
-        <p className="text-muted-foreground">Unable to load analytics data. Please try again later.</p>
+        <p className="text-muted-foreground">
+          Unable to load analytics data. Please try again later.
+        </p>
       </div>
     );
   }

@@ -65,7 +65,8 @@ function detectFieldType(values: unknown[]): FieldType {
   // Check if all values are numbers
   const numCount = nonNull.filter((v) => {
     if (typeof v === "number") return true;
-    if (typeof v === "string") return !Number.isNaN(Number(v)) && v.trim() !== "";
+    if (typeof v === "string")
+      return !Number.isNaN(Number(v)) && v.trim() !== "";
     return false;
   }).length;
   if (numCount > nonNull.length * 0.7) return "quantitative";
@@ -80,9 +81,7 @@ function detectFieldType(values: unknown[]): FieldType {
 /**
  * Build ColumnInfo array from raw data rows.
  */
-function buildColumnInfo(
-  rows: Record<string, unknown>[]
-): ColumnInfo[] {
+function buildColumnInfo(rows: Record<string, unknown>[]): ColumnInfo[] {
   if (rows.length === 0) return [];
 
   const columnNames = new Set<string>();
@@ -121,11 +120,11 @@ function ColumnMapper({
         );
 
         return (
-          <div key={slot.placeholder} className="space-y-1">
+          <div className="space-y-1" key={slot.placeholder}>
             <div className="flex items-center gap-2">
               <Label className="text-sm font-medium">{slot.label}</Label>
               {slot.required && (
-                <Badge variant="outline" className="text-[10px] px-1 py-0">
+                <Badge className="text-[10px] px-1 py-0" variant="outline">
                   Required
                 </Badge>
               )}
@@ -134,13 +133,13 @@ function ColumnMapper({
               </span>
             </div>
             <Select
-              value={mappings[slot.placeholder] ?? ""}
               onValueChange={(value) =>
                 onMappingChange(
                   slot.placeholder,
                   value === "__none__" ? "" : value
                 )
               }
+              value={mappings[slot.placeholder] ?? ""}
             >
               <SelectTrigger className="h-8 text-sm">
                 <SelectValue placeholder="Select column..." />
@@ -166,9 +165,7 @@ function ColumnMapper({
                 {otherColumns.map((col) => (
                   <SelectItem key={col.name} value={col.name}>
                     <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">
-                        {col.name}
-                      </span>
+                      <span className="text-muted-foreground">{col.name}</span>
                       <span
                         className={`text-[10px] px-1 rounded ${TYPE_COLORS[col.detectedType]}`}
                       >

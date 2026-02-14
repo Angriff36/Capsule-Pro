@@ -17,9 +17,9 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { captureException } from "@sentry/nextjs";
 import { Trash2, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useState } from "react";
-import { captureException } from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import { Header } from "../../../components/header";
 
@@ -430,4 +430,3 @@ export default function WasteLoggingMobilePage() {
     </>
   );
 }
-

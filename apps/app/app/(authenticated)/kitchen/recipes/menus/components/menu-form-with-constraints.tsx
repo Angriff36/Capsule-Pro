@@ -1,6 +1,5 @@
 "use client";
 
-import { captureException } from "@sentry/nextjs";
 import {
   ConstraintOverrideDialog,
   useConstraintOverride,
@@ -19,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { captureException } from "@sentry/nextjs";
 import { AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState, useTransition } from "react";
@@ -352,4 +352,3 @@ export function MenuFormWithConstraints({
     </>
   );
 }
-

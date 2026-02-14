@@ -21,4 +21,3 @@ export const parseError = (error: unknown): string => {
 
   return message;
 };
-

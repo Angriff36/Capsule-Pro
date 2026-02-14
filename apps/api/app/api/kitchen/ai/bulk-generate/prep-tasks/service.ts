@@ -5,9 +5,9 @@
 
 import { openai } from "@ai-sdk/openai";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { generateText } from "ai";
 import { v4 as uuidv4 } from "uuid";
-import { captureException } from "@sentry/nextjs";
 import type {
   AIGeneratedTasks,
   BulkGenerateRequest,
@@ -465,4 +465,3 @@ export async function saveGeneratedTasks(
 
   return { created, errors };
 }
-

@@ -200,8 +200,18 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     description: "Horizontal bars, useful for long category labels.",
     tags: ["bar", "horizontal", "comparison"],
     encodings: [
-      { ...Y_SLOT, label: "Category (Y)", acceptedTypes: ["nominal", "ordinal"], placeholder: "FIELD_X" },
-      { ...X_SLOT, label: "Value (X)", acceptedTypes: ["quantitative"], placeholder: "FIELD_Y" },
+      {
+        ...Y_SLOT,
+        label: "Category (Y)",
+        acceptedTypes: ["nominal", "ordinal"],
+        placeholder: "FIELD_X",
+      },
+      {
+        ...X_SLOT,
+        label: "Value (X)",
+        acceptedTypes: ["quantitative"],
+        placeholder: "FIELD_Y",
+      },
       COLOR_SLOT,
     ],
     spec: {
@@ -302,15 +312,16 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     category: "bar",
     description: "Bars with value labels displayed on top.",
     tags: ["bar", "labels", "annotated"],
-    encodings: [
-      { ...X_SLOT, acceptedTypes: ["nominal", "ordinal"] },
-      Y_SLOT,
-    ],
+    encodings: [{ ...X_SLOT, acceptedTypes: ["nominal", "ordinal"] }, Y_SLOT],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
       layer: [
         {
-          mark: { type: "bar", cornerRadiusTopLeft: 4, cornerRadiusTopRight: 4 },
+          mark: {
+            type: "bar",
+            cornerRadiusTopLeft: 4,
+            cornerRadiusTopRight: 4,
+          },
           encoding: {
             x: { field: "FIELD_X", type: "nominal", sort: null },
             y: { field: "FIELD_Y", type: "quantitative" },
@@ -333,10 +344,7 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     category: "bar",
     description: "Bars that extend above and below a zero baseline.",
     tags: ["bar", "negative", "diverging"],
-    encodings: [
-      { ...X_SLOT, acceptedTypes: ["nominal", "ordinal"] },
-      Y_SLOT,
-    ],
+    encodings: [{ ...X_SLOT, acceptedTypes: ["nominal", "ordinal"] }, Y_SLOT],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
       mark: { type: "bar" },
@@ -344,7 +352,10 @@ const CHART_TYPES: ChartTypeDefinition[] = [
         x: { field: "FIELD_X", type: "nominal", sort: null },
         y: { field: "FIELD_Y", type: "quantitative" },
         color: {
-          condition: { test: "datum.FIELD_Y >= 0", value: "hsl(142, 71%, 45%)" },
+          condition: {
+            test: "datum.FIELD_Y >= 0",
+            value: "hsl(142, 71%, 45%)",
+          },
           value: "hsl(0, 84%, 60%)",
         },
         tooltip: [
@@ -390,9 +401,7 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     category: "histogram",
     description: "Distribution of a quantitative variable in bins.",
     tags: ["histogram", "distribution", "frequency"],
-    encodings: [
-      { ...X_SLOT, label: "Value", acceptedTypes: ["quantitative"] },
-    ],
+    encodings: [{ ...X_SLOT, label: "Value", acceptedTypes: ["quantitative"] }],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
       mark: { type: "bar" },
@@ -446,7 +455,11 @@ const CHART_TYPES: ChartTypeDefinition[] = [
       encoding: {
         x: { field: "FIELD_X", type: "quantitative", bin: { maxbins: 20 } },
         y: { field: "FIELD_Y", type: "quantitative", bin: { maxbins: 20 } },
-        color: { aggregate: "count", type: "quantitative", scale: { scheme: "blues" } },
+        color: {
+          aggregate: "count",
+          type: "quantitative",
+          scale: { scheme: "blues" },
+        },
         tooltip: [{ aggregate: "count", type: "quantitative" }],
       },
     } as TopLevelSpec,
@@ -457,19 +470,25 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     category: "histogram",
     description: "Cumulative distribution function of a variable.",
     tags: ["cumulative", "distribution", "cdf"],
-    encodings: [
-      { ...X_SLOT, label: "Value", acceptedTypes: ["quantitative"] },
-    ],
+    encodings: [{ ...X_SLOT, label: "Value", acceptedTypes: ["quantitative"] }],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
       data: { values: [] },
       transform: [
-        { sort: [{ field: "FIELD_X" }], window: [{ op: "count", as: "cumulative_count" }], frame: [null, 0] },
+        {
+          sort: [{ field: "FIELD_X" }],
+          window: [{ op: "count", as: "cumulative_count" }],
+          frame: [null, 0],
+        },
       ],
       mark: { type: "area", opacity: 0.6 },
       encoding: {
         x: { field: "FIELD_X", type: "quantitative" },
-        y: { field: "cumulative_count", type: "quantitative", title: "Cumulative Count" },
+        y: {
+          field: "cumulative_count",
+          type: "quantitative",
+          title: "Cumulative Count",
+        },
         tooltip: [
           { field: "FIELD_X", type: "quantitative" },
           { field: "cumulative_count", type: "quantitative" },
@@ -483,22 +502,33 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     category: "histogram",
     description: "Histogram showing relative frequency (proportion) per bin.",
     tags: ["histogram", "relative", "proportion"],
-    encodings: [
-      { ...X_SLOT, label: "Value", acceptedTypes: ["quantitative"] },
-    ],
+    encodings: [{ ...X_SLOT, label: "Value", acceptedTypes: ["quantitative"] }],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
       transform: [
         { bin: true, field: "FIELD_X", as: "bin_field" },
-        { aggregate: [{ op: "count", as: "count" }], groupby: ["bin_field", "bin_field_end"] },
+        {
+          aggregate: [{ op: "count", as: "count" }],
+          groupby: ["bin_field", "bin_field_end"],
+        },
         { joinaggregate: [{ op: "sum", field: "count", as: "total" }] },
         { calculate: "datum.count / datum.total", as: "pct" },
       ],
       mark: { type: "bar" },
       encoding: {
-        x: { field: "bin_field", type: "quantitative", bin: { binned: true }, title: "FIELD_X" },
+        x: {
+          field: "bin_field",
+          type: "quantitative",
+          bin: { binned: true },
+          title: "FIELD_X",
+        },
         x2: { field: "bin_field_end" },
-        y: { field: "pct", type: "quantitative", title: "Relative Frequency", axis: { format: ".0%" } },
+        y: {
+          field: "pct",
+          type: "quantitative",
+          title: "Relative Frequency",
+          axis: { format: ".0%" },
+        },
         tooltip: [
           { field: "bin_field", type: "quantitative" },
           { field: "pct", type: "quantitative", format: ".1%" },
@@ -514,7 +544,12 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     tags: ["dot", "strip", "distribution"],
     encodings: [
       { ...X_SLOT, label: "Value", acceptedTypes: ["quantitative"] },
-      { ...Y_SLOT, label: "Category", acceptedTypes: ["nominal", "ordinal"], placeholder: "FIELD_Y" },
+      {
+        ...Y_SLOT,
+        label: "Category",
+        acceptedTypes: ["nominal", "ordinal"],
+        placeholder: "FIELD_Y",
+      },
     ],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
@@ -537,7 +572,8 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     id: "scatter",
     name: "Scatter Plot",
     category: "scatter",
-    description: "Points showing relationship between two quantitative variables.",
+    description:
+      "Points showing relationship between two quantitative variables.",
     tags: ["scatter", "correlation", "relationship"],
     encodings: [
       { ...X_SLOT, acceptedTypes: ["quantitative"] },
@@ -593,7 +629,12 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     tags: ["strip", "tick", "distribution"],
     encodings: [
       { ...X_SLOT, acceptedTypes: ["quantitative"] },
-      { ...Y_SLOT, label: "Category", acceptedTypes: ["nominal", "ordinal"], placeholder: "FIELD_Y" },
+      {
+        ...Y_SLOT,
+        label: "Category",
+        acceptedTypes: ["nominal", "ordinal"],
+        placeholder: "FIELD_Y",
+      },
     ],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
@@ -644,7 +685,12 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     encodings: [
       { ...X_SLOT, acceptedTypes: ["quantitative"] },
       Y_SLOT,
-      { label: "Label", placeholder: "FIELD_TEXT", acceptedTypes: ["nominal"], required: true },
+      {
+        label: "Label",
+        placeholder: "FIELD_TEXT",
+        acceptedTypes: ["nominal"],
+        required: true,
+      },
     ],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
@@ -873,7 +919,8 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     id: "area-normalized",
     name: "Normalized Stacked Area",
     category: "area",
-    description: "100% stacked area showing proportional composition over time.",
+    description:
+      "100% stacked area showing proportional composition over time.",
     tags: ["area", "stacked", "normalized", "percentage"],
     encodings: [
       { ...X_SLOT, acceptedTypes: ["temporal", "ordinal"] },
@@ -937,7 +984,10 @@ const CHART_TYPES: ChartTypeDefinition[] = [
         type: "area",
         line: { color: "hsl(221, 83%, 53%)" },
         color: {
-          x1: 1, y1: 1, x2: 1, y2: 0,
+          x1: 1,
+          y1: 1,
+          x2: 1,
+          y2: 0,
           gradient: "linear",
           stops: [
             { offset: 0, color: "white" },
@@ -967,8 +1017,18 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     tags: ["heatmap", "matrix", "color"],
     encodings: [
       { ...X_SLOT, acceptedTypes: ["nominal", "ordinal"] },
-      { ...Y_SLOT, label: "Y Category", acceptedTypes: ["nominal", "ordinal"], placeholder: "FIELD_Y" },
-      { label: "Value", placeholder: "FIELD_VALUE", acceptedTypes: ["quantitative"], required: true },
+      {
+        ...Y_SLOT,
+        label: "Y Category",
+        acceptedTypes: ["nominal", "ordinal"],
+        placeholder: "FIELD_Y",
+      },
+      {
+        label: "Value",
+        placeholder: "FIELD_VALUE",
+        acceptedTypes: ["quantitative"],
+        required: true,
+      },
     ],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
@@ -976,7 +1036,11 @@ const CHART_TYPES: ChartTypeDefinition[] = [
       encoding: {
         x: { field: "FIELD_X", type: "nominal" },
         y: { field: "FIELD_Y", type: "nominal" },
-        color: { field: "FIELD_VALUE", type: "quantitative", scale: { scheme: "blues" } },
+        color: {
+          field: "FIELD_VALUE",
+          type: "quantitative",
+          scale: { scheme: "blues" },
+        },
         tooltip: [
           { field: "FIELD_X", type: "nominal" },
           { field: "FIELD_Y", type: "nominal" },
@@ -993,8 +1057,18 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     tags: ["heatmap", "labels", "annotated"],
     encodings: [
       { ...X_SLOT, acceptedTypes: ["nominal", "ordinal"] },
-      { ...Y_SLOT, label: "Y Category", acceptedTypes: ["nominal", "ordinal"], placeholder: "FIELD_Y" },
-      { label: "Value", placeholder: "FIELD_VALUE", acceptedTypes: ["quantitative"], required: true },
+      {
+        ...Y_SLOT,
+        label: "Y Category",
+        acceptedTypes: ["nominal", "ordinal"],
+        placeholder: "FIELD_Y",
+      },
+      {
+        label: "Value",
+        placeholder: "FIELD_VALUE",
+        acceptedTypes: ["quantitative"],
+        required: true,
+      },
     ],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1002,13 +1076,21 @@ const CHART_TYPES: ChartTypeDefinition[] = [
         {
           mark: { type: "rect" },
           encoding: {
-            color: { field: "FIELD_VALUE", type: "quantitative", scale: { scheme: "blues" } },
+            color: {
+              field: "FIELD_VALUE",
+              type: "quantitative",
+              scale: { scheme: "blues" },
+            },
           },
         },
         {
           mark: { type: "text", fontSize: 10 },
           encoding: {
-            text: { field: "FIELD_VALUE", type: "quantitative", format: ",.0f" },
+            text: {
+              field: "FIELD_VALUE",
+              type: "quantitative",
+              format: ",.0f",
+            },
             color: {
               condition: { test: "datum.FIELD_VALUE > 50", value: "white" },
               value: "black",
@@ -1035,8 +1117,18 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     tags: ["bubble", "table", "punch-card", "matrix"],
     encodings: [
       { ...X_SLOT, acceptedTypes: ["nominal", "ordinal"] },
-      { ...Y_SLOT, label: "Y Category", acceptedTypes: ["nominal", "ordinal"], placeholder: "FIELD_Y" },
-      { label: "Size Value", placeholder: "FIELD_SIZE", acceptedTypes: ["quantitative"], required: true },
+      {
+        ...Y_SLOT,
+        label: "Y Category",
+        acceptedTypes: ["nominal", "ordinal"],
+        placeholder: "FIELD_Y",
+      },
+      {
+        label: "Size Value",
+        placeholder: "FIELD_SIZE",
+        acceptedTypes: ["quantitative"],
+        required: true,
+      },
     ],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1061,8 +1153,18 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     tags: ["lasagna", "heatmap", "time-series", "dense"],
     encodings: [
       { ...X_SLOT, acceptedTypes: ["temporal", "ordinal"] },
-      { ...Y_SLOT, label: "Category", acceptedTypes: ["nominal", "ordinal"], placeholder: "FIELD_Y" },
-      { label: "Value", placeholder: "FIELD_VALUE", acceptedTypes: ["quantitative"], required: true },
+      {
+        ...Y_SLOT,
+        label: "Category",
+        acceptedTypes: ["nominal", "ordinal"],
+        placeholder: "FIELD_Y",
+      },
+      {
+        label: "Value",
+        placeholder: "FIELD_VALUE",
+        acceptedTypes: ["quantitative"],
+        required: true,
+      },
     ],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1070,7 +1172,11 @@ const CHART_TYPES: ChartTypeDefinition[] = [
       encoding: {
         x: { field: "FIELD_X", type: "temporal" },
         y: { field: "FIELD_Y", type: "nominal" },
-        color: { field: "FIELD_VALUE", type: "quantitative", scale: { scheme: "viridis" } },
+        color: {
+          field: "FIELD_VALUE",
+          type: "quantitative",
+          scale: { scheme: "viridis" },
+        },
         tooltip: [
           { field: "FIELD_X", type: "temporal" },
           { field: "FIELD_Y", type: "nominal" },
@@ -1148,13 +1254,21 @@ const CHART_TYPES: ChartTypeDefinition[] = [
         {
           mark: { type: "text", radiusOffset: 15, fontSize: 10 },
           encoding: {
-            text: { field: "FIELD_THETA", type: "quantitative", format: ",.0f" },
+            text: {
+              field: "FIELD_THETA",
+              type: "quantitative",
+              format: ",.0f",
+            },
           },
         },
       ],
       encoding: {
         theta: { field: "FIELD_THETA", type: "quantitative", stack: true },
-        radius: { field: "FIELD_THETA", type: "quantitative", scale: { type: "sqrt", zero: true, rangeMin: 30 } },
+        radius: {
+          field: "FIELD_THETA",
+          type: "quantitative",
+          scale: { type: "sqrt", zero: true, rangeMin: 30 },
+        },
         color: { field: "FIELD_COLOR", type: "nominal", legend: null },
         tooltip: [
           { field: "FIELD_COLOR", type: "nominal" },
@@ -1286,10 +1400,7 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     category: "statistical",
     description: "Scatter plot with a fitted regression line.",
     tags: ["regression", "linear", "trend", "fit"],
-    encodings: [
-      { ...X_SLOT, acceptedTypes: ["quantitative"] },
-      Y_SLOT,
-    ],
+    encodings: [{ ...X_SLOT, acceptedTypes: ["quantitative"] }, Y_SLOT],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
       layer: [
@@ -1317,10 +1428,7 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     category: "statistical",
     description: "Scatter plot with a smooth loess curve.",
     tags: ["loess", "smooth", "regression", "curve"],
-    encodings: [
-      { ...X_SLOT, acceptedTypes: ["quantitative"] },
-      Y_SLOT,
-    ],
+    encodings: [{ ...X_SLOT, acceptedTypes: ["quantitative"] }, Y_SLOT],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
       layer: [
@@ -1350,7 +1458,8 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     id: "waterfall",
     name: "Waterfall Chart",
     category: "advanced",
-    description: "Shows cumulative effect of sequential positive/negative values.",
+    description:
+      "Shows cumulative effect of sequential positive/negative values.",
     tags: ["waterfall", "cumulative", "finance"],
     encodings: [
       { ...X_SLOT, label: "Category", acceptedTypes: ["nominal", "ordinal"] },
@@ -1361,7 +1470,10 @@ const CHART_TYPES: ChartTypeDefinition[] = [
       transform: [
         { window: [{ op: "sum", field: "FIELD_Y", as: "sum" }] },
         { calculate: "datum.sum - datum.FIELD_Y", as: "previous_sum" },
-        { calculate: "datum.FIELD_Y >= 0 ? 'positive' : 'negative'", as: "direction" },
+        {
+          calculate: "datum.FIELD_Y >= 0 ? 'positive' : 'negative'",
+          as: "direction",
+        },
       ],
       mark: { type: "bar" },
       encoding: {
@@ -1371,13 +1483,26 @@ const CHART_TYPES: ChartTypeDefinition[] = [
         color: {
           field: "direction",
           type: "nominal",
-          scale: { domain: ["positive", "negative"], range: ["hsl(142, 71%, 45%)", "hsl(0, 84%, 60%)"] },
+          scale: {
+            domain: ["positive", "negative"],
+            range: ["hsl(142, 71%, 45%)", "hsl(0, 84%, 60%)"],
+          },
           legend: null,
         },
         tooltip: [
           { field: "FIELD_X", type: "nominal" },
-          { field: "FIELD_Y", type: "quantitative", format: "+,.0f", title: "Change" },
-          { field: "sum", type: "quantitative", format: ",.0f", title: "Running Total" },
+          {
+            field: "FIELD_Y",
+            type: "quantitative",
+            format: "+,.0f",
+            title: "Change",
+          },
+          {
+            field: "sum",
+            type: "quantitative",
+            format: ",.0f",
+            title: "Running Total",
+          },
         ],
       },
     } as TopLevelSpec,
@@ -1390,15 +1515,38 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     tags: ["candlestick", "finance", "ohlc"],
     encodings: [
       { ...X_SLOT, label: "Date", acceptedTypes: ["temporal"] },
-      { label: "Open", placeholder: "FIELD_OPEN", acceptedTypes: ["quantitative"], required: true },
-      { label: "High", placeholder: "FIELD_HIGH", acceptedTypes: ["quantitative"], required: true },
-      { label: "Low", placeholder: "FIELD_LOW", acceptedTypes: ["quantitative"], required: true },
-      { label: "Close", placeholder: "FIELD_CLOSE", acceptedTypes: ["quantitative"], required: true },
+      {
+        label: "Open",
+        placeholder: "FIELD_OPEN",
+        acceptedTypes: ["quantitative"],
+        required: true,
+      },
+      {
+        label: "High",
+        placeholder: "FIELD_HIGH",
+        acceptedTypes: ["quantitative"],
+        required: true,
+      },
+      {
+        label: "Low",
+        placeholder: "FIELD_LOW",
+        acceptedTypes: ["quantitative"],
+        required: true,
+      },
+      {
+        label: "Close",
+        placeholder: "FIELD_CLOSE",
+        acceptedTypes: ["quantitative"],
+        required: true,
+      },
     ],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
       transform: [
-        { calculate: "datum.FIELD_OPEN < datum.FIELD_CLOSE ? 'up' : 'down'", as: "direction" },
+        {
+          calculate: "datum.FIELD_OPEN < datum.FIELD_CLOSE ? 'up' : 'down'",
+          as: "direction",
+        },
       ],
       layer: [
         {
@@ -1410,7 +1558,10 @@ const CHART_TYPES: ChartTypeDefinition[] = [
             color: {
               field: "direction",
               type: "nominal",
-              scale: { domain: ["up", "down"], range: ["hsl(142, 71%, 45%)", "hsl(0, 84%, 60%)"] },
+              scale: {
+                domain: ["up", "down"],
+                range: ["hsl(142, 71%, 45%)", "hsl(0, 84%, 60%)"],
+              },
               legend: null,
             },
           },
@@ -1436,7 +1587,12 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     encodings: [
       { ...X_SLOT, acceptedTypes: ["temporal", "ordinal"] },
       { ...Y_SLOT, label: "Left Y Axis" },
-      { label: "Right Y Axis", placeholder: "FIELD_Y2", acceptedTypes: ["quantitative"], required: true },
+      {
+        label: "Right Y Axis",
+        placeholder: "FIELD_Y2",
+        acceptedTypes: ["quantitative"],
+        required: true,
+      },
     ],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1445,14 +1601,22 @@ const CHART_TYPES: ChartTypeDefinition[] = [
           mark: { type: "bar", opacity: 0.6 },
           encoding: {
             x: { field: "FIELD_X", type: "temporal" },
-            y: { field: "FIELD_Y", type: "quantitative", axis: { title: "FIELD_Y" } },
+            y: {
+              field: "FIELD_Y",
+              type: "quantitative",
+              axis: { title: "FIELD_Y" },
+            },
           },
         },
         {
           mark: { type: "line", color: "hsl(0, 84%, 60%)", strokeWidth: 2 },
           encoding: {
             x: { field: "FIELD_X", type: "temporal" },
-            y: { field: "FIELD_Y2", type: "quantitative", axis: { title: "FIELD_Y2" } },
+            y: {
+              field: "FIELD_Y2",
+              type: "quantitative",
+              axis: { title: "FIELD_Y2" },
+            },
           },
         },
       ],
@@ -1468,7 +1632,12 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     encodings: [
       { ...X_SLOT, label: "Category", acceptedTypes: ["nominal"] },
       { ...Y_SLOT, label: "Actual Value" },
-      { label: "Target", placeholder: "FIELD_TARGET", acceptedTypes: ["quantitative"], required: true },
+      {
+        label: "Target",
+        placeholder: "FIELD_TARGET",
+        acceptedTypes: ["quantitative"],
+        required: true,
+      },
     ],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1504,9 +1673,24 @@ const CHART_TYPES: ChartTypeDefinition[] = [
     description: "Dots connected by lines showing ranges per category.",
     tags: ["ranged", "dot", "range", "comparison"],
     encodings: [
-      { ...Y_SLOT, label: "Category", acceptedTypes: ["nominal", "ordinal"], placeholder: "FIELD_Y" },
-      { label: "Min Value", placeholder: "FIELD_MIN", acceptedTypes: ["quantitative"], required: true },
-      { label: "Max Value", placeholder: "FIELD_MAX", acceptedTypes: ["quantitative"], required: true },
+      {
+        ...Y_SLOT,
+        label: "Category",
+        acceptedTypes: ["nominal", "ordinal"],
+        placeholder: "FIELD_Y",
+      },
+      {
+        label: "Min Value",
+        placeholder: "FIELD_MIN",
+        acceptedTypes: ["quantitative"],
+        required: true,
+      },
+      {
+        label: "Max Value",
+        placeholder: "FIELD_MAX",
+        acceptedTypes: ["quantitative"],
+        required: true,
+      },
     ],
     spec: {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1663,7 +1847,13 @@ const CHART_TYPES: ChartTypeDefinition[] = [
 // ---------------------------------------------------------------------------
 
 export { CATEGORIES, CHART_TYPES };
-export type { ChartCategory, ChartTypeDefinition, CategoryMeta, EncodingSlot, FieldType };
+export type {
+  ChartCategory,
+  ChartTypeDefinition,
+  CategoryMeta,
+  EncodingSlot,
+  FieldType,
+};
 
 /**
  * Replace placeholder field names in a spec with actual column names.
@@ -1687,7 +1877,12 @@ function replaceFields(
  * Faceted specs cannot have top-level width/height/autosize.
  */
 function isFacetedSpec(spec: Record<string, unknown>): boolean {
-  return "facet" in spec || "hconcat" in spec || "vconcat" in spec || "concat" in spec;
+  return (
+    "facet" in spec ||
+    "hconcat" in spec ||
+    "vconcat" in spec ||
+    "concat" in spec
+  );
 }
 
 /**
