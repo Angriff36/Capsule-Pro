@@ -7,6 +7,7 @@
  * are already lazy-loaded at the server runtime level.
  */
 
+// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import
 import * as Sentry from "@sentry/nextjs";
 import { keys } from "./keys";
 
