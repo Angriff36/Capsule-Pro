@@ -285,6 +285,10 @@ export declare function updatePrepTaskQuantity(engine: RuntimeEngine, taskId: st
  */
 export declare function cancelPrepTask(engine: RuntimeEngine, taskId: string, reason: string, canceledBy: string, overrideRequests?: OverrideRequest[]): Promise<PrepTaskCommandResult>;
 /**
+ * Create a new prep task via Manifest command pipeline
+ */
+export declare function createPrepTask(engine: RuntimeEngine, taskId: string, name: string, eventId: string, taskType: string, priority: number, quantityTotal: number, quantityUnitId: string, servingsTotal: number, startByDate: number, dueByDate: number, notes: string, ingredients: string, overrideRequests?: OverrideRequest[]): Promise<PrepTaskCommandResult>;
+/**
  * Assign a task to a station
  */
 export declare function assignTaskToStation(engine: RuntimeEngine, stationId: string, taskId: string, taskName: string): Promise<StationCommandResult>;
@@ -308,6 +312,10 @@ export declare function activateStation(engine: RuntimeEngine, stationId: string
  * Update station equipment
  */
 export declare function updateStationEquipment(engine: RuntimeEngine, stationId: string, equipmentList: string, userId: string): Promise<StationCommandResult>;
+/**
+ * Create a new station via Manifest command pipeline
+ */
+export declare function createStation(engine: RuntimeEngine, stationId: string, locationId: string, name: string, stationType: string, capacitySimultaneousTasks: number, equipmentList: string, notes: string, overrideRequests?: OverrideRequest[]): Promise<StationCommandResult>;
 /**
  * Reserve inventory
  */
@@ -333,6 +341,10 @@ export declare function restockInventory(engine: RuntimeEngine, itemId: string, 
  */
 export declare function releaseInventoryReservation(engine: RuntimeEngine, itemId: string, quantity: number, eventId: string, userId: string, overrideRequests?: OverrideRequest[]): Promise<InventoryCommandResult>;
 /**
+ * Create a new inventory item via Manifest command pipeline
+ */
+export declare function createInventoryItem(engine: RuntimeEngine, itemId: string, name: string, itemType: string, category: string, baseUnit: string, parLevel: number, reorderPoint: number, reorderQuantity: number, costPerUnit: number, supplierId: string, locationId: string, allergens: string, overrideRequests?: OverrideRequest[]): Promise<InventoryCommandResult>;
+/**
  * Update a recipe
  */
 export declare function updateRecipe(engine: RuntimeEngine, recipeId: string, newName: string, newCategory: string, newCuisineType: string, newDescription: string, newTags: string, overrideRequests?: OverrideRequest[]): Promise<RecipeCommandResult>;
@@ -345,9 +357,17 @@ export declare function deactivateRecipe(engine: RuntimeEngine, recipeId: string
  */
 export declare function activateRecipe(engine: RuntimeEngine, recipeId: string, overrideRequests?: OverrideRequest[]): Promise<RecipeCommandResult>;
 /**
+ * Create a new ingredient via Manifest command pipeline
+ */
+export declare function createIngredient(engine: RuntimeEngine, ingredientId: string, name: string, defaultUnitId: number, category: string, allergens: string, overrideRequests?: OverrideRequest[]): Promise<RecipeCommandResult>;
+/**
  * Create a recipe version
  */
 export declare function createRecipeVersion(engine: RuntimeEngine, versionId: string, yieldQty: number, yieldUnit: number, prepTime: number, cookTime: number, restTime: number, difficulty: number, instructionsText: string, notesText: string): Promise<RecipeCommandResult>;
+/**
+ * Create a new recipe ingredient via Manifest command pipeline
+ */
+export declare function createRecipeIngredient(engine: RuntimeEngine, recipeIngredientId: string, recipeVersionId: string, ingredientId: string, quantity: number, unitId: number, sortOrder: number, preparationNotes: string, isOptional: boolean, overrideRequests?: OverrideRequest[]): Promise<RecipeCommandResult>;
 /**
  * Update dish pricing
  */
@@ -388,6 +408,18 @@ export declare function deactivateMenu(engine: RuntimeEngine, menuId: string, ov
  * Create a menu via Manifest runtime with constraint validation and event emission
  */
 export declare function createMenu(engine: RuntimeEngine, menuId: string, name: string, description: string, category: string, basePrice: number, pricePerPerson: number, minGuests: number, maxGuests: number, overrideRequests?: OverrideRequest[]): Promise<MenuCommandResult>;
+/**
+ * Result of a menu dish command
+ */
+export interface MenuDishCommandResult extends CommandResult {
+    menuDishId: string;
+    menuId?: string;
+    dishId?: string;
+}
+/**
+ * Create a new menu dish association via Manifest command pipeline
+ */
+export declare function createMenuDish(engine: RuntimeEngine, menuDishId: string, menuId: string, dishId: string, course: string, sortOrder: number, isOptional: boolean, overrideRequests?: OverrideRequest[]): Promise<MenuDishCommandResult>;
 /**
  * Result of a prep list command
  */
@@ -459,6 +491,10 @@ export declare function markPrepListItemUncompleted(engine: RuntimeEngine, itemI
  * Create a prep list via Manifest runtime with constraint validation and event emission
  */
 export declare function createPrepList(engine: RuntimeEngine, prepListId: string, eventId: string, name: string, batchMultiplier: number, dietaryRestrictions: string, totalItems: number, totalEstimatedTime: number, notes: string, overrideRequests?: OverrideRequest[]): Promise<PrepListCommandResult>;
+/**
+ * Create a new prep list item via Manifest command pipeline
+ */
+export declare function createPrepListItem(engine: RuntimeEngine, itemId: string, prepListId: string, stationId: string, stationName: string, ingredientId: string, ingredientName: string, category: string, baseQuantity: number, baseUnit: string, scaledQuantity: number, scaledUnit: string, isOptional: boolean, preparationNotes: string, allergens: string, dietarySubstitutions: string, dishId: string, dishName: string, recipeVersionId: string, sortOrder: number, overrideRequests?: OverrideRequest[]): Promise<PrepListItemCommandResult>;
 /**
  * Setup event listeners for kitchen operations
  */

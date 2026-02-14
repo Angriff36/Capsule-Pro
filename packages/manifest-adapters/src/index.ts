@@ -1018,6 +1018,57 @@ export async function cancelPrepTask(
   };
 }
 
+/**
+ * Create a new prep task via Manifest command pipeline
+ */
+export async function createPrepTask(
+  engine: RuntimeEngine,
+  taskId: string,
+  name: string,
+  eventId: string,
+  taskType: string,
+  priority: number,
+  quantityTotal: number,
+  quantityUnitId: string,
+  servingsTotal: number,
+  startByDate: number,
+  dueByDate: number,
+  notes: string,
+  ingredients: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepTaskCommandResult> {
+  const result = await engine.runCommand(
+    "create",
+    {
+      name,
+      eventId,
+      taskType,
+      priority,
+      quantityTotal,
+      quantityUnitId,
+      servingsTotal,
+      startByDate,
+      dueByDate,
+      notes,
+      ingredients,
+    },
+    {
+      entityName: "PrepTask",
+      instanceId: taskId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepTask", taskId);
+  return {
+    ...result,
+    taskId,
+    claimedBy: instance?.claimedBy as string | undefined,
+    claimedAt: instance?.claimedAt as number | undefined,
+    status: instance?.status as string | undefined,
+  };
+}
+
 // ============ Station Commands ============
 
 /**
@@ -1168,6 +1219,46 @@ export async function updateStationEquipment(
   return {
     ...result,
     stationId,
+  };
+}
+
+/**
+ * Create a new station via Manifest command pipeline
+ */
+export async function createStation(
+  engine: RuntimeEngine,
+  stationId: string,
+  locationId: string,
+  name: string,
+  stationType: string,
+  capacitySimultaneousTasks: number,
+  equipmentList: string,
+  notes: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<StationCommandResult> {
+  const result = await engine.runCommand(
+    "create",
+    {
+      locationId,
+      name,
+      stationType,
+      capacitySimultaneousTasks,
+      equipmentList,
+      notes,
+    },
+    {
+      entityName: "Station",
+      instanceId: stationId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("Station", stationId);
+  return {
+    ...result,
+    stationId,
+    currentTaskCount: instance?.currentTaskCount as number | undefined,
+    capacity: instance?.capacitySimultaneousTasks as number | undefined,
   };
 }
 
@@ -1360,6 +1451,57 @@ export async function releaseInventoryReservation(
   };
 }
 
+/**
+ * Create a new inventory item via Manifest command pipeline
+ */
+export async function createInventoryItem(
+  engine: RuntimeEngine,
+  itemId: string,
+  name: string,
+  itemType: string,
+  category: string,
+  baseUnit: string,
+  parLevel: number,
+  reorderPoint: number,
+  reorderQuantity: number,
+  costPerUnit: number,
+  supplierId: string,
+  locationId: string,
+  allergens: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<InventoryCommandResult> {
+  const result = await engine.runCommand(
+    "create",
+    {
+      name,
+      itemType,
+      category,
+      baseUnit,
+      parLevel,
+      reorderPoint,
+      reorderQuantity,
+      costPerUnit,
+      supplierId,
+      locationId,
+      allergens,
+    },
+    {
+      entityName: "InventoryItem",
+      instanceId: itemId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("InventoryItem", itemId);
+  return {
+    ...result,
+    itemId,
+    quantityOnHand: instance?.quantityOnHand as number | undefined,
+    quantityReserved: instance?.quantityReserved as number | undefined,
+    quantityAvailable: instance?.quantityAvailable as number | undefined,
+  };
+}
+
 // ============ Recipe Commands ============
 
 /**
@@ -1450,6 +1592,42 @@ export async function activateRecipe(
 }
 
 /**
+ * Create a new ingredient via Manifest command pipeline
+ */
+export async function createIngredient(
+  engine: RuntimeEngine,
+  ingredientId: string,
+  name: string,
+  defaultUnitId: number,
+  category: string,
+  allergens: string,
+  overrideRequests?: OverrideRequest[]
+): Promise<RecipeCommandResult> {
+  const result = await engine.runCommand(
+    "create",
+    {
+      name,
+      defaultUnitId,
+      category,
+      allergens,
+    },
+    {
+      entityName: "Ingredient",
+      instanceId: ingredientId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("Ingredient", ingredientId);
+  return {
+    ...result,
+    recipeId: ingredientId,
+    name: instance?.name as string | undefined,
+    isActive: instance?.isActive as boolean | undefined,
+  };
+}
+
+/**
  * Create a recipe version
  */
 export async function createRecipeVersion(
@@ -1485,6 +1663,45 @@ export async function createRecipeVersion(
   return {
     ...result,
     recipeId: versionId,
+  };
+}
+
+/**
+ * Create a new recipe ingredient via Manifest command pipeline
+ */
+export async function createRecipeIngredient(
+  engine: RuntimeEngine,
+  recipeIngredientId: string,
+  recipeVersionId: string,
+  ingredientId: string,
+  quantity: number,
+  unitId: number,
+  sortOrder: number,
+  preparationNotes: string,
+  isOptional: boolean,
+  overrideRequests?: OverrideRequest[]
+): Promise<RecipeCommandResult> {
+  const result = await engine.runCommand(
+    "create",
+    {
+      recipeVersionId,
+      ingredientId,
+      quantity,
+      unitId,
+      sortOrder,
+      preparationNotes,
+      isOptional,
+    },
+    {
+      entityName: "RecipeIngredient",
+      instanceId: recipeIngredientId,
+      overrideRequests,
+    }
+  );
+
+  return {
+    ...result,
+    recipeId: recipeIngredientId,
   };
 }
 
@@ -1783,6 +2000,53 @@ export async function createMenu(
     menuId,
     name: instance?.name as string | undefined,
     isActive: true,
+  };
+}
+
+/**
+ * Result of a menu dish command
+ */
+export interface MenuDishCommandResult extends CommandResult {
+  menuDishId: string;
+  menuId?: string;
+  dishId?: string;
+}
+
+/**
+ * Create a new menu dish association via Manifest command pipeline
+ */
+export async function createMenuDish(
+  engine: RuntimeEngine,
+  menuDishId: string,
+  menuId: string,
+  dishId: string,
+  course: string,
+  sortOrder: number,
+  isOptional: boolean,
+  overrideRequests?: OverrideRequest[]
+): Promise<MenuDishCommandResult> {
+  const result = await engine.runCommand(
+    "create",
+    {
+      menuId,
+      dishId,
+      course,
+      sortOrder,
+      isOptional,
+    },
+    {
+      entityName: "MenuDish",
+      instanceId: menuDishId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("MenuDish", menuDishId);
+  return {
+    ...result,
+    menuDishId,
+    menuId: instance?.menuId as string | undefined,
+    dishId: instance?.dishId as string | undefined,
   };
 }
 
@@ -2191,6 +2455,71 @@ export async function createPrepList(
     status: instance?.status as string | undefined,
     totalItems: instance?.totalItems as number | undefined,
     totalEstimatedTime: instance?.totalEstimatedTime as number | undefined,
+  };
+}
+
+/**
+ * Create a new prep list item via Manifest command pipeline
+ */
+export async function createPrepListItem(
+  engine: RuntimeEngine,
+  itemId: string,
+  prepListId: string,
+  stationId: string,
+  stationName: string,
+  ingredientId: string,
+  ingredientName: string,
+  category: string,
+  baseQuantity: number,
+  baseUnit: string,
+  scaledQuantity: number,
+  scaledUnit: string,
+  isOptional: boolean,
+  preparationNotes: string,
+  allergens: string,
+  dietarySubstitutions: string,
+  dishId: string,
+  dishName: string,
+  recipeVersionId: string,
+  sortOrder: number,
+  overrideRequests?: OverrideRequest[]
+): Promise<PrepListItemCommandResult> {
+  const result = await engine.runCommand(
+    "create",
+    {
+      prepListId,
+      stationId,
+      stationName,
+      ingredientId,
+      ingredientName,
+      category,
+      baseQuantity,
+      baseUnit,
+      scaledQuantity,
+      scaledUnit,
+      isOptional,
+      preparationNotes,
+      allergens,
+      dietarySubstitutions,
+      dishId,
+      dishName,
+      recipeVersionId,
+      sortOrder,
+    },
+    {
+      entityName: "PrepListItem",
+      instanceId: itemId,
+      overrideRequests,
+    }
+  );
+
+  const instance = await engine.getInstance("PrepListItem", itemId);
+  return {
+    ...result,
+    itemId,
+    prepListId: (instance?.prepListId as string) ?? prepListId,
+    ingredientName: instance?.ingredientName as string | undefined,
+    isCompleted: instance?.isCompleted as boolean | undefined,
   };
 }
 

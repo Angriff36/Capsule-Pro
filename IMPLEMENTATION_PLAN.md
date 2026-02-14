@@ -1,8 +1,8 @@
 # Capsule-Pro Implementation Plan
 
-**Last Updated**: 2026-02-14 (P1-5 Create Commands + IR Contract Fixes)
+**Last Updated**: 2026-02-14 (P1-5 Create Commands + Adapters + API Routes)
 **Build Status**: ✅ PASSING
-**Test Status**: ✅ 540 passing, 0 failures
+**Test Status**: ✅ 689 passing, 0 failures
 **Latest Tag**: v0.3.0
 **Current Branch**: manifest-.3
 
@@ -13,7 +13,7 @@
 ### What's Complete
 - **Command Board**: 9/9 features (undo/redo, conflict resolution, event replay, interactive anchors, bulk edit)
 - **Manifest Core**: 12 entity definitions across 6 manifest files + runtime + 44 command routes
-- **Kitchen API**: 101 route handlers (44 Manifest command routes, 22 direct Prisma, 9 generated manifest routes, 28 other)
+- **Kitchen API**: 112 route handlers (55 Manifest command routes, 22 direct Prisma, 9 generated manifest routes, 28 other)
 - **Database**: Multi-tenant schema with OutboxEvent pattern, full kitchen ops support
 - **Runtime**: Constraint evaluation (block/warn/ok), event emission via outbox + Ably
 - **Tests**: 540 passing, 0 failures, 180+ manifest-specific tests
@@ -43,7 +43,7 @@
 2. ✅ **P1-2**: Add Missing Load/Sync Functions - **COMPLETE** (2026-02-14)
 3. **P1-3**: Migrate Legacy Task Routes - **42 routes** bypassing Manifest with direct Prisma
 4. **P1-4**: Migrate Legacy PrepList Routes - **7 routes** including **CRITICAL raw SQL** in `[id]/route.ts`
-5. **P1-5**: Missing Manifest Commands - **12/12 create commands added**, delete + routes pending
+5. **P1-5**: Missing Manifest Commands - **12/12 create commands + adapters + API routes**, delete pending
 6. **P1-6**: Soft Delete Cascade Strategy - Architectural decision needed
 
 ---
@@ -56,7 +56,7 @@
 |----------|---------|--------|-------|
 | **Command Board** | All 9 Features | ✅ COMPLETE | Undo/redo, auto-save, realtime, visual connectors, bulk ops |
 | **Manifest Core** | 12 Entity Definitions | ✅ COMPLETE | 6 manifest files + runtime + Prisma stores |
-| **Kitchen API** | 101 Route Handlers | ✅ COMPLETE | 44 Manifest command routes, 22 direct Prisma, 35 other |
+| **Kitchen API** | 112 Route Handlers | ✅ COMPLETE | 55 Manifest command routes, 22 direct Prisma, 35 other |
 | **Database** | Schema & Migrations | ✅ COMPLETE | Multi-tenant with kitchen ops support |
 | **Runtime** | Constraint & Events | ✅ COMPLETE | Block/warn/ok severity, outbox pattern with Ably |
 | **Kitchen Ops** | Rules & Overrides | ✅ COMPLETE | Constraint severity, override workflow - 2025-02-06 |
@@ -84,7 +84,7 @@
 | P1-2 | **Add Missing Load/Sync Functions** | ✅ **COMPLETE** | All 12 entities have load/sync | Done |
 | P1-3 | **Migrate Legacy Routes** | NOT STARTED | **42 routes** with direct Prisma CRUD | 5 days |
 | P1-4 | **Migrate Legacy PrepList Routes** | NOT STARTED | **7 routes** including raw SQL | 4 days |
-| P1-5 | **Missing Manifest Commands** | **IN PROGRESS** | 12/12 create commands added, delete pending | 3 days remaining |
+| P1-5 | **Missing Manifest Commands** | **IN PROGRESS** | 12/12 create complete (adapters + routes), delete pending | 1 day remaining |
 | P1-6 | **Soft Delete Cascade Strategy** | NOT STARTED | Architectural decision needed | 3 days |
 
 #### P2 - Medium (Polish)
@@ -129,19 +129,24 @@ All 12 PrismaStore classes + 24 load/sync functions exported from @repo/manifest
 
 ### P1-5: Commands - IN PROGRESS (2026-02-14)
 
-**Create commands**: Added to all 12 entities across 6 manifest files:
+**Create commands**: All 12 entities have create commands in manifest files, adapter functions in index.ts, and API route handlers.
+
+**Manifest files** (12/12 create commands):
 - `prep-task-rules.manifest`: PrepTask.create (11 params) + PrepTaskCreated event
 - `station-rules.manifest`: Station.create (6 params) + StationCreated event
 - `inventory-rules.manifest`: InventoryItem.create (11 params) + InventoryItemCreated event
-- `recipe-rules.manifest`: Recipe.create, Ingredient.create, RecipeIngredient.create, Dish.create + 2 new events
+- `recipe-rules.manifest`: Recipe.create, Ingredient.create, RecipeIngredient.create, Dish.create
 - `menu-rules.manifest`: Menu.create, MenuDish.create
 - `prep-list-rules.manifest`: PrepList.create, PrepListItem.create
 
-**Adapter updates**: 4 create functions (createDish, createRecipe, createMenu, createPrepList) migrated from `engine.createInstance()` to `engine.runCommand("create", ...)` for full constraint/event pipeline.
+**Adapter functions** (12/12 in index.ts): createPrepTask, createStation, createInventoryItem, createIngredient, createRecipeVersion, createRecipeIngredient, createDish, createRecipe, createMenu, createMenuDish, createPrepList, createPrepListItem. All use `engine.runCommand("create", ...)` for full constraint/event pipeline.
 
-**IR contract fix**: Enhanced `ir-contract.ts` `inferOwnerEntityName()` with parameter-matching and event-name heuristics to disambiguate same-named commands (e.g., `create`) across multiple entities in the same manifest. Previously, only a hardcoded `KNOWN_COMMAND_OWNERS` map was used, which failed for duplicate command names.
+**API routes** (12/12 POST handlers): All at `/api/kitchen/{entity}/commands/create`:
+- prep-tasks, stations, inventory, ingredients, recipe-ingredients, dishes, recipes, menus, menus/dishes, prep-lists, prep-lists/items, recipes/versions
 
-**Remaining**: Delete commands (soft-delete pattern per P1-6), API route handlers for create endpoints.
+**IR contract**: `inferOwnerEntityName()` uses parameter-matching and event-name heuristics to disambiguate same-named commands (e.g., `create`) across multiple entities in the same manifest.
+
+**Remaining**: Delete commands (soft-delete pattern per P1-6).
 
 ---
 
@@ -185,4 +190,4 @@ All 12 PrismaStore classes + 24 load/sync functions exported from @repo/manifest
 
 ## Manifest Statistics
 
-6 manifest files, 12 entities, 46 commands (+12 create), 64 constraints, 58 events (+3 new), 18 policies, 12 PrismaStore implementations, 24 load/sync functions (all exported from @repo/manifest-adapters)
+6 manifest files, 12 entities, 58 commands (incl. 12 create), 64 constraints, 58 events, 18 policies, 12 PrismaStore implementations, 24 load/sync functions, 12 create adapter functions, 55 API command routes
