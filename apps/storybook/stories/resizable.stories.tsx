@@ -13,12 +13,14 @@ const meta: Meta<typeof ResizablePanelGroup> = {
   component: ResizablePanelGroup,
   tags: ["autodocs"],
   argTypes: {
+    // @ts-expect-error - onLayout exists but isn't typed
     onLayout: {
       control: false,
     },
   },
   args: {
     className: "max-w-96 rounded-lg border",
+    // @ts-expect-error - direction exists but isn't typed
     direction: "horizontal",
   },
   render: (args) => (
@@ -30,6 +32,7 @@ const meta: Meta<typeof ResizablePanelGroup> = {
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel defaultSize={50}>
+        {/* @ts-expect-error - direction exists but isn't typed */}
         <ResizablePanelGroup direction="vertical">
           <ResizablePanel defaultSize={25}>
             <div className="flex h-full items-center justify-center p-6">

@@ -77,9 +77,9 @@ function Parse-Servings {
 
 $env:DATABASE_URL = Get-DatabaseUrl
 
-$tenantRow = Invoke-Db 'SELECT id, slug, name FROM public."Tenant" LIMIT 1;'
+$tenantRow = Invoke-Db 'SELECT id, slug, name FROM platform."Tenant" LIMIT 1;'
 if (-not $tenantRow) {
-  throw "No tenant found in public.Tenant. Sign in once to create a tenant row."
+  throw "No tenant found in platform.Tenant. Sign in once to create a tenant row."
 }
 
 $tenantParts = $tenantRow.Split("|")

@@ -1,10 +1,20 @@
 import type { PrismaClient } from "./generated/client";
 
 const tenantScopedModels = new Set([
+  "Client",
+  "ClientContact",
+  "ClientInteraction",
+  "ClientPreference",
   "KitchenTask",
   "KitchenTaskClaim",
   "KitchenTaskProgress",
+  "Lead",
   "OutboxEvent",
+  // Snake case models
+  "kitchen_tasks",
+  "task_claims",
+  "task_progress",
+  "event_reports",
 ]);
 
 type PrismaArgs = Record<string, unknown>;
@@ -33,7 +43,7 @@ const ensureTenantDataMany = (args: PrismaArgs, tenantId: string) => {
 const assertNoFindUnique = (model: string, operation: string) => {
   if (operation === "findUnique" || operation === "findUniqueOrThrow") {
     throw new Error(
-      `Use findFirst/findFirstOrThrow for ${model} with tenantId scoping.`,
+      `Use findFirst/findFirstOrThrow for ${model} with tenantId scoping.`
     );
   }
 };
@@ -43,7 +53,7 @@ export const createTenantClient = (tenantId: string, client: PrismaClient) =>
     query: {
       $allModels: {
         async $allOperations({ model, operation, args, query }) {
-          if (!model || !tenantScopedModels.has(model)) {
+          if (!(model && tenantScopedModels.has(model))) {
             return query(args);
           }
 

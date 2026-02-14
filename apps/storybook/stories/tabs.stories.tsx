@@ -10,7 +10,7 @@ import type { Meta, StoryObj } from "@storybook/react";
  * A set of layered sections of content—known as tab panels—that are displayed
  * one at a time.
  */
-const meta = {
+const meta: Meta<typeof Tabs> = {
   title: "ui/Tabs",
   component: Tabs,
   tags: ["autodocs"],

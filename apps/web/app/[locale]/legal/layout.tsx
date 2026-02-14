@@ -1,9 +1,8 @@
 import { Toolbar } from "@repo/cms/components/toolbar";
-import type { ReactNode } from "react";
 
-type LegalLayoutProps = {
-  children: ReactNode;
-};
+interface LegalLayoutProps {
+  children: React.ReactNode;
+}
 
 const LegalLayout = ({ children }: LegalLayoutProps) => (
   <>

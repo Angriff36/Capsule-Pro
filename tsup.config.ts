@@ -7,4 +7,5 @@ export default defineConfig({
   minify: true,
   dts: true,
   format: ["cjs", "esm"],
+  tsconfig: "tsconfig.build.json",
 });

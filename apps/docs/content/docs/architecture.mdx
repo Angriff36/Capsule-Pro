@@ -88,6 +88,110 @@ Tenant context is resolved here:
 - UI refresh on event should re-fetch once, not start intervals.
 - Health checks must not hit the database continuously.
 
+## Realtime Known Issues
+
+### "Connection closed" Runtime Error
+
+**Symptoms:**
+- `Runtime Error: Connection closed` in production-board-realtime.tsx or similar realtime components
+- Occurs when navigating between pages or when components re-mount
+
+**Root Cause:**
+Calling `client.close()` in React component cleanup (`useEffect` return) closes the shared Ably connection. When other components (or the same component re-mounting) try to use the connection, it's already closed.
+
+**Fix:**
+Never call `client.close()` in component cleanup. Only unsubscribe from channels:
+
+```typescript
+// ✅ Correct - only clean up channels
+return () => {
+  channel.unsubscribe(handleMessage);
+  // Don't close the client here
+};
+
+// ❌ Wrong - closes shared connection
+return () => {
+  channel.unsubscribe(handleMessage);
+  client.close(); // Causes "Connection closed" errors
+};
+```
+
+**Affected files (fixed):**
+- `apps/app/app/(authenticated)/kitchen/production-board-realtime.tsx`
+- `apps/app/app/(authenticated)/kitchen/recipes/recipes-realtime.tsx`
+- `apps/app/app/(authenticated)/scheduling/scheduling-realtime.tsx`
+
+**Explanation:**
+- Multiple realtime components may share the same Ably connection
+- Connection lifecycle should be managed at the application level, not per-component
+- Closing and recreating connections wastes resources and causes errors
+
+### CORS Error on Ably Auth Endpoint
+
+**Symptoms:**
+- `Access to fetch at 'http://localhost:2223/ably/auth' from origin 'http://localhost:2221' has been blocked by CORS policy`
+- `No 'Access-Control-Allow-Origin' header is present on the requested resource`
+- Occurs when app (port 2221) calls API (port 2223) for Ably token authentication
+
+**Root Cause:**
+Cross-origin requests from browser require CORS headers on the response. The `/ably/auth` endpoint wasn't returning `Access-Control-Allow-Origin` headers.
+
+**Fix:**
+Add CORS headers to the `/ably/auth` route:
+
+```typescript
+// In apps/api/app/ably/auth/route.ts
+function corsHeaders(request: Request) {
+  const allowedOrigins = [
+    "http://localhost:2221",
+    "http://localhost:2222",
+    "http://localhost:3000",
+  ];
+  const origin = request.headers.get("origin");
+  const allowedOrigin = origin && allowedOrigins.includes(origin)
+    ? origin
+    : allowedOrigins[0];
+
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Credentials": "true",
+  };
+}
+
+// Add OPTIONS handler for preflight requests
+export async function OPTIONS(request: Request) {
+  return new NextResponse(null, { status: 204, headers: corsHeaders(request) });
+}
+
+// Include CORS headers on all responses
+return NextResponse.json(tokenRequest, { headers: corsHeaders(request) });
+```
+
+**Also required:** Add `credentials: "include"` to client-side fetch calls so Clerk cookies are sent:
+
+```typescript
+const response = await fetch(`${apiBaseUrl}/ably/auth`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  credentials: "include", // Required for Clerk cookies
+  body: JSON.stringify({ tenantId }),
+});
+```
+
+**Affected files (fixed):**
+- `apps/api/app/ably/auth/route.ts` - Added CORS headers
+- `apps/app/app/(authenticated)/kitchen/production-board-realtime.tsx` - Added credentials: "include"
+- `apps/app/app/(authenticated)/kitchen/recipes/recipes-realtime.tsx` - Added credentials: "include"
+- `apps/app/app/(authenticated)/scheduling/scheduling-realtime.tsx` - Added credentials: "include"
+
+**Environment variable:**
+Set `ABLY_AUTH_CORS_ORIGINS` to configure allowed origins (comma-separated):
+```
+ABLY_AUTH_CORS_ORIGINS="http://localhost:2221,http://localhost:2222,http://localhost:3000"
+```
+
 ## Observability
 - Error reporting: Sentry.
 - Logging: Logtail.

@@ -1,0 +1,15 @@
+Persist Sales Dashboard Data
+1. Confirm requirements (per-user vs shared, raw XLSX vs parsed JSON, replace vs versioning, size limits).
+2. Add storage schema: table for dashboard datasets keyed by Clerk user id; fields for blob URL, uploaded_at, source filename, and parsed JSON payload.
+3. Implement upload route/server action: validate file type/size, store XLSX in blob storage, parse on server, write DB record.
+4. Implement fetch route/server action: load latest dataset for user, return parsed JSON to client; add “Replace data” flow.
+5. Update UI: on load, check for stored dataset; allow use without upload; surface status and last updated.
+6. Add error handling and guardrails (invalid columns, parse failures, missing data) with clear UI messaging.
+7. Manual verification: upload, refresh, cross-device login, replace data, and regression test charts.
+
+Administrative Kanban Auto-Generation
+1. Identify "red card" sources (equipment/vehicle flags, maintenance reports, inventory exceptions).
+2. Add mapping rules to turn red-carded items into admin kanban tasks with source_type/source_id linkage.
+3. De-duplicate tasks when the same red card is re-opened or updated.
+4. Notify assignees on new auto-generated tasks (Slack/email in-app).
+5. Add audit trail for auto-created tasks (who/what created, linked source, timestamps).

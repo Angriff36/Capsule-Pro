@@ -1,8 +1,8 @@
 import { ModuleSection } from "../../components/module-section";
 
-type ModuleSettingsPageProps = {
+interface ModuleSettingsPageProps {
   params: Promise<{ module: string }>;
-};
+}
 
 const ModuleSettingsPage = async ({ params }: ModuleSettingsPageProps) => {
   const { module } = await params;
@@ -13,8 +13,8 @@ const ModuleSettingsPage = async ({ params }: ModuleSettingsPageProps) => {
 
   return (
     <ModuleSection
-      title={`${label} Settings`}
       summary={`Module-level settings for ${label}.`}
+      title={`${label} Settings`}
     />
   );
 };

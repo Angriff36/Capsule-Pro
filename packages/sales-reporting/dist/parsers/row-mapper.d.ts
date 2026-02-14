@@ -1,0 +1,3 @@
+import type { SalesRecord } from "../types";
+export declare function parseRowToRecord(row: Record<string, string>, dateColumn?: string): SalesRecord | null;
+//# sourceMappingURL=row-mapper.d.ts.map

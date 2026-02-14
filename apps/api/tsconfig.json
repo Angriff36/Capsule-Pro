@@ -2,16 +2,19 @@
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
     "ignoreDeprecations": "5.0",
+    "skipLibCheck": true,
     "paths": {
-      "@/*": ["./*"],
-      "@repo/*": ["../../packages/*"]
-    }
+      "@/*": ["./*"]
+    },
+    "strictNullChecks": true
   },
   "include": [
-    "next-env.d.ts",
-    "next.config.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
-  ]
+    ".next/types/**/*.ts",
+    "next-env.d.ts",
+    "next.config.ts",
+    ".next-dev/types/**/*.ts"
+  ],
+  "exclude": ["node_modules", "test-scripts", ".next", "dist"]
 }

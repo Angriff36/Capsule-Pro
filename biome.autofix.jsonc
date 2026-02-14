@@ -1,0 +1,205 @@
+{
+  "root": false,
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "files": {
+    "ignoreUnknown": false,
+    "includes": [
+      "!!nul",
+      "!!**/nul",
+      "!!dist",
+      "!!**/dist",
+      "!!build",
+      "!!**/build",
+      "!!.next",
+      "!!**/.next",
+      "!!generated",
+      "!!**/generated",
+      "!!coverage",
+      "!!**/coverage",
+      "!!.turbo",
+      "!!**/.turbo",
+      "!!.vercel",
+      "!!**/.vercel",
+      "!!**/test-results",
+      "!!**/playwright-report",
+      "!!**/test-gen",
+      "!!**/test-scripts",
+      "!!**/conformance/expected",
+      "!!**/node_modules",
+      "!!apps/docs",
+      "!!packages/design-system/components/ui",
+      "!!packages/design-system/lib",
+      "!!packages/design-system/hooks",
+      "!!packages/collaboration/config.ts",
+      "!!packages/cms/basehub-types.d.ts",
+      "!!**/basehub-types.d.ts",
+      "!!**/test/mocks",
+      "!!**/.codex",
+      "!!**/.claude",
+      "!!**/codex-plans",
+      "!!**/claude-code-plans",
+      "!!**/out",
+      "!!**/storybook-static",
+      "!!**/.contentlayer",
+      "!!**/.content-collections",
+      "!!**/.react-email",
+      "!!**/.specify",
+      "!!**/*.tsbuildinfo",
+      "!!**/*.snap"
+    ]
+  },
+  "extends": [
+    "ultracite/biome/core",
+    "ultracite/biome/react",
+    "ultracite/biome/next"
+  ],
+  "linter": {
+    "rules": {
+      "nursery": "off",
+      "complexity": {
+        "noExcessiveCognitiveComplexity": "warn",
+        "noForEach": "warn"
+      },
+      "style": {
+        "noNestedTernary": "warn",
+        "useFilenamingConvention": "warn",
+        "useBlockStatements": "warn",
+        "noNonNullAssertion": "warn",
+        "useDefaultSwitchClause": "warn",
+        "useConsistentArrayType": "warn"
+      },
+      "correctness": {
+        "useExhaustiveDependencies": "warn",
+        "noUnusedFunctionParameters": "warn",
+        "noUnusedVariables": "warn",
+        "noUnusedImports": "warn"
+      },
+      "a11y": {
+        "useButtonType": "warn",
+        "noSvgWithoutTitle": "warn",
+        "noNoninteractiveElementInteractions": "warn",
+        "useSemanticElements": "warn"
+      },
+      "suspicious": {
+        "noExplicitAny": "warn",
+        "noArrayIndexKey": "warn",
+        "useAwait": "warn",
+        "noEmptyBlockStatements": "warn"
+      },
+      "performance": {
+        "noBarrelFile": "warn"
+      }
+    }
+  },
+  "javascript": {
+    "globals": ["Liveblocks"]
+  },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "overrides": [
+    {
+      "includes": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.test.skip.ts",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/playwright-verify-*.spec.ts"
+      ],
+      "javascript": {
+        "globals": [
+          "vitest",
+          "vi",
+          "describe",
+          "it",
+          "test",
+          "expect",
+          "beforeAll",
+          "afterAll",
+          "beforeEach",
+          "afterEach",
+          "jest"
+        ]
+      },
+      "linter": {
+        "rules": {
+          "performance": {
+            "useTopLevelRegex": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/**"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noBarrelFile": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/**"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noBarrelFile": "warn"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/postcss.config.*"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noBarrelFile": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/basehub-types.d.ts", "**/test/mocks/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          },
+          "correctness": {
+            "useImageSize": "off"
+          },
+          "performance": {
+            "noImgElement": "off"
+          }
+        }
+      },
+      "javascript": {
+        "formatter": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "includes": ["**/__snapshots__/**/*.ts"],
+      "javascript": {
+        "formatter": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "includes": ["**/json-ld.tsx"],
+      "linter": {
+        "rules": {
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
+          }
+        }
+      }
+    }
+  ]
+}

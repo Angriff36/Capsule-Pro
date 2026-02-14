@@ -4,11 +4,12 @@ import {
   HoverCardTrigger,
 } from "@repo/design-system/components/ui/hover-card";
 import type { Meta, StoryObj } from "@storybook/react";
+import type { ComponentProps } from "react";
 
 /**
  * For sighted users to preview content available behind a link.
  */
-const meta = {
+const meta: Meta<ComponentProps<typeof HoverCard>> = {
   title: "ui/HoverCard",
   component: HoverCard,
   tags: ["autodocs"],
@@ -25,7 +26,7 @@ const meta = {
   parameters: {
     layout: "centered",
   },
-} satisfies Meta<typeof HoverCard>;
+};
 
 export default meta;
 

@@ -1,0 +1,7 @@
+- [x] T013: Document Account table + fix types (iteration 1)
+  - Created Account.md (235 lines) documenting central tenant model
+  - Documented all 11 columns with types, defaults, and usage
+  - Documented relationships to all 84+ tenant tables
+  - Documented tenant resolution pattern (Clerk orgId → Account.slug → Account.id)
+  - Fixed 1 `any` type in proposals/actions.ts (replaced with ProposalUpdateData type)
+  - Files checked: packages/auth/*.ts, tenant.ts, proposals/actions.ts

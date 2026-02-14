@@ -29,7 +29,7 @@ export const NotificationsTrigger = () => {
     setIsVisible(false);
   };
 
-  if (!keys().NEXT_PUBLIC_KNOCK_API_KEY || !isMounted) {
+  if (!(keys().NEXT_PUBLIC_KNOCK_API_KEY && isMounted)) {
     return null;
   }
 

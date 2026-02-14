@@ -1,0 +1,13 @@
+diff --git a/config/core/biome.jsonc b/config/core/biome.jsonc
+index 4e09fa092ba8475852d34ac4c366d28e642963d4..561e44007bf81af2996aa4844ea7810d4c5c2f2c 100644
+--- a/config/core/biome.jsonc
++++ b/config/core/biome.jsonc
+@@ -258,7 +258,7 @@
+         "useConsistentGraphqlDescriptions": "error",
+         "useDeprecatedDate": "error",
+         "useMaxParams": "error",
+-        "useUniqueGraphqlOperationName": "error",
++        "noDuplicateGraphqlOperationName": "error",
+ 
+         "noContinue": "off",
+         "noForIn": "off",

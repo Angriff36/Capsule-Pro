@@ -1,13 +1,17 @@
-import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/layouts/docs/page';
-import { createRelativeLink } from 'fumadocs-ui/mdx';
-import type { TOCItemType } from 'fumadocs-core/toc';
-import type { MDXContent } from 'mdx/types';
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import type React from 'react';
-
-import { getMDXComponents } from '@/mdx-components';
-import { source } from '@/lib/source';
+import type { TOCItemType } from "fumadocs-core/toc";
+import {
+  DocsBody,
+  DocsDescription,
+  DocsPage,
+  DocsTitle,
+} from "fumadocs-ui/page";
+import { createRelativeLink } from "fumadocs-ui/mdx";
+import type { MDXContent } from "mdx/types";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import type React from "react";
+import { source } from "@/lib/source";
+import { getMDXComponents } from "@/mdx-components";
 
 type PageProps = {
   params: Promise<{

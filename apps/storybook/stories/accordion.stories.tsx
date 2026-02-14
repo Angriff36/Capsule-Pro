@@ -5,12 +5,13 @@ import {
   AccordionTrigger,
 } from "@repo/design-system/components/ui/accordion";
 import type { Meta, StoryObj } from "@storybook/react";
+import type { ComponentProps } from "react";
 
 /**
  * A vertically stacked set of interactive headings that each reveal a section
  * of content.
  */
-const meta = {
+const meta: Meta<ComponentProps<typeof Accordion>> = {
   title: "ui/Accordion",
   component: Accordion,
   tags: ["autodocs"],
@@ -47,11 +48,11 @@ const meta = {
       </AccordionItem>
     </Accordion>
   ),
-} satisfies Meta<typeof Accordion>;
+};
 
 export default meta;
 
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj;
 
 /**
  * The default behavior of the accordion allows only one item to be open.

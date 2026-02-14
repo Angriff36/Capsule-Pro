@@ -3,6 +3,9 @@ import { Check, Minus, MoveRight, PhoneCall } from "lucide-react";
 import Link from "next/link";
 import { env } from "@/env";
 
+// ISR: Revalidate daily - pricing rarely changes
+export const revalidate = 86_400;
+
 const Pricing = () => (
   <div className="w-full py-20 lg:py-40">
     <div className="container mx-auto">
