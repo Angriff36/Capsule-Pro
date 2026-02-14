@@ -3,7 +3,7 @@
 **Last Updated**: 2026-02-14 (Recipe SQL Migration + Sentry Fix)
 **Build Status**: ✅ PASSING
 **Test Status**: ✅ 647 passing (540 api + 107 app), 0 failures
-**Latest Tag**: v0.3.6
+**Latest Tag**: v0.3.8
 **Current Branch**: manifest-.3
 
 ---
