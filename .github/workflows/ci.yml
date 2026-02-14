@@ -56,30 +56,10 @@ jobs:
 
       - name: Generate code (Prisma, BaseHub types, etc.)
         run: |
-          pnpm run analyze
           cd apps/web && npx basehub
         env:
-          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
           BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
           BASEHUB_DRAFT: false
-          NEXT_PUBLIC_APP_URL: "https://app.example.com"
-          NEXT_PUBLIC_WEB_URL: "https://example.com"
-          NEXT_PUBLIC_API_URL: "https://api.example.com"
-          NEXT_PUBLIC_DOCS_URL: "https://docs.example.com"
-          CLERK_SECRET_KEY: "sk_test_dummy"
-          CLERK_WEBHOOK_SECRET: "whsec_dummy"
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_dummy"
-          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
-          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
-          NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: "/dashboard"
-          NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: "/onboarding"
-          NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: "/"
-          NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: "/"
-          NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
-          NEXT_PUBLIC_POSTHOG_HOST: "https://posthog.example.com"
-          RESEND_FROM: "noreply@example.com"
-          RESEND_TOKEN: "re_dummy"
-          STRIPE_SECRET_KEY: "sk_test_dummy"
 
       - name: Run linting
         run: pnpm run check
