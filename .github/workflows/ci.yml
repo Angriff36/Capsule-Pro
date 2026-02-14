@@ -43,6 +43,8 @@ jobs:
           SKIP_ENV_VALIDATION: true
           BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+          NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
+          NEXT_PUBLIC_WEB_URL: "https://capsule-pro-web.vercel.app"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
