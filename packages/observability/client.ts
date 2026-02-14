@@ -6,7 +6,8 @@
  * Bundle optimization: Sentry configuration is environment-aware to reduce overhead.
  */
 
-import { captureException } from "@sentry/nextjs";
+// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import
+import * as Sentry from "@sentry/nextjs";
 import { keys } from "./keys";
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -73,4 +74,3 @@ export const initializeSentry = () => {
     ],
   });
 };
-
