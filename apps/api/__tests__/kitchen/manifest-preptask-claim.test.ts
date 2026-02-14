@@ -7,13 +7,21 @@
  * 3. Returns expected response format
  */
 
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const apiRoot = join(__dirname, "../..");
 
 describe("Manifest-Generated PrepTask.claim Handler", () => {
   it("should exist and be properly structured", async () => {
     // Verify the generated route file exists
-    const routePath =
-      "C:/projects/capsule-pro/apps/api/app/api/kitchen/prep-tasks/commands/claim/route.ts";
+    const routePath = join(
+      apiRoot,
+      "app/api/kitchen/prep-tasks/commands/claim/route.ts"
+    );
 
     // Import dynamically to avoid build issues if file doesn't exist
     const { existsSync, readFileSync } = await import("node:fs");
@@ -46,8 +54,7 @@ describe("Manifest-Generated PrepTask.claim Handler", () => {
 
   it("should have correct response helpers", async () => {
     // Verify the response helper functions exist
-    const responsePath =
-      "C:/projects/capsule-pro/apps/api/lib/manifest-response.ts";
+    const responsePath = join(apiRoot, "lib/manifest-response.ts");
 
     const { existsSync, readFileSync } = await import("node:fs");
 
@@ -65,8 +72,7 @@ describe("Manifest-Generated PrepTask.claim Handler", () => {
 
   it("should have runtime factory", async () => {
     // Verify the runtime factory exists
-    const runtimePath =
-      "C:/projects/capsule-pro/apps/api/lib/manifest-runtime.ts";
+    const runtimePath = join(apiRoot, "lib/manifest-runtime.ts");
 
     const { existsSync, readFileSync } = await import("node:fs");
 
@@ -101,8 +107,7 @@ describe("Manifest-Generated PrepTask.claim Handler", () => {
       "cancel",
     ];
 
-    const baseDir =
-      "C:/projects/capsule-pro/apps/api/app/api/kitchen/prep-tasks/commands";
+    const baseDir = join(apiRoot, "app/api/kitchen/prep-tasks/commands");
 
     const { existsSync } = await import("node:fs");
 
