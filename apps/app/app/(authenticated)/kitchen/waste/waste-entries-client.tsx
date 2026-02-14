@@ -22,10 +22,11 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { AlertCircle, DollarSign, Package, Search, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { captureException } from "@sentry/nextjs";
+// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
+import * as Sentry from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 
-const { logger } = Sentry;
+const { logger, captureException } = Sentry;
 
 interface InventoryItem {
   id: string;

@@ -5,7 +5,8 @@
  * It orchestrates the flow: Document Import -> Event Creation -> Battle Board/Checklist Generation
  */
 
-import { captureException } from "@sentry/nextjs";
+// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
+import * as Sentry from "@sentry/nextjs";
 import type { EmittedEvent, RuntimeEngine } from "@manifest/runtime";
 import type { IR } from "@manifest/runtime/ir";
 import { compileToIR } from "@manifest/runtime/ir-compiler";

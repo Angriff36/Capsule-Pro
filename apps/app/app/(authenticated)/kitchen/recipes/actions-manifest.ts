@@ -1,7 +1,9 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { captureException } from "@sentry/nextjs";
+// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
+import * as Sentry from "@sentry/nextjs";
+const { captureException } = Sentry;
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import {

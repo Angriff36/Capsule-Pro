@@ -1,11 +1,12 @@
 import type { OverrideRequest } from "@manifest/runtime/ir";
+// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
+import * as Sentry from "@sentry/nextjs";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { NextResponse } from "next/server";
-import { captureException } from "@sentry/nextjs";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-const { logger } = Sentry;
+const { logger, captureException } = Sentry;
 
 /**
  * Override authorization request body

@@ -28,11 +28,12 @@ import {
 import { AlertTriangle, CheckCircle2, Loader2, SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { captureException } from "@sentry/nextjs";
+// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
+import * as Sentry from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import { AllergenManagementModal } from "./allergen-management-modal";
 
-const { logger } = Sentry;
+const { logger, captureException } = Sentry;
 
 // Types matching database schema
 interface AllergenWarning {

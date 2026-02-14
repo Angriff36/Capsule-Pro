@@ -31,6 +31,10 @@ import {
   PrismaStore,
 } from "@repo/manifest-adapters/prisma-store";
 import { ManifestRuntimeEngine } from "@repo/manifest-adapters/runtime-engine";
+import { createSentryTelemetry } from "./manifest/telemetry";
+
+// Singleton Sentry telemetry hooks - created once, reused across all runtimes
+const sentryTelemetry = createSentryTelemetry();
 
 /**
  * Context for creating a manifest runtime.
@@ -201,27 +205,31 @@ export async function createManifestRuntime(
     return new PrismaStore(config);
   };
 
-  // Create a telemetry callback to write events to outbox after command execution
-  // This ensures events are written even if they weren't written during store operations
+  // Telemetry hooks: Sentry observability + transactional outbox event writes.
+  // onConstraintEvaluated and onOverrideApplied are pure Sentry metrics.
+  // onCommandExecuted combines Sentry metrics with outbox event persistence.
   const telemetry = {
+    onConstraintEvaluated: sentryTelemetry.onConstraintEvaluated,
+    onOverrideApplied: sentryTelemetry.onOverrideApplied,
     onCommandExecuted: async (
-      _command: Readonly<IRCommand>,
+      command: Readonly<IRCommand>,
       result: Readonly<CommandResult>,
       entityName?: string
     ) => {
-      // Only write events if the command succeeded
+      // Fire Sentry telemetry (non-blocking, sync)
+      sentryTelemetry.onCommandExecuted?.(command, result, entityName);
+
+      // Write emitted events to outbox for reliable delivery
       if (
         result.success &&
         result.emittedEvents &&
         result.emittedEvents.length > 0
       ) {
-        // Write events to outbox using a transaction
         const outboxWriter = createPrismaOutboxWriter(
           entityName || "unknown",
           ctx.user.tenantId
         );
 
-        // Extract aggregate ID from the result or options
         const aggregateId = (result.result as { id?: string })?.id || "unknown";
 
         const eventsToWrite = result.emittedEvents.map((event) => ({
@@ -230,7 +238,6 @@ export async function createManifestRuntime(
           aggregateId,
         }));
 
-        // Write events in a transaction
         try {
           await database.$transaction(async (tx) => {
             await outboxWriter(tx as PrismaClient, eventsToWrite);

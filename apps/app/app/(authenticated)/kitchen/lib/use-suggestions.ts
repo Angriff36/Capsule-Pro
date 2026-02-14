@@ -2,11 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import { captureException } from "@sentry/nextjs";
+// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
+import * as Sentry from "@sentry/nextjs";
 import { apiFetch } from "@/app/lib/api";
 import type { SuggestedAction, SuggestionsResponse } from "./suggestions-types";
 
-const { logger } = Sentry;
+const { logger, captureException } = Sentry;
 
 export function useSuggestions(tenantId?: string | null) {
   const router = useRouter();

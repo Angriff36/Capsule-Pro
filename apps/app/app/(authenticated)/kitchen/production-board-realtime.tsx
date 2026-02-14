@@ -3,9 +3,10 @@
 import Ably from "ably";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { captureException } from "@sentry/nextjs";
+// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
+import * as Sentry from "@sentry/nextjs";
 
-const { logger } = Sentry;
+const { logger, captureException } = Sentry;
 
 interface ProductionBoardRealtimeProps {
   tenantId: string;
