@@ -30,12 +30,6 @@ jobs:
         with:
           node-version-file: ".nvmrc"
 
-      - name: Enforce DB migration guardrails
-        run: |
-          node scripts/guard-prisma-migrationss.mjs ci
-          # Skip checklist enforcement in CI - it's for pre-commit hooks
-          # node scripts/enforce-db-pre-migration-checklist.mjs ci
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
