@@ -1,13 +1,59 @@
 # Capsule-Pro Implementation Plan
 
 **Last Updated**: 2026-02-15
-**Goal**: KitchenTask Manifest Integration (Phase 1)
+**Goal**: Manifest Integration - Phase 1-7 (25 Manifests)
 **Branch**: manifest-.3
-**Tag**: v0.5.1
+**Tag**: v0.5.2
 
 ---
 
-## Completed
+## Completed (v0.5.2)
+
+### Phase 1-7 Manifest Files (25 new files)
+
+| Phase | Manifest Files | Entities |
+|-------|---------------|----------|
+| Phase 1: Kitchen Ops | prep-comment, ingredient, dish, container, prep-method | ~10 |
+| Phase 2: Events | event, event-report, event-budget, catering-order, battle-board | ~12 |
+| Phase 3: CRM & Sales | client, lead, proposal, client-interaction | ~8 |
+| Phase 4: Purchasing | purchase-order, shipment, inventory-transaction, inventory-supplier, cycle-count | ~14 |
+| Phase 5: Staff | user, schedule, time-entry | ~6 |
+| Phase 6: Command Board | command-board | ~5 |
+| Phase 7: Workflows | workflow, notification | ~3 |
+
+All wired into `ENTITY_TO_MANIFEST` mapping and `create*Runtime` helpers.
+
+### Reserved Word Fixes
+
+All manifest DSL reserved word issues resolved:
+- `delete` → `softDelete` or `remove`
+- `publish` → `release`
+- `not in` → negated constraint
+
+### PrismaJsonStore Generic Adapter
+
+- New `PrismaJsonStore` class for entities without hand-written stores
+- `ManifestEntity` + `ManifestIdempotency` models added to Prisma schema
+- Fallback store provider for all 25+ new entities
+
+### State Machine Enrichment (10 new commands)
+
+- CateringOrder: startPrep, markComplete
+- Event: confirm (draft → confirmed)
+- EventBudget: approve (draft → approved)
+- BattleBoard: open, startVoting
+- CycleCountSession: finalize
+- Shipment: schedule, startPreparing, ship
+- CommandBoard: activate
+
+### Test Coverage
+
+- 672 tests passing
+- `manifest-all-phases-compilation.test.ts` validates all 25 manifests
+
+---
+
+## Previous (v0.5.1)
 
 - [x] `kitchen-task-rules.manifest` (11 commands) at `packages/manifest-adapters/manifests/`
 - [x] `ENTITY_TO_MANIFEST["KitchenTask"]` mapping in `apps/api/lib/manifest-runtime.ts:73`
