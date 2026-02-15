@@ -310,6 +310,14 @@ export function createStationRuntime(user: {
   return createManifestRuntime({ user, manifestName: "station-rules" });
 }
 
+/** Helper to create a runtime specifically for KitchenTask operations */
+export function createKitchenTaskRuntime(user: {
+  id: string;
+  tenantId: string;
+}): Promise<RuntimeEngine> {
+  return createManifestRuntime({ user, manifestName: "kitchen-task-rules" });
+}
+
 /**
  * Re-export runtime types for convenience.
  */
