@@ -7,9 +7,11 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 import { parsePaginationParams, parseProposalFilters } from "./validation";
 
 /**
@@ -169,195 +171,12 @@ export async function GET(request: Request) {
 }
 
 /**
- * Generate a unique proposal number
- */
-async function generateProposalNumber(
-  database: PrismaClient,
-  tenantId: string
-): Promise<string> {
-  const year = new Date().getFullYear();
-  const count = await database.proposal.count({
-    where: {
-      AND: [
-        { tenantId },
-        { proposalNumber: { startsWith: `PROP-${year}` } },
-        { deletedAt: null },
-      ],
-    },
-  });
-  return `PROP-${year}-${String(count + 1).padStart(4, "0")}`;
-}
-
-/**
- * Calculate proposal totals from line items
- */
-function calculateTotals(data: CreateProposalRequest) {
-  let calculatedSubtotal = data.subtotal ?? 0;
-  let calculatedTax = data.taxAmount ?? 0;
-  let calculatedTotal = data.total ?? 0;
-
-  if (data.lineItems && data.lineItems.length > 0) {
-    calculatedSubtotal = data.lineItems.reduce(
-      (sum, item) => sum + item.quantity * item.unitPrice,
-      0
-    );
-    const taxRate = data.taxRate ?? 0;
-    calculatedTax = calculatedSubtotal * (taxRate / 100);
-    const discount = data.discountAmount ?? 0;
-    calculatedTotal = calculatedSubtotal + calculatedTax - discount;
-  }
-
-  return { calculatedSubtotal, calculatedTax, calculatedTotal };
-}
-
-/**
- * Create proposal data object
- */
-function buildCreateProposalData(
-  data: CreateProposalRequest,
-  tenantId: string,
-  proposalNumber: string,
-  calculatedSubtotal: number,
-  calculatedTax: number,
-  calculatedTotal: number
-) {
-  return {
-    tenantId,
-    proposalNumber,
-    clientId: data.clientId,
-    leadId: data.leadId,
-    eventId: data.eventId,
-    title: data.title.trim(),
-    eventDate: data.eventDate ? new Date(data.eventDate) : null,
-    eventType: data.eventType?.trim() || null,
-    guestCount: data.guestCount ?? null,
-    venueName: data.venueName?.trim() || null,
-    venueAddress: data.venueAddress?.trim() || null,
-    subtotal: new Prisma.Decimal(calculatedSubtotal),
-    taxRate: new Prisma.Decimal(data.taxRate ?? 0),
-    taxAmount: new Prisma.Decimal(calculatedTax),
-    discountAmount: new Prisma.Decimal(data.discountAmount ?? 0),
-    total: new Prisma.Decimal(calculatedTotal),
-    status: data.status ?? "draft",
-    validUntil: data.validUntil ? new Date(data.validUntil) : null,
-    notes: data.notes?.trim() || null,
-    termsAndConditions: data.termsAndConditions?.trim() || null,
-  };
-}
-
-/**
- * Create line items for a proposal
- */
-async function createLineItems(
-  database: PrismaClient,
-  proposalId: string,
-  tenantId: string,
-  lineItems: NonNullable<CreateProposalRequest["lineItems"]>
-) {
-  await database.$transaction(async (tx) => {
-    await tx.proposalLineItem.createMany({
-      data: lineItems.map((item, index) => ({
-        proposalId,
-        tenantId,
-        sortOrder: item.sortOrder ?? index,
-        itemType: item.itemType.trim(),
-        category: item.category?.trim() || item.itemType.trim(),
-        description: item.description.trim(),
-        quantity: new Prisma.Decimal(item.quantity),
-        unitPrice: new Prisma.Decimal(item.unitPrice),
-        total: new Prisma.Decimal(item.total ?? item.quantity * item.unitPrice),
-        totalPrice: new Prisma.Decimal(
-          item.total ?? item.quantity * item.unitPrice
-        ),
-        notes: item.notes?.trim() || null,
-      })),
-    });
-  });
-}
-
-/**
  * POST /api/crm/proposals
- * Create a new proposal
+ * Create a new proposal via manifest command
  */
-export async function POST(request: Request) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    const body = await request.json();
-
-    validateCreateProposalRequest(body);
-    const data = body as CreateProposalRequest;
-
-    const proposalNumber = await generateProposalNumber(database, tenantId);
-    const { calculatedSubtotal, calculatedTax, calculatedTotal } =
-      calculateTotals(data);
-
-    const proposalData = buildCreateProposalData(
-      data,
-      tenantId,
-      proposalNumber,
-      calculatedSubtotal,
-      calculatedTax,
-      calculatedTotal
-    );
-    const proposal = await database.proposal.create({ data: proposalData });
-
-    if (data.lineItems && data.lineItems.length > 0) {
-      await createLineItems(database, proposal.id, tenantId, data.lineItems);
-    }
-
-    const [client, lead] = await Promise.all([
-      proposal.clientId
-        ? database.client.findFirst({
-            where: {
-              AND: [
-                { tenantId },
-                { id: proposal.clientId },
-                { deletedAt: null },
-              ],
-            },
-            select: {
-              id: true,
-              company_name: true,
-              first_name: true,
-              last_name: true,
-              email: true,
-              phone: true,
-            },
-          })
-        : null,
-      proposal.leadId
-        ? database.lead.findFirst({
-            where: {
-              AND: [{ tenantId }, { id: proposal.leadId }, { deletedAt: null }],
-            },
-            select: {
-              id: true,
-              companyName: true,
-              contactName: true,
-              contactEmail: true,
-              contactPhone: true,
-            },
-          })
-        : null,
-    ]);
-
-    return NextResponse.json(
-      { data: { ...proposal, client, lead } },
-      { status: 201 }
-    );
-  } catch (error) {
-    if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-    console.error("Error creating proposal:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export async function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "Proposal",
+    commandName: "create",
+  });
 }

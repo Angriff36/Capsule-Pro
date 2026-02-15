@@ -1,7 +1,9 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 export async function GET(request: Request) {
   const { orgId } = await auth();
@@ -77,58 +79,25 @@ export async function GET(request: Request) {
   return NextResponse.json({ tasks: tasksWithUsers });
 }
 
-export async function POST(request: Request) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  const body = await request.json();
-
-  // Validate required fields
-  if (!body.title) {
-    return NextResponse.json({ message: "Title is required" }, { status: 400 });
-  }
-
-  // Priority should be 1-10 (integer)
-  const priority = body.priority || 5;
-  if (typeof priority !== "number" || priority < 1 || priority > 10) {
-    return NextResponse.json(
-      { message: "Priority must be an integer between 1 and 10" },
-      { status: 400 }
-    );
-  }
-
-  const task = await database.kitchenTask.create({
-    data: {
-      tenantId,
-      title: body.title,
+/**
+ * Create a new KitchenTask via manifest runtime.
+ *
+ * Delegates to executeManifestCommand which handles auth, tenant resolution,
+ * user lookup, guard/policy enforcement, and event emission.
+ *
+ * POST /api/kitchen/tasks
+ */
+export async function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "KitchenTask",
+    commandName: "create",
+    transformBody: (body, ctx) => ({
+      ...body,
+      // Provide defaults matching the old direct-Prisma behavior
       summary: body.summary || body.title,
-      priority,
-      complexity: body.complexity || 5,
+      priority: body.priority ?? 5,
+      complexity: body.complexity ?? 5,
       tags: body.tags || [],
-      dueDate: body.dueDate ? new Date(body.dueDate) : null,
-      status: "pending",
-    },
+    }),
   });
-
-  // Create outbox event
-  await database.outboxEvent.create({
-    data: {
-      tenantId,
-      aggregateType: "KitchenTask",
-      aggregateId: task.id,
-      eventType: "kitchen.task.created",
-      payload: {
-        taskId: task.id,
-        title: task.title,
-        status: task.status,
-        priority: task.priority,
-      },
-      status: "pending" as const,
-    },
-  });
-
-  return NextResponse.json({ task }, { status: 201 });
 }

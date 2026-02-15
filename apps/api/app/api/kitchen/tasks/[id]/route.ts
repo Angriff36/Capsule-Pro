@@ -1,143 +1,165 @@
-import { auth } from "@repo/auth/server";
-import { database, type Prisma } from "@repo/database";
-import { captureException } from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
 /**
- * Update a kitchen task status
+ * Status-to-manifest-command mapping.
  *
- * Simple status update for KitchenTask model (bypassing Manifest which expects PrepTask).
- * Supports common status transitions with validation.
+ * Maps the desired target status to the manifest command that performs
+ * the transition. The manifest runtime enforces valid transitions via
+ * guards, so we don't need to duplicate transition validation here.
+ */
+const STATUS_TO_COMMAND: Record<string, string> = {
+  in_progress: "start",
+  done: "complete",
+  cancelled: "cancel",
+};
+
+/**
+ * Update a kitchen task via manifest commands.
+ *
+ * For status transitions, maps the target status to the appropriate
+ * manifest command (start, complete, cancel). The manifest runtime
+ * enforces valid transitions via guards and emits events.
  *
  * PATCH /api/kitchen/tasks/:id
  */
-export async function PATCH(request: Request, context: RouteContext) {
-  // Step 1: Authenticate
-  const { orgId, userId } = await auth();
-  if (!(orgId && userId)) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
+export async function PATCH(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
-  const body = await request.json();
 
-  // Step 2: Verify task exists
-  const existingTask = await database.kitchenTask.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-  });
-
-  if (!existingTask) {
-    return NextResponse.json({ message: "Task not found" }, { status: 404 });
-  }
-
-  const currentStatus = existingTask.status;
-  const newStatus = body.status;
-
-  // Step 3: Validate status transition
-  const validTransitions: Record<string, string[]> = {
-    pending: ["in_progress", "done", "cancelled"],
-    in_progress: ["done", "cancelled", "pending"],
-    done: ["pending"],
-    cancelled: ["pending"],
-  };
-
-  const allowed = validTransitions[currentStatus];
-  if (
-    newStatus &&
-    newStatus !== currentStatus &&
-    !allowed?.includes(newStatus)
-  ) {
+  // Clone the request so we can read the body to determine the command,
+  // while still passing the original request to executeManifestCommand
+  const clonedRequest = request.clone();
+  let body: Record<string, unknown> = {};
+  try {
+    body = await clonedRequest.json();
+  } catch (error) {
+    console.error("[KitchenTask/PATCH] Failed to parse request body:", error);
     return NextResponse.json(
-      {
-        message: `Cannot transition from "${currentStatus}" to "${newStatus}"`,
-      },
+      { message: "Invalid request body" },
       { status: 400 }
     );
   }
 
-  // Step 4: Update task
-  try {
-    const updatedTask = await database.kitchenTask.update({
-      where: { tenantId_id: { tenantId, id } },
-      data: {
-        ...body,
-        updatedAt: new Date(),
-      },
-    });
+  const newStatus = body.status as string | undefined;
 
-    // Step 5: Create progress entry
-    if (newStatus && newStatus !== currentStatus) {
-      await database.kitchenTaskProgress.create({
-        data: {
-          tenantId,
-          taskId: id,
-          employeeId: userId,
-          progressType: "status_change",
-          oldStatus: currentStatus,
-          newStatus: newStatus as string,
+  // Determine which manifest command to use based on the status transition
+  if (newStatus) {
+    const commandName = STATUS_TO_COMMAND[newStatus];
+
+    if (!commandName) {
+      // TODO: "pending" status (reopen) doesn't have a dedicated manifest command yet.
+      // For now, log and return an error. When a "reopen" command is added to the
+      // manifest, map it here.
+      console.error(
+        `[KitchenTask/PATCH] No manifest command mapped for target status: "${newStatus}"`,
+        { taskId: id, requestedStatus: newStatus }
+      );
+      return NextResponse.json(
+        {
+          message: `Status transition to "${newStatus}" is not yet supported via manifest commands`,
         },
-      });
+        { status: 400 }
+      );
     }
 
-    // Step 6: Emit outbox event
-    await database.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "KitchenTask",
-        aggregateId: id,
-        eventType: "kitchen.task.updated",
-        payload: { taskId: id, status: newStatus } as Prisma.InputJsonValue,
-        status: "pending" as const,
-      },
-    });
-
-    return NextResponse.json({ task: updatedTask });
-  } catch (error) {
-    captureException(error);
-    return NextResponse.json(
-      {
-        message: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+    console.log(
+      `[KitchenTask/PATCH] Mapping status="${newStatus}" to command="${commandName}"`,
+      { taskId: id }
     );
+
+    return executeManifestCommand(request, {
+      entityName: "KitchenTask",
+      commandName,
+      params: { id },
+      transformBody: (reqBody, ctx) => ({
+        ...reqBody,
+        id,
+        userId: ctx.userId,
+        // cancel command requires reason and canceledBy
+        ...(commandName === "cancel" && {
+          reason: reqBody.reason || "Cancelled via task update",
+          canceledBy: ctx.userId,
+        }),
+      }),
+    });
   }
+
+  // Non-status field updates — map to specific manifest commands where possible
+  if (body.priority !== undefined) {
+    console.log("[KitchenTask/PATCH] Delegating to updatePriority command", {
+      taskId: id,
+      priority: body.priority,
+    });
+    return executeManifestCommand(request, {
+      entityName: "KitchenTask",
+      commandName: "updatePriority",
+      params: { id },
+      transformBody: (reqBody, ctx) => ({
+        id,
+        priority: reqBody.priority,
+        userId: ctx.userId,
+      }),
+    });
+  }
+
+  if (body.complexity !== undefined) {
+    console.log("[KitchenTask/PATCH] Delegating to updateComplexity command", {
+      taskId: id,
+      complexity: body.complexity,
+    });
+    return executeManifestCommand(request, {
+      entityName: "KitchenTask",
+      commandName: "updateComplexity",
+      params: { id },
+      transformBody: (reqBody, ctx) => ({
+        id,
+        complexity: reqBody.complexity,
+        userId: ctx.userId,
+      }),
+    });
+  }
+
+  // TODO: Handle other field updates (title, summary, dueDate, tags) when
+  // corresponding manifest commands are available. For now, log and return error.
+  console.error(
+    "[KitchenTask/PATCH] No manifest command available for the requested update",
+    { taskId: id, bodyKeys: Object.keys(body) }
+  );
+  return NextResponse.json(
+    {
+      message:
+        "Update not supported: no manifest command available for the requested fields",
+      fields: Object.keys(body),
+    },
+    { status: 400 }
+  );
 }
 
-export async function DELETE(_request: Request, context: RouteContext) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-
-  // Get ID from params
+/**
+ * Soft-delete (cancel) a kitchen task via manifest cancel command.
+ *
+ * DELETE /api/kitchen/tasks/:id
+ */
+export async function DELETE(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
 
-  // Verify task exists
-  const existingTask = await database.kitchenTask.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
+  console.log("[KitchenTask/DELETE] Delegating to cancel command", {
+    taskId: id,
   });
 
-  if (!existingTask) {
-    return NextResponse.json({ message: "Task not found" }, { status: 404 });
-  }
-
-  // Soft delete
-  await database.kitchenTask.update({
-    where: { tenantId_id: { tenantId, id } },
-    data: { deletedAt: new Date() },
+  return executeManifestCommand(request, {
+    entityName: "KitchenTask",
+    commandName: "cancel",
+    params: { id },
+    transformBody: (_body, ctx) => ({
+      id,
+      reason: "Deleted via API",
+      canceledBy: ctx.userId,
+    }),
   });
-
-  return NextResponse.json({ message: "Task deleted" });
 }
