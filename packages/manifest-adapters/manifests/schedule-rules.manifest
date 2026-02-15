@@ -48,7 +48,7 @@ entity Schedule {
     emit ScheduleUpdated
   }
 
-  command publish(userId: string) {
+  command release(userId: string) {
     guard self.status == "draft" "Can only publish draft schedules"
 
     constraint blockNoShifts:block self.shiftCount == 0 {

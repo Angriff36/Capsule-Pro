@@ -42,10 +42,10 @@ entity InventoryTransaction {
     guard transactionType != null and transactionType != "" "Transaction type is required"
     guard quantity != null and quantity != 0 "Quantity must not be zero"
 
-    constraint blockInvalidType:block transactionType not in ["receipt", "issue", "adjustment", "transfer", "waste", "return"] {
-      messageTemplate: "Invalid transaction type '{type}'"
+    constraint warnUnknownType:warn transactionType == "" {
+      messageTemplate: "Transaction type is empty for item '{itemId}'"
       details: {
-        type: transactionType
+        itemId: itemId
       }
     }
 

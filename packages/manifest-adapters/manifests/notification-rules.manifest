@@ -61,12 +61,12 @@ entity Notification {
     guard userId != null and userId != "" "User ID is required"
 
     mutate isRead = true
-    mutate readAt = self.readAt > 0 ? self.readAt : now()
+    mutate readAt = now()
 
     emit NotificationDismissed
   }
 
-  command delete(userId: string) {
+  command remove(userId: string) {
     guard userId != null and userId != "" "User ID is required"
 
     emit NotificationDeleted

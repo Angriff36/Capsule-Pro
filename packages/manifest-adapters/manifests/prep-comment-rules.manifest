@@ -77,7 +77,7 @@ entity PrepComment {
     emit PrepCommentUnresolved
   }
 
-  command delete(userId: string) {
+  command softDelete(userId: string) {
     guard userId != null and userId != "" "User ID is required"
     guard self.isActive "Comment is already deleted"
 
