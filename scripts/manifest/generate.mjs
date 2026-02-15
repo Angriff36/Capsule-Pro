@@ -13,7 +13,8 @@ import { join, relative, resolve } from "node:path";
 
 const repoRoot = resolve(process.cwd());
 const cliDir = resolve(repoRoot, "packages/manifest-runtime/packages/cli");
-const defaultIr = "packages/manifest-ir/ir/kitchen/kitchen.ir.json";
+const defaultIr = resolve(repoRoot, "packages/manifest-ir/ir/kitchen/kitchen.ir.json");
+const defaultOutput = resolve(repoRoot, "apps/api/app/api/kitchen");
 
 const userArgs = process.argv.slice(2);
 
@@ -28,7 +29,7 @@ const baseArgs =
         "--surface",
         "route",
         "--output",
-        "apps/api/app/api/kitchen",
+        defaultOutput,
       ];
 
 // Run the CLI via pnpm in the CLI package directory so node module resolution is correct.
@@ -166,7 +167,7 @@ const invocationArgs = [
 
 const result = spawnSync(pnpmBin, invocationArgs, {
   stdio: "inherit",
-  shell: false,
+  shell: process.platform === "win32",
 });
 
 let guardFailure = false;
