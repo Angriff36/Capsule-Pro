@@ -13,7 +13,10 @@
 - [x] `KitchenTask` Prisma model in `packages/database/prisma/schema.prisma:170-190`
 - [x] `KitchenTaskClaim` Prisma model in `packages/database/prisma/schema.prisma:234-251`
 - [x] `KitchenTaskProgress` Prisma model in `packages/database/prisma/schema.prisma:253-272`
-- [x] Command routes: `claim/route.ts`, `release/route.ts` at `apps/api/app/api/kitchen/kitchen-tasks/commands/`
+- [x] All 11 command routes at `apps/api/app/api/kitchen/kitchen-tasks/commands/`:
+  - claim, release, start, complete, reassign
+  - update-priority, update-complexity
+  - add-tag, remove-tag, cancel, create
 
 ---
 
@@ -39,20 +42,21 @@ Added createKitchenTaskRuntime function that creates a manifest runtime for kitc
 
 ## Task 3: Command Routes (P1)
 
+**Status**: COMPLETED ✓
 **Directory**: `apps/api/app/api/kitchen/kitchen-tasks/commands/`
-**Template**: Use `claim/route.ts` as template
+**Template**: Used `claim/route.ts` as template
 
 | Route | Command | Body Params | Status |
 |-------|---------|-------------|--------|
-| `start/route.ts` | start | `{ id, userId }` | [ ] TODO |
-| `complete/route.ts` | complete | `{ id, userId }` | [ ] TODO |
-| `reassign/route.ts` | reassign | `{ id, newUserId, requestedBy }` | [ ] TODO |
-| `update-priority/route.ts` | updatePriority | `{ id, priority }` | [ ] TODO |
-| `update-complexity/route.ts` | updateComplexity | `{ id, complexity }` | [ ] TODO |
-| `add-tag/route.ts` | addTag | `{ id, tag }` | [ ] TODO |
-| `remove-tag/route.ts` | removeTag | `{ id, tag }` | [ ] TODO |
-| `cancel/route.ts` | cancel | `{ id, reason, canceledBy }` | [ ] TODO |
-| `create/route.ts` | create | `{ title, summary, priority, complexity, tags, dueDate }` | [ ] TODO |
+| `start/route.ts` | start | `{ id, userId }` | [x] DONE |
+| `complete/route.ts` | complete | `{ id, userId }` | [x] DONE |
+| `reassign/route.ts` | reassign | `{ id, newUserId, requestedBy }` | [x] DONE |
+| `update-priority/route.ts` | updatePriority | `{ id, priority }` | [x] DONE |
+| `update-complexity/route.ts` | updateComplexity | `{ id, complexity }` | [x] DONE |
+| `add-tag/route.ts` | addTag | `{ id, tag }` | [x] DONE |
+| `remove-tag/route.ts` | removeTag | `{ id, tag }` | [x] DONE |
+| `cancel/route.ts` | cancel | `{ id, reason, canceledBy }` | [x] DONE |
+| `create/route.ts` | create | `{ title, summary, priority, complexity, tags, dueDate }` | [x] DONE |
 
 ---
 
