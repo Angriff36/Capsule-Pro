@@ -3,7 +3,38 @@
 **Last Updated**: 2026-02-15
 **Goal**: Manifest Integration - Phase 1-7 (25 Manifests)
 **Branch**: manifest-.3
-**Tag**: v0.5.4
+**Tag**: v0.5.5
+
+---
+
+## Completed (v0.5.5) - Generated API Routes
+
+### Generated Manifest Command Handlers
+
+Added 160+ auto-generated API route handlers for all Phase 1-7 manifest entities:
+
+- **Collaboration**: notifications (4 commands), workflows (4 commands)
+- **Command Board**: boards (4), cards (5), connections (2), groups (3), layouts (3)
+- **CRM**: clients (4), leads (5), proposals (8), client-contacts (4), client-interactions (3), client-preferences (3), proposal-line-items (3)
+- **Events**: events (10), battle-boards (7), budgets (4), catering-orders (6), reports (4), profitability (3), summaries (3)
+- **Inventory**: purchase-orders (8), purchase-order-items (3), shipments (7), shipment-items (2), suppliers (3), transactions (1), cycle-count sessions (5), cycle-count records (3), variance-reports (3)
+- **Staff**: employees (5), schedules (4), shifts (3), timecard entries (3), timecard edit-requests (3)
+- **Kitchen**: containers (3), prep-comments (4), prep-methods (3)
+
+### Fixed List Route Imports
+
+- Updated kitchen list routes to use @/lib/* imports instead of @repo/*
+- Fixed CLI generate command import path
+- Fixed generate.mjs script for Windows compatibility (shell: true on win32)
+
+### Added Generic Manifest Handler
+
+- Added apps/api/lib/manifest-command-handler.ts - reusable handler for manifest commands
+
+### Build Status
+
+- Build: PASSED (21 tasks)
+- API Tests: 672 passed (1 skipped)
 
 ---
 
