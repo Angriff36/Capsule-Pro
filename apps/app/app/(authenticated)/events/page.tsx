@@ -68,7 +68,7 @@ const EventsPage = async () => {
     <>
       <Header
         page="Events"
-        pages={[{ label: "Operations", href: "/operations" }]}
+        pages={[]}
       >
         <div className="flex items-center gap-2">
           <Button asChild variant="secondary">

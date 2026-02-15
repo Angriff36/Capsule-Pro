@@ -97,7 +97,6 @@ const ContractDetailPage = async ({ params }: ContractDetailPageProps) => {
       <Header
         page={contract.title}
         pages={[
-          { label: "Operations", href: "/operations" },
           { label: "Events", href: "/events" },
           { label: "Contracts", href: "/events/contracts" },
         ]}

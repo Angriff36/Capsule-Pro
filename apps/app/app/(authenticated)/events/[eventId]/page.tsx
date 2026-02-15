@@ -97,10 +97,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
     <>
       <Header
         page={event.title}
-        pages={[
-          { label: "Operations", href: "/operations" },
-          { label: "Events", href: "/events" },
-        ]}
+        pages={[{ label: "Events", href: "/events" }]}
       >
         <div className="flex items-center gap-2">
           <a

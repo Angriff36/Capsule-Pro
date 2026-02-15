@@ -44,7 +44,6 @@ const BattleBoardPage = async ({ params }: BattleBoardPageProps) => {
       <Header
         page={event.title}
         pages={[
-          { label: "Operations", href: "/operations" },
           { label: "Events", href: "/events" },
           { label: "Battle Board", href: `/events/${eventId}/battle-board` },
         ]}
