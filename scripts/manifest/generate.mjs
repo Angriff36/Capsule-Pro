@@ -11,24 +11,29 @@ import {
 } from "node:fs";
 import { join, relative, resolve } from "node:path";
 
-const userArgs = process.argv.slice(2);
-const defaultArgs = [
-  "exec",
-  "manifest",
-  "generate",
-  "packages/manifest-ir/ir/kitchen/kitchen.ir.json",
-  "--projection",
-  "nextjs",
-  "--surface",
-  "route",
-  "--output",
-  "apps/api/app/api/kitchen",
-];
+const repoRoot = resolve(process.cwd());
+const cliDir = resolve(repoRoot, "packages/manifest-runtime/packages/cli");
+const defaultIr = "packages/manifest-ir/ir/kitchen/kitchen.ir.json";
 
-const args =
+const userArgs = process.argv.slice(2);
+
+// Default: generate kitchen IR with nextjs projection
+const baseArgs =
   userArgs.length > 0
-    ? ["exec", "manifest", "generate", ...userArgs]
-    : defaultArgs;
+    ? userArgs
+    : [
+        defaultIr,
+        "--projection",
+        "nextjs",
+        "--surface",
+        "route",
+        "--output",
+        "apps/api/app/api/kitchen",
+      ];
+
+// Run the CLI via pnpm in the CLI package directory so node module resolution is correct.
+// pnpm -C <dir> exec tsx src/index.ts generate ...
+const pnpmBin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 
 const getOutputDirFromArgs = (cliArgs) => {
   const outputFlagIndex = cliArgs.indexOf("--output");
@@ -142,18 +147,26 @@ const hasDuplicatedApiSegment = (absolutePath, outputRoot) => {
   return relativePath.includes("apps/api/app/api/");
 };
 
-const bin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
-const outputDir = resolve(getOutputDirFromArgs(args));
+const outputDir = resolve(getOutputDirFromArgs(baseArgs));
 const stagingDir = resolve(
   ".tmp",
   `manifest-generate-staging-${Date.now()}-${process.pid}`
 );
 mkdirSync(stagingDir, { recursive: true });
 
-const invocationArgs = setOutputDirInArgs(args, stagingDir);
-const result = spawnSync(bin, invocationArgs, {
+const invocationArgs = [
+  "-C",
+  cliDir,
+  "exec",
+  "tsx",
+  "src/index.ts",
+  "generate",
+  ...setOutputDirInArgs(baseArgs, stagingDir),
+];
+
+const result = spawnSync(pnpmBin, invocationArgs, {
   stdio: "inherit",
-  shell: process.platform === "win32",
+  shell: false,
 });
 
 let guardFailure = false;
