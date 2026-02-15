@@ -1,0 +1,111 @@
+{
+  "description": "Policy mirror for architecture boundaries. Enforced rules live in turbo.json and workspace turbo.json tags.",
+  "rules": {
+    "implicitDependencies": [
+      "@api/*",
+      "@manifest/runtime/*",
+      "@repo/manifest-adapters",
+      "@repo/manifest-adapters/api-response",
+      "@repo/manifest-adapters/prisma-store",
+      "@repo/manifest-adapters/route-helpers",
+      "@repo/*",
+      "@repo/*/*",
+      "@storybook/react",
+      "server-only",
+      "webpack"
+    ],
+    "tags": {
+      "layer:app": {
+        "dependencies": {
+          "deny": ["layer:app"]
+        }
+      },
+      "layer:package": {
+        "dependencies": {
+          "deny": ["layer:app"]
+        }
+      },
+      "scope:config": {
+        "dependencies": {
+          "deny": [
+            "layer:app",
+            "scope:data",
+            "scope:docs",
+            "scope:integration",
+            "scope:platform",
+            "scope:tooling",
+            "scope:ui"
+          ]
+        }
+      },
+      "scope:ui": {
+        "dependencies": {
+          "deny": ["layer:app", "scope:data"]
+        }
+      },
+      "scope:data": {
+        "dependents": {
+          "deny": ["scope:docs", "scope:tooling", "scope:ui"]
+        }
+      },
+      "scope:tooling": {
+        "dependencies": {
+          "deny": ["scope:data"]
+        }
+      },
+      "app:client": {
+        "dependencies": {
+          "deny": ["app:api"]
+        }
+      }
+    }
+  },
+  "workspaces": {
+    "apps/api": ["layer:app", "app:api", "runtime:server"],
+    "apps/app": ["layer:app", "app:client", "runtime:mixed"],
+    "apps/docs": ["layer:app", "app:client", "runtime:web", "scope:docs"],
+    "apps/email": [
+      "layer:app",
+      "app:internal",
+      "runtime:server",
+      "scope:tooling"
+    ],
+    "apps/storybook": [
+      "layer:app",
+      "app:internal",
+      "runtime:web",
+      "scope:tooling"
+    ],
+    "apps/web": ["layer:app", "app:client", "runtime:web"],
+    "packages/ai": ["layer:package", "scope:integration"],
+    "packages/analytics": ["layer:package", "scope:platform"],
+    "packages/auth": ["layer:package", "scope:platform"],
+    "packages/cms": ["layer:package", "scope:ui"],
+    "packages/collaboration": ["layer:package", "scope:integration"],
+    "packages/database": ["layer:package", "scope:data"],
+    "packages/design-system": ["layer:package", "scope:ui"],
+    "packages/email": ["layer:package", "scope:integration"],
+    "packages/event-parser": ["layer:package", "scope:integration"],
+    "packages/feature-flags": ["layer:package", "scope:platform"],
+    "packages/internationalization": ["layer:package", "scope:ui"],
+    "packages/kitchen-state-transitions": [
+      "layer:package",
+      "scope:integration"
+    ],
+    "packages/manifest-adapters": ["layer:package", "scope:integration"],
+    "packages/next-config": ["layer:package", "scope:config"],
+    "packages/notifications": ["layer:package", "scope:platform"],
+    "packages/observability": ["layer:package", "scope:platform"],
+    "packages/payments": ["layer:package", "scope:integration"],
+    "packages/payroll-engine": ["layer:package", "scope:integration"],
+    "packages/pdf": ["layer:package", "scope:integration"],
+    "packages/rate-limit": ["layer:package", "scope:data"],
+    "packages/realtime": ["layer:package", "scope:data"],
+    "packages/sales-reporting": ["layer:package", "scope:integration"],
+    "packages/security": ["layer:package", "scope:platform"],
+    "packages/seo": ["layer:package", "scope:ui"],
+    "packages/storage": ["layer:package", "scope:data"],
+    "packages/typescript-config": ["layer:package", "scope:config"],
+    "packages/webhooks": ["layer:package", "scope:platform"]
+  }
+}

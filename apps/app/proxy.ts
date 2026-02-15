@@ -1,18 +1,40 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-const isPublicRoute = createRouteMatcher(["/sign-in(.*)"]);
+const isPublicRoute = createRouteMatcher([
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/plasmic(.*)", // Public marketing pages
+]);
+const isApiRoute = createRouteMatcher(["/api(.*)", "/trpc(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) {
-    await auth.protect();
+  if (isPublicRoute(req)) {
+    return;
   }
+
+  // For programmatic API calls, return JSON 401 instead of Clerk rewrite HTML.
+  if (isApiRoute(req)) {
+    const { userId } = await auth();
+    if (!userId) {
+      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    return;
+  }
+
+  await auth.protect();
 });
 
+// Narrowed middleware matcher - only runs on protected routes
+// Skips static files, public pages (Plasmic, sign-in, sign-up)
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    "/((?!_next|[^?]*\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
-    "/(api|trpc)(.*)",
+    // Protected routes only - authenticated area, dev-console
+    "/((authenticated|dev-console)(.*)|api(.*)|trpc(.*))",
+    // Auth routes (need clerk middleware)
+    "/sign-in(.*)",
+    "/sign-up(.*)",
   ],
 };

@@ -1,0 +1,35 @@
+{
+  "name": "@repo/realtime",
+  "version": "0.0.0",
+  "dependencies": {
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "vitest": "^4.0.18"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "peerDependencies": {
+    "@repo/database": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@repo/database": {
+      "optional": true
+    }
+  },
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "types": "./dist/index.d.ts"
+}

@@ -1,0 +1,246 @@
+// Kitchen Ops - Station Rules
+// Manifest spec for station capacity and equipment management
+
+entity Station {
+  property required id: string
+  property required tenantId: string
+  property required locationId: string
+  property required name: string
+  property required stationType: string = "prep-station"
+  property capacitySimultaneousTasks: number = 1
+  property equipmentList: string = ""
+  property isActive: boolean = true
+  property currentTaskCount: number = 0
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  computed isAtCapacity: boolean = self.currentTaskCount >= self.capacitySimultaneousTasks
+  computed isOverCapacity: boolean = self.currentTaskCount > self.capacitySimultaneousTasks
+  computed capacityRemaining: number = self.capacitySimultaneousTasks - self.currentTaskCount
+  computed availablePercentage: number = self.capacitySimultaneousTasks > 0 ? ((self.capacitySimultaneousTasks - self.currentTaskCount) / self.capacitySimultaneousTasks) * 100 : 100
+
+  constraint positiveCapacity: self.capacitySimultaneousTasks > 0 "Station capacity must be positive"
+  constraint validStationType: self.stationType in ["hot-line", "cold-prep", "bakery", "garnish", "prep-station"] "Invalid station type"
+
+  constraint warnNearCapacity:warn self.capacityRemaining == 1 and self.capacitySimultaneousTasks > 1 {
+    messageTemplate: "Station '{stationName}' is near capacity ({current}/{max} tasks)"
+    details: {
+      stationName: self.name
+      current: self.currentTaskCount
+      max: self.capacitySimultaneousTasks
+      remaining: self.capacityRemaining
+    }
+  }
+
+  constraint blockAtCapacity:block self.isAtCapacity {
+    messageTemplate: "Station '{stationName}' is at full capacity ({current}/{max} tasks)"
+    details: {
+      stationName: self.name
+      current: self.currentTaskCount
+      max: self.capacitySimultaneousTasks
+    }
+  }
+
+  constraint blockOverCapacity:block self.isOverCapacity {
+    messageTemplate: "Station '{stationName}' is over capacity ({current}/{max} tasks)"
+    details: {
+      stationName: self.name
+      current: self.currentTaskCount
+      max: self.capacitySimultaneousTasks
+      excess: self.currentTaskCount - self.capacitySimultaneousTasks
+    }
+  }
+
+  constraint blockInactive:block self.isActive == false {
+    messageTemplate: "Station '{stationName}' is inactive and cannot accept new tasks"
+    details: {
+      stationName: self.name
+    }
+  }
+
+  command assignTask(taskId: string, taskName: string) {
+    guard taskId != null and taskId != ""
+    guard taskName != null and taskName != ""
+
+    constraint warnNearCapacity:warn self.capacityRemaining == 1 {
+      messageTemplate: "Assigning task '{taskName}' to near-capacity station '{stationName}'"
+      details: {
+        stationName: self.name
+        taskName: taskName
+        current: self.currentTaskCount
+        max: self.capacitySimultaneousTasks
+      }
+    }
+
+    constraint blockFull:block self.isAtCapacity {
+      messageTemplate: "Cannot assign task - station '{stationName}' is at full capacity"
+      details: {
+        stationName: self.name
+        current: self.currentTaskCount
+        max: self.capacitySimultaneousTasks
+      }
+    }
+
+    mutate currentTaskCount = self.currentTaskCount + 1
+    mutate updatedAt = now()
+
+    emit StationTaskAssigned
+  }
+
+  command removeTask(taskId: string, taskName: string) {
+    guard taskId != null and taskId != ""
+
+    constraint warnNoTasks:warn self.currentTaskCount == 0 {
+      messageTemplate: "Removing task from empty station '{stationName}'"
+      details: {
+        stationName: self.name
+      }
+    }
+
+    mutate currentTaskCount = self.currentTaskCount > 0 ? self.currentTaskCount - 1 : 0
+    mutate updatedAt = now()
+
+    emit StationTaskRemoved
+  }
+
+  command updateCapacity(newCapacity: number, userId: string) {
+    guard newCapacity != null and newCapacity > 0
+
+    constraint warnCapacityReduction:warn newCapacity < self.capacitySimultaneousTasks and self.currentTaskCount > newCapacity {
+      messageTemplate: "Reducing capacity from {oldMax} to {newMax} with {current} active tasks"
+      details: {
+        stationName: self.name
+        oldMax: self.capacitySimultaneousTasks
+        newMax: newCapacity
+        current: self.currentTaskCount
+      }
+    }
+
+    mutate capacitySimultaneousTasks = newCapacity
+    mutate updatedAt = now()
+
+    emit StationCapacityUpdated
+  }
+
+  command deactivate(reason: string, userId: string) {
+    guard self.isActive
+
+    constraint warnDeactivateWithTasks:warn self.currentTaskCount > 0 {
+      messageTemplate: "Deactivating station '{stationName}' with {current} active tasks"
+      details: {
+        stationName: self.name
+        currentTaskCount: self.currentTaskCount
+        reason: reason
+      }
+    }
+
+    mutate isActive = false
+    mutate updatedAt = now()
+
+    emit StationDeactivated
+  }
+
+  command activate(userId: string) {
+    guard not self.isActive
+
+    mutate isActive = true
+    mutate updatedAt = now()
+
+    emit StationActivated
+  }
+
+  command updateEquipment(equipmentList: string, userId: string) {
+    guard equipmentList != null
+
+    mutate equipmentList = equipmentList
+    mutate updatedAt = now()
+
+    emit StationEquipmentUpdated
+  }
+
+  command create(locationId: string, name: string, stationType: string, capacitySimultaneousTasks: number, equipmentList: string, notes: string) {
+    guard name != null and name != "" "Station name is required"
+    guard locationId != null and locationId != "" "Location ID is required"
+    guard capacitySimultaneousTasks > 0 "Capacity must be positive"
+
+    mutate locationId = locationId
+    mutate name = name
+    mutate stationType = stationType
+    mutate capacitySimultaneousTasks = capacitySimultaneousTasks
+    mutate equipmentList = equipmentList
+    mutate notes = notes
+    mutate isActive = true
+    mutate currentTaskCount = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit StationCreated
+  }
+
+  store Station in memory
+}
+
+policy ManagersCanModifyStation execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can modify station settings"
+policy KitchenStaffCanAssign execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can assign tasks to stations"
+
+event StationTaskAssigned: "kitchen.station.task.assigned" {
+  stationId: string
+  stationName: string
+  taskId: string
+  taskName: string
+  currentTaskCount: number
+  capacity: number
+  assignedAt: number
+}
+
+event StationTaskRemoved: "kitchen.station.task.removed" {
+  stationId: string
+  stationName: string
+  taskId: string
+  currentTaskCount: number
+  removedAt: number
+}
+
+event StationCapacityUpdated: "kitchen.station.capacity.updated" {
+  stationId: string
+  stationName: string
+  oldCapacity: number
+  newCapacity: number
+  userId: string
+  updatedAt: number
+}
+
+event StationDeactivated: "kitchen.station.deactivated" {
+  stationId: string
+  stationName: string
+  reason: string
+  activeTaskCount: number
+  userId: string
+  deactivatedAt: number
+}
+
+event StationActivated: "kitchen.station.activated" {
+  stationId: string
+  stationName: string
+  userId: string
+  activatedAt: number
+}
+
+event StationCreated: "kitchen.station.created" {
+  stationId: string
+  tenantId: string
+  locationId: string
+  name: string
+  stationType: string
+  capacity: number
+  createdAt: number
+}
+
+event StationEquipmentUpdated: "kitchen.station.equipment.updated" {
+  stationId: string
+  stationName: string
+  equipmentList: string
+  userId: string
+  updatedAt: number
+}

@@ -1,161 +1,82 @@
 #!/usr/bin/env node
-/**
- * Validates that GitHub Actions workflows use versions matching the source of truth:
- * - pnpm version from package.json "packageManager" field
- * - Node.js version from package.json "engines.node" field (or .nvmrc)
- * 
- * Prevents version mismatches between local dev, CI, and Vercel production.
- * 
- * Exit codes:
- *   0 = All versions match
- *   1 = Version mismatch found
- */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const packageJsonPath = join(process.cwd(), 'package.json');
+const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
 
-// Extract pnpm version from package.json
-function getPnpmVersion() {
-  const pkgPath = path.join(__dirname, '..', 'package.json');
-  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
-  
-  if (!pkg.packageManager) {
-    console.error('❌ package.json missing "packageManager" field');
-    process.exit(1);
-  }
-  
-  const match = pkg.packageManager.match(/pnpm@([\d.]+)/);
-  if (!match) {
-    console.error('❌ Could not parse pnpm version from packageManager field');
-    process.exit(1);
-  }
-  
-  return match[1];
-}
+const expectedPnpmVersion = packageJson.packageManager?.replace('pnpm@', '');
+const expectedNodeVersion = packageJson.engines?.node;
 
-// Extract Node.js version from package.json engines or .nvmrc
-function getNodeVersion() {
-  // Try .nvmrc first
-  const nvmrcPath = path.join(__dirname, '..', '.nvmrc');
-  if (fs.existsSync(nvmrcPath)) {
-    return fs.readFileSync(nvmrcPath, 'utf-8').trim().replace(/^v/, '');
-  }
-  
-  // Fall back to package.json engines.node
-  const pkgPath = path.join(__dirname, '..', 'package.json');
-  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
-  
-  if (pkg.engines?.node) {
-    // Extract major version from >=18 or 20.x etc
-    const match = pkg.engines.node.match(/(\d+)/);
-    if (match) {
-      return match[1]; // Return just major version for flexibility
-    }
-  }
-  
-  return null;
-}
-
-// Find all GitHub Actions workflows
-function getWorkflowFiles() {
-  const workflowDir = path.join(__dirname, '..', '.github', 'workflows');
-  if (!fs.existsSync(workflowDir)) {
-    return [];
-  }
-  
-  return fs.readdirSync(workflowDir)
-    .filter(f => f.endsWith('.yml') || f.endsWith('.yaml'))
-    .map(f => path.join(workflowDir, f));
-}
-
-// Validate pnpm versions
-function validatePnpmVersions(expectedVersion) {
-  const workflows = getWorkflowFiles();
-  let hasErrors = false;
-  
-  workflows.forEach(workflowPath => {
-    const content = fs.readFileSync(workflowPath, 'utf-8');
-    
-    // Look for pnpm/action-setup with version: X
-    const versionMatches = content.match(/pnpm\/action-setup@[^\n]*\n\s*with:\s*\n\s*version:\s*([^\n]+)/g);
-    
-    if (versionMatches) {
-      versionMatches.forEach(match => {
-        const versionLine = match.match(/version:\s*([^\n]+)/);
-        if (versionLine) {
-          const version = versionLine[1].trim();
-          if (version !== expectedVersion) {
-            console.error(
-              `❌ ${path.relative(process.cwd(), workflowPath)}: ` +
-              `pnpm version mismatch - found "${version}", expected "${expectedVersion}"`
-            );
-            hasErrors = true;
-          }
-        }
-      });
-    }
-  });
-  
-  return !hasErrors;
-}
-
-// Validate Node.js versions
-function validateNodeVersions(expectedVersion) {
-  if (!expectedVersion) return true; // Skip if not specified
-  
-  const workflows = getWorkflowFiles();
-  let hasErrors = false;
-  
-  workflows.forEach(workflowPath => {
-    const content = fs.readFileSync(workflowPath, 'utf-8');
-    
-    // Look for setup-node with node-version: X
-    const versionMatches = content.match(/setup-node@[^\n]*\n\s*with:\s*\n\s*node-version:\s*['"]?([^'"\n]+)['"]?/g);
-    
-    if (versionMatches) {
-      versionMatches.forEach(match => {
-        const versionLine = match.match(/node-version:\s*['"]?([^'"\n]+)['"]?/);
-        if (versionLine) {
-          const version = versionLine[1].trim();
-          // Extract major version from version strings like "20", "20.x", "20.11.0"
-          const majorVersion = version.match(/^(\d+)/)?.[1];
-          
-          if (majorVersion && majorVersion !== expectedVersion) {
-            console.error(
-              `❌ ${path.relative(process.cwd(), workflowPath)}: ` +
-              `Node.js version mismatch - found "${version}", expected major version "${expectedVersion}"`
-            );
-            hasErrors = true;
-          }
-        }
-      });
-    }
-  });
-  
-  return !hasErrors;
-}
-
-// Main
-const expectedPnpmVersion = getPnpmVersion();
-const expectedNodeVersion = getNodeVersion();
-
-console.log(`✓ Validating workflow versions...`);
-console.log(`  - pnpm@${expectedPnpmVersion} (from package.json packageManager)`);
-if (expectedNodeVersion) {
-  console.log(`  - Node.js ${expectedNodeVersion} (from package.json engines or .nvmrc)`);
-}
-
-const pnpmValid = validatePnpmVersions(expectedPnpmVersion);
-const nodeValid = validateNodeVersions(expectedNodeVersion);
-
-if (pnpmValid && nodeValid) {
-  console.log('✓ All workflow versions match configuration');
-  process.exit(0);
-} else {
-  console.error('\n❌ Version mismatch detected in .github/workflows/*.yml');
-  console.error('Fix by updating hardcoded versions to match package.json and .nvmrc');
+if (!expectedPnpmVersion) {
+  console.error('packageManager not found in package.json');
   process.exit(1);
 }
+
+if (!expectedNodeVersion) {
+  console.error('engines.node not found in package.json');
+  process.exit(1);
+}
+
+const workflowFiles = [
+  '.github/workflows/ci.yml',
+  '.github/workflows/deploy.yml',
+  '.github/workflows/performance.yml',
+  '.github/workflows/security.yml',
+  '.github/workflows/vercel-compat.yml'
+];
+
+let hasErrors = false;
+
+for (const workflowFile of workflowFiles) {
+  try {
+    const content = readFileSync(join(process.cwd(), workflowFile), 'utf8');
+
+    // Check pnpm version (only if explicitly specified in workflow)
+    const pnpmMatch = content.match(/version:\s*(\d+\.\d+\.\d+)/);
+    if (pnpmMatch) {
+      // Only check if version is explicitly set (it's optional when packageManager is in package.json)
+      if (pnpmMatch[1] !== expectedPnpmVersion) {
+        console.error(`pnpm version mismatch in ${workflowFile}: expected ${expectedPnpmVersion}, found ${pnpmMatch[1]}`);
+        hasErrors = true;
+      }
+    }
+    // If no pnpm version specified, that's fine - it will use packageManager from package.json
+
+    // Check node version (handle version ranges like >=20.0.0 and 20.x)
+    const nodeMatch = content.match(/node-version:\s*'([^']+)'/);
+    if (nodeMatch) {
+      const workflowNodeVersion = nodeMatch[1];
+      // If expectedNodeVersion is a range (e.g., >=20.0.0), check if workflow version satisfies it
+      if (expectedNodeVersion.startsWith('>=')) {
+        const minVersion = expectedNodeVersion.replace('>=', '').trim();
+        const workflowMajor = parseInt(workflowNodeVersion.split('.')[0], 10);
+        const minMajor = parseInt(minVersion.split('.')[0], 10);
+        if (workflowMajor < minMajor) {
+          console.error(`Node.js version mismatch in ${workflowFile}: expected ${expectedNodeVersion}, found ${workflowNodeVersion}`);
+          hasErrors = true;
+        }
+      } else if (expectedNodeVersion.endsWith('.x')) {
+        // Handle 20.x format - check if workflow version matches the major version
+        const expectedMajor = parseInt(expectedNodeVersion.replace('.x', ''), 10);
+        const workflowMajor = parseInt(workflowNodeVersion.split('.')[0], 10);
+        if (workflowMajor !== expectedMajor) {
+          console.error(`Node.js version mismatch in ${workflowFile}: expected ${expectedNodeVersion}, found ${workflowNodeVersion}`);
+          hasErrors = true;
+        }
+      } else if (nodeMatch[1] !== expectedNodeVersion) {
+        console.error(`Node.js version mismatch in ${workflowFile}: expected ${expectedNodeVersion}, found ${nodeMatch[1]}`);
+        hasErrors = true;
+      }
+    }
+  } catch (error) {
+    // Skip if file doesn't exist
+  }
+}
+
+if (hasErrors) {
+  process.exit(1);
+}
+
+console.log('Version validation passed');

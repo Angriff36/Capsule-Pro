@@ -1,0 +1,27 @@
+---
+description: Rules for terminal commands run by agents; avoid Windows NUL redirects that create literal files.
+globs: **/*
+alwaysApply: true
+---
+# Terminal / Shell Commands (Agents)
+
+When running or suggesting terminal commands in this workspace (Windows):
+
+## Do NOT use NUL redirects
+
+**Never** use `>nul`, `2>nul`, `>nul 2>&1`, or similar redirects to suppress output.
+
+On Windows, these often create **literal files named `nul`** in the current directory instead of redirecting to the null device, cluttering the repo and causing confusion.
+
+❌ **BAD**:
+```powershell
+pnpm install >nul 2>&1
+some-command 2>nul
+```
+
+✅ **GOOD**:
+- Run the command without redirecting (output is fine in the terminal).
+- If you must hide output, use PowerShell: `| Out-Null` only for the last part of a pipeline, and avoid redirecting stderr to nul.
+- Prefer not suppressing output unless the user explicitly asks.
+
+This rule applies to all agent-generated or agent-suggested commands.

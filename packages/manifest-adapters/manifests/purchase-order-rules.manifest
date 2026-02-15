@@ -1,0 +1,328 @@
+// Purchasing - Purchase Order Rules
+// Manifest spec for purchase order lifecycle and line item management
+
+entity PurchaseOrder {
+  property required id: string
+  property required tenantId: string
+  property required poNumber: string
+  property required vendorId: string
+  property required locationId: string
+  property orderDate: number = 0
+  property expectedDeliveryDate: number = 0
+  property actualDeliveryDate: number = 0
+  property status: string = "draft"
+  property subtotal: number = 0
+  property taxAmount: number = 0
+  property shippingAmount: number = 0
+  property total: number = 0
+  property notes: string = ""
+  property submittedBy: string = ""
+  property submittedAt: number = 0
+  property receivedBy: string = ""
+  property receivedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+  property itemCount: number = 0
+
+  computed isDraft: boolean = self.status == "draft"
+  computed isSubmitted: boolean = self.status == "submitted"
+  computed isApproved: boolean = self.status == "approved"
+  computed isOrdered: boolean = self.status == "ordered"
+  computed isReceived: boolean = self.status == "received"
+  computed isCancelled: boolean = self.status == "cancelled"
+  computed hasItems: boolean = self.itemCount > 0
+  computed isEditable: boolean = self.status == "draft"
+
+  constraint validStatus: self.status in ["draft", "submitted", "approved", "rejected", "ordered", "partially_received", "received", "cancelled"] "Invalid purchase order status"
+
+  constraint blockEditAfterSubmit:block self.status != "draft" {
+    messageTemplate: "Purchase order '{poNumber}' cannot be edited in status '{status}'"
+    details: {
+      poNumber: self.poNumber
+      status: self.status
+    }
+  }
+
+  command create(poNumber: string, vendorId: string, locationId: string, notes: string) {
+    guard poNumber != null and poNumber != "" "PO number is required"
+    guard vendorId != null and vendorId != "" "Vendor is required"
+    guard locationId != null and locationId != "" "Location is required"
+
+    mutate poNumber = poNumber
+    mutate vendorId = vendorId
+    mutate locationId = locationId
+    mutate notes = notes
+    mutate status = "draft"
+    mutate subtotal = 0
+    mutate taxAmount = 0
+    mutate shippingAmount = 0
+    mutate total = 0
+    mutate itemCount = 0
+    mutate orderDate = now()
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit PurchaseOrderCreated
+  }
+
+  command submit(userId: string) {
+    guard self.status == "draft" "Can only submit draft orders"
+
+    constraint blockNoItems:block self.itemCount == 0 {
+      messageTemplate: "Cannot submit purchase order '{poNumber}' with no items"
+      details: {
+        poNumber: self.poNumber
+      }
+    }
+
+    mutate status = "submitted"
+    mutate submittedBy = userId
+    mutate submittedAt = now()
+    mutate updatedAt = now()
+
+    emit PurchaseOrderSubmitted
+  }
+
+  command approve(userId: string) {
+    guard self.status == "submitted" "Can only approve submitted orders"
+
+    constraint blockNoItems:block self.itemCount == 0 {
+      messageTemplate: "Cannot approve purchase order '{poNumber}' with no items"
+      details: {
+        poNumber: self.poNumber
+      }
+    }
+
+    mutate status = "approved"
+    mutate updatedAt = now()
+
+    emit PurchaseOrderApproved
+  }
+
+  command reject(userId: string, reason: string) {
+    guard self.status == "submitted" "Can only reject submitted orders"
+    guard reason != null and reason != "" "Rejection reason is required"
+
+    mutate status = "rejected"
+    mutate notes = reason
+    mutate updatedAt = now()
+
+    emit PurchaseOrderRejected
+  }
+
+  command cancel(userId: string, reason: string) {
+    guard self.status != "received" "Cannot cancel a received order"
+    guard self.status != "cancelled" "Order is already cancelled"
+
+    constraint blockCancelReceived:block self.status == "received" {
+      messageTemplate: "Cannot cancel purchase order '{poNumber}' - already received"
+      details: {
+        poNumber: self.poNumber
+        status: self.status
+      }
+    }
+
+    constraint warnCancelOrdered:warn self.status == "ordered" {
+      messageTemplate: "Cancelling ordered purchase order '{poNumber}' - vendor may need notification"
+      details: {
+        poNumber: self.poNumber
+        vendorId: self.vendorId
+      }
+    }
+
+    mutate status = "cancelled"
+    mutate notes = reason
+    mutate updatedAt = now()
+
+    emit PurchaseOrderCancelled
+  }
+
+  command markOrdered(userId: string) {
+    guard self.status == "approved" "Can only mark approved orders as ordered"
+
+    mutate status = "ordered"
+    mutate updatedAt = now()
+
+    emit PurchaseOrderOrdered
+  }
+
+  command markReceived(userId: string) {
+    guard self.status == "ordered" or self.status == "partially_received" "Can only receive ordered or partially received orders"
+
+    mutate status = "received"
+    mutate receivedBy = userId
+    mutate receivedAt = now()
+    mutate actualDeliveryDate = now()
+    mutate updatedAt = now()
+
+    emit PurchaseOrderReceived
+  }
+
+  store PurchaseOrder in memory
+}
+
+entity PurchaseOrderItem {
+  property required id: string
+  property required tenantId: string
+  property required purchaseOrderId: string
+  property required itemId: string
+  property quantityOrdered: number = 0
+  property quantityReceived: number = 0
+  property unitId: number = 0
+  property unitCost: number = 0
+  property totalCost: number = 0
+  property qualityStatus: string = "pending"
+  property discrepancyType: string = ""
+  property discrepancyAmount: number = 0
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isFullyReceived: boolean = self.quantityReceived >= self.quantityOrdered
+  computed isPartiallyReceived: boolean = self.quantityReceived > 0 and self.quantityReceived < self.quantityOrdered
+  computed hasDiscrepancy: boolean = self.discrepancyType != ""
+
+  constraint positiveQuantity: self.quantityOrdered > 0 "Quantity ordered must be positive"
+  constraint positiveUnitCost: self.unitCost >= 0 "Unit cost cannot be negative"
+
+  command create(purchaseOrderId: string, itemId: string, quantityOrdered: number, unitId: number, unitCost: number, notes: string) {
+    guard purchaseOrderId != null and purchaseOrderId != "" "Purchase order ID is required"
+    guard itemId != null and itemId != "" "Item ID is required"
+    guard quantityOrdered != null and quantityOrdered > 0 "Quantity must be positive"
+    guard unitCost != null and unitCost >= 0 "Unit cost cannot be negative"
+
+    mutate purchaseOrderId = purchaseOrderId
+    mutate itemId = itemId
+    mutate quantityOrdered = quantityOrdered
+    mutate unitId = unitId
+    mutate unitCost = unitCost
+    mutate totalCost = quantityOrdered * unitCost
+    mutate qualityStatus = "pending"
+    mutate quantityReceived = 0
+    mutate notes = notes
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit PurchaseOrderItemCreated
+  }
+
+  command update(quantityOrdered: number, unitCost: number, notes: string) {
+    guard quantityOrdered != null and quantityOrdered > 0 "Quantity must be positive"
+    guard unitCost != null and unitCost >= 0 "Unit cost cannot be negative"
+
+    mutate quantityOrdered = quantityOrdered
+    mutate unitCost = unitCost
+    mutate totalCost = quantityOrdered * unitCost
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit PurchaseOrderItemUpdated
+  }
+
+  command remove(userId: string) {
+    guard self.quantityReceived == 0 "Cannot remove item that has been partially received"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit PurchaseOrderItemRemoved
+  }
+
+  store PurchaseOrderItem in memory
+}
+
+policy ManagersCanCreatePO execute: user.role in ["manager", "admin"] "Only managers can create purchase orders"
+policy ManagersCanSubmitPO execute: user.role in ["kitchen_lead", "manager", "admin"] "Leads and managers can submit purchase orders"
+policy ManagersCanApprovePO execute: user.role in ["manager", "admin"] "Only managers can approve purchase orders"
+policy ManagersCanCancelPO execute: user.role in ["manager", "admin"] "Only managers can cancel purchase orders"
+policy StaffCanReceivePO execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Staff can receive purchase orders"
+
+event PurchaseOrderCreated: "purchasing.po.created" {
+  purchaseOrderId: string
+  tenantId: string
+  poNumber: string
+  vendorId: string
+  locationId: string
+  createdAt: number
+}
+
+event PurchaseOrderSubmitted: "purchasing.po.submitted" {
+  purchaseOrderId: string
+  poNumber: string
+  vendorId: string
+  submittedBy: string
+  itemCount: number
+  total: number
+  submittedAt: number
+}
+
+event PurchaseOrderApproved: "purchasing.po.approved" {
+  purchaseOrderId: string
+  poNumber: string
+  vendorId: string
+  userId: string
+  total: number
+  approvedAt: number
+}
+
+event PurchaseOrderRejected: "purchasing.po.rejected" {
+  purchaseOrderId: string
+  poNumber: string
+  vendorId: string
+  userId: string
+  reason: string
+  rejectedAt: number
+}
+
+event PurchaseOrderCancelled: "purchasing.po.cancelled" {
+  purchaseOrderId: string
+  poNumber: string
+  vendorId: string
+  userId: string
+  reason: string
+  cancelledAt: number
+}
+
+event PurchaseOrderOrdered: "purchasing.po.ordered" {
+  purchaseOrderId: string
+  poNumber: string
+  vendorId: string
+  userId: string
+  orderedAt: number
+}
+
+event PurchaseOrderReceived: "purchasing.po.received" {
+  purchaseOrderId: string
+  poNumber: string
+  vendorId: string
+  receivedBy: string
+  receivedAt: number
+}
+
+event PurchaseOrderItemCreated: "purchasing.po.item.created" {
+  purchaseOrderItemId: string
+  purchaseOrderId: string
+  itemId: string
+  quantityOrdered: number
+  unitCost: number
+  totalCost: number
+  createdAt: number
+}
+
+event PurchaseOrderItemUpdated: "purchasing.po.item.updated" {
+  purchaseOrderItemId: string
+  purchaseOrderId: string
+  quantityOrdered: number
+  unitCost: number
+  totalCost: number
+  updatedAt: number
+}
+
+event PurchaseOrderItemRemoved: "purchasing.po.item.removed" {
+  purchaseOrderItemId: string
+  purchaseOrderId: string
+  userId: string
+  removedAt: number
+}

@@ -1,9 +1,9 @@
 import type { Dictionary } from "@repo/internationalization";
 import Image from "next/image";
 
-type FeaturesProps = {
+interface FeaturesProps {
   dictionary: Dictionary;
-};
+}
 
 export const Features = ({ dictionary }: FeaturesProps) => {
   const featureImages = [

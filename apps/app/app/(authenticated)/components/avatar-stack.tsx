@@ -1,6 +1,6 @@
 "use client";
 
-import { useOthers, useSelf } from "@repo/collaboration/hooks";
+import { useOtherCursors } from "@repo/collaboration/hooks";
 import {
   Avatar,
   AvatarFallback,
@@ -12,9 +12,9 @@ import {
   TooltipTrigger,
 } from "@repo/design-system/components/ui/tooltip";
 
-type PresenceAvatarProps = {
+interface PresenceAvatarProps {
   info?: Liveblocks["UserMeta"]["info"];
-};
+}
 
 const PresenceAvatar = ({ info }: PresenceAvatarProps) => (
   <Tooltip delayDuration={0}>
@@ -33,12 +33,11 @@ const PresenceAvatar = ({ info }: PresenceAvatarProps) => (
 );
 
 export const AvatarStack = () => {
-  const others = useOthers();
-  const self = useSelf();
+  const others = useOtherCursors();
   const hasMoreUsers = others.length > 3;
 
   return (
-    <div className="-space-x-1 flex items-center px-4">
+    <div className="flex items-center -space-x-1 px-4">
       {others.slice(0, 3).map(({ connectionId, info }) => (
         <PresenceAvatar info={info} key={connectionId} />
       ))}
@@ -51,8 +50,6 @@ export const AvatarStack = () => {
           }}
         />
       )}
-
-      {self && <PresenceAvatar info={self.info} />}
     </div>
   );
 };

@@ -1,14 +1,15 @@
+import { AuditLogsClient } from "./audit-logs-client";
+
 const DevConsoleAuditLogsPage = () => (
-  <div className="dev-console-panel">
-    <div className="dev-console-panel-header">
+  <div className="dev-console-stack">
+    <header className="dev-console-header">
       <div>
-        <h2>Audit Logs</h2>
-        <p>Track critical changes across tenants.</p>
+        <p className="dev-console-breadcrumb">Developers / Observability</p>
+        <h1 className="dev-console-title">Audit Logs</h1>
       </div>
-    </div>
-    <p className="text-sm text-slate-400">
-      Placeholder screen. Connect to audit log storage when ready.
-    </p>
+    </header>
+
+    <AuditLogsClient />
   </div>
 );
 

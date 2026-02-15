@@ -1,5 +1,5 @@
-import type { ClaimConflictInfo, TransitionError, TransitionResult } from './types';
-import { TransitionErrorCode } from './types';
+import type { ClaimConflictInfo, TransitionResult } from "./types";
+import { TransitionErrorCode } from "./types";
 
 /**
  * Validate that a user can claim a task
@@ -15,7 +15,9 @@ export function validateClaim(
   userId: string
 ): TransitionResult<void> {
   // Check if there's any active claim by a different user
-  const conflictingClaim = activeClaims.find((claim) => claim.userId !== userId);
+  const conflictingClaim = activeClaims.find(
+    (claim) => claim.userId !== userId
+  );
 
   if (conflictingClaim) {
     return {
@@ -53,7 +55,7 @@ export function validateRelease(
       success: false,
       error: {
         code: TransitionErrorCode.NO_ACTIVE_CLAIM,
-        message: 'User has no active claim on this task',
+        message: "User has no active claim on this task",
       },
     };
   }

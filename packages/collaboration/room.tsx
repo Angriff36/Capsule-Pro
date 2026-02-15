@@ -1,6 +1,7 @@
 "use client";
 
 import type { ResolveMentionSuggestionsArgs } from "@liveblocks/client";
+import { LiveMap } from "@liveblocks/client";
 import type { ResolveUsersArgs } from "@liveblocks/node";
 import {
   ClientSideSuspense,
@@ -30,7 +31,15 @@ export const Room = ({
   ...props
 }: RoomProps) => (
   <LiveblocksProvider authEndpoint={authEndpoint} {...props}>
-    <RoomProvider id={id} initialPresence={{ cursor: null }}>
+    <RoomProvider
+      id={id}
+      initialPresence={{
+        cursor: null,
+        selectedCardId: null,
+        isDragging: false,
+      }}
+      initialStorage={() => ({ cards: new LiveMap() })}
+    >
       <ClientSideSuspense fallback={fallback}>{children}</ClientSideSuspense>
     </RoomProvider>
   </LiveblocksProvider>

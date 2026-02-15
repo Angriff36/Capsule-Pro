@@ -1,13 +1,14 @@
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
-type BlogPostProperties = {
+// ISR: Revalidate every hour - blog posts may be edited
+export const revalidate = 3600;
+
+interface BlogPostProperties {
   readonly params: Promise<{
     slug: string;
   }>;
-};
+}
 
 export const generateMetadata = async (): Promise<Metadata> => {
   // Blog disabled -> no per-post metadata

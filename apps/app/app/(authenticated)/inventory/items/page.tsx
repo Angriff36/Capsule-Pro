@@ -1,10 +1,5 @@
-import { ModuleSection } from "../../components/module-section";
+import { InventoryItemsPageClient } from "./inventory-items-page-client";
 
-const InventoryItemsPage = () => (
-  <ModuleSection
-    title="Inventory Items"
-    summary="Ingredient catalog with vendors, units, and allergen flags."
-  />
-);
+const InventoryItemsPage = () => <InventoryItemsPageClient />;
 
 export default InventoryItemsPage;

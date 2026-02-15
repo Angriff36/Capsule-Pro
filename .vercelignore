@@ -1,0 +1,10 @@
+node_modules
+.turbo
+.next
+__tests__
+test
+test-scripts
+docs
+.env.local
+.env*.local
+*.md

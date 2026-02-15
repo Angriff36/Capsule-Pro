@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
-type AdministrativeLayoutProperties = {
+
+interface AdministrativeLayoutProperties {
   readonly children: ReactNode;
-};
+}
 
 const AdministrativeLayout = ({ children }: AdministrativeLayoutProperties) => (
   <>{children}</>

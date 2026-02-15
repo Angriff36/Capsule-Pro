@@ -1,14 +1,24 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import { CalendarDays } from "lucide-react";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { Header } from "../components/header";
 import { getTenantIdForOrg } from "../../lib/tenant";
+import { Header } from "../components/header";
 
-type SearchPageProperties = {
+interface SearchPageProperties {
   searchParams: Promise<{
     q: string;
   }>;
-};
+}
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   dateStyle: "medium",
@@ -71,27 +81,57 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
   return (
     <>
       <Header page="Search" pages={["Building Your Application"]} />
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-          {events.length === 0 ? (
-            <div className="text-muted-foreground text-sm">
-              No matching events.
-            </div>
-          ) : (
-            events.map((event) => (
-              <div
-                className="flex flex-col justify-between gap-2 rounded-xl bg-muted/50 p-4"
-                key={`${event.tenantId}-${event.id}`}
-              >
-                <div className="text-sm font-medium">{event.title}</div>
-                <div className="text-muted-foreground text-xs">
-                  {dateFormatter.format(event.eventDate)}
-                </div>
-              </div>
-            ))
-          )}
+      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+        {/* Page Header */}
+        <div className="space-y-0.5">
+          <h1 className="text-3xl font-bold tracking-tight">Search Results</h1>
+          <p className="text-muted-foreground">Showing results for "{q}"</p>
         </div>
-        <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+
+        <Separator />
+
+        {/* Search Results Section */}
+        <section className="space-y-4">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Events ({events.length})
+          </h2>
+          {events.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <p className="text-muted-foreground">
+                  No matching events found.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid auto-rows-min gap-6 md:grid-cols-3">
+              {events.map((event) => (
+                <Link
+                  className="group"
+                  href={`/events/${event.id}`}
+                  key={`${event.tenantId}-${event.id}`}
+                >
+                  <Card className="h-full transition hover:border-primary/40 hover:shadow-md">
+                    <CardHeader>
+                      <CardTitle className="text-base line-clamp-2">
+                        {event.title}
+                      </CardTitle>
+                      <CardDescription className="flex items-center gap-2">
+                        <CalendarDays className="size-4" />
+                        {dateFormatter.format(event.eventDate)}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-sm text-muted-foreground">
+                        {event.venueName}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </>
   );

@@ -3,11 +3,14 @@ import { createMetadata } from "@repo/seo/metadata";
 import type { Metadata } from "next";
 import { ContactForm } from "./components/contact-form";
 
-type ContactProps = {
+interface ContactProps {
   params: Promise<{
     locale: string;
   }>;
-};
+}
+
+// ISR: Revalidate daily - contact page has static content
+export const revalidate = 86_400;
 
 export const generateMetadata = async ({
   params,

@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
-type SchedulingLayoutProperties = {
+
+interface SchedulingLayoutProperties {
   readonly children: ReactNode;
-};
+}
 
 const SchedulingLayout = ({ children }: SchedulingLayoutProperties) => (
   <>{children}</>

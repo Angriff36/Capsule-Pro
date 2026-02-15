@@ -1,14 +1,14 @@
+import type { Event } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import type { Event } from "@repo/database";
 import { eventStatuses } from "../constants";
 
-type EventFormProps = {
+interface EventFormProps {
   event?: Event | null;
   action: (formData: FormData) => Promise<void>;
   submitLabel: string;
-};
+}
 
 const formatDateValue = (value?: Date | null): string => {
   if (!value) {
@@ -19,7 +19,7 @@ const formatDateValue = (value?: Date | null): string => {
 };
 
 const formatDecimalValue = (
-  value: Event["budget"] | null | undefined,
+  value: Event["budget"] | Event["ticketPrice"] | null | undefined
 ): string => {
   if (!value) {
     return "";
@@ -32,7 +32,7 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => (
   <form action={action} className="flex flex-col gap-6">
     {event?.id ? <input name="eventId" type="hidden" value={event.id} /> : null}
     <div className="grid gap-6 md:grid-cols-2">
-      <label className="flex flex-col gap-2 text-sm font-medium">
+      <label className="flex flex-col gap-2 font-medium text-sm">
         Title
         <Input
           defaultValue={event?.title ?? ""}
@@ -40,7 +40,7 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => (
           placeholder="Company holiday party"
         />
       </label>
-      <label className="flex flex-col gap-2 text-sm font-medium">
+      <label className="flex flex-col gap-2 font-medium text-sm">
         Event type
         <Input
           defaultValue={event?.eventType ?? ""}
@@ -49,19 +49,19 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => (
           required
         />
       </label>
-      <label className="flex flex-col gap-2 text-sm font-medium">
+      <label className="flex flex-col gap-2 font-medium text-sm">
         Event date
         <Input
           defaultValue={formatDateValue(event?.eventDate)}
           name="eventDate"
-          type="date"
           required
+          type="date"
         />
       </label>
-      <label className="flex flex-col gap-2 text-sm font-medium">
+      <label className="flex flex-col gap-2 font-medium text-sm">
         Status
         <select
-          className="border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none ring-ring/50 focus-visible:border-ring focus-visible:ring-[3px] rounded-md"
+          className="rounded-md border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none ring-ring/50 focus-visible:border-ring focus-visible:ring-[3px]"
           defaultValue={event?.status ?? "confirmed"}
           name="status"
         >
@@ -72,7 +72,7 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => (
           ))}
         </select>
       </label>
-      <label className="flex flex-col gap-2 text-sm font-medium">
+      <label className="flex flex-col gap-2 font-medium text-sm">
         Guest count
         <Input
           defaultValue={event?.guestCount ?? 1}
@@ -81,7 +81,7 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => (
           type="number"
         />
       </label>
-      <label className="flex flex-col gap-2 text-sm font-medium">
+      <label className="flex flex-col gap-2 font-medium text-sm">
         Budget
         <Input
           defaultValue={formatDecimalValue(event?.budget)}
@@ -90,7 +90,37 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => (
           type="number"
         />
       </label>
-      <label className="flex flex-col gap-2 text-sm font-medium md:col-span-2">
+      <label className="flex flex-col gap-2 font-medium text-sm">
+        Ticket tier
+        <Input
+          defaultValue={event?.ticketTier ?? ""}
+          name="ticketTier"
+          placeholder="General Admission"
+        />
+      </label>
+      <label className="flex flex-col gap-2 font-medium text-sm">
+        Ticket price
+        <Input
+          defaultValue={formatDecimalValue(event?.ticketPrice)}
+          min={0}
+          name="ticketPrice"
+          placeholder="0"
+          type="number"
+        />
+      </label>
+      <label className="flex flex-col gap-2 font-medium text-sm">
+        Format
+        <select
+          className="rounded-md border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none ring-ring/50 focus-visible:border-ring focus-visible:ring-[3px]"
+          defaultValue={event?.eventFormat ?? "in_person"}
+          name="eventFormat"
+        >
+          <option value="in_person">In-person</option>
+          <option value="virtual">Virtual</option>
+          <option value="hybrid">Hybrid</option>
+        </select>
+      </label>
+      <label className="flex flex-col gap-2 font-medium text-sm md:col-span-2">
         Venue name
         <Input
           defaultValue={event?.venueName ?? ""}
@@ -98,7 +128,7 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => (
           placeholder="The Archive Loft"
         />
       </label>
-      <label className="flex flex-col gap-2 text-sm font-medium md:col-span-2">
+      <label className="flex flex-col gap-2 font-medium text-sm md:col-span-2">
         Venue address
         <Input
           defaultValue={event?.venueAddress ?? ""}
@@ -106,7 +136,7 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => (
           placeholder="123 Main St, Chicago"
         />
       </label>
-      <label className="flex flex-col gap-2 text-sm font-medium md:col-span-2">
+      <label className="flex flex-col gap-2 font-medium text-sm md:col-span-2">
         Tags (comma separated)
         <Input
           defaultValue={event?.tags?.join(", ") ?? ""}
@@ -114,7 +144,24 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => (
           placeholder="vip, offsite"
         />
       </label>
-      <label className="flex flex-col gap-2 text-sm font-medium md:col-span-2">
+      <label className="flex flex-col gap-2 font-medium text-sm md:col-span-2">
+        Accessibility options (comma separated)
+        <Input
+          defaultValue={event?.accessibilityOptions?.join(", ") ?? ""}
+          name="accessibilityOptions"
+          placeholder="wheelchair access, ASL interpreter"
+        />
+      </label>
+      <label className="flex flex-col gap-2 font-medium text-sm md:col-span-2">
+        Featured media URL
+        <Input
+          defaultValue={event?.featuredMediaUrl ?? ""}
+          name="featuredMediaUrl"
+          placeholder="https://"
+          type="url"
+        />
+      </label>
+      <label className="flex flex-col gap-2 font-medium text-sm md:col-span-2">
         Notes
         <Textarea
           defaultValue={event?.notes ?? ""}
