@@ -123,6 +123,26 @@ export declare class DishPrismaStore implements Store<EntityInstance> {
     private mapToManifestEntity;
 }
 /**
+ * Prisma-backed store for KitchenTask entities
+ *
+ * Maps Manifest KitchenTask entities to the Prisma KitchenTask table.
+ * Unlike PrepTask, KitchenTask is a general-purpose task (not event-driven).
+ * Status values pass through directly (no remapping) since the manifest
+ * uses the same values as the DB: pending, in_progress, done, cancelled.
+ */
+export declare class KitchenTaskPrismaStore implements Store<EntityInstance> {
+    private readonly prisma;
+    private readonly tenantId;
+    constructor(prisma: PrismaClient, tenantId: string);
+    getAll(): Promise<EntityInstance[]>;
+    getById(id: string): Promise<EntityInstance | undefined>;
+    create(data: Partial<EntityInstance>): Promise<EntityInstance>;
+    update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
+    delete(id: string): Promise<boolean>;
+    clear(): Promise<void>;
+    private mapToManifestEntity;
+}
+/**
  * Create a Prisma store provider for Kitchen-Ops entities
  *
  * This returns a function that provides the appropriate Store implementation

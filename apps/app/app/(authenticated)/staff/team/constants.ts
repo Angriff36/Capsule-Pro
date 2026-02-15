@@ -2,6 +2,8 @@ export const roleOptions = [
   { value: "owner", label: "Owner" },
   { value: "admin", label: "Admin" },
   { value: "manager", label: "Manager" },
+  { value: "kitchen_lead", label: "Kitchen Lead" },
+  { value: "kitchen_staff", label: "Kitchen Staff" },
   { value: "staff", label: "Staff" },
 ] as const;
 

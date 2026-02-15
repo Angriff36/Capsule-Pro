@@ -143,7 +143,7 @@ model User {
   createdAt             DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt             DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt             DateTime?              @map("deleted_at") @db.Timestamptz(6)
-  authUserId            String?                @unique @map("auth_user_id")
+  authUserId            String?                @map("auth_user_id")
   employeeNumber        String?                @map("employee_number")
   phone                 String?
   employmentType        EmploymentType         @default(full_time) @map("employment_type")
@@ -162,6 +162,7 @@ model User {
 
   @@id([tenantId, id])
   @@unique([tenantId, id], map: "employees_tenant_id_unique_idx")
+  @@unique([tenantId, authUserId], map: "employees_tenant_auth_user_idx")
   @@index([roleId])
   @@map("employees")
   @@schema("tenant_staff")

@@ -11,6 +11,7 @@ import type {
   Dish,
   Ingredient,
   InventoryItem,
+  KitchenTask,
   KitchenTaskClaim,
   Menu,
   MenuDish,
@@ -838,6 +839,136 @@ export class DishPrismaStore implements Store<EntityInstance> {
 }
 
 /**
+ * Prisma-backed store for KitchenTask entities
+ *
+ * Maps Manifest KitchenTask entities to the Prisma KitchenTask table.
+ * Unlike PrepTask, KitchenTask is a general-purpose task (not event-driven).
+ * Status values pass through directly (no remapping) since the manifest
+ * uses the same values as the DB: pending, in_progress, done, cancelled.
+ */
+export class KitchenTaskPrismaStore implements Store<EntityInstance> {
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
+  ) {}
+
+  async getAll(): Promise<EntityInstance[]> {
+    const tasks = (await this.prisma.kitchenTask.findMany({
+      where: { tenantId: this.tenantId, deletedAt: null },
+    })) as KitchenTask[];
+
+    return tasks.map((task) => this.mapToManifestEntity(task));
+  }
+
+  async getById(id: string): Promise<EntityInstance | undefined> {
+    const task = await this.prisma.kitchenTask.findFirst({
+      where: { tenantId: this.tenantId, id, deletedAt: null },
+    });
+
+    if (!task) {
+      console.error(
+        `[KitchenTaskPrismaStore] getById(${id}) returned null for tenant ${this.tenantId}`
+      );
+      return undefined;
+    }
+
+    return this.mapToManifestEntity(task);
+  }
+
+  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
+    const task = await this.prisma.kitchenTask.create({
+      data: {
+        tenantId: this.tenantId,
+        id: data.id as string,
+        title: (data.title as string) || "",
+        summary: (data.summary as string) || "",
+        status: (data.status as string) || "pending",
+        priority: (data.priority as number) || 5,
+        complexity: (data.complexity as number) || 5,
+        tags: Array.isArray(data.tags) ? (data.tags as string[]) : [],
+        dueDate: data.dueDate ? new Date(data.dueDate as number) : undefined,
+        completedAt: data.completedAt
+          ? new Date(data.completedAt as number)
+          : undefined,
+      },
+    });
+
+    return this.mapToManifestEntity(task);
+  }
+
+  async update(
+    id: string,
+    data: Partial<EntityInstance>
+  ): Promise<EntityInstance | undefined> {
+    const existing = await this.prisma.kitchenTask.findFirst({
+      where: { tenantId: this.tenantId, id, deletedAt: null },
+    });
+
+    if (!existing) {
+      console.error(
+        `[KitchenTaskPrismaStore] update(${id}) — task not found for tenant ${this.tenantId}`
+      );
+      return undefined;
+    }
+
+    const updated = await this.prisma.kitchenTask.update({
+      where: { tenantId_id: { tenantId: this.tenantId, id } },
+      data: {
+        status: data.status as string | undefined,
+        priority: data.priority as number | undefined,
+        complexity: data.complexity as number | undefined,
+        title: data.title as string | undefined,
+        summary: data.summary as string | undefined,
+        tags: Array.isArray(data.tags) ? (data.tags as string[]) : undefined,
+        dueDate: data.dueDate ? new Date(data.dueDate as number) : undefined,
+        completedAt: data.completedAt
+          ? new Date(data.completedAt as number)
+          : undefined,
+        updatedAt: new Date(),
+      },
+    });
+
+    return this.mapToManifestEntity(updated);
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const existing = await this.prisma.kitchenTask.findFirst({
+      where: { tenantId: this.tenantId, id, deletedAt: null },
+    });
+
+    if (!existing) return false;
+
+    await this.prisma.kitchenTask.update({
+      where: { tenantId_id: { tenantId: this.tenantId, id } },
+      data: { deletedAt: new Date() },
+    });
+
+    return true;
+  }
+
+  async clear(): Promise<void> {
+    // No-op for Prisma stores — we don't bulk-delete production data
+  }
+
+  private mapToManifestEntity(task: KitchenTask): EntityInstance {
+    return {
+      id: task.id,
+      tenantId: task.tenantId,
+      title: task.title,
+      summary: task.summary,
+      status: task.status, // No remapping — manifest uses same values as DB
+      priority: task.priority,
+      complexity: task.complexity,
+      tags: Array.isArray(task.tags) ? task.tags.join(",") : "",
+      dueDate: task.dueDate ? task.dueDate.getTime() : 0,
+      completedAt: task.completedAt ? task.completedAt.getTime() : 0,
+      createdAt: task.createdAt.getTime(),
+      updatedAt: task.updatedAt.getTime(),
+    };
+  }
+}
+
+/**
  * Create a Prisma store provider for Kitchen-Ops entities
  *
  * This returns a function that provides the appropriate Store implementation
@@ -873,7 +1004,12 @@ export function createPrismaStoreProvider(
         return new StationPrismaStore(prisma, tenantId);
       case "InventoryItem":
         return new InventoryItemPrismaStore(prisma, tenantId);
+      case "KitchenTask":
+        return new KitchenTaskPrismaStore(prisma, tenantId);
       default:
+        console.error(
+          `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`
+        );
         return undefined;
     }
   };

@@ -210,13 +210,16 @@ export function TaskCard({
     }
     setIsLoading(true);
     try {
-      const response = await apiFetch(`/api/kitchen/tasks/${task.id}/claim`, {
+      // Manifest route: /api/kitchen/kitchen-tasks/commands/claim
+      const response = await apiFetch("/api/kitchen/kitchen-tasks/commands/claim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ employeeId: currentUserId }),
+        body: JSON.stringify({ id: task.id, userId: currentUserId }),
       });
       if (!response.ok) {
-        throw new Error("Failed to claim task");
+        const errBody = await response.json().catch(() => ({ error: "Unknown error" }));
+        console.error("[handleClaim] Failed:", response.status, errBody);
+        throw new Error(`Claim failed (${response.status}): ${errBody.error || JSON.stringify(errBody)}`);
       }
       router.refresh();
     } catch (error) {
@@ -233,13 +236,16 @@ export function TaskCard({
     }
     setIsLoading(true);
     try {
-      const response = await apiFetch(`/api/kitchen/tasks/${task.id}/release`, {
+      // Manifest route: /api/kitchen/kitchen-tasks/commands/release
+      const response = await apiFetch("/api/kitchen/kitchen-tasks/commands/release", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ employeeId: currentUserId }),
+        body: JSON.stringify({ id: task.id, userId: currentUserId, reason: "" }),
       });
       if (!response.ok) {
-        throw new Error("Failed to release task");
+        const errBody = await response.json().catch(() => ({ error: "Unknown error" }));
+        console.error("[handleRelease] Failed:", response.status, errBody);
+        throw new Error(`Release failed (${response.status}): ${errBody.error || JSON.stringify(errBody)}`);
       }
       router.refresh();
     } catch (error) {

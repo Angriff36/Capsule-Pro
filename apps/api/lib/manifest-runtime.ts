@@ -70,6 +70,7 @@ const ENTITY_TO_MANIFEST: Record<string, string> = {
   PrepListItem: "prep-list-rules",
   InventoryItem: "inventory-rules",
   Station: "station-rules",
+  KitchenTask: "kitchen-task-rules",
 };
 
 /**
@@ -254,12 +255,11 @@ export async function createManifestRuntime(
     },
   };
 
-  return new ManifestRuntimeEngine(ir, {
-    user: ctx.user,
-    storeProvider,
-    eventCollector, // Pass event collector to runtime
-    telemetry,
-  });
+  return new ManifestRuntimeEngine(
+    ir,
+    { user: ctx.user, eventCollector, telemetry },
+    { storeProvider }
+  );
 }
 
 /** Helper to create a runtime specifically for Menu operations */

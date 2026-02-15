@@ -218,9 +218,11 @@ export default function KitchenMobilePage() {
     }
 
     try {
-      const response = await apiFetch(`/api/kitchen/tasks/${taskId}/claim`, {
+      // Manifest route: /api/kitchen/kitchen-tasks/commands/claim
+      const response = await apiFetch("/api/kitchen/kitchen-tasks/commands/claim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: taskId }),
       });
 
       if (response.ok) {
@@ -257,9 +259,11 @@ export default function KitchenMobilePage() {
     }
 
     try {
-      const response = await apiFetch(`/api/kitchen/tasks/${taskId}/release`, {
+      // Manifest route: /api/kitchen/kitchen-tasks/commands/release
+      const response = await apiFetch("/api/kitchen/kitchen-tasks/commands/release", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: taskId, reason: "" }),
       });
 
       if (response.ok) {

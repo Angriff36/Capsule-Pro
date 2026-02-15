@@ -1,6 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -21,6 +22,8 @@ import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { AddEmployeeToBoardButton } from "./components/add-employee-to-board-button";
 import { AddStaffForm } from "./components/add-staff-form";
+import { AutoRegisterStaff } from "./components/auto-register-staff";
+import { EditStaffDialog } from "./components/edit-staff-dialog";
 
 interface EmployeeRow {
   id: string;
@@ -81,6 +84,8 @@ const StaffTeamPage = async () => {
 
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+      <AutoRegisterStaff />
+      
       <div className="space-y-0.5">
         <h1 className="text-3xl font-bold tracking-tight">Team</h1>
         <p className="text-muted-foreground">
@@ -142,11 +147,21 @@ const StaffTeamPage = async () => {
                         {dateFormatter.format(employee.createdAt)}
                       </TableCell>
                       <TableCell>
-                        <AddEmployeeToBoardButton
-                          employeeId={employee.id}
-                          employeeName={formatName(employee)}
-                          employeeRole={formatEnum(employee.role)}
-                        />
+                        <EditStaffDialog
+                          employee={{
+                            id: employee.id,
+                            email: employee.email,
+                            firstName: employee.firstName,
+                            lastName: employee.lastName,
+                            role: employee.role,
+                            isActive: employee.isActive,
+                            employmentType: employee.employmentType,
+                          }}
+                        >
+                          <Button variant="outline" size="sm">
+                            Edit
+                          </Button>
+                        </EditStaffDialog>
                       </TableCell>
                     </TableRow>
                   ))}

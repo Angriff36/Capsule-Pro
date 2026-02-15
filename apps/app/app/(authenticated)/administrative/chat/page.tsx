@@ -10,6 +10,13 @@ import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { AdministrativeChatClient } from "./components/admin-chat-client";
 
+const employeeSelect = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+} as const;
+
 const AdministrativeChatPage = async () => {
   const { orgId, userId } = await auth();
 
@@ -21,55 +28,26 @@ const AdministrativeChatPage = async () => {
   const clerkUser = await currentUser();
   const primaryEmail = clerkUser?.emailAddresses.at(0)?.emailAddress ?? null;
 
+  // 1. Try by authUserId (the correct, linked path)
   let employee = await database.user.findFirst({
     where: {
       tenantId,
       authUserId: userId,
       deletedAt: null,
     },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-    },
+    select: employeeSelect,
   });
 
+  // 2. If not found by authUserId, try by email (unlinked employee)
   if (!employee && primaryEmail) {
-    const existingEmployee = await database.user.findFirst({
+    employee = await database.user.findFirst({
       where: {
         tenantId,
         email: primaryEmail,
-        authUserId: null,
         deletedAt: null,
       },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-      },
+      select: employeeSelect,
     });
-
-    if (existingEmployee) {
-      employee = await database.user.update({
-        where: {
-          tenantId_id: {
-            tenantId,
-            id: existingEmployee.id,
-          },
-        },
-        data: {
-          authUserId: userId,
-        },
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-        },
-      });
-    }
   }
 
   if (!employee) {
@@ -87,7 +65,7 @@ const AdministrativeChatPage = async () => {
         <Alert variant="destructive">
           <AlertTitle>Employee profile missing</AlertTitle>
           <AlertDescription>
-            We couldn’t find an employee record linked to your account.
+            We couldn&apos;t find an employee record linked to your account.
             {primaryEmail
               ? ` Ask an admin to add ${primaryEmail} to staff or link your account.`
               : " Ask an admin to add your email to staff or link your account."}
