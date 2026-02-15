@@ -34,9 +34,17 @@ planning scratchpad.
 
 Do not read unless explicitly required by the current task:
 
-- docs/inventory/**
+- docs/inventory/\*\*
 - Archived plans
 - Historical architecture findings
+
+---
+
+## Execution Mode
+
+- **Autonomous execution**: Do NOT ask for approval before bash/write/edit/task operations. Just do it.
+- Skip approval gates — the user trusts the agent to execute directly.
+- Still report errors and stop on failures (don't auto-fix blindly), but don't ask permission to start work.
 
 ---
 
@@ -44,5 +52,3 @@ Do not read unless explicitly required by the current task:
 
 - Exactly one commit per iteration
 - Conventional Commit format
-
-
