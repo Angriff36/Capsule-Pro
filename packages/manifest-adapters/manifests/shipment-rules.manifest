@@ -6,6 +6,7 @@ entity Shipment {
   property required tenantId: string
   property required shipmentNumber: string
   property status: string = "draft"
+  property purchaseOrderId: string = ""
   property eventId: string = ""
   property supplierId: string = ""
   property locationId: string = ""
@@ -73,6 +74,42 @@ entity Shipment {
     mutate updatedAt = now()
 
     emit ShipmentUpdated
+  }
+
+  command schedule(userId: string, scheduledDate: number) {
+    guard self.status == "draft" "Can only schedule draft shipments"
+
+    constraint blockNoItems:block self.totalItems == 0 {
+      messageTemplate: "Cannot schedule shipment with no items"
+      details: {
+        shipmentId: self.id
+        purchaseOrderId: self.purchaseOrderId
+      }
+    }
+
+    mutate status = "scheduled"
+    mutate updatedAt = now()
+
+    emit ShipmentScheduled
+  }
+
+  command startPreparing(userId: string) {
+    guard self.status == "scheduled" "Can only start preparing scheduled shipments"
+
+    mutate status = "preparing"
+    mutate updatedAt = now()
+
+    emit ShipmentPreparationStarted
+  }
+
+  command ship(userId: string, trackingNumber: string) {
+    guard self.status == "preparing" "Can only ship shipments that are being prepared"
+
+    mutate status = "in_transit"
+    mutate trackingNumber = trackingNumber
+    mutate updatedAt = now()
+
+    emit ShipmentShipped
   }
 
   command markDelivered(userId: string, receivedBy: string, signature: string) {
@@ -237,6 +274,31 @@ event ShipmentCancelled: "purchasing.shipment.cancelled" {
   userId: string
   reason: string
   cancelledAt: number
+}
+
+event ShipmentScheduled: "purchasing.shipment.scheduled" {
+  shipmentId: string
+  tenantId: string
+  purchaseOrderId: string
+  userId: string
+  scheduledAt: number
+}
+
+event ShipmentPreparationStarted: "purchasing.shipment.preparation_started" {
+  shipmentId: string
+  tenantId: string
+  purchaseOrderId: string
+  userId: string
+  startedAt: number
+}
+
+event ShipmentShipped: "purchasing.shipment.shipped" {
+  shipmentId: string
+  tenantId: string
+  purchaseOrderId: string
+  trackingNumber: string
+  userId: string
+  shippedAt: number
 }
 
 event ShipmentItemCreated: "purchasing.shipment.item.created" {

@@ -25,6 +25,7 @@ import type { IR, IRCommand } from "@manifest/runtime/ir";
 import { compileToIR } from "@manifest/runtime/ir-compiler";
 import { database, type PrismaClient } from "@repo/database";
 import { enforceCommandOwnership } from "@repo/manifest-adapters/ir-contract";
+import { PrismaJsonStore } from "@repo/manifest-adapters/prisma-json-store";
 import type { PrismaStoreConfig } from "@repo/manifest-adapters/prisma-store";
 import {
   createPrismaOutboxWriter,
@@ -32,6 +33,26 @@ import {
 } from "@repo/manifest-adapters/prisma-store";
 import { ManifestRuntimeEngine } from "@repo/manifest-adapters/runtime-engine";
 import { createSentryTelemetry } from "./manifest/telemetry";
+
+/**
+ * Entities that have dedicated Prisma models with hand-written field mappings.
+ * All other entities fall back to the generic PrismaJsonStore (JSON blob storage).
+ */
+const ENTITIES_WITH_SPECIFIC_STORES = new Set([
+  "PrepTask",
+  "Recipe",
+  "RecipeVersion",
+  "Ingredient",
+  "RecipeIngredient",
+  "Dish",
+  "Menu",
+  "MenuDish",
+  "PrepList",
+  "PrepListItem",
+  "Station",
+  "InventoryItem",
+  "KitchenTask",
+]);
 
 // Singleton Sentry telemetry hooks - created once, reused across all runtimes
 const sentryTelemetry = createSentryTelemetry();
@@ -241,25 +262,39 @@ export async function createManifestRuntime(
   // and consumed by PrismaStore within the same transaction
   const eventCollector: EmittedEvent[] = [];
 
-  // Create a store provider for each entity in the manifest
-  // This allows different entities to use their own Prisma models
+  // Create a store provider for each entity in the manifest.
+  // Entities with dedicated Prisma models use PrismaStore (hand-written field mappings).
+  // All other entities fall back to PrismaJsonStore (generic JSON blob storage).
   const storeProvider: RuntimeOptions["storeProvider"] = (
     entityName: string
   ) => {
-    const outboxWriter = createPrismaOutboxWriter(
-      entityName,
-      ctx.user.tenantId
+    if (ENTITIES_WITH_SPECIFIC_STORES.has(entityName)) {
+      const outboxWriter = createPrismaOutboxWriter(
+        entityName,
+        ctx.user.tenantId
+      );
+
+      const config: PrismaStoreConfig = {
+        prisma: database,
+        entityName,
+        tenantId: ctx.user.tenantId,
+        outboxWriter,
+        eventCollector, // Share the event collector with the store
+      };
+
+      return new PrismaStore(config);
+    }
+
+    // Fall back to generic JSON store for all Phase 1-7 entities
+    // that don't have dedicated Prisma models yet
+    console.log(
+      `[manifest-runtime] Using PrismaJsonStore for entity: ${entityName}`
     );
-
-    const config: PrismaStoreConfig = {
+    return new PrismaJsonStore({
       prisma: database,
-      entityName,
       tenantId: ctx.user.tenantId,
-      outboxWriter,
-      eventCollector, // Share the event collector with the store
-    };
-
-    return new PrismaStore(config);
+      entityType: entityName,
+    });
   };
 
   // Telemetry hooks: Sentry observability + transactional outbox event writes.

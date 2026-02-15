@@ -104,6 +104,23 @@ entity Event {
     emit EventUpdated
   }
 
+  command confirm(userId: string) {
+    guard self.status == "draft" "Can only confirm draft events"
+
+    constraint blockNoGuestCount:block self.guestCount == 0 {
+      messageTemplate: "Cannot confirm event '{eventName}' with no guest count"
+      details: {
+        eventName: self.title
+        eventId: self.id
+      }
+    }
+
+    mutate status = "confirmed"
+    mutate updatedAt = now()
+
+    emit EventConfirmed
+  }
+
   command cancel(reason: string) {
     guard self.status != "completed" "Cannot cancel completed event"
     guard self.status != "archived" "Cannot cancel archived event"
@@ -370,6 +387,15 @@ policy EventFinalize execute: user.role in ["manager", "admin"] "Only managers c
 policy EventArchive execute: user.role in ["manager", "admin"] "Only managers can archive events"
 policy ProfitabilityManagement execute: user.role in ["manager", "admin", "finance"] "Managers and finance can manage profitability"
 policy SummaryManagement execute: user.role in ["event_coordinator", "manager", "admin"] "Event coordinators and above can manage summaries"
+
+event EventConfirmed: "events.event.confirmed" {
+  eventId: string
+  tenantId: string
+  eventName: string
+  guestCount: number
+  userId: string
+  confirmedAt: number
+}
 
 // Event entity events
 event EventCreated: "events.event.created" {

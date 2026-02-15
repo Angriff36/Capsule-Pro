@@ -101,6 +101,7 @@ model Account {
   adminChatParticipants   AdminChatParticipant[]
   adminChatMessages       AdminChatMessage[]
   chartOfAccounts         ChartOfAccount[]
+  manifestEntities        ManifestEntity[]
 
   @@map("accounts")
   @@schema("platform")
@@ -3265,4 +3266,33 @@ model ChartOfAccount {
   @@index([tenantId, accountNumber])
   @@map("chart_of_accounts")
   @@schema("tenant_accounting")
+}
+
+model ManifestEntity {
+  tenantId    String   @map("tenant_id") @db.Uuid
+  entityType  String   @map("entity_type")
+  id          String   @db.Uuid
+  data        Json
+  version     Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant      Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, entityType, id])
+  @@index([tenantId, entityType])
+  @@map("manifest_entity")
+  @@schema("tenant")
+}
+
+model ManifestIdempotency {
+  tenantId  String   @map("tenant_id") @db.Uuid
+  key       String
+  result    Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+
+  @@id([tenantId, key])
+  @@index([expiresAt])
+  @@map("manifest_idempotency")
+  @@schema("tenant")
 }

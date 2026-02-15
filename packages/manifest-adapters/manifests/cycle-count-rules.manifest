@@ -85,6 +85,15 @@ entity CycleCountSession {
     emit CycleCountSessionCompleted
   }
 
+  command finalize(userId: string) {
+    guard self.status == "completed" "Can only finalize completed sessions"
+
+    mutate status = "finalized"
+    mutate updatedAt = now()
+
+    emit CycleCountSessionFinalized
+  }
+
   command cancel(userId: string, reason: string) {
     guard self.status != "completed" "Cannot cancel a completed session"
     guard self.status != "cancelled" "Session is already cancelled"
@@ -333,6 +342,14 @@ event CycleCountSessionCancelled: "inventory.cyclecount.session.cancelled" {
   userId: string
   reason: string
   cancelledAt: number
+}
+
+event CycleCountSessionFinalized: "inventory.cyclecount.session.finalized" {
+  sessionId: string
+  tenantId: string
+  locationId: string
+  userId: string
+  finalizedAt: number
 }
 
 event CycleCountRecordCreated: "inventory.cyclecount.record.created" {

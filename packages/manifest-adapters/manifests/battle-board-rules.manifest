@@ -18,6 +18,7 @@ entity BattleBoard {
   property notes: string = ""
   property tags: string = ""
   property createdAt: number = 0
+  property dishCount: number = 0
   property updatedAt: number = 0
   property deletedAt: number = 0
 
@@ -62,6 +63,32 @@ entity BattleBoard {
     mutate updatedAt = now()
 
     emit BattleBoardCreated
+  }
+
+  command open(userId: string) {
+    guard self.status == "draft" "Can only open draft battle boards"
+
+    constraint blockNoDishes:block self.dishCount == 0 {
+      messageTemplate: "Cannot open battle board '{boardName}' with no dishes"
+      details: {
+        boardName: self.boardName
+        boardId: self.id
+      }
+    }
+
+    mutate status = "open"
+    mutate updatedAt = now()
+
+    emit BattleBoardOpened
+  }
+
+  command startVoting(userId: string) {
+    guard self.status == "open" "Can only start voting on open battle boards"
+
+    mutate status = "voting"
+    mutate updatedAt = now()
+
+    emit BattleBoardVotingStarted
   }
 
   command addDish(dishData: string, userId: string) {
@@ -149,6 +176,23 @@ event BattleBoardVoteCast: "events.battle_board.vote_cast" {
   userId: string
   voteData: string
   votedAt: number
+}
+
+event BattleBoardOpened: "kitchen.battleboard.opened" {
+  boardId: string
+  tenantId: string
+  boardName: string
+  dishCount: number
+  userId: string
+  openedAt: number
+}
+
+event BattleBoardVotingStarted: "kitchen.battleboard.voting_started" {
+  boardId: string
+  tenantId: string
+  boardName: string
+  userId: string
+  startedAt: number
 }
 
 event BattleBoardFinalized: "events.battle_board.finalized" {

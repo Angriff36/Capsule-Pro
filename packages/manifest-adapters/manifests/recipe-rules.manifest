@@ -186,6 +186,7 @@ entity RecipeIngredient {
   property required sortOrder: number
   property preparationNotes: string = ""
   property isOptional: boolean = false
+  property deletedAt: number = 0
 
   constraint positiveQuantity: self.quantity > 0 "Ingredient quantity must be positive"
   constraint validOrder: self.sortOrder > 0 "Sort order must be positive"
@@ -223,6 +224,12 @@ entity RecipeIngredient {
     mutate isOptional = isOptional
 
     emit RecipeIngredientCreated
+  }
+
+  command remove(userId: string) {
+    mutate deletedAt = now()
+
+    emit RecipeIngredientRemoved
   }
 
   store RecipeIngredient in memory
@@ -436,6 +443,15 @@ event DishPricingUpdated: "kitchen.dish.pricing.updated" {
   oldCost: number
   newCost: number
   updatedAt: number
+}
+
+event RecipeIngredientRemoved: "kitchen.recipeingredient.removed" {
+  recipeIngredientId: string
+  recipeVersionId: string
+  ingredientId: string
+  tenantId: string
+  userId: string
+  removedAt: number
 }
 
 event DishLeadTimeUpdated: "kitchen.dish.leadtime.updated" {

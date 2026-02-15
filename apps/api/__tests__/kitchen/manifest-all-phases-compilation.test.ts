@@ -134,6 +134,7 @@ const MANIFEST_SPECS: ManifestSpec[] = [
         commands: [
           "create",
           "update",
+          "confirm",
           "cancel",
           "archive",
           "updateGuestCount",
@@ -169,7 +170,7 @@ const MANIFEST_SPECS: ManifestSpec[] = [
     entities: [
       {
         name: "EventBudget",
-        commands: ["create", "update", "finalize"],
+        commands: ["create", "update", "approve", "finalize"],
       },
       {
         name: "BudgetLineItem",
@@ -183,7 +184,14 @@ const MANIFEST_SPECS: ManifestSpec[] = [
     entities: [
       {
         name: "CateringOrder",
-        commands: ["create", "update", "confirm", "cancel", "updateStatus"],
+        commands: [
+          "create",
+          "update",
+          "confirm",
+          "cancel",
+          "startPrep",
+          "markComplete",
+        ],
       },
     ],
   },
@@ -193,7 +201,15 @@ const MANIFEST_SPECS: ManifestSpec[] = [
     entities: [
       {
         name: "BattleBoard",
-        commands: ["create", "addDish", "removeDish", "vote", "finalize"],
+        commands: [
+          "create",
+          "open",
+          "addDish",
+          "removeDish",
+          "startVoting",
+          "vote",
+          "finalize",
+        ],
       },
     ],
   },
@@ -295,7 +311,15 @@ const MANIFEST_SPECS: ManifestSpec[] = [
     entities: [
       {
         name: "Shipment",
-        commands: ["create", "update", "markDelivered", "cancel"],
+        commands: [
+          "create",
+          "update",
+          "schedule",
+          "startPreparing",
+          "ship",
+          "markDelivered",
+          "cancel",
+        ],
       },
       {
         name: "ShipmentItem",
@@ -329,7 +353,7 @@ const MANIFEST_SPECS: ManifestSpec[] = [
     entities: [
       {
         name: "CycleCountSession",
-        commands: ["create", "start", "complete", "cancel"],
+        commands: ["create", "start", "complete", "finalize", "cancel"],
       },
       {
         name: "CycleCountRecord",
@@ -389,7 +413,7 @@ const MANIFEST_SPECS: ManifestSpec[] = [
     entities: [
       {
         name: "CommandBoard",
-        commands: ["create", "update", "deactivate"],
+        commands: ["create", "update", "activate", "deactivate"],
       },
       {
         name: "CommandBoardCard",

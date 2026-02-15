@@ -118,6 +118,7 @@ entity MenuDish {
   property course: string = ""
   property sortOrder: number = 0
   property isOptional: boolean = false
+  property deletedAt: number = 0
 
   constraint validMenuId: self.menuId != null and self.menuId != "" "Menu ID is required"
   constraint validDishId: self.dishId != null and self.dishId != "" "Dish ID is required"
@@ -142,6 +143,12 @@ entity MenuDish {
     mutate isOptional = isOptional
 
     emit MenuDishAdded
+  }
+
+  command remove(userId: string) {
+    mutate deletedAt = now()
+
+    emit MenuDishRemoved
   }
 
   store MenuDish in memory
@@ -192,11 +199,12 @@ event MenuDishAdded: "kitchen.menu.dish_added" {
   addedAt: number
 }
 
-event MenuDishRemoved: "kitchen.menu.dish_removed" {
-  menuId: string
-  tenantId: string
-  dishId: string
+event MenuDishRemoved: "kitchen.menudish.removed" {
   menuDishId: string
+  menuId: string
+  dishId: string
+  tenantId: string
+  userId: string
   removedAt: number
 }
 

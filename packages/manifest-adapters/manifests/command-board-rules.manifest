@@ -37,6 +37,7 @@ entity CommandBoard {
   }
 
   command update(newName: string, newDescription: string, newTags: string) {
+    guard self.status == "draft" "Can only update draft boards"
     guard newName != null and newName != "" "Board name is required"
 
     constraint warnNameChange:warn self.name != newName {
@@ -53,6 +54,15 @@ entity CommandBoard {
     mutate updatedAt = now()
 
     emit CommandBoardUpdated
+  }
+
+  command activate(userId: string) {
+    guard self.status == "draft" "Can only activate draft boards"
+
+    mutate status = "active"
+    mutate updatedAt = now()
+
+    emit CommandBoardActivated
   }
 
   command deactivate(reason: string, userId: string) {
@@ -405,6 +415,14 @@ event CommandBoardUpdated: "board.command_board.updated" {
   oldName: string
   newName: string
   updatedAt: number
+}
+
+event CommandBoardActivated: "board.command_board.activated" {
+  boardId: string
+  tenantId: string
+  name: string
+  userId: string
+  activatedAt: number
 }
 
 event CommandBoardDeactivated: "board.command_board.deactivated" {

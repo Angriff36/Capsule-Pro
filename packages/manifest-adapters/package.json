@@ -37,6 +37,10 @@
     "./manifest-runtime": {
       "types": "./dist/manifest-runtime.d.ts",
       "import": "./dist/manifest-runtime.js"
+    },
+    "./prisma-json-store": {
+      "types": "./dist/prisma-json-store.d.ts",
+      "import": "./dist/prisma-json-store.js"
     }
   },
   "scripts": {

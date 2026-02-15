@@ -93,6 +93,23 @@ entity EventBudget {
     emit EventBudgetUpdated
   }
 
+  command approve(userId: string) {
+    guard self.status == "draft" "Can only approve draft budgets"
+
+    constraint blockNoLineItems:block self.totalBudgetAmount == 0 {
+      messageTemplate: "Cannot approve budget with no budgeted amount"
+      details: {
+        budgetId: self.id
+        eventId: self.eventId
+      }
+    }
+
+    mutate status = "approved"
+    mutate updatedAt = now()
+
+    emit EventBudgetApproved
+  }
+
   command finalize(userId: string) {
     guard self.status == "draft" or self.status == "approved" "Can only finalize draft or approved budgets"
 
@@ -236,6 +253,15 @@ event EventBudgetFinalized: "events.budget.finalized" {
   variancePercentage: number
   userId: string
   finalizedAt: number
+}
+
+event EventBudgetApproved: "events.budget.approved" {
+  budgetId: string
+  tenantId: string
+  eventId: string
+  totalBudgeted: number
+  userId: string
+  approvedAt: number
 }
 
 // Line item events

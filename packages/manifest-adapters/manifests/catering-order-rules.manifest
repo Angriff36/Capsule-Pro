@@ -170,23 +170,30 @@ entity CateringOrder {
     emit CateringOrderCancelled
   }
 
-  command updateStatus(newStatus: string, userId: string) {
-    guard self.orderStatus != "cancelled" "Cannot update cancelled order"
-    guard newStatus in ["draft", "confirmed", "in_progress", "completed", "cancelled"] "Invalid status"
+  command startPrep(userId: string) {
+    guard self.orderStatus == "confirmed" "Can only start prep on confirmed orders"
 
-    constraint blockCompleteWithoutStaff:warn self.staffRequired > 0 and self.staffAssigned < self.staffRequired and newStatus == "in_progress" {
-      messageTemplate: "Starting order {orderNumber} without full staffing ({assigned}/{required})"
+    mutate orderStatus = "in_progress"
+    mutate updatedAt = now()
+
+    emit CateringOrderPrepStarted
+  }
+
+  command markComplete(userId: string) {
+    guard self.orderStatus == "in_progress" "Can only complete orders that are in progress"
+
+    constraint warnIncompleteItems:warn true {
+      messageTemplate: "Completing catering order '{orderId}' — verify all items are prepared"
       details: {
-        orderNumber: self.orderNumber
-        staffAssigned: self.staffAssigned
-        staffRequired: self.staffRequired
+        orderId: self.id
+        eventId: self.eventId
       }
     }
 
-    mutate orderStatus = newStatus
+    mutate orderStatus = "completed"
     mutate updatedAt = now()
 
-    emit CateringOrderStatusUpdated
+    emit CateringOrderCompleted
   }
 
   store CateringOrder in memory
@@ -236,12 +243,18 @@ event CateringOrderCancelled: "events.catering_order.cancelled" {
   cancelledAt: number
 }
 
-event CateringOrderStatusUpdated: "events.catering_order.status_updated" {
+event CateringOrderPrepStarted: "catering.order.prep_started" {
   orderId: string
   tenantId: string
-  orderNumber: string
-  oldStatus: string
-  newStatus: string
+  eventId: string
   userId: string
-  updatedAt: number
+  startedAt: number
+}
+
+event CateringOrderCompleted: "catering.order.completed" {
+  orderId: string
+  tenantId: string
+  eventId: string
+  userId: string
+  completedAt: number
 }
