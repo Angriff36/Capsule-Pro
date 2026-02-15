@@ -3,6 +3,7 @@
 **Last Updated**: 2026-02-15
 **Goal**: KitchenTask Manifest Integration (Phase 1)
 **Branch**: manifest-.3
+**Tag**: v0.5.0 ✓
 
 ---
 
