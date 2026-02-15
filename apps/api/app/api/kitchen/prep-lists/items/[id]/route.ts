@@ -1,125 +1,168 @@
-import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
-import { captureException } from "@sentry/nextjs";
-import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 /**
  * PATCH /api/kitchen/prep-lists/items/[id]
- * Update a prep list item (quantities, completion, etc.)
+ * Update a prep list item via manifest commands.
  *
- * Migrated from $queryRawUnsafe (SQL injection risk) to Prisma ORM.
- * For command-level operations with constraint/guard validation,
- * use the /commands/* endpoints instead.
+ * Routes to the appropriate manifest command based on the field being updated:
+ * - scaledQuantity → PrepListItem.updateQuantity
+ * - isCompleted: true → PrepListItem.markCompleted
+ * - isCompleted: false → PrepListItem.markUncompleted
+ * - preparationNotes → PrepListItem.updatePrepNotes
+ * - stationId/stationName → PrepListItem.updateStation
+ *
+ * Only one field-type update per request is supported. If multiple fields
+ * are sent, they are prioritized in the order listed above.
  */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
+  // Clone the request so we can read the body to determine the command,
+  // while still passing the original request to executeManifestCommand
+  const clonedRequest = request.clone();
+  let body: Record<string, unknown> = {};
   try {
-    const { orgId, userId } = await auth();
-
-    if (!(orgId && userId)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    const { id } = await params;
-    const body = await request.json();
-    const { scaledQuantity, isCompleted, preparationNotes, isOptional } = body;
-
-    // Build type-safe update data
-    const data: Prisma.PrepListItemUpdateInput = {};
-
-    if (scaledQuantity !== undefined) {
-      data.scaledQuantity = new Prisma.Decimal(scaledQuantity);
-    }
-    if (isCompleted !== undefined) {
-      data.isCompleted = isCompleted;
-      if (isCompleted) {
-        data.completedAt = new Date();
-        data.completedBy = userId;
-      } else {
-        data.completedAt = null;
-        data.completedBy = null;
-      }
-    }
-    if (preparationNotes !== undefined) {
-      data.preparationNotes = preparationNotes;
-    }
-    if (isOptional !== undefined) {
-      data.isOptional = isOptional;
-    }
-
-    if (Object.keys(data).length === 0) {
-      return NextResponse.json(
-        { error: "No fields to update" },
-        { status: 400 }
-      );
-    }
-
-    // Verify the item exists and belongs to this tenant
-    const existing = await database.prepListItem.findFirst({
-      where: { tenantId, id, deletedAt: null },
-    });
-
-    if (!existing) {
-      return NextResponse.json(
-        { error: "Prep list item not found" },
-        { status: 404 }
-      );
-    }
-
-    await database.prepListItem.update({
-      where: { tenantId_id: { tenantId, id } },
-      data,
-    });
-
-    return NextResponse.json({
-      message: "Prep list item updated successfully",
-    });
+    body = await clonedRequest.json();
   } catch (error) {
-    captureException(error);
+    console.error("[PrepListItem/PATCH] Failed to parse request body:", error);
     return NextResponse.json(
-      { error: "Failed to update prep list item" },
-      { status: 500 }
+      { message: "Invalid request body" },
+      { status: 400 }
     );
   }
+
+  // Route to the appropriate manifest command based on the field being updated
+
+  // 1. Completion status changes
+  if (body.isCompleted !== undefined) {
+    if (body.isCompleted) {
+      console.log("[PrepListItem/PATCH] Delegating to markCompleted command", {
+        itemId: id,
+      });
+      return executeManifestCommand(request, {
+        entityName: "PrepListItem",
+        commandName: "markCompleted",
+        params: { id },
+        transformBody: (_body, ctx) => ({
+          id,
+          userId: ctx.userId,
+        }),
+      });
+    }
+
+    console.log("[PrepListItem/PATCH] Delegating to markUncompleted command", {
+      itemId: id,
+    });
+    return executeManifestCommand(request, {
+      entityName: "PrepListItem",
+      commandName: "markUncompleted",
+      params: { id },
+      transformBody: (_body, ctx) => ({
+        id,
+        userId: ctx.userId,
+      }),
+    });
+  }
+
+  // 2. Quantity updates
+  if (body.scaledQuantity !== undefined) {
+    console.log("[PrepListItem/PATCH] Delegating to updateQuantity command", {
+      itemId: id,
+      scaledQuantity: body.scaledQuantity,
+    });
+    return executeManifestCommand(request, {
+      entityName: "PrepListItem",
+      commandName: "updateQuantity",
+      params: { id },
+      transformBody: (reqBody, ctx) => ({
+        id,
+        scaledQuantity: reqBody.scaledQuantity,
+        userId: ctx.userId,
+      }),
+    });
+  }
+
+  // 3. Preparation notes updates
+  if (body.preparationNotes !== undefined) {
+    console.log("[PrepListItem/PATCH] Delegating to updatePrepNotes command", {
+      itemId: id,
+    });
+    return executeManifestCommand(request, {
+      entityName: "PrepListItem",
+      commandName: "updatePrepNotes",
+      params: { id },
+      transformBody: (reqBody, ctx) => ({
+        id,
+        preparationNotes: reqBody.preparationNotes,
+        userId: ctx.userId,
+      }),
+    });
+  }
+
+  // 4. Station updates
+  if (body.stationId !== undefined || body.stationName !== undefined) {
+    console.log("[PrepListItem/PATCH] Delegating to updateStation command", {
+      itemId: id,
+      stationId: body.stationId,
+    });
+    return executeManifestCommand(request, {
+      entityName: "PrepListItem",
+      commandName: "updateStation",
+      params: { id },
+      transformBody: (reqBody, ctx) => ({
+        id,
+        stationId: reqBody.stationId,
+        stationName: reqBody.stationName,
+        userId: ctx.userId,
+      }),
+    });
+  }
+
+  // No recognized field to update
+  console.error(
+    "[PrepListItem/PATCH] No manifest command available for the requested update",
+    { itemId: id, bodyKeys: Object.keys(body) }
+  );
+  return NextResponse.json(
+    {
+      message:
+        "Update not supported: no manifest command available for the requested fields",
+      fields: Object.keys(body),
+    },
+    { status: 400 }
+  );
 }
 
 /**
  * DELETE /api/kitchen/prep-lists/items/[id]
- * Soft-delete a prep list item.
+ * Mark a prep list item as uncompleted via manifest command.
  *
- * Migrated from raw $executeRaw to Prisma ORM.
+ * Delegates to PrepListItem.markUncompleted manifest command which enforces
+ * guards, constraints, policies, and emits domain events.
  */
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { orgId } = await auth();
+  const { id } = await params;
 
-    if (!orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  console.log(
+    "[PrepListItem/DELETE] Delegating to manifest markUncompleted command",
+    { itemId: id }
+  );
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    const { id } = await params;
-
-    await database.prepListItem.updateMany({
-      where: { tenantId, id, deletedAt: null },
-      data: { deletedAt: new Date() },
-    });
-
-    return NextResponse.json({
-      message: "Prep list item deleted successfully",
-    });
-  } catch (error) {
-    captureException(error);
-    return NextResponse.json(
-      { error: "Failed to delete prep list item" },
-      { status: 500 }
-    );
-  }
+  return executeManifestCommand(request, {
+    entityName: "PrepListItem",
+    commandName: "markUncompleted",
+    params: { id },
+    transformBody: (_body, ctx) => ({
+      id,
+      userId: ctx.userId,
+    }),
+  });
 }

@@ -2,15 +2,16 @@
  * Cycle Count Session Detail API Endpoints
  *
  * GET    /api/inventory/cycle-count/sessions/[sessionId]      - Get a single session
- * PUT    /api/inventory/cycle-count/sessions/[sessionId]      - Update a session
- * DELETE /api/inventory/cycle-count/sessions/[sessionId]      - Delete a session (soft delete)
+ * PUT    /api/inventory/cycle-count/sessions/[sessionId]      - Start a session (manifest command)
+ * DELETE /api/inventory/cycle-count/sessions/[sessionId]      - Cancel a session (manifest command)
  */
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 type CycleCountSessionStatus =
   | "draft"
@@ -79,91 +80,6 @@ function mapSession(session: {
 }
 
 /**
- * Build update data for session
- */
-const VALID_STATUSES: CycleCountSessionStatus[] = [
-  "draft",
-  "in_progress",
-  "completed",
-  "finalized",
-  "cancelled",
-] as const;
-
-function validateStringField(value: unknown, fieldName: string): string {
-  if (typeof value !== "string") {
-    throw new InvariantError(`${fieldName} must be a string`);
-  }
-  return value;
-}
-
-function validateStatus(value: unknown): CycleCountSessionStatus {
-  if (!VALID_STATUSES.includes(value as CycleCountSessionStatus)) {
-    throw new InvariantError(
-      `status must be one of: ${VALID_STATUSES.join(", ")}`
-    );
-  }
-  return value as CycleCountSessionStatus;
-}
-
-function getStatusTimestamp(
-  status: CycleCountSessionStatus,
-  existing: {
-    startedAt: Date | null;
-    completedAt: Date | null;
-    finalizedAt: Date | null;
-  }
-): { startedAt?: Date; completedAt?: Date; finalizedAt?: Date } {
-  const timestamps: Record<string, Date> = {};
-  if (status === "in_progress" && !existing.startedAt) {
-    timestamps.startedAt = new Date();
-  }
-  if (status === "completed" && !existing.completedAt) {
-    timestamps.completedAt = new Date();
-  }
-  if (status === "finalized" && !existing.finalizedAt) {
-    timestamps.finalizedAt = new Date();
-  }
-  return timestamps;
-}
-
-function buildSessionUpdateData(
-  body: Record<string, unknown>,
-  existing: {
-    startedAt: Date | null;
-    completedAt: Date | null;
-    finalizedAt: Date | null;
-  }
-): Record<string, unknown> {
-  const updateData: Record<string, unknown> = {};
-
-  if (body.session_name !== undefined) {
-    updateData.sessionName = validateStringField(
-      body.session_name,
-      "session_name"
-    );
-  }
-
-  if (body.status !== undefined) {
-    const status = validateStatus(body.status);
-    updateData.status = status;
-    Object.assign(updateData, getStatusTimestamp(status, existing));
-  }
-
-  if (body.notes !== undefined) {
-    updateData.notes = validateStringField(body.notes, "notes");
-  }
-
-  if (body.approved_by_id !== undefined) {
-    updateData.approvedById = validateStringField(
-      body.approved_by_id,
-      "approved_by_id"
-    );
-  }
-
-  return updateData;
-}
-
-/**
  * GET /api/inventory/cycle-count/sessions/[sessionId] - Get a single session
  */
 export async function GET(_request: Request, context: RouteContext) {
@@ -209,121 +125,41 @@ export async function GET(_request: Request, context: RouteContext) {
 }
 
 /**
- * PUT /api/inventory/cycle-count/sessions/[sessionId] - Update a session
+ * PUT /api/inventory/cycle-count/sessions/[sessionId] - Start a session
  */
-export async function PUT(request: Request, context: RouteContext) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
-
-    const { sessionId } = await context.params;
-    const body = await request.json();
-
-    const existing = await database.cycleCountSession.findFirst({
-      where: {
-        tenantId,
-        id: sessionId,
-        deletedAt: null,
-      },
-    });
-
-    if (!existing) {
-      return NextResponse.json(
-        { message: "Session not found" },
-        { status: 404 }
-      );
-    }
-
-    const updateData = buildSessionUpdateData(body, existing);
-
-    const session = await database.cycleCountSession.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: sessionId,
-        },
-      },
-      data: updateData,
-    });
-
-    return NextResponse.json(mapSession(session));
-  } catch (error) {
-    if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-    console.error("Failed to update cycle count session:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+// TODO: This maps to CycleCountSession.start but the old route handled multiple status transitions (start/complete/finalize/cancel). Consider routing to the appropriate command based on body.status.
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ sessionId: string }> }
+) {
+  const { sessionId } = await context.params;
+  console.log("[CycleCountSession/PUT] Delegating to manifest start command", {
+    sessionId,
+  });
+  return executeManifestCommand(request, {
+    entityName: "CycleCountSession",
+    commandName: "start",
+    params: { sessionId },
+    transformBody: (body) => ({ ...body, id: sessionId }),
+  });
 }
 
 /**
- * DELETE /api/inventory/cycle-count/sessions/[sessionId] - Soft delete a session
+ * DELETE /api/inventory/cycle-count/sessions/[sessionId] - Cancel a session
  */
-export async function DELETE(_request: Request, context: RouteContext) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
-
-    const { sessionId } = await context.params;
-
-    // Check if session exists
-    const existing = await database.cycleCountSession.findFirst({
-      where: {
-        tenantId,
-        id: sessionId,
-        deletedAt: null,
-      },
-    });
-
-    if (!existing) {
-      return NextResponse.json(
-        { message: "Session not found" },
-        { status: 404 }
-      );
-    }
-
-    // Soft delete by setting deletedAt
-    await database.cycleCountSession.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: sessionId,
-        },
-      },
-      data: {
-        deletedAt: new Date(),
-      },
-    });
-
-    return NextResponse.json({ message: "Session deleted" });
-  } catch (error) {
-    console.error("Failed to delete cycle count session:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ sessionId: string }> }
+) {
+  const { sessionId } = await context.params;
+  console.log(
+    "[CycleCountSession/DELETE] Delegating to manifest cancel command",
+    { sessionId }
+  );
+  return executeManifestCommand(request, {
+    entityName: "CycleCountSession",
+    commandName: "cancel",
+    params: { sessionId },
+    transformBody: (_body) => ({ id: sessionId }),
+  });
 }

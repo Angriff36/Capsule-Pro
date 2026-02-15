@@ -9,8 +9,10 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 interface RouteContext {
   params: Promise<{ boardId: string }>;
@@ -88,128 +90,38 @@ export async function GET(_request: Request, context: RouteContext) {
  * PUT /api/events/battle-boards/[boardId]
  * Update a battle board
  */
-export async function PUT(request: Request, context: RouteContext) {
-  try {
-    const { orgId, userId } = await auth();
-    if (!(orgId && userId)) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    const { boardId } = await context.params;
-    const body = await request.json();
-
-    // Verify board exists
-    const existing = await database.battleBoard.findFirst({
-      where: {
-        id: boardId,
-        tenantId,
-        deletedAt: null,
-      },
-    });
-
-    if (!existing) {
-      return NextResponse.json(
-        { message: "Battle board not found" },
-        { status: 404 }
-      );
-    }
-
-    const { boardData, boardName, status, notes } = body;
-
-    // Prepare update data
-    const updateData: Record<string, unknown> = {};
-
-    if (boardData !== undefined) {
-      // Update lastUpdatedISO in meta
-      if (boardData.meta) {
-        boardData.meta.lastUpdatedISO = new Date().toISOString();
-      }
-      updateData.boardData = boardData;
-    }
-
-    if (boardName !== undefined) {
-      updateData.board_name = boardName;
-    }
-
-    if (status !== undefined) {
-      updateData.status = status;
-    }
-
-    if (notes !== undefined) {
-      updateData.notes = notes;
-    }
-
-    // Update board
-    const board = await database.battleBoard.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: boardId,
-        },
-      },
-      data: updateData,
-    });
-
-    return NextResponse.json({ data: board });
-  } catch (error) {
-    console.error("Error updating battle board:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ boardId: string }> }
+) {
+  const { boardId } = await context.params;
+  console.log("[BattleBoard/PUT] Delegating to manifest open command", {
+    boardId,
+  });
+  return executeManifestCommand(request, {
+    entityName: "BattleBoard",
+    commandName: "open",
+    params: { boardId },
+    transformBody: (body) => ({ ...body, id: boardId }),
+  });
 }
 
 /**
  * DELETE /api/events/battle-boards/[boardId]
  * Soft delete a battle board
  */
-export async function DELETE(_request: Request, context: RouteContext) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    const { boardId } = await context.params;
-
-    // Verify board exists
-    const existing = await database.battleBoard.findFirst({
-      where: {
-        id: boardId,
-        tenantId,
-        deletedAt: null,
-      },
-    });
-
-    if (!existing) {
-      return NextResponse.json(
-        { message: "Battle board not found" },
-        { status: 404 }
-      );
-    }
-
-    // Soft delete
-    await database.battleBoard.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: boardId,
-        },
-      },
-      data: {
-        deletedAt: new Date(),
-      },
-    });
-
-    return NextResponse.json({ message: "Battle board deleted" });
-  } catch (error) {
-    console.error("Error deleting battle board:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ boardId: string }> }
+) {
+  const { boardId } = await context.params;
+  console.log("[BattleBoard/DELETE] Delegating to manifest finalize command", {
+    boardId,
+  });
+  return executeManifestCommand(request, {
+    entityName: "BattleBoard",
+    commandName: "finalize",
+    params: { boardId },
+    transformBody: (_body) => ({ id: boardId }),
+  });
 }

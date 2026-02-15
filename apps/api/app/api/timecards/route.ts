@@ -1,7 +1,9 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 function getStatusFilter(status: string | null): string {
   if (status === "approved") {
@@ -165,42 +167,10 @@ export async function GET(request: Request) {
   });
 }
 
-export async function POST(request: Request) {
-  const { orgId, userId } = await auth();
-  if (!(orgId && userId)) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  const body = await request.json();
-
-  if (!(body.employeeId && body.clockIn)) {
-    return NextResponse.json(
-      { message: "Employee ID and clock-in time are required" },
-      { status: 400 }
-    );
-  }
-
-  try {
-    const timeEntry = await database.timeEntry.create({
-      data: {
-        tenantId,
-        employeeId: body.employeeId,
-        locationId: body.locationId || null,
-        shift_id: body.shiftId || null,
-        clockIn: new Date(body.clockIn),
-        clockOut: body.clockOut ? new Date(body.clockOut) : null,
-        breakMinutes: body.breakMinutes || 0,
-        notes: body.notes || null,
-      },
-    });
-
-    return NextResponse.json({ timeEntry }, { status: 201 });
-  } catch (error) {
-    console.error("Error creating time entry:", error);
-    return NextResponse.json(
-      { message: "Failed to create time entry" },
-      { status: 500 }
-    );
-  }
+export async function POST(request: NextRequest) {
+  console.log("[TimeEntry/POST] Delegating to manifest clockIn command");
+  return executeManifestCommand(request, {
+    entityName: "TimeEntry",
+    commandName: "clockIn",
+  });
 }

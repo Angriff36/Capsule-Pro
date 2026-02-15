@@ -1,14 +1,9 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import {
-  checkOverlappingShifts,
-  validateEmployeeRole,
-  validateShiftTimes,
-  verifyEmployee,
-  verifySchedule,
-} from "../validation";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 interface RouteContext {
   params: Promise<{ shiftId: string }>;
@@ -85,205 +80,34 @@ export async function GET(_request: Request, context: RouteContext) {
 
 /**
  * PUT /api/staff/shifts/[shiftId]
- * Update an existing shift
- *
- * Allowed fields:
- * - scheduleId: Parent schedule ID
- * - employeeId: Assigned employee
- * - locationId: Shift location
- * - shiftStart: Shift start time (ISO 8601)
- * - shiftEnd: Shift end time (ISO 8601)
- * - roleDuringShift: Required role for this shift
- * - notes: Additional notes
+ * Update an existing shift (manifest command)
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex business validation is necessary for shift updates
-export async function PUT(request: Request, context: RouteContext) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
+export async function PUT(request: NextRequest, context: RouteContext) {
   const { shiftId } = await context.params;
-  const body = await request.json();
-
-  // Verify shift exists
-  const existingShift = await database.$queryRaw<
-    Array<{
-      id: string;
-      employee_id: string;
-      shift_start: Date;
-      shift_end: Date;
-    }>
-  >(
-    Prisma.sql`
-      SELECT id, employee_id, shift_start, shift_end
-      FROM tenant_staff.schedule_shifts
-      WHERE tenant_id = ${tenantId}
-        AND id = ${shiftId}
-        AND deleted_at IS NULL
-    `
-  );
-
-  if (!existingShift[0]) {
-    return NextResponse.json({ message: "Shift not found" }, { status: 404 });
-  }
-
-  // Parse and validate times if provided
-  const shiftStart = body.shiftStart
-    ? new Date(body.shiftStart)
-    : existingShift[0].shift_start;
-  const shiftEnd = body.shiftEnd
-    ? new Date(body.shiftEnd)
-    : existingShift[0].shift_end;
-
-  // Validate shift times
-  const timeValidationError = validateShiftTimes(shiftStart, shiftEnd);
-  if (timeValidationError) {
-    return timeValidationError;
-  }
-
-  // Validate employee if changing
-  const currentEmployeeId = existingShift[0].employee_id;
-  const newEmployeeId = body.employeeId;
-
-  if (newEmployeeId && newEmployeeId !== currentEmployeeId) {
-    const { employee, error: employeeError } = await verifyEmployee(
-      tenantId,
-      newEmployeeId
-    );
-    if (employeeError) {
-      return employeeError;
-    }
-    if (!employee) {
-      return NextResponse.json(
-        { message: "Employee not found" },
-        { status: 404 }
-      );
-    }
-
-    const roleValidationError = validateEmployeeRole(
-      employee.role,
-      body.roleDuringShift
-    );
-    if (roleValidationError) {
-      return roleValidationError;
-    }
-  }
-
-  // Check for overlapping shifts
-  const employeeId = newEmployeeId || currentEmployeeId;
-  const { overlaps } = await checkOverlappingShifts(
-    tenantId,
-    employeeId,
-    shiftStart,
-    shiftEnd,
-    shiftId
-  );
-
-  if (overlaps.length > 0 && !body.allowOverlap) {
-    return NextResponse.json(
-      {
-        message: "Employee has overlapping shifts",
-        overlappingShifts: overlaps,
-      },
-      { status: 409 }
-    );
-  }
-
-  // Verify schedule exists if changing
-  if (body.scheduleId) {
-    const { error: scheduleError } = await verifySchedule(
-      tenantId,
-      body.scheduleId
-    );
-    if (scheduleError) {
-      return scheduleError;
-    }
-  }
-
-  try {
-    // Update the shift
-    const shift = await database.scheduleShift.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: shiftId,
-        },
-      },
-      data: {
-        ...(body.scheduleId && { scheduleId: body.scheduleId }),
-        ...(body.employeeId && { employeeId: body.employeeId }),
-        ...(body.locationId && { locationId: body.locationId }),
-        ...(body.shiftStart && { shift_start: shiftStart }),
-        ...(body.shiftEnd && { shift_end: shiftEnd }),
-        ...(body.roleDuringShift !== undefined && {
-          role_during_shift: body.roleDuringShift,
-        }),
-        ...(body.notes !== undefined && { notes: body.notes }),
-      },
-    });
-
-    return NextResponse.json({ shift });
-  } catch (error) {
-    console.error("Error updating shift:", error);
-    return NextResponse.json(
-      { message: "Failed to update shift" },
-      { status: 500 }
-    );
-  }
+  console.log("[ScheduleShift/PUT] Delegating to manifest update command", {
+    shiftId,
+  });
+  return executeManifestCommand(request, {
+    entityName: "ScheduleShift",
+    commandName: "update",
+    params: { shiftId },
+    transformBody: (body) => ({ ...body, id: shiftId }),
+  });
 }
 
 /**
  * DELETE /api/staff/shifts/[shiftId]
- * Soft delete a shift
+ * Soft delete a shift (manifest command)
  */
-export async function DELETE(_request: Request, context: RouteContext) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
+export async function DELETE(request: NextRequest, context: RouteContext) {
   const { shiftId } = await context.params;
-
-  // Verify shift exists
-  const existingShift = await database.$queryRaw<
-    Array<{ id: string; shift_start: Date }>
-  >(
-    Prisma.sql`
-      SELECT id, shift_start
-      FROM tenant_staff.schedule_shifts
-      WHERE tenant_id = ${tenantId}
-        AND id = ${shiftId}
-        AND deleted_at IS NULL
-    `
-  );
-
-  if (!existingShift[0]) {
-    return NextResponse.json({ message: "Shift not found" }, { status: 404 });
-  }
-
-  try {
-    // Soft delete the shift
-    await database.scheduleShift.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: shiftId,
-        },
-      },
-      data: {
-        deletedAt: new Date(),
-      },
-    });
-
-    return NextResponse.json({ message: "Shift deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting shift:", error);
-    return NextResponse.json(
-      { message: "Failed to delete shift" },
-      { status: 500 }
-    );
-  }
+  console.log("[ScheduleShift/DELETE] Delegating to manifest remove command", {
+    shiftId,
+  });
+  return executeManifestCommand(request, {
+    entityName: "ScheduleShift",
+    commandName: "remove",
+    params: { shiftId },
+    transformBody: (_body) => ({ id: shiftId }),
+  });
 }

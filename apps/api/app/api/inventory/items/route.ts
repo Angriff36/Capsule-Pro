@@ -2,14 +2,15 @@
  * Inventory Items API Endpoints
  *
  * GET    /api/inventory/items      - List items with pagination and filters
- * POST   /api/inventory/items      - Create a new inventory item
+ * POST   /api/inventory/items      - Create a new inventory item (manifest command)
  */
 
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 import type {
   FSAStatus,
   InventoryItemListFilters,
@@ -18,7 +19,6 @@ import type {
   StockStatus,
 } from "./types";
 import { FSA_STATUSES, ITEM_CATEGORIES } from "./types";
-import { validateCreateInventoryItemRequest } from "./validation";
 
 interface PaginationParams {
   page: number;
@@ -252,141 +252,12 @@ export async function GET(request: Request) {
 }
 
 /**
- * Format inventory item with calculated status fields
- */
-function formatInventoryItemWithStatus(item: {
-  id: string;
-  tenantId: string;
-  item_number: string;
-  name: string;
-  description: string | null;
-  category: string;
-  unitOfMeasure: string;
-  unitCost: unknown;
-  quantityOnHand: unknown;
-  parLevel: unknown;
-  reorder_level: unknown;
-  supplierId: string | null;
-  tags: string[];
-  fsa_status: string | null;
-  fsa_temp_logged: boolean | null;
-  fsa_allergen_info: boolean | null;
-  fsa_traceable: boolean | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-}): InventoryItemWithStatus {
-  const quantityOnHand = Number(item.quantityOnHand);
-  const reorderLevel = Number(item.reorder_level);
-  const stockStatus = calculateStockStatus(quantityOnHand, reorderLevel);
-
-  return {
-    id: item.id,
-    tenant_id: item.tenantId,
-    item_number: item.item_number,
-    name: item.name,
-    description: item.description,
-    category: item.category,
-    unit_of_measure: item.unitOfMeasure,
-    unit_cost: Number(item.unitCost),
-    quantity_on_hand: quantityOnHand,
-    par_level: Number(item.parLevel),
-    reorder_level: reorderLevel,
-    supplier_id: item.supplierId,
-    tags: item.tags,
-    fsa_status: (item.fsa_status ?? "unknown") as FSAStatus,
-    fsa_temp_logged: item.fsa_temp_logged ?? false,
-    fsa_allergen_info: item.fsa_allergen_info ?? false,
-    fsa_traceable: item.fsa_traceable ?? false,
-    created_at: item.createdAt,
-    updated_at: item.updatedAt,
-    deleted_at: item.deletedAt,
-    stock_status: stockStatus,
-    total_value: quantityOnHand * Number(item.unitCost),
-  };
-}
-
-/**
- * Check if item number already exists for tenant
- */
-async function checkExistingItemNumber(
-  tenantId: string,
-  itemNumber: string
-): Promise<boolean> {
-  const existing = await database.inventoryItem.findFirst({
-    where: {
-      tenantId,
-      item_number: itemNumber,
-      deletedAt: null,
-    },
-  });
-  return existing !== null;
-}
-
-/**
  * POST /api/inventory/items - Create a new inventory item
  */
-export async function POST(request: Request) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
-
-    const body = await request.json();
-    validateCreateInventoryItemRequest(body);
-
-    const itemNumberExists = await checkExistingItemNumber(
-      tenantId,
-      body.item_number
-    );
-    if (itemNumberExists) {
-      return NextResponse.json(
-        { message: "Item number already exists" },
-        { status: 409 }
-      );
-    }
-
-    // Create inventory item
-    const item = await database.inventoryItem.create({
-      data: {
-        tenantId,
-        item_number: body.item_number,
-        name: body.name,
-        description: body.description ?? null,
-        category: body.category,
-        unitOfMeasure: body.unit_of_measure ?? "each",
-        unitCost: body.unit_cost ?? 0,
-        quantityOnHand: body.quantity_on_hand ?? 0,
-        parLevel: body.par_level ?? 0,
-        reorder_level: body.reorder_level ?? 0,
-        supplierId: body.supplier_id ?? null,
-        tags: body.tags ?? [],
-        fsa_status: body.fsa_status ?? "unknown",
-        fsa_temp_logged: body.fsa_temp_logged ?? false,
-        fsa_allergen_info: body.fsa_allergen_info ?? false,
-        fsa_traceable: body.fsa_traceable ?? false,
-      },
-    });
-
-    const itemWithStatus = formatInventoryItemWithStatus(item);
-    return NextResponse.json(itemWithStatus, { status: 201 });
-  } catch (error) {
-    if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-    console.error("Failed to create inventory item:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export async function POST(request: NextRequest) {
+  console.log("[InventoryItem/POST] Delegating to manifest create command");
+  return executeManifestCommand(request, {
+    entityName: "InventoryItem",
+    commandName: "create",
+  });
 }

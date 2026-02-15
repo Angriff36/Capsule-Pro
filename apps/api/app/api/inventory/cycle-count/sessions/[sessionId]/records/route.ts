@@ -2,14 +2,15 @@
  * Cycle Count Records API Endpoints
  *
  * GET    /api/inventory/cycle-count/sessions/[sessionId]/records      - List records for a session
- * POST   /api/inventory/cycle-count/sessions/[sessionId]/records      - Create a new record
+ * POST   /api/inventory/cycle-count/sessions/[sessionId]/records      - Create a new record (manifest command)
  */
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 type SyncStatus = "synced" | "pending" | "failed" | "conflict";
 
@@ -90,54 +91,6 @@ function mapRecord(record: {
     updated_at: record.updatedAt,
     deleted_at: record.deletedAt,
   };
-}
-
-/**
- * Validate record creation request body
- */
-function validateRecordCreationBody(body: Record<string, unknown>): void {
-  if (!body.item_id || typeof body.item_id !== "string") {
-    throw new InvariantError("item_id is required and must be a string");
-  }
-
-  if (!body.item_number || typeof body.item_number !== "string") {
-    throw new InvariantError("item_number is required and must be a string");
-  }
-
-  if (!body.item_name || typeof body.item_name !== "string") {
-    throw new InvariantError("item_name is required and must be a string");
-  }
-
-  if (
-    body.expected_quantity === undefined ||
-    typeof body.expected_quantity !== "number"
-  ) {
-    throw new InvariantError(
-      "expected_quantity is required and must be a number"
-    );
-  }
-
-  if (
-    body.counted_quantity === undefined ||
-    typeof body.counted_quantity !== "number"
-  ) {
-    throw new InvariantError(
-      "counted_quantity is required and must be a number"
-    );
-  }
-}
-
-/**
- * Calculate variance values
- */
-function calculateVariance(
-  countedQuantity: number,
-  expectedQuantity: number
-): { variance: number; variancePct: number } {
-  const variance = countedQuantity - expectedQuantity;
-  const variancePct =
-    expectedQuantity > 0 ? (variance / expectedQuantity) * 100 : 0;
-  return { variance, variancePct };
 }
 
 /**
@@ -230,119 +183,18 @@ export async function GET(request: Request, context: RouteContext) {
 /**
  * POST /api/inventory/cycle-count/sessions/[sessionId]/records - Create a new record
  */
-export async function POST(request: Request, context: RouteContext) {
-  try {
-    const { orgId, userId } = await auth();
-    if (!(orgId && userId)) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
-
-    const { sessionId } = await context.params;
-    const body = await request.json();
-
-    const session = await database.cycleCountSession.findFirst({
-      where: {
-        tenantId,
-        sessionId,
-        deletedAt: null,
-      },
-    });
-
-    if (!session) {
-      return NextResponse.json(
-        { message: "Session not found" },
-        { status: 404 }
-      );
-    }
-
-    validateRecordCreationBody(body);
-
-    const user = await database.user.findFirst({
-      where: {
-        tenantId,
-        authUserId: userId,
-      },
-    });
-
-    if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
-    }
-
-    const { variance, variancePct } = calculateVariance(
-      body.counted_quantity as number,
-      body.expected_quantity as number
-    );
-
-    const record = await database.cycleCountRecord.create({
-      data: {
-        tenantId,
-        sessionId: session.id,
-        itemId: body.item_id as string,
-        itemNumber: body.item_number as string,
-        itemName: body.item_name as string,
-        storageLocationId: body.storage_location_id as string,
-        expectedQuantity: body.expected_quantity as number,
-        countedQuantity: body.counted_quantity as number,
-        variance,
-        variancePct,
-        countedById: user.id,
-        barcode: (body.barcode as string | null) || null,
-        notes: (body.notes as string | null) || null,
-        syncStatus: (body.sync_status as SyncStatus) || "synced",
-        offlineId: (body.offline_id as string | null) || null,
-      },
-    });
-
-    const allRecords = await database.cycleCountRecord.findMany({
-      where: {
-        tenantId,
-        sessionId: session.id,
-        deletedAt: null,
-      },
-    });
-
-    let totalVariance = 0;
-    let totalExpected = 0;
-
-    for (const r of allRecords) {
-      totalVariance += toNumber(r.variance);
-      totalExpected += toNumber(r.expectedQuantity);
-    }
-
-    const variancePercentage =
-      totalExpected > 0 ? Math.abs((totalVariance / totalExpected) * 100) : 0;
-
-    await database.cycleCountSession.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: session.id,
-        },
-      },
-      data: {
-        countedItems: allRecords.length,
-        totalVariance,
-        variancePercentage,
-      },
-    });
-
-    return NextResponse.json(mapRecord(record), { status: 201 });
-  } catch (error) {
-    if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-    console.error("Failed to create cycle count record:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export async function POST(
+  request: NextRequest,
+  context: { params: Promise<{ sessionId: string }> }
+) {
+  const { sessionId } = await context.params;
+  console.log("[CycleCountRecord/POST] Delegating to manifest create command", {
+    sessionId,
+  });
+  return executeManifestCommand(request, {
+    entityName: "CycleCountRecord",
+    commandName: "create",
+    params: { sessionId },
+    transformBody: (body) => ({ ...body, sessionId }),
+  });
 }

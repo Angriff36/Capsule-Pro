@@ -1,17 +1,19 @@
 /**
  * @module PrepListsAPI
- * @intent List prep lists with pagination and filtering
+ * @intent List prep lists with pagination and filtering; create prep lists via manifest
  * @responsibility Provide paginated list of prep lists for the current tenant
  * @domain Kitchen
- * @tags prep-lists, api, list
+ * @tags prep-lists, api, list, manifest
  * @canonical true
  */
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 interface PrepListListFilters {
   eventId?: string;
@@ -231,84 +233,16 @@ export async function GET(request: Request) {
 
 /**
  * POST /api/kitchen/prep-lists
- * Create a new prep list
+ * Create a new prep list via manifest command.
+ *
+ * Delegates to PrepList.create manifest command which enforces guards,
+ * constraints, policies, and emits domain events.
  */
-export async function POST(request: Request) {
-  try {
-    const { orgId, userId } = await auth();
+export async function POST(request: NextRequest) {
+  console.log("[PrepList/POST] Delegating to manifest create command");
 
-    if (!(orgId && userId)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    const body = await request.json();
-    const {
-      eventId,
-      name,
-      batchMultiplier = 1,
-      dietaryRestrictions = [],
-      items,
-    } = body;
-
-    if (!(eventId && name && items && Array.isArray(items))) {
-      return NextResponse.json(
-        { error: "eventId, name, and items are required" },
-        { status: 400 }
-      );
-    }
-
-    // Create the prep list using Prisma
-    const prepList = await database.prepList.create({
-      data: {
-        tenantId,
-        eventId,
-        name,
-        batchMultiplier,
-        dietaryRestrictions,
-        status: "draft",
-        totalItems: items.length,
-        totalEstimatedTime: 0,
-      },
-    });
-
-    // Create prep list items
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      await database.prepListItem.create({
-        data: {
-          tenantId,
-          prepListId: prepList.id,
-          stationId: item.stationId,
-          stationName: item.stationName,
-          ingredientId: item.ingredientId,
-          ingredientName: item.ingredientName,
-          category: item.category || null,
-          baseQuantity: item.baseQuantity,
-          baseUnit: item.baseUnit,
-          scaledQuantity: item.scaledQuantity,
-          scaledUnit: item.scaledUnit,
-          isOptional: item.isOptional,
-          preparationNotes: item.preparationNotes || null,
-          allergens: item.allergens || [],
-          dietarySubstitutions: item.dietarySubstitutions || [],
-          dishId: item.dishId || null,
-          dishName: item.dishName || null,
-          recipeVersionId: item.recipeVersionId || null,
-          sortOrder: i,
-        },
-      });
-    }
-
-    return NextResponse.json({
-      id: prepList.id,
-      message: "Prep list created successfully",
-    });
-  } catch (error) {
-    captureException(error);
-    return NextResponse.json(
-      { error: "Failed to create prep list" },
-      { status: 500 }
-    );
-  }
+  return executeManifestCommand(request, {
+    entityName: "PrepList",
+    commandName: "create",
+  });
 }

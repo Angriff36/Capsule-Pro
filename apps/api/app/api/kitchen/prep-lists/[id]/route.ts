@@ -1,8 +1,9 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 export interface StationGroup {
   stationId: string;
@@ -164,120 +165,59 @@ export async function GET(
 
 /**
  * PATCH /api/kitchen/prep-lists/[id]
- * Update a prep list using type-safe Prisma ORM.
+ * Update a prep list via manifest command.
  *
- * Migrated from $queryRawUnsafe (SQL injection risk) to Prisma ORM.
- * For command-level operations with constraint/guard validation,
- * use the /commands/update endpoint instead.
+ * Delegates to PrepList.update manifest command which enforces guards,
+ * constraints, policies, and emits domain events.
+ *
+ * Supports updating: name, status, notes, batchMultiplier, dietaryRestrictions.
+ * For batch multiplier-only updates, consider using the dedicated
+ * PrepList.updateBatchMultiplier command.
  */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { orgId } = await auth();
+  const { id } = await params;
 
-    if (!orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  console.log("[PrepList/PATCH] Delegating to manifest update command", {
+    prepListId: id,
+  });
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    const { id } = await params;
-    const body = await request.json();
-    const { name, status, notes, batchMultiplier, dietaryRestrictions } = body;
-
-    // Build type-safe update data
-    const data: Prisma.PrepListUpdateInput = {};
-
-    if (name !== undefined) {
-      data.name = name;
-    }
-    if (status !== undefined) {
-      data.status = status;
-    }
-    if (notes !== undefined) {
-      data.notes = notes;
-    }
-    if (batchMultiplier !== undefined) {
-      data.batchMultiplier = new Prisma.Decimal(batchMultiplier);
-    }
-    if (dietaryRestrictions !== undefined) {
-      data.dietaryRestrictions = dietaryRestrictions;
-    }
-
-    if (Object.keys(data).length === 0) {
-      return NextResponse.json(
-        { error: "No fields to update" },
-        { status: 400 }
-      );
-    }
-
-    // Verify the prep list exists and belongs to this tenant
-    const existing = await database.prepList.findFirst({
-      where: { tenantId, id, deletedAt: null },
-    });
-
-    if (!existing) {
-      return NextResponse.json(
-        { error: "Prep list not found" },
-        { status: 404 }
-      );
-    }
-
-    await database.prepList.update({
-      where: { tenantId_id: { tenantId, id } },
-      data,
-    });
-
-    return NextResponse.json({ message: "Prep list updated successfully" });
-  } catch (error) {
-    captureException(error);
-    return NextResponse.json(
-      { error: "Failed to update prep list" },
-      { status: 500 }
-    );
-  }
+  return executeManifestCommand(request, {
+    entityName: "PrepList",
+    commandName: "update",
+    params: { id },
+    transformBody: (body) => ({ ...body, id }),
+  });
 }
 
 /**
  * DELETE /api/kitchen/prep-lists/[id]
- * Soft-delete a prep list and its items within a transaction.
+ * Cancel a prep list via manifest command.
  *
- * Migrated from raw $executeRaw to Prisma ORM with transactional consistency.
+ * Delegates to PrepList.cancel manifest command which enforces guards,
+ * constraints, policies, and emits domain events. The manifest command
+ * handles soft-deletion of the prep list and its items.
  */
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { orgId } = await auth();
+  const { id } = await params;
 
-    if (!orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  console.log("[PrepList/DELETE] Delegating to manifest cancel command", {
+    prepListId: id,
+  });
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    const { id } = await params;
-
-    // Transactional soft-delete of prep list + all its items
-    await database.$transaction(async (tx) => {
-      await tx.prepList.updateMany({
-        where: { tenantId, id, deletedAt: null },
-        data: { deletedAt: new Date() },
-      });
-
-      await tx.prepListItem.updateMany({
-        where: { tenantId, prepListId: id, deletedAt: null },
-        data: { deletedAt: new Date() },
-      });
-    });
-
-    return NextResponse.json({ message: "Prep list deleted successfully" });
-  } catch (error) {
-    captureException(error);
-    return NextResponse.json(
-      { error: "Failed to delete prep list" },
-      { status: 500 }
-    );
-  }
+  return executeManifestCommand(request, {
+    entityName: "PrepList",
+    commandName: "cancel",
+    params: { id },
+    transformBody: (_body, ctx) => ({
+      id,
+      reason: "Deleted via API",
+      canceledBy: ctx.userId,
+    }),
+  });
 }

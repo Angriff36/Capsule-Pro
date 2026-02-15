@@ -2,20 +2,20 @@
  * Shipment API Endpoints
  *
  * GET    /api/shipments      - List shipments with pagination and filters
- * POST   /api/shipments      - Create a new shipment
+ * POST   /api/shipments      - Create a new shipment (manifest command)
  */
 
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 import type {
   PaginationParams,
   ShipmentFilters,
   ShipmentStatus,
 } from "./types";
-import { validateCreateShipmentRequest } from "./validation";
 
 function parsePaginationParams(
   searchParams: URLSearchParams
@@ -152,91 +152,10 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
-    const body = await request.json();
-    validateCreateShipmentRequest(body);
-    const shipmentNumber = body.shipment_number || `SHP-${Date.now()}`;
-    const existing = await database.shipment.findFirst({
-      where: { tenantId, shipmentNumber, deletedAt: null },
-    });
-    if (existing) {
-      return NextResponse.json(
-        { message: "Shipment number already exists" },
-        { status: 409 }
-      );
-    }
-    const shipment = await database.shipment.create({
-      data: {
-        tenantId,
-        shipmentNumber,
-        status: body.status || "draft",
-        eventId: body.event_id,
-        supplierId: body.supplier_id,
-        locationId: body.location_id,
-        scheduledDate: body.scheduled_date
-          ? new Date(body.scheduled_date)
-          : null,
-        estimatedDeliveryDate: body.estimated_delivery_date
-          ? new Date(body.estimated_delivery_date)
-          : null,
-        shippingCost: body.shipping_cost ? body.shipping_cost.toString() : null,
-        trackingNumber: body.tracking_number,
-        carrier: body.carrier,
-        shippingMethod: body.shipping_method,
-        notes: body.notes,
-        internalNotes: body.internal_notes,
-      },
-    });
-    const mappedShipment = {
-      id: shipment.id,
-      tenant_id: shipment.tenantId,
-      shipment_number: shipment.shipmentNumber,
-      status: shipment.status,
-      event_id: shipment.eventId,
-      supplier_id: shipment.supplierId,
-      location_id: shipment.locationId,
-      scheduled_date: shipment.scheduledDate,
-      shipped_date: shipment.shippedDate,
-      estimated_delivery_date: shipment.estimatedDeliveryDate,
-      actual_delivery_date: shipment.actualDeliveryDate,
-      total_items: shipment.totalItems,
-      shipping_cost: shipment.shippingCost
-        ? Number(shipment.shippingCost)
-        : null,
-      total_value: shipment.totalValue ? Number(shipment.totalValue) : null,
-      tracking_number: shipment.trackingNumber,
-      carrier: shipment.carrier,
-      shipping_method: shipment.shippingMethod,
-      delivered_by: shipment.deliveredBy,
-      received_by: shipment.receivedBy,
-      signature: shipment.signature,
-      notes: shipment.notes,
-      internal_notes: shipment.internalNotes,
-      created_at: shipment.createdAt,
-      updated_at: shipment.updatedAt,
-      deleted_at: shipment.deletedAt,
-    };
-    return NextResponse.json(mappedShipment, { status: 201 });
-  } catch (error) {
-    if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-    console.error("Failed to create shipment:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export async function POST(request: NextRequest) {
+  console.log("[Shipment/POST] Delegating to manifest create command");
+  return executeManifestCommand(request, {
+    entityName: "Shipment",
+    commandName: "create",
+  });
 }

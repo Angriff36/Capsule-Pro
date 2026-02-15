@@ -1,7 +1,9 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 export async function GET(
   _request: Request,
@@ -134,59 +136,22 @@ export async function GET(
 }
 
 export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { orgId, userId } = await auth();
-  if (!(orgId && userId)) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  const { id } = await params;
-  const body = await request.json();
-
-  try {
-    const existingEntry = await database.timeEntry.findFirst({
-      where: {
-        tenantId,
-        id,
-        deleted_at: null,
-      },
-    });
-
-    if (!existingEntry) {
-      return NextResponse.json(
-        { message: "Time entry not found" },
-        { status: 404 }
-      );
-    }
-
-    const updatedEntry = await database.timeEntry.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
-      },
-      data: {
-        clockOut: body.clockOut ? new Date(body.clockOut) : undefined,
-        breakMinutes: body.breakMinutes ?? undefined,
-        notes: body.notes ?? undefined,
-        locationId: body.locationId ?? undefined,
-      },
-    });
-
-    return NextResponse.json({ timeEntry: updatedEntry });
-  } catch (error) {
-    console.error("Error updating time entry:", error);
-    return NextResponse.json(
-      { message: "Failed to update time entry" },
-      { status: 500 }
-    );
-  }
+  const { id } = await context.params;
+  console.log("[TimeEntry/PUT] Delegating to manifest clockOut command", {
+    id,
+  });
+  return executeManifestCommand(request, {
+    entityName: "TimeEntry",
+    commandName: "clockOut",
+    params: { id },
+    transformBody: (body) => ({ ...body, id }),
+  });
 }
 
+// TODO: No dedicated "delete/cancel" command exists for TimeEntry. Consider adding one to the manifest.
 export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }

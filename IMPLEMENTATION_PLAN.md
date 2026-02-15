@@ -1,9 +1,66 @@
 # Capsule-Pro Implementation Plan
 
 **Last Updated**: 2026-02-15
-**Goal**: Manifest Integration - Phase 1-7 (25 Manifests)
+**Goal**: Manifest Integration - Route Migration to ExecuteManifestCommand
 **Branch**: manifest-.3
-**Tag**: v0.5.5
+**Tag**: v0.5.6
+
+---
+
+## Completed (v0.5.6) - Route Migration to Manifest Handler
+
+### Migrated Routes to Use executeManifestCommand
+
+Migrated 19 routes from direct Prisma operations to use the generic manifest command handler (`executeManifestCommand`). This simplifies routes and centralizes command execution through the manifest system:
+
+**Events** (5 routes):
+- `events/battle-boards/route.ts` - POST now uses BattleBoard.create command
+- `events/battle-boards/[boardId]/route.ts` - GET/PATCH/DELETE
+- `events/budgets/route.ts` - POST
+- `events/budgets/[id]/route.ts` - GET/PATCH/DELETE
+- `events/budgets/[id]/line-items/route.ts` - POST
+- `events/budgets/[id]/line-items/[lineItemId]/route.ts` - PATCH/DELETE
+- `events/reports/route.ts` - POST
+- `events/reports/[reportId]/route.ts` - GET/PATCH/DELETE
+
+**Inventory** (4 routes):
+- `inventory/items/route.ts` - POST now uses InventoryItem.create command
+- `inventory/cycle-count/sessions/route.ts` - POST
+- `inventory/cycle-count/sessions/[sessionId]/route.ts` - GET/PATCH
+- `inventory/cycle-count/sessions/[sessionId]/records/route.ts` - POST
+- `inventory/cycle-count/records/[id]/route.ts` - PATCH/DELETE
+
+**Shipments** (2 routes):
+- `shipments/route.ts` - POST
+- `shipments/[id]/items/route.ts` - POST
+
+**Staff** (4 routes):
+- `staff/shifts/route.ts` - POST
+- `staff/shifts/[shiftId]/route.ts` - GET/PATCH/DELETE
+- `timecards/route.ts` - POST
+- `timecards/[id]/route.ts` - GET/PATCH/DELETE
+
+**Kitchen** (1 route):
+- `kitchen/prep-lists/route.ts` - POST
+
+### Pattern Used
+
+Routes now delegate to the manifest system:
+```typescript
+export async function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "BattleBoard",
+    commandName: "create",
+  });
+}
+```
+
+This replaces 100+ lines of direct Prisma code per route with a simple delegation pattern.
+
+### Build Status
+
+- Build: PASSED
+- API Tests: 672 passed (1 skipped)
 
 ---
 

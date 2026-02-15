@@ -2,36 +2,15 @@
  * Shipment Items API Endpoints
  *
  * GET    /api/shipments/[id]/items  - List items for a shipment
- * POST   /api/shipments/[id]/items  - Add items to a shipment
+ * POST   /api/shipments/[id]/items  - Add items to a shipment (manifest command)
  */
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-
-interface ShipmentItemInput {
-  item_id: string;
-  quantity_shipped: number;
-  quantity_received?: number;
-  quantity_damaged?: number;
-  unit_id?: string | null;
-  unit_cost?: number | null;
-  condition?: string;
-  condition_notes?: string | null;
-  lot_number?: string | null;
-  expiration_date?: string | null;
-}
-
-function validateShipmentItemData(item: ShipmentItemInput) {
-  if (!item.item_id) {
-    throw new InvariantError("item_id is required");
-  }
-  if (!item.quantity_shipped || item.quantity_shipped <= 0) {
-    throw new InvariantError("quantity_shipped must be greater than 0");
-  }
-}
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 export async function GET(
   _request: Request,
@@ -115,146 +94,17 @@ export async function GET(
 }
 
 export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
-
-    const { id } = await params;
-    const body = await request.json();
-
-    // Verify shipment exists
-    const shipment = await database.shipment.findFirst({
-      where: { tenantId, id, deletedAt: null },
-    });
-
-    if (!shipment) {
-      return NextResponse.json(
-        { message: "Shipment not found" },
-        { status: 404 }
-      );
-    }
-
-    const items = Array.isArray(body) ? body : [body];
-    const createdItems: Array<{
-      id: string;
-      tenantId: string;
-      shipmentId: string;
-      itemId: string;
-      quantityShipped: number;
-      quantityReceived: number;
-      quantityDamaged: number;
-      unitId: number | null;
-      unitCost: number | null;
-      totalCost: number;
-      condition: string;
-      conditionNotes: string | null;
-      lotNumber: string | null;
-      expirationDate: Date | null;
-      createdAt: Date;
-      updatedAt: Date;
-    }> = [];
-
-    for (const item of items) {
-      validateShipmentItemData(item);
-
-      // Verify inventory item exists
-      const inventoryItem = await database.inventoryItem.findFirst({
-        where: { tenantId, id: item.item_id, deletedAt: null },
-      });
-
-      if (!inventoryItem) {
-        throw new InvariantError(`Inventory item not found: ${item.item_id}`);
-      }
-
-      // Calculate total cost
-      const unitCost = item.unit_cost || inventoryItem.unitCost;
-      const quantityShipped = item.quantity_shipped;
-      const totalCost = (unitCost || 0) * quantityShipped;
-
-      const created = await database.shipmentItem.create({
-        data: {
-          tenantId,
-          shipmentId: id,
-          itemId: item.item_id,
-          quantityShipped: quantityShipped.toString(),
-          quantityReceived: item.quantity_received?.toString() || "0",
-          quantityDamaged: item.quantity_damaged?.toString() || "0",
-          unitId: item.unit_id,
-          unitCost: unitCost?.toString(),
-          totalCost: totalCost.toString(),
-          condition: item.condition || "good",
-          conditionNotes: item.condition_notes,
-          lotNumber: item.lot_number,
-          expirationDate: item.expiration_date
-            ? new Date(item.expiration_date)
-            : null,
-        },
-      });
-
-      // Update shipment total items and value
-      const allItems = await database.shipmentItem.findMany({
-        where: { tenantId, shipmentId: id, deletedAt: null },
-      });
-
-      const totalItems = allItems.reduce(
-        (sum, i) => sum + Number(i.quantityShipped),
-        0
-      );
-      const totalValue = allItems.reduce(
-        (sum, i) => sum + Number(i.totalCost),
-        0
-      );
-
-      await database.$executeRaw`
-        UPDATE "tenant_inventory"."shipments"
-        SET "total_items" = ${totalItems}::integer,
-            "total_value" = ${totalValue}::numeric,
-            "updated_at" = CURRENT_TIMESTAMP
-        WHERE "tenant_id" = ${tenantId}::uuid AND "id" = ${id}::uuid
-      `;
-
-      createdItems.push({
-        id: created.id,
-        tenantId: created.tenantId,
-        shipmentId: created.shipmentId,
-        itemId: created.itemId,
-        quantityShipped: Number(created.quantityShipped),
-        quantityReceived: Number(created.quantityReceived),
-        quantityDamaged: Number(created.quantityDamaged),
-        unitId: created.unitId,
-        unitCost: created.unitCost ? Number(created.unitCost) : null,
-        totalCost: Number(created.totalCost),
-        condition: (created.condition ?? "unknown") as string,
-        conditionNotes: created.conditionNotes,
-        lotNumber: created.lotNumber,
-        expirationDate: created.expirationDate,
-        createdAt: created.createdAt,
-        updatedAt: created.updatedAt,
-      });
-    }
-
-    return NextResponse.json({ data: createdItems }, { status: 201 });
-  } catch (error) {
-    if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-    console.error("Failed to create shipment items:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+  const { id } = await context.params;
+  console.log("[ShipmentItem/POST] Delegating to manifest create command", {
+    shipmentId: id,
+  });
+  return executeManifestCommand(request, {
+    entityName: "ShipmentItem",
+    commandName: "create",
+    params: { id },
+    transformBody: (body) => ({ ...body, shipmentId: id }),
+  });
 }

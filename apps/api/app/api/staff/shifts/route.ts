@@ -1,14 +1,9 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import {
-  checkOverlappingShifts,
-  validateEmployeeRole,
-  validateShiftTimes,
-  verifyEmployee,
-  verifySchedule,
-} from "./validation";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 /**
  * GET /api/staff/shifts
@@ -125,132 +120,12 @@ export async function GET(request: Request) {
 
 /**
  * POST /api/staff/shifts
- * Create a new shift
- *
- * Required fields:
- * - scheduleId: Parent schedule ID
- * - employeeId: Assigned employee
- * - locationId: Shift location
- * - shiftStart: Shift start time (ISO 8601)
- * - shiftEnd: Shift end time (ISO 8601)
- *
- * Optional fields:
- * - roleDuringShift: Required role for this shift
- * - notes: Additional notes
+ * Create a new shift (manifest command)
  */
-export async function POST(request: Request) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  const body = await request.json();
-
-  // Validate required fields
-  if (
-    !(
-      body.scheduleId &&
-      body.employeeId &&
-      body.locationId &&
-      body.shiftStart &&
-      body.shiftEnd
-    )
-  ) {
-    return NextResponse.json(
-      {
-        message:
-          "Schedule ID, employee ID, location ID, start time, and end time are required",
-      },
-      { status: 400 }
-    );
-  }
-
-  const shiftStart = new Date(body.shiftStart);
-  const shiftEnd = new Date(body.shiftEnd);
-
-  // Validate shift times
-  const timeValidationError = validateShiftTimes(
-    shiftStart,
-    shiftEnd,
-    body.allowHistorical
-  );
-  if (timeValidationError) {
-    return timeValidationError;
-  }
-
-  // Verify employee exists and is active
-  const { employee, error: employeeError } = await verifyEmployee(
-    tenantId,
-    body.employeeId
-  );
-  if (employeeError) {
-    return employeeError;
-  }
-  if (!employee) {
-    return NextResponse.json(
-      { message: "Employee not found" },
-      { status: 404 }
-    );
-  }
-
-  // Validate employee has required role
-  const roleValidationError = validateEmployeeRole(
-    employee.role,
-    body.roleDuringShift
-  );
-  if (roleValidationError) {
-    return roleValidationError;
-  }
-
-  // Check for overlapping shifts
-  const { overlaps } = await checkOverlappingShifts(
-    tenantId,
-    body.employeeId,
-    shiftStart,
-    shiftEnd
-  );
-
-  if (overlaps.length > 0 && !body.allowOverlap) {
-    return NextResponse.json(
-      {
-        message: "Employee has overlapping shifts",
-        overlappingShifts: overlaps,
-      },
-      { status: 409 }
-    );
-  }
-
-  // Verify schedule exists
-  const { error: scheduleError } = await verifySchedule(
-    tenantId,
-    body.scheduleId
-  );
-  if (scheduleError) {
-    return scheduleError;
-  }
-
-  try {
-    // Create the shift
-    const shift = await database.scheduleShift.create({
-      data: {
-        tenantId,
-        scheduleId: body.scheduleId,
-        employeeId: body.employeeId,
-        locationId: body.locationId,
-        shift_start: shiftStart,
-        shift_end: shiftEnd,
-        role_during_shift: body.roleDuringShift || employee.role,
-        notes: body.notes || null,
-      },
-    });
-
-    return NextResponse.json({ shift }, { status: 201 });
-  } catch (error) {
-    console.error("Error creating shift:", error);
-    return NextResponse.json(
-      { message: "Failed to create shift" },
-      { status: 500 }
-    );
-  }
+export async function POST(request: NextRequest) {
+  console.log("[ScheduleShift/POST] Delegating to manifest create command");
+  return executeManifestCommand(request, {
+    entityName: "ScheduleShift",
+    commandName: "create",
+  });
 }

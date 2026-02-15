@@ -9,8 +9,10 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 interface RouteContext {
   params: Promise<{ reportId: string }>;
@@ -72,155 +74,38 @@ export async function GET(_request: Request, context: RouteContext) {
  * PUT /api/events/reports/[reportId]
  * Update an event report
  */
-export async function PUT(request: Request, context: RouteContext) {
-  try {
-    const { orgId, userId } = await auth();
-    if (!(orgId && userId)) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    const { reportId } = await context.params;
-    const body = await request.json();
-
-    // Verify report exists
-    const existing = await database.eventReport.findFirst({
-      where: {
-        id: reportId,
-        tenantId,
-        deletedAt: null,
-      },
-    });
-
-    if (!existing) {
-      return NextResponse.json(
-        { message: "Report not found" },
-        { status: 404 }
-      );
-    }
-
-    const { checklistData, status, reviewNotes } = body;
-
-    // Calculate completion percentage
-    let completion = existing.completion;
-    if (checklistData?.sections) {
-      const questions = checklistData.sections.flatMap(
-        (s: { questions: unknown[] }) => s.questions
-      );
-      const answered = questions.filter(
-        (q: { value: unknown }) => q.value !== null && q.value !== ""
-      ).length;
-      completion = Math.round((answered / questions.length) * 100);
-    }
-
-    // Prepare update data
-    const updateData: Record<string, unknown> = {
-      completion,
-    };
-
-    if (checklistData !== undefined) {
-      updateData.checklistData = checklistData;
-    }
-
-    if (status !== undefined) {
-      updateData.status = status;
-
-      // Set completedAt when status changes to completed
-      if (status === "completed" && existing.status !== "completed") {
-        updateData.completedAt = new Date();
-      }
-
-      // Set reviewedBy/reviewedAt when status changes to approved
-      if (status === "approved" && existing.status !== "approved") {
-        updateData.reviewedBy = userId;
-        updateData.reviewedAt = new Date();
-      }
-    }
-
-    if (reviewNotes !== undefined) {
-      updateData.reviewNotes = reviewNotes;
-    }
-
-    // Update report
-    const report = await database.eventReport.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: reportId,
-        },
-      },
-      data: updateData,
-      include: {
-        event: {
-          select: {
-            id: true,
-            eventNumber: true,
-            title: true,
-            eventDate: true,
-          },
-        },
-      },
-    });
-
-    return NextResponse.json({ data: report });
-  } catch (error) {
-    console.error("Error updating event report:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ reportId: string }> }
+) {
+  const { reportId } = await context.params;
+  console.log("[EventReport/PUT] Delegating to manifest submit command", {
+    reportId,
+  });
+  return executeManifestCommand(request, {
+    entityName: "EventReport",
+    commandName: "submit",
+    params: { reportId },
+    transformBody: (body) => ({ ...body, id: reportId }),
+  });
 }
 
 /**
  * DELETE /api/events/reports/[reportId]
  * Soft delete an event report
  */
-export async function DELETE(_request: Request, context: RouteContext) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    const { reportId } = await context.params;
-
-    // Verify report exists
-    const existing = await database.eventReport.findFirst({
-      where: {
-        id: reportId,
-        tenantId,
-        deletedAt: null,
-      },
-    });
-
-    if (!existing) {
-      return NextResponse.json(
-        { message: "Report not found" },
-        { status: 404 }
-      );
-    }
-
-    // Soft delete
-    await database.eventReport.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: reportId,
-        },
-      },
-      data: {
-        deletedAt: new Date(),
-      },
-    });
-
-    return NextResponse.json({ message: "Report deleted" });
-  } catch (error) {
-    console.error("Error deleting event report:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ reportId: string }> }
+) {
+  const { reportId } = await context.params;
+  console.log("[EventReport/DELETE] Delegating to manifest complete command", {
+    reportId,
+  });
+  return executeManifestCommand(request, {
+    entityName: "EventReport",
+    commandName: "complete",
+    params: { reportId },
+    transformBody: (_body) => ({ id: reportId }),
+  });
 }
