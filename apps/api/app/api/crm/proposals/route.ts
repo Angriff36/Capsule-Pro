@@ -2,20 +2,15 @@
  * Proposal CRUD API Endpoints
  *
  * GET    /api/crm/proposals      - List proposals with pagination and filters
- * POST   /api/crm/proposals      - Create a new proposal
+ * POST   /api/crm/proposals      - Create a new proposal (via manifest command)
  */
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma, type PrismaClient } from "@repo/database";
+import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { CreateProposalRequest } from "./types";
-import {
-  parsePaginationParams,
-  parseProposalFilters,
-  validateCreateProposalRequest,
-} from "./validation";
+import { parsePaginationParams, parseProposalFilters } from "./validation";
 
 /**
  * GET /api/crm/proposals

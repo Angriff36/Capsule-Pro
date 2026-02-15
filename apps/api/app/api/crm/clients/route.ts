@@ -2,21 +2,17 @@
  * Client CRUD API Endpoints
  *
  * GET    /api/crm/clients      - List clients with pagination and filters
- * POST   /api/crm/clients      - Create a new client
+ * POST   /api/crm/clients      - Create a new client (via manifest command)
  */
 
 import { auth } from "@repo/auth/server";
-import { database, type PrismaClient } from "@repo/database";
-import type { ClientCreateInput } from "@repo/database/generated/models/Client";
+import { database } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { CreateClientRequest } from "./types";
-import {
-  parseClientListFilters,
-  parsePaginationParams,
-  validateCreateClientRequest,
-} from "./validation";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { parseClientListFilters, parsePaginationParams } from "./validation";
 
 /**
  * GET /api/crm/clients
@@ -127,131 +123,12 @@ export async function GET(request: Request) {
 }
 
 /**
- * Build client data for creation
- */
-function buildCreateClientData(
-  data: CreateClientRequest,
-  tenantId: string,
-  clientType: string
-): ClientCreateInput {
-  const clientData: Record<string, unknown> = {
-    tenantId,
-    clientType,
-  };
-
-  // Helper to conditionally add trimmed string fields
-  const addTrimmedString = (key: keyof CreateClientRequest) => {
-    const value = data[key];
-    if (value !== undefined && value !== null) {
-      clientData[key] = (value as string)?.trim() || null;
-    }
-  };
-
-  // Helper to add optional values
-  const addOptional = <T>(key: keyof CreateClientRequest, defaultValue?: T) => {
-    const value = data[key];
-    if (value !== undefined) {
-      clientData[key] =
-        defaultValue !== undefined ? (value ?? defaultValue) : value;
-    }
-  };
-
-  // Add string fields that need trimming
-  addTrimmedString("company_name");
-  addTrimmedString("first_name");
-  addTrimmedString("last_name");
-  addTrimmedString("email");
-  addTrimmedString("phone");
-  addTrimmedString("website");
-  addTrimmedString("addressLine1");
-  addTrimmedString("addressLine2");
-  addTrimmedString("city");
-  addTrimmedString("stateProvince");
-  addTrimmedString("postalCode");
-  addTrimmedString("countryCode");
-  addTrimmedString("taxId");
-  addTrimmedString("notes");
-  addTrimmedString("source");
-
-  // Add optional fields with defaults
-  addOptional("defaultPaymentTerms", 30);
-  addOptional("taxExempt", false);
-  addOptional("tags", []);
-  addOptional("assignedTo", null);
-
-  return clientData as ClientCreateInput;
-}
-
-/**
- * Check for duplicate email
- */
-async function checkDuplicateEmail(
-  database: PrismaClient,
-  tenantId: string,
-  email: string
-) {
-  const existingClient = await database.client.findFirst({
-    where: {
-      AND: [{ tenantId }, { email: email.trim() }, { deletedAt: null }],
-    },
-  });
-  return existingClient;
-}
-
-/**
  * POST /api/crm/clients
- * Create a new client
+ * Create a new client via manifest command
  */
-export async function POST(request: Request) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    const body = await request.json();
-
-    // Validate request body
-    validateCreateClientRequest(body);
-
-    const data = body as CreateClientRequest;
-
-    // Check for duplicate email (if provided)
-    if (data.email?.trim()) {
-      const existingClient = await checkDuplicateEmail(
-        database,
-        tenantId,
-        data.email
-      );
-
-      if (existingClient) {
-        return NextResponse.json(
-          { message: "A client with this email already exists" },
-          { status: 409 }
-        );
-      }
-    }
-
-    // Determine client type from data
-    const clientType =
-      data.clientType || (data.company_name ? "company" : "individual");
-
-    // Create client
-    const clientData = buildCreateClientData(data, tenantId, clientType);
-    const client = await database.client.create({
-      data: clientData,
-    });
-
-    return NextResponse.json({ data: client }, { status: 201 });
-  } catch (error) {
-    if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-    console.error("Error creating client:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export async function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "Client",
+    commandName: "create",
+  });
 }
