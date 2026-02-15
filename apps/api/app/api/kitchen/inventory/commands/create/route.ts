@@ -3,6 +3,7 @@
 // Writes MUST flow through runtime.runCommand() to enforce guards, policies, and constraints
 
 import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -25,10 +26,21 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("Tenant not found", 400);
     }
 
+    // Fetch user's role for policy evaluation
+    const currentUser = await database.user.findFirst({
+      where: {
+        AND: [{ tenantId }, { authUserId: userId }],
+      },
+    });
+
+    if (!currentUser) {
+      return manifestErrorResponse("User not found in database", 400);
+    }
+
     const body = await request.json();
 
     const runtime = await createManifestRuntime({
-      user: { id: userId, tenantId },
+      user: { id: currentUser.id, tenantId, role: currentUser.role },
       entityName: "InventoryItem",
     });
     const result = await runtime.runCommand("create", body, {
@@ -56,6 +68,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
+    console.error("[inventory/create] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

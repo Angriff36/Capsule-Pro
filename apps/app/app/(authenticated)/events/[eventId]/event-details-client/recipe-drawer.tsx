@@ -76,7 +76,7 @@ export function RecipeDrawer({
             variant="outline"
           >
             {selectedRecipe?.versionId ? (
-              <Link href={`/inventory/recipes/${selectedRecipe.versionId}`}>
+              <Link href={`/inventory/recipe-costs/${selectedRecipe.versionId}`}>
                 Open recipe
               </Link>
             ) : (

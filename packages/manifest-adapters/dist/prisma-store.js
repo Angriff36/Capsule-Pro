@@ -1551,11 +1551,19 @@ export class InventoryItemPrismaStore {
         return item ? this.mapToManifestEntity(item) : undefined;
     }
     async create(data) {
+        // Generate ID if not provided (per Manifest Store contract, create() returns entity with id)
+        const id = data.id ?? crypto.randomUUID();
+        // Accept both itemNumber and itemType as field aliases
+        // Manifest command param is 'itemType', semantically the item number/SKU
+        const itemNumber = (data.itemNumber ?? data.itemType);
+        if (!itemNumber) {
+            throw new Error("InventoryItemPrismaStore.create: missing itemNumber (or itemType alias). Fix manifest/route contract.");
+        }
         const item = await this.prisma.inventoryItem.create({
             data: {
                 tenantId: this.tenantId,
-                id: data.id,
-                item_number: data.itemNumber,
+                id,
+                item_number: itemNumber,
                 name: data.name,
                 category: data.category || "",
                 unitCost: data.costPerUnit

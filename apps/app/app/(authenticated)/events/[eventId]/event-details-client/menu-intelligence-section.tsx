@@ -205,7 +205,7 @@ export function MenuIntelligenceSection({
                                 {row.recipe.versionId ? (
                                   <Link
                                     className="text-success hover:text-success/80"
-                                    href={`/inventory/recipes/${row.recipe.versionId}`}
+                                    href={`/inventory/recipe-costs/${row.recipe.versionId}`}
                                   >
                                     View recipe
                                   </Link>

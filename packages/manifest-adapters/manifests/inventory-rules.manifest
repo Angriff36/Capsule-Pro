@@ -4,6 +4,7 @@
 entity InventoryItem {
   property required id: string
   property required tenantId: string
+  property required itemNumber: string
   property required name: string
   property required itemType: string = "ingredient"
   property category: string = ""
@@ -243,9 +244,11 @@ entity InventoryItem {
     emit InventoryReservationReleased
   }
 
-  command create(name: string, itemType: string, category: string, baseUnit: string, parLevel: number, reorderPoint: number, reorderQuantity: number, costPerUnit: number, supplierId: string, locationId: string, allergens: string) {
+  command create(itemNumber: string, name: string, itemType: string, category: string, baseUnit: string, parLevel: number, reorderPoint: number, reorderQuantity: number, costPerUnit: number, supplierId: string, locationId: string, allergens: string) {
+    guard itemNumber != null and itemNumber != "" "Item number/SKU is required"
     guard name != null and name != "" "Item name is required"
 
+    mutate itemNumber = itemNumber
     mutate name = name
     mutate itemType = itemType
     mutate category = category
@@ -267,13 +270,14 @@ entity InventoryItem {
     emit InventoryItemCreated
   }
 
-  store InventoryItem in PrismaInventoryItemStore
+  store InventoryItem in memory
 }
 
 policy InventoryStaffCanReserve execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can reserve inventory"
 policy InventoryStaffCanConsume execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can consume inventory"
 policy ManagersCanAdjust execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can adjust inventory"
 policy ManagersCanRestock execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can restock inventory"
+policy ManagersCanCreate execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can create inventory items"
 
 event InventoryReserved: "kitchen.inventory.reserved" {
   itemId: string
@@ -324,6 +328,7 @@ event InventoryRestocked: "kitchen.inventory.restocked" {
 event InventoryItemCreated: "kitchen.inventory.created" {
   itemId: string
   tenantId: string
+  itemNumber: string
   name: string
   itemType: string
   category: string

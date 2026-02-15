@@ -1779,11 +1779,22 @@ export class InventoryItemPrismaStore implements Store<EntityInstance> {
   }
 
   async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
+    // Generate ID if not provided (per Manifest Store contract, create() returns entity with id)
+    const id = (data.id as string | undefined) ?? crypto.randomUUID();
+
+    // itemNumber is the SKU/item number (required by Prisma schema)
+    const itemNumber = data.itemNumber as string | undefined;
+    if (!itemNumber) {
+      throw new Error(
+        "InventoryItemPrismaStore.create: missing itemNumber. Provide itemNumber (SKU) in request."
+      );
+    }
+
     const item = await this.prisma.inventoryItem.create({
       data: {
         tenantId: this.tenantId,
-        id: data.id as string,
-        item_number: data.itemNumber as string,
+        id,
+        item_number: itemNumber,
         name: data.name as string,
         category: (data.category as string) || "",
         unitCost: data.costPerUnit

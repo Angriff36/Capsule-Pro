@@ -357,7 +357,7 @@ export const RecipesPageClient = () => {
                     <TableCell>
                       <Button asChild size="sm" variant="ghost">
                         <a
-                          href={`/inventory/recipes/${recipe.currentVersion?.id || recipe.id}`}
+                          href={`/inventory/recipe-costs/${recipe.currentVersion?.id || recipe.id}`}
                         >
                           View Details
                         </a>

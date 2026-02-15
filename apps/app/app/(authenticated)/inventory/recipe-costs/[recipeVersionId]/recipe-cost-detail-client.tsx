@@ -234,7 +234,7 @@ export const RecipeCostDetailClient = ({
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button asChild size="sm" variant="ghost">
-          <a href="/inventory/recipes">
+          <a href="/inventory/recipe-costs">
             <ChevronLeftIcon className="h-4 w-4 mr-1" />
             Back to Recipes
           </a>

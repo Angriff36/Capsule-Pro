@@ -43,6 +43,7 @@ interface GeneratedRuntimeContext {
   user: {
     id: string;
     tenantId: string;
+    role?: string;
   };
   /** Optional entity name to auto-detect which manifest to load */
   entityName?: string;
