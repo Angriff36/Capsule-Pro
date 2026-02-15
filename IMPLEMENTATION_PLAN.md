@@ -3,7 +3,7 @@
 **Last Updated**: 2026-02-15
 **Goal**: KitchenTask Manifest Integration (Phase 1)
 **Branch**: manifest-.3
-**Tag**: v0.5.0 ✓
+**Tag**: v0.5.1
 
 ---
 
@@ -82,11 +82,34 @@ pnpm install && pnpm lint && pnpm build
 
 ---
 
+## Additional Work (v0.5.1)
+
+### Phase 1-7 Manifest Files (25 new files)
+
+Added 25 manifest files for comprehensive entity coverage:
+
+| Phase | Manifest Files | Entities |
+|-------|---------------|----------|
+| Phase 1: Kitchen Ops | prep-comment, ingredient, dish, container, prep-method | ~10 |
+| Phase 2: Events | event, event-report, event-budget, catering-order, battle-board | ~12 |
+| Phase 3: CRM & Sales | client, lead, proposal, client-interaction | ~8 |
+| Phase 4: Purchasing | purchase-order, shipment, inventory-transaction, inventory-supplier, cycle-count | ~14 |
+| Phase 5: Staff | user, schedule, time-entry | ~6 |
+| Phase 6: Command Board | command-board | ~5 |
+| Phase 7: Workflows | workflow, notification | ~3 |
+
+All wired into `ENTITY_TO_MANIFEST` mapping and `create*Runtime` helpers.
+
+Build: PASSED ✓
+
+---
+
 ## Summary
 
 All Phase 1 KitchenTask Manifest Integration tasks completed:
 - KitchenTaskPrismaStore with full CRUD
 - createKitchenTaskRuntime helper
 - 11 command routes (claim, release, start, complete, reassign, update-priority, update-complexity, add-tag, remove-tag, cancel, create)
+- 25 additional manifest files for Phases 1-7
 
 Branch ready for merge to main.
