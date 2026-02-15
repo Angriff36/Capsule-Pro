@@ -65,24 +65,33 @@ fetch("http://localhost:2223/api/kitchen/inventory/commands/create", {
 
 ---
 
-## Current State (6 Manifests, 12 Entities)
+## Current State (32 Manifests, ~58 Entities)
 
-| Manifest File              | Entities                                            | Status      |
-| -------------------------- | --------------------------------------------------- | ----------- |
-| `menu-rules.manifest`      | Menu, MenuDish                                      | ✅ Complete |
-| `prep-list-rules.manifest` | PrepList, PrepListItem                              | ✅ Complete |
-| `prep-task-rules.manifest` | PrepTask                                            | ✅ Complete |
-| `recipe-rules.manifest`    | Recipe, RecipeVersion, RecipeIngredient, RecipeStep | ✅ Complete |
-| `station-rules.manifest`   | Station                                             | ✅ Complete |
-| `inventory-rules.manifest` | InventoryItem                                       | ✅ Complete |
+### Original Manifests (7 files, 13 entities)
+
+| Manifest File                 | Entities                                            | Status      |
+| ----------------------------- | --------------------------------------------------- | ----------- |
+| `menu-rules.manifest`         | Menu, MenuDish                                      | ✅ Complete |
+| `prep-list-rules.manifest`    | PrepList, PrepListItem                              | ✅ Complete |
+| `prep-task-rules.manifest`    | PrepTask                                            | ✅ Complete |
+| `recipe-rules.manifest`       | Recipe, RecipeVersion, RecipeIngredient, RecipeStep | ✅ Complete |
+| `station-rules.manifest`      | Station                                             | ✅ Complete |
+| `inventory-rules.manifest`    | InventoryItem                                       | ✅ Complete |
+| `kitchen-task-rules.manifest` | KitchenTask                                         | ✅ Complete |
+
+### Phase 1-7 Manifests (25 files, ~45 entities) — Added 2026-02-15
+
+All manifests created with entity definitions, commands, constraints, policies, and events.
+All wired into `apps/api/lib/manifest-runtime.ts` ENTITY_TO_MANIFEST mapping + helper functions.
+Build validated ✅.
 
 ---
 
-## Phase 1: Kitchen Operations (Priority: Critical)
+## Phase 1: Kitchen Operations (Priority: Critical) ✅ COMPLETE
 
 These are the core operational entities that power daily kitchen workflows.
 
-### Task 1.1: kitchen-task-rules.manifest
+### Task 1.1: kitchen-task-rules.manifest ✅
 
 **Files:**
 
@@ -110,7 +119,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 1.2: prep-comment-rules.manifest
+### Task 1.2: prep-comment-rules.manifest ✅
 
 **Files:**
 
@@ -126,7 +135,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 1.3: ingredient-rules.manifest
+### Task 1.3: ingredient-rules.manifest ✅
 
 **Files:**
 
@@ -143,7 +152,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 1.4: dish-rules.manifest
+### Task 1.4: dish-rules.manifest ✅
 
 **Files:**
 
@@ -161,7 +170,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 1.5: container-rules.manifest
+### Task 1.5: container-rules.manifest ✅
 
 **Files:**
 
@@ -177,7 +186,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 1.6: prep-method-rules.manifest
+### Task 1.6: prep-method-rules.manifest ✅
 
 **Files:**
 
@@ -193,9 +202,9 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-## Phase 2: Event & Catering (Priority: High)
+## Phase 2: Event & Catering (Priority: High) ✅ COMPLETE
 
-### Task 2.1: event-rules.manifest
+### Task 2.1: event-rules.manifest ✅
 
 **Files:**
 
@@ -221,7 +230,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 2.2: event-report-rules.manifest
+### Task 2.2: event-report-rules.manifest ✅
 
 **Files:**
 
@@ -237,7 +246,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 2.3: event-budget-rules.manifest
+### Task 2.3: event-budget-rules.manifest ✅
 
 **Files:**
 
@@ -254,7 +263,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 2.4: catering-order-rules.manifest
+### Task 2.4: catering-order-rules.manifest ✅
 
 **Files:**
 
@@ -271,7 +280,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 2.5: battle-board-rules.manifest
+### Task 2.5: battle-board-rules.manifest ✅
 
 **Files:**
 
@@ -287,9 +296,9 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-## Phase 3: CRM & Sales (Priority: Medium)
+## Phase 3: CRM & Sales (Priority: Medium) ✅ COMPLETE
 
-### Task 3.1: client-rules.manifest
+### Task 3.1: client-rules.manifest ✅
 
 **Files:**
 
@@ -307,7 +316,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 3.2: lead-rules.manifest
+### Task 3.2: lead-rules.manifest ✅
 
 **Files:**
 
@@ -323,7 +332,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 3.3: proposal-rules.manifest
+### Task 3.3: proposal-rules.manifest ✅
 
 **Files:**
 
@@ -348,7 +357,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 3.4: client-interaction-rules.manifest
+### Task 3.4: client-interaction-rules.manifest ✅
 
 **Files:**
 
@@ -364,9 +373,9 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-## Phase 4: Purchasing & Inventory (Priority: Medium)
+## Phase 4: Purchasing & Inventory (Priority: Medium) ✅ COMPLETE
 
-### Task 4.1: purchase-order-rules.manifest
+### Task 4.1: purchase-order-rules.manifest ✅
 
 **Files:**
 
@@ -391,7 +400,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 4.2: shipment-rules.manifest
+### Task 4.2: shipment-rules.manifest ✅
 
 **Files:**
 
@@ -413,7 +422,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 4.3: inventory-transaction-rules.manifest
+### Task 4.3: inventory-transaction-rules.manifest ✅
 
 **Files:**
 
@@ -429,7 +438,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 4.4: inventory-supplier-rules.manifest
+### Task 4.4: inventory-supplier-rules.manifest ✅
 
 **Files:**
 
@@ -445,7 +454,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 4.5: cycle-count-rules.manifest
+### Task 4.5: cycle-count-rules.manifest ✅
 
 **Files:**
 
@@ -462,9 +471,9 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-## Phase 5: Staff & Scheduling (Priority: Medium)
+## Phase 5: Staff & Scheduling (Priority: Medium) ✅ COMPLETE
 
-### Task 5.1: user-rules.manifest
+### Task 5.1: user-rules.manifest ✅
 
 **Files:**
 
@@ -481,7 +490,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 5.2: schedule-rules.manifest
+### Task 5.2: schedule-rules.manifest ✅
 
 **Files:**
 
@@ -498,7 +507,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 5.3: time-entry-rules.manifest
+### Task 5.3: time-entry-rules.manifest ✅
 
 **Files:**
 
@@ -515,9 +524,9 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-## Phase 6: Command Board (Priority: Medium)
+## Phase 6: Command Board (Priority: Medium) ✅ COMPLETE
 
-### Task 6.1: command-board-rules.manifest
+### Task 6.1: command-board-rules.manifest ✅
 
 **Files:**
 
@@ -544,9 +553,9 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-## Phase 7: Workflows & Notifications (Priority: Lower)
+## Phase 7: Workflows & Notifications (Priority: Lower) ✅ COMPLETE
 
-### Task 7.1: workflow-rules.manifest
+### Task 7.1: workflow-rules.manifest ✅
 
 **Files:**
 
@@ -563,7 +572,7 @@ These are the core operational entities that power daily kitchen workflows.
 
 ---
 
-### Task 7.2: notification-rules.manifest
+### Task 7.2: notification-rules.manifest ✅
 
 **Files:**
 
@@ -657,18 +666,20 @@ effect GeneratePrepSuggestion {
 
 ## Summary
 
-| Phase | Manifests | Entities | Priority |
-| ----- | --------- | -------- | -------- |
-| 1     | 6         | 8        | Critical |
-| 2     | 5         | 8        | High     |
-| 3     | 4         | 7        | Medium   |
-| 4     | 5         | 9        | Medium   |
-| 5     | 3         | 5        | Medium   |
-| 6     | 1         | 5        | Medium   |
-| 7     | 2         | 2        | Lower    |
-| 8     | 3         | Future   | Future   |
+| Phase | Manifests | Entities | Priority | Status                  |
+| ----- | --------- | -------- | -------- | ----------------------- |
+| 1     | 6         | 8        | Critical | ✅ COMPLETE             |
+| 2     | 5         | 8        | High     | ✅ COMPLETE             |
+| 3     | 4         | 7        | Medium   | ✅ COMPLETE             |
+| 4     | 5         | 9        | Medium   | ✅ COMPLETE             |
+| 5     | 3         | 5        | Medium   | ✅ COMPLETE             |
+| 6     | 1         | 5        | Medium   | ✅ COMPLETE             |
+| 7     | 2         | 2        | Lower    | ✅ COMPLETE             |
+| 8     | 3         | Future   | Future   | Requires Manifest vNext |
 
-**Total: 29 new manifest files covering ~46 entities**
+**Total: 32 manifest files (7 original + 25 new) covering ~58 entities**
+**All wired into manifest-runtime.ts with ENTITY_TO_MANIFEST mapping + helper functions**
+**Build validated: ✅ PASSING (2026-02-15)**
 
 ---
 
@@ -687,7 +698,9 @@ effect GeneratePrepSuggestion {
 
 ## Next Steps
 
-1. Execute Phase 1 manifests first (kitchen-task is highest ROI)
-2. Each manifest follows the same pattern as existing manifests
-3. Generate routes, stores, and tests for each
-4. Migrate existing bypassed routes to use new manifests
+1. ~~Execute Phase 1 manifests first (kitchen-task is highest ROI)~~ ✅ All phases 1-7 complete
+2. ~~Each manifest follows the same pattern as existing manifests~~ ✅ Done
+3. **PrismaStore implementations** for new entities (currently only original 13 entities have stores)
+4. **Command route handlers** for new entities (generate Next.js API routes from manifest definitions)
+5. **Migrate existing bypassed routes** to use new manifests (42 routes still using direct Prisma)
+6. **Frontend migration** — wire UI components to use manifest command routes instead of direct API calls
