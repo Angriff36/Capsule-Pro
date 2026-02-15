@@ -1,0 +1,271 @@
+// Events & Catering - Event Budget Rules
+// Manifest spec for event budget management and line item tracking
+
+entity EventBudget {
+  property required id: string
+  property required tenantId: string
+  property required eventId: string
+  property version: number = 1
+  property status: string = "draft"
+  property totalBudgetAmount: number = 0
+  property totalActualAmount: number = 0
+  property varianceAmount: number = 0
+  property variancePercentage: number = 0
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDraft: boolean = self.status == "draft"
+  computed isApproved: boolean = self.status == "approved"
+  computed isFinalized: boolean = self.status == "finalized"
+  computed isOverBudget: boolean = self.totalActualAmount > self.totalBudgetAmount
+  computed hasVariance: boolean = self.varianceAmount != 0
+  computed varianceExceedsThreshold: boolean = self.variancePercentage > 10 or self.variancePercentage < -10
+
+  constraint validEventId: self.eventId != null and self.eventId != "" "Event ID is required"
+  constraint validStatus: self.status in ["draft", "approved", "finalized"] "Status must be valid"
+  constraint positiveBudget: self.totalBudgetAmount >= 0 "Total budget amount must be non-negative"
+
+  constraint warnOverBudget:warn self.totalActualAmount > self.totalBudgetAmount {
+    messageTemplate: "Budget is over by {varianceAmount} ({variancePct}%)"
+    details: {
+      totalBudgetAmount: self.totalBudgetAmount
+      totalActualAmount: self.totalActualAmount
+      varianceAmount: self.varianceAmount
+      variancePct: self.variancePercentage
+    }
+  }
+
+  constraint warnHighVariance:warn self.variancePercentage > 10 or self.variancePercentage < -10 {
+    messageTemplate: "Budget variance exceeds 10% threshold ({variancePct}%)"
+    details: {
+      variancePercentage: self.variancePercentage
+      varianceAmount: self.varianceAmount
+      eventId: self.eventId
+    }
+  }
+
+  constraint blockFinalizeHighVariance:block self.variancePercentage > 20 or self.variancePercentage < -20 {
+    messageTemplate: "Cannot finalize budget - variance ({variancePct}%) exceeds 20% threshold"
+    details: {
+      variancePercentage: self.variancePercentage
+      varianceAmount: self.varianceAmount
+    }
+  }
+
+  command create(eventId: string, totalBudgetAmount: number, notes: string) {
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard totalBudgetAmount >= 0 "Budget amount must be non-negative"
+
+    mutate eventId = eventId
+    mutate totalBudgetAmount = totalBudgetAmount
+    mutate totalActualAmount = 0
+    mutate varianceAmount = 0
+    mutate variancePercentage = 0
+    mutate notes = notes
+    mutate status = "draft"
+    mutate version = 1
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit EventBudgetCreated
+  }
+
+  command update(totalBudgetAmount: number, totalActualAmount: number, notes: string) {
+    guard self.status != "finalized" "Cannot update finalized budget"
+    guard totalBudgetAmount >= 0 "Budget amount must be non-negative"
+
+    constraint warnBudgetIncrease:warn totalBudgetAmount > self.totalBudgetAmount * 1.25 {
+      messageTemplate: "Budget increasing by more than 25% (from {oldBudget} to {newBudget})"
+      details: {
+        oldBudget: self.totalBudgetAmount
+        newBudget: totalBudgetAmount
+      }
+    }
+
+    mutate totalBudgetAmount = totalBudgetAmount
+    mutate totalActualAmount = totalActualAmount
+    mutate varianceAmount = totalActualAmount - totalBudgetAmount
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit EventBudgetUpdated
+  }
+
+  command finalize(userId: string) {
+    guard self.status == "draft" or self.status == "approved" "Can only finalize draft or approved budgets"
+
+    constraint warnFinalizeWithVariance:warn self.variancePercentage > 10 or self.variancePercentage < -10 {
+      messageTemplate: "Finalizing budget with {variancePct}% variance"
+      details: {
+        variancePercentage: self.variancePercentage
+        varianceAmount: self.varianceAmount
+      }
+    }
+
+    mutate status = "finalized"
+    mutate updatedAt = now()
+
+    emit EventBudgetFinalized
+  }
+
+  store EventBudget in memory
+}
+
+entity BudgetLineItem {
+  property required id: string
+  property required tenantId: string
+  property required budgetId: string
+  property required category: string
+  property required name: string
+  property description: string = ""
+  property budgetedAmount: number = 0
+  property actualAmount: number = 0
+  property varianceAmount: number = 0
+  property sortOrder: number = 0
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isOverBudget: boolean = self.actualAmount > self.budgetedAmount
+  computed hasVariance: boolean = self.varianceAmount != 0
+
+  constraint validBudgetId: self.budgetId != null and self.budgetId != "" "Budget ID is required"
+  constraint validCategory: self.category != null and self.category != "" "Category is required"
+  constraint validName: self.name != null and self.name != "" "Line item name is required"
+  constraint positiveBudgetedAmount: self.budgetedAmount >= 0 "Budgeted amount must be non-negative"
+  constraint positiveActualAmount: self.actualAmount >= 0 "Actual amount must be non-negative"
+  constraint positiveSortOrder: self.sortOrder >= 0 "Sort order must be non-negative"
+
+  constraint warnOverBudgetItem:warn self.actualAmount > self.budgetedAmount {
+    messageTemplate: "Line item '{itemName}' is over budget by {variance}"
+    details: {
+      itemName: self.name
+      budgetedAmount: self.budgetedAmount
+      actualAmount: self.actualAmount
+      variance: self.varianceAmount
+    }
+  }
+
+  command create(budgetId: string, category: string, name: string, description: string, budgetedAmount: number, sortOrder: number, notes: string) {
+    guard budgetId != null and budgetId != "" "Budget ID is required"
+    guard category != null and category != "" "Category is required"
+    guard name != null and name != "" "Line item name is required"
+    guard budgetedAmount >= 0 "Budgeted amount must be non-negative"
+
+    mutate budgetId = budgetId
+    mutate category = category
+    mutate name = name
+    mutate description = description
+    mutate budgetedAmount = budgetedAmount
+    mutate actualAmount = 0
+    mutate varianceAmount = 0
+    mutate sortOrder = sortOrder
+    mutate notes = notes
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit BudgetLineItemCreated
+  }
+
+  command update(budgetedAmount: number, actualAmount: number, description: string, notes: string) {
+    guard budgetedAmount >= 0 "Budgeted amount must be non-negative"
+    guard actualAmount >= 0 "Actual amount must be non-negative"
+
+    constraint warnSignificantOverage:warn actualAmount > budgetedAmount * 1.5 {
+      messageTemplate: "Line item '{itemName}' actual exceeds budget by 50%+"
+      details: {
+        itemName: self.name
+        budgetedAmount: budgetedAmount
+        actualAmount: actualAmount
+      }
+    }
+
+    mutate budgetedAmount = budgetedAmount
+    mutate actualAmount = actualAmount
+    mutate varianceAmount = actualAmount - budgetedAmount
+    mutate description = description
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit BudgetLineItemUpdated
+  }
+
+  command remove(reason: string) {
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit BudgetLineItemRemoved
+  }
+
+  store BudgetLineItem in memory
+}
+
+// Policy definitions
+policy BudgetManagement execute: user.role in ["event_coordinator", "manager", "admin", "finance"] "Event coordinators and finance can manage budgets"
+policy BudgetFinalize execute: user.role in ["manager", "admin", "finance"] "Only managers and finance can finalize budgets"
+policy LineItemManagement execute: user.role in ["event_coordinator", "manager", "admin", "finance"] "Event coordinators and finance can manage line items"
+
+// Budget events
+event EventBudgetCreated: "events.budget.created" {
+  budgetId: string
+  tenantId: string
+  eventId: string
+  totalBudgetAmount: number
+  createdAt: number
+}
+
+event EventBudgetUpdated: "events.budget.updated" {
+  budgetId: string
+  tenantId: string
+  eventId: string
+  totalBudgetAmount: number
+  totalActualAmount: number
+  varianceAmount: number
+  updatedAt: number
+}
+
+event EventBudgetFinalized: "events.budget.finalized" {
+  budgetId: string
+  tenantId: string
+  eventId: string
+  totalBudgetAmount: number
+  totalActualAmount: number
+  variancePercentage: number
+  userId: string
+  finalizedAt: number
+}
+
+// Line item events
+event BudgetLineItemCreated: "events.budget.line_item_created" {
+  lineItemId: string
+  budgetId: string
+  tenantId: string
+  category: string
+  name: string
+  budgetedAmount: number
+  createdAt: number
+}
+
+event BudgetLineItemUpdated: "events.budget.line_item_updated" {
+  lineItemId: string
+  budgetId: string
+  tenantId: string
+  name: string
+  oldBudgetedAmount: number
+  newBudgetedAmount: number
+  actualAmount: number
+  varianceAmount: number
+  updatedAt: number
+}
+
+event BudgetLineItemRemoved: "events.budget.line_item_removed" {
+  lineItemId: string
+  budgetId: string
+  tenantId: string
+  name: string
+  reason: string
+  removedAt: number
+}

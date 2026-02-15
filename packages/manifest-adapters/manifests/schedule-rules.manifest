@@ -1,0 +1,225 @@
+// Staff - Schedule Rules
+// Manifest spec for schedule and shift management
+
+entity Schedule {
+  property required id: string
+  property required tenantId: string
+  property locationId: string = ""
+  property scheduleDate: number = 0
+  property status: string = "draft"
+  property publishedAt: number = 0
+  property publishedBy: string = ""
+  property notes: string = ""
+  property shiftCount: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDraft: boolean = self.status == "draft"
+  computed isPublished: boolean = self.status == "published"
+  computed isClosed: boolean = self.status == "closed"
+  computed hasShifts: boolean = self.shiftCount > 0
+  computed isEditable: boolean = self.status == "draft"
+
+  constraint validStatus: self.status in ["draft", "published", "closed"] "Invalid schedule status"
+
+  command create(locationId: string, scheduleDate: number, notes: string) {
+    guard scheduleDate != null and scheduleDate > 0 "Schedule date is required"
+
+    mutate locationId = locationId
+    mutate scheduleDate = scheduleDate
+    mutate notes = notes
+    mutate status = "draft"
+    mutate shiftCount = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit ScheduleCreated
+  }
+
+  command update(scheduleDate: number, locationId: string, notes: string) {
+    guard self.status == "draft" "Can only update draft schedules"
+
+    mutate scheduleDate = scheduleDate
+    mutate locationId = locationId
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit ScheduleUpdated
+  }
+
+  command publish(userId: string) {
+    guard self.status == "draft" "Can only publish draft schedules"
+
+    constraint blockNoShifts:block self.shiftCount == 0 {
+      messageTemplate: "Cannot publish schedule with no shifts assigned"
+      details: {
+        scheduleId: self.id
+        scheduleDate: self.scheduleDate
+      }
+    }
+
+    mutate status = "published"
+    mutate publishedAt = now()
+    mutate publishedBy = userId
+    mutate updatedAt = now()
+
+    emit SchedulePublished
+  }
+
+  command close(userId: string) {
+    guard self.status == "published" "Can only close published schedules"
+
+    constraint blockNotPublished:block self.status != "published" {
+      messageTemplate: "Cannot close schedule that is not published (current status: '{status}')"
+      details: {
+        scheduleId: self.id
+        status: self.status
+      }
+    }
+
+    mutate status = "closed"
+    mutate updatedAt = now()
+
+    emit ScheduleClosed
+  }
+
+  store Schedule in memory
+}
+
+entity ScheduleShift {
+  property required id: string
+  property required tenantId: string
+  property required scheduleId: string
+  property required employeeId: string
+  property required locationId: string
+  property shiftStart: number = 0
+  property shiftEnd: number = 0
+  property roleDuringShift: string = ""
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed durationHours: number = self.shiftEnd > self.shiftStart ? (self.shiftEnd - self.shiftStart) / 3600000 : 0
+  computed isAssigned: boolean = self.employeeId != ""
+  computed hasRole: boolean = self.roleDuringShift != ""
+
+  constraint validShiftTimes: self.shiftEnd > self.shiftStart "Shift end must be after shift start"
+
+  constraint warnLongShift:warn self.durationHours > 12 {
+    messageTemplate: "Shift duration ({hours} hours) exceeds 12 hours"
+    details: {
+      employeeId: self.employeeId
+      hours: self.durationHours
+      scheduleId: self.scheduleId
+    }
+  }
+
+  command create(scheduleId: string, employeeId: string, locationId: string, shiftStart: number, shiftEnd: number, roleDuringShift: string, notes: string) {
+    guard scheduleId != null and scheduleId != "" "Schedule ID is required"
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard locationId != null and locationId != "" "Location ID is required"
+    guard shiftStart != null and shiftStart > 0 "Shift start time is required"
+    guard shiftEnd != null and shiftEnd > shiftStart "Shift end must be after shift start"
+
+    mutate scheduleId = scheduleId
+    mutate employeeId = employeeId
+    mutate locationId = locationId
+    mutate shiftStart = shiftStart
+    mutate shiftEnd = shiftEnd
+    mutate roleDuringShift = roleDuringShift
+    mutate notes = notes
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit ScheduleShiftCreated
+  }
+
+  command update(employeeId: string, locationId: string, shiftStart: number, shiftEnd: number, roleDuringShift: string, notes: string) {
+    guard shiftEnd > shiftStart "Shift end must be after shift start"
+
+    mutate employeeId = employeeId
+    mutate locationId = locationId
+    mutate shiftStart = shiftStart
+    mutate shiftEnd = shiftEnd
+    mutate roleDuringShift = roleDuringShift
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit ScheduleShiftUpdated
+  }
+
+  command remove(userId: string) {
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit ScheduleShiftRemoved
+  }
+
+  store ScheduleShift in memory
+}
+
+policy ManagersCanCreateSchedule execute: user.role in ["manager", "admin"] "Only managers can create schedules"
+policy ManagersCanPublishSchedule execute: user.role in ["manager", "admin"] "Only managers can publish schedules"
+policy LeadsCanManageShifts execute: user.role in ["kitchen_lead", "manager", "admin"] "Leads and managers can manage shifts"
+policy ManagersCanCloseSchedule execute: user.role in ["manager", "admin"] "Only managers can close schedules"
+
+event ScheduleCreated: "staff.schedule.created" {
+  scheduleId: string
+  tenantId: string
+  locationId: string
+  scheduleDate: number
+  createdAt: number
+}
+
+event ScheduleUpdated: "staff.schedule.updated" {
+  scheduleId: string
+  scheduleDate: number
+  locationId: string
+  updatedAt: number
+}
+
+event SchedulePublished: "staff.schedule.published" {
+  scheduleId: string
+  scheduleDate: number
+  shiftCount: number
+  publishedBy: string
+  publishedAt: number
+}
+
+event ScheduleClosed: "staff.schedule.closed" {
+  scheduleId: string
+  scheduleDate: number
+  userId: string
+  closedAt: number
+}
+
+event ScheduleShiftCreated: "staff.schedule.shift.created" {
+  shiftId: string
+  scheduleId: string
+  employeeId: string
+  locationId: string
+  shiftStart: number
+  shiftEnd: number
+  roleDuringShift: string
+  createdAt: number
+}
+
+event ScheduleShiftUpdated: "staff.schedule.shift.updated" {
+  shiftId: string
+  scheduleId: string
+  employeeId: string
+  shiftStart: number
+  shiftEnd: number
+  roleDuringShift: string
+  updatedAt: number
+}
+
+event ScheduleShiftRemoved: "staff.schedule.shift.removed" {
+  shiftId: string
+  scheduleId: string
+  employeeId: string
+  userId: string
+  removedAt: number
+}

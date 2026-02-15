@@ -1,0 +1,399 @@
+// Inventory - Cycle Count Rules
+// Manifest spec for cycle count sessions, records, and variance reporting
+
+entity CycleCountSession {
+  property required id: string
+  property required tenantId: string
+  property required locationId: string
+  property required sessionId: string
+  property required sessionName: string
+  property countType: string = "ad_hoc"
+  property scheduledDate: number = 0
+  property startedAt: number = 0
+  property completedAt: number = 0
+  property finalizedAt: number = 0
+  property status: string = "draft"
+  property totalItems: number = 0
+  property countedItems: number = 0
+  property totalVariance: number = 0
+  property variancePercentage: number = 0
+  property notes: string = ""
+  property createdById: string = ""
+  property approvedById: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDraft: boolean = self.status == "draft"
+  computed isInProgress: boolean = self.status == "in_progress"
+  computed isCompleted: boolean = self.status == "completed"
+  computed isCancelled: boolean = self.status == "cancelled"
+  computed countProgress: number = self.totalItems > 0 ? (self.countedItems / self.totalItems) * 100 : 0
+  computed hasVariance: boolean = self.totalVariance != 0
+
+  constraint validStatus: self.status in ["draft", "in_progress", "completed", "cancelled", "finalized"] "Invalid cycle count session status"
+
+  command create(locationId: string, sessionId: string, sessionName: string, countType: string, scheduledDate: number, notes: string, userId: string) {
+    guard sessionName != null and sessionName != "" "Session name is required"
+    guard locationId != null and locationId != "" "Location is required"
+
+    mutate locationId = locationId
+    mutate sessionId = sessionId
+    mutate sessionName = sessionName
+    mutate countType = countType
+    mutate scheduledDate = scheduledDate
+    mutate notes = notes
+    mutate createdById = userId
+    mutate status = "draft"
+    mutate totalItems = 0
+    mutate countedItems = 0
+    mutate totalVariance = 0
+    mutate variancePercentage = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit CycleCountSessionCreated
+  }
+
+  command start(userId: string) {
+    guard self.status == "draft" "Can only start draft sessions"
+
+    mutate status = "in_progress"
+    mutate startedAt = now()
+    mutate updatedAt = now()
+
+    emit CycleCountSessionStarted
+  }
+
+  command complete(userId: string) {
+    guard self.status == "in_progress" "Can only complete in-progress sessions"
+
+    constraint warnIncomplete:warn self.countedItems < self.totalItems {
+      messageTemplate: "Completing session '{sessionName}' with only {counted}/{total} items counted"
+      details: {
+        sessionName: self.sessionName
+        counted: self.countedItems
+        total: self.totalItems
+        progress: self.countProgress
+      }
+    }
+
+    mutate status = "completed"
+    mutate completedAt = now()
+    mutate updatedAt = now()
+
+    emit CycleCountSessionCompleted
+  }
+
+  command cancel(userId: string, reason: string) {
+    guard self.status != "completed" "Cannot cancel a completed session"
+    guard self.status != "cancelled" "Session is already cancelled"
+    guard self.status != "finalized" "Cannot cancel a finalized session"
+
+    constraint warnCancelInProgress:warn self.status == "in_progress" and self.countedItems > 0 {
+      messageTemplate: "Cancelling in-progress session '{sessionName}' with {counted} items already counted"
+      details: {
+        sessionName: self.sessionName
+        counted: self.countedItems
+        reason: reason
+      }
+    }
+
+    mutate status = "cancelled"
+    mutate notes = reason
+    mutate updatedAt = now()
+
+    emit CycleCountSessionCancelled
+  }
+
+  store CycleCountSession in memory
+}
+
+entity CycleCountRecord {
+  property required id: string
+  property required tenantId: string
+  property required sessionId: string
+  property required itemId: string
+  property required itemNumber: string
+  property required itemName: string
+  property required storageLocationId: string
+  property expectedQuantity: number = 0
+  property countedQuantity: number = 0
+  property variance: number = 0
+  property variancePct: number = 0
+  property countDate: number = 0
+  property countedById: string = ""
+  property barcode: string = ""
+  property notes: string = ""
+  property isVerified: boolean = false
+  property verifiedById: string = ""
+  property verifiedAt: number = 0
+  property syncStatus: string = "synced"
+  property offlineId: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed hasVariance: boolean = self.variance != 0
+  computed isOvercount: boolean = self.variance > 0
+  computed isUndercount: boolean = self.variance < 0
+  computed isLargeVariance: boolean = self.variancePct > 10 or self.variancePct < -10
+
+  command create(sessionId: string, itemId: string, itemNumber: string, itemName: string, storageLocationId: string, expectedQuantity: number, countedQuantity: number, userId: string, barcode: string, notes: string) {
+    guard sessionId != null and sessionId != "" "Session ID is required"
+    guard itemId != null and itemId != "" "Item ID is required"
+    guard countedQuantity != null and countedQuantity >= 0 "Counted quantity cannot be negative"
+
+    mutate sessionId = sessionId
+    mutate itemId = itemId
+    mutate itemNumber = itemNumber
+    mutate itemName = itemName
+    mutate storageLocationId = storageLocationId
+    mutate expectedQuantity = expectedQuantity
+    mutate countedQuantity = countedQuantity
+    mutate variance = countedQuantity - expectedQuantity
+    mutate variancePct = expectedQuantity > 0 ? ((countedQuantity - expectedQuantity) / expectedQuantity) * 100 : 0
+    mutate countDate = now()
+    mutate countedById = userId
+    mutate barcode = barcode
+    mutate notes = notes
+    mutate isVerified = false
+    mutate syncStatus = "synced"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit CycleCountRecordCreated
+  }
+
+  command update(countedQuantity: number, notes: string, userId: string) {
+    guard countedQuantity != null and countedQuantity >= 0 "Counted quantity cannot be negative"
+    guard not self.isVerified "Cannot update a verified record"
+
+    mutate countedQuantity = countedQuantity
+    mutate variance = countedQuantity - self.expectedQuantity
+    mutate variancePct = self.expectedQuantity > 0 ? ((countedQuantity - self.expectedQuantity) / self.expectedQuantity) * 100 : 0
+    mutate notes = notes
+    mutate countedById = userId
+    mutate countDate = now()
+    mutate updatedAt = now()
+
+    emit CycleCountRecordUpdated
+  }
+
+  command verify(userId: string) {
+    guard not self.isVerified "Record is already verified"
+
+    constraint warnLargeVariance:warn self.isLargeVariance {
+      messageTemplate: "Verifying record for '{itemName}' with large variance ({variancePct}%)"
+      details: {
+        itemName: self.itemName
+        variance: self.variance
+        variancePct: self.variancePct
+        expected: self.expectedQuantity
+        counted: self.countedQuantity
+      }
+    }
+
+    mutate isVerified = true
+    mutate verifiedById = userId
+    mutate verifiedAt = now()
+    mutate updatedAt = now()
+
+    emit CycleCountRecordVerified
+  }
+
+  store CycleCountRecord in memory
+}
+
+entity VarianceReport {
+  property required id: string
+  property required tenantId: string
+  property required sessionId: string
+  property required reportType: string
+  property required itemId: string
+  property required itemNumber: string
+  property required itemName: string
+  property expectedQuantity: number = 0
+  property countedQuantity: number = 0
+  property variance: number = 0
+  property variancePct: number = 0
+  property accuracyScore: number = 0
+  property status: string = "pending"
+  property adjustmentType: string = ""
+  property adjustmentAmount: number = 0
+  property adjustmentDate: number = 0
+  property notes: string = ""
+  property generatedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isPending: boolean = self.status == "pending"
+  computed isReviewed: boolean = self.status == "reviewed"
+  computed isApproved: boolean = self.status == "approved"
+  computed hasAdjustment: boolean = self.adjustmentType != ""
+  computed isHighVariance: boolean = self.variancePct > 10 or self.variancePct < -10
+
+  constraint validStatus: self.status in ["pending", "reviewed", "approved", "adjusted"] "Invalid variance report status"
+
+  command create(sessionId: string, reportType: string, itemId: string, itemNumber: string, itemName: string, expectedQuantity: number, countedQuantity: number, variance: number, variancePct: number, accuracyScore: number, notes: string) {
+    guard sessionId != null and sessionId != "" "Session ID is required"
+    guard itemId != null and itemId != "" "Item ID is required"
+
+    mutate sessionId = sessionId
+    mutate reportType = reportType
+    mutate itemId = itemId
+    mutate itemNumber = itemNumber
+    mutate itemName = itemName
+    mutate expectedQuantity = expectedQuantity
+    mutate countedQuantity = countedQuantity
+    mutate variance = variance
+    mutate variancePct = variancePct
+    mutate accuracyScore = accuracyScore
+    mutate status = "pending"
+    mutate notes = notes
+    mutate generatedAt = now()
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit VarianceReportCreated
+  }
+
+  command review(userId: string, notes: string) {
+    guard self.status == "pending" "Can only review pending reports"
+
+    mutate status = "reviewed"
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit VarianceReportReviewed
+  }
+
+  command approve(userId: string, adjustmentType: string, adjustmentAmount: number) {
+    guard self.status == "reviewed" "Can only approve reviewed reports"
+
+    constraint warnHighVariance:warn self.isHighVariance {
+      messageTemplate: "Approving high-variance report for '{itemName}' ({variancePct}% variance)"
+      details: {
+        itemName: self.itemName
+        variance: self.variance
+        variancePct: self.variancePct
+        adjustmentType: adjustmentType
+        adjustmentAmount: adjustmentAmount
+      }
+    }
+
+    mutate status = "approved"
+    mutate adjustmentType = adjustmentType
+    mutate adjustmentAmount = adjustmentAmount
+    mutate adjustmentDate = now()
+    mutate updatedAt = now()
+
+    emit VarianceReportApproved
+  }
+
+  store VarianceReport in memory
+}
+
+policy StaffCanCount execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Staff can perform cycle counts"
+policy LeadsCanVerify execute: user.role in ["kitchen_lead", "manager", "admin"] "Leads and managers can verify counts"
+policy ManagersCanCreateSession execute: user.role in ["kitchen_lead", "manager", "admin"] "Leads and managers can create count sessions"
+policy ManagersCanApproveVariance execute: user.role in ["manager", "admin"] "Only managers can approve variance reports"
+
+event CycleCountSessionCreated: "inventory.cyclecount.session.created" {
+  sessionId: string
+  tenantId: string
+  locationId: string
+  sessionName: string
+  countType: string
+  createdById: string
+  createdAt: number
+}
+
+event CycleCountSessionStarted: "inventory.cyclecount.session.started" {
+  sessionId: string
+  sessionName: string
+  userId: string
+  startedAt: number
+}
+
+event CycleCountSessionCompleted: "inventory.cyclecount.session.completed" {
+  sessionId: string
+  sessionName: string
+  totalItems: number
+  countedItems: number
+  totalVariance: number
+  userId: string
+  completedAt: number
+}
+
+event CycleCountSessionCancelled: "inventory.cyclecount.session.cancelled" {
+  sessionId: string
+  sessionName: string
+  userId: string
+  reason: string
+  cancelledAt: number
+}
+
+event CycleCountRecordCreated: "inventory.cyclecount.record.created" {
+  recordId: string
+  sessionId: string
+  itemId: string
+  itemName: string
+  expectedQuantity: number
+  countedQuantity: number
+  variance: number
+  countedById: string
+  createdAt: number
+}
+
+event CycleCountRecordUpdated: "inventory.cyclecount.record.updated" {
+  recordId: string
+  sessionId: string
+  itemId: string
+  itemName: string
+  countedQuantity: number
+  variance: number
+  userId: string
+  updatedAt: number
+}
+
+event CycleCountRecordVerified: "inventory.cyclecount.record.verified" {
+  recordId: string
+  sessionId: string
+  itemId: string
+  itemName: string
+  variance: number
+  variancePct: number
+  verifiedById: string
+  verifiedAt: number
+}
+
+event VarianceReportCreated: "inventory.variance.report.created" {
+  reportId: string
+  sessionId: string
+  itemId: string
+  itemName: string
+  variance: number
+  variancePct: number
+  accuracyScore: number
+  createdAt: number
+}
+
+event VarianceReportReviewed: "inventory.variance.report.reviewed" {
+  reportId: string
+  sessionId: string
+  itemName: string
+  userId: string
+  reviewedAt: number
+}
+
+event VarianceReportApproved: "inventory.variance.report.approved" {
+  reportId: string
+  sessionId: string
+  itemName: string
+  adjustmentType: string
+  adjustmentAmount: number
+  userId: string
+  approvedAt: number
+}

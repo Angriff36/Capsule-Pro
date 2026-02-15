@@ -1,0 +1,206 @@
+// Kitchen Ops - Dish Rules
+// Manifest spec for dish catalog management, pricing, lead times, and menu integration
+
+entity Dish {
+  property required id: string
+  property required tenantId: string
+  property required recipeId: string
+  property required name: string
+  property description: string = ""
+  property category: string = ""
+  property serviceStyle: string = ""
+  property defaultContainerId: string = ""
+  property presentationImageUrl: string = ""
+  property minPrepLeadDays: number = 0
+  property maxPrepLeadDays: number = 0
+  property portionSizeDescription: string = ""
+  property dietaryTags: string = ""
+  property allergens: string = ""
+  property pricePerPerson: number = 0
+  property costPerPerson: number = 0
+  property isActive: boolean = true
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed hasPrice: boolean = self.pricePerPerson > 0
+  computed hasCost: boolean = self.costPerPerson > 0
+  computed margin: number = self.pricePerPerson > 0 and self.costPerPerson > 0 ? self.pricePerPerson - self.costPerPerson : 0
+  computed marginPercent: number = self.pricePerPerson > 0 and self.costPerPerson > 0 ? ((self.pricePerPerson - self.costPerPerson) / self.pricePerPerson) * 100 : 0
+  computed hasLeadTime: boolean = self.minPrepLeadDays > 0
+  computed isDeactivated: boolean = self.isActive == false
+
+  constraint positivePrice: self.pricePerPerson >= 0 "Price per person cannot be negative"
+  constraint positiveCost: self.costPerPerson >= 0 "Cost per person cannot be negative"
+  constraint positiveMinLeadDays: self.minPrepLeadDays >= 0 "Minimum prep lead days cannot be negative"
+  constraint positiveMaxLeadDays: self.maxPrepLeadDays >= 0 "Maximum prep lead days cannot be negative"
+  constraint leadDaysOrder: self.maxPrepLeadDays == 0 or self.maxPrepLeadDays >= self.minPrepLeadDays "Max prep lead days must be >= min prep lead days"
+
+  constraint warnNoPrice:warn self.pricePerPerson == 0 and self.isActive {
+    messageTemplate: "Active dish '{dishName}' has no price set"
+    details: {
+      dishName: self.name
+      dishId: self.id
+    }
+  }
+
+  constraint warnLowMargin:warn self.marginPercent > 0 and self.marginPercent < 20 {
+    messageTemplate: "Dish '{dishName}' has a low margin of {margin}%"
+    details: {
+      dishName: self.name
+      margin: self.marginPercent
+      price: self.pricePerPerson
+      cost: self.costPerPerson
+    }
+  }
+
+  command create(recipeId: string, name: string, description: string, category: string, serviceStyle: string, defaultContainerId: string, presentationImageUrl: string, minPrepLeadDays: number, maxPrepLeadDays: number, portionSizeDescription: string, dietaryTags: string, allergens: string, pricePerPerson: number, costPerPerson: number) {
+    guard name != null and name != "" "Dish name is required"
+    guard recipeId != null and recipeId != "" "Recipe ID is required"
+    guard pricePerPerson >= 0 "Price per person cannot be negative"
+    guard costPerPerson >= 0 "Cost per person cannot be negative"
+    guard minPrepLeadDays >= 0 "Min prep lead days cannot be negative"
+
+    mutate recipeId = recipeId
+    mutate name = name
+    mutate description = description
+    mutate category = category
+    mutate serviceStyle = serviceStyle
+    mutate defaultContainerId = defaultContainerId
+    mutate presentationImageUrl = presentationImageUrl
+    mutate minPrepLeadDays = minPrepLeadDays
+    mutate maxPrepLeadDays = maxPrepLeadDays
+    mutate portionSizeDescription = portionSizeDescription
+    mutate dietaryTags = dietaryTags
+    mutate allergens = allergens
+    mutate pricePerPerson = pricePerPerson
+    mutate costPerPerson = costPerPerson
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit DishCreated
+  }
+
+  command update(name: string, description: string, category: string, serviceStyle: string, defaultContainerId: string, presentationImageUrl: string, portionSizeDescription: string, dietaryTags: string, allergens: string) {
+    guard name != null and name != "" "Dish name is required"
+    guard self.isActive "Cannot update a deactivated dish"
+
+    mutate name = name
+    mutate description = description
+    mutate category = category
+    mutate serviceStyle = serviceStyle
+    mutate defaultContainerId = defaultContainerId
+    mutate presentationImageUrl = presentationImageUrl
+    mutate portionSizeDescription = portionSizeDescription
+    mutate dietaryTags = dietaryTags
+    mutate allergens = allergens
+    mutate updatedAt = now()
+
+    emit DishUpdated
+  }
+
+  command deactivate(reason: string, userId: string) {
+    guard self.isActive "Dish is already deactivated"
+
+    constraint warnActiveMenu:warn true {
+      messageTemplate: "Deactivating dish '{dishName}' — verify it is not on any active menus"
+      details: {
+        dishName: self.name
+        dishId: self.id
+        reason: reason
+      }
+    }
+
+    mutate isActive = false
+    mutate updatedAt = now()
+
+    emit DishDeactivated
+  }
+
+  command updatePricing(pricePerPerson: number, costPerPerson: number, userId: string) {
+    guard self.isActive "Cannot update pricing on a deactivated dish"
+    guard pricePerPerson >= 0 "Price per person cannot be negative"
+    guard costPerPerson >= 0 "Cost per person cannot be negative"
+
+    constraint warnLowMargin:warn pricePerPerson > 0 and costPerPerson > 0 and ((pricePerPerson - costPerPerson) / pricePerPerson) * 100 < 20 {
+      messageTemplate: "New pricing for '{dishName}' results in a low margin ({margin}%)"
+      details: {
+        dishName: self.name
+        price: pricePerPerson
+        cost: costPerPerson
+        margin: ((pricePerPerson - costPerPerson) / pricePerPerson) * 100
+      }
+    }
+
+    mutate pricePerPerson = pricePerPerson
+    mutate costPerPerson = costPerPerson
+    mutate updatedAt = now()
+
+    emit DishPricingUpdated
+  }
+
+  command updateLeadTime(minPrepLeadDays: number, maxPrepLeadDays: number, userId: string) {
+    guard self.isActive "Cannot update lead time on a deactivated dish"
+    guard minPrepLeadDays >= 0 "Min prep lead days cannot be negative"
+    guard maxPrepLeadDays >= 0 "Max prep lead days cannot be negative"
+    guard maxPrepLeadDays == 0 or maxPrepLeadDays >= minPrepLeadDays "Max lead days must be >= min lead days"
+
+    mutate minPrepLeadDays = minPrepLeadDays
+    mutate maxPrepLeadDays = maxPrepLeadDays
+    mutate updatedAt = now()
+
+    emit DishLeadTimeUpdated
+  }
+
+  store Dish in memory
+}
+
+policy KitchenStaffCanManage execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage dishes"
+policy ManagersCanDeactivate execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can deactivate dishes"
+policy ManagersCanUpdatePricing execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can update dish pricing"
+
+event DishCreated: "kitchen.dish.created" {
+  dishId: string
+  tenantId: string
+  recipeId: string
+  name: string
+  category: string
+  pricePerPerson: number
+  createdAt: number
+}
+
+event DishUpdated: "kitchen.dish.updated" {
+  dishId: string
+  name: string
+  category: string
+  updatedAt: number
+}
+
+event DishDeactivated: "kitchen.dish.deactivated" {
+  dishId: string
+  name: string
+  reason: string
+  userId: string
+  deactivatedAt: number
+}
+
+event DishPricingUpdated: "kitchen.dish.pricing.updated" {
+  dishId: string
+  name: string
+  oldPrice: number
+  newPrice: number
+  oldCost: number
+  newCost: number
+  userId: string
+  updatedAt: number
+}
+
+event DishLeadTimeUpdated: "kitchen.dish.leadtime.updated" {
+  dishId: string
+  name: string
+  minPrepLeadDays: number
+  maxPrepLeadDays: number
+  userId: string
+  updatedAt: number
+}

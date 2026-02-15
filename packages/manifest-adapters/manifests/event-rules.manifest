@@ -1,0 +1,502 @@
+// Events & Catering - Event Rules
+// Manifest spec for event lifecycle, profitability tracking, and summary management
+
+entity Event {
+  property required id: string
+  property required tenantId: string
+  property clientId: string = ""
+  property eventNumber: string = ""
+  property title: string = "Untitled Event"
+  property eventType: string = ""
+  property eventDate: number = 0
+  property guestCount: number = 1
+  property status: string = "confirmed"
+  property budget: number = 0
+  property ticketPrice: number = 0
+  property ticketTier: string = ""
+  property eventFormat: string = ""
+  property accessibilityOptions: string = ""
+  property featuredMediaUrl: string = ""
+  property locationId: string = ""
+  property venueId: string = ""
+  property assignedTo: string = ""
+  property venueName: string = ""
+  property venueAddress: string = ""
+  property notes: string = ""
+  property tags: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDraft: boolean = self.status == "draft"
+  computed isConfirmed: boolean = self.status == "confirmed"
+  computed isCompleted: boolean = self.status == "completed"
+  computed isArchived: boolean = self.status == "archived"
+  computed isCancelled: boolean = self.status == "cancelled"
+  computed isFinalized: boolean = self.status == "completed" or self.status == "archived"
+  computed isActive: boolean = self.status == "draft" or self.status == "confirmed"
+  computed isLargeEvent: boolean = self.guestCount > 200
+
+  constraint validTitle: self.title != null and self.title != "" "Event title is required"
+  constraint validEventType: self.eventType != null and self.eventType != "" "Event type is required"
+  constraint validStatus: self.status in ["draft", "confirmed", "completed", "archived", "cancelled"] "Status must be valid"
+  constraint positiveGuestCount: self.guestCount > 0 "Guest count must be positive"
+
+  constraint warnLargeGuestCount:warn self.guestCount > 200 {
+    messageTemplate: "Large event with {guestCount} guests - verify capacity and staffing"
+    details: {
+      guestCount: self.guestCount
+      eventTitle: self.title
+    }
+  }
+
+  constraint blockCancelIfFinalized:block self.status == "completed" or self.status == "archived" {
+    messageTemplate: "Cannot cancel event '{eventTitle}' - event is {status}"
+    details: {
+      eventTitle: self.title
+      status: self.status
+    }
+  }
+
+  constraint blockArchiveIfNotCompleted:block self.status != "completed" {
+    messageTemplate: "Cannot archive event '{eventTitle}' - event must be completed first (current: {status})"
+    details: {
+      eventTitle: self.title
+      status: self.status
+    }
+  }
+
+  command create(title: string, eventType: string, eventDate: number, guestCount: number, clientId: string, locationId: string, venueId: string, venueName: string, venueAddress: string, budget: number, notes: string) {
+    guard title != null and title != "" "Event title is required"
+    guard eventType != null and eventType != "" "Event type is required"
+    guard guestCount > 0 "Guest count must be positive"
+
+    mutate title = title
+    mutate eventType = eventType
+    mutate eventDate = eventDate
+    mutate guestCount = guestCount
+    mutate clientId = clientId
+    mutate locationId = locationId
+    mutate venueId = venueId
+    mutate venueName = venueName
+    mutate venueAddress = venueAddress
+    mutate budget = budget
+    mutate notes = notes
+    mutate status = "draft"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit EventCreated
+  }
+
+  command update(title: string, eventType: string, guestCount: number, notes: string, tags: string) {
+    guard self.status != "cancelled" "Cannot update cancelled event"
+    guard self.status != "archived" "Cannot update archived event"
+    guard title != null and title != "" "Event title is required"
+
+    mutate title = title
+    mutate eventType = eventType
+    mutate guestCount = guestCount
+    mutate notes = notes
+    mutate tags = tags
+    mutate updatedAt = now()
+
+    emit EventUpdated
+  }
+
+  command cancel(reason: string) {
+    guard self.status != "completed" "Cannot cancel completed event"
+    guard self.status != "archived" "Cannot cancel archived event"
+    guard self.status != "cancelled" "Event is already cancelled"
+
+    mutate status = "cancelled"
+    mutate updatedAt = now()
+
+    emit EventCancelled
+  }
+
+  command archive() {
+    guard self.status == "completed" "Can only archive completed events"
+
+    mutate status = "archived"
+    mutate updatedAt = now()
+
+    emit EventArchived
+  }
+
+  command updateGuestCount(newGuestCount: number) {
+    guard self.status != "cancelled" "Cannot update cancelled event"
+    guard self.status != "archived" "Cannot update archived event"
+    guard newGuestCount > 0 "Guest count must be positive"
+
+    constraint warnLargeGuestCountChange:warn newGuestCount > self.guestCount * 1.5 or newGuestCount < self.guestCount * 0.5 {
+      messageTemplate: "Guest count changing significantly from {oldCount} to {newCount}"
+      details: {
+        oldCount: self.guestCount
+        newCount: newGuestCount
+        eventTitle: self.title
+      }
+    }
+
+    mutate guestCount = newGuestCount
+    mutate updatedAt = now()
+
+    emit EventGuestCountUpdated
+  }
+
+  command updateDate(newEventDate: number) {
+    guard self.status != "cancelled" "Cannot update cancelled event"
+    guard self.status != "archived" "Cannot update archived event"
+    guard self.status != "completed" "Cannot update completed event"
+
+    mutate eventDate = newEventDate
+    mutate updatedAt = now()
+
+    emit EventDateUpdated
+  }
+
+  command updateLocation(newLocationId: string, newVenueId: string, newVenueName: string, newVenueAddress: string) {
+    guard self.status != "cancelled" "Cannot update cancelled event"
+    guard self.status != "archived" "Cannot update archived event"
+    guard self.status != "completed" "Cannot update completed event"
+
+    constraint warnLocationChange:warn self.venueName != "" and self.venueName != newVenueName {
+      messageTemplate: "Changing venue from '{oldVenue}' to '{newVenue}'"
+      details: {
+        oldVenue: self.venueName
+        newVenue: newVenueName
+        eventTitle: self.title
+      }
+    }
+
+    mutate locationId = newLocationId
+    mutate venueId = newVenueId
+    mutate venueName = newVenueName
+    mutate venueAddress = newVenueAddress
+    mutate updatedAt = now()
+
+    emit EventLocationUpdated
+  }
+
+  command finalize(userId: string) {
+    guard self.status == "confirmed" "Can only finalize confirmed events"
+
+    mutate status = "completed"
+    mutate updatedAt = now()
+
+    emit EventFinalized
+  }
+
+  command unfinalize(userId: string, reason: string) {
+    guard self.status == "completed" "Can only unfinalize completed events"
+
+    mutate status = "confirmed"
+    mutate updatedAt = now()
+
+    emit EventUnfinalized
+  }
+
+  store Event in memory
+}
+
+entity EventProfitability {
+  property required id: string
+  property required tenantId: string
+  property required eventId: string
+  property budgetedRevenue: number = 0
+  property budgetedFoodCost: number = 0
+  property budgetedLaborCost: number = 0
+  property budgetedOverhead: number = 0
+  property budgetedTotalCost: number = 0
+  property budgetedGrossMargin: number = 0
+  property budgetedGrossMarginPct: number = 0
+  property actualRevenue: number = 0
+  property actualFoodCost: number = 0
+  property actualLaborCost: number = 0
+  property actualOverhead: number = 0
+  property actualTotalCost: number = 0
+  property actualGrossMargin: number = 0
+  property actualGrossMarginPct: number = 0
+  property revenueVariance: number = 0
+  property foodCostVariance: number = 0
+  property laborCostVariance: number = 0
+  property totalCostVariance: number = 0
+  property marginVariancePct: number = 0
+  property calculatedAt: number = 0
+  property calculationMethod: string = "auto"
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isProfitable: boolean = self.actualGrossMargin > 0
+  computed hasVariance: boolean = self.totalCostVariance != 0 or self.revenueVariance != 0
+  computed isOverBudget: boolean = self.actualTotalCost > self.budgetedTotalCost
+
+  constraint validEventId: self.eventId != null and self.eventId != "" "Event ID is required"
+
+  constraint warnNegativeMargin:warn self.actualGrossMarginPct < 0 {
+    messageTemplate: "Event profitability is negative ({marginPct}%)"
+    details: {
+      marginPct: self.actualGrossMarginPct
+      eventId: self.eventId
+    }
+  }
+
+  constraint warnHighCostVariance:warn self.totalCostVariance > self.budgetedTotalCost * 0.1 {
+    messageTemplate: "Total cost variance exceeds 10% of budget"
+    details: {
+      budgetedTotalCost: self.budgetedTotalCost
+      actualTotalCost: self.actualTotalCost
+      totalCostVariance: self.totalCostVariance
+    }
+  }
+
+  command create(eventId: string, budgetedRevenue: number, budgetedFoodCost: number, budgetedLaborCost: number, budgetedOverhead: number, notes: string) {
+    guard eventId != null and eventId != "" "Event ID is required"
+
+    mutate eventId = eventId
+    mutate budgetedRevenue = budgetedRevenue
+    mutate budgetedFoodCost = budgetedFoodCost
+    mutate budgetedLaborCost = budgetedLaborCost
+    mutate budgetedOverhead = budgetedOverhead
+    mutate budgetedTotalCost = budgetedFoodCost + budgetedLaborCost + budgetedOverhead
+    mutate budgetedGrossMargin = budgetedRevenue - (budgetedFoodCost + budgetedLaborCost + budgetedOverhead)
+    mutate notes = notes
+    mutate calculationMethod = "auto"
+    mutate calculatedAt = now()
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit EventProfitabilityCreated
+  }
+
+  command update(actualRevenue: number, actualFoodCost: number, actualLaborCost: number, actualOverhead: number, notes: string) {
+    mutate actualRevenue = actualRevenue
+    mutate actualFoodCost = actualFoodCost
+    mutate actualLaborCost = actualLaborCost
+    mutate actualOverhead = actualOverhead
+    mutate actualTotalCost = actualFoodCost + actualLaborCost + actualOverhead
+    mutate actualGrossMargin = actualRevenue - (actualFoodCost + actualLaborCost + actualOverhead)
+    mutate revenueVariance = actualRevenue - self.budgetedRevenue
+    mutate foodCostVariance = actualFoodCost - self.budgetedFoodCost
+    mutate laborCostVariance = actualLaborCost - self.budgetedLaborCost
+    mutate totalCostVariance = (actualFoodCost + actualLaborCost + actualOverhead) - self.budgetedTotalCost
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit EventProfitabilityUpdated
+  }
+
+  command recalculate(calculationMethod: string) {
+    mutate revenueVariance = self.actualRevenue - self.budgetedRevenue
+    mutate foodCostVariance = self.actualFoodCost - self.budgetedFoodCost
+    mutate laborCostVariance = self.actualLaborCost - self.budgetedLaborCost
+    mutate totalCostVariance = self.actualTotalCost - self.budgetedTotalCost
+    mutate calculationMethod = calculationMethod
+    mutate calculatedAt = now()
+    mutate updatedAt = now()
+
+    emit EventProfitabilityRecalculated
+  }
+
+  store EventProfitability in memory
+}
+
+entity EventSummary {
+  property required id: string
+  property required tenantId: string
+  property required eventId: string
+  property highlights: string = "[]"
+  property issues: string = "[]"
+  property financialPerformance: string = "[]"
+  property clientFeedback: string = "[]"
+  property insights: string = "[]"
+  property overallSummary: string = ""
+  property generatedAt: number = 0
+  property generationDurationMs: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed hasHighlights: boolean = self.highlights != "[]" and self.highlights != ""
+  computed hasIssues: boolean = self.issues != "[]" and self.issues != ""
+  computed hasFeedback: boolean = self.clientFeedback != "[]" and self.clientFeedback != ""
+
+  constraint validEventId: self.eventId != null and self.eventId != "" "Event ID is required"
+
+  command create(eventId: string, highlights: string, issues: string, financialPerformance: string, clientFeedback: string, insights: string, overallSummary: string) {
+    guard eventId != null and eventId != "" "Event ID is required"
+
+    mutate eventId = eventId
+    mutate highlights = highlights
+    mutate issues = issues
+    mutate financialPerformance = financialPerformance
+    mutate clientFeedback = clientFeedback
+    mutate insights = insights
+    mutate overallSummary = overallSummary
+    mutate generatedAt = now()
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit EventSummaryCreated
+  }
+
+  command update(highlights: string, issues: string, financialPerformance: string, clientFeedback: string, insights: string, overallSummary: string) {
+    mutate highlights = highlights
+    mutate issues = issues
+    mutate financialPerformance = financialPerformance
+    mutate clientFeedback = clientFeedback
+    mutate insights = insights
+    mutate overallSummary = overallSummary
+    mutate updatedAt = now()
+
+    emit EventSummaryUpdated
+  }
+
+  command refresh() {
+    mutate generatedAt = now()
+    mutate updatedAt = now()
+
+    emit EventSummaryRefreshed
+  }
+
+  store EventSummary in memory
+}
+
+// Policy definitions
+policy EventManagement execute: user.role in ["event_coordinator", "manager", "admin"] "Event coordinators and above can manage events"
+policy EventFinalize execute: user.role in ["manager", "admin"] "Only managers can finalize events"
+policy EventArchive execute: user.role in ["manager", "admin"] "Only managers can archive events"
+policy ProfitabilityManagement execute: user.role in ["manager", "admin", "finance"] "Managers and finance can manage profitability"
+policy SummaryManagement execute: user.role in ["event_coordinator", "manager", "admin"] "Event coordinators and above can manage summaries"
+
+// Event entity events
+event EventCreated: "events.event.created" {
+  eventId: string
+  tenantId: string
+  title: string
+  eventType: string
+  eventDate: number
+  guestCount: number
+  clientId: string
+  createdAt: number
+}
+
+event EventUpdated: "events.event.updated" {
+  eventId: string
+  tenantId: string
+  title: string
+  eventType: string
+  guestCount: number
+  updatedAt: number
+}
+
+event EventCancelled: "events.event.cancelled" {
+  eventId: string
+  tenantId: string
+  title: string
+  reason: string
+  cancelledAt: number
+}
+
+event EventArchived: "events.event.archived" {
+  eventId: string
+  tenantId: string
+  title: string
+  archivedAt: number
+}
+
+event EventGuestCountUpdated: "events.event.guest_count_updated" {
+  eventId: string
+  tenantId: string
+  title: string
+  oldGuestCount: number
+  newGuestCount: number
+  updatedAt: number
+}
+
+event EventDateUpdated: "events.event.date_updated" {
+  eventId: string
+  tenantId: string
+  title: string
+  oldEventDate: number
+  newEventDate: number
+  updatedAt: number
+}
+
+event EventLocationUpdated: "events.event.location_updated" {
+  eventId: string
+  tenantId: string
+  title: string
+  oldVenueName: string
+  newVenueName: string
+  updatedAt: number
+}
+
+event EventFinalized: "events.event.finalized" {
+  eventId: string
+  tenantId: string
+  title: string
+  userId: string
+  finalizedAt: number
+}
+
+event EventUnfinalized: "events.event.unfinalized" {
+  eventId: string
+  tenantId: string
+  title: string
+  userId: string
+  reason: string
+  unfinalizedAt: number
+}
+
+// Profitability events
+event EventProfitabilityCreated: "events.profitability.created" {
+  profitabilityId: string
+  tenantId: string
+  eventId: string
+  budgetedRevenue: number
+  budgetedTotalCost: number
+  createdAt: number
+}
+
+event EventProfitabilityUpdated: "events.profitability.updated" {
+  profitabilityId: string
+  tenantId: string
+  eventId: string
+  actualRevenue: number
+  actualTotalCost: number
+  actualGrossMargin: number
+  updatedAt: number
+}
+
+event EventProfitabilityRecalculated: "events.profitability.recalculated" {
+  profitabilityId: string
+  tenantId: string
+  eventId: string
+  calculationMethod: string
+  calculatedAt: number
+}
+
+// Summary events
+event EventSummaryCreated: "events.summary.created" {
+  summaryId: string
+  tenantId: string
+  eventId: string
+  generatedAt: number
+}
+
+event EventSummaryUpdated: "events.summary.updated" {
+  summaryId: string
+  tenantId: string
+  eventId: string
+  updatedAt: number
+}
+
+event EventSummaryRefreshed: "events.summary.refreshed" {
+  summaryId: string
+  tenantId: string
+  eventId: string
+  generatedAt: number
+}

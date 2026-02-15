@@ -1,0 +1,247 @@
+// Events & Catering - Catering Order Rules
+// Manifest spec for catering order lifecycle and delivery management
+
+entity CateringOrder {
+  property required id: string
+  property required tenantId: string
+  property required orderNumber: string
+  property customerId: string = ""
+  property eventId: string = ""
+  property orderStatus: string = "draft"
+  property orderDate: number = 0
+  property deliveryDate: number = 0
+  property deliveryTime: string = ""
+  property subtotalAmount: number = 0
+  property taxAmount: number = 0
+  property discountAmount: number = 0
+  property serviceChargeAmount: number = 0
+  property totalAmount: number = 0
+  property depositRequired: boolean = false
+  property depositAmount: number = 0
+  property depositPaid: boolean = false
+  property depositPaidAt: number = 0
+  property venueName: string = ""
+  property venueAddress: string = ""
+  property venueCity: string = ""
+  property venueState: string = ""
+  property venueZip: string = ""
+  property venueContactName: string = ""
+  property venueContactPhone: string = ""
+  property guestCount: number = 0
+  property specialInstructions: string = ""
+  property dietaryRestrictions: string = ""
+  property staffRequired: number = 0
+  property staffAssigned: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDraft: boolean = self.orderStatus == "draft"
+  computed isConfirmed: boolean = self.orderStatus == "confirmed"
+  computed isInProgress: boolean = self.orderStatus == "in_progress"
+  computed isCompleted: boolean = self.orderStatus == "completed"
+  computed isCancelled: boolean = self.orderStatus == "cancelled"
+  computed isActive: boolean = self.orderStatus == "draft" or self.orderStatus == "confirmed" or self.orderStatus == "in_progress"
+  computed balanceDue: number = self.totalAmount - (self.depositPaid == true ? self.depositAmount : 0)
+  computed isFullyStaffed: boolean = self.staffAssigned >= self.staffRequired
+  computed hasDeposit: boolean = self.depositRequired and self.depositPaid
+
+  constraint validOrderNumber: self.orderNumber != null and self.orderNumber != "" "Order number is required"
+  constraint validStatus: self.orderStatus in ["draft", "confirmed", "in_progress", "completed", "cancelled"] "Status must be valid"
+  constraint positiveGuestCount: self.guestCount >= 0 "Guest count must be non-negative"
+  constraint positiveTotalAmount: self.totalAmount >= 0 "Total amount must be non-negative"
+
+  constraint warnUnstaffed:warn self.staffRequired > 0 and self.staffAssigned < self.staffRequired {
+    messageTemplate: "Order {orderNumber} needs {needed} more staff ({assigned}/{required})"
+    details: {
+      orderNumber: self.orderNumber
+      staffRequired: self.staffRequired
+      staffAssigned: self.staffAssigned
+      needed: self.staffRequired - self.staffAssigned
+    }
+  }
+
+  constraint warnNoDeposit:warn self.depositRequired and not self.depositPaid and self.orderStatus == "confirmed" {
+    messageTemplate: "Order {orderNumber} is confirmed but deposit not yet paid"
+    details: {
+      orderNumber: self.orderNumber
+      depositAmount: self.depositAmount
+    }
+  }
+
+  constraint blockCancelIfCompleted:block self.orderStatus == "completed" {
+    messageTemplate: "Cannot cancel order {orderNumber} - order is already completed"
+    details: {
+      orderNumber: self.orderNumber
+    }
+  }
+
+  command create(orderNumber: string, customerId: string, eventId: string, deliveryDate: number, deliveryTime: string, guestCount: number, venueName: string, venueAddress: string, venueCity: string, venueState: string, venueZip: string, venueContactName: string, venueContactPhone: string, specialInstructions: string, dietaryRestrictions: string, staffRequired: number) {
+    guard orderNumber != null and orderNumber != "" "Order number is required"
+    guard customerId != null and customerId != "" "Customer ID is required"
+
+    mutate orderNumber = orderNumber
+    mutate customerId = customerId
+    mutate eventId = eventId
+    mutate deliveryDate = deliveryDate
+    mutate deliveryTime = deliveryTime
+    mutate guestCount = guestCount
+    mutate venueName = venueName
+    mutate venueAddress = venueAddress
+    mutate venueCity = venueCity
+    mutate venueState = venueState
+    mutate venueZip = venueZip
+    mutate venueContactName = venueContactName
+    mutate venueContactPhone = venueContactPhone
+    mutate specialInstructions = specialInstructions
+    mutate dietaryRestrictions = dietaryRestrictions
+    mutate staffRequired = staffRequired
+    mutate orderStatus = "draft"
+    mutate orderDate = now()
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit CateringOrderCreated
+  }
+
+  command update(guestCount: number, subtotalAmount: number, taxAmount: number, discountAmount: number, serviceChargeAmount: number, totalAmount: number, depositRequired: boolean, depositAmount: number, specialInstructions: string, dietaryRestrictions: string, staffRequired: number) {
+    guard self.orderStatus != "completed" "Cannot update completed order"
+    guard self.orderStatus != "cancelled" "Cannot update cancelled order"
+
+    constraint warnGuestCountChange:warn guestCount != self.guestCount and (guestCount > self.guestCount * 1.5 or guestCount < self.guestCount * 0.5) {
+      messageTemplate: "Guest count changing significantly from {oldCount} to {newCount}"
+      details: {
+        oldCount: self.guestCount
+        newCount: guestCount
+        orderNumber: self.orderNumber
+      }
+    }
+
+    mutate guestCount = guestCount
+    mutate subtotalAmount = subtotalAmount
+    mutate taxAmount = taxAmount
+    mutate discountAmount = discountAmount
+    mutate serviceChargeAmount = serviceChargeAmount
+    mutate totalAmount = totalAmount
+    mutate depositRequired = depositRequired
+    mutate depositAmount = depositAmount
+    mutate specialInstructions = specialInstructions
+    mutate dietaryRestrictions = dietaryRestrictions
+    mutate staffRequired = staffRequired
+    mutate updatedAt = now()
+
+    emit CateringOrderUpdated
+  }
+
+  command confirm(userId: string) {
+    guard self.orderStatus == "draft" "Can only confirm draft orders"
+    guard self.orderNumber != null and self.orderNumber != "" "Order number is required"
+
+    constraint warnNoDepositOnConfirm:warn self.depositRequired and not self.depositPaid {
+      messageTemplate: "Confirming order {orderNumber} without deposit payment"
+      details: {
+        orderNumber: self.orderNumber
+        depositAmount: self.depositAmount
+      }
+    }
+
+    mutate orderStatus = "confirmed"
+    mutate updatedAt = now()
+
+    emit CateringOrderConfirmed
+  }
+
+  command cancel(reason: string) {
+    guard self.orderStatus != "completed" "Cannot cancel completed order"
+    guard self.orderStatus != "cancelled" "Order is already cancelled"
+
+    constraint warnCancelConfirmed:warn self.orderStatus == "confirmed" or self.orderStatus == "in_progress" {
+      messageTemplate: "Cancelling {status} order {orderNumber}"
+      details: {
+        orderNumber: self.orderNumber
+        status: self.orderStatus
+        reason: reason
+      }
+    }
+
+    mutate orderStatus = "cancelled"
+    mutate updatedAt = now()
+
+    emit CateringOrderCancelled
+  }
+
+  command updateStatus(newStatus: string, userId: string) {
+    guard self.orderStatus != "cancelled" "Cannot update cancelled order"
+    guard newStatus in ["draft", "confirmed", "in_progress", "completed", "cancelled"] "Invalid status"
+
+    constraint blockCompleteWithoutStaff:warn self.staffRequired > 0 and self.staffAssigned < self.staffRequired and newStatus == "in_progress" {
+      messageTemplate: "Starting order {orderNumber} without full staffing ({assigned}/{required})"
+      details: {
+        orderNumber: self.orderNumber
+        staffAssigned: self.staffAssigned
+        staffRequired: self.staffRequired
+      }
+    }
+
+    mutate orderStatus = newStatus
+    mutate updatedAt = now()
+
+    emit CateringOrderStatusUpdated
+  }
+
+  store CateringOrder in memory
+}
+
+// Policy definitions
+policy CateringOrderManagement execute: user.role in ["event_coordinator", "catering_manager", "manager", "admin"] "Event coordinators and catering managers can manage orders"
+policy CateringOrderConfirm execute: user.role in ["catering_manager", "manager", "admin"] "Only catering managers and above can confirm orders"
+policy CateringOrderCancel execute: user.role in ["catering_manager", "manager", "admin"] "Only catering managers and above can cancel orders"
+
+// Event definitions
+event CateringOrderCreated: "events.catering_order.created" {
+  orderId: string
+  tenantId: string
+  orderNumber: string
+  customerId: string
+  eventId: string
+  guestCount: number
+  deliveryDate: number
+  createdAt: number
+}
+
+event CateringOrderUpdated: "events.catering_order.updated" {
+  orderId: string
+  tenantId: string
+  orderNumber: string
+  totalAmount: number
+  guestCount: number
+  updatedAt: number
+}
+
+event CateringOrderConfirmed: "events.catering_order.confirmed" {
+  orderId: string
+  tenantId: string
+  orderNumber: string
+  totalAmount: number
+  depositPaid: boolean
+  userId: string
+  confirmedAt: number
+}
+
+event CateringOrderCancelled: "events.catering_order.cancelled" {
+  orderId: string
+  tenantId: string
+  orderNumber: string
+  reason: string
+  cancelledAt: number
+}
+
+event CateringOrderStatusUpdated: "events.catering_order.status_updated" {
+  orderId: string
+  tenantId: string
+  orderNumber: string
+  oldStatus: string
+  newStatus: string
+  userId: string
+  updatedAt: number
+}

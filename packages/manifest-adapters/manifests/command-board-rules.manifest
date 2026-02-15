@@ -1,0 +1,547 @@
+// Command Board - Board Rules
+// Manifest spec for command board operations with cards, groups, layouts, and connections
+
+entity CommandBoard {
+  property required id: string
+  property required tenantId: string
+  property eventId: string = ""
+  property name: string = ""
+  property description: string = ""
+  property status: string = "draft"
+  property isTemplate: boolean = false
+  property tags: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDraft: boolean = self.status == "draft"
+  computed isActive: boolean = self.status == "active"
+  computed isArchived: boolean = self.status == "archived"
+
+  constraint validName: self.name != null and self.name != "" "Board name is required"
+  constraint validStatus: self.status in ["draft", "active", "archived"] "Status must be valid"
+
+  command create(name: string, description: string, eventId: string, isTemplate: boolean, tags: string) {
+    guard name != null and name != "" "Board name is required"
+
+    mutate name = name
+    mutate description = description
+    mutate eventId = eventId
+    mutate isTemplate = isTemplate
+    mutate tags = tags
+    mutate status = "draft"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit CommandBoardCreated
+  }
+
+  command update(newName: string, newDescription: string, newTags: string) {
+    guard newName != null and newName != "" "Board name is required"
+
+    constraint warnNameChange:warn self.name != newName {
+      messageTemplate: "Renaming board from '{oldName}' to '{newName}'"
+      details: {
+        oldName: self.name
+        newName: newName
+      }
+    }
+
+    mutate name = newName
+    mutate description = newDescription
+    mutate tags = newTags
+    mutate updatedAt = now()
+
+    emit CommandBoardUpdated
+  }
+
+  command deactivate(reason: string, userId: string) {
+    guard self.status != "archived" "Board is already archived"
+
+    constraint warnHasActiveCards:warn true {
+      messageTemplate: "Deactivating board '{boardName}' may affect active cards"
+      details: {
+        boardName: self.name
+        reason: reason
+      }
+    }
+
+    mutate status = "archived"
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit CommandBoardDeactivated
+  }
+
+  store CommandBoard in memory
+}
+
+entity CommandBoardCard {
+  property required id: string
+  property required tenantId: string
+  property required boardId: string
+  property title: string = ""
+  property content: string = ""
+  property cardType: string = "task"
+  property status: string = "pending"
+  property positionX: number = 0
+  property positionY: number = 0
+  property width: number = 200
+  property height: number = 150
+  property zIndex: number = 0
+  property color: string = ""
+  property metadata: string = "{}"
+  property groupId: string = ""
+  property entityId: string = ""
+  property entityType: string = ""
+  property version: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isPending: boolean = self.status == "pending"
+  computed isInProgress: boolean = self.status == "in_progress"
+  computed isDone: boolean = self.status == "done"
+  computed isDeleted: boolean = self.deletedAt > 0
+
+  constraint validTitle: self.title != null and self.title != "" "Card title is required"
+  constraint validBoardId: self.boardId != null and self.boardId != "" "Board ID is required"
+  constraint validCardType: self.cardType in ["task", "note", "reference", "checklist", "entity"] "Invalid card type"
+  constraint validStatus: self.status in ["pending", "in_progress", "done", "blocked", "cancelled"] "Invalid card status"
+  constraint positiveWidth: self.width > 0 "Card width must be positive"
+  constraint positiveHeight: self.height > 0 "Card height must be positive"
+
+  command create(boardId: string, title: string, content: string, cardType: string, status: string, positionX: number, positionY: number, width: number, height: number, color: string, metadata: string, groupId: string, entityId: string, entityType: string) {
+    guard boardId != null and boardId != "" "Board ID is required"
+    guard title != null and title != "" "Card title is required"
+
+    mutate boardId = boardId
+    mutate title = title
+    mutate content = content
+    mutate cardType = cardType
+    mutate status = status
+    mutate positionX = positionX
+    mutate positionY = positionY
+    mutate width = width
+    mutate height = height
+    mutate color = color
+    mutate metadata = metadata
+    mutate groupId = groupId
+    mutate entityId = entityId
+    mutate entityType = entityType
+    mutate version = 0
+    mutate zIndex = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit CommandBoardCardCreated
+  }
+
+  command update(newTitle: string, newContent: string, newCardType: string, newStatus: string, newColor: string, newMetadata: string, newGroupId: string) {
+    guard newTitle != null and newTitle != "" "Card title is required"
+
+    constraint warnStatusChange:warn self.status != newStatus {
+      messageTemplate: "Card '{cardTitle}' status changing from '{oldStatus}' to '{newStatus}'"
+      details: {
+        cardTitle: self.title
+        oldStatus: self.status
+        newStatus: newStatus
+      }
+    }
+
+    mutate title = newTitle
+    mutate content = newContent
+    mutate cardType = newCardType
+    mutate status = newStatus
+    mutate color = newColor
+    mutate metadata = newMetadata
+    mutate groupId = newGroupId
+    mutate version = self.version + 1
+    mutate updatedAt = now()
+
+    emit CommandBoardCardUpdated
+  }
+
+  command move(newPositionX: number, newPositionY: number, newZIndex: number) {
+    guard newPositionX != null "Position X is required"
+    guard newPositionY != null "Position Y is required"
+
+    mutate positionX = newPositionX
+    mutate positionY = newPositionY
+    mutate zIndex = newZIndex
+    mutate version = self.version + 1
+    mutate updatedAt = now()
+
+    emit CommandBoardCardMoved
+  }
+
+  command resize(newWidth: number, newHeight: number) {
+    guard newWidth != null and newWidth > 0 "Width must be positive"
+    guard newHeight != null and newHeight > 0 "Height must be positive"
+
+    mutate width = newWidth
+    mutate height = newHeight
+    mutate version = self.version + 1
+    mutate updatedAt = now()
+
+    emit CommandBoardCardResized
+  }
+
+  command delete(userId: string) {
+    guard self.deletedAt == 0 "Card is already deleted"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit CommandBoardCardDeleted
+  }
+
+  store CommandBoardCard in memory
+}
+
+entity CommandBoardGroup {
+  property required id: string
+  property required tenantId: string
+  property required boardId: string
+  property name: string = ""
+  property color: string = ""
+  property collapsed: boolean = false
+  property positionX: number = 0
+  property positionY: number = 0
+  property width: number = 300
+  property height: number = 200
+  property zIndex: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+
+  constraint validName: self.name != null and self.name != "" "Group name is required"
+  constraint validBoardId: self.boardId != null and self.boardId != "" "Board ID is required"
+  constraint positiveWidth: self.width > 0 "Group width must be positive"
+  constraint positiveHeight: self.height > 0 "Group height must be positive"
+
+  command create(boardId: string, name: string, color: string, positionX: number, positionY: number, width: number, height: number) {
+    guard boardId != null and boardId != "" "Board ID is required"
+    guard name != null and name != "" "Group name is required"
+
+    mutate boardId = boardId
+    mutate name = name
+    mutate color = color
+    mutate positionX = positionX
+    mutate positionY = positionY
+    mutate width = width
+    mutate height = height
+    mutate collapsed = false
+    mutate zIndex = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit CommandBoardGroupCreated
+  }
+
+  command update(newName: string, newColor: string, newCollapsed: boolean, newPositionX: number, newPositionY: number, newWidth: number, newHeight: number) {
+    guard newName != null and newName != "" "Group name is required"
+
+    mutate name = newName
+    mutate color = newColor
+    mutate collapsed = newCollapsed
+    mutate positionX = newPositionX
+    mutate positionY = newPositionY
+    mutate width = newWidth
+    mutate height = newHeight
+    mutate updatedAt = now()
+
+    emit CommandBoardGroupUpdated
+  }
+
+  command delete(userId: string) {
+    guard self.deletedAt == 0 "Group is already deleted"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit CommandBoardGroupDeleted
+  }
+
+  store CommandBoardGroup in memory
+}
+
+entity CommandBoardConnection {
+  property required id: string
+  property required tenantId: string
+  property required boardId: string
+  property required fromCardId: string
+  property required toCardId: string
+  property relationshipType: string = "generic"
+  property label: string = ""
+  property visible: boolean = true
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+
+  constraint validBoardId: self.boardId != null and self.boardId != "" "Board ID is required"
+  constraint validFromCardId: self.fromCardId != null and self.fromCardId != "" "Source card ID is required"
+  constraint validToCardId: self.toCardId != null and self.toCardId != "" "Target card ID is required"
+  constraint noSelfConnection: self.fromCardId != self.toCardId "Cannot connect a card to itself"
+  constraint validRelationshipType: self.relationshipType in ["generic", "dependency", "blocks", "related", "sequence"] "Invalid connection type"
+
+  command create(boardId: string, fromCardId: string, toCardId: string, relationshipType: string, label: string) {
+    guard boardId != null and boardId != "" "Board ID is required"
+    guard fromCardId != null and fromCardId != "" "Source card ID is required"
+    guard toCardId != null and toCardId != "" "Target card ID is required"
+    guard fromCardId != toCardId "Cannot connect a card to itself"
+
+    mutate boardId = boardId
+    mutate fromCardId = fromCardId
+    mutate toCardId = toCardId
+    mutate relationshipType = relationshipType
+    mutate label = label
+    mutate visible = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit CommandBoardConnectionCreated
+  }
+
+  command delete(userId: string) {
+    guard self.deletedAt == 0 "Connection is already deleted"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit CommandBoardConnectionDeleted
+  }
+
+  store CommandBoardConnection in memory
+}
+
+entity CommandBoardLayout {
+  property required id: string
+  property required tenantId: string
+  property required boardId: string
+  property required userId: string
+  property name: string = ""
+  property viewport: string = "{}"
+  property visibleCards: string = ""
+  property gridSize: number = 40
+  property showGrid: boolean = true
+  property snapToGrid: boolean = true
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  constraint validName: self.name != null and self.name != "" "Layout name is required"
+  constraint validBoardId: self.boardId != null and self.boardId != "" "Board ID is required"
+  constraint validUserId: self.userId != null and self.userId != "" "User ID is required"
+  constraint positiveGridSize: self.gridSize > 0 "Grid size must be positive"
+
+  command create(boardId: string, userId: string, name: string, viewport: string, visibleCards: string, gridSize: number, showGrid: boolean, snapToGrid: boolean) {
+    guard boardId != null and boardId != "" "Board ID is required"
+    guard userId != null and userId != "" "User ID is required"
+    guard name != null and name != "" "Layout name is required"
+
+    mutate boardId = boardId
+    mutate userId = userId
+    mutate name = name
+    mutate viewport = viewport
+    mutate visibleCards = visibleCards
+    mutate gridSize = gridSize
+    mutate showGrid = showGrid
+    mutate snapToGrid = snapToGrid
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit CommandBoardLayoutCreated
+  }
+
+  command update(newName: string, newViewport: string, newVisibleCards: string, newGridSize: number, newShowGrid: boolean, newSnapToGrid: boolean) {
+    guard newName != null and newName != "" "Layout name is required"
+
+    mutate name = newName
+    mutate viewport = newViewport
+    mutate visibleCards = newVisibleCards
+    mutate gridSize = newGridSize
+    mutate showGrid = newShowGrid
+    mutate snapToGrid = newSnapToGrid
+    mutate updatedAt = now()
+
+    emit CommandBoardLayoutUpdated
+  }
+
+  command delete(userId: string) {
+    guard self.deletedAt == 0 "Layout is already deleted"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit CommandBoardLayoutDeleted
+  }
+
+  store CommandBoardLayout in memory
+}
+
+// Policy definitions
+policy BoardManagement execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and above can manage boards"
+policy BoardCardManagement execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage board cards"
+policy BoardLayoutManagement execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Staff can manage their own layouts"
+
+// CommandBoard events
+event CommandBoardCreated: "board.command_board.created" {
+  boardId: string
+  tenantId: string
+  name: string
+  status: string
+  isTemplate: boolean
+  createdAt: number
+}
+
+event CommandBoardUpdated: "board.command_board.updated" {
+  boardId: string
+  tenantId: string
+  oldName: string
+  newName: string
+  updatedAt: number
+}
+
+event CommandBoardDeactivated: "board.command_board.deactivated" {
+  boardId: string
+  tenantId: string
+  boardName: string
+  reason: string
+  userId: string
+  deactivatedAt: number
+}
+
+// CommandBoardCard events
+event CommandBoardCardCreated: "board.card.created" {
+  cardId: string
+  boardId: string
+  tenantId: string
+  title: string
+  cardType: string
+  status: string
+  positionX: number
+  positionY: number
+  createdAt: number
+}
+
+event CommandBoardCardUpdated: "board.card.updated" {
+  cardId: string
+  boardId: string
+  tenantId: string
+  title: string
+  oldStatus: string
+  newStatus: string
+  version: number
+  updatedAt: number
+}
+
+event CommandBoardCardMoved: "board.card.moved" {
+  cardId: string
+  boardId: string
+  tenantId: string
+  oldPositionX: number
+  oldPositionY: number
+  newPositionX: number
+  newPositionY: number
+  movedAt: number
+}
+
+event CommandBoardCardResized: "board.card.resized" {
+  cardId: string
+  boardId: string
+  tenantId: string
+  oldWidth: number
+  oldHeight: number
+  newWidth: number
+  newHeight: number
+  resizedAt: number
+}
+
+event CommandBoardCardDeleted: "board.card.deleted" {
+  cardId: string
+  boardId: string
+  tenantId: string
+  title: string
+  userId: string
+  deletedAt: number
+}
+
+// CommandBoardGroup events
+event CommandBoardGroupCreated: "board.group.created" {
+  groupId: string
+  boardId: string
+  tenantId: string
+  name: string
+  color: string
+  createdAt: number
+}
+
+event CommandBoardGroupUpdated: "board.group.updated" {
+  groupId: string
+  boardId: string
+  tenantId: string
+  name: string
+  updatedAt: number
+}
+
+event CommandBoardGroupDeleted: "board.group.deleted" {
+  groupId: string
+  boardId: string
+  tenantId: string
+  name: string
+  userId: string
+  deletedAt: number
+}
+
+// CommandBoardConnection events
+event CommandBoardConnectionCreated: "board.connection.created" {
+  connectionId: string
+  boardId: string
+  tenantId: string
+  fromCardId: string
+  toCardId: string
+  relationshipType: string
+  createdAt: number
+}
+
+event CommandBoardConnectionDeleted: "board.connection.deleted" {
+  connectionId: string
+  boardId: string
+  tenantId: string
+  fromCardId: string
+  toCardId: string
+  userId: string
+  deletedAt: number
+}
+
+// CommandBoardLayout events
+event CommandBoardLayoutCreated: "board.layout.created" {
+  layoutId: string
+  boardId: string
+  tenantId: string
+  userId: string
+  name: string
+  createdAt: number
+}
+
+event CommandBoardLayoutUpdated: "board.layout.updated" {
+  layoutId: string
+  boardId: string
+  tenantId: string
+  name: string
+  updatedAt: number
+}
+
+event CommandBoardLayoutDeleted: "board.layout.deleted" {
+  layoutId: string
+  boardId: string
+  tenantId: string
+  name: string
+  userId: string
+  deletedAt: number
+}

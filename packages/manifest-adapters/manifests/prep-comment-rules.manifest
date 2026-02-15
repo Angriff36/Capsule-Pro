@@ -1,0 +1,134 @@
+// Kitchen Ops - Prep Comment Rules
+// Manifest spec for prep task comment threading, resolution, and moderation
+
+entity PrepComment {
+  property required id: string
+  property required tenantId: string
+  property required taskId: string
+  property required employeeId: string
+  property required commentText: string
+  property isResolved: boolean = false
+  property resolvedAt: number = 0
+  property resolvedBy: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isActive: boolean = self.deletedAt == 0
+  computed hasBeenResolved: boolean = self.resolvedAt != 0
+
+  constraint blockDeleteIfResolved:block self.isResolved {
+    messageTemplate: "Cannot delete resolved comment '{commentId}' on task '{taskId}'"
+    details: {
+      commentId: self.id
+      taskId: self.taskId
+      resolvedBy: self.resolvedBy
+      resolvedAt: self.resolvedAt
+    }
+  }
+
+  command create(taskId: string, employeeId: string, commentText: string) {
+    guard taskId != null and taskId != "" "Task ID is required"
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard commentText != null and commentText != "" "Comment text is required"
+
+    mutate taskId = taskId
+    mutate employeeId = employeeId
+    mutate commentText = commentText
+    mutate isResolved = false
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit PrepCommentCreated
+  }
+
+  command resolve(resolvedBy: string) {
+    guard resolvedBy != null and resolvedBy != "" "Resolver ID is required"
+    guard self.isActive "Cannot resolve a deleted comment"
+
+    constraint warnAlreadyResolved:warn self.isResolved {
+      messageTemplate: "Comment '{commentId}' is already resolved by '{resolvedBy}'"
+      details: {
+        commentId: self.id
+        taskId: self.taskId
+        resolvedBy: self.resolvedBy
+        resolvedAt: self.resolvedAt
+      }
+    }
+
+    mutate isResolved = true
+    mutate resolvedAt = now()
+    mutate resolvedBy = resolvedBy
+    mutate updatedAt = now()
+
+    emit PrepCommentResolved
+  }
+
+  command unresolve(userId: string) {
+    guard userId != null and userId != "" "User ID is required"
+    guard self.isResolved "Comment is not resolved"
+    guard self.isActive "Cannot unresolve a deleted comment"
+
+    mutate isResolved = false
+    mutate resolvedAt = 0
+    mutate resolvedBy = ""
+    mutate updatedAt = now()
+
+    emit PrepCommentUnresolved
+  }
+
+  command delete(userId: string) {
+    guard userId != null and userId != "" "User ID is required"
+    guard self.isActive "Comment is already deleted"
+
+    constraint blockDeleteIfResolved:block self.isResolved {
+      messageTemplate: "Cannot delete resolved comment '{commentId}' — unresolve it first"
+      details: {
+        commentId: self.id
+        taskId: self.taskId
+        resolvedBy: self.resolvedBy
+      }
+    }
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit PrepCommentDeleted
+  }
+
+  store PrepComment in memory
+}
+
+policy KitchenStaffCanComment execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can create and manage comments"
+policy ManagersCanDelete execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can delete comments"
+policy KitchenStaffCanResolve execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can resolve comments"
+
+event PrepCommentCreated: "kitchen.prepcomment.created" {
+  commentId: string
+  tenantId: string
+  taskId: string
+  employeeId: string
+  commentText: string
+  createdAt: number
+}
+
+event PrepCommentResolved: "kitchen.prepcomment.resolved" {
+  commentId: string
+  taskId: string
+  resolvedBy: string
+  resolvedAt: number
+}
+
+event PrepCommentUnresolved: "kitchen.prepcomment.unresolved" {
+  commentId: string
+  taskId: string
+  unresolvedBy: string
+  unresolvedAt: number
+}
+
+event PrepCommentDeleted: "kitchen.prepcomment.deleted" {
+  commentId: string
+  taskId: string
+  deletedBy: string
+  deletedAt: number
+}
