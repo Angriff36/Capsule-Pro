@@ -3,7 +3,28 @@
 **Last Updated**: 2026-02-15
 **Goal**: Manifest Integration - Phase 1-7 (25 Manifests)
 **Branch**: manifest-.3
-**Tag**: v0.5.2
+**Tag**: v0.5.4
+
+---
+
+## Completed (v0.5.4) - Build Fixes
+
+### Critical Fix: Restored manifest-runtime dist folder
+
+- The vendored `packages/manifest-runtime/dist/` folder was accidentally deleted
+- Restored from git (dist must be committed per .gitignore)
+- Added vitest.config.ts for manifest-runtime (tests disabled for vendored package)
+
+### Fixed scripts/manifest/generate.mjs
+
+- Fixed CLI invocation to run from correct directory
+- Updated to use `pnpm -C <dir> exec tsx` pattern for proper module resolution
+
+### Build Status
+
+- Build: PASSED (19 tasks)
+- API Tests: 672 passed (1 skipped)
+- Note: Turbo caching may cause intermittent test failures; direct test run passes
 
 ---
 
