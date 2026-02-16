@@ -48,7 +48,39 @@ Do not read unless explicitly required by the current task:
 
 ---
 
-## How to Add a New Route
+## Manifest CLI — Your Primary Development Tool
+
+The Manifest CLI is the **canonical interface** for understanding and working with
+this codebase's API surface. You MUST use it instead of guessing, grepping, or
+scanning the filesystem.
+
+### Rules
+
+- **MUST** run `pnpm manifest:routes:ir -- --format summary` before writing any
+  route-related code. This gives you the complete route surface (230 routes, all
+  params, methods, auth, policies) in one call.
+- **MUST** run `pnpm manifest:lint-routes` after editing client code to verify no
+  hardcoded `/api/` paths were introduced.
+- **MUST** run `pnpm check:routes` before committing any client-side changes.
+- **NEVER** guess at route paths, params, or methods. Query the manifest.
+- **NEVER** hardcode `/api/...` strings in client code. Use route helpers.
+- **NEVER** scan `apps/api/app/api/` with glob/find to discover routes. Use the CLI.
+
+### CLI Quick Reference
+
+| Command                     | What it does                                                | When to use                              |
+| --------------------------- | ----------------------------------------------------------- | ---------------------------------------- |
+| `pnpm manifest:routes:ir`   | Generate route manifest from compiled IR (230 routes)       | Before any route work — know what exists |
+| `pnpm manifest:routes`      | Regenerate route manifest from filesystem scan (412 routes) | After adding/changing route handlers     |
+| `pnpm manifest:lint-routes` | Scan for hardcoded route strings                            | After editing client code                |
+| `pnpm check:routes`         | CI conformance scan for `/api/` literals                    | Before committing client changes         |
+| `pnpm manifest:compile`     | Compile `.manifest` → IR                                    | After editing manifest files             |
+| `pnpm manifest:generate`    | Generate route handlers from IR                             | After compiling new manifests            |
+| `pnpm manifest:build`       | Compile + generate in one step                              | Full manifest rebuild                    |
+| `pnpm manifest:validate`    | Validate IR + check manifest health                         | Verify manifest integrity                |
+| `pnpm manifest:sync`        | Sync vendored runtime from C:/projects/manifest             | After upstream runtime changes           |
+
+### How to Add a New Route
 
 1. **Create the route handler** in `apps/api/app/api/<domain>/<resource>/route.ts`
 2. **Regenerate the route manifest**:
@@ -67,10 +99,19 @@ Do not read unless explicitly required by the current task:
    const res = await apiFetch(myNewRoute(someId));
    ```
 
-**Do NOT** hardcode `/api/...` strings in client code. The CI check
-(`pnpm check:routes`) and the dev-time `apiFetch` guard will catch violations.
+### How to Debug a Route Issue
 
-**Allowlisted files** (may contain `/api/` strings):
+1. **Check if the route exists**:
+   ```bash
+   pnpm manifest:routes:ir -- --format json | grep "the/path"
+   ```
+2. **Check method and params**: The JSON output includes `method`, `params`, `auth`, `tenant` for every route.
+3. **Check if client code is using the right helper**: Run `pnpm manifest:lint-routes` to find hardcoded paths.
+4. **Check policy coverage**: The summary format shows policy-covered vs uncovered routes.
+
+### Allowlisted Files
+
+These files may contain `/api/` strings (everything else is a violation):
 
 - `apps/app/app/lib/routes.ts` — route helper definitions
 - `apps/app/app/lib/api.ts` — apiFetch wrapper
@@ -80,7 +121,8 @@ Do not read unless explicitly required by the current task:
 - `scripts/**` — build scripts
 - `*.test.ts` / `*.spec.ts` — tests
 
-See `specs/manifest/manifest-master-plan.md` § "Manifest Routes Are Canonical" for full spec.
+See `specs/manifest/manifest-master-plan.md` § "Manifest CLI Workflow for AI Agents" for
+the full detailed workflow with examples.
 
 ---
 
