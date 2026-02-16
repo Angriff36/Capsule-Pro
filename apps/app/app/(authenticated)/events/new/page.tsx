@@ -13,7 +13,10 @@ const NewEventPage = async () => {
 
   return (
     <>
-      <Header page="New event" pages={["Operations", "Events"]} />
+      <Header
+        page="New event"
+        pages={[{ label: "Events", href: "/events" }]}
+      />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <EventForm action={createEvent} submitLabel="Create event" />
       </div>

@@ -1,0 +1,20 @@
+// Bootstrap manifest source for recipe domain.
+entity Recipe {
+  property required id: string
+  property required tenantId: string
+  property required name: string
+  property status: string = "draft"
+
+  command activate() {
+    guard self.name != null and self.name != "" "Recipe name is required"
+    mutate status = "active"
+    emit RecipeActivated
+  }
+
+  store Recipe in memory
+}
+
+event RecipeActivated: "kitchen.recipe.activated" {
+  id: string
+  tenantId: string
+}

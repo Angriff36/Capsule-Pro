@@ -1,33 +1,36 @@
 {
   "name": "@repo/database",
   "version": "0.0.0",
-  "main": "./index.ts",
-  "types": "./index.ts",
-  "scripts": {
-    "analyze": "prisma generate --no-hints --schema=./prisma/schema.prisma",
-    "build": "prisma generate --no-hints --schema=./prisma/schema.prisma",
-    "generate": "prisma generate --schema=./prisma/schema.prisma",
-    "postinstall": "node -e \"process.exit(process.env.VERCEL_ENV && !process.env.DATABASE_URL ? 0 : 1)\" || prisma generate --no-hints --schema=./prisma/schema.prisma",
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
-  },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
-    "@prisma/adapter-neon": "7.1.0",
-    "@prisma/client": "7.1.0",
-    "@prisma/client-runtime-utils": "^7.1.0",
-    "@t3-oss/env-nextjs": "^0.13.8",
+    "@prisma/adapter-neon": "7.3.0",
+    "@prisma/client": "7.3.0",
+    "@prisma/client-runtime-utils": "^7.3.0",
+    "@t3-oss/env-nextjs": "^0.13.10",
+    "pg": "^8.16.3",
     "server-only": "^0.0.1",
-    "undici": "^7.16.0",
-    "ws": "^8.18.3",
-    "zod": "^4.1.13"
+    "undici": "^7.20.0",
+    "ws": "^8.19.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "24.10.1",
+    "@types/node": "25.2.0",
     "@types/ws": "^8.18.1",
-    "bufferutil": "^4.0.9",
-    "prisma": "7.1.0",
-    "typescript": "^5.9.3"
-  }
+    "bufferutil": "^4.1.0",
+    "prisma": "7.3.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  },
+  "main": "./index.ts",
+  "scripts": {
+    "analyze": "prisma generate --no-hints --schema=./prisma/schema.prisma",
+    "build": "prisma generate --no-hints --schema=./prisma/schema.prisma",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "generate": "prisma generate --schema=./prisma/schema.prisma",
+    "postinstall": "node -e \"process.exit(process.env.VERCEL_ENV && !process.env.DATABASE_URL ? 0 : 1)\" || prisma generate --no-hints --schema=./prisma/schema.prisma",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "types": "./index.ts"
 }

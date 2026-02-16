@@ -1,0 +1,119 @@
+// Notifications - Notification Rules
+// Manifest spec for notification delivery, read tracking, and dismissal
+
+entity Notification {
+  property required id: string
+  property required tenantId: string
+  property required recipientEmployeeId: string
+  property notificationType: string = ""
+  property title: string = ""
+  property body: string = ""
+  property actionUrl: string = ""
+  property isRead: boolean = false
+  property readAt: number = 0
+  property correlationId: string = ""
+  property createdAt: number = 0
+
+  computed isUnread: boolean = self.isRead == false
+  computed hasAction: boolean = self.actionUrl != null and self.actionUrl != ""
+  computed hasCorrelation: boolean = self.correlationId != null and self.correlationId != ""
+
+  constraint validTitle: self.title != null and self.title != "" "Notification title is required"
+  constraint validRecipient: self.recipientEmployeeId != null and self.recipientEmployeeId != "" "Recipient employee ID is required"
+  constraint validNotificationType: self.notificationType != null and self.notificationType != "" "Notification type is required"
+
+  command create(recipientEmployeeId: string, notificationType: string, title: string, body: string, actionUrl: string, correlationId: string) {
+    guard recipientEmployeeId != null and recipientEmployeeId != "" "Recipient employee ID is required"
+    guard title != null and title != "" "Notification title is required"
+    guard notificationType != null and notificationType != "" "Notification type is required"
+
+    mutate recipientEmployeeId = recipientEmployeeId
+    mutate notificationType = notificationType
+    mutate title = title
+    mutate body = body
+    mutate actionUrl = actionUrl
+    mutate correlationId = correlationId
+    mutate isRead = false
+    mutate readAt = 0
+    mutate createdAt = now()
+
+    emit NotificationCreated
+  }
+
+  command markRead(userId: string) {
+    guard self.isRead == false "Notification is already read"
+
+    constraint warnAlreadyRead:warn self.isRead == true {
+      messageTemplate: "Notification '{notificationTitle}' is already marked as read"
+      details: {
+        notificationTitle: self.title
+        readAt: self.readAt
+      }
+    }
+
+    mutate isRead = true
+    mutate readAt = now()
+
+    emit NotificationMarkedRead
+  }
+
+  command markDismissed(userId: string) {
+    guard userId != null and userId != "" "User ID is required"
+
+    mutate isRead = true
+    mutate readAt = now()
+
+    emit NotificationDismissed
+  }
+
+  command remove(userId: string) {
+    guard userId != null and userId != "" "User ID is required"
+
+    emit NotificationDeleted
+  }
+
+  store Notification in memory
+}
+
+// Policy definitions
+policy NotificationManagement execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Staff can manage their own notifications"
+policy NotificationCreate execute: user.role in ["system", "manager", "admin"] "Only system and managers can create notifications"
+policy NotificationDelete execute: user.role in ["manager", "admin"] "Only managers and admins can delete notifications"
+
+// Event definitions
+event NotificationCreated: "notification.created" {
+  notificationId: string
+  tenantId: string
+  recipientEmployeeId: string
+  notificationType: string
+  title: string
+  hasAction: boolean
+  createdAt: number
+}
+
+event NotificationMarkedRead: "notification.marked_read" {
+  notificationId: string
+  tenantId: string
+  recipientEmployeeId: string
+  title: string
+  userId: string
+  readAt: number
+}
+
+event NotificationDismissed: "notification.dismissed" {
+  notificationId: string
+  tenantId: string
+  recipientEmployeeId: string
+  title: string
+  userId: string
+  dismissedAt: number
+}
+
+event NotificationDeleted: "notification.deleted" {
+  notificationId: string
+  tenantId: string
+  recipientEmployeeId: string
+  title: string
+  userId: string
+  deletedAt: number
+}

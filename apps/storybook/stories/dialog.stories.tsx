@@ -9,12 +9,13 @@ import {
   DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
 import type { Meta, StoryObj } from "@storybook/react";
+import type { ComponentProps } from "react";
 
 /**
  * A window overlaid on either the primary window or another dialog window,
  * rendering the content underneath inert.
  */
-const meta = {
+const meta: Meta<ComponentProps<typeof Dialog>> = {
   title: "ui/Dialog",
   component: Dialog,
   tags: ["autodocs"],

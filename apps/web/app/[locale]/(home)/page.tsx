@@ -11,11 +11,14 @@ import { Hero } from "./components/hero";
 import { Stats } from "./components/stats";
 import { Testimonials } from "./components/testimonials";
 
-type HomeProps = {
+interface HomeProps {
   params: Promise<{
     locale: string;
   }>;
-};
+}
+
+// ISR: Revalidate every hour - home page content changes infrequently
+export const revalidate = 3600;
 
 export const generateMetadata = async ({
   params,
@@ -46,7 +49,7 @@ const Home = async ({ params }: HomeProps) => {
             <Hero dictionary={dictionary} />
             <Cases dictionary={dictionary} />
             <Features dictionary={dictionary} />
-            <Stats dictionary={dictionary} />
+            <Stats dictionary={dictionary} locale={locale} />
             <Testimonials dictionary={dictionary} />
             <FAQ dictionary={dictionary} />
             <CTA dictionary={dictionary} />

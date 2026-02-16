@@ -9,11 +9,17 @@ const DevConsoleDashboardPage = () => (
         <h1 className="dev-console-title">Dashboard</h1>
       </div>
       <div className="dev-console-header-actions">
-        <button className="dev-console-button dev-console-button-ghost" type="button">
+        <button
+          className="dev-console-button dev-console-button-ghost"
+          type="button"
+        >
           <DownloadIcon className="h-4 w-4" />
           Export Report
         </button>
-        <button className="dev-console-button dev-console-button-primary" type="button">
+        <button
+          className="dev-console-button dev-console-button-primary"
+          type="button"
+        >
           <PlusIcon className="h-4 w-4" />
           New Application
         </button>
@@ -23,18 +29,23 @@ const DevConsoleDashboardPage = () => (
     <section className="dev-console-grid dev-console-grid-4">
       <StatCard
         label="Total Tenants"
-        value="1,248"
         trend="+12% from last month"
         trendTone="positive"
+        value="1,248"
       />
       <StatCard
         label="API Requests (24h)"
-        value="45.2M"
         trend="+5.4% from yesterday"
         trendTone="positive"
+        value="45.2M"
       />
-      <StatCard label="Avg Latency" value="42ms" trend="Within SLA limits" />
-      <StatCard label="Error Rate" value="0.04%" trend="Stable" trendTone="neutral" />
+      <StatCard label="Avg Latency" trend="Within SLA limits" value="42ms" />
+      <StatCard
+        label="Error Rate"
+        trend="Stable"
+        trendTone="neutral"
+        value="0.04%"
+      />
     </section>
 
     <section className="dev-console-grid dev-console-grid-2">
@@ -53,7 +64,10 @@ const DevConsoleDashboardPage = () => (
         <div className="dev-console-chart">
           <div className="dev-console-chart-bars">
             {Array.from({ length: 24 }).map((_, index) => (
-              <span key={index} style={{ height: `${18 + (index % 7) * 6}%` }} />
+              <span
+                key={index}
+                style={{ height: `${18 + (index % 7) * 6}%` }}
+              />
             ))}
           </div>
           <div className="dev-console-chart-axis">
@@ -72,7 +86,9 @@ const DevConsoleDashboardPage = () => (
             <h2>System Health</h2>
             <p>Real-time platform status</p>
           </div>
-          <span className="dev-console-status-pill">All systems operational</span>
+          <span className="dev-console-status-pill">
+            All systems operational
+          </span>
         </div>
         <div className="dev-console-health-list">
           <div>

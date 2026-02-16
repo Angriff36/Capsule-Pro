@@ -1,6 +1,6 @@
+import path from "node:path";
 import withBundleAnalyzer from "@next/bundle-analyzer";
 import type { NextConfig } from "next";
-import path from "path";
 
 export const config: NextConfig = {
   turbopack: {

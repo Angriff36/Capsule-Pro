@@ -4,11 +4,12 @@ import {
   AvatarImage,
 } from "@repo/design-system/components/ui/avatar";
 import type { Meta, StoryObj } from "@storybook/react";
+import type { ComponentProps } from "react";
 
 /**
  * An image element with a fallback for representing the user.
  */
-const meta = {
+const meta: Meta<ComponentProps<typeof Avatar>> = {
   title: "ui/Avatar",
   component: Avatar,
   tags: ["autodocs"],
@@ -22,7 +23,7 @@ const meta = {
   parameters: {
     layout: "centered",
   },
-} satisfies Meta<typeof Avatar>;
+};
 
 export default meta;
 
