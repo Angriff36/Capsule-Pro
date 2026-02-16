@@ -118,7 +118,7 @@ export const ProjectionNode = memo(function ProjectionNode({
       {/* Card container */}
       <div
         className={cn(
-          "h-full w-full rounded-lg border bg-card p-3 transition-all duration-150",
+          "h-full w-[280px] rounded-lg border bg-card p-3 transition-all duration-150",
           // 4px colored left border
           "border-l-4",
           borderColor,

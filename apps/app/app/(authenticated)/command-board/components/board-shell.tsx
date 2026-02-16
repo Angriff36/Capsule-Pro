@@ -9,6 +9,8 @@ import { BoardRoom } from "./board-room";
 import { CommandPalette } from "./command-palette";
 import { EntityBrowser } from "./entity-browser";
 import { EntityDetailPanel } from "./entity-detail-panel";
+import { ErrorBoundary } from "./board-error-boundary";
+import { useBoardHistory } from "../hooks/use-board-history";
 import type { EntityType } from "../types/entities";
 import type {
   BoardProjection,
@@ -82,6 +84,58 @@ export function BoardShell({
   // ---- Entity browser panel state ----
   const [entityBrowserOpen, setEntityBrowserOpen] = useState(false);
 
+  // ---- Undo/Redo history ----
+  const { canUndo, canRedo, pushState, undo, redo } = useBoardHistory();
+
+  // ---- Callbacks ----
+
+  const handleOpenDetail = useCallback(
+    (entityType: string, entityId: string) => {
+      setOpenDetailEntity({ entityType, entityId });
+    },
+    []
+  );
+
+  const handleCloseDetail = useCallback(() => {
+    setOpenDetailEntity(null);
+  }, []);
+
+  const handleProjectionAdded = useCallback(
+    (projection: BoardProjection) => {
+      pushState(projections);
+      setProjections((prev) => [...prev, projection]);
+    },
+    [pushState, projections]
+  );
+
+  const handleProjectionRemoved = useCallback(
+    (projectionId: string) => {
+      pushState(projections);
+      setProjections((prev) => prev.filter((p) => p.id !== projectionId));
+      // Remove any derived connections that reference the removed projection
+      setDerivedConnections((prev) =>
+        prev.filter(
+          (c) =>
+            c.fromProjectionId !== projectionId &&
+            c.toProjectionId !== projectionId
+        )
+      );
+    },
+    [pushState, projections]
+  );
+
+  // ---- Undo handler ----
+  const handleUndo = useCallback(() => {
+    const restored = undo(projections);
+    setProjections(restored);
+  }, [undo, projections]);
+
+  // ---- Redo handler ----
+  const handleRedo = useCallback(() => {
+    const restored = redo(projections);
+    setProjections(restored);
+  }, [redo, projections]);
+
   // ---- Keyboard shortcuts ----
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -100,46 +154,21 @@ export function BoardShell({
         e.preventDefault();
         setEntityBrowserOpen((prev) => !prev);
       }
+      // Cmd+Z → Undo
+      if ((e.metaKey || e.ctrlKey) && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        if (canUndo) handleUndo();
+      }
+      // Cmd+Shift+Z → Redo
+      if ((e.metaKey || e.ctrlKey) && e.key === "z" && e.shiftKey) {
+        e.preventDefault();
+        if (canRedo) handleRedo();
+      }
     }
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  // ---- Callbacks ----
-
-  const handleOpenDetail = useCallback(
-    (entityType: string, entityId: string) => {
-      setOpenDetailEntity({ entityType, entityId });
-    },
-    []
-  );
-
-  const handleCloseDetail = useCallback(() => {
-    setOpenDetailEntity(null);
-  }, []);
-
-  const handleProjectionAdded = useCallback(
-    (projection: BoardProjection) => {
-      setProjections((prev) => [...prev, projection]);
-    },
-    []
-  );
-
-  const handleProjectionRemoved = useCallback(
-    (projectionId: string) => {
-      setProjections((prev) => prev.filter((p) => p.id !== projectionId));
-      // Remove any derived connections that reference the removed projection
-      setDerivedConnections((prev) =>
-        prev.filter(
-          (c) =>
-            c.fromProjectionId !== projectionId &&
-            c.toProjectionId !== projectionId
-        )
-      );
-    },
-    []
-  );
+  }, [canUndo, canRedo, handleUndo, handleRedo]);
 
   return (
     <ReactFlowProvider>
@@ -152,8 +181,10 @@ export function BoardShell({
           boardStatus={board.status}
           boardDescription={board.description}
           boardTags={board.tags}
-          canUndo={false}
-          canRedo={false}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
           entityBrowserOpen={entityBrowserOpen}
           onToggleEntityBrowser={() => setEntityBrowserOpen((prev) => !prev)}
         />
@@ -162,16 +193,18 @@ export function BoardShell({
         <div className="relative flex flex-1 overflow-hidden">
           {/* Board Flow Canvas */}
           <div className="relative flex-1">
-            <BoardFlow
-              boardId={boardId}
-              projections={projections}
-              entities={entities}
-              derivedConnections={derivedConnections}
-              annotations={annotations}
-              onOpenDetail={handleOpenDetail}
-              onProjectionAdded={handleProjectionAdded}
-              onProjectionRemoved={handleProjectionRemoved}
-            />
+            <ErrorBoundary>
+              <BoardFlow
+                boardId={boardId}
+                projections={projections}
+                entities={entities}
+                derivedConnections={derivedConnections}
+                annotations={annotations}
+                onOpenDetail={handleOpenDetail}
+                onProjectionAdded={handleProjectionAdded}
+                onProjectionRemoved={handleProjectionRemoved}
+              />
+            </ErrorBoundary>
           </div>
 
           {/* Entity Browser Panel (right side) */}
@@ -180,6 +213,7 @@ export function BoardShell({
               boardId={boardId}
               onClose={() => setEntityBrowserOpen(false)}
               onProjectionAdded={handleProjectionAdded}
+              projections={projections}
             />
           )}
         </div>
