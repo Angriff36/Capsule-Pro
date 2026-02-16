@@ -265,16 +265,7 @@ async function browseShipments(tenantId: string): Promise<BrowseItem[]> {
 }
 
 async function browseNotes(tenantId: string): Promise<BrowseItem[]> {
-  // Note model may not be in generated Prisma types yet
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = database as any;
-  const noteModel = db.note as {
-    findMany: (args: Record<string, unknown>) => Promise<
-      Array<{ id: string; title: string; color: string | null }>
-    >;
-  };
-
-  const rows = await noteModel.findMany({
+  const rows = await database.note.findMany({
     where: { tenantId, deletedAt: null },
     select: { id: true, title: true, color: true },
     take: BROWSE_LIMIT,
