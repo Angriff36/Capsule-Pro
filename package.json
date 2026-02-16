@@ -100,6 +100,7 @@
     "manifest:compile": "node scripts/manifest/compile.mjs",
     "manifest:generate": "node scripts/manifest/generate.mjs",
     "manifest:routes": "node scripts/manifest/generate-route-manifest.mjs",
+    "manifest:sync": "node scripts/sync-manifest-runtime.mjs",
     "manifest:validate": "node scripts/manifest/check.mjs --with-cli",
     "bump-deps": "pnpm dlx npm-check-updates --deep -u --reject recharts && pnpm install",
     "bump-ui": "cd packages/design-system && pnpm dlx shadcn@latest add --all --overwrite",
