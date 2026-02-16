@@ -19,7 +19,12 @@
       "@manifest/runtime": ["../../dist/manifest/runtime-engine.d.ts"],
       "@manifest/runtime/compiler": ["../../dist/manifest/compiler.d.ts"],
       "@manifest/runtime/ir-compiler": ["../../dist/manifest/ir-compiler.d.ts"],
-      "@manifest/runtime/projections/nextjs": ["../../dist/manifest/projections/nextjs/generator.d.ts"]
+      "@manifest/runtime/projections/nextjs": [
+        "../../dist/manifest/projections/nextjs/generator.d.ts"
+      ],
+      "@manifest/runtime/projections/routes": [
+        "../../dist/manifest/projections/routes/generator.d.ts"
+      ]
     }
   },
   "include": ["src/**/*"],
