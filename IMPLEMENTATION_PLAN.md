@@ -1,9 +1,259 @@
 # Capsule-Pro Implementation Plan
 
-**Last Updated**: 2026-02-15
-**Goal**: Manifest Integration - Route Migration to ExecuteManifestCommand
-**Branch**: manifest-.3
-**Tag**: v0.5.6
+**Last Updated**: 2026-02-16
+**Goal**: Command Board Bug Fixes
+**Branch**: fix/command-board-bugs
+**Tag**: v0.5.7
+
+---
+
+## Command Board Bug Fixes
+
+### Implementation Order
+
+1. **BUG-01** (P0) — Wire up Entity Detail Panel
+2. **BUG-05** (P1) — Add Error Boundary
+3. **BUG-02** (P1) — Prevent duplicate entities (backend exists, need UI)
+4. **BUG-04** (P1) — Entity Browser staleness
+5. **BUG-03** (P1) — Undo/Redo (larger effort)
+6. **BUG-06** (P2) — Smart placement
+7. **BUG-07** (P2) — Consistent card width
+8. **BUG-08** (P2) — MiniMap/Controls styling
+
+---
+
+## Task 1: BUG-01 — Wire Up Entity Detail Panel (P0)
+
+**Status**: COMPLETED ✓
+**Files to modify**:
+- `apps/app/app/(authenticated)/command-board/components/board-shell.tsx`
+
+**Changes needed**:
+1. Import `EntityDetailPanel` component at top of file
+2. Replace the inline `<Sheet>` block (lines 247-268) with `<EntityDetailPanel>`
+3. Pass props: `entityType`, `entityId`, `open`, `onOpenChange`
+
+**Specific code changes**:
+```typescript
+// Add import
+import { EntityDetailPanel } from "./entity-detail-panel";
+
+// Replace Sheet (lines 247-268) with:
+<EntityDetailPanel
+  entityType={openDetailEntity?.entityType as EntityType}
+  entityId={openDetailEntity?.entityId ?? ""}
+  open={openDetailEntity !== null}
+  onOpenChange={(open) => {
+    if (!open) handleCloseDetail();
+  }}
+/>
+```
+
+**Acceptance criteria**:
+- [ ] Clicking a card opens the Entity Detail Panel showing actual entity details
+- [ ] Panel shows loading state while fetching
+- [ ] Panel shows error state with retry if fetch fails
+- [ ] Panel routes to correct detail view based on entity type
+- [ ] "Open Full Page" link navigates to entity's full page
+- [ ] Closing panel returns to board without side effects
+
+---
+
+## Task 2: BUG-05 — Add Error Boundary (P1)
+
+**Status**: PENDING
+**Files to modify**:
+- `apps/app/app/(authenticated)/command-board/components/board-shell.tsx` OR
+- `apps/app/app/(authenticated)/command-board/components/board-flow.tsx`
+
+**Changes needed**:
+1. Create an ErrorBoundary component (or use existing React error boundary pattern)
+2. Wrap React Flow canvas with error boundary
+3. Display fallback UI with error message and retry button
+
+**Implementation approach**:
+- Use `react-error-boundary` package or implement a simple class-based ErrorBoundary
+- Wrap `<BoardFlow>` with `<ErrorBoundary fallback={<ErrorFallback />}>` in BoardShell
+
+**Acceptance criteria**:
+- [ ] Board errors are caught by error boundary
+- [ ] Fallback UI displays with error message and retry button
+- [ ] User can recover from errors without page refresh
+- [ ] Errors are logged for debugging
+
+---
+
+## Task 3: BUG-02 — Prevent Duplicate Entities (P1)
+
+**Status**: PENDING
+**Files to modify**:
+- `apps/app/app/(authenticated)/command-board/components/entity-browser.tsx`
+- `apps/app/app/(authenticated)/command-board/components/board-shell.tsx`
+
+**Changes needed**:
+1. Backend already prevents duplicates (see `projections.ts` lines 99-115)
+2. Need to pass current projections to EntityBrowser so it can show "already on board" indicator
+3. Update toast message to show "already on board" when duplicate is rejected
+
+**Specific code changes**:
+1. BoardShell: Pass `projections` array to EntityBrowser component
+2. EntityBrowser: Accept projections prop, compute set of `entityType:entityId` keys
+3. Add visual indicator (badge/disabled state) for items already on board
+4. Show specific toast: "This {entity} is already on the board"
+
+**Acceptance criteria**:
+- [ ] User cannot add the same entity to the board twice (already works via backend)
+- [ ] Visual feedback shows which entities are already on the board
+- [ ] Clear error message when trying to add duplicate
+
+---
+
+## Task 4: BUG-04 — Entity Browser Staleness (P1)
+
+**Status**: PENDING
+**Files to modify**:
+- `apps/app/app/(authenticated)/command-board/components/entity-browser.tsx`
+- `apps/app/app/(authenticated)/command-board/components/board-shell.tsx`
+
+**Changes needed**:
+1. Pass current projections to EntityBrowser
+2. When projections change (add/remove), trigger EntityBrowser state update
+3. Use React Flow's store or Liveblocks to listen for projection changes
+
+**Implementation approach**:
+- In BoardShell, pass `onProjectionAdded` and `onProjectionRemoved` callbacks to EntityBrowser
+- When EntityBrowser receives new projection, update its internal "on board" set
+- Listen for Liveblocks events for realtime updates from other users
+
+**Acceptance criteria**:
+- [ ] Entity Browser updates when entities are added to board
+- [ ] Entity Browser updates when entities are removed from board
+- [ ] Visual indicators stay accurate in real-time
+
+---
+
+## Task 5: BUG-03 — Undo/Redo System (P1)
+
+**Status**: PENDING
+**Files to modify**:
+- `apps/app/app/(authenticated)/command-board/components/board-shell.tsx`
+- `apps/app/app/(authenticated)/command-board/components/board-header.tsx`
+
+**Changes needed**:
+1. Create a history hook (`useBoardHistory.ts`) that tracks:
+   - Stack of previous states (for undo)
+   - Stack of undone states (for redo)
+2. Track actions: add, remove, move, batch-move
+3. Implement undo/redo handlers
+4. Wire to BoardHeader props: `canUndo`, `canRedo`, `onUndo`, `onRedo`
+5. Add keyboard shortcuts: Cmd+Z (undo), Cmd+Shift+Z (redo)
+
+**Implementation approach**:
+- Store snapshots of projections + positions before each action
+- On undo: restore previous snapshot
+- On redo: restore next snapshot
+- Limit stack to 50 items (per types-specific/undo-redo.ts config)
+
+**Files to create**:
+- `apps/app/app/(authenticated)/command-board/hooks/use-board-history.ts`
+
+**Acceptance criteria**:
+- [ ] Users can undo moves, adds, and deletes
+- [ ] Users can redo after undo
+- [ ] Undo/redo buttons enable/disable based on history state
+- [ ] Keyboard shortcuts work (Cmd+Z, Cmd+Shift+Z)
+
+---
+
+## Task 6: BUG-06 — Smart Placement Algorithm (P2)
+
+**Status**: PENDING
+**Files to modify**:
+- `apps/app/app/(authenticated)/command-board/components/entity-browser.tsx` (lines 173-186)
+
+**Changes needed**:
+1. Replace random offset with smarter placement:
+   - Use a grid-based or spiral pattern
+   - OR check for overlaps before placing
+
+**Implementation approach**:
+```typescript
+// Option 1: Simple grid offset from center
+const GRID_SPACING = 320; // card width + gap
+const offsetX = (index % 3) * GRID_SPACING;
+const offsetY = Math.floor(index / 3) * 200;
+
+// Option 2: Check existing nodes for non-overlapping position
+// Use reactFlow.getNodes() to get existing positions
+```
+
+**Acceptance criteria**:
+- [ ] New entities are placed in a predictable, non-overlapping pattern
+- [ ] Placement feels intentional and organized
+
+---
+
+## Task 7: BUG-07 — Consistent Card Width (P2)
+
+**Status**: PENDING
+**Files to modify**:
+- `apps/app/app/(authenticated)/command-board/nodes/projection-node.tsx`
+- `apps/app/app/(authenticated)/command-board/actions/projections.ts` (default width)
+
+**Changes needed**:
+1. Set explicit width on ProjectionNode container div
+2. Ensure default width in addProjection matches
+
+**Implementation**:
+```typescript
+// In projection-node.tsx, add explicit width:
+<div
+  className={cn(
+    "w-[280px] h-full rounded-lg border bg-card p-3 ..."}
+```
+
+**Acceptance criteria**:
+- [ ] All cards have consistent, predictable width
+
+---
+
+## Task 8: BUG-08 — MiniMap/Controls Styling (P2)
+
+**Status**: PENDING
+**Files to modify**:
+- `apps/app/app/(authenticated)/command-board/components/board-flow.tsx` (lines 430-435)
+
+**Changes needed**:
+1. Remove `!important` overrides
+2. Use proper CSS classes or inline styles
+
+**Implementation**:
+```typescript
+// Replace:
+<Controls className="!bg-card !border-border !shadow-md" />
+<MiniMap className="!bg-card !border-border !shadow-md" />
+
+// With:
+<Controls className="bg-card border border-border shadow-md" />
+<MiniMap className="bg-card border border-border shadow-md" />
+// OR use styled wrapper div
+```
+
+**Acceptance criteria**:
+- [ ] MiniMap and Controls styled without `!important`
+- [ ] Styling respects theme/brand colors
+
+---
+
+## Validation
+
+```bash
+pnpm install && pnpm lint && pnpm build
+```
+
+**Last Validation**: 2026-02-16
+- Build: PENDING
+- Lint: Check for any introduced issues
 
 ---
 

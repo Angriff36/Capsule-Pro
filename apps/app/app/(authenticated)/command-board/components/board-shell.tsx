@@ -2,19 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@repo/design-system/components/ui/sheet";
 import { AiChatPanel } from "./ai-chat-panel";
 import { BoardHeader } from "./board-header";
 import { BoardFlow } from "./board-flow";
 import { BoardRoom } from "./board-room";
 import { CommandPalette } from "./command-palette";
 import { EntityBrowser } from "./entity-browser";
+import { EntityDetailPanel } from "./entity-detail-panel";
+import type { EntityType } from "../types/entities";
 import type {
   BoardProjection,
   ResolvedEntity,
@@ -146,45 +141,6 @@ export function BoardShell({
     []
   );
 
-  // ---- Resolve the detail entity title for the sheet header ----
-  const detailEntityTitle = useMemo(() => {
-    if (!openDetailEntity) return "";
-    const key = `${openDetailEntity.entityType}:${openDetailEntity.entityId}`;
-    const entity = entities.get(key);
-    if (!entity) return "Entity Details";
-    // Use a simple title extraction based on entity type
-    switch (entity.type) {
-      case "event":
-        return entity.data.title;
-      case "client":
-        return (
-          entity.data.companyName ??
-          (`${entity.data.firstName ?? ""} ${entity.data.lastName ?? ""}`.trim() ||
-          "Client")
-        );
-      case "prep_task":
-        return entity.data.name;
-      case "kitchen_task":
-        return entity.data.title;
-      case "employee":
-        return `${entity.data.firstName} ${entity.data.lastName}`;
-      case "inventory_item":
-        return entity.data.name;
-      case "recipe":
-        return entity.data.name;
-      case "dish":
-        return entity.data.name;
-      case "proposal":
-        return entity.data.title;
-      case "shipment":
-        return entity.data.shipmentNumber ?? "Shipment";
-      case "note":
-        return entity.data.title;
-      default:
-        return "Entity Details";
-    }
-  }, [openDetailEntity, entities]);
-
   return (
     <ReactFlowProvider>
     <BoardRoom boardId={boardId} orgId={orgId}>
@@ -244,28 +200,15 @@ export function BoardShell({
           onProjectionAdded={handleProjectionAdded}
         />
 
-        {/* Entity Detail Panel (Sheet) */}
-        <Sheet
+        {/* Entity Detail Panel */}
+        <EntityDetailPanel
+          entityType={(openDetailEntity?.entityType ?? "") as EntityType}
+          entityId={openDetailEntity?.entityId ?? ""}
           open={openDetailEntity !== null}
           onOpenChange={(open) => {
             if (!open) handleCloseDetail();
           }}
-        >
-          <SheetContent className="sm:max-w-lg">
-            <SheetHeader>
-              <SheetTitle>{detailEntityTitle}</SheetTitle>
-              <SheetDescription>
-                {openDetailEntity
-                  ? `${openDetailEntity.entityType.replace(/_/g, " ")} details`
-                  : ""}
-              </SheetDescription>
-            </SheetHeader>
-            {/* Placeholder for entity detail content — Task 3.1 */}
-            <div className="flex h-64 items-center justify-center text-muted-foreground text-sm">
-              Entity detail panel coming soon
-            </div>
-          </SheetContent>
-        </Sheet>
+        />
       </div>
     </BoardRoom>
     </ReactFlowProvider>
