@@ -1,10 +1,9 @@
-import { ModuleSection } from "../../components/module-section";
+import { ProfitabilityDashboard } from "./components/profitability-dashboard";
 
 const AnalyticsEventsPage = () => (
-  <ModuleSection
-    title="Event Analytics"
-    summary="Analyze event performance, margins, and service trends."
-  />
+  <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+    <ProfitabilityDashboard />
+  </div>
 );
 
 export default AnalyticsEventsPage;

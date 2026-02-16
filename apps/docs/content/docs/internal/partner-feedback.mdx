@@ -27,6 +27,37 @@ Template:
 - Status (new/triage/in-progress/done):
 ```
 
+## Add UI Blocks (Simple Steps)
+This is the quick, no-fuss way to add a new UI block with Codex.
+
+Browse blocks online:
+- https://www.shadcnblocks.com/explorer/blocks
+- https://ui.shadcn.com/blocks
+- https://ui.shadcn.com/docs/registry/registry-index
+
+Clone the repo and open it:
+```bash
+git clone <PASTE_GITHUB_REPO_URL_HERE>
+cd capsule-pro
+```
+
+Start Codex (pick one):
+```bash
+# Option A: start Codex from repo root
+codex
+
+# Option B: start Codex inside the design system
+cd packages/design-system
+codex
+```
+
+What to ask Codex:
+```
+Add a new block component in packages/design-system/components/blocks called
+<block-name>.tsx and a Storybook story <block-name>.stories.tsx. Use existing
+design system UI components. Make sure it appears under “Blocks” in Storybook.
+```
+
 ## Feedback Log
 - Date: TBD
 - Partner: Partner at company

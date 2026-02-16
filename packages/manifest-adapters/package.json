@@ -1,0 +1,66 @@
+{
+  "name": "@repo/manifest-adapters",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./runtime": {
+      "types": "./dist/runtime.d.ts",
+      "import": "./dist/runtime.js"
+    },
+    "./prisma-store": {
+      "types": "./dist/prisma-store.d.ts",
+      "import": "./dist/prisma-store.js"
+    },
+    "./api-response": {
+      "types": "./dist/api-response.d.ts",
+      "import": "./dist/api-response.js"
+    },
+    "./route-helpers": {
+      "types": "./dist/route-helpers.d.ts",
+      "import": "./dist/route-helpers.js"
+    },
+    "./ir-contract": {
+      "types": "./dist/ir-contract.d.ts",
+      "import": "./dist/ir-contract.js"
+    },
+    "./runtime-engine": {
+      "types": "./dist/runtime-engine.d.ts",
+      "import": "./dist/runtime-engine.js"
+    },
+    "./manifest-runtime": {
+      "types": "./dist/manifest-runtime.d.ts",
+      "import": "./dist/manifest-runtime.js"
+    },
+    "./prisma-json-store": {
+      "types": "./dist/prisma-json-store.d.ts",
+      "import": "./dist/prisma-json-store.js"
+    },
+    "./prisma-idempotency-store": {
+      "types": "./dist/prisma-idempotency-store.d.ts",
+      "import": "./dist/prisma-idempotency-store.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/database": "workspace:*",
+    "@repo/realtime": "workspace:*",
+    "@manifest/runtime": "workspace:*",
+    "@sentry/nextjs": "^10.38.0",
+    "hono": "^4.10.5"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}

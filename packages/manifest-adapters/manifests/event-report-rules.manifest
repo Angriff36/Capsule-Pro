@@ -1,0 +1,164 @@
+// Events & Catering - Event Report Rules
+// Manifest spec for pre-event review checklists and report lifecycle
+
+entity EventReport {
+  property required id: string
+  property required tenantId: string
+  property required eventId: string
+  property required name: string
+  property version: string = "2025-01-01"
+  property status: string = "draft"
+  property completion: number = 0
+  property checklistData: string = "{}"
+  property parsedEventData: string = ""
+  property reportConfig: string = ""
+  property autoFillScore: number = 0
+  property reviewNotes: string = ""
+  property reviewedBy: string = ""
+  property reviewedAt: number = 0
+  property completedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDraft: boolean = self.status == "draft"
+  computed isInProgress: boolean = self.status == "in_progress"
+  computed isCompleted: boolean = self.status == "completed"
+  computed isApproved: boolean = self.status == "approved"
+  computed hasContent: boolean = self.checklistData != "{}" and self.checklistData != ""
+  computed isFullyComplete: boolean = self.completion == 100
+  computed isReviewed: boolean = self.reviewedBy != "" and self.reviewedBy != null
+
+  constraint validName: self.name != null and self.name != "" "Report name is required"
+  constraint validEventId: self.eventId != null and self.eventId != "" "Event ID is required"
+  constraint validStatus: self.status in ["draft", "in_progress", "completed", "approved"] "Status must be valid"
+  constraint validCompletion: self.completion >= 0 and self.completion <= 100 "Completion must be between 0 and 100"
+
+  constraint warnLowCompletion:warn self.completion < 50 and self.status == "in_progress" {
+    messageTemplate: "Report '{reportName}' is less than 50% complete"
+    details: {
+      reportName: self.name
+      completion: self.completion
+    }
+  }
+
+  constraint blockSubmitEmptyContent:block self.checklistData == "{}" or self.checklistData == "" {
+    messageTemplate: "Cannot submit report '{reportName}' - checklist data is empty"
+    details: {
+      reportName: self.name
+    }
+  }
+
+  constraint blockApproveIfNotCompleted:block self.status != "completed" {
+    messageTemplate: "Cannot approve report '{reportName}' - report must be completed first (current: {status})"
+    details: {
+      reportName: self.name
+      status: self.status
+    }
+  }
+
+  command create(eventId: string, name: string, version: string, checklistData: string, reportConfig: string, notes: string) {
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard name != null and name != "" "Report name is required"
+
+    mutate eventId = eventId
+    mutate name = name
+    mutate version = version
+    mutate checklistData = checklistData
+    mutate reportConfig = reportConfig
+    mutate reviewNotes = notes
+    mutate status = "draft"
+    mutate completion = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit EventReportCreated
+  }
+
+  command submit(userId: string) {
+    guard self.status == "draft" or self.status == "in_progress" "Can only submit draft or in-progress reports"
+    guard self.checklistData != "{}" and self.checklistData != "" "Cannot submit report with empty checklist data"
+
+    constraint warnIncomplete:warn self.completion < 100 {
+      messageTemplate: "Submitting report '{reportName}' at {completion}% completion"
+      details: {
+        reportName: self.name
+        completion: self.completion
+      }
+    }
+
+    mutate status = "completed"
+    mutate completedAt = now()
+    mutate updatedAt = now()
+
+    emit EventReportSubmitted
+  }
+
+  command approve(userId: string, reviewNotes: string) {
+    guard self.status == "completed" "Can only approve completed reports"
+    guard userId != null and userId != "" "Reviewer user ID is required"
+
+    mutate status = "approved"
+    mutate reviewedBy = userId
+    mutate reviewedAt = now()
+    mutate reviewNotes = reviewNotes
+    mutate updatedAt = now()
+
+    emit EventReportApproved
+  }
+
+  command complete(userId: string) {
+    guard self.status == "draft" or self.status == "in_progress" "Can only complete draft or in-progress reports"
+    guard self.checklistData != "{}" and self.checklistData != "" "Cannot complete report with empty checklist data"
+
+    mutate status = "completed"
+    mutate completion = 100
+    mutate completedAt = now()
+    mutate updatedAt = now()
+
+    emit EventReportCompleted
+  }
+
+  store EventReport in memory
+}
+
+// Policy definitions
+policy ReportManagement execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Kitchen staff and above can manage reports"
+policy ReportApproval execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and above can approve reports"
+
+// Event definitions
+event EventReportCreated: "events.report.created" {
+  reportId: string
+  tenantId: string
+  eventId: string
+  name: string
+  version: string
+  createdAt: number
+}
+
+event EventReportSubmitted: "events.report.submitted" {
+  reportId: string
+  tenantId: string
+  eventId: string
+  name: string
+  completion: number
+  submittedAt: number
+}
+
+event EventReportApproved: "events.report.approved" {
+  reportId: string
+  tenantId: string
+  eventId: string
+  name: string
+  reviewedBy: string
+  reviewNotes: string
+  approvedAt: number
+}
+
+event EventReportCompleted: "events.report.completed" {
+  reportId: string
+  tenantId: string
+  eventId: string
+  name: string
+  completedAt: number
+}

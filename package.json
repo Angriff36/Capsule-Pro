@@ -4,64 +4,71 @@
   "bin": {
     "next-forge": "dist/index.js"
   },
-  "files": [
-    "dist/index.js"
-  ],
-  "scripts": {
-    "docs:list": "bun ./tools/scripts/docs-list.ts",
-    "browser-tools": "./tools/bin/browser-tools.exe",
-    "build": "turbo build",
-    "dev": "turbo dev --parallel",
-    "dev:apps": "turbo dev --parallel --filter=app --filter=web --filter=api --filter=docs --filter=email --filter=storybook",
-    "check": "npx ultracite@latest check",
-    "fix": "npx ultracite@latest fix",
-    "test": "turbo test",
-    "analyze": "turbo analyze",
-    "translate": "turbo translate",
-    "boundaries": "turbo boundaries",
-    "bump-deps": "npx npm-check-updates --deep -u --reject recharts && pnpm install",
-    "bump-ui": "cd packages/design-system && pnpm dlx shadcn@latest add --all --overwrite",
-    "prisma:format": "cd packages/database && npx prisma format",
-    "prisma:generate": "cd packages/database && npx prisma generate",
-    "db:push": "cd packages/database && npx prisma db push",
-    "migrate": "pnpm prisma:format && pnpm prisma:generate && pnpm db:push",
-    "clean:preview": "git clean -ndx",
-    "clean:hard": "git clean -xdf",
-    "clean:node_modules": "git clean -xdf node_modules",
-    "secrets:scan": "secretlint \"**/*\"",
-    "prepare": "husky"
+  "dependencies": {
+    "@prisma/adapter-neon": "7.3.0",
+    "@prisma/client": "7.3.0",
+    "ai": "^6.0.70",
+    "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
     "@auto-it/first-time-contributor": "^11.3.6",
-    "@biomejs/biome": "2.3.8",
-    "@clack/prompts": "^0.11.0",
+    "@biomejs/biome": "2.3.14",
+    "@clack/prompts": "^1.0.0",
+    "@clerk/testing": "^1.13.34",
+    "@playwright/test": "1.58.1",
     "@repo/typescript-config": "workspace:*",
-    "@secretlint/secretlint-rule-database-connection-string": "^11.3.0",
-    "@secretlint/secretlint-rule-preset-recommend": "^11.3.0",
-    "@turbo/gen": "^2.6.3",
-    "@types/node": "24.10.1",
-    "commander": "^14.0.2",
-    "cross-env": "^7.0.3",
+    "@secretlint/secretlint-rule-database-connection-string": "^11.3.1",
+    "@secretlint/secretlint-rule-preset-recommend": "^11.3.1",
+    "@turbo/gen": "2.8.3",
+    "@types/node": "25.2.0",
+    "baseline-browser-mapping": "^2.9.19",
+    "commander": "^14.0.3",
+    "cross-env": "^10.1.0",
     "husky": "^9.1.7",
-    "secretlint": "^11.3.0",
+    "node-mocks-http": "^1.17.2",
+    "pg": "^8.18.0",
+    "prettier": "3.8.1",
+    "prisma": "7.3.0",
+    "secretlint": "^11.3.1",
+    "syncpack": "14.0.0-alpha.40",
     "tsup": "^8.5.1",
-    "turbo": "^2.6.3",
+    "tsx": "^4.21.0",
+    "turbo": "2.8.3",
     "typescript": "^5.9.3",
-    "ultracite": "6.3.9",
-    "vitest": "^4.0.15"
+    "ultracite": "7.1.4",
+    "vitest": "^4.0.18"
   },
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22 <23"
   },
+  "files": [
+    "dist/index.js"
+  ],
   "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a",
   "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "@types/react": ">=19",
+        "@types/react-dom": ">=19",
+        "ai": ">=6",
+        "react": ">=19",
+        "react-dom": ">=19",
+        "next": ">=15",
+        "zod": ">=4"
+      }
+    },
     "overrides": {
       "parse5": "^7.2.1",
-      "next": "16.0.10",
-      "react": "19.2.3",
-      "react-dom": "19.2.3",
-      "@types/react": "19.2.7",
-      "@types/react-dom": "19.2.3"
+      "next": "15.4.11",
+      "react": "19.2.4",
+      "react-dom": "19.2.4",
+      "@types/react": "19.2.11",
+      "@types/react-dom": "19.2.3",
+      "prisma": "7.3.0",
+      "@prisma/client": "7.3.0",
+      "@prisma/adapter-neon": "7.3.0",
+      "baseline-browser-mapping": "^2.9.19",
+      "prettier": "3.8.1"
     },
     "ignoredBuiltDependencies": [
       "@clerk/shared",
@@ -76,7 +83,54 @@
       "esbuild",
       "prisma",
       "sharp"
-    ]
+    ],
+    "patchedDependencies": {
+      "ultracite": "patches/ultracite.patch"
+    }
+  },
+  "scripts": {
+    "analyze": "turbo analyze",
+    "boundaries": "turbo boundaries",
+    "browser-tools": "pnpm dlx @modelcontextprotocol/server-playwright",
+    "build": "pnpm prisma:check && turbo build",
+    "check": "turbo typecheck",
+    "manifest:build": "node scripts/manifest/build.mjs",
+    "manifest:check": "node scripts/manifest/check.mjs",
+    "manifest:compile": "node scripts/manifest/compile.mjs",
+    "manifest:generate": "node scripts/manifest/generate.mjs",
+    "manifest:validate": "node scripts/manifest/check.mjs --with-cli",
+    "bump-deps": "pnpm dlx npm-check-updates --deep -u --reject recharts && pnpm install",
+    "bump-ui": "cd packages/design-system && pnpm dlx shadcn@latest add --all --overwrite",
+    "clean:hard": "git clean -xdf",
+    "clean:node_modules": "git clean -xdf node_modules",
+    "clean:preview": "git clean -ndx",
+    "ports": "pwsh -Command \"2221..2226 | ForEach-Object { $port = $_; Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue } }\"",
+    "db:check": "node scripts/db-drift-check.mjs",
+    "db:deploy": "pnpm --filter @repo/database exec prisma migrate deploy",
+    "db:dev": "pnpm --filter @repo/database exec prisma migrate dev",
+    "db:push": "echo \"❌ Disabled. Use pnpm migrate (dev) or pnpm migrate:deploy (CI/prod).\" && exit 1",
+    "db:repair": "node scripts/db-drift-repair.mjs",
+    "dev": "turbo dev --parallel",
+    "dev:apps": "turbo run dev --filter=api --filter=app --parallel",
+    "dev:check": "node scripts/dev.mjs",
+    "docs:list": "tsx ./tools/scripts/docs-list.ts",
+    "lint": "pnpm dlx ultracite check",
+    "lint:fix": "pnpm dlx ultracite fix",
+    "migrate": "pnpm db:check && pnpm prisma:format && pnpm prisma:check && pnpm db:dev",
+    "migrate:deploy": "pnpm prisma:check && pnpm db:deploy",
+    "migrate:resolve": "pnpm --filter @repo/database exec prisma migrate resolve",
+    "migrate:baseline": "node scripts/migrate-baseline.mjs",
+    "migrate:status": "pnpm --filter @repo/database exec prisma migrate status",
+    "predev": "pnpm db:check",
+    "prepare": "husky",
+    "prisma:format": "pnpm --filter @repo/database exec prisma format",
+    "prisma:check": "pnpm exec prisma generate --schema=./packages/database/prisma/schema.prisma",
+    "secrets:scan": "secretlint \"**/*\"",
+    "test": "turbo test",
+    "test:e2e": "playwright test",
+    "test:kitchen": "playwright test e2e/kitchen-workflow.spec.ts",
+    "translate": "turbo translate",
+    "vercel:bisect": "node scripts/vercel-bisect.mjs"
   },
   "type": "module"
 }

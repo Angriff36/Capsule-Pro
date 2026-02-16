@@ -3,44 +3,30 @@ import { Feed } from "@repo/cms/components/feed";
 import { Status } from "@repo/observability/status";
 import Link from "next/link";
 import { env } from "@/env";
+import { buildFooterNavigationItems } from "./footer-config";
 
+/**
+ * Site footer with navigation links and system status
+ *
+ * Features:
+ * - Dynamic navigation with CMS-driven legal pages
+ * - Optional docs link (if NEXT_PUBLIC_DOCS_URL is set)
+ * - System status indicator via observability module
+ * - Responsive two-column layout
+ *
+ * The footer uses server-side data fetching via the CMS Feed component
+ * to dynamically load legal page links.
+ */
 export const Footer = () => (
   <Feed queries={[legal.postsQuery]}>
+    {/* biome-ignore lint/suspicious/useAwait: async required for "use server" directive */}
     {async ([data]) => {
       "use server";
 
-      const navigationItems = [
-        {
-          title: "Home",
-          href: "/",
-          description: "",
-        },
-        {
-          title: "Pages",
-          description: "Managing a small business today is already tough.",
-          items: [
-            {
-              title: "Blog",
-              href: "/blog",
-            },
-          ],
-        },
-        {
-          title: "Legal",
-          description: "We stay on top of the latest legal requirements.",
-          items: data._componentInstances.legalPagesItem.items.map((post) => ({
-            title: post._title,
-            href: `/legal/${post._slug}`,
-          })),
-        },
-      ];
-
-      if (env.NEXT_PUBLIC_DOCS_URL) {
-        navigationItems.at(1)?.items?.push({
-          title: "Docs",
-          href: env.NEXT_PUBLIC_DOCS_URL,
-        });
-      }
+      const navigationItems = buildFooterNavigationItems(
+        data._componentInstances.legalPagesItem.items,
+        env.NEXT_PUBLIC_DOCS_URL
+      );
 
       return (
         <section className="dark border-foreground/10 border-t">
@@ -50,10 +36,10 @@ export const Footer = () => (
                 <div className="flex flex-col items-start gap-8">
                   <div className="flex flex-col gap-2">
                     <h2 className="max-w-xl text-left font-regular text-3xl tracking-tighter md:text-5xl">
-                      next-forge
+                      Capsule
                     </h2>
                     <p className="max-w-lg text-left text-foreground/75 text-lg leading-relaxed tracking-tight">
-                      This is the start of something new.
+                      Enterprise business solutions, unified.
                     </p>
                   </div>
                   <Status />

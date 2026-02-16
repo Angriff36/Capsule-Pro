@@ -17,15 +17,15 @@ import {
 import { FilterIcon, PlusIcon, SearchIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-type RecipesTab = {
+interface RecipesTab {
   value: string;
   label: string;
   count?: number;
-};
+}
 
-type RecipesToolbarProps = {
+interface RecipesToolbarProps {
   tabs: RecipesTab[];
   activeTab: string;
   initialQuery?: string;
@@ -36,7 +36,7 @@ type RecipesToolbarProps = {
     label: string;
     href: string;
   };
-};
+}
 
 const buildSearchParams = (
   current: URLSearchParams,
@@ -63,8 +63,10 @@ export const RecipesToolbar = ({
   primaryAction,
 }: RecipesToolbarProps) => {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams() ?? new URLSearchParams();
   const [query, setQuery] = useState(initialQuery ?? "");
+  const [isMounted, setIsMounted] = useState(false);
+  const tabsId = "recipes-tabs";
 
   const currentParams = useMemo(
     () => buildSearchParams(searchParams, {}),
@@ -77,6 +79,10 @@ export const RecipesToolbar = ({
     router.replace(search ? `?${search}` : "?");
   };
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -87,7 +93,9 @@ export const RecipesToolbar = ({
           <TabsList className="h-10 bg-transparent p-0">
             {tabs.map((tab) => (
               <TabsTrigger
-                className="h-10 rounded-none border-b-2 border-transparent px-4 text-sm data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground"
+                aria-controls={`${tabsId}-content-${tab.value}`}
+                className="h-10 rounded-none border-transparent border-b-2 px-4 text-sm data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground"
+                id={`${tabsId}-trigger-${tab.value}`}
                 key={tab.value}
                 value={tab.value}
               >
@@ -121,7 +129,7 @@ export const RecipesToolbar = ({
       >
         <div className="relative min-w-[240px] flex-1">
           <SearchIcon
-            className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2"
+            className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
             size={16}
           />
           <Input
@@ -132,55 +140,77 @@ export const RecipesToolbar = ({
             value={query}
           />
         </div>
-        <Select
-          onValueChange={(value) =>
-            updateParams({ category: value === "all" ? null : value })
-          }
-          value={initialCategory ?? "all"}
-        >
-          <SelectTrigger className="min-w-[140px] gap-2" size="default">
-            <FilterIcon size={14} />
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All categories</SelectItem>
-            <SelectItem value="main course">Main course</SelectItem>
-            <SelectItem value="appetizer">Appetizer</SelectItem>
-            <SelectItem value="dessert">Dessert</SelectItem>
-            <SelectItem value="side">Side</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select
-          onValueChange={(value) =>
-            updateParams({ dietary: value === "all" ? null : value })
-          }
-          value={initialDietary ?? "all"}
-        >
-          <SelectTrigger className="min-w-[120px]" size="default">
-            <SelectValue placeholder="Dietary" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Dietary</SelectItem>
-            <SelectItem value="gf">Gluten free</SelectItem>
-            <SelectItem value="v">Vegetarian</SelectItem>
-            <SelectItem value="vg">Vegan</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select
-          onValueChange={(value) =>
-            updateParams({ status: value === "all" ? null : value })
-          }
-          value={initialStatus ?? "all"}
-        >
-          <SelectTrigger className="min-w-[120px]" size="default">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Paused</SelectItem>
-          </SelectContent>
-        </Select>
+        {isMounted ? (
+          <>
+            <Select
+              onValueChange={(value) =>
+                updateParams({ category: value === "all" ? null : value })
+              }
+              value={initialCategory ?? "all"}
+            >
+              <SelectTrigger
+                className="min-w-[140px] gap-2"
+                id="recipes-filter-category"
+                size="default"
+              >
+                <FilterIcon size={14} />
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All categories</SelectItem>
+                <SelectItem value="main course">Main course</SelectItem>
+                <SelectItem value="appetizer">Appetizer</SelectItem>
+                <SelectItem value="dessert">Dessert</SelectItem>
+                <SelectItem value="side">Side</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              onValueChange={(value) =>
+                updateParams({ dietary: value === "all" ? null : value })
+              }
+              value={initialDietary ?? "all"}
+            >
+              <SelectTrigger
+                className="min-w-[120px]"
+                id="recipes-filter-dietary"
+                size="default"
+              >
+                <SelectValue placeholder="Dietary" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Dietary</SelectItem>
+                <SelectItem value="gf">Gluten free</SelectItem>
+                <SelectItem value="v">Vegetarian</SelectItem>
+                <SelectItem value="vg">Vegan</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              onValueChange={(value) =>
+                updateParams({ status: value === "all" ? null : value })
+              }
+              value={initialStatus ?? "all"}
+            >
+              <SelectTrigger
+                className="min-w-[120px]"
+                id="recipes-filter-status"
+                size="default"
+              >
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Paused</SelectItem>
+              </SelectContent>
+            </Select>
+          </>
+        ) : (
+          <>
+            <div className="h-9 min-w-[140px] rounded-md border border-input bg-background" />
+            <div className="h-9 min-w-[120px] rounded-md border border-input bg-background" />
+            <div className="h-9 min-w-[120px] rounded-md border border-input bg-background" />
+          </>
+        )}
         <Button
           className="border-muted-foreground/30 text-muted-foreground"
           type="submit"

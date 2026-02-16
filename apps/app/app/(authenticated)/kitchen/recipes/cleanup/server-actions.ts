@@ -1,15 +1,15 @@
 "use server";
 
-import { randomUUID } from "crypto";
-import { Prisma, database } from "@repo/database";
-import { requireTenantId } from "../../../../lib/tenant";
+import { randomUUID } from "node:crypto";
+import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireTenantId } from "../../../../lib/tenant";
 
-type CandidateRow = {
+interface CandidateRow {
   id: string;
   name: string;
-};
+}
 
 const SUPPLY_KEYWORDS = [
   "chafing",
@@ -66,7 +66,11 @@ const INGREDIENT_KEYWORDS = [
 ];
 
 const normalize = (value: string) =>
-  value.replace(/\uFEFF/g, "").trim().replace(/\s+/g, " ").toLowerCase();
+  value
+    .replace(/\uFEFF/g, "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
 
 const classifyCandidate = (name: string) => {
   const normalized = normalize(name);
@@ -76,7 +80,7 @@ const classifyCandidate = (name: string) => {
   }
 
   const isBeverage = BEVERAGE_KEYWORDS.some((keyword) =>
-    normalized.includes(keyword),
+    normalized.includes(keyword)
   );
   if (isBeverage) {
     const isPackaged =
@@ -103,7 +107,7 @@ const findInventoryItemId = async (tenantId: string, name: string) => {
         AND name = ${name}
         AND deleted_at IS NULL
       LIMIT 1
-    `,
+    `
   );
   return row?.id;
 };
@@ -111,7 +115,7 @@ const findInventoryItemId = async (tenantId: string, name: string) => {
 const insertInventoryItem = async (
   tenantId: string,
   name: string,
-  category: string,
+  category: string
 ) => {
   const existingId = await findInventoryItemId(tenantId, name);
   if (existingId) {
@@ -144,7 +148,7 @@ const insertInventoryItem = async (
         ${0},
         ${["cleanup"]}
       )
-    `,
+    `
   );
   return id;
 };
@@ -158,7 +162,7 @@ const findIngredientId = async (tenantId: string, name: string) => {
         AND name = ${name}
         AND deleted_at IS NULL
       LIMIT 1
-    `,
+    `
   );
   return row?.id;
 };
@@ -170,7 +174,7 @@ const getFallbackUnitId = async () => {
       FROM core.units
       ORDER BY id ASC
       LIMIT 1
-    `,
+    `
   );
   return row?.id;
 };
@@ -179,7 +183,7 @@ const insertIngredient = async (
   tenantId: string,
   name: string,
   defaultUnitId: number,
-  category: string,
+  category: string
 ) => {
   const existingId = await findIngredientId(tenantId, name);
   if (existingId) {
@@ -198,7 +202,7 @@ const insertIngredient = async (
         is_active
       )
       VALUES (${tenantId}, ${id}, ${name}, ${category}, ${defaultUnitId}, true)
-    `,
+    `
   );
   return id;
 };
@@ -210,7 +214,7 @@ const deactivateRecipeAndDish = async (tenantId: string, recipeId: string) => {
       SET is_active = false
       WHERE tenant_id = ${tenantId}
         AND id = ${recipeId}
-    `,
+    `
   );
 
   await database.$executeRaw(
@@ -219,7 +223,7 @@ const deactivateRecipeAndDish = async (tenantId: string, recipeId: string) => {
       SET is_active = false
       WHERE tenant_id = ${tenantId}
         AND recipe_id = ${recipeId}
-    `,
+    `
   );
 };
 
@@ -237,7 +241,7 @@ export const cleanupImportedItems = async (formData: FormData) => {
       WHERE tenant_id = ${tenantId}
         AND id IN (${Prisma.join(recipeIds)})
         AND deleted_at IS NULL
-    `,
+    `
   );
 
   const fallbackUnitId = await getFallbackUnitId();
@@ -251,7 +255,7 @@ export const cleanupImportedItems = async (formData: FormData) => {
       await insertInventoryItem(
         tenantId,
         candidate.name,
-        classification.category,
+        classification.category
       );
       await deactivateRecipeAndDish(tenantId, candidate.id);
       continue;
@@ -262,7 +266,7 @@ export const cleanupImportedItems = async (formData: FormData) => {
         tenantId,
         candidate.name,
         fallbackUnitId,
-        classification.category,
+        classification.category
       );
       await deactivateRecipeAndDish(tenantId, candidate.id);
     }

@@ -1,0 +1,19 @@
+// Bootstrap manifest source for prep-list domain.
+entity PrepList {
+  property required id: string
+  property required tenantId: string
+  property status: string = "draft"
+
+  command activate() {
+    guard self.status == "draft" "Only draft lists can be activated"
+    mutate status = "active"
+    emit PrepListActivated
+  }
+
+  store PrepList in memory
+}
+
+event PrepListActivated: "kitchen.prepList.activated" {
+  id: string
+  tenantId: string
+}

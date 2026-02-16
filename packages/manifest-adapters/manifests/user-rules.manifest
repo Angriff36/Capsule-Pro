@@ -1,0 +1,174 @@
+// Staff - User Rules
+// Manifest spec for user/employee lifecycle management
+
+entity User {
+  property required id: string
+  property required tenantId: string
+  property required email: string
+  property firstName: string = ""
+  property lastName: string = ""
+  property role: string = "staff"
+  property authUserId: string = ""
+  property employeeNumber: string = ""
+  property phone: string = ""
+  property employmentType: string = "full_time"
+  property hourlyRate: number = 0
+  property salaryAnnual: number = 0
+  property hireDate: number = 0
+  property terminationDate: number = 0
+  property isActive: boolean = true
+  property avatarUrl: string = ""
+  property roleId: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed fullName: string = self.firstName + " " + self.lastName
+  computed isTerminated: boolean = self.terminationDate > 0
+  computed isHourly: boolean = self.employmentType == "full_time" or self.employmentType == "part_time"
+  computed isContractor: boolean = self.employmentType == "contractor"
+
+  constraint validRole: self.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Invalid user role"
+  constraint validEmploymentType: self.employmentType in ["full_time", "part_time", "contractor", "temp"] "Invalid employment type"
+
+  command create(email: string, firstName: string, lastName: string, role: string, phone: string, employmentType: string, hourlyRate: number, salaryAnnual: number, hireDate: number, employeeNumber: string) {
+    guard email != null and email != "" "Email is required"
+    guard firstName != null and firstName != "" "First name is required"
+    guard lastName != null and lastName != "" "Last name is required"
+
+    mutate email = email
+    mutate firstName = firstName
+    mutate lastName = lastName
+    mutate role = role
+    mutate phone = phone
+    mutate employmentType = employmentType
+    mutate hourlyRate = hourlyRate
+    mutate salaryAnnual = salaryAnnual
+    mutate hireDate = hireDate
+    mutate employeeNumber = employeeNumber
+    mutate isActive = true
+    mutate terminationDate = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit UserCreated
+  }
+
+  command update(firstName: string, lastName: string, phone: string, employmentType: string, hourlyRate: number, salaryAnnual: number, avatarUrl: string) {
+    guard self.isActive "Cannot update an inactive user"
+
+    mutate firstName = firstName
+    mutate lastName = lastName
+    mutate phone = phone
+    mutate employmentType = employmentType
+    mutate hourlyRate = hourlyRate
+    mutate salaryAnnual = salaryAnnual
+    mutate avatarUrl = avatarUrl
+    mutate updatedAt = now()
+
+    emit UserUpdated
+  }
+
+  command deactivate(userId: string, reason: string) {
+    guard self.isActive "User is already inactive"
+
+    mutate isActive = false
+    mutate updatedAt = now()
+
+    emit UserDeactivated
+  }
+
+  command terminate(userId: string, reason: string, terminationDate: number) {
+    guard self.isActive "User is already inactive"
+
+    constraint blockAlreadyTerminated:block self.isTerminated {
+      messageTemplate: "User '{name}' is already terminated"
+      details: {
+        name: self.fullName
+        email: self.email
+        terminationDate: self.terminationDate
+      }
+    }
+
+    mutate isActive = false
+    mutate terminationDate = terminationDate
+    mutate updatedAt = now()
+
+    emit UserTerminated
+  }
+
+  command updateRole(newRole: string, userId: string) {
+    guard self.isActive "Cannot update role for an inactive user"
+    guard newRole != null and newRole != "" "Role is required"
+
+    constraint warnAdminPromotion:warn newRole == "admin" {
+      messageTemplate: "Promoting user '{name}' to admin role"
+      details: {
+        name: self.fullName
+        email: self.email
+        previousRole: self.role
+        newRole: newRole
+      }
+    }
+
+    mutate role = newRole
+    mutate updatedAt = now()
+
+    emit UserRoleUpdated
+  }
+
+  store User in memory
+}
+
+policy AdminsCanCreateUser execute: user.role in ["manager", "admin"] "Only managers and admins can create users"
+policy AdminsCanUpdateUser execute: user.role in ["manager", "admin"] "Only managers and admins can update users"
+policy AdminsCanDeactivateUser execute: user.role in ["manager", "admin"] "Only managers and admins can deactivate users"
+policy AdminsCanTerminateUser execute: user.role in ["admin"] "Only admins can terminate users"
+policy AdminsCanUpdateRole execute: user.role in ["admin"] "Only admins can update user roles"
+
+event UserCreated: "staff.user.created" {
+  userId: string
+  tenantId: string
+  email: string
+  firstName: string
+  lastName: string
+  role: string
+  employmentType: string
+  createdAt: number
+}
+
+event UserUpdated: "staff.user.updated" {
+  userId: string
+  email: string
+  firstName: string
+  lastName: string
+  updatedAt: number
+}
+
+event UserDeactivated: "staff.user.deactivated" {
+  userId: string
+  email: string
+  name: string
+  userId: string
+  reason: string
+  deactivatedAt: number
+}
+
+event UserTerminated: "staff.user.terminated" {
+  userId: string
+  email: string
+  name: string
+  reason: string
+  terminationDate: number
+  terminatedAt: number
+}
+
+event UserRoleUpdated: "staff.user.role.updated" {
+  userId: string
+  email: string
+  name: string
+  previousRole: string
+  newRole: string
+  updatedBy: string
+  updatedAt: number
+}

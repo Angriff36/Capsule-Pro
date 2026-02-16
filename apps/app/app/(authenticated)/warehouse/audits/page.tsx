@@ -1,10 +1,7 @@
-import { ModuleSection } from "../../components/module-section";
+import { CycleCountClient } from "./cycle-count-client";
 
-const WarehouseAuditsPage = () => (
-  <ModuleSection
-    title="Audits"
-    summary="Cycle counts and variance review for warehouse stock."
-  />
-);
+const WarehouseAuditsPage = () => {
+  return <CycleCountClient />;
+};
 
 export default WarehouseAuditsPage;

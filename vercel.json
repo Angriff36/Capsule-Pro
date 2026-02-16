@@ -1,0 +1,8 @@
+{
+  "buildCommand": "turbo build",
+  "ignoreCommand": "if [ \"$VERCEL_GIT_COMMIT_REF\" = \"manifest-.3\" ]; then exit 1; fi; git diff --quiet HEAD~1 HEAD -- apps/ packages/ || exit 0",
+  "installCommand": "corepack enable && corepack prepare pnpm@10.22.0 --activate && pnpm install",
+  "github": {
+    "silent": true
+  }
+}

@@ -6,7 +6,7 @@ const DevConsoleApiKeysPage = () => (
         <p>Issue, rotate, and revoke API keys.</p>
       </div>
     </div>
-    <p className="text-sm text-slate-400">
+    <p className="text-slate-400 text-sm">
       Placeholder screen. Hook this to key management when ready.
     </p>
   </div>

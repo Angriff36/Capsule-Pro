@@ -2,16 +2,23 @@
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
     "ignoreDeprecations": "5.0",
+    "skipLibCheck": true,
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "emitDeclarationOnly": false,
     "paths": {
-      "@/*": ["./*"],
-      "@repo/*": ["../../packages/*"]
-    }
+      "@/*": ["./*"]
+    },
+    "strictNullChecks": true
   },
   "include": [
-    "next-env.d.ts",
-    "next.config.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
-  ]
+    ".next/types/**/*.ts",
+    "next-env.d.ts",
+    "next.config.ts",
+    ".next-dev/types/**/*.ts"
+  ],
+  "exclude": ["prisma"]
 }
