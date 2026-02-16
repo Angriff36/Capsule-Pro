@@ -746,6 +746,165 @@ These files are permitted to contain `/api/` string literals:
 
 ---
 
+## Manifest CLI Workflow for AI Agents
+
+> **Added 2026-02-16** — This section defines how AI agents interact with the
+> codebase's API surface. The CLI is the canonical interface — same data as the
+> Manifest DevTools GUI, but accessible from the terminal.
+
+### Why This Exists
+
+The Manifest CLI gives agents the same route surface visibility that humans get
+from the Manifest DevTools desktop app. Without it, agents resort to scanning
+hundreds of route handler files with glob/find — slow, error-prone, and
+incomplete. The CLI returns the complete, authoritative route surface in one call.
+
+### The Two Route Views
+
+| Command                   | Routes | Source                         | Use case                                |
+| ------------------------- | ------ | ------------------------------ | --------------------------------------- |
+| `pnpm manifest:routes:ir` | 230    | Compiled from `.manifest` IR   | IR-derived routes (entities + commands) |
+| `pnpm manifest:routes`    | 412    | Filesystem scan of `apps/api/` | All routes including manual/legacy      |
+
+The IR view (230) is the **canonical** set — routes that are derived from Manifest
+entity definitions. The filesystem view (412) includes everything: manual routes,
+legacy routes, and routes not yet covered by manifests.
+
+### CLI Quick Reference
+
+| Command                     | What it does                                                | When to use                              |
+| --------------------------- | ----------------------------------------------------------- | ---------------------------------------- |
+| `pnpm manifest:routes:ir`   | Generate route manifest from compiled IR (230 routes)       | Before any route work — know what exists |
+| `pnpm manifest:routes`      | Regenerate route manifest from filesystem scan (412 routes) | After adding/changing route handlers     |
+| `pnpm manifest:lint-routes` | Scan for hardcoded route strings                            | After editing client code                |
+| `pnpm check:routes`         | CI conformance scan for `/api/` literals                    | Before committing client changes         |
+| `pnpm manifest:compile`     | Compile `.manifest` → IR                                    | After editing manifest files             |
+| `pnpm manifest:generate`    | Generate route handlers from IR                             | After compiling new manifests            |
+| `pnpm manifest:build`       | Compile + generate in one step                              | Full manifest rebuild                    |
+| `pnpm manifest:validate`    | Validate IR + check manifest health                         | Verify manifest integrity                |
+| `pnpm manifest:sync`        | Sync vendored runtime from C:/projects/manifest             | After upstream runtime changes           |
+
+### Mandatory Workflows
+
+#### Before Writing Any Route-Related Code
+
+```bash
+# Get the complete route surface — 230 IR-derived routes
+pnpm manifest:routes:ir -- --format summary
+
+# Or get machine-readable JSON for programmatic use
+pnpm manifest:routes:ir -- --format json
+
+# Need to find a specific route?
+pnpm manifest:routes:ir -- --format json | grep "kitchen/prep"
+```
+
+This tells you: every path, every HTTP method, every parameter, auth requirements,
+tenant scoping, and policy coverage. **Do not guess. Query the manifest.**
+
+#### After Editing Client Code (apps/app/)
+
+```bash
+# Check for hardcoded /api/ strings (CI enforcement)
+pnpm check:routes
+
+# Or use the Manifest CLI linter
+pnpm manifest:lint-routes
+```
+
+If either reports violations, replace the hardcoded path with a route helper from
+`apps/app/app/lib/routes.ts`.
+
+#### After Adding or Changing Route Handlers
+
+```bash
+# Regenerate the route manifest from filesystem
+pnpm manifest:routes
+
+# Verify the route appears in the manifest
+pnpm manifest:routes:ir -- --format json | grep "your/new/route"
+```
+
+#### After Editing .manifest Files
+
+```bash
+# Compile manifests to IR
+pnpm manifest:compile
+
+# Generate route handlers from IR
+pnpm manifest:generate
+
+# Or do both in one step
+pnpm manifest:build
+
+# Validate the result
+pnpm manifest:validate
+```
+
+#### After Upstream Runtime Changes
+
+```bash
+# Sync vendored @manifest/runtime from C:/projects/manifest
+pnpm manifest:sync
+
+# Verify nothing broke
+cd apps/api && pnpm test -- --run manifest
+```
+
+### Route Development Workflow (End-to-End)
+
+When building a feature that involves API routes:
+
+1. **Discover** — Run `pnpm manifest:routes:ir -- --format summary` to see what
+   routes already exist. Don't duplicate existing routes.
+
+2. **Implement** — Create or modify route handlers in `apps/api/app/api/`.
+
+3. **Register** — Run `pnpm manifest:routes` to update the route manifest.
+
+4. **Create helpers** — Add typed route helpers to `apps/app/app/lib/routes.ts`:
+
+   ```ts
+   export const myNewRoute = (id: string): string =>
+     `/api/domain/resource/${encodeURIComponent(id)}`;
+   ```
+
+5. **Use helpers** — Import and use in client code:
+
+   ```ts
+   import { myNewRoute } from "@/app/lib/routes";
+   const res = await apiFetch(myNewRoute(someId));
+   ```
+
+6. **Verify** — Run `pnpm check:routes` to confirm no hardcoded paths leaked in.
+
+7. **Test** — Run `cd apps/api && pnpm test -- --run manifest` to verify manifest
+   integration.
+
+### Debugging Route Issues
+
+| Symptom                        | Diagnostic command                                        | What to look for                                  |
+| ------------------------------ | --------------------------------------------------------- | ------------------------------------------------- |
+| 404 on API call                | `pnpm manifest:routes:ir -- --format json \| grep "path"` | Route doesn't exist or wrong method               |
+| 405 Method Not Allowed         | Same as above                                             | Using GET when route expects POST (or vice versa) |
+| Client code has hardcoded path | `pnpm check:routes`                                       | Replace with route helper                         |
+| Route exists but not in IR     | `pnpm manifest:routes` (filesystem scan)                  | Route is manual/legacy, not manifest-derived      |
+| Manifest compile error         | `pnpm manifest:compile`                                   | Syntax error in `.manifest` file                  |
+| Policy not applied             | `pnpm manifest:routes:ir -- --format summary`             | Check "Policy" column in route table              |
+
+### What Agents MUST NOT Do
+
+- **NEVER** scan `apps/api/app/api/` with glob or find to discover routes.
+  Use `pnpm manifest:routes:ir` or `pnpm manifest:routes` instead.
+- **NEVER** guess at route paths, parameters, or HTTP methods.
+  Query the manifest — it has the authoritative answer.
+- **NEVER** hardcode `/api/...` strings in client code under `apps/app/`.
+  Use route helpers from `apps/app/app/lib/routes.ts`.
+- **NEVER** skip `pnpm check:routes` before committing client-side changes.
+  The CI will catch it anyway — save the round-trip.
+
+---
+
 ## Next Steps
 
 1. ~~Execute Phase 1 manifests first (kitchen-task is highest ROI)~~ ✅ All phases 1-7 complete
