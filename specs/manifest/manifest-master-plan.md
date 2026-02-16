@@ -704,3 +704,8 @@ effect GeneratePrepSuggestion {
 4. **Command route handlers** for new entities (generate Next.js API routes from manifest definitions)
 5. **Migrate existing bypassed routes** to use new manifests (42 routes still using direct Prisma)
 6. **Frontend migration** — wire UI components to use manifest command routes instead of direct API calls
+7. **Fix Pattern B** — Recipe server action uses Manifest for constraints only, not persistence. See `PATTERNS.md` §Migration Strategy for options.
+8. **Delete dead routes** — ~30 command-board + 9 kitchen/manifest Gen 1 routes. See `PATTERNS.md` §Dead Routes.
+9. **Composite command routes** — For multi-entity operations (recipe+version+ingredients), use the Embedded Runtime Pattern. See `PATTERNS.md` §Multi-Entity Orchestration.
+
+> **See also:** `specs/manifest/PATTERNS.md` — Documents all three integration patterns, the runtime pipeline, store providers, multi-entity orchestration, dead routes, and migration strategy.
