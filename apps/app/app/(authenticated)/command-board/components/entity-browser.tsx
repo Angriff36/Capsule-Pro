@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useMemo, useState, useTransition } from "react";
 import { useReactFlow } from "@xyflow/react";
 import { toast } from "sonner";
 import {
@@ -69,6 +69,7 @@ interface EntityBrowserProps {
   boardId: string;
   onClose: () => void;
   onProjectionAdded?: (projection: BoardProjection) => void;
+  projections?: BoardProjection[];
 }
 
 interface CategoryState {
@@ -86,9 +87,16 @@ export function EntityBrowser({
   boardId,
   onClose,
   onProjectionAdded,
+  projections = [],
 }: EntityBrowserProps) {
   const reactFlow = useReactFlow();
   const [isPending, startTransition] = useTransition();
+
+  // Build set of entity keys already on board for quick lookup
+  const onBoardKeys = useMemo(
+    () => new Set(projections.map((p) => `${p.entityType}:${p.entityId}`)),
+    [projections]
+  );
 
   // Track loaded state per category — lazy load on expand
   const [categories, setCategories] = useState<Record<string, CategoryState>>(
@@ -170,20 +178,30 @@ export function EntityBrowser({
 
       startTransition(async () => {
         try {
-          // Place near viewport center with some randomness
+          // Smart placement: use grid pattern to avoid overlapping
           const viewport = reactFlow.getViewport();
-          const centerX =
+          const viewportCenterX =
             (-viewport.x + window.innerWidth / 2) / viewport.zoom;
-          const centerY =
+          const viewportCenterY =
             (-viewport.y + window.innerHeight / 2) / viewport.zoom;
-          const offsetX = (Math.random() - 0.5) * 300;
-          const offsetY = (Math.random() - 0.5) * 300;
+
+          // Grid spacing based on card dimensions (280px width + 40px gap)
+          const GRID_SPACING_X = 320;
+          const GRID_SPACING_Y = 200;
+
+          // Use existing projections to determine grid position
+          const existingCount = projections.length;
+          const gridX = existingCount % 3;
+          const gridY = Math.floor(existingCount / 3);
+
+          const offsetX = gridX * GRID_SPACING_X;
+          const offsetY = gridY * GRID_SPACING_Y;
 
           const result = await addProjection(boardId, {
             entityType: item.entityType,
             entityId: item.id,
-            positionX: Math.round(centerX + offsetX),
-            positionY: Math.round(centerY + offsetY),
+            positionX: Math.round(viewportCenterX + offsetX),
+            positionY: Math.round(viewportCenterY + offsetY),
           });
 
           if (result.success && result.projection) {
@@ -192,7 +210,15 @@ export function EntityBrowser({
               ENTITY_TYPE_LABELS[item.entityType] ?? item.entityType;
             toast.success(`${label} added to board`);
           } else {
-            toast.error(result.error ?? "Failed to add entity");
+            // Check for duplicate error and show specific message
+            const errorMsg = result.error ?? "Failed to add entity";
+            if (errorMsg.includes("already exists") || errorMsg.includes("already on this board")) {
+              const label =
+                ENTITY_TYPE_LABELS[item.entityType] ?? item.entityType;
+              toast.info(`This ${label.toLowerCase()} is already on the board`);
+            } else {
+              toast.error(errorMsg);
+            }
           }
         } catch (error) {
           console.error("[EntityBrowser] Failed to add entity:", error);
@@ -273,12 +299,13 @@ export function EntityBrowser({
                     {/* Items */}
                     {state?.items.map((item) => {
                       const isAdding = addingId === item.id;
+                      const isOnBoard = onBoardKeys.has(`${item.entityType}:${item.id}`);
 
                       return (
                         <button
                           key={item.id}
                           type="button"
-                          disabled={isPending || isAdding}
+                          disabled={isPending || isAdding || isOnBoard}
                           onClick={() => handleAddEntity(item)}
                           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-muted/50 transition-colors disabled:opacity-50 group/item"
                         >
@@ -294,6 +321,10 @@ export function EntityBrowser({
                           </div>
                           {isAdding ? (
                             <Loader2Icon className="h-3 w-3 shrink-0 animate-spin text-muted-foreground" />
+                          ) : isOnBoard ? (
+                            <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                              On board
+                            </span>
                           ) : (
                             <PlusIcon className="h-3 w-3 shrink-0 text-muted-foreground opacity-0 group-hover/item:opacity-100 transition-opacity" />
                           )}

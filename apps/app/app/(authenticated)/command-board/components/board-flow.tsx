@@ -427,9 +427,9 @@ function BoardFlowInner({
         size={1}
         className="!bg-background"
       />
-      <Controls className="!bg-card !border-border !shadow-md" />
+      <Controls style={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '6px' }} />
       <MiniMap
-        className="!bg-card !border-border !shadow-md"
+        style={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '6px' }}
         nodeColor={minimapNodeColor}
         maskColor="rgba(0,0,0,0.1)"
       />
