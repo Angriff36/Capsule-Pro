@@ -222,17 +222,7 @@ async function searchNotes(
   tenantId: string,
   query: string
 ): Promise<SearchResultItem[]> {
-  // Note model may not be in generated Prisma types yet — cast to any
-  // Same pattern used in resolve-entities.ts
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = database as any;
-  const noteModel = db.note as {
-    findMany: (args: Record<string, unknown>) => Promise<
-      Array<{ id: string; title: string; color: string | null }>
-    >;
-  };
-
-  const notes = await noteModel.findMany({
+  const notes = await database.note.findMany({
     where: {
       tenantId,
       deletedAt: null,

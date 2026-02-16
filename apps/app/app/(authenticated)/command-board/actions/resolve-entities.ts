@@ -5,6 +5,7 @@ import { requireTenantId } from "../../../lib/tenant";
 import type {
   EntityType,
   ResolvedClient,
+  ResolvedDish,
   ResolvedEmployee,
   ResolvedEntity,
   ResolvedEvent,
@@ -12,7 +13,9 @@ import type {
   ResolvedKitchenTask,
   ResolvedNote,
   ResolvedPrepTask,
+  ResolvedProposal,
   ResolvedRecipe,
+  ResolvedShipment,
 } from "../types/entities";
 
 // ============================================================================
@@ -404,6 +407,141 @@ async function resolveRecipes(
 }
 
 /**
+ * Resolve dishes in a single batched query.
+ */
+async function resolveDishes(
+  tenantId: string,
+  ids: string[]
+): Promise<Map<string, ResolvedEntity>> {
+  const results = new Map<string, ResolvedEntity>();
+
+  const dishes = await database.dish.findMany({
+    where: { tenantId, id: { in: ids }, deletedAt: null },
+    select: {
+      id: true,
+      name: true,
+      category: true,
+      serviceStyle: true,
+      pricePerPerson: true,
+      dietaryTags: true,
+    },
+  });
+
+  for (const dish of dishes) {
+    const data: ResolvedDish = {
+      id: dish.id,
+      name: dish.name,
+      category: dish.category,
+      serviceStyle: dish.serviceStyle,
+      pricePerPerson: dish.pricePerPerson ? Number(dish.pricePerPerson) : null,
+      dietaryTags: dish.dietaryTags,
+    };
+
+    results.set(entityKey("dish", dish.id), { type: "dish", data });
+  }
+
+  return results;
+}
+
+/**
+ * Resolve proposals in a single batched query.
+ * Includes client relation for clientName.
+ */
+async function resolveProposals(
+  tenantId: string,
+  ids: string[]
+): Promise<Map<string, ResolvedEntity>> {
+  const results = new Map<string, ResolvedEntity>();
+
+  const proposals = await database.proposal.findMany({
+    where: { tenantId, id: { in: ids }, deletedAt: null },
+    select: {
+      id: true,
+      proposalNumber: true,
+      title: true,
+      status: true,
+      total: true,
+      client: {
+        select: {
+          company_name: true,
+          first_name: true,
+          last_name: true,
+        },
+      },
+    },
+  });
+
+  for (const proposal of proposals) {
+    const clientName = proposal.client
+      ? (proposal.client.company_name ??
+        (`${proposal.client.first_name ?? ""} ${proposal.client.last_name ?? ""}`.trim() ||
+        null))
+      : null;
+
+    const data: ResolvedProposal = {
+      id: proposal.id,
+      proposalNumber: proposal.proposalNumber,
+      title: proposal.title,
+      status: proposal.status,
+      total: proposal.total ? Number(proposal.total) : null,
+      clientName,
+    };
+
+    results.set(entityKey("proposal", proposal.id), {
+      type: "proposal",
+      data,
+    });
+  }
+
+  return results;
+}
+
+/**
+ * Resolve shipments in a single batched query.
+ * Includes event and supplier relations for display names and item count.
+ */
+async function resolveShipments(
+  tenantId: string,
+  ids: string[]
+): Promise<Map<string, ResolvedEntity>> {
+  const results = new Map<string, ResolvedEntity>();
+
+  const shipments = await database.shipment.findMany({
+    where: { tenantId, id: { in: ids }, deletedAt: null },
+    select: {
+      id: true,
+      shipmentNumber: true,
+      status: true,
+      totalItems: true,
+      event: {
+        select: { title: true },
+      },
+      supplier: {
+        select: { name: true },
+      },
+    },
+  });
+
+  for (const shipment of shipments) {
+    const data: ResolvedShipment = {
+      id: shipment.id,
+      shipmentNumber: shipment.shipmentNumber,
+      status: shipment.status,
+      eventTitle: shipment.event?.title ?? null,
+      supplierName: shipment.supplier?.name ?? null,
+      itemCount: shipment.totalItems,
+    };
+
+    results.set(entityKey("shipment", shipment.id), {
+      type: "shipment",
+      data,
+    });
+  }
+
+  return results;
+}
+
+/**
  * Resolve notes in a single batched query.
  */
 async function resolveNotes(
@@ -494,13 +632,14 @@ export async function resolveEntities(
               return await resolveInventoryItems(tenantId, uniqueIds);
             case "recipe":
               return await resolveRecipes(tenantId, uniqueIds);
+            case "dish":
+              return await resolveDishes(tenantId, uniqueIds);
+            case "proposal":
+              return await resolveProposals(tenantId, uniqueIds);
+            case "shipment":
+              return await resolveShipments(tenantId, uniqueIds);
             case "note":
               return await resolveNotes(tenantId, uniqueIds);
-            // Stub resolvers — models not yet available
-            case "dish":
-            case "proposal":
-            case "shipment":
-              return new Map<string, ResolvedEntity>();
             default: {
               // Exhaustive check — if a new EntityType is added, this will error at compile time
               const _exhaustive: never = entityType;
