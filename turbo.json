@@ -68,7 +68,7 @@
       "cache": false
     },
     "build": {
-      "dependsOn": ["^build", "generate", "test"],
+      "dependsOn": ["^build", "generate"],
       "outputs": [
         ".next/**",
         "!.next/cache/**",
