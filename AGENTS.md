@@ -48,6 +48,42 @@ Do not read unless explicitly required by the current task:
 
 ---
 
+## How to Add a New Route
+
+1. **Create the route handler** in `apps/api/app/api/<domain>/<resource>/route.ts`
+2. **Regenerate the route manifest**:
+   ```bash
+   pnpm manifest:routes
+   ```
+   This updates `packages/manifest-ir/dist/routes.manifest.json` and `routes.ts`.
+3. **Add a route helper** in `apps/app/app/lib/routes.ts`:
+   ```ts
+   export const myNewRoute = (id: string): string =>
+     `/api/domain/resource/${encodeURIComponent(id)}`;
+   ```
+4. **Use the helper** in your component:
+   ```ts
+   import { myNewRoute } from "@/app/lib/routes";
+   const res = await apiFetch(myNewRoute(someId));
+   ```
+
+**Do NOT** hardcode `/api/...` strings in client code. The CI check
+(`pnpm check:routes`) and the dev-time `apiFetch` guard will catch violations.
+
+**Allowlisted files** (may contain `/api/` strings):
+
+- `apps/app/app/lib/routes.ts` — route helper definitions
+- `apps/app/app/lib/api.ts` — apiFetch wrapper
+- `apps/app/next.config.ts` — Next.js rewrite rules
+- `apps/app/app/api/**` — server route handlers
+- `apps/api/**` — API server
+- `scripts/**` — build scripts
+- `*.test.ts` / `*.spec.ts` — tests
+
+See `specs/manifest/manifest-master-plan.md` § "Manifest Routes Are Canonical" for full spec.
+
+---
+
 ## Commit Rules
 
 - Exactly one commit per iteration
