@@ -323,6 +323,7 @@ scripts/*
 !scripts/manifest/*.mjs
 !scripts/check-hardcoded-routes.mjs
 !scripts/test-route-conformance.mjs
+!scripts/sync-manifest-runtime.mjs
 
 # Local Netlify folder
 .netlify
