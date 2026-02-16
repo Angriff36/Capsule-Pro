@@ -3,29 +3,45 @@ export type ModuleKey =
   | "kitchen"
   | "warehouse"
   | "scheduling"
+  | "staff"
   | "payroll"
   | "administrative"
   | "crm"
-  | "analytics";
+  | "analytics"
+  | "command-board";
 
-type ModuleSidebarItem = {
+interface ModuleSidebarItem {
   title: string;
   href?: string;
-};
+}
 
-type ModuleSidebarSection = {
+interface ModuleSidebarSection {
   label: string;
   items: ModuleSidebarItem[];
-};
+}
 
-export type ModuleDefinition = {
+export interface ModuleDefinition {
   key: ModuleKey;
   label: string;
   href: string;
   sidebar: ModuleSidebarSection[];
-};
+}
 
 export const modules: ModuleDefinition[] = [
+  {
+    key: "command-board",
+    label: "Command Board",
+    href: "/command-board",
+    sidebar: [
+      {
+        label: "Command Board",
+        items: [
+          { title: "All Boards", href: "/command-board" },
+          { title: "Create Board", href: "/command-board?create=true" },
+        ],
+      },
+    ],
+  },
   {
     key: "events",
     label: "Events",
@@ -35,6 +51,21 @@ export const modules: ModuleDefinition[] = [
         label: "Events",
         items: [
           { title: "All Events", href: "/events" },
+          { title: "Kitchen Dashboard", href: "/events/kitchen-dashboard" },
+        ],
+      },
+      {
+        label: "Planning",
+        items: [
+          { title: "Battle Boards", href: "/events/battle-boards" },
+          { title: "Budgets", href: "/events/budgets" },
+        ],
+      },
+      {
+        label: "Management",
+        items: [
+          { title: "Contracts", href: "/events/contracts" },
+          { title: "Reports", href: "/events/reports" },
           { title: "Imports", href: "/events/import" },
         ],
       },
@@ -57,6 +88,7 @@ export const modules: ModuleDefinition[] = [
           { title: "Recipes", href: "/kitchen/recipes" },
           { title: "Prep Lists", href: "/kitchen/prep-lists" },
           { title: "Inventory", href: "/kitchen/inventory" },
+          { title: "Waste Tracking", href: "/kitchen/waste" },
         ],
       },
       {
@@ -81,6 +113,7 @@ export const modules: ModuleDefinition[] = [
           { title: "Receiving", href: "/warehouse/receiving" },
           { title: "Shipments", href: "/warehouse/shipments" },
           { title: "Audits", href: "/warehouse/audits" },
+          { title: "Cycle Counting", href: "/cycle-counting" },
         ],
       },
     ],
@@ -97,6 +130,23 @@ export const modules: ModuleDefinition[] = [
           { title: "Shifts", href: "/scheduling/shifts" },
           { title: "Availability", href: "/scheduling/availability" },
           { title: "Requests", href: "/scheduling/requests" },
+          { title: "Budgets", href: "/scheduling/budgets" },
+        ],
+      },
+    ],
+  },
+  {
+    key: "staff",
+    label: "Staff",
+    href: "/staff",
+    sidebar: [
+      {
+        label: "Staff",
+        items: [
+          { title: "Team", href: "/staff/team" },
+          { title: "Schedule", href: "/staff/schedule" },
+          { title: "Availability", href: "/staff/availability" },
+          { title: "Time Off", href: "/staff/time-off" },
         ],
       },
     ],
@@ -162,6 +212,7 @@ export const modules: ModuleDefinition[] = [
           { title: "Overview", href: "/analytics" },
           { title: "Kitchen", href: "/analytics/kitchen" },
           { title: "Events", href: "/analytics/events" },
+          { title: "Sales", href: "/analytics/sales" },
           { title: "Finance", href: "/analytics/finance" },
         ],
       },
@@ -170,9 +221,10 @@ export const modules: ModuleDefinition[] = [
 ];
 
 export const getModuleKeyFromPathname = (pathname: string): ModuleKey => {
-  const match = modules.find((module) =>
-    pathname === module.href || pathname.startsWith(`${module.href}/`)
+  const match = modules.find(
+    (module) =>
+      pathname === module.href || pathname.startsWith(`${module.href}/`)
   );
 
-  return match?.key ?? "events";
+  return match?.key ?? "command-board";
 };

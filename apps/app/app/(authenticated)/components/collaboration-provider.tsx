@@ -4,6 +4,7 @@ import { Room } from "@repo/collaboration/room";
 import type { ReactNode } from "react";
 import { getUsers } from "@/app/actions/users/get";
 import { searchUsers } from "@/app/actions/users/search";
+import { apiUrl } from "@/app/lib/api";
 
 export const CollaborationProvider = ({
   orgId,
@@ -34,7 +35,7 @@ export const CollaborationProvider = ({
 
   return (
     <Room
-      authEndpoint="/api/collaboration/auth"
+      authEndpoint={apiUrl("/api/collaboration/auth")}
       fallback={
         <div className="px-3 text-muted-foreground text-xs">Loading...</div>
       }

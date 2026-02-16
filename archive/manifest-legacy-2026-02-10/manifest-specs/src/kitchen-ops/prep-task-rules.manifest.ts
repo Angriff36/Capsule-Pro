@@ -1,0 +1,243 @@
+/**
+ * Prep Task Rules Manifest
+ * Kitchen ops manifest spec for prep task operations
+ */
+
+export const prepTaskRulesManifest = `
+// Kitchen Ops - Prep Task Rules
+// Manifest spec for prep task operations with constraints, guards, and events
+
+entity PrepTask {
+  property required id: string
+  property required tenantId: string
+  property required eventId: string
+  property required name: string
+  property required taskType: string = "prep"
+  property required status: string = "open"
+  property stationId: string = ""
+  property claimedBy: string = ""
+  property claimedAt: number = 0
+  property quantityTotal: number = 0
+  property quantityCompleted: number = 0
+  property quantityUnitId: string = ""
+  property servingsTotal: number = 0
+  property startByDate: number = 0
+  property dueByDate: number = 0
+  property priority: number = 5
+  property notes: string = ""
+  property ingredients: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  computed isClaimed: boolean = self.claimedBy != ""
+  computed isOverdue: boolean = self.dueByDate != 0 and now() > self.dueByDate and self.status != "done"
+  computed isCompleted: boolean = self.status == "done"
+  computed percentComplete: number = self.quantityTotal > 0 ? (self.quantityCompleted / self.quantityTotal) * 100 : 0
+  computed isUrgent: boolean = self.priority <= 2
+  computed isHighPriority: boolean = self.priority <= 3
+
+  constraint validStatus: self.status in ["open", "in_progress", "done", "canceled"] "Invalid task status"
+  constraint positiveQuantity: self.quantityTotal >= 0 "Total quantity must be non-negative"
+  constraint validPriority: self.priority >= 1 and self.priority <= 5 "Priority must be between 1 (critical) and 5 (low)"
+
+  constraint warnOverdue:warn self.isOverdue and self.status != "done" {
+    messageTemplate: "Task '{taskName}' is overdue by {daysOverdue} day(s)"
+    details: {
+      taskName: self.name
+      dueDate: self.dueByDate
+      daysOverdue: (now() - self.dueByDate) / 86400000
+    }
+  }
+
+  constraint warnStationCapacity:warn self.stationId != "" and self.isClaimed {
+    messageTemplate: "Station '{stationId}' has active task - verify capacity"
+    details: {
+      stationId: self.stationId
+      taskName: self.name
+    }
+  }
+
+  command claim(userId: string, stationId: string) {
+    guard userId != null and userId != ""
+    guard self.status == "open" or self.status == "pending"
+
+    constraint warnOverdueClaim:warn self.isOverdue {
+      messageTemplate: "Claiming overdue task '{taskName}'"
+      details: {
+        taskName: self.name
+        dueDate: self.dueByDate
+      }
+    }
+
+    mutate status = "in_progress"
+    mutate claimedBy = userId
+    mutate claimedAt = now()
+    mutate stationId = stationId
+
+    emit PrepTaskClaimed
+  }
+
+  command start(userId: string) {
+    guard userId != null and userId != ""
+    guard self.status == "open" or self.status == "pending"
+    guard self.claimedBy == "" or self.claimedBy == userId
+
+    mutate status = "in_progress"
+    mutate claimedBy = userId
+    mutate claimedAt = now()
+
+    emit PrepTaskStarted
+  }
+
+  command complete(quantityCompleted: number, userId: string) {
+    guard quantityCompleted != null and quantityCompleted >= 0
+    guard self.status == "in_progress"
+    guard self.claimedBy == userId or userId == ""
+
+    constraint warnIncomplete:warn quantityCompleted < self.quantityTotal and self.quantityTotal > 0 {
+      messageTemplate: "Completing with {remaining} {unit} remaining"
+      details: {
+        quantityTotal: self.quantityTotal
+        quantityCompleted: quantityCompleted
+        remaining: self.quantityTotal - quantityCompleted
+        unit: self.quantityUnitId
+      }
+    }
+
+    mutate status = "done"
+    mutate quantityCompleted = quantityCompleted
+    mutate updatedAt = now()
+
+    emit PrepTaskCompleted
+  }
+
+  command release(userId: string, reason: string) {
+    guard userId != null and userId != ""
+    guard self.status == "in_progress"
+
+    mutate status = "open"
+    mutate claimedBy = ""
+    mutate claimedAt = 0
+    mutate stationId = ""
+    mutate updatedAt = now()
+
+    emit PrepTaskReleased
+  }
+
+  command reassign(newUserId: string, requestedBy: string) {
+    guard newUserId != null and newUserId != ""
+    guard requestedBy != null and requestedBy != ""
+    guard self.status in ["open", "in_progress"]
+
+    constraint warnReassignInProgress:warn self.status == "in_progress and self.claimedBy != newUserId {
+      messageTemplate: "Reassigning in-progress task from '{currentAssignee}' to '{newAssignee}'"
+      details: {
+        currentAssignee: self.claimedBy
+        newAssignee: newUserId
+      }
+    }
+
+    mutate claimedBy = newUserId
+    mutate claimedAt = now()
+    mutate updatedAt = now()
+
+    emit PrepTaskReassigned
+  }
+
+  command updateQuantity(quantityTotal: number, quantityCompleted: number) {
+    guard quantityTotal != null and quantityTotal >= 0
+    guard quantityCompleted != null and quantityCompleted >= 0
+    guard quantityCompleted <= quantityTotal
+
+    constraint warnQuantityDecrease:warn quantityTotal < self.quantityTotal {
+      messageTemplate: "Decreasing total quantity from {oldTotal} to {newTotal}"
+      details: {
+        oldTotal: self.quantityTotal
+        newTotal: quantityTotal
+      }
+    }
+
+    mutate quantityTotal = quantityTotal
+    mutate quantityCompleted = quantityCompleted
+    mutate updatedAt = now()
+
+    emit PrepTaskQuantityUpdated
+  }
+
+  command cancel(reason: string, canceledBy: string) {
+    guard self.status != "done" and self.status != "canceled"
+
+    constraint warnCancelInProgress:warn self.status == "in_progress {
+      messageTemplate: "Canceling in-progress task claimed by '{claimedBy}'"
+      details: {
+        claimedBy: self.claimedBy
+        reason: reason
+      }
+    }
+
+    mutate status = "canceled"
+    mutate updatedAt = now()
+
+    emit PrepTaskCanceled
+  }
+
+  store PrepTask in memory
+}
+
+policy KitchenStaffClaim execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can claim prep tasks"
+policy KitchenStaffComplete execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can complete prep tasks"
+policy ManagersCanCancel execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can cancel prep tasks"
+
+event PrepTaskClaimed: "kitchen.preptask.claimed" {
+  taskId: string
+  userId: string
+  stationId: string
+  claimedAt: number
+}
+
+event PrepTaskStarted: "kitchen.preptask.started" {
+  taskId: string
+  userId: string
+  startedAt: number
+}
+
+event PrepTaskCompleted: "kitchen.preptask.completed" {
+  taskId: string
+  userId: string
+  quantityCompleted: number
+  completedAt: number
+}
+
+event PrepTaskReleased: "kitchen.preptask.released" {
+  taskId: string
+  previousUserId: string
+  reason: string
+  releasedAt: number
+}
+
+event PrepTaskReassigned: "kitchen.preptask.reassigned" {
+  taskId: string
+  previousUserId: string
+  newUserId: string
+  reassignedBy: string
+  reassignedAt: number
+}
+
+event PrepTaskQuantityUpdated: "kitchen.preptask.quantity.updated" {
+  taskId: string
+  oldQuantityTotal: number
+  newQuantityTotal: number
+  quantityCompleted: number
+  updatedAt: number
+}
+
+event PrepTaskCanceled: "kitchen.preptask.canceled" {
+  taskId: string
+  reason: string
+  canceledBy: string
+  canceledAt: number
+}
+`;
+
+export const PREP_TASK_RULES_IR_VERSION = "1.0";
+export const PREP_TASK_RULES_SCHEMA_HASH = "sha256-prep-task-rules";

@@ -1,5 +1,65 @@
 {
   "$schema": "https://turborepo.com/schema.json",
+  "boundaries": {
+    "implicitDependencies": [
+      "@api/*",
+      "@manifest/runtime/*",
+      "@repo/manifest-adapters",
+      "@repo/manifest-adapters/api-response",
+      "@repo/manifest-adapters/prisma-store",
+      "@repo/manifest-adapters/route-helpers",
+      "@repo/*",
+      "@repo/*/*",
+      "@storybook/react",
+      "server-only",
+      "webpack"
+    ],
+    "tags": {
+      "layer:app": {
+        "dependencies": {
+          "deny": ["layer:app"]
+        }
+      },
+      "layer:package": {
+        "dependencies": {
+          "deny": ["layer:app"]
+        }
+      },
+      "scope:config": {
+        "dependencies": {
+          "deny": [
+            "layer:app",
+            "scope:data",
+            "scope:docs",
+            "scope:integration",
+            "scope:platform",
+            "scope:tooling",
+            "scope:ui"
+          ]
+        }
+      },
+      "scope:ui": {
+        "dependencies": {
+          "deny": ["layer:app", "scope:data"]
+        }
+      },
+      "scope:data": {
+        "dependents": {
+          "deny": ["scope:docs", "scope:tooling", "scope:ui"]
+        }
+      },
+      "scope:tooling": {
+        "dependencies": {
+          "deny": ["scope:data"]
+        }
+      },
+      "app:client": {
+        "dependencies": {
+          "deny": ["app:api"]
+        }
+      }
+    }
+  },
   "globalDependencies": ["**/.env.*local"],
   "ui": "tui",
   "envMode": "loose",
@@ -14,11 +74,16 @@
         "!.next/cache/**",
         "**/generated/**",
         "storybook-static/**",
-        ".react-email/**"
+        ".react-email/**",
+        "dist/**"
       ]
     },
     "test": {
       "dependsOn": ["^test"]
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "cache": false
     },
     "analyze": {
       "dependsOn": ["^analyze"]

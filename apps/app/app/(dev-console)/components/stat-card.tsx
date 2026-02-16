@@ -1,9 +1,9 @@
-type StatCardProperties = {
+interface StatCardProperties {
   label: string;
   value: string;
   trend?: string;
   trendTone?: "positive" | "neutral" | "negative";
-};
+}
 
 const trendStyles: Record<string, string> = {
   positive: "text-emerald-400",

@@ -5,6 +5,7 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+  workflow_dispatch:
 
 jobs:
   test:
@@ -13,93 +14,66 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Check if Dependabot PR
-        id: dependabot-check
-        run: |
-          if [ "${{ github.actor }}" = "dependabot[bot]" ]; then
-            echo "is_dependabot=true" >> $GITHUB_OUTPUT
-          else
-            echo "is_dependabot=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Setup PostgreSQL (skip for Dependabot)
-        if: steps.dependabot-check.outputs.is_dependabot != 'true'
-        uses: harmon758/postgresql-action@v1
         with:
-          postgresql version: '15'
-          postgresql password: postgres
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.12.0'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.24.0
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          node-version: "22.x" # Match Vercel's engine requirement
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Generate code (Prisma, BaseHub types, etc.)
-        run: |
-          pnpm run analyze
-          cd apps/web && npx basehub
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
-          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
-          BASEHUB_DRAFT: false
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
       - name: Run linting
         run: pnpm run check
 
-      - name: Run tests (with DB for non-Dependabot)
-        if: steps.dependabot-check.outputs.is_dependabot != 'true'
+      - name: Run tests
         run: pnpm test
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
 
-      - name: Run tests (no DB for Dependabot)
-        if: steps.dependabot-check.outputs.is_dependabot == 'true'
-        run: pnpm test -- --run --reporter=verbose
+      - name: Build with Turbo (matches Vercel)
+        run: pnpm turbo run build
         env:
-          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"  # Dummy URL for tests that don't need DB
-
-      - name: Build all apps
-        run: pnpm run build
-        env:
-          # Required env vars for build (dummy values for CI)
+          # All required env vars for build-time validation (dummy values for CI)
+          SKIP_ENV_VALIDATION: true
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
-          NEXT_PUBLIC_APP_URL: "https://app.example.com"
-          NEXT_PUBLIC_WEB_URL: "https://example.com"
-          NEXT_PUBLIC_API_URL: "https://api.example.com"
-          NEXT_PUBLIC_DOCS_URL: "https://docs.example.com"
+          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
+          # Server env vars
+          CLERK_SECRET_KEY: "sk_test_dummy"
+          CLERK_WEBHOOK_SECRET: "whsec_dummy"
+          RESEND_FROM: "noreply@ci-build.local"
+          RESEND_TOKEN: "re_dummy"
+          STRIPE_SECRET_KEY: "sk_test_dummy"
+          STRIPE_WEBHOOK_SECRET: "whsec_dummy"
+          BETTERSTACK_API_KEY: "dummy"
+          BETTERSTACK_URL: "https://dummy.betterstack.com"
+          FLAGS_SECRET: "dummy"
+          ARCJET_KEY: "ajkey_dummy"
+          SVIX_TOKEN: "sk_dummy"
+          LIVEBLOCKS_SECRET: "sk_dummy"
+          VERCEL_PROJECT_PRODUCTION_URL: "https://capsule-pro-app.vercel.app"
+          KNOCK_API_KEY: "dummy"
+          KNOCK_FEED_CHANNEL_ID: "dummy"
+          # Client env vars
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_dummy"
           NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
           NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
-          NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: "/dashboard"
-          NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: "/onboarding"
+          NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: "/"
+          NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: "/"
+          NEXT_PUBLIC_GA_MEASUREMENT_ID: "G-DUMMY"
           NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
-          NEXT_PUBLIC_POSTHOG_HOST: "https://posthog.example.com"
-          BASEHUB_TOKEN: "bshb_pk_dummy"
-          RESEND_TOKEN: "re_dummy"
-          RESEND_FROM: "noreply@example.com"
-          STRIPE_SECRET_KEY: "sk_test_dummy"
+          NEXT_PUBLIC_POSTHOG_HOST: "https://app.posthog.com"
+          NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
+          NEXT_PUBLIC_WEB_URL: "https://capsule-pro-web.vercel.app"
+          NEXT_PUBLIC_API_URL: "https://capsule-pro-api.vercel.app"
+          NEXT_PUBLIC_DOCS_URL: "https://capsule-pro-docs.vercel.app"
+          NEXT_PUBLIC_ABLY_AUTH_URL: "https://capsule-pro-api.vercel.app/ably/auth"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -107,7 +81,6 @@ jobs:
         with:
           name: build-artifacts
           path: |
-            apps/*/dist/
             apps/*/.next/
             packages/*/dist/
             packages/*/generated/

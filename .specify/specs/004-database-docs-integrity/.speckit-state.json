@@ -1,0 +1,13 @@
+{
+  "featureId": "004",
+  "name": "database-docs-integrity",
+  "basePath": ".specify/specs/004-database-docs-integrity",
+  "phase": "complete",
+  "taskIndex": 35,
+  "totalTasks": 35,
+  "taskIteration": 1,
+  "maxTaskIterations": 3,
+  "globalIteration": 15,
+  "maxGlobalIterations": 100,
+  "awaitingApproval": false
+}

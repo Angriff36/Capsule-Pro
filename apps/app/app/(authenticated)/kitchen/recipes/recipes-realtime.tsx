@@ -1,22 +1,15 @@
 "use client";
 
 import Ably from "ably";
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-type RecipesRealtimeProps = {
+interface RecipesRealtimeProps {
   tenantId: string;
   userId?: string | null;
-};
+}
 
-const getApiBaseUrl = () => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (apiUrl) {
-    return apiUrl.replace(/\/$/, "");
-  }
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-  return appUrl ? appUrl.replace(/\/$/, "") : "";
-};
+const authUrl = "/ably/auth";
 
 const isRecipeEvent = (eventName?: string) =>
   eventName?.startsWith("recipe.") ?? false;
@@ -25,20 +18,18 @@ const RecipesRealtime = ({ tenantId, userId }: RecipesRealtimeProps) => {
   const router = useRouter();
 
   useEffect(() => {
-    if (!tenantId) return;
-
-    const apiBaseUrl = getApiBaseUrl();
-    if (!apiBaseUrl) {
+    if (!tenantId) {
       return;
     }
 
     const client = new Ably.Realtime({
       authCallback: async (_, callback) => {
         try {
-          const response = await fetch(`${apiBaseUrl}/ably/auth`, {
+          const response = await fetch(authUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tenantId, userId: userId ?? undefined }),
+            credentials: "include",
+            body: JSON.stringify({ tenantId }),
           });
           if (!response.ok) {
             throw new Error(`Ably auth failed: ${response.status}`);
@@ -55,7 +46,9 @@ const RecipesRealtime = ({ tenantId, userId }: RecipesRealtimeProps) => {
 
     const channel = client.channels.get(`tenant:${tenantId}`);
     const handleMessage = (message: { name?: string }) => {
-      if (!isRecipeEvent(message.name)) return;
+      if (!isRecipeEvent(message.name)) {
+        return;
+      }
       router.refresh();
     };
 
@@ -63,15 +56,14 @@ const RecipesRealtime = ({ tenantId, userId }: RecipesRealtimeProps) => {
 
     return () => {
       channel.unsubscribe(handleMessage);
-      const releasableStates = new Set(["initialized", "detached", "failed"]);
-      if (releasableStates.has(channel.state)) {
-        client.channels.release(`tenant:${tenantId}`);
-      }
+      // Note: We don't close the client here because:
+      // 1. Multiple components may share the same connection
+      // 2. The connection lifecycle should be managed at the app level
+      // 3. Closing and recreating connections causes "Connection closed" errors
     };
-  }, [tenantId, userId, router]);
+  }, [tenantId, router]);
 
   return null;
 };
 
 export default RecipesRealtime;
-

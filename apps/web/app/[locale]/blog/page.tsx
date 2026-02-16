@@ -3,11 +3,14 @@ import { createMetadata } from "@repo/seo/metadata";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-type BlogProps = {
+interface BlogProps {
   params: Promise<{
     locale: string;
   }>;
-};
+}
+
+// ISR: Revalidate every 30 minutes - new posts may be added
+export const revalidate = 1800;
 
 export const generateMetadata = async ({
   params,

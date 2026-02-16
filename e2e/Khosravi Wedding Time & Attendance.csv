@@ -1,0 +1,15 @@
+Date,Event Name,First Name,Last Name,Phone Number,Email,Position,Scheduled In,Scheduled Out,Actual In,Breaks,Actual Out,Scheduled Hours,Actual Hours,Rate,Scheduled Cost,Actual Cost,Bill Rate,Bill Total,Notes,Approved
+09/12/2025,Khosravi Wedding,Tim,Mitchell,208-819-4501,tim@mangiacateringco.com,Planning - Full Event Planner,11:00 AM,10:00 PM,11:00 AM,,11:00 PM,11.000,12.000,$50.00,$550.00,$600.00,,,,Yes
+09/12/2025,Khosravi Wedding,Kayden,Ruhter,208-952-8941,kaydenruhter@icloud.com,Event Coordinator ,12:00 PM,10:00 PM,11:55 AM,,10:30 PM,10.000,10.583,$19.00,$190.00,$201.08,$19.00,$201.08,,Yes
+09/12/2025,Khosravi Wedding,Paige,Johanson-Oflock,971-804-8630,pjiceland@gmail.com,Catering - BOH,1:00 PM,11:00 PM,12:58 PM,,1:04 AM,10.000,12.100,$20.00,$200.00,$242.00,,,,Yes
+09/12/2025,Khosravi Wedding,Peter,Wallander,509-558-9783,pwallander85@gmail.com,Catering - BOH,1:00 PM,11:00 PM,1:01 PM,,1:06 AM,10.000,12.083,$21.00,$210.00,$253.75,,,,Yes
+09/12/2025,Khosravi Wedding,Mike,Leaver,208-518-9897,michael@mangiacateringco.com,Catering - BOH LEAD,1:00 PM,11:00 PM,1:00 PM,,11:48 PM,10.000,10.800,$27.00,$270.00,$291.60,$325.00,"$3,510.00",,Yes
+09/12/2025,Khosravi Wedding,Bill,Colacurcio,208-415-8387,bcolacurcio365@gmail.com,Bartender,1:30 PM,11:55 PM,1:00 PM,,1:00 AM,10.417,12.000,$25.00,$260.42,$300.00,,,,Yes
+09/12/2025,Khosravi Wedding,Dan,Crawley,208-620-6055,dancrawley182@gmail.com,Bartender,1:30 PM,11:55 PM,1:30 PM,5:00 PM - 6:00 PM,11:55 PM,10.417,9.417,$25.00,$260.42,$235.42,,,,Yes
+09/12/2025,Khosravi Wedding,Express Request,(Agency),212-555-5555,staffing_1691761972416@nowsta.com,Catering - FOH,3:30 PM,9:30 PM,3:45 PM,,10:45 PM,6.000,7.000,$0,,,,,,Yes
+09/12/2025,Khosravi Wedding,Express Request,(Agency),212-555-5555,staffing_1691761982868@nowsta.com,Catering - FOH,3:30 PM,9:30 PM,,,,6.000,,$0,,,$250.00,,,
+09/12/2025,Khosravi Wedding,Kina,Trowbridge,509-530-8022,kinatrowbridge0@icloud.com,Catering - FOH,3:30 PM,9:30 PM,3:32 PM,,10:45 PM,6.000,7.217,$25.00,$150.00,$180.42,,,,Yes
+09/12/2025,Khosravi Wedding,Brook,Weissig,509-598-6700,brochlienweissig@gmail.com,Catering - FOH,3:30 PM,9:30 PM,3:30 PM,,10:45 PM,6.000,7.250,$25.00,$150.00,$181.25,,,,Yes
+09/12/2025,Khosravi Wedding,Joshua,Mitchell,208-964-0713,josh@mangiacateringco.com,Catering - FOH Captain,3:30 PM,9:30 PM,3:30 PM,,11:30 PM,6.000,8.000,$35.00,$210.00,$280.00,$325.00,"$2,600.00",,Yes
+,,,,,,,,,,,,,,,,,,,,
+,Totals,,,,,,,,,,,101.833,108.450,,"$2,450.84","$2,765.52",,"$6,311.08",,

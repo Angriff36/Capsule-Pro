@@ -1,53 +1,54 @@
-# AGENTS.md - Codex Instructions
+# AGENTS.md — Convoy (Ralph Wiggum Loop)
 
-**Version:** 2.0.0 **Last Updated:** 2026-01-14 **Project:** Enterprise Catering
-Management System (Convoy)
+This file defines **operational context** for Ralph Wiggum loops. It is read on
+every iteration.
+
+It is NOT an architecture document. It is NOT a design proposal. It is NOT a
+planning scratchpad.
 
 ---
 
-**Before doing any work, read:**
+## Project Type
 
-- `C:\Users\Ryan\Home\agent-scripts\AGENTS.MD`
-- `C:\Users\Ryan\Home\agent-scripts\docs`
+- Monorepo
+- Package manager: pnpm (ONLY)
+- Primary folders:
+  - apps/
+  - packages/
+  - specs/
 
-**APP IS NOT PRODUCTION. IF SOMETHING SEEMS WRONG, INVESTIGATE, DONT ASSUME ALL
-SYSTEMS ARE CORRECTLY WIRED AND CONFIGURED**
+---
 
-## Repo specifics:
+## Build & Validation Conventions
 
-- **ALL SYSTEMS CONNECTED** Every module is interconnected. Events created in
-  crm module must display on kitchen mobile app etc. This is imperative.
-- **Use** pnpm (never npm or yarn)
-- **Stack**: Prisma + Neon (no Supabase RLS)
-- **Multi-tenant**: Shared DB with `tenant_id` column (NOT per-tenant databases)
-- **Realtime**: Ably via outbox pipeline (NOT Supabase Realtime)
-- **Auth**: Clerk (already integrated)
-- **Priority order**: Recipes > Kitchen tasks → Events → Scheduling
-- **Docs**: Mintlify at http://localhost:2232/introduction (when running)
+- Use pnpm only (no npm, no yarn)
+- Prefer the smallest possible validation:
+  - Targeted tests
+  - Targeted typecheck
+- Do NOT run full monorepo builds unless required to validate the task
+- ALWAYS ADD FULL ERROR LOGGING THIS IS RIDICULOUS
 
-## Setup Discipline (Required)
+---
 
-- Follow all relevant setup steps from official docs end-to-end (install, env,
-  scripts, generators, integration).
-- No minimal patterns or partial installs; wire into the actual repo files.
-- If blocked or missing secrets, stop and ask before proceeding.
+## Files to Ignore by Default
 
-## Planning With Files (Required)
+Do not read unless explicitly required by the current task:
 
-**WHEN WORKING ON ANY 3rd PARTY LIB OR IMPLEMENTATION OF A NEW FEATURE FROM A
-3rd PARTY, AND UPON ENCOUNTERING ANY ERROR THAT ISN'T A SIMPLE INCORRECT
-COMMAND, CALL CONTEXT7 MCP**
+- docs/inventory/\*\*
+- Archived plans
+- Historical architecture findings
 
-- Use the `planning-with-files` skill for any task that goes beyond simple or
-  mundane tasks, as well as upon encountering unexpected errors.
+---
 
-## CI/CD Configuration Rules
+## Execution Mode
 
-**GitHub Actions Workflows - CRITICAL**
-- **NEVER** hardcode ANY versions in `.github/workflows/*.yml`
-- **ALWAYS** extract versions from source-of-truth configuration files:
-  - pnpm version: `package.json` `"packageManager"` field
-  - Node.js version: `.nvmrc` file or `package.json` `"engines.node"` field
-- Validation script blocks commits with mismatches: `scripts/validate-pnpm-versions.js`
-- This ensures local dev, CI, and Vercel production all use identical versions
-- Example: If `package.json` has `"packageManager": "pnpm@10.24.0"`, workflows MUST use `version: 10.24.0`
+- **Autonomous execution**: Do NOT ask for approval before bash/write/edit/task operations. Just do it.
+- Skip approval gates — the user trusts the agent to execute directly.
+- Still report errors and stop on failures (don't auto-fix blindly), but don't ask permission to start work.
+
+---
+
+## Commit Rules
+
+- Exactly one commit per iteration
+- Conventional Commit format

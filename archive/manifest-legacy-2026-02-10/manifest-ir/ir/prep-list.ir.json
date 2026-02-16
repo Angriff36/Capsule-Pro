@@ -1,0 +1,136 @@
+{
+  "version": "1.0",
+  "provenance": {
+    "contentHash": "96792f4d3d1d6bcb0ca2ce6c12c284845ea76663b9dc53888a703d96bb807525",
+    "irHash": "00aad6d30d4a8c835e816cc938f627e5c2233c26b63a0ced93f7b2170f2e6fb6",
+    "compilerVersion": "0.3.8",
+    "schemaVersion": "1.0",
+    "compiledAt": "2026-02-10T10:39:44.987Z"
+  },
+  "modules": [],
+  "entities": [
+    {
+      "name": "PrepList",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "status",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "draft"
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [],
+      "commands": ["activate"],
+      "constraints": [],
+      "policies": []
+    }
+  ],
+  "stores": [
+    {
+      "entity": "PrepList",
+      "target": "memory",
+      "config": {}
+    }
+  ],
+  "events": [
+    {
+      "name": "PrepListActivated",
+      "channel": "kitchen.prepList.activated",
+      "payload": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "name": "activate",
+      "entity": "PrepList",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "draft"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Only draft lists can be activated"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "active"
+            }
+          }
+        }
+      ],
+      "emits": ["PrepListActivated"]
+    }
+  ],
+  "policies": []
+}

@@ -1,0 +1,237 @@
+// Kitchen Ops - Kitchen Task Rules
+// Manifest spec for general kitchen task operations with constraints, guards, and events
+// Note: This is for KitchenTask (general tasks), NOT PrepTask (event-driven prep work)
+
+entity KitchenTask {
+  property required id: string
+  property required tenantId: string
+  property required title: string
+  property required summary: string
+  property required status: string = "pending"
+  property priority: number = 5
+  property complexity: number = 5
+  property tags: string = ""
+  property dueDate: number = 0
+  property completedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  computed isOverdue: boolean = self.dueDate != 0 and now() > self.dueDate and self.status != "done"
+  computed isCompleted: boolean = self.status == "done"
+  computed isPending: boolean = self.status == "pending"
+  computed isInProgress: boolean = self.status == "in_progress"
+  computed isUrgent: boolean = self.priority <= 2
+  computed isHighPriority: boolean = self.priority <= 3
+
+  // State transitions
+  transition status from "pending" to ["in_progress", "done", "cancelled"]
+  transition status from "in_progress" to ["pending", "done", "cancelled"]
+  // "done" and "cancelled" are terminal states
+
+  constraint validStatus: self.status in ["pending", "in_progress", "done", "cancelled"] "Invalid task status"
+  constraint validPriority: self.priority >= 1 and self.priority <= 5 "Priority must be between 1 (critical) and 5 (low)"
+  constraint validComplexity: self.complexity >= 1 and self.complexity <= 5 "Complexity must be between 1 (simple) and 5 (very complex)"
+
+  constraint warnOverdue:warn self.isOverdue {
+    messageTemplate: "Task '{taskTitle}' is overdue"
+    details: {
+      taskTitle: self.title
+      dueDate: self.dueDate
+    }
+  }
+
+  command claim(userId: string) {
+    guard userId != null and userId != ""
+    guard self.status == "pending" or self.status == "in_progress"
+
+    mutate status = "in_progress"
+    mutate updatedAt = now()
+
+    emit KitchenTaskClaimed
+  }
+
+  command start(userId: string) {
+    guard userId != null and userId != ""
+    guard self.status == "pending"
+
+    mutate status = "in_progress"
+    mutate updatedAt = now()
+
+    emit KitchenTaskStarted
+  }
+
+  command complete(userId: string) {
+    guard userId != null and userId != ""
+    guard self.status == "in_progress"
+
+    mutate status = "done"
+    mutate completedAt = now()
+    mutate updatedAt = now()
+
+    emit KitchenTaskCompleted
+  }
+
+  command release(userId: string, reason: string) {
+    guard userId != null and userId != ""
+    guard self.status == "in_progress"
+
+    mutate status = "pending"
+    mutate updatedAt = now()
+
+    emit KitchenTaskReleased
+  }
+
+  command reassign(newUserId: string, requestedBy: string) {
+    guard newUserId != null and newUserId != ""
+    guard requestedBy != null and requestedBy != ""
+    guard self.status in ["pending", "in_progress"]
+
+    mutate updatedAt = now()
+
+    emit KitchenTaskReassigned
+  }
+
+  command updatePriority(priority: number) {
+    guard priority >= 1 and priority <= 5
+
+    mutate priority = priority
+    mutate updatedAt = now()
+
+    emit KitchenTaskPriorityUpdated
+  }
+
+  command updateComplexity(complexity: number) {
+    guard complexity >= 1 and complexity <= 5
+
+    mutate complexity = complexity
+    mutate updatedAt = now()
+
+    emit KitchenTaskComplexityUpdated
+  }
+
+  command addTag(tag: string) {
+    guard tag != null and tag != ""
+
+    mutate tags = self.tags + "," + tag
+    mutate updatedAt = now()
+
+    emit KitchenTaskTagAdded
+  }
+
+  command removeTag(tag: string) {
+    guard tag != null and tag != ""
+
+    mutate updatedAt = now()
+
+    emit KitchenTaskTagRemoved
+  }
+
+  command cancel(reason: string, canceledBy: string) {
+    guard self.status != "done" and self.status != "cancelled"
+
+    mutate status = "cancelled"
+    mutate updatedAt = now()
+
+    emit KitchenTaskCanceled
+  }
+
+  command create(title: string, summary: string, priority: number, complexity: number, tags: string, dueDate: number) {
+    guard title != null and title != "" "Task title is required"
+    guard summary != null and summary != "" "Task summary is required"
+    guard priority >= 1 and priority <= 5 "Priority must be between 1 and 5"
+    guard complexity >= 1 and complexity <= 5 "Complexity must be between 1 and 5"
+
+    mutate title = title
+    mutate summary = summary
+    mutate status = "pending"
+    mutate priority = priority
+    mutate complexity = complexity
+    mutate tags = tags
+    mutate dueDate = dueDate
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit KitchenTaskCreated
+  }
+
+  store KitchenTask in memory
+}
+
+policy KitchenStaffCanClaim execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can claim kitchen tasks"
+policy KitchenStaffCanComplete execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can complete kitchen tasks"
+policy ManagersCanCancel execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can cancel kitchen tasks"
+policy AnyoneCanView execute: true "Anyone can view kitchen tasks"
+
+event KitchenTaskClaimed: "kitchen.kitchentask.claimed" {
+  taskId: string
+  userId: string
+  claimedAt: number
+}
+
+event KitchenTaskStarted: "kitchen.kitchentask.started" {
+  taskId: string
+  userId: string
+  startedAt: number
+}
+
+event KitchenTaskCompleted: "kitchen.kitchentask.completed" {
+  taskId: string
+  userId: string
+  completedAt: number
+}
+
+event KitchenTaskReleased: "kitchen.kitchentask.released" {
+  taskId: string
+  previousUserId: string
+  reason: string
+  releasedAt: number
+}
+
+event KitchenTaskReassigned: "kitchen.kitchentask.reassigned" {
+  taskId: string
+  previousUserId: string
+  newUserId: string
+  reassignedBy: string
+  reassignedAt: number
+}
+
+event KitchenTaskPriorityUpdated: "kitchen.kitchentask.priority.updated" {
+  taskId: string
+  oldPriority: number
+  newPriority: number
+  updatedAt: number
+}
+
+event KitchenTaskComplexityUpdated: "kitchen.kitchentask.complexity.updated" {
+  taskId: string
+  oldComplexity: number
+  newComplexity: number
+  updatedAt: number
+}
+
+event KitchenTaskTagAdded: "kitchen.kitchentask.tag.added" {
+  taskId: string
+  tag: string
+  addedAt: number
+}
+
+event KitchenTaskTagRemoved: "kitchen.kitchentask.tag.removed" {
+  taskId: string
+  tag: string
+  removedAt: number
+}
+
+event KitchenTaskCanceled: "kitchen.kitchentask.canceled" {
+  taskId: string
+  reason: string
+  canceledBy: string
+  canceledAt: number
+}
+
+event KitchenTaskCreated: "kitchen.kitchentask.created" {
+  taskId: string
+  tenantId: string
+  title: string
+  priority: number
+  createdAt: number
+}

@@ -1,0 +1,204 @@
+// Events & Catering - Battle Board Rules
+// Manifest spec for battle board dish competition and voting management
+
+entity BattleBoard {
+  property required id: string
+  property required tenantId: string
+  property eventId: string = ""
+  property boardName: string = ""
+  property boardType: string = "event-specific"
+  property schemaVersion: string = "mangia-battle-board@1"
+  property boardData: string = "{}"
+  property documentUrl: string = ""
+  property sourceDocumentType: string = ""
+  property documentImportedAt: number = 0
+  property status: string = "draft"
+  property isTemplate: boolean = false
+  property description: string = ""
+  property notes: string = ""
+  property tags: string = ""
+  property createdAt: number = 0
+  property dishCount: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isOpen: boolean = self.status == "open"
+  computed isVoting: boolean = self.status == "voting"
+  computed isFinalized: boolean = self.status == "finalized"
+  computed isDraft: boolean = self.status == "draft"
+  computed hasData: boolean = self.boardData != "{}" and self.boardData != ""
+  computed hasDocument: boolean = self.documentUrl != "" and self.documentUrl != null
+
+  constraint validBoardName: self.boardName != null and self.boardName != "" "Board name is required"
+  constraint validStatus: self.status in ["draft", "open", "voting", "finalized"] "Status must be valid"
+  constraint validBoardType: self.boardType in ["event-specific", "general", "seasonal", "competition"] "Board type must be valid"
+
+  constraint blockVoteIfFinalized:block self.status == "finalized" {
+    messageTemplate: "Cannot vote on finalized battle board '{boardName}'"
+    details: {
+      boardName: self.boardName
+    }
+  }
+
+  constraint blockFinalizeNoData:block self.boardData == "{}" or self.boardData == "" {
+    messageTemplate: "Cannot finalize battle board '{boardName}' - no board data"
+    details: {
+      boardName: self.boardName
+    }
+  }
+
+  command create(boardName: string, boardType: string, eventId: string, description: string, isTemplate: boolean, notes: string, tags: string) {
+    guard boardName != null and boardName != "" "Board name is required"
+
+    mutate boardName = boardName
+    mutate boardType = boardType
+    mutate eventId = eventId
+    mutate description = description
+    mutate isTemplate = isTemplate
+    mutate notes = notes
+    mutate tags = tags
+    mutate status = "draft"
+    mutate boardData = "{}"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit BattleBoardCreated
+  }
+
+  command open(userId: string) {
+    guard self.status == "draft" "Can only open draft battle boards"
+
+    constraint blockNoDishes:block self.dishCount == 0 {
+      messageTemplate: "Cannot open battle board '{boardName}' with no dishes"
+      details: {
+        boardName: self.boardName
+        boardId: self.id
+      }
+    }
+
+    mutate status = "open"
+    mutate updatedAt = now()
+
+    emit BattleBoardOpened
+  }
+
+  command startVoting(userId: string) {
+    guard self.status == "open" "Can only start voting on open battle boards"
+
+    mutate status = "voting"
+    mutate updatedAt = now()
+
+    emit BattleBoardVotingStarted
+  }
+
+  command addDish(dishData: string, userId: string) {
+    guard self.status != "finalized" "Cannot add dishes to finalized board"
+    guard dishData != null and dishData != "" "Dish data is required"
+
+    mutate boardData = dishData
+    mutate updatedAt = now()
+
+    emit BattleBoardDishAdded
+  }
+
+  command removeDish(dishId: string, userId: string) {
+    guard self.status != "finalized" "Cannot remove dishes from finalized board"
+    guard self.status != "voting" "Cannot remove dishes during voting"
+    guard dishId != null and dishId != "" "Dish ID is required"
+
+    mutate updatedAt = now()
+
+    emit BattleBoardDishRemoved
+  }
+
+  command vote(voteData: string, userId: string) {
+    guard self.status == "voting" "Can only vote when board is in voting status"
+    guard userId != null and userId != "" "User ID is required"
+    guard voteData != null and voteData != "" "Vote data is required"
+
+    mutate boardData = voteData
+    mutate updatedAt = now()
+
+    emit BattleBoardVoteCast
+  }
+
+  command finalize(userId: string) {
+    guard self.status == "voting" "Can only finalize boards in voting status"
+    guard self.boardData != "{}" and self.boardData != "" "Cannot finalize board with no data"
+
+    mutate status = "finalized"
+    mutate updatedAt = now()
+
+    emit BattleBoardFinalized
+  }
+
+  store BattleBoard in memory
+}
+
+// Policy definitions
+policy BattleBoardManagement execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Kitchen staff and above can manage battle boards"
+policy BattleBoardFinalize execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and above can finalize battle boards"
+policy BattleBoardVote execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "All kitchen staff can vote on battle boards"
+
+// Event definitions
+event BattleBoardCreated: "events.battle_board.created" {
+  boardId: string
+  tenantId: string
+  boardName: string
+  boardType: string
+  eventId: string
+  isTemplate: boolean
+  createdAt: number
+}
+
+event BattleBoardDishAdded: "events.battle_board.dish_added" {
+  boardId: string
+  tenantId: string
+  boardName: string
+  dishData: string
+  userId: string
+  addedAt: number
+}
+
+event BattleBoardDishRemoved: "events.battle_board.dish_removed" {
+  boardId: string
+  tenantId: string
+  boardName: string
+  dishId: string
+  userId: string
+  removedAt: number
+}
+
+event BattleBoardVoteCast: "events.battle_board.vote_cast" {
+  boardId: string
+  tenantId: string
+  boardName: string
+  userId: string
+  voteData: string
+  votedAt: number
+}
+
+event BattleBoardOpened: "kitchen.battleboard.opened" {
+  boardId: string
+  tenantId: string
+  boardName: string
+  dishCount: number
+  userId: string
+  openedAt: number
+}
+
+event BattleBoardVotingStarted: "kitchen.battleboard.voting_started" {
+  boardId: string
+  tenantId: string
+  boardName: string
+  userId: string
+  startedAt: number
+}
+
+event BattleBoardFinalized: "events.battle_board.finalized" {
+  boardId: string
+  tenantId: string
+  boardName: string
+  userId: string
+  finalizedAt: number
+}

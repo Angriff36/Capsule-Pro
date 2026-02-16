@@ -1,0 +1,135 @@
+// Workflow Engine - Workflow Rules
+// Manifest spec for workflow automation with triggers, steps, and lifecycle management
+
+entity Workflow {
+  property required id: string
+  property required tenantId: string
+  property name: string = ""
+  property description: string = ""
+  property triggerType: string = ""
+  property triggerConfig: string = "{}"
+  property isActive: boolean = true
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isInactive: boolean = self.isActive == false
+  computed isDeleted: boolean = self.deletedAt > 0
+  computed hasTriggerConfig: boolean = self.triggerConfig != null and self.triggerConfig != "" and self.triggerConfig != "{}"
+
+  constraint validName: self.name != null and self.name != "" "Workflow name is required"
+  constraint validTriggerType: self.triggerType != null and self.triggerType != "" "Trigger type is required"
+
+  command create(name: string, description: string, triggerType: string, triggerConfig: string) {
+    guard name != null and name != "" "Workflow name is required"
+    guard triggerType != null and triggerType != "" "Trigger type is required"
+
+    mutate name = name
+    mutate description = description
+    mutate triggerType = triggerType
+    mutate triggerConfig = triggerConfig
+    mutate isActive = false
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit WorkflowCreated
+  }
+
+  command update(newName: string, newDescription: string, newTriggerType: string, newTriggerConfig: string) {
+    guard newName != null and newName != "" "Workflow name is required"
+    guard self.isActive == false "Cannot update an active workflow - deactivate first"
+
+    constraint warnNameChange:warn self.name != newName {
+      messageTemplate: "Renaming workflow from '{oldName}' to '{newName}'"
+      details: {
+        oldName: self.name
+        newName: newName
+      }
+    }
+
+    mutate name = newName
+    mutate description = newDescription
+    mutate triggerType = newTriggerType
+    mutate triggerConfig = newTriggerConfig
+    mutate updatedAt = now()
+
+    emit WorkflowUpdated
+  }
+
+  command activate(userId: string) {
+    guard self.isActive == false "Workflow is already active"
+
+    constraint blockNoTriggerConfig:block self.triggerConfig == null or self.triggerConfig == "" or self.triggerConfig == "{}" {
+      messageTemplate: "Cannot activate workflow '{workflowName}' without trigger configuration"
+      details: {
+        workflowName: self.name
+        triggerType: self.triggerType
+      }
+    }
+
+    mutate isActive = true
+    mutate updatedAt = now()
+
+    emit WorkflowActivated
+  }
+
+  command deactivate(reason: string, userId: string) {
+    guard self.isActive == true "Workflow is already inactive"
+
+    constraint warnDeactivate:warn true {
+      messageTemplate: "Deactivating workflow '{workflowName}' - active automations will stop"
+      details: {
+        workflowName: self.name
+        reason: reason
+      }
+    }
+
+    mutate isActive = false
+    mutate updatedAt = now()
+
+    emit WorkflowDeactivated
+  }
+
+  store Workflow in memory
+}
+
+// Policy definitions
+policy WorkflowManagement execute: user.role in ["manager", "admin"] "Only managers and admins can manage workflows"
+policy WorkflowActivation execute: user.role in ["admin"] "Only admins can activate workflows"
+
+// Event definitions
+event WorkflowCreated: "workflow.created" {
+  workflowId: string
+  tenantId: string
+  name: string
+  triggerType: string
+  isActive: boolean
+  createdAt: number
+}
+
+event WorkflowUpdated: "workflow.updated" {
+  workflowId: string
+  tenantId: string
+  oldName: string
+  newName: string
+  triggerType: string
+  updatedAt: number
+}
+
+event WorkflowActivated: "workflow.activated" {
+  workflowId: string
+  tenantId: string
+  workflowName: string
+  triggerType: string
+  userId: string
+  activatedAt: number
+}
+
+event WorkflowDeactivated: "workflow.deactivated" {
+  workflowId: string
+  tenantId: string
+  workflowName: string
+  reason: string
+  userId: string
+  deactivatedAt: number
+}

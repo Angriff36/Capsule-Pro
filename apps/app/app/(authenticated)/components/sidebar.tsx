@@ -19,25 +19,17 @@ import {
 } from "@repo/design-system/components/ui/sidebar";
 import { cn } from "@repo/design-system/lib/utils";
 import { NotificationsTrigger } from "@repo/notifications/components/trigger";
-import {
-  AnchorIcon,
-  CogIcon,
-  LifeBuoyIcon,
-  SendIcon,
-} from "lucide-react";
+import { AnchorIcon, CogIcon, LifeBuoyIcon, SendIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import {
-  getModuleKeyFromPathname,
-  modules,
-} from "./module-nav";
 import { ModuleHeader } from "./module-header";
+import { getModuleKeyFromPathname, modules } from "./module-nav";
 import { Search } from "./search";
 
-type GlobalSidebarProperties = {
+interface GlobalSidebarProperties {
   readonly children: ReactNode;
-};
+}
 
 const data = {
   navSecondary: [
@@ -61,7 +53,7 @@ const data = {
 
 export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
   const sidebar = useSidebar();
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const activeModuleKey = getModuleKeyFromPathname(pathname);
   const activeModule =
     modules.find((module) => module.key === activeModuleKey) ?? modules[0];
@@ -155,7 +147,10 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
         </SidebarContent>
         <SidebarFooter>
           <SidebarMenu>
-            <SidebarMenuItem className="flex items-center gap-2">
+            <SidebarMenuItem
+              className="flex items-center gap-2"
+              suppressHydrationWarning
+            >
               <UserButton
                 appearance={{
                   elements: {

@@ -1,0 +1,161 @@
+// CRM & Sales - Client Interaction Rules
+// Manifest spec for tracking client interactions, follow-ups, and communication history
+
+entity ClientInteraction {
+  property required id: string
+  property required tenantId: string
+  property clientId: string = ""
+  property leadId: string = ""
+  property employeeId: string = ""
+  property interactionType: string = "note"
+  property interactionDate: number = 0
+  property subject: string = ""
+  property description: string = ""
+  property followUpDate: number = 0
+  property followUpCompleted: boolean = false
+  property correlationId: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed hasFollowUp: boolean = self.followUpDate > 0
+  computed isFollowUpOverdue: boolean = self.followUpDate > 0 and self.followUpDate < now() and self.followUpCompleted == false
+  computed isCompleted: boolean = self.followUpCompleted == true
+  computed hasSubject: boolean = self.subject != null and self.subject != ""
+
+  constraint validInteractionType: self.interactionType in ["call", "email", "meeting", "note"] "Interaction type must be 'call', 'email', 'meeting', or 'note'"
+  constraint validSubject: self.subject != null and self.subject != "" "Subject is required"
+  constraint validEmployeeId: self.employeeId != null and self.employeeId != "" "Employee ID is required"
+
+  constraint warnNoClientOrLead:warn self.clientId == "" and self.leadId == "" {
+    messageTemplate: "Interaction '{subject}' is not linked to any client or lead"
+    details: {
+      subject: self.subject
+      interactionType: self.interactionType
+      employeeId: self.employeeId
+    }
+  }
+
+  constraint warnOverdueFollowUp:warn self.isFollowUpOverdue {
+    messageTemplate: "Follow-up for '{subject}' is overdue (due {followUpDate})"
+    details: {
+      subject: self.subject
+      interactionType: self.interactionType
+      followUpDate: self.followUpDate
+      employeeId: self.employeeId
+    }
+  }
+
+  command create(clientId: string, leadId: string, employeeId: string, interactionType: string, interactionDate: number, subject: string, description: string, followUpDate: number, correlationId: string) {
+    guard subject != null and subject != "" "Subject is required"
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard interactionType != null and interactionType != "" "Interaction type is required"
+
+    constraint warnPastFollowUp:warn followUpDate > 0 and followUpDate < now() {
+      messageTemplate: "Creating interaction with a follow-up date in the past ({followUpDate})"
+      details: {
+        subject: subject
+        followUpDate: followUpDate
+      }
+    }
+
+    mutate clientId = clientId
+    mutate leadId = leadId
+    mutate employeeId = employeeId
+    mutate interactionType = interactionType
+    mutate interactionDate = interactionDate > 0 ? interactionDate : now()
+    mutate subject = subject
+    mutate description = description
+    mutate followUpDate = followUpDate
+    mutate followUpCompleted = false
+    mutate correlationId = correlationId
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit ClientInteractionCreated
+  }
+
+  command update(interactionType: string, interactionDate: number, subject: string, description: string, followUpDate: number, correlationId: string) {
+    guard self.deletedAt == 0 "Cannot update a deleted interaction"
+    guard subject != null and subject != "" "Subject is required"
+
+    constraint warnPastFollowUp:warn followUpDate > 0 and followUpDate < now() {
+      messageTemplate: "Updating interaction with a follow-up date in the past ({followUpDate})"
+      details: {
+        subject: subject
+        followUpDate: followUpDate
+      }
+    }
+
+    mutate interactionType = interactionType
+    mutate interactionDate = interactionDate
+    mutate subject = subject
+    mutate description = description
+    mutate followUpDate = followUpDate
+    mutate correlationId = correlationId
+    mutate updatedAt = now()
+
+    emit ClientInteractionUpdated
+  }
+
+  command complete(completionNotes: string, userId: string) {
+    guard self.deletedAt == 0 "Cannot complete a deleted interaction"
+    guard self.followUpCompleted == false "Interaction follow-up is already completed"
+
+    constraint warnNoFollowUp:warn self.hasFollowUp == false {
+      messageTemplate: "Completing interaction '{subject}' that has no follow-up date set"
+      details: {
+        subject: self.subject
+        interactionType: self.interactionType
+      }
+    }
+
+    mutate followUpCompleted = true
+    mutate updatedAt = now()
+
+    emit ClientInteractionCompleted
+  }
+
+  store ClientInteraction in memory
+}
+
+// Policy definitions
+policy SalesCanManageInteractions execute: user.role in ["sales", "manager", "admin"] "Sales staff can manage interactions"
+policy SalesCanCompleteInteractions execute: user.role in ["sales", "manager", "admin"] "Sales staff can complete interaction follow-ups"
+
+// Event definitions
+event ClientInteractionCreated: "crm.interaction.created" {
+  interactionId: string
+  tenantId: string
+  clientId: string
+  leadId: string
+  employeeId: string
+  interactionType: string
+  subject: string
+  followUpDate: number
+  createdAt: number
+}
+
+event ClientInteractionUpdated: "crm.interaction.updated" {
+  interactionId: string
+  tenantId: string
+  clientId: string
+  leadId: string
+  subject: string
+  interactionType: string
+  followUpDate: number
+  updatedAt: number
+}
+
+event ClientInteractionCompleted: "crm.interaction.completed" {
+  interactionId: string
+  tenantId: string
+  clientId: string
+  leadId: string
+  employeeId: string
+  subject: string
+  interactionType: string
+  completionNotes: string
+  userId: string
+  completedAt: number
+}

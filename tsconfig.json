@@ -2,8 +2,8 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "display": "Default",
   "compilerOptions": {
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
+    "declarationMap": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "incremental": false,
@@ -12,6 +12,7 @@
     "module": "NodeNext",
     "moduleDetection": "force",
     "moduleResolution": "NodeNext",
+    "noEmit": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,

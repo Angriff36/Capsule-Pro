@@ -10,23 +10,19 @@ import type { ReactNode } from "react";
 import { Footer } from "./components/footer";
 import { Header } from "./components/header";
 
-type RootLayoutProperties = {
+interface RootLayoutProperties {
   readonly children: ReactNode;
   readonly params: Promise<{
     locale: string;
   }>;
-};
+}
 
 const RootLayout = async ({ children, params }: RootLayoutProperties) => {
   const { locale } = await params;
   const dictionary = await getDictionary(locale);
 
   return (
-    <html
-      className={cn(fonts, "scroll-smooth")}
-      lang="en"
-      suppressHydrationWarning
-    >
+    <html className={cn(fonts, "scroll-smooth")} lang={locale}>
       <body>
         <AnalyticsProvider>
           <DesignSystemProvider>

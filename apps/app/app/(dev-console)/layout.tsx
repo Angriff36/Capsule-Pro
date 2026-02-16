@@ -1,14 +1,14 @@
-import type { ReactNode } from "react";
 import { auth, currentUser } from "@repo/auth/server";
-import { env } from "@/env";
 import { secure } from "@repo/security";
+import type { ReactNode } from "react";
+import { env } from "@/env";
 import { DevConsoleBodyClass } from "./components/body-class";
 import { DevConsoleSidebar } from "./components/sidebar";
 import { DevConsoleTopbar } from "./components/topbar";
 
-type DevConsoleLayoutProperties = {
+interface DevConsoleLayoutProperties {
   readonly children: ReactNode;
-};
+}
 
 const DevConsoleLayout = async ({ children }: DevConsoleLayoutProperties) => {
   if (env.ARCJET_KEY) {
