@@ -1,13 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
-import * as Sentry from "@sentry/nextjs";
-
-const { captureException } = Sentry;
-
 import type { ConstraintOutcome, OverrideRequest } from "@manifest/runtime/ir";
-import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import {
   activatePrepList,
@@ -26,9 +20,10 @@ import {
   updatePrepListItemQuantity,
   updatePrepListItemStation,
 } from "@repo/manifest-adapters";
+// biome-ignore lint/performance/noNamespaceImport: Sentry.logger requires namespace import
+import * as Sentry from "@sentry/nextjs";
 import { revalidatePath } from "next/cache";
-import { invariant } from "../../../lib/invariant";
-import { requireTenantId } from "../../../lib/tenant";
+import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
 
 // ============ Helper Types ============
 
@@ -111,19 +106,7 @@ export interface PrepListManifestActionResult {
  * for persistent entity storage and constraint checking.
  */
 async function createRuntimeContext(): Promise<KitchenOpsContext> {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await requireTenantId();
-
-  // Get current user from database
-  const currentUser = await database.user.findFirst({
-    where: {
-      AND: [{ tenantId }, { authUserId: (await auth()).userId ?? "" }],
-    },
-  });
-
-  invariant(currentUser, "User not found in database");
+  const currentUser = await requireCurrentUser();
 
   // Dynamically import PrismaStore to avoid circular dependencies
   const { createPrismaStoreProvider } = await import(
@@ -131,10 +114,10 @@ async function createRuntimeContext(): Promise<KitchenOpsContext> {
   );
 
   return {
-    tenantId,
+    tenantId: currentUser.tenantId,
     userId: currentUser.id,
     userRole: currentUser.role,
-    storeProvider: createPrismaStoreProvider(database, tenantId),
+    storeProvider: createPrismaStoreProvider(database, currentUser.tenantId),
   };
 }
 
@@ -1358,16 +1341,8 @@ export const markPrepListItemCompletedManifest = async (
     };
   }
 
-  // Get current user
-  const currentUser = await database.user.findFirst({
-    where: {
-      AND: [{ tenantId }, { authUserId: (await auth()).userId ?? "" }],
-    },
-  });
-
-  if (!currentUser) {
-    return { success: false, error: "User not found." };
-  }
+  // Get current user (auto-provisions if needed)
+  const currentUser = await requireCurrentUser();
 
   // Create Manifest runtime for constraint checking
   const runtimeContext = await createRuntimeContext();
