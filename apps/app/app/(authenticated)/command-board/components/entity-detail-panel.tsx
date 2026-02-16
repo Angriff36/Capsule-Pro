@@ -206,9 +206,9 @@ export function EntityDetailPanel({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const Icon = ENTITY_TYPE_ICONS[entityType];
-  const colors = ENTITY_TYPE_COLORS[entityType];
-  const typeLabel = ENTITY_TYPE_LABELS[entityType];
+  const Icon = ENTITY_TYPE_ICONS[entityType] ?? StickyNote;
+  const colors = ENTITY_TYPE_COLORS[entityType] ?? ENTITY_TYPE_COLORS.note;
+  const typeLabel = ENTITY_TYPE_LABELS[entityType] ?? "Unknown";
   const fullPageLink = getEntityLink(entityType, entityId);
 
   /** Fetch entity data via the resolveEntities server action */
