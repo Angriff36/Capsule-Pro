@@ -18,6 +18,8 @@ Read and understand:
 
 ### Phase 0b: Study the Codebase
 
+Use up to 500 parallel Sonnet subagents to study the existing Command Board implementation. **Don't assume functionality is missing** - search first before planning new implementations.
+
 Focus on these areas:
 
 - `apps/app/app/(authenticated)/command-board/components/board-shell.tsx` — Main board wrapper
@@ -30,7 +32,7 @@ Focus on these areas:
 
 ### Phase 0c: Study Related Patterns
 
-Look for:
+Use parallel Sonnet subagents to search for existing patterns:
 
 - How other detail panels are implemented in the app
 - Error boundary patterns used elsewhere
@@ -38,6 +40,8 @@ Look for:
 - History/undo patterns in the codebase
 
 ### Phase 1: Update IMPLEMENTATION_PLAN.md
+
+Use an Opus subagent to analyze findings and update IMPLEMENTATION_PLAN_commandboard_bugs.md.
 
 Break down each bug fix into concrete tasks:
 

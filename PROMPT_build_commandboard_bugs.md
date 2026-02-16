@@ -16,14 +16,17 @@ Fix Command Board bugs by implementing the tasks in IMPLEMENTATION_PLAN.md. Work
 
 ### Phase 0b: Study Context
 
-Before implementing each task:
+Before implementing each task, use up to 500 parallel Sonnet subagents to study the codebase:
 
-1. Read the relevant files mentioned in the task
-2. Understand the current implementation
-3. Identify what needs to change
-4. Check for any dependencies or side effects
+1. **Don't assume not implemented** - Search the codebase first before adding new functionality
+2. Read the relevant files mentioned in the task
+3. Understand the current implementation
+4. Identify what needs to change
+5. Check for any dependencies or side effects
 
 ### Phase 1: Implement the Task
+
+Use up to 500 parallel Sonnet subagents for file operations. Use only 1 Sonnet subagent for build/tests (backpressure control).
 
 For each bug fix:
 
@@ -164,6 +167,22 @@ If tests fail:
 - [ ] No new bugs introduced
 - [ ] All commits follow conventional format
 - [ ] IMPLEMENTATION_PLAN.md fully updated
+
+---
+
+## Critical Guardrails
+
+999. **Don't assume not implemented** - Always search the codebase before adding functionality. Use parallel subagents to confirm it doesn't exist.
+
+1000. **Use parallel subagents** - Spawn up to 500 Sonnet subagents for searches/reads/writes. Use only 1 subagent for build/tests.
+
+1001. **Keep IMPLEMENTATION_PLAN.md current** - Update using a subagent after each task completion. Future work depends on this.
+
+1002. **Update AGENTS.md sparingly** - Only update `AGENTS.md` when learning new operational commands (build/test). Keep it brief. Status/progress goes in IMPLEMENTATION_PLAN.md.
+
+1003. **Complete implementations only** - No placeholders, no stubs. Implement functionality completely. Placeholders waste time redoing work.
+
+1004. **Resolve or document issues** - If you find bugs unrelated to current work, resolve them or document in IMPLEMENTATION_PLAN.md.
 
 ---
 
