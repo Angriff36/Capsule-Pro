@@ -696,6 +696,56 @@ effect GeneratePrepSuggestion {
 
 ---
 
+## Invariant: Manifest Routes Are Canonical
+
+> **Added 2026-02-16** — Enforcement gate for route discoverability.
+
+All client-facing HTTP routes MUST be either:
+
+1. **Generated from Manifest IR projections** — command routes and read projections
+   emitted by the Manifest compiler pipeline (`pnpm manifest:generate`).
+2. **Implemented inside a documented "manual route boundary"** — hand-written routes
+   in `apps/api/app/api/` that are registered in the route manifest via
+   `pnpm manifest:routes` (runs `scripts/manifest/generate-route-manifest.mjs`).
+
+### Route Manifest Artifacts
+
+The route manifest generator scans the API route tree and the compiled IR to produce:
+
+- `packages/manifest-ir/dist/routes.manifest.json` — Canonical list of every HTTP
+  route with method, param, and source metadata (412 routes as of 2026-02-16).
+- `packages/manifest-ir/dist/routes.ts` — Typed helper functions that build URL
+  paths at runtime (generated, DO NOT EDIT).
+
+### Client Code Constraint
+
+**UI/client code MUST NOT hardcode `/api/*` string literals.** Instead:
+
+- Import route helpers from `apps/app/app/lib/routes.ts` (the single SDK module).
+- Or import from the generated `packages/manifest-ir/dist/routes.ts` directly.
+
+### Enforcement
+
+| Layer       | Mechanism                                                                       | Status                                       |
+| ----------- | ------------------------------------------------------------------------------- | -------------------------------------------- |
+| CI          | `scripts/check-hardcoded-routes.mjs` scans client code for `/api/` literals     | ✅ Active (soft-fail during migration)       |
+| ESLint      | `eslint.config.mjs` with `no-restricted-syntax` banning `/api/` in client files | ✅ Config ready (install eslint to activate) |
+| Dev runtime | `apiFetch()` validates paths against `routes.manifest.json` in development      | ✅ Active                                    |
+
+### Allowlisted Files
+
+These files are permitted to contain `/api/` string literals:
+
+- `apps/app/app/lib/routes.ts` — Canonical route helper definitions
+- `apps/app/app/lib/api.ts` — apiFetch wrapper (dev guard)
+- `apps/app/next.config.ts` — Next.js rewrite proxy rules
+- `apps/app/app/api/**` — Server-side route handlers
+- `apps/api/**` — API server (not client code)
+- `scripts/**` — Build/CI scripts
+- `*.test.ts`, `*.spec.ts` — Test files
+
+---
+
 ## Next Steps
 
 1. ~~Execute Phase 1 manifests first (kitchen-task is highest ROI)~~ ✅ All phases 1-7 complete
@@ -703,9 +753,10 @@ effect GeneratePrepSuggestion {
 3. **PrismaStore implementations** for new entities (currently only original 13 entities have stores)
 4. **Command route handlers** for new entities (generate Next.js API routes from manifest definitions)
 5. **Migrate existing bypassed routes** to use new manifests (42 routes still using direct Prisma)
-6. **Frontend migration** — wire UI components to use manifest command routes instead of direct API calls
+6. **Frontend migration** — wire UI components to use manifest command routes instead of direct API calls. **Use route helpers from `apps/app/app/lib/routes.ts`** — see §Manifest Routes Are Canonical.
 7. **Fix Pattern B** — Recipe server action uses Manifest for constraints only, not persistence. See `PATTERNS.md` §Migration Strategy for options.
 8. **Delete dead routes** — ~30 command-board + 9 kitchen/manifest Gen 1 routes. See `PATTERNS.md` §Dead Routes.
 9. **Composite command routes** — For multi-entity operations (recipe+version+ingredients), use the Embedded Runtime Pattern. See `PATTERNS.md` §Multi-Entity Orchestration.
+10. **Migrate remaining 171 hardcoded `/api/` paths** to use route helpers. Run `pnpm check:routes` to see current violations.
 
 > **See also:** `specs/manifest/PATTERNS.md` — Documents all three integration patterns, the runtime pipeline, store providers, multi-entity orchestration, dead routes, and migration strategy.

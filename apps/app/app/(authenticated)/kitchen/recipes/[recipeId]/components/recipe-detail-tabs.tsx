@@ -40,6 +40,11 @@ import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import {
+  kitchenRecipeVersions,
+  kitchenRecipeVersionDetail,
+  kitchenRecipeVersionsCompare,
+} from "@/app/lib/routes";
+import {
   getRecipeCost,
   type IngredientCostBreakdown,
   type RecipeCostBreakdown,
@@ -403,7 +408,7 @@ function HistoryTabContent({
     const fetchVersions = async () => {
       setLoading(true);
       try {
-        const response = await apiFetch(`/api/recipes/${recipeId}/versions`);
+        const response = await apiFetch(kitchenRecipeVersions(recipeId));
         if (response.ok) {
           const data = await response.json();
           setVersions(data);
@@ -433,7 +438,7 @@ function HistoryTabContent({
     setViewingDetail(null);
     try {
       const response = await apiFetch(
-        `/api/recipes/${recipeId}/versions/${version.id}`
+        kitchenRecipeVersionDetail(recipeId, version.id)
       );
       if (!response.ok) {
         const error = await response.json();
@@ -459,7 +464,7 @@ function HistoryTabContent({
     setCompareData(null);
     try {
       const response = await apiFetch(
-        `/api/recipes/${recipeId}/versions/compare?from=${compareFrom}&to=${compareTo}`
+        kitchenRecipeVersionsCompare(recipeId, compareFrom, compareTo)
       );
       if (!response.ok) {
         const error = await response.json();
