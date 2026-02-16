@@ -1,97 +1,69 @@
-# Command Board Implementation Plan
+# Command Board — Implementation Plan
 
-## Status Summary
+> Last updated: 2026-02-16
+> See `STATUS.md` for current state, `BUGS.md` for known issues
 
-### Completed Features
+## Priority Order
 
-| # | Feature | Status |
-|---|---------|--------|
-| 1.1 | Undo/Redo System | COMPLETED |
-| 1.2 | Auto-Save/Draft Recovery | COMPLETED |
-| 1.3 | Connection Context Menu | COMPLETED |
-| 2.1 | Connection Events | COMPLETED |
-| 2.2 | Event Replay System | COMPLETED |
-| 2.3 | Conflict Resolution | COMPLETED |
-| 3.1 | Interactive Anchor Points | COMPLETED |
-| 4.1 | UserPreference Model | COMPLETED |
-| 4.2 | Bulk Edit Command | COMPLETED |
+Work items ordered by impact and dependency. Each item references its spec.
 
-### Pending / Not Started
+### P0 — Do First
 
-| # | Feature | Status |
-|---|---------|--------|
+| #   | Item                                       | Spec                          | Effort | Status      |
+| --- | ------------------------------------------ | ----------------------------- | ------ | ----------- |
+| 1   | Wire up EntityDetailPanel in BoardShell    | `SPEC_entity-detail-panel.md` | 15 min | NOT STARTED |
+| 2   | Entity Browser: already-on-board indicator | `SPEC_entity-browser.md` §1.1 | 30 min | NOT STARTED |
+| 3   | Entity Browser: search within browser      | `SPEC_entity-browser.md` §1.2 | 1 hr   | NOT STARTED |
 
----
+### P1 — Do Next
 
-## Implementation Details (Pending Items Only)
+| #   | Item                                            | Spec                            | Effort | Status      |
+| --- | ----------------------------------------------- | ------------------------------- | ------ | ----------- |
+| 4   | Entity Browser: pre-load category counts        | `SPEC_entity-browser.md` §1.3   | 30 min | NOT STARTED |
+| 5   | Entity Browser: refresh button                  | `SPEC_entity-browser.md` §1.4   | 15 min | NOT STARTED |
+| 6   | Card consistent width (280px)                   | `SPEC_ui-polish.md` §Cards.1    | 30 min | NOT STARTED |
+| 7   | Card hover action buttons (remove, detail, pin) | `SPEC_ui-polish.md` §Cards.5    | 1 hr   | NOT STARTED |
+| 8   | Connection edge labels                          | `SPEC_connections.md` §1.1      | 1 hr   | NOT STARTED |
+| 9   | Browser text size fix (text-[10px] → text-xs)   | `SPEC_ui-polish.md` §Typography | 10 min | NOT STARTED |
+| 10  | Smart placement algorithm                       | `SPEC_entity-browser.md` §2.2   | 1 hr   | NOT STARTED |
 
-### Not Started / Missing:
+### P2 — Polish
 
-*None - all features completed*
+| #   | Item                                         | Spec                          | Effort | Status      |
+| --- | -------------------------------------------- | ----------------------------- | ------ | ----------- |
+| 11  | Card hover/selection animations              | `SPEC_ui-polish.md` §Cards.4  | 1 hr   | NOT STARTED |
+| 12  | Edge hover state (thicken + tooltip)         | `SPEC_connections.md` §1.2    | 1 hr   | NOT STARTED |
+| 13  | Smooth edge routing                          | `SPEC_connections.md` §1.4    | 30 min | NOT STARTED |
+| 14  | Canvas background brand colors               | `SPEC_ui-polish.md` §Canvas.1 | 30 min | NOT STARTED |
+| 15  | Controls/MiniMap styling (remove !important) | `SPEC_ui-polish.md` §Canvas.2 | 30 min | NOT STARTED |
+| 16  | Empty state with quick actions               | `SPEC_ui-polish.md` §Canvas.3 | 1 hr   | NOT STARTED |
+| 17  | Entity Browser drag-to-add                   | `SPEC_entity-browser.md` §2.1 | 2 hr   | NOT STARTED |
+| 18  | Entity Browser keyboard navigation           | `SPEC_entity-browser.md` §2.3 | 1 hr   | NOT STARTED |
+| 19  | Error boundary on board                      | `BUGS.md` BUG-05              | 30 min | NOT STARTED |
 
----
+### P3 — Future
 
-## Completed Feature Details (Archive)
+| #   | Item                                     | Spec                             | Effort | Status      |
+| --- | ---------------------------------------- | -------------------------------- | ------ | ----------- |
+| 20  | Quick actions on cards                   | `SPEC_product-direction.md`      | 2-3 hr | NOT STARTED |
+| 21  | Board templates                          | `SPEC_product-direction.md`      | 4-6 hr | NOT STARTED |
+| 22  | Manual connection creation               | `SPEC_connections.md` §2.2       | 2 hr   | NOT STARTED |
+| 23  | Connection filtering                     | `SPEC_connections.md` §2.3       | 2 hr   | NOT STARTED |
+| 24  | Path highlighting                        | `SPEC_connections.md` §3.2       | 2 hr   | NOT STARTED |
+| 25  | Undo/Redo system (React Flow compatible) | `BUGS.md` BUG-03                 | 4-6 hr | NOT STARTED |
+| 26  | Live card updates (polling/realtime)     | `SPEC_product-direction.md`      | 4-6 hr | NOT STARTED |
+| 27  | Edit-in-place in detail panel            | `SPEC_entity-detail-panel.md` §3 | 4-6 hr | NOT STARTED |
 
-### 1. Undo/Redo System (1.1) - COMPLETED
-- `apps/app/app/(authenticated)/command-board/lib/undo-manager.ts` - UndoManager class
-- `apps/app/app/(authenticated)/command-board/lib/commands/` - Full command pattern
-- `apps/app/app/(authenticated)/command-board/hooks/use-undo-redo.ts` - React hook
-- Keyboard shortcuts (Ctrl+Z/Ctrl+Y)
-- Undo/Redo buttons in board header toolbar
+## Historical Archive
 
-### 2. Auto-Save/Draft Recovery (1.2) - COMPLETED
-- `apps/app/app/(authenticated)/command-board/hooks/use-auto-save.ts` - Auto-save with 30s debounce
-- `apps/app/app/(authenticated)/command-board/lib/draft-manager.ts` - Uses CommandBoard.tags
-- `apps/app/app/(authenticated)/command-board/components/auto-save-indicator.tsx`
-- `apps/app/app/(authenticated)/command-board/components/draft-recovery-dialog.tsx`
-- API endpoints: `/api/command-board/[boardId]/draft`, `/api/command-board/draft`
+The following features were part of the OLD custom canvas system (pre-React Flow). They were fully implemented but have been **replaced** by the React Flow rewrite. The code was removed in the squash merge (PR #19). These are listed for historical reference only — do NOT re-implement them.
 
-### 3. Connection Context Menu (1.3) - COMPLETED
-- ConnectionContextMenu.tsx with edit/delete dialogs
-- onContextMenu handler in connection-lines.tsx
-- Context menu in board-canvas-realtime.tsx with proper positioning
-- Toast notifications for operations
-
-### 4. Connection Events (2.1) - COMPLETED
-- `packages/realtime/src/events/connection.ts` - Event definitions
-- Events: `command.board.connection.created`, `.updated`, `.deleted`
-- Added to CommandBoardEvent union type
-- Zod schemas in schemas.ts
-
-### 5. Event Replay System (2.2) - COMPLETED
-- `packages/realtime/src/replay/` - types.ts, index.ts, replay-buffer.ts
-- API: `/api/command-board/[boardId]/replay/route.ts`
-- Hook: `apps/app/app/(authenticated)/command-board/hooks/use-replay-events.ts`
-- Component: `apps/app/app/(authenticated)/command-board/components/replay-indicator.tsx`
-
-### 6. Conflict Resolution (2.3) - COMPLETED
-- `packages/realtime/src/clocks/` - Vector clock implementation
-- Database migration with `vectorClock` and `version` fields
-- `apps/app/app/(authenticated)/command-board/lib/conflict-resolver.ts`
-- API with 409 Conflict responses
-- Hook: `use-conflict-resolution.ts`
-- Conflict resolution dialog component
-
-### 7. Interactive Anchor Points (3.1) - COMPLETED
-- Visual anchor points on card edges (12px handles, 16px hover state)
-- Drag-and-drop connection creation from anchor points
-- Temporary connection line during drag (green for valid, red for invalid)
-- Toggle button in toolbar to show/hide anchor points
-- Integration with existing ConnectionDialog for relationship configuration
-- Duplicate connection prevention logic
-- Keyboard and mouse accessibility (tab navigation, Enter/Space to activate)
-
-### 8. UserPreference Model (4.1) - COMPLETED
-- Database model: `UserPreference` in `packages/database/prisma/schema.prisma`
-- Migration: `20260211000000_add_user_preferences`
-- Server actions: `apps/app/app/(authenticated)/command-board/actions/preferences.ts`
-- API routes: `apps/api/app/api/user-preferences/route.ts`
-- Functions: `getUserPreferences`, `getUserPreference`, `saveUserPreference`, `deleteUserPreference`
-
-### 9. Bulk Edit Command (4.2) - COMPLETED
-- `apps/app/app/(authenticated)/command-board/lib/commands/bulk-edit-command.ts` - BulkEditCommand with undo/redo support
-- `apps/app/app/(authenticated)/command-board/lib/undo-manager.ts` - Added `bulkEditCards` to CommandType union
-- `apps/app/app/(authenticated)/command-board/components/bulk-edit-dialog.tsx` - Updated to use `onBulkUpdate` callback pattern
-- `apps/app/app/(authenticated)/command-board/components/board-canvas-realtime.tsx` - Integrated with `recordAction` for undo/redo support
-- Bulk edit operations now support undo/redo through the snapshot-based system
+- Undo/Redo System (UndoManager, command pattern) — replaced by React Flow's built-in state management
+- Auto-Save/Draft Recovery — replaced by Liveblocks storage sync
+- Connection Context Menu — replaced by React Flow edge interactions
+- Connection Events (realtime package) — replaced by Liveblocks events
+- Event Replay System — removed (not needed with Liveblocks)
+- Conflict Resolution (vector clocks) — replaced by Liveblocks CRDT
+- Interactive Anchor Points — replaced by React Flow Handles
+- Bulk Edit Command — removed (will be re-implemented differently)
+- board-canvas-realtime.tsx (2233 lines) — the old monolith canvas, fully replaced
