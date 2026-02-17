@@ -20,15 +20,158 @@ import { getProjectionsForBoard } from "../../../(authenticated)/command-board/a
 // Helper Functions
 // ---------------------------------------------------------------------------
 
+interface ProjectionWithLabel {
+  id: string;
+  entityId: string;
+  entityType: string;
+  label: string | null;
+  positionX: number;
+  positionY: number;
+  width: number;
+  height: number;
+  colorOverride: string | null;
+  collapsed: boolean;
+  groupId: string | null;
+  pinned: boolean;
+}
+
 /**
- * Helper to get board projections for AI tools
+ * Helper to get board projections for AI tools with resolved entity labels
  */
-async function getBoardProjections(boardId: string) {
+async function getBoardProjections(boardId: string): Promise<ProjectionWithLabel[]> {
+  const tenantId = await requireTenantId();
   const projections = await getProjectionsForBoard(boardId);
+
+  if (projections.length === 0) {
+    return [];
+  }
+
+  // Group projections by entity type for batch queries
+  const byType = new Map<string, string[]>();
+  for (const p of projections) {
+    const ids = byType.get(p.entityType) ?? [];
+    ids.push(p.entityId);
+    byType.set(p.entityType, ids);
+  }
+
+  // Build entity ID to label map
+  const entityLabels = new Map<string, string>();
+
+  // Resolve events
+  const eventIds = byType.get("event") ?? [];
+  if (eventIds.length > 0) {
+    const events = await database.event.findMany({
+      where: { tenantId, id: { in: eventIds }, deletedAt: null },
+      select: { id: true, title: true },
+    });
+    for (const e of events) {
+      entityLabels.set(`event:${e.id}`, e.title);
+    }
+  }
+
+  // Resolve prep tasks
+  const prepTaskIds = byType.get("prep_task") ?? [];
+  if (prepTaskIds.length > 0) {
+    const tasks = await database.prepTask.findMany({
+      where: { tenantId, id: { in: prepTaskIds }, deletedAt: null },
+      select: { id: true, name: true },
+    });
+    for (const t of tasks) {
+      entityLabels.set(`prep_task:${t.id}`, t.name);
+    }
+  }
+
+  // Resolve employees (stored as Users in the database)
+  const employeeIds = byType.get("employee") ?? [];
+  if (employeeIds.length > 0) {
+    const employees = await database.user.findMany({
+      where: { tenantId, id: { in: employeeIds } },
+      select: { id: true, firstName: true, lastName: true },
+    });
+    for (const e of employees) {
+      entityLabels.set(`employee:${e.id}`, `${e.firstName} ${e.lastName}`.trim());
+    }
+  }
+
+  // Resolve inventory items
+  const inventoryIds = byType.get("inventory_item") ?? [];
+  if (inventoryIds.length > 0) {
+    const items = await database.inventoryItem.findMany({
+      where: { tenantId, id: { in: inventoryIds }, deletedAt: null },
+      select: { id: true, name: true },
+    });
+    for (const i of items) {
+      entityLabels.set(`inventory_item:${i.id}`, i.name);
+    }
+  }
+
+  // Resolve clients
+  const clientIds = byType.get("client") ?? [];
+  if (clientIds.length > 0) {
+    const clients = await database.client.findMany({
+      where: { tenantId, id: { in: clientIds }, deletedAt: null },
+      select: { id: true, company_name: true, first_name: true, last_name: true },
+    });
+    for (const c of clients) {
+      const label = c.company_name ?? (`${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() || "Unknown Client");
+      entityLabels.set(`client:${c.id}`, label);
+    }
+  }
+
+  // Resolve proposals
+  const proposalIds = byType.get("proposal") ?? [];
+  if (proposalIds.length > 0) {
+    const proposals = await database.proposal.findMany({
+      where: { tenantId, id: { in: proposalIds }, deletedAt: null },
+      select: { id: true, title: true },
+    });
+    for (const p of proposals) {
+      entityLabels.set(`proposal:${p.id}`, p.title);
+    }
+  }
+
+  // Resolve recipes
+  const recipeIds = byType.get("recipe") ?? [];
+  if (recipeIds.length > 0) {
+    const recipes = await database.recipe.findMany({
+      where: { tenantId, id: { in: recipeIds }, deletedAt: null },
+      select: { id: true, name: true },
+    });
+    for (const r of recipes) {
+      entityLabels.set(`recipe:${r.id}`, r.name);
+    }
+  }
+
+  // Resolve dishes
+  const dishIds = byType.get("dish") ?? [];
+  if (dishIds.length > 0) {
+    const dishes = await database.dish.findMany({
+      where: { tenantId, id: { in: dishIds }, deletedAt: null },
+      select: { id: true, name: true },
+    });
+    for (const d of dishes) {
+      entityLabels.set(`dish:${d.id}`, d.name);
+    }
+  }
+
+  // Resolve shipments
+  const shipmentIds = byType.get("shipment") ?? [];
+  if (shipmentIds.length > 0) {
+    const shipments = await database.shipment.findMany({
+      where: { tenantId, id: { in: shipmentIds }, deletedAt: null },
+      select: { id: true, trackingNumber: true },
+    });
+    for (const s of shipments) {
+      entityLabels.set(`shipment:${s.id}`, s.trackingNumber ?? `Shipment ${s.id.substring(0, 8)}`);
+    }
+  }
+
+  // Map projections to include labels
   return projections.map(p => ({
     id: p.id,
     entityId: p.entityId,
     entityType: p.entityType,
+    label: entityLabels.get(`${p.entityType}:${p.entityId}`) ?? null,
     positionX: p.positionX,
     positionY: p.positionY,
     width: p.width,
@@ -1290,7 +1433,7 @@ function createBoardTools(params: {
           // Generate prep timeline structure
           const prepTimeline = targetEvents.map(projection => ({
             eventId: projection.entityId,
-            eventName: `Event ${projection.entityId.substring(0, 8)}`,
+            eventName: projection.label ?? `Event ${projection.entityId.substring(0, 8)}`,
             prepTasks: [
               {
                 day: -7,
@@ -1400,7 +1543,7 @@ function createBoardTools(params: {
           const purchaseList = {
             eventBased: targetEvents.map(projection => ({
               eventId: projection.entityId,
-              eventName: `Event ${projection.entityId.substring(0, 8)}`,
+              eventName: projection.label ?? `Event ${projection.entityId.substring(0, 8)}`,
               estimatedGuests: 100, // Placeholder
               items: [
                 {
@@ -1422,7 +1565,7 @@ function createBoardTools(params: {
             })),
             lowStockItems: input.includeLowStock ? inventoryProjections.map(p => ({
               itemId: p.entityId,
-              itemName: `Item ${p.entityId.substring(0, 8)}`,
+              itemName: p.label ?? `Item ${p.entityId.substring(0, 8)}`,
               currentQuantity: 0, // Placeholder - would need to fetch from inventory
               reorderLevel: 0, // Placeholder
               suggestedOrder: 10, // Placeholder
