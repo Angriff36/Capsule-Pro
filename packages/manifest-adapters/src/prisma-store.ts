@@ -936,7 +936,9 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
       where: { tenantId: this.tenantId, id, deletedAt: null },
     });
 
-    if (!existing) return false;
+    if (!existing) {
+      return false;
+    }
 
     await this.prisma.kitchenTask.update({
       where: { tenantId_id: { tenantId: this.tenantId, id } },

@@ -154,7 +154,8 @@ export async function addProjection(
     console.error("[addProjection] Failed to add projection:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to add projection",
+      error:
+        error instanceof Error ? error.message : "Failed to add projection",
     };
   }
 }
@@ -263,7 +264,9 @@ export async function batchRemoveProjections(
 ): Promise<void> {
   const tenantId = await requireTenantId();
 
-  if (projectionIds.length === 0) return;
+  if (projectionIds.length === 0) {
+    return;
+  }
 
   // Use updateMany for bulk soft-delete — filters by tenantId for isolation
   await database.boardProjection.updateMany({

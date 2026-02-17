@@ -16,9 +16,9 @@ import { Loader2Icon, PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import type { CommandBoard } from "../actions/boards";
 import { createCommandBoard, listCommandBoards } from "../actions/boards";
 import { addProjection } from "../actions/projections";
-import type { CommandBoard } from "../actions/boards";
 import type { EntityType } from "../types/entities";
 
 /** Map legacy entity type names to the new EntityType union */

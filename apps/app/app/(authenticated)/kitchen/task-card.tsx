@@ -211,15 +211,22 @@ export function TaskCard({
     setIsLoading(true);
     try {
       // Manifest route: /api/kitchen/kitchen-tasks/commands/claim
-      const response = await apiFetch("/api/kitchen/kitchen-tasks/commands/claim", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: task.id, userId: currentUserId }),
-      });
+      const response = await apiFetch(
+        "/api/kitchen/kitchen-tasks/commands/claim",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: task.id, userId: currentUserId }),
+        }
+      );
       if (!response.ok) {
-        const errBody = await response.json().catch(() => ({ error: "Unknown error" }));
+        const errBody = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
         console.error("[handleClaim] Failed:", response.status, errBody);
-        throw new Error(`Claim failed (${response.status}): ${errBody.error || JSON.stringify(errBody)}`);
+        throw new Error(
+          `Claim failed (${response.status}): ${errBody.error || JSON.stringify(errBody)}`
+        );
       }
       router.refresh();
     } catch (error) {
@@ -237,15 +244,26 @@ export function TaskCard({
     setIsLoading(true);
     try {
       // Manifest route: /api/kitchen/kitchen-tasks/commands/release
-      const response = await apiFetch("/api/kitchen/kitchen-tasks/commands/release", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: task.id, userId: currentUserId, reason: "" }),
-      });
+      const response = await apiFetch(
+        "/api/kitchen/kitchen-tasks/commands/release",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: task.id,
+            userId: currentUserId,
+            reason: "",
+          }),
+        }
+      );
       if (!response.ok) {
-        const errBody = await response.json().catch(() => ({ error: "Unknown error" }));
+        const errBody = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
         console.error("[handleRelease] Failed:", response.status, errBody);
-        throw new Error(`Release failed (${response.status}): ${errBody.error || JSON.stringify(errBody)}`);
+        throw new Error(
+          `Release failed (${response.status}): ${errBody.error || JSON.stringify(errBody)}`
+        );
       }
       router.refresh();
     } catch (error) {

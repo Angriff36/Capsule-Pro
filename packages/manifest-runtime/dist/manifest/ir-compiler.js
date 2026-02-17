@@ -1,15 +1,15 @@
-import { Parser } from './parser.js';
-import { globalIRCache } from './ir-cache.js';
-import { COMPILER_VERSION, SCHEMA_VERSION } from './version.js';
+import { globalIRCache } from "./ir-cache.js";
+import { Parser } from "./parser.js";
+import { COMPILER_VERSION, SCHEMA_VERSION } from "./version.js";
 /**
  * Compute SHA-256 hash of the source manifest
  */
 async function computeContentHash(source) {
     const encoder = new TextEncoder();
     const data = encoder.encode(source);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 /**
  * Create provenance metadata for the IR
@@ -43,7 +43,7 @@ async function computeIRHash(ir) {
     // names at ALL levels, silently dropping nested properties — a subtle JSON.stringify
     // pitfall that would make the hash blind to content changes within entities/commands.
     const json = JSON.stringify(canonical, (_key, value) => {
-        if (value && typeof value === 'object' && !Array.isArray(value)) {
+        if (value && typeof value === "object" && !Array.isArray(value)) {
             const sorted = {};
             for (const k of Object.keys(value).sort()) {
                 sorted[k] = value[k];
@@ -54,9 +54,9 @@ async function computeIRHash(ir) {
     });
     const encoder = new TextEncoder();
     const data = encoder.encode(json);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 export class IRCompiler {
     diagnostics = [];
@@ -93,12 +93,12 @@ export class IRCompiler {
                 column: err.position?.column,
             });
         }
-        if (errors.some(e => e.severity === 'error')) {
+        if (errors.some((e) => e.severity === "error")) {
             return { ir: null, diagnostics: this.diagnostics };
         }
         const ir = await this.transformProgram(program, source);
         // Check for semantic errors emitted during transformation (e.g., duplicate constraint codes)
-        if (this.diagnostics.some(d => d.severity === 'error')) {
+        if (this.diagnostics.some((d) => d.severity === "error")) {
             return { ir: null, diagnostics: this.diagnostics };
         }
         // vNext: Cache the compiled IR
@@ -109,53 +109,65 @@ export class IRCompiler {
         return { ir, diagnostics: this.diagnostics };
     }
     async transformProgram(program, source) {
-        const modules = program.modules.map(m => this.transformModule(m));
+        const modules = program.modules.map((m) => this.transformModule(m));
         const entities = [
-            ...program.entities.map(e => this.transformEntity(e)),
-            ...program.modules.flatMap(m => m.entities.map(e => this.transformEntity(e, m.name))),
+            ...program.entities.map((e) => this.transformEntity(e)),
+            ...program.modules.flatMap((m) => m.entities.map((e) => this.transformEntity(e, m.name))),
         ];
         // Collect entity-scoped stores (defined as "store in <target>" inside entity)
         const entityScopedStores = [
-            ...program.entities.filter(e => e.store).map(e => ({
+            ...program.entities
+                .filter((e) => e.store)
+                .map((e) => ({
                 entity: e.name,
-                target: e.store === 'filesystem' ? 'localStorage' : e.store,
+                target: e.store === "filesystem"
+                    ? "localStorage"
+                    : e.store,
                 config: {},
             })),
-            ...program.modules.flatMap(m => m.entities.filter(e => e.store).map(e => ({
+            ...program.modules.flatMap((m) => m.entities
+                .filter((e) => e.store)
+                .map((e) => ({
                 entity: e.name,
-                target: e.store === 'filesystem' ? 'localStorage' : e.store,
+                target: e.store === "filesystem"
+                    ? "localStorage"
+                    : e.store,
                 config: {},
             }))),
         ];
         const stores = [
-            ...program.stores.map(s => this.transformStore(s)),
-            ...program.modules.flatMap(m => m.stores.map(s => this.transformStore(s))),
+            ...program.stores.map((s) => this.transformStore(s)),
+            ...program.modules.flatMap((m) => m.stores.map((s) => this.transformStore(s))),
             ...entityScopedStores,
         ];
         const events = [
-            ...program.events.map(e => this.transformEvent(e)),
-            ...program.modules.flatMap(m => m.events.map(e => this.transformEvent(e))),
+            ...program.events.map((e) => this.transformEvent(e)),
+            ...program.modules.flatMap((m) => m.events.map((e) => this.transformEvent(e))),
         ];
         const commands = [
-            ...program.commands.map(c => this.transformCommand(c)),
-            ...program.modules.flatMap(m => m.commands.map(c => this.transformCommand(c, m.name))),
-            ...program.entities.flatMap(e => {
+            ...program.commands.map((c) => this.transformCommand(c)),
+            ...program.modules.flatMap((m) => m.commands.map((c) => this.transformCommand(c, m.name))),
+            ...program.entities.flatMap((e) => {
                 // Get default policies from entity for expansion
-                const defaultPolicies = e.policies.filter(p => p.isDefault).map(p => p.name);
-                return e.commands.map(c => this.transformCommand(c, undefined, e.name, defaultPolicies));
+                const defaultPolicies = e.policies
+                    .filter((p) => p.isDefault)
+                    .map((p) => p.name);
+                return e.commands.map((c) => this.transformCommand(c, undefined, e.name, defaultPolicies));
             }),
-            ...program.modules.flatMap(m => m.entities.flatMap(e => {
+            ...program.modules.flatMap((m) => m.entities.flatMap((e) => {
                 // Get default policies from entity for expansion
-                const defaultPolicies = e.policies.filter(p => p.isDefault).map(p => p.name);
-                return e.commands.map(c => this.transformCommand(c, m.name, e.name, defaultPolicies));
+                const defaultPolicies = e.policies
+                    .filter((p) => p.isDefault)
+                    .map((p) => p.name);
+                return e.commands.map((c) => this.transformCommand(c, m.name, e.name, defaultPolicies));
             })),
         ];
         const policies = [
-            ...program.policies.map(p => this.transformPolicy(p)),
-            ...program.modules.flatMap(m => m.policies.map(p => this.transformPolicy(p, m.name))),
+            ...program.policies.map((p) => this.transformPolicy(p)),
+            ...program.modules.flatMap((m) => m.policies.map((p) => this.transformPolicy(p, m.name))),
             // Extract entity-scoped policies with entity name
-            ...program.entities.flatMap(e => e.policies.map(p => this.transformPolicy(p, undefined, e.name))),
-            ...program.modules.flatMap(m => m.entities.flatMap(e => e.policies.map(p => this.transformPolicy(p, m.name, e.name)))),
+            ...program.entities.flatMap((e) => e.policies.map((p) => this.transformPolicy(p, undefined, e.name))),
+            ...program.modules.flatMap((m) => m.entities.flatMap((e) => e.policies.map((p) => this.transformPolicy(p, m.name, e.name)))),
         ];
         // Create provenance once (single timestamp) then compute hash and stamp irHash.
         // Provenance is created WITHOUT irHash first so the hash covers the entire IR
@@ -163,7 +175,7 @@ export class IRCompiler {
         // compiledAt) to ensure the runtime can reproduce the hash exactly.
         const provenance = await createProvenance(source);
         const irWithoutHash = {
-            version: '1.0',
+            version: "1.0",
             provenance,
             modules,
             entities,
@@ -182,38 +194,44 @@ export class IRCompiler {
     transformModule(m) {
         return {
             name: m.name,
-            entities: m.entities.map(e => e.name),
+            entities: m.entities.map((e) => e.name),
             commands: [
-                ...m.commands.map(c => c.name),
-                ...m.entities.flatMap(e => e.commands.map(c => c.name)),
+                ...m.commands.map((c) => c.name),
+                ...m.entities.flatMap((e) => e.commands.map((c) => c.name)),
             ],
-            stores: m.stores.map(s => s.entity),
-            events: m.events.map(e => e.name), // Entity-scoped events emit parser warning
+            stores: m.stores.map((s) => s.entity),
+            events: m.events.map((e) => e.name), // Entity-scoped events emit parser warning
             policies: [
-                ...m.policies.map(p => p.name),
-                ...m.entities.flatMap(e => e.policies.map(p => p.name)),
+                ...m.policies.map((p) => p.name),
+                ...m.entities.flatMap((e) => e.policies.map((p) => p.name)),
             ],
         };
     }
     transformEntity(e, moduleName) {
-        const constraints = e.constraints.map(c => this.transformConstraint(c));
+        const constraints = e.constraints.map((c) => this.transformConstraint(c));
         this.validateConstraintCodeUniqueness(constraints, e.constraints, `entity '${e.name}'`);
         // Separate default policies from regular policies
-        const defaultPolicies = e.policies.filter(p => p.isDefault).map(p => p.name);
-        const regularPolicies = e.policies.filter(p => !p.isDefault).map(p => p.name);
+        const defaultPolicies = e.policies
+            .filter((p) => p.isDefault)
+            .map((p) => p.name);
+        const regularPolicies = e.policies
+            .filter((p) => !p.isDefault)
+            .map((p) => p.name);
         return {
             name: e.name,
             module: moduleName,
-            properties: e.properties.map(p => this.transformProperty(p)),
-            computedProperties: e.computedProperties.map(cp => this.transformComputedProperty(cp)),
-            relationships: e.relationships.map(r => this.transformRelationship(r)),
-            commands: e.commands.map(c => c.name),
+            properties: e.properties.map((p) => this.transformProperty(p)),
+            computedProperties: e.computedProperties.map((cp) => this.transformComputedProperty(cp)),
+            relationships: e.relationships.map((r) => this.transformRelationship(r)),
+            commands: e.commands.map((c) => c.name),
             constraints,
             policies: regularPolicies,
             ...(defaultPolicies.length > 0 ? { defaultPolicies } : {}),
             versionProperty: e.versionProperty,
             versionAtProperty: e.versionAtProperty,
-            ...(e.transitions.length > 0 ? { transitions: e.transitions.map(t => this.transformTransition(t)) } : {}),
+            ...(e.transitions.length > 0
+                ? { transitions: e.transitions.map((t) => this.transformTransition(t)) }
+                : {}),
         };
     }
     transformTransition(t) {
@@ -227,7 +245,9 @@ export class IRCompiler {
         return {
             name: p.name,
             type: this.transformType(p.dataType),
-            defaultValue: p.defaultValue ? this.transformExprToValue(p.defaultValue) : undefined,
+            defaultValue: p.defaultValue
+                ? this.transformExprToValue(p.defaultValue)
+                : undefined,
             modifiers: p.modifiers,
         };
     }
@@ -253,11 +273,14 @@ export class IRCompiler {
             name: c.name,
             code: c.code || c.name, // Default to name if code not specified
             expression: this.transformExpression(c.expression),
-            severity: c.severity || 'block', // Default to block
+            severity: c.severity || "block", // Default to block
             message: c.message,
             messageTemplate: c.messageTemplate,
             detailsMapping: c.detailsMapping
-                ? Object.fromEntries(Object.entries(c.detailsMapping).map(([k, v]) => [k, this.transformExpression(v)]))
+                ? Object.fromEntries(Object.entries(c.detailsMapping).map(([k, v]) => [
+                    k,
+                    this.transformExpression(v),
+                ]))
                 : undefined,
             overrideable: c.overrideable,
             overridePolicyRef: c.overridePolicyRef,
@@ -280,7 +303,7 @@ export class IRCompiler {
             if (firstIdx !== undefined) {
                 // Duplicate found — emit error at the duplicate's location
                 const astNode = astConstraints[i];
-                this.emitDiagnostic('error', `Duplicate constraint code '${code}' in ${scope}. First defined at constraint '${irConstraints[firstIdx].name}'.`, astNode.position?.line, astNode.position?.column);
+                this.emitDiagnostic("error", `Duplicate constraint code '${code}' in ${scope}. First defined at constraint '${irConstraints[firstIdx].name}'.`, astNode.position?.line, astNode.position?.column);
             }
             else {
                 seen.set(code, i);
@@ -292,8 +315,9 @@ export class IRCompiler {
         if (s.config) {
             for (const [k, v] of Object.entries(s.config)) {
                 const val = this.transformExprToValue(v);
-                if (val)
+                if (val) {
                     config[k] = val;
+                }
             }
         }
         return {
@@ -303,11 +327,11 @@ export class IRCompiler {
         };
     }
     transformEvent(e) {
-        if ('fields' in e.payload) {
+        if ("fields" in e.payload) {
             return {
                 name: e.name,
                 channel: e.channel,
-                payload: e.payload.fields.map(f => ({
+                payload: e.payload.fields.map((f) => ({
                     name: f.name,
                     type: this.transformType(f.dataType),
                     required: f.required,
@@ -321,9 +345,11 @@ export class IRCompiler {
         };
     }
     transformCommand(c, moduleName, entityName, entityDefaultPolicies) {
-        const constraints = (c.constraints || []).map(con => this.transformConstraint(con));
+        const constraints = (c.constraints || []).map((con) => this.transformConstraint(con));
         if (c.constraints && c.constraints.length > 0) {
-            const scope = entityName ? `command '${entityName}.${c.name}'` : `command '${c.name}'`;
+            const scope = entityName
+                ? `command '${entityName}.${c.name}'`
+                : `command '${c.name}'`;
             this.validateConstraintCodeUniqueness(constraints, c.constraints, scope);
         }
         // Expand entity default policies into command policies
@@ -335,11 +361,11 @@ export class IRCompiler {
             name: c.name,
             module: moduleName,
             entity: entityName,
-            parameters: c.parameters.map(p => this.transformParameter(p)),
-            guards: (c.guards || []).map(g => this.transformExpression(g)),
+            parameters: c.parameters.map((p) => this.transformParameter(p)),
+            guards: (c.guards || []).map((g) => this.transformExpression(g)),
             constraints,
             ...(commandPolicies ? { policies: commandPolicies } : {}),
-            actions: c.actions.map(a => this.transformAction(a)),
+            actions: c.actions.map((a) => this.transformAction(a)),
             emits: c.emits || [],
             returns: c.returns ? this.transformType(c.returns) : undefined,
         };
@@ -349,7 +375,9 @@ export class IRCompiler {
             name: p.name,
             type: this.transformType(p.dataType),
             required: p.required,
-            defaultValue: p.defaultValue ? this.transformExprToValue(p.defaultValue) : undefined,
+            defaultValue: p.defaultValue
+                ? this.transformExprToValue(p.defaultValue)
+                : undefined,
         };
     }
     transformAction(a) {
@@ -378,117 +406,123 @@ export class IRCompiler {
     }
     transformExpression(expr) {
         switch (expr.type) {
-            case 'Literal': {
+            case "Literal": {
                 const lit = expr;
                 return {
-                    kind: 'literal',
+                    kind: "literal",
                     value: this.literalToValue(lit.value, lit.dataType),
                 };
             }
-            case 'Identifier': {
-                return { kind: 'identifier', name: expr.name };
+            case "Identifier": {
+                return { kind: "identifier", name: expr.name };
             }
-            case 'MemberAccess': {
+            case "MemberAccess": {
                 const ma = expr;
                 return {
-                    kind: 'member',
+                    kind: "member",
                     object: this.transformExpression(ma.object),
                     property: ma.property,
                 };
             }
-            case 'BinaryOp': {
+            case "BinaryOp": {
                 const bo = expr;
                 return {
-                    kind: 'binary',
+                    kind: "binary",
                     operator: bo.operator,
                     left: this.transformExpression(bo.left),
                     right: this.transformExpression(bo.right),
                 };
             }
-            case 'UnaryOp': {
+            case "UnaryOp": {
                 const uo = expr;
                 return {
-                    kind: 'unary',
+                    kind: "unary",
                     operator: uo.operator,
                     operand: this.transformExpression(uo.operand),
                 };
             }
-            case 'Call': {
+            case "Call": {
                 const call = expr;
                 return {
-                    kind: 'call',
+                    kind: "call",
                     callee: this.transformExpression(call.callee),
-                    args: call.arguments.map(a => this.transformExpression(a)),
+                    args: call.arguments.map((a) => this.transformExpression(a)),
                 };
             }
-            case 'Conditional': {
+            case "Conditional": {
                 const cond = expr;
                 return {
-                    kind: 'conditional',
+                    kind: "conditional",
                     condition: this.transformExpression(cond.condition),
                     consequent: this.transformExpression(cond.consequent),
                     alternate: this.transformExpression(cond.alternate),
                 };
             }
-            case 'Array': {
+            case "Array": {
                 const arr = expr;
                 return {
-                    kind: 'array',
-                    elements: arr.elements.map(e => this.transformExpression(e)),
+                    kind: "array",
+                    elements: arr.elements.map((e) => this.transformExpression(e)),
                 };
             }
-            case 'Object': {
+            case "Object": {
                 const obj = expr;
                 return {
-                    kind: 'object',
-                    properties: obj.properties.map(p => ({
+                    kind: "object",
+                    properties: obj.properties.map((p) => ({
                         key: p.key,
                         value: this.transformExpression(p.value),
                     })),
                 };
             }
-            case 'Lambda': {
+            case "Lambda": {
                 const lam = expr;
                 return {
-                    kind: 'lambda',
+                    kind: "lambda",
                     params: lam.parameters,
                     body: this.transformExpression(lam.body),
                 };
             }
             default:
-                return { kind: 'literal', value: { kind: 'null' } };
+                return { kind: "literal", value: { kind: "null" } };
         }
     }
     transformExprToValue(expr) {
-        if (expr.type === 'Literal') {
+        if (expr.type === "Literal") {
             const lit = expr;
             return this.literalToValue(lit.value, lit.dataType);
         }
-        if (expr.type === 'Array') {
+        if (expr.type === "Array") {
             const arr = expr;
-            const elements = arr.elements.map(e => this.transformExprToValue(e)).filter((v) => v !== undefined);
-            return { kind: 'array', elements };
+            const elements = arr.elements
+                .map((e) => this.transformExprToValue(e))
+                .filter((v) => v !== undefined);
+            return { kind: "array", elements };
         }
-        if (expr.type === 'Object') {
+        if (expr.type === "Object") {
             const obj = expr;
             const properties = {};
             for (const p of obj.properties) {
                 const v = this.transformExprToValue(p.value);
-                if (v)
+                if (v) {
                     properties[p.key] = v;
+                }
             }
-            return { kind: 'object', properties };
+            return { kind: "object", properties };
         }
         return undefined;
     }
     literalToValue(value, dataType) {
-        if (dataType === 'string')
-            return { kind: 'string', value: value };
-        if (dataType === 'number')
-            return { kind: 'number', value: value };
-        if (dataType === 'boolean')
-            return { kind: 'boolean', value: value };
-        return { kind: 'null' };
+        if (dataType === "string") {
+            return { kind: "string", value: value };
+        }
+        if (dataType === "number") {
+            return { kind: "number", value: value };
+        }
+        if (dataType === "boolean") {
+            return { kind: "boolean", value: value };
+        }
+        return { kind: "null" };
     }
 }
 export async function compileToIR(source) {

@@ -58,8 +58,12 @@ function parseRelativeDate(value: string): Date {
   if (!match) {
     // Try parsing as ISO date
     const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) return parsed;
-    console.error(`[auto-populate] Invalid date value: ${value}, defaulting to now`);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+    console.error(
+      `[auto-populate] Invalid date value: ${value}, defaulting to now`
+    );
     return now;
   }
 
@@ -127,7 +131,9 @@ async function discoverEvents(
       take: 100, // Safety cap
     });
 
-    return events.map((e): DiscoveredEntity => ({ entityType: "event", entityId: e.id }));
+    return events.map(
+      (e): DiscoveredEntity => ({ entityType: "event", entityId: e.id })
+    );
   } catch (error) {
     console.error("[auto-populate] Failed to discover events:", error);
     return [];
@@ -166,7 +172,9 @@ async function discoverPrepTasks(
       take: 100,
     });
 
-    return tasks.map((t): DiscoveredEntity => ({ entityType: "prep_task", entityId: t.id }));
+    return tasks.map(
+      (t): DiscoveredEntity => ({ entityType: "prep_task", entityId: t.id })
+    );
   } catch (error) {
     console.error("[auto-populate] Failed to discover prep tasks:", error);
     return [];
@@ -203,7 +211,9 @@ async function discoverKitchenTasks(
       take: 100,
     });
 
-    return tasks.map((t): DiscoveredEntity => ({ entityType: "kitchen_task", entityId: t.id }));
+    return tasks.map(
+      (t): DiscoveredEntity => ({ entityType: "kitchen_task", entityId: t.id })
+    );
   } catch (error) {
     console.error("[auto-populate] Failed to discover kitchen tasks:", error);
     return [];
@@ -226,7 +236,9 @@ async function discoverClients(
       take: 50,
     });
 
-    return clients.map((c): DiscoveredEntity => ({ entityType: "client", entityId: c.id }));
+    return clients.map(
+      (c): DiscoveredEntity => ({ entityType: "client", entityId: c.id })
+    );
   } catch (error) {
     console.error("[auto-populate] Failed to discover clients:", error);
     return [];
@@ -248,7 +260,9 @@ async function discoverEmployees(
       take: 50,
     });
 
-    return users.map((u): DiscoveredEntity => ({ entityType: "employee", entityId: u.id }));
+    return users.map(
+      (u): DiscoveredEntity => ({ entityType: "employee", entityId: u.id })
+    );
   } catch (error) {
     console.error("[auto-populate] Failed to discover employees:", error);
     return [];
@@ -274,7 +288,12 @@ async function discoverInventoryItems(
       LIMIT 50
     `;
 
-    return items.map((i): DiscoveredEntity => ({ entityType: "inventory_item", entityId: i.id }));
+    return items.map(
+      (i): DiscoveredEntity => ({
+        entityType: "inventory_item",
+        entityId: i.id,
+      })
+    );
   } catch (error) {
     console.error("[auto-populate] Failed to discover inventory items:", error);
     return [];
@@ -295,7 +314,10 @@ const OFFSET_X = 100;
 const OFFSET_Y = 100;
 
 /** Calculate grid position for the Nth new card, offset by existing card count */
-function gridPosition(index: number, existingCount: number): { x: number; y: number } {
+function gridPosition(
+  index: number,
+  existingCount: number
+): { x: number; y: number } {
   const totalIndex = existingCount + index;
   const col = totalIndex % GRID_COLS;
   const row = Math.floor(totalIndex / GRID_COLS);
@@ -499,7 +521,10 @@ export async function autoPopulateBoard(
       newProjections: [],
       matchedCount: 0,
       skippedCount: 0,
-      error: error instanceof Error ? error.message : "Failed to auto-populate board",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to auto-populate board",
     };
   }
 }

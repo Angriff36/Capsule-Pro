@@ -5,15 +5,18 @@ import {
   copyFileSync,
   existsSync,
   mkdirSync,
-  readFileSync,
   readdirSync,
+  readFileSync,
   rmSync,
 } from "node:fs";
 import { join, relative, resolve } from "node:path";
 
 const repoRoot = resolve(process.cwd());
 const cliDir = resolve(repoRoot, "packages/manifest-runtime/packages/cli");
-const defaultIr = resolve(repoRoot, "packages/manifest-ir/ir/kitchen/kitchen.ir.json");
+const defaultIr = resolve(
+  repoRoot,
+  "packages/manifest-ir/ir/kitchen/kitchen.ir.json"
+);
 const defaultOutput = resolve(repoRoot, "apps/api/app/api/kitchen");
 
 const userArgs = process.argv.slice(2);
@@ -59,7 +62,7 @@ const collectFiles = (rootDir) => {
   const stack = [rootDir];
   while (stack.length > 0) {
     const current = stack.pop();
-    if (!current || !existsSync(current)) {
+    if (!(current && existsSync(current))) {
       continue;
     }
     for (const entry of readdirSync(current, { withFileTypes: true })) {
@@ -181,7 +184,10 @@ if (result.status === 0) {
     if (existsSync(nestedAppsDir)) {
       rmSync(nestedAppsDir, { recursive: true, force: true });
     }
-    const materializeResult = materializeNormalizedOutput(stagingDir, outputDir);
+    const materializeResult = materializeNormalizedOutput(
+      stagingDir,
+      outputDir
+    );
     copiedFiles = materializeResult.copiedFiles;
     skippedOverwriteCount = materializeResult.skippedOverwriteCount;
     const generatedRoutes = collectFiles(outputDir).filter((filePath) =>

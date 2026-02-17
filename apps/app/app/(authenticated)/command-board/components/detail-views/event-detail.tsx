@@ -33,7 +33,9 @@ const statusVariantMap = {
 
 /** Format a date for display using Intl */
 function formatDate(date: Date | null): string | null {
-  if (!date) return null;
+  if (!date) {
+    return null;
+  }
   return new Intl.DateTimeFormat("en-US", {
     weekday: "short",
     month: "long",
@@ -44,7 +46,9 @@ function formatDate(date: Date | null): string | null {
 
 /** Format a time for display using Intl */
 function formatTime(date: Date | null): string | null {
-  if (!date) return null;
+  if (!date) {
+    return null;
+  }
   return new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
     minute: "2-digit",
@@ -53,7 +57,9 @@ function formatTime(date: Date | null): string | null {
 
 /** Format currency using Intl */
 function formatCurrency(amount: number | null): string | null {
-  if (amount == null) return null;
+  if (amount == null) {
+    return null;
+  }
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",

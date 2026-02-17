@@ -36,36 +36,40 @@ export function useBoardHistory() {
   }, []);
 
   // Undo: restore previous state
-  const undo = useCallback((currentProjections: BoardProjection[]): BoardProjection[] => {
-    if (past.length === 0) return currentProjections;
+  const undo = useCallback(
+    (currentProjections: BoardProjection[]): BoardProjection[] => {
+      if (past.length === 0) {
+        return currentProjections;
+      }
 
-    const previous = past[past.length - 1];
-    const newPast = past.slice(0, -1);
+      const previous = past.at(-1);
+      const newPast = past.slice(0, -1);
 
-    setPast(newPast);
-    setFuture((prev) => [
-      { projections: currentProjections },
-      ...prev,
-    ]);
+      setPast(newPast);
+      setFuture((prev) => [{ projections: currentProjections }, ...prev]);
 
-    return previous.projections;
-  }, [past]);
+      return previous.projections;
+    },
+    [past]
+  );
 
   // Redo: restore next state
-  const redo = useCallback((currentProjections: BoardProjection[]): BoardProjection[] => {
-    if (future.length === 0) return currentProjections;
+  const redo = useCallback(
+    (currentProjections: BoardProjection[]): BoardProjection[] => {
+      if (future.length === 0) {
+        return currentProjections;
+      }
 
-    const next = future[0];
-    const newFuture = future.slice(1);
+      const next = future[0];
+      const newFuture = future.slice(1);
 
-    setFuture(newFuture);
-    setPast((prev) => [
-      ...prev,
-      { projections: currentProjections },
-    ]);
+      setFuture(newFuture);
+      setPast((prev) => [...prev, { projections: currentProjections }]);
 
-    return next.projections;
-  }, [future]);
+      return next.projections;
+    },
+    [future]
+  );
 
   // Clear history
   const clearHistory = useCallback(() => {

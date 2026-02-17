@@ -2,13 +2,13 @@
 // React Flow Types — Node and edge types for @xyflow/react integration
 // ============================================================================
 
-import type { Node, Edge } from "@xyflow/react";
-import type { ResolvedEntity } from "./entities";
+import type { Edge, Node } from "@xyflow/react";
 import type {
+  BoardAnnotation,
   BoardProjection,
   DerivedConnection,
-  BoardAnnotation,
 } from "./board";
+import type { ResolvedEntity } from "./entities";
 
 // ============================================================================
 // Node Data Types
@@ -76,7 +76,7 @@ export function projectionToNode(
   callbacks: {
     onOpenDetail: (entityType: string, entityId: string) => void;
     onRemove: (projectionId: string) => void;
-  },
+  }
 ): ProjectionNode {
   return {
     id: projection.id,
@@ -118,11 +118,17 @@ export function connectionToEdge(connection: DerivedConnection): BoardEdge {
 
 /** Convert a BoardAnnotation into a React Flow Edge (connection type only) */
 export function annotationToEdge(
-  annotation: BoardAnnotation,
+  annotation: BoardAnnotation
 ): BoardEdge | null {
-  if (annotation.annotationType !== "connection") return null;
-  if (!annotation.fromProjectionId) return null;
-  if (!annotation.toProjectionId) return null;
+  if (annotation.annotationType !== "connection") {
+    return null;
+  }
+  if (!annotation.fromProjectionId) {
+    return null;
+  }
+  if (!annotation.toProjectionId) {
+    return null;
+  }
 
   return {
     id: `annotation-${annotation.id}`,

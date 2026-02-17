@@ -33,7 +33,7 @@ interface ProjectionRef {
  * - Client → Proposal (Proposal.clientId)
  */
 export async function deriveConnections(
-  projections: ProjectionRef[],
+  projections: ProjectionRef[]
 ): Promise<DerivedConnection[]> {
   try {
     const tenantId = await requireTenantId();
@@ -60,7 +60,7 @@ export async function deriveConnections(
     // Helper to find a projection by entity type + entity ID
     const findProj = (
       type: string,
-      entityId: string,
+      entityId: string
     ): ProjectionRef | undefined => lookupMap.get(`${type}:${entityId}`);
 
     const connections: DerivedConnection[] = [];
@@ -71,10 +71,12 @@ export async function deriveConnections(
       fromProj: ProjectionRef,
       toProj: ProjectionRef,
       relationshipType: string,
-      label: string,
+      label: string
     ) => {
       const id = `${fromProj.id}-${toProj.id}-${relationshipType}`;
-      if (seen.has(id)) return;
+      if (seen.has(id)) {
+        return;
+      }
       seen.add(id);
       connections.push({
         id,
@@ -117,7 +119,9 @@ export async function deriveConnections(
           });
 
           for (const event of events) {
-            if (!event.clientId) continue;
+            if (!event.clientId) {
+              continue;
+            }
             const clientProj = findProj("client", event.clientId);
             const eventProj = findProj("event", event.id);
             if (clientProj && eventProj) {
@@ -125,14 +129,14 @@ export async function deriveConnections(
                 clientProj,
                 eventProj,
                 "client_to_event",
-                "has event",
+                "has event"
               );
             }
           }
         } catch (error) {
           console.error(
             "[derive-connections] Failed to derive client→event connections:",
-            error,
+            error
           );
         }
       });
@@ -159,18 +163,13 @@ export async function deriveConnections(
             const eventProj = findProj("event", task.eventId);
             const taskProj = findProj("prep_task", task.id);
             if (eventProj && taskProj) {
-              addConnection(
-                eventProj,
-                taskProj,
-                "event_to_task",
-                "includes",
-              );
+              addConnection(eventProj, taskProj, "event_to_task", "includes");
             }
           }
         } catch (error) {
           console.error(
             "[derive-connections] Failed to derive event→prepTask connections:",
-            error,
+            error
           );
         }
       });
@@ -183,23 +182,19 @@ export async function deriveConnections(
           const eventIds = idsForType("event");
           const employeeIds = idsForType("employee");
 
-          const assignments =
-            await database.eventStaffAssignment.findMany({
-              where: {
-                tenantId,
-                eventId: { in: eventIds },
-                employeeId: { in: employeeIds },
-                deletedAt: null,
-              },
-              select: { eventId: true, employeeId: true },
-            });
+          const assignments = await database.eventStaffAssignment.findMany({
+            where: {
+              tenantId,
+              eventId: { in: eventIds },
+              employeeId: { in: employeeIds },
+              deletedAt: null,
+            },
+            select: { eventId: true, employeeId: true },
+          });
 
           for (const assignment of assignments) {
             const eventProj = findProj("event", assignment.eventId);
-            const employeeProj = findProj(
-              "employee",
-              assignment.employeeId,
-            );
+            const employeeProj = findProj("employee", assignment.employeeId);
             if (eventProj && employeeProj) {
               // Deduplicated by addConnection — multiple roles on same
               // event produce only one connection
@@ -207,14 +202,14 @@ export async function deriveConnections(
                 eventProj,
                 employeeProj,
                 "event_to_employee",
-                "assigned",
+                "assigned"
               );
             }
           }
         } catch (error) {
           console.error(
             "[derive-connections] Failed to derive event→employee connections:",
-            error,
+            error
           );
         }
       });
@@ -238,7 +233,9 @@ export async function deriveConnections(
           });
 
           for (const shipment of shipments) {
-            if (!shipment.eventId) continue;
+            if (!shipment.eventId) {
+              continue;
+            }
             const eventProj = findProj("event", shipment.eventId);
             const shipmentProj = findProj("shipment", shipment.id);
             if (eventProj && shipmentProj) {
@@ -246,14 +243,14 @@ export async function deriveConnections(
                 eventProj,
                 shipmentProj,
                 "event_to_shipment",
-                "delivery",
+                "delivery"
               );
             }
           }
         } catch (error) {
           console.error(
             "[derive-connections] Failed to derive event→shipment connections:",
-            error,
+            error
           );
         }
       });
@@ -277,7 +274,9 @@ export async function deriveConnections(
           });
 
           for (const proposal of proposals) {
-            if (!proposal.clientId) continue;
+            if (!proposal.clientId) {
+              continue;
+            }
             const clientProj = findProj("client", proposal.clientId);
             const proposalProj = findProj("proposal", proposal.id);
             if (clientProj && proposalProj) {
@@ -285,14 +284,14 @@ export async function deriveConnections(
                 clientProj,
                 proposalProj,
                 "client_to_proposal",
-                "proposal",
+                "proposal"
               );
             }
           }
         } catch (error) {
           console.error(
             "[derive-connections] Failed to derive client→proposal connections:",
-            error,
+            error
           );
         }
       });
@@ -303,10 +302,7 @@ export async function deriveConnections(
 
     return connections;
   } catch (error) {
-    console.error(
-      "[derive-connections] Failed to derive connections:",
-      error,
-    );
+    console.error("[derive-connections] Failed to derive connections:", error);
     return [];
   }
 }

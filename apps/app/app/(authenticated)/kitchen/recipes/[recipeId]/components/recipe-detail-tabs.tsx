@@ -1,6 +1,5 @@
 "use client";
 
-import { captureException } from "@sentry/nextjs";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -28,6 +27,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
+import { captureException } from "@sentry/nextjs";
 import {
   ChefHat,
   Clock,
@@ -40,8 +40,8 @@ import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import {
-  kitchenRecipeVersions,
   kitchenRecipeVersionDetail,
+  kitchenRecipeVersions,
   kitchenRecipeVersionsCompare,
 } from "@/app/lib/routes";
 import {
@@ -429,7 +429,7 @@ function HistoryTabContent({
     }
     // Use functional updates to avoid needing compareFrom/compareTo in deps
     setCompareFrom((prev) => prev ?? versions[0].id);
-    setCompareTo((prev) => prev ?? (versions[1]?.id ?? versions[0].id));
+    setCompareTo((prev) => prev ?? versions[1]?.id ?? versions[0].id);
   }, [versions]);
 
   const handleViewVersion = async (version: RecipeVersionRow) => {

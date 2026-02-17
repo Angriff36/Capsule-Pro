@@ -1,46 +1,46 @@
 "use client";
 
 import {
-  ReactFlow,
   Background,
   BackgroundVariant,
   Controls,
-  MiniMap,
-  SelectionMode,
-  useNodesState,
-  useEdgesState,
-  type NodeChange,
   type EdgeChange,
+  MiniMap,
   type Node,
+  type NodeChange,
+  ReactFlow,
+  SelectionMode,
+  useEdgesState,
+  useNodesState,
+  useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
+import { LayoutGrid } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
-import { LayoutGrid } from "lucide-react";
-
-import { nodeTypes } from "../nodes/node-types";
-import type {
-  BoardProjection,
-  ResolvedEntity,
-  DerivedConnection,
-  BoardAnnotation,
-} from "../types/index";
-import type { BoardEdge, ProjectionNode } from "../types/flow";
 import {
-  projectionToNode,
-  connectionToEdge,
-  annotationToEdge,
-} from "../types/flow";
-import { RELATIONSHIP_STYLES } from "../types/board";
-import {
-  updateProjectionPosition,
+  batchRemoveProjections,
   batchUpdatePositions,
   removeProjection,
-  batchRemoveProjections,
+  updateProjectionPosition,
 } from "../actions/projections";
-import { useBoardSync, type BoardSyncEvent } from "../hooks/use-board-sync";
+import { useBoardSync } from "../hooks/use-board-sync";
 import { useLiveblocksSync } from "../hooks/use-liveblocks-sync";
+import { nodeTypes } from "../nodes/node-types";
+import { RELATIONSHIP_STYLES } from "../types/board";
+import type { BoardEdge, ProjectionNode } from "../types/flow";
+import {
+  annotationToEdge,
+  connectionToEdge,
+  projectionToNode,
+} from "../types/flow";
+import type {
+  BoardAnnotation,
+  BoardProjection,
+  DerivedConnection,
+  ResolvedEntity,
+} from "../types/index";
 
 // ============================================================================
 // Types
@@ -79,6 +79,99 @@ const ENTITY_MINIMAP_COLORS: Record<string, string> = {
 const DEFAULT_MINIMAP_COLOR = "#9ca3af";
 
 // ============================================================================
+// RTS-style Edge Auto-Pan Hook
+// ============================================================================
+
+/**
+ * Pans the React Flow viewport when the mouse is near the edge of the canvas,
+ * like an RTS game. Speed scales linearly from 0 at the outer edge of the
+ * threshold zone to MAX_SPEED at the very edge of the container.
+ */
+function useEdgePan(containerRef: React.RefObject<HTMLDivElement | null>) {
+  const { getViewport, setViewport } = useReactFlow();
+
+  // Pixels from the container edge that trigger panning
+  const EDGE_THRESHOLD = 80;
+  // Maximum pan speed in flow-units per frame (~60fps)
+  const MAX_SPEED = 12;
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) {
+      return;
+    }
+
+    // Current mouse position relative to the container, updated on mousemove
+    let mouseX = -1;
+    let mouseY = -1;
+    let rafId: number | null = null;
+
+    function computeVelocity(pos: number, size: number): number {
+      // Distance from near edge
+      const nearDist = pos;
+      // Distance from far edge
+      const farDist = size - pos;
+
+      if (nearDist < EDGE_THRESHOLD) {
+        // Closer to 0 → stronger pull in negative direction
+        return -MAX_SPEED * (1 - nearDist / EDGE_THRESHOLD);
+      }
+      if (farDist < EDGE_THRESHOLD) {
+        // Closer to size → stronger pull in positive direction
+        return MAX_SPEED * (1 - farDist / EDGE_THRESHOLD);
+      }
+      return 0;
+    }
+
+    function tick() {
+      if (mouseX < 0 || mouseY < 0) {
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+
+      const el = containerRef.current;
+      if (!el) {
+        return;
+      }
+      const { width, height } = el.getBoundingClientRect();
+      const vx = computeVelocity(mouseX, width);
+      const vy = computeVelocity(mouseY, height);
+
+      if (vx !== 0 || vy !== 0) {
+        const { x, y, zoom } = getViewport();
+        setViewport({ x: x - vx, y: y - vy, zoom });
+      }
+
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function onMouseMove(e: MouseEvent) {
+      // container is non-null here — guarded above before addEventListener
+      const rect = (container as HTMLDivElement).getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = e.clientY - rect.top;
+    }
+
+    function onMouseLeave() {
+      mouseX = -1;
+      mouseY = -1;
+    }
+
+    container.addEventListener("mousemove", onMouseMove);
+    container.addEventListener("mouseleave", onMouseLeave);
+    rafId = requestAnimationFrame(tick);
+
+    return () => {
+      container.removeEventListener("mousemove", onMouseMove);
+      container.removeEventListener("mouseleave", onMouseLeave);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+    };
+  }, [containerRef, getViewport, setViewport]);
+}
+
+// ============================================================================
 // Inner Component (must be inside ReactFlowProvider)
 // ============================================================================
 
@@ -92,6 +185,12 @@ function BoardFlowInner({
   onProjectionAdded,
   onProjectionRemoved,
 }: BoardFlowProps) {
+  // Ref for the canvas wrapper — used by the edge-pan hook
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // RTS-style edge auto-pan
+  useEdgePan(containerRef);
+
   // Track which nodes are currently being dragged to detect drag-end
   const draggingNodesRef = useRef<Set<string>>(new Set());
 
@@ -237,7 +336,9 @@ function BoardFlowInner({
       onNodesChange(changes);
 
       for (const change of changes) {
-        if (change.type !== "position") continue;
+        if (change.type !== "position") {
+          continue;
+        }
 
         if (change.dragging) {
           // Node is being dragged — track it and broadcast position to peers
@@ -275,9 +376,7 @@ function BoardFlowInner({
                   for (const node of currentNodes) {
                     if (node.selected || node.id === changedId) {
                       const pos =
-                        node.id === changedId
-                          ? changedPosition
-                          : node.position;
+                        node.id === changedId ? changedPosition : node.position;
                       updates.push({
                         id: node.id,
                         x: pos.x,
@@ -334,7 +433,9 @@ function BoardFlowInner({
 
   const handleDelete = useCallback(
     async (deletedNodes: Node[]) => {
-      if (deletedNodes.length === 0) return;
+      if (deletedNodes.length === 0) {
+        return;
+      }
 
       const projectionIds = deletedNodes.map((n) => n.id);
 
@@ -373,7 +474,9 @@ function BoardFlowInner({
   const minimapNodeColor = useCallback((node: Node) => {
     const data = node.data as { projection?: BoardProjection } | undefined;
     const entityType = data?.projection?.entityType;
-    if (!entityType) return DEFAULT_MINIMAP_COLOR;
+    if (!entityType) {
+      return DEFAULT_MINIMAP_COLOR;
+    }
     return ENTITY_MINIMAP_COLORS[entityType] ?? DEFAULT_MINIMAP_COLOR;
   }, []);
 
@@ -400,40 +503,53 @@ function BoardFlowInner({
   }
 
   return (
-    <ReactFlow
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={handleNodesChange}
-      onEdgesChange={handleEdgesChange}
-      onNodesDelete={handleDelete}
-      nodeTypes={nodeTypes}
-      fitView
-      fitViewOptions={{ padding: 0.2 }}
-      minZoom={0.1}
-      maxZoom={2}
-      snapToGrid
-      snapGrid={[20, 20]}
-      deleteKeyCode={["Backspace", "Delete"]}
-      multiSelectionKeyCode="Shift"
-      selectionOnDrag
-      panOnDrag={[1, 2]}
-      selectionMode={SelectionMode.Partial}
-      className="bg-background"
-      proOptions={{ hideAttribution: true }}
-    >
-      <Background
-        variant={BackgroundVariant.Dots}
-        gap={20}
-        size={1}
-        className="!bg-background"
-      />
-      <Controls style={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '6px' }} />
-      <MiniMap
-        style={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '6px' }}
-        nodeColor={minimapNodeColor}
-        maskColor="rgba(0,0,0,0.1)"
-      />
-    </ReactFlow>
+    <div className="h-full w-full" ref={containerRef}>
+      <ReactFlow
+        className="bg-background"
+        deleteKeyCode={["Backspace", "Delete"]}
+        edges={edges}
+        fitView
+        fitViewOptions={{ padding: 0.2 }}
+        maxZoom={2}
+        minZoom={0.1}
+        multiSelectionKeyCode="Shift"
+        nodes={nodes}
+        nodeTypes={nodeTypes}
+        onEdgesChange={handleEdgesChange}
+        onNodesChange={handleNodesChange}
+        onNodesDelete={handleDelete}
+        panActivationKeyCode="Space"
+        panOnDrag={[1, 2]}
+        proOptions={{ hideAttribution: true }}
+        selectionMode={SelectionMode.Partial}
+        selectionOnDrag
+        snapGrid={[20, 20]}
+        snapToGrid
+      >
+        <Background
+          className="!bg-background"
+          gap={20}
+          size={1}
+          variant={BackgroundVariant.Dots}
+        />
+        <Controls
+          style={{
+            backgroundColor: "hsl(var(--card))",
+            border: "1px solid hsl(var(--border))",
+            borderRadius: "6px",
+          }}
+        />
+        <MiniMap
+          maskColor="rgba(0,0,0,0.1)"
+          nodeColor={minimapNodeColor}
+          style={{
+            backgroundColor: "hsl(var(--card))",
+            border: "1px solid hsl(var(--border))",
+            borderRadius: "6px",
+          }}
+        />
+      </ReactFlow>
+    </div>
   );
 }
 

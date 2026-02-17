@@ -107,7 +107,9 @@ function shouldExclude(relPath) {
 
 function walkDir(dir) {
   const results = [];
-  if (!existsSync(dir)) return results;
+  if (!existsSync(dir)) {
+    return results;
+  }
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
@@ -127,7 +129,9 @@ function ensureDir(filePath) {
 }
 
 function filesAreIdentical(a, b) {
-  if (!(existsSync(a) && existsSync(b))) return false;
+  if (!(existsSync(a) && existsSync(b))) {
+    return false;
+  }
   const bufA = readFileSync(a);
   const bufB = readFileSync(b);
   return bufA.equals(bufB);
@@ -166,17 +170,10 @@ function mergePackageJson(sourcePkg, targetPkg) {
   // Keep local dependencies (workspace:* refs)
   // Keep local devDependencies
 
-  // Merge scripts: upstream scripts added, local scripts preserved
+  // Merge scripts: upstream adds new scripts, local overrides win for existing keys
+  // This ensures local overrides (e.g. build: "echo 'pre-built'") survive syncs.
   if (sourcePkg.scripts) {
-    merged.scripts = { ...targetPkg.scripts, ...sourcePkg.scripts };
-    // But keep local-only scripts that upstream doesn't have
-    if (targetPkg.scripts) {
-      for (const [key, value] of Object.entries(targetPkg.scripts)) {
-        if (!(key in sourcePkg.scripts)) {
-          merged.scripts[key] = value;
-        }
-      }
-    }
+    merged.scripts = { ...sourcePkg.scripts, ...targetPkg.scripts };
   }
 
   return merged;
@@ -260,8 +257,11 @@ function main() {
         copyFileSync(srcPath, dstPath);
       }
 
-      if (action === "ADD") added++;
-      else updated++;
+      if (action === "ADD") {
+        added++;
+      } else {
+        updated++;
+      }
     } else if (srcStat.isDirectory()) {
       // Directory sync — collect all source files
       const srcFiles = walkDir(srcPath);
@@ -272,7 +272,9 @@ function main() {
 
       for (const srcFile of srcFiles) {
         const relToSrc = relative(srcPath, srcFile);
-        if (shouldExclude(relToSrc)) continue;
+        if (shouldExclude(relToSrc)) {
+          continue;
+        }
 
         const dstFile = join(dstPath, relToSrc);
         expectedDstFiles.add(dstFile);
@@ -291,15 +293,20 @@ function main() {
           copyFileSync(srcFile, dstFile);
         }
 
-        if (action === "ADD") added++;
-        else updated++;
+        if (action === "ADD") {
+          added++;
+        } else {
+          updated++;
+        }
       }
 
       // Remove files in target that don't exist in source (stale files)
       for (const dstFile of dstFiles) {
         if (!expectedDstFiles.has(dstFile)) {
           const relToTarget = relative(dstPath, dstFile);
-          if (shouldExclude(relToTarget)) continue;
+          if (shouldExclude(relToTarget)) {
+            continue;
+          }
 
           const relDisplay = join(dstBase, relToTarget).replace(/\\/g, "/");
           console.log(`  - ${relDisplay} (stale — removed)`);
@@ -330,7 +337,7 @@ function main() {
 
   console.log("");
   const merged = mergePackageJson(sourcePkg, targetPkg);
-  const mergedJson = JSON.stringify(merged, null, 2) + "\n";
+  const mergedJson = `${JSON.stringify(merged, null, 2)}\n`;
   const currentJson = existsSync(targetPkgPath)
     ? readFileSync(targetPkgPath, "utf-8")
     : "";
@@ -373,7 +380,7 @@ function main() {
           shell: process.platform === "win32",
         });
         console.log("[sync-manifest-runtime] Dist rebuild complete.");
-      } catch (err) {
+      } catch (_err) {
         console.error(
           "[sync-manifest-runtime] ERROR: Dist rebuild failed. Run manually:"
         );

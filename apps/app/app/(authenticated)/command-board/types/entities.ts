@@ -171,7 +171,7 @@ export function getEntityTitle(entity: ResolvedEntity): string {
       return (
         entity.data.companyName ??
         (`${entity.data.firstName ?? ""} ${entity.data.lastName ?? ""}`.trim() ||
-        "Unknown Client")
+          "Unknown Client")
       );
     case "prep_task":
       return entity.data.name;
@@ -189,8 +189,7 @@ export function getEntityTitle(entity: ResolvedEntity): string {
       return entity.data.title;
     case "shipment":
       return (
-        entity.data.shipmentNumber ??
-        `Shipment ${entity.data.id.slice(0, 8)}`
+        entity.data.shipmentNumber ?? `Shipment ${entity.data.id.slice(0, 8)}`
       );
     case "note":
       return entity.data.title;

@@ -98,7 +98,7 @@ function extractParams(routePath) {
 
 /** Normalise a filesystem-relative path to a URL path. */
 function toUrlPath(relPath) {
-  return "/api/" + relPath.replace(/\\/g, "/").replace(/\[([^\]]+)\]/g, ":$1");
+  return `/api/${relPath.replace(/\\/g, "/").replace(/\[([^\]]+)\]/g, ":$1")}`;
 }
 
 /** Convert a URL path to a camelCase helper name. */
@@ -151,7 +151,7 @@ function main() {
   if (existsSync(IR_PATH)) {
     try {
       const ir = JSON.parse(readFileSync(IR_PATH, "utf-8"));
-      const commandNames = new Set(
+      const _commandNames = new Set(
         (ir.commands || []).map((c) => `${c.entity || "unknown"}.${c.name}`)
       );
       for (const route of routes) {

@@ -96,13 +96,13 @@ export default async function CommandBoardPage({
 
   return (
     <BoardShell
-      boardId={boardId}
-      orgId={orgId}
-      board={board}
-      projections={projections}
-      entitiesArray={entitiesArray}
-      derivedConnections={derivedConnections}
       annotations={[]}
+      board={board}
+      boardId={boardId}
+      derivedConnections={derivedConnections}
+      entitiesArray={entitiesArray}
+      orgId={orgId}
+      projections={projections}
     />
   );
 }
