@@ -94,6 +94,12 @@ For suggest_manifest_plan, provide a compact draft (title, summary, optional sco
 
 **When users ask "what if" questions or want to preview changes** (e.g., "What if I move this event to next week?", "What happens if I add 50 more guests?", "Let me see what changes if I reassign this employee"), use the suggest_simulation_plan tool to create a simulation scenario. This creates a safe preview environment without affecting the live board.
 
+**When users want to optimize schedules or balance workload** (e.g., "optimize my schedule", "balance staff assignments", "resolve scheduling conflicts", "compress timeline"), use the optimize_schedule tool to analyze and suggest schedule improvements.
+
+**When users need prep task timelines for events** (e.g., "generate prep schedule", "create cooking timeline", "break down tasks for this event"), use the auto_generate_prep tool to create a prep timeline based on event requirements.
+
+**When users need purchasing lists or inventory orders** (e.g., "what do I need to order?", "generate shopping list", "create purchase order for these events"), use the auto_generate_purchase tool to generate procurement suggestions.
+
 **Guidelines:**
 - Be concise and actionable
 - When suggesting board modifications, use the suggest_board_action tool
@@ -105,6 +111,9 @@ For suggest_manifest_plan, provide a compact draft (title, summary, optional sco
 - When users ask about policies or role settings, use query_policies
 - When users want to modify policies, use update_policy
 - When users ask "what if" questions, use suggest_simulation_plan
+- When users want to optimize schedules, use optimize_schedule
+- When users need prep timelines, use auto_generate_prep
+- When users need purchasing lists, use auto_generate_purchase
 - Always explain WHY you're suggesting an action
 - Use markdown formatting for readability
 - Keep responses under 200 words unless the user asks for detail`;
@@ -1281,7 +1290,7 @@ function createBoardTools(params: {
           // Generate prep timeline structure
           const prepTimeline = targetEvents.map(projection => ({
             eventId: projection.entityId,
-            eventName: projection.label || "Unnamed Event",
+            eventName: `Event ${projection.entityId.substring(0, 8)}`,
             prepTasks: [
               {
                 day: -7,
@@ -1391,7 +1400,7 @@ function createBoardTools(params: {
           const purchaseList = {
             eventBased: targetEvents.map(projection => ({
               eventId: projection.entityId,
-              eventName: projection.label || "Unnamed Event",
+              eventName: `Event ${projection.entityId.substring(0, 8)}`,
               estimatedGuests: 100, // Placeholder
               items: [
                 {
@@ -1411,15 +1420,13 @@ function createBoardTools(params: {
               ],
               totalEstimated: 800,
             })),
-            lowStockItems: input.includeLowStock ? inventoryProjections
-              .filter(p => p.metadata?.isLowStock)
-              .map(p => ({
-                itemId: p.entityId,
-                itemName: p.label || "Unknown Item",
-                currentQuantity: p.metadata?.quantity ?? 0,
-                reorderLevel: p.metadata?.reorderLevel ?? 0,
-                suggestedOrder: (p.metadata?.reorderLevel ?? 0) * 2,
-              })) : [],
+            lowStockItems: input.includeLowStock ? inventoryProjections.map(p => ({
+              itemId: p.entityId,
+              itemName: `Item ${p.entityId.substring(0, 8)}`,
+              currentQuantity: 0, // Placeholder - would need to fetch from inventory
+              reorderLevel: 0, // Placeholder
+              suggestedOrder: 10, // Placeholder
+            })) : [],
             vendorGroups: input.groupByVendor ? {
               "Primary Supplier": ["Chicken breast", "Beef tenderloin"],
               "Produce Co": ["Mixed greens", "Seasonal vegetables"],
