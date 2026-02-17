@@ -1,46 +1,46 @@
-import type {
-  CompileToIRResult,
-  IR,
-  IRAction,
-  IRCommand,
-  IRComputedProperty,
-  IRConstraint,
-  IRDiagnostic,
-  IREntity,
-  IREvent,
-  IRExpression,
-  IRModule,
-  IRParameter,
-  IRPolicy,
-  IRProperty,
-  IRProvenance,
-  IRRelationship,
-  IRStore,
-  IRTransition,
-  IRType,
-  IRValue,
-  PropertyModifier,
-} from "./ir";
-import { globalIRCache, type IRCache } from "./ir-cache.js";
-import { Parser } from "./parser.js";
-import type {
-  ActionNode,
-  CommandNode,
-  ComputedPropertyNode,
-  ConstraintNode,
-  EntityNode,
-  ExpressionNode,
+import { Parser } from './parser.js';
+import {
   ManifestProgram,
-  OutboxEventNode,
+  EntityNode,
+  PropertyNode,
+  ComputedPropertyNode,
+  RelationshipNode,
+  CommandNode,
   ParameterNode,
   PolicyNode,
-  PropertyNode,
-  RelationshipNode,
   StoreNode,
-  TransitionNode,
+  OutboxEventNode,
+  ConstraintNode,
+  ActionNode,
+  ExpressionNode,
   TypeNode,
-} from "./types";
-import { COMPILER_VERSION, SCHEMA_VERSION } from "./version.js";
+  TransitionNode,
+} from './types';
+import {
+  IR,
+  IRModule,
+  IREntity,
+  IRProperty,
+  IRComputedProperty,
+  IRRelationship,
+  IRConstraint,
+  IRStore,
+  IREvent,
+  IRCommand,
+  IRParameter,
+  IRAction,
+  IRPolicy,
+  IRType,
+  IRValue,
+  IRExpression,
+  IRDiagnostic,
+  CompileToIRResult,
+  PropertyModifier,
+  IRProvenance,
+  IRTransition,
+} from './ir';
+import { globalIRCache, type IRCache } from './ir-cache.js';
+import { COMPILER_VERSION, SCHEMA_VERSION } from './version.js';
 
 /**
  * Compute SHA-256 hash of the source manifest
@@ -48,18 +48,15 @@ import { COMPILER_VERSION, SCHEMA_VERSION } from "./version.js";
 async function computeContentHash(source: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(source);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 /**
  * Create provenance metadata for the IR
  */
-async function createProvenance(
-  source: string,
-  irHash?: string
-): Promise<IRProvenance> {
+async function createProvenance(source: string, irHash?: string): Promise<IRProvenance> {
   return {
     contentHash: await computeContentHash(source),
     irHash,
@@ -75,9 +72,7 @@ async function createProvenance(
  */
 async function computeIRHash(ir: IR): Promise<string> {
   // Create a copy of the IR without the irHash for hashing
-  const { provenance, ...irWithoutProvenance } = ir as IR & {
-    provenance: IRProvenance;
-  };
+  const { provenance, ...irWithoutProvenance } = ir as IR & { provenance: IRProvenance };
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { irHash: _irHash, ...provenanceWithoutIrHash } = provenance;
 
@@ -93,7 +88,7 @@ async function computeIRHash(ir: IR): Promise<string> {
   // names at ALL levels, silently dropping nested properties — a subtle JSON.stringify
   // pitfall that would make the hash blind to content changes within entities/commands.
   const json = JSON.stringify(canonical, (_key: string, value: unknown) => {
-    if (value && typeof value === "object" && !Array.isArray(value)) {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
       const sorted: Record<string, unknown> = {};
       for (const k of Object.keys(value as Record<string, unknown>).sort()) {
         sorted[k] = (value as Record<string, unknown>)[k];
@@ -104,14 +99,14 @@ async function computeIRHash(ir: IR): Promise<string> {
   });
   const encoder = new TextEncoder();
   const data = encoder.encode(json);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 export class IRCompiler {
   private diagnostics: IRDiagnostic[] = [];
-  private readonly cache: IRCache;
+  private cache: IRCache;
 
   constructor(cache?: IRCache) {
     this.cache = cache ?? globalIRCache;
@@ -123,18 +118,15 @@ export class IRCompiler {
    * beyond what the parser catches (e.g., duplicate constraint codes).
    */
   private emitDiagnostic(
-    severity: "error" | "warning",
+    severity: 'error' | 'warning',
     message: string,
     line?: number,
-    column?: number
+    column?: number,
   ): void {
     this.diagnostics.push({ severity, message, line, column });
   }
 
-  async compileToIR(
-    source: string,
-    options?: { useCache?: boolean }
-  ): Promise<CompileToIRResult> {
+  async compileToIR(source: string, options?: { useCache?: boolean }): Promise<CompileToIRResult> {
     this.diagnostics = [];
 
     // vNext: Check cache before compilation
@@ -159,14 +151,14 @@ export class IRCompiler {
       });
     }
 
-    if (errors.some((e) => e.severity === "error")) {
+    if (errors.some(e => e.severity === 'error')) {
       return { ir: null, diagnostics: this.diagnostics };
     }
 
     const ir = await this.transformProgram(program, source);
 
     // Check for semantic errors emitted during transformation (e.g., duplicate constraint codes)
-    if (this.diagnostics.some((d) => d.severity === "error")) {
+    if (this.diagnostics.some(d => d.severity === 'error')) {
       return { ir: null, diagnostics: this.diagnostics };
     }
 
@@ -179,107 +171,58 @@ export class IRCompiler {
     return { ir, diagnostics: this.diagnostics };
   }
 
-  private async transformProgram(
-    program: ManifestProgram,
-    source: string
-  ): Promise<IR> {
-    const modules: IRModule[] = program.modules.map((m) =>
-      this.transformModule(m)
-    );
+  private async transformProgram(program: ManifestProgram, source: string): Promise<IR> {
+    const modules: IRModule[] = program.modules.map(m => this.transformModule(m));
     const entities: IREntity[] = [
-      ...program.entities.map((e) => this.transformEntity(e)),
-      ...program.modules.flatMap((m) =>
-        m.entities.map((e) => this.transformEntity(e, m.name))
-      ),
+      ...program.entities.map(e => this.transformEntity(e)),
+      ...program.modules.flatMap(m => m.entities.map(e => this.transformEntity(e, m.name))),
     ];
 
     // Collect entity-scoped stores (defined as "store in <target>" inside entity)
     const entityScopedStores: IRStore[] = [
-      ...program.entities
-        .filter((e) => e.store)
-        .map((e) => ({
+      ...program.entities.filter(e => e.store).map(e => ({
+        entity: e.name,
+        target: e.store === 'filesystem' ? 'localStorage' : e.store as 'memory' | 'localStorage' | 'postgres' | 'supabase',
+        config: {},
+      })),
+      ...program.modules.flatMap(m =>
+        m.entities.filter(e => e.store).map(e => ({
           entity: e.name,
-          target:
-            e.store === "filesystem"
-              ? "localStorage"
-              : (e.store as
-                  | "memory"
-                  | "localStorage"
-                  | "postgres"
-                  | "supabase"),
+          target: e.store === 'filesystem' ? 'localStorage' : e.store as 'memory' | 'localStorage' | 'postgres' | 'supabase',
           config: {},
-        })),
-      ...program.modules.flatMap((m) =>
-        m.entities
-          .filter((e) => e.store)
-          .map((e) => ({
-            entity: e.name,
-            target:
-              e.store === "filesystem"
-                ? "localStorage"
-                : (e.store as
-                    | "memory"
-                    | "localStorage"
-                    | "postgres"
-                    | "supabase"),
-            config: {},
-          }))
+        }))
       ),
     ];
 
     const stores: IRStore[] = [
-      ...program.stores.map((s) => this.transformStore(s)),
-      ...program.modules.flatMap((m) =>
-        m.stores.map((s) => this.transformStore(s))
-      ),
+      ...program.stores.map(s => this.transformStore(s)),
+      ...program.modules.flatMap(m => m.stores.map(s => this.transformStore(s))),
       ...entityScopedStores,
     ];
     const events: IREvent[] = [
-      ...program.events.map((e) => this.transformEvent(e)),
-      ...program.modules.flatMap((m) =>
-        m.events.map((e) => this.transformEvent(e))
-      ),
+      ...program.events.map(e => this.transformEvent(e)),
+      ...program.modules.flatMap(m => m.events.map(e => this.transformEvent(e))),
     ];
     const commands: IRCommand[] = [
-      ...program.commands.map((c) => this.transformCommand(c)),
-      ...program.modules.flatMap((m) =>
-        m.commands.map((c) => this.transformCommand(c, m.name))
-      ),
-      ...program.entities.flatMap((e) => {
+      ...program.commands.map(c => this.transformCommand(c)),
+      ...program.modules.flatMap(m => m.commands.map(c => this.transformCommand(c, m.name))),
+      ...program.entities.flatMap(e => {
         // Get default policies from entity for expansion
-        const defaultPolicies = e.policies
-          .filter((p) => p.isDefault)
-          .map((p) => p.name);
-        return e.commands.map((c) =>
-          this.transformCommand(c, undefined, e.name, defaultPolicies)
-        );
+        const defaultPolicies = e.policies.filter(p => p.isDefault).map(p => p.name);
+        return e.commands.map(c => this.transformCommand(c, undefined, e.name, defaultPolicies));
       }),
-      ...program.modules.flatMap((m) =>
-        m.entities.flatMap((e) => {
-          // Get default policies from entity for expansion
-          const defaultPolicies = e.policies
-            .filter((p) => p.isDefault)
-            .map((p) => p.name);
-          return e.commands.map((c) =>
-            this.transformCommand(c, m.name, e.name, defaultPolicies)
-          );
-        })
-      ),
+      ...program.modules.flatMap(m => m.entities.flatMap(e => {
+        // Get default policies from entity for expansion
+        const defaultPolicies = e.policies.filter(p => p.isDefault).map(p => p.name);
+        return e.commands.map(c => this.transformCommand(c, m.name, e.name, defaultPolicies));
+      })),
     ];
     const policies: IRPolicy[] = [
-      ...program.policies.map((p) => this.transformPolicy(p)),
-      ...program.modules.flatMap((m) =>
-        m.policies.map((p) => this.transformPolicy(p, m.name))
-      ),
+      ...program.policies.map(p => this.transformPolicy(p)),
+      ...program.modules.flatMap(m => m.policies.map(p => this.transformPolicy(p, m.name))),
       // Extract entity-scoped policies with entity name
-      ...program.entities.flatMap((e) =>
-        e.policies.map((p) => this.transformPolicy(p, undefined, e.name))
-      ),
-      ...program.modules.flatMap((m) =>
-        m.entities.flatMap((e) =>
-          e.policies.map((p) => this.transformPolicy(p, m.name, e.name))
-        )
-      ),
+      ...program.entities.flatMap(e => e.policies.map(p => this.transformPolicy(p, undefined, e.name))),
+      ...program.modules.flatMap(m => m.entities.flatMap(e => e.policies.map(p => this.transformPolicy(p, m.name, e.name)))),
     ];
 
     // Create provenance once (single timestamp) then compute hash and stamp irHash.
@@ -288,7 +231,7 @@ export class IRCompiler {
     // compiledAt) to ensure the runtime can reproduce the hash exactly.
     const provenance = await createProvenance(source);
     const irWithoutHash: IR = {
-      version: "1.0",
+      version: '1.0',
       provenance,
       modules,
       entities,
@@ -306,63 +249,44 @@ export class IRCompiler {
     };
   }
 
-  private transformModule(m: {
-    name: string;
-    entities: EntityNode[];
-    commands: CommandNode[];
-    stores: StoreNode[];
-    events: OutboxEventNode[];
-    policies: PolicyNode[];
-  }): IRModule {
+  private transformModule(m: { name: string; entities: EntityNode[]; commands: CommandNode[]; stores: StoreNode[]; events: OutboxEventNode[]; policies: PolicyNode[] }): IRModule {
     return {
       name: m.name,
-      entities: m.entities.map((e) => e.name),
+      entities: m.entities.map(e => e.name),
       commands: [
-        ...m.commands.map((c) => c.name),
-        ...m.entities.flatMap((e) => e.commands.map((c) => c.name)),
+        ...m.commands.map(c => c.name),
+        ...m.entities.flatMap(e => e.commands.map(c => c.name)),
       ],
-      stores: m.stores.map((s) => s.entity),
-      events: m.events.map((e) => e.name), // Entity-scoped events emit parser warning
+      stores: m.stores.map(s => s.entity),
+      events: m.events.map(e => e.name), // Entity-scoped events emit parser warning
       policies: [
-        ...m.policies.map((p) => p.name),
-        ...m.entities.flatMap((e) => e.policies.map((p) => p.name)),
+        ...m.policies.map(p => p.name),
+        ...m.entities.flatMap(e => e.policies.map(p => p.name)),
       ],
     };
   }
 
   private transformEntity(e: EntityNode, moduleName?: string): IREntity {
-    const constraints = e.constraints.map((c) => this.transformConstraint(c));
-    this.validateConstraintCodeUniqueness(
-      constraints,
-      e.constraints,
-      `entity '${e.name}'`
-    );
+    const constraints = e.constraints.map(c => this.transformConstraint(c));
+    this.validateConstraintCodeUniqueness(constraints, e.constraints, `entity '${e.name}'`);
 
     // Separate default policies from regular policies
-    const defaultPolicies = e.policies
-      .filter((p) => p.isDefault)
-      .map((p) => p.name);
-    const regularPolicies = e.policies
-      .filter((p) => !p.isDefault)
-      .map((p) => p.name);
+    const defaultPolicies = e.policies.filter(p => p.isDefault).map(p => p.name);
+    const regularPolicies = e.policies.filter(p => !p.isDefault).map(p => p.name);
 
     return {
       name: e.name,
       module: moduleName,
-      properties: e.properties.map((p) => this.transformProperty(p)),
-      computedProperties: e.computedProperties.map((cp) =>
-        this.transformComputedProperty(cp)
-      ),
-      relationships: e.relationships.map((r) => this.transformRelationship(r)),
-      commands: e.commands.map((c) => c.name),
+      properties: e.properties.map(p => this.transformProperty(p)),
+      computedProperties: e.computedProperties.map(cp => this.transformComputedProperty(cp)),
+      relationships: e.relationships.map(r => this.transformRelationship(r)),
+      commands: e.commands.map(c => c.name),
       constraints,
       policies: regularPolicies,
       ...(defaultPolicies.length > 0 ? { defaultPolicies } : {}),
       versionProperty: e.versionProperty,
       versionAtProperty: e.versionAtProperty,
-      ...(e.transitions.length > 0
-        ? { transitions: e.transitions.map((t) => this.transformTransition(t)) }
-        : {}),
+      ...(e.transitions.length > 0 ? { transitions: e.transitions.map(t => this.transformTransition(t)) } : {}),
     };
   }
 
@@ -378,16 +302,12 @@ export class IRCompiler {
     return {
       name: p.name,
       type: this.transformType(p.dataType),
-      defaultValue: p.defaultValue
-        ? this.transformExprToValue(p.defaultValue)
-        : undefined,
+      defaultValue: p.defaultValue ? this.transformExprToValue(p.defaultValue) : undefined,
       modifiers: p.modifiers as PropertyModifier[],
     };
   }
 
-  private transformComputedProperty(
-    cp: ComputedPropertyNode
-  ): IRComputedProperty {
+  private transformComputedProperty(cp: ComputedPropertyNode): IRComputedProperty {
     return {
       name: cp.name,
       type: this.transformType(cp.dataType),
@@ -411,15 +331,12 @@ export class IRCompiler {
       name: c.name,
       code: c.code || c.name, // Default to name if code not specified
       expression: this.transformExpression(c.expression),
-      severity: c.severity || "block", // Default to block
+      severity: c.severity || 'block', // Default to block
       message: c.message,
       messageTemplate: c.messageTemplate,
       detailsMapping: c.detailsMapping
         ? Object.fromEntries(
-            Object.entries(c.detailsMapping).map(([k, v]) => [
-              k,
-              this.transformExpression(v),
-            ])
+            Object.entries(c.detailsMapping).map(([k, v]) => [k, this.transformExpression(v)])
           )
         : undefined,
       overrideable: c.overrideable,
@@ -439,7 +356,7 @@ export class IRCompiler {
   private validateConstraintCodeUniqueness(
     irConstraints: IRConstraint[],
     astConstraints: ConstraintNode[],
-    scope: string
+    scope: string,
   ): void {
     const seen = new Map<string, number>(); // code → first occurrence index
     for (let i = 0; i < irConstraints.length; i++) {
@@ -449,10 +366,10 @@ export class IRCompiler {
         // Duplicate found — emit error at the duplicate's location
         const astNode = astConstraints[i];
         this.emitDiagnostic(
-          "error",
+          'error',
           `Duplicate constraint code '${code}' in ${scope}. First defined at constraint '${irConstraints[firstIdx].name}'.`,
           astNode.position?.line,
-          astNode.position?.column
+          astNode.position?.column,
         );
       } else {
         seen.set(code, i);
@@ -465,9 +382,7 @@ export class IRCompiler {
     if (s.config) {
       for (const [k, v] of Object.entries(s.config)) {
         const val = this.transformExprToValue(v);
-        if (val) {
-          config[k] = val;
-        }
+        if (val) config[k] = val;
       }
     }
     return {
@@ -478,11 +393,11 @@ export class IRCompiler {
   }
 
   private transformEvent(e: OutboxEventNode): IREvent {
-    if ("fields" in e.payload) {
+    if ('fields' in e.payload) {
       return {
         name: e.name,
         channel: e.channel,
-        payload: (e.payload.fields as ParameterNode[]).map((f) => ({
+        payload: (e.payload.fields as ParameterNode[]).map(f => ({
           name: f.name,
           type: this.transformType(f.dataType),
           required: f.required,
@@ -496,38 +411,28 @@ export class IRCompiler {
     };
   }
 
-  private transformCommand(
-    c: CommandNode,
-    moduleName?: string,
-    entityName?: string,
-    entityDefaultPolicies?: string[]
-  ): IRCommand {
-    const constraints = (c.constraints || []).map((con) =>
-      this.transformConstraint(con)
-    );
+  private transformCommand(c: CommandNode, moduleName?: string, entityName?: string, entityDefaultPolicies?: string[]): IRCommand {
+    const constraints = (c.constraints || []).map(con => this.transformConstraint(con));
     if (c.constraints && c.constraints.length > 0) {
-      const scope = entityName
-        ? `command '${entityName}.${c.name}'`
-        : `command '${c.name}'`;
+      const scope = entityName ? `command '${entityName}.${c.name}'` : `command '${c.name}'`;
       this.validateConstraintCodeUniqueness(constraints, c.constraints, scope);
     }
 
     // Expand entity default policies into command policies
     // Per spec: commands without explicit policies inherit entity defaults
-    const commandPolicies =
-      entityDefaultPolicies && entityDefaultPolicies.length > 0
-        ? [...entityDefaultPolicies]
-        : undefined;
+    const commandPolicies = entityDefaultPolicies && entityDefaultPolicies.length > 0
+      ? [...entityDefaultPolicies]
+      : undefined;
 
     return {
       name: c.name,
       module: moduleName,
       entity: entityName,
-      parameters: c.parameters.map((p) => this.transformParameter(p)),
-      guards: (c.guards || []).map((g) => this.transformExpression(g)),
+      parameters: c.parameters.map(p => this.transformParameter(p)),
+      guards: (c.guards || []).map(g => this.transformExpression(g)),
       constraints,
       ...(commandPolicies ? { policies: commandPolicies } : {}),
-      actions: c.actions.map((a) => this.transformAction(a)),
+      actions: c.actions.map(a => this.transformAction(a)),
       emits: c.emits || [],
       returns: c.returns ? this.transformType(c.returns) : undefined,
     };
@@ -538,9 +443,7 @@ export class IRCompiler {
       name: p.name,
       type: this.transformType(p.dataType),
       required: p.required,
-      defaultValue: p.defaultValue
-        ? this.transformExprToValue(p.defaultValue)
-        : undefined,
+      defaultValue: p.defaultValue ? this.transformExprToValue(p.defaultValue) : undefined,
     };
   }
 
@@ -552,11 +455,7 @@ export class IRCompiler {
     };
   }
 
-  private transformPolicy(
-    p: PolicyNode,
-    moduleName?: string,
-    entityName?: string
-  ): IRPolicy {
+  private transformPolicy(p: PolicyNode, moduleName?: string, entityName?: string): IRPolicy {
     return {
       name: p.name,
       module: moduleName,
@@ -577,149 +476,115 @@ export class IRCompiler {
 
   private transformExpression(expr: ExpressionNode): IRExpression {
     switch (expr.type) {
-      case "Literal": {
-        const lit = expr as {
-          value: string | number | boolean | null;
-          dataType: string;
-        };
+      case 'Literal': {
+        const lit = expr as { value: string | number | boolean | null; dataType: string };
         return {
-          kind: "literal",
+          kind: 'literal',
           value: this.literalToValue(lit.value, lit.dataType),
         };
       }
-      case "Identifier": {
-        return { kind: "identifier", name: (expr as { name: string }).name };
+      case 'Identifier': {
+        return { kind: 'identifier', name: (expr as { name: string }).name };
       }
-      case "MemberAccess": {
+      case 'MemberAccess': {
         const ma = expr as { object: ExpressionNode; property: string };
         return {
-          kind: "member",
+          kind: 'member',
           object: this.transformExpression(ma.object),
           property: ma.property,
         };
       }
-      case "BinaryOp": {
-        const bo = expr as {
-          operator: string;
-          left: ExpressionNode;
-          right: ExpressionNode;
-        };
+      case 'BinaryOp': {
+        const bo = expr as { operator: string; left: ExpressionNode; right: ExpressionNode };
         return {
-          kind: "binary",
+          kind: 'binary',
           operator: bo.operator,
           left: this.transformExpression(bo.left),
           right: this.transformExpression(bo.right),
         };
       }
-      case "UnaryOp": {
+      case 'UnaryOp': {
         const uo = expr as { operator: string; operand: ExpressionNode };
         return {
-          kind: "unary",
+          kind: 'unary',
           operator: uo.operator,
           operand: this.transformExpression(uo.operand),
         };
       }
-      case "Call": {
-        const call = expr as {
-          callee: ExpressionNode;
-          arguments: ExpressionNode[];
-        };
+      case 'Call': {
+        const call = expr as { callee: ExpressionNode; arguments: ExpressionNode[] };
         return {
-          kind: "call",
+          kind: 'call',
           callee: this.transformExpression(call.callee),
-          args: call.arguments.map((a) => this.transformExpression(a)),
+          args: call.arguments.map(a => this.transformExpression(a)),
         };
       }
-      case "Conditional": {
-        const cond = expr as {
-          condition: ExpressionNode;
-          consequent: ExpressionNode;
-          alternate: ExpressionNode;
-        };
+      case 'Conditional': {
+        const cond = expr as { condition: ExpressionNode; consequent: ExpressionNode; alternate: ExpressionNode };
         return {
-          kind: "conditional",
+          kind: 'conditional',
           condition: this.transformExpression(cond.condition),
           consequent: this.transformExpression(cond.consequent),
           alternate: this.transformExpression(cond.alternate),
         };
       }
-      case "Array": {
+      case 'Array': {
         const arr = expr as { elements: ExpressionNode[] };
         return {
-          kind: "array",
-          elements: arr.elements.map((e) => this.transformExpression(e)),
+          kind: 'array',
+          elements: arr.elements.map(e => this.transformExpression(e)),
         };
       }
-      case "Object": {
-        const obj = expr as {
-          properties: { key: string; value: ExpressionNode }[];
-        };
+      case 'Object': {
+        const obj = expr as { properties: { key: string; value: ExpressionNode }[] };
         return {
-          kind: "object",
-          properties: obj.properties.map((p) => ({
+          kind: 'object',
+          properties: obj.properties.map(p => ({
             key: p.key,
             value: this.transformExpression(p.value),
           })),
         };
       }
-      case "Lambda": {
+      case 'Lambda': {
         const lam = expr as { parameters: string[]; body: ExpressionNode };
         return {
-          kind: "lambda",
+          kind: 'lambda',
           params: lam.parameters,
           body: this.transformExpression(lam.body),
         };
       }
       default:
-        return { kind: "literal", value: { kind: "null" } };
+        return { kind: 'literal', value: { kind: 'null' } };
     }
   }
 
   private transformExprToValue(expr: ExpressionNode): IRValue | undefined {
-    if (expr.type === "Literal") {
-      const lit = expr as {
-        value: string | number | boolean | null;
-        dataType: string;
-      };
+    if (expr.type === 'Literal') {
+      const lit = expr as { value: string | number | boolean | null; dataType: string };
       return this.literalToValue(lit.value, lit.dataType);
     }
-    if (expr.type === "Array") {
+    if (expr.type === 'Array') {
       const arr = expr as { elements: ExpressionNode[] };
-      const elements = arr.elements
-        .map((e) => this.transformExprToValue(e))
-        .filter((v): v is IRValue => v !== undefined);
-      return { kind: "array", elements };
+      const elements = arr.elements.map(e => this.transformExprToValue(e)).filter((v): v is IRValue => v !== undefined);
+      return { kind: 'array', elements };
     }
-    if (expr.type === "Object") {
-      const obj = expr as {
-        properties: { key: string; value: ExpressionNode }[];
-      };
+    if (expr.type === 'Object') {
+      const obj = expr as { properties: { key: string; value: ExpressionNode }[] };
       const properties: Record<string, IRValue> = {};
       for (const p of obj.properties) {
         const v = this.transformExprToValue(p.value);
-        if (v) {
-          properties[p.key] = v;
-        }
+        if (v) properties[p.key] = v;
       }
-      return { kind: "object", properties };
+      return { kind: 'object', properties };
     }
     return undefined;
   }
 
-  private literalToValue(
-    value: string | number | boolean | null,
-    dataType: string
-  ): IRValue {
-    if (dataType === "string") {
-      return { kind: "string", value: value as string };
-    }
-    if (dataType === "number") {
-      return { kind: "number", value: value as number };
-    }
-    if (dataType === "boolean") {
-      return { kind: "boolean", value: value as boolean };
-    }
-    return { kind: "null" };
+  private literalToValue(value: string | number | boolean | null, dataType: string): IRValue {
+    if (dataType === 'string') return { kind: 'string', value: value as string };
+    if (dataType === 'number') return { kind: 'number', value: value as number };
+    if (dataType === 'boolean') return { kind: 'boolean', value: value as boolean };
+    return { kind: 'null' };
   }
 }
 

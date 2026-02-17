@@ -5,21 +5,16 @@
  * Primary goal: "If scan passes, the code works."
  */
 
-import fs from "node:fs/promises";
-import os from "node:os";
-import path from "node:path";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import fs from 'fs/promises';
+import path from 'path';
+import os from 'os';
 
 // Helper to create temp manifest files
-async function createTempManifest(
-  content: string,
-  filename = "test.manifest"
-): Promise<string> {
-  const tempDir = await fs.mkdtemp(
-    path.join(os.tmpdir(), "manifest-scan-test-")
-  );
+async function createTempManifest(content: string, filename: string = 'test.manifest'): Promise<string> {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'manifest-scan-test-'));
   const filePath = path.join(tempDir, filename);
-  await fs.writeFile(filePath, content, "utf-8");
+  await fs.writeFile(filePath, content, 'utf-8');
   return filePath;
 }
 
@@ -36,21 +31,19 @@ async function cleanupTemp(filePath: string): Promise<void> {
 // Helper to capture all console output
 function captureOutput() {
   const outputs: string[] = [];
-  const logSpy = vi.spyOn(console, "log").mockImplementation((...args) => {
-    outputs.push(args.join(" "));
+  const logSpy = vi.spyOn(console, 'log').mockImplementation((...args) => {
+    outputs.push(args.join(' '));
   });
-  const errorSpy = vi.spyOn(console, "error").mockImplementation((...args) => {
-    outputs.push(args.join(" "));
+  const errorSpy = vi.spyOn(console, 'error').mockImplementation((...args) => {
+    outputs.push(args.join(' '));
   });
-  const warnSpy = vi.spyOn(console, "warn").mockImplementation((...args) => {
-    outputs.push(args.join(" "));
+  const warnSpy = vi.spyOn(console, 'warn').mockImplementation((...args) => {
+    outputs.push(args.join(' '));
   });
-  const stderrSpy = vi
-    .spyOn(process.stderr, "write")
-    .mockImplementation((data: any) => {
-      outputs.push(String(data));
-      return true;
-    });
+  const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation((data: any) => {
+    outputs.push(String(data));
+    return true;
+  });
 
   return {
     outputs,
@@ -63,12 +56,12 @@ function captureOutput() {
   };
 }
 
-describe("Scan Command - Policy Coverage", () => {
+describe('Scan Command - Policy Coverage', () => {
   beforeEach(() => {
     vi.resetModules();
   });
 
-  it("should pass when command has policy with execute action", async () => {
+  it('should pass when command has policy with execute action', async () => {
     const manifest = `
 entity Counter {
   property count: number
@@ -83,17 +76,15 @@ policy CanIncrement execute: user.role in ["admin"]
 `;
     const filePath = await createTempManifest(manifest);
     try {
-      const { scanCommand } = await import("./scan.js");
+      const { scanCommand } = await import('./scan.js');
       const capture = captureOutput();
 
-      await scanCommand(filePath, { format: "json" });
+      await scanCommand(filePath, { format: 'json' });
 
-      const jsonOutput = capture.outputs.find((o) => o.includes('"errors"'));
+      const jsonOutput = capture.outputs.find(o => o.includes('"errors"'));
       expect(jsonOutput).toBeDefined();
       const result = JSON.parse(jsonOutput!);
-      expect(
-        result.errors.filter((e: any) => e.message?.includes("has no policy"))
-      ).toHaveLength(0);
+      expect(result.errors.filter((e: any) => e.message?.includes('has no policy'))).toHaveLength(0);
 
       capture.restore();
     } finally {
@@ -115,17 +106,15 @@ policy AdminAllAccess all: user.role == "admin"
 `;
     const filePath = await createTempManifest(manifest);
     try {
-      const { scanCommand } = await import("./scan.js");
+      const { scanCommand } = await import('./scan.js');
       const capture = captureOutput();
 
-      await scanCommand(filePath, { format: "json" });
+      await scanCommand(filePath, { format: 'json' });
 
-      const jsonOutput = capture.outputs.find((o) => o.includes('"errors"'));
+      const jsonOutput = capture.outputs.find(o => o.includes('"errors"'));
       expect(jsonOutput).toBeDefined();
       const result = JSON.parse(jsonOutput!);
-      expect(
-        result.errors.filter((e: any) => e.message?.includes("has no policy"))
-      ).toHaveLength(0);
+      expect(result.errors.filter((e: any) => e.message?.includes('has no policy'))).toHaveLength(0);
 
       capture.restore();
     } finally {
@@ -134,12 +123,12 @@ policy AdminAllAccess all: user.role == "admin"
   });
 });
 
-describe("Scan Command - Store Consistency", () => {
+describe('Scan Command - Store Consistency', () => {
   beforeEach(() => {
     vi.resetModules();
   });
 
-  it("should accept built-in store targets", async () => {
+  it('should accept built-in store targets', async () => {
     const manifest = `
 entity Counter {
   property count: number
@@ -148,18 +137,17 @@ entity Counter {
 `;
     const filePath = await createTempManifest(manifest);
     try {
-      const { scanCommand } = await import("./scan.js");
+      const { scanCommand } = await import('./scan.js');
       const capture = captureOutput();
 
-      await scanCommand(filePath, { format: "json" });
+      await scanCommand(filePath, { format: 'json' });
 
-      const jsonOutput = capture.outputs.find((o) => o.includes('"warnings"'));
+      const jsonOutput = capture.outputs.find(o => o.includes('"warnings"'));
       if (jsonOutput) {
         const result = JSON.parse(jsonOutput);
-        const storeWarnings =
-          result.warnings?.filter((w: any) =>
-            w.message?.includes("not a built-in target")
-          ) || [];
+        const storeWarnings = result.warnings?.filter(
+          (w: any) => w.message?.includes('not a built-in target')
+        ) || [];
         expect(storeWarnings).toHaveLength(0);
       }
 
@@ -169,7 +157,7 @@ entity Counter {
     }
   });
 
-  it("should warn on unknown store targets", async () => {
+  it('should warn on unknown store targets', async () => {
     const manifest = `
 entity Counter {
   property count: number
@@ -178,21 +166,20 @@ entity Counter {
 `;
     const filePath = await createTempManifest(manifest);
     try {
-      const { scanCommand } = await import("./scan.js");
+      const { scanCommand } = await import('./scan.js');
       const capture = captureOutput();
 
-      await scanCommand(filePath, { format: "json" });
+      await scanCommand(filePath, { format: 'json' });
 
-      const jsonOutput = capture.outputs.find((o) => o.includes('"warnings"'));
+      const jsonOutput = capture.outputs.find(o => o.includes('"warnings"'));
       expect(jsonOutput).toBeDefined();
       const result = JSON.parse(jsonOutput!);
 
-      const storeWarnings =
-        result.warnings?.filter((w: any) =>
-          w.message?.includes("is not a built-in target")
-        ) || [];
+      const storeWarnings = result.warnings?.filter(
+        (w: any) => w.message?.includes('is not a built-in target')
+      ) || [];
       expect(storeWarnings.length).toBeGreaterThan(0);
-      expect(storeWarnings[0].message).toContain("customStore");
+      expect(storeWarnings[0].message).toContain('customStore');
 
       capture.restore();
     } finally {
@@ -201,12 +188,12 @@ entity Counter {
   });
 });
 
-describe("Scan Command - Output Formats", () => {
+describe('Scan Command - Output Formats', () => {
   beforeEach(() => {
     vi.resetModules();
   });
 
-  it("should output JSON format when requested", async () => {
+  it('should output JSON format when requested', async () => {
     const manifest = `
 entity Counter {
   property count: number
@@ -217,20 +204,18 @@ entity Counter {
 `;
     const filePath = await createTempManifest(manifest);
     try {
-      const { scanCommand } = await import("./scan.js");
+      const { scanCommand } = await import('./scan.js');
       const capture = captureOutput();
 
-      await scanCommand(filePath, { format: "json" });
+      await scanCommand(filePath, { format: 'json' });
 
-      const jsonOutput = capture.outputs.find((o) =>
-        o.includes('"filesScanned"')
-      );
+      const jsonOutput = capture.outputs.find(o => o.includes('"filesScanned"'));
       expect(jsonOutput).toBeDefined();
       const result = JSON.parse(jsonOutput!);
-      expect(result).toHaveProperty("filesScanned");
-      expect(result).toHaveProperty("commandsChecked");
-      expect(result).toHaveProperty("errors");
-      expect(result).toHaveProperty("warnings");
+      expect(result).toHaveProperty('filesScanned');
+      expect(result).toHaveProperty('commandsChecked');
+      expect(result).toHaveProperty('errors');
+      expect(result).toHaveProperty('warnings');
 
       capture.restore();
     } finally {
@@ -239,12 +224,12 @@ entity Counter {
   });
 });
 
-describe("Scan Command - Multiple Commands", () => {
+describe('Scan Command - Multiple Commands', () => {
   beforeEach(() => {
     vi.resetModules();
   });
 
-  it("should cover all commands with single global policy", async () => {
+  it('should cover all commands with single global policy', async () => {
     const manifest = `
 entity Counter {
   property count: number
@@ -262,17 +247,15 @@ policy AuthenticatedOnly execute: user.authenticated
 `;
     const filePath = await createTempManifest(manifest);
     try {
-      const { scanCommand } = await import("./scan.js");
+      const { scanCommand } = await import('./scan.js');
       const capture = captureOutput();
 
-      await scanCommand(filePath, { format: "json" });
+      await scanCommand(filePath, { format: 'json' });
 
-      const jsonOutput = capture.outputs.find((o) => o.includes('"errors"'));
+      const jsonOutput = capture.outputs.find(o => o.includes('"errors"'));
       expect(jsonOutput).toBeDefined();
       const result = JSON.parse(jsonOutput!);
-      expect(
-        result.errors.filter((e: any) => e.message?.includes("has no policy"))
-      ).toHaveLength(0);
+      expect(result.errors.filter((e: any) => e.message?.includes('has no policy'))).toHaveLength(0);
 
       capture.restore();
     } finally {
@@ -281,32 +264,27 @@ policy AuthenticatedOnly execute: user.authenticated
   });
 });
 
-describe("Scan Command - Conformance Fixtures", () => {
+describe('Scan Command - Conformance Fixtures', () => {
   beforeEach(() => {
     vi.resetModules();
   });
 
-  it("should pass scan on fixtures with policies", async () => {
+  it('should pass scan on fixtures with policies', async () => {
     // Use existing conformance fixtures that have policies
-    const fixturePath = path.resolve(
-      process.cwd(),
-      "src/manifest/conformance/fixtures/17-tiny-app.manifest"
-    );
+    const fixturePath = path.resolve(process.cwd(), 'src/manifest/conformance/fixtures/17-tiny-app.manifest');
 
     try {
       await fs.stat(fixturePath);
-      const { scanCommand } = await import("./scan.js");
+      const { scanCommand } = await import('./scan.js');
       const capture = captureOutput();
 
-      await scanCommand(fixturePath, { format: "json" });
+      await scanCommand(fixturePath, { format: 'json' });
 
-      const jsonOutput = capture.outputs.find((o) => o.includes('"errors"'));
+      const jsonOutput = capture.outputs.find(o => o.includes('"errors"'));
       if (jsonOutput) {
         const result = JSON.parse(jsonOutput);
         // Tiny app fixture should have policy coverage
-        expect(
-          result.errors.filter((e: any) => e.message?.includes("has no policy"))
-        ).toHaveLength(0);
+        expect(result.errors.filter((e: any) => e.message?.includes('has no policy'))).toHaveLength(0);
       }
 
       capture.restore();
@@ -316,12 +294,12 @@ describe("Scan Command - Conformance Fixtures", () => {
   });
 });
 
-describe("Scan Command - Route Context Detection", () => {
+describe('Scan Command - Route Context Detection', () => {
   beforeEach(() => {
     vi.resetModules();
   });
 
-  it("should detect commands that require user context", async () => {
+  it('should detect commands that require user context', async () => {
     const manifest = `
 entity Document {
   property title: string
@@ -336,17 +314,15 @@ policy AdminOnly execute: user.role == "admin"
 `;
     const filePath = await createTempManifest(manifest);
     try {
-      const { scanCommand } = await import("./scan.js");
+      const { scanCommand } = await import('./scan.js');
       const capture = captureOutput();
 
-      await scanCommand(filePath, { format: "json" });
+      await scanCommand(filePath, { format: 'json' });
 
-      const jsonOutput = capture.outputs.find((o) =>
-        o.includes('"filesScanned"')
-      );
+      const jsonOutput = capture.outputs.find(o => o.includes('"filesScanned"'));
       expect(jsonOutput).toBeDefined();
       const result = JSON.parse(jsonOutput!);
-      expect(result).toHaveProperty("routesScanned");
+      expect(result).toHaveProperty('routesScanned');
 
       capture.restore();
     } finally {
@@ -354,7 +330,7 @@ policy AdminOnly execute: user.role == "admin"
     }
   });
 
-  it("should not require user context for commands without user references", async () => {
+  it('should not require user context for commands without user references', async () => {
     const manifest = `
 entity Counter {
   property count: number
@@ -369,14 +345,12 @@ policy Anyone execute: true
 `;
     const filePath = await createTempManifest(manifest);
     try {
-      const { scanCommand } = await import("./scan.js");
+      const { scanCommand } = await import('./scan.js');
       const capture = captureOutput();
 
-      await scanCommand(filePath, { format: "json" });
+      await scanCommand(filePath, { format: 'json' });
 
-      const jsonOutput = capture.outputs.find((o) =>
-        o.includes('"filesScanned"')
-      );
+      const jsonOutput = capture.outputs.find(o => o.includes('"filesScanned"'));
       expect(jsonOutput).toBeDefined();
       const result = JSON.parse(jsonOutput!);
       // No routes to scan in temp directory
@@ -388,7 +362,7 @@ policy Anyone execute: true
     }
   });
 
-  it("should include routesScanned in JSON output", async () => {
+  it('should include routesScanned in JSON output', async () => {
     const manifest = `
 entity Task {
   property name: string
@@ -403,18 +377,16 @@ policy Authenticated execute: user.authenticated
 `;
     const filePath = await createTempManifest(manifest);
     try {
-      const { scanCommand } = await import("./scan.js");
+      const { scanCommand } = await import('./scan.js');
       const capture = captureOutput();
 
-      await scanCommand(filePath, { format: "json" });
+      await scanCommand(filePath, { format: 'json' });
 
-      const jsonOutput = capture.outputs.find((o) =>
-        o.includes('"routesScanned"')
-      );
+      const jsonOutput = capture.outputs.find(o => o.includes('"routesScanned"'));
       expect(jsonOutput).toBeDefined();
       const result = JSON.parse(jsonOutput!);
-      expect(result).toHaveProperty("routesScanned");
-      expect(typeof result.routesScanned).toBe("number");
+      expect(result).toHaveProperty('routesScanned');
+      expect(typeof result.routesScanned).toBe('number');
 
       capture.restore();
     } finally {

@@ -9,10 +9,11 @@
  * TS/JS config: Runtime bindings (stores, resolveUser)
  */
 
-import fs from "node:fs/promises";
-import path from "node:path";
-import { pathToFileURL } from "node:url";
-import yaml from "js-yaml";
+import fs from 'fs/promises';
+import path from 'path';
+import yaml from 'js-yaml';
+import { createRequire } from 'module';
+import { pathToFileURL } from 'url';
 
 // ============================================================================
 // Type Definitions
@@ -33,13 +34,10 @@ export interface ManifestConfig {
   prismaSchema?: string;
 
   // Optional: Projection settings for code generation
-  projections?: Record<
-    string,
-    {
-      output?: string;
-      options?: Record<string, unknown>;
-    }
-  >;
+  projections?: Record<string, {
+    output?: string;
+    options?: Record<string, unknown>;
+  }>;
 }
 
 /**
@@ -128,19 +126,22 @@ export interface CombinedConfig {
 // ============================================================================
 
 const DEFAULT_CONFIG: ManifestConfig = {
-  $schema: "https://manifest.dev/config.schema.json",
-  src: "**/*.manifest",
-  output: "ir/",
+  $schema: 'https://manifest.dev/config.schema.json',
+  src: '**/*.manifest',
+  output: 'ir/',
 };
 
 // Config paths in precedence order (highest to lowest)
-const TS_CONFIG_PATHS = ["manifest.config.ts", "manifest.config.js"];
+const TS_CONFIG_PATHS = [
+  'manifest.config.ts',
+  'manifest.config.js',
+];
 
 const YAML_CONFIG_PATHS = [
-  "manifest.config.yaml",
-  "manifest.config.yml",
-  ".manifestrc.yaml",
-  ".manifestrc.yml",
+  'manifest.config.yaml',
+  'manifest.config.yml',
+  '.manifestrc.yaml',
+  '.manifestrc.yml',
 ];
 
 // All config paths for existence checking
@@ -157,10 +158,13 @@ async function loadYamlConfig(cwd: string): Promise<ManifestConfig | null> {
   for (const configFile of YAML_CONFIG_PATHS) {
     const configPath = path.resolve(cwd, configFile);
     try {
-      const content = await fs.readFile(configPath, "utf-8");
+      const content = await fs.readFile(configPath, 'utf-8');
       const config = yaml.load(content) as ManifestConfig;
       return config;
-    } catch {}
+    } catch {
+      // File doesn't exist or can't be read - try next one
+      continue;
+    }
   }
 
   return null;
@@ -176,9 +180,7 @@ async function loadYamlConfig(cwd: string): Promise<ManifestConfig | null> {
  * jiti provides runtime TypeScript support with caching, making it ideal
  * for config file loading without a build step.
  */
-async function loadTsConfig(
-  cwd: string
-): Promise<ManifestRuntimeConfig | null> {
+async function loadTsConfig(cwd: string): Promise<ManifestRuntimeConfig | null> {
   for (const configFile of TS_CONFIG_PATHS) {
     const configPath = path.resolve(cwd, configFile);
 
@@ -193,7 +195,7 @@ async function loadTsConfig(
       // Use dynamic import with jiti for TS/JS support
       const config = await loadModule(configPath);
 
-      if (config && typeof config === "object") {
+      if (config && typeof config === 'object') {
         // Handle both default export and named export
         const runtimeConfig = config.default ?? config;
 
@@ -217,17 +219,12 @@ async function loadTsConfig(
 async function loadModule(modulePath: string): Promise<unknown> {
   // Try jiti first for TypeScript support
   try {
-    const jiti = await import("jiti").then((m) => m.default || m);
-    const load = jiti(
-      typeof import.meta.filename !== "undefined"
-        ? path.dirname(import.meta.filename)
-        : process.cwd(),
-      {
-        esmResolve: true,
-        interopDefault: true,
-        requireCache: false, // Always reload config
-      }
-    );
+    const jiti = await import('jiti').then(m => m.default || m);
+    const load = jiti(typeof __filename !== 'undefined' ? path.dirname(__filename) : process.cwd(), {
+      esmResolve: true,
+      interopDefault: true,
+      requireCache: false, // Always reload config
+    });
 
     const module = load(modulePath);
     return module;
@@ -242,19 +239,17 @@ async function loadModule(modulePath: string): Promise<unknown> {
 /**
  * Validate that an object is a valid runtime config
  */
-function isValidRuntimeConfig(
-  config: unknown
-): config is ManifestRuntimeConfig {
-  if (!config || typeof config !== "object") {
+function isValidRuntimeConfig(config: unknown): config is ManifestRuntimeConfig {
+  if (!config || typeof config !== 'object') {
     return false;
   }
 
   const c = config as Record<string, unknown>;
 
   // At least one of these should be defined for a runtime config
-  const hasStores = c.stores && typeof c.stores === "object";
-  const hasResolveUser = typeof c.resolveUser === "function";
-  const hasBuild = c.build && typeof c.build === "object";
+  const hasStores = c.stores && typeof c.stores === 'object';
+  const hasResolveUser = typeof c.resolveUser === 'function';
+  const hasBuild = c.build && typeof c.build === 'object';
 
   // Allow empty config objects that just have build settings
   return hasStores || hasResolveUser || hasBuild || Object.keys(c).length === 0;
@@ -267,10 +262,7 @@ function isValidRuntimeConfig(
 /**
  * Merge user config with defaults
  */
-function mergeConfig(
-  defaults: ManifestConfig,
-  user: ManifestConfig | null
-): ManifestConfig {
+function mergeConfig(defaults: ManifestConfig, user: ManifestConfig | null): ManifestConfig {
   if (!user) {
     return defaults;
   }
@@ -304,9 +296,7 @@ function mergeBuildConfig(
  *
  * Returns both build (YAML) and runtime (TS/JS) configs separately.
  */
-export async function loadAllConfigs(
-  cwd: string = process.cwd()
-): Promise<CombinedConfig> {
+export async function loadAllConfigs(cwd: string = process.cwd()): Promise<CombinedConfig> {
   const [yamlConfig, tsConfig] = await Promise.all([
     loadYamlConfig(cwd),
     loadTsConfig(cwd),
@@ -323,9 +313,7 @@ export async function loadAllConfigs(
 /**
  * Load only the YAML configuration (backward compatible)
  */
-export async function loadConfig(
-  cwd: string = process.cwd()
-): Promise<ManifestConfig | null> {
+export async function loadConfig(cwd: string = process.cwd()): Promise<ManifestConfig | null> {
   return loadYamlConfig(cwd);
 }
 
@@ -334,9 +322,7 @@ export async function loadConfig(
  *
  * For new code, prefer loadAllConfigs() which includes runtime config.
  */
-export async function getConfig(
-  cwd: string = process.cwd()
-): Promise<ManifestConfig> {
+export async function getConfig(cwd: string = process.cwd()): Promise<ManifestConfig> {
   const userConfig = await loadConfig(cwd);
   return mergeConfig(DEFAULT_CONFIG, userConfig);
 }
@@ -344,9 +330,7 @@ export async function getConfig(
 /**
  * Get the runtime configuration
  */
-export async function getRuntimeConfig(
-  cwd: string = process.cwd()
-): Promise<ManifestRuntimeConfig | null> {
+export async function getRuntimeConfig(cwd: string = process.cwd()): Promise<ManifestRuntimeConfig | null> {
   return loadTsConfig(cwd);
 }
 
@@ -360,28 +344,28 @@ export async function saveConfig(
   config: ManifestConfig,
   cwd: string = process.cwd()
 ): Promise<void> {
-  const configPath = path.resolve(cwd, "manifest.config.yaml");
+  const configPath = path.resolve(cwd, 'manifest.config.yaml');
   const yamlContent = yaml.dump(config, {
     indent: 2,
     lineWidth: 120,
     quotingType: '"',
     forceQuotes: false,
   });
-  await fs.writeFile(configPath, yamlContent, "utf-8");
+  await fs.writeFile(configPath, yamlContent, 'utf-8');
 }
 
 /**
  * Check if any config file exists (YAML or TS/JS)
  */
-export async function configExists(
-  cwd: string = process.cwd()
-): Promise<boolean> {
+export async function configExists(cwd: string = process.cwd()): Promise<boolean> {
   for (const configFile of ALL_CONFIG_PATHS) {
     const configPath = path.resolve(cwd, configFile);
     try {
       await fs.access(configPath);
       return true;
-    } catch {}
+    } catch {
+      continue;
+    }
   }
 
   return false;
@@ -390,15 +374,15 @@ export async function configExists(
 /**
  * Check which config file is being used
  */
-export async function getActiveConfigPath(
-  cwd: string = process.cwd()
-): Promise<string | null> {
+export async function getActiveConfigPath(cwd: string = process.cwd()): Promise<string | null> {
   for (const configFile of ALL_CONFIG_PATHS) {
     const configPath = path.resolve(cwd, configFile);
     try {
       await fs.access(configPath);
       return configPath;
-    } catch {}
+    } catch {
+      continue;
+    }
   }
 
   return null;
@@ -420,26 +404,19 @@ export async function getNextJsOptions(cwd: string = process.cwd()): Promise<{
   appDir: string;
 }> {
   const { build } = await loadAllConfigs(cwd);
-  const options =
-    build.projections?.nextjs?.options ||
-    build.projections?.nextjs?.options ||
-    {};
+  const options = build.projections?.nextjs?.options || build.projections?.['nextjs']?.options || {};
 
   return {
-    authProvider: (options.authProvider as string) || "clerk",
-    authImportPath: (options.authImportPath as string) || "@/lib/auth",
-    databaseImportPath:
-      (options.databaseImportPath as string) || "@/lib/database",
-    runtimeImportPath:
-      (options.runtimeImportPath as string) || "@/lib/manifest-runtime",
-    responseImportPath:
-      (options.responseImportPath as string) || "@/lib/manifest-response",
-    includeTenantFilter: (options.includeTenantFilter as boolean) ?? true,
-    includeSoftDeleteFilter:
-      (options.includeSoftDeleteFilter as boolean) ?? true,
-    tenantIdProperty: (options.tenantIdProperty as string) || "tenantId",
-    deletedAtProperty: (options.deletedAtProperty as string) || "deletedAt",
-    appDir: (options.appDir as string) || "app",
+    authProvider: options.authProvider as string || 'clerk',
+    authImportPath: options.authImportPath as string || '@/lib/auth',
+    databaseImportPath: options.databaseImportPath as string || '@/lib/database',
+    runtimeImportPath: options.runtimeImportPath as string || '@/lib/manifest-runtime',
+    responseImportPath: options.responseImportPath as string || '@/lib/manifest-response',
+    includeTenantFilter: options.includeTenantFilter as boolean ?? true,
+    includeSoftDeleteFilter: options.includeSoftDeleteFilter as boolean ?? true,
+    tenantIdProperty: options.tenantIdProperty as string || 'tenantId',
+    deletedAtProperty: options.deletedAtProperty as string || 'deletedAt',
+    appDir: options.appDir as string || 'app',
   };
 }
 
@@ -453,11 +430,8 @@ export async function getOutputPaths(cwd: string = process.cwd()): Promise<{
   const { build } = await loadAllConfigs(cwd);
 
   return {
-    irOutput: build.output || "ir/",
-    codeOutput:
-      build.projections?.nextjs?.output ||
-      build.projections?.nextjs?.output ||
-      "generated/",
+    irOutput: build.output || 'ir/',
+    codeOutput: build.projections?.nextjs?.output || build.projections?.['nextjs']?.output || 'generated/',
   };
 }
 
@@ -509,9 +483,7 @@ const storeCache = new Map<string, Store>();
  * const runtime = new RuntimeEngine(ir, context, { storeProvider });
  * ```
  */
-export function createStoreProvider(
-  config: ManifestRuntimeConfig | null
-): StoreProvider {
+export function createStoreProvider(config: ManifestRuntimeConfig | null): StoreProvider {
   // Reset cache when creating a new provider
   storeCache.clear();
 
@@ -537,7 +509,7 @@ export function createStoreProvider(
     // Handle different implementation types
     let store: Store | undefined;
 
-    if (typeof implementation === "function") {
+    if (typeof implementation === 'function') {
       // It's a constructor or factory function
       try {
         // Try calling as constructor (with new)
@@ -553,7 +525,7 @@ export function createStoreProvider(
           return undefined;
         }
       }
-    } else if (typeof implementation === "object" && implementation !== null) {
+    } else if (typeof implementation === 'object' && implementation !== null) {
       // It's already an instance
       store = implementation as Store;
     }
@@ -583,19 +555,15 @@ export function getStoreBindingsInfo(config: ManifestRuntimeConfig | null): {
   entityNames: string[];
   hasStore: (entityName: string) => boolean;
   getPrismaModel: (entityName: string) => string | undefined;
-  getPropertyMapping: (
-    entityName: string
-  ) => Record<string, string> | undefined;
+  getPropertyMapping: (entityName: string) => Record<string, string> | undefined;
 } {
   const entityNames = config?.stores ? Object.keys(config.stores) : [];
 
   return {
     entityNames,
-    hasStore: (entityName: string) => !!config?.stores?.[entityName],
-    getPrismaModel: (entityName: string) =>
-      config?.stores?.[entityName]?.prismaModel,
-    getPropertyMapping: (entityName: string) =>
-      config?.stores?.[entityName]?.propertyMapping,
+    hasStore: (entityName: string) => !!(config?.stores?.[entityName]),
+    getPrismaModel: (entityName: string) => config?.stores?.[entityName]?.prismaModel,
+    getPropertyMapping: (entityName: string) => config?.stores?.[entityName]?.propertyMapping,
   };
 }
 
@@ -625,9 +593,7 @@ export function getStoreBindingsInfo(config: ManifestRuntimeConfig | null): {
  * const runtime = new RuntimeEngine(ir, { user, ...otherContext });
  * ```
  */
-export function createUserResolver(
-  config: ManifestRuntimeConfig | null
-): (auth: AuthContext) => Promise<UserContext | null> {
+export function createUserResolver(config: ManifestRuntimeConfig | null): (auth: AuthContext) => Promise<UserContext | null> {
   if (!config?.resolveUser) {
     // Return a pass-through resolver that returns null
     return async () => null;
@@ -635,13 +601,10 @@ export function createUserResolver(
 
   return async (auth: AuthContext): Promise<UserContext | null> => {
     try {
-      return await config.resolveUser?.(auth);
+      return await config.resolveUser!(auth);
     } catch (error) {
       // Log error but don't throw - return null to indicate resolution failure
-      console.error(
-        "Failed to resolve user:",
-        error instanceof Error ? error.message : error
-      );
+      console.error('Failed to resolve user:', error instanceof Error ? error.message : error);
       return null;
     }
   };
@@ -651,7 +614,7 @@ export function createUserResolver(
  * Check if a runtime config has user resolution configured
  */
 export function hasUserResolver(config: ManifestRuntimeConfig | null): boolean {
-  return typeof config?.resolveUser === "function";
+  return typeof config?.resolveUser === 'function';
 }
 
 // ============================================================================
@@ -695,10 +658,7 @@ export interface PrismaSchema {
  * 2. Default: prisma/schema.prisma
  * 3. Alternative: schema.prisma
  */
-export async function findPrismaSchemaPath(
-  cwd: string,
-  config: ManifestConfig | null
-): Promise<string | null> {
+export async function findPrismaSchemaPath(cwd: string, config: ManifestConfig | null): Promise<string | null> {
   // Check config-specified path first
   if (config?.prismaSchema) {
     const configPath = path.resolve(cwd, config.prismaSchema);
@@ -712,9 +672,9 @@ export async function findPrismaSchemaPath(
 
   // Default locations
   const defaultPaths = [
-    "prisma/schema.prisma",
-    "schema.prisma",
-    "db/schema.prisma",
+    'prisma/schema.prisma',
+    'schema.prisma',
+    'db/schema.prisma',
   ];
 
   for (const schemaPath of defaultPaths) {
@@ -722,7 +682,9 @@ export async function findPrismaSchemaPath(
     try {
       await fs.access(fullPath);
       return fullPath;
-    } catch {}
+    } catch {
+      continue;
+    }
   }
 
   return null;
@@ -734,16 +696,14 @@ export async function findPrismaSchemaPath(
  * This is a simple parser that handles common Prisma schema patterns.
  * It extracts model names and their field definitions.
  */
-export async function parsePrismaSchema(
-  schemaPath: string
-): Promise<PrismaSchema> {
-  const content = await fs.readFile(schemaPath, "utf-8");
+export async function parsePrismaSchema(schemaPath: string): Promise<PrismaSchema> {
+  const content = await fs.readFile(schemaPath, 'utf-8');
   const models: PrismaModel[] = [];
 
   // Remove comments
   const cleanedContent = content
-    .replace(/\/\/.*$/gm, "") // Remove single-line comments
-    .replace(/\/\*[\s\S]*?\*\//g, ""); // Remove multi-line comments
+    .replace(/\/\/.*$/gm, '')  // Remove single-line comments
+    .replace(/\/\*[\s\S]*?\*\//g, '');  // Remove multi-line comments
 
   // Match model blocks
   const modelRegex = /model\s+(\w+)\s*\{([^}]+)\}/g;
@@ -755,16 +715,11 @@ export async function parsePrismaSchema(
     const fields: PrismaField[] = [];
 
     // Parse each field (line by line)
-    const fieldLines = modelBody
-      .split("\n")
-      .map((l) => l.trim())
-      .filter((l) => l.length > 0);
+    const fieldLines = modelBody.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
     for (const fieldLine of fieldLines) {
       // Skip block attributes like @@id, @@index, etc.
-      if (fieldLine.startsWith("@@")) {
-        continue;
-      }
+      if (fieldLine.startsWith('@@')) continue;
 
       // Parse field: name type options*
       const fieldMatch = fieldLine.match(/^(\w+)\s+(\w+)(\?|\[])?(\s+@.*)?$/);
@@ -773,15 +728,14 @@ export async function parsePrismaSchema(
 
         // Check for @id attribute
         const hasId = /@id/.test(fieldLine);
-        const _hasDefault = /@default\(/.test(fieldLine);
-        const isGenerated =
-          /@default\(autoincrement\)|@updatedAt|@createdAt/.test(fieldLine);
+        const hasDefault = /@default\(/.test(fieldLine);
+        const isGenerated = /@default\(autoincrement\)|@updatedAt|@createdAt/.test(fieldLine);
 
         fields.push({
           name: fieldName,
           type: fieldType,
-          isOptional: modifier === "?",
-          isList: modifier === "[]",
+          isOptional: modifier === '?',
+          isList: modifier === '[]',
           isId: hasId,
           isGenerated,
           defaultValue: undefined, // Would need more complex parsing
@@ -800,18 +754,13 @@ export async function parsePrismaSchema(
 /**
  * Get Prisma model by name (case-insensitive search)
  */
-export function getPrismaModel(
-  schema: PrismaSchema,
-  modelName: string
-): PrismaModel | undefined {
+export function getPrismaModel(schema: PrismaSchema, modelName: string): PrismaModel | undefined {
   // Exact match first
-  let model = schema.models.find((m) => m.name === modelName);
+  let model = schema.models.find(m => m.name === modelName);
 
   if (!model) {
     // Case-insensitive search
-    model = schema.models.find(
-      (m) => m.name.toLowerCase() === modelName.toLowerCase()
-    );
+    model = schema.models.find(m => m.name.toLowerCase() === modelName.toLowerCase());
   }
 
   return model;
@@ -827,19 +776,14 @@ export function propertyExistsInModel(
   propertyMapping?: Record<string, string>
 ): boolean {
   // Check if property name matches a field
-  const hasDirectMatch = model.fields.some((f) => f.name === propertyName);
+  const hasDirectMatch = model.fields.some(f => f.name === propertyName);
 
-  if (hasDirectMatch) {
-    return true;
-  }
+  if (hasDirectMatch) return true;
 
   // Check if there's a mapping from this property to a field
   if (propertyMapping) {
     for (const [manifestProp, dbField] of Object.entries(propertyMapping)) {
-      if (
-        manifestProp === propertyName &&
-        model.fields.some((f) => f.name === dbField)
-      ) {
+      if (manifestProp === propertyName && model.fields.some(f => f.name === dbField)) {
         return true;
       }
     }
@@ -852,5 +796,5 @@ export function propertyExistsInModel(
  * Get Prisma field names for a model
  */
 export function getPrismaFieldNames(model: PrismaModel): string[] {
-  return model.fields.map((f) => f.name);
+  return model.fields.map(f => f.name);
 }

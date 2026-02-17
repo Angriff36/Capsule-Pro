@@ -4,8 +4,8 @@
  * Generates Next.js API route handlers using App Router conventions.
  * Configurable for different auth providers and database setups.
  */
-import type { IR } from "../../ir";
-import type { ProjectionRequest, ProjectionResult, ProjectionTarget } from "../interface";
+import type { IR } from '../../ir';
+import type { ProjectionTarget, ProjectionRequest, ProjectionResult } from '../interface';
 /**
  * Next.js projection implementation.
  */
@@ -29,3 +29,4 @@ export declare class NextJsProjection implements ProjectionTarget {
      */
     private _generateGetRoute;
 }
+//# sourceMappingURL=generator.d.ts.map

@@ -1,4 +1,4 @@
-import type { ManifestProgram } from "./types";
+import { ManifestProgram } from './types';
 export declare class CodeGenerator {
     private out;
     private serverOut;
