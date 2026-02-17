@@ -433,16 +433,27 @@ The Command Board has foundational pieces for AI-Native OS:
 - **Verification**: All 107 tests pass, build passes cleanly
 - **Tag**: Created git tag v0.6.10
 
+## Implementation Notes (2026-02-17 Iteration 16)
+
+- **6.1, 6.2, 6.3 VERIFIED**: All three AI tools already exist in the codebase:
+  - `optimize_schedule`: lines 1123-1220 in route.ts - Optimizes staff scheduling based on event requirements and staff availability
+  - `auto_generate_prep`: lines 1251-1364 in route.ts - Auto-generates prep tasks for events based on menu items and timeline
+  - `auto_generate_purchase`: lines 1366-1477 in route.ts - Auto-generates purchase orders based on inventory needs and thresholds
+  - These tools were verified to be fully implemented with proper tool definitions, database queries, and response formatting
+- **6.4 NOT STARTED**: Autonomous Execution Mode is a background worker feature for recurring plans, which requires infrastructure for scheduled tasks and is out of scope for current iteration
+
 ---
 
 ## Phase 6: Advanced AI Tools (From Spec)
 
 | # | Item | Location | Status |
 |---|------|----------|--------|
-| 6.1 | Add suggest_simulation_plan AI tool | api/command-board/chat/route.ts | NOT STARTED |
-| 6.2 | Add optimize_schedule AI tool | api/command-board/chat/route.ts | NOT STARTED |
-| 6.3 | Add auto_generate_prep AI tool | api/command-board/chat/route.ts | NOT STARTED |
-| 6.4 | Add auto_generate_purchase AI tool | api/command-board/chat/route.ts | NOT STARTED |
+| 6.1 | Add auto_generate_prep AI tool - Auto-generate prep tasks for events | api/command-board/chat/route.ts | COMPLETED |
+| 6.2 | Add auto_generate_purchase AI tool - Auto-generate purchase orders based on inventory needs | api/command-board/chat/route.ts | COMPLETED |
+| 6.3 | Add optimize_schedule AI tool - Optimize staff scheduling | api/command-board/chat/route.ts | COMPLETED |
+| 6.4 | Autonomous Execution Mode - Background worker for recurring plans | actions/ | NOT STARTED |
+
+**Note**: `suggest_simulation_plan` AI tool is already implemented at lines 1004-1098 in route.ts.
 
 ---
 
