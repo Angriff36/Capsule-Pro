@@ -49,9 +49,7 @@
       "!!**/.specify",
       "!!**/*.tsbuildinfo",
       "!!**/*.snap",
-      "!!eslint.config.mjs",
-      "!!apps/api/app/api/**/list/route.ts",
-      "!!apps/api/app/api/**/commands/*/route.ts"
+      "!!eslint.config.mjs"
     ]
   },
   "extends": [
