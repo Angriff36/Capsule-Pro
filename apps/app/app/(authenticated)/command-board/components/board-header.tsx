@@ -19,6 +19,7 @@ import {
 } from "@repo/design-system/components/ui/dropdown-menu";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import {
+  AlertTriangleIcon,
   BotIcon,
   EllipsisIcon,
   HomeIcon,
@@ -60,6 +61,10 @@ interface BoardHeaderProps {
   // AI chat toggle
   aiChatOpen?: boolean;
   onToggleAiChat?: () => void;
+  // Conflict detection
+  conflictCount?: number;
+  onToggleConflicts?: () => void;
+  isLoadingConflicts?: boolean;
   // Fullscreen exit
   onExitFullscreen?: () => void;
 }
@@ -81,6 +86,9 @@ export function BoardHeader({
   onToggleCommandPalette,
   aiChatOpen = false,
   onToggleAiChat,
+  conflictCount = 0,
+  onToggleConflicts,
+  isLoadingConflicts = false,
   onExitFullscreen,
 }: BoardHeaderProps) {
   const router = useRouter();
@@ -328,6 +336,25 @@ export function BoardHeader({
             >
               <BotIcon className="mr-1.5 h-4 w-4" />
               AI Assistant
+            </Button>
+          )}
+          {onToggleConflicts && (
+            <Button
+              className="hidden sm:flex"
+              onClick={onToggleConflicts}
+              size="sm"
+              title="Check for Conflicts"
+              variant={conflictCount > 0 ? "destructive" : "outline"}
+              disabled={isLoadingConflicts}
+            >
+              {isLoadingConflicts ? (
+                <Loader2Icon className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <AlertTriangleIcon className="mr-1.5 h-4 w-4" />
+              )}
+              {conflictCount > 0
+                ? `${conflictCount} Risk${conflictCount === 1 ? "" : "s"}`
+                : "Check Risks"}
             </Button>
           )}
 

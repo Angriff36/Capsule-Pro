@@ -12,6 +12,7 @@ import type {
   DerivedConnection,
   ResolvedEntity,
 } from "../types/index";
+import type { Conflict } from "../conflict-types";
 import type { SuggestedManifestPlan } from "../types/manifest-plan";
 import { AiChatPanel } from "./ai-chat-panel";
 import { ErrorBoundary } from "./board-error-boundary";
@@ -19,8 +20,10 @@ import { BoardFlow } from "./board-flow";
 import { BoardHeader } from "./board-header";
 import { BoardRoom } from "./board-room";
 import { CommandPalette } from "./command-palette";
+import { ConflictWarningPanel } from "./conflict-warning-panel";
 import { EntityBrowser } from "./entity-browser";
 import { EntityDetailPanel } from "./entity-detail-panel";
+import { detectConflicts } from "../actions/conflicts";
 
 // ============================================================================
 // Types
@@ -89,6 +92,11 @@ export function BoardShell({
 
   // ---- Entity browser panel state ----
   const [entityBrowserOpen, setEntityBrowserOpen] = useState(false);
+
+  // ---- Conflict detection state ----
+  const [conflicts, setConflicts] = useState<Conflict[]>([]);
+  const [showConflicts, setShowConflicts] = useState(false);
+  const [isLoadingConflicts, setIsLoadingConflicts] = useState(false);
 
   // Exit board → navigate back to board list
   const handleExitFullscreen = useCallback(() => {
@@ -185,6 +193,27 @@ export function BoardShell({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [canUndo, canRedo, handleUndo, handleRedo]);
 
+  // ---- Fetch conflicts on mount ----
+  const fetchConflicts = useCallback(async () => {
+    setIsLoadingConflicts(true);
+    try {
+      const result = await detectConflicts({ boardId });
+      setConflicts(result.conflicts);
+      // Auto-show panel if there are conflicts
+      if (result.conflicts.length > 0) {
+        setShowConflicts(true);
+      }
+    } catch (error) {
+      console.error("Failed to detect conflicts:", error);
+    } finally {
+      setIsLoadingConflicts(false);
+    }
+  }, [boardId]);
+
+  useEffect(() => {
+    fetchConflicts();
+  }, [fetchConflicts]);
+
   return (
     <ReactFlowProvider>
       <BoardRoom boardId={boardId} orgId={orgId}>
@@ -200,13 +229,22 @@ export function BoardShell({
             canRedo={canRedo}
             canUndo={canUndo}
             commandPaletteOpen={commandPaletteOpen}
+            conflictCount={conflicts.length}
             entityBrowserOpen={entityBrowserOpen}
+            isLoadingConflicts={isLoadingConflicts}
             onExitFullscreen={handleExitFullscreen}
             onRedo={handleRedo}
             onToggleAiChat={() => setAiChatOpen((prev) => !prev)}
             onToggleCommandPalette={() =>
               setCommandPaletteOpen((prev) => !prev)
             }
+            onToggleConflicts={() => {
+              if (conflicts.length > 0) {
+                setShowConflicts((prev) => !prev);
+              } else {
+                fetchConflicts();
+              }
+            }}
             onToggleEntityBrowser={() => setEntityBrowserOpen((prev) => !prev)}
             onUndo={handleUndo}
           />
@@ -228,6 +266,14 @@ export function BoardShell({
                   projections={projections}
                 />
               </ErrorBoundary>
+
+              {/* Conflict Warning Panel Overlay */}
+              {showConflicts && conflicts.length > 0 && (
+                <ConflictWarningPanel
+                  conflicts={conflicts}
+                  onClose={() => setShowConflicts(false)}
+                />
+              )}
             </div>
 
             {/* Entity Browser Panel (right side) */}
