@@ -18,6 +18,9 @@
       "!!**/coverage",
       "!!.turbo",
       "!!**/.turbo",
+      "!!.tmp",
+      "!!**/.tmp",
+      "!!**/test-output",
       "!!.vercel",
       "!!**/.vercel",
       "!!**/test-results",
@@ -46,7 +49,9 @@
       "!!**/.specify",
       "!!**/*.tsbuildinfo",
       "!!**/*.snap",
-      "!!eslint.config.mjs"
+      "!!eslint.config.mjs",
+      "!!apps/api/app/api/**/list/route.ts",
+      "!!apps/api/app/api/**/commands/*/route.ts"
     ]
   },
   "extends": [
