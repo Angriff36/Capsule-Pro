@@ -2,7 +2,7 @@
  * Generated Route Helpers — DO NOT EDIT
  *
  * Re-run:  node scripts/manifest/generate-route-manifest.mjs
- * Generated at: 2026-02-16T21:27:39.823Z
+ * Generated at: 2026-02-16T23:26:08.905Z
  * Total routes: 412
  */
 

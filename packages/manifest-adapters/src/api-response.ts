@@ -11,8 +11,8 @@
  * - Type-safe response builders
  */
 
-import type { CommandResult, EmittedEvent } from "@manifest/runtime";
-import type { ConstraintOutcome } from "@manifest/runtime/ir";
+import type { CommandResult, EmittedEvent } from "@angriff36/manifest";
+import type { ConstraintOutcome } from "@angriff36/manifest/ir";
 
 // ============ Type Guards ============
 

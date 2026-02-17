@@ -20,9 +20,9 @@ import type {
   EmittedEvent,
   RuntimeEngine,
   RuntimeOptions,
-} from "@manifest/runtime";
-import type { IR, IRCommand } from "@manifest/runtime/ir";
-import { compileToIR } from "@manifest/runtime/ir-compiler";
+} from "@angriff36/manifest";
+import type { IR, IRCommand } from "@angriff36/manifest/ir";
+import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { database, type PrismaClient } from "@repo/database";
 import { enforceCommandOwnership } from "@repo/manifest-adapters/ir-contract";
 import { PrismaIdempotencyStore } from "@repo/manifest-adapters/prisma-idempotency-store";
@@ -649,4 +649,4 @@ export type {
   RuntimeContext,
   RuntimeEngine,
   RuntimeOptions,
-} from "@manifest/runtime";
+} from "@angriff36/manifest";

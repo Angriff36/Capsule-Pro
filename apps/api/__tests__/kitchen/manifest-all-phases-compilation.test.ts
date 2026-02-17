@@ -20,7 +20,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { compileToIR } from "@manifest/runtime/ir-compiler";
+import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "@repo/manifest-adapters/ir-contract";
 import { ManifestRuntimeEngine } from "@repo/manifest-adapters/runtime-engine";
 import { describe, expect, it } from "vitest";

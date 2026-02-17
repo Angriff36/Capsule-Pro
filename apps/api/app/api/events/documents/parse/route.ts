@@ -889,7 +889,7 @@ async function processDocumentsAndGenerateResponse(
     "files"
   );
   // Initialize Manifest runtime via dynamic import (avoids require() of ESM on Vercel)
-  // Note: Event import functions are capsule-pro specific and not in @manifest/runtime
+  // Note: Event import functions are capsule-pro specific and not in @angriff36/manifest
   // These need to be ported to kitchen-ops or a separate event-import module
   const _engine = undefined;
   const _processDoc = undefined;

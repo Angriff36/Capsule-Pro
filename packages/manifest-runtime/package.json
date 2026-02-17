@@ -1,5 +1,5 @@
 {
-  "name": "@manifest/runtime",
+  "name": "@angriff36/manifest",
   "version": "0.3.21",
   "private": true,
   "type": "module",
