@@ -14,18 +14,18 @@ import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type RecipeListFilters = {
+interface RecipeListFilters {
   category?: string;
   cuisineType?: string;
   search?: string;
   tag?: string;
   isActive?: boolean;
-};
+}
 
-type PaginationParams = {
+interface PaginationParams {
   page: number;
   limit: number;
-};
+}
 
 /**
  * Parse and validate recipe list filters from URL search params
@@ -34,19 +34,29 @@ function parseRecipeFilters(searchParams: URLSearchParams): RecipeListFilters {
   const filters: RecipeListFilters = {};
 
   const category = searchParams.get("category");
-  if (category) filters.category = category;
+  if (category) {
+    filters.category = category;
+  }
 
   const cuisineType = searchParams.get("cuisineType");
-  if (cuisineType) filters.cuisineType = cuisineType;
+  if (cuisineType) {
+    filters.cuisineType = cuisineType;
+  }
 
   const search = searchParams.get("search");
-  if (search) filters.search = search;
+  if (search) {
+    filters.search = search;
+  }
 
   const tag = searchParams.get("tag");
-  if (tag) filters.tag = tag;
+  if (tag) {
+    filters.tag = tag;
+  }
 
   const isActive = searchParams.get("isActive");
-  if (isActive) filters.isActive = isActive === "true";
+  if (isActive) {
+    filters.isActive = isActive === "true";
+  }
 
   return filters;
 }
@@ -93,7 +103,7 @@ export async function GET(request: Request) {
     // Add category filter
     if (filters.category) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         { category: filters.category },
       ];
     }
@@ -101,7 +111,7 @@ export async function GET(request: Request) {
     // Add cuisine type filter
     if (filters.cuisineType) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         { cuisineType: filters.cuisineType },
       ];
     }
@@ -110,7 +120,7 @@ export async function GET(request: Request) {
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         {
           OR: [
             { name: { contains: searchLower, mode: "insensitive" } },
@@ -123,7 +133,7 @@ export async function GET(request: Request) {
     // Add tag filter
     if (filters.tag) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         { tags: { has: filters.tag } },
       ];
     }
@@ -131,7 +141,7 @@ export async function GET(request: Request) {
     // Add active filter
     if (filters.isActive !== undefined) {
       whereClause.AND = [
-        ...(whereClause.AND as Array<Record<string, unknown>>),
+        ...(whereClause.AND as Record<string, unknown>[]),
         { isActive: filters.isActive },
       ];
     }

@@ -57,7 +57,7 @@ interface ManifestSpec {
  * - `publish` → `release`
  * - `not in` → negated constraint
  */
-const KNOWN_COMPILER_ISSUES: Record<string, string> = {};
+const _KNOWN_COMPILER_ISSUES: Record<string, string> = {};
 
 const MANIFEST_SPECS: ManifestSpec[] = [
   // ── Phase 1: Kitchen Operations ──────────────────────────────────────────
@@ -572,7 +572,7 @@ describe("Manifest All-Phases Compilation", () => {
       const { ir } = await compileManifest(manifest);
       expect(ir).toBeDefined();
 
-      const irEntityNames = ir!.entities.map((e: { name: string }) => e.name);
+      const irEntityNames = ir?.entities.map((e: { name: string }) => e.name);
 
       for (const entitySpec of entities) {
         expect(
@@ -585,10 +585,13 @@ describe("Manifest All-Phases Compilation", () => {
     it("IR contains expected commands for each entity (after normalization)", async () => {
       const { ir } = await compileManifest(manifest);
       expect(ir).toBeDefined();
+      if (!ir) {
+        throw new Error(`${manifest} should compile to a valid IR`);
+      }
 
       // Apply enforceCommandOwnership to normalize entity→command mapping
       // This is the same normalization the runtime uses
-      const normalized = enforceCommandOwnership(ir!, manifest);
+      const normalized = enforceCommandOwnership(ir, manifest);
 
       for (const entitySpec of entities) {
         // After normalization, commands have entity set
@@ -608,8 +611,11 @@ describe("Manifest All-Phases Compilation", () => {
     it("ManifestRuntimeEngine can be instantiated", async () => {
       const { ir } = await compileManifest(manifest);
       expect(ir).toBeDefined();
+      if (!ir) {
+        throw new Error(`${manifest} should compile to a valid IR`);
+      }
 
-      const normalized = enforceCommandOwnership(ir!, manifest);
+      const normalized = enforceCommandOwnership(ir, manifest);
 
       const runtime = new ManifestRuntimeEngine(normalized, {
         user: {
@@ -646,7 +652,7 @@ describe("Manifest All-Phases Compilation", () => {
       it("documents known compiler limitation", () => {
         console.info(`  ⚠️  ${manifest}: ${knownCompilerIssue}`);
         expect(knownCompilerIssue).toBeDefined();
-        expect(knownCompilerIssue!.length).toBeGreaterThan(0);
+        expect(knownCompilerIssue?.length).toBeGreaterThan(0);
       });
 
       it("fails compilation due to known reserved word / syntax issue", async () => {
