@@ -1,6 +1,6 @@
 # Command Board — Current State
 
-> Last updated: 2026-02-16
+> Last updated: 2026-02-17
 
 ## What Is the Command Board?
 
@@ -39,7 +39,7 @@ All tables use composite PKs `(tenantId, id)` and soft deletes.
 
 ### Type System
 
-- `EntityType` — 11 entity types: event, client, prep_task, kitchen_task, employee, inventory_item, recipe, dish, proposal, shipment, note
+- `EntityType` — 13 entity types: event, client, prep_task, kitchen_task, employee, inventory_item, recipe, dish, proposal, shipment, note, risk, financial_projection
 - `ResolvedEntity` — Discriminated union of all resolved entity data
 - `BoardProjection` — Position + metadata for an entity on a board
 - `DerivedConnection` — Auto-generated relationship edges
@@ -50,7 +50,7 @@ All tables use composite PKs `(tenantId, id)` and soft deletes.
 | Feature             | Status      | Notes                                                   |
 | ------------------- | ----------- | ------------------------------------------------------- |
 | React Flow canvas   | Done        | Replaced entire custom canvas stack                     |
-| 7 entity card types | Done        | event, client, task, employee, inventory, note, generic |
+| 7 entity card types | Done        | event, client, task, employee, inventory, risk, financial, note, generic |
 | Entity resolution   | Done        | Batched server action resolves all entity types         |
 | Derived connections | Done        | Auto-generates edges from DB relationships              |
 | Drag persistence    | Done        | Single + batch position updates                         |
@@ -59,7 +59,7 @@ All tables use composite PKs `(tenantId, id)` and soft deletes.
 | Entity Browser      | Done        | Collapsible categories, lazy loading, add-to-board      |
 | Command Palette     | Done        | Cmd+K, quick actions                                    |
 | AI Chat Panel       | Done        | Cmd+J, streaming responses                              |
-| Entity Detail Panel | **Partial** | Component exists but NOT wired into BoardShell          |
+| Entity Detail Panel | Done        | Fully wired with loading states, error handling         |
 | Liveblocks realtime | Done        | Cursor presence, position sync, add/remove broadcast    |
 | Auto-population     | Done        | Smart board seeding based on scope                      |
 | Board CRUD          | Done        | Create, update, delete boards                           |
@@ -69,13 +69,17 @@ All tables use composite PKs `(tenantId, id)` and soft deletes.
 
 ## Known Bugs
 
-1. **Entity Detail Panel not wired up** — `board-shell.tsx` line 263 has placeholder text "Entity detail panel coming soon" instead of rendering `EntityDetailPanel` component. The component (`entity-detail-panel.tsx`) is fully built with loading states, error handling, detail view routing, and "Open Full Page" links.
+All previously documented bugs have been resolved:
 
-2. **Entity Browser has no "already on board" indicator** — You can add the same entity multiple times. No visual feedback that an entity is already projected.
+1. ~~**Entity Detail Panel not wired up**~~ — **FIXED**: EntityDetailPanel is now properly wired in BoardShell with loading states, error handling, detail view routing, and "Open Full Page" links.
+
+2. ~~**Entity Browser has no "already on board" indicator**~~ — **FIXED**: Entity Browser now shows "On board" badge for entities already projected and prevents duplicates with toast notification.
 
 3. **Entity Browser has no search/filter** — With many entities per category, there's no way to find a specific one without scrolling.
 
-4. **Undo/Redo not connected** — `BoardHeader` receives `canUndo`/`canRedo` props but they're hardcoded to `false` in `BoardShell`. The old undo system was removed with the custom canvas.
+4. ~~**Undo/Redo not connected**~~ — **FIXED**: useBoardHistory hook now properly implements canUndo/canRedo with keyboard shortcuts.
+
+5. ~~**No Error Boundary**~~ — **FIXED**: ErrorBoundary component now wraps BoardFlow for graceful error recovery.
 
 ## Keyboard Shortcuts
 
@@ -119,7 +123,7 @@ apps/app/app/(authenticated)/command-board/
 │   ├── ai-chat-panel.tsx        # Cmd+J
 │   ├── entity-search.tsx        # Search component
 │   ├── entity-browser.tsx       # Right sidebar browser
-│   ├── entity-detail-panel.tsx  # Slide-over detail (NOT WIRED)
+│   ├── entity-detail-panel.tsx  # Slide-over detail panel
 │   ├── boards-list-client.tsx   # Board list page
 │   ├── add-to-board-dialog.tsx  # Add entity dialog
 │   └── detail-views/
@@ -137,9 +141,13 @@ apps/app/app/(authenticated)/command-board/
 │       ├── employee-card.tsx
 │       ├── task-card.tsx
 │       ├── inventory-card.tsx
+│       ├── risk-card.tsx
+│       ├── financial-projection-card.tsx
 │       ├── note-card.tsx
 │       └── generic-card.tsx
 └── hooks/
     ├── use-board-sync.ts        # Realtime sync event system
+    ├── use-board-history.ts     # Undo/Redo history management
+    ├── use-inventory-realtime.ts # Real-time inventory updates
     └── use-liveblocks-sync.ts   # Liveblocks integration
 ```

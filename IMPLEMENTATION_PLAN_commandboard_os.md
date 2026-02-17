@@ -421,7 +421,16 @@ The Command Board has foundational pieces for AI-Native OS:
 - **Financial Analysis**: Financial projection infrastructure implemented in derive-financial-projections.ts with FinancialProjectionNodeCard component
 - **All Known Bugs**: Resolved (B1-B5 all marked COMPLETED)
 
-**Status**: Command Board OS implementation is COMPLETE. All phases finished, build passes, tests pass.
+---
+
+## Phase 6: Advanced AI Tools (From Spec)
+
+| # | Item | Location | Status |
+|---|------|----------|--------|
+| 6.1 | Add suggest_simulation_plan AI tool | api/command-board/chat/route.ts | NOT STARTED |
+| 6.2 | Add optimize_schedule AI tool | api/command-board/chat/route.ts | NOT STARTED |
+| 6.3 | Add auto_generate_prep AI tool | api/command-board/chat/route.ts | NOT STARTED |
+| 6.4 | Add auto_generate_purchase AI tool | api/command-board/chat/route.ts | NOT STARTED |
 
 ---
 
