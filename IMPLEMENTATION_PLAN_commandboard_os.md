@@ -64,9 +64,9 @@ The Command Board has foundational pieces for AI-Native OS:
 
 | # | Item | Location | Status |
 |---|------|----------|--------|
-| 3.1 | Add recipe->dish, dish->recipe connections | derive-connections.ts | NOT STARTED |
+| 3.1 | Add recipe->dish, dish->recipe connections | derive-connections.ts | COMPLETED |
 | 3.2 | Add financial exposure projection nodes | types/entities.ts, nodes/ | NOT STARTED |
-| 3.3 | Add inventory risk indicator nodes | nodes/inventory-card.tsx | PARTIAL (low stock badge exists, multi-threshold levels not implemented) |
+| 3.3 | Add inventory risk indicator nodes | nodes/inventory-card.tsx | COMPLETED (multi-threshold system with good/low/critical/out_of_stock levels, progress bar, color-coded indicators) |
 | 3.4 | Real-time live inventory levels on cards | projection-node.tsx | NOT STARTED |
 
 ### Phase 4: AI as Configuration Abstraction
@@ -151,6 +151,17 @@ The Command Board has foundational pieces for AI-Native OS:
   - Added `risk_to_entity` to `RELATIONSHIP_STYLES` in `board.ts`
   - The function now returns edges when both risk projections AND conflict data are available
 
+## Implementation Notes (2026-02-17 Iteration 5)
+
+- **3.1 IMPLEMENTED**: Recipe-dish connection derivation:
+  - Added `hasRecipes` and `hasDishes` checks in `derive-connections.ts` to conditionally derive connections
+  - Added Dish→Recipe query using `Dish.recipeId` foreign key in database
+  - Creates bidirectional edges: `dish_to_recipe` (dish → recipe, "based on") and `recipe_to_dish` (recipe → dish, "used in")
+  - Added relationship styles in `board.ts`:
+    - `dish_to_recipe`: pink (#ec4899), "based on"
+    - `recipe_to_dish`: rose (#f43f5e), "used in"
+  - Updated JSDoc comment to document the new relationship type
+
 ## Implementation Notes (2026-02-17 Iteration 2)
 
 - **2.1, 2.5 COMPLETED**: Added RiskEntity type to the board:
@@ -167,6 +178,30 @@ The Command Board has foundational pieces for AI-Native OS:
   - Added risk case to resolve-entities.ts (returns empty map since risks are derived from conflicts)
   - Added risk edges derivation in derive-connections.ts (placeholder logic)
 - **2.3, 2.4 VERIFIED**: explain_risk and resolve_risk AI tools already exist in the chat route - they work with the detect_conflicts tool to explain and resolve operational risks
+
+## Implementation Notes (2026-02-17 Iteration 6)
+
+- **3.3 COMPLETED**: Enhanced inventory card with multi-threshold risk indicators:
+  - Added `InventoryThreshold` type with 4 levels: good, low, critical, out_of_stock
+  - Added `reorderLevel` field to `ResolvedInventoryItem` interface
+  - Implemented `calculateInventoryThreshold()` function with percentage-based thresholds:
+    - 0 units = out_of_stock
+    - <=50% of par level = critical
+    - <=100% of par level = low
+    - >100% of par level = good
+  - Added `getInventoryThresholdLabel()` for human-readable labels
+  - Updated `InventoryNodeCard` component with:
+    - Color-coded progress bar showing stock percentage
+    - Visual badges for low/critical/out_of_stock states
+    - Icons for each status (CheckCircle, TrendingDown, AlertTriangle, PackageX)
+    - Highlighted "On Hand" quantity in red when out of stock
+    - Reorder level display with conditional highlighting
+- **TypeScript fixes** (pre-existing issues resolved):
+  - Added missing `risk` case to `ENTITY_TYPE_ICONS` in entity-detail-panel.tsx
+  - Added missing `risk` case to `getEntityLink()` function
+  - Fixed invalid "warning" badge variant in risk-card.tsx (changed to "secondary")
+  - Added null check for `previous` in use-board-history.ts undo function
+  - Fixed duplicate identifier exports in types/index.ts
 
 ---
 

@@ -116,6 +116,14 @@ export const RELATIONSHIP_STYLES = {
     strokeDasharray: "5,5",
     label: "threatens",
   },
+  dish_to_recipe: {
+    color: "#ec4899",
+    label: "based on",
+  },
+  recipe_to_dish: {
+    color: "#f43f5e",
+    label: "used in",
+  },
   generic: { color: "#9ca3af", strokeDasharray: "3,3", label: "related" },
 } as const satisfies Record<
   string,

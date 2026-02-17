@@ -78,6 +78,21 @@ export interface ResolvedEmployee {
   isActive: boolean;
 }
 
+/** Inventory stock level thresholds */
+export const InventoryThreshold = {
+  /** Good stock level - above par level */
+  good: "good",
+  /** Low stock - at or below par level but above reorder level */
+  low: "low",
+  /** Critical stock - at or below reorder level */
+  critical: "critical",
+  /** Out of stock - zero quantity */
+  out_of_stock: "out_of_stock",
+} as const;
+
+export type InventoryThreshold =
+  (typeof InventoryThreshold)[keyof typeof InventoryThreshold];
+
 /** Resolved inventory item data for display on the board */
 export interface ResolvedInventoryItem {
   id: string;
@@ -85,7 +100,71 @@ export interface ResolvedInventoryItem {
   category: string | null;
   quantityOnHand: number;
   parLevel: number | null;
+  reorderLevel: number | null;
   unit: string | null;
+}
+
+/**
+ * Calculate inventory threshold status based on quantity and thresholds.
+ *
+ * Threshold hierarchy (from lowest to highest urgency):
+ * - good: quantity > parLevel (healthy stock)
+ * - low: quantity <= parLevel but > reorderLevel (needs attention)
+ * - critical: quantity <= reorderLevel but > 0 (urgent reorder)
+ * - out_of_stock: quantity <= 0 (no stock available)
+ *
+ * If only one threshold is set, it's used as the primary indicator.
+ * If neither threshold is set, returns "good" (no thresholds to evaluate against).
+ */
+export function calculateInventoryThreshold(
+  quantityOnHand: number,
+  parLevel: number | null,
+  reorderLevel: number | null
+): InventoryThreshold {
+  // Out of stock - highest urgency
+  if (quantityOnHand <= 0) {
+    return "out_of_stock";
+  }
+
+  // If no thresholds configured, consider stock as good
+  if (parLevel == null && reorderLevel == null) {
+    return "good";
+  }
+
+  // If only parLevel is set, use it as the single threshold
+  if (reorderLevel == null) {
+    return quantityOnHand > (parLevel ?? 0) ? "good" : "low";
+  }
+
+  // If only reorderLevel is set, use it as the single threshold
+  if (parLevel == null) {
+    return quantityOnHand > reorderLevel ? "good" : "critical";
+  }
+
+  // Both thresholds set - use full hierarchy
+  // parLevel is the minimum acceptable (low warning)
+  // reorderLevel is the urgent reorder point (critical)
+  if (quantityOnHand <= reorderLevel) {
+    return "critical";
+  }
+  if (quantityOnHand <= parLevel) {
+    return "low";
+  }
+  return "good";
+}
+
+/** Get display label for inventory threshold status */
+export function getInventoryThresholdLabel(status: InventoryThreshold): string {
+  switch (status) {
+    case "good":
+      return "In Stock";
+    case "low":
+      return "Low Stock";
+    case "critical":
+      return "Critical";
+    case "out_of_stock":
+      return "Out of Stock";
+  }
 }
 
 /** Resolved recipe data for display on the board */

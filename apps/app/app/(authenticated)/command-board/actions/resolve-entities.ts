@@ -304,6 +304,7 @@ async function resolveInventoryItems(
       category: true,
       quantityOnHand: true,
       parLevel: true,
+      reorder_level: true,
       unitOfMeasure: true,
     },
   });
@@ -314,7 +315,8 @@ async function resolveInventoryItems(
       name: item.name,
       category: item.category,
       quantityOnHand: Number(item.quantityOnHand),
-      parLevel: Number(item.parLevel),
+      parLevel: item.parLevel ? Number(item.parLevel) : null,
+      reorderLevel: item.reorder_level ? Number(item.reorder_level) : null,
       unit: item.unitOfMeasure,
     };
 

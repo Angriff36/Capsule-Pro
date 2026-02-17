@@ -33,6 +33,7 @@ interface ProjectionRef {
  * - Event → Shipment (Shipment.eventId)
  * - Client → Proposal (Proposal.clientId)
  * - Risk → Affected Entity (from conflict detection data)
+ * - Dish ↔ Recipe (Dish.recipeId foreign key)
  */
 export async function deriveConnections(
   projections: ProjectionRef[],
@@ -100,6 +101,8 @@ export async function deriveConnections(
     const hasShipments = (byType.get("shipment")?.length ?? 0) > 0;
     const hasProposals = (byType.get("proposal")?.length ?? 0) > 0;
     const hasRisks = (byType.get("risk")?.length ?? 0) > 0;
+    const hasRecipes = (byType.get("recipe")?.length ?? 0) > 0;
+    const hasDishes = (byType.get("dish")?.length ?? 0) > 0;
 
     // Build parallel query array — only query relationships where both
     // endpoint types have projections on the board
@@ -354,6 +357,54 @@ export async function deriveConnections(
         } catch (error) {
           console.error(
             "[derive-connections] Failed to derive risk connections:",
+            error
+          );
+        }
+      });
+    }
+
+    // 7. Dish → Recipe: Dish has recipeId foreign key
+    if (hasDishes && hasRecipes) {
+      queries.push(async () => {
+        try {
+          const dishIds = idsForType("dish");
+          const recipeIds = idsForType("recipe");
+
+          const dishes = await database.dish.findMany({
+            where: {
+              tenantId,
+              id: { in: dishIds },
+              recipeId: { in: recipeIds },
+              deletedAt: null,
+            },
+            select: { id: true, recipeId: true },
+          });
+
+          for (const dish of dishes) {
+            if (!dish.recipeId) {
+              continue;
+            }
+            const dishProj = findProj("dish", dish.id);
+            const recipeProj = findProj("recipe", dish.recipeId);
+            if (dishProj && recipeProj) {
+              addConnection(
+                dishProj,
+                recipeProj,
+                "dish_to_recipe",
+                "based on"
+              );
+              // Also add reverse direction: recipe → dish
+              addConnection(
+                recipeProj,
+                dishProj,
+                "recipe_to_dish",
+                "used in"
+              );
+            }
+          }
+        } catch (error) {
+          console.error(
+            "[derive-connections] Failed to derive dish→recipe connections:",
             error
           );
         }
