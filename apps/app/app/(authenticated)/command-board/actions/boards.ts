@@ -621,8 +621,9 @@ export async function discardSimulation(
 /**
  * Computes the delta between original and simulated board states.
  * Used to display a diff overlay showing what would change.
+ * Note: Must be async as it's exported from a 'use server' file.
  */
-export function computeBoardDelta(input: ComputeDeltaInput): BoardDelta {
+export async function computeBoardDelta(input: ComputeDeltaInput): Promise<BoardDelta> {
   const addedProjections: BoardProjection[] = [];
   const removedProjectionIds: string[] = [];
   const modifiedProjections: BoardDelta["modifiedProjections"] = [];
