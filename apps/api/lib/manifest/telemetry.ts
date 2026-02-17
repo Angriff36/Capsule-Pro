@@ -1,10 +1,10 @@
-import type { CommandResult } from "@manifest/runtime";
+import type { CommandResult } from "@angriff36/manifest";
 import type {
   ConstraintOutcome,
   IRCommand,
   IRConstraint,
   OverrideRequest,
-} from "@manifest/runtime/ir";
+} from "@angriff36/manifest/ir";
 import * as Sentry from "@sentry/nextjs";
 
 /**

@@ -3,7 +3,7 @@
   "boundaries": {
     "implicitDependencies": [
       "@api/*",
-      "@manifest/runtime/*",
+      "@angriff36/manifest/*",
       "@repo/manifest-adapters",
       "@repo/manifest-adapters/api-response",
       "@repo/manifest-adapters/prisma-store",

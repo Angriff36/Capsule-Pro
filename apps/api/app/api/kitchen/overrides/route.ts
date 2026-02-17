@@ -1,4 +1,4 @@
-import type { OverrideRequest } from "@manifest/runtime/ir";
+import type { OverrideRequest } from "@angriff36/manifest/ir";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 // biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger

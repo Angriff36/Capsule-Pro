@@ -123,12 +123,12 @@ importers:
       '@ai-sdk/openai':
         specifier: ^3.0.25
         version: 3.0.25(zod@4.3.6)
+      '@angriff36/manifest':
+        specifier: workspace:*
+        version: link:../../packages/manifest-runtime
       '@capsule-pro/sales-reporting':
         specifier: workspace:*
         version: link:../../packages/sales-reporting
-      '@manifest/runtime':
-        specifier: workspace:*
-        version: link:../../packages/manifest-runtime
       '@react-pdf/renderer':
         specifier: ^4.3.2
         version: 4.3.2(react@19.2.4)
@@ -241,6 +241,9 @@ importers:
       '@ai-sdk/react':
         specifier: ^3.0.88
         version: 3.0.88(react@19.2.4)(zod@4.3.6)
+      '@angriff36/manifest':
+        specifier: workspace:*
+        version: link:../../packages/manifest-runtime
       '@capsule-pro/sales-reporting':
         specifier: workspace:*
         version: link:../../packages/sales-reporting
@@ -250,9 +253,6 @@ importers:
       '@clerk/themes':
         specifier: ^2.2.68
         version: 2.4.51(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@manifest/runtime':
-        specifier: workspace:*
-        version: link:../../packages/manifest-runtime
       '@neondatabase/serverless':
         specifier: ^1.0.2
         version: 1.0.2
@@ -1240,7 +1240,7 @@ importers:
 
   packages/manifest-adapters:
     dependencies:
-      '@manifest/runtime':
+      '@angriff36/manifest':
         specifier: workspace:*
         version: link:../manifest-runtime
       '@repo/database':

@@ -6,7 +6,7 @@
  * model and the Prisma database tables.
  */
 
-import type { Store } from "@manifest/runtime";
+import type { Store } from "@angriff36/manifest";
 import type {
   Dish,
   Ingredient,
