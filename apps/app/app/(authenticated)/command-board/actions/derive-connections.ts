@@ -3,6 +3,7 @@
 import { database } from "@repo/database";
 import { requireTenantId } from "../../../lib/tenant";
 import type { DerivedConnection } from "../types/board";
+import type { Conflict } from "../conflict-types";
 
 // ============================================================================
 // Derived Connection Engine
@@ -31,9 +32,11 @@ interface ProjectionRef {
  * - Event → Employee (EventStaffAssignment join table)
  * - Event → Shipment (Shipment.eventId)
  * - Client → Proposal (Proposal.clientId)
+ * - Risk → Affected Entity (from conflict detection data)
  */
 export async function deriveConnections(
-  projections: ProjectionRef[]
+  projections: ProjectionRef[],
+  conflicts?: Conflict[]
 ): Promise<DerivedConnection[]> {
   try {
     const tenantId = await requireTenantId();
@@ -300,42 +303,54 @@ export async function deriveConnections(
 
     // 6. Risk → Affected Entity: Risk has affectedEntityId and affectedEntityType
     // This creates edges from risk nodes to the entities they threaten
-    if (hasRisks) {
+    // Uses conflict data passed to the function to find affected entities
+    if (hasRisks && conflicts && conflicts.length > 0) {
       queries.push(async () => {
         try {
           const riskProjections = byType.get("risk") ?? [];
 
-          // Get all unique affected entity types and IDs from risk projections
-          // We'll query the board projections to find the actual affected entities
-          // For now, we'll create connections based on matching entity IDs
-          // The risk entity contains affectedEntityId in its data
-
-          // Query board projections that are risks and have affected entity info
-          // We'll look at all risk projections and try to find matching entities
-          for (const riskProj of riskProjections) {
-            // Risk entities should have the affected entity info in their data
-            // We need to check if the affected entity is also on the board
-            // This is handled differently since risk is derived from conflicts
-
-            // For now, we'll derive connections based on any entity that shares
-            // an ID with the risk's affected entity
-            const allProjections = Array.from(lookupMap.values());
-
-            for (const proj of allProjections) {
-              if (proj.entityType === "risk") {
-                continue;
-              }
-              // Check if this entity could be the affected entity
-              // The risk's affectedEntityType should match this projection's entityType
-              // and affectedEntityId should match this projection's entityId
-              // This requires the risk data to be loaded with affected entity info
-            }
+          // Build a map of conflict ID to conflict for quick lookup
+          const conflictMap = new Map<string, Conflict>();
+          for (const conflict of conflicts) {
+            conflictMap.set(conflict.id, conflict);
           }
 
-          // Note: Risk connections are typically derived from the conflict detection
-          // system, where each conflict creates a risk entity pointing to affected entities.
-          // The actual edge derivation happens when risk entities are created from
-          // detected conflicts - the affectedEntityId field is used to link them.
+          // Map conflict entity types to board entity types
+          // Conflict uses: "event" | "task" | "employee" | "inventory"
+          // Board uses: "event" | "prep_task" | "employee" | "inventory_item"
+          const conflictToEntityType: Record<string, string> = {
+            event: "event",
+            task: "prep_task",
+            employee: "employee",
+            inventory: "inventory_item",
+          };
+
+          for (const riskProj of riskProjections) {
+            // Find the matching conflict using the risk's entityId
+            const conflict = conflictMap.get(riskProj.entityId);
+            if (!conflict) {
+              continue;
+            }
+
+            // For each affected entity in the conflict, create an edge
+            for (const affected of conflict.affectedEntities) {
+              const boardEntityType = conflictToEntityType[affected.type];
+              if (!boardEntityType) {
+                continue;
+              }
+
+              // Find the projection for this affected entity on the board
+              const affectedProj = findProj(boardEntityType, affected.id);
+              if (affectedProj) {
+                addConnection(
+                  riskProj,
+                  affectedProj,
+                  "risk_to_entity",
+                  `threatens`
+                );
+              }
+            }
+          }
         } catch (error) {
           console.error(
             "[derive-connections] Failed to derive risk connections:",

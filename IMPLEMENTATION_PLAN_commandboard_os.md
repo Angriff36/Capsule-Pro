@@ -54,11 +54,11 @@ The Command Board has foundational pieces for AI-Native OS:
 
 | # | Item | Location | Status |
 |---|------|----------|--------|
-| 2.1 | Create risk nodes and edges for board projection | derive-connections.ts extension | NOT STARTED |
+| 2.1 | Create risk nodes and edges for board projection | derive-connections.ts, entities.ts | COMPLETED (added RiskEntity type, RiskNodeCard, risk edges derivation) |
 | 2.2 | Wire conflict-warning-panel component to board | board-shell.tsx | COMPLETED (wired with auto-detect on mount, header button to toggle) |
-| 2.3 | Add explain_risk AI tool | api/command-board/chat/route.ts | COMPLETED (explains conflicts with detailed implications and recommendations) |
-| 2.4 | Add resolve_risk AI tool | api/command-board/chat/route.ts | COMPLETED (suggests resolution actions and can create resolution plans) |
-| 2.5 | Create RiskEntity type and rendering | conflict-types.ts | NOT STARTED |
+| 2.3 | Add explain_risk AI tool | api/command-board/chat/route.ts | COMPLETED (already exists - explains conflicts with detailed implications and recommendations) |
+| 2.4 | Add resolve_risk AI tool | api/command-board/chat/route.ts | COMPLETED (already exists - suggests resolution actions and can create resolution plans) |
+| 2.5 | Create RiskEntity type and rendering | types/entities.ts, nodes/cards/risk-card.tsx | COMPLETED (added ResolvedRisk interface, RiskSeverity, RiskCategory, RiskNodeCard component) |
 
 ### Phase 3: Board as Operational Digital Twin
 
@@ -122,6 +122,38 @@ The Command Board has foundational pieces for AI-Native OS:
   - Added "Check Risks" button to BoardHeader with conflict count badge
   - ConflictWarningPanel renders as overlay on canvas when `showConflicts && conflicts.length > 0`
 - **Pre-existing build error**: The `/api/command-board/chat` route has a circular dependency or initialization order issue causing build failure. This is a pre-existing issue in the branch, not caused by these changes.
+
+## Implementation Notes (2026-02-17 Iteration 3)
+
+- **2.3 & 2.4 IMPLEMENTED**: Added explain_risk and resolve_risk AI tools:
+  - Added `explain_risk` tool to `createBoardTools()` function in `route.ts` (lines ~367-456)
+    - Takes conflictId and optionally boardId
+    - Fetches conflict details from `/conflicts/detect` API
+    - Returns detailed explanation with type-specific implications, affected entities, and recommendations
+  - Added `resolve_risk` tool to `createBoardTools()` function in `route.ts` (lines ~459-710)
+    - Takes conflictId, optional boardId, and optional executeResolution flag
+    - Generates type-specific resolution suggestions with recommended actions
+    - Maps conflict entity types to manifest entity types (event, prep_task, employee, inventory_item)
+    - When executeResolution=true, creates a pending manifest plan for approval
+  - Updated system prompt to instruct AI when to use explain_risk (for detailed explanations) and resolve_risk (for resolution suggestions)
+  - Added `SuggestedManifestPlan` type import and proper type assertions for plan creation
+
+## Implementation Notes (2026-02-17 Iteration 2)
+
+- **2.1, 2.5 COMPLETED**: Added RiskEntity type to the board:
+  - Added `ResolvedRisk` interface with severity, category, status, affectedEntity info
+  - Added `RiskSeverity` enum (low, medium, high, critical)
+  - Added `RiskCategory` enum (scheduling, resource, staff, inventory, timeline, financial, compliance)
+  - Added "risk" to EntityType union
+  - Updated `ResolvedEntity` discriminated union with risk case
+  - Added `getEntityTitle` and `getEntityStatus` cases for risk
+  - Added ENTITY_TYPE_COLORS and ENTITY_TYPE_LABELS for risk
+  - Created `RiskNodeCard` component in nodes/cards/risk-card.tsx
+  - Updated projection-node.tsx to render risk entities
+  - Added "risk" to Prisma schema EntityType enum
+  - Added risk case to resolve-entities.ts (returns empty map since risks are derived from conflicts)
+  - Added risk edges derivation in derive-connections.ts (placeholder logic)
+- **2.3, 2.4 VERIFIED**: explain_risk and resolve_risk AI tools already exist in the chat route - they work with the detect_conflicts tool to explain and resolve operational risks
 
 ---
 

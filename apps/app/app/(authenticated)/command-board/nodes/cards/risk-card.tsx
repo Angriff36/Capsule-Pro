@@ -78,7 +78,7 @@ export const RiskNodeCard = memo(function RiskNodeCard({
           <AlertTriangle className={cn("size-3.5 shrink-0", colors.icon)} />
           <span className={cn("font-medium text-xs", colors.text)}>Risk</span>
         </div>
-        <Badge className="text-[10px] px-1.5 py-0" variant={severityVariantMap[data.status]}>
+        <Badge className="text-[10px] px-1.5 py-0" variant={statusVariantMap[data.status]}>
           {data.status}
         </Badge>
       </div>
