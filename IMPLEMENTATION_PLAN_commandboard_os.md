@@ -421,6 +421,18 @@ The Command Board has foundational pieces for AI-Native OS:
 - **Financial Analysis**: Financial projection infrastructure implemented in derive-financial-projections.ts with FinancialProjectionNodeCard component
 - **All Known Bugs**: Resolved (B1-B5 all marked COMPLETED)
 
+## Implementation Notes (2026-02-17 Iteration 15)
+
+- **Documentation Update**: Updated STATUS.md to reflect current implementation state:
+  - Marked Entity Detail Panel as "Done" (previously marked as "Partial")
+  - Updated EntityType count from 11 to 13 (added risk, financial_projection)
+  - Updated entity card types to include risk-card.tsx and financial-projection-card.tsx
+  - Added new hooks: use-board-history.ts, use-inventory-realtime.ts
+  - Marked all previously documented bugs as FIXED with strikethrough
+  - Added Error Boundary fix documentation
+- **Verification**: All 107 tests pass, build passes cleanly
+- **Tag**: Created git tag v0.6.10
+
 ---
 
 ## Phase 6: Advanced AI Tools (From Spec)
