@@ -1,18 +1,23 @@
-import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { compileToIR } from '../ir-compiler';
-import { RuntimeEngine, RuntimeOptions, CommandResult, EntityInstance } from '../runtime-engine';
-import type { IR } from '../ir';
+import { existsSync, readdirSync, readFileSync } from "fs";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
+import { describe, expect, it } from "vitest";
+import type { IR } from "../ir";
+import { compileToIR } from "../ir-compiler";
+import {
+  type CommandResult,
+  type EntityInstance,
+  RuntimeEngine,
+  type RuntimeOptions,
+} from "../runtime-engine";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const FIXTURES_DIR = join(__dirname, 'fixtures');
-const EXPECTED_DIR = join(__dirname, 'expected');
+const FIXTURES_DIR = join(__dirname, "fixtures");
+const EXPECTED_DIR = join(__dirname, "expected");
 
-const DETERMINISTIC_TIMESTAMP = 1000000000000;
+const DETERMINISTIC_TIMESTAMP = 1_000_000_000_000;
 let idCounter = 0;
 
 function createDeterministicOptions(): RuntimeOptions {
@@ -24,19 +29,19 @@ function createDeterministicOptions(): RuntimeOptions {
 }
 
 function loadFixture(name: string): string {
-  return readFileSync(join(FIXTURES_DIR, name), 'utf-8');
+  return readFileSync(join(FIXTURES_DIR, name), "utf-8");
 }
 
 function loadExpectedIR(name: string): IR | null {
-  const irPath = join(EXPECTED_DIR, name.replace('.manifest', '.ir.json'));
+  const irPath = join(EXPECTED_DIR, name.replace(".manifest", ".ir.json"));
   if (!existsSync(irPath)) return null;
-  return JSON.parse(readFileSync(irPath, 'utf-8'));
+  return JSON.parse(readFileSync(irPath, "utf-8"));
 }
 
 interface ExpectedDiagnostics {
   shouldFail: boolean;
   diagnostics: Array<{
-    severity: 'error' | 'warning';
+    severity: "error" | "warning";
     message: string;
     line?: number;
     column?: number;
@@ -44,9 +49,12 @@ interface ExpectedDiagnostics {
 }
 
 function loadExpectedDiagnostics(name: string): ExpectedDiagnostics | null {
-  const diagnosticsPath = join(EXPECTED_DIR, name.replace('.manifest', '.diagnostics.json'));
+  const diagnosticsPath = join(
+    EXPECTED_DIR,
+    name.replace(".manifest", ".diagnostics.json")
+  );
   if (!existsSync(diagnosticsPath)) return null;
-  return JSON.parse(readFileSync(diagnosticsPath, 'utf-8'));
+  return JSON.parse(readFileSync(diagnosticsPath, "utf-8"));
 }
 
 interface CommandTestCase {
@@ -154,13 +162,22 @@ interface ConstraintTestCase {
 }
 
 interface ResultsFile {
-  testCases: Array<CommandTestCase | ComputedTestCase | CreateTestCase | PersistenceTestCase | ConstraintTestCase>;
+  testCases: Array<
+    | CommandTestCase
+    | ComputedTestCase
+    | CreateTestCase
+    | PersistenceTestCase
+    | ConstraintTestCase
+  >;
 }
 
 function loadExpectedResults(name: string): ResultsFile | null {
-  const resultsPath = join(EXPECTED_DIR, name.replace('.manifest', '.results.json'));
+  const resultsPath = join(
+    EXPECTED_DIR,
+    name.replace(".manifest", ".results.json")
+  );
   try {
-    return JSON.parse(readFileSync(resultsPath, 'utf-8'));
+    return JSON.parse(readFileSync(resultsPath, "utf-8"));
   } catch {
     return null;
   }
@@ -171,9 +188,9 @@ function normalizeIR(ir: IR): IR {
   const normalized = JSON.parse(JSON.stringify(ir));
   // Normalize provenance fields that vary between compilations
   if (normalized.provenance) {
-    normalized.provenance.compiledAt = '2024-01-01T00:00:00.000Z';
-    normalized.provenance.contentHash = 'normalized-content-hash';
-    normalized.provenance.irHash = 'normalized-ir-hash';
+    normalized.provenance.compiledAt = "2024-01-01T00:00:00.000Z";
+    normalized.provenance.contentHash = "normalized-content-hash";
+    normalized.provenance.irHash = "normalized-ir-hash";
   }
   return normalized;
 }
@@ -210,11 +227,13 @@ function normalizeResult(result: CommandResult): Partial<CommandResult> {
   return normalized;
 }
 
-describe('Manifest Conformance Tests', () => {
-  const fixtures = readdirSync(FIXTURES_DIR).filter(f => f.endsWith('.manifest')).sort();
+describe("Manifest Conformance Tests", () => {
+  const fixtures = readdirSync(FIXTURES_DIR)
+    .filter((f) => f.endsWith(".manifest"))
+    .sort();
 
-  describe('IR Compilation', () => {
-    fixtures.forEach(fixtureName => {
+  describe("IR Compilation", () => {
+    fixtures.forEach((fixtureName) => {
       const expectedDiagnostics = loadExpectedDiagnostics(fixtureName);
 
       // If this fixture has a diagnostics file, it's a diagnostic test (expected to fail)
@@ -226,11 +245,15 @@ describe('Manifest Conformance Tests', () => {
           if (expectedDiagnostics.shouldFail) {
             // Compilation should fail
             expect(ir).toBeNull();
-            expect(diagnostics.filter(d => d.severity === 'error').length).toBeGreaterThan(0);
+            expect(
+              diagnostics.filter((d) => d.severity === "error").length
+            ).toBeGreaterThan(0);
           }
 
           // Verify each expected diagnostic is present with exact matching
-          expect(diagnostics.length).toBe(expectedDiagnostics.diagnostics.length);
+          expect(diagnostics.length).toBe(
+            expectedDiagnostics.diagnostics.length
+          );
 
           expectedDiagnostics.diagnostics.forEach((expectedDiag, index) => {
             const actualDiag = diagnostics[index];
@@ -250,7 +273,7 @@ describe('Manifest Conformance Tests', () => {
           const source = loadFixture(fixtureName);
           const { ir, diagnostics } = await compileToIR(source);
 
-          expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+          expect(diagnostics.filter((d) => d.severity === "error")).toEqual([]);
           expect(ir).not.toBeNull();
 
           const expectedIR = loadExpectedIR(fixtureName);
@@ -265,14 +288,14 @@ describe('Manifest Conformance Tests', () => {
     });
   });
 
-  describe('Runtime Behavior', () => {
-    fixtures.forEach(fixtureName => {
+  describe("Runtime Behavior", () => {
+    fixtures.forEach((fixtureName) => {
       const results = loadExpectedResults(fixtureName);
       if (!results) return;
 
       describe(fixtureName, () => {
         results.testCases.forEach((testCase) => {
-          if ('command' in testCase) {
+          if ("command" in testCase) {
             const tc = testCase as CommandTestCase;
             it(tc.name, async () => {
               const source = loadFixture(fixtureName);
@@ -280,7 +303,11 @@ describe('Manifest Conformance Tests', () => {
               expect(ir).not.toBeNull();
 
               const context = tc.context || {};
-              const engine = new RuntimeEngine(ir!, context, createDeterministicOptions());
+              const engine = new RuntimeEngine(
+                ir!,
+                context,
+                createDeterministicOptions()
+              );
 
               if (tc.setup?.createInstance) {
                 await engine.createInstance(
@@ -290,7 +317,10 @@ describe('Manifest Conformance Tests', () => {
               }
               if (tc.setup?.createInstances) {
                 for (const inst of tc.setup.createInstances) {
-                  await engine.createInstance(inst.entity, inst.data as EntityInstance);
+                  await engine.createInstance(
+                    inst.entity,
+                    inst.data as EntityInstance
+                  );
                 }
               }
 
@@ -312,40 +342,64 @@ describe('Manifest Conformance Tests', () => {
               }
 
               if (tc.expectedResult.deniedBy) {
-                expect(normalizedResult.deniedBy).toBe(tc.expectedResult.deniedBy);
+                expect(normalizedResult.deniedBy).toBe(
+                  tc.expectedResult.deniedBy
+                );
               }
 
               if (tc.expectedGuardFailure) {
                 expect(normalizedResult.guardFailure).toBeDefined();
-                expect(normalizedResult.guardFailure?.index).toBe(tc.expectedGuardFailure.index);
+                expect(normalizedResult.guardFailure?.index).toBe(
+                  tc.expectedGuardFailure.index
+                );
                 // Check that the formatted expression contains the expected expression
-                expect(normalizedResult.guardFailure?.formatted).toContain(tc.expectedGuardFailure.expression);
+                expect(normalizedResult.guardFailure?.formatted).toContain(
+                  tc.expectedGuardFailure.expression
+                );
               }
 
               if (tc.expectedPolicyDenial) {
                 expect(normalizedResult.policyDenial).toBeDefined();
-                expect(normalizedResult.policyDenial?.policyName).toBe(tc.expectedPolicyDenial.policyName);
+                expect(normalizedResult.policyDenial?.policyName).toBe(
+                  tc.expectedPolicyDenial.policyName
+                );
                 // Check that the formatted expression contains the expected expression
-                expect(normalizedResult.policyDenial?.formatted).toContain(tc.expectedPolicyDenial.expression);
+                expect(normalizedResult.policyDenial?.formatted).toContain(
+                  tc.expectedPolicyDenial.expression
+                );
                 // Verify resolved values are present for diagnostics
                 expect(normalizedResult.policyDenial?.resolved).toBeDefined();
-                expect(Array.isArray(normalizedResult.policyDenial?.resolved)).toBe(true);
+                expect(
+                  Array.isArray(normalizedResult.policyDenial?.resolved)
+                ).toBe(true);
               }
 
               if (tc.expectedConcurrencyConflict) {
                 expect(normalizedResult.concurrencyConflict).toBeDefined();
-                expect(normalizedResult.concurrencyConflict?.entityType).toBe(tc.expectedConcurrencyConflict.entityType);
-                expect(normalizedResult.concurrencyConflict?.entityId).toBe(tc.expectedConcurrencyConflict.entityId);
-                expect(normalizedResult.concurrencyConflict?.expectedVersion).toBe(tc.expectedConcurrencyConflict.expectedVersion);
-                expect(normalizedResult.concurrencyConflict?.actualVersion).toBe(tc.expectedConcurrencyConflict.actualVersion);
-                expect(normalizedResult.concurrencyConflict?.conflictCode).toBe(tc.expectedConcurrencyConflict.conflictCode);
+                expect(normalizedResult.concurrencyConflict?.entityType).toBe(
+                  tc.expectedConcurrencyConflict.entityType
+                );
+                expect(normalizedResult.concurrencyConflict?.entityId).toBe(
+                  tc.expectedConcurrencyConflict.entityId
+                );
+                expect(
+                  normalizedResult.concurrencyConflict?.expectedVersion
+                ).toBe(tc.expectedConcurrencyConflict.expectedVersion);
+                expect(
+                  normalizedResult.concurrencyConflict?.actualVersion
+                ).toBe(tc.expectedConcurrencyConflict.actualVersion);
+                expect(normalizedResult.concurrencyConflict?.conflictCode).toBe(
+                  tc.expectedConcurrencyConflict.conflictCode
+                );
               }
 
               if (tc.expectedResult.result !== undefined) {
                 expect(normalizedResult.result).toBe(tc.expectedResult.result);
               }
 
-              expect(normalizedResult.emittedEvents?.length).toBe(tc.expectedResult.emittedEvents.length);
+              expect(normalizedResult.emittedEvents?.length).toBe(
+                tc.expectedResult.emittedEvents.length
+              );
 
               tc.expectedResult.emittedEvents.forEach((expectedEvent, i) => {
                 const actualEvent = normalizedResult.emittedEvents![i];
@@ -358,22 +412,35 @@ describe('Manifest Conformance Tests', () => {
                 }
               });
 
-              if (tc.expectedInstanceState && tc.command.entityName && tc.command.instanceId) {
-                const instance = await engine.getInstance(tc.command.entityName, tc.command.instanceId);
+              if (
+                tc.expectedInstanceState &&
+                tc.command.entityName &&
+                tc.command.instanceId
+              ) {
+                const instance = await engine.getInstance(
+                  tc.command.entityName,
+                  tc.command.instanceId
+                );
                 expect(instance).toEqual(tc.expectedInstanceState);
               }
             });
           }
 
-          if ('computedProperty' in testCase) {
+          if ("computedProperty" in testCase) {
             const tc = testCase as ComputedTestCase;
             it(tc.name, async () => {
               const source = loadFixture(fixtureName);
               const { ir } = await compileToIR(source);
               expect(ir).not.toBeNull();
 
-              const context = (testCase as unknown as { context?: Record<string, unknown> }).context ?? {};
-              const engine = new RuntimeEngine(ir!, context, createDeterministicOptions());
+              const context =
+                (testCase as unknown as { context?: Record<string, unknown> })
+                  .context ?? {};
+              const engine = new RuntimeEngine(
+                ir!,
+                context,
+                createDeterministicOptions()
+              );
 
               if (tc.setup.createInstance) {
                 await engine.createInstance(
@@ -383,7 +450,10 @@ describe('Manifest Conformance Tests', () => {
               }
               if (tc.setup.createInstances) {
                 for (const inst of tc.setup.createInstances) {
-                  await engine.createInstance(inst.entity, inst.data as EntityInstance);
+                  await engine.createInstance(
+                    inst.entity,
+                    inst.data as EntityInstance
+                  );
                 }
               }
 
@@ -397,14 +467,23 @@ describe('Manifest Conformance Tests', () => {
             });
           }
 
-          if ('createInstance' in testCase && !('command' in testCase) && !('computedProperty' in testCase) && !('persistenceTest' in testCase)) {
+          if (
+            "createInstance" in testCase &&
+            !("command" in testCase) &&
+            !("computedProperty" in testCase) &&
+            !("persistenceTest" in testCase)
+          ) {
             const tc = testCase as CreateTestCase;
             it(tc.name, async () => {
               const source = loadFixture(fixtureName);
               const { ir } = await compileToIR(source);
               expect(ir).not.toBeNull();
 
-              const engine = new RuntimeEngine(ir!, {}, createDeterministicOptions());
+              const engine = new RuntimeEngine(
+                ir!,
+                {},
+                createDeterministicOptions()
+              );
 
               const instance = await engine.createInstance(
                 tc.createInstance.entity,
@@ -415,14 +494,18 @@ describe('Manifest Conformance Tests', () => {
             });
           }
 
-          if ('persistenceTest' in testCase) {
+          if ("persistenceTest" in testCase) {
             const tc = testCase as PersistenceTestCase;
             it(tc.name, async () => {
               const source = loadFixture(fixtureName);
               const { ir } = await compileToIR(source);
               expect(ir).not.toBeNull();
 
-              const engine1 = new RuntimeEngine(ir!, {}, createDeterministicOptions());
+              const engine1 = new RuntimeEngine(
+                ir!,
+                {},
+                createDeterministicOptions()
+              );
               await engine1.createInstance(
                 tc.persistenceTest.entity,
                 tc.persistenceTest.createData as EntityInstance
@@ -430,7 +513,11 @@ describe('Manifest Conformance Tests', () => {
 
               const serialized = await engine1.serialize();
 
-              const engine2 = new RuntimeEngine(ir!, {}, createDeterministicOptions());
+              const engine2 = new RuntimeEngine(
+                ir!,
+                {},
+                createDeterministicOptions()
+              );
               await engine2.restore({ stores: serialized.stores });
 
               const restored = await engine2.getInstance(
@@ -442,18 +529,27 @@ describe('Manifest Conformance Tests', () => {
             });
           }
 
-          if ('expectedConstraintFailures' in testCase) {
+          if ("expectedConstraintFailures" in testCase) {
             const tc = testCase as ConstraintTestCase;
             it(tc.name, async () => {
               const source = loadFixture(fixtureName);
               const { ir } = await compileToIR(source);
               expect(ir).not.toBeNull();
 
-              const engine = new RuntimeEngine(ir!, {}, createDeterministicOptions());
+              const engine = new RuntimeEngine(
+                ir!,
+                {},
+                createDeterministicOptions()
+              );
 
-              const failures = await engine.checkConstraints(tc.entity, tc.data);
+              const failures = await engine.checkConstraints(
+                tc.entity,
+                tc.data
+              );
 
-              expect(failures.length).toBe(tc.expectedConstraintFailures.length);
+              expect(failures.length).toBe(
+                tc.expectedConstraintFailures.length
+              );
 
               tc.expectedConstraintFailures.forEach((expected, index) => {
                 const actual = failures[index];
@@ -470,44 +566,65 @@ describe('Manifest Conformance Tests', () => {
     });
   });
 
-  describe('Denial Reason Stability', () => {
-    it('guard denial message is stable', async () => {
-      const source = loadFixture('05-guard-denial.manifest');
+  describe("Denial Reason Stability", () => {
+    it("guard denial message is stable", async () => {
+      const source = loadFixture("05-guard-denial.manifest");
       const { ir } = await compileToIR(source);
       const engine = new RuntimeEngine(ir!, {}, createDeterministicOptions());
 
-      await engine.createInstance('Task', { id: 'task-1', title: 'Test', completed: true } as EntityInstance);
+      await engine.createInstance("Task", {
+        id: "task-1",
+        title: "Test",
+        completed: true,
+      } as EntityInstance);
 
-      const result = await engine.runCommand('complete', {}, {
-        entityName: 'Task',
-        instanceId: 'task-1',
-      });
+      const result = await engine.runCommand(
+        "complete",
+        {},
+        {
+          entityName: "Task",
+          instanceId: "task-1",
+        }
+      );
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Guard condition failed for command 'complete'");
+      expect(result.error).toBe(
+        "Guard condition failed for command 'complete'"
+      );
     });
 
-    it('policy denial message is stable', async () => {
-      const source = loadFixture('06-policy-denial.manifest');
+    it("policy denial message is stable", async () => {
+      const source = loadFixture("06-policy-denial.manifest");
       const { ir } = await compileToIR(source);
-      const engine = new RuntimeEngine(ir!, { user: { id: 'user-1', role: 'user' } }, createDeterministicOptions());
+      const engine = new RuntimeEngine(
+        ir!,
+        { user: { id: "user-1", role: "user" } },
+        createDeterministicOptions()
+      );
 
-      await engine.createInstance('Document', { id: 'doc-1', title: 'Test' } as EntityInstance);
+      await engine.createInstance("Document", {
+        id: "doc-1",
+        title: "Test",
+      } as EntityInstance);
 
-      const result = await engine.runCommand('makePublic', {}, {
-        entityName: 'Document',
-        instanceId: 'doc-1',
-      });
+      const result = await engine.runCommand(
+        "makePublic",
+        {},
+        {
+          entityName: "Document",
+          instanceId: "doc-1",
+        }
+      );
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Only administrators can execute commands');
-      expect(result.deniedBy).toBe('adminOnly');
+      expect(result.error).toBe("Only administrators can execute commands");
+      expect(result.deniedBy).toBe("adminOnly");
     });
   });
 
-  describe('Determinism', () => {
-    it('produces identical IR across multiple compilations', async () => {
-      const source = loadFixture('04-command-mutate-emit.manifest');
+  describe("Determinism", () => {
+    it("produces identical IR across multiple compilations", async () => {
+      const source = loadFixture("04-command-mutate-emit.manifest");
 
       const result1 = await compileToIR(source);
       const result2 = await compileToIR(source);
@@ -517,31 +634,44 @@ describe('Manifest Conformance Tests', () => {
       expect(normalizeIR(result2.ir!)).toEqual(normalizeIR(result3.ir!));
     });
 
-    it('uses deterministic timestamps when options provided', async () => {
-      const source = loadFixture('04-command-mutate-emit.manifest');
+    it("uses deterministic timestamps when options provided", async () => {
+      const source = loadFixture("04-command-mutate-emit.manifest");
       const { ir } = await compileToIR(source);
       const engine = new RuntimeEngine(ir!, {}, createDeterministicOptions());
 
-      await engine.createInstance('Counter', { id: 'counter-1', value: 0 } as EntityInstance);
+      await engine.createInstance("Counter", {
+        id: "counter-1",
+        value: 0,
+      } as EntityInstance);
 
-      const result = await engine.runCommand('increment', {}, {
-        entityName: 'Counter',
-        instanceId: 'counter-1',
-      });
+      const result = await engine.runCommand(
+        "increment",
+        {},
+        {
+          entityName: "Counter",
+          instanceId: "counter-1",
+        }
+      );
 
       expect(result.emittedEvents[0].timestamp).toBe(DETERMINISTIC_TIMESTAMP);
     });
 
-    it('uses deterministic IDs when options provided', async () => {
-      const source = loadFixture('01-entity-properties.manifest');
+    it("uses deterministic IDs when options provided", async () => {
+      const source = loadFixture("01-entity-properties.manifest");
       const { ir } = await compileToIR(source);
       const engine = new RuntimeEngine(ir!, {}, createDeterministicOptions());
 
-      const instance1 = await engine.createInstance('Product', { id: '', name: 'Product 1' } as unknown as EntityInstance);
-      const instance2 = await engine.createInstance('Product', { id: '', name: 'Product 2' } as unknown as EntityInstance);
+      const instance1 = await engine.createInstance("Product", {
+        id: "",
+        name: "Product 1",
+      } as unknown as EntityInstance);
+      const instance2 = await engine.createInstance("Product", {
+        id: "",
+        name: "Product 2",
+      } as unknown as EntityInstance);
 
-      expect(instance1?.id).toBe('test-id-1');
-      expect(instance2?.id).toBe('test-id-2');
+      expect(instance1?.id).toBe("test-id-1");
+      expect(instance2?.id).toBe("test-id-2");
     });
   });
 });

@@ -1,6 +1,6 @@
 "use server";
 
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { requireTenantId } from "../../../lib/tenant";
 import type { BoardProjection, BoardScope } from "../types/board";
 import type { EntityType } from "../types/entities";
@@ -313,6 +313,18 @@ const GAP_Y = 40;
 const OFFSET_X = 100;
 const OFFSET_Y = 100;
 
+function isUniqueConstraintError(error: unknown): boolean {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    return error.code === "P2002";
+  }
+
+  if (error instanceof Error) {
+    return error.message.includes("Unique constraint failed");
+  }
+
+  return false;
+}
+
 /** Calculate grid position for the Nth new card, offset by existing card count */
 function gridPosition(
   index: number,
@@ -464,11 +476,16 @@ export async function autoPopulateBoard(
       0
     );
 
-    // Create projections in a transaction with grid layout
-    const createdRows = await database.$transaction(
-      newEntities.map((entity, index) => {
-        const pos = gridPosition(index, existingProjections.length);
-        return database.boardProjection.create({
+    // Create projections one-by-one so uniqueness races don't fail the whole run.
+    const createdRows: Array<
+      Awaited<ReturnType<typeof database.boardProjection.create>>
+    > = [];
+    let raceSkippedCount = 0;
+
+    for (const [index, entity] of newEntities.entries()) {
+      const pos = gridPosition(index, existingProjections.length);
+      try {
+        const created = await database.boardProjection.create({
           data: {
             tenantId,
             id: crypto.randomUUID(),
@@ -482,8 +499,16 @@ export async function autoPopulateBoard(
             zIndex: maxZ + index + 1,
           },
         });
-      })
-    );
+        createdRows.push(created);
+      } catch (createError) {
+        if (isUniqueConstraintError(createError)) {
+          // Another process inserted this projection between discovery and create.
+          raceSkippedCount += 1;
+          continue;
+        }
+        throw createError;
+      }
+    }
 
     // Map to domain type
     const newProjections: BoardProjection[] = createdRows.map((row) => ({
@@ -505,14 +530,14 @@ export async function autoPopulateBoard(
 
     console.info(
       `[auto-populate] Board ${boardId}: discovered ${matchedCount} entities, ` +
-        `skipped ${skippedCount} existing, created ${newProjections.length} new projections`
+        `skipped ${skippedCount + raceSkippedCount} existing, created ${newProjections.length} new projections`
     );
 
     return {
       success: true,
       newProjections,
       matchedCount,
-      skippedCount,
+      skippedCount: skippedCount + raceSkippedCount,
     };
   } catch (error) {
     console.error("[auto-populate] Failed to auto-populate board:", error);

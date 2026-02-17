@@ -8,10 +8,10 @@
  * don't need to think about startup ordering.
  */
 
-import type { ProjectionTarget } from './interface';
-import { registerProjection } from './registry.js';
-import { NextJsProjection } from './nextjs/generator.js';
-import { RoutesProjection } from './routes/generator.js';
+import type { ProjectionTarget } from "./interface";
+import { NextJsProjection } from "./nextjs/generator.js";
+import { registerProjection } from "./registry.js";
+import { RoutesProjection } from "./routes/generator.js";
 
 /**
  * Register all built-in projections.
@@ -49,8 +49,5 @@ export function registerBuiltinProjections(): void {
  * @returns Array of built-in projection instances
  */
 export function listBuiltinProjections(): ProjectionTarget[] {
-  return [
-    new NextJsProjection(),
-    new RoutesProjection(),
-  ];
+  return [new NextJsProjection(), new RoutesProjection()];
 }

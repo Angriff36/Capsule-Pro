@@ -46,8 +46,8 @@ The Command Board has foundational pieces for AI-Native OS:
 |---|------|----------|--------|
 | 1.1 | Wire EntityDetailPanel in BoardShell | board-shell.tsx line 263 | COMPLETED |
 | 1.2 | Extend manifest plan schema with executionStrategy, rollbackStrategy, riskAssessment, costImpact | types/manifest-plan.ts | COMPLETED (schemas exist at lines 129-132 and 190-251, populated by AI when creating plans) |
-| 1.3 | Add financial delta and task load delta to plan preview UI | ai-chat-panel.tsx | COMPLETED (riskAssessment, costImpact, executionStrategy, rollbackStrategy all now displayed in plan preview) |
-| 1.4 | Add more domain command handlers (create_task, assign_employee, update_inventory) | actions/manifest-plans.ts | NOT STARTED |
+| 1.3 | Add financial delta and task load delta to plan preview UI | ai-chat-panel.tsx | COMPLETED (financial delta and risk assessment already displayed in plan preview - verified in code at lines 703-827) |
+| 1.4 | Add more domain command handlers (create_task, assign_employee, update_inventory) | actions/manifest-plans.ts | COMPLETED (added create_task, assign_employee, update_inventory + aliases) |
 | 1.5 | Wire conflict detection to AI chat "What's at risk?" prompt | api/command-board/chat/route.ts | COMPLETED (detect_conflicts tool wired to /api/conflicts/detect, system prompt instructs AI to use it) |
 
 ### Phase 2: Risk Intelligence (Visible Intelligence)
@@ -108,6 +108,10 @@ The Command Board has foundational pieces for AI-Native OS:
 
 ## Implementation Notes (2026-02-17)
 
+- **1.4 COMPLETED**: Added three new domain command handlers in `manifest-plans.ts`:
+  - `create_task` / `add_task` / `create_prep_task`: Creates prep tasks linked to events
+  - `assign_employee` / `assign_staff` / `add_employee`: Assigns employees to events with role
+  - `update_inventory` / `adjust_inventory` / `modify_inventory`: Updates inventory quantities (set/add/subtract)
 - **1.3 COMPLETED**: Added display of riskAssessment, costImpact (financial delta), executionStrategy, and rollbackStrategy to AI Chat Panel plan preview UI.
 - **1.2 CORRECTION**: Item 1.2 was already completed in a previous iteration - the chat route (`apps/app/app/api/command-board/chat/route.ts`) already populates these fields via `calculateFinancialDelta` and `generateRiskAssessment` helper functions (lines 33-187).
 - **1.5 CORRECTION**: Item 1.5 was already completed in a previous iteration - the chat route has `detect_conflicts` tool (lines 559-610) that calls `/api/conflicts/detect`, and the system prompt instructs AI to use it when users ask about risks.

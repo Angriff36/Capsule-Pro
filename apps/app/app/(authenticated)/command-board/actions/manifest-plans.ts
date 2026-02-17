@@ -357,6 +357,315 @@ async function executeLinkMenuStep(
   };
 }
 
+async function resolveEmployeeIdFromStep(
+  context: DomainExecutionContext,
+  step: DomainCommandStep
+): Promise<string | null> {
+  const fromArgs = asString(step.args.employeeId);
+  if (fromArgs) {
+    return fromArgs;
+  }
+
+  if (
+    step.entityType === "employee" &&
+    step.entityId &&
+    step.entityId !== "available_employee"
+  ) {
+    return step.entityId;
+  }
+
+  const employeeProjection = await database.boardProjection.findFirst({
+    where: {
+      tenantId: context.tenantId,
+      boardId: context.boardId,
+      entityType: "employee",
+      deletedAt: null,
+    },
+    orderBy: { createdAt: "asc" },
+    select: { entityId: true },
+  });
+
+  return employeeProjection?.entityId ?? null;
+}
+
+async function resolveInventoryItemIdFromStep(
+  context: DomainExecutionContext,
+  step: DomainCommandStep
+): Promise<string | null> {
+  const fromArgs = asString(step.args.inventoryItemId);
+  if (fromArgs) {
+    return fromArgs;
+  }
+
+  if (step.entityType === "inventory_item" && step.entityId) {
+    return step.entityId;
+  }
+
+  const inventoryProjection = await database.boardProjection.findFirst({
+    where: {
+      tenantId: context.tenantId,
+      boardId: context.boardId,
+      entityType: "inventory_item",
+      deletedAt: null,
+    },
+    orderBy: { createdAt: "asc" },
+    select: { entityId: true },
+  });
+
+  return inventoryProjection?.entityId ?? null;
+}
+
+async function executeCreateTaskStep(
+  context: DomainExecutionContext,
+  step: DomainCommandStep
+): Promise<StepExecutionResult> {
+  const name = asString(step.args.name);
+  if (!name) {
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Task name is required",
+      error: "Missing required parameter: name",
+    };
+  }
+
+  const eventId = await resolveEventIdFromStep(context, step);
+  if (!eventId) {
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Event ID is required to create a task",
+      error: "No event available - specify an event to associate the task with",
+    };
+  }
+
+  const priorityStr = asString(step.args.priority) ?? "medium";
+  const priorityMap: Record<string, number> = {
+    low: 1,
+    medium: 5,
+    high: 7,
+    urgent: 9,
+  };
+  const priority = priorityMap[priorityStr] ?? 5;
+  const dueByDays = Math.max(1, Math.round(asNumber(step.args.dueByDays) ?? 7));
+  const dueByDate = resolveFutureEventDate(dueByDays);
+  const now = new Date();
+
+  const taskId = crypto.randomUUID();
+
+  await database.$executeRaw(
+    Prisma.sql`
+      INSERT INTO tenant_kitchen.prep_tasks (
+        id,
+        tenant_id,
+        event_id,
+        task_type,
+        name,
+        status,
+        priority,
+        due_by_date,
+        quantity_total,
+        servings_total,
+        quantity_completed,
+        created_at,
+        updated_at,
+        deleted_at
+      )
+      VALUES (
+        ${taskId},
+        ${context.tenantId}::uuid,
+        ${eventId},
+        'prep',
+        ${name},
+        'pending',
+        ${priority},
+        ${dueByDate},
+        1,
+        1,
+        0,
+        ${now},
+        ${now},
+        NULL
+      )
+    `
+  );
+
+  const projectionResult = await addProjection(context.boardId, {
+    entityType: "prep_task",
+    entityId: taskId,
+    positionX: 200,
+    positionY: 200,
+  });
+
+  const projectionSuffix =
+    projectionResult.success || !projectionResult.error
+      ? ""
+      : ` (board projection skipped: ${projectionResult.error})`;
+
+  return {
+    stepId: step.stepId,
+    success: true,
+    message: `Created task "${name}" (${taskId}).${projectionSuffix}`,
+  };
+}
+
+async function executeAssignEmployeeStep(
+  context: DomainExecutionContext,
+  step: DomainCommandStep
+): Promise<StepExecutionResult> {
+  const employeeId = await resolveEmployeeIdFromStep(context, step);
+  if (!employeeId) {
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Unable to resolve employee",
+      error: "No employee available for assignment",
+    };
+  }
+
+  const eventId = await resolveEventIdFromStep(context, step);
+  const role = asString(step.args.role) ?? "staff";
+
+  if (eventId) {
+    const existing = await database.$queryRaw<Array<{ id: string }>>(
+      Prisma.sql`
+        SELECT id
+        FROM tenant_events.event_staff
+        WHERE tenant_id = ${context.tenantId}
+          AND event_id = ${eventId}
+          AND user_id = ${employeeId}
+          AND deleted_at IS NULL
+        LIMIT 1
+      `
+    );
+
+    if (existing.length > 0) {
+      return {
+        stepId: step.stepId,
+        success: true,
+        message: `Employee already assigned to event (${eventId}).`,
+      };
+    }
+
+    await database.$executeRaw(
+      Prisma.sql`
+        INSERT INTO tenant_events.event_staff (
+          tenant_id,
+          id,
+          event_id,
+          user_id,
+          role,
+          status,
+          created_at,
+          updated_at
+        )
+        VALUES (
+          ${context.tenantId},
+          gen_random_uuid(),
+          ${eventId},
+          ${employeeId},
+          ${role},
+          'confirmed',
+          ${new Date()},
+          ${new Date()}
+        )
+      `
+    );
+
+    return {
+      stepId: step.stepId,
+      success: true,
+      message: `Assigned employee ${employeeId} to event ${eventId} as ${role}.`,
+    };
+  }
+
+  return {
+    stepId: step.stepId,
+    success: false,
+    message: "No event specified for employee assignment",
+    error: "Event ID required for employee assignment",
+  };
+}
+
+async function executeUpdateInventoryStep(
+  context: DomainExecutionContext,
+  step: DomainCommandStep
+): Promise<StepExecutionResult> {
+  const inventoryItemId = await resolveInventoryItemIdFromStep(context, step);
+  if (!inventoryItemId) {
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Unable to resolve inventory item",
+      error: "No inventory item available for update",
+    };
+  }
+
+  const quantityChange = asNumber(step.args.quantityChange);
+  const quantityAdjustment = asNumber(step.args.quantityAdjustment);
+  const operation = asString(step.args.operation) ?? "set";
+
+  if (quantityChange === undefined && quantityAdjustment === undefined) {
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Quantity change or adjustment is required",
+      error: "Missing required parameter: quantityChange or quantityAdjustment",
+    };
+  }
+
+  const currentItem = await database.$queryRaw<
+    Array<{ id: string; quantity: number; name: string }>
+  >(
+    Prisma.sql`
+      SELECT id, quantity, name
+      FROM tenant_inventory.inventory_items
+      WHERE id = ${inventoryItemId}
+        AND tenant_id = ${context.tenantId}
+        AND deleted_at IS NULL
+      LIMIT 1
+    `
+  );
+
+  if (currentItem.length === 0) {
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Inventory item not found",
+      error: `Inventory item ${inventoryItemId} not found`,
+    };
+  }
+
+  let newQuantity: number;
+  if (operation === "add") {
+    newQuantity =
+      currentItem[0].quantity + (quantityAdjustment ?? quantityChange ?? 0);
+  } else if (operation === "subtract") {
+    newQuantity = Math.max(
+      0,
+      currentItem[0].quantity - (quantityAdjustment ?? quantityChange ?? 0)
+    );
+  } else {
+    newQuantity = quantityChange ?? currentItem[0].quantity;
+  }
+
+  await database.$executeRaw(
+    Prisma.sql`
+      UPDATE tenant_inventory.inventory_items
+      SET quantity = ${newQuantity},
+          updated_at = ${new Date()}
+      WHERE id = ${inventoryItemId}
+        AND tenant_id = ${context.tenantId}
+    `
+  );
+
+  return {
+    stepId: step.stepId,
+    success: true,
+    message: `Updated inventory item ${currentItem[0].name}: ${currentItem[0].quantity} -> ${newQuantity}.`,
+  };
+}
+
 async function executeDomainStep(
   context: DomainExecutionContext,
   boardId: string,
@@ -386,6 +695,30 @@ async function executeDomainStep(
     normalized === "link_menu_item"
   ) {
     return executeLinkMenuStep(context, step);
+  }
+
+  if (
+    normalized === "create_task" ||
+    normalized === "add_task" ||
+    normalized === "create_prep_task"
+  ) {
+    return executeCreateTaskStep(context, step);
+  }
+
+  if (
+    normalized === "assign_employee" ||
+    normalized === "assign_staff" ||
+    normalized === "add_employee"
+  ) {
+    return executeAssignEmployeeStep(context, step);
+  }
+
+  if (
+    normalized === "update_inventory" ||
+    normalized === "adjust_inventory" ||
+    normalized === "modify_inventory"
+  ) {
+    return executeUpdateInventoryStep(context, step);
   }
 
   return {

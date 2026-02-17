@@ -16,14 +16,14 @@
  * - manual: Declared in project config, not IR-derived
  */
 export type RouteSource =
-  | { kind: 'entity-read'; entity: string }
-  | { kind: 'command'; entity: string; command: string }
-  | { kind: 'manual'; id: string };
+  | { kind: "entity-read"; entity: string }
+  | { kind: "command"; entity: string; command: string }
+  | { kind: "manual"; id: string };
 
 /**
  * Parameter location in the transport layer.
  */
-export type ParamLocation = 'path' | 'query' | 'body';
+export type ParamLocation = "path" | "query" | "body";
 
 /**
  * A single route parameter.
@@ -44,7 +44,7 @@ export interface RouteEntry {
   /** URL path template (e.g. "/api/recipe/list", "/api/recipe/:id") */
   path: string;
   /** HTTP method */
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   /** Route parameters */
   params: RouteParam[];
   /** Source of this route */
@@ -60,7 +60,7 @@ export interface RouteEntry {
  */
 export interface RouteManifest {
   $schema: string;
-  version: '1.0';
+  version: "1.0";
   generatedAt: string;
   basePath: string;
   routes: RouteEntry[];
@@ -77,7 +77,7 @@ export interface ManualRouteDeclaration {
   /** URL path template */
   path: string;
   /** HTTP method */
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   /** Route parameters */
   params?: RouteParam[];
   /** Whether this route requires authentication (default: false) */
