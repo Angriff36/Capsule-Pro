@@ -65,7 +65,7 @@ The Command Board has foundational pieces for AI-Native OS:
 | # | Item | Location | Status |
 |---|------|----------|--------|
 | 3.1 | Add recipe->dish, dish->recipe connections | derive-connections.ts | COMPLETED |
-| 3.2 | Add financial exposure projection nodes | types/entities.ts, nodes/ | NOT STARTED |
+| 3.2 | Add financial exposure projection nodes | types/entities.ts, nodes/ | COMPLETED (added financial conflict detection with cost overrun, margin erosion, and profitability risk detection via /api/conflicts/detect) |
 | 3.3 | Add inventory risk indicator nodes | nodes/inventory-card.tsx | COMPLETED (multi-threshold system with good/low/critical/out_of_stock levels, progress bar, color-coded indicators) |
 | 3.4 | Real-time live inventory levels on cards | projection-node.tsx, board-shell.tsx | COMPLETED |
 
@@ -74,7 +74,7 @@ The Command Board has foundational pieces for AI-Native OS:
 | # | Item | Location | Status |
 |---|------|----------|--------|
 | 4.1 | Add policy editing tool to AI | api/command-board/chat/route.ts | COMPLETED (added query_policies and update_policy AI tools) |
-| 4.2 | Create natural language->domain command compiler | actions/ | NOT STARTED |
+| 4.2 | Create natural language->domain command compiler | actions/ | COMPLETED (already exists via AI chat interface with suggest_manifest_plan tool - converts natural language to domain commands like create_event, link_menu, create_task, etc.) |
 | 4.3 | Add config validation and preview | actions/manifest-plans.ts | NOT STARTED |
 
 ### Phase 5: Simulation Engine
@@ -266,6 +266,34 @@ The Command Board has foundational pieces for AI-Native OS:
 - Keep board as projection surface only - never source of truth
 - Idempotency already implemented - continue using manifestIdempotency table
 - Audit trail already implemented - continue using outboxEvent
+
+## Implementation Notes (2026-02-17 Iteration 10)
+
+- **4.2 VERIFIED**: Natural language→domain command compiler already exists:
+  - The AI chat interface (`apps/app/app/api/command-board/chat/route.ts`) implements the full NLP→command pipeline
+  - `suggest_manifest_plan` tool converts natural language intent into structured domain commands
+  - Supported commands: create_event, link_menu, add_dish_to_event, link_menu_item, create_task, assign_employee, update_inventory
+  - The `command-definitions.ts` file defines board-level commands (show_this_week, show_overdue, etc.) with keyword matching
+  - AI system prompt instructs the model when to use each tool type
+  - This item was incorrectly marked as "NOT STARTED" - it has been functional since the AI chat was implemented
+
+## Implementation Notes (2026-02-17 Iteration 11)
+
+- **3.2 IMPLEMENTED**: Financial exposure projection nodes:
+  - Added `financial` conflict type to `ConflictType` enum in types.ts
+  - Created `detectFinancialConflicts()` function in `/api/conflicts/detect/route.ts`
+  - Detects 3 categories of financial risks:
+    - **Cost overrun**: When actual costs exceed budgeted costs by >10%
+    - **Margin erosion**: When actual margin drops >5 percentage points below budgeted
+    - **Unprofitable events**: When events have negative margins (critical severity)
+  - Queries `tenant_events.event_profitability` table joined with events
+  - Severity levels:
+    - `critical`: Negative margins or margin erosion >10%
+    - `high`: Cost overrun >25% or margin erosion >5%
+    - `medium`: Cost variance (catch-all for lower severity issues)
+  - Provides actionable suggested actions for each risk type
+  - Integrated into conflict summary tracking with `byType.financial` counter
+  - Financial risks appear in the "What's at risk?" AI query via detect_conflicts tool
 
 ---
 

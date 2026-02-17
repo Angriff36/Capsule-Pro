@@ -95,6 +95,18 @@ export async function browseEntities(
           success: true,
           items: await browseNotes(tenantId),
         };
+      case "risk":
+        // Risks are derived from conflicts, not browsable directly
+        return {
+          success: true,
+          items: [],
+        };
+      case "financial_projection":
+        // Financial projections are derived from events, not browsable directly
+        return {
+          success: true,
+          items: [],
+        };
       default:
         return {
           success: false,

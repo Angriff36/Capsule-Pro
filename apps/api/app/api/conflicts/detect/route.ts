@@ -9,6 +9,7 @@
  * - Staff: Availability conflicts, time-off conflicts
  * - Inventory: Stock shortages for events
  * - Timeline: Task dependency violations, deadline risks
+ * - Financial: Cost overruns, margin erosion, profitability risks
  */
 
 import { auth } from "@repo/auth/server";
@@ -383,6 +384,153 @@ async function detectTimelineConflicts(
 }
 
 /**
+ * Determine financial risk severity and messaging
+ */
+function getFinancialRiskInfo(
+  eventTitle: string,
+  budgetedCost: number,
+  actualMarginPct: number,
+  budgetedMarginPct: number,
+  costVariance: number,
+  marginVariance: number
+): {
+  severity: "low" | "medium" | "high" | "critical";
+  title: string;
+  description: string;
+} {
+  if (actualMarginPct < 0) {
+    return {
+      severity: "critical",
+      title: `Unprofitable event: ${eventTitle}`,
+      description: `${eventTitle} has a negative margin (${actualMarginPct.toFixed(1)}%). Immediate review required.`,
+    };
+  }
+
+  if (marginVariance < -10) {
+    return {
+      severity: "critical",
+      title: `Severe margin erosion: ${eventTitle}`,
+      description: `${eventTitle} margin dropped ${Math.abs(marginVariance).toFixed(1)}% (from ${budgetedMarginPct.toFixed(1)}% to ${actualMarginPct.toFixed(1)}%).`,
+    };
+  }
+
+  if (budgetedCost > 0 && costVariance > budgetedCost * 0.25) {
+    const percentOver = ((costVariance / budgetedCost) * 100).toFixed(0);
+    return {
+      severity: "high",
+      title: `Cost overrun: ${eventTitle}`,
+      description: `${eventTitle} is over budget by $${costVariance.toFixed(0)} (${percentOver}% over budget).`,
+    };
+  }
+
+  if (marginVariance < -5) {
+    return {
+      severity: "high",
+      title: `Margin erosion: ${eventTitle}`,
+      description: `${eventTitle} margin dropped ${Math.abs(marginVariance).toFixed(1)}% (from ${budgetedMarginPct.toFixed(1)}% to ${actualMarginPct.toFixed(1)}%).`,
+    };
+  }
+
+  const percentOver =
+    budgetedCost > 0 ? ((costVariance / budgetedCost) * 100).toFixed(0) : "0";
+  return {
+    severity: "medium",
+    title: `Cost variance: ${eventTitle}`,
+    description: `${eventTitle} has cost variance of $${costVariance.toFixed(0)} (${percentOver}% over budget).`,
+  };
+}
+
+/**
+ * Detect financial conflicts (cost overruns, margin erosion, profitability risks)
+ */
+async function detectFinancialConflicts(
+  tenantId: string,
+  timeRange?: { start: Date; end: Date }
+): Promise<Conflict[]> {
+  const conflicts: Conflict[] = [];
+  const now = new Date();
+  const startDate =
+    timeRange?.start || new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const endDate =
+    timeRange?.end || new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+
+  const financialRisks = await database.$queryRaw<
+    Array<{
+      event_id: string;
+      event_title: string;
+      budgeted_total_cost: string;
+      budgeted_gross_margin_pct: string;
+      actual_gross_margin_pct: string;
+      cost_variance: string;
+      margin_variance_pct: string;
+    }>
+  >`
+    SELECT
+      e.id as event_id,
+      e.title as event_title,
+      COALESCE(ep.budgeted_total_cost, 0)::text as budgeted_total_cost,
+      COALESCE(ep.budgeted_gross_margin_pct, 0)::text as budgeted_gross_margin_pct,
+      COALESCE(ep.actual_gross_margin_pct, 0)::text as actual_gross_margin_pct,
+      COALESCE(ep.total_cost_variance, 0)::text as cost_variance,
+      COALESCE(ep.margin_variance_pct, 0)::text as margin_variance_pct
+    FROM tenant_events.events e
+    LEFT JOIN tenant_events.event_profitability ep ON ep.event_id = e.id AND ep.deleted_at IS NULL
+    WHERE e.tenant_id = ${tenantId}::uuid
+      AND e.deleted_at IS NULL
+      AND e.event_date BETWEEN ${startDate}::date AND ${endDate}::date
+      AND e.status NOT IN ('cancelled', 'completed')
+      AND (
+        (ep.actual_total_cost > ep.budgeted_total_cost * 1.1)
+        OR (ep.budgeted_gross_margin_pct - ep.actual_gross_margin_pct) > 5
+        OR (ep.actual_gross_margin_pct < 0)
+      )
+    ORDER BY ABS(ep.margin_variance_pct) DESC
+    LIMIT 20
+  `;
+
+  for (const risk of financialRisks) {
+    const budgetedCost = Number.parseFloat(risk.budgeted_total_cost) || 0;
+    const actualMarginPct =
+      Number.parseFloat(risk.actual_gross_margin_pct) || 0;
+    const budgetedMarginPct =
+      Number.parseFloat(risk.budgeted_gross_margin_pct) || 0;
+    const costVariance = Number.parseFloat(risk.cost_variance) || 0;
+    const marginVariance = Number.parseFloat(risk.margin_variance_pct) || 0;
+
+    const { severity, title, description } = getFinancialRiskInfo(
+      risk.event_title,
+      budgetedCost,
+      actualMarginPct,
+      budgetedMarginPct,
+      costVariance,
+      marginVariance
+    );
+
+    conflicts.push({
+      id: `financial-risk-${risk.event_id}`,
+      type: "financial",
+      severity,
+      title,
+      description,
+      affectedEntities: [
+        {
+          type: "event",
+          id: risk.event_id,
+          name: risk.event_title,
+        },
+      ],
+      suggestedAction:
+        severity === "critical"
+          ? "Review event costs immediately - consider menu adjustments, staffing changes, or price renegotiation"
+          : "Analyze cost breakdown and identify areas for optimization",
+      createdAt: new Date(),
+    });
+  }
+
+  return conflicts;
+}
+
+/**
  * Build conflict summary
  */
 function buildConflictSummary(conflicts: Conflict[]) {
@@ -401,6 +549,7 @@ function buildConflictSummary(conflicts: Conflict[]) {
       inventory: 0,
       timeline: 0,
       venue: 0,
+      financial: 0,
     } as Record<ConflictType, number>,
   };
 
@@ -455,6 +604,10 @@ export async function POST(request: Request) {
 
     if (!entityTypes || entityTypes.includes("venue")) {
       conflicts.push(...(await detectVenueConflicts(tenantId, timeRange)));
+    }
+
+    if (!entityTypes || entityTypes.includes("financial")) {
+      conflicts.push(...(await detectFinancialConflicts(tenantId, timeRange)));
     }
 
     // Sort by severity (critical first)

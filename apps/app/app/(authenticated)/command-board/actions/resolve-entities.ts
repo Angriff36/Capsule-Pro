@@ -646,6 +646,10 @@ export async function resolveEntities(
               // Risk entities are derived from conflicts, not directly resolved from DB
               // Return empty map - risks come from conflict detection
               return new Map<string, ResolvedEntity>();
+            case "financial_projection":
+              // Financial projections are derived from event data, not directly resolved from DB
+              // Return empty map - projections are computed from events on the board
+              return new Map<string, ResolvedEntity>();
             default: {
               // Exhaustive check — if a new EntityType is added, this will error at compile time
               const _exhaustive: never = entityType;
