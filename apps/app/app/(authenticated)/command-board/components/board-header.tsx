@@ -19,15 +19,21 @@ import {
 } from "@repo/design-system/components/ui/dropdown-menu";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@repo/design-system/components/ui/toggle-group";
+import {
   AlertTriangleIcon,
   BotIcon,
   EllipsisIcon,
+  FlaskConicalIcon,
   HomeIcon,
   KeyboardIcon,
   LayoutGridIcon,
   Loader2Icon,
   PencilIcon,
   PlusIcon,
+  RadioIcon,
   Redo2Icon,
   TerminalSquareIcon,
   TrashIcon,
@@ -37,7 +43,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import type { CommandBoard } from "../actions/boards";
+import type { BoardDelta, CommandBoard } from "../actions/boards";
 import { deleteCommandBoard, updateCommandBoard } from "../actions/boards";
 
 interface BoardHeaderProps {
@@ -67,6 +73,12 @@ interface BoardHeaderProps {
   isLoadingConflicts?: boolean;
   // Fullscreen exit
   onExitFullscreen?: () => void;
+  // Simulation mode
+  boardMode?: "live" | "simulation";
+  onSwitchMode?: (mode: "live" | "simulation") => void;
+  simulationDelta?: BoardDelta | null;
+  isCreatingSimulation?: boolean;
+  onDiscardSimulation?: () => void;
 }
 
 export function BoardHeader({
@@ -90,6 +102,12 @@ export function BoardHeader({
   onToggleConflicts,
   isLoadingConflicts = false,
   onExitFullscreen,
+  // Simulation mode
+  boardMode = "live",
+  onSwitchMode,
+  simulationDelta,
+  isCreatingSimulation = false,
+  onDiscardSimulation,
 }: BoardHeaderProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -279,6 +297,71 @@ export function BoardHeader({
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          {/* Live/Simulation Mode Toggle */}
+          {onSwitchMode && (
+            <div className="flex items-center gap-1">
+              <ToggleGroup
+                type="single"
+                value={boardMode}
+                onValueChange={(value) => {
+                  if (value && onSwitchMode) {
+                    onSwitchMode(value as "live" | "simulation");
+                  }
+                }}
+                className="border rounded-md"
+              >
+                <ToggleGroupItem
+                  value="live"
+                  size="sm"
+                  className="px-2 h-8 data-[state=on]:bg-green-600 data-[state=on]:text-white"
+                  aria-label="Live mode"
+                >
+                  <RadioIcon className="h-3.5 w-3.5 mr-1" />
+                  Live
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="simulation"
+                  size="sm"
+                  className="px-2 h-8 data-[state=on]:bg-purple-600 data-[state=on]:text-white"
+                  disabled={isCreatingSimulation}
+                  aria-label="Simulation mode"
+                >
+                  {isCreatingSimulation ? (
+                    <Loader2Icon className="h-3.5 w-3.5 mr-1 animate-spin" />
+                  ) : (
+                    <FlaskConicalIcon className="h-3.5 w-3.5 mr-1" />
+                  )}
+                  Simulate
+                </ToggleGroupItem>
+              </ToggleGroup>
+              {boardMode === "simulation" && simulationDelta && (
+                <span className="text-xs text-muted-foreground ml-2">
+                  {simulationDelta.summary.totalChanges > 0 ? (
+                    <span className="text-amber-600 dark:text-amber-400">
+                      {simulationDelta.summary.additions} added,{" "}
+                      {simulationDelta.summary.removals} removed,{" "}
+                      {simulationDelta.summary.modifications} modified
+                    </span>
+                  ) : (
+                    <span className="text-green-600 dark:text-green-400">
+                      No changes yet
+                    </span>
+                  )}
+                </span>
+              )}
+              {boardMode === "simulation" && onDiscardSimulation && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={onDiscardSimulation}
+                  className="h-8 text-destructive hover:text-destructive ml-1"
+                  title="Discard simulation"
+                >
+                  <XIcon className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+          )}
           {/* Undo/Redo buttons */}
           {(onUndo || onRedo) && (
             <>

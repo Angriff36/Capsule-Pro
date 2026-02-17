@@ -81,8 +81,8 @@ The Command Board has foundational pieces for AI-Native OS:
 
 | # | Item | Location | Status |
 |---|------|----------|--------|
-| 5.1 | Add board fork/clone functionality | actions/boards.ts | NOT STARTED |
-| 5.2 | Create ephemeral simulation mode state | types/board.ts | NOT STARTED |
+| 5.1 | Add board fork/clone functionality | actions/boards.ts | COMPLETED (forkCommandBoard, getSimulationContext, discardSimulation, listSimulationsForBoard) |
+| 5.2 | Create ephemeral simulation mode state | types/board.ts | COMPLETED (SimulationContext, BoardDelta, ForkBoardResult, ComputeDeltaInput types defined in actions/boards.ts:18-73) |
 | 5.3 | Add diff overlay rendering | board-flow.tsx | NOT STARTED |
 | 5.4 | Add Live/Simulation toggle UI | board-header.tsx | NOT STARTED |
 
@@ -344,6 +344,27 @@ The Command Board has foundational pieces for AI-Native OS:
   - Provides actionable suggested actions for each risk type
   - Integrated into conflict summary tracking with `byType.financial` counter
   - Financial risks appear in the "What's at risk?" AI query via detect_conflicts tool
+
+## Implementation Notes (2026-02-17 Iteration 12)
+
+- **5.1 IMPLEMENTED**: Board fork/clone functionality for simulation engine:
+  - Added `SimulationContext` interface to track simulation sessions
+  - Added `BoardDelta` interface for computing differences between states
+  - Added `forkCommandBoard()` - Deep copies board with all projections, groups, annotations
+  - Added `getSimulationContext()` - Retrieves active simulation by ID
+  - Added `discardSimulation()` - Marks simulation as discarded (archived)
+  - Added `computeBoardDelta()` - Computes delta between original and simulated states
+  - Added `listSimulationsForBoard()` - Lists all active simulations for a source board
+  - Simulations stored as tagged boards with `simulation` and `source:` tags
+  - Projections copied with new IDs, group references updated
+  - Annotations copied with updated projection references
+
+- **5.2 IMPLEMENTED**: Ephemeral simulation mode state types:
+  - `SimulationContext` - Full simulation session state
+  - `BoardDelta` - Change tracking with added/removed/modified items
+  - `ForkBoardResult` - Result type for fork operation
+  - `ComputeDeltaInput` - Input for delta computation
+  - Types defined in `actions/boards.ts:18-73`
 
 ---
 

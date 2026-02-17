@@ -3,7 +3,17 @@
 import { ReactFlowProvider } from "@xyflow/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { CommandBoardWithCards } from "../actions/boards";
+import type {
+  BoardDelta,
+  CommandBoardWithCards,
+  SimulationContext,
+} from "../actions/boards";
+import {
+  computeBoardDelta,
+  discardSimulation,
+  forkCommandBoard,
+  listSimulationsForBoard,
+} from "../actions/boards";
 import { useBoardHistory } from "../hooks/use-board-history";
 import { useInventoryRealtime } from "../hooks/use-inventory-realtime";
 import type { EntityType, ResolvedInventoryItem } from "../types/entities";
@@ -99,6 +109,18 @@ export function BoardShell({
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
   const [showConflicts, setShowConflicts] = useState(false);
   const [isLoadingConflicts, setIsLoadingConflicts] = useState(false);
+
+  // ---- Simulation mode state ----
+  const [boardMode, setBoardMode] = useState<"live" | "simulation">("live");
+  const [activeSimulation, setActiveSimulation] =
+    useState<SimulationContext | null>(null);
+  const [simulationDelta, setSimulationDelta] = useState<BoardDelta | null>(
+    null
+  );
+  const [availableSimulations, setAvailableSimulations] = useState<
+    SimulationContext[]
+  >([]);
+  const [isCreatingSimulation, setIsCreatingSimulation] = useState(false);
 
   // ---- Real-time inventory update handler ----
   const handleInventoryUpdate = useCallback(
@@ -256,6 +278,72 @@ export function BoardShell({
     fetchConflicts();
   }, [fetchConflicts]);
 
+  // ---- Simulation handlers ----
+  const handleCreateSimulation = useCallback(async () => {
+    setIsCreatingSimulation(true);
+    try {
+      const result = await forkCommandBoard(
+        boardId,
+        `What-if ${new Date().toLocaleString()}`
+      );
+      if (result.success && result.simulation) {
+        setActiveSimulation(result.simulation);
+        setAvailableSimulations((prev) => [result.simulation!, ...prev]);
+        // Compute initial delta (empty at start)
+        const delta = computeBoardDelta({
+          originalProjections: projections,
+          simulatedProjections: result.simulation.projections,
+          originalGroups: [],
+          simulatedGroups: result.simulation.groups,
+          originalAnnotations: annotations,
+          simulatedAnnotations: result.simulation.annotations,
+        });
+        setSimulationDelta(delta);
+        setBoardMode("simulation");
+      }
+    } catch (error) {
+      console.error("Failed to create simulation:", error);
+    } finally {
+      setIsCreatingSimulation(false);
+    }
+  }, [boardId, projections, annotations]);
+
+  const handleSwitchMode = useCallback(
+    async (mode: "live" | "simulation") => {
+      if (mode === "simulation" && !activeSimulation) {
+        // Create a new simulation if none exists
+        await handleCreateSimulation();
+      } else {
+        setBoardMode(mode);
+      }
+    },
+    [activeSimulation, handleCreateSimulation]
+  );
+
+  const handleDiscardSimulation = useCallback(async () => {
+    if (!activeSimulation) return;
+    try {
+      await discardSimulation(activeSimulation.id);
+      setActiveSimulation(null);
+      setSimulationDelta(null);
+      setBoardMode("live");
+      setAvailableSimulations((prev) =>
+        prev.filter((s) => s.id !== activeSimulation.id)
+      );
+    } catch (error) {
+      console.error("Failed to discard simulation:", error);
+    }
+  }, [activeSimulation]);
+
+  // Load available simulations on mount
+  useEffect(() => {
+    listSimulationsForBoard(boardId)
+      .then(setAvailableSimulations)
+      .catch((error) => {
+        console.error("Failed to load simulations:", error);
+      });
+  }, [boardId]);
+
   return (
     <ReactFlowProvider>
       <BoardRoom boardId={boardId} orgId={orgId}>
@@ -265,6 +353,7 @@ export function BoardShell({
             aiChatOpen={aiChatOpen}
             boardDescription={board.description}
             boardId={boardId}
+            boardMode={boardMode}
             boardName={board.name}
             boardStatus={board.status}
             boardTags={board.tags}
@@ -273,9 +362,12 @@ export function BoardShell({
             commandPaletteOpen={commandPaletteOpen}
             conflictCount={conflicts.length}
             entityBrowserOpen={entityBrowserOpen}
+            isCreatingSimulation={isCreatingSimulation}
             isLoadingConflicts={isLoadingConflicts}
+            onDiscardSimulation={handleDiscardSimulation}
             onExitFullscreen={handleExitFullscreen}
             onRedo={handleRedo}
+            onSwitchMode={handleSwitchMode}
             onToggleAiChat={() => setAiChatOpen((prev) => !prev)}
             onToggleCommandPalette={() =>
               setCommandPaletteOpen((prev) => !prev)
@@ -289,6 +381,7 @@ export function BoardShell({
             }}
             onToggleEntityBrowser={() => setEntityBrowserOpen((prev) => !prev)}
             onUndo={handleUndo}
+            simulationDelta={simulationDelta}
           />
 
           {/* Canvas + Entity Browser side by side */}
@@ -300,12 +393,18 @@ export function BoardShell({
                   activePreviewMutations={activePreviewPlan?.boardPreview ?? []}
                   annotations={annotations}
                   boardId={boardId}
+                  boardMode={boardMode}
                   derivedConnections={derivedConnections}
                   entities={entities}
                   onOpenDetail={handleOpenDetail}
                   onProjectionAdded={handleProjectionAdded}
                   onProjectionRemoved={handleProjectionRemoved}
-                  projections={projections}
+                  projections={
+                    boardMode === "simulation" && activeSimulation
+                      ? activeSimulation.projections
+                      : projections
+                  }
+                  simulationDelta={boardMode === "simulation" ? simulationDelta : null}
                 />
               </ErrorBoundary>
 
