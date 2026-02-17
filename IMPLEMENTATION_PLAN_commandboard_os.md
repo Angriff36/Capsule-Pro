@@ -67,7 +67,7 @@ The Command Board has foundational pieces for AI-Native OS:
 | 3.1 | Add recipe->dish, dish->recipe connections | derive-connections.ts | COMPLETED |
 | 3.2 | Add financial exposure projection nodes | types/entities.ts, nodes/ | NOT STARTED |
 | 3.3 | Add inventory risk indicator nodes | nodes/inventory-card.tsx | COMPLETED (multi-threshold system with good/low/critical/out_of_stock levels, progress bar, color-coded indicators) |
-| 3.4 | Real-time live inventory levels on cards | projection-node.tsx | NOT STARTED |
+| 3.4 | Real-time live inventory levels on cards | projection-node.tsx, board-shell.tsx | COMPLETED |
 
 ### Phase 4: AI as Configuration Abstraction
 
@@ -220,6 +220,29 @@ The Command Board has foundational pieces for AI-Native OS:
   - Updated system prompt to instruct AI when to use policy tools:
     - Use `query_policies` for questions about overtime rules, role settings, pay rates
     - Use `update_policy` for modification requests (change overtime threshold, update rates)
+
+## Implementation Notes (2026-02-17 Iteration 8)
+
+- **3.4 IMPLEMENTED**: Real-time live inventory levels on command board:
+  - Created `useInventoryRealtime` hook in `hooks/use-inventory-realtime.ts`:
+    - Subscribes to Ably channel `tenant:{tenantId}`
+    - Listens for `inventory.stock.*` events (adjusted, consumed, received, wasted)
+    - Calls callback with stockItemId, newQuantity, previousQuantity
+    - Graceful degradation when Ably is unavailable
+  - Updated `BoardShell` component:
+    - Added `tenantId` prop (passed from server component)
+    - Changed `entities` from `useMemo` to `useState` for real-time updates
+    - Added `handleInventoryUpdate` callback that updates entity data in state
+    - Subscribed to inventory events via `useInventoryRealtime` hook
+  - Updated page.tsx to:
+    - Import `getTenantIdForOrg` from tenant utilities
+    - Resolve tenantId from orgId
+    - Pass tenantId to BoardShell
+  - Inventory cards now update in real-time when:
+    - Stock is manually adjusted
+    - Stock is consumed by prep tasks
+    - Stock is received from purchase orders
+    - Stock is wasted/spoiled
 
 ---
 

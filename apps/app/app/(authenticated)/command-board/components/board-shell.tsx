@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { CommandBoardWithCards } from "../actions/boards";
 import { useBoardHistory } from "../hooks/use-board-history";
-import type { EntityType } from "../types/entities";
+import { useInventoryRealtime } from "../hooks/use-inventory-realtime";
+import type { EntityType, ResolvedInventoryItem } from "../types/entities";
 import type {
   BoardAnnotation,
   BoardProjection,
@@ -32,6 +33,7 @@ import { detectConflicts } from "../actions/conflicts";
 interface BoardShellProps {
   boardId: string;
   orgId: string;
+  tenantId: string;
   board: CommandBoardWithCards;
   projections: BoardProjection[];
   entitiesArray: [string, ResolvedEntity][];
@@ -57,6 +59,7 @@ interface OpenDetailEntity {
 export function BoardShell({
   boardId,
   orgId,
+  tenantId,
   board,
   projections: initialProjections,
   entitiesArray,
@@ -65,10 +68,9 @@ export function BoardShell({
 }: BoardShellProps) {
   const router = useRouter();
 
-  // ---- Reconstruct entities Map from serialized array ----
-  const entities = useMemo(
-    () => new Map<string, ResolvedEntity>(entitiesArray),
-    [entitiesArray]
+  // ---- Reconstruct entities Map from serialized array (mutable for real-time updates) ----
+  const [entities, setEntities] = useState<Map<string, ResolvedEntity>>(
+    () => new Map(entitiesArray)
   );
 
   // ---- Local projection state for optimistic updates ----
@@ -97,6 +99,46 @@ export function BoardShell({
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
   const [showConflicts, setShowConflicts] = useState(false);
   const [isLoadingConflicts, setIsLoadingConflicts] = useState(false);
+
+  // ---- Real-time inventory update handler ----
+  const handleInventoryUpdate = useCallback(
+    (payload: { stockItemId: string; newQuantity: number }) => {
+      // Update the entity in the map if it exists
+      setEntities((prevEntities) => {
+        const entityKey = `inventory_item:${payload.stockItemId}`;
+        const existingEntity = prevEntities.get(entityKey);
+
+        if (
+          !existingEntity ||
+          existingEntity.type !== "inventory_item"
+        ) {
+          return prevEntities; // No change if entity not found
+        }
+
+        // Create updated entity with new quantity
+        const updatedData: ResolvedInventoryItem = {
+          ...existingEntity.data,
+          quantityOnHand: payload.newQuantity,
+        };
+
+        // Create new Map to trigger re-render
+        const newEntities = new Map(prevEntities);
+        newEntities.set(entityKey, {
+          type: "inventory_item",
+          data: updatedData,
+        });
+
+        return newEntities;
+      });
+    },
+    []
+  );
+
+  // ---- Real-time inventory subscription ----
+  useInventoryRealtime({
+    tenantId,
+    onInventoryUpdate: handleInventoryUpdate,
+  });
 
   // Exit board → navigate back to board list
   const handleExitFullscreen = useCallback(() => {
