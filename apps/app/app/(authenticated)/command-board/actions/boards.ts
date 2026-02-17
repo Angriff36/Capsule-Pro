@@ -451,6 +451,7 @@ export async function forkCommandBoard(
         : null;
       return {
         id: crypto.randomUUID(),
+        tenantId,
         boardId: simulationId,
         annotationType: ann.annotationType,
         fromProjectionId: newFromId,
@@ -470,7 +471,7 @@ export async function forkCommandBoard(
 
     // Batch insert groups
     if (groupCopies.length > 0) {
-      await database.boardGroup.createMany({
+      await database.commandBoardGroup.createMany({
         data: groupCopies,
       });
     }

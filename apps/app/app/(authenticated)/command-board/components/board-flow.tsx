@@ -42,6 +42,7 @@ import type {
   ResolvedEntity,
 } from "../types/index";
 import type { BoardMutation } from "../types/manifest-plan";
+import type { BoardDelta } from "../actions/boards";
 
 // ============================================================================
 // Types
@@ -54,6 +55,10 @@ interface BoardFlowProps {
   derivedConnections: DerivedConnection[];
   annotations: BoardAnnotation[];
   activePreviewMutations: BoardMutation[];
+  /** Current board mode - live or simulation */
+  boardMode?: "live" | "simulation";
+  /** Simulation delta for "what-if" diff overlay */
+  simulationDelta?: BoardDelta | null;
   onOpenDetail: (entityType: string, entityId: string) => void;
   onProjectionAdded?: (projection: BoardProjection) => void;
   onProjectionRemoved?: (projectionId: string) => void;
@@ -184,6 +189,8 @@ function BoardFlowInner({
   derivedConnections,
   annotations,
   activePreviewMutations,
+  simulationDelta,
+  isSimulationMode = false,
   onOpenDetail,
   onProjectionAdded,
   onProjectionRemoved,
@@ -290,6 +297,42 @@ function BoardFlowInner({
 
   // ---- Preview layer (ghost mutations before approval) ----
 
+  // ---- Simulation delta state (for "what-if" diff overlay) ----
+  const simulationState = useMemo(() => {
+    if (!isSimulationMode || !simulationDelta) {
+      return {
+        addedEntityIds: new Set<string>(),
+        removedProjectionIds: new Set<string>(),
+        modifiedProjectionIds: new Set<string>(),
+        modifications: new Map<string, Array<{ field: string; original: unknown; simulated: unknown }>>(),
+      };
+    }
+
+    const addedEntityIds = new Set<string>(
+      simulationDelta.addedProjections.map((p) => p.entityId)
+    );
+    const removedProjectionIds = new Set<string>(
+      simulationDelta.removedProjectionIds
+    );
+    const modifiedProjectionIds = new Set<string>(
+      simulationDelta.modifiedProjections.map((m) => m.id)
+    );
+    const modifications = new Map<string, Array<{ field: string; original: unknown; simulated: unknown }>>();
+
+    for (const mod of simulationDelta.modifiedProjections) {
+      const existing = modifications.get(mod.id) ?? [];
+      existing.push({ field: mod.field, original: mod.original, simulated: mod.simulated });
+      modifications.set(mod.id, existing);
+    }
+
+    return {
+      addedEntityIds,
+      removedProjectionIds,
+      modifiedProjectionIds,
+      modifications,
+    };
+  }, [isSimulationMode, simulationDelta]);
+
   const previewState = useMemo(() => {
     const removedNodeIds = new Set<string>();
     const removedEdgeIds = new Set<string>();
@@ -345,13 +388,48 @@ function BoardFlowInner({
       .map((node) => {
         const moved = previewState.movedNodePositions.get(node.id);
         const highlightColor = previewState.highlightedNodeColors.get(node.id);
-        if (!(moved || highlightColor)) {
+
+        // Check simulation state for this node
+        const nodeData = node.data as { projection?: BoardProjection } | undefined;
+        const projection = nodeData?.projection;
+        const entityId = projection?.entityId ?? "";
+        const projectionId = node.id;
+
+        // Determine simulation styling
+        let simulationStyle: React.CSSProperties = {};
+        let simulationClassName = "";
+
+        if (isSimulationMode && simulationDelta) {
+          if (simulationState.removedProjectionIds.has(projectionId)) {
+            // Removed in simulation - red border with strike-through effect
+            simulationStyle = {
+              opacity: 0.5,
+              boxShadow: "0 0 0 3px #ef4444",
+            };
+            simulationClassName = "simulation-removed";
+          } else if (simulationState.modifiedProjectionIds.has(projectionId)) {
+            // Modified in simulation - yellow/amber border
+            simulationStyle = {
+              boxShadow: "0 0 0 3px #f59e0b",
+            };
+            simulationClassName = "simulation-modified";
+          } else if (simulationState.addedEntityIds.has(entityId)) {
+            // Added in simulation - green border
+            simulationStyle = {
+              boxShadow: "0 0 0 3px #22c55e",
+            };
+            simulationClassName = "simulation-added";
+          }
+        }
+
+        if (!(moved || highlightColor) && Object.keys(simulationStyle).length === 0) {
           return node;
         }
 
         return {
           ...node,
           position: moved ?? node.position,
+          className: `${node.className ?? ""} ${simulationClassName}`.trim(),
           style: {
             ...node.style,
             ...(highlightColor
@@ -359,10 +437,12 @@ function BoardFlowInner({
                   boxShadow: `0 0 0 2px ${highlightColor}`,
                 }
               : {}),
+            ...simulationStyle,
           },
         };
       });
 
+    // Add ghost nodes from preview mutations
     const ghostNodes = previewState.previewAddNodes.map((mutation) => {
       const projection: BoardProjection = {
         id: mutation.previewNodeId,
@@ -405,7 +485,7 @@ function BoardFlowInner({
     });
 
     return [...persistedNodes, ...ghostNodes];
-  }, [boardId, entities, nodes, previewState]);
+  }, [boardId, entities, nodes, previewState, isSimulationMode, simulationDelta, simulationState]);
 
   const renderedEdges = useMemo(() => {
     const persistedEdges = edges.filter(
@@ -683,6 +763,39 @@ function BoardFlowInner({
 
   return (
     <div className="h-full w-full" ref={containerRef}>
+      {/* Simulation Mode Indicator */}
+      {isSimulationMode && simulationDelta && (
+        <div className="absolute left-4 top-4 z-10 rounded-lg border border-amber-500/50 bg-amber-50 px-3 py-2 shadow-md dark:bg-amber-950/50">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-amber-500" />
+            <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
+              Simulation Mode
+            </span>
+          </div>
+          {simulationDelta.summary.totalChanges > 0 && (
+            <div className="mt-1 flex gap-3 text-xs text-amber-600 dark:text-amber-400">
+              {simulationDelta.summary.additions > 0 && (
+                <span className="flex items-center gap-1">
+                  <span className="h-2 w-2 rounded-full bg-green-500" />
+                  +{simulationDelta.summary.additions}
+                </span>
+              )}
+              {simulationDelta.summary.removals > 0 && (
+                <span className="flex items-center gap-1">
+                  <span className="h-2 w-2 rounded-full bg-red-500" />
+                  -{simulationDelta.summary.removals}
+                </span>
+              )}
+              {simulationDelta.summary.modifications > 0 && (
+                <span className="flex items-center gap-1">
+                  <span className="h-2 w-2 rounded-full bg-amber-500" />
+                  ~{simulationDelta.summary.modifications}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
       <ReactFlow
         className="bg-background"
         deleteKeyCode={["Backspace", "Delete"]}
