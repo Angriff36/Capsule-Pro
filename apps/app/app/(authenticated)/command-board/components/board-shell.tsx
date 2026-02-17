@@ -2,7 +2,7 @@
 
 import { ReactFlowProvider } from "@xyflow/react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type {
   BoardDelta,
   CommandBoardWithCards,
@@ -14,6 +14,8 @@ import {
   forkCommandBoard,
   listSimulationsForBoard,
 } from "../actions/boards";
+import { detectConflicts } from "../actions/conflicts";
+import type { Conflict } from "../conflict-types";
 import { useBoardHistory } from "../hooks/use-board-history";
 import { useInventoryRealtime } from "../hooks/use-inventory-realtime";
 import type { EntityType, ResolvedInventoryItem } from "../types/entities";
@@ -23,7 +25,6 @@ import type {
   DerivedConnection,
   ResolvedEntity,
 } from "../types/index";
-import type { Conflict } from "../conflict-types";
 import type { SuggestedManifestPlan } from "../types/manifest-plan";
 import { AiChatPanel } from "./ai-chat-panel";
 import { ErrorBoundary } from "./board-error-boundary";
@@ -34,7 +35,6 @@ import { CommandPalette } from "./command-palette";
 import { ConflictWarningPanel } from "./conflict-warning-panel";
 import { EntityBrowser } from "./entity-browser";
 import { EntityDetailPanel } from "./entity-detail-panel";
-import { detectConflicts } from "../actions/conflicts";
 
 // ============================================================================
 // Types
@@ -117,7 +117,7 @@ export function BoardShell({
   const [simulationDelta, setSimulationDelta] = useState<BoardDelta | null>(
     null
   );
-  const [availableSimulations, setAvailableSimulations] = useState<
+  const [_availableSimulations, setAvailableSimulations] = useState<
     SimulationContext[]
   >([]);
   const [isCreatingSimulation, setIsCreatingSimulation] = useState(false);
@@ -130,10 +130,7 @@ export function BoardShell({
         const entityKey = `inventory_item:${payload.stockItemId}`;
         const existingEntity = prevEntities.get(entityKey);
 
-        if (
-          !existingEntity ||
-          existingEntity.type !== "inventory_item"
-        ) {
+        if (!existingEntity || existingEntity.type !== "inventory_item") {
           return prevEntities; // No change if entity not found
         }
 
@@ -287,16 +284,17 @@ export function BoardShell({
         `What-if ${new Date().toLocaleString()}`
       );
       if (result.success && result.simulation) {
-        setActiveSimulation(result.simulation);
-        setAvailableSimulations((prev) => [result.simulation!, ...prev]);
+        const simulation = result.simulation;
+        setActiveSimulation(simulation);
+        setAvailableSimulations((prev) => [simulation, ...prev]);
         // Compute initial delta (empty at start)
         const delta = computeBoardDelta({
           originalProjections: projections,
-          simulatedProjections: result.simulation.projections,
+          simulatedProjections: simulation.projections,
           originalGroups: [],
-          simulatedGroups: result.simulation.groups,
+          simulatedGroups: simulation.groups,
           originalAnnotations: annotations,
-          simulatedAnnotations: result.simulation.annotations,
+          simulatedAnnotations: simulation.annotations,
         });
         setSimulationDelta(delta);
         setBoardMode("simulation");
@@ -321,7 +319,9 @@ export function BoardShell({
   );
 
   const handleDiscardSimulation = useCallback(async () => {
-    if (!activeSimulation) return;
+    if (!activeSimulation) {
+      return;
+    }
     try {
       await discardSimulation(activeSimulation.id);
       setActiveSimulation(null);
@@ -404,7 +404,9 @@ export function BoardShell({
                       ? activeSimulation.projections
                       : projections
                   }
-                  simulationDelta={boardMode === "simulation" ? simulationDelta : null}
+                  simulationDelta={
+                    boardMode === "simulation" ? simulationDelta : null
+                  }
                 />
               </ErrorBoundary>
 

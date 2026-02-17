@@ -301,30 +301,30 @@ export function BoardHeader({
           {onSwitchMode && (
             <div className="flex items-center gap-1">
               <ToggleGroup
-                type="single"
-                value={boardMode}
+                className="border rounded-md"
                 onValueChange={(value) => {
                   if (value && onSwitchMode) {
                     onSwitchMode(value as "live" | "simulation");
                   }
                 }}
-                className="border rounded-md"
+                type="single"
+                value={boardMode}
               >
                 <ToggleGroupItem
-                  value="live"
-                  size="sm"
-                  className="px-2 h-8 data-[state=on]:bg-green-600 data-[state=on]:text-white"
                   aria-label="Live mode"
+                  className="px-2 h-8 data-[state=on]:bg-green-600 data-[state=on]:text-white"
+                  size="sm"
+                  value="live"
                 >
                   <RadioIcon className="h-3.5 w-3.5 mr-1" />
                   Live
                 </ToggleGroupItem>
                 <ToggleGroupItem
-                  value="simulation"
-                  size="sm"
+                  aria-label="Simulation mode"
                   className="px-2 h-8 data-[state=on]:bg-amber-600 data-[state=on]:text-white"
                   disabled={isCreatingSimulation}
-                  aria-label="Simulation mode"
+                  size="sm"
+                  value="simulation"
                 >
                   {isCreatingSimulation ? (
                     <Loader2Icon className="h-3.5 w-3.5 mr-1 animate-spin" />
@@ -341,11 +341,11 @@ export function BoardHeader({
               )}
               {boardMode === "simulation" && onDiscardSimulation && (
                 <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={onDiscardSimulation}
                   className="h-8 text-destructive hover:text-destructive ml-1"
+                  onClick={onDiscardSimulation}
+                  size="sm"
                   title="Discard simulation"
+                  variant="ghost"
                 >
                   <XIcon className="h-3.5 w-3.5" />
                 </Button>
@@ -414,11 +414,11 @@ export function BoardHeader({
           {onToggleConflicts && (
             <Button
               className="hidden sm:flex"
+              disabled={isLoadingConflicts}
               onClick={onToggleConflicts}
               size="sm"
               title="Check for Conflicts"
               variant={conflictCount > 0 ? "destructive" : "outline"}
-              disabled={isLoadingConflicts}
             >
               {isLoadingConflicts ? (
                 <Loader2Icon className="mr-1.5 h-4 w-4 animate-spin" />
