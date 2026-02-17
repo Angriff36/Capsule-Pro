@@ -63,6 +63,10 @@ For suggest_manifest_plan, provide a compact draft (title, summary, optional sco
 
 **When users want to resolve or fix a specific risk** (e.g., "how do I fix this?", "resolve this conflict", "what should I do about this?"), use the resolve_risk tool with the conflict ID. This provides actionable steps and can create a resolution plan.
 
+**When users ask about policies, overtime rules, or role settings** (e.g., "what's the overtime policy?", "show me role rates", "what are the staff rules?"), use the query_policies tool to retrieve current policy settings.
+
+**When users want to modify policies or role settings** (e.g., "change overtime threshold to 45 hours", "disable overtime for prep cooks", "update base rate for servers"), use the update_policy tool to create a manifest plan for the policy change.
+
 **Guidelines:**
 - Be concise and actionable
 - When suggesting board modifications, use the suggest_board_action tool
@@ -71,6 +75,8 @@ For suggest_manifest_plan, provide a compact draft (title, summary, optional sco
 - When users ask about risks, conflicts, or operational issues, use detect_conflicts
 - When users want to understand a specific risk in detail, use explain_risk
 - When users want to resolve a risk, use resolve_risk
+- When users ask about policies or role settings, use query_policies
+- When users want to modify policies, use update_policy
 - Always explain WHY you're suggesting an action
 - Use markdown formatting for readability
 - Keep responses under 200 words unless the user asks for detail`;
@@ -739,6 +745,254 @@ function createBoardTools(params: {
             error: "Failed to resolve risk",
             resolution: "An error occurred while trying to resolve this risk.",
             canResolve: false,
+          };
+        }
+      },
+    }),
+    query_policies: tool({
+      description:
+        "Query current policy settings including roles, overtime rules, and pay rates. Use this when users ask about overtime policies, role settings, or staff compensation rules.",
+      inputSchema: z.object({
+        policyType: z
+          .enum(["roles", "overtime", "rates", "all"])
+          .optional()
+          .describe("Type of policy to query: roles (all role info), overtime (overtime settings only), rates (pay rates only), all (everything)"),
+        roleId: z
+          .string()
+          .optional()
+          .describe("Optional specific role ID to query"),
+      }),
+      execute: async ({ policyType = "all", roleId }) => {
+        try {
+          const whereClause = {
+            tenantId,
+            deletedAt: null,
+            isActive: true,
+            ...(roleId ? { id: roleId } : {}),
+          };
+
+          const roles = await database.role.findMany({
+            where: whereClause,
+            select: {
+              id: true,
+              name: true,
+              baseRate: true,
+              overtimeMultiplier: true,
+              overtimeThresholdHours: true,
+              description: true,
+              isActive: true,
+            },
+            orderBy: { name: "asc" },
+          });
+
+          if (policyType === "overtime") {
+            return {
+              type: "overtime_policies",
+              count: roles.length,
+              policies: roles.map((r) => ({
+                id: r.id,
+                roleName: r.name,
+                overtimeMultiplier: Number(r.overtimeMultiplier),
+                overtimeThresholdHours: r.overtimeThresholdHours,
+              })),
+              summary: `Found ${roles.length} role(s) with overtime settings.`,
+            };
+          }
+
+          if (policyType === "rates") {
+            return {
+              type: "pay_rates",
+              count: roles.length,
+              rates: roles.map((r) => ({
+                id: r.id,
+                roleName: r.name,
+                baseRate: Number(r.baseRate),
+              })),
+              summary: `Found ${roles.length} role(s) with pay rates.`,
+            };
+          }
+
+          // Return all policy info
+          return {
+            type: "all_policies",
+            count: roles.length,
+            roles: roles.map((r) => ({
+              id: r.id,
+              name: r.name,
+              baseRate: Number(r.baseRate),
+              overtimeMultiplier: Number(r.overtimeMultiplier),
+              overtimeThresholdHours: r.overtimeThresholdHours,
+              description: r.description,
+            })),
+            summary: `Found ${roles.length} active role(s) with policy settings.`,
+          };
+        } catch (error) {
+          console.error("[AI Chat] Query policies failed:", error);
+          return {
+            error: "Failed to query policies",
+            policies: [],
+            summary: "An error occurred while querying policy settings.",
+          };
+        }
+      },
+    }),
+    update_policy: tool({
+      description:
+        "Create a manifest plan to update policy settings such as overtime rules, pay rates, or role configurations. Use this when users want to modify overtime thresholds, change pay rates, or adjust role settings.",
+      inputSchema: z.object({
+        policyType: z
+          .enum(["overtime_threshold", "overtime_multiplier", "base_rate", "role_settings"])
+          .describe("Type of policy change to make"),
+        roleId: z
+          .string()
+          .describe("The ID of the role to update"),
+        currentValue: z
+          .union([z.number(), z.string()])
+          .describe("The current value (for verification)"),
+        newValue: z
+          .union([z.number(), z.string()])
+          .describe("The new value to set"),
+        reason: z
+          .string()
+          .optional()
+          .describe("Optional reason for the change"),
+      }),
+      execute: async ({ policyType, roleId, currentValue, newValue, reason }) => {
+        try {
+          if (!boardId) {
+            return {
+              suggested: false,
+              error: "boardId is required to create policy change plans",
+            };
+          }
+
+          // Fetch the current role to verify
+          const role = await database.role.findFirst({
+            where: { tenantId, id: roleId, deletedAt: null },
+            select: {
+              id: true,
+              name: true,
+              baseRate: true,
+              overtimeMultiplier: true,
+              overtimeThresholdHours: true,
+            },
+          });
+
+          if (!role) {
+            return {
+              suggested: false,
+              error: "Role not found",
+              message: `No role found with ID: ${roleId}`,
+            };
+          }
+
+          // Verify current value matches
+          let actualCurrentValue: number;
+          let fieldName: string;
+          let fieldLabel: string;
+
+          switch (policyType) {
+            case "overtime_threshold":
+              actualCurrentValue = role.overtimeThresholdHours;
+              fieldName = "overtimeThresholdHours";
+              fieldLabel = "Overtime Threshold (hours)";
+              break;
+            case "overtime_multiplier":
+              actualCurrentValue = Number(role.overtimeMultiplier);
+              fieldName = "overtimeMultiplier";
+              fieldLabel = "Overtime Multiplier";
+              break;
+            case "base_rate":
+              actualCurrentValue = Number(role.baseRate);
+              fieldName = "baseRate";
+              fieldLabel = "Base Rate ($/hour)";
+              break;
+            default:
+              return {
+                suggested: false,
+                error: "Invalid policy type",
+                message: `Unknown policy type: ${policyType}`,
+              };
+          }
+
+          // Create the manifest plan
+          const plan: SuggestedManifestPlan = {
+            planId: crypto.randomUUID(),
+            title: `Update ${fieldLabel} for ${role.name}`,
+            summary: `Change ${fieldLabel.toLowerCase()} from ${actualCurrentValue} to ${newValue}${reason ? ` - Reason: ${reason}` : ""}`,
+            confidence: 0.95,
+            scope: {
+              boardId,
+              tenantId,
+              entities: [{ entityType: "employee", entityId: roleId }],
+            },
+            prerequisites: [],
+            boardPreview: [],
+            domainPlan: [
+              {
+                stepId: "update-policy-1",
+                commandName: "update_role_policy",
+                entityType: "employee",
+                entityId: roleId,
+                args: {
+                  roleId,
+                  fieldName,
+                  currentValue: actualCurrentValue,
+                  newValue: Number(newValue),
+                  reason,
+                },
+              },
+            ],
+            execution: {
+              mode: "execute",
+              idempotencyKey: crypto.randomUUID(),
+            },
+            trace: {
+              reasoningSummary: `User-requested policy change: ${fieldLabel} for role ${role.name}`,
+              citations: [],
+            },
+            riskAssessment: {
+              level: "low",
+              factors: ["Policy modification"],
+              mitigations: ["Change is reversible", "Requires explicit approval"],
+              affectedEntities: [],
+            },
+            costImpact: {
+              currency: "USD",
+              financialDelta: {
+                revenue: 0,
+                cost: policyType === "base_rate" ? (Number(newValue) - actualCurrentValue) * 100 : 0,
+                profit: policyType === "base_rate" ? (actualCurrentValue - Number(newValue)) * 100 : 0,
+                marginChange: 0,
+              },
+            },
+          };
+
+          await createPendingManifestPlan({
+            tenantId,
+            boardId,
+            requestedBy: userId,
+            plan,
+          });
+
+          return {
+            suggested: true,
+            plan,
+            policyChange: {
+              roleName: role.name,
+              field: fieldLabel,
+              from: actualCurrentValue,
+              to: newValue,
+              reason,
+            },
+            message: `Policy change plan created: ${fieldLabel} for ${role.name} from ${actualCurrentValue} to ${newValue}. Please review and approve.`,
+          };
+        } catch (error) {
+          console.error("[AI Chat] Update policy failed:", error);
+          return {
+            suggested: false,
+            error: "Failed to create policy change plan",
+            message: "An error occurred while creating the policy change plan.",
           };
         }
       },
