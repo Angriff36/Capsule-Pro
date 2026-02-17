@@ -314,7 +314,22 @@ The Command Board has foundational pieces for AI-Native OS:
 
 ## Implementation Notes (2026-02-17 Iteration 11)
 
-- **3.2 IMPLEMENTED**: Financial exposure projection nodes:
+- **3.2 ENHANCED**: Added complete financial projection entity type infrastructure:
+  - Added `financial_projection` to EntityType union in `types/entities.ts`
+  - Created `ResolvedFinancialProjection` interface with period, revenue, costs, margin, health status
+  - Created `FinancialHealthStatus` enum (healthy, warning, critical, unknown)
+  - Created `FinancialProjectionNodeCard` component in `nodes/cards/financial-projection-card.tsx`
+  - Updated `projection-node.tsx` to render financial projection entities
+  - Updated `resolve-entities.ts` to handle financial_projection (derived, not from database)
+  - Updated `browse-entities.ts` to handle financial_projection browsing
+  - Updated `entity-detail-panel.tsx` with financial_projection icon and link handling
+  - Added `financial_projection` to Prisma schema EntityType enum
+  - Added `financial_projection` to ENTITY_TYPE_VALUES in `manifest-plan.ts`
+  - Fixed `derive-financial-projections.ts` to use event budget data (costs estimated via industry ratios)
+  - Fixed `use-inventory-realtime.ts` Ably type error
+  - Fixed `validatePlanConfig` to be async (Next.js 15 requirement)
+
+- **3.2 ALSO IMPLEMENTED** (financial conflict detection):
   - Added `financial` conflict type to `ConflictType` enum in types.ts
   - Created `detectFinancialConflicts()` function in `/api/conflicts/detect/route.ts`
   - Detects 3 categories of financial risks:

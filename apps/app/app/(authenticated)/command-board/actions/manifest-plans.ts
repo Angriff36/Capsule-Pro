@@ -1294,7 +1294,7 @@ export async function previewManifestPlan(
   const plan = payload.plan;
 
   // Validate configuration
-  const validation = validatePlanConfig(plan);
+  const validation = await validatePlanConfig(plan);
 
   // Preview domain steps
   const domainStepPreviews: StepPreviewResult[] = [];
@@ -1590,7 +1590,7 @@ export async function approveManifestPlan(
 
     // Validate configuration before execution
     if (!options?.skipValidation) {
-      const validation = validatePlanConfig(payload.plan);
+      const validation = await validatePlanConfig(payload.plan);
       if (!validation.valid) {
         const errorMessages = validation.errors.map((e) => `${e.field}: ${e.message}`);
         return {
