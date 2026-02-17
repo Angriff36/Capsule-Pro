@@ -189,8 +189,8 @@ function BoardFlowInner({
   derivedConnections,
   annotations,
   activePreviewMutations,
+  boardMode = "live",
   simulationDelta,
-  isSimulationMode = false,
   onOpenDetail,
   onProjectionAdded,
   onProjectionRemoved,
@@ -299,7 +299,7 @@ function BoardFlowInner({
 
   // ---- Simulation delta state (for "what-if" diff overlay) ----
   const simulationState = useMemo(() => {
-    if (!isSimulationMode || !simulationDelta) {
+    if (boardMode !== "simulation" || !simulationDelta) {
       return {
         addedEntityIds: new Set<string>(),
         removedProjectionIds: new Set<string>(),
@@ -331,7 +331,7 @@ function BoardFlowInner({
       modifiedProjectionIds,
       modifications,
     };
-  }, [isSimulationMode, simulationDelta]);
+  }, [boardMode, simulationDelta]);
 
   const previewState = useMemo(() => {
     const removedNodeIds = new Set<string>();
@@ -399,7 +399,7 @@ function BoardFlowInner({
         let simulationStyle: React.CSSProperties = {};
         let simulationClassName = "";
 
-        if (isSimulationMode && simulationDelta) {
+        if (boardMode === "simulation" && simulationDelta) {
           if (simulationState.removedProjectionIds.has(projectionId)) {
             // Removed in simulation - red border with strike-through effect
             simulationStyle = {
@@ -485,7 +485,7 @@ function BoardFlowInner({
     });
 
     return [...persistedNodes, ...ghostNodes];
-  }, [boardId, entities, nodes, previewState, isSimulationMode, simulationDelta, simulationState]);
+  }, [boardId, entities, nodes, previewState, boardMode, simulationDelta, simulationState]);
 
   const renderedEdges = useMemo(() => {
     const persistedEdges = edges.filter(
@@ -764,7 +764,7 @@ function BoardFlowInner({
   return (
     <div className="h-full w-full" ref={containerRef}>
       {/* Simulation Mode Indicator */}
-      {isSimulationMode && simulationDelta && (
+      {boardMode === "simulation" && simulationDelta && (
         <div className="absolute left-4 top-4 z-10 rounded-lg border border-amber-500/50 bg-amber-50 px-3 py-2 shadow-md dark:bg-amber-950/50">
           <div className="flex items-center gap-2">
             <div className="h-2 w-2 animate-pulse rounded-full bg-amber-500" />

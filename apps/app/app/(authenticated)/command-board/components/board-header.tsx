@@ -322,7 +322,7 @@ export function BoardHeader({
                 <ToggleGroupItem
                   value="simulation"
                   size="sm"
-                  className="px-2 h-8 data-[state=on]:bg-purple-600 data-[state=on]:text-white"
+                  className="px-2 h-8 data-[state=on]:bg-amber-600 data-[state=on]:text-white"
                   disabled={isCreatingSimulation}
                   aria-label="Simulation mode"
                 >
@@ -331,22 +331,12 @@ export function BoardHeader({
                   ) : (
                     <FlaskConicalIcon className="h-3.5 w-3.5 mr-1" />
                   )}
-                  Simulate
+                  Sim
                 </ToggleGroupItem>
               </ToggleGroup>
-              {boardMode === "simulation" && simulationDelta && (
-                <span className="text-xs text-muted-foreground ml-2">
-                  {simulationDelta.summary.totalChanges > 0 ? (
-                    <span className="text-amber-600 dark:text-amber-400">
-                      {simulationDelta.summary.additions} added,{" "}
-                      {simulationDelta.summary.removals} removed,{" "}
-                      {simulationDelta.summary.modifications} modified
-                    </span>
-                  ) : (
-                    <span className="text-green-600 dark:text-green-400">
-                      No changes yet
-                    </span>
-                  )}
+              {simulationDelta && simulationDelta.summary.totalChanges > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 rounded">
+                  {simulationDelta.summary.totalChanges}
                 </span>
               )}
               {boardMode === "simulation" && onDiscardSimulation && (

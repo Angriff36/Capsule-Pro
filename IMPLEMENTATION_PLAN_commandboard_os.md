@@ -83,8 +83,8 @@ The Command Board has foundational pieces for AI-Native OS:
 |---|------|----------|--------|
 | 5.1 | Add board fork/clone functionality | actions/boards.ts | COMPLETED (forkCommandBoard, getSimulationContext, discardSimulation, listSimulationsForBoard) |
 | 5.2 | Create ephemeral simulation mode state | types/board.ts | COMPLETED (SimulationContext, BoardDelta, ForkBoardResult, ComputeDeltaInput types defined in actions/boards.ts:18-73) |
-| 5.3 | Add diff overlay rendering | board-flow.tsx | NOT STARTED |
-| 5.4 | Add Live/Simulation toggle UI | board-header.tsx | NOT STARTED |
+| 5.3 | Add diff overlay rendering | board-flow.tsx | COMPLETED (simulation state tracking, visual styles with green/red/amber box shadows, ghost nodes for preview, simulation mode indicator with change counts) |
+| 5.4 | Add Live/Simulation toggle UI | board-header.tsx | COMPLETED (ToggleGroup with Live/Sim buttons, green/amber styling, change count badge, discard button, loading state) |
 
 ---
 
@@ -365,6 +365,25 @@ The Command Board has foundational pieces for AI-Native OS:
   - `ForkBoardResult` - Result type for fork operation
   - `ComputeDeltaInput` - Input for delta computation
   - Types defined in `actions/boards.ts:18-73`
+
+- **5.3 VERIFIED**: Diff overlay rendering already implemented in board-flow.tsx:
+  - Simulation state tracking (lines 301-334) for added/removed/modified projections
+  - Visual node styling (lines 398-423) with colored box shadows:
+    - Green (#22c55e) for added entities
+    - Red (#ef4444) for removed projections
+    - Amber (#f59e0b) for modified projections
+  - Ghost nodes for preview mutations (lines 445-485) with dashed blue border
+  - Simulation mode indicator badge (lines 767-798) showing change counts
+
+- **5.4 VERIFIED**: Live/Simulation toggle UI already implemented in board-header.tsx:
+  - ToggleGroup component (lines 300-354) with Live/Sim buttons
+  - RadioIcon for Live mode, FlaskConicalIcon for Simulation
+  - Green styling for live state, amber for simulation
+  - Loading spinner when creating simulation
+  - Change count badge when simulation has changes
+  - Discard button (X icon) in simulation mode
+
+**All Phase 5 (Simulation Engine) items are now complete!**
 
 ---
 
