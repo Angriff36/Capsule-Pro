@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   DropdownMenu,
@@ -9,13 +19,16 @@ import {
 } from "@repo/design-system/components/ui/dropdown-menu";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import {
+  BotIcon,
   EllipsisIcon,
   HomeIcon,
+  KeyboardIcon,
   LayoutGridIcon,
   Loader2Icon,
   PencilIcon,
   PlusIcon,
   Redo2Icon,
+  TerminalSquareIcon,
   TrashIcon,
   Undo2Icon,
   XIcon,
@@ -41,6 +54,12 @@ interface BoardHeaderProps {
   // Entity browser toggle
   entityBrowserOpen?: boolean;
   onToggleEntityBrowser?: () => void;
+  // Command palette toggle
+  commandPaletteOpen?: boolean;
+  onToggleCommandPalette?: () => void;
+  // AI chat toggle
+  aiChatOpen?: boolean;
+  onToggleAiChat?: () => void;
   // Fullscreen exit
   onExitFullscreen?: () => void;
 }
@@ -58,22 +77,27 @@ export function BoardHeader({
   onRedo,
   entityBrowserOpen = false,
   onToggleEntityBrowser,
+  commandPaletteOpen = false,
+  onToggleCommandPalette,
+  aiChatOpen = false,
+  onToggleAiChat,
   onExitFullscreen,
 }: BoardHeaderProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [_isDeleting, setIsDeleting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [editName, setEditName] = useState(boardName);
   const [editDescription, setEditDescription] = useState(
     boardDescription || ""
   );
 
-  const handleSwitchBoard = async () => {
+  const handleSwitchBoard = () => {
     router.push("/command-board");
   };
 
-  const handleCreateNew = async () => {
+  const handleCreateNew = () => {
     router.push("/command-board?create=true");
   };
 
@@ -102,15 +126,11 @@ export function BoardHeader({
     }
   };
 
-  const handleDelete = async () => {
-    if (
-      !confirm(
-        `Are you sure you want to delete "${boardName}"? This action cannot be undone.`
-      )
-    ) {
-      return;
-    }
+  const handleDelete = () => {
+    setDeleteDialogOpen(true);
+  };
 
+  const handleDeleteConfirm = async () => {
     setIsDeleting(true);
 
     try {
@@ -126,6 +146,7 @@ export function BoardHeader({
       toast.error("Failed to delete board");
     } finally {
       setIsDeleting(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -144,6 +165,31 @@ export function BoardHeader({
 
   return (
     <header className="bg-muted/50 border-b px-4 py-3">
+      <AlertDialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Board</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{boardName}&quot;? This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting}
+              onClick={handleDeleteConfirm}
+            >
+              {isDeleting && (
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Delete Board
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           {/* Home button */}
@@ -260,6 +306,30 @@ export function BoardHeader({
               Entities
             </Button>
           )}
+          {onToggleCommandPalette && (
+            <Button
+              className="hidden sm:flex"
+              onClick={onToggleCommandPalette}
+              size="sm"
+              title="Commands (Ctrl+K)"
+              variant={commandPaletteOpen ? "default" : "outline"}
+            >
+              <TerminalSquareIcon className="mr-1.5 h-4 w-4" />
+              Commands
+            </Button>
+          )}
+          {onToggleAiChat && (
+            <Button
+              className="hidden sm:flex"
+              onClick={onToggleAiChat}
+              size="sm"
+              title="AI Assistant (Ctrl+J)"
+              variant={aiChatOpen ? "default" : "outline"}
+            >
+              <BotIcon className="mr-1.5 h-4 w-4" />
+              AI Assistant
+            </Button>
+          )}
 
           <Button
             className="hidden sm:flex"
@@ -280,6 +350,28 @@ export function BoardHeader({
               <DropdownMenuItem onClick={() => router.push("/command-board")}>
                 <HomeIcon className="mr-2 h-4 w-4" />
                 All Boards
+              </DropdownMenuItem>
+              {onToggleEntityBrowser && (
+                <DropdownMenuItem onClick={onToggleEntityBrowser}>
+                  <LayoutGridIcon className="mr-2 h-4 w-4" />
+                  Entities (Ctrl+E)
+                </DropdownMenuItem>
+              )}
+              {onToggleCommandPalette && (
+                <DropdownMenuItem onClick={onToggleCommandPalette}>
+                  <TerminalSquareIcon className="mr-2 h-4 w-4" />
+                  Commands (Ctrl+K)
+                </DropdownMenuItem>
+              )}
+              {onToggleAiChat && (
+                <DropdownMenuItem onClick={onToggleAiChat}>
+                  <BotIcon className="mr-2 h-4 w-4" />
+                  AI Assistant (Ctrl+J)
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem disabled>
+                <KeyboardIcon className="mr-2 h-4 w-4" />
+                Undo/Redo: Ctrl+Z / Ctrl+Shift+Z
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleCreateNew}>
                 <PlusIcon className="mr-2 h-4 w-4" />
