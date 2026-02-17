@@ -221,6 +221,21 @@ The Command Board has foundational pieces for AI-Native OS:
     - Use `query_policies` for questions about overtime rules, role settings, pay rates
     - Use `update_policy` for modification requests (change overtime threshold, update rates)
 
+## Implementation Notes (2026-02-17 Iteration 9)
+
+- **3.3 ENHANCED**: Upgraded inventory multi-threshold system to use database `reorder_level`:
+  - Added `reorderLevel: number | null` to `ResolvedInventoryItem` interface
+  - Updated `resolve-entities.ts` to fetch `reorder_level` from database (Prisma field `reorder_level`)
+  - Enhanced `calculateInventoryThreshold()` function:
+    - Now uses database `reorderLevel` as critical threshold (not percentage-based)
+    - Threshold hierarchy: out_of_stock (0) < critical (≤reorderLevel) < low (≤parLevel) < good (>parLevel)
+    - Graceful fallback when only one threshold is configured
+  - Updated `InventoryNodeCard` component:
+    - Uses `calculateInventoryThreshold()` utility from entities.ts
+    - Displays "Reorder At" field with conditional red highlight when at/below threshold
+    - Progress bar and badges color-coded by status
+  - This completes the multi-threshold inventory risk indicators with database-backed thresholds
+
 ## Implementation Notes (2026-02-17 Iteration 8)
 
 - **3.4 IMPLEMENTED**: Real-time live inventory levels on command board:
