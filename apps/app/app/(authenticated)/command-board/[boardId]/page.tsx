@@ -6,6 +6,7 @@ import { deriveConnections } from "../actions/derive-connections";
 import { getProjectionsForBoard } from "../actions/projections";
 import { resolveEntities } from "../actions/resolve-entities";
 import { BoardShell } from "../components/board-shell";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 // UUID regex constant at top level for performance
 const UUID_REGEX =
@@ -24,6 +25,9 @@ export default async function CommandBoardPage({
   if (!orgId) {
     redirect("/sign-in");
   }
+
+  // Get tenantId for real-time subscriptions
+  const tenantId = await getTenantIdForOrg(orgId);
 
   // Handle "default" board — redirect to first existing board or board list
   if (boardId === "default") {
@@ -103,6 +107,7 @@ export default async function CommandBoardPage({
       entitiesArray={entitiesArray}
       orgId={orgId}
       projections={projections}
+      tenantId={tenantId}
     />
   );
 }

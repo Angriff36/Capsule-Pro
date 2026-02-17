@@ -73,7 +73,7 @@ The Command Board has foundational pieces for AI-Native OS:
 
 | # | Item | Location | Status |
 |---|------|----------|--------|
-| 4.1 | Add policy editing tool to AI | api/command-board/chat/route.ts | NOT STARTED |
+| 4.1 | Add policy editing tool to AI | api/command-board/chat/route.ts | COMPLETED (added query_policies and update_policy AI tools) |
 | 4.2 | Create natural language->domain command compiler | actions/ | NOT STARTED |
 | 4.3 | Add config validation and preview | actions/manifest-plans.ts | NOT STARTED |
 
@@ -202,6 +202,24 @@ The Command Board has foundational pieces for AI-Native OS:
   - Fixed invalid "warning" badge variant in risk-card.tsx (changed to "secondary")
   - Added null check for `previous` in use-board-history.ts undo function
   - Fixed duplicate identifier exports in types/index.ts
+
+## Implementation Notes (2026-02-17 Iteration 7)
+
+- **4.1 IMPLEMENTED**: Added policy editing AI tools to chat route:
+  - Added `query_policies` tool to `createBoardTools()` function:
+    - Queries role policies from database (base rates, overtime settings)
+    - Supports filtering by policyType: "roles", "overtime", "rates", "all"
+    - Optional roleId parameter for specific role lookup
+    - Returns structured policy data for AI to format responses
+  - Added `update_policy` tool to `createBoardTools()` function:
+    - Creates manifest plans for policy modifications
+    - Supports policyType: "overtime_threshold", "overtime_multiplier", "base_rate", "role_settings"
+    - Verifies current role exists before creating plan
+    - Generates risk assessment and cost impact projections
+    - Creates pending manifest plan for user approval
+  - Updated system prompt to instruct AI when to use policy tools:
+    - Use `query_policies` for questions about overtime rules, role settings, pay rates
+    - Use `update_policy` for modification requests (change overtime threshold, update rates)
 
 ---
 
