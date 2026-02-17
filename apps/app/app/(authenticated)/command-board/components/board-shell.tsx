@@ -288,7 +288,7 @@ export function BoardShell({
         setActiveSimulation(simulation);
         setAvailableSimulations((prev) => [simulation, ...prev]);
         // Compute initial delta (empty at start)
-        const delta = computeBoardDelta({
+        const delta = await computeBoardDelta({
           originalProjections: projections,
           simulatedProjections: simulation.projections,
           originalGroups: [],
