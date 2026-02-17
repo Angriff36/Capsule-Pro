@@ -385,6 +385,13 @@ The Command Board has foundational pieces for AI-Native OS:
 
 **All Phase 5 (Simulation Engine) items are now complete!**
 
+## Implementation Notes (2026-02-17 Iteration 14)
+
+- **Bug Fix**: Fixed TypeScript error in board-shell.tsx:
+  - The `computeBoardDelta` function was made async but the call site in `handleCreateSimulation` wasn't awaiting the result
+  - Added missing `await` keyword on line 291
+  - This fixes TS2345: "Argument of type 'Promise<BoardDelta>' is not assignable to parameter of type 'SetStateAction<BoardDelta | null>'"
+
 ## Implementation Notes (2026-02-17 Iteration 13)
 
 - **Build Fix**: Fixed server action async requirement:
