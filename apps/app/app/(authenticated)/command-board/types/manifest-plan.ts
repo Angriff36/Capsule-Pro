@@ -125,6 +125,11 @@ export const suggestedManifestPlanSchema = z.object({
   domainPlan: z.array(domainCommandStepSchema).default([]),
   execution: manifestExecutionSchema,
   trace: manifestTraceSchema,
+  // Extended fields for AI-Native Command Board OS
+  executionStrategy: executionStrategySchema.optional(),
+  rollbackStrategy: rollbackStrategySchema.optional(),
+  riskAssessment: riskAssessmentSchema.optional(),
+  costImpact: costImpactSchema.optional(),
 });
 
 export const suggestManifestPlanInputSchema = suggestedManifestPlanSchema
@@ -181,3 +186,71 @@ export type SuggestManifestPlanInput = z.infer<
   typeof suggestManifestPlanInputSchema
 >;
 export type ManifestPlanRecordPayload = z.infer<typeof planRecordPayloadSchema>;
+
+export const riskAssessmentSchema = z.object({
+  level: z.enum(["low", "medium", "high", "critical"]).default("low"),
+  factors: z.array(z.string()).default([]),
+  mitigations: z.array(z.string()).default([]),
+  affectedEntities: z.array(manifestEntityRefSchema).default([]),
+});
+
+export const costImpactSchema = z.object({
+  estimatedCost: z.number().optional(),
+  currency: z.string().default("USD"),
+  costBreakdown: z
+    .record(
+      z.string(),
+      z.object({
+        amount: z.number(),
+        description: z.string().optional(),
+      })
+    )
+    .optional(),
+  financialDelta: z
+    .object({
+      revenue: z.number().default(0),
+      cost: z.number().default(0),
+      profit: z.number().default(0),
+      marginChange: z.number().default(0),
+    })
+    .optional(),
+});
+
+export const executionStrategySchema = z.object({
+  approach: z
+    .enum(["sequential", "parallel", "staged", "conditional"])
+    .default("sequential"),
+  steps: z.array(z.string()).default([]),
+  dependencies: z
+    .array(
+      z.object({
+        before: z.string(),
+        after: z.string(),
+        type: z.enum(["required", "optional"]).default("required"),
+      })
+    )
+    .default([]),
+  parallelBatches: z.number().optional(),
+  timeout: z.number().optional(),
+  retryPolicy: z
+    .object({
+      maxAttempts: z.number().default(3),
+      backoffMs: z.number().default(1000),
+    })
+    .optional(),
+});
+
+export const rollbackStrategySchema = z.object({
+  enabled: z.boolean().default(false),
+  strategy: z
+    .enum(["full_revert", "compensating", "manual"])
+    .default("compensating"),
+  steps: z.array(domainCommandStepSchema).default([]),
+  estimatedRecoveryTime: z.number().optional(),
+  risks: z.array(z.string()).default([]),
+});
+
+export type RiskAssessment = z.infer<typeof riskAssessmentSchema>;
+export type CostImpact = z.infer<typeof costImpactSchema>;
+export type ExecutionStrategy = z.infer<typeof executionStrategySchema>;
+export type RollbackStrategy = z.infer<typeof rollbackStrategySchema>;
