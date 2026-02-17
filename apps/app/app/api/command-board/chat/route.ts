@@ -55,11 +55,14 @@ Your role is to help users manage their command board — a visual, spatial inte
 The plan must be previewable and approval-gated before execution.
 For suggest_manifest_plan, provide a compact draft (title, summary, optional scope/prereqs/boardPreview/domainPlan/trace).
 
+**When users ask about risks, conflicts, or what's at risk**, use the detect_conflicts tool to analyze scheduling, staff, inventory, timeline, and venue conflicts. This helps identify operational issues before they become problems.
+
 **Guidelines:**
 - Be concise and actionable
 - When suggesting board modifications, use the suggest_board_action tool
 - When suggesting domain-intent execution, use suggest_manifest_plan
 - When answering questions about data, use the query_board_context tool first
+- When users ask about risks, conflicts, or operational issues, use detect_conflicts
 - Always explain WHY you're suggesting an action
 - Use markdown formatting for readability
 - Keep responses under 200 words unless the user asks for detail`;
@@ -248,6 +251,96 @@ function createBoardTools(params: {
         } catch (error) {
           console.error("[AI Chat] Board query failed:", error);
           return { error: "Failed to query board data" };
+        }
+      },
+    }),
+    detect_conflicts: tool({
+      description:
+        "Detect operational conflicts across scheduling, staff, inventory, timeline, and venue. Use this when users ask about risks, what's at risk, conflicts, or operational issues.",
+      inputSchema: z.object({
+        boardId: z.string().optional().describe("Optional board ID to scope detection"),
+        timeRange: z
+          .object({
+            start: z.string().describe("Start date ISO string"),
+            end: z.string().describe("End date ISO string"),
+          })
+          .optional()
+          .describe("Optional time range to analyze"),
+        entityTypes: z
+          .array(
+            z.enum([
+              "scheduling",
+              "staff",
+              "inventory",
+              "timeline",
+              "venue",
+              "resource",
+            ])
+          )
+          .optional()
+          .describe("Conflict types to detect"),
+      }),
+      execute: async ({ boardId, timeRange, entityTypes }) => {
+        try {
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+          const response = await fetch(`${baseUrl}/conflicts/detect`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              boardId,
+              timeRange: timeRange
+                ? {
+                    start: new Date(timeRange.start),
+                    end: new Date(timeRange.end),
+                  }
+                : undefined,
+              entityTypes,
+            }),
+          });
+
+          if (!response.ok) {
+            return {
+              conflicts: [],
+              summary: {
+                total: 0,
+                bySeverity: { low: 0, medium: 0, high: 0, critical: 0 },
+                byType: {
+                  scheduling: 0,
+                  staff: 0,
+                  inventory: 0,
+                  timeline: 0,
+                  venue: 0,
+                  resource: 0,
+                },
+              },
+              analyzedAt: new Date().toISOString(),
+              error: `Conflict detection failed: ${response.statusText}`,
+            };
+          }
+
+          const result = await response.json();
+          return result;
+        } catch (error) {
+          console.error("[AI Chat] Conflict detection failed:", error);
+          return {
+            conflicts: [],
+            summary: {
+              total: 0,
+              bySeverity: { low: 0, medium: 0, high: 0, critical: 0 },
+              byType: {
+                scheduling: 0,
+                staff: 0,
+                inventory: 0,
+                timeline: 0,
+                venue: 0,
+                resource: 0,
+              },
+            },
+            analyzedAt: new Date().toISOString(),
+            error: "Failed to detect conflicts",
+          };
         }
       },
     }),
