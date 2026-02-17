@@ -1,10 +1,8 @@
 "use client";
 
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import Ably from "ably";
 import { useEffect, useRef } from "react";
-
-const { logger } = Sentry;
 
 const authUrl = "/ably/auth";
 
@@ -20,6 +18,67 @@ interface InventoryStockPayload {
 interface UseInventoryRealtimeProps {
   tenantId: string;
   onInventoryUpdate?: (payload: InventoryStockPayload) => void;
+}
+
+function logDev(message: string, ...args: unknown[]) {
+  if (process.env.NODE_ENV === "development") {
+    console.debug(message, ...args);
+  }
+}
+
+async function testAuthEndpoint(tenantId: string): Promise<boolean> {
+  const response = await fetch(authUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ tenantId }),
+  }).catch(() => null);
+
+  return response?.ok ?? false;
+}
+
+function createAuthCallback(tenantId: string): Ably.AuthCallback {
+  return async (_, callback) => {
+    try {
+      const response = await fetch(authUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ tenantId }),
+      });
+      if (!response.ok) {
+        throw new Error(`Ably auth failed: ${response.status}`);
+      }
+      const tokenRequest = await response.json();
+      callback(null, tokenRequest);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Ably auth failed.";
+      logDev("[useInventoryRealtime] Auth error:", message);
+      callback(message, null);
+    }
+  };
+}
+
+function createMessageHandler(
+  isMounted: () => boolean,
+  callbackRef: React.MutableRefObject<
+    ((payload: InventoryStockPayload) => void) | undefined
+  >
+) {
+  return (message: { name?: string; data?: InventoryStockPayload }) => {
+    if (!(isMounted() && isInventoryStockEvent(message.name))) {
+      return;
+    }
+
+    if (message.data && callbackRef.current) {
+      callbackRef.current({
+        stockItemId: message.data.stockItemId,
+        newQuantity: message.data.newQuantity,
+        previousQuantity: message.data.previousQuantity,
+      });
+    }
+  };
 }
 
 /**
@@ -45,149 +104,82 @@ export function useInventoryRealtime({
     }
 
     let isMounted = true;
+    const checkMounted = () => isMounted;
 
     const initializeConnection = async () => {
-      try {
-        // Test if the auth endpoint is available
-        const testResponse = await fetch(authUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ tenantId }),
-        }).catch(() => null);
+      const isAvailable = await testAuthEndpoint(tenantId);
+      if (!isAvailable) {
+        logDev(
+          "[useInventoryRealtime] Auth endpoint not available, skipping real-time connection"
+        );
+        return;
+      }
 
-        if (!testResponse?.ok) {
-          if (process.env.NODE_ENV === "development") {
-            logger.warn(
-              "[useInventoryRealtime] Auth endpoint not available, skipping real-time connection"
-            );
-          }
-          return;
-        }
+      if (!isMounted) {
+        return;
+      }
 
+      const client = new Ably.Realtime({
+        authCallback: createAuthCallback(tenantId),
+      });
+
+      client.connection.on((stateChange) => {
         if (!isMounted) {
           return;
         }
 
-        const client = new Ably.Realtime({
-          authCallback: async (_, callback) => {
-            try {
-              const response = await fetch(authUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({ tenantId }),
-              });
-              if (!response.ok) {
-                throw new Error(`Ably auth failed: ${response.status}`);
-              }
-              const tokenRequest = await response.json();
-              callback(null, tokenRequest);
-            } catch (error) {
-              const message =
-                error instanceof Error ? error.message : "Ably auth failed.";
-              if (process.env.NODE_ENV === "development") {
-                logger.warn(
-                  logger.fmt`[useInventoryRealtime] Auth error: ${message}`
-                );
-              }
-              callback(message, null);
-            }
-          },
-        });
+        const { current, reason, retryIn } = stateChange;
 
-        // Handle connection errors gracefully
-        client.connection.on((stateChange) => {
-          if (!isMounted) {
-            return;
-          }
-
-          const { current, reason, retryIn } = stateChange;
-
-          if (
-            current === "failed" ||
-            current === "suspended" ||
-            current === "disconnected" ||
-            current === "closed"
-          ) {
-            return;
-          }
-
-          if (process.env.NODE_ENV === "development" && reason) {
-            logger.info(
-              logger.fmt`[useInventoryRealtime] Connection state: ${current}`,
-              { reason, retryIn }
-            );
-          }
-        });
-
-        clientRef.current = client;
-
-        const channel = client.channels.get(`tenant:${tenantId}`);
-        channelRef.current = channel;
-
-        const handleMessage = (message: {
-          name?: string;
-          data?: InventoryStockPayload;
-        }) => {
-          if (!isMounted) {
-            return;
-          }
-          if (!isInventoryStockEvent(message.name)) {
-            return;
-          }
-
-          // Extract payload and call callback
-          if (message.data && onInventoryUpdateRef.current) {
-            onInventoryUpdateRef.current({
-              stockItemId: message.data.stockItemId,
-              newQuantity: message.data.newQuantity,
-              previousQuantity: message.data.previousQuantity,
-            });
-          }
-        };
-
-        try {
-          channel.subscribe(handleMessage);
-        } catch (error) {
-          if (process.env.NODE_ENV === "development") {
-            logger.warn(
-              logger.fmt`[useInventoryRealtime] Subscription error: ${String(error)}`
-            );
-          }
+        if (
+          current === "failed" ||
+          current === "suspended" ||
+          current === "disconnected" ||
+          current === "closed"
+        ) {
+          return;
         }
+
+        if (reason) {
+          logDev(`[useInventoryRealtime] Connection state: ${current}`, {
+            reason,
+            retryIn,
+          });
+        }
+      });
+
+      clientRef.current = client;
+
+      const channel = client.channels.get(`tenant:${tenantId}`);
+      channelRef.current = channel;
+
+      const handleMessage = createMessageHandler(
+        checkMounted,
+        onInventoryUpdateRef
+      );
+
+      try {
+        channel.subscribe(handleMessage);
       } catch (error) {
-        if (process.env.NODE_ENV === "development") {
-          logger.warn(
-            logger.fmt`[useInventoryRealtime] Initialization error: ${String(error)}`
-          );
-        }
+        logDev("[useInventoryRealtime] Subscription error:", String(error));
+        captureException(error);
       }
     };
 
     initializeConnection().catch((error) => {
-      if (process.env.NODE_ENV === "development") {
-        logger.warn(
-          logger.fmt`[useInventoryRealtime] Connection initialization failed: ${String(error)}`
-        );
-      }
+      logDev(
+        "[useInventoryRealtime] Connection initialization failed:",
+        String(error)
+      );
+      captureException(error);
     });
 
     return () => {
       isMounted = false;
       try {
-        if (channelRef.current) {
-          channelRef.current.unsubscribe();
-        }
-        if (clientRef.current) {
-          clientRef.current.close();
-        }
+        channelRef.current?.unsubscribe();
+        clientRef.current?.close();
       } catch (error) {
-        if (process.env.NODE_ENV === "development") {
-          logger.warn(
-            logger.fmt`[useInventoryRealtime] Cleanup error: ${String(error)}`
-          );
-        }
+        logDev("[useInventoryRealtime] Cleanup error:", String(error));
       }
     };
   }, [tenantId]);
