@@ -3201,6 +3201,7 @@ enum EntityType {
   shipment
   note
   risk
+  financial_projection
 
   @@schema("tenant_events")
 }
