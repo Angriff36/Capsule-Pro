@@ -138,6 +138,19 @@ The Command Board has foundational pieces for AI-Native OS:
   - Updated system prompt to instruct AI when to use explain_risk (for detailed explanations) and resolve_risk (for resolution suggestions)
   - Added `SuggestedManifestPlan` type import and proper type assertions for plan creation
 
+## Implementation Notes (2026-02-17 Iteration 4)
+
+- **2.1 IMPLEMENTED**: Risk edge derivation logic (completed the placeholder):
+  - Modified `deriveConnections()` in `derive-connections.ts` to accept optional `conflicts` parameter
+  - Implemented actual edge derivation logic that:
+    - Builds a conflict ID to conflict map for quick lookup
+    - Maps conflict entity types to board entity types (event→event, task→prep_task, employee→employee, inventory→inventory_item)
+    - For each risk projection on the board, finds the matching conflict by entityId
+    - Creates edges from risk nodes to each affected entity in the conflict
+    - Uses new `risk_to_entity` relationship type with red color (#ef4444) and dashed line style
+  - Added `risk_to_entity` to `RELATIONSHIP_STYLES` in `board.ts`
+  - The function now returns edges when both risk projections AND conflict data are available
+
 ## Implementation Notes (2026-02-17 Iteration 2)
 
 - **2.1, 2.5 COMPLETED**: Added RiskEntity type to the board:
