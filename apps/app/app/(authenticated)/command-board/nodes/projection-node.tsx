@@ -13,6 +13,7 @@ import { EventNodeCard } from "./cards/event-card";
 import { GenericNodeCard } from "./cards/generic-card";
 import { InventoryNodeCard } from "./cards/inventory-card";
 import { NoteNodeCard } from "./cards/note-card";
+import { RiskNodeCard } from "./cards/risk-card";
 import { TaskNodeCard } from "./cards/task-card";
 
 /** Left border color per entity type — 4px accent stripe */
@@ -28,6 +29,7 @@ const entityBorderColors: Record<string, string> = {
   proposal: "border-l-violet-500",
   shipment: "border-l-cyan-500",
   note: "border-l-stone-400",
+  risk: "border-l-red-500",
 };
 
 /** Handle shared className for consistent styling */
@@ -89,6 +91,8 @@ export const ProjectionNode = memo(function ProjectionNode({
         return <InventoryNodeCard data={entity.data} stale={false} />;
       case "note":
         return <NoteNodeCard data={entity.data} stale={false} />;
+      case "risk":
+        return <RiskNodeCard data={entity.data} stale={false} />;
       default:
         return <GenericNodeCard entityType={entityType} stale={false} />;
     }
