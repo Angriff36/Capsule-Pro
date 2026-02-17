@@ -39,12 +39,12 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import type { CommandBoard } from "../actions/boards";
 import {
   deleteCommandBoard,
   listCommandBoards,
   updateCommandBoard,
 } from "../actions/boards";
-import type { CommandBoard } from "../actions/boards";
 import { CreateBoardDialog } from "./create-board-dialog";
 
 export function BoardsListClient() {

@@ -5,8 +5,8 @@
  * performance across different input sizes and complexity.
  */
 
-import { describe, bench } from 'vitest';
-import { compileToIR } from './ir-compiler';
+import { bench, describe } from "vitest";
+import { compileToIR } from "./ir-compiler";
 
 // Small source (~100 tokens)
 const smallSource = `
@@ -223,16 +223,25 @@ entity Shipment {
 }
 `;
 
-describe('IR Compiler Benchmarks', () => {
-  bench('compile small source (~1 entity, 3 constraints, 1 command)', async () => {
-    await compileToIR(smallSource);
-  });
+describe("IR Compiler Benchmarks", () => {
+  bench(
+    "compile small source (~1 entity, 3 constraints, 1 command)",
+    async () => {
+      await compileToIR(smallSource);
+    }
+  );
 
-  bench('compile medium source (~1 entity, 11 constraints, 4 commands)', async () => {
-    await compileToIR(mediumSource);
-  });
+  bench(
+    "compile medium source (~1 entity, 11 constraints, 4 commands)",
+    async () => {
+      await compileToIR(mediumSource);
+    }
+  );
 
-  bench('compile large source (~5 entities, 25+ constraints, 15+ commands)', async () => {
-    await compileToIR(largeSource);
-  });
+  bench(
+    "compile large source (~5 entities, 25+ constraints, 15+ commands)",
+    async () => {
+      await compileToIR(largeSource);
+    }
+  );
 });

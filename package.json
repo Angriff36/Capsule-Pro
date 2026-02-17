@@ -130,6 +130,7 @@
     "prepare": "husky",
     "prisma:format": "pnpm --filter @repo/database exec prisma format",
     "prisma:check": "pnpm exec prisma generate --schema=./packages/database/prisma/schema.prisma",
+    "sentry": "pnpm exec sentry-cli issues list --org the-eight-percent --project capsule-pro --query \"is:unresolved\"",
     "secrets:scan": "secretlint \"**/*\"",
     "test": "turbo test",
     "test:e2e": "playwright test",

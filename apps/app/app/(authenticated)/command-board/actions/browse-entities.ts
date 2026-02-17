@@ -96,14 +96,19 @@ export async function browseEntities(
           items: await browseNotes(tenantId),
         };
       default:
-        return { success: false, items: [], error: `Unknown entity type: ${entityType}` };
+        return {
+          success: false,
+          items: [],
+          error: `Unknown entity type: ${entityType}`,
+        };
     }
   } catch (error) {
     console.error(`[browse-entities] Failed to browse ${entityType}:`, error);
     return {
       success: false,
       items: [],
-      error: error instanceof Error ? error.message : "Failed to browse entities",
+      error:
+        error instanceof Error ? error.message : "Failed to browse entities",
     };
   }
 }
@@ -130,7 +135,13 @@ async function browseEvents(tenantId: string): Promise<BrowseItem[]> {
 async function browseClients(tenantId: string): Promise<BrowseItem[]> {
   const rows = await database.client.findMany({
     where: { tenantId, deletedAt: null },
-    select: { id: true, company_name: true, first_name: true, last_name: true, email: true },
+    select: {
+      id: true,
+      company_name: true,
+      first_name: true,
+      last_name: true,
+      email: true,
+    },
     take: BROWSE_LIMIT,
     orderBy: { updatedAt: "desc" },
   });

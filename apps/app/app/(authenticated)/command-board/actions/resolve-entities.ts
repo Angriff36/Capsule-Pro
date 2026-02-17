@@ -82,7 +82,7 @@ async function resolveEvents(
     const clientName = event.client
       ? (event.client.company_name ??
         (`${event.client.first_name ?? ""} ${event.client.last_name ?? ""}`.trim() ||
-        null))
+          null))
       : null;
 
     // Prefer the venue relation name, fall back to the denormalized venueName field
@@ -475,7 +475,7 @@ async function resolveProposals(
     const clientName = proposal.client
       ? (proposal.client.company_name ??
         (`${proposal.client.first_name ?? ""} ${proposal.client.last_name ?? ""}`.trim() ||
-        null))
+          null))
       : null;
 
     const data: ResolvedProposal = {
@@ -679,9 +679,7 @@ export async function resolveEntities(
     return {
       success: false,
       error:
-        error instanceof Error
-          ? error.message
-          : "Failed to resolve entities",
+        error instanceof Error ? error.message : "Failed to resolve entities",
     };
   }
 }

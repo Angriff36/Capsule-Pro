@@ -26,9 +26,9 @@ export interface PostgresConfig {
     tableName?: string;
 }
 export declare class PostgresStore<T extends EntityInstance> implements Store<T> {
-    private pool;
-    private tableName;
-    private generateId;
+    private readonly pool;
+    private readonly tableName;
+    private readonly generateId;
     private initialized;
     /**
      * Quotes a PostgreSQL identifier to prevent SQL injection.
@@ -52,9 +52,9 @@ export interface SupabaseConfig {
     tableName?: string;
 }
 export declare class SupabaseStore<T extends EntityInstance> implements Store<T> {
-    private client;
-    private tableName;
-    private generateId;
+    private readonly client;
+    private readonly tableName;
+    private readonly generateId;
     constructor(config: SupabaseConfig, generateId?: () => string);
     getAll(): Promise<T[]>;
     getById(id: string): Promise<T | undefined>;

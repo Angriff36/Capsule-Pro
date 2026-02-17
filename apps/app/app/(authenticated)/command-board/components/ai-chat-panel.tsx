@@ -1,18 +1,17 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, isToolUIPart } from "ai";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
 } from "@repo/design-system/components/ui/sheet";
-import { Button } from "@repo/design-system/components/ui/button";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { DefaultChatTransport, isToolUIPart } from "ai";
 import {
   BotIcon,
   CheckIcon,
@@ -22,10 +21,11 @@ import {
   UserIcon,
   XIcon,
 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
-  executeCommand,
   type BoardCommandId,
+  executeCommand,
 } from "../actions/execute-command";
 import type { BoardProjection } from "../types/board";
 
@@ -55,13 +55,11 @@ const QUICK_PROMPTS = [
   },
   {
     label: "Suggest actions",
-    prompt:
-      "What actions should I take based on the current board state?",
+    prompt: "What actions should I take based on the current board state?",
   },
   {
     label: "Find conflicts",
-    prompt:
-      "Are there any scheduling conflicts or resource issues?",
+    prompt: "Are there any scheduling conflicts or resource issues?",
   },
 ];
 
@@ -104,7 +102,7 @@ export function AiChatPanel({
   // ---- Auto-scroll to bottom on new messages ----
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, []);
 
   // ---- Focus textarea when panel opens ----
   useEffect(() => {
@@ -124,17 +122,24 @@ export function AiChatPanel({
   // ---- Detect tool call parts in messages and track pending actions ----
   useEffect(() => {
     for (const message of messages) {
-      if (message.role !== "assistant") continue;
+      if (message.role !== "assistant") {
+        continue;
+      }
       for (const part of message.parts) {
         if (isToolUIPart(part) && part.type === "tool-suggest_board_action") {
           const toolCallId = part.toolCallId;
-          if (!pendingActions.has(toolCallId) && part.state === "output-available") {
+          if (
+            !pendingActions.has(toolCallId) &&
+            part.state === "output-available"
+          ) {
             const input = part.input as {
               commandId: BoardCommandId;
               reason: string;
             };
             setPendingActions((prev) => {
-              if (prev.has(toolCallId)) return prev;
+              if (prev.has(toolCallId)) {
+                return prev;
+              }
               const next = new Map(prev);
               next.set(toolCallId, {
                 commandId: input.commandId,
@@ -152,7 +157,9 @@ export function AiChatPanel({
   // ---- Send a message ----
   const handleSend = useCallback(() => {
     const trimmed = input.trim();
-    if (!trimmed || isLoading) return;
+    if (!trimmed || isLoading) {
+      return;
+    }
 
     sendMessage({ text: trimmed });
     setInput("");
@@ -173,7 +180,9 @@ export function AiChatPanel({
   const handleApproveAction = useCallback(
     async (toolCallId: string) => {
       const action = pendingActions.get(toolCallId);
-      if (!action) return;
+      if (!action) {
+        return;
+      }
 
       setPendingActions((prev) => {
         const next = new Map(prev);
@@ -224,10 +233,10 @@ export function AiChatPanel({
   }, []);
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet onOpenChange={onOpenChange} open={open}>
       <SheetContent
-        side="right"
         className="flex w-[400px] flex-col sm:max-w-[400px]"
+        side="right"
       >
         <SheetHeader className="shrink-0">
           <SheetTitle className="flex items-center gap-2">
@@ -243,13 +252,13 @@ export function AiChatPanel({
         <div className="flex shrink-0 flex-wrap gap-1.5 px-1">
           {QUICK_PROMPTS.map((qp) => (
             <button
-              key={qp.label}
-              type="button"
               className="rounded-full border border-border bg-muted/50 px-2.5 py-1 text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground"
+              key={qp.label}
               onClick={() => {
                 setInput(qp.prompt);
                 textareaRef.current?.focus();
               }}
+              type="button"
             >
               {qp.label}
             </button>
@@ -277,10 +286,10 @@ export function AiChatPanel({
 
             {messages.map((message) => (
               <div
-                key={message.id}
                 className={`flex gap-2 ${
                   message.role === "user" ? "flex-row-reverse" : "flex-row"
                 }`}
+                key={message.id}
               >
                 {/* Avatar */}
                 <div
@@ -308,7 +317,7 @@ export function AiChatPanel({
                   {message.parts.map((part, idx) => {
                     if (part.type === "text") {
                       return (
-                        <p key={idx} className="whitespace-pre-wrap">
+                        <p className="whitespace-pre-wrap" key={idx}>
                           {part.text}
                         </p>
                       );
@@ -325,8 +334,8 @@ export function AiChatPanel({
                           // Action not yet tracked (still streaming)
                           return (
                             <div
-                              key={idx}
                               className="flex items-center gap-2 text-muted-foreground text-xs"
+                              key={idx}
                             >
                               <Loader2Icon className="h-3 w-3 animate-spin" />
                               Preparing suggestion...
@@ -336,8 +345,8 @@ export function AiChatPanel({
 
                         return (
                           <div
-                            key={idx}
                             className="flex items-center justify-between gap-2 rounded-md bg-background/50 p-2"
+                            key={idx}
                           >
                             <div className="flex flex-col">
                               <span className="font-medium text-xs capitalize">
@@ -351,22 +360,20 @@ export function AiChatPanel({
                             {action.status === "pending" && (
                               <div className="flex shrink-0 gap-1">
                                 <Button
-                                  size="icon"
-                                  variant="ghost"
                                   className="h-6 w-6"
                                   onClick={() =>
                                     handleApproveAction(toolCallId)
                                   }
+                                  size="icon"
+                                  variant="ghost"
                                 >
                                   <CheckIcon className="h-3.5 w-3.5 text-green-600" />
                                 </Button>
                                 <Button
+                                  className="h-6 w-6"
+                                  onClick={() => handleRejectAction(toolCallId)}
                                   size="icon"
                                   variant="ghost"
-                                  className="h-6 w-6"
-                                  onClick={() =>
-                                    handleRejectAction(toolCallId)
-                                  }
                                 >
                                   <XIcon className="h-3.5 w-3.5 text-red-500" />
                                 </Button>
@@ -379,8 +386,8 @@ export function AiChatPanel({
 
                             {action.status === "executed" && (
                               <Badge
-                                variant="secondary"
                                 className="shrink-0 text-xs"
+                                variant="secondary"
                               >
                                 Done
                               </Badge>
@@ -388,8 +395,8 @@ export function AiChatPanel({
 
                             {action.status === "rejected" && (
                               <Badge
-                                variant="outline"
                                 className="shrink-0 text-muted-foreground text-xs"
+                                variant="outline"
                               >
                                 Skipped
                               </Badge>
@@ -397,8 +404,8 @@ export function AiChatPanel({
 
                             {action.status === "failed" && (
                               <Badge
-                                variant="destructive"
                                 className="shrink-0 text-xs"
+                                variant="destructive"
                               >
                                 Failed
                               </Badge>
@@ -414,8 +421,8 @@ export function AiChatPanel({
                       ) {
                         return (
                           <div
-                            key={idx}
                             className="flex items-center gap-2 text-muted-foreground text-xs"
+                            key={idx}
                           >
                             <Loader2Icon className="h-3 w-3 animate-spin" />
                             Looking up board data...
@@ -458,19 +465,19 @@ export function AiChatPanel({
         <div className="shrink-0 border-t border-border pt-3">
           <div className="flex gap-2">
             <Textarea
-              ref={textareaRef}
-              value={input}
+              className="min-h-[60px] resize-none"
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask about your board..."
-              className="min-h-[60px] resize-none"
+              ref={textareaRef}
               rows={2}
+              value={input}
             />
             <Button
-              size="icon"
-              onClick={handleSend}
-              disabled={!input.trim() || isLoading}
               className="shrink-0 self-end"
+              disabled={!input.trim() || isLoading}
+              onClick={handleSend}
+              size="icon"
             >
               <SendIcon className="h-4 w-4" />
             </Button>

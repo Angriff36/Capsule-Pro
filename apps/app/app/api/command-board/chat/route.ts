@@ -174,7 +174,9 @@ async function getBoardContext(boardId: string): Promise<string> {
     },
   });
 
-  if (!board) return "Board not found.";
+  if (!board) {
+    return "Board not found.";
+  }
 
   const projections = await database.boardProjection.findMany({
     where: { boardId, deletedAt: null },

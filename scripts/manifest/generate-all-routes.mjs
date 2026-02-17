@@ -251,8 +251,12 @@ function parseManifestCommands(source) {
     if (inEntity) {
       // Count braces
       for (const ch of trimmed) {
-        if (ch === "{") braceDepth++;
-        if (ch === "}") braceDepth--;
+        if (ch === "{") {
+          braceDepth++;
+        }
+        if (ch === "}") {
+          braceDepth--;
+        }
       }
 
       // Match command declaration (at entity level, braceDepth >= 1)
@@ -277,7 +281,9 @@ function parseManifestCommands(source) {
 console.log("=== Manifest Route Generator ===");
 console.log(`Manifests dir: ${MANIFESTS_DIR}`);
 console.log(`API output dir: ${API_DIR}`);
-if (DRY_RUN) console.log("DRY RUN — no files will be written\n");
+if (DRY_RUN) {
+  console.log("DRY RUN — no files will be written\n");
+}
 
 const manifestFiles = readdirSync(MANIFESTS_DIR).filter((f) =>
   f.endsWith(".manifest")

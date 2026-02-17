@@ -71,7 +71,10 @@ const ENTITY_TYPE_ICONS: Record<EntityType, typeof Calendar> = {
 };
 
 /** Map entity types to their full-page link paths */
-function getEntityLink(entityType: EntityType, entityId: string): string | null {
+function getEntityLink(
+  entityType: EntityType,
+  entityId: string
+): string | null {
   switch (entityType) {
     case "event":
       return `/events/${entityId}`;
@@ -220,7 +223,12 @@ export function EntityDetailPanel({
       // The entities.ts EntityType is broader than the types.ts EntityType used by resolveEntities.
       // Both define the same union at runtime; the cast bridges the two type definitions.
       const result = await resolveEntities([
-        { entityType: entityType as Parameters<typeof resolveEntities>[0][0]["entityType"], entityId },
+        {
+          entityType: entityType as Parameters<
+            typeof resolveEntities
+          >[0][0]["entityType"],
+          entityId,
+        },
       ]);
 
       if (!result.success) {

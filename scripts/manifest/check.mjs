@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
 import { spawnSync } from "node:child_process";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 
 const args = new Set(process.argv.slice(2));
 const withCli = args.has("--with-cli");
@@ -31,14 +31,18 @@ for (const p of requiredPaths) {
 }
 
 if (existsSync("packages/manifest-adapters/manifests")) {
-  const manifestFiles = listFiles("packages/manifest-adapters/manifests").filter((f) =>
-    f.endsWith(".manifest")
-  );
+  const manifestFiles = listFiles(
+    "packages/manifest-adapters/manifests"
+  ).filter((f) => f.endsWith(".manifest"));
   if (manifestFiles.length === 0) {
-    console.error("[manifest/check] No .manifest files found under packages/manifest-adapters/manifests.");
+    console.error(
+      "[manifest/check] No .manifest files found under packages/manifest-adapters/manifests."
+    );
     ok = false;
   } else {
-    console.log(`[manifest/check] Found ${manifestFiles.length} manifest file(s)`);
+    console.log(
+      `[manifest/check] Found ${manifestFiles.length} manifest file(s)`
+    );
   }
 }
 
@@ -47,7 +51,9 @@ if (!existsSync(irPath)) {
   console.error(`[manifest/check] Missing compiled IR artifact: ${irPath}`);
   ok = false;
 } else if (statSync(irPath).isDirectory()) {
-  console.error(`[manifest/check] Expected ${irPath} to be a file, but found a directory.`);
+  console.error(
+    `[manifest/check] Expected ${irPath} to be a file, but found a directory.`
+  );
   ok = false;
 } else {
   try {
@@ -63,7 +69,9 @@ if (!existsSync(irPath)) {
       }
       ok = false;
     } else {
-      console.log(`[manifest/check] IR contains ${ir.entities.length} entities: ${ir.entities.map((e) => e.name).join(", ")}`);
+      console.log(
+        `[manifest/check] IR contains ${ir.entities.length} entities: ${ir.entities.map((e) => e.name).join(", ")}`
+      );
     }
   } catch {
     console.error(`[manifest/check] ${irPath} is not valid JSON.`);
@@ -78,7 +86,9 @@ if (withCli) {
     shell: process.platform === "win32",
   });
   if (result.status !== 0) {
-    console.error("[manifest/check] Manifest CLI is unavailable in this environment.");
+    console.error(
+      "[manifest/check] Manifest CLI is unavailable in this environment."
+    );
     ok = false;
   }
 }
@@ -100,7 +110,7 @@ function checkForDuplicates(ir) {
 
   // Check entities (globally unique by name)
   const entityNames = new Map();
-  for (const entity of (ir.entities || [])) {
+  for (const entity of ir.entities || []) {
     if (!entityNames.has(entity.name)) {
       entityNames.set(entity.name, 0);
     }
@@ -115,7 +125,7 @@ function checkForDuplicates(ir) {
 
   // Check commands (unique by (entity, name) tuple)
   const commandKeys = new Map();
-  for (const command of (ir.commands || [])) {
+  for (const command of ir.commands || []) {
     const key = `${command.entity}.${command.name}`;
     if (!commandKeys.has(key)) {
       commandKeys.set(key, 0);
@@ -131,7 +141,7 @@ function checkForDuplicates(ir) {
 
   // Check events (unique by channel, not name)
   const eventChannels = new Map();
-  for (const event of (ir.events || [])) {
+  for (const event of ir.events || []) {
     if (!eventChannels.has(event.channel)) {
       eventChannels.set(event.channel, 0);
     }
@@ -140,13 +150,15 @@ function checkForDuplicates(ir) {
 
   for (const [channel, count] of eventChannels) {
     if (count > 1) {
-      duplicates.push(`Duplicate event channel: "${channel}" (${count} occurrences)`);
+      duplicates.push(
+        `Duplicate event channel: "${channel}" (${count} occurrences)`
+      );
     }
   }
 
   // Check policies (globally unique by name)
   const policyNames = new Map();
-  for (const policy of (ir.policies || [])) {
+  for (const policy of ir.policies || []) {
     if (!policyNames.has(policy.name)) {
       policyNames.set(policy.name, 0);
     }

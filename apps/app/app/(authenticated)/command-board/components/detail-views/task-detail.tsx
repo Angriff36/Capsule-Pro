@@ -11,7 +11,10 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
-import type { ResolvedKitchenTask, ResolvedPrepTask } from "../../types/entities";
+import type {
+  ResolvedKitchenTask,
+  ResolvedPrepTask,
+} from "../../types/entities";
 
 // ============================================================================
 // Task Detail View — handles both prep_task and kitchen_task
@@ -40,7 +43,9 @@ const priorityVariantMap = {
 
 /** Format a date for display using Intl */
 function formatDate(date: Date | null): string | null {
-  if (!date) return null;
+  if (!date) {
+    return null;
+  }
   return new Intl.DateTimeFormat("en-US", {
     month: "long",
     day: "numeric",
@@ -56,15 +61,20 @@ function isPrepTask(
 }
 
 export function TaskDetail({ data, taskType }: TaskDetailProps) {
-  const title = isPrepTask(data) ? data.name : data.title;
+  const _title = isPrepTask(data) ? data.name : data.title;
   const statusVariant =
     statusVariantMap[data.status as keyof typeof statusVariantMap] ?? "outline";
   const priority = data.priority;
   const priorityLabel =
-    typeof priority === "string" ? priority : priority != null ? `P${priority}` : null;
+    typeof priority === "string"
+      ? priority
+      : priority != null
+        ? `P${priority}`
+        : null;
   const priorityVariant =
     typeof priority === "string"
-      ? (priorityVariantMap[priority as keyof typeof priorityVariantMap] ?? "outline")
+      ? (priorityVariantMap[priority as keyof typeof priorityVariantMap] ??
+        "outline")
       : "outline";
 
   const dueDate = isPrepTask(data) ? data.dueByDate : data.dueDate;

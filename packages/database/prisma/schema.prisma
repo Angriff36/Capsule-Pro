@@ -3332,6 +3332,16 @@ enum ShipmentStatus {
   @@schema("core")
 }
 
+enum SentryFixJobStatus {
+  queued
+  running
+  succeeded
+  failed
+  cancelled
+
+  @@schema("core")
+}
+
 enum AccountType {
   ASSET
   LIABILITY
@@ -3391,4 +3401,35 @@ model ManifestIdempotency {
   @@index([expiresAt])
   @@map("manifest_idempotency")
   @@schema("tenant")
+}
+
+/// Sentry-to-PR auto-fixer job tracking
+model SentryFixJob {
+  id              String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sentryIssueId   String              @map("sentry_issue_id")
+  sentryEventId   String?             @map("sentry_event_id")
+  organizationSlug String             @map("organization_slug")
+  projectSlug     String              @map("project_slug")
+  environment     String?
+  release         String?
+  issueTitle      String              @map("issue_title")
+  issueUrl        String              @map("issue_url")
+  status          SentryFixJobStatus  @default(queued)
+  payloadSnapshot Json                @map("payload_snapshot")
+  branchName      String?             @map("branch_name")
+  prUrl           String?             @map("pr_url")
+  prNumber        Int?
+  errorMessage    String?             @map("error_message")
+  retryCount      Int                 @default(0) @map("retry_count")
+  maxRetries      Int                 @default(3) @map("max_retries")
+  startedAt       DateTime?           @map("started_at") @db.Timestamptz(6)
+  completedAt     DateTime?           @map("completed_at") @db.Timestamptz(6)
+  createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([sentryIssueId])
+  @@index([status, createdAt])
+  @@index([sentryIssueId, createdAt])
+  @@map("sentry_fix_jobs")
+  @@schema("platform")
 }

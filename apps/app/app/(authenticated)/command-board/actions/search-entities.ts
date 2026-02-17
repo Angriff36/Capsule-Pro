@@ -94,8 +94,7 @@ async function searchClients(
     entityType: "client" as const,
     title:
       c.company_name ??
-      (`${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() ||
-      "Unknown Client"),
+      (`${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() || "Unknown Client"),
     subtitle: c.email,
   }));
 }

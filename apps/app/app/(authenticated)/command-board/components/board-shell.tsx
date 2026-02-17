@@ -1,24 +1,25 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import type { CommandBoardWithCards } from "../actions/boards";
+import { useBoardHistory } from "../hooks/use-board-history";
+import type { EntityType } from "../types/entities";
+import type {
+  BoardAnnotation,
+  BoardProjection,
+  DerivedConnection,
+  ResolvedEntity,
+} from "../types/index";
 import { AiChatPanel } from "./ai-chat-panel";
-import { BoardHeader } from "./board-header";
+import { ErrorBoundary } from "./board-error-boundary";
 import { BoardFlow } from "./board-flow";
+import { BoardHeader } from "./board-header";
 import { BoardRoom } from "./board-room";
 import { CommandPalette } from "./command-palette";
 import { EntityBrowser } from "./entity-browser";
 import { EntityDetailPanel } from "./entity-detail-panel";
-import { ErrorBoundary } from "./board-error-boundary";
-import { useBoardHistory } from "../hooks/use-board-history";
-import type { EntityType } from "../types/entities";
-import type {
-  BoardProjection,
-  ResolvedEntity,
-  DerivedConnection,
-  BoardAnnotation,
-} from "../types/index";
-import type { CommandBoardWithCards } from "../actions/boards";
 
 // ============================================================================
 // Types
@@ -58,6 +59,8 @@ export function BoardShell({
   derivedConnections: initialDerivedConnections,
   annotations,
 }: BoardShellProps) {
+  const router = useRouter();
+
   // ---- Reconstruct entities Map from serialized array ----
   const entities = useMemo(
     () => new Map<string, ResolvedEntity>(entitiesArray),
@@ -83,6 +86,11 @@ export function BoardShell({
 
   // ---- Entity browser panel state ----
   const [entityBrowserOpen, setEntityBrowserOpen] = useState(false);
+
+  // Exit board → navigate back to board list
+  const handleExitFullscreen = useCallback(() => {
+    router.push("/command-board");
+  }, [router]);
 
   // ---- Undo/Redo history ----
   const { canUndo, canRedo, pushState, undo, redo } = useBoardHistory();
@@ -157,12 +165,16 @@ export function BoardShell({
       // Cmd+Z → Undo
       if ((e.metaKey || e.ctrlKey) && e.key === "z" && !e.shiftKey) {
         e.preventDefault();
-        if (canUndo) handleUndo();
+        if (canUndo) {
+          handleUndo();
+        }
       }
       // Cmd+Shift+Z → Redo
       if ((e.metaKey || e.ctrlKey) && e.key === "z" && e.shiftKey) {
         e.preventDefault();
-        if (canRedo) handleRedo();
+        if (canRedo) {
+          handleRedo();
+        }
       }
     }
 
@@ -172,79 +184,82 @@ export function BoardShell({
 
   return (
     <ReactFlowProvider>
-    <BoardRoom boardId={boardId} orgId={orgId}>
-      <div className="flex h-full flex-col">
-        {/* Board Header */}
-        <BoardHeader
-          boardId={boardId}
-          boardName={board.name}
-          boardStatus={board.status}
-          boardDescription={board.description}
-          boardTags={board.tags}
-          canUndo={canUndo}
-          canRedo={canRedo}
-          onUndo={handleUndo}
-          onRedo={handleRedo}
-          entityBrowserOpen={entityBrowserOpen}
-          onToggleEntityBrowser={() => setEntityBrowserOpen((prev) => !prev)}
-        />
+      <BoardRoom boardId={boardId} orgId={orgId}>
+        <div className="fixed inset-0 z-40 flex flex-col bg-background">
+          {/* Board Header */}
+          <BoardHeader
+            boardDescription={board.description}
+            boardId={boardId}
+            boardName={board.name}
+            boardStatus={board.status}
+            boardTags={board.tags}
+            canRedo={canRedo}
+            canUndo={canUndo}
+            entityBrowserOpen={entityBrowserOpen}
+            onExitFullscreen={handleExitFullscreen}
+            onRedo={handleRedo}
+            onToggleEntityBrowser={() => setEntityBrowserOpen((prev) => !prev)}
+            onUndo={handleUndo}
+          />
 
-        {/* Canvas + Entity Browser side by side */}
-        <div className="relative flex flex-1 overflow-hidden">
-          {/* Board Flow Canvas */}
-          <div className="relative flex-1">
-            <ErrorBoundary>
-              <BoardFlow
+          {/* Canvas + Entity Browser side by side */}
+          <div className="relative flex flex-1 overflow-hidden">
+            {/* Board Flow Canvas */}
+            <div className="relative flex-1">
+              <ErrorBoundary>
+                <BoardFlow
+                  annotations={annotations}
+                  boardId={boardId}
+                  derivedConnections={derivedConnections}
+                  entities={entities}
+                  onOpenDetail={handleOpenDetail}
+                  onProjectionAdded={handleProjectionAdded}
+                  onProjectionRemoved={handleProjectionRemoved}
+                  projections={projections}
+                />
+              </ErrorBoundary>
+            </div>
+
+            {/* Entity Browser Panel (right side) */}
+            {entityBrowserOpen && (
+              <EntityBrowser
                 boardId={boardId}
-                projections={projections}
-                entities={entities}
-                derivedConnections={derivedConnections}
-                annotations={annotations}
-                onOpenDetail={handleOpenDetail}
+                onClose={() => setEntityBrowserOpen(false)}
                 onProjectionAdded={handleProjectionAdded}
-                onProjectionRemoved={handleProjectionRemoved}
+                projections={projections}
               />
-            </ErrorBoundary>
+            )}
           </div>
 
-          {/* Entity Browser Panel (right side) */}
-          {entityBrowserOpen && (
-            <EntityBrowser
-              boardId={boardId}
-              onClose={() => setEntityBrowserOpen(false)}
-              onProjectionAdded={handleProjectionAdded}
-              projections={projections}
-            />
-          )}
+          {/* Command Palette (Cmd+K) */}
+          <CommandPalette
+            boardId={boardId}
+            onOpenChange={setCommandPaletteOpen}
+            onProjectionAdded={handleProjectionAdded}
+            open={commandPaletteOpen}
+          />
+
+          {/* AI Chat Panel (Cmd+J) */}
+          <AiChatPanel
+            boardId={boardId}
+            onOpenChange={setAiChatOpen}
+            onProjectionAdded={handleProjectionAdded}
+            open={aiChatOpen}
+          />
+
+          {/* Entity Detail Panel */}
+          <EntityDetailPanel
+            entityId={openDetailEntity?.entityId ?? ""}
+            entityType={(openDetailEntity?.entityType ?? "") as EntityType}
+            onOpenChange={(open) => {
+              if (!open) {
+                handleCloseDetail();
+              }
+            }}
+            open={openDetailEntity !== null}
+          />
         </div>
-
-        {/* Command Palette (Cmd+K) */}
-        <CommandPalette
-          boardId={boardId}
-          open={commandPaletteOpen}
-          onOpenChange={setCommandPaletteOpen}
-          onProjectionAdded={handleProjectionAdded}
-        />
-
-        {/* AI Chat Panel (Cmd+J) */}
-        <AiChatPanel
-          boardId={boardId}
-          open={aiChatOpen}
-          onOpenChange={setAiChatOpen}
-          onProjectionAdded={handleProjectionAdded}
-        />
-
-        {/* Entity Detail Panel */}
-        <EntityDetailPanel
-          entityType={(openDetailEntity?.entityType ?? "") as EntityType}
-          entityId={openDetailEntity?.entityId ?? ""}
-          open={openDetailEntity !== null}
-          onOpenChange={(open) => {
-            if (!open) handleCloseDetail();
-          }}
-        />
-      </div>
-    </BoardRoom>
+      </BoardRoom>
     </ReactFlowProvider>
   );
 }

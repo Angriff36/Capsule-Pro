@@ -1,8 +1,8 @@
-import { CompileToIRResult } from './ir';
-import { type IRCache } from './ir-cache.js';
+import type { CompileToIRResult } from "./ir";
+import { type IRCache } from "./ir-cache.js";
 export declare class IRCompiler {
     private diagnostics;
-    private cache;
+    private readonly cache;
     constructor(cache?: IRCache);
     /**
      * Emit a semantic diagnostic during IR compilation.

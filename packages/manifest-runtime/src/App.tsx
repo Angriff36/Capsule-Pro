@@ -234,18 +234,19 @@ function Editor({
       hlRef.current.scrollLeft = textRef.current.scrollLeft;
     }
   }, []);
-  useEffect(sync, [value, sync]);
+  useEffect(sync, [sync]);
 
   const onKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Tab") {
       e.preventDefault();
       const s = e.currentTarget.selectionStart,
         end = e.currentTarget.selectionEnd;
-      const newValue = value.substring(0, s) + "  " + value.substring(end);
+      const newValue = `${value.substring(0, s)}  ${value.substring(end)}`;
       onChange(newValue);
       setTimeout(() => {
-        if (textRef.current)
+        if (textRef.current) {
           textRef.current.selectionStart = textRef.current.selectionEnd = s + 2;
+        }
       }, 0);
     }
   };
@@ -288,18 +289,19 @@ function TreeNode({
   depth?: number;
 }) {
   const [open, setOpen] = useState(depth < 2);
-  if (value === null || value === undefined)
+  if (value === null || value === undefined) {
     return (
       <div className="flex gap-2 py-0.5" style={{ paddingLeft: depth * 16 }}>
         <span className="text-gray-400">{label}:</span>
         <span className="text-gray-500">null</span>
       </div>
     );
+  }
   if (
     typeof value === "string" ||
     typeof value === "number" ||
     typeof value === "boolean"
-  )
+  ) {
     return (
       <div className="flex gap-2 py-0.5" style={{ paddingLeft: depth * 16 }}>
         <span className="text-gray-400">{label}:</span>
@@ -316,14 +318,16 @@ function TreeNode({
         </span>
       </div>
     );
+  }
   if (Array.isArray(value)) {
-    if (value.length === 0)
+    if (value.length === 0) {
       return (
         <div className="flex gap-2 py-0.5" style={{ paddingLeft: depth * 16 }}>
           <span className="text-gray-400">{label}:</span>
           <span className="text-gray-500">[]</span>
         </div>
       );
+    }
     return (
       <div>
         <button
@@ -379,12 +383,13 @@ function TreeNode({
 }
 
 function ASTViewer({ ast }: { ast: ManifestProgram | null }) {
-  if (!ast)
+  if (!ast) {
     return (
       <div className="h-full flex items-center justify-center text-gray-500">
         No AST
       </div>
     );
+  }
   return (
     <div className="h-full overflow-auto p-4 font-mono text-sm">
       <TreeNode label="program" value={ast} />
@@ -550,7 +555,7 @@ export default function App() {
   useEffect(() => {
     const t = setTimeout(compile, 300);
     return () => clearTimeout(t);
-  }, [source, compile]);
+  }, [compile]);
 
   return (
     <div className="h-screen flex flex-col bg-gray-950 text-gray-100">

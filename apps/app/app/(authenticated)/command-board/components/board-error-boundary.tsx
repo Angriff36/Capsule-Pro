@@ -1,7 +1,7 @@
 "use client";
 
-import { Component, type ReactNode, type ErrorInfo } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Component, type ErrorInfo, type ReactNode } from "react";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -13,7 +13,10 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -47,12 +50,13 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <div className="space-y-2">
             <h2 className="text-xl font-semibold">Something went wrong</h2>
             <p className="text-muted-foreground max-w-md">
-              {this.state.error?.message || "An unexpected error occurred while rendering the board."}
+              {this.state.error?.message ||
+                "An unexpected error occurred while rendering the board."}
             </p>
           </div>
           <button
-            onClick={this.handleRetry}
             className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            onClick={this.handleRetry}
           >
             <RefreshCw className="h-4 w-4" />
             Try Again

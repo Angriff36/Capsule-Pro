@@ -45,10 +45,7 @@ export const InventoryNodeCard = memo(function InventoryNodeCard({
       {/* Stock info */}
       <div className="space-y-1.5">
         {isLowStock && (
-          <Badge
-            className="gap-1 text-xs"
-            variant="destructive"
-          >
+          <Badge className="gap-1 text-xs" variant="destructive">
             <AlertTriangle className="size-3" />
             Low Stock
           </Badge>

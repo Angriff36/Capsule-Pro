@@ -18,12 +18,13 @@ import {
   Redo2Icon,
   TrashIcon,
   Undo2Icon,
+  XIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { deleteCommandBoard, updateCommandBoard } from "../actions/boards";
 import type { CommandBoard } from "../actions/boards";
+import { deleteCommandBoard, updateCommandBoard } from "../actions/boards";
 
 interface BoardHeaderProps {
   boardId: string;
@@ -40,6 +41,8 @@ interface BoardHeaderProps {
   // Entity browser toggle
   entityBrowserOpen?: boolean;
   onToggleEntityBrowser?: () => void;
+  // Fullscreen exit
+  onExitFullscreen?: () => void;
 }
 
 export function BoardHeader({
@@ -55,6 +58,7 @@ export function BoardHeader({
   onRedo,
   entityBrowserOpen = false,
   onToggleEntityBrowser,
+  onExitFullscreen,
 }: BoardHeaderProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -294,6 +298,21 @@ export function BoardHeader({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {onExitFullscreen && (
+            <>
+              <Separator className="h-6" orientation="vertical" />
+              <Button
+                className="h-8 w-8 shrink-0"
+                onClick={onExitFullscreen}
+                size="icon"
+                title="Exit board (Escape)"
+                variant="ghost"
+              >
+                <XIcon className="h-4 w-4" />
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>

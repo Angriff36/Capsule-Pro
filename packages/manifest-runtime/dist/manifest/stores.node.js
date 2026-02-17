@@ -4,8 +4,8 @@
  * DO NOT import this file in browser code. It requires Node.js modules (pg).
  * For browser environments, use MemoryStore or LocalStorageStore from runtime-engine.ts.
  */
-import { createClient } from '@supabase/supabase-js';
-import { Pool } from 'pg';
+import { createClient } from "@supabase/supabase-js";
+import { Pool } from "pg";
 export class PostgresStore {
     pool;
     tableName;
@@ -21,21 +21,22 @@ export class PostgresStore {
     }
     constructor(config, generateId) {
         this.generateId = generateId || (() => crypto.randomUUID());
-        this.tableName = config.tableName || 'entities';
+        this.tableName = config.tableName || "entities";
         const poolConfig = config.connectionString
             ? { connectionString: config.connectionString }
             : {
-                host: config.host || 'localhost',
+                host: config.host || "localhost",
                 port: config.port || 5432,
-                database: config.database || 'manifest',
-                user: config.user || 'postgres',
-                password: config.password || '',
+                database: config.database || "manifest",
+                user: config.user || "postgres",
+                password: config.password || "",
             };
         this.pool = new Pool(poolConfig);
     }
     async ensureInitialized() {
-        if (this.initialized)
+        if (this.initialized) {
             return;
+        }
         const client = await this.pool.connect();
         try {
             const quotedTable = this.quoteIdentifier(this.tableName);
@@ -91,8 +92,9 @@ export class PostgresStore {
         return this.withConnection(async (client) => {
             const quotedTable = this.quoteIdentifier(this.tableName);
             const selectResult = await client.query(`SELECT data FROM ${quotedTable} WHERE id = $1`, [id]);
-            if (selectResult.rows.length === 0)
+            if (selectResult.rows.length === 0) {
                 return undefined;
+            }
             const existing = selectResult.rows[0].data;
             const updated = { ...existing, ...data, id };
             await client.query(`UPDATE ${quotedTable} SET data = $1, updated_at = NOW() WHERE id = $2`, [JSON.stringify(updated), id]);
@@ -122,24 +124,28 @@ export class SupabaseStore {
     generateId;
     constructor(config, generateId) {
         this.generateId = generateId || (() => crypto.randomUUID());
-        this.tableName = config.tableName || 'entities';
+        this.tableName = config.tableName || "entities";
         this.client = createClient(config.url, config.key);
     }
     async getAll() {
-        const { data, error } = await this.client.from(this.tableName).select('data');
-        if (error)
+        const { data, error } = await this.client
+            .from(this.tableName)
+            .select("data");
+        if (error) {
             throw new Error(`Supabase getAll failed: ${error.message}`);
+        }
         return (data ?? []).map((row) => row.data);
     }
     async getById(id) {
         const { data, error } = await this.client
             .from(this.tableName)
-            .select('data')
-            .eq('id', id)
+            .select("data")
+            .eq("id", id)
             .single();
         if (error) {
-            if (error.code === 'PGRST116')
+            if (error.code === "PGRST116") {
                 return undefined;
+            }
             throw new Error(`Supabase getById failed: ${error.message}`);
         }
         return data?.data;
@@ -149,45 +155,56 @@ export class SupabaseStore {
         const item = { ...data, id };
         const { data: result, error } = await this.client
             .from(this.tableName)
-            .upsert({ id, data: item }, { onConflict: 'id' })
-            .select('data')
+            .upsert({ id, data: item }, { onConflict: "id" })
+            .select("data")
             .single();
-        if (error)
+        if (error) {
             throw new Error(`Supabase create failed: ${error.message}`);
+        }
         return result?.data ?? item;
     }
     async update(id, data) {
         const { data: existing, error: fetchError } = await this.client
             .from(this.tableName)
-            .select('data')
-            .eq('id', id)
+            .select("data")
+            .eq("id", id)
             .single();
         if (fetchError) {
-            if (fetchError.code === 'PGRST116')
+            if (fetchError.code === "PGRST116") {
                 return undefined;
+            }
             throw new Error(`Supabase update fetch failed: ${fetchError.message}`);
         }
         const merged = { ...existing?.data, ...data, id };
         const { data: result, error: updateError } = await this.client
             .from(this.tableName)
             .update({ data: merged })
-            .eq('id', id)
-            .select('data')
+            .eq("id", id)
+            .select("data")
             .single();
-        if (updateError)
+        if (updateError) {
             throw new Error(`Supabase update failed: ${updateError.message}`);
+        }
         return result?.data;
     }
     async delete(id) {
-        const { error } = await this.client.from(this.tableName).delete().eq('id', id);
-        if (error)
+        const { error } = await this.client
+            .from(this.tableName)
+            .delete()
+            .eq("id", id);
+        if (error) {
             throw new Error(`Supabase delete failed: ${error.message}`);
+        }
         return true;
     }
     async clear() {
-        const { error } = await this.client.from(this.tableName).delete().neq('id', null);
-        if (error)
+        const { error } = await this.client
+            .from(this.tableName)
+            .delete()
+            .neq("id", null);
+        if (error) {
             throw new Error(`Supabase clear failed: ${error.message}`);
+        }
     }
 }
 //# sourceMappingURL=stores.node.js.map

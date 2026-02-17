@@ -4,7 +4,7 @@
  * Projections are TOOLING, not runtime semantics.
  * They must not redefine execution order or policy/guard semantics.
  */
-import type { IR } from '../ir';
+import type { IR } from "../ir";
 export interface ProjectionRequest {
     /**
      * Surface identifier (capability name).
@@ -42,7 +42,7 @@ export interface ProjectionArtifact {
     code: string;
 }
 export interface ProjectionDiagnostic {
-    severity: 'error' | 'warning' | 'info';
+    severity: "error" | "warning" | "info";
     /** Machine-readable error code for programmatic handling */
     code?: string;
     message: string;
@@ -84,7 +84,7 @@ export interface ProjectionTarget {
  */
 export interface NextJsProjectionOptions {
     /** Auth provider: 'clerk', 'nextauth', 'custom', or 'none' */
-    authProvider?: 'clerk' | 'nextauth' | 'custom' | 'none';
+    authProvider?: "clerk" | "nextauth" | "custom" | "none";
     /** Custom import path for auth utilities (default: '@/lib/auth') */
     authImportPath?: string;
     /** Custom import path for database client (default: '@/lib/database') */
@@ -118,9 +118,8 @@ export interface NextJsProjectionOptions {
         /** Function name to call (e.g. 'getTenantIdForOrg') */
         functionName: string;
         /** Which auth field to pass as the lookup key */
-        lookupKey: 'orgId' | 'userId';
+        lookupKey: "orgId" | "userId";
     };
     /** Custom indentation (default: 2 spaces) */
     indentSize?: number;
 }
-//# sourceMappingURL=interface.d.ts.map

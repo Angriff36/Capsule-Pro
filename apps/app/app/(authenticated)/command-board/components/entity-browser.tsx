@@ -1,8 +1,13 @@
 "use client";
 
-import { useCallback, useMemo, useState, useTransition } from "react";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@repo/design-system/components/ui/collapsible";
+import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import { useReactFlow } from "@xyflow/react";
-import { toast } from "sonner";
 import {
   BookOpenIcon,
   CalendarIcon,
@@ -12,7 +17,6 @@ import {
   Loader2Icon,
   PackageIcon,
   PlusIcon,
-  SendIcon,
   StickyNoteIcon,
   TruckIcon,
   UserIcon,
@@ -20,17 +24,9 @@ import {
   UtensilsIcon,
   XIcon,
 } from "lucide-react";
-import { Button } from "@repo/design-system/components/ui/button";
-import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@repo/design-system/components/ui/collapsible";
-import {
-  browseEntities,
-  type BrowseItem,
-} from "../actions/browse-entities";
+import { useCallback, useMemo, useState, useTransition } from "react";
+import { toast } from "sonner";
+import { type BrowseItem, browseEntities } from "../actions/browse-entities";
 import { addProjection } from "../actions/projections";
 import type { BoardProjection } from "../types/board";
 import {
@@ -109,11 +105,15 @@ export function EntityBrowser({
   // ---- Load a category's items on first expand ----
   const handleOpenChange = useCallback(
     (entityType: EntityType, isOpen: boolean) => {
-      if (!isOpen) return;
+      if (!isOpen) {
+        return;
+      }
 
       // Already loaded? Skip.
       const existing = categories[entityType];
-      if (existing?.loaded || existing?.loading) return;
+      if (existing?.loaded || existing?.loading) {
+        return;
+      }
 
       // Mark as loading
       setCategories((prev) => ({
@@ -151,10 +151,7 @@ export function EntityBrowser({
           }
         })
         .catch((error) => {
-          console.error(
-            `[EntityBrowser] Error browsing ${entityType}:`,
-            error
-          );
+          console.error(`[EntityBrowser] Error browsing ${entityType}:`, error);
           setCategories((prev) => ({
             ...prev,
             [entityType]: {
@@ -172,7 +169,9 @@ export function EntityBrowser({
   // ---- Add an entity to the board ----
   const handleAddEntity = useCallback(
     (item: BrowseItem) => {
-      if (addingId) return; // Prevent double-clicks
+      if (addingId) {
+        return; // Prevent double-clicks
+      }
 
       setAddingId(item.id);
 
@@ -212,7 +211,10 @@ export function EntityBrowser({
           } else {
             // Check for duplicate error and show specific message
             const errorMsg = result.error ?? "Failed to add entity";
-            if (errorMsg.includes("already exists") || errorMsg.includes("already on this board")) {
+            if (
+              errorMsg.includes("already exists") ||
+              errorMsg.includes("already on this board")
+            ) {
               const label =
                 ENTITY_TYPE_LABELS[item.entityType] ?? item.entityType;
               toast.info(`This ${label.toLowerCase()} is already on the board`);
@@ -228,7 +230,7 @@ export function EntityBrowser({
         }
       });
     },
-    [addingId, boardId, onProjectionAdded, reactFlow, startTransition]
+    [addingId, boardId, onProjectionAdded, reactFlow, projections.length]
   );
 
   return (
@@ -237,10 +239,10 @@ export function EntityBrowser({
       <div className="flex items-center justify-between border-b px-3 py-2.5">
         <h2 className="text-sm font-semibold">Entities</h2>
         <Button
-          variant="ghost"
-          size="icon"
           className="h-7 w-7"
           onClick={onClose}
+          size="icon"
+          variant="ghost"
         >
           <XIcon className="h-4 w-4" />
         </Button>
@@ -290,24 +292,28 @@ export function EntityBrowser({
                     )}
 
                     {/* Empty */}
-                    {state?.loaded && !state.error && state.items.length === 0 && (
-                      <div className="px-2 py-2 text-xs text-muted-foreground">
-                        No {label.toLowerCase()}s found
-                      </div>
-                    )}
+                    {state?.loaded &&
+                      !state.error &&
+                      state.items.length === 0 && (
+                        <div className="px-2 py-2 text-xs text-muted-foreground">
+                          No {label.toLowerCase()}s found
+                        </div>
+                      )}
 
                     {/* Items */}
                     {state?.items.map((item) => {
                       const isAdding = addingId === item.id;
-                      const isOnBoard = onBoardKeys.has(`${item.entityType}:${item.id}`);
+                      const isOnBoard = onBoardKeys.has(
+                        `${item.entityType}:${item.id}`
+                      );
 
                       return (
                         <button
-                          key={item.id}
-                          type="button"
-                          disabled={isPending || isAdding || isOnBoard}
-                          onClick={() => handleAddEntity(item)}
                           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-muted/50 transition-colors disabled:opacity-50 group/item"
+                          disabled={isPending || isAdding || isOnBoard}
+                          key={item.id}
+                          onClick={() => handleAddEntity(item)}
+                          type="button"
                         >
                           <div className="min-w-0 flex-1">
                             <div className="truncate font-medium text-foreground">

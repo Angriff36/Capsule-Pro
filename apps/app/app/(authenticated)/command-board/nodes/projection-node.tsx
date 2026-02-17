@@ -1,12 +1,12 @@
 "use client";
 
-import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { cn } from "@repo/design-system/lib/utils";
+import { Handle, type NodeProps, Position } from "@xyflow/react";
 import { AlertTriangle } from "lucide-react";
 import { memo, useCallback } from "react";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import type { ProjectionNodeData } from "../types/flow";
 import { ENTITY_TYPE_COLORS } from "../types/entities";
+import type { ProjectionNodeData } from "../types/flow";
 import { ClientNodeCard } from "./cards/client-card";
 import { EmployeeNodeCard } from "./cards/employee-card";
 import { EventNodeCard } from "./cards/event-card";
@@ -37,8 +37,13 @@ export const ProjectionNode = memo(function ProjectionNode({
   data,
   selected,
 }: NodeProps) {
-  const { projection, entity, stale, onOpenDetail, onRemove: _onRemove } =
-    data as ProjectionNodeData;
+  const {
+    projection,
+    entity,
+    stale,
+    onOpenDetail,
+    onRemove: _onRemove,
+  } = data as ProjectionNodeData;
 
   const entityType = projection.entityType;
   const colors = ENTITY_TYPE_COLORS[entityType] ?? ENTITY_TYPE_COLORS.note;
