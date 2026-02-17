@@ -18,6 +18,7 @@ import {
   Calendar,
   CheckSquare,
   ClipboardList,
+  DollarSign,
   ExternalLink,
   Package,
   StickyNote,
@@ -69,6 +70,7 @@ const ENTITY_TYPE_ICONS: Record<EntityType, typeof Calendar> = {
   shipment: Box,
   note: StickyNote,
   risk: AlertTriangle,
+  financial_projection: DollarSign,
 };
 
 /** Map entity types to their full-page link paths */
@@ -100,6 +102,9 @@ function getEntityLink(
       return "/notes";
     case "risk":
       // Risks are derived entities - no direct link
+      return null;
+    case "financial_projection":
+      // Financial projections are derived entities - no direct link
       return null;
     default: {
       const _exhaustive: never = entityType;

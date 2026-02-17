@@ -15,7 +15,8 @@ export type EntityType =
   | "proposal"
   | "shipment"
   | "note"
-  | "risk";
+  | "risk"
+  | "financial_projection";
 
 // ============================================================================
 // Resolved Entity Interfaces
@@ -261,6 +262,47 @@ export interface ResolvedRisk {
   resolvedAt: Date | null;
 }
 
+/** Financial exposure health status */
+export const FinancialHealthStatus = {
+  healthy: "healthy",
+  warning: "warning",
+  critical: "critical",
+  unknown: "unknown",
+} as const;
+
+export type FinancialHealthStatus =
+  (typeof FinancialHealthStatus)[keyof typeof FinancialHealthStatus];
+
+/** Resolved financial projection data for display on the board */
+export interface ResolvedFinancialProjection {
+  id: string;
+  title: string;
+  /** Time period this projection covers */
+  period: string;
+  /** Total projected revenue from events */
+  projectedRevenue: number;
+  /** Total projected costs (food, labor, other) */
+  projectedCosts: number;
+  /** Gross profit = revenue - costs */
+  grossProfit: number;
+  /** Gross profit margin as percentage (0-100) */
+  grossProfitMargin: number;
+  /** Number of events included in this projection */
+  eventCount: number;
+  /** Total guest count across all events */
+  totalGuests: number | null;
+  /** Health status based on margin thresholds */
+  healthStatus: FinancialHealthStatus;
+  /** Optional breakdown by category */
+  breakdown?: {
+    foodCost: number;
+    laborCost: number;
+    otherCost: number;
+  };
+  /** Event IDs that contribute to this projection */
+  sourceEventIds: string[];
+}
+
 // ============================================================================
 // Discriminated Union
 // ============================================================================
@@ -278,7 +320,8 @@ export type ResolvedEntity =
   | { type: "proposal"; data: ResolvedProposal }
   | { type: "shipment"; data: ResolvedShipment }
   | { type: "note"; data: ResolvedNote }
-  | { type: "risk"; data: ResolvedRisk };
+  | { type: "risk"; data: ResolvedRisk }
+  | { type: "financial_projection"; data: ResolvedFinancialProjection };
 
 // ============================================================================
 // Utility Functions
@@ -317,6 +360,8 @@ export function getEntityTitle(entity: ResolvedEntity): string {
       return entity.data.title;
     case "risk":
       return entity.data.title;
+    case "financial_projection":
+      return entity.data.title;
   }
 }
 
@@ -335,6 +380,8 @@ export function getEntityStatus(entity: ResolvedEntity): string | null {
       return entity.data.status;
     case "risk":
       return entity.data.status;
+    case "financial_projection":
+      return entity.data.healthStatus;
     default:
       return null;
   }
@@ -418,6 +465,12 @@ export const ENTITY_TYPE_COLORS = {
     text: "text-red-900 dark:text-red-100",
     icon: "text-red-600 dark:text-red-400",
   },
+  financial_projection: {
+    bg: "bg-yellow-50 dark:bg-yellow-950/30",
+    border: "border-yellow-200 dark:border-yellow-800",
+    text: "text-yellow-900 dark:text-yellow-100",
+    icon: "text-yellow-600 dark:text-yellow-400",
+  },
 } as const satisfies Record<
   EntityType,
   { bg: string; border: string; text: string; icon: string }
@@ -437,4 +490,5 @@ export const ENTITY_TYPE_LABELS = {
   shipment: "Shipment",
   note: "Note",
   risk: "Risk",
+  financial_projection: "Financial",
 } as const satisfies Record<EntityType, string>;

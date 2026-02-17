@@ -15,6 +15,7 @@ export const ConflictType = {
   inventory: "inventory",
   timeline: "timeline",
   venue: "venue",
+  financial: "financial",
 } as const;
 
 export type ConflictType = (typeof ConflictType)[keyof typeof ConflictType];

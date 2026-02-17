@@ -12,6 +12,8 @@ export const ENTITY_TYPE_VALUES = [
   "proposal",
   "shipment",
   "note",
+  "risk",
+  "financial_projection",
 ] as const;
 
 const entityTypeSchema = z.enum(ENTITY_TYPE_VALUES);

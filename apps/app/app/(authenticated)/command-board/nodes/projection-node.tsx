@@ -10,6 +10,7 @@ import type { ProjectionNodeData } from "../types/flow";
 import { ClientNodeCard } from "./cards/client-card";
 import { EmployeeNodeCard } from "./cards/employee-card";
 import { EventNodeCard } from "./cards/event-card";
+import { FinancialProjectionNodeCard } from "./cards/financial-projection-card";
 import { GenericNodeCard } from "./cards/generic-card";
 import { InventoryNodeCard } from "./cards/inventory-card";
 import { NoteNodeCard } from "./cards/note-card";
@@ -30,6 +31,7 @@ const entityBorderColors: Record<string, string> = {
   shipment: "border-l-cyan-500",
   note: "border-l-stone-400",
   risk: "border-l-red-500",
+  financial_projection: "border-l-yellow-500",
 };
 
 /** Handle shared className for consistent styling */
@@ -93,6 +95,8 @@ export const ProjectionNode = memo(function ProjectionNode({
         return <NoteNodeCard data={entity.data} stale={false} />;
       case "risk":
         return <RiskNodeCard data={entity.data} stale={false} />;
+      case "financial_projection":
+        return <FinancialProjectionNodeCard data={entity.data} stale={false} />;
       default:
         return <GenericNodeCard entityType={entityType} stale={false} />;
     }
