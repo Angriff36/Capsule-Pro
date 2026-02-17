@@ -43,6 +43,9 @@ export function useBoardHistory() {
       }
 
       const previous = past.at(-1);
+      if (!previous) {
+        return currentProjections;
+      }
       const newPast = past.slice(0, -1);
 
       setPast(newPast);

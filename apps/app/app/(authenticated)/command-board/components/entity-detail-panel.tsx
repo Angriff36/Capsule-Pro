@@ -68,6 +68,7 @@ const ENTITY_TYPE_ICONS: Record<EntityType, typeof Calendar> = {
   proposal: ClipboardList,
   shipment: Box,
   note: StickyNote,
+  risk: AlertTriangle,
 };
 
 /** Map entity types to their full-page link paths */
@@ -97,8 +98,13 @@ function getEntityLink(
       return "/shipments";
     case "note":
       return "/notes";
-    default:
+    case "risk":
+      // Risks are derived entities - no direct link
       return null;
+    default: {
+      const _exhaustive: never = entityType;
+      return null;
+    }
   }
 }
 

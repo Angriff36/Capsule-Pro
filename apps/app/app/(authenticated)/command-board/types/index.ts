@@ -28,16 +28,17 @@ export type {
   ResolvedRecipe,
   ResolvedRisk,
   ResolvedShipment,
-  RiskCategory,
-  RiskSeverity,
 } from "./entities";
 export {
+  calculateInventoryThreshold,
   ENTITY_TYPE_COLORS,
   ENTITY_TYPE_LABELS,
-  RiskCategory,
-  RiskSeverity,
   getEntityStatus,
   getEntityTitle,
+  getInventoryThresholdLabel,
+  InventoryThreshold,
+  RiskCategory,
+  RiskSeverity,
 } from "./entities";
 
 // React Flow integration types and converters

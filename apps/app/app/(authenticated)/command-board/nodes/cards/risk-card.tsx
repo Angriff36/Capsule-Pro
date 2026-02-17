@@ -44,13 +44,15 @@ const severityConfig: Record<
 };
 
 /** Status badge variant mapping */
-const statusVariantMap: Record<string, "destructive" | "warning" | "default" | "secondary"> =
-  {
-    identified: "destructive",
-    monitoring: "warning",
-    mitigating: "default",
-    resolved: "secondary",
-  };
+const statusVariantMap: Record<
+  string,
+  "destructive" | "secondary" | "default" | "outline"
+> = {
+  identified: "destructive",
+  monitoring: "secondary",
+  mitigating: "default",
+  resolved: "outline",
+};
 
 /** Category display labels */
 const categoryLabels: Record<string, string> = {
@@ -78,7 +80,10 @@ export const RiskNodeCard = memo(function RiskNodeCard({
           <AlertTriangle className={cn("size-3.5 shrink-0", colors.icon)} />
           <span className={cn("font-medium text-xs", colors.text)}>Risk</span>
         </div>
-        <Badge className="text-[10px] px-1.5 py-0" variant={statusVariantMap[data.status]}>
+        <Badge
+          className="text-[10px] px-1.5 py-0"
+          variant={statusVariantMap[data.status]}
+        >
           {data.status}
         </Badge>
       </div>
