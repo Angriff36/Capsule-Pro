@@ -113,7 +113,8 @@ async function getBoardProjections(boardId: string): Promise<ProjectionWithLabel
       select: { id: true, company_name: true, first_name: true, last_name: true },
     });
     for (const c of clients) {
-      const label = c.company_name ?? (`${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() || "Unknown Client");
+      const nameFallback = `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() || "Unknown Client";
+      const label = c.company_name ?? nameFallback;
       entityLabels.set(`client:${c.id}`, label);
     }
   }
@@ -1192,7 +1193,7 @@ function createBoardTools(params: {
           entityId: z.string().optional().describe("ID of entity (if modifying existing)"),
           changeType: z.enum(["create", "update", "delete", "move"]).describe("Type of change"),
           description: z.string().describe("Human-readable description of the change"),
-          details: z.record(z.unknown()).optional().describe("Additional details about the change"),
+          details: z.record(z.string(), z.unknown()).optional().describe("Additional details about the change"),
         })).optional().describe("List of proposed changes to simulate"),
         previewOnly: z.boolean().optional().describe("If true, only preview without creating simulation board"),
       }),
