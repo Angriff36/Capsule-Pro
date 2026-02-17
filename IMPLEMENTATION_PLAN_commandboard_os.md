@@ -397,8 +397,12 @@ The Command Board has foundational pieces for AI-Native OS:
 - **Build Fix**: Fixed server action async requirement:
   - `computeBoardDelta` in `actions/boards.ts` must be async as it's exported from a 'use server' file (Next.js 15 requirement)
   - Fixed Ably type annotations in `use-inventory-realtime.ts` hook for proper TypeScript compliance
-  - Build now passes cleanly with `pnpm turbo build --filter=app`
+  - TypeScript compiles cleanly with `pnpm tsc --noEmit`
   - Created git tag v0.6.6
+- **Pre-existing Build Issues** (unrelated to command-board):
+  - `vega-canvas` module can't resolve 'canvas' during static page generation (server-side rendering issue with vega charts)
+  - `plasmic-host` page prerendering error (missing module during static export)
+  - These are infrastructure issues outside command-board scope
 
 ---
 
