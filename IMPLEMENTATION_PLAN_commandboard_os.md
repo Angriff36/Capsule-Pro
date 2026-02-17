@@ -474,9 +474,14 @@ The Command Board has foundational pieces for AI-Native OS:
 - **Entity Label Resolution Enhancement**: Improved `getBoardProjections` helper function to resolve actual entity labels from database:
   - Added `ProjectionWithLabel` interface for typed return values
   - Implemented batch entity resolution for all projection types:
-    - Events (title), Prep tasks (name), Employees (firstName + lastName)
+    - Events (title), Prep tasks (name), Employees/Users (firstName + lastName)
     - Inventory items (name), Clients (company_name or first/last name)
-    - Proposals (title), Recipes (title), Dishes (name), Shipments (trackingNumber)
+    - Proposals (title), Recipes (name), Dishes (name), Shipments (trackingNumber)
+  - Fixed TypeScript issues:
+    - Changed `database.employee` to `database.user` (employee entity maps to User model)
+    - Fixed operator precedence in client label fallback
+    - Changed Recipe field from `title` to `name` (matches Prisma schema)
+    - Fixed `z.record()` call to include key schema: `z.record(z.string(), z.unknown())`
   - Updated `auto_generate_prep` and `auto_generate_purchase` tools to use resolved labels
   - AI tool responses now show meaningful entity names instead of placeholder IDs
   - All 107 tests pass
