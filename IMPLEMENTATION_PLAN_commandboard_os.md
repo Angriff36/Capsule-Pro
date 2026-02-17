@@ -75,7 +75,7 @@ The Command Board has foundational pieces for AI-Native OS:
 |---|------|----------|--------|
 | 4.1 | Add policy editing tool to AI | api/command-board/chat/route.ts | COMPLETED (added query_policies and update_policy AI tools) |
 | 4.2 | Create natural language->domain command compiler | actions/ | COMPLETED (already exists via AI chat interface with suggest_manifest_plan tool - converts natural language to domain commands like create_event, link_menu, create_task, etc.) |
-| 4.3 | Add config validation and preview | actions/manifest-plans.ts | NOT STARTED |
+| 4.3 | Add config validation and preview | actions/manifest-plans.ts | COMPLETED (validatePlanConfig + previewManifestPlan functions with full validation of execution/rollback strategies, risk assessment, cost impact) |
 
 ### Phase 5: Simulation Engine
 
@@ -292,6 +292,17 @@ The Command Board has foundational pieces for AI-Native OS:
 - Audit trail already implemented - continue using outboxEvent
 
 ## Implementation Notes (2026-02-17 Iteration 10)
+
+- **4.3 VERIFIED**: Config validation and preview already fully implemented:
+  - `validatePlanConfig()` - Main validation function at manifest-plans.ts:1230
+  - `validateExecutionStrategy()` - Validates step dependencies, cycle detection, timeouts, retry policies
+  - `validateRollbackStrategy()` - Validates rollback steps and recovery time
+  - `validateRiskAssessment()` - Validates severity levels have mitigations
+  - `validateCostImpact()` - Validates financial delta consistency
+  - `previewManifestPlan()` - Dry-run preview function at manifest-plans.ts:1270
+  - `previewDomainStep()` - Simulates individual steps without execution
+  - `previewBoardMutation()` - Previews board mutations
+  - Used in approval flow at lines 1593 and 1609
 
 - **4.2 VERIFIED**: Natural language→domain command compiler already exists:
   - The AI chat interface (`apps/app/app/api/command-board/chat/route.ts`) implements the full NLP→command pipeline

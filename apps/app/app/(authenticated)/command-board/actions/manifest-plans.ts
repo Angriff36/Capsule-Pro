@@ -1014,7 +1014,7 @@ function validateExecutionStrategy(
     return false;
   }
 
-  for (const stepId of stepIds) {
+  for (const stepId of Array.from(stepIds)) {
     if (!visited.has(stepId)) {
       if (hasCycle(stepId)) {
         errors.push({
@@ -1227,9 +1227,9 @@ function validateCostImpact(impact: CostImpact | undefined): ConfigValidationErr
  * Validates the complete plan configuration including execution strategy,
  * rollback strategy, risk assessment, and cost impact.
  */
-export function validatePlanConfig(
+export async function validatePlanConfig(
   plan: SuggestedManifestPlan
-): ConfigValidationResult {
+): Promise<ConfigValidationResult> {
   const errors: ConfigValidationError[] = [];
   const warnings: ConfigValidationWarning[] = [];
 
