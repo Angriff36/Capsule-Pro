@@ -469,6 +469,18 @@ The Command Board has foundational pieces for AI-Native OS:
   - Fixed arithmetic error in auto_generate_purchase by using placeholder values instead of accessing non-existent metadata
 - **Build Note**: Build compiles successfully (105/105 static pages), but fails during build trace collection due to known Next.js cache issue (pre-existing infrastructure problem)
 
+## Implementation Notes (2026-02-17 Iteration 18)
+
+- **Entity Label Resolution Enhancement**: Improved `getBoardProjections` helper function to resolve actual entity labels from database:
+  - Added `ProjectionWithLabel` interface for typed return values
+  - Implemented batch entity resolution for all projection types:
+    - Events (title), Prep tasks (name), Employees (firstName + lastName)
+    - Inventory items (name), Clients (company_name or first/last name)
+    - Proposals (title), Recipes (title), Dishes (name), Shipments (trackingNumber)
+  - Updated `auto_generate_prep` and `auto_generate_purchase` tools to use resolved labels
+  - AI tool responses now show meaningful entity names instead of placeholder IDs
+  - All 107 tests pass
+
 ---
 
 ## Files to Reference
