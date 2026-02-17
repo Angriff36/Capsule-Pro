@@ -5,3 +5,4 @@
  * They must not redefine execution order or policy/guard semantics.
  */
 export {};
+//# sourceMappingURL=interface.js.map

@@ -10,11 +10,11 @@
  * See docs/spec/manifest-vnext.md § "Canonical Routes (Normative)".
  */
 
-import fs from "node:fs/promises";
-import path from "node:path";
-import chalk from "chalk";
-import { glob } from "glob";
-import ora from "ora";
+import fs from 'fs/promises';
+import path from 'path';
+import { glob } from 'glob';
+import chalk from 'chalk';
+import ora from 'ora';
 
 // ============================================================================
 // Types
@@ -50,19 +50,19 @@ export interface LintResult {
 // ============================================================================
 
 const DEFAULT_CONFIG: LintRoutesConfig = {
-  dirs: ["src", "app", "pages", "components", "lib"],
-  prefixes: ["/api/"],
+  dirs: ['src', 'app', 'pages', 'components', 'lib'],
+  prefixes: ['/api/'],
   allowlist: [],
   exclude: [
-    "**/node_modules/**",
-    "**/.next/**",
-    "**/dist/**",
-    "**/build/**",
-    "**/routes.ts",
-    "**/routes.manifest.json",
-    "**/*.test.*",
-    "**/*.spec.*",
-    "**/*.d.ts",
+    '**/node_modules/**',
+    '**/.next/**',
+    '**/dist/**',
+    '**/build/**',
+    '**/routes.ts',
+    '**/routes.manifest.json',
+    '**/*.test.*',
+    '**/*.spec.*',
+    '**/*.d.ts',
   ],
 };
 
@@ -73,21 +73,22 @@ const DEFAULT_CONFIG: LintRoutesConfig = {
 /**
  * Load lint-routes config from manifest.config.yaml or use defaults.
  */
-export async function loadLintRoutesConfig(
-  cwd: string
-): Promise<LintRoutesConfig> {
+export async function loadLintRoutesConfig(cwd: string): Promise<LintRoutesConfig> {
   // Try to load from manifest.config.yaml
-  const configPaths = ["manifest.config.yaml", "manifest.config.yml"];
+  const configPaths = [
+    'manifest.config.yaml',
+    'manifest.config.yml',
+  ];
 
   for (const configFile of configPaths) {
     const configPath = path.resolve(cwd, configFile);
     try {
-      const content = await fs.readFile(configPath, "utf-8");
+      const content = await fs.readFile(configPath, 'utf-8');
       // Simple YAML parsing for the lintRoutes section
-      const yaml = await import("js-yaml");
+      const yaml = await import('js-yaml');
       const parsed = yaml.load(content) as Record<string, unknown>;
 
-      if (parsed?.lintRoutes && typeof parsed.lintRoutes === "object") {
+      if (parsed?.lintRoutes && typeof parsed.lintRoutes === 'object') {
         const lintConfig = parsed.lintRoutes as Partial<LintRoutesConfig>;
         return {
           dirs: lintConfig.dirs ?? DEFAULT_CONFIG.dirs,
@@ -96,7 +97,9 @@ export async function loadLintRoutesConfig(
           exclude: lintConfig.exclude ?? DEFAULT_CONFIG.exclude,
         };
       }
-    } catch {}
+    } catch {
+      continue;
+    }
   }
 
   return DEFAULT_CONFIG;
@@ -120,11 +123,11 @@ export async function loadLintRoutesConfig(
  */
 function buildRoutePattern(prefixes: string[]): RegExp {
   // Escape regex special chars in prefixes
-  const escaped = prefixes.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const escaped = prefixes.map(p => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   // Match quoted strings or template literal strings containing any prefix
   // Wrap alternation in non-capturing group so [^...] applies to all alternatives
-  const pattern = `(?:["'\`])\\s*((?:${escaped.join("|")})[^"'\`\\s]*)\\s*(?:["'\`])`;
-  return new RegExp(pattern, "g");
+  const pattern = `(?:["'\`])\\s*((?:${escaped.join('|')})[^"'\`\\s]*)\\s*(?:["'\`])`;
+  return new RegExp(pattern, 'g');
 }
 
 /**
@@ -133,12 +136,12 @@ function buildRoutePattern(prefixes: string[]): RegExp {
 function isCommentOrGenerated(line: string): boolean {
   const trimmed = line.trim();
   return (
-    trimmed.startsWith("//") ||
-    trimmed.startsWith("*") ||
-    trimmed.startsWith("/*") ||
-    trimmed.startsWith("*/") ||
-    trimmed.includes("DO NOT EDIT") ||
-    trimmed.includes("Auto-generated")
+    trimmed.startsWith('//') ||
+    trimmed.startsWith('*') ||
+    trimmed.startsWith('/*') ||
+    trimmed.startsWith('*/') ||
+    trimmed.includes('DO NOT EDIT') ||
+    trimmed.includes('Auto-generated')
   );
 }
 
@@ -146,9 +149,7 @@ function isCommentOrGenerated(line: string): boolean {
  * Check if a match is in the allowlist.
  */
 function isAllowlisted(match: string, allowlist: string[]): boolean {
-  return allowlist.some(
-    (allowed) => match === allowed || match.startsWith(allowed)
-  );
+  return allowlist.some(allowed => match === allowed || match.startsWith(allowed));
 }
 
 /**
@@ -161,15 +162,13 @@ export function scanFileForRoutes(
 ): LintViolation[] {
   const violations: LintViolation[] = [];
   const pattern = buildRoutePattern(config.prefixes);
-  const lines = content.split("\n");
+  const lines = content.split('\n');
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
     // Skip comments and generated file headers
-    if (isCommentOrGenerated(line)) {
-      continue;
-    }
+    if (isCommentOrGenerated(line)) continue;
 
     // Reset regex state for each line
     pattern.lastIndex = 0;
@@ -179,14 +178,10 @@ export function scanFileForRoutes(
       const matchedPath = match[1];
 
       // Skip allowlisted paths
-      if (isAllowlisted(matchedPath, config.allowlist)) {
-        continue;
-      }
+      if (isAllowlisted(matchedPath, config.allowlist)) continue;
 
       // Skip if this looks like an import path (from "..." or require("..."))
-      if (/(?:from|require)\s*\(?\s*$/.test(line.slice(0, match.index))) {
-        continue;
-      }
+      if (/(?:from|require)\s*\(?\s*$/.test(line.slice(0, match.index))) continue;
 
       violations.push({
         file: filePath,
@@ -212,9 +207,7 @@ export async function scanDirectories(
   let filesScanned = 0;
 
   // Collect all files from configured directories
-  const filePatterns = config.dirs.map(
-    (dir) => `${dir}/**/*.{ts,tsx,js,jsx,mjs,cjs}`
-  );
+  const filePatterns = config.dirs.map(dir => `${dir}/**/*.{ts,tsx,js,jsx,mjs,cjs}`);
 
   for (const pattern of filePatterns) {
     const files = await glob(pattern, {
@@ -226,7 +219,7 @@ export async function scanDirectories(
     for (const file of files) {
       const fullPath = path.resolve(cwd, file);
       try {
-        const content = await fs.readFile(fullPath, "utf-8");
+        const content = await fs.readFile(fullPath, 'utf-8');
         filesScanned++;
 
         const fileViolations = scanFileForRoutes(content, file, config);
@@ -246,17 +239,15 @@ export async function scanDirectories(
 
 interface LintRoutesOptions {
   config?: string;
-  format?: "text" | "json";
+  format?: 'text' | 'json';
   fix?: boolean;
 }
 
 /**
  * lint-routes command handler
  */
-export async function lintRoutesCommand(
-  options: LintRoutesOptions = {}
-): Promise<void> {
-  const spinner = ora("Scanning for hardcoded route strings").start();
+export async function lintRoutesCommand(options: LintRoutesOptions = {}): Promise<void> {
+  const spinner = ora('Scanning for hardcoded route strings').start();
 
   try {
     const cwd = process.cwd();
@@ -264,55 +255,45 @@ export async function lintRoutesCommand(
     // Load config
     const config = await loadLintRoutesConfig(cwd);
 
-    spinner.text = `Scanning ${config.dirs.join(", ")} for hardcoded routes...`;
+    spinner.text = `Scanning ${config.dirs.join(', ')} for hardcoded routes...`;
 
     // Scan
     const result = await scanDirectories(cwd, config);
 
     // Output
-    if (options.format === "json") {
+    if (options.format === 'json') {
       spinner.stop();
       console.log(JSON.stringify(result, null, 2));
-    } else if (result.violations.length === 0) {
-      spinner.succeed(
-        `Scanned ${result.filesScanned} file(s) — no hardcoded routes found`
-      );
-      console.log(
-        chalk.green(
-          "\n  Route surface is clean. All transport paths use generated helpers."
-        )
-      );
     } else {
-      spinner.fail(
-        `Found ${result.violations.length} hardcoded route(s) in ${result.filesScanned} file(s)`
-      );
-      console.log("");
+      if (result.violations.length === 0) {
+        spinner.succeed(`Scanned ${result.filesScanned} file(s) — no hardcoded routes found`);
+        console.log(chalk.green('\n  Route surface is clean. All transport paths use generated helpers.'));
+      } else {
+        spinner.fail(`Found ${result.violations.length} hardcoded route(s) in ${result.filesScanned} file(s)`);
+        console.log('');
 
-      for (const v of result.violations) {
-        console.log(chalk.red(`  ${v.file}:${v.line}:${v.column}`));
-        console.log(`    Hardcoded route: ${chalk.yellow(v.match)}`);
-        if (v.suggestion) {
-          console.log(chalk.gray(`    → ${v.suggestion}`));
+        for (const v of result.violations) {
+          console.log(chalk.red(`  ${v.file}:${v.line}:${v.column}`));
+          console.log(`    Hardcoded route: ${chalk.yellow(v.match)}`);
+          if (v.suggestion) {
+            console.log(chalk.gray(`    → ${v.suggestion}`));
+          }
+          console.log('');
         }
-        console.log("");
+
+        console.log(chalk.bold('SUMMARY:'));
+        console.log(`  Files scanned: ${result.filesScanned}`);
+        console.log(`  Violations: ${chalk.red(String(result.violations.length))}`);
+        console.log(`  Prefixes checked: ${config.prefixes.join(', ')}`);
+        console.log('');
+        console.log(chalk.gray('  Configure in manifest.config.yaml under lintRoutes:'));
+        console.log(chalk.gray('    lintRoutes:'));
+        console.log(chalk.gray('      dirs: [src, app]'));
+        console.log(chalk.gray('      prefixes: ["/api/"]'));
+        console.log(chalk.gray('      allowlist: ["/api/health"]'));
+
+        process.exit(1);
       }
-
-      console.log(chalk.bold("SUMMARY:"));
-      console.log(`  Files scanned: ${result.filesScanned}`);
-      console.log(
-        `  Violations: ${chalk.red(String(result.violations.length))}`
-      );
-      console.log(`  Prefixes checked: ${config.prefixes.join(", ")}`);
-      console.log("");
-      console.log(
-        chalk.gray("  Configure in manifest.config.yaml under lintRoutes:")
-      );
-      console.log(chalk.gray("    lintRoutes:"));
-      console.log(chalk.gray("      dirs: [src, app]"));
-      console.log(chalk.gray('      prefixes: ["/api/"]'));
-      console.log(chalk.gray('      allowlist: ["/api/health"]'));
-
-      process.exit(1);
     }
   } catch (error: any) {
     spinner.fail(`Route linting failed: ${error.message}`);

@@ -1,7 +1,7 @@
 export const examples = [
   {
-    name: "Kitchen Module",
-    desc: "Full module with commands, policies, and events",
+    name: 'Kitchen Module',
+    desc: 'Full module with commands, policies, and events',
     code: `// Module: encapsulates related entities and commands
 module kitchen {
   entity PrepTask {
@@ -78,11 +78,11 @@ store Station in supabase { table: "stations" }
 // API with server generation
 expose PrepTask as rest server "/api/tasks" {
   list, get, create, update
-}`,
+}`
   },
   {
-    name: "Order with Computed",
-    desc: "Derived properties that auto-update",
+    name: 'Order with Computed',
+    desc: 'Derived properties that auto-update',
     code: `entity OrderItem {
   property required id: string
   property required productId: string
@@ -130,11 +130,11 @@ entity Order {
 }
 
 store Order in localStorage { key: "orders" }
-expose Order as function`,
+expose Order as function`
   },
   {
-    name: "User with Policies",
-    desc: "Auth and permission rules",
+    name: 'User with Policies',
+    desc: 'Auth and permission rules',
     code: `entity User {
   property required id: string
   property required email: string
@@ -187,11 +187,11 @@ store Team in supabase { table: "teams" }
 
 expose User as rest server "/api/users" {
   list, get, create, update, delete
-}`,
+}`
   },
   {
-    name: "Realtime Events",
-    desc: "Outbox pattern for pub/sub",
+    name: 'Realtime Events',
+    desc: 'Outbox pattern for pub/sub',
     code: `// Define event types for realtime channels
 event OrderCreated: "orders.created" {
   orderId: string
@@ -260,11 +260,11 @@ store Order in supabase
 store Product in supabase
 
 expose Order as rest server "/api/orders"
-expose Product as rest server "/api/products"`,
+expose Product as rest server "/api/products"`
   },
   {
-    name: "E-commerce System",
-    desc: "Full composition with relationships",
+    name: 'E-commerce System',
+    desc: 'Full composition with relationships',
     code: `entity Customer {
   property required id: string
   property required email: string
@@ -386,11 +386,11 @@ compose CheckoutFlow {
 
 expose Customer as rest server "/api/customers"
 expose Product as rest server "/api/products"
-expose Order as rest server "/api/orders"`,
+expose Order as rest server "/api/orders"`
   },
   {
-    name: "Simple Counter",
-    desc: "Basic example with all v2 features",
+    name: 'Simple Counter',
+    desc: 'Basic example with all v2 features',
     code: `// Simple counter showing v2 features
 
 entity Counter {
@@ -437,6 +437,6 @@ entity Counter {
 store Counter in localStorage { key: "counter" }
 
 // Generate function factory
-expose Counter as function`,
-  },
+expose Counter as function`
+  }
 ];

@@ -1,4 +1,4 @@
-import { Lexer } from "./lexer.js";
+import { Lexer } from './lexer.js';
 export class Parser {
     tokens = [];
     pos = 0;
@@ -8,114 +8,75 @@ export class Parser {
         this.pos = 0;
         this.errors = [];
         const program = {
-            modules: [],
-            entities: [],
-            commands: [],
-            flows: [],
-            effects: [],
-            exposures: [],
-            compositions: [],
-            policies: [],
-            stores: [],
-            events: [],
+            modules: [], entities: [], commands: [], flows: [], effects: [],
+            exposures: [], compositions: [], policies: [], stores: [], events: []
         };
         while (!this.isEnd()) {
             this.skipNL();
-            if (this.isEnd()) {
+            if (this.isEnd())
                 break;
-            }
             try {
-                if (this.check("KEYWORD", "module")) {
+                if (this.check('KEYWORD', 'module'))
                     program.modules.push(this.parseModule());
-                }
-                else if (this.check("KEYWORD", "entity")) {
+                else if (this.check('KEYWORD', 'entity'))
                     program.entities.push(this.parseEntity());
-                }
-                else if (this.check("KEYWORD", "command")) {
+                else if (this.check('KEYWORD', 'command'))
                     program.commands.push(this.parseCommand());
-                }
-                else if (this.check("KEYWORD", "flow")) {
+                else if (this.check('KEYWORD', 'flow'))
                     program.flows.push(this.parseFlow());
-                }
-                else if (this.check("KEYWORD", "effect")) {
+                else if (this.check('KEYWORD', 'effect'))
                     program.effects.push(this.parseEffect());
-                }
-                else if (this.check("KEYWORD", "expose")) {
+                else if (this.check('KEYWORD', 'expose'))
                     program.exposures.push(this.parseExpose());
-                }
-                else if (this.check("KEYWORD", "compose")) {
+                else if (this.check('KEYWORD', 'compose'))
                     program.compositions.push(this.parseComposition());
-                }
-                else if (this.check("KEYWORD", "policy")) {
+                else if (this.check('KEYWORD', 'policy'))
                     program.policies.push(this.parsePolicy(false));
-                }
-                else if (this.check("KEYWORD", "store")) {
+                else if (this.check('KEYWORD', 'store'))
                     program.stores.push(this.parseStore());
-                }
-                else if (this.check("KEYWORD", "event")) {
+                else if (this.check('KEYWORD', 'event'))
                     program.events.push(this.parseOutboxEvent());
-                }
-                else {
+                else
                     this.advance();
-                }
             }
             catch (e) {
-                this.errors.push({
-                    message: e instanceof Error ? e.message : "Parse error",
-                    position: this.current()?.position,
-                    severity: "error",
-                });
+                this.errors.push({ message: e instanceof Error ? e.message : 'Parse error', position: this.current()?.position, severity: 'error' });
                 this.sync();
             }
         }
         return { program, errors: this.errors };
     }
     parseModule() {
-        this.consume("KEYWORD", "module");
+        this.consume('KEYWORD', 'module');
         const name = this.consumeIdentifier().value;
-        this.consume("PUNCTUATION", "{");
+        this.consume('PUNCTUATION', '{');
         this.skipNL();
         const entities = [], commands = [], policies = [], stores = [], events = [];
-        while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
+        while (!this.check('PUNCTUATION', '}') && !this.isEnd()) {
             this.skipNL();
-            if (this.check("PUNCTUATION", "}")) {
+            if (this.check('PUNCTUATION', '}'))
                 break;
-            }
-            if (this.check("KEYWORD", "entity")) {
+            if (this.check('KEYWORD', 'entity'))
                 entities.push(this.parseEntity());
-            }
-            else if (this.check("KEYWORD", "command")) {
+            else if (this.check('KEYWORD', 'command'))
                 commands.push(this.parseCommand());
-            }
-            else if (this.check("KEYWORD", "policy")) {
+            else if (this.check('KEYWORD', 'policy'))
                 policies.push(this.parsePolicy(false));
-            }
-            else if (this.check("KEYWORD", "store")) {
+            else if (this.check('KEYWORD', 'store'))
                 stores.push(this.parseStore());
-            }
-            else if (this.check("KEYWORD", "event")) {
+            else if (this.check('KEYWORD', 'event'))
                 events.push(this.parseOutboxEvent());
-            }
-            else {
+            else
                 this.advance();
-            }
             this.skipNL();
         }
-        this.consume("PUNCTUATION", "}");
-        return {
-            type: "Module",
-            name,
-            entities,
-            commands,
-            policies,
-            stores,
-            events,
-        };
+        this.consume('PUNCTUATION', '}');
+        return { type: 'Module', name, entities, commands, policies, stores, events };
     }
     parseEntity() {
-        this.consume("KEYWORD", "entity");
+        this.consume('KEYWORD', 'entity');
         const name = this.consumeIdentifier().value;
-        this.consume("PUNCTUATION", "{");
+        this.consume('PUNCTUATION', '{');
         this.skipNL();
         const properties = [], computedProperties = [], relationships = [];
         const behaviors = [], commands = [], constraints = [], policies = [];
@@ -123,58 +84,45 @@ export class Parser {
         let store;
         let versionProperty;
         let versionAtProperty;
-        while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
+        while (!this.check('PUNCTUATION', '}') && !this.isEnd()) {
             this.skipNL();
-            if (this.check("PUNCTUATION", "}")) {
+            if (this.check('PUNCTUATION', '}'))
                 break;
-            }
-            if (this.check("KEYWORD", "property")) {
+            if (this.check('KEYWORD', 'property'))
                 properties.push(this.parseProperty());
-            }
-            else if (this.check("KEYWORD", "computed") ||
-                this.check("KEYWORD", "derived")) {
+            else if (this.check('KEYWORD', 'computed') || this.check('KEYWORD', 'derived'))
                 computedProperties.push(this.parseComputedProperty());
-            }
-            else if (this.check("KEYWORD", "hasMany") ||
-                this.check("KEYWORD", "hasOne") ||
-                this.check("KEYWORD", "belongsTo") ||
-                this.check("KEYWORD", "ref")) {
+            else if (this.check('KEYWORD', 'hasMany') || this.check('KEYWORD', 'hasOne') || this.check('KEYWORD', 'belongsTo') || this.check('KEYWORD', 'ref'))
                 relationships.push(this.parseRelationship());
-            }
-            else if (this.check("KEYWORD", "behavior") ||
-                this.check("KEYWORD", "on")) {
+            else if (this.check('KEYWORD', 'behavior') || this.check('KEYWORD', 'on'))
                 behaviors.push(this.parseBehavior());
-            }
-            else if (this.check("KEYWORD", "command")) {
+            else if (this.check('KEYWORD', 'command'))
                 commands.push(this.parseCommand());
-            }
-            else if (this.check("KEYWORD", "constraint")) {
+            else if (this.check('KEYWORD', 'constraint'))
                 constraints.push(this.parseConstraint());
-            }
-            else if (this.check("KEYWORD", "policy")) {
+            else if (this.check('KEYWORD', 'policy'))
                 policies.push(this.parsePolicy(false));
-            }
-            else if (this.check("KEYWORD", "default")) {
+            else if (this.check('KEYWORD', 'default')) {
                 // Default policy syntax: "default policy execute: ..."
                 this.advance(); // consume 'default'
-                if (this.check("KEYWORD", "policy")) {
+                if (this.check('KEYWORD', 'policy')) {
                     policies.push(this.parsePolicy(true));
                 }
                 else {
                     throw new Error("Expected 'policy' after 'default'");
                 }
             }
-            else if (this.check("KEYWORD", "store")) {
+            else if (this.check('KEYWORD', 'store')) {
                 // Check the syntax variant
                 const nextToken = this.tokens[this.pos + 1];
                 const afterNextToken = this.tokens[this.pos + 2];
-                if (nextToken?.value === "in") {
+                if (nextToken?.value === 'in') {
                     // Entity-scoped syntax: "store in <target>"
                     this.advance(); // consume 'store'
                     this.advance(); // consume 'in'
                     store = this.advance().value; // get target
                 }
-                else if (afterNextToken?.value === "in") {
+                else if (afterNextToken?.value === 'in') {
                     // Full syntax inside entity: "store <Entity> in <target>"
                     // Parse as store node and extract target
                     const storeNode = this.parseStore();
@@ -186,170 +134,139 @@ export class Parser {
                     store = this.advance().value; // get target directly
                 }
             }
-            else if (this.check("KEYWORD", "versionProperty")) {
+            else if (this.check('KEYWORD', 'versionProperty')) {
                 // Syntax: versionProperty <name>: <type>
                 this.advance(); // consume 'versionProperty'
                 versionProperty = this.consumeIdentifier().value;
                 // Skip type annotation (': number')
-                if (this.check("OPERATOR", ":")) {
+                if (this.check('OPERATOR', ':')) {
                     this.advance(); // consume ':'
                     this.advance(); // consume type name
                 }
             }
-            else if (this.check("KEYWORD", "versionAtProperty")) {
+            else if (this.check('KEYWORD', 'versionAtProperty')) {
                 // Syntax: versionAtProperty <name>: <type>
                 this.advance(); // consume 'versionAtProperty'
                 versionAtProperty = this.consumeIdentifier().value;
                 // Skip type annotation (': number')
-                if (this.check("OPERATOR", ":")) {
+                if (this.check('OPERATOR', ':')) {
                     this.advance(); // consume ':'
                     this.advance(); // consume type name
                 }
             }
-            else if (this.check("KEYWORD", "transition")) {
+            else if (this.check('KEYWORD', 'transition'))
                 transitions.push(this.parseTransition());
-            }
-            else if (this.check("KEYWORD", "event")) {
+            else if (this.check('KEYWORD', 'event')) {
                 // Entity-scoped events are not supported - emit warning to prevent silent data loss
                 const pos = this.current()?.position;
                 this.errors.push({
                     message: "Events cannot be declared inside entity blocks. Declare events at module or root level instead.",
                     position: pos,
-                    severity: "warning",
+                    severity: 'warning'
                 });
                 this.advance(); // consume the 'event' keyword to prevent infinite loop
                 // Also skip the event name if present
-                if (this.current()?.type === "IDENTIFIER") {
+                if (this.current()?.type === 'IDENTIFIER')
                     this.advance();
-                }
             }
-            else {
+            else
                 this.advance();
-            }
             this.skipNL();
         }
-        this.consume("PUNCTUATION", "}");
-        return {
-            type: "Entity",
-            name,
-            properties,
-            computedProperties,
-            relationships,
-            behaviors,
-            commands,
-            constraints,
-            policies,
-            transitions,
-            store,
-            versionProperty,
-            versionAtProperty,
-        };
+        this.consume('PUNCTUATION', '}');
+        return { type: 'Entity', name, properties, computedProperties, relationships, behaviors, commands, constraints, policies, transitions, store, versionProperty, versionAtProperty };
     }
     parseProperty() {
-        this.consume("KEYWORD", "property");
+        this.consume('KEYWORD', 'property');
         const modifiers = [];
-        while ([
-            "required",
-            "unique",
-            "indexed",
-            "private",
-            "readonly",
-            "optional",
-        ].includes(this.current()?.value || "")) {
+        while (['required', 'unique', 'indexed', 'private', 'readonly', 'optional'].includes(this.current()?.value || '')) {
             modifiers.push(this.advance().value);
         }
         const name = this.consumeIdentifier().value;
-        this.consume("OPERATOR", ":");
+        this.consume('OPERATOR', ':');
         const dataType = this.parseType();
         let defaultValue;
-        if (this.check("OPERATOR", "=")) {
+        if (this.check('OPERATOR', '=')) {
             this.advance();
             defaultValue = this.parseExpr();
         }
-        return { type: "Property", name, dataType, defaultValue, modifiers };
+        return { type: 'Property', name, dataType, defaultValue, modifiers };
     }
     parseTransition() {
         // Syntax: transition <property> from "<value>" to ["<value>", "<value>"]
-        this.consume("KEYWORD", "transition");
+        this.consume('KEYWORD', 'transition');
         const property = this.consumeIdentifier().value;
-        this.consume("KEYWORD", "from");
+        this.consume('KEYWORD', 'from');
         const fromToken = this.advance(); // consume the "from" value (string literal)
-        const from = fromToken.type === "STRING" ? fromToken.value : fromToken.value;
-        this.consume("KEYWORD", "to");
+        const from = fromToken.type === 'STRING' ? fromToken.value : fromToken.value;
+        this.consume('KEYWORD', 'to');
         const to = [];
-        if (this.check("PUNCTUATION", "[")) {
+        if (this.check('PUNCTUATION', '[')) {
             this.advance(); // consume '['
-            while (!(this.check("PUNCTUATION", "]") || this.isEnd())) {
+            while (!this.check('PUNCTUATION', ']') && !this.isEnd()) {
                 const valToken = this.advance();
-                to.push(valToken.type === "STRING" ? valToken.value : valToken.value);
-                if (this.check("PUNCTUATION", ",")) {
+                to.push(valToken.type === 'STRING' ? valToken.value : valToken.value);
+                if (this.check('PUNCTUATION', ','))
                     this.advance(); // consume ','
-                }
             }
-            this.consume("PUNCTUATION", "]");
+            this.consume('PUNCTUATION', ']');
         }
         else {
             // Single value: transition status from "draft" to "review"
             const valToken = this.advance();
-            to.push(valToken.type === "STRING" ? valToken.value : valToken.value);
+            to.push(valToken.type === 'STRING' ? valToken.value : valToken.value);
         }
-        return { type: "Transition", property, from, to };
+        return { type: 'Transition', property, from, to };
     }
     parseComputedProperty() {
         this.advance();
         const name = this.consumeIdentifier().value;
-        this.consume("OPERATOR", ":");
+        this.consume('OPERATOR', ':');
         const dataType = this.parseType();
-        this.consume("OPERATOR", "=");
+        this.consume('OPERATOR', '=');
         const expression = this.parseExpr();
         const dependencies = this.extractDependencies(expression);
-        return {
-            type: "ComputedProperty",
-            name,
-            dataType,
-            expression,
-            dependencies,
-        };
+        return { type: 'ComputedProperty', name, dataType, expression, dependencies };
     }
     extractDependencies(expr) {
         const deps = new Set();
-        const RESERVED = ["self", "this", "user", "context"];
+        const RESERVED = ['self', 'this', 'user', 'context'];
         const walk = (e) => {
             switch (e.type) {
-                case "Identifier":
+                case 'Identifier':
                     if (!RESERVED.includes(e.name)) {
                         deps.add(e.name);
                     }
                     break;
-                case "MemberAccess":
+                case 'MemberAccess':
                     walk(e.object);
                     break;
-                case "BinaryOp":
+                case 'BinaryOp':
                     walk(e.left);
                     walk(e.right);
                     break;
-                case "UnaryOp":
+                case 'UnaryOp':
                     walk(e.operand);
                     break;
-                case "Call":
+                case 'Call':
                     walk(e.callee);
                     e.arguments.forEach(walk);
                     break;
-                case "Conditional":
+                case 'Conditional':
                     walk(e.condition);
                     walk(e.consequent);
                     walk(e.alternate);
                     break;
-                case "Array":
+                case 'Array':
                     e.elements.forEach(walk);
                     break;
-                case "Object":
+                case 'Object':
                     e.properties.forEach((p) => walk(p.value));
                     break;
-                case "Lambda":
+                case 'Lambda':
                     walk(e.body);
                     break;
-                case "Literal":
+                case 'Literal':
                     // No dependencies in literals
                     break;
             }
@@ -360,290 +277,246 @@ export class Parser {
     parseRelationship() {
         const kind = this.advance().value;
         const name = this.consumeIdentifier().value;
-        this.consume("OPERATOR", ":");
+        this.consume('OPERATOR', ':');
         const target = this.consumeIdentifier().value;
         let foreignKey, through;
-        if (this.check("KEYWORD", "through")) {
+        if (this.check('KEYWORD', 'through')) {
             this.advance();
             through = this.consumeIdentifier().value;
         }
-        if (this.check("KEYWORD", "with")) {
+        if (this.check('KEYWORD', 'with')) {
             this.advance();
             foreignKey = this.consumeIdentifier().value;
         }
-        return { type: "Relationship", kind, name, target, foreignKey, through };
+        return { type: 'Relationship', kind, name, target, foreignKey, through };
     }
     parseCommand() {
-        this.consume("KEYWORD", "command");
+        this.consume('KEYWORD', 'command');
         const name = this.consumeIdentifier().value;
-        this.consume("PUNCTUATION", "(");
+        this.consume('PUNCTUATION', '(');
         const parameters = [];
-        while (!(this.check("PUNCTUATION", ")") || this.isEnd())) {
-            const required = !this.check("KEYWORD", "optional");
-            if (!required) {
+        while (!this.check('PUNCTUATION', ')') && !this.isEnd()) {
+            const required = !this.check('KEYWORD', 'optional');
+            if (!required)
                 this.advance();
-            }
             const pname = this.consumeIdentifier().value;
-            this.consume("OPERATOR", ":");
+            this.consume('OPERATOR', ':');
             const dataType = this.parseType();
             let defaultValue;
-            if (this.check("OPERATOR", "=")) {
+            if (this.check('OPERATOR', '=')) {
                 this.advance();
                 defaultValue = this.parseExpr();
             }
-            parameters.push({
-                type: "Parameter",
-                name: pname,
-                dataType,
-                required,
-                defaultValue,
-            });
-            if (this.check("PUNCTUATION", ",")) {
+            parameters.push({ type: 'Parameter', name: pname, dataType, required, defaultValue });
+            if (this.check('PUNCTUATION', ','))
                 this.advance();
-            }
         }
-        this.consume("PUNCTUATION", ")");
+        this.consume('PUNCTUATION', ')');
         let returns;
-        if (this.check("KEYWORD", "returns")) {
+        if (this.check('KEYWORD', 'returns')) {
             this.advance();
             returns = this.parseType();
         }
         const guards = [], constraints = [], actions = [], emits = [];
-        if (this.check("PUNCTUATION", "{")) {
+        if (this.check('PUNCTUATION', '{')) {
             this.advance();
             this.skipNL();
-            while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
+            while (!this.check('PUNCTUATION', '}') && !this.isEnd()) {
                 this.skipNL();
-                if (this.check("PUNCTUATION", "}")) {
+                if (this.check('PUNCTUATION', '}'))
                     break;
-                }
-                if (this.check("KEYWORD", "guard") || this.check("KEYWORD", "when")) {
+                if (this.check('KEYWORD', 'guard') || this.check('KEYWORD', 'when')) {
                     this.advance();
                     guards.push(this.parseExpr());
                 }
-                else if (this.check("KEYWORD", "constraint")) {
+                else if (this.check('KEYWORD', 'constraint')) {
                     constraints.push(this.parseConstraint());
                 }
-                else if (this.check("KEYWORD", "emit")) {
+                else if (this.check('KEYWORD', 'emit')) {
                     this.advance();
                     emits.push(this.consumeIdentifier().value);
                 }
-                else {
+                else
                     actions.push(this.parseAction());
-                }
                 this.skipNL();
             }
-            this.consume("PUNCTUATION", "}");
+            this.consume('PUNCTUATION', '}');
         }
-        else if (this.check("OPERATOR", "=>")) {
+        else if (this.check('OPERATOR', '=>')) {
             this.advance();
             actions.push(this.parseAction());
         }
         return {
-            type: "Command",
+            type: 'Command',
             name,
             parameters,
             guards: guards.length ? guards : undefined,
             constraints: constraints.length ? constraints : undefined,
             actions,
             emits: emits.length ? emits : undefined,
-            returns,
+            returns
         };
     }
     parsePolicy(isDefault = false) {
-        this.consume("KEYWORD", "policy");
+        this.consume('KEYWORD', 'policy');
         const name = this.consumeIdentifier().value;
-        let action = "all";
-        if (this.check("KEYWORD", "read") ||
-            this.check("KEYWORD", "write") ||
-            this.check("KEYWORD", "delete") ||
-            this.check("KEYWORD", "execute") ||
-            this.check("KEYWORD", "all") ||
-            this.check("KEYWORD", "override")) {
+        let action = 'all';
+        if (this.check('KEYWORD', 'read') || this.check('KEYWORD', 'write') || this.check('KEYWORD', 'delete') || this.check('KEYWORD', 'execute') || this.check('KEYWORD', 'all') || this.check('KEYWORD', 'override')) {
             action = this.advance().value;
         }
-        this.consume("OPERATOR", ":");
+        this.consume('OPERATOR', ':');
         this.skipNL();
         const expression = this.parseExpr();
-        const message = this.check("STRING") ? this.advance().value : undefined;
-        return { type: "Policy", name, action, expression, message, isDefault };
+        const message = this.check('STRING') ? this.advance().value : undefined;
+        return { type: 'Policy', name, action, expression, message, isDefault };
     }
     parseStore() {
-        this.consume("KEYWORD", "store");
+        this.consume('KEYWORD', 'store');
         const entity = this.consumeIdentifier().value;
-        this.consume("KEYWORD", "in");
+        this.consume('KEYWORD', 'in');
         const target = this.advance().value;
         const config = {};
-        if (this.check("PUNCTUATION", "{")) {
+        if (this.check('PUNCTUATION', '{')) {
             this.advance();
             this.skipNL();
-            while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
+            while (!this.check('PUNCTUATION', '}') && !this.isEnd()) {
                 this.skipNL();
-                if (this.check("PUNCTUATION", "}")) {
+                if (this.check('PUNCTUATION', '}'))
                     break;
-                }
                 // Config keys are like object literal keys - allow keywords
                 const key = this.consumeIdentifierOrKeyword().value;
-                this.consume("OPERATOR", ":");
+                this.consume('OPERATOR', ':');
                 config[key] = this.parseExpr();
                 this.skipNL();
             }
-            this.consume("PUNCTUATION", "}");
+            this.consume('PUNCTUATION', '}');
         }
-        return {
-            type: "Store",
-            entity,
-            target,
-            config: Object.keys(config).length ? config : undefined,
-        };
+        return { type: 'Store', entity, target, config: Object.keys(config).length ? config : undefined };
     }
     parseOutboxEvent() {
-        this.consume("KEYWORD", "event");
+        this.consume('KEYWORD', 'event');
         const name = this.consumeIdentifier().value;
-        this.consume("OPERATOR", ":");
-        const channel = this.check("STRING") ? this.advance().value : name;
-        let payload = {
-            type: "Type",
-            name: "unknown",
-            nullable: false,
-        };
-        if (this.check("PUNCTUATION", "{")) {
+        this.consume('OPERATOR', ':');
+        const channel = this.check('STRING') ? this.advance().value : name;
+        let payload = { type: 'Type', name: 'unknown', nullable: false };
+        if (this.check('PUNCTUATION', '{')) {
             this.advance();
             this.skipNL();
             const fields = [];
-            while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
+            while (!this.check('PUNCTUATION', '}') && !this.isEnd()) {
                 this.skipNL();
-                if (this.check("PUNCTUATION", "}")) {
+                if (this.check('PUNCTUATION', '}'))
                     break;
-                }
                 const fname = this.consumeIdentifier().value;
-                this.consume("OPERATOR", ":");
+                this.consume('OPERATOR', ':');
                 const ftype = this.parseType();
-                fields.push({
-                    type: "Parameter",
-                    name: fname,
-                    dataType: ftype,
-                    required: true,
-                });
+                fields.push({ type: 'Parameter', name: fname, dataType: ftype, required: true });
                 this.skipNL();
             }
-            this.consume("PUNCTUATION", "}");
+            this.consume('PUNCTUATION', '}');
             payload = { fields };
         }
-        else if (this.check("IDENTIFIER") || this.check("KEYWORD")) {
+        else if (this.check('IDENTIFIER') || this.check('KEYWORD')) {
             payload = this.parseType();
         }
-        return { type: "OutboxEvent", name, channel, payload };
+        return { type: 'OutboxEvent', name, channel, payload };
     }
     parseType() {
         const name = this.advance().value;
         let generic;
-        if (this.check("OPERATOR", "<")) {
+        if (this.check('OPERATOR', '<')) {
             this.advance();
             generic = this.parseType();
-            this.consume("OPERATOR", ">");
+            this.consume('OPERATOR', '>');
         }
-        const nullable = this.check("OPERATOR", "?")
-            ? (this.advance(), true)
-            : false;
-        return { type: "Type", name, generic, nullable };
+        const nullable = this.check('OPERATOR', '?') ? (this.advance(), true) : false;
+        return { type: 'Type', name, generic, nullable };
     }
     parseBehavior() {
-        if (this.check("KEYWORD", "behavior")) {
+        if (this.check('KEYWORD', 'behavior'))
             this.advance();
-        }
-        this.consume("KEYWORD", "on");
+        this.consume('KEYWORD', 'on');
         const trigger = this.parseTrigger();
         const guards = [];
-        while (this.check("KEYWORD", "guard") || this.check("KEYWORD", "when")) {
+        while (this.check('KEYWORD', 'guard') || this.check('KEYWORD', 'when')) {
             this.advance();
             guards.push(this.parseExpr());
         }
         const actions = [];
-        if (this.check("PUNCTUATION", "{")) {
+        if (this.check('PUNCTUATION', '{')) {
             this.advance();
             this.skipNL();
-            while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
+            while (!this.check('PUNCTUATION', '}') && !this.isEnd()) {
                 this.skipNL();
-                if (this.check("PUNCTUATION", "}")) {
+                if (this.check('PUNCTUATION', '}'))
                     break;
-                }
                 actions.push(this.parseAction());
                 this.skipNL();
             }
-            this.consume("PUNCTUATION", "}");
+            this.consume('PUNCTUATION', '}');
         }
-        else if (this.check("KEYWORD", "then") || this.check("OPERATOR", "=>")) {
+        else if (this.check('KEYWORD', 'then') || this.check('OPERATOR', '=>')) {
             this.advance();
             actions.push(this.parseAction());
         }
-        return {
-            type: "Behavior",
-            name: trigger.event,
-            trigger,
-            actions,
-            guards: guards.length ? guards : undefined,
-        };
+        return { type: 'Behavior', name: trigger.event, trigger, actions, guards: guards.length ? guards : undefined };
     }
     parseTrigger() {
         const event = this.consumeIdentifier().value;
         let parameters;
-        if (this.check("PUNCTUATION", "(")) {
+        if (this.check('PUNCTUATION', '(')) {
             this.advance();
             parameters = [];
-            while (!(this.check("PUNCTUATION", ")") || this.isEnd())) {
+            while (!this.check('PUNCTUATION', ')') && !this.isEnd()) {
                 parameters.push(this.consumeIdentifier().value);
-                if (this.check("PUNCTUATION", ",")) {
+                if (this.check('PUNCTUATION', ','))
                     this.advance();
-                }
             }
-            this.consume("PUNCTUATION", ")");
+            this.consume('PUNCTUATION', ')');
         }
-        return { type: "Trigger", event, parameters };
+        return { type: 'Trigger', event, parameters };
     }
     parseAction() {
-        let kind = "compute", target;
-        if (this.check("KEYWORD", "mutate")) {
+        let kind = 'compute', target;
+        if (this.check('KEYWORD', 'mutate')) {
             this.advance();
-            kind = "mutate";
+            kind = 'mutate';
             target = this.consumeIdentifier().value;
-            this.consume("OPERATOR", "=");
+            this.consume('OPERATOR', '=');
         }
-        else if (this.check("KEYWORD", "emit")) {
+        else if (this.check('KEYWORD', 'emit')) {
             this.advance();
-            kind = "emit";
+            kind = 'emit';
         }
-        else if (this.check("KEYWORD", "effect")) {
+        else if (this.check('KEYWORD', 'effect')) {
             this.advance();
-            kind = "effect";
+            kind = 'effect';
         }
-        else if (this.check("KEYWORD", "publish")) {
+        else if (this.check('KEYWORD', 'publish')) {
             this.advance();
-            kind = "publish";
+            kind = 'publish';
         }
-        else if (this.check("KEYWORD", "persist")) {
+        else if (this.check('KEYWORD', 'persist')) {
             this.advance();
-            kind = "persist";
+            kind = 'persist';
         }
-        else if (this.check("KEYWORD", "compute")) {
+        else if (this.check('KEYWORD', 'compute')) {
             this.advance();
-            kind = "compute";
+            kind = 'compute';
             // Check for assignment form: compute <identifier> = <expr>
             const nextToken = this.tokens[this.pos + 1];
-            if (this.check("IDENTIFIER") &&
-                nextToken?.type === "OPERATOR" &&
-                nextToken?.value === "=") {
+            if (this.check('IDENTIFIER') && nextToken?.type === 'OPERATOR' && nextToken?.value === '=') {
                 target = this.consumeIdentifier().value;
-                this.consume("OPERATOR", "=");
+                this.consume('OPERATOR', '=');
             }
         }
-        return { type: "Action", kind, target, expression: this.parseExpr() };
+        return { type: 'Action', kind, target, expression: this.parseExpr() };
     }
     parseConstraint() {
-        this.consume("KEYWORD", "constraint");
+        this.consume('KEYWORD', 'constraint');
         // Check for overrideable modifier
         let overrideable = false;
-        if (this.check("KEYWORD", "overrideable")) {
+        if (this.check('KEYWORD', 'overrideable')) {
             this.advance();
             overrideable = true;
         }
@@ -656,61 +529,56 @@ export class Parser {
         let detailsMapping;
         let overridePolicyRef;
         // Check for block syntax: constraint <name> { ... }
-        if (this.check("PUNCTUATION", "{")) {
+        if (this.check('PUNCTUATION', '{')) {
             this.advance();
             this.skipNL();
             let expression;
-            while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
+            while (!this.check('PUNCTUATION', '}') && !this.isEnd()) {
                 this.skipNL();
-                if (this.check("PUNCTUATION", "}")) {
+                if (this.check('PUNCTUATION', '}'))
                     break;
-                }
                 const field = this.consumeIdentifierOrKeyword().value;
-                this.consume("OPERATOR", ":");
+                this.consume('OPERATOR', ':');
                 switch (field) {
-                    case "code":
+                    case 'code':
                         code = this.consumeIdentifier().value;
                         break;
-                    case "severity": {
+                    case 'severity': {
                         const sev = this.consumeIdentifierOrKeyword().value;
-                        if (sev === "ok" || sev === "warn" || sev === "block") {
+                        if (sev === 'ok' || sev === 'warn' || sev === 'block') {
                             severity = sev;
                         }
                         break;
                     }
-                    case "expression":
+                    case 'expression':
                         expression = this.parseExpr();
                         break;
-                    case "message":
-                        message = this.check("STRING") ? this.advance().value : undefined;
+                    case 'message':
+                        message = this.check('STRING') ? this.advance().value : undefined;
                         break;
-                    case "messageTemplate":
-                        messageTemplate = this.check("STRING")
-                            ? this.advance().value
-                            : undefined;
+                    case 'messageTemplate':
+                        messageTemplate = this.check('STRING') ? this.advance().value : undefined;
                         break;
-                    case "overridePolicy":
+                    case 'overridePolicy':
                         overridePolicyRef = this.consumeIdentifier().value;
                         break;
-                    case "details":
+                    case 'details':
                         detailsMapping = {};
-                        if (this.check("PUNCTUATION", "{")) {
+                        if (this.check('PUNCTUATION', '{')) {
                             this.advance();
                             this.skipNL();
-                            while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
+                            while (!this.check('PUNCTUATION', '}') && !this.isEnd()) {
                                 this.skipNL();
-                                if (this.check("PUNCTUATION", "}")) {
+                                if (this.check('PUNCTUATION', '}'))
                                     break;
-                                }
                                 const key = this.consumeIdentifierOrKeyword().value;
-                                this.consume("OPERATOR", ":");
+                                this.consume('OPERATOR', ':');
                                 detailsMapping[key] = this.parseExpr();
                                 this.skipNL();
-                                if (this.check("PUNCTUATION", ",")) {
+                                if (this.check('PUNCTUATION', ','))
                                     this.advance();
-                                }
                             }
-                            this.consume("PUNCTUATION", "}");
+                            this.consume('PUNCTUATION', '}');
                         }
                         break;
                     default:
@@ -718,20 +586,19 @@ export class Parser {
                         this.parseExpr();
                 }
                 this.skipNL();
-                if (this.check("PUNCTUATION", ",")) {
+                if (this.check('PUNCTUATION', ','))
                     this.advance();
-                }
             }
-            this.consume("PUNCTUATION", "}");
+            this.consume('PUNCTUATION', '}');
             if (!expression) {
-                throw new Error("Constraint block must include an expression");
+                throw new Error('Constraint block must include an expression');
             }
             return {
-                type: "Constraint",
+                type: 'Constraint',
                 name,
                 code,
                 expression,
-                severity: severity || "block",
+                severity: severity || 'block',
                 message,
                 messageTemplate,
                 detailsMapping,
@@ -740,282 +607,224 @@ export class Parser {
             };
         }
         // Inline syntax: constraint <name>[:severity] <expression> ["<message>"]
-        this.consume("OPERATOR", ":");
+        this.consume('OPERATOR', ':');
         // Check for severity suffix (name:ok, name:warn, name:block)
-        if (this.check("KEYWORD", "ok") ||
-            this.check("KEYWORD", "warn") ||
-            this.check("KEYWORD", "block")) {
+        if (this.check('KEYWORD', 'ok') || this.check('KEYWORD', 'warn') || this.check('KEYWORD', 'block')) {
             const sev = this.advance().value;
             severity = sev;
         }
         const expression = this.parseExpr();
-        message = this.check("STRING") ? this.advance().value : undefined;
+        message = this.check('STRING') ? this.advance().value : undefined;
         return {
-            type: "Constraint",
+            type: 'Constraint',
             name,
             code,
             expression,
-            severity: severity || "block",
+            severity: severity || 'block',
             message,
             overrideable,
         };
     }
     parseFlow() {
-        this.consume("KEYWORD", "flow");
+        this.consume('KEYWORD', 'flow');
         const name = this.consumeIdentifier().value;
-        this.consume("PUNCTUATION", "(");
+        this.consume('PUNCTUATION', '(');
         const input = this.parseType();
-        this.consume("PUNCTUATION", ")");
-        this.consume("OPERATOR", "->");
+        this.consume('PUNCTUATION', ')');
+        this.consume('OPERATOR', '->');
         const output = this.parseType();
-        this.consume("PUNCTUATION", "{");
+        this.consume('PUNCTUATION', '{');
         this.skipNL();
         const steps = [];
-        while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
+        while (!this.check('PUNCTUATION', '}') && !this.isEnd()) {
             this.skipNL();
-            if (this.check("PUNCTUATION", "}")) {
+            if (this.check('PUNCTUATION', '}'))
                 break;
-            }
             steps.push(this.parseFlowStep());
             this.skipNL();
         }
-        this.consume("PUNCTUATION", "}");
-        return { type: "Flow", name, input, output, steps };
+        this.consume('PUNCTUATION', '}');
+        return { type: 'Flow', name, input, output, steps };
     }
     parseFlowStep() {
         const operation = this.advance().value;
         let condition;
-        if (this.check("KEYWORD", "when")) {
+        if (this.check('KEYWORD', 'when')) {
             this.advance();
             condition = this.parseExpr();
         }
-        this.consume("OPERATOR", ":");
-        return {
-            type: "FlowStep",
-            operation,
-            expression: this.parseExpr(),
-            condition,
-        };
+        this.consume('OPERATOR', ':');
+        return { type: 'FlowStep', operation, expression: this.parseExpr(), condition };
     }
     parseEffect() {
-        this.consume("KEYWORD", "effect");
+        this.consume('KEYWORD', 'effect');
         const name = this.consumeIdentifier().value;
-        this.consume("OPERATOR", ":");
+        this.consume('OPERATOR', ':');
         const kind = this.advance().value;
         const config = {};
-        if (this.check("PUNCTUATION", "{")) {
+        if (this.check('PUNCTUATION', '{')) {
             this.advance();
             this.skipNL();
-            while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
+            while (!this.check('PUNCTUATION', '}') && !this.isEnd()) {
                 this.skipNL();
-                if (this.check("PUNCTUATION", "}")) {
+                if (this.check('PUNCTUATION', '}'))
                     break;
-                }
                 // Config keys are like object literal keys - allow keywords
                 const key = this.consumeIdentifierOrKeyword().value;
-                this.consume("OPERATOR", ":");
+                this.consume('OPERATOR', ':');
                 config[key] = this.parseExpr();
                 this.skipNL();
             }
-            this.consume("PUNCTUATION", "}");
+            this.consume('PUNCTUATION', '}');
         }
-        return { type: "Effect", name, kind, config };
+        return { type: 'Effect', name, kind, config };
     }
     parseExpose() {
-        this.consume("KEYWORD", "expose");
+        this.consume('KEYWORD', 'expose');
         const entity = this.consumeIdentifier().value;
-        this.consume("KEYWORD", "as");
+        this.consume('KEYWORD', 'as');
         const protocol = this.advance().value;
         let name = entity.toLowerCase();
         let generateServer = false;
-        if (this.check("KEYWORD", "server")) {
+        if (this.check('KEYWORD', 'server')) {
             this.advance();
             generateServer = true;
         }
-        if (this.check("STRING")) {
+        if (this.check('STRING'))
             name = this.advance().value;
-        }
         const operations = [], middleware = [];
-        if (this.check("PUNCTUATION", "{")) {
+        if (this.check('PUNCTUATION', '{')) {
             this.advance();
             this.skipNL();
-            while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
+            while (!this.check('PUNCTUATION', '}') && !this.isEnd()) {
                 this.skipNL();
-                if (this.check("PUNCTUATION", "}")) {
+                if (this.check('PUNCTUATION', '}'))
                     break;
-                }
                 const val = this.advance().value;
-                if (val === "middleware") {
-                    this.consume("OPERATOR", ":");
+                if (val === 'middleware') {
+                    this.consume('OPERATOR', ':');
                     middleware.push(this.consumeIdentifier().value);
                 }
-                else {
+                else
                     operations.push(val);
-                }
-                if (this.check("PUNCTUATION", ",")) {
+                if (this.check('PUNCTUATION', ','))
                     this.advance();
-                }
                 this.skipNL();
             }
-            this.consume("PUNCTUATION", "}");
+            this.consume('PUNCTUATION', '}');
         }
-        return {
-            type: "Expose",
-            name,
-            protocol,
-            entity,
-            operations,
-            generateServer,
-            middleware: middleware.length ? middleware : undefined,
-        };
+        return { type: 'Expose', name, protocol, entity, operations, generateServer, middleware: middleware.length ? middleware : undefined };
     }
     parseComposition() {
-        this.consume("KEYWORD", "compose");
+        this.consume('KEYWORD', 'compose');
         const name = this.consumeIdentifier().value;
-        this.consume("PUNCTUATION", "{");
+        this.consume('PUNCTUATION', '{');
         this.skipNL();
         const components = [], connections = [];
-        while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
+        while (!this.check('PUNCTUATION', '}') && !this.isEnd()) {
             this.skipNL();
-            if (this.check("PUNCTUATION", "}")) {
+            if (this.check('PUNCTUATION', '}'))
                 break;
-            }
-            if (this.check("KEYWORD", "connect")) {
+            if (this.check('KEYWORD', 'connect'))
                 connections.push(this.parseConnection());
-            }
-            else {
+            else
                 components.push(this.parseComponentRef());
-            }
             this.skipNL();
         }
-        this.consume("PUNCTUATION", "}");
-        return { type: "Composition", name, components, connections };
+        this.consume('PUNCTUATION', '}');
+        return { type: 'Composition', name, components, connections };
     }
     parseComponentRef() {
         const entity = this.consumeIdentifier().value;
         let alias;
-        if (this.check("KEYWORD", "as")) {
+        if (this.check('KEYWORD', 'as')) {
             this.advance();
             alias = this.consumeIdentifier().value;
         }
-        return { type: "ComponentRef", entity, alias };
+        return { type: 'ComponentRef', entity, alias };
     }
     parseConnection() {
-        this.consume("KEYWORD", "connect");
+        this.consume('KEYWORD', 'connect');
         // Component names are references to declared components (use consumeIdentifier for declaration-like reference)
         // Port names after '.' are member-access-like (use consumeIdentifierOrKeyword to allow keywords)
         const fromComponent = this.consumeIdentifier().value;
-        this.consume("OPERATOR", ".");
+        this.consume('OPERATOR', '.');
         const fromOutput = this.consumeIdentifierOrKeyword().value;
-        this.consume("OPERATOR", "->");
+        this.consume('OPERATOR', '->');
         const toComponent = this.consumeIdentifier().value;
-        this.consume("OPERATOR", ".");
+        this.consume('OPERATOR', '.');
         const toInput = this.consumeIdentifierOrKeyword().value;
         let transform;
-        if (this.check("KEYWORD", "with")) {
+        if (this.check('KEYWORD', 'with')) {
             this.advance();
             transform = this.parseExpr();
         }
-        return {
-            type: "Connection",
-            from: { component: fromComponent, output: fromOutput },
-            to: { component: toComponent, input: toInput },
-            transform,
-        };
+        return { type: 'Connection', from: { component: fromComponent, output: fromOutput }, to: { component: toComponent, input: toInput }, transform };
     }
-    parseExpr() {
-        return this.parseTernary();
-    }
+    parseExpr() { return this.parseTernary(); }
     parseTernary() {
         const expr = this.parseOr();
-        if (this.check("OPERATOR", "?")) {
+        if (this.check('OPERATOR', '?')) {
             this.advance();
             const cons = this.parseExpr();
-            this.consume("OPERATOR", ":");
+            this.consume('OPERATOR', ':');
             const alt = this.parseExpr();
-            return {
-                type: "Conditional",
-                condition: expr,
-                consequent: cons,
-                alternate: alt,
-            };
+            return { type: 'Conditional', condition: expr, consequent: cons, alternate: alt };
         }
         return expr;
     }
     parseOr() {
         let left = this.parseAnd();
-        while (this.check("OPERATOR", "||") || this.check("KEYWORD", "or")) {
+        while (this.check('OPERATOR', '||') || this.check('KEYWORD', 'or')) {
             const op = this.advance().value;
-            left = { type: "BinaryOp", operator: op, left, right: this.parseAnd() };
+            left = { type: 'BinaryOp', operator: op, left, right: this.parseAnd() };
         }
         return left;
     }
     parseAnd() {
         let left = this.parseEquality();
-        while (this.check("OPERATOR", "&&") || this.check("KEYWORD", "and")) {
+        while (this.check('OPERATOR', '&&') || this.check('KEYWORD', 'and')) {
             const op = this.advance().value;
-            left = {
-                type: "BinaryOp",
-                operator: op,
-                left,
-                right: this.parseEquality(),
-            };
+            left = { type: 'BinaryOp', operator: op, left, right: this.parseEquality() };
         }
         return left;
     }
     parseEquality() {
         let left = this.parseComparison();
-        while (["==", "!="].includes(this.current()?.value || "") ||
-            ["is", "in", "contains"].includes(this.current()?.value || "")) {
+        while (['==', '!='].includes(this.current()?.value || '') || ['is', 'in', 'contains'].includes(this.current()?.value || '')) {
             const op = this.advance().value;
-            left = {
-                type: "BinaryOp",
-                operator: op,
-                left,
-                right: this.parseComparison(),
-            };
+            left = { type: 'BinaryOp', operator: op, left, right: this.parseComparison() };
         }
         return left;
     }
     parseComparison() {
         let left = this.parseAdditive();
-        while (["<", ">", "<=", ">="].includes(this.current()?.value || "")) {
+        while (['<', '>', '<=', '>='].includes(this.current()?.value || '')) {
             const op = this.advance().value;
-            left = {
-                type: "BinaryOp",
-                operator: op,
-                left,
-                right: this.parseAdditive(),
-            };
+            left = { type: 'BinaryOp', operator: op, left, right: this.parseAdditive() };
         }
         return left;
     }
     parseAdditive() {
         let left = this.parseMultiplicative();
-        while (["+", "-"].includes(this.current()?.value || "")) {
+        while (['+', '-'].includes(this.current()?.value || '')) {
             const op = this.advance().value;
-            left = {
-                type: "BinaryOp",
-                operator: op,
-                left,
-                right: this.parseMultiplicative(),
-            };
+            left = { type: 'BinaryOp', operator: op, left, right: this.parseMultiplicative() };
         }
         return left;
     }
     parseMultiplicative() {
         let left = this.parseUnary();
-        while (["*", "/", "%"].includes(this.current()?.value || "")) {
+        while (['*', '/', '%'].includes(this.current()?.value || '')) {
             const op = this.advance().value;
-            left = { type: "BinaryOp", operator: op, left, right: this.parseUnary() };
+            left = { type: 'BinaryOp', operator: op, left, right: this.parseUnary() };
         }
         return left;
     }
     parseUnary() {
-        if (["!", "-"].includes(this.current()?.value || "") ||
-            this.check("KEYWORD", "not")) {
+        if (['!', '-'].includes(this.current()?.value || '') || this.check('KEYWORD', 'not')) {
             const op = this.advance().value;
-            return { type: "UnaryOp", operator: op, operand: this.parseUnary() };
+            return { type: 'UnaryOp', operator: op, operand: this.parseUnary() };
         }
         return this.parsePostfix();
     }
@@ -1023,150 +832,107 @@ export class Parser {
         let expr = this.parsePrimary();
         while (true) {
             // Member access: allow both identifiers AND keywords as property names (e.g., obj.entity, obj.command)
-            if (this.check("OPERATOR", ".") || this.check("OPERATOR", "?.")) {
+            if (this.check('OPERATOR', '.') || this.check('OPERATOR', '?.')) {
                 this.advance();
-                expr = {
-                    type: "MemberAccess",
-                    object: expr,
-                    property: this.consumeIdentifierOrKeyword().value,
-                };
+                expr = { type: 'MemberAccess', object: expr, property: this.consumeIdentifierOrKeyword().value };
             }
-            else if (this.check("PUNCTUATION", "(")) {
+            else if (this.check('PUNCTUATION', '(')) {
                 this.advance();
                 const args = [];
-                while (!(this.check("PUNCTUATION", ")") || this.isEnd())) {
+                while (!this.check('PUNCTUATION', ')') && !this.isEnd()) {
                     args.push(this.parseExpr());
-                    if (this.check("PUNCTUATION", ",")) {
+                    if (this.check('PUNCTUATION', ','))
                         this.advance();
-                    }
                 }
-                this.consume("PUNCTUATION", ")");
-                expr = { type: "Call", callee: expr, arguments: args };
+                this.consume('PUNCTUATION', ')');
+                expr = { type: 'Call', callee: expr, arguments: args };
             }
-            else if (this.check("PUNCTUATION", "[")) {
+            else if (this.check('PUNCTUATION', '[')) {
                 this.advance();
                 const idx = this.parseExpr();
-                this.consume("PUNCTUATION", "]");
-                expr = {
-                    type: "MemberAccess",
-                    object: expr,
-                    property: `[${"value" in idx ? idx.value : ""}]`,
-                };
+                this.consume('PUNCTUATION', ']');
+                expr = { type: 'MemberAccess', object: expr, property: `[${'value' in idx ? idx.value : ''}]` };
             }
-            else {
+            else
                 break;
-            }
         }
         return expr;
     }
     parsePrimary() {
-        if (this.check("NUMBER")) {
-            return {
-                type: "Literal",
-                value: Number.parseFloat(this.advance().value),
-                dataType: "number",
-            };
-        }
-        if (this.check("STRING")) {
-            return {
-                type: "Literal",
-                value: this.advance().value,
-                dataType: "string",
-            };
-        }
-        if (this.check("KEYWORD", "true") || this.check("KEYWORD", "false")) {
-            return {
-                type: "Literal",
-                value: this.advance().value === "true",
-                dataType: "boolean",
-            };
-        }
-        if (this.check("KEYWORD", "null")) {
+        if (this.check('NUMBER'))
+            return { type: 'Literal', value: parseFloat(this.advance().value), dataType: 'number' };
+        if (this.check('STRING'))
+            return { type: 'Literal', value: this.advance().value, dataType: 'string' };
+        if (this.check('KEYWORD', 'true') || this.check('KEYWORD', 'false'))
+            return { type: 'Literal', value: this.advance().value === 'true', dataType: 'boolean' };
+        if (this.check('KEYWORD', 'null')) {
             this.advance();
-            return { type: "Literal", value: null, dataType: "null" };
+            return { type: 'Literal', value: null, dataType: 'null' };
         }
-        if (this.check("PUNCTUATION", "[")) {
+        if (this.check('PUNCTUATION', '[')) {
             this.advance();
             const els = [];
-            while (!(this.check("PUNCTUATION", "]") || this.isEnd())) {
+            while (!this.check('PUNCTUATION', ']') && !this.isEnd()) {
                 els.push(this.parseExpr());
-                if (this.check("PUNCTUATION", ",")) {
+                if (this.check('PUNCTUATION', ','))
                     this.advance();
-                }
             }
-            this.consume("PUNCTUATION", "]");
-            return { type: "Array", elements: els };
+            this.consume('PUNCTUATION', ']');
+            return { type: 'Array', elements: els };
         }
         // Object literal: allow both identifiers AND keywords as unquoted keys (e.g., { entity: 1, command: 2 })
-        if (this.check("PUNCTUATION", "{")) {
+        if (this.check('PUNCTUATION', '{')) {
             this.advance();
             this.skipNL();
             const props = [];
-            while (!(this.check("PUNCTUATION", "}") || this.isEnd())) {
+            while (!this.check('PUNCTUATION', '}') && !this.isEnd()) {
                 this.skipNL();
-                if (this.check("PUNCTUATION", "}")) {
+                if (this.check('PUNCTUATION', '}'))
                     break;
-                }
-                const key = this.check("STRING")
-                    ? this.advance().value
-                    : this.consumeIdentifierOrKeyword().value;
-                this.consume("OPERATOR", ":");
+                const key = this.check('STRING') ? this.advance().value : this.consumeIdentifierOrKeyword().value;
+                this.consume('OPERATOR', ':');
                 props.push({ key, value: this.parseExpr() });
-                if (this.check("PUNCTUATION", ",")) {
+                if (this.check('PUNCTUATION', ','))
                     this.advance();
-                }
                 this.skipNL();
             }
-            this.consume("PUNCTUATION", "}");
-            return { type: "Object", properties: props };
+            this.consume('PUNCTUATION', '}');
+            return { type: 'Object', properties: props };
         }
         // Lambda or parenthesized expression
-        if (this.check("PUNCTUATION", "(")) {
+        if (this.check('PUNCTUATION', '(')) {
             this.advance();
             const startPos = this.pos;
             const params = [];
             // Try to parse lambda parameters (identifiers only - reserved words not allowed as parameter declarations)
-            while (this.check("IDENTIFIER") && !this.isEnd()) {
+            while (this.check('IDENTIFIER') && !this.isEnd()) {
                 params.push(this.advance().value);
-                if (this.check("PUNCTUATION", ",")) {
+                if (this.check('PUNCTUATION', ','))
                     this.advance();
-                }
-                else {
+                else
                     break;
-                }
             }
             // Check if this looks like a lambda: (params) =>
-            if (this.check("PUNCTUATION", ")")) {
+            if (this.check('PUNCTUATION', ')')) {
                 this.advance();
-                if (this.check("OPERATOR", "=>")) {
+                if (this.check('OPERATOR', '=>')) {
                     this.advance();
-                    return { type: "Lambda", parameters: params, body: this.parseExpr() };
+                    return { type: 'Lambda', parameters: params, body: this.parseExpr() };
                 }
             }
             // Not a lambda, backtrack and parse as parenthesized expression
             this.pos = startPos;
             const expr = this.parseExpr();
-            this.consume("PUNCTUATION", ")");
+            this.consume('PUNCTUATION', ')');
             return expr;
         }
-        if (this.check("IDENTIFIER") ||
-            this.check("KEYWORD", "user") ||
-            this.check("KEYWORD", "self") ||
-            this.check("KEYWORD", "context")) {
-            return { type: "Identifier", name: this.advance().value };
-        }
-        throw new Error(`Unexpected: ${this.current()?.value || "EOF"}`);
+        if (this.check('IDENTIFIER') || this.check('KEYWORD', 'user') || this.check('KEYWORD', 'self') || this.check('KEYWORD', 'context'))
+            return { type: 'Identifier', name: this.advance().value };
+        throw new Error(`Unexpected: ${this.current()?.value || 'EOF'}`);
     }
-    check(type, value) {
-        const t = this.current();
-        return t && t.type === type && (value === undefined || t.value === value);
-    }
-    consume(type, value) {
-        if (this.check(type, value)) {
-            return this.advance();
-        }
-        throw new Error(`Expected ${value || type}, got ${this.current()?.value || "EOF"}`);
-    }
+    check(type, value) { const t = this.current(); return t && t.type === type && (value === undefined || t.value === value); }
+    consume(type, value) { if (this.check(type, value))
+        return this.advance(); throw new Error(`Expected ${value || type}, got ${this.current()?.value || 'EOF'}`); }
     /**
      * Consumes a declaration identifier token, enforcing the reserved word rule.
      * Use this ONLY at declaration sites (entity/module/command/property/parameter names, etc.).
@@ -1177,17 +943,17 @@ export class Parser {
      */
     consumeIdentifier() {
         const token = this.current();
-        if (token && token.type === "KEYWORD") {
+        if (token && token.type === 'KEYWORD') {
             // Emit structured diagnostic with position from the reserved word token
             this.errors.push({
                 message: `Reserved word '${token.value}' cannot be used as an identifier`,
                 position: token.position,
-                severity: "error",
+                severity: 'error'
             });
             // Advance past the keyword and return it as a placeholder to continue parsing
             return this.advance();
         }
-        return this.consume("IDENTIFIER");
+        return this.consume('IDENTIFIER');
     }
     /**
      * Consumes any identifier-like token (IDENTIFIER or KEYWORD) for use in expressions.
@@ -1195,45 +961,18 @@ export class Parser {
      */
     consumeIdentifierOrKeyword() {
         const token = this.current();
-        if (token && (token.type === "IDENTIFIER" || token.type === "KEYWORD")) {
+        if (token && (token.type === 'IDENTIFIER' || token.type === 'KEYWORD')) {
             return this.advance();
         }
-        throw new Error(`Expected identifier, got ${token?.value || "EOF"}`);
+        throw new Error(`Expected identifier, got ${token?.value || 'EOF'}`);
     }
-    advance() {
-        if (!this.isEnd()) {
-            this.pos++;
-        }
-        return this.tokens[this.pos - 1];
-    }
-    current() {
-        return this.tokens[this.pos];
-    }
-    isEnd() {
-        return (this.pos >= this.tokens.length || this.tokens[this.pos]?.type === "EOF");
-    }
-    skipNL() {
-        while (this.check("NEWLINE", "\n")) {
-            this.advance();
-        }
-    }
-    sync() {
-        this.advance();
-        while (!(this.isEnd() ||
-            [
-                "entity",
-                "flow",
-                "effect",
-                "expose",
-                "compose",
-                "module",
-                "command",
-                "policy",
-                "store",
-                "event",
-            ].includes(this.current()?.value || ""))) {
-            this.advance();
-        }
-    }
+    advance() { if (!this.isEnd())
+        this.pos++; return this.tokens[this.pos - 1]; }
+    current() { return this.tokens[this.pos]; }
+    isEnd() { return this.pos >= this.tokens.length || this.tokens[this.pos]?.type === 'EOF'; }
+    skipNL() { while (this.check('NEWLINE', '\n'))
+        this.advance(); }
+    sync() { this.advance(); while (!this.isEnd() && !['entity', 'flow', 'effect', 'expose', 'compose', 'module', 'command', 'policy', 'store', 'event'].includes(this.current()?.value || ''))
+        this.advance(); }
 }
 //# sourceMappingURL=parser.js.map

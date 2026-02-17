@@ -7,7 +7,7 @@
  * KEY: getProjection() auto-registers builtins on first call.
  * Consumers don't need to think about startup ordering.
  */
-import type { ProjectionTarget } from "./interface";
+import type { ProjectionTarget } from './interface';
 /**
  * Register a projection target.
  *

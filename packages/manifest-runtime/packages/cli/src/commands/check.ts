@@ -4,9 +4,9 @@
  * Runs compile + validate as a single verification workflow.
  */
 
-import chalk from "chalk";
-import { compileCommand } from "./compile.js";
-import { validateCommand } from "./validate.js";
+import chalk from 'chalk';
+import { compileCommand } from './compile.js';
+import { validateCommand } from './validate.js';
 
 interface CheckOptions {
   output?: string;
@@ -42,6 +42,7 @@ export async function checkCommand(
   });
 
   const elapsedMs = Date.now() - startedAt;
-  console.log("");
+  console.log('');
   console.log(chalk.bold.green(`✓ Check complete in ${elapsedMs}ms`));
 }
+

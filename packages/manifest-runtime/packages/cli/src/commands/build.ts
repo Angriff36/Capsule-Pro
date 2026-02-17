@@ -4,11 +4,11 @@
  * Compiles .manifest to IR and generates code in one step.
  */
 
-import path from "node:path";
-import chalk from "chalk";
-import ora from "ora";
-import { compileCommand } from "./compile.js";
-import { generateCommand } from "./generate.js";
+import path from 'path';
+import chalk from 'chalk';
+import ora from 'ora';
+import { compileCommand } from './compile.js';
+import { generateCommand } from './generate.js';
 
 interface BuildOptions {
   projection: string;
@@ -36,17 +36,17 @@ export async function buildCommand(
   source: string | undefined,
   options: BuildOptions
 ): Promise<void> {
-  const spinner = ora("Manifest build workflow").start();
+  const spinner = ora('Manifest build workflow').start();
 
   try {
     // Step 1: Compile to IR
-    spinner.text = "Step 1/2: Compiling .manifest to IR...";
+    spinner.text = 'Step 1/2: Compiling .manifest to IR...';
 
     // Run compile (silent mode, we handle output)
-    const compileSpinner = ora("Compiling").start();
+    const compileSpinner = ora('Compiling').start();
 
     // Collect IR files that would be generated
-    const _irFiles: IRFile[] = [];
+    const irFiles: IRFile[] = [];
 
     // For now, we'll call compileCommand but capture the output
     // In a real implementation, we'd make compileCommand return the IR files
@@ -57,10 +57,10 @@ export async function buildCommand(
       pretty: true,
     });
 
-    compileSpinner.succeed("Compiled to IR");
+    compileSpinner.succeed('Compiled to IR');
 
     // Step 2: Generate code from IR
-    spinner.text = "Step 2/2: Generating code from IR...";
+    spinner.text = 'Step 2/2: Generating code from IR...';
 
     await generateCommand(options.irOutput, {
       projection: options.projection,
@@ -72,22 +72,17 @@ export async function buildCommand(
       response: options.response,
     });
 
-    spinner.succeed(
-      `Build complete: IR → ${options.irOutput}, Code → ${options.codeOutput}`
-    );
+    spinner.succeed(`Build complete: IR → ${options.irOutput}, Code → ${options.codeOutput}`);
 
     // Show summary
-    console.log("");
-    console.log(chalk.bold("Build Summary:"));
-    console.log(
-      `  IR output:  ${path.relative(process.cwd(), options.irOutput)}`
-    );
-    console.log(
-      `  Code output: ${path.relative(process.cwd(), options.codeOutput)}`
-    );
+    console.log('');
+    console.log(chalk.bold('Build Summary:'));
+    console.log(`  IR output:  ${path.relative(process.cwd(), options.irOutput)}`);
+    console.log(`  Code output: ${path.relative(process.cwd(), options.codeOutput)}`);
     console.log(`  Projection: ${options.projection}`);
     console.log(`  Surface:    ${options.surface}`);
-    console.log("");
+    console.log('');
+
   } catch (error: any) {
     spinner.fail(`Build failed: ${error.message}`);
     console.error(error);

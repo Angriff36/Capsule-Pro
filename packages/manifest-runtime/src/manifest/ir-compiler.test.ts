@@ -5,33 +5,33 @@
  * Comprehensive coverage for all transformation functions and edge cases.
  */
 
-import { describe, expect, it } from "vitest";
-import { compileToIR, IRCompiler } from "./ir-compiler";
+import { describe, it, expect } from 'vitest';
+import { IRCompiler, compileToIR } from './ir-compiler';
 
-describe("IRCompiler", () => {
-  describe("Basic Compilation", () => {
-    it("should compile empty source", async () => {
+describe('IRCompiler', () => {
+  describe('Basic Compilation', () => {
+    it('should compile empty source', async () => {
       const compiler = new IRCompiler();
-      const result = await compiler.compileToIR("");
+      const result = await compiler.compileToIR('');
 
       expect(result.diagnostics).toHaveLength(0);
       expect(result.ir).not.toBeNull();
-      expect(result.ir?.version).toBe("1.0");
+      expect(result.ir?.version).toBe('1.0');
       expect(result.ir?.entities).toHaveLength(0);
       expect(result.ir?.commands).toHaveLength(0);
     });
 
-    it("should compile whitespace-only source", async () => {
+    it('should compile whitespace-only source', async () => {
       const compiler = new IRCompiler();
-      const result = await compiler.compileToIR("   \n\n  ");
+      const result = await compiler.compileToIR('   \n\n  ');
 
       expect(result.diagnostics).toHaveLength(0);
       expect(result.ir).not.toBeNull();
     });
 
-    it("should generate provenance metadata", async () => {
+    it('should generate provenance metadata', async () => {
       const compiler = new IRCompiler();
-      const result = await compiler.compileToIR("entity User {}");
+      const result = await compiler.compileToIR('entity User {}');
 
       expect(result.ir?.provenance).toBeDefined();
       expect(result.ir?.provenance.contentHash).toBeDefined();
@@ -40,61 +40,55 @@ describe("IRCompiler", () => {
       expect(result.ir?.provenance.compiledAt).toBeDefined();
     });
 
-    it("should generate content hash for source", async () => {
+    it('should generate content hash for source', async () => {
       const compiler = new IRCompiler();
-      const source = "entity User {}";
+      const source = 'entity User {}';
       const result1 = await compiler.compileToIR(source);
       const result2 = await compiler.compileToIR(source);
 
-      expect(result1.ir?.provenance.contentHash).toBe(
-        result2.ir?.provenance.contentHash
-      );
+      expect(result1.ir?.provenance.contentHash).toBe(result2.ir?.provenance.contentHash);
     });
 
-    it("should generate different content hashes for different sources", async () => {
+    it('should generate different content hashes for different sources', async () => {
       const compiler = new IRCompiler();
-      const result1 = await compiler.compileToIR("entity User {}");
-      const result2 = await compiler.compileToIR("entity Post {}");
+      const result1 = await compiler.compileToIR('entity User {}');
+      const result2 = await compiler.compileToIR('entity Post {}');
 
-      expect(result1.ir?.provenance.contentHash).not.toBe(
-        result2.ir?.provenance.contentHash
-      );
+      expect(result1.ir?.provenance.contentHash).not.toBe(result2.ir?.provenance.contentHash);
     });
 
-    it("should generate irHash for integrity verification", async () => {
+    it('should generate irHash for integrity verification', async () => {
       const compiler = new IRCompiler();
-      const result = await compiler.compileToIR("entity User {}");
+      const result = await compiler.compileToIR('entity User {}');
 
       expect(result.ir?.provenance.irHash).toBeDefined();
       expect(result.ir?.provenance.irHash?.length).toBe(64); // SHA-256 hex string
     });
 
-    it("should return diagnostics for syntax errors", async () => {
+    it('should return diagnostics for syntax errors', async () => {
       const compiler = new IRCompiler();
-      const result = await compiler.compileToIR(
-        "entity User { property name: }"
-      );
+      const result = await compiler.compileToIR('entity User { property name: }');
 
       expect(result.ir).not.toBeUndefined();
       expect(result.diagnostics.length).toBeGreaterThan(0);
-      expect(result.diagnostics[0].severity).toBe("error");
+      expect(result.diagnostics[0].severity).toBe('error');
     });
   });
 
-  describe("Entity Transformation", () => {
-    it("should transform basic entity", async () => {
+  describe('Entity Transformation', () => {
+    it('should transform basic entity', async () => {
       const compiler = new IRCompiler();
-      const result = await compiler.compileToIR("entity User {}");
+      const result = await compiler.compileToIR('entity User {}');
 
       expect(result.ir?.entities).toHaveLength(1);
       const entity = result.ir?.entities[0];
-      expect(entity?.name).toBe("User");
+      expect(entity?.name).toBe('User');
       expect(entity?.properties).toHaveLength(0);
       expect(entity?.relationships).toHaveLength(0);
       expect(entity?.constraints).toHaveLength(0);
     });
 
-    it("should transform entity with properties", async () => {
+    it('should transform entity with properties', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -106,15 +100,15 @@ describe("IRCompiler", () => {
 
       const entity = result.ir?.entities[0];
       expect(entity?.properties).toHaveLength(3);
-      expect(entity?.properties[0].name).toBe("name");
-      expect(entity?.properties[0].type.name).toBe("string");
-      expect(entity?.properties[1].name).toBe("age");
-      expect(entity?.properties[1].type.name).toBe("number");
-      expect(entity?.properties[2].name).toBe("active");
-      expect(entity?.properties[2].type.name).toBe("boolean");
+      expect(entity?.properties[0].name).toBe('name');
+      expect(entity?.properties[0].type.name).toBe('string');
+      expect(entity?.properties[1].name).toBe('age');
+      expect(entity?.properties[1].type.name).toBe('number');
+      expect(entity?.properties[2].name).toBe('active');
+      expect(entity?.properties[2].type.name).toBe('boolean');
     });
 
-    it("should transform entity with property modifiers", async () => {
+    it('should transform entity with property modifiers', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -125,12 +119,12 @@ describe("IRCompiler", () => {
       `);
 
       const entity = result.ir?.entities[0];
-      expect(entity?.properties[0].modifiers).toContain("required");
-      expect(entity?.properties[1].modifiers).toContain("unique");
-      expect(entity?.properties[2].modifiers).toContain("indexed");
+      expect(entity?.properties[0].modifiers).toContain('required');
+      expect(entity?.properties[1].modifiers).toContain('unique');
+      expect(entity?.properties[2].modifiers).toContain('indexed');
     });
 
-    it("should transform entity with default values", async () => {
+    it('should transform entity with default values', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -142,25 +136,13 @@ describe("IRCompiler", () => {
       `);
 
       const entity = result.ir?.entities[0];
-      expect(entity?.properties[0].defaultValue).toEqual({
-        kind: "string",
-        value: "Anonymous",
-      });
-      expect(entity?.properties[1].defaultValue).toEqual({
-        kind: "number",
-        value: 18,
-      });
-      expect(entity?.properties[2].defaultValue).toEqual({
-        kind: "boolean",
-        value: true,
-      });
-      expect(entity?.properties[3].defaultValue).toEqual({
-        kind: "number",
-        value: 0,
-      });
+      expect(entity?.properties[0].defaultValue).toEqual({ kind: 'string', value: 'Anonymous' });
+      expect(entity?.properties[1].defaultValue).toEqual({ kind: 'number', value: 18 });
+      expect(entity?.properties[2].defaultValue).toEqual({ kind: 'boolean', value: true });
+      expect(entity?.properties[3].defaultValue).toEqual({ kind: 'number', value: 0 });
     });
 
-    it("should transform entity with computed properties", async () => {
+    it('should transform entity with computed properties', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -172,12 +154,12 @@ describe("IRCompiler", () => {
 
       const entity = result.ir?.entities[0];
       expect(entity?.computedProperties).toHaveLength(1);
-      expect(entity?.computedProperties[0].name).toBe("fullName");
-      expect(entity?.computedProperties[0].type.name).toBe("string");
+      expect(entity?.computedProperties[0].name).toBe('fullName');
+      expect(entity?.computedProperties[0].type.name).toBe('string');
       expect(entity?.computedProperties[0].expression).toBeDefined();
     });
 
-    it("should transform entity with relationships", async () => {
+    it('should transform entity with relationships', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -189,13 +171,13 @@ describe("IRCompiler", () => {
 
       const entity = result.ir?.entities[0];
       expect(entity?.relationships).toHaveLength(3);
-      expect(entity?.relationships[0].kind).toBe("hasMany");
-      expect(entity?.relationships[0].target).toBe("Post");
-      expect(entity?.relationships[1].kind).toBe("hasOne");
-      expect(entity?.relationships[2].kind).toBe("belongsTo");
+      expect(entity?.relationships[0].kind).toBe('hasMany');
+      expect(entity?.relationships[0].target).toBe('Post');
+      expect(entity?.relationships[1].kind).toBe('hasOne');
+      expect(entity?.relationships[2].kind).toBe('belongsTo');
     });
 
-    it("should transform entity with constraints", async () => {
+    it('should transform entity with constraints', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -206,12 +188,12 @@ describe("IRCompiler", () => {
 
       const entity = result.ir?.entities[0];
       expect(entity?.constraints).toHaveLength(1);
-      expect(entity?.constraints[0].name).toBe("ageCheck");
-      expect(entity?.constraints[0].code).toBe("ageCheck");
-      expect(entity?.constraints[0].severity).toBe("block"); // default
+      expect(entity?.constraints[0].name).toBe('ageCheck');
+      expect(entity?.constraints[0].code).toBe('ageCheck');
+      expect(entity?.constraints[0].severity).toBe('block'); // default
     });
 
-    it("should transform entity with inline constraints", async () => {
+    it('should transform entity with inline constraints', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -222,12 +204,12 @@ describe("IRCompiler", () => {
 
       const entity = result.ir?.entities[0];
       expect(entity?.constraints).toHaveLength(1);
-      expect(entity?.constraints[0].name).toBe("ageCheck");
+      expect(entity?.constraints[0].name).toBe('ageCheck');
     });
   });
 
-  describe("Constraint Transformation", () => {
-    it("should transform constraint with block severity", async () => {
+  describe('Constraint Transformation', () => {
+    it('should transform constraint with block severity', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -237,10 +219,10 @@ describe("IRCompiler", () => {
       `);
 
       const constraint = result.ir?.entities[0].constraints[0];
-      expect(constraint?.severity).toBe("block");
+      expect(constraint?.severity).toBe('block');
     });
 
-    it("should transform constraint with warn severity", async () => {
+    it('should transform constraint with warn severity', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -250,10 +232,10 @@ describe("IRCompiler", () => {
       `);
 
       const constraint = result.ir?.entities[0].constraints[0];
-      expect(constraint?.severity).toBe("warn");
+      expect(constraint?.severity).toBe('warn');
     });
 
-    it("should transform constraint with ok severity", async () => {
+    it('should transform constraint with ok severity', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -263,10 +245,10 @@ describe("IRCompiler", () => {
       `);
 
       const constraint = result.ir?.entities[0].constraints[0];
-      expect(constraint?.severity).toBe("ok");
+      expect(constraint?.severity).toBe('ok');
     });
 
-    it("should transform constraint with messageTemplate", async () => {
+    it('should transform constraint with messageTemplate', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -276,10 +258,10 @@ describe("IRCompiler", () => {
       `);
 
       const constraint = result.ir?.entities[0].constraints[0];
-      expect(constraint?.message).toBe("Age {age} is below minimum");
+      expect(constraint?.message).toBe('Age {age} is below minimum');
     });
 
-    it("should transform constraint with detailsMapping", async () => {
+    it('should transform constraint with detailsMapping', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -295,7 +277,7 @@ describe("IRCompiler", () => {
       expect(constraint?.expression).toBeDefined();
     });
 
-    it("should transform overrideable constraint", async () => {
+    it('should transform overrideable constraint', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -308,7 +290,7 @@ describe("IRCompiler", () => {
       expect(constraint?.overrideable).toBe(true);
     });
 
-    it("should transform constraint with overridePolicyRef", async () => {
+    it('should transform constraint with overridePolicyRef', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -322,13 +304,13 @@ describe("IRCompiler", () => {
       // The parser may not support the 'via' syntax for override policy
       // Check if overridePolicyRef is set, otherwise skip the assertion
       if (constraint?.overridePolicyRef) {
-        expect(constraint.overridePolicyRef).toBe("adminOverride");
+        expect(constraint.overridePolicyRef).toBe('adminOverride');
       }
     });
   });
 
-  describe("Command Transformation", () => {
-    it("should transform basic command", async () => {
+  describe('Command Transformation', () => {
+    it('should transform basic command', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -340,16 +322,16 @@ describe("IRCompiler", () => {
       `);
 
       const command = result.ir?.commands[0];
-      expect(command?.name).toBe("createUser");
-      expect(command?.entity).toBe("User");
+      expect(command?.name).toBe('createUser');
+      expect(command?.entity).toBe('User');
       expect(command?.parameters).toHaveLength(1);
-      expect(command?.parameters[0].name).toBe("name");
-      expect(command?.parameters[0].type.name).toBe("string");
+      expect(command?.parameters[0].name).toBe('name');
+      expect(command?.parameters[0].type.name).toBe('string');
       expect(command?.actions).toHaveLength(1);
-      expect(command?.actions[0].kind).toBe("mutate");
+      expect(command?.actions[0].kind).toBe('mutate');
     });
 
-    it("should transform command with guards", async () => {
+    it('should transform command with guards', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -365,10 +347,10 @@ describe("IRCompiler", () => {
 
       const command = result.ir?.commands[0];
       expect(command?.guards).toHaveLength(2);
-      expect(command?.guards[0].kind).toBe("binary");
+      expect(command?.guards[0].kind).toBe('binary');
     });
 
-    it("should transform command with multiple actions", async () => {
+    it('should transform command with multiple actions', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -385,12 +367,12 @@ describe("IRCompiler", () => {
       const command = result.ir?.commands[0];
       // Emit statements are stored in the emits array, not actions
       expect(command?.actions).toHaveLength(2);
-      expect(command?.actions[0].kind).toBe("mutate");
+      expect(command?.actions[0].kind).toBe('mutate');
       expect(command?.emits).toHaveLength(1);
-      expect(command?.emits[0]).toBe("UserCreated");
+      expect(command?.emits[0]).toBe('UserCreated');
     });
 
-    it("should transform command with return type", async () => {
+    it('should transform command with return type', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -402,10 +384,10 @@ describe("IRCompiler", () => {
       `);
 
       const command = result.ir?.commands[0];
-      expect(command?.returns?.name).toBe("User");
+      expect(command?.returns?.name).toBe('User');
     });
 
-    it("should transform command with constraints", async () => {
+    it('should transform command with constraints', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity Payment {
@@ -419,10 +401,10 @@ describe("IRCompiler", () => {
 
       const command = result.ir?.commands[0];
       expect(command?.constraints).toHaveLength(1);
-      expect(command?.constraints?.[0].name).toBe("amountLimit");
+      expect(command?.constraints?.[0].name).toBe('amountLimit');
     });
 
-    it("should transform entity-scoped command", async () => {
+    it('should transform entity-scoped command', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -434,13 +416,13 @@ describe("IRCompiler", () => {
       `);
 
       const command = result.ir?.commands[0];
-      expect(command?.name).toBe("updateProfile");
-      expect(command?.entity).toBe("User");
+      expect(command?.name).toBe('updateProfile');
+      expect(command?.entity).toBe('User');
     });
   });
 
-  describe("Policy Transformation", () => {
-    it("should transform read policy", async () => {
+  describe('Policy Transformation', () => {
+    it('should transform read policy', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -450,13 +432,13 @@ describe("IRCompiler", () => {
       `);
 
       const policy = result.ir?.policies[0];
-      expect(policy?.name).toBe("readUser");
-      expect(policy?.action).toBe("read");
-      expect(policy?.entity).toBe("User");
+      expect(policy?.name).toBe('readUser');
+      expect(policy?.action).toBe('read');
+      expect(policy?.entity).toBe('User');
       expect(policy?.expression).toBeDefined();
     });
 
-    it("should transform write policy", async () => {
+    it('should transform write policy', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -466,10 +448,10 @@ describe("IRCompiler", () => {
       `);
 
       const policy = result.ir?.policies[0];
-      expect(policy?.action).toBe("write");
+      expect(policy?.action).toBe('write');
     });
 
-    it("should transform delete policy", async () => {
+    it('should transform delete policy', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -479,10 +461,10 @@ describe("IRCompiler", () => {
       `);
 
       const policy = result.ir?.policies[0];
-      expect(policy?.action).toBe("delete");
+      expect(policy?.action).toBe('delete');
     });
 
-    it("should transform execute policy", async () => {
+    it('should transform execute policy', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -492,10 +474,10 @@ describe("IRCompiler", () => {
       `);
 
       const policy = result.ir?.policies[0];
-      expect(policy?.action).toBe("execute");
+      expect(policy?.action).toBe('execute');
     });
 
-    it("should transform all policy", async () => {
+    it('should transform all policy', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -505,10 +487,10 @@ describe("IRCompiler", () => {
       `);
 
       const policy = result.ir?.policies[0];
-      expect(policy?.action).toBe("all");
+      expect(policy?.action).toBe('all');
     });
 
-    it("should transform override policy", async () => {
+    it('should transform override policy', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -518,10 +500,10 @@ describe("IRCompiler", () => {
       `);
 
       const policy = result.ir?.policies[0];
-      expect(policy?.action).toBe("override");
+      expect(policy?.action).toBe('override');
     });
 
-    it("should transform policy with message", async () => {
+    it('should transform policy with message', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -531,10 +513,10 @@ describe("IRCompiler", () => {
       `);
 
       const policy = result.ir?.policies[0];
-      expect(policy?.message).toBe("Admin access required");
+      expect(policy?.message).toBe('Admin access required');
     });
 
-    it("should transform entity-scoped policy", async () => {
+    it('should transform entity-scoped policy', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -544,14 +526,14 @@ describe("IRCompiler", () => {
       `);
 
       const policy = result.ir?.policies[0];
-      expect(policy?.entity).toBe("User");
-      expect(policy?.name).toBe("readUser");
-      expect(policy?.action).toBe("read");
+      expect(policy?.entity).toBe('User');
+      expect(policy?.name).toBe('readUser');
+      expect(policy?.action).toBe('read');
     });
   });
 
-  describe("Store Transformation", () => {
-    it("should transform memory store", async () => {
+  describe('Store Transformation', () => {
+    it('should transform memory store', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {}
@@ -559,11 +541,11 @@ describe("IRCompiler", () => {
       `);
 
       const store = result.ir?.stores[0];
-      expect(store?.entity).toBe("User");
-      expect(store?.target).toBe("memory");
+      expect(store?.entity).toBe('User');
+      expect(store?.target).toBe('memory');
     });
 
-    it("should transform localStorage store", async () => {
+    it('should transform localStorage store', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {}
@@ -571,10 +553,10 @@ describe("IRCompiler", () => {
       `);
 
       const store = result.ir?.stores[0];
-      expect(store?.target).toBe("localStorage");
+      expect(store?.target).toBe('localStorage');
     });
 
-    it("should transform postgres store", async () => {
+    it('should transform postgres store', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {}
@@ -582,10 +564,10 @@ describe("IRCompiler", () => {
       `);
 
       const store = result.ir?.stores[0];
-      expect(store?.target).toBe("postgres");
+      expect(store?.target).toBe('postgres');
     });
 
-    it("should transform supabase store", async () => {
+    it('should transform supabase store', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {}
@@ -593,10 +575,10 @@ describe("IRCompiler", () => {
       `);
 
       const store = result.ir?.stores[0];
-      expect(store?.target).toBe("supabase");
+      expect(store?.target).toBe('supabase');
     });
 
-    it("should transform store with config", async () => {
+    it('should transform store with config', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {}
@@ -604,13 +586,13 @@ describe("IRCompiler", () => {
       `);
 
       const store = result.ir?.stores[0];
-      expect(store?.entity).toBe("User");
-      expect(store?.target).toBe("postgres");
+      expect(store?.entity).toBe('User');
+      expect(store?.target).toBe('postgres');
     });
   });
 
-  describe("Event Transformation", () => {
-    it("should transform event with type payload", async () => {
+  describe('Event Transformation', () => {
+    it('should transform event with type payload', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {}
@@ -621,15 +603,15 @@ describe("IRCompiler", () => {
       `);
 
       const event = result.ir?.events[0];
-      expect(event?.name).toBe("UserCreated");
-      expect(event?.channel).toBe("users");
+      expect(event?.name).toBe('UserCreated');
+      expect(event?.channel).toBe('users');
       if (event && Array.isArray(event.payload)) {
-        expect(event.payload[0].name).toBe("userId");
-        expect(event.payload[0].type.name).toBe("string");
+        expect(event.payload[0].name).toBe('userId');
+        expect(event.payload[0].type.name).toBe('string');
       }
     });
 
-    it("should transform event with field list payload", async () => {
+    it('should transform event with field list payload', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {}
@@ -641,16 +623,16 @@ describe("IRCompiler", () => {
       `);
 
       const event = result.ir?.events[0];
-      expect(event?.name).toBe("UserDeleted");
+      expect(event?.name).toBe('UserDeleted');
       if (event && Array.isArray(event.payload)) {
-        expect(event.payload[0].name).toBe("userId");
-        expect(event.payload[1].name).toBe("reason");
+        expect(event.payload[0].name).toBe('userId');
+        expect(event.payload[1].name).toBe('reason');
       }
     });
   });
 
-  describe("Module Transformation", () => {
-    it("should transform module with entities", async () => {
+  describe('Module Transformation', () => {
+    it('should transform module with entities', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         module Users {
@@ -660,12 +642,12 @@ describe("IRCompiler", () => {
       `);
 
       const module = result.ir?.modules[0];
-      expect(module?.name).toBe("Users");
-      expect(module?.entities).toEqual(["User", "Admin"]);
+      expect(module?.name).toBe('Users');
+      expect(module?.entities).toEqual(['User', 'Admin']);
       expect(result.ir?.entities).toHaveLength(2);
     });
 
-    it("should transform module with commands", async () => {
+    it('should transform module with commands', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         module Users {
@@ -684,10 +666,10 @@ describe("IRCompiler", () => {
 
       const module = result.ir?.modules[0];
       // Entity-scoped commands are tracked in module.commands
-      expect(module?.commands).toEqual(["createUser", "deleteUser"]);
+      expect(module?.commands).toEqual(['createUser', 'deleteUser']);
     });
 
-    it("should transform module with stores", async () => {
+    it('should transform module with stores', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         module Users {
@@ -703,7 +685,7 @@ describe("IRCompiler", () => {
       expect(module?.stores).toEqual([]);
     });
 
-    it("should transform module with events", async () => {
+    it('should transform module with events', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         module Users {
@@ -718,7 +700,7 @@ describe("IRCompiler", () => {
       expect(module?.events).toEqual([]);
     });
 
-    it("should transform module with policies", async () => {
+    it('should transform module with policies', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         module Users {
@@ -730,10 +712,10 @@ describe("IRCompiler", () => {
 
       // Entity-scoped policies ARE tracked in module.policies
       const module = result.ir?.modules[0];
-      expect(module?.policies).toEqual(["canRead"]);
+      expect(module?.policies).toEqual(['canRead']);
     });
 
-    it("should associate module name with entities", async () => {
+    it('should associate module name with entities', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         module Users {
@@ -741,11 +723,11 @@ describe("IRCompiler", () => {
         }
       `);
 
-      const entity = result.ir?.entities.find((e) => e.name === "User");
-      expect(entity?.module).toBe("Users");
+      const entity = result.ir?.entities.find(e => e.name === 'User');
+      expect(entity?.module).toBe('Users');
     });
 
-    it("should associate module name with commands", async () => {
+    it('should associate module name with commands', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         module Users {
@@ -757,11 +739,11 @@ describe("IRCompiler", () => {
         }
       `);
 
-      const command = result.ir?.commands.find((c) => c.name === "createUser");
-      expect(command?.module).toBe("Users");
+      const command = result.ir?.commands.find(c => c.name === 'createUser');
+      expect(command?.module).toBe('Users');
     });
 
-    it("should associate module name with policies", async () => {
+    it('should associate module name with policies', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         module Users {
@@ -771,13 +753,13 @@ describe("IRCompiler", () => {
         }
       `);
 
-      const policy = result.ir?.policies.find((p) => p.name === "canRead");
-      expect(policy?.module).toBe("Users");
+      const policy = result.ir?.policies.find(p => p.name === 'canRead');
+      expect(policy?.module).toBe('Users');
     });
   });
 
-  describe("Expression Transformation", () => {
-    it("should transform string literal", async () => {
+  describe('Expression Transformation', () => {
+    it('should transform string literal', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -786,10 +768,10 @@ describe("IRCompiler", () => {
       `);
 
       const defaultValue = result.ir?.entities[0].properties[0].defaultValue;
-      expect(defaultValue).toEqual({ kind: "string", value: "test" });
+      expect(defaultValue).toEqual({ kind: 'string', value: 'test' });
     });
 
-    it("should transform number literal", async () => {
+    it('should transform number literal', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -798,10 +780,10 @@ describe("IRCompiler", () => {
       `);
 
       const defaultValue = result.ir?.entities[0].properties[0].defaultValue;
-      expect(defaultValue).toEqual({ kind: "number", value: 42 });
+      expect(defaultValue).toEqual({ kind: 'number', value: 42 });
     });
 
-    it("should transform boolean literal true", async () => {
+    it('should transform boolean literal true', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -810,10 +792,10 @@ describe("IRCompiler", () => {
       `);
 
       const defaultValue = result.ir?.entities[0].properties[0].defaultValue;
-      expect(defaultValue).toEqual({ kind: "boolean", value: true });
+      expect(defaultValue).toEqual({ kind: 'boolean', value: true });
     });
 
-    it("should transform boolean literal false", async () => {
+    it('should transform boolean literal false', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -822,10 +804,10 @@ describe("IRCompiler", () => {
       `);
 
       const defaultValue = result.ir?.entities[0].properties[0].defaultValue;
-      expect(defaultValue).toEqual({ kind: "boolean", value: false });
+      expect(defaultValue).toEqual({ kind: 'boolean', value: false });
     });
 
-    it("should transform null literal", async () => {
+    it('should transform null literal', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -834,10 +816,10 @@ describe("IRCompiler", () => {
       `);
 
       const defaultValue = result.ir?.entities[0].properties[0].defaultValue;
-      expect(defaultValue).toEqual({ kind: "null" });
+      expect(defaultValue).toEqual({ kind: 'null' });
     });
 
-    it("should transform identifier expression", async () => {
+    it('should transform identifier expression', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -846,13 +828,10 @@ describe("IRCompiler", () => {
       `);
 
       const expr = result.ir?.policies[0].expression;
-      expect(expr).toEqual({
-        kind: "literal",
-        value: { kind: "boolean", value: true },
-      });
+      expect(expr).toEqual({ kind: 'literal', value: { kind: 'boolean', value: true } });
     });
 
-    it("should transform member access expression", async () => {
+    it('should transform member access expression', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -862,10 +841,10 @@ describe("IRCompiler", () => {
       `);
 
       const expr = result.ir?.policies[0].expression;
-      expect(expr?.kind).toBe("binary");
+      expect(expr?.kind).toBe('binary');
     });
 
-    it("should transform nested member access", async () => {
+    it('should transform nested member access', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -875,10 +854,10 @@ describe("IRCompiler", () => {
       `);
 
       const expr = result.ir?.policies[0].expression;
-      expect(expr?.kind).toBe("binary");
+      expect(expr?.kind).toBe('binary');
     });
 
-    it("should transform binary expression (arithmetic)", async () => {
+    it('should transform binary expression (arithmetic)', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -889,18 +868,14 @@ describe("IRCompiler", () => {
 
       const expr = result.ir?.entities[0].computedProperties[0].expression;
       expect(expr).toEqual({
-        kind: "binary",
-        operator: "*",
-        left: {
-          kind: "member",
-          object: { kind: "identifier", name: "self" },
-          property: "age",
-        },
-        right: { kind: "literal", value: { kind: "number", value: 2 } },
+        kind: 'binary',
+        operator: '*',
+        left: { kind: 'member', object: { kind: 'identifier', name: 'self' }, property: 'age' },
+        right: { kind: 'literal', value: { kind: 'number', value: 2 } }
       });
     });
 
-    it("should transform binary expression (comparison)", async () => {
+    it('should transform binary expression (comparison)', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -911,18 +886,14 @@ describe("IRCompiler", () => {
 
       const expr = result.ir?.entities[0].constraints[0].expression;
       expect(expr).toEqual({
-        kind: "binary",
-        operator: ">=",
-        left: {
-          kind: "member",
-          object: { kind: "identifier", name: "self" },
-          property: "age",
-        },
-        right: { kind: "literal", value: { kind: "number", value: 18 } },
+        kind: 'binary',
+        operator: '>=',
+        left: { kind: 'member', object: { kind: 'identifier', name: 'self' }, property: 'age' },
+        right: { kind: 'literal', value: { kind: 'number', value: 18 } }
       });
     });
 
-    it("should transform binary expression (logical AND)", async () => {
+    it('should transform binary expression (logical AND)', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -934,22 +905,14 @@ describe("IRCompiler", () => {
 
       const expr = result.ir?.entities[0].constraints[0].expression;
       expect(expr).toEqual({
-        kind: "binary",
-        operator: "&&",
-        left: {
-          kind: "member",
-          object: { kind: "identifier", name: "self" },
-          property: "authenticated",
-        },
-        right: {
-          kind: "member",
-          object: { kind: "identifier", name: "self" },
-          property: "active",
-        },
+        kind: 'binary',
+        operator: '&&',
+        left: { kind: 'member', object: { kind: 'identifier', name: 'self' }, property: 'authenticated' },
+        right: { kind: 'member', object: { kind: 'identifier', name: 'self' }, property: 'active' }
       });
     });
 
-    it("should transform binary expression (logical OR)", async () => {
+    it('should transform binary expression (logical OR)', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -960,35 +923,24 @@ describe("IRCompiler", () => {
 
       const expr = result.ir?.entities[0].constraints[0].expression;
       expect(expr).toEqual({
-        kind: "binary",
-        operator: "||",
+        kind: 'binary',
+        operator: '||',
         left: {
-          kind: "binary",
-          operator: "==",
-          left: {
-            kind: "member",
-            object: { kind: "identifier", name: "self" },
-            property: "role",
-          },
-          right: { kind: "literal", value: { kind: "string", value: "admin" } },
+          kind: 'binary',
+          operator: '==',
+          left: { kind: 'member', object: { kind: 'identifier', name: 'self' }, property: 'role' },
+          right: { kind: 'literal', value: { kind: 'string', value: 'admin' } }
         },
         right: {
-          kind: "binary",
-          operator: "==",
-          left: {
-            kind: "member",
-            object: { kind: "identifier", name: "self" },
-            property: "role",
-          },
-          right: {
-            kind: "literal",
-            value: { kind: "string", value: "moderator" },
-          },
-        },
+          kind: 'binary',
+          operator: '==',
+          left: { kind: 'member', object: { kind: 'identifier', name: 'self' }, property: 'role' },
+          right: { kind: 'literal', value: { kind: 'string', value: 'moderator' } }
+        }
       });
     });
 
-    it("should transform unary expression (not)", async () => {
+    it('should transform unary expression (not)', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -999,17 +951,13 @@ describe("IRCompiler", () => {
 
       const expr = result.ir?.entities[0].constraints[0].expression;
       expect(expr).toEqual({
-        kind: "unary",
-        operator: "!",
-        operand: {
-          kind: "member",
-          object: { kind: "identifier", name: "self" },
-          property: "banned",
-        },
+        kind: 'unary',
+        operator: '!',
+        operand: { kind: 'member', object: { kind: 'identifier', name: 'self' }, property: 'banned' }
       });
     });
 
-    it("should transform unary expression (negate)", async () => {
+    it('should transform unary expression (negate)', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -1020,17 +968,13 @@ describe("IRCompiler", () => {
 
       const expr = result.ir?.entities[0].computedProperties[0].expression;
       expect(expr).toEqual({
-        kind: "unary",
-        operator: "-",
-        operand: {
-          kind: "member",
-          object: { kind: "identifier", name: "self" },
-          property: "age",
-        },
+        kind: 'unary',
+        operator: '-',
+        operand: { kind: 'member', object: { kind: 'identifier', name: 'self' }, property: 'age' }
       });
     });
 
-    it("should transform function call expression", async () => {
+    it('should transform function call expression', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -1041,27 +985,23 @@ describe("IRCompiler", () => {
 
       const expr = result.ir?.entities[0].constraints[0].expression;
       expect(expr).toMatchObject({
-        kind: "binary",
-        operator: "==",
+        kind: 'binary',
+        operator: '==',
         left: {
-          kind: "call",
-          callee: { kind: "identifier", name: "upper" },
+          kind: 'call',
+          callee: { kind: 'identifier', name: 'upper' },
           args: [
-            {
-              kind: "member",
-              object: { kind: "identifier", name: "self" },
-              property: "name",
-            },
-          ],
+            { kind: 'member', object: { kind: 'identifier', name: 'self' }, property: 'name' }
+          ]
         },
         right: {
-          kind: "literal",
-          value: { kind: "string", value: "ADMIN" },
-        },
+          kind: 'literal',
+          value: { kind: 'string', value: 'ADMIN' }
+        }
       });
     });
 
-    it("should transform conditional expression", async () => {
+    it('should transform conditional expression', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -1072,24 +1012,14 @@ describe("IRCompiler", () => {
 
       const expr = result.ir?.entities[0].computedProperties[0].expression;
       expect(expr).toEqual({
-        kind: "conditional",
-        condition: {
-          kind: "member",
-          object: { kind: "identifier", name: "self" },
-          property: "active",
-        },
-        consequent: {
-          kind: "literal",
-          value: { kind: "string", value: "active" },
-        },
-        alternate: {
-          kind: "literal",
-          value: { kind: "string", value: "inactive" },
-        },
+        kind: 'conditional',
+        condition: { kind: 'member', object: { kind: 'identifier', name: 'self' }, property: 'active' },
+        consequent: { kind: 'literal', value: { kind: 'string', value: 'active' } },
+        alternate: { kind: 'literal', value: { kind: 'string', value: 'inactive' } }
       });
     });
 
-    it("should transform array literal", async () => {
+    it('should transform array literal', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity Config {
@@ -1098,17 +1028,14 @@ describe("IRCompiler", () => {
       `);
 
       const defaultValue = result.ir?.entities[0].properties[0].defaultValue;
-      expect(defaultValue?.kind).toBe("array");
-      if (defaultValue && defaultValue.kind === "array") {
+      expect(defaultValue?.kind).toBe('array');
+      if (defaultValue && defaultValue.kind === 'array') {
         expect(defaultValue.elements).toHaveLength(3);
-        expect(defaultValue.elements[0]).toEqual({
-          kind: "string",
-          value: "admin",
-        });
+        expect(defaultValue.elements[0]).toEqual({ kind: 'string', value: 'admin' });
       }
     });
 
-    it("should transform object literal", async () => {
+    it('should transform object literal', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity Config {
@@ -1117,20 +1044,14 @@ describe("IRCompiler", () => {
       `);
 
       const defaultValue = result.ir?.entities[0].properties[0].defaultValue;
-      expect(defaultValue?.kind).toBe("object");
-      if (defaultValue && defaultValue.kind === "object") {
-        expect(defaultValue.properties.theme).toEqual({
-          kind: "string",
-          value: "dark",
-        });
-        expect(defaultValue.properties.lang).toEqual({
-          kind: "string",
-          value: "en",
-        });
+      expect(defaultValue?.kind).toBe('object');
+      if (defaultValue && defaultValue.kind === 'object') {
+        expect(defaultValue.properties.theme).toEqual({ kind: 'string', value: 'dark' });
+        expect(defaultValue.properties.lang).toEqual({ kind: 'string', value: 'en' });
       }
     });
 
-    it("should transform lambda expression", async () => {
+    it('should transform lambda expression', async () => {
       // Lambda expressions require parentheses around parameters: (x) => body
       // The Manifest parser does not support shorthand: x => body
       const compiler = new IRCompiler();
@@ -1143,20 +1064,20 @@ describe("IRCompiler", () => {
 
       const expr = result.ir?.entities[0].computedProperties[0].expression;
       expect(expr).toEqual({
-        kind: "lambda",
-        params: ["x"],
+        kind: 'lambda',
+        params: ['x'],
         body: {
-          kind: "binary",
-          operator: "*",
-          left: { kind: "identifier", name: "x" },
-          right: { kind: "literal", value: { kind: "number", value: 2 } },
-        },
+          kind: 'binary',
+          operator: '*',
+          left: { kind: 'identifier', name: 'x' },
+          right: { kind: 'literal', value: { kind: 'number', value: 2 } }
+        }
       });
     });
   });
 
-  describe("Type Transformation", () => {
-    it("should transform basic string type", async () => {
+  describe('Type Transformation', () => {
+    it('should transform basic string type', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -1165,11 +1086,11 @@ describe("IRCompiler", () => {
       `);
 
       const type = result.ir?.entities[0].properties[0].type;
-      expect(type?.name).toBe("string");
+      expect(type?.name).toBe('string');
       expect(type?.nullable).toBe(false);
     });
 
-    it("should transform nullable type", async () => {
+    it('should transform nullable type', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -1178,11 +1099,11 @@ describe("IRCompiler", () => {
       `);
 
       const type = result.ir?.entities[0].properties[0].type;
-      expect(type?.name).toBe("string");
+      expect(type?.name).toBe('string');
       expect(type?.nullable).toBe(true);
     });
 
-    it("should transform generic type (list)", async () => {
+    it('should transform generic type (list)', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -1191,11 +1112,11 @@ describe("IRCompiler", () => {
       `);
 
       const type = result.ir?.entities[0].properties[0].type;
-      expect(type?.name).toBe("list");
-      expect(type?.generic?.name).toBe("string");
+      expect(type?.name).toBe('list');
+      expect(type?.generic?.name).toBe('string');
     });
 
-    it("should transform generic type (map)", async () => {
+    it('should transform generic type (map)', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -1204,15 +1125,15 @@ describe("IRCompiler", () => {
       `);
 
       const type = result.ir?.entities[0].properties[0].type;
-      expect(type?.name).toBe("map");
-      expect(type?.generic?.name).toBe("string");
+      expect(type?.name).toBe('map');
+      expect(type?.generic?.name).toBe('string');
     });
   });
 
-  describe("Caching", () => {
-    it("should cache compiled IR", async () => {
+  describe('Caching', () => {
+    it('should cache compiled IR', async () => {
       const compiler = new IRCompiler();
-      const source = "entity User {}";
+      const source = 'entity User {}';
 
       const result1 = await compiler.compileToIR(source, { useCache: true });
       const result2 = await compiler.compileToIR(source, { useCache: true });
@@ -1223,9 +1144,9 @@ describe("IRCompiler", () => {
       expect(result2.diagnostics).toHaveLength(0);
     });
 
-    it("should bypass cache when useCache is false", async () => {
+    it('should bypass cache when useCache is false', async () => {
       const compiler = new IRCompiler();
-      const source = "entity User {}";
+      const source = 'entity User {}';
 
       const result1 = await compiler.compileToIR(source, { useCache: false });
       const result2 = await compiler.compileToIR(source, { useCache: false });
@@ -1234,16 +1155,12 @@ describe("IRCompiler", () => {
       expect(result1.ir).not.toBe(result2.ir);
     });
 
-    it("should not cache when compilation fails", async () => {
+    it('should not cache when compilation fails', async () => {
       const compiler = new IRCompiler();
-      const invalidSource = "entity User { property name: }";
+      const invalidSource = 'entity User { property name: }';
 
-      const result1 = await compiler.compileToIR(invalidSource, {
-        useCache: true,
-      });
-      const result2 = await compiler.compileToIR(invalidSource, {
-        useCache: true,
-      });
+      const result1 = await compiler.compileToIR(invalidSource, { useCache: true });
+      const result2 = await compiler.compileToIR(invalidSource, { useCache: true });
 
       // When compilation has errors, IR should be null
       expect(result1.ir).toBeNull();
@@ -1254,8 +1171,8 @@ describe("IRCompiler", () => {
     });
   });
 
-  describe("Edge Cases", () => {
-    it("should handle multiple entities", async () => {
+  describe('Edge Cases', () => {
+    it('should handle multiple entities', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {}
@@ -1264,14 +1181,10 @@ describe("IRCompiler", () => {
       `);
 
       expect(result.ir?.entities).toHaveLength(3);
-      expect(result.ir?.entities.map((e) => e.name)).toEqual([
-        "User",
-        "Post",
-        "Comment",
-      ]);
+      expect(result.ir?.entities.map(e => e.name)).toEqual(['User', 'Post', 'Comment']);
     });
 
-    it("should handle entity with all components", async () => {
+    it('should handle entity with all components', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -1296,7 +1209,7 @@ describe("IRCompiler", () => {
       expect(entity?.commands).toHaveLength(1);
     });
 
-    it("should handle complex nested expressions", async () => {
+    it('should handle complex nested expressions', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -1308,13 +1221,13 @@ describe("IRCompiler", () => {
       `);
 
       const expr = result.ir?.entities[0].constraints[0].expression;
-      expect(expr?.kind).toBe("binary");
-      if (expr && expr.kind === "binary") {
-        expect(expr.operator).toBe("||");
+      expect(expr?.kind).toBe('binary');
+      if (expr && expr.kind === 'binary') {
+        expect(expr.operator).toBe('||');
       }
     });
 
-    it("should handle self, user, context keywords", async () => {
+    it('should handle self, user, context keywords', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -1324,10 +1237,10 @@ describe("IRCompiler", () => {
       `);
 
       const expr = result.ir?.entities[0].constraints[0].expression;
-      expect(expr?.kind).toBe("binary");
+      expect(expr?.kind).toBe('binary');
     });
 
-    it("should handle array and object defaults in parameters", async () => {
+    it('should handle array and object defaults in parameters', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity Test {
@@ -1338,11 +1251,11 @@ describe("IRCompiler", () => {
       `);
 
       const command = result.ir?.commands[0];
-      expect(command?.parameters[0].defaultValue?.kind).toBe("array");
-      expect(command?.parameters[1].defaultValue?.kind).toBe("object");
+      expect(command?.parameters[0].defaultValue?.kind).toBe('array');
+      expect(command?.parameters[1].defaultValue?.kind).toBe('object');
     });
 
-    it("should handle through relationships", async () => {
+    it('should handle through relationships', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -1351,10 +1264,10 @@ describe("IRCompiler", () => {
       `);
 
       const relationship = result.ir?.entities[0].relationships[0];
-      expect(relationship?.through).toBe("AuthorPost");
+      expect(relationship?.through).toBe('AuthorPost');
     });
 
-    it("should handle foreign key relationships", async () => {
+    it('should handle foreign key relationships', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity Post {
@@ -1363,10 +1276,10 @@ describe("IRCompiler", () => {
       `);
 
       const relationship = result.ir?.entities[0].relationships[0];
-      expect(relationship?.foreignKey).toBe("authorId");
+      expect(relationship?.foreignKey).toBe('authorId');
     });
 
-    it("should handle ref relationships", async () => {
+    it('should handle ref relationships', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity Post {
@@ -1375,10 +1288,10 @@ describe("IRCompiler", () => {
       `);
 
       const relationship = result.ir?.entities[0].relationships[0];
-      expect(relationship?.kind).toBe("ref");
+      expect(relationship?.kind).toBe('ref');
     });
 
-    it("should handle complex constraint with all vNext features", async () => {
+    it('should handle complex constraint with all vNext features', async () => {
       const compiler = new IRCompiler();
       const result = await compiler.compileToIR(`
         entity User {
@@ -1389,15 +1302,15 @@ describe("IRCompiler", () => {
 
       const constraint = result.ir?.entities[0].constraints[0];
       expect(constraint?.overrideable).toBe(true);
-      expect(constraint?.severity).toBe("warn");
-      expect(constraint?.message).toBe("Must be 18 or older");
+      expect(constraint?.severity).toBe('warn');
+      expect(constraint?.message).toBe('Must be 18 or older');
       // Note: overridePolicyRef requires 'via' syntax which parser may not support
     });
   });
 
-  describe("Semantic Diagnostics", () => {
-    describe("Constraint Code Uniqueness", () => {
-      it("should emit error for duplicate constraint codes within an entity", async () => {
+  describe('Semantic Diagnostics', () => {
+    describe('Constraint Code Uniqueness', () => {
+      it('should emit error for duplicate constraint codes within an entity', async () => {
         const compiler = new IRCompiler();
         const result = await compiler.compileToIR(`
           entity Account {
@@ -1409,17 +1322,13 @@ describe("IRCompiler", () => {
 
         expect(result.ir).toBeNull();
         expect(result.diagnostics.length).toBeGreaterThan(0);
-        const errorDiag = result.diagnostics.find(
-          (d) => d.severity === "error"
-        );
+        const errorDiag = result.diagnostics.find(d => d.severity === 'error');
         expect(errorDiag).toBeDefined();
-        expect(errorDiag?.message).toContain(
-          "Duplicate constraint code 'balanceCheck'"
-        );
-        expect(errorDiag?.message).toContain("entity 'Account'");
+        expect(errorDiag!.message).toContain("Duplicate constraint code 'balanceCheck'");
+        expect(errorDiag!.message).toContain("entity 'Account'");
       });
 
-      it("should emit error for duplicate explicit codes within an entity", async () => {
+      it('should emit error for duplicate explicit codes within an entity', async () => {
         const compiler = new IRCompiler();
         const result = await compiler.compileToIR(`
           entity Account {
@@ -1436,17 +1345,13 @@ describe("IRCompiler", () => {
         `);
 
         expect(result.ir).toBeNull();
-        const errorDiag = result.diagnostics.find(
-          (d) => d.severity === "error"
-        );
+        const errorDiag = result.diagnostics.find(d => d.severity === 'error');
         expect(errorDiag).toBeDefined();
-        expect(errorDiag?.message).toContain(
-          "Duplicate constraint code 'BALANCE_CHECK'"
-        );
-        expect(errorDiag?.message).toContain("entity 'Account'");
+        expect(errorDiag!.message).toContain("Duplicate constraint code 'BALANCE_CHECK'");
+        expect(errorDiag!.message).toContain("entity 'Account'");
       });
 
-      it("should emit error for duplicate constraint codes within a command", async () => {
+      it('should emit error for duplicate constraint codes within a command', async () => {
         const compiler = new IRCompiler();
         const result = await compiler.compileToIR(`
           entity Payment {
@@ -1460,17 +1365,13 @@ describe("IRCompiler", () => {
         `);
 
         expect(result.ir).toBeNull();
-        const errorDiag = result.diagnostics.find(
-          (d) => d.severity === "error"
-        );
+        const errorDiag = result.diagnostics.find(d => d.severity === 'error');
         expect(errorDiag).toBeDefined();
-        expect(errorDiag?.message).toContain(
-          "Duplicate constraint code 'amountLimit'"
-        );
-        expect(errorDiag?.message).toContain("command 'Payment.transfer'");
+        expect(errorDiag!.message).toContain("Duplicate constraint code 'amountLimit'");
+        expect(errorDiag!.message).toContain("command 'Payment.transfer'");
       });
 
-      it("should allow same constraint code in different entities", async () => {
+      it('should allow same constraint code in different entities', async () => {
         const compiler = new IRCompiler();
         const result = await compiler.compileToIR(`
           entity Account {
@@ -1484,12 +1385,10 @@ describe("IRCompiler", () => {
         `);
 
         expect(result.ir).not.toBeNull();
-        expect(
-          result.diagnostics.filter((d) => d.severity === "error")
-        ).toHaveLength(0);
+        expect(result.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
       });
 
-      it("should allow same constraint code in entity and command scopes", async () => {
+      it('should allow same constraint code in entity and command scopes', async () => {
         const compiler = new IRCompiler();
         const result = await compiler.compileToIR(`
           entity Payment {
@@ -1503,12 +1402,10 @@ describe("IRCompiler", () => {
         `);
 
         expect(result.ir).not.toBeNull();
-        expect(
-          result.diagnostics.filter((d) => d.severity === "error")
-        ).toHaveLength(0);
+        expect(result.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
       });
 
-      it("should detect multiple duplicates and emit one error per duplicate", async () => {
+      it('should detect multiple duplicates and emit one error per duplicate', async () => {
         const compiler = new IRCompiler();
         const result = await compiler.compileToIR(`
           entity Account {
@@ -1521,15 +1418,15 @@ describe("IRCompiler", () => {
         `);
 
         expect(result.ir).toBeNull();
-        const errors = result.diagnostics.filter((d) => d.severity === "error");
+        const errors = result.diagnostics.filter(d => d.severity === 'error');
         // Two duplicates: the second and third "check" constraints
         expect(errors).toHaveLength(2);
-        errors.forEach((e) => {
+        errors.forEach(e => {
           expect(e.message).toContain("Duplicate constraint code 'check'");
         });
       });
 
-      it("should allow unique constraint codes within an entity", async () => {
+      it('should allow unique constraint codes within an entity', async () => {
         const compiler = new IRCompiler();
         const result = await compiler.compileToIR(`
           entity Account {
@@ -1540,55 +1437,53 @@ describe("IRCompiler", () => {
         `);
 
         expect(result.ir).not.toBeNull();
-        expect(
-          result.diagnostics.filter((d) => d.severity === "error")
-        ).toHaveLength(0);
-        expect(result.ir?.entities[0].constraints).toHaveLength(2);
+        expect(result.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+        expect(result.ir!.entities[0].constraints).toHaveLength(2);
       });
     });
   });
 
-  describe("Convenience Function", () => {
-    it("should export compileToIR convenience function", async () => {
-      const result = await compileToIR("entity User {}");
+  describe('Convenience Function', () => {
+    it('should export compileToIR convenience function', async () => {
+      const result = await compileToIR('entity User {}');
 
       expect(result.ir).not.toBeNull();
-      expect(result.ir?.entities[0].name).toBe("User");
+      expect(result.ir?.entities[0].name).toBe('User');
     });
   });
 
-  describe("Version Information", () => {
-    it("should include compiler version in provenance", async () => {
+  describe('Version Information', () => {
+    it('should include compiler version in provenance', async () => {
       const compiler = new IRCompiler();
-      const result = await compiler.compileToIR("entity User {}");
+      const result = await compiler.compileToIR('entity User {}');
 
       expect(result.ir?.provenance.compilerVersion).toBeDefined();
-      expect(typeof result.ir?.provenance.compilerVersion).toBe("string");
+      expect(typeof result.ir?.provenance.compilerVersion).toBe('string');
     });
 
-    it("should include schema version in provenance", async () => {
+    it('should include schema version in provenance', async () => {
       const compiler = new IRCompiler();
-      const result = await compiler.compileToIR("entity User {}");
+      const result = await compiler.compileToIR('entity User {}');
 
       expect(result.ir?.provenance.schemaVersion).toBeDefined();
-      expect(typeof result.ir?.provenance.schemaVersion).toBe("string");
+      expect(typeof result.ir?.provenance.schemaVersion).toBe('string');
     });
 
-    it("should include compilation timestamp in provenance", async () => {
+    it('should include compilation timestamp in provenance', async () => {
       const compiler = new IRCompiler();
-      const result = await compiler.compileToIR("entity User {}");
+      const result = await compiler.compileToIR('entity User {}');
 
       expect(result.ir?.provenance.compiledAt).toBeDefined();
-      expect(typeof result.ir?.provenance.compiledAt).toBe("string");
+      expect(typeof result.ir?.provenance.compiledAt).toBe('string');
       // ISO 8601 format check
-      expect(Date.parse(result.ir?.provenance.compiledAt)).not.toBeNaN();
+      expect(Date.parse(result.ir!.provenance.compiledAt)).not.toBeNaN();
     });
 
-    it("should set IR version to 1.0", async () => {
+    it('should set IR version to 1.0', async () => {
       const compiler = new IRCompiler();
-      const result = await compiler.compileToIR("entity User {}");
+      const result = await compiler.compileToIR('entity User {}');
 
-      expect(result.ir?.version).toBe("1.0");
+      expect(result.ir?.version).toBe('1.0');
     });
   });
 });

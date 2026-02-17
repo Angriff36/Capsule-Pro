@@ -1,4 +1,4 @@
-import type { ConcurrencyConflict, ConstraintOutcome, IR, IRCommand, IREntity, IRExpression, IRPolicy, IRProvenance, OverrideRequest } from "./ir";
+import { IR, IRProvenance, IREntity, IRCommand, IRPolicy, IRExpression, ConstraintOutcome, OverrideRequest, ConcurrencyConflict } from './ir';
 export interface RuntimeContext {
     user?: {
         id: string;
@@ -166,9 +166,9 @@ export declare class ManifestEffectBoundaryError extends Error {
  * See docs/spec/manifest-vnext.md § "Diagnostic Payload Bounding".
  */
 export declare class EvaluationBudgetExceededError extends Error {
-    readonly limitType: "depth" | "steps";
+    readonly limitType: 'depth' | 'steps';
     readonly limit: number;
-    constructor(limitType: "depth" | "steps", limit: number);
+    constructor(limitType: 'depth' | 'steps', limit: number);
 }
 /**
  * Optional complexity limits for expression evaluation.
@@ -188,20 +188,20 @@ export interface ProvenanceVerificationResult {
     error?: string;
 }
 export declare class RuntimeEngine {
-    private readonly ir;
+    private ir;
     private context;
-    private readonly options;
-    private readonly stores;
-    private readonly eventListeners;
+    private options;
+    private stores;
+    private eventListeners;
     private eventLog;
     /** Index of relationships for efficient lookup during expression evaluation */
-    private readonly relationshipIndex;
+    private relationshipIndex;
     /** Memoization cache for resolved relationships to avoid repeated store queries */
-    private readonly relationshipMemoCache;
+    private relationshipMemoCache;
     /** Track whether version has been incremented for the current command execution */
     private versionIncrementedForCommand;
     /** Track instances that were just created (to prevent version increment on subsequent mutate actions) */
-    private readonly justCreatedInstanceIds;
+    private justCreatedInstanceIds;
     /** Last transition validation error (set by updateInstance, checked by _executeCommandInternal) */
     private lastTransitionError;
     /** Last concurrency conflict (set by updateInstance, checked by _executeCommandInternal) */

@@ -4,15 +4,7 @@ export interface Position {
 }
 
 export interface Token {
-  type:
-    | "KEYWORD"
-    | "IDENTIFIER"
-    | "STRING"
-    | "NUMBER"
-    | "OPERATOR"
-    | "PUNCTUATION"
-    | "NEWLINE"
-    | "EOF";
+  type: 'KEYWORD' | 'IDENTIFIER' | 'STRING' | 'NUMBER' | 'OPERATOR' | 'PUNCTUATION' | 'NEWLINE' | 'EOF';
   value: string;
   position: Position;
 }
@@ -23,7 +15,7 @@ export interface ASTNode {
 }
 
 export interface ModuleNode extends ASTNode {
-  type: "Module";
+  type: 'Module';
   name: string;
   entities: EntityNode[];
   commands: CommandNode[];
@@ -33,14 +25,14 @@ export interface ModuleNode extends ASTNode {
 }
 
 export interface TransitionNode extends ASTNode {
-  type: "Transition";
+  type: 'Transition';
   property: string;
   from: string;
   to: string[];
 }
 
 export interface EntityNode extends ASTNode {
-  type: "Entity";
+  type: 'Entity';
   name: string;
   properties: PropertyNode[];
   computedProperties: ComputedPropertyNode[];
@@ -58,7 +50,7 @@ export interface EntityNode extends ASTNode {
 }
 
 export interface PropertyNode extends ASTNode {
-  type: "Property";
+  type: 'Property';
   name: string;
   dataType: TypeNode;
   defaultValue?: ExpressionNode;
@@ -66,7 +58,7 @@ export interface PropertyNode extends ASTNode {
 }
 
 export interface ComputedPropertyNode extends ASTNode {
-  type: "ComputedProperty";
+  type: 'ComputedProperty';
   name: string;
   dataType: TypeNode;
   expression: ExpressionNode;
@@ -74,8 +66,8 @@ export interface ComputedPropertyNode extends ASTNode {
 }
 
 export interface RelationshipNode extends ASTNode {
-  type: "Relationship";
-  kind: "hasMany" | "hasOne" | "belongsTo" | "ref";
+  type: 'Relationship';
+  kind: 'hasMany' | 'hasOne' | 'belongsTo' | 'ref';
   name: string;
   target: string;
   foreignKey?: string;
@@ -83,7 +75,7 @@ export interface RelationshipNode extends ASTNode {
 }
 
 export interface CommandNode extends ASTNode {
-  type: "Command";
+  type: 'Command';
   name: string;
   parameters: ParameterNode[];
   guards?: ExpressionNode[];
@@ -95,7 +87,7 @@ export interface CommandNode extends ASTNode {
 }
 
 export interface ParameterNode extends ASTNode {
-  type: "Parameter";
+  type: 'Parameter';
   name: string;
   dataType: TypeNode;
   required: boolean;
@@ -103,37 +95,37 @@ export interface ParameterNode extends ASTNode {
 }
 
 export interface PolicyNode extends ASTNode {
-  type: "Policy";
+  type: 'Policy';
   name: string;
-  action: "read" | "write" | "delete" | "execute" | "all" | "override";
+  action: 'read' | 'write' | 'delete' | 'execute' | 'all' | 'override';
   expression: ExpressionNode;
   message?: string;
   isDefault?: boolean; // True if this is an entity-level default policy (vNext)
 }
 
 export interface StoreNode extends ASTNode {
-  type: "Store";
+  type: 'Store';
   entity: string;
-  target: "memory" | "postgres" | "supabase" | "localStorage";
+  target: 'memory' | 'postgres' | 'supabase' | 'localStorage';
   config?: Record<string, ExpressionNode>;
 }
 
 export interface OutboxEventNode extends ASTNode {
-  type: "OutboxEvent";
+  type: 'OutboxEvent';
   name: string;
   channel: string;
   payload: TypeNode | { fields: ParameterNode[] };
 }
 
 export interface TypeNode extends ASTNode {
-  type: "Type";
+  type: 'Type';
   name: string;
   generic?: TypeNode;
   nullable: boolean;
 }
 
 export interface BehaviorNode extends ASTNode {
-  type: "Behavior";
+  type: 'Behavior';
   name: string;
   trigger: TriggerNode;
   actions: ActionNode[];
@@ -141,26 +133,26 @@ export interface BehaviorNode extends ASTNode {
 }
 
 export interface TriggerNode extends ASTNode {
-  type: "Trigger";
+  type: 'Trigger';
   event: string;
   parameters?: string[];
 }
 
 export interface ActionNode extends ASTNode {
-  type: "Action";
-  kind: "mutate" | "emit" | "compute" | "effect" | "publish" | "persist";
+  type: 'Action';
+  kind: 'mutate' | 'emit' | 'compute' | 'effect' | 'publish' | 'persist';
   target?: string;
   expression: ExpressionNode;
 }
 
 export interface ConstraintNode extends ASTNode {
-  type: "Constraint";
+  type: 'Constraint';
   name: string;
   /** Stable identifier for overrides/auditing (defaults to name) */
   code?: string;
   expression: ExpressionNode;
   /** Constraint severity level (default: block) */
-  severity?: "ok" | "warn" | "block";
+  severity?: 'ok' | 'warn' | 'block';
   message?: string;
   /** Template for error messages with interpolation */
   messageTemplate?: string;
@@ -173,7 +165,7 @@ export interface ConstraintNode extends ASTNode {
 }
 
 export interface FlowNode extends ASTNode {
-  type: "Flow";
+  type: 'Flow';
   name: string;
   input: TypeNode;
   output: TypeNode;
@@ -181,23 +173,23 @@ export interface FlowNode extends ASTNode {
 }
 
 export interface FlowStepNode extends ASTNode {
-  type: "FlowStep";
+  type: 'FlowStep';
   operation: string;
   expression: ExpressionNode;
   condition?: ExpressionNode;
 }
 
 export interface EffectNode extends ASTNode {
-  type: "Effect";
+  type: 'Effect';
   name: string;
-  kind: "http" | "storage" | "timer" | "event" | "custom";
+  kind: 'http' | 'storage' | 'timer' | 'event' | 'custom';
   config: Record<string, ExpressionNode>;
 }
 
 export interface ExposeNode extends ASTNode {
-  type: "Expose";
+  type: 'Expose';
   name: string;
-  protocol: "rest" | "graphql" | "websocket" | "function";
+  protocol: 'rest' | 'graphql' | 'websocket' | 'function';
   entity: string;
   operations: string[];
   generateServer: boolean;
@@ -205,21 +197,21 @@ export interface ExposeNode extends ASTNode {
 }
 
 export interface CompositionNode extends ASTNode {
-  type: "Composition";
+  type: 'Composition';
   name: string;
   components: ComponentRefNode[];
   connections: ConnectionNode[];
 }
 
 export interface ComponentRefNode extends ASTNode {
-  type: "ComponentRef";
+  type: 'ComponentRef';
   entity: string;
   alias?: string;
   config?: Record<string, ExpressionNode>;
 }
 
 export interface ConnectionNode extends ASTNode {
-  type: "Connection";
+  type: 'Connection';
   from: { component: string; output: string };
   to: { component: string; input: string };
   transform?: ExpressionNode;
@@ -238,60 +230,60 @@ export type ExpressionNode =
   | LambdaNode;
 
 export interface LiteralNode extends ASTNode {
-  type: "Literal";
+  type: 'Literal';
   value: string | number | boolean | null;
-  dataType: "string" | "number" | "boolean" | "null";
+  dataType: 'string' | 'number' | 'boolean' | 'null';
 }
 
 export interface IdentifierNode extends ASTNode {
-  type: "Identifier";
+  type: 'Identifier';
   name: string;
 }
 
 export interface BinaryOpNode extends ASTNode {
-  type: "BinaryOp";
+  type: 'BinaryOp';
   operator: string;
   left: ExpressionNode;
   right: ExpressionNode;
 }
 
 export interface UnaryOpNode extends ASTNode {
-  type: "UnaryOp";
+  type: 'UnaryOp';
   operator: string;
   operand: ExpressionNode;
 }
 
 export interface CallNode extends ASTNode {
-  type: "Call";
+  type: 'Call';
   callee: ExpressionNode;
   arguments: ExpressionNode[];
 }
 
 export interface MemberAccessNode extends ASTNode {
-  type: "MemberAccess";
+  type: 'MemberAccess';
   object: ExpressionNode;
   property: string;
 }
 
 export interface ConditionalNode extends ASTNode {
-  type: "Conditional";
+  type: 'Conditional';
   condition: ExpressionNode;
   consequent: ExpressionNode;
   alternate: ExpressionNode;
 }
 
 export interface ArrayNode extends ASTNode {
-  type: "Array";
+  type: 'Array';
   elements: ExpressionNode[];
 }
 
 export interface ObjectNode extends ASTNode {
-  type: "Object";
+  type: 'Object';
   properties: { key: string; value: ExpressionNode }[];
 }
 
 export interface LambdaNode extends ASTNode {
-  type: "Lambda";
+  type: 'Lambda';
   parameters: string[];
   body: ExpressionNode;
 }
@@ -321,5 +313,5 @@ export interface CompilationResult {
 export interface CompilationError {
   message: string;
   position?: Position;
-  severity: "error" | "warning";
+  severity: 'error' | 'warning';
 }

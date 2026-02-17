@@ -4,15 +4,15 @@
  * Compiles .manifest source files to IR (Intermediate Representation).
  */
 
-import fs from "node:fs/promises";
-import path from "node:path";
-import chalk from "chalk";
-import { glob } from "glob";
-import ora, { type Ora } from "ora";
+import fs from 'fs/promises';
+import path from 'path';
+import { glob } from 'glob';
+import chalk from 'chalk';
+import ora, { Ora } from 'ora';
 
 // Import from the main Manifest package
 async function loadCompiler() {
-  const module = await import("@angriff36/manifest/ir-compiler");
+  const module = await import('@angriff36/manifest/ir-compiler');
   return module.compileToIR;
 }
 
@@ -26,15 +26,12 @@ interface CompileOptions {
 /**
  * Get all manifest files from source pattern
  */
-async function getManifestFiles(
-  source: string,
-  options: CompileOptions
-): Promise<string[]> {
+async function getManifestFiles(source: string, options: CompileOptions): Promise<string[]> {
   if (!source) {
     // Use glob pattern from options or default
-    const pattern = options.glob || "**/*.manifest";
+    const pattern = options.glob || '**/*.manifest';
     const files = await glob(pattern, { cwd: process.cwd() });
-    return files.map((f) => path.resolve(process.cwd(), f));
+    return files.map(f => path.resolve(process.cwd(), f));
   }
 
   const resolved = path.resolve(process.cwd(), source);
@@ -49,9 +46,9 @@ async function getManifestFiles(
   }
 
   // Directory: use glob pattern
-  const pattern = options.glob || path.join(source, "**/*.manifest");
+  const pattern = options.glob || path.join(source, '**/*.manifest');
   const files = await glob(pattern, { cwd: process.cwd() });
-  return files.map((f) => path.resolve(process.cwd(), f));
+  return files.map(f => path.resolve(process.cwd(), f));
 }
 
 /**
@@ -67,7 +64,7 @@ async function compileFile(
   spinner.text = `Compiling ${path.relative(process.cwd(), filePath)}`;
 
   // Read source
-  const source = await fs.readFile(filePath, "utf-8");
+  const source = await fs.readFile(filePath, 'utf-8');
 
   // Compile to IR
   const result = await compileToIR(source);
@@ -78,7 +75,7 @@ async function compileFile(
     const stat = await fs.stat(options.output).catch(() => null);
     if (stat?.isDirectory()) {
       // Output to directory with same name
-      const basename = path.basename(filePath, ".manifest");
+      const basename = path.basename(filePath, '.manifest');
       outputPath = path.resolve(options.output, `${basename}.ir.json`);
     } else {
       // Direct file output
@@ -86,7 +83,7 @@ async function compileFile(
     }
   } else {
     // Default: same name, .ir.json extension
-    outputPath = filePath.replace(/\.manifest$/, ".ir.json");
+    outputPath = filePath.replace(/\.manifest$/, '.ir.json');
   }
 
   // Ensure output directory exists
@@ -97,20 +94,16 @@ async function compileFile(
     ? JSON.stringify(result.ir, null, 2)
     : JSON.stringify(result.ir);
 
-  await fs.writeFile(outputPath, jsonContent, "utf-8");
+  await fs.writeFile(outputPath, jsonContent, 'utf-8');
 
   // Show diagnostics if requested
-  if (
-    options.diagnostics &&
-    result.diagnostics &&
-    result.diagnostics.length > 0
-  ) {
-    console.log("");
-    console.log(chalk.bold("Diagnostics:"));
+  if (options.diagnostics && result.diagnostics && result.diagnostics.length > 0) {
+    console.log('');
+    console.log(chalk.bold('Diagnostics:'));
     result.diagnostics.forEach((d: any) => {
-      if (d.severity === "error") {
+      if (d.severity === 'error') {
         console.error(chalk.red(`  ✖ ${d.message}`));
-      } else if (d.severity === "warning") {
+      } else if (d.severity === 'warning') {
         console.warn(chalk.yellow(`  ⚠ ${d.message}`));
       } else {
         console.log(chalk.gray(`  ℹ ${d.message}`));
@@ -118,27 +111,22 @@ async function compileFile(
     });
   }
 
-  spinner.succeed(
-    `Compiled ${path.relative(process.cwd(), filePath)} → ${path.relative(process.cwd(), outputPath)}`
-  );
+  spinner.succeed(`Compiled ${path.relative(process.cwd(), filePath)} → ${path.relative(process.cwd(), outputPath)}`);
 }
 
 /**
  * Compile command handler
  */
-export async function compileCommand(
-  source: string | undefined,
-  options: CompileOptions = {}
-): Promise<void> {
-  const spinner = ora("Preparing to compile").start();
+export async function compileCommand(source: string | undefined, options: CompileOptions = {}): Promise<void> {
+  const spinner = ora('Preparing to compile').start();
 
   try {
     // Get manifest files
-    const files = await getManifestFiles(source || "", options);
+    const files = await getManifestFiles(source || '', options);
 
     if (files.length === 0) {
-      spinner.warn("No .manifest files found");
-      console.log("  Create a .manifest file or specify a source pattern");
+      spinner.warn('No .manifest files found');
+      console.log('  Create a .manifest file or specify a source pattern');
       return;
     }
 
@@ -154,15 +142,13 @@ export async function compileCommand(
         await compileFile(file, options, fileSpinner);
         successCount++;
       } catch (error: any) {
-        fileSpinner.fail(
-          `Failed to compile ${path.relative(process.cwd(), file)}: ${error.message}`
-        );
+        fileSpinner.fail(`Failed to compile ${path.relative(process.cwd(), file)}: ${error.message}`);
         errorCount++;
       }
     }
 
     // Summary
-    console.log("");
+    console.log('');
     if (errorCount === 0) {
       spinner.succeed(`Compiled ${successCount} file(s)`);
     } else {

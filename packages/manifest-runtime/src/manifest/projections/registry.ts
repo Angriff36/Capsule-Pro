@@ -8,8 +8,8 @@
  * Consumers don't need to think about startup ordering.
  */
 
-import { registerBuiltinProjections } from "./builtins.js";
-import type { ProjectionTarget } from "./interface";
+import type { ProjectionTarget } from './interface';
+import { registerBuiltinProjections } from './builtins.js';
 
 /**
  * Internal registry of all registered projections.
@@ -31,9 +31,7 @@ let builtinsRegistered = false;
  */
 export function registerProjection(projection: ProjectionTarget): void {
   if (projections.has(projection.name)) {
-    throw new Error(
-      `Projection "${projection.name}" is already registered. Projection names must be unique.`
-    );
+    throw new Error(`Projection "${projection.name}" is already registered. Projection names must be unique.`);
   }
   projections.set(projection.name, projection);
 }
