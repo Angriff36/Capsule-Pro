@@ -3200,6 +3200,7 @@ enum EntityType {
   proposal
   shipment
   note
+  risk
 
   @@schema("tenant_events")
 }

@@ -111,6 +111,11 @@ export const RELATIONSHIP_STYLES = {
     strokeDasharray: "5,5",
     label: "proposal",
   },
+  risk_to_entity: {
+    color: "#ef4444",
+    strokeDasharray: "5,5",
+    label: "threatens",
+  },
   generic: { color: "#9ca3af", strokeDasharray: "3,3", label: "related" },
 } as const satisfies Record<
   string,

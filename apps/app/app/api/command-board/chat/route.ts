@@ -6,8 +6,10 @@ import { z } from "zod";
 import {
   type BoardMutation,
   type DomainCommandStep,
+  type ENTITY_TYPE_VALUES,
   type ManifestEntityRef,
   type ManifestPlanQuestion,
+  type SuggestedManifestPlan,
   suggestedManifestPlanSchema,
 } from "../../../(authenticated)/command-board/types/manifest-plan";
 import { createPendingManifestPlan } from "../../../lib/command-board/manifest-plans";
@@ -284,7 +286,10 @@ function createBoardTools(params: {
       description:
         "Detect operational conflicts across scheduling, staff, inventory, timeline, and venue. Use this when users ask about risks, what's at risk, conflicts, or operational issues.",
       inputSchema: z.object({
-        boardId: z.string().optional().describe("Optional board ID to scope detection"),
+        boardId: z
+          .string()
+          .optional()
+          .describe("Optional board ID to scope detection"),
         timeRange: z
           .object({
             start: z.string().describe("Start date ISO string"),
@@ -308,7 +313,8 @@ function createBoardTools(params: {
       }),
       execute: async ({ boardId, timeRange, entityTypes }) => {
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+          const baseUrl =
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
           const response = await fetch(`${baseUrl}/conflicts/detect`, {
             method: "POST",
             headers: {
@@ -376,13 +382,19 @@ function createBoardTools(params: {
       inputSchema: z.object({
         conflictId: z
           .string()
-          .describe("The ID of the conflict/risk to explain (from detect_conflicts result)"),
-        boardId: z.string().optional().describe("Optional board ID to scope the explanation"),
+          .describe(
+            "The ID of the conflict/risk to explain (from detect_conflicts result)"
+          ),
+        boardId: z
+          .string()
+          .optional()
+          .describe("Optional board ID to scope the explanation"),
       }),
       execute: async ({ conflictId, boardId }) => {
         try {
           // Fetch all conflicts to find the specific one
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+          const baseUrl =
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
           const response = await fetch(`${baseUrl}/conflicts/detect`, {
             method: "POST",
             headers: {
@@ -390,14 +402,22 @@ function createBoardTools(params: {
             },
             body: JSON.stringify({
               boardId,
-              entityTypes: ["scheduling", "staff", "inventory", "timeline", "venue", "resource"],
+              entityTypes: [
+                "scheduling",
+                "staff",
+                "inventory",
+                "timeline",
+                "venue",
+                "resource",
+              ],
             }),
           });
 
           if (!response.ok) {
             return {
               error: "Failed to fetch conflict details",
-              explanation: "Could not retrieve the conflict details. The conflict may no longer exist.",
+              explanation:
+                "Could not retrieve the conflict details. The conflict may no longer exist.",
             };
           }
 
@@ -415,22 +435,32 @@ function createBoardTools(params: {
 
           // Generate a detailed explanation based on conflict type
           const explanations: Record<string, string> = {
-            scheduling: `This is a scheduling conflict where resources (typically staff) are double-booked or have overlapping assignments. This can lead to operational failures, missed events, or overtime costs.`,
-            staff: `This is a staff availability conflict. The scheduled staff member has a conflicting availability (time off, sick leave, or other commitments) during their assigned shift.`,
-            inventory: `This is an inventory risk. The current stock levels are insufficient for the planned event, which could lead to menu item unavailability or emergency procurement.`,
-            timeline: `This is a timeline conflict. Tasks or deliverables have conflicting deadlines, or critical dependencies are at risk of being violated.`,
-            venue: `This is a venue conflict. The same venue or equipment is double-booked, or there are venue-specific constraints being violated.`,
-            resource: `This is a resource conflict. Critical equipment, vehicles, or other operational resources are over-allocated or unavailable when needed.`,
+            scheduling:
+              "This is a scheduling conflict where resources (typically staff) are double-booked or have overlapping assignments. This can lead to operational failures, missed events, or overtime costs.",
+            staff:
+              "This is a staff availability conflict. The scheduled staff member has a conflicting availability (time off, sick leave, or other commitments) during their assigned shift.",
+            inventory:
+              "This is an inventory risk. The current stock levels are insufficient for the planned event, which could lead to menu item unavailability or emergency procurement.",
+            timeline:
+              "This is a timeline conflict. Tasks or deliverables have conflicting deadlines, or critical dependencies are at risk of being violated.",
+            venue:
+              "This is a venue conflict. The same venue or equipment is double-booked, or there are venue-specific constraints being violated.",
+            resource:
+              "This is a resource conflict. Critical equipment, vehicles, or other operational resources are over-allocated or unavailable when needed.",
           };
 
           const severityImplications: Record<string, string> = {
             low: "This is a minor issue that should be monitored but doesn't require immediate action.",
-            medium: "This issue should be addressed soon to prevent it from escalating.",
+            medium:
+              "This issue should be addressed soon to prevent it from escalating.",
             high: "This is a serious issue that requires attention to prevent operational problems.",
-            critical: "This is a critical issue that requires immediate action to prevent system failure or major problems.",
+            critical:
+              "This is a critical issue that requires immediate action to prevent system failure or major problems.",
           };
 
-          const explanation = explanations[conflict.type] || "This is an operational risk that requires attention.";
+          const explanation =
+            explanations[conflict.type] ||
+            "This is an operational risk that requires attention.";
           const implication = severityImplications[conflict.severity] || "";
 
           return {
@@ -468,17 +498,25 @@ function createBoardTools(params: {
       inputSchema: z.object({
         conflictId: z
           .string()
-          .describe("The ID of the conflict/risk to resolve (from detect_conflicts result)"),
-        boardId: z.string().optional().describe("Optional board ID to scope the resolution"),
+          .describe(
+            "The ID of the conflict/risk to resolve (from detect_conflicts result)"
+          ),
+        boardId: z
+          .string()
+          .optional()
+          .describe("Optional board ID to scope the resolution"),
         executeResolution: z
           .boolean()
           .optional()
-          .describe("Whether to execute the resolution automatically (requires approval)"),
+          .describe(
+            "Whether to execute the resolution automatically (requires approval)"
+          ),
       }),
       execute: async ({ conflictId, boardId, executeResolution }) => {
         try {
           // Fetch all conflicts to find the specific one
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+          const baseUrl =
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
           const response = await fetch(`${baseUrl}/conflicts/detect`, {
             method: "POST",
             headers: {
@@ -486,7 +524,14 @@ function createBoardTools(params: {
             },
             body: JSON.stringify({
               boardId,
-              entityTypes: ["scheduling", "staff", "inventory", "timeline", "venue", "resource"],
+              entityTypes: [
+                "scheduling",
+                "staff",
+                "inventory",
+                "timeline",
+                "venue",
+                "resource",
+              ],
             }),
           });
 
@@ -512,7 +557,10 @@ function createBoardTools(params: {
           }
 
           // Generate resolution suggestions based on conflict type
-          const resolutionSuggestions: Record<string, { actions: string[]; domainCommands: string[] }> = {
+          const resolutionSuggestions: Record<
+            string,
+            { actions: string[]; domainCommands: string[] }
+          > = {
             scheduling: {
               actions: [
                 "Review the employee schedule and identify overlapping shifts",
@@ -566,9 +614,7 @@ function createBoardTools(params: {
                 "Look for similar venues as backup options",
                 "Coordinate with venue manager for extended hours",
               ],
-              domainCommands: [
-                "update_event - change event venue or timing",
-              ],
+              domainCommands: ["update_event - change event venue or timing"],
             },
             resource: {
               actions: [
@@ -584,15 +630,33 @@ function createBoardTools(params: {
           };
 
           const suggestions = resolutionSuggestions[conflict.type] || {
-            actions: ["Review the conflict details", "Take appropriate action based on the specific situation"],
+            actions: [
+              "Review the conflict details",
+              "Take appropriate action based on the specific situation",
+            ],
             domainCommands: [],
           };
 
           // If execution is requested, we create a manifest plan
-          let executionResult = null;
+          let executionResult: {
+            planCreated: boolean;
+            planId: string;
+            message: string;
+          } | null = null;
           if (executeResolution && boardId && tenantId && userId) {
+            // Map conflict entity types to manifest entity types
+            const entityTypeMap: Record<
+              string,
+              (typeof ENTITY_TYPE_VALUES)[number]
+            > = {
+              event: "event",
+              task: "prep_task",
+              employee: "employee",
+              inventory: "inventory_item",
+            };
+
             // Create a pending manifest plan for resolution
-            const plan = {
+            const plan: SuggestedManifestPlan = {
               planId: crypto.randomUUID(),
               title: `Resolve: ${conflict.title}`,
               summary: `Resolution plan for ${conflict.type} conflict - ${conflict.description}`,
@@ -600,20 +664,31 @@ function createBoardTools(params: {
               scope: {
                 boardId,
                 tenantId,
-                entities: conflict.affectedEntities?.map((e: { type: string; id: string }) => ({
-                  entityType: e.type,
-                  entityId: e.id,
-                })) || [],
+                entities:
+                  conflict.affectedEntities?.map(
+                    (e: { type: string; id: string }): ManifestEntityRef => ({
+                      entityType: entityTypeMap[e.type] || "event",
+                      entityId: e.id,
+                    })
+                  ) || [],
               },
-              domainPlan: suggestions.domainCommands.map((cmd, idx) => ({
-                stepId: `step-${idx + 1}`,
-                command: cmd.split(" - ")[0],
-                entityRef: conflict.affectedEntities?.[0] ? {
-                  entityType: conflict.affectedEntities[0].type,
-                  entityId: conflict.affectedEntities[0].id,
-                } : undefined,
-                params: cmd.includes("- ") ? cmd.split(" - ")[1] : undefined,
-              })),
+              prerequisites: [],
+              boardPreview: [],
+              domainPlan: suggestions.domainCommands.map(
+                (cmd, idx): DomainCommandStep => {
+                  const [cmdName, cmdArgs] = cmd.split(" - ");
+                  return {
+                    stepId: `step-${idx + 1}`,
+                    commandName: cmdName,
+                    entityType: conflict.affectedEntities?.[0]
+                      ? entityTypeMap[conflict.affectedEntities[0].type] ||
+                        "event"
+                      : undefined,
+                    entityId: conflict.affectedEntities?.[0]?.id,
+                    args: cmdArgs ? { description: cmdArgs } : {},
+                  };
+                }
+              ),
               execution: {
                 mode: "execute",
                 idempotencyKey: crypto.randomUUID(),
@@ -624,7 +699,9 @@ function createBoardTools(params: {
               },
             };
 
-            const { createPendingManifestPlan } = await import("../../../lib/command-board/manifest-plans");
+            const { createPendingManifestPlan } = await import(
+              "../../../lib/command-board/manifest-plans"
+            );
             await createPendingManifestPlan({
               tenantId,
               boardId,
@@ -635,7 +712,8 @@ function createBoardTools(params: {
             executionResult = {
               planCreated: true,
               planId: plan.planId,
-              message: "A resolution plan has been created and is pending approval.",
+              message:
+                "A resolution plan has been created and is pending approval.",
             };
           }
 

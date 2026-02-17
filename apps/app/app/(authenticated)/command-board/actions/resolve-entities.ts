@@ -640,6 +640,10 @@ export async function resolveEntities(
               return await resolveShipments(tenantId, uniqueIds);
             case "note":
               return await resolveNotes(tenantId, uniqueIds);
+            case "risk":
+              // Risk entities are derived from conflicts, not directly resolved from DB
+              // Return empty map - risks come from conflict detection
+              return new Map<string, ResolvedEntity>();
             default: {
               // Exhaustive check — if a new EntityType is added, this will error at compile time
               const _exhaustive: never = entityType;
