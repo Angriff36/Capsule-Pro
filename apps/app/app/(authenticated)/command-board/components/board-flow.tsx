@@ -41,6 +41,7 @@ import type {
   DerivedConnection,
   ResolvedEntity,
 } from "../types/index";
+import type { BoardMutation } from "../types/manifest-plan";
 
 // ============================================================================
 // Types
@@ -52,6 +53,7 @@ interface BoardFlowProps {
   entities: Map<string, ResolvedEntity>;
   derivedConnections: DerivedConnection[];
   annotations: BoardAnnotation[];
+  activePreviewMutations: BoardMutation[];
   onOpenDetail: (entityType: string, entityId: string) => void;
   onProjectionAdded?: (projection: BoardProjection) => void;
   onProjectionRemoved?: (projectionId: string) => void;
@@ -181,6 +183,7 @@ function BoardFlowInner({
   entities,
   derivedConnections,
   annotations,
+  activePreviewMutations,
   onOpenDetail,
   onProjectionAdded,
   onProjectionRemoved,
@@ -197,9 +200,13 @@ function BoardFlowInner({
   // Refs for broadcast functions — allows callbacks defined before useBoardSync
   // to access broadcast without circular dependency issues
   const broadcastMoveRef = useRef<(id: string, x: number, y: number) => void>(
-    () => {}
+    () => {
+      // noop
+    }
   );
-  const broadcastRemoveRef = useRef<(id: string) => void>(() => {});
+  const broadcastRemoveRef = useRef<(id: string) => void>(() => {
+    // noop
+  });
 
   // ---- Callbacks for node data ----
 
@@ -281,6 +288,164 @@ function BoardFlowInner({
     setEdges(initialEdges);
   }, [initialEdges, setEdges]);
 
+  // ---- Preview layer (ghost mutations before approval) ----
+
+  const previewState = useMemo(() => {
+    const removedNodeIds = new Set<string>();
+    const removedEdgeIds = new Set<string>();
+    const movedNodePositions = new Map<string, { x: number; y: number }>();
+    const highlightedNodeColors = new Map<string, string>();
+    const previewAddNodes = activePreviewMutations.filter(
+      (mutation): mutation is Extract<BoardMutation, { type: "addNode" }> =>
+        mutation.type === "addNode"
+    );
+    const previewAddEdges = activePreviewMutations.filter(
+      (mutation): mutation is Extract<BoardMutation, { type: "addEdge" }> =>
+        mutation.type === "addEdge"
+    );
+
+    for (const mutation of activePreviewMutations) {
+      switch (mutation.type) {
+        case "removeNode":
+          removedNodeIds.add(mutation.projectionId);
+          break;
+        case "removeEdge":
+          removedEdgeIds.add(mutation.edgeId);
+          break;
+        case "moveNode":
+          movedNodePositions.set(mutation.projectionId, {
+            x: mutation.positionX,
+            y: mutation.positionY,
+          });
+          break;
+        case "highlightNode":
+          highlightedNodeColors.set(
+            mutation.projectionId,
+            mutation.color ?? "#f59e0b"
+          );
+          break;
+        default:
+          break;
+      }
+    }
+
+    return {
+      removedNodeIds,
+      removedEdgeIds,
+      movedNodePositions,
+      highlightedNodeColors,
+      previewAddNodes,
+      previewAddEdges,
+    };
+  }, [activePreviewMutations]);
+
+  const renderedNodes = useMemo(() => {
+    const persistedNodes = nodes
+      .filter((node) => !previewState.removedNodeIds.has(node.id))
+      .map((node) => {
+        const moved = previewState.movedNodePositions.get(node.id);
+        const highlightColor = previewState.highlightedNodeColors.get(node.id);
+        if (!(moved || highlightColor)) {
+          return node;
+        }
+
+        return {
+          ...node,
+          position: moved ?? node.position,
+          style: {
+            ...node.style,
+            ...(highlightColor
+              ? {
+                  boxShadow: `0 0 0 2px ${highlightColor}`,
+                }
+              : {}),
+          },
+        };
+      });
+
+    const ghostNodes = previewState.previewAddNodes.map((mutation) => {
+      const projection: BoardProjection = {
+        id: mutation.previewNodeId,
+        tenantId: "preview",
+        boardId,
+        entityType: mutation.entityType,
+        entityId: mutation.entityId,
+        positionX: Math.round(mutation.positionX),
+        positionY: Math.round(mutation.positionY),
+        width: mutation.width ?? 280,
+        height: mutation.height ?? 180,
+        zIndex: 9999,
+        colorOverride: null,
+        collapsed: false,
+        groupId: null,
+        pinned: false,
+      };
+
+      const key = `${mutation.entityType}:${mutation.entityId}`;
+      const entity = entities.get(key) ?? null;
+      const ghostNode = projectionToNode(projection, entity, {
+        onOpenDetail: () => {
+          // preview nodes are read-only
+        },
+        onRemove: () => {
+          // preview nodes are read-only
+        },
+      });
+
+      return {
+        ...ghostNode,
+        draggable: false,
+        selectable: false,
+        style: {
+          ...ghostNode.style,
+          opacity: 0.7,
+          border: "2px dashed #3b82f6",
+        },
+      };
+    });
+
+    return [...persistedNodes, ...ghostNodes];
+  }, [boardId, entities, nodes, previewState]);
+
+  const renderedEdges = useMemo(() => {
+    const persistedEdges = edges.filter(
+      (edge) => !previewState.removedEdgeIds.has(edge.id)
+    );
+
+    const ghostEdges: BoardEdge[] = previewState.previewAddEdges.map(
+      (mutation) => ({
+        id:
+          mutation.edgeId ??
+          `preview-edge-${mutation.sourceProjectionId}-${mutation.targetProjectionId}-${mutation.label ?? "link"}`,
+        source: mutation.sourceProjectionId,
+        target: mutation.targetProjectionId,
+        type: "smoothstep",
+        label: mutation.label,
+        animated: true,
+        style: {
+          stroke: mutation.color ?? "#3b82f6",
+          strokeDasharray: (() => {
+            if (mutation.style === "dotted") {
+              return "2,2";
+            }
+            if (mutation.style === "dashed") {
+              return "5,5";
+            }
+            return undefined;
+          })(),
+        },
+        data: {
+          derived: false,
+          annotationId: "preview",
+          label: mutation.label ?? null,
+          style: mutation.style ?? null,
+        },
+      })
+    );
+
+    return [...persistedEdges, ...ghostEdges];
+  }, [edges, previewState]);
+
   // ---- Realtime sync via Liveblocks ----
 
   const {
@@ -333,7 +498,11 @@ function BoardFlowInner({
   const handleNodesChange = useCallback(
     (changes: NodeChange<ProjectionNode>[]) => {
       // Let React Flow apply all changes first
-      onNodesChange(changes);
+      onNodesChange(
+        changes.filter(
+          (change) => !("id" in change && change.id.startsWith("preview:"))
+        )
+      );
 
       for (const change of changes) {
         if (change.type !== "position") {
@@ -424,7 +593,11 @@ function BoardFlowInner({
 
   const handleEdgesChange = useCallback(
     (changes: EdgeChange<BoardEdge>[]) => {
-      onEdgesChange(changes);
+      onEdgesChange(
+        changes.filter(
+          (change) => !("id" in change && change.id.startsWith("preview-edge-"))
+        )
+      );
     },
     [onEdgesChange]
   );
@@ -437,7 +610,13 @@ function BoardFlowInner({
         return;
       }
 
-      const projectionIds = deletedNodes.map((n) => n.id);
+      const projectionIds = deletedNodes
+        .map((n) => n.id)
+        .filter((id) => !id.startsWith("preview:"));
+
+      if (projectionIds.length === 0) {
+        return;
+      }
 
       try {
         if (projectionIds.length === 1) {
@@ -482,7 +661,7 @@ function BoardFlowInner({
 
   // ---- Empty state ----
 
-  if (projections.length === 0) {
+  if (projections.length === 0 && previewState.previewAddNodes.length === 0) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3 text-center">
@@ -507,13 +686,13 @@ function BoardFlowInner({
       <ReactFlow
         className="bg-background"
         deleteKeyCode={["Backspace", "Delete"]}
-        edges={edges}
+        edges={renderedEdges}
         fitView
         fitViewOptions={{ padding: 0.2 }}
         maxZoom={2}
         minZoom={0.1}
         multiSelectionKeyCode="Shift"
-        nodes={nodes}
+        nodes={renderedNodes}
         nodeTypes={nodeTypes}
         onEdgesChange={handleEdgesChange}
         onNodesChange={handleNodesChange}

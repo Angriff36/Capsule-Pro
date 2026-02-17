@@ -10,7 +10,7 @@
  * - Structured constraint outcome information for frontend consumption
  * - Type-safe response builders
  */
-import type { CommandResult, EmittedEvent } from "@manifest/runtime";
+import type { CommandResult, EmittedEvent } from "@angriff36/manifest";
 /**
  * Severity level for constraint classification
  */

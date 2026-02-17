@@ -1,8 +1,8 @@
 "use client";
 
 import { ReactFlowProvider } from "@xyflow/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { CommandBoardWithCards } from "../actions/boards";
 import { useBoardHistory } from "../hooks/use-board-history";
 import type { EntityType } from "../types/entities";
@@ -12,6 +12,7 @@ import type {
   DerivedConnection,
   ResolvedEntity,
 } from "../types/index";
+import type { SuggestedManifestPlan } from "../types/manifest-plan";
 import { AiChatPanel } from "./ai-chat-panel";
 import { ErrorBoundary } from "./board-error-boundary";
 import { BoardFlow } from "./board-flow";
@@ -83,6 +84,8 @@ export function BoardShell({
 
   // ---- AI chat panel state ----
   const [aiChatOpen, setAiChatOpen] = useState(false);
+  const [activePreviewPlan, setActivePreviewPlan] =
+    useState<SuggestedManifestPlan | null>(null);
 
   // ---- Entity browser panel state ----
   const [entityBrowserOpen, setEntityBrowserOpen] = useState(false);
@@ -188,6 +191,7 @@ export function BoardShell({
         <div className="fixed inset-0 z-40 flex flex-col bg-background">
           {/* Board Header */}
           <BoardHeader
+            aiChatOpen={aiChatOpen}
             boardDescription={board.description}
             boardId={boardId}
             boardName={board.name}
@@ -195,9 +199,14 @@ export function BoardShell({
             boardTags={board.tags}
             canRedo={canRedo}
             canUndo={canUndo}
+            commandPaletteOpen={commandPaletteOpen}
             entityBrowserOpen={entityBrowserOpen}
             onExitFullscreen={handleExitFullscreen}
             onRedo={handleRedo}
+            onToggleAiChat={() => setAiChatOpen((prev) => !prev)}
+            onToggleCommandPalette={() =>
+              setCommandPaletteOpen((prev) => !prev)
+            }
             onToggleEntityBrowser={() => setEntityBrowserOpen((prev) => !prev)}
             onUndo={handleUndo}
           />
@@ -208,6 +217,7 @@ export function BoardShell({
             <div className="relative flex-1">
               <ErrorBoundary>
                 <BoardFlow
+                  activePreviewMutations={activePreviewPlan?.boardPreview ?? []}
                   annotations={annotations}
                   boardId={boardId}
                   derivedConnections={derivedConnections}
@@ -243,6 +253,7 @@ export function BoardShell({
           <AiChatPanel
             boardId={boardId}
             onOpenChange={setAiChatOpen}
+            onPreviewPlanChange={setActivePreviewPlan}
             onProjectionAdded={handleProjectionAdded}
             open={aiChatOpen}
           />

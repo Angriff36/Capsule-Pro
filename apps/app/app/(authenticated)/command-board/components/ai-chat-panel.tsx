@@ -27,7 +27,9 @@ import {
   type BoardCommandId,
   executeCommand,
 } from "../actions/execute-command";
+import { approveManifestPlan } from "../actions/manifest-plans";
 import type { BoardProjection } from "../types/board";
+import type { SuggestedManifestPlan } from "../types/manifest-plan";
 
 // ============================================================================
 // Types
@@ -38,6 +40,7 @@ interface AiChatPanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onProjectionAdded?: (projection: BoardProjection) => void;
+  onPreviewPlanChange?: (plan: SuggestedManifestPlan | null) => void;
 }
 
 // ============================================================================
@@ -80,6 +83,7 @@ export function AiChatPanel({
   open,
   onOpenChange,
   onProjectionAdded: _onProjectionAdded,
+  onPreviewPlanChange,
 }: AiChatPanelProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -89,6 +93,21 @@ export function AiChatPanel({
   const [pendingActions, setPendingActions] = useState<
     Map<string, { commandId: BoardCommandId; reason: string; status: string }>
   >(new Map());
+  const [pendingPlans, setPendingPlans] = useState<
+    Map<
+      string,
+      {
+        plan: SuggestedManifestPlan;
+        answers: Record<string, string>;
+        status: "pending" | "executing" | "executed" | "rejected" | "failed";
+        resultSummary?: string;
+        error?: string;
+      }
+    >
+  >(new Map());
+  const [previewPlanToolCallId, setPreviewPlanToolCallId] = useState<
+    string | null
+  >(null);
 
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({
@@ -150,9 +169,38 @@ export function AiChatPanel({
             });
           }
         }
+
+        if (isToolUIPart(part) && part.type === "tool-suggest_manifest_plan") {
+          const toolCallId = part.toolCallId;
+          if (
+            !pendingPlans.has(toolCallId) &&
+            part.state === "output-available" &&
+            part.output
+          ) {
+            const output = part.output as {
+              suggested?: boolean;
+              plan?: SuggestedManifestPlan;
+            };
+            const suggestedPlan = output.plan;
+            if (output.suggested && suggestedPlan) {
+              setPendingPlans((prev) => {
+                if (prev.has(toolCallId)) {
+                  return prev;
+                }
+                const next = new Map(prev);
+                next.set(toolCallId, {
+                  plan: suggestedPlan,
+                  answers: {},
+                  status: "pending",
+                });
+                return next;
+              });
+            }
+          }
+        }
       }
     }
-  }, [messages, pendingActions]);
+  }, [messages, pendingActions, pendingPlans]);
 
   // ---- Send a message ----
   const handleSend = useCallback(() => {
@@ -231,6 +279,141 @@ export function AiChatPanel({
       return next;
     });
   }, []);
+
+  const handlePlanAnswerChange = useCallback(
+    (toolCallId: string, questionId: string, value: string) => {
+      setPendingPlans((prev) => {
+        const current = prev.get(toolCallId);
+        if (!current) {
+          return prev;
+        }
+
+        const next = new Map(prev);
+        next.set(toolCallId, {
+          ...current,
+          answers: {
+            ...current.answers,
+            [questionId]: value,
+          },
+        });
+        return next;
+      });
+    },
+    []
+  );
+
+  const handleTogglePlanPreview = useCallback(
+    (toolCallId: string) => {
+      const nextPreviewId =
+        previewPlanToolCallId === toolCallId ? null : toolCallId;
+      setPreviewPlanToolCallId(nextPreviewId);
+
+      if (!onPreviewPlanChange) {
+        return;
+      }
+
+      if (nextPreviewId === null) {
+        onPreviewPlanChange(null);
+        return;
+      }
+
+      const pending = pendingPlans.get(toolCallId);
+      onPreviewPlanChange(pending ? pending.plan : null);
+    },
+    [onPreviewPlanChange, pendingPlans, previewPlanToolCallId]
+  );
+
+  const handleApprovePlan = useCallback(
+    async (toolCallId: string) => {
+      const pendingPlan = pendingPlans.get(toolCallId);
+      if (!pendingPlan) {
+        return;
+      }
+
+      setPendingPlans((prev) => {
+        const next = new Map(prev);
+        next.set(toolCallId, {
+          ...pendingPlan,
+          status: "executing",
+        });
+        return next;
+      });
+
+      try {
+        const result = await approveManifestPlan(
+          boardId,
+          pendingPlan.plan.planId,
+          pendingPlan.answers
+        );
+
+        if (result.success) {
+          toast.success(result.summary);
+          setPendingPlans((prev) => {
+            const next = new Map(prev);
+            next.set(toolCallId, {
+              ...pendingPlan,
+              status: "executed",
+              resultSummary: result.summary,
+            });
+            return next;
+          });
+          if (previewPlanToolCallId === toolCallId) {
+            onPreviewPlanChange?.(null);
+            setPreviewPlanToolCallId(null);
+          }
+        } else {
+          toast.error(result.error ?? result.summary);
+          setPendingPlans((prev) => {
+            const next = new Map(prev);
+            next.set(toolCallId, {
+              ...pendingPlan,
+              status: "failed",
+              resultSummary: result.summary,
+              error: result.error,
+            });
+            return next;
+          });
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Plan execution failed";
+        toast.error(message);
+        setPendingPlans((prev) => {
+          const next = new Map(prev);
+          next.set(toolCallId, {
+            ...pendingPlan,
+            status: "failed",
+            error: message,
+          });
+          return next;
+        });
+      }
+    },
+    [boardId, onPreviewPlanChange, pendingPlans, previewPlanToolCallId]
+  );
+
+  const handleRejectPlan = useCallback(
+    (toolCallId: string) => {
+      setPendingPlans((prev) => {
+        const pendingPlan = prev.get(toolCallId);
+        if (!pendingPlan) {
+          return prev;
+        }
+        const next = new Map(prev);
+        next.set(toolCallId, {
+          ...pendingPlan,
+          status: "rejected",
+        });
+        return next;
+      });
+
+      if (previewPlanToolCallId === toolCallId) {
+        onPreviewPlanChange?.(null);
+        setPreviewPlanToolCallId(null);
+      }
+    },
+    [onPreviewPlanChange, previewPlanToolCallId]
+  );
 
   return (
     <Sheet onOpenChange={onOpenChange} open={open}>
@@ -314,128 +497,372 @@ export function AiChatPanel({
                       : "bg-muted"
                   }`}
                 >
-                  {message.parts.map((part, idx) => {
-                    if (part.type === "text") {
-                      return (
-                        <p className="whitespace-pre-wrap" key={idx}>
-                          {part.text}
-                        </p>
-                      );
-                    }
+                  {(() => {
+                    let renderedPartCount = 0;
+                    const renderedParts = message.parts.map((part, idx) => {
+                      if (part.type === "text") {
+                        renderedPartCount += 1;
+                        return (
+                          <p className="whitespace-pre-wrap" key={idx}>
+                            {part.text}
+                          </p>
+                        );
+                      }
 
-                    // Handle tool parts generically
-                    if (isToolUIPart(part)) {
-                      const { toolCallId } = part;
+                      // Handle tool parts generically
+                      if (isToolUIPart(part)) {
+                        const { toolCallId } = part;
 
-                      // Board action suggestion — show approve/reject UI
-                      if (part.type === "tool-suggest_board_action") {
-                        const action = pendingActions.get(toolCallId);
-                        if (!action) {
-                          // Action not yet tracked (still streaming)
+                        // Board action suggestion — show approve/reject UI
+                        if (part.type === "tool-suggest_board_action") {
+                          const action = pendingActions.get(toolCallId);
+                          if (!action) {
+                            // Action not yet tracked (still streaming)
+                            renderedPartCount += 1;
+                            return (
+                              <div
+                                className="flex items-center gap-2 text-muted-foreground text-xs"
+                                key={idx}
+                              >
+                                <Loader2Icon className="h-3 w-3 animate-spin" />
+                                Preparing suggestion...
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div
+                              className="flex items-center justify-between gap-2 rounded-md bg-background/50 p-2"
+                              key={idx}
+                            >
+                              <div className="flex flex-col">
+                                <span className="font-medium text-xs capitalize">
+                                  {action.commandId.replace(/_/g, " ")}
+                                </span>
+                                <span className="text-muted-foreground text-xs">
+                                  {action.reason}
+                                </span>
+                              </div>
+
+                              {action.status === "pending" && (
+                                <div className="flex shrink-0 gap-1">
+                                  <Button
+                                    className="h-6 w-6"
+                                    onClick={() =>
+                                      handleApproveAction(toolCallId)
+                                    }
+                                    size="icon"
+                                    variant="ghost"
+                                  >
+                                    <CheckIcon className="h-3.5 w-3.5 text-green-600" />
+                                  </Button>
+                                  <Button
+                                    className="h-6 w-6"
+                                    onClick={() =>
+                                      handleRejectAction(toolCallId)
+                                    }
+                                    size="icon"
+                                    variant="ghost"
+                                  >
+                                    <XIcon className="h-3.5 w-3.5 text-red-500" />
+                                  </Button>
+                                </div>
+                              )}
+
+                              {action.status === "executing" && (
+                                <Loader2Icon className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
+                              )}
+
+                              {action.status === "executed" && (
+                                <Badge
+                                  className="shrink-0 text-xs"
+                                  variant="secondary"
+                                >
+                                  Done
+                                </Badge>
+                              )}
+
+                              {action.status === "rejected" && (
+                                <Badge
+                                  className="shrink-0 text-muted-foreground text-xs"
+                                  variant="outline"
+                                >
+                                  Skipped
+                                </Badge>
+                              )}
+
+                              {action.status === "failed" && (
+                                <Badge
+                                  className="shrink-0 text-xs"
+                                  variant="destructive"
+                                >
+                                  Failed
+                                </Badge>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        if (part.type === "tool-suggest_manifest_plan") {
+                          const pendingPlan = pendingPlans.get(toolCallId);
+                          if (!pendingPlan) {
+                            renderedPartCount += 1;
+                            return (
+                              <div
+                                className="flex items-center gap-2 text-muted-foreground text-xs"
+                                key={idx}
+                              >
+                                <Loader2Icon className="h-3 w-3 animate-spin" />
+                                Building plan...
+                              </div>
+                            );
+                          }
+
+                          const requiredQuestions =
+                            pendingPlan.plan.prerequisites.filter(
+                              (q) => q.required
+                            );
+                          const missingRequired = requiredQuestions.filter(
+                            (q) => !pendingPlan.answers[q.questionId]
+                          );
+                          const canApprove = missingRequired.length === 0;
+                          const previewActive =
+                            previewPlanToolCallId === toolCallId;
+
+                          renderedPartCount += 1;
+                          return (
+                            <div
+                              className="space-y-2 rounded-md bg-background/50 p-2"
+                              key={idx}
+                            >
+                              <div className="space-y-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-medium text-xs">
+                                    {pendingPlan.plan.title}
+                                  </span>
+                                  <Badge variant="outline">
+                                    {Math.round(
+                                      pendingPlan.plan.confidence * 100
+                                    )}
+                                    % confidence
+                                  </Badge>
+                                </div>
+                                <p className="text-muted-foreground text-xs">
+                                  {pendingPlan.plan.summary}
+                                </p>
+                              </div>
+
+                              <div className="space-y-1 rounded border border-border/60 p-2 text-xs">
+                                <p className="font-medium">
+                                  Board changes (
+                                  {pendingPlan.plan.boardPreview.length})
+                                </p>
+                                <p className="text-muted-foreground">
+                                  {pendingPlan.plan.boardPreview
+                                    .map((m) => m.type)
+                                    .join(", ") || "No board preview changes"}
+                                </p>
+                              </div>
+
+                              <div className="space-y-1 rounded border border-border/60 p-2 text-xs">
+                                <p className="font-medium">
+                                  Domain effects (
+                                  {pendingPlan.plan.domainPlan.length})
+                                </p>
+                                <div className="space-y-1 text-muted-foreground">
+                                  {pendingPlan.plan.domainPlan.length === 0 && (
+                                    <p>No domain steps</p>
+                                  )}
+                                  {pendingPlan.plan.domainPlan.map((step) => (
+                                    <p key={step.stepId}>
+                                      {step.commandName}
+                                      {step.entityType && step.entityId
+                                        ? ` on ${step.entityType}:${step.entityId}`
+                                        : ""}
+                                    </p>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {pendingPlan.plan.prerequisites.length > 0 && (
+                                <div className="space-y-2 rounded border border-border/60 p-2 text-xs">
+                                  <p className="font-medium">
+                                    Required inputs ({missingRequired.length}{" "}
+                                    missing)
+                                  </p>
+                                  {pendingPlan.plan.prerequisites.map(
+                                    (question) => (
+                                      <div
+                                        className="block space-y-1"
+                                        key={question.questionId}
+                                      >
+                                        <span>
+                                          {question.prompt}
+                                          {question.required ? " *" : ""}
+                                        </span>
+                                        {question.type === "select" ||
+                                        question.type === "enum" ? (
+                                          <select
+                                            className="w-full rounded border border-input bg-background px-2 py-1"
+                                            onChange={(event) =>
+                                              handlePlanAnswerChange(
+                                                toolCallId,
+                                                question.questionId,
+                                                event.target.value
+                                              )
+                                            }
+                                            value={
+                                              pendingPlan.answers[
+                                                question.questionId
+                                              ] ?? ""
+                                            }
+                                          >
+                                            <option value="">Select...</option>
+                                            {(question.options ?? []).map(
+                                              (option) => (
+                                                <option
+                                                  key={option}
+                                                  value={option}
+                                                >
+                                                  {option}
+                                                </option>
+                                              )
+                                            )}
+                                          </select>
+                                        ) : (
+                                          <input
+                                            className="w-full rounded border border-input bg-background px-2 py-1"
+                                            onChange={(event) =>
+                                              handlePlanAnswerChange(
+                                                toolCallId,
+                                                question.questionId,
+                                                event.target.value
+                                              )
+                                            }
+                                            type={(() => {
+                                              if (question.type === "number") {
+                                                return "number";
+                                              }
+                                              if (question.type === "date") {
+                                                return "date";
+                                              }
+                                              return "text";
+                                            })()}
+                                            value={
+                                              pendingPlan.answers[
+                                                question.questionId
+                                              ] ?? ""
+                                            }
+                                          />
+                                        )}
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              )}
+
+                              {pendingPlan.status === "pending" && (
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    className="h-7 text-xs"
+                                    onClick={() =>
+                                      handleTogglePlanPreview(toolCallId)
+                                    }
+                                    size="sm"
+                                    variant="outline"
+                                  >
+                                    {previewActive ? "Hide preview" : "Preview"}
+                                  </Button>
+                                  <Button
+                                    className="h-7 text-xs"
+                                    disabled={!canApprove}
+                                    onClick={() =>
+                                      handleApprovePlan(toolCallId)
+                                    }
+                                    size="sm"
+                                  >
+                                    Approve plan
+                                  </Button>
+                                  <Button
+                                    className="h-7 text-xs"
+                                    onClick={() => handleRejectPlan(toolCallId)}
+                                    size="sm"
+                                    variant="ghost"
+                                  >
+                                    Reject
+                                  </Button>
+                                </div>
+                              )}
+
+                              {pendingPlan.status === "executing" && (
+                                <div className="flex items-center gap-2 text-muted-foreground text-xs">
+                                  <Loader2Icon className="h-3 w-3 animate-spin" />
+                                  Executing plan...
+                                </div>
+                              )}
+
+                              {pendingPlan.status === "executed" && (
+                                <Badge variant="secondary">
+                                  {pendingPlan.resultSummary ?? "Plan executed"}
+                                </Badge>
+                              )}
+
+                              {pendingPlan.status === "rejected" && (
+                                <Badge variant="outline">Plan skipped</Badge>
+                              )}
+
+                              {pendingPlan.status === "failed" && (
+                                <Badge variant="destructive">
+                                  {pendingPlan.error ??
+                                    pendingPlan.resultSummary ??
+                                    "Plan failed"}
+                                </Badge>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        // Other tool calls (e.g., query_board_context) — show loading
+                        if (
+                          part.state === "input-available" ||
+                          part.state === "input-streaming"
+                        ) {
+                          renderedPartCount += 1;
                           return (
                             <div
                               className="flex items-center gap-2 text-muted-foreground text-xs"
                               key={idx}
                             >
                               <Loader2Icon className="h-3 w-3 animate-spin" />
-                              Preparing suggestion...
+                              Looking up board data...
                             </div>
                           );
                         }
 
-                        return (
-                          <div
-                            className="flex items-center justify-between gap-2 rounded-md bg-background/50 p-2"
-                            key={idx}
-                          >
-                            <div className="flex flex-col">
-                              <span className="font-medium text-xs capitalize">
-                                {action.commandId.replace(/_/g, " ")}
-                              </span>
-                              <span className="text-muted-foreground text-xs">
-                                {action.reason}
-                              </span>
-                            </div>
-
-                            {action.status === "pending" && (
-                              <div className="flex shrink-0 gap-1">
-                                <Button
-                                  className="h-6 w-6"
-                                  onClick={() =>
-                                    handleApproveAction(toolCallId)
-                                  }
-                                  size="icon"
-                                  variant="ghost"
-                                >
-                                  <CheckIcon className="h-3.5 w-3.5 text-green-600" />
-                                </Button>
-                                <Button
-                                  className="h-6 w-6"
-                                  onClick={() => handleRejectAction(toolCallId)}
-                                  size="icon"
-                                  variant="ghost"
-                                >
-                                  <XIcon className="h-3.5 w-3.5 text-red-500" />
-                                </Button>
-                              </div>
-                            )}
-
-                            {action.status === "executing" && (
-                              <Loader2Icon className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
-                            )}
-
-                            {action.status === "executed" && (
-                              <Badge
-                                className="shrink-0 text-xs"
-                                variant="secondary"
-                              >
-                                Done
-                              </Badge>
-                            )}
-
-                            {action.status === "rejected" && (
-                              <Badge
-                                className="shrink-0 text-muted-foreground text-xs"
-                                variant="outline"
-                              >
-                                Skipped
-                              </Badge>
-                            )}
-
-                            {action.status === "failed" && (
-                              <Badge
-                                className="shrink-0 text-xs"
-                                variant="destructive"
-                              >
-                                Failed
-                              </Badge>
-                            )}
-                          </div>
-                        );
+                        // Tool output available — don't render (AI will summarize)
+                        return null;
                       }
 
-                      // Other tool calls (e.g., query_board_context) — show loading
-                      if (
-                        part.state === "input-available" ||
-                        part.state === "input-streaming"
-                      ) {
-                        return (
-                          <div
-                            className="flex items-center gap-2 text-muted-foreground text-xs"
-                            key={idx}
-                          >
-                            <Loader2Icon className="h-3 w-3 animate-spin" />
-                            Looking up board data...
-                          </div>
-                        );
-                      }
-
-                      // Tool output available — don't render (AI will summarize)
                       return null;
+                    });
+
+                    if (
+                      renderedPartCount === 0 &&
+                      message.role === "assistant"
+                    ) {
+                      return (
+                        <>
+                          {renderedParts}
+                          <p className="text-muted-foreground text-xs">
+                            Processed request. No text was returned by the
+                            model.
+                          </p>
+                        </>
+                      );
                     }
 
-                    return null;
-                  })}
+                    return renderedParts;
+                  })()}
                 </div>
               </div>
             ))}
