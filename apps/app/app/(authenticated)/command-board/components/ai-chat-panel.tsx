@@ -606,6 +606,22 @@ export function AiChatPanel({
                         if (part.type === "tool-suggest_manifest_plan") {
                           const pendingPlan = pendingPlans.get(toolCallId);
                           if (!pendingPlan) {
+                            if (part.state === "output-available") {
+                              const output = part.output as
+                                | { error?: string; message?: string }
+                                | undefined;
+                              renderedPartCount += 1;
+                              return (
+                                <div
+                                  className="rounded-md bg-background/50 p-2 text-muted-foreground text-xs"
+                                  key={idx}
+                                >
+                                  {output?.error ??
+                                    output?.message ??
+                                    "Plan generation did not return a valid plan. Try again with a shorter request."}
+                                </div>
+                              );
+                            }
                             renderedPartCount += 1;
                             return (
                               <div
@@ -683,6 +699,249 @@ export function AiChatPanel({
                                   ))}
                                 </div>
                               </div>
+
+                              {/* Risk Assessment */}
+                              {pendingPlan.plan.riskAssessment && (
+                                <div className="space-y-1 rounded border border-border/60 p-2 text-xs">
+                                  <div className="flex items-center justify-between">
+                                    <p className="font-medium">
+                                      Risk Assessment
+                                    </p>
+                                    <Badge
+                                      variant={(() => {
+                                        const level =
+                                          pendingPlan.plan.riskAssessment.level;
+                                        if (level === "critical")
+                                          return "destructive";
+                                        if (level === "high") return "outline";
+                                        return "secondary";
+                                      })()}
+                                    >
+                                      {pendingPlan.plan.riskAssessment.level}
+                                    </Badge>
+                                  </div>
+                                  {pendingPlan.plan.riskAssessment.factors
+                                    .length > 0 && (
+                                    <div className="text-muted-foreground">
+                                      <p className="font-medium text-[10px] uppercase">
+                                        Factors
+                                      </p>
+                                      <ul className="list-inside list-disc">
+                                        {pendingPlan.plan.riskAssessment.factors.map(
+                                          (factor, i) => (
+                                            <li key={i}>{factor}</li>
+                                          )
+                                        )}
+                                      </ul>
+                                    </div>
+                                  )}
+                                  {pendingPlan.plan.riskAssessment.mitigations
+                                    .length > 0 && (
+                                    <div className="text-muted-foreground">
+                                      <p className="font-medium text-[10px] uppercase">
+                                        Mitigations
+                                      </p>
+                                      <ul className="list-inside list-disc">
+                                        {pendingPlan.plan.riskAssessment.mitigations.map(
+                                          (m, i) => (
+                                            <li key={i}>{m}</li>
+                                          )
+                                        )}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Cost Impact / Financial Delta */}
+                              {pendingPlan.plan.costImpact && (
+                                <div className="space-y-1 rounded border border-border/60 p-2 text-xs">
+                                  <p className="font-medium">
+                                    Financial Impact
+                                  </p>
+                                  {pendingPlan.plan.costImpact.estimatedCost !==
+                                    undefined && (
+                                    <p className="text-muted-foreground">
+                                      Estimated:{" "}
+                                      {pendingPlan.plan.costImpact.currency}{" "}
+                                      {pendingPlan.plan.costImpact.estimatedCost.toLocaleString()}
+                                    </p>
+                                  )}
+                                  {pendingPlan.plan.costImpact
+                                    .financialDelta && (
+                                    <div className="mt-1 space-y-0.5">
+                                      <p className="font-medium text-[10px] uppercase text-muted-foreground">
+                                        Financial Delta
+                                      </p>
+                                      <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-muted-foreground">
+                                        <span>Revenue:</span>
+                                        <span
+                                          className={
+                                            (pendingPlan.plan.costImpact
+                                              .financialDelta.revenue ?? 0) >= 0
+                                              ? "text-green-600"
+                                              : "text-red-600"
+                                          }
+                                        >
+                                          +
+                                          {pendingPlan.plan.costImpact.financialDelta.revenue.toLocaleString()}
+                                        </span>
+                                        <span>Cost:</span>
+                                        <span className="text-red-600">
+                                          -
+                                          {pendingPlan.plan.costImpact.financialDelta.cost.toLocaleString()}
+                                        </span>
+                                        <span>Profit:</span>
+                                        <span
+                                          className={
+                                            (pendingPlan.plan.costImpact
+                                              .financialDelta.profit ?? 0) >= 0
+                                              ? "text-green-600"
+                                              : "text-red-600"
+                                          }
+                                        >
+                                          {(
+                                            pendingPlan.plan.costImpact
+                                              .financialDelta.profit ?? 0
+                                          ).toLocaleString()}
+                                        </span>
+                                        <span>Margin:</span>
+                                        <span
+                                          className={
+                                            (pendingPlan.plan.costImpact
+                                              .financialDelta.marginChange ??
+                                              0) >= 0
+                                              ? "text-green-600"
+                                              : "text-red-600"
+                                          }
+                                        >
+                                          {pendingPlan.plan.costImpact
+                                            .financialDelta.marginChange ?? 0}
+                                          %
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Execution Strategy */}
+                              {pendingPlan.plan.executionStrategy && (
+                                <div className="space-y-1 rounded border border-border/60 p-2 text-xs">
+                                  <p className="font-medium">Execution Plan</p>
+                                  <div className="text-muted-foreground">
+                                    <p>
+                                      Approach:{" "}
+                                      <span className="font-medium capitalize">
+                                        {
+                                          pendingPlan.plan.executionStrategy
+                                            .approach
+                                        }
+                                      </span>
+                                    </p>
+                                    {pendingPlan.plan.executionStrategy.steps
+                                      .length > 0 && (
+                                      <div className="mt-1">
+                                        <p className="font-medium text-[10px] uppercase">
+                                          Steps
+                                        </p>
+                                        <ol className="list-inside list-decimal">
+                                          {pendingPlan.plan.executionStrategy.steps.map(
+                                            (step, i) => (
+                                              <li key={i}>{step}</li>
+                                            )
+                                          )}
+                                        </ol>
+                                      </div>
+                                    )}
+                                    {pendingPlan.plan.executionStrategy
+                                      .timeout && (
+                                      <p>
+                                        Timeout:{" "}
+                                        {
+                                          pendingPlan.plan.executionStrategy
+                                            .timeout
+                                        }
+                                        s
+                                      </p>
+                                    )}
+                                    {pendingPlan.plan.executionStrategy
+                                      .retryPolicy && (
+                                      <p>
+                                        Retries:{" "}
+                                        {
+                                          pendingPlan.plan.executionStrategy
+                                            .retryPolicy.maxAttempts
+                                        }{" "}
+                                        max
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Rollback Strategy */}
+                              {pendingPlan.plan.rollbackStrategy && (
+                                <div className="space-y-1 rounded border border-border/60 p-2 text-xs">
+                                  <div className="flex items-center justify-between">
+                                    <p className="font-medium">Rollback Plan</p>
+                                    <Badge
+                                      variant={
+                                        pendingPlan.plan.rollbackStrategy
+                                          .enabled
+                                          ? "outline"
+                                          : "secondary"
+                                      }
+                                    >
+                                      {pendingPlan.plan.rollbackStrategy.enabled
+                                        ? "Enabled"
+                                        : "Disabled"}
+                                    </Badge>
+                                  </div>
+                                  {pendingPlan.plan.rollbackStrategy
+                                    .enabled && (
+                                    <div className="text-muted-foreground">
+                                      <p>
+                                        Strategy:{" "}
+                                        <span className="font-medium">
+                                          {pendingPlan.plan.rollbackStrategy.strategy.replace(
+                                            "_",
+                                            " "
+                                          )}
+                                        </span>
+                                      </p>
+                                      {pendingPlan.plan.rollbackStrategy.steps
+                                        .length > 0 && (
+                                        <div className="mt-1">
+                                          <p className="font-medium text-[10px] uppercase">
+                                            Rollback Steps
+                                          </p>
+                                          <ul className="list-inside list-disc">
+                                            {pendingPlan.plan.rollbackStrategy.steps.map(
+                                              (step, i) => (
+                                                <li key={i}>
+                                                  {step.commandName}
+                                                </li>
+                                              )
+                                            )}
+                                          </ul>
+                                        </div>
+                                      )}
+                                      {pendingPlan.plan.rollbackStrategy
+                                        .estimatedRecoveryTime && (
+                                        <p>
+                                          Recovery time: ~{" "}
+                                          {
+                                            pendingPlan.plan.rollbackStrategy
+                                              .estimatedRecoveryTime
+                                          }{" "}
+                                          min
+                                        </p>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
 
                               {pendingPlan.plan.prerequisites.length > 0 && (
                                 <div className="space-y-2 rounded border border-border/60 p-2 text-xs">
