@@ -37,8 +37,10 @@ async function testAuthEndpoint(tenantId: string): Promise<boolean> {
   return response?.ok ?? false;
 }
 
-function createAuthCallback(tenantId: string): Ably.AuthCallback {
-  return async (_, callback) => {
+function createAuthCallback(
+  tenantId: string
+): (tokenParams: unknown, callback: (error: string | null, tokenRequest: unknown) => void) => Promise<void> {
+  return async (_tokenParams, callback) => {
     try {
       const response = await fetch(authUrl, {
         method: "POST",

@@ -124,6 +124,11 @@ export const RELATIONSHIP_STYLES = {
     color: "#f43f5e",
     label: "used in",
   },
+  financial_to_event: {
+    color: "#eab308",
+    strokeDasharray: "5,5",
+    label: "includes",
+  },
   generic: { color: "#9ca3af", strokeDasharray: "3,3", label: "related" },
 } as const satisfies Record<
   string,

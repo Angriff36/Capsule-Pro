@@ -236,6 +236,30 @@ The Command Board has foundational pieces for AI-Native OS:
     - Progress bar and badges color-coded by status
   - This completes the multi-threshold inventory risk indicators with database-backed thresholds
 
+## Implementation Notes (2026-02-17 Iteration 10)
+
+- **3.2 ENHANCED**: Added financial projection node infrastructure:
+  - Created `derive-financial-projections.ts` action:
+    - Derives financial projections from event budget data on the board
+    - Aggregates events by month (period)
+    - Estimates costs using industry-standard ratios (30% food, 25% labor, 10% overhead)
+    - Calculates gross profit and margin percentages
+    - Determines health status (healthy >= 30%, warning >= 20%, critical < 20%)
+    - Returns `ResolvedFinancialProjection[]` with source event IDs
+  - Updated `derive-connections.ts`:
+    - Added `financialProjections` parameter for resolved financial data
+    - Added financial projection → event connection derivation
+    - Uses `financial_to_event` relationship type
+  - Added `financial_to_event` to `RELATIONSHIP_STYLES` in `board.ts`:
+    - Yellow color (#eab308) with dashed line style
+    - Label: "includes"
+  - Financial projection nodes can now display on board with:
+    - Revenue/costs breakdown
+    - Gross profit and margin indicators
+    - Health status badges (healthy/warning/critical)
+    - Event count and guest totals
+    - Connections to source events
+
 ## Implementation Notes (2026-02-17 Iteration 8)
 
 - **3.4 IMPLEMENTED**: Real-time live inventory levels on command board:

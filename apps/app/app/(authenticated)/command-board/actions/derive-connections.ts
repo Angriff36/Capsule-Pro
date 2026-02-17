@@ -4,6 +4,7 @@ import { database } from "@repo/database";
 import { requireTenantId } from "../../../lib/tenant";
 import type { DerivedConnection } from "../types/board";
 import type { Conflict } from "../conflict-types";
+import type { ResolvedFinancialProjection } from "../types/entities";
 
 // ============================================================================
 // Derived Connection Engine
@@ -34,10 +35,12 @@ interface ProjectionRef {
  * - Client → Proposal (Proposal.clientId)
  * - Risk → Affected Entity (from conflict detection data)
  * - Dish ↔ Recipe (Dish.recipeId foreign key)
+ * - Financial Projection → Events (from derived financial projection data)
  */
 export async function deriveConnections(
   projections: ProjectionRef[],
-  conflicts?: Conflict[]
+  conflicts?: Conflict[],
+  financialProjections?: ResolvedFinancialProjection[]
 ): Promise<DerivedConnection[]> {
   try {
     const tenantId = await requireTenantId();
@@ -103,6 +106,8 @@ export async function deriveConnections(
     const hasRisks = (byType.get("risk")?.length ?? 0) > 0;
     const hasRecipes = (byType.get("recipe")?.length ?? 0) > 0;
     const hasDishes = (byType.get("dish")?.length ?? 0) > 0;
+    const hasFinancialProjections =
+      (byType.get("financial_projection")?.length ?? 0) > 0;
 
     // Build parallel query array — only query relationships where both
     // endpoint types have projections on the board
@@ -405,6 +410,48 @@ export async function deriveConnections(
         } catch (error) {
           console.error(
             "[derive-connections] Failed to derive dish→recipe connections:",
+            error
+          );
+        }
+      });
+    }
+
+    // 8. Financial Projection → Events: Financial projection has sourceEventIds
+    // Creates edges from financial projections to the events they aggregate
+    if (hasFinancialProjections && hasEvents && financialProjections) {
+      queries.push(async () => {
+        try {
+          const financialProjs = byType.get("financial_projection") ?? [];
+
+          // Build a map of financial projection ID to resolved projection data
+          const financialDataMap = new Map<string, ResolvedFinancialProjection>();
+          for (const fp of financialProjections) {
+            financialDataMap.set(fp.id, fp);
+          }
+
+          for (const finProj of financialProjs) {
+            // Get the financial projection data
+            const finData = financialDataMap.get(finProj.entityId);
+            if (!finData || !finData.sourceEventIds) {
+              continue;
+            }
+
+            // For each source event, create a connection to the event on the board
+            for (const sourceEventId of finData.sourceEventIds) {
+              const eventProj = findProj("event", sourceEventId);
+              if (eventProj) {
+                addConnection(
+                  finProj,
+                  eventProj,
+                  "financial_to_event",
+                  "includes"
+                );
+              }
+            }
+          }
+        } catch (error) {
+          console.error(
+            "[derive-connections] Failed to derive financial→event connections:",
             error
           );
         }

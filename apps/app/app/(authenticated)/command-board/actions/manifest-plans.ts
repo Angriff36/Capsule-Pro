@@ -11,8 +11,12 @@ import {
 import { requireTenantId } from "../../../lib/tenant";
 import type {
   BoardMutation,
+  CostImpact,
   DomainCommandStep,
+  ExecutionStrategy,
   ManifestPlanRecordPayload,
+  RiskAssessment,
+  RollbackStrategy,
   SuggestedManifestPlan,
 } from "../types/manifest-plan";
 import { BOARD_COMMANDS } from "./command-definitions";
@@ -52,6 +56,48 @@ export interface ApproveManifestPlanResult {
   stepResults: StepExecutionResult[];
   boardMutationResults: BoardMutationResult[];
   error?: string;
+}
+
+export interface ConfigValidationResult {
+  valid: boolean;
+  errors: ConfigValidationError[];
+  warnings: ConfigValidationWarning[];
+}
+
+export interface ConfigValidationError {
+  field: string;
+  message: string;
+  severity: "error" | "warning";
+}
+
+export interface ConfigValidationWarning {
+  field: string;
+  message: string;
+  suggestion?: string;
+}
+
+export interface PlanPreviewResult {
+  planId: string;
+  dryRun: boolean;
+  domainStepPreviews: StepPreviewResult[];
+  boardMutationPreviews: MutationPreviewResult[];
+  estimatedDuration: number;
+  riskSummary: string;
+  validation: ConfigValidationResult;
+}
+
+export interface StepPreviewResult {
+  stepId: string;
+  commandName: string;
+  wouldSucceed: boolean;
+  estimatedImpact: string;
+  warnings: string[];
+}
+
+export interface MutationPreviewResult {
+  mutationType: BoardMutation["type"];
+  wouldSucceed: boolean;
+  description: string;
 }
 
 function isBoardCommandId(value: string): value is BoardCommandId {
@@ -911,10 +957,590 @@ function summarizeResult(
   };
 }
 
+/**
+ * Validates execution strategy configuration for consistency and completeness.
+ */
+function validateExecutionStrategy(
+  strategy: ExecutionStrategy | undefined,
+  domainPlan: DomainCommandStep[]
+): ConfigValidationError[] {
+  const errors: ConfigValidationError[] = [];
+
+  if (!strategy) {
+    return errors; // Optional field, no validation needed
+  }
+
+  // Validate step references exist in domain plan
+  const stepIds = new Set(domainPlan.map((step) => step.stepId));
+  for (const stepRef of strategy.steps) {
+    if (!stepIds.has(stepRef)) {
+      errors.push({
+        field: "executionStrategy.steps",
+        message: `Step reference "${stepRef}" not found in domain plan`,
+        severity: "error",
+      });
+    }
+  }
+
+  // Validate dependencies don't create cycles
+  const dependencyGraph = new Map<string, string[]>();
+  for (const dep of strategy.dependencies) {
+    if (!stepIds.has(dep.before) || !stepIds.has(dep.after)) {
+      continue; // Already reported as missing step
+    }
+    const existing = dependencyGraph.get(dep.before) ?? [];
+    existing.push(dep.after);
+    dependencyGraph.set(dep.before, existing);
+  }
+
+  // Check for cycles using DFS
+  const visited = new Set<string>();
+  const recursionStack = new Set<string>();
+
+  function hasCycle(node: string): boolean {
+    visited.add(node);
+    recursionStack.add(node);
+
+    const neighbors = dependencyGraph.get(node) ?? [];
+    for (const neighbor of neighbors) {
+      if (!visited.has(neighbor)) {
+        if (hasCycle(neighbor)) return true;
+      } else if (recursionStack.has(neighbor)) {
+        return true;
+      }
+    }
+
+    recursionStack.delete(node);
+    return false;
+  }
+
+  for (const stepId of stepIds) {
+    if (!visited.has(stepId)) {
+      if (hasCycle(stepId)) {
+        errors.push({
+          field: "executionStrategy.dependencies",
+          message: "Circular dependency detected in execution strategy",
+          severity: "error",
+        });
+        break;
+      }
+    }
+  }
+
+  // Validate timeout is reasonable (not too short or too long)
+  if (strategy.timeout !== undefined) {
+    if (strategy.timeout < 1000) {
+      errors.push({
+        field: "executionStrategy.timeout",
+        message: "Timeout is too short (minimum 1000ms recommended)",
+        severity: "warning",
+      });
+    }
+    if (strategy.timeout > 300000) {
+      // 5 minutes
+      errors.push({
+        field: "executionStrategy.timeout",
+        message: "Timeout exceeds 5 minutes - consider breaking into smaller steps",
+        severity: "warning",
+      });
+    }
+  }
+
+  // Validate retry policy
+  if (strategy.retryPolicy) {
+    if (strategy.retryPolicy.maxAttempts > 10) {
+      errors.push({
+        field: "executionStrategy.retryPolicy.maxAttempts",
+        message: "Max retry attempts exceeds 10 - this may cause long delays",
+        severity: "warning",
+      });
+    }
+    if (strategy.retryPolicy.backoffMs < 100) {
+      errors.push({
+        field: "executionStrategy.retryPolicy.backoffMs",
+        message: "Backoff is too short - minimum 100ms recommended",
+        severity: "warning",
+      });
+    }
+  }
+
+  // Validate parallel batches
+  if (
+    strategy.approach === "parallel" &&
+    strategy.parallelBatches &&
+    strategy.parallelBatches > domainPlan.length
+  ) {
+    errors.push({
+      field: "executionStrategy.parallelBatches",
+      message: "Parallel batches exceeds number of domain steps",
+      severity: "warning",
+    });
+  }
+
+  return errors;
+}
+
+/**
+ * Validates rollback strategy configuration.
+ */
+function validateRollbackStrategy(
+  strategy: RollbackStrategy | undefined
+): ConfigValidationError[] {
+  const errors: ConfigValidationError[] = [];
+
+  if (!strategy) {
+    return errors; // Optional field
+  }
+
+  // If rollback is enabled, validate steps are defined
+  if (strategy.enabled && strategy.steps.length === 0) {
+    if (strategy.strategy !== "manual") {
+      errors.push({
+        field: "rollbackStrategy.steps",
+        message:
+          "Rollback is enabled but no compensating steps are defined (except for manual strategy)",
+        severity: "warning",
+      });
+    }
+  }
+
+  // Validate recovery time is reasonable
+  if (strategy.estimatedRecoveryTime !== undefined) {
+    if (strategy.estimatedRecoveryTime > 600000) {
+      // 10 minutes
+      errors.push({
+        field: "rollbackStrategy.estimatedRecoveryTime",
+        message:
+          "Estimated recovery time exceeds 10 minutes - consider simplifying the plan",
+        severity: "warning",
+      });
+    }
+  }
+
+  // Validate risks are documented
+  if (strategy.enabled && strategy.risks.length === 0) {
+    errors.push({
+      field: "rollbackStrategy.risks",
+      message: "Rollback is enabled but no risks are documented",
+      severity: "warning",
+    });
+  }
+
+  return errors;
+}
+
+/**
+ * Validates risk assessment configuration.
+ */
+function validateRiskAssessment(
+  assessment: RiskAssessment | undefined
+): ConfigValidationError[] {
+  const errors: ConfigValidationError[] = [];
+
+  if (!assessment) {
+    return errors; // Optional field
+  }
+
+  // High/critical severity should have mitigations
+  if (
+    (assessment.level === "high" || assessment.level === "critical") &&
+    assessment.mitigations.length === 0
+  ) {
+    errors.push({
+      field: "riskAssessment.mitigations",
+      message: `${assessment.level} severity risk should have at least one mitigation`,
+      severity: "warning",
+    });
+  }
+
+  // Critical severity should have factors documented
+  if (assessment.level === "critical" && assessment.factors.length === 0) {
+    errors.push({
+      field: "riskAssessment.factors",
+      message: "Critical severity risk should document contributing factors",
+      severity: "warning",
+    });
+  }
+
+  return errors;
+}
+
+/**
+ * Validates cost impact configuration.
+ */
+function validateCostImpact(impact: CostImpact | undefined): ConfigValidationError[] {
+  const errors: ConfigValidationError[] = [];
+
+  if (!impact) {
+    return errors; // Optional field
+  }
+
+  // Validate financial delta consistency
+  if (impact.financialDelta) {
+    const { revenue, cost, profit } = impact.financialDelta;
+
+    // Profit should roughly equal revenue - cost (within 10% tolerance for rounding)
+    const expectedProfit = revenue - cost;
+    if (profit !== 0 && expectedProfit !== 0) {
+      const tolerance = Math.abs(expectedProfit) * 0.1;
+      if (Math.abs(profit - expectedProfit) > tolerance) {
+        errors.push({
+          field: "costImpact.financialDelta",
+          message:
+            "Profit calculation is inconsistent with revenue and cost values",
+          severity: "warning",
+        });
+      }
+    }
+
+    // Negative profit with positive revenue is a warning
+    if (revenue > 0 && profit < 0) {
+      errors.push({
+        field: "costImpact.financialDelta.profit",
+        message:
+          "Plan shows negative profit despite positive revenue - verify cost estimates",
+        severity: "warning",
+      });
+    }
+  }
+
+  // Validate cost breakdown totals match estimated cost
+  if (impact.estimatedCost && impact.costBreakdown) {
+    const breakdownTotal = Object.values(impact.costBreakdown).reduce(
+      (sum, item) => sum + item.amount,
+      0
+    );
+    const tolerance = Math.abs(impact.estimatedCost) * 0.1;
+    if (Math.abs(breakdownTotal - impact.estimatedCost) > tolerance) {
+      errors.push({
+        field: "costImpact.costBreakdown",
+        message: "Cost breakdown total does not match estimated cost",
+        severity: "warning",
+      });
+    }
+  }
+
+  return errors;
+}
+
+/**
+ * Validates the complete plan configuration including execution strategy,
+ * rollback strategy, risk assessment, and cost impact.
+ */
+export function validatePlanConfig(
+  plan: SuggestedManifestPlan
+): ConfigValidationResult {
+  const errors: ConfigValidationError[] = [];
+  const warnings: ConfigValidationWarning[] = [];
+
+  // Validate execution strategy
+  errors.push(...validateExecutionStrategy(plan.executionStrategy, plan.domainPlan));
+
+  // Validate rollback strategy
+  errors.push(...validateRollbackStrategy(plan.rollbackStrategy));
+
+  // Validate risk assessment
+  errors.push(...validateRiskAssessment(plan.riskAssessment));
+
+  // Validate cost impact
+  errors.push(...validateCostImpact(plan.costImpact));
+
+  // Separate errors and warnings
+  const actualErrors = errors.filter((e) => e.severity === "error");
+  const actualWarnings = errors.filter((e) => e.severity === "warning");
+
+  for (const warning of actualWarnings) {
+    warnings.push({
+      field: warning.field,
+      message: warning.message,
+    });
+  }
+
+  return {
+    valid: actualErrors.length === 0,
+    errors: actualErrors,
+    warnings,
+  };
+}
+
+/**
+ * Previews a manifest plan without executing it (dry run mode).
+ * Validates configuration and simulates execution to identify potential issues.
+ */
+export async function previewManifestPlan(
+  boardId: string,
+  planId: string
+): Promise<PlanPreviewResult> {
+  const tenantId = await requireTenantId();
+
+  const stored = await getPendingManifestPlan(tenantId, boardId, planId);
+  if (!stored) {
+    return {
+      planId,
+      dryRun: true,
+      domainStepPreviews: [],
+      boardMutationPreviews: [],
+      estimatedDuration: 0,
+      riskSummary: "Plan not found",
+      validation: {
+        valid: false,
+        errors: [{ field: "planId", message: "Plan not found", severity: "error" }],
+        warnings: [],
+      },
+    };
+  }
+
+  const { payload } = stored;
+  const plan = payload.plan;
+
+  // Validate configuration
+  const validation = validatePlanConfig(plan);
+
+  // Preview domain steps
+  const domainStepPreviews: StepPreviewResult[] = [];
+  let estimatedDuration = 0;
+
+  for (const step of plan.domainPlan) {
+    const preview = await previewDomainStep(tenantId, boardId, step);
+    domainStepPreviews.push(preview);
+    estimatedDuration += estimateStepDuration(step);
+  }
+
+  // Preview board mutations
+  const boardMutationPreviews: MutationPreviewResult[] = [];
+  for (const mutation of plan.boardPreview) {
+    boardMutationPreviews.push(previewBoardMutation(mutation));
+  }
+
+  // Generate risk summary
+  const riskSummary = generateRiskSummary(
+    plan.riskAssessment,
+    validation,
+    domainStepPreviews
+  );
+
+  return {
+    planId,
+    dryRun: true,
+    domainStepPreviews,
+    boardMutationPreviews,
+    estimatedDuration,
+    riskSummary,
+    validation,
+  };
+}
+
+/**
+ * Previews a single domain step without executing it.
+ */
+async function previewDomainStep(
+  tenantId: string,
+  _boardId: string,
+  step: DomainCommandStep
+): Promise<StepPreviewResult> {
+  const warnings: string[] = [];
+  let wouldSucceed = true;
+  let estimatedImpact = "";
+
+  const normalized = step.commandName.trim().toLowerCase();
+
+  // Check for required arguments based on command type
+  if (normalized === "create_event") {
+    estimatedImpact = "Will create a new event in the database";
+    if (!step.args.title) {
+      warnings.push("No title provided - will use default 'AI Planned Event'");
+    }
+  } else if (
+    normalized === "link_menu" ||
+    normalized === "add_dish_to_event" ||
+    normalized === "link_menu_item"
+  ) {
+    estimatedImpact = "Will link a dish to an event menu";
+
+    // Check if we can resolve the event
+    if (step.args.eventId) {
+      const event = await database.event.findFirst({
+        where: { id: asString(step.args.eventId), tenantId, deletedAt: null },
+        select: { id: true },
+      });
+      if (!event) {
+        warnings.push("Specified event not found - may use fallback");
+      }
+    }
+
+    // Check if we can resolve the dish
+    if (step.args.dishId) {
+      const dish = await database.dish.findFirst({
+        where: { id: asString(step.args.dishId), tenantId, deletedAt: null },
+        select: { id: true },
+      });
+      if (!dish) {
+        warnings.push("Specified dish not found - may use fallback");
+      }
+    }
+  } else if (
+    normalized === "create_task" ||
+    normalized === "add_task" ||
+    normalized === "create_prep_task"
+  ) {
+    estimatedImpact = "Will create a new prep task";
+    if (!step.args.name) {
+      wouldSucceed = false;
+      warnings.push("Task name is required");
+    }
+    if (!step.args.eventId) {
+      warnings.push("No event specified - will attempt to resolve from board context");
+    }
+  } else if (
+    normalized === "assign_employee" ||
+    normalized === "assign_staff" ||
+    normalized === "add_employee"
+  ) {
+    estimatedImpact = "Will assign an employee to an event";
+    if (!step.args.employeeId && step.entityType !== "employee") {
+      warnings.push("No employee specified - will attempt to resolve from board context");
+    }
+  } else if (
+    normalized === "update_inventory" ||
+    normalized === "adjust_inventory" ||
+    normalized === "modify_inventory"
+  ) {
+    estimatedImpact = "Will update inventory quantity";
+    if (
+      step.args.quantityChange === undefined &&
+      step.args.quantityAdjustment === undefined
+    ) {
+      wouldSucceed = false;
+      warnings.push("Quantity change or adjustment is required");
+    }
+  } else if (isBoardCommandId(step.commandName)) {
+    estimatedImpact = `Will execute board command: ${step.commandName}`;
+  } else {
+    wouldSucceed = false;
+    estimatedImpact = "Unknown command - will fail";
+    warnings.push(`Unsupported command: ${step.commandName}`);
+  }
+
+  return {
+    stepId: step.stepId,
+    commandName: step.commandName,
+    wouldSucceed,
+    estimatedImpact,
+    warnings,
+  };
+}
+
+/**
+ * Estimates duration in milliseconds for a domain step.
+ */
+function estimateStepDuration(step: DomainCommandStep): number {
+  const normalized = step.commandName.trim().toLowerCase();
+
+  // Database operations are typically fast
+  if (normalized === "create_event") return 500;
+  if (normalized.includes("link") || normalized.includes("menu")) return 300;
+  if (normalized.includes("task")) return 400;
+  if (normalized.includes("employee") || normalized.includes("assign")) return 300;
+  if (normalized.includes("inventory")) return 350;
+
+  // Default estimate
+  return 500;
+}
+
+/**
+ * Previews a board mutation without executing it.
+ */
+function previewBoardMutation(mutation: BoardMutation): MutationPreviewResult {
+  switch (mutation.type) {
+    case "addNode":
+      return {
+        mutationType: mutation.type,
+        wouldSucceed: true,
+        description: `Will add ${mutation.entityType} node at (${mutation.positionX}, ${mutation.positionY})`,
+      };
+    case "removeNode":
+      return {
+        mutationType: mutation.type,
+        wouldSucceed: true,
+        description: `Will remove node ${mutation.projectionId}`,
+      };
+    case "moveNode":
+      return {
+        mutationType: mutation.type,
+        wouldSucceed: true,
+        description: `Will move node ${mutation.projectionId} to (${mutation.positionX}, ${mutation.positionY})`,
+      };
+    case "addEdge":
+      return {
+        mutationType: mutation.type,
+        wouldSucceed: true,
+        description: `Will add edge from ${mutation.sourceProjectionId} to ${mutation.targetProjectionId}`,
+      };
+    case "removeEdge":
+      return {
+        mutationType: mutation.type,
+        wouldSucceed: true,
+        description: `Will remove edge ${mutation.edgeId}`,
+      };
+    case "highlightNode":
+      return {
+        mutationType: mutation.type,
+        wouldSucceed: true,
+        description: `Will highlight node ${mutation.projectionId}`,
+      };
+    case "annotate":
+      return {
+        mutationType: mutation.type,
+        wouldSucceed: true,
+        description: `Will add annotation: ${mutation.label}`,
+      };
+  }
+}
+
+/**
+ * Generates a human-readable risk summary for the preview.
+ */
+function generateRiskSummary(
+  riskAssessment: RiskAssessment | undefined,
+  validation: ConfigValidationResult,
+  stepPreviews: StepPreviewResult[]
+): string {
+  const parts: string[] = [];
+
+  // Add validation summary
+  if (!validation.valid) {
+    parts.push(`${validation.errors.length} configuration error(s) found`);
+  }
+  if (validation.warnings.length > 0) {
+    parts.push(`${validation.warnings.length} warning(s)`);
+  }
+
+  // Add risk assessment summary
+  if (riskAssessment) {
+    parts.push(`Risk level: ${riskAssessment.level}`);
+    if (riskAssessment.mitigations.length > 0) {
+      parts.push(`${riskAssessment.mitigations.length} mitigation(s) defined`);
+    }
+  }
+
+  // Add step failure summary
+  const failingSteps = stepPreviews.filter((s) => !s.wouldSucceed);
+  if (failingSteps.length > 0) {
+    parts.push(`${failingSteps.length} step(s) may fail`);
+  }
+
+  if (parts.length === 0) {
+    return "Plan appears ready for execution";
+  }
+
+  return parts.join("; ");
+}
+
 export async function approveManifestPlan(
   boardId: string,
   planId: string,
-  prerequisiteAnswers: Record<string, string> = {}
+  prerequisiteAnswers: Record<string, string> = {},
+  options?: { skipValidation?: boolean }
 ): Promise<ApproveManifestPlanResult> {
   try {
     const tenantId = await requireTenantId();
@@ -959,6 +1585,49 @@ export async function approveManifestPlan(
         stepResults: [],
         boardMutationResults: [],
         error: `Missing prerequisites: ${missingAnswers.join(", ")}`,
+      };
+    }
+
+    // Validate configuration before execution
+    if (!options?.skipValidation) {
+      const validation = validatePlanConfig(payload.plan);
+      if (!validation.valid) {
+        const errorMessages = validation.errors.map((e) => `${e.field}: ${e.message}`);
+        return {
+          success: false,
+          planId,
+          summary: "Configuration validation failed",
+          stepResults: [],
+          boardMutationResults: [],
+          error: `Config validation errors: ${errorMessages.join("; ")}`,
+        };
+      }
+    }
+
+    // Handle dry_run mode - return preview without executing
+    if (payload.plan.execution.mode === "dry_run") {
+      const preview = await previewManifestPlan(boardId, planId);
+      const previewStepResults: StepExecutionResult[] = preview.domainStepPreviews.map((p) => ({
+        stepId: p.stepId,
+        success: p.wouldSucceed,
+        message: p.estimatedImpact,
+        ...(p.warnings.length > 0 ? { error: p.warnings.join("; ") } : {}),
+      }));
+      const previewMutationResults: BoardMutationResult[] = preview.boardMutationPreviews.map((m) => ({
+        mutationType: m.mutationType,
+        success: m.wouldSucceed,
+        message: m.description,
+      }));
+
+      return {
+        success: preview.validation.valid && previewStepResults.every((s) => s.success),
+        planId,
+        summary: `Dry run preview: ${preview.riskSummary}`,
+        stepResults: previewStepResults,
+        boardMutationResults: previewMutationResults,
+        ...(preview.validation.warnings.length > 0
+          ? { error: `Warnings: ${preview.validation.warnings.map((w) => w.message).join("; ")}` }
+          : {}),
       };
     }
 
