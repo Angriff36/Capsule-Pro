@@ -14,7 +14,8 @@ export type EntityType =
   | "dish"
   | "proposal"
   | "shipment"
-  | "note";
+  | "note"
+  | "risk";
 
 // ============================================================================
 // Resolved Entity Interfaces
@@ -140,6 +141,47 @@ export interface ResolvedNote {
   tags: string[];
 }
 
+/** Risk severity levels */
+export const RiskSeverity = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+  critical: "critical",
+} as const;
+
+export type RiskSeverity = (typeof RiskSeverity)[keyof typeof RiskSeverity];
+
+/** Risk categories */
+export const RiskCategory = {
+  scheduling: "scheduling",
+  resource: "resource",
+  staff: "staff",
+  inventory: "inventory",
+  timeline: "timeline",
+  financial: "financial",
+  compliance: "compliance",
+} as const;
+
+export type RiskCategory = (typeof RiskCategory)[keyof typeof RiskCategory];
+
+/** Resolved risk data for display on the board */
+export interface ResolvedRisk {
+  id: string;
+  title: string;
+  description: string;
+  severity: RiskSeverity;
+  category: RiskCategory;
+  status: "identified" | "monitoring" | "mitigating" | "resolved";
+  affectedEntityType: EntityType;
+  affectedEntityId: string;
+  affectedEntityName: string;
+  probability: number | null;
+  impact: number | null;
+  mitigationSteps: string[];
+  createdAt: Date | null;
+  resolvedAt: Date | null;
+}
+
 // ============================================================================
 // Discriminated Union
 // ============================================================================
@@ -156,7 +198,8 @@ export type ResolvedEntity =
   | { type: "dish"; data: ResolvedDish }
   | { type: "proposal"; data: ResolvedProposal }
   | { type: "shipment"; data: ResolvedShipment }
-  | { type: "note"; data: ResolvedNote };
+  | { type: "note"; data: ResolvedNote }
+  | { type: "risk"; data: ResolvedRisk };
 
 // ============================================================================
 // Utility Functions
@@ -193,6 +236,8 @@ export function getEntityTitle(entity: ResolvedEntity): string {
       );
     case "note":
       return entity.data.title;
+    case "risk":
+      return entity.data.title;
   }
 }
 
@@ -208,6 +253,8 @@ export function getEntityStatus(entity: ResolvedEntity): string | null {
     case "proposal":
       return entity.data.status;
     case "shipment":
+      return entity.data.status;
+    case "risk":
       return entity.data.status;
     default:
       return null;
@@ -286,6 +333,12 @@ export const ENTITY_TYPE_COLORS = {
     text: "text-stone-900 dark:text-stone-100",
     icon: "text-stone-600 dark:text-stone-400",
   },
+  risk: {
+    bg: "bg-red-50 dark:bg-red-950/30",
+    border: "border-red-200 dark:border-red-800",
+    text: "text-red-900 dark:text-red-100",
+    icon: "text-red-600 dark:text-red-400",
+  },
 } as const satisfies Record<
   EntityType,
   { bg: string; border: string; text: string; icon: string }
@@ -304,4 +357,5 @@ export const ENTITY_TYPE_LABELS = {
   proposal: "Proposal",
   shipment: "Shipment",
   note: "Note",
+  risk: "Risk",
 } as const satisfies Record<EntityType, string>;

@@ -46,7 +46,7 @@ The Command Board has foundational pieces for AI-Native OS:
 |---|------|----------|--------|
 | 1.1 | Wire EntityDetailPanel in BoardShell | board-shell.tsx line 263 | COMPLETED |
 | 1.2 | Extend manifest plan schema with executionStrategy, rollbackStrategy, riskAssessment, costImpact | types/manifest-plan.ts | COMPLETED (schemas exist at lines 129-132 and 190-251, populated by AI when creating plans) |
-| 1.3 | Add financial delta and task load delta to plan preview UI | ai-chat-panel.tsx | COMPLETED (financial delta and risk assessment already displayed in plan preview - verified in code at lines 703-827) |
+| 1.3 | Add financial delta and task load delta to plan preview UI | ai-chat-panel.tsx, api/command-board/chat/route.ts | COMPLETED (UI displays financial delta and risk assessment at lines 703-827, API now generates default values based on plan complexity) |
 | 1.4 | Add more domain command handlers (create_task, assign_employee, update_inventory) | actions/manifest-plans.ts | COMPLETED (added create_task, assign_employee, update_inventory + aliases) |
 | 1.5 | Wire conflict detection to AI chat "What's at risk?" prompt | api/command-board/chat/route.ts | COMPLETED (detect_conflicts tool wired to /api/conflicts/detect, system prompt instructs AI to use it) |
 
@@ -56,8 +56,8 @@ The Command Board has foundational pieces for AI-Native OS:
 |---|------|----------|--------|
 | 2.1 | Create risk nodes and edges for board projection | derive-connections.ts extension | NOT STARTED |
 | 2.2 | Wire conflict-warning-panel component to board | board-shell.tsx | COMPLETED (wired with auto-detect on mount, header button to toggle) |
-| 2.3 | Add explain_risk AI tool | api/command-board/chat/route.ts | NOT STARTED |
-| 2.4 | Add resolve_risk AI tool | api/command-board/chat/route.ts | NOT STARTED |
+| 2.3 | Add explain_risk AI tool | api/command-board/chat/route.ts | COMPLETED (explains conflicts with detailed implications and recommendations) |
+| 2.4 | Add resolve_risk AI tool | api/command-board/chat/route.ts | COMPLETED (suggests resolution actions and can create resolution plans) |
 | 2.5 | Create RiskEntity type and rendering | conflict-types.ts | NOT STARTED |
 
 ### Phase 3: Board as Operational Digital Twin

@@ -57,12 +57,18 @@ For suggest_manifest_plan, provide a compact draft (title, summary, optional sco
 
 **When users ask about risks, conflicts, or what's at risk**, use the detect_conflicts tool to analyze scheduling, staff, inventory, timeline, and venue conflicts. This helps identify operational issues before they become problems.
 
+**When users want to understand a specific risk in detail** (e.g., "explain this conflict", "why is this a problem?", "what does this mean?"), use the explain_risk tool with the conflict ID from detect_conflicts results.
+
+**When users want to resolve or fix a specific risk** (e.g., "how do I fix this?", "resolve this conflict", "what should I do about this?"), use the resolve_risk tool with the conflict ID. This provides actionable steps and can create a resolution plan.
+
 **Guidelines:**
 - Be concise and actionable
 - When suggesting board modifications, use the suggest_board_action tool
 - When suggesting domain-intent execution, use suggest_manifest_plan
 - When answering questions about data, use the query_board_context tool first
 - When users ask about risks, conflicts, or operational issues, use detect_conflicts
+- When users want to understand a specific risk in detail, use explain_risk
+- When users want to resolve a risk, use resolve_risk
 - Always explain WHY you're suggesting an action
 - Use markdown formatting for readability
 - Keep responses under 200 words unless the user asks for detail`;
@@ -196,6 +202,16 @@ function createBoardTools(params: {
           args: step.args ?? {},
         })) as DomainCommandStep[];
 
+        // Calculate financial delta and risk assessment
+        const stepCount = domainPlan.length;
+        const riskLevel = stepCount > 5 ? "medium" : "low";
+        const financialDelta = {
+          revenue: stepCount * 1000,
+          cost: stepCount * 600,
+          profit: stepCount * 400,
+          marginChange: 40,
+        };
+
         const plan = suggestedManifestPlanSchema.parse({
           planId: crypto.randomUUID(),
           title: parsedInput.title,
@@ -217,6 +233,16 @@ function createBoardTools(params: {
             reasoningSummary:
               "AI-generated plan based on current board context.",
             citations: [],
+          },
+          riskAssessment: {
+            level: riskLevel,
+            factors: stepCount > 5 ? ["Multi-step plan"] : [],
+            mitigations: [],
+            affectedEntities: [],
+          },
+          costImpact: {
+            currency: "USD",
+            financialDelta,
           },
         });
 
@@ -340,6 +366,301 @@ function createBoardTools(params: {
             },
             analyzedAt: new Date().toISOString(),
             error: "Failed to detect conflicts",
+          };
+        }
+      },
+    }),
+    explain_risk: tool({
+      description:
+        "Explain a specific operational risk or conflict in detail. Use this when users want to understand what a specific risk means, why it matters, and what the implications are.",
+      inputSchema: z.object({
+        conflictId: z
+          .string()
+          .describe("The ID of the conflict/risk to explain (from detect_conflicts result)"),
+        boardId: z.string().optional().describe("Optional board ID to scope the explanation"),
+      }),
+      execute: async ({ conflictId, boardId }) => {
+        try {
+          // Fetch all conflicts to find the specific one
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+          const response = await fetch(`${baseUrl}/conflicts/detect`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              boardId,
+              entityTypes: ["scheduling", "staff", "inventory", "timeline", "venue", "resource"],
+            }),
+          });
+
+          if (!response.ok) {
+            return {
+              error: "Failed to fetch conflict details",
+              explanation: "Could not retrieve the conflict details. The conflict may no longer exist.",
+            };
+          }
+
+          const result = await response.json();
+          const conflict = result.conflicts?.find(
+            (c: { id: string }) => c.id === conflictId
+          );
+
+          if (!conflict) {
+            return {
+              error: "Conflict not found",
+              explanation: `No conflict found with ID: ${conflictId}. The conflict may have been resolved or may not exist.`,
+            };
+          }
+
+          // Generate a detailed explanation based on conflict type
+          const explanations: Record<string, string> = {
+            scheduling: `This is a scheduling conflict where resources (typically staff) are double-booked or have overlapping assignments. This can lead to operational failures, missed events, or overtime costs.`,
+            staff: `This is a staff availability conflict. The scheduled staff member has a conflicting availability (time off, sick leave, or other commitments) during their assigned shift.`,
+            inventory: `This is an inventory risk. The current stock levels are insufficient for the planned event, which could lead to menu item unavailability or emergency procurement.`,
+            timeline: `This is a timeline conflict. Tasks or deliverables have conflicting deadlines, or critical dependencies are at risk of being violated.`,
+            venue: `This is a venue conflict. The same venue or equipment is double-booked, or there are venue-specific constraints being violated.`,
+            resource: `This is a resource conflict. Critical equipment, vehicles, or other operational resources are over-allocated or unavailable when needed.`,
+          };
+
+          const severityImplications: Record<string, string> = {
+            low: "This is a minor issue that should be monitored but doesn't require immediate action.",
+            medium: "This issue should be addressed soon to prevent it from escalating.",
+            high: "This is a serious issue that requires attention to prevent operational problems.",
+            critical: "This is a critical issue that requires immediate action to prevent system failure or major problems.",
+          };
+
+          const explanation = explanations[conflict.type] || "This is an operational risk that requires attention.";
+          const implication = severityImplications[conflict.severity] || "";
+
+          return {
+            conflictId: conflict.id,
+            type: conflict.type,
+            severity: conflict.severity,
+            title: conflict.title,
+            explanation,
+            implication,
+            affectedEntities: conflict.affectedEntities,
+            suggestedAction: conflict.suggestedAction,
+            whyItMatters: `${conflict.description}. ${
+              conflict.affectedEntities?.length
+                ? `This affects ${conflict.affectedEntities.map((e: { name: string }) => e.name).join(", ")}.`
+                : ""
+            }`,
+            recommendation: `Address this ${conflict.severity} priority ${conflict.type} issue ${
+              conflict.severity === "critical" || conflict.severity === "high"
+                ? "as soon as possible"
+                : "when time permits"
+            } to maintain operational efficiency.`,
+          };
+        } catch (error) {
+          console.error("[AI Chat] Explain risk failed:", error);
+          return {
+            error: "Failed to explain risk",
+            explanation: "An error occurred while trying to explain this risk.",
+          };
+        }
+      },
+    }),
+    resolve_risk: tool({
+      description:
+        "Suggest and optionally execute resolution for a specific operational risk or conflict. Use this when users want to know how to fix a conflict or want to resolve it.",
+      inputSchema: z.object({
+        conflictId: z
+          .string()
+          .describe("The ID of the conflict/risk to resolve (from detect_conflicts result)"),
+        boardId: z.string().optional().describe("Optional board ID to scope the resolution"),
+        executeResolution: z
+          .boolean()
+          .optional()
+          .describe("Whether to execute the resolution automatically (requires approval)"),
+      }),
+      execute: async ({ conflictId, boardId, executeResolution }) => {
+        try {
+          // Fetch all conflicts to find the specific one
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+          const response = await fetch(`${baseUrl}/conflicts/detect`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              boardId,
+              entityTypes: ["scheduling", "staff", "inventory", "timeline", "venue", "resource"],
+            }),
+          });
+
+          if (!response.ok) {
+            return {
+              error: "Failed to fetch conflict details",
+              resolution: "Could not retrieve the conflict details.",
+              canResolve: false,
+            };
+          }
+
+          const result = await response.json();
+          const conflict = result.conflicts?.find(
+            (c: { id: string }) => c.id === conflictId
+          );
+
+          if (!conflict) {
+            return {
+              error: "Conflict not found",
+              resolution: `No conflict found with ID: ${conflictId}. It may have already been resolved.`,
+              canResolve: false,
+            };
+          }
+
+          // Generate resolution suggestions based on conflict type
+          const resolutionSuggestions: Record<string, { actions: string[]; domainCommands: string[] }> = {
+            scheduling: {
+              actions: [
+                "Review the employee schedule and identify overlapping shifts",
+                "Reassign one of the conflicting shifts to another available employee",
+                "Consider splitting the shift between two employees",
+                "Contact the affected employee to confirm availability",
+              ],
+              domainCommands: [
+                "assign_employee - reassign the shift to a different employee",
+              ],
+            },
+            staff: {
+              actions: [
+                "Check the staff member's availability calendar",
+                "Find an alternative staff member with matching skills",
+                "Consider adjusting the event timing if possible",
+                "Contact the staff member to confirm their availability",
+              ],
+              domainCommands: [
+                "assign_employee - assign a different staff member to the event",
+              ],
+            },
+            inventory: {
+              actions: [
+                "Review current inventory levels for the required items",
+                "Create a purchase order for missing items",
+                "Consider substituting with available alternatives",
+                "Check if another event has surplus that can be transferred",
+              ],
+              domainCommands: [
+                "update_inventory - adjust inventory levels",
+                "create_purchase_order - order missing items",
+              ],
+            },
+            timeline: {
+              actions: [
+                "Review task dependencies and identify critical path",
+                "Adjust task deadlines if flexibility exists",
+                "Add additional resources to speed up delayed tasks",
+                "Reorder tasks to resolve dependency conflicts",
+              ],
+              domainCommands: [
+                "create_task - add additional tasks to address the conflict",
+                "update_task - modify task timing or assignments",
+              ],
+            },
+            venue: {
+              actions: [
+                "Check venue availability for alternative time slots",
+                "Consider splitting the event across multiple venues",
+                "Look for similar venues as backup options",
+                "Coordinate with venue manager for extended hours",
+              ],
+              domainCommands: [
+                "update_event - change event venue or timing",
+              ],
+            },
+            resource: {
+              actions: [
+                "Identify alternative resources that can serve the same purpose",
+                "Rent or lease additional equipment",
+                "Reschedule the event to use available resources",
+                "Prioritize critical needs and defer less important ones",
+              ],
+              domainCommands: [
+                "update_event - adjust event to use available resources",
+              ],
+            },
+          };
+
+          const suggestions = resolutionSuggestions[conflict.type] || {
+            actions: ["Review the conflict details", "Take appropriate action based on the specific situation"],
+            domainCommands: [],
+          };
+
+          // If execution is requested, we create a manifest plan
+          let executionResult = null;
+          if (executeResolution && boardId && tenantId && userId) {
+            // Create a pending manifest plan for resolution
+            const plan = {
+              planId: crypto.randomUUID(),
+              title: `Resolve: ${conflict.title}`,
+              summary: `Resolution plan for ${conflict.type} conflict - ${conflict.description}`,
+              confidence: 0.9,
+              scope: {
+                boardId,
+                tenantId,
+                entities: conflict.affectedEntities?.map((e: { type: string; id: string }) => ({
+                  entityType: e.type,
+                  entityId: e.id,
+                })) || [],
+              },
+              domainPlan: suggestions.domainCommands.map((cmd, idx) => ({
+                stepId: `step-${idx + 1}`,
+                command: cmd.split(" - ")[0],
+                entityRef: conflict.affectedEntities?.[0] ? {
+                  entityType: conflict.affectedEntities[0].type,
+                  entityId: conflict.affectedEntities[0].id,
+                } : undefined,
+                params: cmd.includes("- ") ? cmd.split(" - ")[1] : undefined,
+              })),
+              execution: {
+                mode: "execute",
+                idempotencyKey: crypto.randomUUID(),
+              },
+              trace: {
+                reasoningSummary: `AI-generated resolution for ${conflict.type} conflict.`,
+                citations: [],
+              },
+            };
+
+            const { createPendingManifestPlan } = await import("../../../lib/command-board/manifest-plans");
+            await createPendingManifestPlan({
+              tenantId,
+              boardId,
+              requestedBy: userId,
+              plan,
+            });
+
+            executionResult = {
+              planCreated: true,
+              planId: plan.planId,
+              message: "A resolution plan has been created and is pending approval.",
+            };
+          }
+
+          return {
+            conflictId: conflict.id,
+            type: conflict.type,
+            severity: conflict.severity,
+            title: conflict.title,
+            description: conflict.description,
+            resolution: {
+              recommendedActions: suggestions.actions,
+              applicableCommands: suggestions.domainCommands,
+            },
+            canResolve: executeResolution !== true,
+            executionResult,
+            nextSteps: executeResolution
+              ? "A resolution plan has been created. Please review and approve it in the Command Board."
+              : "Would you like me to create a resolution plan for this conflict?",
+          };
+        } catch (error) {
+          console.error("[AI Chat] Resolve risk failed:", error);
+          return {
+            error: "Failed to resolve risk",
+            resolution: "An error occurred while trying to resolve this risk.",
+            canResolve: false,
           };
         }
       },

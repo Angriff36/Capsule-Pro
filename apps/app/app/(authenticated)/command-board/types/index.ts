@@ -26,11 +26,16 @@ export type {
   ResolvedPrepTask,
   ResolvedProposal,
   ResolvedRecipe,
+  ResolvedRisk,
   ResolvedShipment,
+  RiskCategory,
+  RiskSeverity,
 } from "./entities";
 export {
   ENTITY_TYPE_COLORS,
   ENTITY_TYPE_LABELS,
+  RiskCategory,
+  RiskSeverity,
   getEntityStatus,
   getEntityTitle,
 } from "./entities";
