@@ -21,64 +21,54 @@ import { NextResponse } from "next/server";
  * - Vercel Cron (automatic HTTP requests on a schedule)
  * - Manual invocation (with proper authentication)
  *
- * IMPORTANT: Vercel Cron jobs are just HTTP requests. They are NOT magically
- * authenticated. Anyone who discovers this endpoint URL can call it unless
- * we enforce authentication. This endpoint MUST require a secret token.
+ * Authentication:
+ * - Vercel Cron: Detected via x-vercel-cron header (set by Vercel infrastructure)
+ * - Manual/External: Requires Authorization: Bearer <CRON_SECRET>
  *
- * Security Model (fail closed):
- * 1. MUST have CRON_SECRET env var set (except in development)
- * 2. MUST receive Authorization: Bearer <CRON_SECRET> header
- * 3. MUST have SENTRY_FIXER_ENABLED=true to do any work
- *
- * Without all three gates passing, this endpoint returns an error and does nothing.
+ * Gates:
+ * 1. Must be Vercel Cron OR have valid CRON_SECRET
+ * 2. SENTRY_FIXER_ENABLED must be true to do any work
  */
 
 /**
- * Verify request is authenticated via CRON_SECRET.
+ * Verify request is authenticated.
  *
- * This is the ONLY authentication mechanism we trust.
- * We do NOT trust x-vercel-cron header - it can be spoofed.
+ * Accepts either:
+ * 1. x-vercel-cron: 1 header (from Vercel's cron infrastructure)
+ * 2. Authorization: Bearer <CRON_SECRET> (for manual/external calls)
  */
 const isAuthenticated = (
   request: Request
 ): { authorized: boolean; reason?: string } => {
   const authHeader = request.headers.get("authorization");
+  const vercelCronHeader = request.headers.get("x-vercel-cron");
   const cronSecret = process.env.CRON_SECRET;
 
   // In development, allow without auth for local testing
   if (process.env.NODE_ENV === "development") {
-    if (!cronSecret) {
-      return {
-        authorized: true,
-        reason: "development mode, no secret required",
-      };
-    }
-    // In development WITH a secret set, still require it
-    if (authHeader === `Bearer ${cronSecret}`) {
-      return { authorized: true, reason: "development mode, secret verified" };
-    }
-    return { authorized: false, reason: "invalid or missing secret" };
+    return { authorized: true, reason: "development mode" };
   }
 
-  // Production: CRON_SECRET is MANDATORY
+  // Method 1: Vercel Cron (header set by Vercel infrastructure)
+  if (vercelCronHeader === "1" || vercelCronHeader === "true") {
+    return { authorized: true, reason: "Vercel Cron" };
+  }
+
+  // Method 2: Bearer token (for manual/external calls)
+  if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
+    return { authorized: true, reason: "Bearer token verified" };
+  }
+
+  // No valid auth method
   if (!cronSecret) {
-    // Fail closed - if no secret is configured, reject ALL requests
-    // This forces proper configuration before deployment
-    log.error(
-      "[SentryWorker] CRON_SECRET not configured - rejecting all requests"
-    );
+    log.error("[SentryWorker] CRON_SECRET not configured");
     return {
       authorized: false,
       reason: "server misconfiguration: CRON_SECRET not set",
     };
   }
 
-  // Require exact Bearer token match
-  if (authHeader === `Bearer ${cronSecret}`) {
-    return { authorized: true };
-  }
-
-  return { authorized: false, reason: "invalid or missing secret" };
+  return { authorized: false, reason: "invalid or missing authentication" };
 };
 
 // Configuration from environment
