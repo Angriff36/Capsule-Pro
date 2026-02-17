@@ -385,6 +385,14 @@ The Command Board has foundational pieces for AI-Native OS:
 
 **All Phase 5 (Simulation Engine) items are now complete!**
 
+## Implementation Notes (2026-02-17 Iteration 13)
+
+- **Build Fix**: Fixed server action async requirement:
+  - `computeBoardDelta` in `actions/boards.ts` must be async as it's exported from a 'use server' file (Next.js 15 requirement)
+  - Fixed Ably type annotations in `use-inventory-realtime.ts` hook for proper TypeScript compliance
+  - Build now passes cleanly with `pnpm turbo build --filter=app`
+  - Created git tag v0.6.6
+
 ---
 
 ## Files to Reference
