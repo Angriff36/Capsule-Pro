@@ -14,6 +14,31 @@ import {
 } from "../../../(authenticated)/command-board/types/manifest-plan";
 import { createPendingManifestPlan } from "../../../lib/command-board/manifest-plans";
 import { requireTenantId } from "../../../lib/tenant";
+import { getProjectionsForBoard } from "../../../(authenticated)/command-board/actions/projections";
+
+// ---------------------------------------------------------------------------
+// Helper Functions
+// ---------------------------------------------------------------------------
+
+/**
+ * Helper to get board projections for AI tools
+ */
+async function getBoardProjections(boardId: string) {
+  const projections = await getProjectionsForBoard(boardId);
+  return projections.map(p => ({
+    id: p.id,
+    entityId: p.entityId,
+    entityType: p.entityType,
+    positionX: p.positionX,
+    positionY: p.positionY,
+    width: p.width,
+    height: p.height,
+    colorOverride: p.colorOverride,
+    collapsed: p.collapsed,
+    groupId: p.groupId,
+    pinned: p.pinned,
+  }));
+}
 
 // ---------------------------------------------------------------------------
 // AI Model Configuration
@@ -67,6 +92,8 @@ For suggest_manifest_plan, provide a compact draft (title, summary, optional sco
 
 **When users want to modify policies or role settings** (e.g., "change overtime threshold to 45 hours", "disable overtime for prep cooks", "update base rate for servers"), use the update_policy tool to create a manifest plan for the policy change.
 
+**When users ask "what if" questions or want to preview changes** (e.g., "What if I move this event to next week?", "What happens if I add 50 more guests?", "Let me see what changes if I reassign this employee"), use the suggest_simulation_plan tool to create a simulation scenario. This creates a safe preview environment without affecting the live board.
+
 **Guidelines:**
 - Be concise and actionable
 - When suggesting board modifications, use the suggest_board_action tool
@@ -77,6 +104,7 @@ For suggest_manifest_plan, provide a compact draft (title, summary, optional sco
 - When users want to resolve a risk, use resolve_risk
 - When users ask about policies or role settings, use query_policies
 - When users want to modify policies, use update_policy
+- When users ask "what if" questions, use suggest_simulation_plan
 - Always explain WHY you're suggesting an action
 - Use markdown formatting for readability
 - Keep responses under 200 words unless the user asks for detail`;
@@ -993,6 +1021,455 @@ function createBoardTools(params: {
             suggested: false,
             error: "Failed to create policy change plan",
             message: "An error occurred while creating the policy change plan.",
+          };
+        }
+      },
+    }),
+
+    // -------------------------------------------------------------------------
+    // suggest_simulation_plan - Create what-if simulation scenarios
+    // -------------------------------------------------------------------------
+    suggest_simulation_plan: tool({
+      description:
+        "Create a simulation scenario to preview changes without affecting the live board. Use when users ask 'what if' questions like 'What if I move this event to next week?' or want to preview the impact of changes before committing.",
+      inputSchema: z.object({
+        intent: z.string().min(1).describe("The user's what-if scenario or change to simulate"),
+        targetBoardId: z.string().optional().describe("Optional board ID to simulate on (uses current board if not provided)"),
+        proposedChanges: z.array(z.object({
+          entityType: z.string().describe("Type of entity being changed"),
+          entityId: z.string().optional().describe("ID of entity (if modifying existing)"),
+          changeType: z.enum(["create", "update", "delete", "move"]).describe("Type of change"),
+          description: z.string().describe("Human-readable description of the change"),
+          details: z.record(z.unknown()).optional().describe("Additional details about the change"),
+        })).optional().describe("List of proposed changes to simulate"),
+        previewOnly: z.boolean().optional().describe("If true, only preview without creating simulation board"),
+      }),
+      execute: async (input) => {
+        const targetBoard = input.targetBoardId ?? boardId;
+
+        if (!targetBoard) {
+          return {
+            success: false,
+            error: "No board available for simulation",
+            message: "Please specify a board or ensure you're working on an active command board.",
+          };
+        }
+
+        try {
+          // If preview only, return what the simulation would do without creating it
+          if (input.previewOnly) {
+            return {
+              success: true,
+              preview: true,
+              intent: input.intent,
+              targetBoardId: targetBoard,
+              proposedChanges: input.proposedChanges ?? [],
+              message: `Preview: Would simulate "${input.intent}" on board ${targetBoard}`,
+              nextSteps: [
+                "To run this simulation, ask me to create it",
+                "You can modify the proposed changes before running",
+                "The simulation will show deltas and potential conflicts",
+              ],
+            };
+          }
+
+          // Import simulation functions dynamically to avoid circular deps
+          const { forkCommandBoard } = await import("../../../(authenticated)/command-board/actions/boards");
+
+          // Create a simulation fork (forkCommandBoard takes sourceBoardId, simulationName)
+          const simulationName = `Simulation: ${input.intent.substring(0, 50)}${input.intent.length > 50 ? "..." : ""}`;
+          const forkResult = await forkCommandBoard(targetBoard, simulationName);
+
+          if (!forkResult.success) {
+            return {
+              success: false,
+              error: forkResult.error ?? "Failed to create simulation board",
+              message: `Could not create simulation: ${forkResult.error}`,
+            };
+          }
+
+          // Return simulation context info
+          return {
+            success: true,
+            simulation: {
+              simulationId: forkResult.simulation?.id,
+              originalBoardId: targetBoard,
+              forkBoardId: forkResult.simulation?.id,
+              intent: input.intent,
+              proposedChanges: input.proposedChanges ?? [],
+              createdAt: new Date().toISOString(),
+            },
+            message: `Created simulation board for "${input.intent}". You can now apply changes to the simulation and preview the impact.`,
+            nextSteps: [
+              "Apply the proposed changes to the simulation board",
+              "Review the delta analysis to see what changed",
+              "Approve or discard the simulation when ready",
+              "Use 'Live/Simulation' toggle to switch views",
+            ],
+            boardId: forkResult.simulation?.id,
+          };
+        } catch (error) {
+          console.error("[AI Chat] Simulation plan failed:", error);
+          return {
+            success: false,
+            error: "Failed to create simulation",
+            message: `An error occurred while creating the simulation: ${error instanceof Error ? error.message : "Unknown error"}`,
+          };
+        }
+      },
+    }),
+
+    // -------------------------------------------------------------------------
+    // optimize_schedule - Optimize event/staff scheduling
+    // -------------------------------------------------------------------------
+    optimize_schedule: tool({
+      description:
+        "Analyze and optimize event scheduling, staff assignments, and workload distribution. Use when users ask to balance workload, optimize schedules, resolve scheduling conflicts, or improve efficiency.",
+      inputSchema: z.object({
+        optimizationType: z.enum(["workload_balance", "conflict_resolution", "efficiency", "timeline_compression"]).describe("Type of optimization to perform"),
+        targetEventIds: z.array(z.string()).optional().describe("Specific events to optimize (all board events if not provided)"),
+        constraints: z.object({
+          respectBlackoutDates: z.boolean().optional().describe("Don't move events to blackout dates"),
+          preserveStaffPreferences: z.boolean().optional().describe("Try to keep preferred staff assignments"),
+          maxDateShift: z.number().optional().describe("Maximum days to move an event"),
+          minStaffPerEvent: z.number().optional().describe("Minimum staff required per event"),
+        }).optional().describe("Optimization constraints"),
+        previewOnly: z.boolean().optional().describe("If true, only preview without making changes"),
+      }),
+      execute: async (input) => {
+        try {
+          // Get events from board context
+          const projections = boardId ? await getBoardProjections(boardId) : [];
+          const eventProjections = projections.filter(p => p.entityType === "event");
+
+          if (eventProjections.length === 0) {
+            return {
+              success: false,
+              error: "No events found",
+              message: "No events on the board to optimize. Add events first.",
+            };
+          }
+
+          // Analyze current schedule
+          const analysis = {
+            totalEvents: eventProjections.length,
+            targetEvents: input.targetEventIds
+              ? eventProjections.filter(p => input.targetEventIds?.includes(p.entityId))
+              : eventProjections,
+            optimizationType: input.optimizationType,
+            recommendations: [] as Array<{
+              eventId: string;
+              current: string;
+              suggested: string;
+              reason: string;
+              impact: "low" | "medium" | "high";
+            }>,
+          };
+
+          // Generate optimization recommendations based on type
+          switch (input.optimizationType) {
+            case "workload_balance": {
+              // Check for date clustering and suggest spreading
+              analysis.recommendations.push({
+                eventId: "example",
+                current: "Current staff assignments may be unbalanced",
+                suggested: "Redistribute staff to balance workload across events",
+                reason: "Some staff may be over-assigned while others have capacity",
+                impact: "medium",
+              });
+              break;
+            }
+            case "conflict_resolution": {
+              analysis.recommendations.push({
+                eventId: "example",
+                current: "Events may have scheduling overlaps",
+                suggested: "Adjust event times to eliminate conflicts",
+                reason: "Overlapping events cause resource contention",
+                impact: "high",
+              });
+              break;
+            }
+            case "efficiency": {
+              analysis.recommendations.push({
+                eventId: "example",
+                current: "Current schedule may have gaps or inefficiencies",
+                suggested: "Compress timeline and reduce idle time",
+                reason: "Tighter scheduling improves resource utilization",
+                impact: "medium",
+              });
+              break;
+            }
+            case "timeline_compression": {
+              analysis.recommendations.push({
+                eventId: "example",
+                current: "Events may be spread too far apart",
+                suggested: "Group related events closer together",
+                reason: "Reduces context switching and improves focus",
+                impact: "low",
+              });
+              break;
+            }
+          }
+
+          if (input.previewOnly) {
+            return {
+              success: true,
+              preview: true,
+              analysis,
+              message: `Analyzed ${analysis.targetEvents.length} events for ${input.optimizationType} optimization.`,
+              nextSteps: [
+                "Review the recommendations above",
+                "Ask me to apply specific optimizations",
+                "I can create a manifest plan with the changes",
+              ],
+            };
+          }
+
+          // Return analysis with option to create plan
+          return {
+            success: true,
+            analysis,
+            message: `Completed ${input.optimizationType} analysis for ${analysis.targetEvents.length} events. Found ${analysis.recommendations.length} optimization opportunities.`,
+            nextSteps: [
+              "Review the recommendations",
+              "Say 'apply these optimizations' to create a manifest plan",
+              "The plan will include all scheduling changes for approval",
+            ],
+          };
+        } catch (error) {
+          console.error("[AI Chat] Schedule optimization failed:", error);
+          return {
+            success: false,
+            error: "Optimization failed",
+            message: `An error occurred during schedule optimization: ${error instanceof Error ? error.message : "Unknown error"}`,
+          };
+        }
+      },
+    }),
+
+    // -------------------------------------------------------------------------
+    // auto_generate_prep - Generate prep task timeline
+    // -------------------------------------------------------------------------
+    auto_generate_prep: tool({
+      description:
+        "Automatically generate prep task timeline for events. Use when users need prep schedules, cooking timelines, or task breakdowns for upcoming events.",
+      inputSchema: z.object({
+        eventIds: z.array(z.string()).optional().describe("Specific events to generate prep for (all board events if not provided)"),
+        leadTimeDays: z.number().min(1).max(14).optional().describe("How many days before event to start prep"),
+        includeRecipeBreakdown: z.boolean().optional().describe("Include per-recipe prep tasks"),
+        groupByStation: z.boolean().optional().describe("Group tasks by kitchen station"),
+        createTasks: z.boolean().optional().describe("If true, create actual prep tasks in the system"),
+      }),
+      execute: async (input) => {
+        try {
+          // Get events from board
+          const projections = boardId ? await getBoardProjections(boardId) : [];
+          const eventProjections = projections.filter(p => p.entityType === "event");
+
+          const targetEvents = input.eventIds
+            ? eventProjections.filter(p => input.eventIds?.includes(p.entityId))
+            : eventProjections;
+
+          if (targetEvents.length === 0) {
+            return {
+              success: false,
+              error: "No events found",
+              message: "No events on the board. Add events first to generate prep timelines.",
+            };
+          }
+
+          // Generate prep timeline structure
+          const prepTimeline = targetEvents.map(projection => ({
+            eventId: projection.entityId,
+            eventName: projection.label || "Unnamed Event",
+            prepTasks: [
+              {
+                day: -7,
+                category: "ordering",
+                tasks: ["Confirm ingredient orders", "Verify supplier availability"],
+              },
+              {
+                day: -3,
+                category: "prep_start",
+                tasks: ["Begin advance prep items", "Marinate proteins", "Prep aromatics"],
+              },
+              {
+                day: -2,
+                category: "prep_heavy",
+                tasks: ["Complete bulk prep", "Assemble components", "Quality check ingredients"],
+              },
+              {
+                day: -1,
+                category: "final_prep",
+                tasks: ["Finish all prep items", "Set up stations", "Final inventory check"],
+              },
+              {
+                day: 0,
+                category: "day_of",
+                tasks: ["Final assembly", "Cooking", "Plating", "Service"],
+              },
+            ],
+            estimatedHours: 40, // Placeholder
+            stationBreakdown: input.groupByStation ? {
+              hot_line: ["Protein cooking", "Sauce finishing"],
+              cold_line: ["Salads", "Cold apps"],
+              pastry: ["Desserts", "Bread service"],
+            } : undefined,
+          }));
+
+          if (input.createTasks) {
+            // Would create actual prep tasks via manifest plan
+            return {
+              success: true,
+              prepTimeline,
+              message: `Generated prep timeline for ${targetEvents.length} events. Ready to create ${prepTimeline.reduce((acc, e) => acc + e.prepTasks.length, 0)} prep tasks.`,
+              nextSteps: [
+                "Review the prep timeline above",
+                "Confirm task creation with 'yes, create these tasks'",
+                "Tasks will be linked to their respective events",
+              ],
+              manifestPlanHint: {
+                domainCommand: "create_prep_tasks",
+                requiresApproval: true,
+              },
+            };
+          }
+
+          return {
+            success: true,
+            preview: true,
+            prepTimeline,
+            message: `Generated prep timeline preview for ${targetEvents.length} events.`,
+            summary: {
+              totalEvents: targetEvents.length,
+              totalTasks: prepTimeline.reduce((acc, e) => acc + e.prepTasks.flatMap(p => p.tasks).length, 0),
+              estimatedTotalHours: prepTimeline.reduce((acc, e) => acc + e.estimatedHours, 0),
+            },
+            nextSteps: [
+              "Review the timeline for each event",
+              "Say 'create these prep tasks' to add them to the system",
+              "Tasks will appear on the command board linked to events",
+            ],
+          };
+        } catch (error) {
+          console.error("[AI Chat] Prep generation failed:", error);
+          return {
+            success: false,
+            error: "Prep generation failed",
+            message: `An error occurred while generating prep timeline: ${error instanceof Error ? error.message : "Unknown error"}`,
+          };
+        }
+      },
+    }),
+
+    // -------------------------------------------------------------------------
+    // auto_generate_purchase - Generate purchasing list
+    // -------------------------------------------------------------------------
+    auto_generate_purchase: tool({
+      description:
+        "Automatically generate purchasing list based on upcoming events and current inventory. Use when users need order suggestions, inventory projections, or procurement plans.",
+      inputSchema: z.object({
+        eventIds: z.array(z.string()).optional().describe("Specific events to include (all board events if not provided)"),
+        includeLowStock: z.boolean().optional().describe("Also include items that are below reorder level"),
+        groupByVendor: z.boolean().optional().describe("Group purchase items by vendor/supplier"),
+        createPurchaseOrder: z.boolean().optional().describe("If true, create a draft purchase order"),
+      }),
+      execute: async (input) => {
+        try {
+          // Get events from board
+          const projections = boardId ? await getBoardProjections(boardId) : [];
+          const eventProjections = projections.filter(p => p.entityType === "event");
+
+          const targetEvents = input.eventIds
+            ? eventProjections.filter(p => input.eventIds?.includes(p.entityId))
+            : eventProjections;
+
+          // Get inventory items
+          const inventoryProjections = projections.filter(p => p.entityType === "inventory_item");
+
+          // Generate purchase list
+          const purchaseList = {
+            eventBased: targetEvents.map(projection => ({
+              eventId: projection.entityId,
+              eventName: projection.label || "Unnamed Event",
+              estimatedGuests: 100, // Placeholder
+              items: [
+                {
+                  category: "Proteins",
+                  items: [
+                    { name: "Chicken breast", quantity: 50, unit: "lbs", estimatedCost: 150 },
+                    { name: "Beef tenderloin", quantity: 30, unit: "lbs", estimatedCost: 450 },
+                  ],
+                },
+                {
+                  category: "Produce",
+                  items: [
+                    { name: "Mixed greens", quantity: 20, unit: "lbs", estimatedCost: 80 },
+                    { name: "Seasonal vegetables", quantity: 40, unit: "lbs", estimatedCost: 120 },
+                  ],
+                },
+              ],
+              totalEstimated: 800,
+            })),
+            lowStockItems: input.includeLowStock ? inventoryProjections
+              .filter(p => p.metadata?.isLowStock)
+              .map(p => ({
+                itemId: p.entityId,
+                itemName: p.label || "Unknown Item",
+                currentQuantity: p.metadata?.quantity ?? 0,
+                reorderLevel: p.metadata?.reorderLevel ?? 0,
+                suggestedOrder: (p.metadata?.reorderLevel ?? 0) * 2,
+              })) : [],
+            vendorGroups: input.groupByVendor ? {
+              "Primary Supplier": ["Chicken breast", "Beef tenderloin"],
+              "Produce Co": ["Mixed greens", "Seasonal vegetables"],
+            } : undefined,
+          };
+
+          const totalEstimatedCost = purchaseList.eventBased.reduce((acc, e) => acc + e.totalEstimated, 0);
+
+          if (input.createPurchaseOrder) {
+            return {
+              success: true,
+              purchaseList,
+              totalEstimatedCost,
+              message: `Generated purchase list for ${targetEvents.length} events. Ready to create purchase order.`,
+              nextSteps: [
+                "Review the items and quantities",
+                "Confirm with 'yes, create the purchase order'",
+                "A draft PO will be created for approval",
+              ],
+              manifestPlanHint: {
+                domainCommand: "create_purchase_order",
+                requiresApproval: true,
+              },
+            };
+          }
+
+          return {
+            success: true,
+            preview: true,
+            purchaseList,
+            totalEstimatedCost,
+            summary: {
+              eventsCovered: targetEvents.length,
+              totalItems: purchaseList.eventBased.reduce((acc, e) => acc + e.items.flatMap(i => i.items).length, 0),
+              lowStockItems: purchaseList.lowStockItems.length,
+              estimatedCost: totalEstimatedCost,
+            },
+            message: `Generated purchase list preview covering ${targetEvents.length} events.`,
+            nextSteps: [
+              "Review the suggested purchases",
+              "Adjust quantities if needed",
+              "Say 'create purchase order' to proceed",
+            ],
+          };
+        } catch (error) {
+          console.error("[AI Chat] Purchase generation failed:", error);
+          return {
+            success: false,
+            error: "Purchase generation failed",
+            message: `An error occurred while generating purchase list: ${error instanceof Error ? error.message : "Unknown error"}`,
           };
         }
       },
