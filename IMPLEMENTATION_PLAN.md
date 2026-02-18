@@ -7,7 +7,7 @@ Enable full AI-driven command board operations: users can create events, prep li
 
 ## Current State (Verified 2026-02-18)
 
-### AI Tools Status (13 total)
+### AI Tools Status (14 total)
 | Tool | Status | Issue |
 |------|--------|-------|
 | suggest_board_action | FUNCTIONAL | - |
@@ -23,6 +23,7 @@ Enable full AI-driven command board operations: users can create events, prep li
 | **auto_generate_prep** | FUNCTIONAL | Now calls /api/kitchen/ai/bulk-generate/prep-tasks for real data |
 | **auto_generate_purchase** | FUNCTIONAL | Now queries event_dishes, RecipeIngredient, InventoryItem for real data |
 | **generate_payroll** | FUNCTIONAL | Calls /api/payroll/generate for real payroll calculations |
+| **create_shift** | FUNCTIONAL | Calls /api/staff/shifts via manifest runtime |
 
 ### Domain Commands Status (10 implemented)
 | Command | Status | Location |
@@ -150,14 +151,20 @@ Enable full AI-driven command board operations: users can create events, prep li
 - Provides manifest plan hint for `execute_payroll` domain command
 - Returns actionable next steps for approval workflow
 
-### P2-2. [ ] Add AI Tool: `create_shift`
-**File**: `apps/app/app/api/command-board/chat/route.ts` (new tool after line 1640)
+### P2-2. [x] Add AI Tool: `create_shift`
+**File**: `apps/app/app/api/command-board/chat/route.ts:2185-2410`
 
-**Solution**:
-1. Add `create_shift` AI tool with employeeId, date, startTime, endTime, role, locationId
-2. Call `POST /api/staff/shifts` via manifest runtime
-3. Return shift details for approval
-4. Create manifest plan with domain command
+**Completed**: 2026-02-18
+
+**Changes**:
+- Added `create_shift` AI tool with employeeId, date, startTime, endTime, locationId, role (optional), notes (optional)
+- Validates date format (ISO) and time format (HH:MM)
+- Validates shift end time is after start time
+- Warns if shift duration exceeds 12 hours
+- Finds existing schedule for target date or creates new schedule via `/api/staff/schedules/commands/create`
+- Creates shift via `POST /api/staff/shifts` with manifest runtime
+- Returns shift details with formatted times, duration, and manifest plan hint
+- Added tool guidance to SYSTEM_PROMPT for when to use create_shift
 
 ### P2-3. [ ] Add AI Tool: `create_recipe`
 **File**: `apps/app/app/api/command-board/chat/route.ts` (new tool after line 1640)
@@ -204,3 +211,4 @@ Enable full AI-driven command board operations: users can create events, prep li
 - [x] **auto_generate_prep** AI Tool - Now calls `/api/kitchen/ai/bulk-generate/prep-tasks` for real data, calculates estimatedHours from task.estimatedMinutes, groups by station, saves via save endpoint
 - [x] **auto_generate_purchase** AI Tool - Now queries event_dishes, dishes, recipes (RecipeVersion, RecipeIngredient), ingredients, and inventory items for real purchase calculations based on event guest counts
 - [x] **generate_payroll** AI Tool - Now calls `/api/payroll/generate` for real payroll calculations with period parameters, returns formatted summary with employee count and totals
+- [x] **create_shift** AI Tool - Now calls `/api/staff/shifts` via manifest runtime, finds or creates schedule for target date, validates date/time formats and shift duration

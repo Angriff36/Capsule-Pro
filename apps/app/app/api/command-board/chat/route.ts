@@ -253,6 +253,10 @@ For suggest_manifest_plan, provide a compact draft (title, summary, optional sco
 
 **When users need purchasing lists or inventory orders** (e.g., "what do I need to order?", "generate shopping list", "create purchase order for these events"), use the auto_generate_purchase tool to generate procurement suggestions.
 
+**When users need to run payroll or calculate wages** (e.g., "run payroll", "calculate employee wages", "generate pay summary"), use the generate_payroll tool to generate payroll for a specific pay period.
+
+**When users need to schedule staff or create shifts** (e.g., "schedule John for tomorrow", "create a shift for Maria", "assign shifts for next week"), use the create_shift tool to create staff shifts for employees.
+
 **Guidelines:**
 - Be concise and actionable
 - When suggesting board modifications, use the suggest_board_action tool
@@ -267,6 +271,8 @@ For suggest_manifest_plan, provide a compact draft (title, summary, optional sco
 - When users want to optimize schedules, use optimize_schedule
 - When users need prep timelines, use auto_generate_prep
 - When users need purchasing lists, use auto_generate_purchase
+- When users need to run payroll, use generate_payroll
+- When users need to create staff shifts, use create_shift
 - Always explain WHY you're suggesting an action
 - Use markdown formatting for readability
 - Keep responses under 200 words unless the user asks for detail`;
@@ -2174,6 +2180,230 @@ function createBoardTools(params: {
             success: false,
             error: "Payroll generation failed",
             message: `An error occurred while generating payroll: ${error instanceof Error ? error.message : "Unknown error"}`,
+          };
+        }
+      },
+    }),
+
+    // -------------------------------------------------------------------------
+    // create_shift - Create a staff shift
+    // -------------------------------------------------------------------------
+    create_shift: tool({
+      description:
+        "Create a staff shift for an employee. Use when users need to schedule staff, assign shifts, or add working hours for employees.",
+      inputSchema: z.object({
+        employeeId: z.string().describe("ID of the employee to assign the shift to"),
+        date: z.string().describe("Date of the shift (ISO date string, e.g., '2026-02-20')"),
+        startTime: z.string().describe("Start time of the shift (HH:MM format, e.g., '09:00')"),
+        endTime: z.string().describe("End time of the shift (HH:MM format, e.g., '17:00')"),
+        locationId: z.string().describe("ID of the location where the shift takes place"),
+        role: z.string().optional().describe("Role for this shift (e.g., 'Line Cook', 'Prep Cook')"),
+        notes: z.string().optional().describe("Additional notes about the shift"),
+      }),
+      execute: async (input) => {
+        try {
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+
+          // Parse date and times to create timestamps
+          const shiftDate = new Date(input.date);
+          if (Number.isNaN(shiftDate.getTime())) {
+            return {
+              success: false,
+              error: "Invalid date",
+              message: `Invalid date format: ${input.date}. Use ISO format (e.g., '2026-02-20')`,
+            };
+          }
+
+          // Combine date with time strings to create full timestamps
+          const [startHour, startMin] = input.startTime.split(":").map(Number);
+          const [endHour, endMin] = input.endTime.split(":").map(Number);
+
+          if (
+            Number.isNaN(startHour) ||
+            Number.isNaN(startMin) ||
+            Number.isNaN(endHour) ||
+            Number.isNaN(endMin)
+          ) {
+            return {
+              success: false,
+              error: "Invalid time format",
+              message: "Time must be in HH:MM format (e.g., '09:00', '17:30')",
+            };
+          }
+
+          const shiftStart = new Date(shiftDate);
+          shiftStart.setHours(startHour, startMin, 0, 0);
+
+          const shiftEnd = new Date(shiftDate);
+          shiftEnd.setHours(endHour, endMin, 0, 0);
+
+          if (shiftEnd <= shiftStart) {
+            return {
+              success: false,
+              error: "Invalid time range",
+              message: "End time must be after start time",
+            };
+          }
+
+          // Check for shift duration warning (more than 12 hours)
+          const shiftDurationHours = (shiftEnd.getTime() - shiftStart.getTime()) / (1000 * 60 * 60);
+          const durationWarning =
+            shiftDurationHours > 12
+              ? " Warning: This shift is longer than 12 hours."
+              : "";
+
+          // Find or create a schedule for this date
+          const schedulesResponse = await fetch(
+            `${baseUrl}/api/staff/schedules?limit=100`,
+            {
+              headers: {
+                ...(authCookie ? { Cookie: authCookie } : {}),
+              },
+            }
+          );
+
+          if (!schedulesResponse.ok) {
+            return {
+              success: false,
+              error: "Failed to fetch schedules",
+              message: `Could not retrieve schedules: ${schedulesResponse.status}`,
+            };
+          }
+
+          const schedulesData = (await schedulesResponse.json()) as {
+            schedules: Array<{
+              id: string;
+              schedule_date: string;
+              status: string;
+              location_id: string | null;
+            }>;
+          };
+
+          // Format the target date for matching
+          const targetDateStr = shiftDate.toISOString().split("T")[0];
+
+          // Find a schedule for the target date
+          const schedule = schedulesData.schedules.find((s) => {
+            const scheduleDate = new Date(s.schedule_date).toISOString().split("T")[0];
+            return scheduleDate === targetDateStr;
+          });
+
+          // If schedule exists, use it; otherwise create one
+          let scheduleId: string;
+          if (schedule) {
+            scheduleId = schedule.id;
+          } else {
+            const createScheduleResponse = await fetch(`${baseUrl}/api/staff/schedules/commands/create`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...(authCookie ? { Cookie: authCookie } : {}),
+              },
+              body: JSON.stringify({
+                scheduleDate: targetDateStr,
+                locationId: input.locationId,
+                status: "draft",
+              }),
+            });
+
+            if (!createScheduleResponse.ok) {
+              const errorText = await createScheduleResponse.text();
+              console.error("[AI Chat] Schedule creation failed:", errorText);
+              return {
+                success: false,
+                error: "Failed to create schedule",
+                message: `Could not create schedule for ${targetDateStr}: ${createScheduleResponse.status}`,
+              };
+            }
+
+            const newSchedule = (await createScheduleResponse.json()) as { result: { id: string } };
+            scheduleId = newSchedule.result.id;
+          }
+
+          // Create the shift via manifest runtime
+          const response = await fetch(`${baseUrl}/api/staff/shifts`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(authCookie ? { Cookie: authCookie } : {}),
+            },
+            body: JSON.stringify({
+              scheduleId,
+              employeeId: input.employeeId,
+              locationId: input.locationId,
+              shiftStart: shiftStart.getTime(),
+              shiftEnd: shiftEnd.getTime(),
+              roleDuringShift: input.role,
+              notes: input.notes,
+            }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error("[AI Chat] Shift creation API error:", errorText);
+            return {
+              success: false,
+              error: "Shift creation failed",
+              message: `Failed to create shift: ${response.status} ${response.statusText}`,
+            };
+          }
+
+          const data = (await response.json()) as {
+            result: {
+              id: string;
+              scheduleId: string;
+              employeeId: string;
+              locationId: string;
+              shiftStart: number;
+              shiftEnd: number;
+              roleDuringShift?: string;
+              notes?: string;
+            };
+          };
+
+          // Format times for display
+          const formatTime = (timestamp: number) =>
+            new Date(timestamp).toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+
+          return {
+            success: true,
+            shiftId: data.result.id,
+            shift: {
+              id: data.result.id,
+              date: input.date,
+              startTime: formatTime(data.result.shiftStart),
+              endTime: formatTime(data.result.shiftEnd),
+              duration: `${shiftDurationHours.toFixed(1)} hours`,
+              employeeId: data.result.employeeId,
+              locationId: data.result.locationId,
+              role: data.result.roleDuringShift,
+              notes: data.result.notes,
+              scheduleId: data.result.scheduleId,
+            },
+            message: `Created shift for ${input.date} from ${input.startTime} to ${input.endTime} (${shiftDurationHours.toFixed(1)} hours).${durationWarning}`,
+            nextSteps: [
+              "Review the shift details above",
+              "Confirm the shift assignment with the employee",
+              "Use 'publish schedule' to make shifts visible to staff",
+            ],
+            manifestPlanHint: {
+              domainCommand: "create_shift",
+              requiresApproval: false,
+              params: {
+                shiftId: data.result.id,
+                scheduleId: data.result.scheduleId,
+              },
+            },
+          };
+        } catch (error) {
+          console.error("[AI Chat] Shift creation failed:", error);
+          return {
+            success: false,
+            error: "Shift creation failed",
+            message: `An error occurred while creating the shift: ${error instanceof Error ? error.message : "Unknown error"}`,
           };
         }
       },
