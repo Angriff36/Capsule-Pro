@@ -106,6 +106,55 @@ const createJobQueue = () => {
   return new SentryJobQueue(store, getQueueConfig());
 };
 
+// Helper to validate GitHub runner configuration
+const validateRunnerConfig = (
+  config: Partial<JobRunnerConfig>
+): JobRunnerConfig => {
+  if (!(config.githubToken && config.repoOwner && config.repoName)) {
+    throw new Error("GitHub configuration incomplete");
+  }
+  return config as JobRunnerConfig;
+};
+
+// Helper to send Slack notification for successful PR creation
+const notifyPRCreated = async (
+  result: { prUrl?: string; prNumber?: number; branchName?: string },
+  issue: { title: string; issueUrl: string; environment: string }
+) => {
+  const slackConfig = getSlackConfig();
+  if (slackConfig.webhookUrl || slackConfig.botToken) {
+    const slack = createSlackNotifier(slackConfig);
+    await slack.notifyPRCreated({
+      prUrl: result.prUrl ?? "",
+      prNumber: result.prNumber ?? 0,
+      issueTitle: issue.title,
+      issueUrl: issue.issueUrl,
+      branchName: result.branchName ?? "",
+      environment: issue.environment,
+    });
+  }
+};
+
+// Helper to send Slack notification for fix failure (on final retry)
+const notifyFixFailed = async (
+  issue: { title: string; issueUrl: string },
+  errorMessage: string,
+  retryCount: number,
+  maxRetries: number
+) => {
+  const slackConfig = getSlackConfig();
+  if (slackConfig.webhookUrl || slackConfig.botToken) {
+    const slack = createSlackNotifier(slackConfig);
+    await slack.notifyFixFailed({
+      issueTitle: issue.title,
+      issueUrl: issue.issueUrl,
+      errorMessage,
+      retryCount,
+      maxRetries,
+    });
+  }
+};
+
 /**
  * Process a single job from the queue.
  *
@@ -129,58 +178,23 @@ const processJob = async (): Promise<{
     issueId: job.sentryIssueId,
   });
 
-  // Mark job as running (prevents concurrent processing)
   await jobQueue.startJob(job.id);
 
   try {
-    // Parse issue from payload
     const issue = parseSentryIssue(job.payloadSnapshot);
+    const runnerConfig = validateRunnerConfig(getRunnerConfig());
 
-    // Check runner config
-    const runnerConfig = getRunnerConfig();
-    if (
-      !(
-        runnerConfig.githubToken &&
-        runnerConfig.repoOwner &&
-        runnerConfig.repoName
-      )
-    ) {
-      throw new Error("GitHub configuration incomplete");
-    }
-
-    // Create runner and execute
-    const runner = createJobRunner({
-      githubToken: runnerConfig.githubToken,
-      repoOwner: runnerConfig.repoOwner,
-      repoName: runnerConfig.repoName,
-      baseBranch: runnerConfig.baseBranch,
-      runTests: runnerConfig.runTests,
-      testCommand: runnerConfig.testCommand,
-    });
-
+    const runner = createJobRunner(runnerConfig);
     const result = await runner.execute(job, issue);
 
     if (result.success) {
-      // Mark job as completed
       await jobQueue.completeJob(job.id, {
         branchName: result.branchName ?? undefined,
         prUrl: result.prUrl ?? undefined,
         prNumber: result.prNumber ?? undefined,
       });
 
-      // Send Slack notification
-      const slackConfig = getSlackConfig();
-      if (slackConfig.webhookUrl || slackConfig.botToken) {
-        const slack = createSlackNotifier(slackConfig);
-        await slack.notifyPRCreated({
-          prUrl: result.prUrl ?? "",
-          prNumber: result.prNumber ?? 0,
-          issueTitle: issue.title,
-          issueUrl: issue.issueUrl,
-          branchName: result.branchName ?? "",
-          environment: issue.environment,
-        });
-      }
+      await notifyPRCreated(result, issue);
 
       log.info("[SentryWorker] Job completed successfully", {
         jobId: job.id,
@@ -189,22 +203,16 @@ const processJob = async (): Promise<{
 
       return { processed: true, jobId: job.id, success: true };
     }
-    // Mark job as failed
+
     await jobQueue.failJob(job.id, result.error ?? "Unknown error");
 
-    // Send Slack notification for final failures
     if (job.retryCount + 1 >= job.maxRetries) {
-      const slackConfig = getSlackConfig();
-      if (slackConfig.webhookUrl || slackConfig.botToken) {
-        const slack = createSlackNotifier(slackConfig);
-        await slack.notifyFixFailed({
-          issueTitle: issue.title,
-          issueUrl: issue.issueUrl,
-          errorMessage: result.error ?? "Unknown error",
-          retryCount: job.retryCount + 1,
-          maxRetries: job.maxRetries,
-        });
-      }
+      await notifyFixFailed(
+        issue,
+        result.error ?? "Unknown error",
+        job.retryCount + 1,
+        job.maxRetries
+      );
     }
 
     log.warn("[SentryWorker] Job failed", {
@@ -223,7 +231,6 @@ const processJob = async (): Promise<{
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
 
-    // Mark job as failed
     await jobQueue.failJob(job.id, message);
 
     log.error("[SentryWorker] Job error", { jobId: job.id, error: message });
@@ -324,7 +331,7 @@ export const POST = async (request: Request): Promise<Response> => {
  * Note: This endpoint is intentionally public for monitoring purposes.
  * It does not expose secrets or perform any mutations.
  */
-export const GET = async (): Promise<Response> => {
+export const GET = (): Response => {
   const queueConfig = getQueueConfig();
   const runnerConfig = getRunnerConfig();
   const slackConfig = getSlackConfig();
@@ -350,5 +357,5 @@ export const GET = async (): Promise<Response> => {
       maxRetries: queueConfig.maxRetries,
       runTests: runnerConfig.runTests,
     },
-  });
+  }) as Response;
 };
