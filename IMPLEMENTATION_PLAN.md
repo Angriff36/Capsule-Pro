@@ -223,3 +223,4 @@ Enable full AI-driven command board operations: users can create events, prep li
 - [x] **create_recipe** AI Tool - Now calls `/api/kitchen/recipes/commands/create` via manifest runtime with name, category, cuisineType, description, tags parameters
 - [x] **create_recipe** Domain Command - Added executeCreateRecipeStep function and routing in manifest-plans.ts
 - [x] **Simulation Conflicts UI** - ConflictWarningPanel now shows simulation-specific conflicts with delta analysis (introduces/resolves), blue border for simulation mode, "New in simulation" badges
+- [x] **Biome Lint Fixes** - Fixed lint issues in kitchen routes: removed unused imports, fixed nested ternary expressions, reduced cognitive complexity in sync-claims/route.ts (2026-02-18)
