@@ -105,10 +105,26 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 - **Status:** Specs only - no implementation
 - **Effort:** 6-8 hours each
 
-### 9. QuickBooks Export Enhancements
-- **Specs:** `specs/staff/quickbooks-*-export_TODO/`
-- **Status:** Payroll export complete, need Invoice and Bill exports
-- **Effort:** 4-6 hours each
+### ~~9. QuickBooks Invoice Export~~ ✅ COMPLETE (2026-02-18)
+- **Spec:** `specs/staff/quickbooks-invoice-export_TODO/`
+- **Implemented:**
+  - Created invoice export utility at `apps/api/app/lib/quickbooks-invoice-export.ts`
+  - Supports QuickBooks Online CSV format with proper column structure
+  - Supports QuickBooks Desktop IIF format for import
+  - Builder pattern for fluent invoice construction
+  - CSV escaping for special characters (commas, quotes)
+  - Configurable date formats (US MM/DD/YYYY or ISO YYYY-MM-DD)
+  - Account mappings for income accounts, items, tax codes
+  - Created API endpoint at `/api/events/export/quickbooks`
+  - Filters events by date range, status
+  - Maps Event + BudgetLineItems to invoice line items
+  - Returns base64-encoded file for download
+  - Full test coverage (14 tests passing)
+
+### 9b. QuickBooks Bill Export
+- **Spec:** `specs/staff/quickbooks-bill-export_TODO/`
+- **Status:** Spec only - no implementation
+- **Effort:** 4-6 hours
 
 ---
 
@@ -202,6 +218,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | Payroll Timecard System | **Complete** | Clock in/out, approvals, exceptions |
 | Payroll Approval Workflow | **Complete** | Multi-step approval with history |
 | QuickBooks Payroll Export | **Complete** | QBXML and QBO CSV exports |
+| QuickBooks Invoice Export | **Complete** | QBO CSV and IIF formats for events |
 | Scheduling Shift CRUD | **Complete** | Full API and UI |
 | Scheduling Availability | **Complete** | Full API and UI |
 | Scheduling Auto-Assignment | **Complete** | Sophisticated algorithm with tests |
