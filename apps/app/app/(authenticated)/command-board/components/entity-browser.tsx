@@ -293,9 +293,9 @@ export function EntityBrowser({
     [categories]
   );
 
-  // ---- Add an entity to the board ----
-  const handleAddEntity = useCallback(
-    (item: BrowseItem) => {
+  // ---- Add an entity to the board at a specific position ----
+  const handleAddEntityAtPosition = useCallback(
+    (item: BrowseItem, positionX?: number, positionY?: number) => {
       if (addingId) {
         return; // Prevent double-clicks
       }
@@ -304,30 +304,38 @@ export function EntityBrowser({
 
       startTransition(async () => {
         try {
-          // Smart placement: use grid pattern to avoid overlapping
-          const viewport = reactFlow.getViewport();
-          const viewportCenterX =
-            (-viewport.x + window.innerWidth / 2) / viewport.zoom;
-          const viewportCenterY =
-            (-viewport.y + window.innerHeight / 2) / viewport.zoom;
+          let finalX = positionX;
+          let finalY = positionY;
 
-          // Grid spacing based on card dimensions (280px width + 40px gap)
-          const GRID_SPACING_X = 320;
-          const GRID_SPACING_Y = 200;
+          // If no position provided, use smart placement
+          if (finalX === undefined || finalY === undefined) {
+            const viewport = reactFlow.getViewport();
+            const viewportCenterX =
+              (-viewport.x + window.innerWidth / 2) / viewport.zoom;
+            const viewportCenterY =
+              (-viewport.y + window.innerHeight / 2) / viewport.zoom;
 
-          // Use existing projections to determine grid position
-          const existingCount = projections.length;
-          const gridX = existingCount % 3;
-          const gridY = Math.floor(existingCount / 3);
+            // Grid spacing based on card dimensions (280px width + 40px gap)
+            const GRID_SPACING_X = 320;
+            const GRID_SPACING_Y = 200;
 
-          const offsetX = gridX * GRID_SPACING_X;
-          const offsetY = gridY * GRID_SPACING_Y;
+            // Use existing projections to determine grid position
+            const existingCount = projections.length;
+            const gridX = existingCount % 3;
+            const gridY = Math.floor(existingCount / 3);
+
+            const offsetX = gridX * GRID_SPACING_X;
+            const offsetY = gridY * GRID_SPACING_Y;
+
+            finalX = viewportCenterX + offsetX;
+            finalY = viewportCenterY + offsetY;
+          }
 
           const result = await addProjection(boardId, {
             entityType: item.entityType,
             entityId: item.id,
-            positionX: Math.round(viewportCenterX + offsetX),
-            positionY: Math.round(viewportCenterY + offsetY),
+            positionX: Math.round(finalX),
+            positionY: Math.round(finalY),
           });
 
           if (result.success && result.projection) {
@@ -358,6 +366,28 @@ export function EntityBrowser({
       });
     },
     [addingId, boardId, onProjectionAdded, reactFlow, projections.length]
+  );
+
+  // ---- Add an entity to the board (click handler - uses smart placement) ----
+  const handleAddEntity = useCallback(
+    (item: BrowseItem) => {
+      handleAddEntityAtPosition(item);
+    },
+    [handleAddEntityAtPosition]
+  );
+
+  // ---- Handle drag start - set drag data for drop handler ----
+  const handleDragStart = useCallback(
+    (e: React.DragEvent<HTMLButtonElement>, item: BrowseItem) => {
+      const data = JSON.stringify({
+        entityType: item.entityType,
+        entityId: item.id,
+        title: item.title,
+      });
+      e.dataTransfer.setData("application/json", data);
+      e.dataTransfer.effectAllowed = "copy";
+    },
+    []
   );
 
   // ---- Get navigable items for keyboard navigation ----
@@ -664,14 +694,16 @@ export function EntityBrowser({
                       return (
                         <button
                           className={cn(
-                            "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors disabled:opacity-50 group/item",
+                            "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors disabled:opacity-50 group/item cursor-grab active:cursor-grabbing",
                             isItemFocused
                               ? "bg-primary/10 ring-2 ring-primary/50"
                               : "hover:bg-muted/50"
                           )}
                           disabled={isPending || isAdding || isOnBoard}
+                          draggable={!(isOnBoard || isPending || isAdding)}
                           key={item.id}
                           onClick={() => handleAddEntity(item)}
+                          onDragStart={(e) => handleDragStart(e, item)}
                           ref={(el) => {
                             if (el) {
                               itemRefs.current.set(`${type}:${item.id}`, el);
