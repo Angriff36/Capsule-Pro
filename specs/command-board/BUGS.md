@@ -61,8 +61,8 @@
 
 **Fix Applied**: ProjectionNode already has explicit `w-[280px]` class set on line 134 of projection-node.tsx.
 
-### BUG-08: MiniMap/Controls Styling
+### BUG-08: MiniMap/Controls Styling ✅ FIXED
 
-**Status**: OPEN
+**Problem**: ~~MiniMap and Controls use `!important` overrides (`!bg-card !border-border !shadow-md`) which is fragile and doesn't respect the brand color palette.~~
 
-**Problem**: MiniMap and Controls use `!important` overrides (`!bg-card !border-border !shadow-md`) which is fragile and doesn't respect the brand color palette.
+**Fix Applied**: Replaced inline styles and `!important` classes with proper CSS rules in `styles.css` using theme CSS variables (hsl(var(--background)), etc.) for Background, Controls, and MiniMap components.
