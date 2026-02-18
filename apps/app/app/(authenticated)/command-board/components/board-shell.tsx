@@ -405,6 +405,7 @@ export function BoardShell({
                   derivedConnections={derivedConnections}
                   entities={entities}
                   onOpenDetail={handleOpenDetail}
+                  onOpenEntityBrowser={() => setEntityBrowserOpen(true)}
                   onProjectionAdded={handleProjectionAdded}
                   onProjectionRemoved={handleProjectionRemoved}
                   projections={

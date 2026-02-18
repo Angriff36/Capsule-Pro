@@ -34,12 +34,12 @@ Enable full AI-driven command board operations: users can create events, prep li
 
 ---
 
-## Priority Tasks (2 remaining - P1 UI Polish)
+## Priority Tasks (1 remaining - P1 UI Polish)
 
 ### P1 - In Progress
 - [x] Card hover action buttons (remove, detail, pin) - HIGH IMPACT
 - [x] Edge hover state (thicken on hover + tooltip)
-- [ ] Empty state with quick action buttons
+- [x] Empty state with quick action buttons
 - [ ] Entity Browser: refresh button for categories
 
 ### P1 - Lower Priority
@@ -65,3 +65,4 @@ Enable full AI-driven command board operations: users can create events, prep li
 - BUG-08: MiniMap/Controls styling - replaced !important with CSS classes
 - Card hover action buttons (Eye, Pin/Unpin, Remove) with toggle pin API
 - Edge hover state with thickening and tooltip for connection labels
+- Empty state with quick action buttons (Events, Clients, Tasks, Browse All)
