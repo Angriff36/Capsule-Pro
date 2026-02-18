@@ -1,8 +1,17 @@
 import { openai } from "@ai-sdk/openai";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { convertToModelMessages, streamText, tool, type UIMessage } from "ai";
+import {
+  convertToModelMessages,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  streamText,
+  tool,
+  type UIMessage,
+} from "ai";
 import { z } from "zod";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   type BoardMutation,
   type DomainCommandStep,
@@ -188,7 +197,7 @@ async function getBoardProjections(boardId: string): Promise<ProjectionWithLabel
 // AI Model Configuration
 // ---------------------------------------------------------------------------
 
-const AI_MODEL = "gpt-4o-mini";
+const AI_MODEL = process.env.COMMAND_BOARD_AI_MODEL ?? "gpt-4o-mini";
 const TEMPERATURE = 0.7;
 
 // Allow streaming responses up to 30 seconds
@@ -270,8 +279,9 @@ function createBoardTools(params: {
   boardId?: string;
   tenantId: string;
   userId: string | null;
+  authCookie?: string | null;
 }) {
-  const { boardId, tenantId, userId } = params;
+  const { boardId, tenantId, userId, authCookie } = params;
   const entityTypeEnum = z.enum([
     "event",
     "client",
@@ -506,6 +516,7 @@ function createBoardTools(params: {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              ...(authCookie ? { Cookie: authCookie } : {}),
             },
             body: JSON.stringify({
               boardId,
@@ -586,6 +597,7 @@ function createBoardTools(params: {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              ...(authCookie ? { Cookie: authCookie } : {}),
             },
             body: JSON.stringify({
               boardId,
@@ -708,6 +720,7 @@ function createBoardTools(params: {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              ...(authCookie ? { Cookie: authCookie } : {}),
             },
             body: JSON.stringify({
               boardId,
@@ -1303,73 +1316,151 @@ function createBoardTools(params: {
             };
           }
 
-          // Analyze current schedule
+          // Determine conflict types to check based on optimization type
+          const conflictTypesByOptimization: Record<string, ("scheduling" | "staff" | "inventory" | "timeline" | "venue")[]> = {
+            workload_balance: ["scheduling", "staff"],
+            conflict_resolution: ["scheduling", "staff", "venue", "timeline"],
+            efficiency: ["timeline", "inventory"],
+            timeline_compression: ["timeline", "scheduling"],
+          };
+
+          const entityTypes = conflictTypesByOptimization[input.optimizationType] || ["scheduling", "staff"];
+
+          // Call conflicts detect API to get real data
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+          const response = await fetch(`${baseUrl}/conflicts/detect`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(authCookie ? { Cookie: authCookie } : {}),
+            },
+            body: JSON.stringify({
+              boardId,
+              entityTypes,
+            }),
+          });
+
+          interface AffectedEntity {
+            type: string;
+            id: string;
+            name: string;
+          }
+
+          interface ResolutionOption {
+            type: string;
+            description: string;
+            affectedEntities: AffectedEntity[];
+            estimatedImpact: "low" | "medium" | "high";
+          }
+
+          interface Conflict {
+            id: string;
+            type: string;
+            severity: "low" | "medium" | "high" | "critical";
+            title: string;
+            description: string;
+            affectedEntities: AffectedEntity[];
+            suggestedAction?: string;
+            resolutionOptions?: ResolutionOption[];
+          }
+
+          let conflicts: Conflict[] = [];
+          let conflictSummary: {
+            total: number;
+            bySeverity: { low: number; medium: number; high: number; critical: number };
+          } = { total: 0, bySeverity: { low: 0, medium: 0, high: 0, critical: 0 } };
+
+          if (response.ok) {
+            const result = (await response.json()) as {
+              conflicts: Conflict[];
+              summary: {
+                total: number;
+                bySeverity: { low: number; medium: number; high: number; critical: number };
+              };
+            };
+            conflicts = result.conflicts || [];
+            if (result.summary) {
+              conflictSummary = {
+                total: result.summary.total,
+                bySeverity: {
+                  low: result.summary.bySeverity?.low ?? 0,
+                  medium: result.summary.bySeverity?.medium ?? 0,
+                  high: result.summary.bySeverity?.high ?? 0,
+                  critical: result.summary.bySeverity?.critical ?? 0,
+                },
+              };
+            }
+          }
+
+          // Filter conflicts by target events if specified
+          const targetEventIdSet = input.targetEventIds ? new Set(input.targetEventIds) : null;
+          const relevantConflicts = targetEventIdSet
+            ? conflicts.filter((c) =>
+                c.affectedEntities.some(
+                  (e) => e.type === "event" && targetEventIdSet.has(e.id)
+                )
+              )
+            : conflicts;
+
+          // Build recommendations from real conflict data
+          type Recommendation = {
+            eventId: string;
+            eventName: string;
+            conflictId: string;
+            conflictType: string;
+            current: string;
+            suggested: string;
+            reason: string;
+            impact: "low" | "medium" | "high";
+            resolutionOptions?: ResolutionOption[];
+          };
+
+          const recommendations: Recommendation[] = [];
+
+          for (const conflict of relevantConflicts) {
+            // Find the primary event entity for this conflict
+            const eventEntity = conflict.affectedEntities.find((e) => e.type === "event");
+            const eventId = eventEntity?.id || "unknown";
+            const eventName = eventEntity?.name || "Unknown Event";
+
+            // Map severity to impact
+            const impactMap: Record<string, "low" | "medium" | "high"> = {
+              low: "low",
+              medium: "medium",
+              high: "high",
+              critical: "high",
+            };
+
+            recommendations.push({
+              eventId,
+              eventName,
+              conflictId: conflict.id,
+              conflictType: conflict.type,
+              current: conflict.description,
+              suggested: conflict.suggestedAction || "Review and resolve the conflict",
+              reason: conflict.title,
+              impact: impactMap[conflict.severity] || "medium",
+              resolutionOptions: conflict.resolutionOptions,
+            });
+          }
+
+          // Build analysis object
           const analysis = {
             totalEvents: eventProjections.length,
             targetEvents: input.targetEventIds
-              ? eventProjections.filter(p => input.targetEventIds?.includes(p.entityId))
+              ? eventProjections.filter((p) => input.targetEventIds?.includes(p.entityId))
               : eventProjections,
             optimizationType: input.optimizationType,
-            recommendations: [] as Array<{
-              eventId: string;
-              current: string;
-              suggested: string;
-              reason: string;
-              impact: "low" | "medium" | "high";
-            }>,
+            conflictSummary,
+            recommendations,
           };
-
-          // Generate optimization recommendations based on type
-          switch (input.optimizationType) {
-            case "workload_balance": {
-              // Check for date clustering and suggest spreading
-              analysis.recommendations.push({
-                eventId: "example",
-                current: "Current staff assignments may be unbalanced",
-                suggested: "Redistribute staff to balance workload across events",
-                reason: "Some staff may be over-assigned while others have capacity",
-                impact: "medium",
-              });
-              break;
-            }
-            case "conflict_resolution": {
-              analysis.recommendations.push({
-                eventId: "example",
-                current: "Events may have scheduling overlaps",
-                suggested: "Adjust event times to eliminate conflicts",
-                reason: "Overlapping events cause resource contention",
-                impact: "high",
-              });
-              break;
-            }
-            case "efficiency": {
-              analysis.recommendations.push({
-                eventId: "example",
-                current: "Current schedule may have gaps or inefficiencies",
-                suggested: "Compress timeline and reduce idle time",
-                reason: "Tighter scheduling improves resource utilization",
-                impact: "medium",
-              });
-              break;
-            }
-            case "timeline_compression": {
-              analysis.recommendations.push({
-                eventId: "example",
-                current: "Events may be spread too far apart",
-                suggested: "Group related events closer together",
-                reason: "Reduces context switching and improves focus",
-                impact: "low",
-              });
-              break;
-            }
-          }
 
           if (input.previewOnly) {
             return {
               success: true,
               preview: true,
               analysis,
-              message: `Analyzed ${analysis.targetEvents.length} events for ${input.optimizationType} optimization.`,
+              message: `Analyzed ${analysis.targetEvents.length} events for ${input.optimizationType} optimization. Found ${conflictSummary.total} conflicts, ${recommendations.length} relevant to your selection.`,
               nextSteps: [
                 "Review the recommendations above",
                 "Ask me to apply specific optimizations",
@@ -1382,7 +1473,7 @@ function createBoardTools(params: {
           return {
             success: true,
             analysis,
-            message: `Completed ${input.optimizationType} analysis for ${analysis.targetEvents.length} events. Found ${analysis.recommendations.length} optimization opportunities.`,
+            message: `Completed ${input.optimizationType} analysis for ${analysis.targetEvents.length} events. Found ${conflictSummary.total} total conflicts with ${recommendations.length} actionable recommendations.`,
             nextSteps: [
               "Review the recommendations",
               "Say 'apply these optimizations' to create a manifest plan",
@@ -1645,6 +1736,7 @@ export async function POST(request: Request) {
       messages: UIMessage[];
       boardId?: string;
     };
+    const authCookie = request.headers.get("cookie");
 
     if (!(messages && Array.isArray(messages))) {
       return new Response("Invalid request: messages required", {
@@ -1667,6 +1759,18 @@ export async function POST(request: Request) {
       ? `${SYSTEM_PROMPT}\n\n**Current Board State:**\n${boardContext}`
       : SYSTEM_PROMPT;
 
+    const openAiApiKey = resolveOpenAiApiKey();
+    if (!openAiApiKey) {
+      console.warn(
+        "[AI Chat] OPENAI_API_KEY is missing. Using local fallback response mode."
+      );
+      return createLocalFallbackResponse({ messages, boardId });
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      process.env.OPENAI_API_KEY = openAiApiKey;
+    }
+
     const result = streamText({
       model: openai(AI_MODEL),
       system: systemWithContext,
@@ -1676,6 +1780,7 @@ export async function POST(request: Request) {
         boardId,
         tenantId,
         userId: userId ?? null,
+        authCookie,
       }),
     });
 
@@ -1690,6 +1795,116 @@ export async function POST(request: Request) {
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Local Fallback (No API Key)
+// ---------------------------------------------------------------------------
+
+function resolveOpenAiApiKey(): string | null {
+  const envKey = process.env.OPENAI_API_KEY?.trim();
+  if (envKey) {
+    return envKey;
+  }
+
+  try {
+    const userProfile = process.env.USERPROFILE;
+    if (!userProfile) {
+      return null;
+    }
+
+    const envTxtPath = join(userProfile, "Documents", "env.txt");
+    if (!existsSync(envTxtPath)) {
+      return null;
+    }
+
+    const envContents = readFileSync(envTxtPath, "utf8");
+    const line = envContents
+      .split(/\r?\n/)
+      .map((entry) => entry.trim())
+      .find((entry) => entry.startsWith("OPENAI_API_KEY="));
+
+    if (!line) {
+      return null;
+    }
+
+    const key = line.slice("OPENAI_API_KEY=".length).trim();
+    return key ? key.replace(/^['"]|['"]$/g, "") : null;
+  } catch (error) {
+    console.error("[AI Chat] Failed to read Documents/env.txt:", error);
+    return null;
+  }
+}
+
+async function createLocalFallbackResponse(params: {
+  messages: UIMessage[];
+  boardId?: string;
+}): Promise<Response> {
+  const { messages, boardId } = params;
+  const lastUserMessage = [...messages]
+    .reverse()
+    .find((message) => message.role === "user");
+
+  const userText =
+    (lastUserMessage?.parts ?? [])
+      .filter((part): part is { type: "text"; text: string } => {
+        return typeof part === "object" && part !== null && part.type === "text";
+      })
+      .map((part) => part.text)
+      .join(" ")
+      .trim()
+      .toLowerCase() ?? "";
+
+  const isSummaryQuery =
+    userText.includes("summary") || userText.includes("what's on") || userText.includes("whats on");
+  const isRiskQuery =
+    userText.includes("risk") || userText.includes("conflict") || userText.includes("at risk");
+  const isPlanningQuery =
+    userText.includes("plan") ||
+    userText.includes("create") ||
+    userText.includes("event") ||
+    userText.includes("menu");
+
+  let responseText =
+    "AI provider is not configured on this environment. Set `OPENAI_API_KEY` in your local `.env` and restart the dev server to enable full planning and execution.";
+
+  if (boardId && isSummaryQuery) {
+    try {
+      const summary = await queryBoardData(boardId, "summary");
+      const total =
+        typeof summary.totalProjections === "number" ? summary.totalProjections : 0;
+      const byType =
+        summary.byType && typeof summary.byType === "object"
+          ? Object.entries(summary.byType as Record<string, number>)
+              .map(([type, count]) => `${type}: ${count}`)
+              .join(", ")
+          : "none";
+
+      responseText = `Board summary: ${total} projections (${byType}). AI planning is currently in fallback mode because \`OPENAI_API_KEY\` is missing locally.`;
+    } catch (error) {
+      console.error("[AI Chat] Fallback summary failed:", error);
+    }
+  } else if (isRiskQuery) {
+    responseText =
+      "Risk analysis needs the configured AI backend for full conflict detection/explanations in this panel. You can still use `Commands` and `Entities` while local AI is unconfigured.";
+  } else if (isPlanningQuery) {
+    responseText =
+      "I can see you’re asking for a plan. In fallback mode I cannot generate/execute `suggest_manifest_plan`. Set local `OPENAI_API_KEY` and restart dev to re-enable plan generation.";
+  }
+
+  const stream = createUIMessageStream({
+    execute: ({ writer }) => {
+      const textId = crypto.randomUUID();
+      writer.write({ type: "start" });
+      writer.write({ type: "text-start", id: textId });
+      writer.write({ type: "text-delta", id: textId, delta: responseText });
+      writer.write({ type: "text-end", id: textId });
+      writer.write({ type: "finish", finishReason: "stop" });
+    },
+    originalMessages: messages,
+  });
+
+  return createUIMessageStreamResponse({ stream });
 }
 
 // ---------------------------------------------------------------------------
