@@ -34,13 +34,13 @@ Enable full AI-driven command board operations: users can create events, prep li
 
 ---
 
-## Priority Tasks (1 remaining - P1 UI Polish)
+## Priority Tasks (P1 Lower Priority remaining)
 
-### P1 - In Progress
+### P1 - Completed
 - [x] Card hover action buttons (remove, detail, pin) - HIGH IMPACT
 - [x] Edge hover state (thicken on hover + tooltip)
 - [x] Empty state with quick action buttons
-- [ ] Entity Browser: refresh button for categories
+- [x] Entity Browser: refresh button for categories
 
 ### P1 - Lower Priority
 - [ ] Card hover/selection smooth animations
@@ -66,3 +66,4 @@ Enable full AI-driven command board operations: users can create events, prep li
 - Card hover action buttons (Eye, Pin/Unpin, Remove) with toggle pin API
 - Edge hover state with thickening and tooltip for connection labels
 - Empty state with quick action buttons (Events, Clients, Tasks, Browse All)
+- Entity Browser: refresh button for categories with loading spinner
