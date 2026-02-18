@@ -1717,62 +1717,283 @@ function createBoardTools(params: {
       }),
       execute: async (input) => {
         try {
+          const tenantId = await requireTenantId();
+
           // Get events from board
           const projections = boardId ? await getBoardProjections(boardId) : [];
           const eventProjections = projections.filter(p => p.entityType === "event");
 
-          const targetEvents = input.eventIds
-            ? eventProjections.filter(p => input.eventIds?.includes(p.entityId))
-            : eventProjections;
+          const targetEventIds = input.eventIds
+            ? eventProjections.filter(p => input.eventIds?.includes(p.entityId)).map(p => p.entityId)
+            : eventProjections.map(p => p.entityId);
 
-          // Get inventory items
-          const inventoryProjections = projections.filter(p => p.entityType === "inventory_item");
+          if (targetEventIds.length === 0) {
+            return {
+              success: true,
+              preview: true,
+              purchaseList: { eventBased: [], lowStockItems: [], vendorGroups: undefined },
+              totalEstimatedCost: 0,
+              summary: { eventsCovered: 0, totalItems: 0, lowStockItems: 0, estimatedCost: 0 },
+              message: "No events found on the board to generate purchase list.",
+              nextSteps: ["Add events to the command board first"],
+            };
+          }
 
-          // Generate purchase list
+          // 1. Get events with guest counts
+          const events = await database.event.findMany({
+            where: { tenantId, id: { in: targetEventIds }, deletedAt: null },
+            select: { id: true, title: true, guestCount: true },
+          });
+          const eventMap = new Map(events.map(e => [e.id, e]));
+
+          // 2. Get event_dishes for those events
+          type EventDishRow = {
+            event_id: string;
+            dish_id: string;
+            quantity_servings: number;
+          };
+          const eventDishes = await database.$queryRaw<EventDishRow[]>`
+            SELECT event_id, dish_id, quantity_servings
+            FROM tenant_events.event_dishes
+            WHERE tenant_id = ${tenantId}::uuid
+            AND event_id = ANY(${targetEventIds}::uuid[])
+            AND deleted_at IS NULL
+          `;
+
+          if (eventDishes.length === 0) {
+            return {
+              success: true,
+              preview: true,
+              purchaseList: { eventBased: [], lowStockItems: [], vendorGroups: undefined },
+              totalEstimatedCost: 0,
+              summary: { eventsCovered: events.length, totalItems: 0, lowStockItems: 0, estimatedCost: 0 },
+              message: `Found ${events.length} events but no dishes linked. Add dishes to events to generate purchase suggestions.`,
+              nextSteps: ["Link dishes to events via menus"],
+            };
+          }
+
+          // 3. Get dishes with recipeId
+          const dishIds = [...new Set(eventDishes.map(ed => ed.dish_id))];
+          const dishes = await database.dish.findMany({
+            where: { tenantId, id: { in: dishIds }, deletedAt: null },
+            select: { id: true, recipeId: true, name: true },
+          });
+          const dishMap = new Map(dishes.map(d => [d.id, d]));
+          const recipeIds = [...new Set(dishes.map(d => d.recipeId).filter(Boolean))] as string[];
+
+          // 4. Get latest RecipeVersion for each recipe
+          const recipeVersions = await database.$queryRaw<
+            Array<{ recipe_id: string; version_number: number; yield_quantity: number }>
+          >`
+            SELECT DISTINCT ON (recipe_id) recipe_id, version_number, yield_quantity
+            FROM tenant_kitchen.recipe_versions
+            WHERE tenant_id = ${tenantId}::uuid
+            AND recipe_id = ANY(${recipeIds}::uuid[])
+            AND deleted_at IS NULL
+            ORDER BY recipe_id, version_number DESC
+          `;
+          const recipeVersionMap = new Map(recipeVersions.map(rv => [rv.recipe_id, rv]));
+
+          // 5. Get RecipeIngredients for those recipe versions
+          const versionIds = recipeVersions.map(rv => rv.recipe_id);
+          const recipeIngredients = await database.recipeIngredient.findMany({
+            where: { tenantId, recipeVersionId: { in: versionIds }, deletedAt: null },
+            select: { recipeVersionId: true, ingredientId: true, quantity: true },
+          });
+
+          // 6. Get Ingredient details
+          const ingredientIds = [...new Set(recipeIngredients.map(ri => ri.ingredientId))];
+          const ingredients = await database.ingredient.findMany({
+            where: { tenantId, id: { in: ingredientIds }, deletedAt: null },
+            select: { id: true, name: true, category: true },
+          });
+          const ingredientMap = new Map(ingredients.map(i => [i.id, i]));
+
+          // 7. Get InventoryItems for stock levels (match by name)
+          const inventoryItems = await database.inventoryItem.findMany({
+            where: { tenantId, deletedAt: null },
+            select: {
+              id: true,
+              name: true,
+              category: true,
+              quantityOnHand: true,
+              parLevel: true,
+              unitCost: true,
+              supplierId: true,
+            },
+          });
+
+          // Build a case-insensitive name to inventory item map
+          const inventoryByName = new Map<string, typeof inventoryItems[0]>();
+          for (const item of inventoryItems) {
+            inventoryByName.set(item.name.toLowerCase(), item);
+          }
+
+          // 8. Calculate ingredient requirements per event
+          interface IngredientNeed {
+            name: string;
+            category: string | null;
+            requiredQuantity: number;
+            currentQuantity: number;
+            unitCost: number;
+            suggestedOrder: number;
+            inventoryItemId: string | null;
+          }
+
+          const eventBasedPurchases: Array<{
+            eventId: string;
+            eventName: string;
+            estimatedGuests: number;
+            items: Array<{ category: string; items: Array<{ name: string; quantity: number; unit: string; estimatedCost: number; currentStock: number }> }>;
+            totalEstimated: number;
+          }> = [];
+
+          // Aggregate all ingredients needed across events
+          const aggregatedNeeds = new Map<string, IngredientNeed>();
+
+          for (const eventDish of eventDishes) {
+            const event = eventMap.get(eventDish.event_id);
+            const dish = dishMap.get(eventDish.dish_id);
+            if (!event || !dish?.recipeId) continue;
+
+            const recipeVersion = recipeVersionMap.get(dish.recipeId);
+            if (!recipeVersion) continue;
+
+            const yieldQuantity = Number(recipeVersion.yield_quantity) || 1;
+            const guestCount = event.guestCount || 1;
+            const servingsMultiplier = guestCount / yieldQuantity;
+
+            // Get ingredients for this recipe version
+            const dishIngredients = recipeIngredients.filter(ri => ri.recipeVersionId === dish.recipeId);
+
+            for (const ri of dishIngredients) {
+              const ingredient = ingredientMap.get(ri.ingredientId);
+              if (!ingredient) continue;
+
+              const requiredQty = Number(ri.quantity) * servingsMultiplier;
+              const key = ingredient.id;
+
+              const existing = aggregatedNeeds.get(key);
+              if (existing) {
+                existing.requiredQuantity += requiredQty;
+              } else {
+                // Try to find matching inventory item
+                const invItem = inventoryByName.get(ingredient.name.toLowerCase());
+                aggregatedNeeds.set(key, {
+                  name: ingredient.name,
+                  category: ingredient.category,
+                  requiredQuantity: requiredQty,
+                  currentQuantity: invItem ? Number(invItem.quantityOnHand) : 0,
+                  unitCost: invItem ? Number(invItem.unitCost) : 0,
+                  suggestedOrder: 0,
+                  inventoryItemId: invItem?.id ?? null,
+                });
+              }
+            }
+          }
+
+          // Calculate suggested orders and group by category
+          const categoryGroups = new Map<string, Array<{ name: string; quantity: number; unit: string; estimatedCost: number; currentStock: number }>>();
+
+          for (const need of aggregatedNeeds.values()) {
+            const shortfall = Math.max(0, need.requiredQuantity - need.currentQuantity);
+            need.suggestedOrder = shortfall;
+            const estimatedCost = shortfall * need.unitCost;
+
+            const category = need.category || "Other";
+            const items = categoryGroups.get(category) || [];
+            items.push({
+              name: need.name,
+              quantity: Math.ceil(shortfall),
+              unit: "units",
+              estimatedCost,
+              currentStock: need.currentQuantity,
+            });
+            categoryGroups.set(category, items);
+          }
+
+          // Group by event for response structure
+          for (const event of events) {
+            const eventDishesForEvent = eventDishes.filter(ed => ed.event_id === event.id);
+            const hasDishes = eventDishesForEvent.length > 0;
+
+            eventBasedPurchases.push({
+              eventId: event.id,
+              eventName: event.title,
+              estimatedGuests: event.guestCount,
+              items: hasDishes
+                ? Array.from(categoryGroups.entries()).map(([category, items]) => ({
+                    category,
+                    items: items.filter(i => i.quantity > 0),
+                  })).filter(g => g.items.length > 0)
+                : [],
+              totalEstimated: Array.from(aggregatedNeeds.values())
+                .reduce((sum, n) => sum + Math.max(0, n.requiredQuantity - n.currentQuantity) * n.unitCost, 0),
+            });
+          }
+
+          // Get low stock items if requested
+          let lowStockItems: Array<{
+            itemId: string;
+            itemName: string;
+            currentQuantity: number;
+            reorderLevel: number;
+            suggestedOrder: number;
+          }> = [];
+
+          if (input.includeLowStock) {
+            const lowStock = inventoryItems.filter(
+              item => Number(item.parLevel) > 0 && Number(item.quantityOnHand) < Number(item.parLevel)
+            );
+            lowStockItems = lowStock.map(item => ({
+              itemId: item.id,
+              itemName: item.name,
+              currentQuantity: Number(item.quantityOnHand),
+              reorderLevel: Number(item.parLevel),
+              suggestedOrder: Math.ceil(Number(item.parLevel) - Number(item.quantityOnHand)),
+            }));
+          }
+
+          // Group by vendor if requested
+          let vendorGroups: Record<string, string[]> | undefined;
+          if (input.groupByVendor) {
+            // Get suppliers
+            const supplierIds = [...new Set(inventoryItems.map(i => i.supplierId).filter(Boolean))] as string[];
+            if (supplierIds.length > 0) {
+              const suppliers = await database.inventorySupplier.findMany({
+                where: { tenantId, id: { in: supplierIds } },
+                select: { id: true, name: true },
+              });
+              const supplierMap = new Map(suppliers.map(s => [s.id, s.name]));
+
+              vendorGroups = {};
+              for (const item of inventoryItems) {
+                if (item.supplierId && aggregatedNeeds.has(item.name.toLowerCase())) {
+                  const supplierName = supplierMap.get(item.supplierId) || "Unknown Supplier";
+                  if (!vendorGroups[supplierName]) {
+                    vendorGroups[supplierName] = [];
+                  }
+                  vendorGroups[supplierName].push(item.name);
+                }
+              }
+            }
+          }
+
           const purchaseList = {
-            eventBased: targetEvents.map(projection => ({
-              eventId: projection.entityId,
-              eventName: projection.label ?? `Event ${projection.entityId.substring(0, 8)}`,
-              estimatedGuests: 100, // Placeholder
-              items: [
-                {
-                  category: "Proteins",
-                  items: [
-                    { name: "Chicken breast", quantity: 50, unit: "lbs", estimatedCost: 150 },
-                    { name: "Beef tenderloin", quantity: 30, unit: "lbs", estimatedCost: 450 },
-                  ],
-                },
-                {
-                  category: "Produce",
-                  items: [
-                    { name: "Mixed greens", quantity: 20, unit: "lbs", estimatedCost: 80 },
-                    { name: "Seasonal vegetables", quantity: 40, unit: "lbs", estimatedCost: 120 },
-                  ],
-                },
-              ],
-              totalEstimated: 800,
-            })),
-            lowStockItems: input.includeLowStock ? inventoryProjections.map(p => ({
-              itemId: p.entityId,
-              itemName: p.label ?? `Item ${p.entityId.substring(0, 8)}`,
-              currentQuantity: 0, // Placeholder - would need to fetch from inventory
-              reorderLevel: 0, // Placeholder
-              suggestedOrder: 10, // Placeholder
-            })) : [],
-            vendorGroups: input.groupByVendor ? {
-              "Primary Supplier": ["Chicken breast", "Beef tenderloin"],
-              "Produce Co": ["Mixed greens", "Seasonal vegetables"],
-            } : undefined,
+            eventBased: eventBasedPurchases,
+            lowStockItems,
+            vendorGroups,
           };
 
-          const totalEstimatedCost = purchaseList.eventBased.reduce((acc, e) => acc + e.totalEstimated, 0);
+          const totalEstimatedCost = Array.from(aggregatedNeeds.values())
+            .reduce((sum, n) => sum + Math.max(0, n.requiredQuantity - n.currentQuantity) * n.unitCost, 0);
 
           if (input.createPurchaseOrder) {
             return {
               success: true,
               purchaseList,
               totalEstimatedCost,
-              message: `Generated purchase list for ${targetEvents.length} events. Ready to create purchase order.`,
+              message: `Generated purchase list for ${events.length} events. Ready to create purchase order.`,
               nextSteps: [
                 "Review the items and quantities",
                 "Confirm with 'yes, create the purchase order'",
@@ -1785,18 +2006,21 @@ function createBoardTools(params: {
             };
           }
 
+          const totalItems = Array.from(categoryGroups.values())
+            .reduce((sum, items) => sum + items.filter(i => i.quantity > 0).length, 0);
+
           return {
             success: true,
             preview: true,
             purchaseList,
             totalEstimatedCost,
             summary: {
-              eventsCovered: targetEvents.length,
-              totalItems: purchaseList.eventBased.reduce((acc, e) => acc + e.items.flatMap(i => i.items).length, 0),
-              lowStockItems: purchaseList.lowStockItems.length,
+              eventsCovered: events.length,
+              totalItems,
+              lowStockItems: lowStockItems.length,
               estimatedCost: totalEstimatedCost,
             },
-            message: `Generated purchase list preview covering ${targetEvents.length} events.`,
+            message: `Generated purchase list preview covering ${events.length} events with ${totalItems} items to order.`,
             nextSteps: [
               "Review the suggested purchases",
               "Adjust quantities if needed",

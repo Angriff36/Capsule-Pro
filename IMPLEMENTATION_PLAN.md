@@ -21,7 +21,7 @@ Enable full AI-driven command board operations: users can create events, prep li
 | suggest_simulation_plan | FUNCTIONAL | Uses forkCommandBoard correctly |
 | optimize_schedule | FUNCTIONAL | Now calls /api/conflicts/detect for real data |
 | **auto_generate_prep** | FUNCTIONAL | Now calls /api/kitchen/ai/bulk-generate/prep-tasks for real data |
-| **auto_generate_purchase** | PLACEHOLDER | `estimatedGuests: 100` (line 1561), `currentQuantity: 0` (line 1583), hardcoded items |
+| **auto_generate_purchase** | FUNCTIONAL | Now queries event_dishes, RecipeIngredient, InventoryItem for real data |
 
 ### Domain Commands Status (5 implemented, 5 missing)
 | Command | Status | Location |
@@ -48,7 +48,7 @@ Enable full AI-driven command board operations: users can create events, prep li
 
 ---
 
-## Priority Tasks (10 remaining)
+## Priority Tasks (9 remaining)
 
 ### P0-1. [x] Fix `auto_generate_prep` AI Tool
 **File**: `apps/app/app/api/command-board/chat/route.ts:1497-1704`
@@ -62,18 +62,23 @@ Enable full AI-driven command board operations: users can create events, prep li
 - Calls `/api/kitchen/ai/bulk-generate/prep-tasks/save` when `createTasks: true`
 - Returns actual generated task data with proper type definitions
 
-### P0-2. [ ] Fix `auto_generate_purchase` AI Tool
-**File**: `apps/app/app/api/command-board/chat/route.ts:1534-1640`
+### P0-2. [x] Fix `auto_generate_purchase` AI Tool
+**File**: `apps/app/app/api/command-board/chat/route.ts:1706-2040`
 
-**Problem**: Fabricates items, uses hardcoded `estimatedGuests: 100`, `currentQuantity: 0`.
+**Completed**: 2026-02-18
 
-**Solution**:
-1. Query `event_dishes` table for dishes linked to target events
-2. Query `RecipeIngredient` for ingredient quantities per recipe
-3. Query `InventoryItem` for actual `quantity` and `reorder_level`
-4. Fetch real `event.guestCount` from Event entity
-5. Calculate needed: `recipeIngredient.quantity * (eventGuestCount / recipeServings)`
-6. Compare needed vs current to determine `suggestedOrder` quantities
+**Changes**:
+- Replaced hardcoded items with real API queries to event_dishes, dishes, recipes, and inventory
+- Queries `event_dishes` table for dishes linked to target events via $queryRaw
+- Fetches `event.guestCount` from Event entity for accurate guest counts
+- Gets latest `RecipeVersion` for each recipe to determine `yieldQuantity` (servings)
+- Gets `RecipeIngredient` records for ingredient quantities per recipe
+- Gets `Ingredient` details (name, category) for item descriptions
+- Matches ingredients to `InventoryItem` by name for current stock levels
+- Calculates needed: `recipeIngredient.quantity * (eventGuestCount / recipeServings)`
+- Compares needed vs current stock to determine `suggestedOrder` quantities
+- Returns real low-stock items from InventoryItem.parLevel checks
+- Groups items by vendor when `groupByVendor: true`
 
 ### P1-1. [ ] Add `create_prep_tasks` Domain Command
 **File**: `apps/app/app/(authenticated)/command-board/actions/manifest-plans.ts:715-776`
@@ -180,3 +185,4 @@ Enable full AI-driven command board operations: users can create events, prep li
 - [x] Full payroll UI and APIs
 - [x] **optimize_schedule** AI Tool - Now calls `/api/conflicts/detect` for real conflict data, maps affected entities to real event IDs, provides actionable recommendations with proper severity mapping
 - [x] **auto_generate_prep** AI Tool - Now calls `/api/kitchen/ai/bulk-generate/prep-tasks` for real data, calculates estimatedHours from task.estimatedMinutes, groups by station, saves via save endpoint
+- [x] **auto_generate_purchase** AI Tool - Now queries event_dishes, dishes, recipes (RecipeVersion, RecipeIngredient), ingredients, and inventory items for real purchase calculations based on event guest counts
