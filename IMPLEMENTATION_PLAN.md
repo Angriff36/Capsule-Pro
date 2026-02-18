@@ -38,6 +38,15 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 
 ---
 
+## Bug Fixes
+
+### Manifest Runtime NodeJS Enforcement (2026-02-18)
+- **Fixed:** Manifest runtime nodejs enforcement
+- **Issue:** Command routes using createManifestRuntime needed explicit `export const runtime = 'nodejs'` to prevent Edge runtime usage
+- **Resolution:** Added runtime declaration to 224 command route files, updated invariant test
+
+---
+
 ## P1 — High Priority (AI + Command Board Enhancement)
 
 ### 3. AI Conflict Detection Completion
@@ -51,10 +60,15 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 - **Status:** Stub actions exist, full implementation needed
 - **Effort:** 2-3 hours
 
-### 5. Command Board: Live Card Updates
+### 5. ~~Command Board: Live Card Updates~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/command-board/SPEC_product-direction.md`
-- **Status:** Polling infrastructure exists, needs wiring
-- **Effort:** 2-3 hours
+- **Implemented:**
+  - Created `useEntityPolling` hook for periodic entity refresh
+  - Hook polls every 30 seconds for entity data changes
+  - Pauses polling when tab is not visible (saves resources)
+  - Only updates entities when data actually changes (JSON comparison)
+  - Disabled during simulation mode (only polls in live mode)
+  - Wired into BoardShell component alongside existing inventory realtime
 
 ### 6. ~~Command Board: Quick Actions on Cards~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/command-board/SPEC_product-direction.md`

@@ -17,6 +17,7 @@ import {
 import { detectConflicts } from "../actions/conflicts";
 import type { Conflict } from "../conflict-types";
 import { useBoardHistory } from "../hooks/use-board-history";
+import { useEntityPolling } from "../hooks/use-entity-polling";
 import { useInventoryRealtime } from "../hooks/use-inventory-realtime";
 import type { EntityType, ResolvedInventoryItem } from "../types/entities";
 import type {
@@ -158,6 +159,43 @@ export function BoardShell({
   useInventoryRealtime({
     tenantId,
     onInventoryUpdate: handleInventoryUpdate,
+  });
+
+  // ---- Entity polling for live card updates ----
+  const handleEntitiesUpdate = useCallback(
+    (updates: Map<string, ResolvedEntity>) => {
+      setEntities((prevEntities) => {
+        let hasChanges = false;
+        const newEntities = new Map(prevEntities);
+
+        for (const [key, newEntity] of updates) {
+          const existingEntity = prevEntities.get(key);
+
+          // Only update if entity actually changed
+          if (
+            !existingEntity ||
+            existingEntity.type !== newEntity.type ||
+            JSON.stringify(existingEntity.data) !==
+              JSON.stringify(newEntity.data)
+          ) {
+            newEntities.set(key, newEntity);
+            hasChanges = true;
+          }
+        }
+
+        // Only return new Map if there were actual changes
+        return hasChanges ? newEntities : prevEntities;
+      });
+    },
+    []
+  );
+
+  useEntityPolling({
+    projections,
+    onEntitiesUpdate: handleEntitiesUpdate,
+    interval: 30_000, // 30 seconds
+    enabled: boardMode === "live", // Only poll in live mode, not simulation
+    pauseOnHidden: true,
   });
 
   // Exit board → navigate back to board list
