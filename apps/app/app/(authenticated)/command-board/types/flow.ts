@@ -14,6 +14,17 @@ import type { ResolvedEntity } from "./entities";
 // Node Data Types
 // ============================================================================
 
+/** Quick action type for tasks */
+export type TaskQuickAction =
+  | "complete"
+  | "start"
+  | "cancel"
+  | "claim"
+  | "release";
+
+/** Quick action type for events */
+export type EventQuickAction = "confirm" | "tentative" | "cancel" | "complete";
+
 /** Custom node data for entity projection nodes */
 export interface ProjectionNodeData {
   [key: string]: unknown;
@@ -24,6 +35,14 @@ export interface ProjectionNodeData {
   onOpenDetail: (entityType: string, entityId: string) => void;
   onRemove: (projectionId: string) => void;
   onTogglePin: (projectionId: string) => void;
+  /** Quick action handler for task entities (prep_task, kitchen_task) */
+  onTaskAction?: (
+    entityType: string,
+    entityId: string,
+    action: TaskQuickAction
+  ) => Promise<void>;
+  /** Quick action handler for event entities */
+  onEventAction?: (entityId: string, action: EventQuickAction) => Promise<void>;
 }
 
 /** Custom node data for group nodes */
@@ -78,6 +97,15 @@ export function projectionToNode(
     onOpenDetail: (entityType: string, entityId: string) => void;
     onRemove: (projectionId: string) => void;
     onTogglePin: (projectionId: string) => void;
+    onTaskAction?: (
+      entityType: string,
+      entityId: string,
+      action: TaskQuickAction
+    ) => Promise<void>;
+    onEventAction?: (
+      entityId: string,
+      action: EventQuickAction
+    ) => Promise<void>;
   }
 ): ProjectionNode {
   return {
@@ -91,6 +119,8 @@ export function projectionToNode(
       onOpenDetail: callbacks.onOpenDetail,
       onRemove: callbacks.onRemove,
       onTogglePin: callbacks.onTogglePin,
+      onTaskAction: callbacks.onTaskAction,
+      onEventAction: callbacks.onEventAction,
     },
     style: {
       width: projection.width,

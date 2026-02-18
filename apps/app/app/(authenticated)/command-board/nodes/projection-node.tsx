@@ -1,12 +1,33 @@
 "use client";
 
 import { Badge } from "@repo/design-system/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@repo/design-system/components/ui/dropdown-menu";
 import { cn } from "@repo/design-system/lib/utils";
 import { Handle, type NodeProps, Position } from "@xyflow/react";
-import { AlertTriangle, Eye, Pin, PinOff, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  Clock,
+  Eye,
+  MoreHorizontal,
+  Pin,
+  PinOff,
+  Play,
+  Trash2,
+  XCircle,
+} from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { ENTITY_TYPE_COLORS } from "../types/entities";
-import type { ProjectionNodeData } from "../types/flow";
+import type {
+  EventQuickAction,
+  ProjectionNodeData,
+  TaskQuickAction,
+} from "../types/flow";
 import { ClientNodeCard } from "./cards/client-card";
 import { EmployeeNodeCard } from "./cards/employee-card";
 import { EventNodeCard } from "./cards/event-card";
@@ -37,6 +58,86 @@ const entityBorderColors: Record<string, string> = {
 /** Handle shared className for consistent styling */
 const handleClassName = "!bg-muted-foreground/50 !w-2 !h-2";
 
+/** Task quick action configuration */
+interface QuickActionConfig {
+  action: TaskQuickAction | EventQuickAction;
+  icon: React.ReactNode;
+  label: string;
+}
+
+/** Get available quick actions for a task based on its status */
+function getTaskQuickActions(status: string | null): QuickActionConfig[] {
+  if (!status) {
+    return [];
+  }
+
+  const actions: QuickActionConfig[] = [];
+
+  if (status === "pending") {
+    actions.push({
+      action: "start",
+      icon: <Play className="size-3.5" />,
+      label: "Start",
+    });
+  }
+  if (status === "pending" || status === "in_progress") {
+    actions.push({
+      action: "complete",
+      icon: <Check className="size-3.5" />,
+      label: "Mark Complete",
+    });
+  }
+  if (status === "in_progress") {
+    actions.push({
+      action: "release",
+      icon: <Clock className="size-3.5" />,
+      label: "Release",
+    });
+  }
+  if (status !== "completed" && status !== "canceled") {
+    actions.push({
+      action: "cancel",
+      icon: <XCircle className="size-3.5" />,
+      label: "Cancel",
+    });
+  }
+
+  return actions;
+}
+
+/** Get available quick actions for an event based on its status */
+function getEventQuickActions(status: string | null): QuickActionConfig[] {
+  if (!status) {
+    return [];
+  }
+
+  const actions: QuickActionConfig[] = [];
+
+  if (status === "tentative" || status === "draft") {
+    actions.push({
+      action: "confirm",
+      icon: <Check className="size-3.5" />,
+      label: "Confirm Event",
+    });
+  }
+  if (status === "confirmed") {
+    actions.push({
+      action: "complete",
+      icon: <Check className="size-3.5" />,
+      label: "Mark Completed",
+    });
+  }
+  if (status !== "cancelled" && status !== "completed") {
+    actions.push({
+      action: "cancel",
+      icon: <XCircle className="size-3.5" />,
+      label: "Cancel Event",
+    });
+  }
+
+  return actions;
+}
+
 export const ProjectionNode = memo(function ProjectionNode({
   data,
   selected,
@@ -48,13 +149,33 @@ export const ProjectionNode = memo(function ProjectionNode({
     onOpenDetail,
     onRemove: _onRemove,
     onTogglePin,
+    onTaskAction,
+    onEventAction,
   } = data as ProjectionNodeData;
 
   const [isHovered, setIsHovered] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const entityType = projection.entityType;
   const colors = ENTITY_TYPE_COLORS[entityType] ?? ENTITY_TYPE_COLORS.note;
   const borderColor = entityBorderColors[entityType] ?? "border-l-stone-400";
   const isPinned = projection.pinned;
+
+  // Check if this is a task entity
+  const isTaskEntity =
+    entityType === "prep_task" || entityType === "kitchen_task";
+  const isEventEntity = entityType === "event";
+
+  // Get task status for conditional action buttons
+  const taskStatus =
+    isTaskEntity && entity?.data
+      ? (entity.data as { status?: string }).status
+      : null;
+
+  // Get event status for conditional action buttons
+  const eventStatus =
+    isEventEntity && entity?.data
+      ? (entity.data as { status?: string }).status
+      : null;
 
   const handleClick = useCallback(() => {
     if (entity && !stale) {
@@ -87,6 +208,45 @@ export const ProjectionNode = memo(function ProjectionNode({
     },
     [entity, stale, onOpenDetail, entityType, projection.entityId]
   );
+
+  // Handle task quick action
+  const handleTaskAction = useCallback(
+    async (e: React.MouseEvent, action: TaskQuickAction) => {
+      e.stopPropagation();
+      if (!onTaskAction || actionLoading) {
+        return;
+      }
+      setActionLoading(true);
+      try {
+        await onTaskAction(entityType, projection.entityId, action);
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [onTaskAction, entityType, projection.entityId, actionLoading]
+  );
+
+  // Handle event quick action
+  const handleEventAction = useCallback(
+    async (e: React.MouseEvent, action: EventQuickAction) => {
+      e.stopPropagation();
+      if (!onEventAction || actionLoading) {
+        return;
+      }
+      setActionLoading(true);
+      try {
+        await onEventAction(projection.entityId, action);
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [onEventAction, projection.entityId, actionLoading]
+  );
+
+  // Get available quick actions using extracted functions
+  const taskActions = isTaskEntity ? getTaskQuickActions(taskStatus) : [];
+  const eventActions = isEventEntity ? getEventQuickActions(eventStatus) : [];
+  const hasQuickActions = taskActions.length > 0 || eventActions.length > 0;
 
   /** Route to the correct card component based on entity type */
   function renderCard() {
@@ -241,6 +401,56 @@ export const ProjectionNode = memo(function ProjectionNode({
                 <Pin className="size-3.5" />
               )}
             </button>
+
+            {/* Quick Actions Dropdown - only for tasks and events */}
+            {hasQuickActions && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                    disabled={actionLoading}
+                    onClick={(e) => e.stopPropagation()}
+                    title="Quick actions"
+                    type="button"
+                  >
+                    <MoreHorizontal className="size-3.5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-40"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {taskActions.length > 0 &&
+                    taskActions.map((item) => (
+                      <DropdownMenuItem
+                        disabled={actionLoading}
+                        key={item.action}
+                        onClick={(e) =>
+                          handleTaskAction(e, item.action as TaskQuickAction)
+                        }
+                      >
+                        {item.icon}
+                        <span className="ml-2">{item.label}</span>
+                      </DropdownMenuItem>
+                    ))}
+                  {eventActions.length > 0 &&
+                    eventActions.map((item) => (
+                      <DropdownMenuItem
+                        disabled={actionLoading}
+                        key={item.action}
+                        onClick={(e) =>
+                          handleEventAction(e, item.action as EventQuickAction)
+                        }
+                      >
+                        {item.icon}
+                        <span className="ml-2">{item.label}</span>
+                      </DropdownMenuItem>
+                    ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
             <button
               className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
               onClick={handleRemove}
