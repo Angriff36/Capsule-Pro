@@ -51,6 +51,8 @@ Enable full AI-driven command board operations: users can create events, prep li
 
 ### P2 - Completed
 - [x] Canvas background brand colors
+- [x] BUG-06: Smart placement algorithm (grid-based instead of random)
+- [x] BUG-07: Consistent card width (280px constraint)
 
 ---
 
@@ -78,3 +80,6 @@ Enable full AI-driven command board operations: users can create events, prep li
 - Entity Browser: pre-load category counts (parallel count queries on mount)
 - Entity Browser: text size fix (text-[10px] → text-xs for readability)
 - Canvas background brand colors (using CSS variable --border for themed dots)
+- BUG-06: Smart placement algorithm (grid-based, 3-column layout with 320x200 spacing)
+- BUG-07: Card width constraint (280px fixed width in projection-node.tsx)
+- Lint fix: Added default switch clause and fixed Array<T> → T[] syntax
