@@ -29,7 +29,7 @@ import {
 } from "../actions/projections";
 import { useBoardSync } from "../hooks/use-board-sync";
 import { useLiveblocksSync } from "../hooks/use-liveblocks-sync";
-import { nodeTypes } from "../nodes/node-types";
+import { edgeTypes, nodeTypes } from "../nodes/node-types";
 import { RELATIONSHIP_STYLES } from "../types/board";
 import type { BoardEdge, ProjectionNode } from "../types/flow";
 import {
@@ -851,6 +851,7 @@ function BoardFlowInner({
         multiSelectionKeyCode="Shift"
         nodes={renderedNodes}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onEdgesChange={handleEdgesChange}
         onNodesChange={handleNodesChange}
         onNodesDelete={handleDelete}
