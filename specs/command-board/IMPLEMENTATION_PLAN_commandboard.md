@@ -34,7 +34,7 @@ Work items ordered by impact and dependency. Each item references its spec.
 | 11  | Card hover/selection animations              | `SPEC_ui-polish.md` §Cards.4  | 1 hr   | **DONE** |
 | 12  | Edge hover state (thicken + tooltip)         | `SPEC_connections.md` §1.2    | 1 hr   | **DONE** |
 | 13  | Smooth edge routing                          | `SPEC_connections.md` §1.4    | 30 min | **DONE** |
-| 14  | Canvas background brand colors               | `SPEC_ui-polish.md` §Canvas.1 | 30 min | NOT STARTED |
+| 14  | Canvas background brand colors               | `SPEC_ui-polish.md` §Canvas.1 | 30 min | **DONE** |
 | 15  | Controls/MiniMap styling (remove !important) | `SPEC_ui-polish.md` §Canvas.2 | 30 min | **DONE** |
 | 16  | Empty state with quick actions               | `SPEC_ui-polish.md` §Canvas.3 | 1 hr   | **DONE** |
 | 17  | Entity Browser drag-to-add                   | `SPEC_entity-browser.md` §2.1 | 2 hr   | **DONE** |
@@ -58,8 +58,7 @@ Work items ordered by impact and dependency. Each item references its spec.
 
 ### P1 - All Completed ✅
 
-### P2 Remaining (1 item)
-1. **Canvas background brand colors** — Use brand colors instead of default dots
+### P2 - All Completed ✅
 
 ## Historical Archive
 
