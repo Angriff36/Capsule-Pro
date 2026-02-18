@@ -55,11 +55,59 @@ vi.mock("@repo/database", () => {
     outboxEvent: {
       create: vi.fn(),
     },
+    manifestState: {
+      findUnique: vi.fn(),
+      upsert: vi.fn(),
+    },
+    idempotencyKey: {
+      findUnique: vi.fn(),
+      upsert: vi.fn(),
+    },
+    $transaction: vi.fn((fn) => fn(mockDb)),
   };
   return {
     database: mockDb,
   };
 });
+
+// Mock manifest runtime to avoid complex dependencies
+vi.mock("@/lib/manifest-runtime", () => ({
+  createManifestRuntime: vi.fn(() =>
+    Promise.resolve({
+      runCommand: vi.fn((command: string, body: Record<string, unknown>) => {
+        // Simulate constraint validation for RecipeVersion
+        if (body.difficulty && (body.difficulty < 1 || body.difficulty > 5)) {
+          return Promise.resolve({
+            success: false,
+            guardFailure: {
+              index: 0,
+              formatted: "difficulty must be between 1 and 5",
+            },
+          });
+        }
+        if (
+          typeof body.prepTime === "number" && body.prepTime < 0 ||
+          typeof body.cookTime === "number" && body.cookTime < 0 ||
+          typeof body.restTime === "number" && body.restTime < 0
+        ) {
+          return Promise.resolve({
+            success: false,
+            guardFailure: {
+              index: 0,
+              formatted: "times cannot be negative",
+            },
+          });
+        }
+        return Promise.resolve({
+          success: true,
+          result: { id: "test-id" },
+          emittedEvents: [],
+          warnings: [],
+        });
+      }),
+    })
+  ),
+}));
 
 // Mock getTenantIdForOrg
 vi.mock("@/app/lib/tenant", () => ({
