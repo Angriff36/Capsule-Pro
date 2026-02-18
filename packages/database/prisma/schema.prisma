@@ -106,6 +106,9 @@ model Account {
   chartOfAccounts         ChartOfAccount[]
   manifestEntities        ManifestEntity[]
   venues                  Venue[]
+  nowstaConfig            NowstaConfig?
+  nowstaEmployeeMappings  NowstaEmployeeMapping[]
+  nowstaShiftSyncs        NowstaShiftSync[]
 
   @@map("accounts")
   @@schema("platform")
@@ -3475,4 +3478,73 @@ model SentryFixJob {
   @@index([sentryIssueId, createdAt])
   @@map("sentry_fix_jobs")
   @@schema("platform")
+}
+
+// Nowsta Integration Models
+model NowstaConfig {
+  tenantId         String    @map("tenant_id") @db.Uuid
+  id               String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  apiKey           String    @map("api_key")
+  apiSecret        String    @map("api_secret")
+  organizationId   String?   @map("organization_id")
+  syncEnabled      Boolean   @default(true) @map("sync_enabled")
+  syncDirection    String    @default("one_way") // one_way or two_way
+  lastSyncAt       DateTime? @map("last_sync_at") @db.Timestamptz(6)
+  lastSyncStatus   String?   @map("last_sync_status")
+  lastSyncError    String?   @map("last_sync_error") @db.Text
+  autoSyncInterval Int?      @map("auto_sync_interval") // in minutes
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant           Account   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId])
+  @@map("nowsta_config")
+  @@schema("tenant_admin")
+}
+
+model NowstaEmployeeMapping {
+  tenantId           String   @map("tenant_id") @db.Uuid
+  id                 String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nowstaEmployeeId   String   @map("nowsta_employee_id")
+  convoyEmployeeId   String   @map("convoy_employee_id") @db.Uuid
+  nowstaEmployeeName String?  @map("nowsta_employee_name")
+  nowstaEmployeeEmail String? @map("nowsta_employee_email")
+  autoMapped         Boolean  @default(false) @map("auto_mapped")
+  confirmedAt        DateTime? @map("confirmed_at") @db.Timestamptz(6)
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant             Account  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, nowstaEmployeeId])
+  @@index([tenantId, convoyEmployeeId])
+  @@map("nowsta_employee_mappings")
+  @@schema("tenant_admin")
+}
+
+model NowstaShiftSync {
+  tenantId         String    @map("tenant_id") @db.Uuid
+  id               String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nowstaShiftId    String    @map("nowsta_shift_id")
+  convoyShiftId    String?   @map("convoy_shift_id") @db.Uuid
+  nowstaEmployeeId String    @map("nowsta_employee_id")
+  locationId       String?   @map("location_id") @db.Uuid
+  shiftStart       DateTime  @map("shift_start") @db.Timestamptz(6)
+  shiftEnd         DateTime  @map("shift_end") @db.Timestamptz(6)
+  roleDuringShift  String?   @map("role_during_shift")
+  status           String    @default("pending") // pending, synced, error
+  syncError        String?   @map("sync_error") @db.Text
+  lastSyncedAt     DateTime? @map("last_synced_at") @db.Timestamptz(6)
+  nowstaUpdatedAt  DateTime? @map("nowsta_updated_at") @db.Timestamptz(6)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant           Account   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, nowstaShiftId])
+  @@index([tenantId, status])
+  @@index([tenantId, shiftStart])
+  @@index([tenantId, nowstaEmployeeId])
+  @@map("nowsta_shift_syncs")
+  @@schema("tenant_admin")
 }
