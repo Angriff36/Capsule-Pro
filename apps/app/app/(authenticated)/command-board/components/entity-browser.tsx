@@ -18,6 +18,7 @@ import {
   Loader2Icon,
   PackageIcon,
   PlusIcon,
+  RefreshCwIcon,
   SearchIcon,
   StickyNoteIcon,
   TruckIcon,
@@ -74,6 +75,7 @@ interface CategoryState {
   items: BrowseItem[];
   loaded: boolean;
   loading: boolean;
+  refreshing: boolean;
   error: string | null;
 }
 
@@ -139,7 +141,13 @@ export function EntityBrowser({
       // Mark as loading
       setCategories((prev) => ({
         ...prev,
-        [entityType]: { items: [], loaded: false, loading: true, error: null },
+        [entityType]: {
+          items: [],
+          loaded: false,
+          loading: true,
+          refreshing: false,
+          error: null,
+        },
       }));
 
       // Fetch
@@ -152,6 +160,7 @@ export function EntityBrowser({
                 items: result.items,
                 loaded: true,
                 loading: false,
+                refreshing: false,
                 error: null,
               },
             }));
@@ -166,6 +175,7 @@ export function EntityBrowser({
                 items: [],
                 loaded: true,
                 loading: false,
+                refreshing: false,
                 error: result.error ?? "Failed to load",
               },
             }));
@@ -179,9 +189,91 @@ export function EntityBrowser({
               items: [],
               loaded: true,
               loading: false,
+              refreshing: false,
               error: "Failed to load",
             },
           }));
+        });
+    },
+    [categories]
+  );
+
+  // ---- Refresh a category's items ----
+  const handleRefresh = useCallback(
+    (entityType: EntityType, event: React.MouseEvent) => {
+      event.stopPropagation(); // Prevent collapsible toggle
+
+      const existing = categories[entityType];
+      if (!existing?.loaded || existing.refreshing) {
+        return;
+      }
+
+      // Mark as refreshing
+      setCategories((prev) => {
+        const currentState = prev[entityType];
+        if (!currentState) {
+          return prev;
+        }
+        return {
+          ...prev,
+          [entityType]: { ...currentState, refreshing: true, error: null },
+        };
+      });
+
+      // Fetch
+      browseEntities(entityType)
+        .then((result) => {
+          if (result.success) {
+            setCategories((prev) => ({
+              ...prev,
+              [entityType]: {
+                items: result.items,
+                loaded: true,
+                loading: false,
+                refreshing: false,
+                error: null,
+              },
+            }));
+          } else {
+            console.error(
+              `[EntityBrowser] Failed to refresh ${entityType}:`,
+              result.error
+            );
+            setCategories((prev) => {
+              const currentState = prev[entityType];
+              if (!currentState) {
+                return prev;
+              }
+              return {
+                ...prev,
+                [entityType]: {
+                  ...currentState,
+                  refreshing: false,
+                  error: result.error ?? "Failed to refresh",
+                },
+              };
+            });
+          }
+        })
+        .catch((error) => {
+          console.error(
+            `[EntityBrowser] Error refreshing ${entityType}:`,
+            error
+          );
+          setCategories((prev) => {
+            const currentState = prev[entityType];
+            if (!currentState) {
+              return prev;
+            }
+            return {
+              ...prev,
+              [entityType]: {
+                ...currentState,
+                refreshing: false,
+                error: "Failed to refresh",
+              },
+            };
+          });
         });
     },
     [categories]
@@ -301,9 +393,22 @@ export function EntityBrowser({
                   <Icon className={`h-4 w-4 shrink-0 ${colors.icon}`} />
                   <span className="flex-1 text-left">{label}s</span>
                   {state?.loaded && (
-                    <span className="text-[10px] text-muted-foreground tabular-nums">
-                      {state.items.length}
-                    </span>
+                    <>
+                      <span className="text-[10px] text-muted-foreground tabular-nums">
+                        {state.items.length}
+                      </span>
+                      <button
+                        className="h-4 w-4 shrink-0 flex items-center justify-center rounded hover:bg-muted-foreground/10 transition-colors"
+                        disabled={state.refreshing}
+                        onClick={(e) => handleRefresh(type, e)}
+                        title={`Refresh ${label.toLowerCase()}s`}
+                        type="button"
+                      >
+                        <RefreshCwIcon
+                          className={`h-3 w-3 text-muted-foreground ${state.refreshing ? "animate-spin" : ""}`}
+                        />
+                      </button>
+                    </>
                   )}
                 </CollapsibleTrigger>
 
