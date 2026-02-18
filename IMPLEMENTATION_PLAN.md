@@ -49,8 +49,8 @@ Enable full AI-driven command board operations: users can create events, prep li
 - [x] Entity Browser: pre-load category counts
 - [x] Browser text size fix (text-[10px] → text-xs)
 
-### P2 - Remaining
-- [ ] Canvas background brand colors
+### P2 - Completed
+- [x] Canvas background brand colors
 
 ---
 
@@ -77,3 +77,4 @@ Enable full AI-driven command board operations: users can create events, prep li
 - Smooth edge routing using getSmoothStepPath with rounded corners
 - Entity Browser: pre-load category counts (parallel count queries on mount)
 - Entity Browser: text size fix (text-[10px] → text-xs for readability)
+- Canvas background brand colors (using CSS variable --border for themed dots)

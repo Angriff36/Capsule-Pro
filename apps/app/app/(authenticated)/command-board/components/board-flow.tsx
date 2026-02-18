@@ -1036,7 +1036,12 @@ function BoardFlowInner({
         snapGrid={[20, 20]}
         snapToGrid
       >
-        <Background gap={20} size={1} variant={BackgroundVariant.Dots} />
+        <Background
+          color="var(--border)"
+          gap={20}
+          size={1}
+          variant={BackgroundVariant.Dots}
+        />
         <Controls />
         <MiniMap maskColor="rgba(0,0,0,0.1)" nodeColor={minimapNodeColor} />
       </ReactFlow>
